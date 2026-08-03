@@ -1,0 +1,374 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II map-script engine static contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "upstream",
+    "rom",
+    "summary",
+    "function",
+    "dispatcher",
+    "familyCounts",
+    "abiFacts",
+    "macroContracts",
+    "macroSourceCounts",
+    "opcodeSourceCounts",
+    "unusedMacros",
+    "handlers",
+    "programCorpus",
+    "runtimeQuestions",
+    "dialogueCommandFacts",
+    "transitionCommandFacts",
+    "forceStateCommandFacts",
+    "storyStateCommandFacts",
+    "mapBlockMutationCommandFacts",
+    "entityPopulationCommandFacts",
+    "mapLifecycleCommandFacts",
+    "mapInteractionTriggerCommandFacts",
+    "mapCameraControlCommandFacts",
+    "entityPlacementCommandFacts",
+    "entityActionBridgeCommandFacts",
+    "entityLifecyclePresentationCommandFacts",
+    "entityGestureRelationshipMotionCommandFacts",
+    "screenPresentationCommandFacts",
+    "entityPresentationFxCommandFacts",
+    "mapScriptUiPrimaryCommandFacts",
+    "entityCloneCommandFacts",
+    "scriptControlCommandFacts"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-map-script-engine-static-v1"
+    },
+    "upstream": {
+      "type": "object"
+    },
+    "rom": {
+      "type": "object"
+    },
+    "summary": {
+      "type": "object",
+      "minProperties": 28
+    },
+    "function": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "dispatcher": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "endExclusive",
+        "sha256",
+        "targets",
+        "fillerTarget",
+        "fillerIndices",
+        "sourceRomParity"
+      ],
+      "properties": {
+        "address": {
+          "type": "integer"
+        },
+        "endExclusive": {
+          "type": "integer"
+        },
+        "sha256": {
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fillerTarget": {
+          "type": "string"
+        },
+        "fillerIndices": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "sourceRomParity": {
+          "type": "boolean"
+        }
+      }
+    },
+    "familyCounts": {
+      "type": "object",
+      "minProperties": 14
+    },
+    "abiFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandWidthCounts",
+        "handlerFlowCounts",
+        "absoluteJumpHandlers",
+        "conditionalAbsoluteJumpHandlers",
+        "inlineActionProgramHandlers",
+        "shorthandOperands"
+      ],
+      "properties": {
+        "commandWidthCounts": {
+          "type": "object"
+        },
+        "handlerFlowCounts": {
+          "type": "object"
+        },
+        "absoluteJumpHandlers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "conditionalAbsoluteJumpHandlers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "inlineActionProgramHandlers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "shorthandOperands": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "macroContracts": {
+      "type": "object"
+    },
+    "macroSourceCounts": {
+      "type": "object"
+    },
+    "opcodeSourceCounts": {
+      "type": "object",
+      "minProperties": 70
+    },
+    "unusedMacros": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "handlers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "opcodes",
+          "families",
+          "address",
+          "sourcePath",
+          "startLine",
+          "endLine",
+          "statementCount",
+          "macroNames",
+          "encodedCommandBytes",
+          "operandBytes",
+          "cursorFlow",
+          "sourceCommandCount",
+          "entityFieldAccesses",
+          "globalStateAccesses",
+          "directCalls",
+          "scriptCursorStatements"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "opcodes": {
+            "type": "array"
+          },
+          "families": {
+            "type": "array"
+          },
+          "address": {
+            "type": "integer"
+          },
+          "sourcePath": {
+            "type": "string"
+          },
+          "startLine": {
+            "type": "integer"
+          },
+          "endLine": {
+            "type": "integer"
+          },
+          "statementCount": {
+            "type": "integer"
+          },
+          "macroNames": {
+            "type": "array"
+          },
+          "encodedCommandBytes": {
+            "type": "integer"
+          },
+          "operandBytes": {
+            "type": "integer"
+          },
+          "cursorFlow": {
+            "enum": [
+              "sequential",
+              "absolute-jump",
+              "conditional-absolute-jump",
+              "inline-action-program"
+            ]
+          },
+          "sourceCommandCount": {
+            "type": "integer"
+          },
+          "entityFieldAccesses": {
+            "type": "array"
+          },
+          "globalStateAccesses": {
+            "type": "array"
+          },
+          "directCalls": {
+            "type": "array"
+          },
+          "scriptCursorStatements": {
+            "type": "array"
+          }
+        }
+      }
+    },
+    "programCorpus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "transferCounts",
+        "referenceSummary",
+        "storyState",
+        "unreferencedPrograms",
+        "programReferences",
+        "labelReferences",
+        "sourceOnlyPrograms",
+        "largestPrograms",
+        "labelOwners",
+        "transfers",
+        "programs"
+      ],
+      "properties": {
+        "summary": {
+          "type": "object"
+        },
+        "transferCounts": {
+          "type": "object"
+        },
+        "referenceSummary": {
+          "type": "object"
+        },
+        "unreferencedPrograms": {
+          "type": "array"
+        },
+        "storyState": {
+          "type": "object"
+        },
+        "programReferences": {
+          "type": "array"
+        },
+        "labelReferences": {
+          "type": "array"
+        },
+        "sourceOnlyPrograms": {
+          "type": "array"
+        },
+        "largestPrograms": {
+          "type": "array"
+        },
+        "labelOwners": {
+          "type": "object"
+        },
+        "transfers": {
+          "type": "array"
+        },
+        "programs": {
+          "type": "array"
+        }
+      }
+    },
+    "runtimeQuestions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dialogueCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-dialogue.schema.json#/definitions/dialogueCommandFacts"
+    },
+    "transitionCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-map-control.schema.json#/definitions/transitionCommandFacts"
+    },
+    "forceStateCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-state-block.schema.json#/definitions/forceStateCommandFacts"
+    },
+    "storyStateCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-state-block.schema.json#/definitions/storyStateCommandFacts"
+    },
+    "mapBlockMutationCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-state-block.schema.json#/definitions/mapBlockMutationCommandFacts"
+    },
+    "entityPopulationCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityPopulationCommandFacts"
+    },
+    "mapLifecycleCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-map-control.schema.json#/definitions/mapLifecycleCommandFacts"
+    },
+    "mapInteractionTriggerCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-map-control.schema.json#/definitions/mapInteractionTriggerCommandFacts"
+    },
+    "mapCameraControlCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-presentation-ui.schema.json#/definitions/mapCameraControlCommandFacts"
+    },
+    "entityPlacementCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityPlacementCommandFacts"
+    },
+    "entityActionBridgeCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityActionBridgeCommandFacts"
+    },
+    "entityLifecyclePresentationCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityLifecyclePresentationCommandFacts"
+    },
+    "entityGestureRelationshipMotionCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityGestureRelationshipMotionCommandFacts"
+    },
+    "screenPresentationCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-presentation-ui.schema.json#/definitions/screenPresentationCommandFacts"
+    },
+    "entityPresentationFxCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-presentation-ui.schema.json#/definitions/entityPresentationFxCommandFacts"
+    },
+    "mapScriptUiPrimaryCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-presentation-ui.schema.json#/definitions/mapScriptUiPrimaryCommandFacts"
+    },
+    "entityCloneCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityCloneCommandFacts"
+    },
+    "scriptControlCommandFacts": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-script-control.schema.json#/definitions/scriptControlCommandFacts"
+    }
+  },
+  "$id": "https://sf2-research.example/schemas/h2/map-script-engine-output.schema.json"
+}

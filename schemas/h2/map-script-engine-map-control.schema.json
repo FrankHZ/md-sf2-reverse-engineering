@@ -1,0 +1,2297 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-script-engine-map-control.schema.json",
+  "title": "Map-script engine map-control structural definitions",
+  "definitions": {
+    "mapInteractionTriggerCalleeOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols",
+        "relatedContractId"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "relatedContractId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "mapInteractionTriggerCallerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerCallerHandler"
+          }
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerTargetResolution"
+          }
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/mapInteractionTriggerInstructionCountMap"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/mapInteractionTriggerEffectiveCountMap"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/mapInteractionTriggerEffectiveCountMap"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/mapInteractionTriggerEffectiveCountMap"
+        }
+      }
+    },
+    "mapInteractionTriggerCallerHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/mapInteractionTriggerInstructionCountMap"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/mapInteractionTriggerEffectiveCountMap"
+        }
+      }
+    },
+    "mapInteractionTriggerCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "handlers",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerMacro"
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerSourceSite"
+          },
+          "minItems": 1
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "sourceSitesSha256": {
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "programTotalsSha256": {
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerProgramTotal"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerHandler"
+          }
+        },
+        "callerBreakdown": {
+          "$ref": "#/definitions/mapInteractionTriggerCallerBreakdown"
+        },
+        "sourceIdentityJoins": {
+          "$ref": "#/definitions/mapInteractionTriggerSourceIdentityJoins"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "mapInteractionTriggerCursorRead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceRegister",
+        "destinationRegister",
+        "transferredByteCount",
+        "cursorAdvanceByteCount",
+        "instruction"
+      ],
+      "properties": {
+        "sourceRegister": {
+          "type": "string"
+        },
+        "destinationRegister": {
+          "type": "string"
+        },
+        "transferredByteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cursorAdvanceByteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapInteractionTriggerDirectCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opcode",
+        "instructionTarget"
+      ],
+      "properties": {
+        "opcode": {
+          "type": "string"
+        },
+        "instructionTarget": {
+          "type": "string"
+        }
+      }
+    },
+    "mapInteractionTriggerEffectiveCountMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "PerformMapBlockCopyScript",
+        "OpenDoor"
+      ],
+      "properties": {
+        "PerformMapBlockCopyScript": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "OpenDoor": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapInteractionTriggerEventTableBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mapContentContractId",
+        "canonicalMapImportContractId",
+        "mapContentSectionCounts",
+        "mapContentRecordCounts",
+        "canonicalResourceCounts",
+        "canonicalRecordCounts"
+      ],
+      "properties": {
+        "mapContentContractId": {
+          "type": "string"
+        },
+        "canonicalMapImportContractId": {
+          "type": "string"
+        },
+        "mapContentSectionCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "stepEvents",
+            "roofEvents"
+          ],
+          "properties": {
+            "stepEvents": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "roofEvents": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "mapContentRecordCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "stepEvents",
+            "roofEvents"
+          ],
+          "properties": {
+            "stepEvents": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "roofEvents": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "canonicalResourceCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "stepEventTables",
+            "roofEventTables"
+          ],
+          "properties": {
+            "stepEventTables": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "roofEventTables": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "canonicalRecordCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "stepEvents",
+            "roofEvents"
+          ],
+          "properties": {
+            "stepEvents": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "roofEvents": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "mapInteractionTriggerHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macro",
+        "handler",
+        "address",
+        "opcode",
+        "sourceCommandCount",
+        "operandAnnotations",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandAnnotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerOperandAnnotation"
+          }
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "guardedStatements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/mapInteractionTriggerSectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerDirectCall"
+          }
+        }
+      }
+    },
+    "mapInteractionTriggerHandlerSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "mapInteractionTriggerInstructionCountMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "PerformMapBlockCopyScript",
+        "OpenDoor"
+      ],
+      "properties": {
+        "PerformMapBlockCopyScript": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "OpenDoor": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapInteractionTriggerMacro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "handler",
+        "sourceOperandAnnotations",
+        "sourceCommandCount"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "encodedBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandLayout": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerOperandLayout"
+          }
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "handler": {
+          "type": "string"
+        },
+        "sourceOperandAnnotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerOperandAnnotation"
+          }
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapInteractionTriggerMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roofEvent",
+        "stepEvent"
+      ],
+      "properties": {
+        "roofEvent": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stepEvent": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapInteractionTriggerOperandAnnotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceComment": {
+          "type": "string"
+        },
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapInteractionTriggerOperandLayout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "properties": {
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expression": {
+          "type": "string"
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1
+        },
+        "encoding": {
+          "type": "string"
+        }
+      }
+    },
+    "mapInteractionTriggerOperandValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes",
+        "rawValue",
+        "resolvedValue",
+        "resolution"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceComment": {
+          "type": "string"
+        },
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rawValue": {
+          "type": "string"
+        },
+        "resolvedValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "resolution": {
+          "type": "string"
+        }
+      }
+    },
+    "mapInteractionTriggerProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "$ref": "#/definitions/mapInteractionTriggerMacroCounts"
+        }
+      }
+    },
+    "mapInteractionTriggerSectionGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "scriptCursorReadUseSites",
+        "tileSizeUseSites",
+        "directCallOrder",
+        "returnInstruction"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scriptCursorReadUseSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerCursorRead"
+          }
+        },
+        "tileSizeUseSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerTileSizeUse"
+          }
+        },
+        "directCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "returnInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapInteractionTriggerSourceCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerOperandValue"
+          }
+        }
+      }
+    },
+    "mapInteractionTriggerSourceIdentityJoins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handlerSource",
+        "calleeOwner",
+        "eventTableBoundary"
+      ],
+      "properties": {
+        "handlerSource": {
+          "$ref": "#/definitions/mapInteractionTriggerHandlerSource"
+        },
+        "calleeOwner": {
+          "$ref": "#/definitions/mapInteractionTriggerCalleeOwner"
+        },
+        "eventTableBoundary": {
+          "$ref": "#/definitions/mapInteractionTriggerEventTableBoundary"
+        }
+      }
+    },
+    "mapInteractionTriggerSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapInteractionTriggerSourceCommand"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "mapInteractionTriggerTargetResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "aliasSourcePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effectiveTargetScope": {
+          "type": "string"
+        }
+      }
+    },
+    "mapInteractionTriggerTileSizeUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "value",
+        "destinationRegister",
+        "instruction"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "destinationRegister": {
+          "type": "string"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleAnnotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer"
+        },
+        "sourceComment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "streamOffset": {
+          "type": "integer"
+        },
+        "widthBytes": {
+          "type": "integer"
+        }
+      }
+    },
+    "mapLifecycleBranchRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "testInstruction",
+        "branchInstruction",
+        "fallthroughInstruction",
+        "branchTarget"
+      ],
+      "properties": {
+        "testInstruction": {
+          "type": "string"
+        },
+        "branchInstruction": {
+          "type": "string"
+        },
+        "fallthroughInstruction": {
+          "type": "string"
+        },
+        "branchTarget": {
+          "$ref": "#/definitions/mapLifecycleBranchTarget"
+        }
+      }
+    },
+    "mapLifecycleBranchTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetLabel",
+        "targetInstruction",
+        "targetStatementIndex"
+      ],
+      "properties": {
+        "targetLabel": {
+          "type": "string"
+        },
+        "targetInstruction": {
+          "type": "string"
+        },
+        "targetStatementIndex": {
+          "type": "integer"
+        }
+      }
+    },
+    "mapLifecycleCalleeOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols",
+        "relatedContractId"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "relatedContractId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "mapLifecycleCallerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleCallerHandler"
+          },
+          "minItems": 0
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleTargetResolution"
+          },
+          "minItems": 0
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        }
+      }
+    },
+    "mapLifecycleCallerHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/mapLifecycleTargetCounts"
+        }
+      }
+    },
+    "mapLifecycleCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "canonicalMapDomain",
+        "handlers",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleMacro"
+          },
+          "minItems": 0
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleSourceSite"
+          },
+          "minItems": 0
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleProgramTotal"
+          },
+          "minItems": 0
+        },
+        "canonicalMapDomain": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "contractId",
+            "mapCount",
+            "mapIds",
+            "sourceMapCurrentValue"
+          ],
+          "properties": {
+            "contractId": {
+              "type": "string"
+            },
+            "mapCount": {
+              "type": "integer"
+            },
+            "mapIds": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "minItems": 0
+            },
+            "sourceMapCurrentValue": {
+              "type": "integer"
+            }
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleHandler"
+          },
+          "minItems": 0
+        },
+        "callerBreakdown": {
+          "$ref": "#/definitions/mapLifecycleCallerBreakdown"
+        },
+        "sourceIdentityJoins": {
+          "$ref": "#/definitions/mapLifecycleSourceIdentityJoins"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "mapLifecycleConstantUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleContinuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "address",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer"
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/mapLifecycleSectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleDirectCall"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "mapLifecycleCursorRead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceRegister",
+        "destinationRegister",
+        "transferredByteCount",
+        "cursorAdvanceByteCount",
+        "instruction"
+      ],
+      "properties": {
+        "sourceRegister": {
+          "type": "string"
+        },
+        "destinationRegister": {
+          "type": "string"
+        },
+        "transferredByteCount": {
+          "type": "integer"
+        },
+        "cursorAdvanceByteCount": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleDirectCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opcode",
+        "instructionTarget"
+      ],
+      "properties": {
+        "opcode": {
+          "type": "string"
+        },
+        "instructionTarget": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macro",
+        "handler",
+        "address",
+        "opcode",
+        "sourceCommandCount",
+        "operandAnnotations",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls",
+        "continuation"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        },
+        "operandAnnotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleAnnotation"
+          },
+          "minItems": 0
+        },
+        "statementCount": {
+          "type": "integer"
+        },
+        "guardedStatements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/mapLifecycleSectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleDirectCall"
+          },
+          "minItems": 0
+        },
+        "continuation": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/mapLifecycleContinuation"
+            }
+          ]
+        }
+      }
+    },
+    "mapLifecycleHandlerSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "mapLifecycleMacro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "handler",
+        "sourceOperandAnnotations",
+        "sourceCommandCount"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "encodedBytes": {
+          "type": "integer"
+        },
+        "operandBytes": {
+          "type": "integer"
+        },
+        "operandLayout": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleOperandLayout"
+          },
+          "minItems": 0
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 0
+        },
+        "handler": {
+          "type": "string"
+        },
+        "sourceOperandAnnotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleAnnotation"
+          },
+          "minItems": 0
+        },
+        "sourceCommandCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "mapLifecycleMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resetMap",
+        "loadMapFadeIn",
+        "reloadMap",
+        "mapLoad"
+      ],
+      "properties": {
+        "resetMap": {
+          "type": "integer"
+        },
+        "loadMapFadeIn": {
+          "type": "integer"
+        },
+        "reloadMap": {
+          "type": "integer"
+        },
+        "mapLoad": {
+          "type": "integer"
+        }
+      }
+    },
+    "mapLifecycleMutationRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceSymbols",
+        "sourceValueSymbol",
+        "sourceValue",
+        "literalValue",
+        "instruction"
+      ],
+      "properties": {
+        "sourceSymbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "sourceValueSymbol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "literalValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleOperandLayout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "properties": {
+        "streamOffset": {
+          "type": "integer"
+        },
+        "widthBytes": {
+          "type": "integer"
+        },
+        "expression": {
+          "type": "string"
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 0
+        },
+        "encoding": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleOperandPackUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinals",
+        "sourceComments",
+        "shiftUseSite",
+        "maskUseSite",
+        "mergeInstruction",
+        "multiplierUseSite"
+      ],
+      "properties": {
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 0
+        },
+        "sourceComments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "shiftUseSite": {
+          "$ref": "#/definitions/mapLifecycleConstantUse"
+        },
+        "maskUseSite": {
+          "$ref": "#/definitions/mapLifecycleConstantUse"
+        },
+        "mergeInstruction": {
+          "type": "string"
+        },
+        "multiplierUseSite": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "value",
+            "instruction"
+          ],
+          "properties": {
+            "value": {
+              "type": "integer"
+            },
+            "instruction": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "mapLifecycleOperandValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes",
+        "rawValue",
+        "resolvedValue",
+        "resolution",
+        "mapDomain"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer"
+        },
+        "sourceComment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "streamOffset": {
+          "type": "integer"
+        },
+        "widthBytes": {
+          "type": "integer"
+        },
+        "rawValue": {
+          "type": "string"
+        },
+        "resolvedValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "resolution": {
+          "type": "string"
+        },
+        "mapDomain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "mapLifecycleProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer"
+        },
+        "macroCounts": {
+          "$ref": "#/definitions/mapLifecycleMacroCounts"
+        }
+      }
+    },
+    "mapLifecycleSectionGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "scriptCursorReadUseSites",
+        "mapProbeUseSite",
+        "vintControlRecords",
+        "branchRecords",
+        "sourceStateMutationRecords",
+        "sourceConstantUses",
+        "operandPackUseSites",
+        "sourceD1SelectorUseSite",
+        "directCallOrder",
+        "returnInstruction"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "scriptCursorReadUseSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleCursorRead"
+          },
+          "minItems": 0
+        },
+        "mapProbeUseSite": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/mapLifecycleCursorRead"
+            }
+          ]
+        },
+        "vintControlRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleVintRecord"
+          },
+          "minItems": 0
+        },
+        "branchRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleBranchRecord"
+          },
+          "minItems": 0
+        },
+        "sourceStateMutationRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleMutationRecord"
+          },
+          "minItems": 0
+        },
+        "sourceConstantUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleConstantUse"
+          },
+          "minItems": 0
+        },
+        "operandPackUseSites": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/mapLifecycleOperandPackUse"
+            }
+          ]
+        },
+        "sourceD1SelectorUseSite": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/mapLifecycleSelectorUse"
+            }
+          ]
+        },
+        "directCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "returnInstruction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "mapLifecycleSelectorUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "literalValue",
+        "instruction"
+      ],
+      "properties": {
+        "literalValue": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleSourceCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer"
+        },
+        "sourceLine": {
+          "type": "integer"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 0
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleOperandValue"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "mapLifecycleSourceIdentityJoins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handlerSource",
+        "calleeOwners"
+      ],
+      "properties": {
+        "handlerSource": {
+          "$ref": "#/definitions/mapLifecycleHandlerSource"
+        },
+        "calleeOwners": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleCalleeOwner"
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "mapLifecycleSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapLifecycleSourceCommand"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "mapLifecycleTargetCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "EnableDisplayAndInterrupts",
+        "LoadMap",
+        "LoadMapTilesets",
+        "ResetCurrentMap",
+        "WaitForVInt"
+      ],
+      "properties": {
+        "EnableDisplayAndInterrupts": {
+          "type": "integer"
+        },
+        "LoadMap": {
+          "type": "integer"
+        },
+        "LoadMapTilesets": {
+          "type": "integer"
+        },
+        "ResetCurrentMap": {
+          "type": "integer"
+        },
+        "WaitForVInt": {
+          "type": "integer"
+        }
+      }
+    },
+    "mapLifecycleTargetResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "aliasSourcePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effectiveTargetScope": {
+          "type": "string"
+        }
+      }
+    },
+    "mapLifecycleVintRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase",
+        "operationSymbol",
+        "operationValue",
+        "trapInstruction",
+        "operationInstruction",
+        "argumentInstruction"
+      ],
+      "properties": {
+        "phase": {
+          "type": "string"
+        },
+        "operationSymbol": {
+          "type": "string"
+        },
+        "operationValue": {
+          "type": "integer"
+        },
+        "trapInstruction": {
+          "type": "string"
+        },
+        "operationInstruction": {
+          "type": "string"
+        },
+        "argumentInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "transitionCaller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/transitionCallerCounts"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/transitionCallerCounts"
+        }
+      }
+    },
+    "transitionCallerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/transitionCaller"
+          }
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/transitionResolution"
+          }
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/transitionTargetTotals"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/transitionTargetTotals"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/transitionTargetTotals"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/transitionTargetTotals"
+        }
+      }
+    },
+    "transitionCallerCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ResetCurrentMap",
+        "LoadMapTilesets",
+        "LoadMap",
+        "EnableDisplayAndInterrupts"
+      ],
+      "properties": {
+        "ResetCurrentMap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "LoadMapTilesets": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "LoadMap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "EnableDisplayAndInterrupts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "transitionCanonicalMapDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contractId",
+        "mapCount",
+        "mapIds",
+        "sourceMapCurrentValue"
+      ],
+      "properties": {
+        "contractId": {
+          "type": "string"
+        },
+        "mapCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mapIds": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "sourceMapCurrentValue": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "transitionCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "programTotals",
+        "canonicalMapDomain",
+        "handlers",
+        "callerBreakdown",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/transitionMacro"
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/transitionSiteGroup"
+          }
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/transitionProgramTotal"
+          }
+        },
+        "canonicalMapDomain": {
+          "$ref": "#/definitions/transitionCanonicalMapDomain"
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/transitionHandler"
+          }
+        },
+        "callerBreakdown": {
+          "$ref": "#/definitions/transitionCallerBreakdown"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "transitionHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macro",
+        "handler",
+        "address",
+        "opcode",
+        "cursorReadWidths",
+        "mapEventTypeValue",
+        "mapEventClearByteValue",
+        "d1Immediate",
+        "packedCoordinateMultiplier",
+        "directServiceCalls",
+        "fallsThroughTo"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "cursorReadWidths": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "directServiceCalls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fallsThroughTo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mapEventTypeValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "d1Immediate": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "packedCoordinateMultiplier": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "mapEventClearByteValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "transitionMacro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "handler",
+        "sourceCommandCount"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "opcode": {
+          "type": "integer"
+        },
+        "encodedBytes": {
+          "type": "integer"
+        },
+        "operandBytes": {
+          "type": "integer"
+        },
+        "operandLayout": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-core.schema.json#/definitions/emissionRow"
+          }
+        },
+        "handler": {
+          "type": "string"
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "transitionMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "warp",
+        "resetMap",
+        "loadMapFadeIn",
+        "reloadMap",
+        "mapLoad"
+      ],
+      "properties": {
+        "warp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resetMap": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "loadMapFadeIn": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reloadMap": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mapLoad": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "transitionProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "$ref": "#/definitions/transitionMacroCounts"
+        }
+      }
+    },
+    "transitionResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "effectiveTargetScope": {
+          "type": "string",
+          "enum": [
+            "internal",
+            "external"
+          ]
+        }
+      }
+    },
+    "transitionSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "macro",
+        "destinationMapOperand",
+        "destinationMapValue",
+        "destinationMapDomain",
+        "coordinateXValue",
+        "coordinateYValue",
+        "facingValue"
+      ],
+      "properties": {
+        "destinationMapValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "coordinateXValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "coordinateYValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "facingValue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "commandIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macro": {
+          "type": "string"
+        },
+        "destinationMapOperand": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "destinationMapDomain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "transitionSiteGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/transitionSite"
+          }
+        }
+      }
+    },
+    "transitionTargetTotals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ResetCurrentMap",
+        "LoadMapTilesets",
+        "LoadMap",
+        "EnableDisplayAndInterrupts"
+      ],
+      "properties": {
+        "ResetCurrentMap": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "LoadMapTilesets": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "LoadMap": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "EnableDisplayAndInterrupts": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

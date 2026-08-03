@@ -44,6 +44,14 @@ shard's local path, identity, field inventory, and section schema, then reconstr
 corpus cardinalities; `src/sf2tool/h2/map_events.py` retains complete fixture equality,
 provenance/address, summary, and canonical-digest ownership.
 
+Map-script engine composes seven cohesive structural components through
+`h2/map-script-engine-output.schema.json` and `h2/map-script-engine-fixture.schema.json`. Core
+dispatcher/program shape, dialogue, state/block, entity, presentation/UI, map-control, and
+script-control definitions have one tracked owner each; neither root copies definitions. The unchanged
+`tests/fixtures/h2/map-script-engine-static-v1.json` owns exact corpora and order for H2 and downstream
+H3 consumers. `src/sf2tool/h2/map_script_engine.py` retains complete fixture-field equality,
+provenance/address, summary, runtime-question, and canonical-digest checks before output is written.
+
 The measured problem, target architecture, staged migration order, and acceptance guardrails are
 documented in [ADR 0007](../docs/decisions/0007-schema-contract-composition-and-migration.md). Existing
 contracts are not weakened merely because they predate that decision; migrate one complete owner at a

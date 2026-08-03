@@ -1,0 +1,3187 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-script-engine-script-control.schema.json",
+  "title": "Map-script engine script-control structural definitions",
+  "definitions": {
+    "scriptControlCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "macroSourceOrder",
+        "macros",
+        "sourceSites",
+        "sourceSitesSha256",
+        "programTotalsSha256",
+        "programTotals",
+        "mainLoopGuard",
+        "handlers",
+        "targetInventories",
+        "targetInventoriesSha256",
+        "soundOperandJoin",
+        "soundOperandJoinSha256",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "macroCount",
+            "sourceUseCount",
+            "sourceSiteProgramCount",
+            "zeroUseMacroCount",
+            "sourceEncodedByteCount",
+            "waitSourceUseCount",
+            "soundSourceUseCount",
+            "subroutineSourceUseCount",
+            "jumpSourceUseCount",
+            "terminatorSourceUseCount"
+          ],
+          "properties": {
+            "macroCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sourceSiteProgramCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "zeroUseMacroCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sourceEncodedByteCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "waitSourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "soundSourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "subroutineSourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "jumpSourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "terminatorSourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "macroSourceOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "macros": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "negativeWaitLeadByte"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "csWait"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "negativeWaitLeadByte": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "handler"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "playSound"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "handler": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "handler"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "csc06"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "handler": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "handler"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "executeSubroutine"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "handler": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "handler"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "jump"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "handler": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "cscNop"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "encodedWord"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "csc_end"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "encodedWord": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "programId",
+              "sourcePath",
+              "programAddress",
+              "commands"
+            ],
+            "properties": {
+              "programId": {
+                "type": "string"
+              },
+              "sourcePath": {
+                "type": "string"
+              },
+              "programAddress": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "commands": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "commandIndex",
+                        "sourceLine",
+                        "macro",
+                        "directiveKind",
+                        "encodedBytes",
+                        "operand"
+                      ],
+                      "properties": {
+                        "commandIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "sourceLine": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "macro": {
+                          "type": "string"
+                        },
+                        "directiveKind": {
+                          "type": "string"
+                        },
+                        "encodedBytes": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "operand": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "sourceOperand",
+                            "sourceSymbol",
+                            "resolvedValue"
+                          ],
+                          "properties": {
+                            "sourceOperand": {
+                              "type": "string"
+                            },
+                            "sourceSymbol": {
+                              "oneOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "enum": [
+                                    null
+                                  ]
+                                }
+                              ]
+                            },
+                            "resolvedValue": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "commandIndex",
+                        "sourceLine",
+                        "macro",
+                        "directiveKind",
+                        "encodedBytes",
+                        "operand",
+                        "soundCategory"
+                      ],
+                      "properties": {
+                        "commandIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "sourceLine": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "macro": {
+                          "type": "string"
+                        },
+                        "directiveKind": {
+                          "type": "string"
+                        },
+                        "encodedBytes": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "operand": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "sourceOperand",
+                            "sourceSymbol",
+                            "resolvedValue"
+                          ],
+                          "properties": {
+                            "sourceOperand": {
+                              "type": "string"
+                            },
+                            "sourceSymbol": {
+                              "oneOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "enum": [
+                                    null
+                                  ]
+                                }
+                              ]
+                            },
+                            "resolvedValue": {
+                              "type": "integer",
+                              "minimum": 0
+                            }
+                          }
+                        },
+                        "soundCategory": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "commandIndex",
+                        "sourceLine",
+                        "macro",
+                        "directiveKind",
+                        "encodedBytes",
+                        "target"
+                      ],
+                      "properties": {
+                        "commandIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "sourceLine": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "macro": {
+                          "type": "string"
+                        },
+                        "directiveKind": {
+                          "type": "string"
+                        },
+                        "encodedBytes": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "target": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "sourceOperand",
+                            "instructionTarget",
+                            "instructionTargetAddress",
+                            "effectiveTarget",
+                            "effectiveTargetAddress",
+                            "aliasSourcePath"
+                          ],
+                          "properties": {
+                            "sourceOperand": {
+                              "type": "string"
+                            },
+                            "instructionTarget": {
+                              "type": "string"
+                            },
+                            "instructionTargetAddress": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "effectiveTarget": {
+                              "type": "string"
+                            },
+                            "effectiveTargetAddress": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "aliasSourcePath": {
+                              "oneOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "enum": [
+                                    null
+                                  ]
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "commandIndex",
+                        "sourceLine",
+                        "macro",
+                        "directiveKind",
+                        "encodedBytes"
+                      ],
+                      "properties": {
+                        "commandIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "sourceLine": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "macro": {
+                          "type": "string"
+                        },
+                        "directiveKind": {
+                          "type": "string"
+                        },
+                        "encodedBytes": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "programId",
+              "commandCount",
+              "macroCounts"
+            ],
+            "properties": {
+              "programId": {
+                "type": "string"
+              },
+              "commandCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "macroCounts": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "csWait",
+                  "playSound",
+                  "csc06",
+                  "executeSubroutine",
+                  "jump",
+                  "cscNop",
+                  "csc_end"
+                ],
+                "properties": {
+                  "csWait": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "playSound": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "csc06": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "executeSubroutine": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "jump": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "cscNop": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "csc_end": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "mainLoopGuard": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sectionLabel",
+            "orderedInstructions",
+            "scriptCursorReadUseSite",
+            "terminatorCompare",
+            "negativeWaitPath",
+            "opcodeDispatchPath",
+            "branchTargets"
+          ],
+          "properties": {
+            "sectionLabel": {
+              "type": "string"
+            },
+            "orderedInstructions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "scriptCursorReadUseSite": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceRegister",
+                "destinationRegister",
+                "transferredByteCount",
+                "cursorAdvanceByteCount",
+                "instruction"
+              ],
+              "properties": {
+                "sourceRegister": {
+                  "type": "string"
+                },
+                "destinationRegister": {
+                  "type": "string"
+                },
+                "transferredByteCount": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "cursorAdvanceByteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "instruction": {
+                  "type": "string"
+                }
+              }
+            },
+            "terminatorCompare": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instruction",
+                "comparedSignedValue",
+                "terminatorMacro",
+                "terminatorEncodedWord",
+                "terminatorEncodedByteCount"
+              ],
+              "properties": {
+                "instruction": {
+                  "type": "string"
+                },
+                "comparedSignedValue": {
+                  "type": "integer",
+                  "minimum": -32768
+                },
+                "terminatorMacro": {
+                  "type": "string"
+                },
+                "terminatorEncodedWord": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminatorEncodedByteCount": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "negativeWaitPath": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "negativeTestInstruction",
+                "negativeBranchInstruction",
+                "skipGateReadInstruction",
+                "skipGateBranchInstruction",
+                "byteMaskUse",
+                "sleepCallInstruction",
+                "loopInstruction",
+                "waitMacro",
+                "waitLeadByte",
+                "waitDurationOperandWidthBytes"
+              ],
+              "properties": {
+                "negativeTestInstruction": {
+                  "type": "string"
+                },
+                "negativeBranchInstruction": {
+                  "type": "string"
+                },
+                "skipGateReadInstruction": {
+                  "type": "string"
+                },
+                "skipGateBranchInstruction": {
+                  "type": "string"
+                },
+                "byteMaskUse": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "constant",
+                    "value",
+                    "instruction"
+                  ],
+                  "properties": {
+                    "constant": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "instruction": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "sleepCallInstruction": {
+                  "type": "string"
+                },
+                "loopInstruction": {
+                  "type": "string"
+                },
+                "waitMacro": {
+                  "type": "string"
+                },
+                "waitLeadByte": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "waitDurationOperandWidthBytes": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "opcodeDispatchPath": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "selectorScaleInstruction",
+                "tableReadInstruction",
+                "dispatchCallInstruction",
+                "loopInstruction"
+              ],
+              "properties": {
+                "selectorScaleInstruction": {
+                  "type": "string"
+                },
+                "tableReadInstruction": {
+                  "type": "string"
+                },
+                "dispatchCallInstruction": {
+                  "type": "string"
+                },
+                "loopInstruction": {
+                  "type": "string"
+                }
+              }
+            },
+            "branchTargets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "branchInstruction",
+                  "targetLabel",
+                  "targetInstruction"
+                ],
+                "properties": {
+                  "branchInstruction": {
+                    "type": "string"
+                  },
+                  "targetLabel": {
+                    "type": "string"
+                  },
+                  "targetInstruction": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "sourcePath",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "statementCount",
+              "sectionGuard"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourcePath": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "opcode": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourceCommandCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "statementCount": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "sectionGuard": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "orderedInstructions",
+                      "returnInstruction",
+                      "scriptCursorReadUseSite",
+                      "soundCommandInstruction",
+                      "soundCommandSymbol"
+                    ],
+                    "properties": {
+                      "orderedInstructions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "returnInstruction": {
+                        "type": "string"
+                      },
+                      "scriptCursorReadUseSite": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "sourceRegister",
+                          "destinationRegister",
+                          "transferredByteCount",
+                          "cursorAdvanceByteCount",
+                          "instruction"
+                        ],
+                        "properties": {
+                          "sourceRegister": {
+                            "type": "string"
+                          },
+                          "destinationRegister": {
+                            "type": "string"
+                          },
+                          "transferredByteCount": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "cursorAdvanceByteCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "instruction": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "soundCommandInstruction": {
+                        "type": "string"
+                      },
+                      "soundCommandSymbol": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "orderedInstructions",
+                      "returnInstruction",
+                      "scriptCursorReadUseSites"
+                    ],
+                    "properties": {
+                      "orderedInstructions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "returnInstruction": {
+                        "type": "string"
+                      },
+                      "scriptCursorReadUseSites": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "sourceRegister",
+                            "destinationRegister",
+                            "transferredByteCount",
+                            "cursorAdvanceByteCount",
+                            "instruction"
+                          ],
+                          "properties": {
+                            "sourceRegister": {
+                              "type": "string"
+                            },
+                            "destinationRegister": {
+                              "type": "string"
+                            },
+                            "transferredByteCount": {
+                              "type": "integer",
+                              "minimum": 1
+                            },
+                            "cursorAdvanceByteCount": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "instruction": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "orderedInstructions",
+                      "returnInstruction",
+                      "scriptCursorReadUseSite",
+                      "targetRegister",
+                      "saveInstruction",
+                      "indirectCallInstruction",
+                      "restoreInstruction"
+                    ],
+                    "properties": {
+                      "orderedInstructions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "returnInstruction": {
+                        "type": "string"
+                      },
+                      "scriptCursorReadUseSite": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "sourceRegister",
+                          "destinationRegister",
+                          "transferredByteCount",
+                          "cursorAdvanceByteCount",
+                          "instruction"
+                        ],
+                        "properties": {
+                          "sourceRegister": {
+                            "type": "string"
+                          },
+                          "destinationRegister": {
+                            "type": "string"
+                          },
+                          "transferredByteCount": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "cursorAdvanceByteCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "instruction": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "targetRegister": {
+                        "type": "string"
+                      },
+                      "saveInstruction": {
+                        "type": "string"
+                      },
+                      "indirectCallInstruction": {
+                        "type": "string"
+                      },
+                      "restoreInstruction": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "orderedInstructions",
+                      "returnInstruction",
+                      "scriptCursorReadUseSite",
+                      "cursorRedirectInstruction"
+                    ],
+                    "properties": {
+                      "orderedInstructions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "returnInstruction": {
+                        "type": "string"
+                      },
+                      "scriptCursorReadUseSite": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "sourceRegister",
+                          "destinationRegister",
+                          "transferredByteCount",
+                          "cursorAdvanceByteCount",
+                          "instruction"
+                        ],
+                        "properties": {
+                          "sourceRegister": {
+                            "type": "string"
+                          },
+                          "destinationRegister": {
+                            "type": "string"
+                          },
+                          "transferredByteCount": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "cursorAdvanceByteCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "instruction": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "cursorRedirectInstruction": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "targetInventories": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "executeSubroutine",
+            "jump"
+          ],
+          "properties": {
+            "executeSubroutine": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "declaredInstructionTargets",
+                "declaredEffectiveTargets",
+                "targetResolutions",
+                "instructionTargetTotals",
+                "effectiveTargetTotals",
+                "internalInstructionTargetTotals",
+                "externalInstructionTargetTotals",
+                "internalEffectiveTargetTotals",
+                "externalEffectiveTargetTotals",
+                "unresolvedInstructionTargetCount",
+                "sourceUseCount"
+              ],
+              "properties": {
+                "declaredInstructionTargets": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "targetResolutions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "instructionTarget",
+                      "instructionTargetAddress",
+                      "effectiveTarget",
+                      "effectiveTargetAddress",
+                      "aliasSourcePath",
+                      "effectiveTargetScope"
+                    ],
+                    "properties": {
+                      "instructionTarget": {
+                        "type": "string"
+                      },
+                      "instructionTargetAddress": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "effectiveTarget": {
+                        "type": "string"
+                      },
+                      "effectiveTargetAddress": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "aliasSourcePath": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "enum": [
+                              null
+                            ]
+                          }
+                        ]
+                      },
+                      "effectiveTargetScope": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "instructionTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "effectiveTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "internalInstructionTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "externalInstructionTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "internalEffectiveTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "externalEffectiveTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "unresolvedInstructionTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourceUseCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "declaredEffectiveTargets": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "jump": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "declaredInstructionTargets",
+                "declaredEffectiveTargets",
+                "targetResolutions",
+                "instructionTargetTotals",
+                "effectiveTargetTotals",
+                "internalInstructionTargetTotals",
+                "externalInstructionTargetTotals",
+                "internalEffectiveTargetTotals",
+                "externalEffectiveTargetTotals",
+                "unresolvedInstructionTargetCount",
+                "sourceUseCount"
+              ],
+              "properties": {
+                "declaredInstructionTargets": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "targetResolutions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "instructionTarget",
+                      "instructionTargetAddress",
+                      "effectiveTarget",
+                      "effectiveTargetAddress",
+                      "aliasSourcePath",
+                      "effectiveTargetScope"
+                    ],
+                    "properties": {
+                      "instructionTarget": {
+                        "type": "string"
+                      },
+                      "instructionTargetAddress": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "effectiveTarget": {
+                        "type": "string"
+                      },
+                      "effectiveTargetAddress": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "aliasSourcePath": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "enum": [
+                              null
+                            ]
+                          }
+                        ]
+                      },
+                      "effectiveTargetScope": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "instructionTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "effectiveTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "internalInstructionTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "externalInstructionTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "internalEffectiveTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "externalEffectiveTargetTotals": {
+                  "type": "object",
+                  "patternProperties": {
+                    "^[A-Za-z0-9_]+$": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "unresolvedInstructionTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourceUseCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "declaredEffectiveTargets": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "soundOperandJoin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "soundDataContractId",
+            "soundDataFixturePath",
+            "sourceEnumPath",
+            "sourceEnumSha256",
+            "musicDomainFactPath",
+            "sfxDomainFactPath",
+            "soundOperands",
+            "sourceCategoryCounts"
+          ],
+          "properties": {
+            "soundDataContractId": {
+              "type": "string"
+            },
+            "soundDataFixturePath": {
+              "type": "string"
+            },
+            "sourceEnumPath": {
+              "type": "string"
+            },
+            "sourceEnumSha256": {
+              "type": "string"
+            },
+            "musicDomainFactPath": {
+              "type": "string"
+            },
+            "sfxDomainFactPath": {
+              "type": "string"
+            },
+            "soundOperands": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "sourceSymbol",
+                  "value",
+                  "sourceCategory",
+                  "sourceUseCount",
+                  "soundDataFactPath"
+                ],
+                "properties": {
+                  "sourceSymbol": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sourceCategory": {
+                    "type": "string"
+                  },
+                  "sourceUseCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "soundDataFactPath": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "sourceCategoryCounts": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "music",
+                "sfx",
+                "sound-command"
+              ],
+              "properties": {
+                "music": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sfx": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sound-command": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetInventoriesSha256": {
+          "type": "string"
+        },
+        "soundOperandJoinSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        }
+      }
+    },
+    "scriptControlEmissionRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "properties": {
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expression": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "encoding": {
+          "enum": [
+            "direct",
+            "shorthand"
+          ]
+        }
+      }
+    },
+    "scriptControlFixtureCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "macroSourceOrder",
+        "macros",
+        "sourceSitesSha256",
+        "programTotalsSha256",
+        "mainLoopGuard",
+        "handlers",
+        "targetInventoriesSha256",
+        "soundOperandJoin",
+        "soundOperandJoinSha256",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "macroCount",
+            "sourceUseCount",
+            "sourceSiteProgramCount",
+            "zeroUseMacroCount",
+            "sourceEncodedByteCount",
+            "waitSourceUseCount",
+            "soundSourceUseCount",
+            "subroutineSourceUseCount",
+            "jumpSourceUseCount",
+            "terminatorSourceUseCount"
+          ],
+          "properties": {
+            "macroCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sourceSiteProgramCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "zeroUseMacroCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sourceEncodedByteCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "waitSourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "soundSourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "subroutineSourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "jumpSourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "terminatorSourceUseCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "macroSourceOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "macros": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "negativeWaitLeadByte"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "csWait"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "negativeWaitLeadByte": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "handler"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "playSound"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "handler": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "handler"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "csc06"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "handler": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "handler"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "executeSubroutine"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "handler": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "handler"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "jump"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "handler": {
+                    "type": "string"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "cscNop"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "directiveKind",
+                  "opcode",
+                  "encodedBytes",
+                  "operandBytes",
+                  "emissionRows",
+                  "operandLayout",
+                  "parameterOrdinals",
+                  "sourceOperandAnnotations",
+                  "sourceCommandCount",
+                  "encodedWord"
+                ],
+                "properties": {
+                  "name": {
+                    "enum": [
+                      "csc_end"
+                    ]
+                  },
+                  "directiveKind": {
+                    "type": "string"
+                  },
+                  "opcode": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "encodedBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operandBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emissionRows": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "operandLayout": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlEmissionRow"
+                    }
+                  },
+                  "parameterOrdinals": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  },
+                  "sourceOperandAnnotations": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/scriptControlOperandAnnotation"
+                    }
+                  },
+                  "sourceCommandCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "encodedWord": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "mainLoopGuard": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sectionLabel",
+            "orderedInstructions",
+            "scriptCursorReadUseSite",
+            "terminatorCompare",
+            "negativeWaitPath",
+            "opcodeDispatchPath",
+            "branchTargets"
+          ],
+          "properties": {
+            "sectionLabel": {
+              "type": "string"
+            },
+            "orderedInstructions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "scriptCursorReadUseSite": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceRegister",
+                "destinationRegister",
+                "transferredByteCount",
+                "cursorAdvanceByteCount",
+                "instruction"
+              ],
+              "properties": {
+                "sourceRegister": {
+                  "type": "string"
+                },
+                "destinationRegister": {
+                  "type": "string"
+                },
+                "transferredByteCount": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "cursorAdvanceByteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "instruction": {
+                  "type": "string"
+                }
+              }
+            },
+            "terminatorCompare": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instruction",
+                "comparedSignedValue",
+                "terminatorMacro",
+                "terminatorEncodedWord",
+                "terminatorEncodedByteCount"
+              ],
+              "properties": {
+                "instruction": {
+                  "type": "string"
+                },
+                "comparedSignedValue": {
+                  "type": "integer",
+                  "minimum": -32768
+                },
+                "terminatorMacro": {
+                  "type": "string"
+                },
+                "terminatorEncodedWord": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "terminatorEncodedByteCount": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "negativeWaitPath": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "negativeTestInstruction",
+                "negativeBranchInstruction",
+                "skipGateReadInstruction",
+                "skipGateBranchInstruction",
+                "byteMaskUse",
+                "sleepCallInstruction",
+                "loopInstruction",
+                "waitMacro",
+                "waitLeadByte",
+                "waitDurationOperandWidthBytes"
+              ],
+              "properties": {
+                "negativeTestInstruction": {
+                  "type": "string"
+                },
+                "negativeBranchInstruction": {
+                  "type": "string"
+                },
+                "skipGateReadInstruction": {
+                  "type": "string"
+                },
+                "skipGateBranchInstruction": {
+                  "type": "string"
+                },
+                "byteMaskUse": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "constant",
+                    "value",
+                    "instruction"
+                  ],
+                  "properties": {
+                    "constant": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "instruction": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "sleepCallInstruction": {
+                  "type": "string"
+                },
+                "loopInstruction": {
+                  "type": "string"
+                },
+                "waitMacro": {
+                  "type": "string"
+                },
+                "waitLeadByte": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "waitDurationOperandWidthBytes": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "opcodeDispatchPath": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "selectorScaleInstruction",
+                "tableReadInstruction",
+                "dispatchCallInstruction",
+                "loopInstruction"
+              ],
+              "properties": {
+                "selectorScaleInstruction": {
+                  "type": "string"
+                },
+                "tableReadInstruction": {
+                  "type": "string"
+                },
+                "dispatchCallInstruction": {
+                  "type": "string"
+                },
+                "loopInstruction": {
+                  "type": "string"
+                }
+              }
+            },
+            "branchTargets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "branchInstruction",
+                  "targetLabel",
+                  "targetInstruction"
+                ],
+                "properties": {
+                  "branchInstruction": {
+                    "type": "string"
+                  },
+                  "targetLabel": {
+                    "type": "string"
+                  },
+                  "targetInstruction": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "sourcePath",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "statementCount",
+              "sectionGuard"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourcePath": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "opcode": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourceCommandCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "statementCount": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "sectionGuard": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "orderedInstructions",
+                      "returnInstruction",
+                      "scriptCursorReadUseSite",
+                      "soundCommandInstruction",
+                      "soundCommandSymbol"
+                    ],
+                    "properties": {
+                      "orderedInstructions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "returnInstruction": {
+                        "type": "string"
+                      },
+                      "scriptCursorReadUseSite": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "sourceRegister",
+                          "destinationRegister",
+                          "transferredByteCount",
+                          "cursorAdvanceByteCount",
+                          "instruction"
+                        ],
+                        "properties": {
+                          "sourceRegister": {
+                            "type": "string"
+                          },
+                          "destinationRegister": {
+                            "type": "string"
+                          },
+                          "transferredByteCount": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "cursorAdvanceByteCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "instruction": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "soundCommandInstruction": {
+                        "type": "string"
+                      },
+                      "soundCommandSymbol": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "orderedInstructions",
+                      "returnInstruction",
+                      "scriptCursorReadUseSites"
+                    ],
+                    "properties": {
+                      "orderedInstructions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "returnInstruction": {
+                        "type": "string"
+                      },
+                      "scriptCursorReadUseSites": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "sourceRegister",
+                            "destinationRegister",
+                            "transferredByteCount",
+                            "cursorAdvanceByteCount",
+                            "instruction"
+                          ],
+                          "properties": {
+                            "sourceRegister": {
+                              "type": "string"
+                            },
+                            "destinationRegister": {
+                              "type": "string"
+                            },
+                            "transferredByteCount": {
+                              "type": "integer",
+                              "minimum": 1
+                            },
+                            "cursorAdvanceByteCount": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "instruction": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "orderedInstructions",
+                      "returnInstruction",
+                      "scriptCursorReadUseSite",
+                      "targetRegister",
+                      "saveInstruction",
+                      "indirectCallInstruction",
+                      "restoreInstruction"
+                    ],
+                    "properties": {
+                      "orderedInstructions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "returnInstruction": {
+                        "type": "string"
+                      },
+                      "scriptCursorReadUseSite": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "sourceRegister",
+                          "destinationRegister",
+                          "transferredByteCount",
+                          "cursorAdvanceByteCount",
+                          "instruction"
+                        ],
+                        "properties": {
+                          "sourceRegister": {
+                            "type": "string"
+                          },
+                          "destinationRegister": {
+                            "type": "string"
+                          },
+                          "transferredByteCount": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "cursorAdvanceByteCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "instruction": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "targetRegister": {
+                        "type": "string"
+                      },
+                      "saveInstruction": {
+                        "type": "string"
+                      },
+                      "indirectCallInstruction": {
+                        "type": "string"
+                      },
+                      "restoreInstruction": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "orderedInstructions",
+                      "returnInstruction",
+                      "scriptCursorReadUseSite",
+                      "cursorRedirectInstruction"
+                    ],
+                    "properties": {
+                      "orderedInstructions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "returnInstruction": {
+                        "type": "string"
+                      },
+                      "scriptCursorReadUseSite": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "sourceRegister",
+                          "destinationRegister",
+                          "transferredByteCount",
+                          "cursorAdvanceByteCount",
+                          "instruction"
+                        ],
+                        "properties": {
+                          "sourceRegister": {
+                            "type": "string"
+                          },
+                          "destinationRegister": {
+                            "type": "string"
+                          },
+                          "transferredByteCount": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "cursorAdvanceByteCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "instruction": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "cursorRedirectInstruction": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "soundOperandJoin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "soundDataContractId",
+            "soundDataFixturePath",
+            "sourceEnumPath",
+            "sourceEnumSha256",
+            "musicDomainFactPath",
+            "sfxDomainFactPath",
+            "soundOperands",
+            "sourceCategoryCounts"
+          ],
+          "properties": {
+            "soundDataContractId": {
+              "type": "string"
+            },
+            "soundDataFixturePath": {
+              "type": "string"
+            },
+            "sourceEnumPath": {
+              "type": "string"
+            },
+            "sourceEnumSha256": {
+              "type": "string"
+            },
+            "musicDomainFactPath": {
+              "type": "string"
+            },
+            "sfxDomainFactPath": {
+              "type": "string"
+            },
+            "soundOperands": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "sourceSymbol",
+                  "value",
+                  "sourceCategory",
+                  "sourceUseCount",
+                  "soundDataFactPath"
+                ],
+                "properties": {
+                  "sourceSymbol": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sourceCategory": {
+                    "type": "string"
+                  },
+                  "sourceUseCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "soundDataFactPath": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "sourceCategoryCounts": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "music",
+                "sfx",
+                "sound-command"
+              ],
+              "properties": {
+                "music": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sfx": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sound-command": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetInventoriesSha256": {
+          "type": "string"
+        },
+        "soundOperandJoinSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        }
+      }
+    },
+    "scriptControlOperandAnnotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes",
+        "encoding"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sourceComment": {
+          "type": "string"
+        },
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "encoding": {
+          "enum": [
+            "direct",
+            "shorthand"
+          ]
+        }
+      }
+    }
+  }
+}

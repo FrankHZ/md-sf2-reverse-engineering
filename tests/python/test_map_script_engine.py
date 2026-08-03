@@ -6,7 +6,6 @@ from json import dumps
 from pathlib import Path
 
 import pytest
-from jsonschema import Draft7Validator, FormatChecker
 
 from sf2tool.h2 import map_script_engine
 from sf2tool.h2.map_script_engine import (
@@ -94,9 +93,19 @@ from sf2tool.h2.map_script_engine import (
     _story_state_facts,
     _story_state_section_guard,
     _substitute_alias_layout,
+    _verify_map_script_engine_fixture,
     build_map_script_engine_contract,
+    verify_map_script_engine_contract,
 )
-from sf2tool.jsonio import load_json, validate_json
+from sf2tool.h2.map_script_schema import (
+    COMPONENT_SCHEMAS,
+    COMPOSED_SCHEMAS,
+    FIXTURE_SCHEMA,
+    OUTPUT_SCHEMA,
+    map_script_schema_definition,
+    map_script_schema_definitions,
+)
+from sf2tool.jsonio import load_json, schema_composition_audit, validate_json
 from sf2tool.paths import repo_path
 
 
@@ -697,8 +706,8 @@ def test_script_control_command_boundary_schemas_reject_nested_and_corpus_mutati
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     sources = (map_script_engine_output, fixture)
     schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+        repo_path("schemas/h2/map-script-engine-output.schema.json"),
+        repo_path("schemas/h2/map-script-engine-fixture.schema.json"),
     )
     for source, schema_path in zip(sources, schema_paths, strict=True):
         validate_json(source, schema_path, owner="script-control baseline")
@@ -722,7 +731,7 @@ def test_script_control_command_boundary_schemas_reject_nested_and_corpus_mutati
         renamed = deepcopy(source)
         guard = target_for(renamed)["handlers"][2]["sectionGuard"]
         guard["callInstruction"] = guard.pop("indirectCallInstruction")
-        with pytest.raises(ValueError, match="indirectCallInstruction"):
+        with pytest.raises(ValueError, match="script-control renamed nested"):
             validate_json(renamed, schema_path, owner="script-control renamed nested")
 
         extra = deepcopy(source)
@@ -732,8 +741,12 @@ def test_script_control_command_boundary_schemas_reject_nested_and_corpus_mutati
 
         boundary = deepcopy(source)
         target_for(boundary)["macros"].pop()
-        with pytest.raises(ValueError):
-            validate_json(boundary, schema_path, owner="script-control macro boundary")
+        validate_json(boundary, schema_path, owner="script-control macro boundary")
+        with pytest.raises(ValueError, match="scriptControlCommandFacts drift"):
+            if source is map_script_engine_output:
+                _verify_map_script_engine_fixture(fixture, boundary)
+            else:
+                _verify_map_script_engine_fixture(boundary, map_script_engine_output)
 
     reordered = deepcopy(map_script_engine_output)["scriptControlCommandFacts"]
     reordered["sourceSites"][0], reordered["sourceSites"][1] = (
@@ -745,28 +758,11 @@ def test_script_control_command_boundary_schemas_reject_nested_and_corpus_mutati
 
 
 def test_script_control_command_schema_uses_compact_closed_corpora() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        fixture_schema = path.name.startswith("h2-map-script-engine")
-        command_contract = (
-            schema["properties"]["expected"]["properties"]["scriptControlCommandFacts"]
-            if fixture_schema
-            else schema["properties"]["scriptControlCommandFacts"]
-        )
-        exact = command_contract["allOf"][1]
-        assert {"sourceSites", "programTotals", "targetInventories"}.isdisjoint(
-            exact.get("const", exact.get("properties", {}))
-        )
-        definition_name = (
-            "scriptControlFixtureCommandFacts"
-            if fixture_schema
-            else "scriptControlCommandFacts"
-        )
-        facts = schema["definitions"][definition_name]
+    for definition_name, fixture_schema in (
+        ("scriptControlCommandFacts", False),
+        ("scriptControlFixtureCommandFacts", True),
+    ):
+        facts = map_script_schema_definition(definition_name)
         assert facts["additionalProperties"] is False
         if fixture_schema:
             assert {"sourceSites", "programTotals", "targetInventories"}.isdisjoint(
@@ -778,16 +774,16 @@ def test_script_control_command_schema_uses_compact_closed_corpora() -> None:
             )
             for corpus in ("sourceSites", "programTotals"):
                 contract = facts["properties"][corpus]
-                assert contract["minItems"] == contract["maxItems"] == 304
+                assert "minItems" not in contract
+                assert "maxItems" not in contract
                 assert "const" not in contract
-            for target, count in (("executeSubroutine", 47), ("jump", 348)):
+            for target in ("executeSubroutine", "jump"):
                 inventory = facts["properties"]["targetInventories"]["properties"][target]
-                assert inventory["properties"]["declaredEffectiveTargets"] == {
-                    "type": "array",
-                    "minItems": count,
-                    "maxItems": count,
-                    "items": {"type": "string"},
-                }
+                declared = inventory["properties"]["declaredEffectiveTargets"]
+                assert declared["type"] == "array"
+                assert declared["items"] == {"type": "string"}
+                assert "minItems" not in declared
+                assert "maxItems" not in declared
                 for name in (
                     "instructionTargetTotals",
                     "effectiveTargetTotals",
@@ -2253,6 +2249,137 @@ def map_script_engine_output() -> dict:
     )
 
 
+def _expect_output_owner_rejected(output: dict, field: str) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    with pytest.raises(ValueError, match=rf"map-script engine {field} drift"):
+        _verify_map_script_engine_fixture(fixture, output)
+
+
+def _expect_any_output_owner_drift(output: dict) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    with pytest.raises(ValueError, match=r"map-script engine .* drift"):
+        _verify_map_script_engine_fixture(fixture, output)
+
+
+def _expect_fixture_owner_rejected(fixture: dict, output: dict, field: str) -> None:
+    with pytest.raises(ValueError, match=rf"map-script engine {field} drift"):
+        _verify_map_script_engine_fixture(fixture, output)
+
+
+def test_map_script_schema_composition_is_local_reusable_and_shape_only(
+    map_script_engine_output: dict,
+) -> None:
+    audit = schema_composition_audit(list(COMPOSED_SCHEMAS))
+    assert audit["schemaCount"] == 9
+    assert audit["totalSizeBytes"] < 900_000
+    assert audit["constCount"] == 4
+    assert audit["constPayloadBytes"] == 68
+    assert audit["largeConstCount"] == 0
+    assert audit["referencedResourceCount"] == 7
+    assert audit["unresolvedReferences"] == []
+    assert audit["duplicateBodyGroups"] == []
+    assert len(map_script_schema_definitions()) == 289
+
+    def exact_cardinality_paths(value: object, path: str = "$") -> list[str]:
+        if isinstance(value, list):
+            return [
+                nested
+                for index, child in enumerate(value)
+                for nested in exact_cardinality_paths(child, f"{path}[{index}]")
+            ]
+        if not isinstance(value, dict):
+            return []
+        matches = []
+        if value.get("minItems") == value.get("maxItems") and "minItems" in value:
+            matches.append(path)
+        if (
+            value.get("minProperties") == value.get("maxProperties")
+            and "minProperties" in value
+        ):
+            matches.append(path)
+        return matches + [
+            nested
+            for key, child in value.items()
+            for nested in exact_cardinality_paths(child, f"{path}.{key}")
+        ]
+
+    for path in COMPONENT_SCHEMAS:
+        schema = load_json(path)
+        assert schema_composition_audit([path])["constCount"] == 0
+
+    for path in COMPOSED_SCHEMAS:
+        schema = load_json(path)
+        assert exact_cardinality_paths(schema) == []
+
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    for root_path, instance in (
+        (OUTPUT_SCHEMA, map_script_engine_output),
+        (FIXTURE_SCHEMA, fixture),
+    ):
+        root = load_json(root_path)
+        assert "definitions" not in root
+        validate_json(instance, root_path, owner="map-script composed root")
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    (
+        (lambda fixture: fixture.__setitem__("upstreamCommit", "0" * 40), "provenance"),
+        (lambda fixture: fixture.__setitem__("romSha256", "0" * 64), "provenance"),
+        (
+            lambda fixture: fixture["function"].__setitem__(
+                "ExecuteMapScript", fixture["function"]["ExecuteMapScript"] + 2
+            ),
+            "provenance",
+        ),
+        (
+            lambda fixture: fixture["expected"]["summary"].__setitem__(
+                "trackedMacroCount",
+                fixture["expected"]["summary"]["trackedMacroCount"] + 1,
+            ),
+            "summary",
+        ),
+    ),
+)
+def test_map_script_fixture_owner_rejects_schema_valid_provenance_and_semantic_drift(
+    map_script_engine_output: dict,
+    mutation,
+    message: str,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    mutation(fixture)
+    validate_json(fixture, FIXTURE_SCHEMA, owner="mutated map-script fixture")
+    with pytest.raises(ValueError, match=rf"map-script engine {message}.*drift"):
+        _verify_map_script_engine_fixture(fixture, map_script_engine_output)
+
+
+def test_map_script_verifier_rejects_schema_valid_fixture_drift_before_write(
+    map_script_engine_output: dict,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
+    fixture["expected"]["runtimeQuestions"] = list(
+        reversed(fixture["expected"]["runtimeQuestions"])
+    )
+    mutated_fixture = tmp_path / "map-script-fixture.json"
+    mutated_fixture.write_text(dumps(fixture), encoding="utf-8")
+    destination = tmp_path / "should-not-exist.json"
+    validate_json(fixture, FIXTURE_SCHEMA, owner="mutated map-script fixture")
+    monkeypatch.setattr(map_script_engine, "FIXTURE", mutated_fixture)
+    monkeypatch.setattr(
+        map_script_engine,
+        "build_map_script_engine_contract",
+        lambda _rom_path, _upstream_path: map_script_engine_output,
+    )
+
+    with pytest.raises(ValueError, match="map-script engine runtimeQuestions drift"):
+        verify_map_script_engine_contract(
+            Path("unused-rom"), Path("unused-upstream"), output_path=destination
+        )
+    assert not destination.exists()
+
+
 def test_map_camera_control_contract_matches_complete_golden_fixture(
     map_script_engine_output: dict,
 ) -> None:
@@ -2431,8 +2558,8 @@ def test_map_camera_control_contract_matches_complete_golden_fixture(
 def test_map_camera_control_schemas_reject_nested_mutations_and_exact_order(
     map_script_engine_output: dict,
 ) -> None:
-    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
-    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    output_schema = repo_path("schemas/h2/map-script-engine-output.schema.json")
+    fixture_schema = repo_path("schemas/h2/map-script-engine-fixture.schema.json")
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     validate_json(map_script_engine_output, output_schema, owner="map-camera-control output")
     validate_json(fixture, fixture_schema, owner="map-camera-control fixture")
@@ -2462,21 +2589,21 @@ def test_map_camera_control_schemas_reject_nested_mutations_and_exact_order(
     reordered_source = deepcopy(map_script_engine_output)
     source_order = reordered_source["mapCameraControlCommandFacts"]["sourceSiteOrderKeys"]
     source_order[0], source_order[1] = source_order[1], source_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(reordered_source, output_schema, owner="map-camera-control source order")
+    validate_json(reordered_source, output_schema, owner="map-camera-control source order")
+    _expect_output_owner_rejected(reordered_source, "mapCameraControlCommandFacts")
 
     reordered_programs = deepcopy(map_script_engine_output)
     program_order = reordered_programs["mapCameraControlCommandFacts"]["programTotalOrderKeys"]
     program_order[0], program_order[1] = program_order[1], program_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(reordered_programs, output_schema, owner="map-camera-control program order")
+    validate_json(reordered_programs, output_schema, owner="map-camera-control program order")
+    _expect_output_owner_rejected(reordered_programs, "mapCameraControlCommandFacts")
 
     boundary = deepcopy(map_script_engine_output)
     boundary["mapCameraControlCommandFacts"]["cameraDestinationServiceFacts"][
         "sectionGuard"
     ]["tileSizeUseSites"][0]["value"] = 385
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(boundary, output_schema, owner="map-camera-control output boundary")
+    validate_json(boundary, output_schema, owner="map-camera-control output boundary")
+    _expect_output_owner_rejected(boundary, "mapCameraControlCommandFacts")
 
     fixture_missing = deepcopy(fixture)
     del fixture_missing["expected"]["mapCameraControlCommandFacts"]["handlers"][0][
@@ -2505,50 +2632,40 @@ def test_map_camera_control_schemas_reject_nested_mutations_and_exact_order(
         "sourceSiteOrderKeys"
     ]
     source_order[0], source_order[1] = source_order[1], source_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(fixture_reordered, fixture_schema, owner="map-camera-control fixture order")
+    validate_json(fixture_reordered, fixture_schema, owner="map-camera-control fixture order")
+    _expect_fixture_owner_rejected(
+        fixture_reordered, map_script_engine_output, "mapCameraControlCommandFacts"
+    )
 
     fixture_boundary = deepcopy(fixture)
     fixture_boundary["expected"]["mapCameraControlCommandFacts"][
         "cameraDestinationServiceFacts"
     ]["sectionGuard"]["tileSizeUseSites"][0]["value"] = 385
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(fixture_boundary, fixture_schema, owner="map-camera-control fixture boundary")
+    validate_json(fixture_boundary, fixture_schema, owner="map-camera-control fixture boundary")
+    _expect_fixture_owner_rejected(
+        fixture_boundary, map_script_engine_output, "mapCameraControlCommandFacts"
+    )
 
 
 def test_map_camera_control_schema_exact_blocks_keep_large_corpora_compact() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("mapCameraControlCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "mapCameraControlCommandFacts"
-            ]
-        exact = contract["allOf"][1]
-        assert "sourceSites" not in exact["properties"]
-        assert "programTotals" not in exact["properties"]
-        definitions = {
-            name: value
-            for name, value in schema["definitions"].items()
-            if name.startswith("mapCameraControl")
-        }
+    definitions = {
+        name: definition
+        for name, (_, definition) in map_script_schema_definitions().items()
+        if name.startswith("mapCameraControl")
+    }
 
-        def assert_closed_objects(value):
-            if isinstance(value, dict):
-                if value.get("type") == "object":
-                    assert value.get("additionalProperties") is False
-                for child in value.values():
-                    assert_closed_objects(child)
-            elif isinstance(value, list):
-                for child in value:
-                    assert_closed_objects(child)
+    def assert_closed_objects(value):
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                assert value.get("additionalProperties") is False
+            for child in value.values():
+                assert_closed_objects(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_closed_objects(child)
 
-        for value in definitions.values():
-            assert_closed_objects(value)
+    for value in definitions.values():
+        assert_closed_objects(value)
 
 
 def test_dialogue_contract_matches_complete_golden_fixture(map_script_engine_output: dict) -> None:
@@ -2565,8 +2682,8 @@ def test_dialogue_contract_matches_complete_golden_fixture(map_script_engine_out
 def test_dialogue_schemas_reject_missing_extra_reordered_and_boundary_content(
     map_script_engine_output: dict,
 ) -> None:
-    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
-    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    output_schema = repo_path("schemas/h2/map-script-engine-output.schema.json")
+    fixture_schema = repo_path("schemas/h2/map-script-engine-fixture.schema.json")
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     validate_json(map_script_engine_output, output_schema, owner="dialogue output")
     validate_json(fixture, fixture_schema, owner="dialogue fixture")
@@ -2590,30 +2707,30 @@ def test_dialogue_schemas_reject_missing_extra_reordered_and_boundary_content(
     reordered = deepcopy(map_script_engine_output)
     references = reordered["dialogueCommandFacts"]["sourceSiteReferences"]
     references[0], references[1] = references[1], references[0]
-    with pytest.raises(ValueError, match="sourceSiteReferences"):
-        validate_json(reordered, output_schema, owner="dialogue output reordered sites")
+    validate_json(reordered, output_schema, owner="dialogue output reordered sites")
+    _expect_output_owner_rejected(reordered, "dialogueCommandFacts")
 
     summary_boundary = deepcopy(map_script_engine_output)
     summary_boundary["dialogueCommandFacts"]["sourceInputSummary"]["count"] -= 1
-    with pytest.raises(ValueError, match="sourceInputSummary"):
-        validate_json(
-            summary_boundary,
-            output_schema,
-            owner="dialogue output source summary boundary",
-        )
+    validate_json(
+        summary_boundary,
+        output_schema,
+        owner="dialogue output source summary boundary",
+    )
+    _expect_output_owner_rejected(summary_boundary, "dialogueCommandFacts")
 
     missing_zero_caller = deepcopy(map_script_engine_output)
     del missing_zero_caller["dialogueCommandFacts"]["callerBreakdown"]["callerHandlers"][4]
-    with pytest.raises(ValueError, match="callerBreakdown"):
-        validate_json(
-            missing_zero_caller, output_schema, owner="dialogue output missing zero caller"
-        )
+    validate_json(
+        missing_zero_caller, output_schema, owner="dialogue output missing zero caller"
+    )
+    _expect_output_owner_rejected(missing_zero_caller, "dialogueCommandFacts")
 
     extra_caller_target = deepcopy(map_script_engine_output)
     extra_caller_target["dialogueCommandFacts"]["callerBreakdown"]["callerHandlers"][4][
         "instructionTargetSiteCounts"
     ]["csc1C_otherPortrait"] = 0
-    with pytest.raises(ValueError, match="csc1C_otherPortrait"):
+    with pytest.raises(ValueError, match="unexpected"):
         validate_json(
             extra_caller_target, output_schema, owner="dialogue output extra caller target"
         )
@@ -2623,21 +2740,21 @@ def test_dialogue_schemas_reject_missing_extra_reordered_and_boundary_content(
         "callerHandlers"
     ]
     caller_rows[4], caller_rows[5] = caller_rows[5], caller_rows[4]
-    with pytest.raises(ValueError, match="callerBreakdown"):
-        validate_json(reordered_callers, output_schema, owner="dialogue output reordered callers")
+    validate_json(reordered_callers, output_schema, owner="dialogue output reordered callers")
+    _expect_output_owner_rejected(reordered_callers, "dialogueCommandFacts")
 
     boundary = deepcopy(fixture)
     bounds = boundary["expected"]["dialogueCommandFacts"]["operandFacts"][
         "textCursorValueBounds"
     ]
     bounds["maximum"] += 1
-    with pytest.raises(ValueError, match="const"):
-        validate_json(boundary, fixture_schema, owner="dialogue fixture boundary")
+    validate_json(boundary, fixture_schema, owner="dialogue fixture boundary")
+    _expect_fixture_owner_rejected(boundary, map_script_engine_output, "dialogueCommandFacts")
 
 
 def test_transition_contract_and_closed_schema_mutations(map_script_engine_output: dict) -> None:
-    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
-    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    output_schema = repo_path("schemas/h2/map-script-engine-output.schema.json")
+    fixture_schema = repo_path("schemas/h2/map-script-engine-fixture.schema.json")
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     actual = map_script_engine_output["transitionCommandFacts"]
     assert actual == fixture["expected"]["transitionCommandFacts"]
@@ -2874,15 +2991,15 @@ def test_transition_contract_and_closed_schema_mutations(map_script_engine_outpu
     reordered = deepcopy(map_script_engine_output)
     totals = reordered["transitionCommandFacts"]["programTotals"]
     totals[0], totals[1] = totals[1], totals[0]
-    with pytest.raises(ValueError):
-        validate_json(reordered, output_schema, owner="transition output reordered totals")
+    validate_json(reordered, output_schema, owner="transition output reordered totals")
+    _expect_output_owner_rejected(reordered, "transitionCommandFacts")
 
     out_of_bounds = deepcopy(map_script_engine_output)
     out_of_bounds["transitionCommandFacts"]["sourceSites"][0]["commands"][0][
         "destinationMapValue"
     ] = 79
-    with pytest.raises(ValueError):
-        validate_json(out_of_bounds, output_schema, owner="transition output map boundary")
+    validate_json(out_of_bounds, output_schema, owner="transition output map boundary")
+    _expect_output_owner_rejected(out_of_bounds, "transitionCommandFacts")
 
     fixture_missing = deepcopy(fixture)
     del fixture_missing["expected"]["transitionCommandFacts"]["handlers"][0][
@@ -3017,8 +3134,8 @@ def test_force_state_contract_matches_complete_golden_and_zero_inclusive_maps(
 def test_force_state_schemas_reject_nested_mutations_and_boundary_content(
     map_script_engine_output: dict,
 ) -> None:
-    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
-    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    output_schema = repo_path("schemas/h2/map-script-engine-output.schema.json")
+    fixture_schema = repo_path("schemas/h2/map-script-engine-fixture.schema.json")
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     validate_json(map_script_engine_output, output_schema, owner="force-state output")
     validate_json(fixture, fixture_schema, owner="force-state fixture")
@@ -3046,20 +3163,20 @@ def test_force_state_schemas_reject_nested_mutations_and_boundary_content(
     reordered = deepcopy(map_script_engine_output)
     totals = reordered["forceStateCommandFacts"]["programTotals"]
     totals[0], totals[1] = totals[1], totals[0]
-    with pytest.raises(ValueError, match="const"):
-        validate_json(reordered, output_schema, owner="force-state output reordered totals")
+    validate_json(reordered, output_schema, owner="force-state output reordered totals")
+    _expect_output_owner_rejected(reordered, "forceStateCommandFacts")
 
     out_of_bounds = deepcopy(map_script_engine_output)
     out_of_bounds["forceStateCommandFacts"]["macros"][0]["encodedBytes"] = 3
-    with pytest.raises(ValueError, match="const"):
-        validate_json(out_of_bounds, output_schema, owner="force-state output boundary")
+    validate_json(out_of_bounds, output_schema, owner="force-state output boundary")
+    _expect_output_owner_rejected(out_of_bounds, "forceStateCommandFacts")
 
     wrong_scope = deepcopy(map_script_engine_output)
     wrong_scope["forceStateCommandFacts"]["callerBreakdown"]["targetResolutions"][0][
         "effectiveTargetScope"
     ] = "internal"
-    with pytest.raises(ValueError, match="const"):
-        validate_json(wrong_scope, output_schema, owner="force-state output wrong scope")
+    validate_json(wrong_scope, output_schema, owner="force-state output wrong scope")
+    _expect_output_owner_rejected(wrong_scope, "forceStateCommandFacts")
 
     extra_effective_target = deepcopy(map_script_engine_output)
     extra_effective_target["forceStateCommandFacts"]["callerBreakdown"][
@@ -3113,19 +3230,19 @@ def test_force_state_schemas_reject_nested_mutations_and_boundary_content(
         "macros"
     ]
     active_macros[0], active_macros[1] = active_macros[1], active_macros[0]
-    with pytest.raises(ValueError, match="const"):
-        validate_json(active_reordered, output_schema, owner="active-party output reordered macros")
+    validate_json(active_reordered, output_schema, owner="active-party output reordered macros")
+    _expect_output_owner_rejected(active_reordered, "forceStateCommandFacts")
 
     active_out_of_bounds = deepcopy(map_script_engine_output)
     active_out_of_bounds["forceStateCommandFacts"]["activePartyCommandFacts"]["handlers"][
         1
     ]["sectionGuard"]["sourceConstantUses"][0]["value"] = 5
-    with pytest.raises(ValueError, match="const"):
-        validate_json(
-            active_out_of_bounds,
-            output_schema,
-            owner="active-party output source constant boundary",
-        )
+    validate_json(
+        active_out_of_bounds,
+        output_schema,
+        owner="active-party output source constant boundary",
+    )
+    _expect_output_owner_rejected(active_out_of_bounds, "forceStateCommandFacts")
 
     fixture_active_missing = deepcopy(fixture)
     del fixture_active_missing["expected"]["forceStateCommandFacts"]["activePartyCommandFacts"][
@@ -3546,19 +3663,15 @@ def test_story_state_corpus_order_keys_reject_source_reordering_before_fixture(
     output = build_map_script_engine_contract(
         repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
     )
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            output,
-            repo_path("schemas/map-script-engine-static.schema.json"),
-            owner="story-state source-order output",
-        )
+    validate_json(output, OUTPUT_SCHEMA, owner="story-state source-order output")
+    _expect_any_output_owner_drift(output)
 
 
 def test_story_state_schemas_reject_nested_mutations_and_exact_order(
     map_script_engine_output: dict,
 ) -> None:
-    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
-    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    output_schema = repo_path("schemas/h2/map-script-engine-output.schema.json")
+    fixture_schema = repo_path("schemas/h2/map-script-engine-fixture.schema.json")
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     validate_json(map_script_engine_output, output_schema, owner="story-state output")
     validate_json(fixture, fixture_schema, owner="story-state fixture")
@@ -3586,35 +3699,35 @@ def test_story_state_schemas_reject_nested_mutations_and_exact_order(
     reordered = deepcopy(map_script_engine_output)
     macros = reordered["storyStateCommandFacts"]["macros"]
     macros[0], macros[1] = macros[1], macros[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(reordered, output_schema, owner="story-state output reordered macros")
+    validate_json(reordered, output_schema, owner="story-state output reordered macros")
+    _expect_output_owner_rejected(reordered, "storyStateCommandFacts")
 
     reordered_source_order = deepcopy(map_script_engine_output)
     keys = reordered_source_order["storyStateCommandFacts"]["sourceSiteOrderKeys"]
     keys[0], keys[1] = keys[1], keys[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            reordered_source_order,
-            output_schema,
-            owner="story-state output reordered source-site keys",
-        )
+    validate_json(
+        reordered_source_order,
+        output_schema,
+        owner="story-state output reordered source-site keys",
+    )
+    _expect_output_owner_rejected(reordered_source_order, "storyStateCommandFacts")
 
     reordered_program_order = deepcopy(map_script_engine_output)
     keys = reordered_program_order["storyStateCommandFacts"]["programTotalOrderKeys"]
     keys[0], keys[1] = keys[1], keys[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            reordered_program_order,
-            output_schema,
-            owner="story-state output reordered program-total keys",
-        )
+    validate_json(
+        reordered_program_order,
+        output_schema,
+        owner="story-state output reordered program-total keys",
+    )
+    _expect_output_owner_rejected(reordered_program_order, "storyStateCommandFacts")
 
     out_of_bounds = deepcopy(map_script_engine_output)
     out_of_bounds["storyStateCommandFacts"]["handlers"][3]["sectionGuard"][
         "sourceConstantUses"
     ][0]["value"] = 90
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(out_of_bounds, output_schema, owner="story-state output boundary")
+    validate_json(out_of_bounds, output_schema, owner="story-state output boundary")
+    _expect_output_owner_rejected(out_of_bounds, "storyStateCommandFacts")
 
     fixture_missing = deepcopy(fixture)
     del fixture_missing["expected"]["storyStateCommandFacts"]["handlers"][4][
@@ -3943,19 +4056,15 @@ def test_map_block_mutation_corpus_order_schema_rejects_source_reordering(
     output = build_map_script_engine_contract(
         repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
     )
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            output,
-            repo_path("schemas/map-script-engine-static.schema.json"),
-            owner="map-block mutation source-order output",
-        )
+    validate_json(output, OUTPUT_SCHEMA, owner="map-block mutation source-order output")
+    _expect_any_output_owner_drift(output)
 
 
 def test_map_block_mutation_schemas_reject_nested_mutations_and_exact_order(
     map_script_engine_output: dict,
 ) -> None:
-    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
-    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    output_schema = repo_path("schemas/h2/map-script-engine-output.schema.json")
+    fixture_schema = repo_path("schemas/h2/map-script-engine-fixture.schema.json")
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     validate_json(map_script_engine_output, output_schema, owner="map-block mutation output")
     validate_json(fixture, fixture_schema, owner="map-block mutation fixture")
@@ -3985,31 +4094,31 @@ def test_map_block_mutation_schemas_reject_nested_mutations_and_exact_order(
     reordered_source = deepcopy(map_script_engine_output)
     source_order = reordered_source["mapBlockMutationCommandFacts"]["sourceSiteOrderKeys"]
     source_order[0], source_order[1] = source_order[1], source_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            reordered_source,
-            output_schema,
-            owner="map-block mutation output reordered source keys",
-        )
+    validate_json(
+        reordered_source,
+        output_schema,
+        owner="map-block mutation output reordered source keys",
+    )
+    _expect_output_owner_rejected(reordered_source, "mapBlockMutationCommandFacts")
 
     reordered_programs = deepcopy(map_script_engine_output)
     program_order = reordered_programs["mapBlockMutationCommandFacts"]["programTotalOrderKeys"]
     program_order[0], program_order[1] = program_order[1], program_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            reordered_programs,
-            output_schema,
-            owner="map-block mutation output reordered program keys",
-        )
+    validate_json(
+        reordered_programs,
+        output_schema,
+        owner="map-block mutation output reordered program keys",
+    )
+    _expect_output_owner_rejected(reordered_programs, "mapBlockMutationCommandFacts")
 
     out_of_boundary = deepcopy(map_script_engine_output)
     out_of_boundary["mapBlockMutationCommandFacts"]["copyMapBlocksHelperFacts"][
         "derivedAddressStride"
     ]["rowByteStride"] = 127
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            out_of_boundary, output_schema, owner="map-block mutation output boundary"
-        )
+    validate_json(
+        out_of_boundary, output_schema, owner="map-block mutation output boundary"
+    )
+    _expect_output_owner_rejected(out_of_boundary, "mapBlockMutationCommandFacts")
 
     fixture_missing = deepcopy(fixture)
     del fixture_missing["expected"]["mapBlockMutationCommandFacts"]["handlers"][0][
@@ -4022,23 +4131,9 @@ def test_map_block_mutation_schemas_reject_nested_mutations_and_exact_order(
 
 
 def test_map_block_mutation_schema_exact_blocks_keep_large_corpora_compact() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("mapBlockMutationCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "mapBlockMutationCommandFacts"
-            ]
-        exact = contract["allOf"][1]
-        assert "sourceSites" not in exact["properties"]
-        assert "programTotals" not in exact["properties"]
-        facts = schema["definitions"]["mapBlockMutationCommandFacts"]
-        assert facts["additionalProperties"] is False
-        assert {"sourceSites", "programTotals"} <= set(facts["required"])
+    facts = map_script_schema_definition("mapBlockMutationCommandFacts")
+    assert facts["additionalProperties"] is False
+    assert {"sourceSites", "programTotals"} <= set(facts["required"])
 
 
 def test_entity_population_contract_matches_complete_golden_fixture(
@@ -4294,19 +4389,15 @@ def test_entity_population_corpus_order_schema_rejects_source_reordering(monkeyp
     output = build_map_script_engine_contract(
         repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
     )
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            output,
-            repo_path("schemas/map-script-engine-static.schema.json"),
-            owner="entity-population source-order output",
-        )
+    validate_json(output, OUTPUT_SCHEMA, owner="entity-population source-order output")
+    _expect_any_output_owner_drift(output)
 
 
 def test_entity_population_schemas_reject_nested_mutations_and_exact_order(
     map_script_engine_output: dict,
 ) -> None:
-    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
-    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    output_schema = repo_path("schemas/h2/map-script-engine-output.schema.json")
+    fixture_schema = repo_path("schemas/h2/map-script-engine-fixture.schema.json")
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     validate_json(map_script_engine_output, output_schema, owner="entity-population output")
     validate_json(fixture, fixture_schema, owner="entity-population fixture")
@@ -4332,29 +4423,29 @@ def test_entity_population_schemas_reject_nested_mutations_and_exact_order(
     reordered_source = deepcopy(map_script_engine_output)
     source_order = reordered_source["entityPopulationCommandFacts"]["sourceSiteOrderKeys"]
     source_order[0], source_order[1] = source_order[1], source_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            reordered_source,
-            output_schema,
-            owner="entity-population output reordered source keys",
-        )
+    validate_json(
+        reordered_source,
+        output_schema,
+        owner="entity-population output reordered source keys",
+    )
+    _expect_output_owner_rejected(reordered_source, "entityPopulationCommandFacts")
 
     reordered_programs = deepcopy(map_script_engine_output)
     program_order = reordered_programs["entityPopulationCommandFacts"]["programTotalOrderKeys"]
     program_order[0], program_order[1] = program_order[1], program_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            reordered_programs,
-            output_schema,
-            owner="entity-population output reordered program keys",
-        )
+    validate_json(
+        reordered_programs,
+        output_schema,
+        owner="entity-population output reordered program keys",
+    )
+    _expect_output_owner_rejected(reordered_programs, "entityPopulationCommandFacts")
 
     out_of_boundary = deepcopy(map_script_engine_output)
     out_of_boundary["entityPopulationCommandFacts"]["handlers"][2]["sectionGuard"][
         "sourceConstantUses"
     ][0]["value"] = 383
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(out_of_boundary, output_schema, owner="entity-population output boundary")
+    validate_json(out_of_boundary, output_schema, owner="entity-population output boundary")
+    _expect_output_owner_rejected(out_of_boundary, "entityPopulationCommandFacts")
 
     fixture_missing = deepcopy(fixture)
     del fixture_missing["expected"]["entityPopulationCommandFacts"]["handlers"][1]["sectionGuard"][
@@ -4387,43 +4478,33 @@ def test_entity_population_schemas_reject_nested_mutations_and_exact_order(
         "sourceSiteOrderKeys"
     ]
     source_order[0], source_order[1] = source_order[1], source_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            fixture_reordered,
-            fixture_schema,
-            owner="entity-population fixture reordered source keys",
-        )
+    validate_json(
+        fixture_reordered,
+        fixture_schema,
+        owner="entity-population fixture reordered source keys",
+    )
+    _expect_fixture_owner_rejected(
+        fixture_reordered, map_script_engine_output, "entityPopulationCommandFacts"
+    )
 
     fixture_out_of_boundary = deepcopy(fixture)
     fixture_out_of_boundary["expected"]["entityPopulationCommandFacts"]["handlers"][2][
         "sectionGuard"
     ]["sourceConstantUses"][0]["value"] = 383
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            fixture_out_of_boundary,
-            fixture_schema,
-            owner="entity-population fixture boundary",
-        )
+    validate_json(
+        fixture_out_of_boundary,
+        fixture_schema,
+        owner="entity-population fixture boundary",
+    )
+    _expect_fixture_owner_rejected(
+        fixture_out_of_boundary, map_script_engine_output, "entityPopulationCommandFacts"
+    )
 
 
 def test_entity_population_schema_exact_blocks_keep_large_corpora_compact() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("entityPopulationCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "entityPopulationCommandFacts"
-            ]
-        exact = contract["allOf"][1]
-        assert "sourceSites" not in exact["properties"]
-        assert "programTotals" not in exact["properties"]
-        facts = schema["definitions"]["entityPopulationCommandFacts"]
-        assert facts["additionalProperties"] is False
-        assert {"sourceSites", "programTotals"} <= set(facts["required"])
+    facts = map_script_schema_definition("entityPopulationCommandFacts")
+    assert facts["additionalProperties"] is False
+    assert {"sourceSites", "programTotals"} <= set(facts["required"])
 
 
 def test_entity_clone_contract_matches_complete_golden_fixture(
@@ -4746,8 +4827,8 @@ def test_entity_clone_section_guard_rejects_extra_statement_and_field_relationsh
 def test_entity_clone_schemas_reject_nested_mutations_and_exact_order(
     map_script_engine_output: dict,
 ) -> None:
-    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
-    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    output_schema = repo_path("schemas/h2/map-script-engine-output.schema.json")
+    fixture_schema = repo_path("schemas/h2/map-script-engine-fixture.schema.json")
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     validate_json(map_script_engine_output, output_schema, owner="entity-clone output")
     validate_json(fixture, fixture_schema, owner="entity-clone fixture")
@@ -4777,15 +4858,15 @@ def test_entity_clone_schemas_reject_nested_mutations_and_exact_order(
     reordered = deepcopy(map_script_engine_output)
     source_order = reordered["entityCloneCommandFacts"]["sourceSiteOrderKeys"]
     source_order[0], source_order[1] = source_order[1], source_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(reordered, output_schema, owner="entity-clone output reordered keys")
+    validate_json(reordered, output_schema, owner="entity-clone output reordered keys")
+    _expect_output_owner_rejected(reordered, "entityCloneCommandFacts")
 
     out_of_boundary = deepcopy(map_script_engine_output)
     out_of_boundary["entityCloneCommandFacts"]["handlers"][0]["sectionGuard"][
         "entnumFieldTransfer"
     ]["derivedTransferByteCount"] = 2
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(out_of_boundary, output_schema, owner="entity-clone output boundary")
+    validate_json(out_of_boundary, output_schema, owner="entity-clone output boundary")
+    _expect_output_owner_rejected(out_of_boundary, "entityCloneCommandFacts")
 
     fixture_missing = deepcopy(fixture)
     del fixture_missing["expected"]["entityCloneCommandFacts"]["handlers"][0][
@@ -4806,37 +4887,33 @@ def test_entity_clone_schemas_reject_nested_mutations_and_exact_order(
         "sourceSiteOrderKeys"
     ]
     source_order[0], source_order[1] = source_order[1], source_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(fixture_reordered, fixture_schema, owner="entity-clone fixture order")
+    validate_json(fixture_reordered, fixture_schema, owner="entity-clone fixture order")
+    _expect_fixture_owner_rejected(
+        fixture_reordered, map_script_engine_output, "entityCloneCommandFacts"
+    )
 
     fixture_out_of_boundary = deepcopy(fixture)
     fixture_out_of_boundary["expected"]["entityCloneCommandFacts"]["handlers"][0][
         "sectionGuard"
     ]["entnumFieldTransfer"]["derivedTransferByteCount"] = 2
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            fixture_out_of_boundary,
-            fixture_schema,
-            owner="entity-clone fixture boundary",
-        )
+    validate_json(
+        fixture_out_of_boundary,
+        fixture_schema,
+        owner="entity-clone fixture boundary",
+    )
+    _expect_fixture_owner_rejected(
+        fixture_out_of_boundary, map_script_engine_output, "entityCloneCommandFacts"
+    )
 
 
 def test_entity_clone_schema_exact_blocks_keep_raw_corpora_out_of_fixture() -> None:
-    output_schema = load_json(repo_path("schemas/map-script-engine-static.schema.json"))
-    fixture_schema = load_json(repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"))
-    output_contract = output_schema["properties"]["entityCloneCommandFacts"]
-    fixture_contract = fixture_schema["properties"]["expected"]["properties"][
-        "entityCloneCommandFacts"
-    ]
+    definitions = map_script_schema_definitions()
     assert {"sourceSites", "programTotals"} <= set(
-        output_schema["definitions"]["entityCloneCommandFacts"]["required"]
+        definitions["entityCloneCommandFacts"][1]["required"]
     )
     assert {"sourceSites", "programTotals"}.isdisjoint(
-        fixture_schema["definitions"]["entityCloneCommandFactsFixture"]["required"]
+        definitions["entityCloneCommandFactsFixture"][1]["required"]
     )
-    for contract in (output_contract, fixture_contract):
-        exact = contract["allOf"][1]
-        assert {"sourceSites", "programTotals"}.isdisjoint(exact["properties"])
 
 
 def test_map_lifecycle_contract_matches_complete_golden_fixture(
@@ -5239,222 +5316,12 @@ def test_h3_handoffs_change_only_runtime_question_queues() -> None:
         "5ece905a0dc3fadbdf120e2bc60eab9130e2004ff4b7579b99697261ce959788"
     )
 
-    output_schema = deepcopy(load_json(repo_path("schemas/map-script-engine-static.schema.json")))
-    del output_schema["properties"]["runtimeQuestions"]
-    del output_schema["properties"]["mapBlockMutationCommandFacts"]["allOf"][1][
-        "properties"
-    ]["runtimeQuestions"]
-    del output_schema["properties"]["mapScriptUiPrimaryCommandFacts"]["allOf"][1][
-        "properties"
-    ]["runtimeQuestions"]
-    del output_schema["definitions"]["mapBlockMutationCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ]
-    output_schema["definitions"]["mapBlockMutationCommandFacts"]["required"].remove(
-        "runtimeQuestions"
-    )
-    del output_schema["definitions"]["mapScriptUiPrimaryCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ]
-    output_schema["definitions"]["mapScriptUiPrimaryCommandFacts"]["required"].remove(
-        "runtimeQuestions"
-    )
-    del output_schema["properties"]["forceStateCommandFacts"]["allOf"][1]["const"][
-        "activePartyCommandFacts"
-    ]["runtimeQuestions"]
-    del output_schema["properties"]["storyStateCommandFacts"]["allOf"][1]["properties"][
-        "runtimeQuestions"
-    ]
-    del output_schema["properties"]["mapLifecycleCommandFacts"]["allOf"][1]["properties"][
-        "runtimeQuestions"
-    ]
-    del output_schema["properties"]["entityPlacementCommandFacts"]["allOf"][1]["properties"][
-        "runtimeQuestions"
-    ]
-    del output_schema["properties"]["entityActionBridgeCommandFacts"]["allOf"][1][
-        "properties"
-    ]["runtimeQuestions"]
-    del output_schema["properties"]["entityLifecyclePresentationCommandFacts"]["allOf"][1][
-        "properties"
-    ]["runtimeQuestions"]
-    del output_schema["properties"]["entityGestureRelationshipMotionCommandFacts"]["allOf"][1][
-        "properties"
-    ]["runtimeQuestions"]
-    del output_schema["definitions"]["entityGestureRelationshipMotionCommandFacts"][
-        "properties"
-    ]["runtimeQuestions"]
-    output_schema["definitions"]["entityGestureRelationshipMotionCommandFacts"][
-        "required"
-    ].remove("runtimeQuestions")
-    dialogue_exact = output_schema["properties"]["dialogueCommandFacts"]["allOf"][1]["const"]
-    assert dialogue_exact.pop("runtimeQuestions") == [
-        "map-script-dialogue/normal-story-reachability",
-        "map-script-dialogue/rendered-portrait-speech-and-controller-timing",
-        "map-script-dialogue/service-body-effects-and-persistence",
-    ]
-    assert dialogue_exact.pop("sourceInputSummary") == {
-        "count": 2883,
-        "sha256": "6243D978C8BAD9960E5E3B1972DC12AF63C02B4DFE3DBD09AC5EDFF14FD826B5",
-    }
-    dialogue_exact["runtimeQuestions"] = ["dialogue-presentation/runtime-matrix"]
-    del output_schema["definitions"]["dialogueCommandFacts"]["properties"][
-        "sourceInputSummary"
-    ]
-    output_schema["definitions"]["dialogueCommandFacts"]["required"].remove(
-        "sourceInputSummary"
-    )
-    del output_schema["definitions"]["dialogueSourceInputSummary"]
-    output_schema["properties"]["screenPresentationCommandFacts"]["allOf"][1][
-        "properties"
-    ]["runtimeQuestions"] = {"const": ["map-script-screen-presentation/runtime-effects-matrix"]}
-    output_schema["properties"]["entityCloneCommandFacts"]["allOf"][1]["properties"][
-        "runtimeQuestions"
-    ] = {"const": ["map-script-entity-clone/runtime-effects-matrix"]}
-    output_schema["definitions"]["screenPresentationCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ] = {
-        "type": "array",
-        "minItems": 1,
-        "maxItems": 1,
-        "items": {"type": "string"},
-    }
-    del output_schema["definitions"]["storyStateCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ]
-    output_schema["definitions"]["storyStateCommandFacts"]["required"].remove(
-        "runtimeQuestions"
-    )
-    del output_schema["definitions"]["activePartyCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ]
-    output_schema["definitions"]["activePartyCommandFacts"]["required"].remove(
-        "runtimeQuestions"
-    )
-    del output_schema["properties"]["entityPopulationCommandFacts"]["allOf"][1][
-        "properties"
-    ]["runtimeQuestions"]
-    del output_schema["definitions"]["entityPopulationCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ]
-    output_schema["definitions"]["entityPopulationCommandFacts"]["required"].remove(
-        "runtimeQuestions"
-    )
-    assert _canonical_digest(output_schema) == (
-        "9d12c0d70a778231f7a26eb7976899065089f1b9d75cfe2f53895084917a3807"
-    )
-
-    fixture_schema = deepcopy(
-        load_json(repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"))
-    )
-    del fixture_schema["properties"]["expected"]["properties"]["runtimeQuestions"]
-    del fixture_schema["properties"]["expected"]["properties"][
-        "mapBlockMutationCommandFacts"
-    ]["allOf"][1]["properties"]["runtimeQuestions"]
-    del fixture_schema["properties"]["expected"]["properties"][
-        "mapScriptUiPrimaryCommandFacts"
-    ]["allOf"][1]["properties"]["runtimeQuestions"]
-    del fixture_schema["definitions"]["mapBlockMutationCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ]
-    fixture_schema["definitions"]["mapBlockMutationCommandFacts"]["required"].remove(
-        "runtimeQuestions"
-    )
-    del fixture_schema["definitions"]["mapScriptUiPrimaryFixtureCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ]
-    fixture_schema["definitions"]["mapScriptUiPrimaryFixtureCommandFacts"]["required"].remove(
-        "runtimeQuestions"
-    )
-    del fixture_schema["properties"]["expected"]["properties"]["forceStateCommandFacts"][
-        "allOf"
-    ][1]["const"]["activePartyCommandFacts"]["runtimeQuestions"]
-    del fixture_schema["properties"]["expected"]["properties"][
-        "storyStateCommandFacts"
-    ]["allOf"][1]["properties"]["runtimeQuestions"]
-    del fixture_schema["properties"]["expected"]["properties"]["mapLifecycleCommandFacts"][
-        "allOf"
-    ][1]["properties"]["runtimeQuestions"]
-    del fixture_schema["properties"]["expected"]["properties"]["entityPlacementCommandFacts"][
-        "allOf"
-    ][1]["properties"]["runtimeQuestions"]
-    del fixture_schema["properties"]["expected"]["properties"][
-        "entityActionBridgeCommandFacts"
-    ]["allOf"][1]["const"]["runtimeQuestions"]
-    del fixture_schema["properties"]["expected"]["properties"][
-        "entityLifecyclePresentationCommandFacts"
-    ]["allOf"][1]["const"]["runtimeQuestions"]
-    del fixture_schema["properties"]["expected"]["properties"][
-        "entityGestureRelationshipMotionCommandFacts"
-    ]["allOf"][1]["const"]["runtimeQuestions"]
-    del fixture_schema["definitions"]["entityGestureRelationshipMotionFixtureCommandFacts"][
-        "properties"
-    ]["runtimeQuestions"]
-    fixture_schema["definitions"]["entityGestureRelationshipMotionFixtureCommandFacts"][
-        "required"
-    ].remove("runtimeQuestions")
-    dialogue_fixture_exact = fixture_schema["properties"]["expected"]["properties"][
-        "dialogueCommandFacts"
-    ]["allOf"][1]["const"]
-    assert dialogue_fixture_exact.pop("runtimeQuestions") == [
-        "map-script-dialogue/normal-story-reachability",
-        "map-script-dialogue/rendered-portrait-speech-and-controller-timing",
-        "map-script-dialogue/service-body-effects-and-persistence",
-    ]
-    assert dialogue_fixture_exact.pop("sourceInputSummary") == {
-        "count": 2883,
-        "sha256": "6243D978C8BAD9960E5E3B1972DC12AF63C02B4DFE3DBD09AC5EDFF14FD826B5",
-    }
-    dialogue_fixture_exact["runtimeQuestions"] = ["dialogue-presentation/runtime-matrix"]
-    del fixture_schema["definitions"]["dialogueCommandFacts"]["properties"][
-        "sourceInputSummary"
-    ]
-    fixture_schema["definitions"]["dialogueCommandFacts"]["required"].remove(
-        "sourceInputSummary"
-    )
-    del fixture_schema["definitions"]["dialogueSourceInputSummary"]
-    fixture_schema["properties"]["expected"]["properties"][
-        "screenPresentationCommandFacts"
-    ]["allOf"][1]["const"]["runtimeQuestions"] = [
-        "map-script-screen-presentation/runtime-effects-matrix"
-    ]
-    fixture_schema["properties"]["expected"]["properties"][
-        "entityCloneCommandFacts"
-    ]["allOf"][1]["properties"]["runtimeQuestions"] = {
-        "const": ["map-script-entity-clone/runtime-effects-matrix"]
-    }
-    fixture_schema["definitions"]["screenPresentationFixtureCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ] = {
-        "type": "array",
-        "minItems": 1,
-        "maxItems": 1,
-        "items": {"type": "string"},
-    }
-    del fixture_schema["definitions"]["storyStateCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ]
-    fixture_schema["definitions"]["storyStateCommandFacts"]["required"].remove(
-        "runtimeQuestions"
-    )
-    del fixture_schema["definitions"]["activePartyCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ]
-    fixture_schema["definitions"]["activePartyCommandFacts"]["required"].remove(
-        "runtimeQuestions"
-    )
-    del fixture_schema["properties"]["expected"]["properties"][
-        "entityPopulationCommandFacts"
-    ]["allOf"][1]["properties"]["runtimeQuestions"]
-    del fixture_schema["definitions"]["entityPopulationCommandFacts"]["properties"][
-        "runtimeQuestions"
-    ]
-    fixture_schema["definitions"]["entityPopulationCommandFacts"]["required"].remove(
-        "runtimeQuestions"
-    )
-    assert _canonical_digest(fixture_schema) == (
-        "f78a60fd8ae531812a1dc8802347ee0fbac9bc20a6017433b7f2c944bfec5483"
-    )
-
+    validate_json(fixture, FIXTURE_SCHEMA, owner="map-script fixture")
+    for path in COMPOSED_SCHEMAS:
+        schema_text = path.read_text(encoding="utf-8")
+        assert "dialogue-presentation/runtime-matrix" not in schema_text
+        assert "map-script-screen-presentation/runtime-effects-matrix" not in schema_text
+        assert "map-script-entity-clone/runtime-effects-matrix" not in schema_text
 
 def test_map_lifecycle_opcode_operand_order_and_polarity_guards_fail_before_fixture(
     monkeypatch,
@@ -5595,19 +5462,15 @@ def test_map_lifecycle_corpus_order_schema_rejects_source_reordering(monkeypatch
     output = build_map_script_engine_contract(
         repo_path("local/roms/sf2-us.bin"), repo_path("local/upstream/SF2DISASM")
     )
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            output,
-            repo_path("schemas/map-script-engine-static.schema.json"),
-            owner="map-lifecycle source-order output",
-        )
+    validate_json(output, OUTPUT_SCHEMA, owner="map-lifecycle source-order output")
+    _expect_any_output_owner_drift(output)
 
 
 def test_map_lifecycle_schemas_reject_nested_mutations_and_exact_order(
     map_script_engine_output: dict,
 ) -> None:
-    output_schema = repo_path("schemas/map-script-engine-static.schema.json")
-    fixture_schema = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
+    output_schema = repo_path("schemas/h2/map-script-engine-output.schema.json")
+    fixture_schema = repo_path("schemas/h2/map-script-engine-fixture.schema.json")
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     validate_json(map_script_engine_output, output_schema, owner="map-lifecycle output")
     validate_json(fixture, fixture_schema, owner="map-lifecycle fixture")
@@ -5637,35 +5500,35 @@ def test_map_lifecycle_schemas_reject_nested_mutations_and_exact_order(
     reordered_source = deepcopy(map_script_engine_output)
     source_order = reordered_source["mapLifecycleCommandFacts"]["sourceSiteOrderKeys"]
     source_order[0], source_order[1] = source_order[1], source_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            reordered_source,
-            output_schema,
-            owner="map-lifecycle output reordered source keys",
-        )
+    validate_json(
+        reordered_source,
+        output_schema,
+        owner="map-lifecycle output reordered source keys",
+    )
+    _expect_output_owner_rejected(reordered_source, "mapLifecycleCommandFacts")
 
     reordered_programs = deepcopy(map_script_engine_output)
     program_order = reordered_programs["mapLifecycleCommandFacts"]["programTotalOrderKeys"]
     program_order[0], program_order[1] = program_order[1], program_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            reordered_programs,
-            output_schema,
-            owner="map-lifecycle output reordered program keys",
-        )
+    validate_json(
+        reordered_programs,
+        output_schema,
+        owner="map-lifecycle output reordered program keys",
+    )
+    _expect_output_owner_rejected(reordered_programs, "mapLifecycleCommandFacts")
 
     out_of_boundary = deepcopy(map_script_engine_output)
     out_of_boundary["mapLifecycleCommandFacts"]["handlers"][3]["sectionGuard"][
         "operandPackUseSites"
     ]["multiplierUseSite"]["value"] = 4
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(out_of_boundary, output_schema, owner="map-lifecycle output boundary")
+    validate_json(out_of_boundary, output_schema, owner="map-lifecycle output boundary")
+    _expect_output_owner_rejected(out_of_boundary, "mapLifecycleCommandFacts")
 
     fixture_missing = deepcopy(fixture)
     del fixture_missing["expected"]["mapLifecycleCommandFacts"]["handlers"][3][
         "sectionGuard"
     ]["mapProbeUseSite"]["destinationRegister"]
-    with pytest.raises(ValueError, match="destinationRegister"):
+    with pytest.raises(ValueError, match="mapProbeUseSite|destinationRegister"):
         validate_json(fixture_missing, fixture_schema, owner="map-lifecycle fixture missing field")
 
     fixture_renamed = deepcopy(fixture)
@@ -5688,61 +5551,51 @@ def test_map_lifecycle_schemas_reject_nested_mutations_and_exact_order(
         "sourceSiteOrderKeys"
     ]
     source_order[0], source_order[1] = source_order[1], source_order[0]
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            fixture_reordered,
-            fixture_schema,
-            owner="map-lifecycle fixture reordered source keys",
-        )
+    validate_json(
+        fixture_reordered,
+        fixture_schema,
+        owner="map-lifecycle fixture reordered source keys",
+    )
+    _expect_fixture_owner_rejected(
+        fixture_reordered, map_script_engine_output, "mapLifecycleCommandFacts"
+    )
 
     fixture_out_of_boundary = deepcopy(fixture)
     fixture_out_of_boundary["expected"]["mapLifecycleCommandFacts"]["handlers"][3][
         "sectionGuard"
     ]["operandPackUseSites"]["multiplierUseSite"]["value"] = 4
-    with pytest.raises(ValueError, match="was expected"):
-        validate_json(
-            fixture_out_of_boundary,
-            fixture_schema,
-            owner="map-lifecycle fixture boundary",
-        )
+    validate_json(
+        fixture_out_of_boundary,
+        fixture_schema,
+        owner="map-lifecycle fixture boundary",
+    )
+    _expect_fixture_owner_rejected(
+        fixture_out_of_boundary, map_script_engine_output, "mapLifecycleCommandFacts"
+    )
 
 
 def test_map_lifecycle_schema_exact_blocks_keep_large_corpora_compact() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("mapLifecycleCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "mapLifecycleCommandFacts"
-            ]
-        exact = contract["allOf"][1]
-        assert "sourceSites" not in exact["properties"]
-        assert "programTotals" not in exact["properties"]
-        facts = schema["definitions"]["mapLifecycleCommandFacts"]
-        assert facts["additionalProperties"] is False
-        assert {"sourceSites", "programTotals"} <= set(facts["required"])
-        lifecycle_definitions = {
-            name: value
-            for name, value in schema["definitions"].items()
-            if name.startswith("mapLifecycle")
-        }
+    facts = map_script_schema_definition("mapLifecycleCommandFacts")
+    assert facts["additionalProperties"] is False
+    assert {"sourceSites", "programTotals"} <= set(facts["required"])
+    lifecycle_definitions = {
+        name: definition
+        for name, (_, definition) in map_script_schema_definitions().items()
+        if name.startswith("mapLifecycle")
+    }
 
-        def assert_closed_objects(value):
-            if isinstance(value, dict):
-                if value.get("type") == "object":
-                    assert value.get("additionalProperties") is False
-                for child in value.values():
-                    assert_closed_objects(child)
-            elif isinstance(value, list):
-                for child in value:
-                    assert_closed_objects(child)
+    def assert_closed_objects(value):
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                assert value.get("additionalProperties") is False
+            for child in value.values():
+                assert_closed_objects(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_closed_objects(child)
 
-        for definition in lifecycle_definitions.values():
-            assert_closed_objects(definition)
+    for definition in lifecycle_definitions.values():
+        assert_closed_objects(definition)
 
 
 def test_map_interaction_trigger_contract_matches_complete_golden_fixture(
@@ -6076,107 +5929,75 @@ def test_map_interaction_trigger_parsers_reject_near_misses_and_preserve_comment
         )
 
 
-def test_map_interaction_trigger_schemas_reject_nested_mutations_and_exact_order() -> None:
+def test_map_interaction_trigger_schemas_reject_nested_mutations_and_exact_order(
+    map_script_engine_output: dict,
+) -> None:
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
-    facts = fixture["expected"]["mapInteractionTriggerCommandFacts"]
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+    output_schema = OUTPUT_SCHEMA
+    fixture_schema = FIXTURE_SCHEMA
+
+    missing = deepcopy(map_script_engine_output)
+    del missing["mapInteractionTriggerCommandFacts"]["handlers"][0]["sectionGuard"][
+        "tileSizeUseSites"
+    ][0]["destinationRegister"]
+    with pytest.raises(ValueError, match="destinationRegister"):
+        validate_json(missing, output_schema, owner="map interaction missing field")
+
+    renamed = deepcopy(map_script_engine_output)
+    annotation = renamed["mapInteractionTriggerCommandFacts"]["macros"][0][
+        "sourceOperandAnnotations"
+    ][0]
+    annotation["label"] = annotation.pop("sourceComment")
+    with pytest.raises(ValueError, match="sourceComment"):
+        validate_json(renamed, output_schema, owner="map interaction renamed field")
+
+    fixture_extra = deepcopy(fixture)
+    fixture_extra["expected"]["mapInteractionTriggerCommandFacts"][
+        "sourceIdentityJoins"
+    ]["calleeOwner"]["extra"] = True
+    with pytest.raises(ValueError, match="extra"):
+        validate_json(fixture_extra, fixture_schema, owner="map interaction extra field")
+
+    reordered = deepcopy(map_script_engine_output)
+    source_order = reordered["mapInteractionTriggerCommandFacts"]["sourceSiteOrderKeys"]
+    source_order[0], source_order[1] = source_order[1], source_order[0]
+    validate_json(reordered, output_schema, owner="map interaction reordered keys")
+    _expect_output_owner_rejected(reordered, "mapInteractionTriggerCommandFacts")
+
+    fixture_boundary = deepcopy(fixture)
+    fixture_boundary["expected"]["mapInteractionTriggerCommandFacts"]["handlers"][0][
+        "sectionGuard"
+    ]["tileSizeUseSites"][0]["value"] = 383
+    validate_json(fixture_boundary, fixture_schema, owner="map interaction boundary")
+    _expect_fixture_owner_rejected(
+        fixture_boundary,
+        map_script_engine_output,
+        "mapInteractionTriggerCommandFacts",
     )
-
-    for path in schema_paths:
-        schema = load_json(path)
-        property_schema = schema["properties"].get("mapInteractionTriggerCommandFacts")
-        if property_schema is None:
-            property_schema = schema["properties"]["expected"]["properties"][
-                "mapInteractionTriggerCommandFacts"
-            ]
-        exact_properties = property_schema["allOf"][1]["properties"]
-
-        def definition_validator(
-            name: str, *, schema: dict = schema
-        ) -> Draft7Validator:
-            return Draft7Validator(
-                {
-                    "$schema": schema["$schema"],
-                    "definitions": {name: schema["definitions"][name]},
-                    "$ref": f"#/definitions/{name}",
-                },
-                format_checker=FormatChecker(),
-            )
-
-        def rejects(validator: Draft7Validator, instance: object) -> None:
-            assert next(validator.iter_errors(instance), None) is not None
-
-        tile_validator = definition_validator("mapInteractionTriggerTileSizeUse")
-        annotation_validator = definition_validator("mapInteractionTriggerOperandAnnotation")
-        owner_validator = definition_validator("mapInteractionTriggerCalleeOwner")
-        source_order_validator = Draft7Validator(exact_properties["sourceSiteOrderKeys"])
-        handler_validator = Draft7Validator(exact_properties["handlers"])
-
-        missing = deepcopy(facts["handlers"][0]["sectionGuard"]["tileSizeUseSites"][0])
-        del missing["destinationRegister"]
-        rejects(tile_validator, missing)
-
-        renamed = deepcopy(facts["macros"][0]["sourceOperandAnnotations"][0])
-        renamed["label"] = renamed.pop("sourceComment")
-        rejects(annotation_validator, renamed)
-
-        extra = deepcopy(facts["sourceIdentityJoins"]["calleeOwner"])
-        extra["extra"] = True
-        rejects(owner_validator, extra)
-
-        reordered = facts["sourceSiteOrderKeys"].copy()
-        reordered[0], reordered[1] = reordered[1], reordered[0]
-        rejects(source_order_validator, reordered)
-
-        out_of_boundary = deepcopy(facts["handlers"])
-        out_of_boundary[0]["sectionGuard"]["tileSizeUseSites"][0]["value"] = 383
-        rejects(handler_validator, out_of_boundary)
 
 
 def test_map_interaction_trigger_schema_exact_blocks_keep_large_corpora_compact() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("mapInteractionTriggerCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "mapInteractionTriggerCommandFacts"
-            ]
-        exact = contract["allOf"][1]
-        assert "sourceSites" not in exact["properties"]
-        assert "programTotals" not in exact["properties"]
-        assert {
-            "sourceSiteOrderKeys",
-            "sourceSitesSha256",
-            "programTotalOrderKeys",
-            "programTotalsSha256",
-        } <= set(exact["properties"])
-        facts = schema["definitions"]["mapInteractionTriggerCommandFacts"]
-        assert facts["additionalProperties"] is False
-        assert {"sourceSites", "programTotals"} <= set(facts["required"])
-        interaction_definitions = {
-            name: value
-            for name, value in schema["definitions"].items()
-            if name.startswith("mapInteractionTrigger")
-        }
+    facts = map_script_schema_definition("mapInteractionTriggerCommandFacts")
+    assert facts["additionalProperties"] is False
+    assert {"sourceSites", "programTotals"} <= set(facts["required"])
+    interaction_definitions = {
+        name: definition
+        for name, (_, definition) in map_script_schema_definitions().items()
+        if name.startswith("mapInteractionTrigger")
+    }
 
-        def assert_closed_objects(value):
-            if isinstance(value, dict):
-                if value.get("type") == "object":
-                    assert value.get("additionalProperties") is False
-                for child in value.values():
-                    assert_closed_objects(child)
-            elif isinstance(value, list):
-                for child in value:
-                    assert_closed_objects(child)
+    def assert_closed_objects(value):
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                assert value.get("additionalProperties") is False
+            for child in value.values():
+                assert_closed_objects(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_closed_objects(child)
 
-        for definition in interaction_definitions.values():
-            assert_closed_objects(definition)
+    for definition in interaction_definitions.values():
+        assert_closed_objects(definition)
 
 
 def test_map_entity_placement_contract_matches_complete_golden_fixture(
@@ -6484,8 +6305,8 @@ def test_map_entity_placement_schemas_reject_nested_mutations_and_exact_order(
 ) -> None:
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+        repo_path("schemas/h2/map-script-engine-output.schema.json"),
+        repo_path("schemas/h2/map-script-engine-fixture.schema.json"),
     )
     sources = (
         map_script_engine_output,
@@ -6536,8 +6357,13 @@ def test_map_entity_placement_schemas_reject_nested_mutations_and_exact_order(
         )
         source_order = target["sourceSiteOrderKeys"]
         source_order[0], source_order[1] = source_order[1], source_order[0]
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(reordered, schema, owner="entity-placement exact source order")
+        validate_json(reordered, schema, owner="entity-placement exact source order")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(reordered, "entityPlacementCommandFacts")
+        else:
+            _expect_fixture_owner_rejected(
+                reordered, map_script_engine_output, "entityPlacementCommandFacts"
+            )
 
         boundary = deepcopy(source)
         target = (
@@ -6548,42 +6374,33 @@ def test_map_entity_placement_schemas_reject_nested_mutations_and_exact_order(
         target["handlers"][0]["sectionGuard"]["aliveStatusCursorAdjustment"][
             "adjustmentLiteralValue"
         ] = 5
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(boundary, schema, owner="entity-placement exact boundary")
+        validate_json(boundary, schema, owner="entity-placement exact boundary")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(boundary, "entityPlacementCommandFacts")
+        else:
+            _expect_fixture_owner_rejected(
+                boundary, map_script_engine_output, "entityPlacementCommandFacts"
+            )
 
 
 def test_map_entity_placement_schema_exact_blocks_keep_large_corpora_compact() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("entityPlacementCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "entityPlacementCommandFacts"
-            ]
-        exact = contract["allOf"][1]
-        assert "sourceSites" not in exact["properties"]
-        assert "programTotals" not in exact["properties"]
-        facts = schema["definitions"]["entityPlacementCommandFacts"]
-        assert facts["additionalProperties"] is False
-        assert {"sourceSites", "programTotals"} <= set(facts["required"])
+    facts = map_script_schema_definition("entityPlacementCommandFacts")
+    assert facts["additionalProperties"] is False
+    assert {"sourceSites", "programTotals"} <= set(facts["required"])
 
-        def assert_closed_objects(value):
-            if isinstance(value, dict):
-                if value.get("type") == "object":
-                    assert value.get("additionalProperties") is False
-                for child in value.values():
-                    assert_closed_objects(child)
-            elif isinstance(value, list):
-                for child in value:
-                    assert_closed_objects(child)
+    def assert_closed_objects(value):
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                assert value.get("additionalProperties") is False
+            for child in value.values():
+                assert_closed_objects(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_closed_objects(child)
 
-        for name, definition in schema["definitions"].items():
-            if name.startswith("entityPlacement"):
-                assert_closed_objects(definition)
+    for name, (_, definition) in map_script_schema_definitions().items():
+        if name.startswith("entityPlacement"):
+            assert_closed_objects(definition)
 
 
 def test_map_entity_action_bridge_contract_matches_complete_golden_fixture(
@@ -6925,8 +6742,8 @@ def test_map_entity_action_bridge_schemas_reject_nested_mutations_and_exact_orde
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     sources = (map_script_engine_output, fixture)
     schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+        repo_path("schemas/h2/map-script-engine-output.schema.json"),
+        repo_path("schemas/h2/map-script-engine-fixture.schema.json"),
     )
     for source, schema_path in zip(sources, schema_paths, strict=True):
         validate_json(source, schema_path, owner="entity-action bridge baseline")
@@ -6961,60 +6778,46 @@ def test_map_entity_action_bridge_schemas_reject_nested_mutations_and_exact_orde
         reordered = deepcopy(source)
         order = target_for(reordered)["sourceSiteOrderKeys"]
         order[0], order[1] = order[1], order[0]
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(reordered, schema_path, owner="entity-action bridge exact source order")
+        validate_json(reordered, schema_path, owner="entity-action bridge exact source order")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(reordered, "entityActionBridgeCommandFacts")
+        else:
+            _expect_fixture_owner_rejected(
+                reordered, map_script_engine_output, "entityActionBridgeCommandFacts"
+            )
 
         boundary = deepcopy(source)
         target_for(boundary)["macros"][0]["sourceControlField"]["value"] = 1
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(boundary, schema_path, owner="entity-action bridge exact boundary")
+        validate_json(boundary, schema_path, owner="entity-action bridge exact boundary")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(boundary, "entityActionBridgeCommandFacts")
+        else:
+            _expect_fixture_owner_rejected(
+                boundary, map_script_engine_output, "entityActionBridgeCommandFacts"
+            )
 
 
 def test_map_entity_action_bridge_schema_exact_blocks_keep_large_corpora_compact() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("entityActionBridgeCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "entityActionBridgeCommandFacts"
-            ]
-        exact = contract["allOf"][1]
-        exact_value = exact.get("const", exact.get("properties", {}))
-        assert "sourceSites" not in exact_value
-        assert "programTotals" not in exact_value
-        definition_name = (
-            "entityActionBridgeCommandFacts"
-            if "entityActionBridgeCommandFacts" in schema["definitions"]
-            else "entityActionBridgeFixtureCommandFacts"
-        )
-        facts = schema["definitions"][definition_name]
-        assert facts["additionalProperties"] is False
-        if definition_name == "entityActionBridgeCommandFacts":
-            assert {"sourceSites", "programTotals"} <= set(facts["required"])
-            assert schema["definitions"]["entityActionBridgeSourceSite"][
-                "additionalProperties"
-            ] is False
-            assert schema["definitions"]["entityActionBridgeProgramTotal"][
-                "additionalProperties"
-            ] is False
+    definitions = map_script_schema_definitions()
+    facts = definitions["entityActionBridgeCommandFacts"][1]
+    assert facts["additionalProperties"] is False
+    assert {"sourceSites", "programTotals"} <= set(facts["required"])
+    assert definitions["entityActionBridgeSourceSite"][1]["additionalProperties"] is False
+    assert definitions["entityActionBridgeProgramTotal"][1]["additionalProperties"] is False
 
-        def assert_closed_objects(value):
-            if isinstance(value, dict):
-                if value.get("type") == "object":
-                    assert value.get("additionalProperties") is False
-                for child in value.values():
-                    assert_closed_objects(child)
-            elif isinstance(value, list):
-                for child in value:
-                    assert_closed_objects(child)
+    def assert_closed_objects(value):
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                assert value.get("additionalProperties") is False
+            for child in value.values():
+                assert_closed_objects(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_closed_objects(child)
 
-        for name, definition in schema["definitions"].items():
-            if name.startswith("entityActionBridge"):
-                assert_closed_objects(definition)
+    for name, (_, definition) in definitions.items():
+        if name.startswith("entityActionBridge"):
+            assert_closed_objects(definition)
 
 
 def test_map_entity_lifecycle_presentation_contract_matches_complete_golden_fixture(
@@ -7253,8 +7056,8 @@ def test_map_entity_lifecycle_presentation_schemas_reject_nested_mutations_and_e
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     sources = (map_script_engine_output, fixture)
     schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+        repo_path("schemas/h2/map-script-engine-output.schema.json"),
+        repo_path("schemas/h2/map-script-engine-fixture.schema.json"),
     )
     for source, schema_path in zip(sources, schema_paths, strict=True):
         validate_json(source, schema_path, owner="entity-lifecycle presentation baseline")
@@ -7293,83 +7096,61 @@ def test_map_entity_lifecycle_presentation_schemas_reject_nested_mutations_and_e
         reordered = deepcopy(source)
         order = target_for(reordered)["sourceSiteOrderKeys"]
         order[0], order[1] = order[1], order[0]
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(reordered, schema_path, owner="entity-lifecycle exact source order")
+        validate_json(reordered, schema_path, owner="entity-lifecycle exact source order")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(
+                reordered, "entityLifecyclePresentationCommandFacts"
+            )
+        else:
+            _expect_fixture_owner_rejected(
+                reordered,
+                map_script_engine_output,
+                "entityLifecyclePresentationCommandFacts",
+            )
 
         boundary = deepcopy(source)
         target_for(boundary)["handlers"][1]["sectionGuard"][
             "aliveStatusPointerAdjustment"
         ]["adjustmentLiteralValue"] = 3
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(boundary, schema_path, owner="entity-lifecycle exact boundary")
+        validate_json(boundary, schema_path, owner="entity-lifecycle exact boundary")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(
+                boundary, "entityLifecyclePresentationCommandFacts"
+            )
+        else:
+            _expect_fixture_owner_rejected(
+                boundary,
+                map_script_engine_output,
+                "entityLifecyclePresentationCommandFacts",
+            )
 
 
 def test_map_entity_lifecycle_presentation_schema_compacts_raw_corpora_and_closes_shapes() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("entityLifecyclePresentationCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "entityLifecyclePresentationCommandFacts"
-            ]
-        exact_block = contract["allOf"][1]
-        exact = (
-            exact_block["const"]
-            if "const" in exact_block
-            else exact_block["properties"]
-        )
-        assert {"sourceSites", "programTotals"}.isdisjoint(exact)
-        assert {"sourceSiteOrderKeys", "programTotalOrderKeys"} <= set(exact)
-        definition_name = (
-            "entityLifecyclePresentationCommandFacts"
-            if "entityLifecyclePresentationCommandFacts" in schema["definitions"]
-            else "entityLifecyclePresentationFixtureCommandFacts"
-        )
-        facts = schema["definitions"][definition_name]
-        assert facts["additionalProperties"] is False
-        if definition_name == "entityLifecyclePresentationCommandFacts":
-            assert {"sourceSites", "programTotals"} <= set(facts["required"])
-            source_sites = facts["properties"]["sourceSites"]
-            program_totals = facts["properties"]["programTotals"]
-            assert source_sites == {
-                "type": "array",
-                "minItems": 105,
-                "maxItems": 105,
-                "items": {"$ref": "#/definitions/entityLifecyclePresentationSourceSite"},
-            }
-            assert program_totals == {
-                "type": "array",
-                "minItems": 304,
-                "maxItems": 304,
-                "items": {"$ref": "#/definitions/entityLifecyclePresentationProgramTotal"},
-            }
-            for name in (
-                "entityLifecyclePresentationCommand",
-                "entityLifecyclePresentationSourceSite",
-                "entityLifecyclePresentationProgramTotal",
-            ):
-                item = schema["definitions"][name]
-                assert item["additionalProperties"] is False
-                assert "prefixItems" not in item
-                assert "const" not in item
-        else:
-            assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
+    facts = map_script_schema_definition("entityLifecyclePresentationCommandFacts")
+    assert facts["additionalProperties"] is False
+    assert {"sourceSites", "programTotals"} <= set(facts["required"])
+    definitions = map_script_schema_definitions()
+    for name in (
+        "entityLifecyclePresentationCommand",
+        "entityLifecyclePresentationSourceSite",
+        "entityLifecyclePresentationProgramTotal",
+    ):
+        item = definitions[name][1]
+        assert item["additionalProperties"] is False
+        assert "prefixItems" not in item
+        assert "const" not in item
 
-        def assert_closed_objects(value):
-            if isinstance(value, dict):
-                if value.get("type") == "object":
-                    assert value.get("additionalProperties") is False
-                for child in value.values():
-                    assert_closed_objects(child)
-            elif isinstance(value, list):
-                for child in value:
-                    assert_closed_objects(child)
+    def assert_closed_objects(value):
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                assert value.get("additionalProperties") is False
+            for child in value.values():
+                assert_closed_objects(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_closed_objects(child)
 
-        assert_closed_objects(facts)
+    assert_closed_objects(facts)
 
 
 def test_map_ui_command_macro_annotations_preserve_byte_operands_and_empty_comment(
@@ -7575,8 +7356,8 @@ def test_map_ui_command_boundary_schemas_reject_nested_mutations_and_exact_order
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     sources = (map_script_engine_output, fixture)
     schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+        repo_path("schemas/h2/map-script-engine-output.schema.json"),
+        repo_path("schemas/h2/map-script-engine-fixture.schema.json"),
     )
     for source, schema_path in zip(sources, schema_paths, strict=True):
         validate_json(source, schema_path, owner="map UI command boundary baseline")
@@ -7611,71 +7392,46 @@ def test_map_ui_command_boundary_schemas_reject_nested_mutations_and_exact_order
         reordered = deepcopy(source)
         order = target_for(reordered)["sourceSiteOrderKeys"]
         order[0], order[1] = order[1], order[0]
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(reordered, schema_path, owner="map UI exact source order")
+        validate_json(reordered, schema_path, owner="map UI exact source order")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(reordered, "mapScriptUiPrimaryCommandFacts")
+        else:
+            _expect_fixture_owner_rejected(
+                reordered, map_script_engine_output, "mapScriptUiPrimaryCommandFacts"
+            )
 
         boundary = deepcopy(source)
         target_for(boundary)["macros"][2]["sourceCommandCount"] = 1
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(boundary, schema_path, owner="map UI zero-use boundary")
+        validate_json(boundary, schema_path, owner="map UI zero-use boundary")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(boundary, "mapScriptUiPrimaryCommandFacts")
+        else:
+            _expect_fixture_owner_rejected(
+                boundary, map_script_engine_output, "mapScriptUiPrimaryCommandFacts"
+            )
 
 
 def test_map_ui_command_boundary_schema_compacts_raw_corpora_and_closes_shapes() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("mapScriptUiPrimaryCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "mapScriptUiPrimaryCommandFacts"
-            ]
-        exact = contract["allOf"][1]["properties"]
-        assert {"sourceSites", "programTotals"}.isdisjoint(exact)
-        assert {"sourceSiteOrderKeys", "programTotalOrderKeys"} <= set(exact)
-        definition_name = (
-            "mapScriptUiPrimaryCommandFacts"
-            if "mapScriptUiPrimaryCommandFacts" in schema["definitions"]
-            else "mapScriptUiPrimaryFixtureCommandFacts"
-        )
-        facts = schema["definitions"][definition_name]
-        assert facts["additionalProperties"] is False
-        if definition_name == "mapScriptUiPrimaryCommandFacts":
-            assert facts["properties"]["sourceSites"] == {
-                "type": "array",
-                "minItems": 4,
-                "maxItems": 4,
-                "items": {"$ref": "#/definitions/mapScriptUiPrimarySourceSite"},
-            }
-            assert facts["properties"]["programTotals"] == {
-                "type": "array",
-                "minItems": 304,
-                "maxItems": 304,
-                "items": {"$ref": "#/definitions/mapScriptUiPrimaryProgramTotal"},
-            }
-            command = schema["definitions"]["mapScriptUiPrimaryCommand"]
-            operand_value = command["properties"]["operandValues"]["items"]
-            assert operand_value["additionalProperties"] is False
-            assert set(operand_value["required"]) >= {"encoding", "resolution", "resolvedValue"}
-            assert operand_value["properties"]["resolvedValue"] == {
-                "type": ["integer", "null"]
-            }
-        else:
-            assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
+    facts = map_script_schema_definition("mapScriptUiPrimaryCommandFacts")
+    assert facts["additionalProperties"] is False
+    assert {"sourceSites", "programTotals"} <= set(facts["required"])
+    command = map_script_schema_definition("mapScriptUiPrimaryCommand")
+    operand_value = command["properties"]["operandValues"]["items"]
+    assert operand_value["additionalProperties"] is False
+    assert set(operand_value["required"]) >= {"encoding", "resolution", "resolvedValue"}
+    assert operand_value["properties"]["resolvedValue"] == {"type": ["integer", "null"]}
 
-        def assert_closed_objects(value):
-            if isinstance(value, dict):
-                if value.get("type") == "object":
-                    assert value.get("additionalProperties") is False
-                for child in value.values():
-                    assert_closed_objects(child)
-            elif isinstance(value, list):
-                for child in value:
-                    assert_closed_objects(child)
+    def assert_closed_objects(value):
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                assert value.get("additionalProperties") is False
+            for child in value.values():
+                assert_closed_objects(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_closed_objects(child)
 
-        assert_closed_objects(facts)
+    assert_closed_objects(facts)
 
 
 def test_map_entity_gesture_relationship_motion_contract_matches_complete_golden_fixture(
@@ -7976,8 +7732,8 @@ def test_map_entity_gesture_relationship_motion_schemas_reject_nested_mutations_
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     sources = (map_script_engine_output, fixture)
     schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+        repo_path("schemas/h2/map-script-engine-output.schema.json"),
+        repo_path("schemas/h2/map-script-engine-fixture.schema.json"),
     )
     for source, schema_path in zip(sources, schema_paths, strict=True):
         validate_json(source, schema_path, owner="entity gesture relationship motion baseline")
@@ -8016,84 +7772,60 @@ def test_map_entity_gesture_relationship_motion_schemas_reject_nested_mutations_
         reordered = deepcopy(source)
         order = target_for(reordered)["sourceSiteOrderKeys"]
         order[0], order[1] = order[1], order[0]
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(reordered, schema_path, owner="gesture exact source order")
+        validate_json(reordered, schema_path, owner="gesture exact source order")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(
+                reordered, "entityGestureRelationshipMotionCommandFacts"
+            )
+        else:
+            _expect_fixture_owner_rejected(
+                reordered,
+                map_script_engine_output,
+                "entityGestureRelationshipMotionCommandFacts",
+            )
 
         boundary = deepcopy(source)
         target_for(boundary)["macros"][0]["sourceCommandCount"] = 192
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(boundary, schema_path, owner="gesture exact boundary")
+        validate_json(boundary, schema_path, owner="gesture exact boundary")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(
+                boundary, "entityGestureRelationshipMotionCommandFacts"
+            )
+        else:
+            _expect_fixture_owner_rejected(
+                boundary,
+                map_script_engine_output,
+                "entityGestureRelationshipMotionCommandFacts",
+            )
 
 
 def test_map_entity_gesture_relationship_motion_schema_compacts_raw_corpora_and_closes_shapes(
 ) -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("entityGestureRelationshipMotionCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "entityGestureRelationshipMotionCommandFacts"
-            ]
-        exact_block = contract["allOf"][1]
-        exact = (
-            exact_block["const"]
-            if "const" in exact_block
-            else exact_block["properties"]
-        )
-        assert {"sourceSites", "programTotals"}.isdisjoint(exact)
-        assert {"sourceSiteOrderKeys", "programTotalOrderKeys"} <= set(exact)
-        definition_name = (
-            "entityGestureRelationshipMotionCommandFacts"
-            if "entityGestureRelationshipMotionCommandFacts" in schema["definitions"]
-            else "entityGestureRelationshipMotionFixtureCommandFacts"
-        )
-        facts = schema["definitions"][definition_name]
-        assert facts["additionalProperties"] is False
-        if definition_name == "entityGestureRelationshipMotionCommandFacts":
-            assert {"sourceSites", "programTotals"} <= set(facts["required"])
-            assert facts["properties"]["sourceSites"] == {
-                "type": "array",
-                "minItems": 133,
-                "maxItems": 133,
-                "items": {
-                    "$ref": "#/definitions/entityGestureRelationshipMotionSourceSite"
-                },
-            }
-            assert facts["properties"]["programTotals"] == {
-                "type": "array",
-                "minItems": 304,
-                "maxItems": 304,
-                "items": {
-                    "$ref": "#/definitions/entityGestureRelationshipMotionProgramTotal"
-                },
-            }
-            for name in (
-                "entityGestureRelationshipMotionCommand",
-                "entityGestureRelationshipMotionSourceSite",
-                "entityGestureRelationshipMotionProgramTotal",
-            ):
-                item = schema["definitions"][name]
-                assert item["additionalProperties"] is False
-                assert "prefixItems" not in item
-                assert "const" not in item
-        else:
-            assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
+    definitions = map_script_schema_definitions()
+    facts = definitions["entityGestureRelationshipMotionCommandFacts"][1]
+    assert facts["additionalProperties"] is False
+    assert {"sourceSites", "programTotals"} <= set(facts["required"])
+    for name in (
+        "entityGestureRelationshipMotionCommand",
+        "entityGestureRelationshipMotionSourceSite",
+        "entityGestureRelationshipMotionProgramTotal",
+    ):
+        item = definitions[name][1]
+        assert item["additionalProperties"] is False
+        assert "prefixItems" not in item
+        assert "const" not in item
 
-        def assert_closed_objects(value):
-            if isinstance(value, dict):
-                if value.get("type") == "object":
-                    assert value.get("additionalProperties") is False
-                for child in value.values():
-                    assert_closed_objects(child)
-            elif isinstance(value, list):
-                for child in value:
-                    assert_closed_objects(child)
+    def assert_closed_objects(value):
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                assert value.get("additionalProperties") is False
+            for child in value.values():
+                assert_closed_objects(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_closed_objects(child)
 
-        assert_closed_objects(facts)
+    assert_closed_objects(facts)
 
 
 def test_map_screen_presentation_macro_annotations_preserve_only_source_operands(
@@ -8432,8 +8164,8 @@ def test_map_screen_presentation_schemas_reject_nested_mutations_and_exact_order
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     sources = (map_script_engine_output, fixture)
     schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+        repo_path("schemas/h2/map-script-engine-output.schema.json"),
+        repo_path("schemas/h2/map-script-engine-fixture.schema.json"),
     )
     for source, schema_path in zip(sources, schema_paths, strict=True):
         validate_json(source, schema_path, owner="screen presentation baseline")
@@ -8472,79 +8204,51 @@ def test_map_screen_presentation_schemas_reject_nested_mutations_and_exact_order
         reordered = deepcopy(source)
         order = target_for(reordered)["sourceSiteOrderKeys"]
         order[0], order[1] = order[1], order[0]
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(reordered, schema_path, owner="screen presentation exact source order")
+        validate_json(reordered, schema_path, owner="screen presentation exact source order")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(reordered, "screenPresentationCommandFacts")
+        else:
+            _expect_fixture_owner_rejected(
+                reordered, map_script_engine_output, "screenPresentationCommandFacts"
+            )
 
         boundary = deepcopy(source)
         target_for(boundary)["macros"][0]["sourceCommandCount"] = 195
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(boundary, schema_path, owner="screen presentation exact boundary")
+        validate_json(boundary, schema_path, owner="screen presentation exact boundary")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(boundary, "screenPresentationCommandFacts")
+        else:
+            _expect_fixture_owner_rejected(
+                boundary, map_script_engine_output, "screenPresentationCommandFacts"
+            )
 
 
 def test_map_screen_presentation_schema_compacts_raw_corpora_and_closes_shapes() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("screenPresentationCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "screenPresentationCommandFacts"
-            ]
-        exact_block = contract["allOf"][1]
-        exact = (
-            exact_block["const"]
-            if "const" in exact_block
-            else exact_block["properties"]
-        )
-        assert {"sourceSites", "programTotals"}.isdisjoint(exact)
-        assert {"sourceSiteOrderKeys", "programTotalOrderKeys"} <= set(exact)
-        definition_name = (
-            "screenPresentationCommandFacts"
-            if "screenPresentationCommandFacts" in schema["definitions"]
-            else "screenPresentationFixtureCommandFacts"
-        )
-        facts = schema["definitions"][definition_name]
-        assert facts["additionalProperties"] is False
-        if definition_name == "screenPresentationCommandFacts":
-            assert {"sourceSites", "programTotals"} <= set(facts["required"])
-            assert facts["properties"]["sourceSites"] == {
-                "type": "array",
-                "minItems": 115,
-                "maxItems": 115,
-                "items": {"$ref": "#/definitions/screenPresentationSourceSite"},
-            }
-            assert facts["properties"]["programTotals"] == {
-                "type": "array",
-                "minItems": 304,
-                "maxItems": 304,
-                "items": {"$ref": "#/definitions/screenPresentationProgramTotal"},
-            }
-            for name in (
-                "screenPresentationCommand",
-                "screenPresentationSourceSite",
-                "screenPresentationProgramTotal",
-            ):
-                item = schema["definitions"][name]
-                assert item["additionalProperties"] is False
-                assert "prefixItems" not in item
-                assert "const" not in item
-        else:
-            assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
+    definitions = map_script_schema_definitions()
+    facts = definitions["screenPresentationCommandFacts"][1]
+    assert facts["additionalProperties"] is False
+    assert {"sourceSites", "programTotals"} <= set(facts["required"])
+    for name in (
+        "screenPresentationCommand",
+        "screenPresentationSourceSite",
+        "screenPresentationProgramTotal",
+    ):
+        item = definitions[name][1]
+        assert item["additionalProperties"] is False
+        assert "prefixItems" not in item
+        assert "const" not in item
 
-        def assert_closed_objects(value):
-            if isinstance(value, dict):
-                if value.get("type") == "object":
-                    assert value.get("additionalProperties") is False
-                for child in value.values():
-                    assert_closed_objects(child)
-            elif isinstance(value, list):
-                for child in value:
-                    assert_closed_objects(child)
+    def assert_closed_objects(value):
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                assert value.get("additionalProperties") is False
+            for child in value.values():
+                assert_closed_objects(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_closed_objects(child)
 
-        assert_closed_objects(facts)
+    assert_closed_objects(facts)
 
 
 def test_map_entity_presentation_fx_macro_annotations_preserve_shorthand_encoding(
@@ -8806,8 +8510,8 @@ def test_map_entity_presentation_fx_schemas_reject_nested_mutations_and_exact_or
     fixture = load_json(repo_path("tests/fixtures/h2/map-script-engine-static-v1.json"))
     sources = (map_script_engine_output, fixture)
     schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
+        repo_path("schemas/h2/map-script-engine-output.schema.json"),
+        repo_path("schemas/h2/map-script-engine-fixture.schema.json"),
     )
     for source, schema_path in zip(sources, schema_paths, strict=True):
         validate_json(source, schema_path, owner="entity presentation FX baseline")
@@ -8844,68 +8548,44 @@ def test_map_entity_presentation_fx_schemas_reject_nested_mutations_and_exact_or
         reordered = deepcopy(source)
         order = target_for(reordered)["sourceSiteOrderKeys"]
         order[0], order[1] = order[1], order[0]
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(reordered, schema_path, owner="entity presentation FX exact source order")
+        validate_json(reordered, schema_path, owner="entity presentation FX exact source order")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(reordered, "entityPresentationFxCommandFacts")
+        else:
+            _expect_fixture_owner_rejected(
+                reordered, map_script_engine_output, "entityPresentationFxCommandFacts"
+            )
 
         boundary = deepcopy(source)
         target_for(boundary)["macros"][2]["sourceCommandCount"] = 49
-        with pytest.raises(ValueError, match="was expected"):
-            validate_json(boundary, schema_path, owner="entity presentation FX exact boundary")
+        validate_json(boundary, schema_path, owner="entity presentation FX exact boundary")
+        if source is map_script_engine_output:
+            _expect_output_owner_rejected(boundary, "entityPresentationFxCommandFacts")
+        else:
+            _expect_fixture_owner_rejected(
+                boundary, map_script_engine_output, "entityPresentationFxCommandFacts"
+            )
 
 
 def test_map_entity_presentation_fx_schema_compacts_raw_corpora_and_closes_shapes() -> None:
-    schema_paths = (
-        repo_path("schemas/map-script-engine-static.schema.json"),
-        repo_path("schemas/h2-map-script-engine-static-fixture.schema.json"),
-    )
-    for path in schema_paths:
-        schema = load_json(path)
-        contract = schema["properties"].get("entityPresentationFxCommandFacts")
-        if contract is None:
-            contract = schema["properties"]["expected"]["properties"][
-                "entityPresentationFxCommandFacts"
-            ]
-        exact = contract["allOf"][1]["properties"]
-        assert {"sourceSites", "programTotals"}.isdisjoint(exact)
-        assert {"sourceSiteOrderKeys", "programTotalOrderKeys"} <= set(exact)
-        definition_name = (
-            "entityPresentationFxCommandFacts"
-            if "entityPresentationFxCommandFacts" in schema["definitions"]
-            else "entityPresentationFxFixtureCommandFacts"
-        )
-        facts = schema["definitions"][definition_name]
-        assert facts["additionalProperties"] is False
-        if definition_name == "entityPresentationFxCommandFacts":
-            assert facts["properties"]["sourceSites"] == {
-                "type": "array",
-                "minItems": 61,
-                "maxItems": 61,
-                "items": {"$ref": "#/definitions/entityPresentationFxSourceSite"},
-            }
-            assert facts["properties"]["programTotals"] == {
-                "type": "array",
-                "minItems": 304,
-                "maxItems": 304,
-                "items": {"$ref": "#/definitions/entityPresentationFxProgramTotal"},
-            }
-            command = schema["definitions"]["entityPresentationFxCommand"]
-            operand_value = command["properties"]["operandValues"]["items"]
-            assert operand_value["additionalProperties"] is False
-            assert set(operand_value["required"]) >= {"encoding", "resolution", "resolvedValue"}
-            assert operand_value["properties"]["resolvedValue"] == {
-                "type": ["integer", "null"]
-            }
-        else:
-            assert {"sourceSites", "programTotals"}.isdisjoint(facts["required"])
+    definitions = map_script_schema_definitions()
+    facts = definitions["entityPresentationFxCommandFacts"][1]
+    assert facts["additionalProperties"] is False
+    assert {"sourceSites", "programTotals"} <= set(facts["required"])
+    command = definitions["entityPresentationFxCommand"][1]
+    operand_value = command["properties"]["operandValues"]["items"]
+    assert operand_value["additionalProperties"] is False
+    assert set(operand_value["required"]) >= {"encoding", "resolution", "resolvedValue"}
+    assert operand_value["properties"]["resolvedValue"] == {"type": ["integer", "null"]}
 
-        def assert_closed_objects(value):
-            if isinstance(value, dict):
-                if value.get("type") == "object":
-                    assert value.get("additionalProperties") is False
-                for child in value.values():
-                    assert_closed_objects(child)
-            elif isinstance(value, list):
-                for child in value:
-                    assert_closed_objects(child)
+    def assert_closed_objects(value):
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                assert value.get("additionalProperties") is False
+            for child in value.values():
+                assert_closed_objects(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_closed_objects(child)
 
-        assert_closed_objects(facts)
+    assert_closed_objects(facts)

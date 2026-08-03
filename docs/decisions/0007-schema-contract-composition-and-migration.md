@@ -206,6 +206,15 @@ schema-migration milestone or merge-readiness boundary.
   section-order, field-inventory, duplicate-field, and incomplete-coverage drift before recomposing the
   exact 103-field logical fixture; the unchanged complete-equality and canonical-digest gates still own
   every value and ordering relationship.
+- The map-script-engine stage replaces its 4,949,973-byte mirrored schema pair and 280 copied
+  definitions with seven cohesive core, dialogue, state/block, entity, presentation/UI, map-control,
+  and script-control components plus two roots under `schemas/h2/`. The nine-schema set is below 0.9
+  MiB, contains 289 uniquely owned definitions, has zero component-level golden `const` or exact
+  corpus-cardinality locks, retains only four root identity constants, and resolves seven tracked
+  resources with no duplicate bodies. The H2 fixture and every H3 consumer path remain unchanged;
+  exact values and order stay fixture-owned, while the production verifier rejects schema-valid
+  provenance, address, corpus, summary, and runtime-question drift before writing output. The canonical
+  H2 digest remains the final whole-output gate.
 
 ## Acceptance and Guardrails
 

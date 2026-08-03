@@ -1,0 +1,208 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II map-script engine static fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "romSha256",
+    "upstreamCommit",
+    "function",
+    "expected"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-map-script-engine-static-v1"
+    },
+    "romSha256": {
+      "pattern": "^[0-9A-F]{64}$"
+    },
+    "upstreamCommit": {
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ExecuteMapScript",
+        "rjt_cutsceneScriptCommands"
+      ],
+      "properties": {
+        "ExecuteMapScript": {
+          "type": "integer"
+        },
+        "rjt_cutsceneScriptCommands": {
+          "type": "integer"
+        }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "dispatcherFacts",
+        "familyCounts",
+        "abiFacts",
+        "programSummary",
+        "transferCounts",
+        "referenceSummary",
+        "unreferencedPrograms",
+        "sourceOnlyPrograms",
+        "largestPrograms",
+        "storyStateSummary",
+        "storyStateConstants",
+        "storyReadFlagCounts",
+        "storyReadWriteOverlapFlags",
+        "storyDirectSetFlags",
+        "storyDirectClearFlags",
+        "storyBattleUnlockFlags",
+        "mostUsedMacros",
+        "unusedMacros",
+        "runtimeQuestions",
+        "dialogueCommandFacts",
+        "transitionCommandFacts",
+        "forceStateCommandFacts",
+        "storyStateCommandFacts",
+        "mapBlockMutationCommandFacts",
+        "entityPopulationCommandFacts",
+        "mapLifecycleCommandFacts",
+        "mapInteractionTriggerCommandFacts",
+        "mapCameraControlCommandFacts",
+        "entityPlacementCommandFacts",
+        "entityActionBridgeCommandFacts",
+        "entityLifecyclePresentationCommandFacts",
+        "entityGestureRelationshipMotionCommandFacts",
+        "screenPresentationCommandFacts",
+        "entityPresentationFxCommandFacts",
+        "mapScriptUiPrimaryCommandFacts",
+        "entityCloneCommandFacts",
+        "scriptControlCommandFacts"
+      ],
+      "properties": {
+        "summary": {
+          "type": "object"
+        },
+        "dispatcherFacts": {
+          "type": "object"
+        },
+        "familyCounts": {
+          "type": "object"
+        },
+        "abiFacts": {
+          "type": "object"
+        },
+        "programSummary": {
+          "type": "object"
+        },
+        "transferCounts": {
+          "type": "object"
+        },
+        "referenceSummary": {
+          "type": "object"
+        },
+        "unreferencedPrograms": {
+          "type": "array"
+        },
+        "sourceOnlyPrograms": {
+          "type": "array"
+        },
+        "largestPrograms": {
+          "type": "array"
+        },
+        "storyStateSummary": {
+          "type": "object"
+        },
+        "storyStateConstants": {
+          "type": "object"
+        },
+        "storyReadFlagCounts": {
+          "type": "object"
+        },
+        "storyReadWriteOverlapFlags": {
+          "type": "array"
+        },
+        "storyDirectSetFlags": {
+          "type": "array"
+        },
+        "storyDirectClearFlags": {
+          "type": "array"
+        },
+        "storyBattleUnlockFlags": {
+          "type": "array"
+        },
+        "mostUsedMacros": {
+          "type": "array"
+        },
+        "unusedMacros": {
+          "type": "array"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dialogueCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-dialogue.schema.json#/definitions/dialogueCommandFacts"
+        },
+        "transitionCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-map-control.schema.json#/definitions/transitionCommandFacts"
+        },
+        "forceStateCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-state-block.schema.json#/definitions/forceStateCommandFacts"
+        },
+        "storyStateCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-state-block.schema.json#/definitions/storyStateCommandFacts"
+        },
+        "mapBlockMutationCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-state-block.schema.json#/definitions/mapBlockMutationCommandFacts"
+        },
+        "entityPopulationCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityPopulationCommandFacts"
+        },
+        "mapLifecycleCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-map-control.schema.json#/definitions/mapLifecycleCommandFacts"
+        },
+        "mapInteractionTriggerCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-map-control.schema.json#/definitions/mapInteractionTriggerCommandFacts"
+        },
+        "mapCameraControlCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-presentation-ui.schema.json#/definitions/mapCameraControlCommandFacts"
+        },
+        "entityPlacementCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityPlacementFixtureCommandFacts"
+        },
+        "entityActionBridgeCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityActionBridgeFixtureCommandFacts"
+        },
+        "entityLifecyclePresentationCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityLifecyclePresentationFixtureCommandFacts"
+        },
+        "entityGestureRelationshipMotionCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityGestureRelationshipMotionFixtureCommandFacts"
+        },
+        "screenPresentationCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-presentation-ui.schema.json#/definitions/screenPresentationFixtureCommandFacts"
+        },
+        "entityPresentationFxCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-presentation-ui.schema.json#/definitions/entityPresentationFxFixtureCommandFacts"
+        },
+        "mapScriptUiPrimaryCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-presentation-ui.schema.json#/definitions/mapScriptUiPrimaryFixtureCommandFacts"
+        },
+        "entityCloneCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-entity.schema.json#/definitions/entityCloneCommandFactsFixture"
+        },
+        "scriptControlCommandFacts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-script-control.schema.json#/definitions/scriptControlFixtureCommandFacts"
+        }
+      }
+    }
+  },
+  "$id": "https://sf2-research.example/schemas/h2/map-script-engine-fixture.schema.json"
+}
