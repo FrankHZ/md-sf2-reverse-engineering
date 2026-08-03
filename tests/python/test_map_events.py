@@ -59,10 +59,44 @@ from sf2tool.jsonio import load_json, schema_composition_audit, validate_json
 
 @pytest.fixture(scope="module")
 def complete_output() -> dict[str, Any]:
-    """Build the complete static contract once; mutation tests receive deep copies."""
+    """Build the complete static contract once; mutation tests must preserve it."""
     return build_map_events_contract(
         Path("local/roms/sf2-us.bin"), Path("local/upstream/SF2DISASM")
     )
+
+
+def _copy_on_write_mutation(
+    source: dict[str, Any],
+    path: tuple[str | int, ...],
+    *,
+    delete: bool = False,
+    value: Any = None,
+) -> dict[str, Any]:
+    """Clone only containers on *path* before applying one schema mutation."""
+    if not path:
+        raise ValueError("mutation path must not be empty")
+
+    mutated = source.copy()
+    source_cursor: Any = source
+    mutated_cursor: Any = mutated
+    for part in path[:-1]:
+        child = source_cursor[part]
+        if isinstance(child, dict):
+            cloned_child = child.copy()
+        elif isinstance(child, list):
+            cloned_child = list(child)
+        else:
+            raise ValueError(f"mutation path crosses scalar at {part!r}")
+        mutated_cursor[part] = cloned_child
+        source_cursor = child
+        mutated_cursor = cloned_child
+
+    leaf = path[-1]
+    if delete:
+        del mutated_cursor[leaf]
+    else:
+        mutated_cursor[leaf] = value
+    return mutated
 
 
 def test_event_macro_definition_derives_target_position_marker_and_width() -> None:
@@ -1572,169 +1606,266 @@ def test_map_events_schemas_reject_nested_missing_extra_and_boundary_mutations(
     fixture = load_map_events_fixture()
     validate_json(output, SCHEMA, owner="map events complete output")
 
-    def output_rejects(instance: dict[str, Any], owner: str) -> None:
+    def output_rejects(
+        instance: dict[str, Any], section: str, owner: str
+    ) -> None:
         with pytest.raises(ValueError, match=owner):
-            validate_json(instance, SCHEMA, owner=owner)
-
-    missing = copy.deepcopy(output)
-    del missing["categories"]["entityEvents"]["tables"][0]["records"][0][
-        "targetCanonicalSymbol"
-    ]
-    output_rejects(missing, "missing nested field")
-
-    extra = copy.deepcopy(output)
-    extra["categories"]["zoneEvents"]["tables"][0]["records"][0]["unexpected"] = True
-    output_rejects(extra, "extra nested field")
-
-    boundary = copy.deepcopy(output)
-    boundary["routeCategoryJoins"][0]["pointerTableAddress"] = -1
-    output_rejects(boundary, "numeric boundary")
-
-    operation_definition_missing = copy.deepcopy(output)
-    del operation_definition_missing["operationDefinitions"][0][
-        "emissionStatementTemplates"
-    ]
-    output_rejects(operation_definition_missing, "operation definition missing field")
-
-    operation_definition_extra = copy.deepcopy(output)
-    operation_definition_extra["operationDefinitions"][0]["engineCatalog"][
-        "unexpected"
-    ] = True
-    output_rejects(operation_definition_extra, "operation definition extra field")
-
-    operation_definition_boundary = copy.deepcopy(output)
-    operation_definition_boundary["operationDefinitions"][0]["definitionSourceLine"] = 0
-    output_rejects(operation_definition_boundary, "operation definition boundary")
-
-    direct_flag_missing = copy.deepcopy(output)
-    del direct_flag_missing["directFlagAccessSites"][0]["conditionConsumer"][
-        "branchPolarity"
-    ]
-    output_rejects(direct_flag_missing, "direct flag missing field")
-
-    direct_flag_extra = copy.deepcopy(output)
-    direct_flag_extra["directFlagAccessSites"][0]["conditionConsumer"]["target"][
-        "unexpected"
-    ] = True
-    output_rejects(direct_flag_extra, "direct flag extra field")
-
-    direct_flag_boundary = copy.deepcopy(output)
-    direct_flag_boundary["directFlagAccessSites"][0]["flagNumber"] = -1
-    output_rejects(direct_flag_boundary, "direct flag boundary")
-
-    operation_family_mutation = copy.deepcopy(output)
-    operation_family_mutation["entityTargetPrograms"][0]["operations"][0]["family"] = (
-        "raw-68000-instruction"
-    )
-    output_rejects(operation_family_mutation, "operation family discriminator")
-
-    script_missing = copy.deepcopy(output)
-    del script_missing["scriptInvocationSites"][0]["weightCounts"][
-        "routeRecordReferenceWeightedSiteCount"
-    ]
-    output_rejects(script_missing, "script invocation missing field")
-
-    script_extra = copy.deepcopy(output)
-    script_extra["scriptInvocationSites"][0]["weightCounts"]["unexpected"] = True
-    output_rejects(script_extra, "script invocation extra field")
-
-    script_boundary = copy.deepcopy(output)
-    script_boundary["scriptInvocationSites"][0]["operationAddress"] = -1
-    output_rejects(script_boundary, "script invocation boundary")
+            validate_json(instance, SECTION_SCHEMAS[section], owner=owner)
 
     textbox_site_index = next(
         index
         for index, site in enumerate(output["textboxReferenceSites"])
         if site["sourceKind"] == "line-reference"
     )
-    textbox_missing = copy.deepcopy(output)
-    del textbox_missing["textboxReferenceSites"][textbox_site_index]["weightCounts"][
-        "routeRecordReferenceWeightedSiteCount"
-    ]
-    output_rejects(textbox_missing, "textbox missing field")
-
-    textbox_extra = copy.deepcopy(output)
-    textbox_extra["textboxReferenceSites"][textbox_site_index]["weightCounts"][
-        "unexpected"
-    ] = True
-    output_rejects(textbox_extra, "textbox extra field")
-
-    textbox_boundary = copy.deepcopy(output)
-    textbox_boundary["textboxReferenceSites"][textbox_site_index]["lineId"] = -1
-    output_rejects(textbox_boundary, "textbox boundary")
-
-    textbox_line_boundary = copy.deepcopy(output)
-    textbox_line_boundary["textboxLineTotals"][0]["lineId"] = -1
-    output_rejects(textbox_line_boundary, "textbox line-total boundary")
-
-    entity_program_missing = copy.deepcopy(output)
-    del entity_program_missing["entityTargetPrograms"][0]["termination"][
-        "sourceMnemonic"
-    ]
-    output_rejects(entity_program_missing, "entity program missing field")
-
-    entity_program_extra = copy.deepcopy(output)
-    entity_target_operation = next(
-        operation
-        for program in entity_program_extra["entityTargetPrograms"]
-        for operation in program["operations"]
+    entity_target_location = next(
+        (program_index, operation_index)
+        for program_index, program in enumerate(output["entityTargetPrograms"])
+        for operation_index, operation in enumerate(program["operations"])
         if operation["target"] is not None
     )
-    entity_target_operation["target"]["unexpected"] = True
-    output_rejects(entity_program_extra, "entity program extra field")
-
-    entity_program_boundary = copy.deepcopy(output)
-    entity_program_boundary["entityTargetPrograms"][0]["encodedSpanBytes"] = -1
-    output_rejects(entity_program_boundary, "entity program boundary")
-
-    zone_program_missing = copy.deepcopy(output)
-    del zone_program_missing["zoneTargetPrograms"][0]["termination"]["sourceMnemonic"]
-    output_rejects(zone_program_missing, "zone program missing field")
-
-    item_program_extra = copy.deepcopy(output)
-    item_target_operation = next(
-        operation
-        for program in item_program_extra["itemTargetPrograms"]
-        for operation in program["operations"]
+    item_target_location = next(
+        (program_index, operation_index)
+        for program_index, program in enumerate(output["itemTargetPrograms"])
+        for operation_index, operation in enumerate(program["operations"])
         if operation["target"] is not None
     )
-    item_target_operation["target"]["unexpected"] = True
-    output_rejects(item_program_extra, "item program extra field")
 
-    item_program_boundary = copy.deepcopy(output)
-    item_program_boundary["itemTargetPrograms"][0]["encodedSpanBytes"] = -1
-    output_rejects(item_program_boundary, "item program boundary")
-
-    zone_exclusion_missing = copy.deepcopy(output)
-    del zone_exclusion_missing["zoneTargetProgramExclusions"][0]["targetH1Address"]
-    output_rejects(zone_exclusion_missing, "zone exclusion missing field")
+    rejection_cases = (
+        (
+            "routing-setup",
+            "missing nested field",
+            ("categories", "entityEvents", "tables", 0, "records", 0, "targetCanonicalSymbol"),
+            True,
+            None,
+        ),
+        (
+            "routing-setup",
+            "extra nested field",
+            ("categories", "zoneEvents", "tables", 0, "records", 0, "unexpected"),
+            False,
+            True,
+        ),
+        (
+            "routing-setup",
+            "numeric boundary",
+            ("routeCategoryJoins", 0, "pointerTableAddress"),
+            False,
+            -1,
+        ),
+        (
+            "operation-vocabulary",
+            "operation definition missing field",
+            ("operationDefinitions", 0, "emissionStatementTemplates"),
+            True,
+            None,
+        ),
+        (
+            "operation-vocabulary",
+            "operation definition extra field",
+            ("operationDefinitions", 0, "engineCatalog", "unexpected"),
+            False,
+            True,
+        ),
+        (
+            "operation-vocabulary",
+            "operation definition boundary",
+            ("operationDefinitions", 0, "definitionSourceLine"),
+            False,
+            0,
+        ),
+        (
+            "direct-flags",
+            "direct flag missing field",
+            ("directFlagAccessSites", 0, "conditionConsumer", "branchPolarity"),
+            True,
+            None,
+        ),
+        (
+            "direct-flags",
+            "direct flag extra field",
+            ("directFlagAccessSites", 0, "conditionConsumer", "target", "unexpected"),
+            False,
+            True,
+        ),
+        (
+            "direct-flags",
+            "direct flag boundary",
+            ("directFlagAccessSites", 0, "flagNumber"),
+            False,
+            -1,
+        ),
+        (
+            "entity-programs",
+            "operation family discriminator",
+            ("entityTargetPrograms", 0, "operations", 0, "family"),
+            False,
+            "raw-68000-instruction",
+        ),
+        (
+            "script-invocation",
+            "script invocation missing field",
+            (
+                "scriptInvocationSites",
+                0,
+                "weightCounts",
+                "routeRecordReferenceWeightedSiteCount",
+            ),
+            True,
+            None,
+        ),
+        (
+            "script-invocation",
+            "script invocation extra field",
+            ("scriptInvocationSites", 0, "weightCounts", "unexpected"),
+            False,
+            True,
+        ),
+        (
+            "script-invocation",
+            "script invocation boundary",
+            ("scriptInvocationSites", 0, "operationAddress"),
+            False,
+            -1,
+        ),
+        (
+            "textbox",
+            "textbox missing field",
+            (
+                "textboxReferenceSites",
+                textbox_site_index,
+                "weightCounts",
+                "routeRecordReferenceWeightedSiteCount",
+            ),
+            True,
+            None,
+        ),
+        (
+            "textbox",
+            "textbox extra field",
+            ("textboxReferenceSites", textbox_site_index, "weightCounts", "unexpected"),
+            False,
+            True,
+        ),
+        (
+            "textbox",
+            "textbox boundary",
+            ("textboxReferenceSites", textbox_site_index, "lineId"),
+            False,
+            -1,
+        ),
+        (
+            "textbox",
+            "textbox line-total boundary",
+            ("textboxLineTotals", 0, "lineId"),
+            False,
+            -1,
+        ),
+        (
+            "entity-programs",
+            "entity program missing field",
+            ("entityTargetPrograms", 0, "termination", "sourceMnemonic"),
+            True,
+            None,
+        ),
+        (
+            "entity-programs",
+            "entity program extra field",
+            (
+                "entityTargetPrograms",
+                entity_target_location[0],
+                "operations",
+                entity_target_location[1],
+                "target",
+                "unexpected",
+            ),
+            False,
+            True,
+        ),
+        (
+            "entity-programs",
+            "entity program boundary",
+            ("entityTargetPrograms", 0, "encodedSpanBytes"),
+            False,
+            -1,
+        ),
+        (
+            "zone-programs",
+            "zone program missing field",
+            ("zoneTargetPrograms", 0, "termination", "sourceMnemonic"),
+            True,
+            None,
+        ),
+        (
+            "item-programs",
+            "item program extra field",
+            (
+                "itemTargetPrograms",
+                item_target_location[0],
+                "operations",
+                item_target_location[1],
+                "target",
+                "unexpected",
+            ),
+            False,
+            True,
+        ),
+        (
+            "item-programs",
+            "item program boundary",
+            ("itemTargetPrograms", 0, "encodedSpanBytes"),
+            False,
+            -1,
+        ),
+        (
+            "zone-programs",
+            "zone exclusion missing field",
+            ("zoneTargetProgramExclusions", 0, "targetH1Address"),
+            True,
+            None,
+        ),
+    )
+    assert len(rejection_cases) == 24
+    for section, owner, path, delete, value in rejection_cases:
+        output_rejects(
+            _copy_on_write_mutation(output, path, delete=delete, value=value),
+            section,
+            owner,
+        )
 
     # Ordering and complete corpus values are owner semantics, not reusable shape.
-    for mutate in (
-        lambda value: value["physicalRecordOrder"].reverse(),
-        lambda value: value["operationVocabulary"].reverse(),
-        lambda value: value["directFlagAccessSiteOrder"].reverse(),
-        lambda value: value["directFlagTotalOrder"].reverse(),
-        lambda value: value["scriptInvocationSiteOrder"].reverse(),
-        lambda value: value["scriptInvocationEffectiveTargetTotalOrder"].reverse(),
-        lambda value: value["textboxLineTotalOrder"].reverse(),
-        lambda value: value["entityTargetProgramOperationOrders"].reverse(),
-        lambda value: value["zoneTargetProgramOperationOrders"].reverse(),
-        lambda value: value["routeCategoryJoinOrder"].reverse(),
-    ):
-        semantic = copy.deepcopy(output)
-        mutate(semantic)
-        validate_json(semantic, SCHEMA, owner="schema-valid map events semantic drift")
+    semantic_cases = (
+        ("routing-setup", "physicalRecordOrder"),
+        ("operation-vocabulary", "operationVocabulary"),
+        ("direct-flags", "directFlagAccessSiteOrder"),
+        ("direct-flags", "directFlagTotalOrder"),
+        ("script-invocation", "scriptInvocationSiteOrder"),
+        ("script-invocation", "scriptInvocationEffectiveTargetTotalOrder"),
+        ("textbox", "textboxLineTotalOrder"),
+        ("entity-programs", "entityTargetProgramOperationOrders"),
+        ("zone-programs", "zoneTargetProgramOperationOrders"),
+        ("routing-setup", "routeCategoryJoinOrder"),
+    )
+    assert len(semantic_cases) == 10
+    for section, field in semantic_cases:
+        semantic = output.copy()
+        semantic[field] = list(reversed(output[field]))
+        validate_json(
+            semantic,
+            SECTION_SCHEMAS[section],
+            owner="schema-valid map events semantic drift",
+        )
         with pytest.raises(ValueError, match="complete semantic fixture drift"):
             _verify_complete_map_events_fixture(fixture, semantic)
 
-    fixture_semantic = copy.deepcopy(fixture)
-    fixture_semantic["expected"]["recordTargetProfiles"][0][
-        "canonicalSymbol"
-    ] = "wrong-owner"
+    fixture_semantic = fixture.copy()
+    fixture_semantic["expected"] = _copy_on_write_mutation(
+        fixture["expected"],
+        ("recordTargetProfiles", 0, "canonicalSymbol"),
+        value="wrong-owner",
+    )
     validate_json(
         fixture_semantic["expected"],
-        SCHEMA,
+        SECTION_SCHEMAS["routing-setup"],
         owner="schema-valid fixture target-owner drift",
     )
     with pytest.raises(ValueError, match="complete semantic fixture drift"):
@@ -1754,10 +1885,11 @@ def test_map_events_schemas_reject_nested_missing_extra_and_boundary_mutations(
             },
         ),
     ):
-        wrong_owner = copy.deepcopy(fixture)
-        wrong_owner[field] = replacement
+        wrong_owner = {**fixture, field: replacement}
         with pytest.raises(ValueError, match="provenance/address drift"):
             _verify_complete_map_events_fixture(wrong_owner, output)
+
+    assert output == fixture["expected"]
 
 
 def test_map_events_fixture_shards_recompose_exactly_and_reject_inventory_drift(

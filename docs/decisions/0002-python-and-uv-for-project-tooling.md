@@ -94,6 +94,16 @@ pass/fail threshold. Developers can reproduce only the parallel Python portion w
 uv run pytest -n 4 --dist loadfile --max-worker-restart 0 --durations 25
 ```
 
+Large composed contracts may keep complete mutation coverage without repeatedly copying and validating
+their entire logical fixture. When a root schema first validates the accepted baseline and executable
+tests prove its exact local `$ref` inventory, a mutation test may copy only the containers on the changed
+path and validate the mutated object through the owning referenced section schema. Schema-valid semantic
+mutations must still reach the complete domain verifier, and the test must prove that its shared baseline
+was not modified. This is a traversal optimization, not permission to sample mutations, bypass the root
+composition guard, or weaken missing/extra/boundary coverage. Applying that rule to the 24 schema-invalid
+and ten schema-valid map-events mutations reduced the observed test call from 159.55 seconds to 29.27
+seconds on 2026-08-03 while retaining every case.
+
 ## Consequences
 
 - New project tooling and tests go under `src/sf2tool/` and `tests/python/`.
