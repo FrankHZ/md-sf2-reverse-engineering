@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from referencing.exceptions import NoSuchResource
 
+from sf2tool import jsonio
 from sf2tool.jsonio import (
     SCHEMA_ROOT,
     build_schema_registry,
@@ -13,6 +14,43 @@ from sf2tool.jsonio import (
     tracked_schema_registry,
     validate_json,
 )
+
+
+def test_tracked_schema_validator_is_cached_per_worker(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    tracked_schema_registry()
+    jsonio._tracked_schema_validator.cache_clear()
+    original_load_json = jsonio.load_json
+    loads: list[Path] = []
+
+    def recording_load_json(path: Path) -> object:
+        loads.append(path.resolve())
+        return original_load_json(path)
+
+    monkeypatch.setattr(jsonio, "load_json", recording_load_json)
+    schema_path = SCHEMA_ROOT / "rom-manifest.schema.json"
+    instance = load_json(Path("manifests/roms/sf2-us.json"))
+
+    try:
+        validate_json(instance, schema_path, owner="first cached validation")
+        validate_json(instance, schema_path, owner="second cached validation")
+
+        assert loads.count(schema_path.resolve()) == 1
+    finally:
+        jsonio._tracked_schema_validator.cache_clear()
+
+
+def test_temporary_schema_validation_does_not_use_the_tracked_cache(
+    tmp_path: Path,
+) -> None:
+    schema_path = tmp_path / "mutable.schema.json"
+    _write_schema(schema_path, _draft7_schema("urn:sf2:test:mutable", type="integer"))
+    validate_json(1, schema_path, owner="initial temporary schema")
+
+    _write_schema(schema_path, _draft7_schema("urn:sf2:test:mutable", type="string"))
+    with pytest.raises(ValueError, match="1 is not of type 'string'"):
+        validate_json(1, schema_path, owner="mutated temporary schema")
 
 
 def _write_schema(path: Path, schema: dict[str, object]) -> None:

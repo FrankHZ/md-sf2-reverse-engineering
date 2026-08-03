@@ -137,6 +137,16 @@ H3_STAGES = (
 
 RUFF_TARGETS = ("src", "tests/python")
 COMMIT_PYTEST_TARGETS = ("tests/python/test_native_harness.py",)
+FULL_PYTEST_ARGUMENTS = (
+    "-n",
+    "4",
+    "--dist",
+    "loadfile",
+    "--max-worker-restart",
+    "0",
+    "--durations",
+    "25",
+)
 
 
 def _heading(title: str) -> None:
@@ -161,7 +171,9 @@ def _run_python_gates(*, full: bool) -> None:
         check=True,
     )
     pytest_arguments = [sys.executable, "-m", "pytest"]
-    if not full:
+    if full:
+        pytest_arguments.extend(FULL_PYTEST_ARGUMENTS)
+    else:
         pytest_arguments.extend(COMMIT_PYTEST_TARGETS)
     subprocess.run(pytest_arguments, cwd=root, check=True)
 

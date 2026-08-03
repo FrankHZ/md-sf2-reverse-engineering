@@ -112,6 +112,16 @@ def test_python_verification_profiles_use_exact_command_shapes(
     )
     assert tracked.stdout.strip() == "tests/python/test_native_harness.py"
     assert harness.COMMIT_PYTEST_TARGETS == ("tests/python/test_native_harness.py",)
+    assert harness.FULL_PYTEST_ARGUMENTS == (
+        "-n",
+        "4",
+        "--dist",
+        "loadfile",
+        "--max-worker-restart",
+        "0",
+        "--durations",
+        "25",
+    )
     assert expected_target.is_file()
     target_contents = expected_target.read_text(encoding="utf-8")
     assert "def test_python_verification_profiles_use_exact_command_shapes" in target_contents
@@ -137,7 +147,23 @@ def test_python_verification_profiles_use_exact_command_shapes(
     harness._run_python_gates(full=True)
     assert calls == [
         ([sys.executable, "-m", "ruff", "check", "src", "tests/python"], root, True),
-        ([sys.executable, "-m", "pytest"], root, True),
+        (
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "-n",
+                "4",
+                "--dist",
+                "loadfile",
+                "--max-worker-restart",
+                "0",
+                "--durations",
+                "25",
+            ],
+            root,
+            True,
+        ),
     ]
 
 
