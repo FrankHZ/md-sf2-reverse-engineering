@@ -1,0 +1,839 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/common-menus-caravan.schema.json",
+  "title": "Common menus Caravan facts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entrySymbol",
+    "sourcePaths",
+    "dispatchTables",
+    "topDispatch",
+    "submenus",
+    "constants",
+    "sourceRanges",
+    "routeDerived",
+    "routeOperations",
+    "helperOperations",
+    "jumpInterfaceAliases",
+    "internalDirectCallerOccurrences",
+    "internalEffectiveDirectCallSiteCounts",
+    "externalDirectCallerOccurrences",
+    "externalEffectiveDirectCallSiteCounts",
+    "indirectBehavior"
+  ],
+  "properties": {
+    "entrySymbol": {
+      "type": "string"
+    },
+    "sourcePaths": {
+      "type": "array"
+    },
+    "dispatchTables": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "top",
+        "depot",
+        "item"
+      ],
+      "properties": {
+        "top": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "baseLabel",
+            "entryWidthBytes",
+            "targets"
+          ],
+          "properties": {
+            "baseLabel": {
+              "type": "string"
+            },
+            "entryWidthBytes": {
+              "type": "integer"
+            },
+            "targets": {
+              "type": "array"
+            }
+          }
+        },
+        "depot": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "baseLabel",
+            "entryWidthBytes",
+            "targets"
+          ],
+          "properties": {
+            "baseLabel": {
+              "type": "string"
+            },
+            "entryWidthBytes": {
+              "type": "integer"
+            },
+            "targets": {
+              "type": "array"
+            }
+          }
+        },
+        "item": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "baseLabel",
+            "entryWidthBytes",
+            "targets"
+          ],
+          "properties": {
+            "baseLabel": {
+              "type": "string"
+            },
+            "entryWidthBytes": {
+              "type": "integer"
+            },
+            "targets": {
+              "type": "array"
+            }
+          }
+        }
+      }
+    },
+    "topDispatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "menuLabel",
+        "selectorScaleBytes",
+        "cancelValue",
+        "cancelBranchTarget",
+        "loopBranchTarget"
+      ],
+      "properties": {
+        "menuLabel": {
+          "type": "string"
+        },
+        "selectorScaleBytes": {
+          "type": "integer"
+        },
+        "cancelValue": {
+          "type": "integer"
+        },
+        "cancelBranchTarget": {
+          "type": "string"
+        },
+        "loopBranchTarget": {
+          "type": "string"
+        }
+      }
+    },
+    "submenus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "depot",
+        "item"
+      ],
+      "properties": {
+        "depot": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "entrySymbol",
+            "menuLabel",
+            "dispatchTable",
+            "selectorScaleBytes",
+            "cancelValue",
+            "cancelBranchTarget",
+            "loopBranchTarget"
+          ],
+          "properties": {
+            "entrySymbol": {
+              "type": "string"
+            },
+            "menuLabel": {
+              "type": "string"
+            },
+            "dispatchTable": {
+              "type": "string"
+            },
+            "selectorScaleBytes": {
+              "type": "integer"
+            },
+            "cancelValue": {
+              "type": "integer"
+            },
+            "cancelBranchTarget": {
+              "type": "string"
+            },
+            "loopBranchTarget": {
+              "type": "string"
+            }
+          }
+        },
+        "item": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "entrySymbol",
+            "menuLabel",
+            "dispatchTable",
+            "selectorScaleBytes",
+            "cancelValue",
+            "cancelBranchTarget",
+            "loopBranchTarget"
+          ],
+          "properties": {
+            "entrySymbol": {
+              "type": "string"
+            },
+            "menuLabel": {
+              "type": "string"
+            },
+            "dispatchTable": {
+              "type": "string"
+            },
+            "selectorScaleBytes": {
+              "type": "integer"
+            },
+            "cancelValue": {
+              "type": "integer"
+            },
+            "cancelBranchTarget": {
+              "type": "string"
+            },
+            "loopBranchTarget": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "constants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "CARAVAN_MAX_ITEMS_NUMBER",
+        "COMBATANT_ITEMSLOTS",
+        "FORCE_MAX_SIZE",
+        "ITEMDEF_OFFSET_PRICE",
+        "ITEMDEF_OFFSET_TYPE",
+        "ITEMENTRY_BIT_EQUIPPED",
+        "ITEMENTRY_MASK_INDEX",
+        "ITEMSELLPRICE_BITSHIFTRIGHT",
+        "ITEMSELLPRICE_MULTIPLIER",
+        "ITEMTYPE_BIT_RARE",
+        "ITEMTYPE_BIT_UNSELLABLE"
+      ],
+      "properties": {
+        "CARAVAN_MAX_ITEMS_NUMBER": {
+          "type": "integer"
+        },
+        "COMBATANT_ITEMSLOTS": {
+          "type": "integer"
+        },
+        "FORCE_MAX_SIZE": {
+          "type": "integer"
+        },
+        "ITEMDEF_OFFSET_PRICE": {
+          "type": "integer"
+        },
+        "ITEMDEF_OFFSET_TYPE": {
+          "type": "integer"
+        },
+        "ITEMENTRY_BIT_EQUIPPED": {
+          "type": "integer"
+        },
+        "ITEMENTRY_MASK_INDEX": {
+          "type": "integer"
+        },
+        "ITEMSELLPRICE_BITSHIFTRIGHT": {
+          "type": "integer"
+        },
+        "ITEMSELLPRICE_MULTIPLIER": {
+          "type": "integer"
+        },
+        "ITEMTYPE_BIT_RARE": {
+          "type": "integer"
+        },
+        "ITEMTYPE_BIT_UNSELLABLE": {
+          "type": "integer"
+        }
+      }
+    },
+    "sourceRanges": {
+      "type": "array"
+    },
+    "routeDerived": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "join",
+        "purge",
+        "depot",
+        "item"
+      ],
+      "properties": {
+        "join": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "battlePartyCapacity",
+            "capacityBranchOpcode",
+            "capacityBranchTarget",
+            "partyMutationCalls"
+          ],
+          "properties": {
+            "battlePartyCapacity": {
+              "type": "integer"
+            },
+            "capacityBranchOpcode": {
+              "type": "string"
+            },
+            "capacityBranchTarget": {
+              "type": "string"
+            },
+            "partyMutationCalls": {
+              "type": "array"
+            }
+          }
+        },
+        "purge": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "partyMutationCalls"
+          ],
+          "properties": {
+            "partyMutationCalls": {
+              "type": "array"
+            }
+          }
+        },
+        "depot": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "storedItemCapacity",
+            "depositCapacityBranchOpcode",
+            "depositCapacityBranchTarget",
+            "depositMutationCalls",
+            "recipientItemCapacity",
+            "deriveCapacityBranchTarget",
+            "deriveNormalMutationCalls",
+            "deriveExchangeMutationCalls",
+            "dropMutationCalls",
+            "rareBit",
+            "unsellableBit",
+            "lookPrice"
+          ],
+          "properties": {
+            "storedItemCapacity": {
+              "type": "integer"
+            },
+            "depositCapacityBranchOpcode": {
+              "type": "string"
+            },
+            "depositCapacityBranchTarget": {
+              "type": "string"
+            },
+            "depositMutationCalls": {
+              "type": "array"
+            },
+            "recipientItemCapacity": {
+              "type": "integer"
+            },
+            "deriveCapacityBranchTarget": {
+              "type": "string"
+            },
+            "deriveNormalMutationCalls": {
+              "type": "array"
+            },
+            "deriveExchangeMutationCalls": {
+              "type": "array"
+            },
+            "dropMutationCalls": {
+              "type": "array"
+            },
+            "rareBit": {
+              "type": "integer"
+            },
+            "unsellableBit": {
+              "type": "integer"
+            },
+            "lookPrice": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "itemDefinitionOffsetBytes",
+                "loadWidthBits",
+                "multiplyConstant",
+                "rightShiftBits"
+              ],
+              "properties": {
+                "itemDefinitionOffsetBytes": {
+                  "type": "integer"
+                },
+                "loadWidthBits": {
+                  "type": "integer"
+                },
+                "multiplyConstant": {
+                  "type": "integer"
+                },
+                "rightShiftBits": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "item": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "useMutationCalls",
+            "recipientItemCapacity",
+            "giveCapacityBranchTarget",
+            "giveSelfMutationCalls",
+            "giveNormalMutationCalls",
+            "giveExchangeMutationCalls",
+            "equipSelectionAction",
+            "dropMutationCalls",
+            "rareBit"
+          ],
+          "properties": {
+            "useMutationCalls": {
+              "type": "array"
+            },
+            "recipientItemCapacity": {
+              "type": "integer"
+            },
+            "giveCapacityBranchTarget": {
+              "type": "string"
+            },
+            "giveSelfMutationCalls": {
+              "type": "array"
+            },
+            "giveNormalMutationCalls": {
+              "type": "array"
+            },
+            "giveExchangeMutationCalls": {
+              "type": "array"
+            },
+            "equipSelectionAction": {
+              "type": "string"
+            },
+            "dropMutationCalls": {
+              "type": "array"
+            },
+            "rareBit": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "routeOperations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry",
+        "join",
+        "purge",
+        "depot",
+        "depotLook",
+        "depotDeposit",
+        "depotDerive",
+        "depotDrop",
+        "item",
+        "itemUse",
+        "itemGive",
+        "itemEquip",
+        "itemDrop"
+      ],
+      "properties": {
+        "entry": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "join": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "purge": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "depot": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "depotLook": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "depotDeposit": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "depotDerive": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "depotDrop": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "item": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "itemUse": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "itemGive": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "itemEquip": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "itemDrop": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        }
+      }
+    },
+    "helperOperations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "DisplaySpecialCaravanDescription",
+        "DisplayCaravanMessageWithPortrait",
+        "PopulateGenericListWithMembersList",
+        "CopyCaravanItems",
+        "IsItemInSlotEquippedAndCursed",
+        "PlayPreviousMusicAfterCurrentOne",
+        "IsItemUnsellable"
+      ],
+      "properties": {
+        "DisplaySpecialCaravanDescription": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "DisplayCaravanMessageWithPortrait": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "PopulateGenericListWithMembersList": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "CopyCaravanItems": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "IsItemInSlotEquippedAndCursed": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "PlayPreviousMusicAfterCurrentOne": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "IsItemUnsellable": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        }
+      }
+    },
+    "jumpInterfaceAliases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "j_CaravanMenu"
+      ],
+      "properties": {
+        "j_CaravanMenu": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string"
+            },
+            "sourcePath": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "internalDirectCallerOccurrences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code/common/menus/caravan/caravanactions_1.asm",
+        "code/common/menus/caravan/caravanactions_2.asm"
+      ],
+      "properties": {
+        "code/common/menus/caravan/caravanactions_1.asm": {
+          "type": "array"
+        },
+        "code/common/menus/caravan/caravanactions_2.asm": {
+          "type": "array"
+        }
+      }
+    },
+    "internalEffectiveDirectCallSiteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "CaravanMenu",
+        "CopyCaravanItems",
+        "DisplayCaravanMessageWithPortrait",
+        "DisplaySpecialCaravanDescription",
+        "IsItemInSlotEquippedAndCursed",
+        "IsItemUnsellable",
+        "PlayPreviousMusicAfterCurrentOne",
+        "PopulateGenericListWithMembersList",
+        "caravanDepotSubmenu_Deposit",
+        "caravanDepotSubmenu_Derive",
+        "caravanDepotSubmenu_Drop",
+        "caravanDepotSubmenu_Look",
+        "caravanItemSubmenu_Drop",
+        "caravanItemSubmenu_Equip",
+        "caravanItemSubmenu_Give",
+        "caravanItemSubmenu_Use",
+        "caravanMenu_Depot",
+        "caravanMenu_Item",
+        "caravanMenu_Join",
+        "caravanMenu_Purge"
+      ],
+      "properties": {
+        "CaravanMenu": {
+          "type": "integer"
+        },
+        "CopyCaravanItems": {
+          "type": "integer"
+        },
+        "DisplayCaravanMessageWithPortrait": {
+          "type": "integer"
+        },
+        "DisplaySpecialCaravanDescription": {
+          "type": "integer"
+        },
+        "IsItemInSlotEquippedAndCursed": {
+          "type": "integer"
+        },
+        "IsItemUnsellable": {
+          "type": "integer"
+        },
+        "PlayPreviousMusicAfterCurrentOne": {
+          "type": "integer"
+        },
+        "PopulateGenericListWithMembersList": {
+          "type": "integer"
+        },
+        "caravanDepotSubmenu_Deposit": {
+          "type": "integer"
+        },
+        "caravanDepotSubmenu_Derive": {
+          "type": "integer"
+        },
+        "caravanDepotSubmenu_Drop": {
+          "type": "integer"
+        },
+        "caravanDepotSubmenu_Look": {
+          "type": "integer"
+        },
+        "caravanItemSubmenu_Drop": {
+          "type": "integer"
+        },
+        "caravanItemSubmenu_Equip": {
+          "type": "integer"
+        },
+        "caravanItemSubmenu_Give": {
+          "type": "integer"
+        },
+        "caravanItemSubmenu_Use": {
+          "type": "integer"
+        },
+        "caravanMenu_Depot": {
+          "type": "integer"
+        },
+        "caravanMenu_Item": {
+          "type": "integer"
+        },
+        "caravanMenu_Join": {
+          "type": "integer"
+        },
+        "caravanMenu_Purge": {
+          "type": "integer"
+        }
+      }
+    },
+    "externalDirectCallerOccurrences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code/gameflow/exploration/explorationvints.asm",
+        "code/gameflow/special/battletest.asm"
+      ],
+      "properties": {
+        "code/gameflow/exploration/explorationvints.asm": {
+          "type": "array"
+        },
+        "code/gameflow/special/battletest.asm": {
+          "type": "array"
+        }
+      }
+    },
+    "externalEffectiveDirectCallSiteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "CaravanMenu",
+        "CopyCaravanItems",
+        "DisplayCaravanMessageWithPortrait",
+        "DisplaySpecialCaravanDescription",
+        "IsItemInSlotEquippedAndCursed",
+        "IsItemUnsellable",
+        "PlayPreviousMusicAfterCurrentOne",
+        "PopulateGenericListWithMembersList",
+        "caravanDepotSubmenu_Deposit",
+        "caravanDepotSubmenu_Derive",
+        "caravanDepotSubmenu_Drop",
+        "caravanDepotSubmenu_Look",
+        "caravanItemSubmenu_Drop",
+        "caravanItemSubmenu_Equip",
+        "caravanItemSubmenu_Give",
+        "caravanItemSubmenu_Use",
+        "caravanMenu_Depot",
+        "caravanMenu_Item",
+        "caravanMenu_Join",
+        "caravanMenu_Purge"
+      ],
+      "properties": {
+        "CaravanMenu": {
+          "type": "integer"
+        },
+        "CopyCaravanItems": {
+          "type": "integer"
+        },
+        "DisplayCaravanMessageWithPortrait": {
+          "type": "integer"
+        },
+        "DisplaySpecialCaravanDescription": {
+          "type": "integer"
+        },
+        "IsItemInSlotEquippedAndCursed": {
+          "type": "integer"
+        },
+        "IsItemUnsellable": {
+          "type": "integer"
+        },
+        "PlayPreviousMusicAfterCurrentOne": {
+          "type": "integer"
+        },
+        "PopulateGenericListWithMembersList": {
+          "type": "integer"
+        },
+        "caravanDepotSubmenu_Deposit": {
+          "type": "integer"
+        },
+        "caravanDepotSubmenu_Derive": {
+          "type": "integer"
+        },
+        "caravanDepotSubmenu_Drop": {
+          "type": "integer"
+        },
+        "caravanDepotSubmenu_Look": {
+          "type": "integer"
+        },
+        "caravanItemSubmenu_Drop": {
+          "type": "integer"
+        },
+        "caravanItemSubmenu_Equip": {
+          "type": "integer"
+        },
+        "caravanItemSubmenu_Give": {
+          "type": "integer"
+        },
+        "caravanItemSubmenu_Use": {
+          "type": "integer"
+        },
+        "caravanMenu_Depot": {
+          "type": "integer"
+        },
+        "caravanMenu_Item": {
+          "type": "integer"
+        },
+        "caravanMenu_Join": {
+          "type": "integer"
+        },
+        "caravanMenu_Purge": {
+          "type": "integer"
+        }
+      }
+    },
+    "indirectBehavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "directCallInventoryDoesNotEstablishReachability"
+      ],
+      "properties": {
+        "directCallInventoryDoesNotEstablishReachability": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

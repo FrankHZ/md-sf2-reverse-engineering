@@ -1,0 +1,594 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/common-menus-church.schema.json",
+  "title": "Common menus church facts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entrySymbol",
+    "sourcePaths",
+    "choiceDispatch",
+    "constants",
+    "routeDerived",
+    "routeOperations",
+    "helperOperations",
+    "jumpInterfaceAliases",
+    "internalDirectCallerOccurrences",
+    "internalEffectiveDirectCallSiteCounts",
+    "externalDirectCallerOccurrences",
+    "externalEffectiveDirectCallSiteCounts",
+    "indirectBehavior"
+  ],
+  "properties": {
+    "entrySymbol": {
+      "type": "string"
+    },
+    "sourcePaths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "choiceDispatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "menuLabel",
+        "comparedChoiceValues",
+        "comparedRouteOrder",
+        "fallthroughRoute",
+        "cancelValue",
+        "cancelBranchTarget"
+      ],
+      "properties": {
+        "menuLabel": {
+          "type": "string"
+        },
+        "comparedChoiceValues": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "comparedRouteOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fallthroughRoute": {
+          "type": "string"
+        },
+        "cancelValue": {
+          "type": "integer"
+        },
+        "cancelBranchTarget": {
+          "type": "string"
+        }
+      }
+    },
+    "constants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "CHURCHMENU_PER_LEVEL_RAISE_COST",
+        "CHURCHMENU_CURE_POISON_COST",
+        "CHURCHMENU_CURE_STUN_COST",
+        "CHURCHMENU_MIN_PROMOTABLE_LEVEL",
+        "CHURCHMENU_RAISE_COST_EXTRA_WHEN_PROMOTED",
+        "STATUSEFFECT_POISON",
+        "STATUSEFFECT_STUN",
+        "STATUSEFFECT_CURSE",
+        "STATUSEFFECT_MASK",
+        "CHAR_STATCAP_HP",
+        "ITEMDEF_OFFSET_PRICE"
+      ],
+      "properties": {
+        "CHURCHMENU_PER_LEVEL_RAISE_COST": {
+          "type": "integer"
+        },
+        "CHURCHMENU_CURE_POISON_COST": {
+          "type": "integer"
+        },
+        "CHURCHMENU_CURE_STUN_COST": {
+          "type": "integer"
+        },
+        "CHURCHMENU_MIN_PROMOTABLE_LEVEL": {
+          "type": "integer"
+        },
+        "CHURCHMENU_RAISE_COST_EXTRA_WHEN_PROMOTED": {
+          "type": "integer"
+        },
+        "STATUSEFFECT_POISON": {
+          "type": "integer"
+        },
+        "STATUSEFFECT_STUN": {
+          "type": "integer"
+        },
+        "STATUSEFFECT_CURSE": {
+          "type": "integer"
+        },
+        "STATUSEFFECT_MASK": {
+          "type": "integer"
+        },
+        "CHAR_STATCAP_HP": {
+          "type": "integer"
+        },
+        "ITEMDEF_OFFSET_PRICE": {
+          "type": "integer"
+        }
+      }
+    },
+    "routeDerived": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raise",
+        "cure",
+        "promote",
+        "save"
+      ],
+      "properties": {
+        "raise": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "levelCostMultiplier",
+            "promotedExtraCost",
+            "aliveBranchOpcode",
+            "goldBranchTarget",
+            "mutationCalls",
+            "hpCap"
+          ],
+          "properties": {
+            "levelCostMultiplier": {
+              "type": "integer"
+            },
+            "promotedExtraCost": {
+              "type": "integer"
+            },
+            "aliveBranchOpcode": {
+              "type": "string"
+            },
+            "goldBranchTarget": {
+              "type": "string"
+            },
+            "mutationCalls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "hpCap": {
+              "type": "integer"
+            }
+          }
+        },
+        "cure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "poisonCost",
+            "stunCost",
+            "statusMasks",
+            "curseItemPrice"
+          ],
+          "properties": {
+            "poisonCost": {
+              "type": "integer"
+            },
+            "stunCost": {
+              "type": "integer"
+            },
+            "statusMasks": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "poison",
+                "stun",
+                "curse",
+                "allStatusBits"
+              ],
+              "properties": {
+                "poison": {
+                  "type": "integer"
+                },
+                "stun": {
+                  "type": "integer"
+                },
+                "curse": {
+                  "type": "integer"
+                },
+                "allStatusBits": {
+                  "type": "integer"
+                }
+              }
+            },
+            "curseItemPrice": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "itemDefinitionOffsetBytes",
+                "loadWidthBits",
+                "rightShiftBits"
+              ],
+              "properties": {
+                "itemDefinitionOffsetBytes": {
+                  "type": "integer"
+                },
+                "loadWidthBits": {
+                  "type": "integer"
+                },
+                "rightShiftBits": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "promote": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "minimumLevel",
+            "classAndPromotionCalls"
+          ],
+          "properties": {
+            "minimumLevel": {
+              "type": "integer"
+            },
+            "classAndPromotionCalls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "save": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "saveCallOperand",
+            "suspendJumpOperand"
+          ],
+          "properties": {
+            "saveCallOperand": {
+              "type": "string"
+            },
+            "suspendJumpOperand": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "jumpInterfaceAliases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "j_ChurchMenu"
+      ],
+      "properties": {
+        "j_ChurchMenu": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string"
+            },
+            "sourcePath": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "internalDirectCallerOccurrences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code/common/menus/church/churchactions_1.asm",
+        "code/common/menus/church/churchactions_2.asm"
+      ],
+      "properties": {
+        "code/common/menus/church/churchactions_1.asm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "siteCount"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "siteCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "code/common/menus/church/churchactions_2.asm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "siteCount"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "siteCount": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "internalEffectiveDirectCallSiteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ChurchMenu",
+        "Church_CureStun",
+        "Church_GetCurrentForceMemberInfo",
+        "CountPromotableMembers",
+        "FindPromotionSection",
+        "GetPromotionData",
+        "ReplaceSpellsWithSorcDefaults",
+        "UpdateAllyMapsprite",
+        "WaitForMusicResumeAndPlayerInput"
+      ],
+      "properties": {
+        "ChurchMenu": {
+          "type": "integer"
+        },
+        "Church_CureStun": {
+          "type": "integer"
+        },
+        "Church_GetCurrentForceMemberInfo": {
+          "type": "integer"
+        },
+        "CountPromotableMembers": {
+          "type": "integer"
+        },
+        "FindPromotionSection": {
+          "type": "integer"
+        },
+        "GetPromotionData": {
+          "type": "integer"
+        },
+        "ReplaceSpellsWithSorcDefaults": {
+          "type": "integer"
+        },
+        "UpdateAllyMapsprite": {
+          "type": "integer"
+        },
+        "WaitForMusicResumeAndPlayerInput": {
+          "type": "integer"
+        }
+      }
+    },
+    "externalDirectCallerOccurrences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code/common/menus/main/mainactions.asm",
+        "code/common/scripting/map/mapscriptengine_2.asm",
+        "code/gameflow/exploration/explorationvints.asm",
+        "code/gameflow/special/battletest.asm"
+      ],
+      "properties": {
+        "code/common/menus/main/mainactions.asm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "siteCount"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "siteCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "code/common/scripting/map/mapscriptengine_2.asm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "siteCount"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "siteCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "code/gameflow/exploration/explorationvints.asm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "siteCount"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "siteCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "code/gameflow/special/battletest.asm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "siteCount"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "siteCount": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "externalEffectiveDirectCallSiteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ChurchMenu",
+        "Church_CureStun",
+        "Church_GetCurrentForceMemberInfo",
+        "CountPromotableMembers",
+        "FindPromotionSection",
+        "GetPromotionData",
+        "ReplaceSpellsWithSorcDefaults",
+        "UpdateAllyMapsprite",
+        "WaitForMusicResumeAndPlayerInput"
+      ],
+      "properties": {
+        "ChurchMenu": {
+          "type": "integer"
+        },
+        "Church_CureStun": {
+          "type": "integer"
+        },
+        "Church_GetCurrentForceMemberInfo": {
+          "type": "integer"
+        },
+        "CountPromotableMembers": {
+          "type": "integer"
+        },
+        "FindPromotionSection": {
+          "type": "integer"
+        },
+        "GetPromotionData": {
+          "type": "integer"
+        },
+        "ReplaceSpellsWithSorcDefaults": {
+          "type": "integer"
+        },
+        "UpdateAllyMapsprite": {
+          "type": "integer"
+        },
+        "WaitForMusicResumeAndPlayerInput": {
+          "type": "integer"
+        }
+      }
+    },
+    "indirectBehavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "directCallInventoryDoesNotEstablishReachability"
+      ],
+      "properties": {
+        "directCallInventoryDoesNotEstablishReachability": {
+          "type": "boolean"
+        }
+      }
+    },
+    "routeOperations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raise",
+        "cure",
+        "promote",
+        "save"
+      ],
+      "properties": {
+        "raise": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "cure": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "promote": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "save": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        }
+      }
+    },
+    "helperOperations": {
+      "type": "array",
+      "items": {
+        "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+      }
+    }
+  }
+}

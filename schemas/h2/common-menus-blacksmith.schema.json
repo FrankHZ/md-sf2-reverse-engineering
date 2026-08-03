@@ -1,0 +1,1957 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/common-menus-blacksmith.schema.json",
+  "title": "Common menus blacksmith facts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entrySymbol",
+    "sourcePaths",
+    "constants",
+    "sourceRanges",
+    "frame",
+    "derived",
+    "functionOperations",
+    "jumpInterfaceAliases",
+    "internalDirectCallerOccurrences",
+    "internalEffectiveDirectCallSiteCounts",
+    "externalDirectCallerOccurrences",
+    "externalEffectiveDirectCallSiteCounts",
+    "indirectBehavior"
+  ],
+  "properties": {
+    "entrySymbol": {
+      "type": "string"
+    },
+    "sourcePaths": {
+      "type": "array"
+    },
+    "constants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "BLACKSMITH_MAX_ORDERS_NUMBER",
+        "BLACKSMITH_ORDERS_COUNTER",
+        "BLACKSMITH_MITHRIL_ITEM",
+        "BLACKSMITH_ORDER_COST",
+        "CHAR_CLASS_FIRSTPROMOTED",
+        "COMBATANT_ITEMSLOTS",
+        "MITHRIL_WEAPON_CLASSES_COUNTER",
+        "MITHRIL_WEAPON_ORDER_SLOT_SIZE",
+        "MITHRIL_WEAPONS_PER_CLASS_COUNTER",
+        "SOUND_COMMAND_PLAY_PREVIOUS_MUSIC"
+      ],
+      "properties": {
+        "BLACKSMITH_MAX_ORDERS_NUMBER": {
+          "type": "integer"
+        },
+        "BLACKSMITH_ORDERS_COUNTER": {
+          "type": "integer"
+        },
+        "BLACKSMITH_MITHRIL_ITEM": {
+          "type": "integer"
+        },
+        "BLACKSMITH_ORDER_COST": {
+          "type": "integer"
+        },
+        "CHAR_CLASS_FIRSTPROMOTED": {
+          "type": "integer"
+        },
+        "COMBATANT_ITEMSLOTS": {
+          "type": "integer"
+        },
+        "MITHRIL_WEAPON_CLASSES_COUNTER": {
+          "type": "integer"
+        },
+        "MITHRIL_WEAPON_ORDER_SLOT_SIZE": {
+          "type": "integer"
+        },
+        "MITHRIL_WEAPONS_PER_CLASS_COUNTER": {
+          "type": "integer"
+        },
+        "SOUND_COMMAND_PLAY_PREVIOUS_MUSIC": {
+          "type": "integer"
+        }
+      }
+    },
+    "sourceRanges": {
+      "type": "array"
+    },
+    "frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frameSizeBytes",
+        "counterOffsetsBytes",
+        "initializationOrder"
+      ],
+      "properties": {
+        "frameSizeBytes": {
+          "type": "integer"
+        },
+        "counterOffsetsBytes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "readyToFulfillOrdersNumber",
+            "fulfilledOrdersNumber",
+            "pendingOrdersNumber",
+            "fulfillOrdersFlag"
+          ],
+          "properties": {
+            "readyToFulfillOrdersNumber": {
+              "type": "integer"
+            },
+            "fulfilledOrdersNumber": {
+              "type": "integer"
+            },
+            "pendingOrdersNumber": {
+              "type": "integer"
+            },
+            "fulfillOrdersFlag": {
+              "type": "integer"
+            }
+          }
+        },
+        "initializationOrder": {
+          "type": "array"
+        }
+      }
+    },
+    "derived": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "process",
+        "orders",
+        "fulfill",
+        "place",
+        "classLists",
+        "pick"
+      ],
+      "properties": {
+        "process": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "forceCopy",
+            "readiness"
+          ],
+          "properties": {
+            "forceCopy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceLengthOperand",
+                "destinationLengthOperand",
+                "counterSource",
+                "counterSourceOperand",
+                "counterDestination",
+                "entryCopyOpcode",
+                "entryCopyOperands",
+                "counterAdjustment",
+                "counterLoopOpcode",
+                "loopTarget"
+              ],
+              "properties": {
+                "sourceLengthOperand": {
+                  "type": "string"
+                },
+                "destinationLengthOperand": {
+                  "type": "string"
+                },
+                "counterSource": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "counterSourceOperand": {
+                  "type": "string"
+                },
+                "counterDestination": {
+                  "type": "string"
+                },
+                "entryCopyOpcode": {
+                  "type": "string"
+                },
+                "entryCopyOperands": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "counterAdjustment": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "counterLoopOpcode": {
+                  "type": "string"
+                },
+                "loopTarget": {
+                  "type": "string"
+                }
+              }
+            },
+            "readiness": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "flagId",
+                "checkFlagLoad",
+                "checkCall",
+                "clearFlagLoad",
+                "clearCall"
+              ],
+              "properties": {
+                "flagId": {
+                  "type": "integer"
+                },
+                "checkFlagLoad": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "checkCall": {
+                  "type": "string"
+                },
+                "clearFlagLoad": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "clearCall": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "orders": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maximumSlots",
+            "inclusiveCounter",
+            "slotWidthBytes",
+            "storageWriteOpcode"
+          ],
+          "properties": {
+            "maximumSlots": {
+              "type": "integer"
+            },
+            "inclusiveCounter": {
+              "type": "integer"
+            },
+            "slotWidthBytes": {
+              "type": "integer"
+            },
+            "storageWriteOpcode": {
+              "type": "string"
+            }
+          }
+        },
+        "fulfill": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "inventoryCapacity",
+            "inventoryFullBranchOpcode",
+            "mutationCalls",
+            "orderedMutationSequence",
+            "branchSequence"
+          ],
+          "properties": {
+            "inventoryCapacity": {
+              "type": "integer"
+            },
+            "inventoryFullBranchOpcode": {
+              "type": "string"
+            },
+            "mutationCalls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "orderedMutationSequence": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "labels",
+                      "opcode",
+                      "operands",
+                      "directTarget",
+                      "branchTarget"
+                    ],
+                    "properties": {
+                      "labels": {
+                        "type": "array"
+                      },
+                      "opcode": {
+                        "type": "string"
+                      },
+                      "operands": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "directTarget": {
+                        "type": "string"
+                      },
+                      "branchTarget": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "labels",
+                      "opcode",
+                      "operands",
+                      "directTarget",
+                      "branchTarget"
+                    ],
+                    "properties": {
+                      "labels": {
+                        "type": "array"
+                      },
+                      "opcode": {
+                        "type": "string"
+                      },
+                      "operands": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "directTarget": {
+                        "type": "null"
+                      },
+                      "branchTarget": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "branchSequence": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "name",
+                      "operation",
+                      "branch"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "operation": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "labels",
+                          "opcode",
+                          "operands",
+                          "directTarget",
+                          "branchTarget"
+                        ],
+                        "properties": {
+                          "labels": {
+                            "type": "array"
+                          },
+                          "opcode": {
+                            "type": "string"
+                          },
+                          "operands": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "directTarget": {
+                            "type": "null"
+                          },
+                          "branchTarget": {
+                            "type": "null"
+                          }
+                        }
+                      },
+                      "branch": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "labels",
+                          "opcode",
+                          "operands",
+                          "directTarget",
+                          "branchTarget"
+                        ],
+                        "properties": {
+                          "labels": {
+                            "type": "array"
+                          },
+                          "opcode": {
+                            "type": "string"
+                          },
+                          "operands": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "directTarget": {
+                            "type": "null"
+                          },
+                          "branchTarget": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "name",
+                      "operation",
+                      "branch"
+                    ],
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "operation": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "labels",
+                          "opcode",
+                          "operands",
+                          "directTarget",
+                          "branchTarget"
+                        ],
+                        "properties": {
+                          "labels": {
+                            "type": "array"
+                          },
+                          "opcode": {
+                            "type": "string"
+                          },
+                          "operands": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "directTarget": {
+                            "type": "string"
+                          },
+                          "branchTarget": {
+                            "type": "null"
+                          }
+                        }
+                      },
+                      "branch": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "labels",
+                          "opcode",
+                          "operands",
+                          "directTarget",
+                          "branchTarget"
+                        ],
+                        "properties": {
+                          "labels": {
+                            "type": "array"
+                          },
+                          "opcode": {
+                            "type": "string"
+                          },
+                          "operands": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "directTarget": {
+                            "type": "null"
+                          },
+                          "branchTarget": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "place": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mithrilItem",
+            "promotionClassFloor",
+            "orderCost",
+            "goldBranchTarget",
+            "mutationCalls",
+            "gateSequence",
+            "postPlacementCapacityBranch",
+            "orderedMutationSequence"
+          ],
+          "properties": {
+            "mithrilItem": {
+              "type": "integer"
+            },
+            "promotionClassFloor": {
+              "type": "integer"
+            },
+            "orderCost": {
+              "type": "integer"
+            },
+            "goldBranchTarget": {
+              "type": "string"
+            },
+            "mutationCalls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "gateSequence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "name",
+                  "operation",
+                  "branch"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "operation": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "labels",
+                      "opcode",
+                      "operands",
+                      "directTarget",
+                      "branchTarget"
+                    ],
+                    "properties": {
+                      "labels": {
+                        "type": "array"
+                      },
+                      "opcode": {
+                        "type": "string"
+                      },
+                      "operands": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "directTarget": {
+                        "type": "null"
+                      },
+                      "branchTarget": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "branch": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "labels",
+                      "opcode",
+                      "operands",
+                      "directTarget",
+                      "branchTarget"
+                    ],
+                    "properties": {
+                      "labels": {
+                        "type": "array"
+                      },
+                      "opcode": {
+                        "type": "string"
+                      },
+                      "operands": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "directTarget": {
+                        "type": "null"
+                      },
+                      "branchTarget": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "postPlacementCapacityBranch": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name",
+                "operation",
+                "branch"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "operation": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "branch": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "orderedMutationSequence": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "labels",
+                      "opcode",
+                      "operands",
+                      "directTarget",
+                      "branchTarget"
+                    ],
+                    "properties": {
+                      "labels": {
+                        "type": "array"
+                      },
+                      "opcode": {
+                        "type": "string"
+                      },
+                      "operands": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "directTarget": {
+                        "type": "string"
+                      },
+                      "branchTarget": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "labels",
+                      "opcode",
+                      "operands",
+                      "directTarget",
+                      "branchTarget"
+                    ],
+                    "properties": {
+                      "labels": {
+                        "type": "array"
+                      },
+                      "opcode": {
+                        "type": "string"
+                      },
+                      "operands": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "directTarget": {
+                        "type": "null"
+                      },
+                      "branchTarget": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "classLists": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "eligibleClassCount",
+            "eligiblePrefix",
+            "mithrilWeaponClassGroups",
+            "weaponRows"
+          ],
+          "properties": {
+            "eligibleClassCount": {
+              "type": "integer"
+            },
+            "eligiblePrefix": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "loadOpcode",
+                "decrementOpcode",
+                "loopTarget"
+              ],
+              "properties": {
+                "loadOpcode": {
+                  "type": "string"
+                },
+                "decrementOpcode": {
+                  "type": "string"
+                },
+                "loopTarget": {
+                  "type": "string"
+                }
+              }
+            },
+            "mithrilWeaponClassGroups": {
+              "type": "integer"
+            },
+            "weaponRows": {
+              "type": "integer"
+            }
+          }
+        },
+        "pick": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "classGroupInclusiveCounter",
+            "weightedRowInclusiveCounter",
+            "rowStrideBytes",
+            "initialGroupRowIndexOpcode",
+            "initialGroupRowIndex",
+            "fallbackRandomBound",
+            "fallback",
+            "classGroupScan",
+            "weightedRngLoop",
+            "orderSlot"
+          ],
+          "properties": {
+            "classGroupInclusiveCounter": {
+              "type": "integer"
+            },
+            "weightedRowInclusiveCounter": {
+              "type": "integer"
+            },
+            "rowStrideBytes": {
+              "type": "integer"
+            },
+            "initialGroupRowIndexOpcode": {
+              "type": "string"
+            },
+            "initialGroupRowIndex": {
+              "type": "integer"
+            },
+            "fallbackRandomBound": {
+              "type": "integer"
+            },
+            "fallback": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "compareValue",
+                "branchOpcode",
+                "nonzeroTarget",
+                "zeroResultRowIndex",
+                "convergenceLabel"
+              ],
+              "properties": {
+                "compareValue": {
+                  "type": "integer"
+                },
+                "branchOpcode": {
+                  "type": "string"
+                },
+                "nonzeroTarget": {
+                  "type": "string"
+                },
+                "zeroResultRowIndex": {
+                  "type": "integer"
+                },
+                "convergenceLabel": {
+                  "type": "string"
+                }
+              }
+            },
+            "classGroupScan": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "prefixRead",
+                "prefixDecrement",
+                "classRead",
+                "characterClassRead",
+                "classCompare",
+                "classMatchBranch",
+                "innerLoop",
+                "groupIndexIncrement",
+                "outerLoop"
+              ],
+              "properties": {
+                "prefixRead": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "prefixDecrement": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "classRead": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "characterClassRead": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "classCompare": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "classMatchBranch": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "innerLoop": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "groupIndexIncrement": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "outerLoop": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "weightedRngLoop": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "parameterRead",
+                "itemRead",
+                "parameterToRngRange",
+                "rngCall",
+                "resultCompare",
+                "resultBranch",
+                "loop",
+                "parameterColumnDenominators"
+              ],
+              "properties": {
+                "parameterRead": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "itemRead": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "parameterToRngRange": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "rngCall": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "string"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "resultCompare": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "resultBranch": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "loop": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "parameterColumnDenominators": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "owner",
+                    "sourcePath",
+                    "values"
+                  ],
+                  "properties": {
+                    "owner": {
+                      "type": "string"
+                    },
+                    "sourcePath": {
+                      "type": "string"
+                    },
+                    "values": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "orderSlot": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "emptyCompare",
+                "occupiedBranch",
+                "scanCounter",
+                "strideLoad",
+                "strideAdd",
+                "loop",
+                "write"
+              ],
+              "properties": {
+                "emptyCompare": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "occupiedBranch": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "scanCounter": {
+                  "type": "integer"
+                },
+                "strideLoad": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "strideAdd": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                },
+                "loop": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "write": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "labels",
+                    "opcode",
+                    "operands",
+                    "directTarget",
+                    "branchTarget"
+                  ],
+                  "properties": {
+                    "labels": {
+                      "type": "array"
+                    },
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "operands": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "directTarget": {
+                      "type": "null"
+                    },
+                    "branchTarget": {
+                      "type": "null"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "functionOperations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "BlacksmithMenu",
+        "ProcessBlacksmithOrders",
+        "BlacksmithAction_FulfillOrder",
+        "BlacksmithAction_PlaceOrder",
+        "WaitForMusicResumeAndPlayerInput_Blacksmith",
+        "CountPendingAndReadyToFulfillOrders",
+        "IsClassBlacksmithEligible",
+        "PickMithrilWeapon"
+      ],
+      "properties": {
+        "BlacksmithMenu": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "ProcessBlacksmithOrders": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "BlacksmithAction_FulfillOrder": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "BlacksmithAction_PlaceOrder": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "WaitForMusicResumeAndPlayerInput_Blacksmith": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "CountPendingAndReadyToFulfillOrders": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "IsClassBlacksmithEligible": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "PickMithrilWeapon": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        }
+      }
+    },
+    "jumpInterfaceAliases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "j_BlacksmithMenu"
+      ],
+      "properties": {
+        "j_BlacksmithMenu": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string"
+            },
+            "sourcePath": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "internalDirectCallerOccurrences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code/common/menus/blacksmith/blacksmithactions.asm",
+        "code/common/menus/blacksmith/pickmithrilweapon.asm"
+      ],
+      "properties": {
+        "code/common/menus/blacksmith/blacksmithactions.asm": {
+          "type": "array"
+        },
+        "code/common/menus/blacksmith/pickmithrilweapon.asm": {
+          "type": "array"
+        }
+      }
+    },
+    "internalEffectiveDirectCallSiteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "BlacksmithAction_FulfillOrder",
+        "BlacksmithAction_PlaceOrder",
+        "BlacksmithMenu",
+        "CountPendingAndReadyToFulfillOrders",
+        "IsClassBlacksmithEligible",
+        "PickMithrilWeapon",
+        "ProcessBlacksmithOrders",
+        "WaitForMusicResumeAndPlayerInput_Blacksmith"
+      ],
+      "properties": {
+        "BlacksmithAction_FulfillOrder": {
+          "type": "integer"
+        },
+        "BlacksmithAction_PlaceOrder": {
+          "type": "integer"
+        },
+        "BlacksmithMenu": {
+          "type": "integer"
+        },
+        "CountPendingAndReadyToFulfillOrders": {
+          "type": "integer"
+        },
+        "IsClassBlacksmithEligible": {
+          "type": "integer"
+        },
+        "PickMithrilWeapon": {
+          "type": "integer"
+        },
+        "ProcessBlacksmithOrders": {
+          "type": "integer"
+        },
+        "WaitForMusicResumeAndPlayerInput_Blacksmith": {
+          "type": "integer"
+        }
+      }
+    },
+    "externalDirectCallerOccurrences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code/common/scripting/map/mapscriptengine_2.asm"
+      ],
+      "properties": {
+        "code/common/scripting/map/mapscriptengine_2.asm": {
+          "type": "array"
+        }
+      }
+    },
+    "externalEffectiveDirectCallSiteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "BlacksmithAction_FulfillOrder",
+        "BlacksmithAction_PlaceOrder",
+        "BlacksmithMenu",
+        "CountPendingAndReadyToFulfillOrders",
+        "IsClassBlacksmithEligible",
+        "PickMithrilWeapon",
+        "ProcessBlacksmithOrders",
+        "WaitForMusicResumeAndPlayerInput_Blacksmith"
+      ],
+      "properties": {
+        "BlacksmithAction_FulfillOrder": {
+          "type": "integer"
+        },
+        "BlacksmithAction_PlaceOrder": {
+          "type": "integer"
+        },
+        "BlacksmithMenu": {
+          "type": "integer"
+        },
+        "CountPendingAndReadyToFulfillOrders": {
+          "type": "integer"
+        },
+        "IsClassBlacksmithEligible": {
+          "type": "integer"
+        },
+        "PickMithrilWeapon": {
+          "type": "integer"
+        },
+        "ProcessBlacksmithOrders": {
+          "type": "integer"
+        },
+        "WaitForMusicResumeAndPlayerInput_Blacksmith": {
+          "type": "integer"
+        }
+      }
+    },
+    "indirectBehavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "directCallInventoryDoesNotEstablishReachability"
+      ],
+      "properties": {
+        "directCallInventoryDoesNotEstablishReachability": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

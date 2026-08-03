@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SF2 common menus static fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "romSha256",
+    "upstreamCommit",
+    "function",
+    "expected"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-common-menus-static-v1"
+    },
+    "romSha256": {
+      "type": "string"
+    },
+    "upstreamCommit": {
+      "type": "string"
+    },
+    "function": {
+      "type": "object",
+      "minProperties": 41,
+      "maxProperties": 41,
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "menuFacts",
+        "alternateSource"
+      ],
+      "properties": {
+        "menuFacts": {
+          "type": "object",
+          "minProperties": 8,
+          "maxProperties": 8,
+          "required": [
+            "serviceStateMachines"
+          ],
+          "properties": {
+            "serviceStateMachines": {
+              "$ref": "https://sf2-research.example/schemas/h2/common-menus-service-state-machines.schema.json"
+            }
+          }
+        },
+        "alternateSource": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "$id": "https://sf2-research.example/schemas/h2/common-menus-fixture.schema.json"
+}

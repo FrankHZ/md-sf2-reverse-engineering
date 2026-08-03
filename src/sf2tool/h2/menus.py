@@ -20,9 +20,9 @@ SOURCE_ROOT = Path("code/common/menus")
 ALTERNATE_SOURCE = SOURCE_ROOT / "writememberlisttext.asm"
 CANONICAL_CONTAINER = SOURCE_ROOT / "memberslistscreen.asm"
 MANIFEST = repo_path("manifests/extractions/common-menus-static.json")
-SCHEMA = repo_path("schemas/common-menus-static.schema.json")
+SCHEMA = repo_path("schemas/h2/common-menus-output.schema.json")
 FIXTURE = repo_path("tests/fixtures/h2/common-menus-static-v1.json")
-FIXTURE_SCHEMA = repo_path("schemas/h2-common-menus-static-fixture.schema.json")
+FIXTURE_SCHEMA = repo_path("schemas/h2/common-menus-fixture.schema.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
 
@@ -3706,6 +3706,26 @@ def build_menu_inventory(upstream_path: Path) -> dict[str, Any]:
     }
 
 
+def _verify_menu_fixture_owner(
+    fixture: dict[str, Any],
+    output: dict[str, Any],
+    *,
+    rom_manifest: dict[str, Any],
+) -> None:
+    """Keep exact common-menu evidence outside the reusable shape schemas."""
+    if (
+        fixture["upstreamCommit"] != output["upstream"]["commit"]
+        or fixture["romSha256"] != rom_manifest["hashes"]["sha256"]
+    ):
+        raise ValueError("common menus provenance drift")
+    if output["representativeAddresses"] != fixture["function"]:
+        raise ValueError("common menus H1 address drift")
+    if output["menuFacts"] != fixture["expected"]["menuFacts"]:
+        raise ValueError("common menus model drift")
+    if output["alternateSource"] != fixture["expected"]["alternateSource"]:
+        raise ValueError("common menus alternate-source drift")
+
+
 def verify_menu_inventory(
     upstream_path: Path, *, output_path: Path | None = None
 ) -> dict[str, Any]:
@@ -3714,19 +3734,13 @@ def verify_menu_inventory(
     manifest = load_json(MANIFEST)
     output = build_menu_inventory(upstream_path)
     validate_json(output, SCHEMA, owner="common menus static inventory")
-    if (
-        fixture["upstreamCommit"] != output["upstream"]["commit"]
-        or fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]
-    ):
-        raise ValueError("common menus provenance drift")
+    _verify_menu_fixture_owner(
+        fixture,
+        output,
+        rom_manifest=load_json(ROM_MANIFEST),
+    )
     if output["summary"] != manifest["summary"]:
         raise ValueError("common menus summary drift")
-    if output["representativeAddresses"] != fixture["function"]:
-        raise ValueError("common menus H1 address drift")
-    if output["menuFacts"] != fixture["expected"]["menuFacts"]:
-        raise ValueError("common menus model drift")
-    if output["alternateSource"] != fixture["expected"]["alternateSource"]:
-        raise ValueError("common menus alternate-source drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("common menus canonical hash drift")

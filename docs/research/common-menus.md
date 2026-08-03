@@ -134,9 +134,9 @@ were already bound by this rail.
 `code/common/menus/shop/shopactions.asm:ShopMenu` (`0x20064`) and
 `code/common/menus/shopscreen.asm:ExecuteShopScreen` (`0x147FA`). Its exact fixture is
 `sf2-common-menus-static-v1` at `tests/fixtures/h2/common-menus-static-v1.json`, and the parser,
-strict output schema, mirrored fixture schema, and focused source-mutation tests are
-`src/sf2tool/h2/menus.py`, `schemas/common-menus-static.schema.json`,
-`schemas/h2-common-menus-static-fixture.schema.json`, and
+composed output/fixture roots, shared service schemas, and focused source/fixture-mutation tests are
+`src/sf2tool/h2/menus.py`, `schemas/h2/common-menus-output.schema.json`,
+`schemas/h2/common-menus-fixture.schema.json`, the adjacent `common-menus-*.schema.json` components, and
 `tests/python/test_common_menus.py`. Reproduce with `uv run sf2 h2 common-menus`.
 Observed result on 2026-07-21: `Status: PASS`, canonical SHA-256
 `9D9D1E3B7F847193307DA6E3C0114D33597EE4E7667E99EDFD1C7EF362426DB6`.
@@ -207,7 +207,7 @@ selection-screen 3; absence of another direct call remains not an unreachability
 `c834c652b6862bc5679fd7f69a38a7093206efc6`,
 `code/common/menus/church/churchactions_1.asm:ChurchMenu` (`0x20A02`), and the directly used
 `churchactions_2.asm` helper surface. It uses the same exact `sf2-common-menus-static-v1` fixture,
-both mirrored schemas, and `tests/python/test_common_menus.py`; reproduce with
+the composed common-menu schemas, and `tests/python/test_common_menus.py`; reproduce with
 `uv run sf2 h2 common-menus`. Observed result on 2026-07-21: `Status: PASS`, canonical SHA-256
 `9D9D1E3B7F847193307DA6E3C0114D33597EE4E7667E99EDFD1C7EF362426DB6`.
 

@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/common-menus-service-state-machines.schema.json",
+  "title": "Common menus service state machines",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "builtSourcePaths",
+    "sourceInventory",
+    "sharedSelectionScreen",
+    "shop",
+    "church",
+    "caravan",
+    "blacksmith",
+    "staticBoundary"
+  ],
+  "properties": {
+    "builtSourcePaths": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "sourceInventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fileCount",
+        "sourceLineCount",
+        "directCallSiteCount",
+        "indirectCallSiteCount",
+        "uniqueDirectTargetCount",
+        "entrySymbols"
+      ],
+      "properties": {
+        "fileCount": {
+          "type": "integer"
+        },
+        "sourceLineCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "directCallSiteCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "indirectCallSiteCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "uniqueDirectTargetCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "entrySymbols": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "blacksmith",
+            "caravan",
+            "church",
+            "shop",
+            "sharedSelection"
+          ],
+          "properties": {
+            "blacksmith": {
+              "type": "string"
+            },
+            "caravan": {
+              "type": "string"
+            },
+            "church": {
+              "type": "string"
+            },
+            "shop": {
+              "type": "string"
+            },
+            "sharedSelection": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "sharedSelectionScreen": {
+      "$ref": "https://sf2-research.example/schemas/h2/common-menus-shared-selection.schema.json"
+    },
+    "shop": {
+      "$ref": "https://sf2-research.example/schemas/h2/common-menus-shop.schema.json"
+    },
+    "church": {
+      "$ref": "https://sf2-research.example/schemas/h2/common-menus-church.schema.json"
+    },
+    "caravan": {
+      "$ref": "https://sf2-research.example/schemas/h2/common-menus-caravan.schema.json"
+    },
+    "blacksmith": {
+      "$ref": "https://sf2-research.example/schemas/h2/common-menus-blacksmith.schema.json"
+    },
+    "staticBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerDependentServiceAdmissionAndReturnState",
+        "persistenceAcrossMapLoadSaveAndStoryProgress",
+        "windowPortraitSoundAndInputTiming",
+        "unbuiltAlternatePaths"
+      ],
+      "properties": {
+        "callerDependentServiceAdmissionAndReturnState": {
+          "type": "string"
+        },
+        "persistenceAcrossMapLoadSaveAndStoryProgress": {
+          "type": "string"
+        },
+        "windowPortraitSoundAndInputTiming": {
+          "type": "string"
+        },
+        "unbuiltAlternatePaths": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
