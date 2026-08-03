@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:sram-lifecycle-observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "core", "id", "caseOrder", "records", "sramResidueZero", "callbacksCleared"],
+  "properties": {
+    "system": {"const": "GEN"},
+    "core": {"const": "Genesis Plus GX"},
+    "id": {"const": "sf2-sram-lifecycle-runtime-v1"},
+    "caseOrder": {"const": ["signature-mismatch-init", "valid-signature-empty", "valid-slot1", "valid-slot2", "invalid-slot1-clears-bit0", "invalid-slot2-clears-bit1", "save-game-slot1", "save-game-slot2", "load-game-slot1", "load-game-slot2", "copy-save-1-to-2", "copy-save-2-to-1", "clear-save-slot-flag-selector0", "clear-save-slot-flag-selector1"]},
+    "records": {"type": "array", "minItems": 14, "maxItems": 14, "items": {"$ref": "#/definitions/record"}},
+    "sramResidueZero": {"const": true},
+    "callbacksCleared": {"const": 0}
+  },
+  "definitions": {
+    "boundary": {"type": "object", "additionalProperties": false, "required": ["first", "last"], "properties": {"first": {"type": "integer", "minimum": 0, "maximum": 255}, "last": {"type": "integer", "minimum": 0, "maximum": 255}}},
+    "sentinel": {"type": "object", "additionalProperties": false, "required": ["logicalOffset", "byte"], "properties": {"logicalOffset": {"enum": [0, 1, 2007, 4015]}, "byte": {"type": "integer", "minimum": 0, "maximum": 255}}},
+    "span": {"type": "object", "additionalProperties": false, "required": ["logicalByteCount", "checksumByte", "mismatchCount", "boundary", "sentinels"], "properties": {"logicalByteCount": {"const": 4016}, "checksumByte": {"type": "integer", "minimum": 0, "maximum": 255}, "mismatchCount": {"type": "integer", "minimum": 0, "maximum": 4016}, "boundary": {"$ref": "#/definitions/boundary"}, "sentinels": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/definitions/sentinel"}}}},
+    "slotFact": {"type": "object", "additionalProperties": false, "required": ["slot", "storedChecksumByte", "span"], "properties": {"slot": {"enum": ["slot1", "slot2"]}, "storedChecksumByte": {"type": "integer", "minimum": 0, "maximum": 255}, "span": {"$ref": "#/definitions/span"}}},
+    "fullSramFact": {"type": "object", "additionalProperties": false, "required": ["logicalByteCount", "checksumByte", "mismatchCount", "boundary"], "properties": {"logicalByteCount": {"const": 8192}, "checksumByte": {"type": "integer", "minimum": 0, "maximum": 255}, "mismatchCount": {"type": "integer", "minimum": 0, "maximum": 8192}, "boundary": {"$ref": "#/definitions/boundary"}}},
+    "record": {"type": "object", "additionalProperties": false, "required": ["id", "resultD0", "resultD1", "saveFlags", "slotFacts", "combatantFacts", "fullSramFact"], "properties": {"id": {"enum": ["signature-mismatch-init", "valid-signature-empty", "valid-slot1", "valid-slot2", "invalid-slot1-clears-bit0", "invalid-slot2-clears-bit1", "save-game-slot1", "save-game-slot2", "load-game-slot1", "load-game-slot2", "copy-save-1-to-2", "copy-save-2-to-1", "clear-save-slot-flag-selector0", "clear-save-slot-flag-selector1"]}, "resultD0": {"enum": [-1, 0, 1]}, "resultD1": {"enum": [-1, 0, 1]}, "saveFlags": {"type": "integer", "minimum": 0, "maximum": 3}, "slotFacts": {"type": "array", "minItems": 1, "maxItems": 2, "items": {"$ref": "#/definitions/slotFact"}}, "combatantFacts": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/span"}]}, "fullSramFact": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/fullSramFact"}]}}}
+  }
+}

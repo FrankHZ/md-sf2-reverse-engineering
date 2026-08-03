@@ -215,23 +215,23 @@ def test_h3_bootstrap_registry_closes_every_registered_owner() -> None:
     assert Counter(bootstrap.OBSERVER_PROFILES.values()) == {
         "battle01-intro-skip": 28,
         "map-debug-host": 23,
-        "direct-function-seam": 6,
+        "direct-function-seam": 7,
         "witch-menu": 2,
         "sound-driver": 1,
     }
     assert Counter(bootstrap.H3_COMMAND_PROFILES.values()) == {
         "battle01-intro-skip": 31,
         "map-debug-host": 23,
-        "direct-function-seam": 4,
+        "direct-function-seam": 5,
         "witch-menu": 2,
         "sound-driver": 1,
     }
     assert Counter(
         launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()
-    ) == {1: 57, 2: 1, 8: 1, 16: 1, 27: 1}
+    ) == {1: 58, 2: 1, 8: 1, 16: 1, 27: 1}
     assert sum(
         launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()
-    ) == 110
+    ) == 111
     assert Counter(bootstrap.LEGACY_LAUNCHER_PROFILES.values()) == {
         "battle01-intro-skip": 15,
     }

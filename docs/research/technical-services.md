@@ -5,11 +5,12 @@
   SRAM slot/checksum structure, the complete variable-width-font, context-Huffman, and witch-menu
   direct payload/pointer boundaries, the four-stream unused-cloud and two-palette unused-base
   boundaries, the 68000 music-wait command, Z80 driver build chain, and the complete six-entry RNG
-  service boundary and the one-launch range-low-byte retry and controlled source-shaped copy matrix
+  service boundary, the one-launch range-low-byte retry and controlled source-shaped copy matrix,
+  and the fourteen-case in-process SRAM lifecycle matrix
 - Status: **Inferred** for caller-visible retry distribution and perceived RNG delay
 - Status: **Unknown** for controller hardware edge cases, SRAM persistence/corruption behavior, and
   rendered/audio timing
-- Evidence date: 2026-08-02
+- Evidence date: 2026-08-03
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -118,13 +119,48 @@ byte, then sets its occupied bit. `LoadGame` copies the selected slot to combata
 local checksum comparison. `CopySave` loads then saves to the opposite selector, while
 `ClearSaveSlotFlag` only clears the selected occupied bit.
 
+## Confirmed Direct-Service Lifecycle Matrix
+
+**Confirmed:** `sf2-sram-lifecycle-runtime-v1` is one BizHawk 2.11.1 / Genesis Plus GX launch with
+fourteen fixture-defined direct-service cases, in this fixture order: signature mismatch init, valid
+empty state, valid slot 1, valid slot 2, invalid slot 1, invalid slot 2, save slot 1, save slot 2,
+load slot 1, load slot 2, copy 1-to-2, copy 2-to-1, and clear occupied flag for selectors 0 and 1.
+The bootstrap captures the original `CheckSram` return only to enter a harness-defined work-RAM
+direct-function probe; it neither observes nor promotes Witch-menu behavior.
+
+The matrix checks the full 4,016 logical bytes of every tracked slot with a deterministic compact
+span (checksum, mismatch count, boundaries, and sentinels), not only selected samples. It confirms
+the signature-mismatch path clears all 8,192 logical locations, writes the source-defined 17-byte
+checked signature prefix, and clears flags. It confirms both valid and invalid occupied-bit outcomes,
+both save/load selectors, both `CopySave` directions, and both flag-clear selectors. For copy,
+runtime callbacks confirm entry into the nested `LoadGame` and `SaveGame` functions. The source
+guard establishes `LoadGame`-before-`SaveGame` instruction order, while H1 binds the source-derived
+call/return addresses `0x6FDC`/`0x6FDE` and `0x6FE6`/`0x6FE8`. Those addresses provide expected
+diagnostic context; the call and return sites are not themselves callback-observed.
+
+Every registered execution callback is wrapped in the observer failure/status contract, reports the
+case, phase, role, and expected/actual PC state, and shares a deterministic dispatch list when roles
+meet at one physical PC. The final run records zero registered callbacks, zero logical SRAM residue,
+an observer-finished status, and no Lua Console error. Reproduce with:
+
+```powershell
+uv run sf2 h3 sram-lifecycle --timeout-seconds 180
+```
+
+The tracked fixture, schemas, and verifier are
+`tests/fixtures/h3/sram-lifecycle-v1.json`, `schemas/h3/sram-lifecycle-*.schema.json`, and
+`src/sf2tool/h3/sram_lifecycle.py`. They are tied to the H2 seven-entry source model and the pinned
+`SF2DISASM` baseline named in the fixture provenance.
+
 The direct-call parser (comments excluded) finds seven external call sites in three source files:
 church `SaveGame`, battle suspend `SaveGame`, and witch `CheckSram`/`SaveGame`/`LoadGame`/
 `CopySave`/`ClearSaveSlotFlag`, one site each. **Inferred:** these callers intend their respective
 save UI/lifecycle operations; their full caller-state outcomes are not promoted solely from the
-direct-call inventory. **Unknown:** physical-media persistence, power loss between data/checksum/flag
-writes, corruption beyond this checksum, emulator storage behavior, and the resulting player-visible
-timing. The remake-facing extraction is
+direct-call inventory. **Unknown:** cross-process or durable-media persistence, power loss between
+data/checksum/flag writes, torn-write recovery, corruption beyond this checksum, SRAM bus/bank/cycle
+behavior, emulator storage behavior, normal story/church/battle caller persistence, and the resulting
+player-visible timing. The matrix deliberately does not reopen ADR 0005 hardware exactness. The
+remake-facing extraction is
 [`save-system.md`](../design/save-system.md). Physical-media/failure exactness is priority-frozen by
 ADR 0005 once save/load/copy/delete behavior is adequate; a user-visible save-flow acceptance failure
 remains a reason to reopen one bounded question.
@@ -195,8 +231,8 @@ electrical/latency behavior, SRAM hardware-failure behavior, audio timing/regist
 micro-timing after their import and visible contracts are adequate. The remaining grouped questions are:
 
 1. controller/input behavior that leaves a concrete UI/menu wait or repeat acceptance ambiguity;
-2. SRAM signature/checksum/occupied-flag and save/copy/delete/reload behavior that leaves a concrete
-   user-visible save-flow ambiguity;
+2. SRAM durable-media, interrupted-write, or normal player-caller behavior that leaves a concrete
+   user-visible save-flow ambiguity; the direct in-process service lifecycle is now observed;
 3. music loop/transition/fade/resume or SFX selection/priority/interruption behavior when the existing
    command/channel seam is insufficient for a remake acceptance contract;
 4. RNG text/menu/AI caller-context execution and seed-copy lifetime/isolation (the helper-local
@@ -216,6 +252,7 @@ uv run sf2 h2 text-huffman
 uv run sf2 h2 unused-tech-assets
 uv run sf2 h2 witch-menu-graphics
 uv run sf2 h3 random-services --timeout-seconds 180
+uv run sf2 h3 sram-lifecycle --timeout-seconds 180
 uv run sf2 research-index test
 ```
 

@@ -8,7 +8,7 @@
   presentation or input cadence, and caller-visible pixels/audio/suspend timing.
 - Remake status: implementation-neutral contract; in-process service effects are observed, while
   durable-medium behavior remains unobserved.
-- Evidence date: 2026-07-29
+- Evidence date: 2026-08-03
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - Traceability: `sf2-tech-services-static-v1` in
@@ -22,7 +22,10 @@
   `docs/research/special-screens.md`. The bounded New-game runtime contract is
   `sf2-witch-new-game-lifecycle-runtime-v1` in
   `tests/fixtures/h3/witch-new-game-lifecycle-v1.json`;
-  `src/sf2tool/h3/witch_new_game_lifecycle.py`; and `docs/research/special-screens.md`.
+  `src/sf2tool/h3/witch_new_game_lifecycle.py`; and `docs/research/special-screens.md`. The
+  direct-service lifecycle contract is `sf2-sram-lifecycle-runtime-v1` in
+  `tests/fixtures/h3/sram-lifecycle-v1.json`; `src/sf2tool/h3/sram_lifecycle.py`; and
+  `docs/research/technical-services.md`.
 
 ## Confirmed Static Contract
 
@@ -65,6 +68,31 @@ its player-facing lifecycle meaning is not inferred.
 power-cycle behavior, partial/interrupted-write recovery, player-driven New-game naming/menu results,
 pixels, audio, input cadence, or suspend presentation. Those remain the grouped H3 questions named in
 `docs/research/special-screens.md`.
+
+## Confirmed Direct-Service Lifecycle Matrix
+
+**Confirmed:** a separate, one-launch, fourteen-case direct-service matrix exercises `CheckSram`,
+`SaveGame`, `LoadGame`, `CopySave`, and `ClearSaveSlotFlag` from a harness-defined work-RAM probe. It
+uses the original `CheckSram` return only as bootstrap and does not treat the title or Witch UI as an
+observed service caller. The fixture-defined cases cover signature initialization,
+empty/valid/invalid slots, both save and load selectors, both copy directions, and both occupied-flag
+clears.
+
+The fixture compares all 4,016 logical bytes for each tracked slot using compact checksum,
+mismatch-count, boundary, and sentinel facts. It independently checks the full 8,192-logical-byte
+signature-mismatch clear, then its 17-byte source-defined checked signature prefix and cleared flags.
+Runtime confirms both nested function entries, while the source guard establishes `CopySave`'s
+`LoadGame`-then-`SaveGame` order. These are
+in-process helper effects only; they do not establish a player path, persistent physical medium, or
+recovery policy.
+
+**Confirmed harness boundary:** callback exceptions become a nonzero observer status/exit result with
+case, phase, role, and expected/actual PC diagnostics. Shared-PC roles dispatch deterministically.
+The accepted run leaves no Lua Console error, no registered callback, and zero logical SRAM residue.
+
+**Unknown:** cross-process survival, power-cycle or torn-write behavior, hardware bus/bank/cycle
+details, normal story/church/battle persistence, and player-facing save UI remain outside this direct
+matrix and do not reopen ADR 0005 hardware fidelity.
 
 ## Confirmed New-game Runtime Matrix
 

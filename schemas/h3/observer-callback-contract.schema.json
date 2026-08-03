@@ -173,6 +173,20 @@
         "sourceCopyWriteSeen": {"type": "boolean"}
       }
     },
+    "sramLifecyclePendingCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "caseIndex", "copyLoadSeen", "copySaveSeen", "expectedFunctionPc", "pendingReturnPc", "rolesAtPc"],
+      "properties": {
+        "active": {"type": "boolean"},
+        "caseIndex": {"type": "integer", "minimum": 0},
+        "copyLoadSeen": {"type": "boolean"},
+        "copySaveSeen": {"type": "boolean"},
+        "expectedFunctionPc": {"$ref": "#/definitions/nullablePc"},
+        "pendingReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/definitions/nonEmptyString"}}
+      }
+    },
     "controlAudioFailure": {
       "type": "object",
       "additionalProperties": false,
@@ -240,6 +254,24 @@
         "expectedTargetPc": {"$ref": "#/definitions/nullablePc"},
         "owner": {"const": "random-services"},
         "pendingCallback": {"$ref": "#/definitions/randomServicesPendingCallback"},
+        "phase": {"$ref": "#/definitions/nonEmptyString"},
+        "role": {"$ref": "#/definitions/nonEmptyString"}
+      }
+    },
+    "sramLifecycleFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actualPc", "caseId", "error", "expectedCallPc", "expectedEventPc", "expectedReturnPc", "expectedTargetPc", "owner", "pendingCallback", "phase", "role"],
+      "properties": {
+        "actualPc": {"$ref": "#/definitions/nullablePc"},
+        "caseId": {"$ref": "#/definitions/nullableNonEmptyString"},
+        "error": {"$ref": "#/definitions/nonEmptyString"},
+        "expectedCallPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedEventPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetPc": {"$ref": "#/definitions/nullablePc"},
+        "owner": {"const": "sram-lifecycle"},
+        "pendingCallback": {"$ref": "#/definitions/sramLifecyclePendingCallback"},
         "phase": {"$ref": "#/definitions/nonEmptyString"},
         "role": {"$ref": "#/definitions/nonEmptyString"}
       }

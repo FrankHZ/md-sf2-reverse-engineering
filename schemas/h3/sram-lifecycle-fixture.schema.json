@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:sram-lifecycle-fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "evidenceDate", "provenance", "observationBoundary", "function", "pattern", "caseOrder", "cases", "runtimeQuestions"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "id": {"const": "sf2-sram-lifecycle-runtime-v1"},
+    "romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
+    "emulator": {"$ref": "#/definitions/emulator"},
+    "evidenceDate": {"const": "2026-08-03"},
+    "provenance": {"$ref": "#/definitions/provenance"},
+    "observationBoundary": {"type": "string", "minLength": 1},
+    "function": {"$ref": "#/definitions/function"},
+    "pattern": {"$ref": "#/definitions/pattern"},
+    "caseOrder": {"const": ["signature-mismatch-init", "valid-signature-empty", "valid-slot1", "valid-slot2", "invalid-slot1-clears-bit0", "invalid-slot2-clears-bit1", "save-game-slot1", "save-game-slot2", "load-game-slot1", "load-game-slot2", "copy-save-1-to-2", "copy-save-2-to-1", "clear-save-slot-flag-selector0", "clear-save-slot-flag-selector1"]},
+    "cases": {"type": "array", "minItems": 14, "maxItems": 14, "items": {"$ref": "#/definitions/case"}},
+    "runtimeQuestions": {"const": ["sram-lifecycle/physical-medium-cross-process-and-power-loss-boundaries"]}
+  },
+  "definitions": {
+    "emulator": {"type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": {"name": {"const": "BizHawk"}, "version": {"const": "2.11.1"}, "core": {"const": "Genesis Plus GX"}}},
+    "provenance": {"type": "object", "additionalProperties": false, "required": ["h2Fixture", "h2FixtureId", "sourcePath", "listingPath", "upstreamRepository", "upstreamBranch", "upstreamCommit"], "properties": {"h2Fixture": {"const": "tests/fixtures/h2/tech-services-static-v1.json"}, "h2FixtureId": {"const": "sf2-tech-services-static-v1"}, "sourcePath": {"const": "code/common/tech/sram/sramfunctions.asm"}, "listingPath": {"const": "build/sf2build-h1.lst"}, "upstreamRepository": {"const": "https://github.com/ShiningForceCentral/SF2DISASM"}, "upstreamBranch": {"const": "master"}, "upstreamCommit": {"const": "c834c652b6862bc5679fd7f69a38a7093206efc6"}}},
+    "function": {"type": "object", "additionalProperties": false, "required": ["checkSramAddress"], "properties": {"checkSramAddress": {"const": 28326}}},
+    "pattern": {"type": "object", "additionalProperties": false, "required": ["id", "formula", "sentinelOffsets"], "properties": {"id": {"const": "sram-linear-stride-v1"}, "formula": {"const": "(seed + 17 * logicalOffset + 29 * floor(logicalOffset / 8)) mod 256"}, "sentinelOffsets": {"const": [0, 1, 2007, 4015]}}},
+    "setup": {"type": "object", "additionalProperties": false, "required": ["signature", "flags", "slot1Seed", "slot2Seed", "ramSeed", "slot1Checksum", "slot2Checksum"], "properties": {"signature": {"enum": ["mismatch", "valid"]}, "flags": {"type": "integer", "minimum": 0, "maximum": 3}, "slot1Seed": {"type": "integer", "minimum": 0, "maximum": 255}, "slot2Seed": {"type": "integer", "minimum": 0, "maximum": 255}, "ramSeed": {"type": "integer", "minimum": 0, "maximum": 255}, "slot1Checksum": {"enum": ["computed", "mismatch"]}, "slot2Checksum": {"enum": ["computed", "mismatch"]}}},
+    "expected": {"type": "object", "additionalProperties": false, "required": ["resultD0", "resultD1", "saveFlags", "observedSlots", "fullSramInitialized"], "properties": {"resultD0": {"enum": [-1, 0, 1]}, "resultD1": {"enum": [-1, 0, 1]}, "saveFlags": {"type": "integer", "minimum": 0, "maximum": 3}, "observedSlots": {"type": "array", "minItems": 1, "maxItems": 2, "uniqueItems": true, "items": {"enum": ["slot1", "slot2"]}}, "fullSramInitialized": {"type": "boolean"}}},
+    "case": {"type": "object", "additionalProperties": false, "required": ["id", "operation", "selector", "setup", "expected"], "properties": {"id": {"enum": ["signature-mismatch-init", "valid-signature-empty", "valid-slot1", "valid-slot2", "invalid-slot1-clears-bit0", "invalid-slot2-clears-bit1", "save-game-slot1", "save-game-slot2", "load-game-slot1", "load-game-slot2", "copy-save-1-to-2", "copy-save-2-to-1", "clear-save-slot-flag-selector0", "clear-save-slot-flag-selector1"]}, "operation": {"enum": ["check", "save", "load", "copy", "clear"]}, "selector": {"type": "integer", "minimum": 0, "maximum": 1}, "setup": {"$ref": "#/definitions/setup"}, "expected": {"$ref": "#/definitions/expected"}}}
+  }
+}
