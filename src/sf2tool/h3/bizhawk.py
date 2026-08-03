@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from sf2tool.h3.bootstrap import BOOTSTRAP_LIBRARY, runtime_bootstrap
 from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 from sf2tool.rom import inspect_rom
@@ -126,6 +127,8 @@ def run_observer(
     observer_path = observer_path.resolve(strict=True)
     _, executable = bizhawk_contract()
     validate_lua_syntax(observer_path, executable)
+    validate_lua_syntax(BOOTSTRAP_LIBRARY, executable)
+    bootstrap = runtime_bootstrap(observer_path)
     DERIVED_ROOT.mkdir(parents=True, exist_ok=True)
     config_path = DERIVED_ROOT / f"{output_name}.config.lua"
     output_path = DERIVED_ROOT / f"{output_name}.observed.json"
@@ -134,6 +137,8 @@ def run_observer(
         path.unlink(missing_ok=True)
     runtime_config = {
         **config,
+        "bootstrap": bootstrap,
+        "bootstrapLibraryPath": BOOTSTRAP_LIBRARY.as_posix(),
         "outputPath": output_path.as_posix(),
         "statusPath": status_path.as_posix(),
     }
@@ -172,6 +177,14 @@ def run_observer(
         raise RuntimeError(
             f"BizHawk observation timed out after {timeout_seconds}s ({status}).\n{diagnostic}"
         ) from error
+    status_tail = (
+        status_path.read_text(encoding="utf-8").strip() if status_path.exists() else "no status"
+    )
+    if "failure:observer-callback:" in status_tail:
+        raise RuntimeError(
+            f"BizHawk observer callback failure (exit code {process.returncode}).\n"
+            f"STATUS:\n{status_tail}\nSTDOUT:\n{stdout[-4000:]}\nSTDERR:\n{stderr[-4000:]}"
+        )
     if process.returncode != 0:
         raise RuntimeError(
             f"BizHawk observation failed with exit code {process.returncode}.\n"

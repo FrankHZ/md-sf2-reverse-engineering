@@ -1,4 +1,5 @@
 local config = assert(dofile(assert(os.getenv("SF2_H3_CONFIG"), "SF2_H3_CONFIG is not set")))
+local bootstrap = assert(dofile(config.bootstrapLibraryPath))
 local stage, prompt_count = "cheat", 0
 local queue = {}
 local action_started, target_supplied, playback = false, false, false
@@ -65,7 +66,7 @@ local function write_result_and_exit()
 end
 
 event.on_bus_exec(function() stage="ui" end,config.harness["function"].battleTestAddress,"sf2-mp-battle","M68K BUS")
-event.on_bus_exec(function() prompt_count=prompt_count+1;if prompt_count==1 then pulse("Right");pulse("C") elseif prompt_count==2 then pulse("C") end end,config.harness["function"].numberPromptAddress,"sf2-mp-number","M68K BUS")
+event.on_bus_exec(function() prompt_count=prompt_count+1;bootstrap.battle01_intro_skip(config.bootstrap.profile,prompt_count,pulse) end,config.harness["function"].numberPromptAddress,"sf2-mp-number","M68K BUS")
 event.on_bus_exec(function() pulse("B") end,config.harness["function"].flagPromptAddress,"sf2-mp-flag","M68K BUS")
 event.on_bus_exec(function()
     stage="battle";local a=entry(config.case.actor)

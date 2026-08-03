@@ -1,4 +1,5 @@
 local config = assert(dofile(assert(os.getenv("SF2_H3_CONFIG"), "SF2_H3_CONFIG is not set")))
+local bootstrap = assert(dofile(config.bootstrapLibraryPath))
 local stage, prompt_count = "cheat", 0
 local queue = {}
 local action_started, target_supplied, playback = false, false, false
@@ -128,8 +129,7 @@ end, config.harness["function"].battleTestAddress, "sf2-boost-battle", "M68K BUS
 
 event.on_bus_exec(function()
     prompt_count = prompt_count + 1
-    if prompt_count == 1 then pulse("Right"); pulse("C")
-    elseif prompt_count == 2 then pulse("C") end
+    bootstrap.battle01_intro_skip(config.bootstrap.profile, prompt_count, pulse)
 end, config.harness["function"].numberPromptAddress, "sf2-boost-number", "M68K BUS")
 
 event.on_bus_exec(function()
