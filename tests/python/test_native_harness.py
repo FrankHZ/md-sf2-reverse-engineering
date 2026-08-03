@@ -44,8 +44,8 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Records"] == 1620
     assert result["Confirmed"] == 1620
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 81
-    assert result["AddressBindings"] == 2493
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 82
+    assert result["AddressBindings"] == 2494
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1583
@@ -1072,6 +1072,27 @@ def test_random_services_observer_has_callback_failure_and_cleanup_contract() ->
         "duplicate physical-PC callback",
         "callbacks-cleared:0",
         "observer-finished",
+    ):
+        assert required_text in observer
+
+
+def test_sram_lifecycle_observer_has_callback_failure_and_cleanup_contract() -> None:
+    root = Path(__file__).resolve().parents[2]
+    observer = (root / "tools" / "bizhawk" / "sram_lifecycle_observer.lua").read_text(
+        encoding="utf-8"
+    )
+    for required_text in (
+        "pcall(function()",
+        "config.observerFailureContract.statusPrefix",
+        "client.exitCode(config.observerFailureContract.exitCode)",
+        "event.unregisterbyid",
+        "duplicate physical-PC callback",
+        "callbacks-cleared:0",
+        "observer-finished",
+        "CopySave nested callback sequence drift",
+        "residual registered callback",
+        "residual SRAM bytes",
+        "callbacks[address]",
     ):
         assert required_text in observer
 

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-sram-lifecycle-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "evidenceDate": "2026-08-03",
+  "provenance": {
+    "h2Fixture": "tests/fixtures/h2/tech-services-static-v1.json",
+    "h2FixtureId": "sf2-tech-services-static-v1",
+    "sourcePath": "code/common/tech/sram/sramfunctions.asm",
+    "listingPath": "build/sf2build-h1.lst",
+    "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM",
+    "upstreamBranch": "master",
+    "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+  },
+  "observationBoundary": "One BizHawk 2.11.1 / Genesis Plus GX process writes a session-local direct-function work-RAM probe and invokes only the H2-owned SRAM service surface before restoring the emulator SRAM domain to zero, removing every callback, and exiting. Each of fourteen cases initializes its in-process SRAM/RAM precondition independently. Compact facts checksum and compare every logical payload byte without retaining a dump. This does not observe physical media, persistence across processes, power loss, torn writes, bus/bank/cycle behavior, witch UI, normal-story reachability, or church/battle caller-visible persistence.",
+  "function": {
+    "checkSramAddress": 28326
+  },
+  "pattern": {
+    "id": "sram-linear-stride-v1",
+    "formula": "(seed + 17 * logicalOffset + 29 * floor(logicalOffset / 8)) mod 256",
+    "sentinelOffsets": [0, 1, 2007, 4015]
+  },
+  "caseOrder": [
+    "signature-mismatch-init",
+    "valid-signature-empty",
+    "valid-slot1",
+    "valid-slot2",
+    "invalid-slot1-clears-bit0",
+    "invalid-slot2-clears-bit1",
+    "save-game-slot1",
+    "save-game-slot2",
+    "load-game-slot1",
+    "load-game-slot2",
+    "copy-save-1-to-2",
+    "copy-save-2-to-1",
+    "clear-save-slot-flag-selector0",
+    "clear-save-slot-flag-selector1"
+  ],
+  "cases": [
+    {"id":"signature-mismatch-init","operation":"check","selector":0,"setup":{"signature":"mismatch","flags":3,"slot1Seed":19,"slot2Seed":20,"ramSeed":0,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":0,"resultD1":0,"saveFlags":0,"observedSlots":["slot1"],"fullSramInitialized":true}},
+    {"id":"valid-signature-empty","operation":"check","selector":0,"setup":{"signature":"valid","flags":0,"slot1Seed":0,"slot2Seed":0,"ramSeed":0,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":0,"resultD1":0,"saveFlags":0,"observedSlots":["slot1"],"fullSramInitialized":false}},
+    {"id":"valid-slot1","operation":"check","selector":0,"setup":{"signature":"valid","flags":1,"slot1Seed":19,"slot2Seed":20,"ramSeed":0,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":1,"resultD1":0,"saveFlags":1,"observedSlots":["slot1"],"fullSramInitialized":false}},
+    {"id":"valid-slot2","operation":"check","selector":1,"setup":{"signature":"valid","flags":2,"slot1Seed":19,"slot2Seed":20,"ramSeed":0,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":0,"resultD1":1,"saveFlags":2,"observedSlots":["slot2"],"fullSramInitialized":false}},
+    {"id":"invalid-slot1-clears-bit0","operation":"check","selector":0,"setup":{"signature":"valid","flags":1,"slot1Seed":19,"slot2Seed":20,"ramSeed":0,"slot1Checksum":"mismatch","slot2Checksum":"computed"},"expected":{"resultD0":-1,"resultD1":0,"saveFlags":0,"observedSlots":["slot1"],"fullSramInitialized":false}},
+    {"id":"invalid-slot2-clears-bit1","operation":"check","selector":1,"setup":{"signature":"valid","flags":2,"slot1Seed":19,"slot2Seed":20,"ramSeed":0,"slot1Checksum":"computed","slot2Checksum":"mismatch"},"expected":{"resultD0":0,"resultD1":-1,"saveFlags":0,"observedSlots":["slot2"],"fullSramInitialized":false}},
+    {"id":"save-game-slot1","operation":"save","selector":0,"setup":{"signature":"valid","flags":0,"slot1Seed":0,"slot2Seed":0,"ramSeed":33,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":0,"resultD1":0,"saveFlags":1,"observedSlots":["slot1"],"fullSramInitialized":false}},
+    {"id":"save-game-slot2","operation":"save","selector":1,"setup":{"signature":"valid","flags":0,"slot1Seed":0,"slot2Seed":0,"ramSeed":34,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":1,"resultD1":0,"saveFlags":2,"observedSlots":["slot2"],"fullSramInitialized":false}},
+    {"id":"load-game-slot1","operation":"load","selector":0,"setup":{"signature":"valid","flags":1,"slot1Seed":19,"slot2Seed":20,"ramSeed":35,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":0,"resultD1":0,"saveFlags":1,"observedSlots":["slot1"],"fullSramInitialized":false}},
+    {"id":"load-game-slot2","operation":"load","selector":1,"setup":{"signature":"valid","flags":2,"slot1Seed":19,"slot2Seed":20,"ramSeed":36,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":1,"resultD1":0,"saveFlags":2,"observedSlots":["slot2"],"fullSramInitialized":false}},
+    {"id":"copy-save-1-to-2","operation":"copy","selector":0,"setup":{"signature":"valid","flags":1,"slot1Seed":19,"slot2Seed":20,"ramSeed":0,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":0,"resultD1":0,"saveFlags":3,"observedSlots":["slot1","slot2"],"fullSramInitialized":false}},
+    {"id":"copy-save-2-to-1","operation":"copy","selector":1,"setup":{"signature":"valid","flags":2,"slot1Seed":19,"slot2Seed":20,"ramSeed":0,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":1,"resultD1":0,"saveFlags":3,"observedSlots":["slot1","slot2"],"fullSramInitialized":false}},
+    {"id":"clear-save-slot-flag-selector0","operation":"clear","selector":0,"setup":{"signature":"valid","flags":3,"slot1Seed":19,"slot2Seed":20,"ramSeed":0,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":0,"resultD1":0,"saveFlags":2,"observedSlots":["slot1","slot2"],"fullSramInitialized":false}},
+    {"id":"clear-save-slot-flag-selector1","operation":"clear","selector":1,"setup":{"signature":"valid","flags":3,"slot1Seed":19,"slot2Seed":20,"ramSeed":0,"slot1Checksum":"computed","slot2Checksum":"computed"},"expected":{"resultD0":1,"resultD1":0,"saveFlags":1,"observedSlots":["slot1","slot2"],"fullSramInitialized":false}}
+  ],
+  "runtimeQuestions": [
+    "sram-lifecycle/physical-medium-cross-process-and-power-loss-boundaries"
+  ]
+}

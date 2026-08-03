@@ -142,6 +142,7 @@ from sf2tool.h3.spell_muddle import verify_spell_muddle, verify_spell_muddle1
 from sf2tool.h3.spell_silence import verify_spell_silence_gate
 from sf2tool.h3.spell_slow import verify_spell_slow
 from sf2tool.h3.spell_status import verify_spell_status
+from sf2tool.h3.sram_lifecycle import verify_sram_lifecycle
 from sf2tool.h3.stat_clamps import verify_stat_clamp_boundaries
 from sf2tool.h3.story_state import verify_story_state
 from sf2tool.h3.witch_new_game_lifecycle import verify_witch_new_game_lifecycle
@@ -701,6 +702,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_witch_save_actions)
     h3_witch_save_actions.add_argument("--timeout-seconds", type=int, default=120)
+    h3_sram_lifecycle = h3_commands.add_parser(
+        "sram-lifecycle",
+        help="verify one-launch direct SRAM signature, slot, checksum, and service lifecycle facts",
+    )
+    _add_local_paths(h3_sram_lifecycle)
+    h3_sram_lifecycle.add_argument("--timeout-seconds", type=int, default=180)
     h3_witch_new_game_lifecycle = h3_commands.add_parser(
         "witch-new-game-lifecycle",
         help="verify one-launch witch New action slot, difficulty, save, and MainLoop handoff",
@@ -1496,6 +1503,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "random-services":
         print_record(
             verify_random_services(args.rom_path, timeout_seconds=args.timeout_seconds)
+        )
+    elif args.command == "h3" and args.h3_command == "sram-lifecycle":
+        print_record(
+            verify_sram_lifecycle(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
         )
     elif args.command == "h3" and args.h3_command == "growth":
         print_record(

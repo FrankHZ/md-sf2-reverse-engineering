@@ -153,6 +153,7 @@ DIRECT_FUNCTION_SEAM_OBSERVERS = (
     "tools/bizhawk/level_up_refresh_observer.lua",
     "tools/bizhawk/stat_clamp_boundaries_observer.lua",
     "tools/bizhawk/stat_gain_observer.lua",
+    "tools/bizhawk/sram_lifecycle_observer.lua",
 )
 
 WITCH_MENU_OBSERVERS = (
@@ -198,6 +199,10 @@ COMMAND_LAUNCHES = {
     "random-services": _command(
         "sf2tool.h3.random_services", "verify_random_services", "battle01-intro-skip",
         _launch("tools/bizhawk/random_services_observer.lua"),
+    ),
+    "sram-lifecycle": _command(
+        "sf2tool.h3.sram_lifecycle", "verify_sram_lifecycle", "direct-function-seam",
+        _launch("tools/bizhawk/sram_lifecycle_observer.lua"),
     ),
     "growth": _command(
         "sf2tool.h3.growth", "verify_growth", "direct-function-seam",

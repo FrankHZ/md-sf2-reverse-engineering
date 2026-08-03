@@ -136,8 +136,10 @@ The current evidence is deep but narrow:
   surface are static contracts; one overlapping member-list alternate remains excluded, while UI,
   persistence, caller-return, and presentation timing remain queued for one concentrated simulation.
   Technical services now additionally models the complete seven-entry SRAM save surface: two-slot
-  layout, interleaved copying, checksum/flag transitions, and its caller inventory, with durable-media
-  hardware behavior retained as Unknown but priority-frozen; its six-entry input surface now binds two-port
+  layout, interleaved copying, checksum/flag transitions, and its caller inventory. One fourteen-case,
+  single-launch direct-service H3 matrix validates its in-process initialization, valid/invalid slot,
+  save/load/copy/delete behavior over full compact 4,016-byte spans; durable-media hardware behavior
+  remains Unknown and priority-frozen. Its six-entry input surface now binds two-port
   raw sampling, state storage, wait helpers, 11 direct call sites, and one controller/input H3 matrix.
   The paired six-entry RNG surface now records both seed states, base/debug control flow, exact
   low-byte bounded domains, 163 direct named call sites, and the six-site jump-alias boundary; retry
