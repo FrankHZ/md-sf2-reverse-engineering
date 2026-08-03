@@ -60,7 +60,7 @@ local function fail_callback(message)
   observer_failed=true
   local expected=expectation()
   local case=current_case()
-  local payload={caseId=nullable(case and case.id or nil),phase=current_phase,actualPc=nullable(emu.getregister("M68K PC")),expectedCallSiteAddress=nullable(expected.callSiteAddress),expectedTargetAddress=nullable(expected.targetAddress),expectedReturnAddress=nullable(expected.returnAddress),pendingCallback=pending_callback_state(),error=tostring(message)}
+  local payload={owner=config.observerFailureContract.owner,caseId=nullable(case and case.id or nil),phase=current_phase,actualPc=nullable(emu.getregister("M68K PC")),expectedCallSiteAddress=nullable(expected.callSiteAddress),expectedTargetAddress=nullable(expected.targetAddress),expectedReturnAddress=nullable(expected.returnAddress),pendingCallback=pending_callback_state(),error=tostring(message)}
   local diagnostic=config.observerFailureContract.statusPrefix..json(payload)
   status(diagnostic);print(diagnostic)
   if config.observerFailureContract.removeOutputBeforeExit then os.remove(config.outputPath) end

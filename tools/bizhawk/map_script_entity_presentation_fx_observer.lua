@@ -58,7 +58,7 @@ local function fail_callback(phase,address,message)
   if observer_failed then return end
   observer_failed=true
   local expected=expected_callback_for_failure()
-  local payload={caseId=nullable((config.cases[case_index] or {}).id),phase=phase,actualPc=nullable(emu.getregister("M68K PC")),expectedCallSiteAddress=nullable(expected and (expected.callSiteAddressExpected or expected.callSiteAddress)),expectedTargetAddress=nullable(expected and (expected.targetAddressExpected or expected.targetAddress)),expectedReturnAddress=nullable(expected and (expected.returnAddressExpected or expected.returnAddress)),pendingCallback=nullable(copy(pending_callback)),error=tostring(message)}
+  local payload={owner=config.observerFailureContract.owner,caseId=nullable((config.cases[case_index] or {}).id),phase=phase,actualPc=nullable(emu.getregister("M68K PC")),expectedCallSiteAddress=nullable(expected and (expected.callSiteAddressExpected or expected.callSiteAddress)),expectedTargetAddress=nullable(expected and (expected.targetAddressExpected or expected.targetAddress)),expectedReturnAddress=nullable(expected and (expected.returnAddressExpected or expected.returnAddress)),pendingCallback=nullable(copy(pending_callback)),error=tostring(message)}
   local diagnostic=config.observerFailureContract.statusPrefix..json(payload)
   status(diagnostic);print(diagnostic)
   if config.observerFailureContract.removeOutputBeforeExit then os.remove(config.outputPath) end
@@ -197,9 +197,10 @@ local function finish(code)
   if observer_failed then return end
   cleanup_session()
   if code~=0 then client.exitCode(code);return end
+  status("milestone:callbacks-cleared:"..#event_ids)
   local result={system=emu.getsystemid(),core="Genesis Plus GX",id=config.fixtureId,mapTest=config.mapTestIndex,recordOrder={},records=records}
   for _,case in ipairs(config.cases) do result.recordOrder[#result.recordOrder+1]=case.id end
-  local file=assert(io.open(config.outputPath,"w"));file:write(json(result).."\n");file:close();client.exitCode(0)
+  local file=assert(io.open(config.outputPath,"w"));file:write(json(result).."\n");file:close();status("milestone:observer-finished");client.exitCode(0)
 end
 
 local function observe_phase(phase,address)

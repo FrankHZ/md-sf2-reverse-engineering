@@ -40,6 +40,7 @@ def _observation(fixture: dict[str, object]) -> dict[str, object]:
 
 def _status_payload() -> dict[str, object]:
     return {
+        "owner": "random-services",
         "caseId": "unsigned-range-two-retry",
         "phase": "unsigned-generator-return",
         "role": "unsigned-bounded-generator-return",
@@ -245,22 +246,23 @@ def test_callback_status_requires_exact_keys_and_types(tmp_path: Path) -> None:
     malformed = _status_payload()
     del malformed["pendingCallback"]["active"]
     _write_status(path, malformed)
-    with pytest.raises(ValueError, match="pending callback state"):
+    with pytest.raises(ValueError, match="pendingCallback"):
         random_services._failure_diagnostic(path)
     malformed = _status_payload()
     malformed["pendingCallback"]["renamed"] = malformed["pendingCallback"].pop("active")
     _write_status(path, malformed)
-    with pytest.raises(ValueError, match="pending callback state"):
+    with pytest.raises(ValueError, match="pendingCallback"):
         random_services._failure_diagnostic(path)
     malformed = _status_payload()
     malformed["pendingCallback"]["extra"] = True
     _write_status(path, malformed)
-    with pytest.raises(ValueError, match="pending callback state"):
+    with pytest.raises(ValueError, match="pendingCallback"):
         random_services._failure_diagnostic(path)
     for parent, field, value in (
         (None, "caseId", 1),
         (None, "phase", None),
         (None, "actualPc", True),
+        (None, "actualPc", None),
         (None, "expectedTargetPc", True),
         ("pendingCallback", "active", 1),
         ("pendingCallback", "caseIndex", True),
@@ -270,13 +272,13 @@ def test_callback_status_requires_exact_keys_and_types(tmp_path: Path) -> None:
         container = malformed if parent is None else malformed[parent]
         container[field] = value
         _write_status(path, malformed)
-        with pytest.raises(ValueError, match="types"):
+        with pytest.raises(ValueError, match="failed schema validation"):
             random_services._failure_diagnostic(path)
 
     _write_status(path, _status_payload(), "milestone:observer-loaded")
     with path.open("a", encoding="utf-8") as handle:
         handle.write("\n" + random_services.STATUS_PREFIX + json.dumps(_status_payload()))
-    with pytest.raises(ValueError, match="ambiguous"):
+    with pytest.raises(ValueError, match="multiplicity"):
         random_services._failure_diagnostic(path)
     path.write_text(
         "milestone:observer-loaded\nmalformed " + random_services.STATUS_PREFIX + "{}",
@@ -334,6 +336,10 @@ def test_verifier_enforces_one_launch(monkeypatch: pytest.MonkeyPatch, tmp_path:
     assert launches[0]["rom_path"] == tmp_path / "input.bin"
     assert launches[0]["config"]["callbackExpectations"] == random_services.callback_expectations(
         fixture
+    )
+    assert (
+        launches[0]["config"]["observerFailureContract"]
+        == random_services.OBSERVER_FAILURE_CONTRACT
     )
     assert result["SetupHost"] == "debug Battle Test route only"
     assert result["Launches"] == 1

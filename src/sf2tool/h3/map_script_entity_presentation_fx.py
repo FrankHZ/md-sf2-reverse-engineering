@@ -19,6 +19,11 @@ from typing import Any
 from sf2tool.h2.map_script_engine import _canonical_bytes, build_map_script_engine_contract
 from sf2tool.h3.bizhawk import DERIVED_ROOT, run_observer, verify_runtime_contract
 from sf2tool.h3.map_lifecycle import _instrument_rom, _with_instrumented_rom_database
+from sf2tool.h3.observer_status import (
+    assert_observer_status,
+    callback_failure_status,
+    observer_failure_contract,
+)
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 from sf2tool.research_index import listing_symbol_addresses
@@ -31,6 +36,9 @@ OBSERVATION_SCHEMA = repo_path(
     "schemas/h3-map-script-entity-presentation-fx-observation.schema.json"
 )
 OBSERVER = repo_path("tools/bizhawk/map_script_entity_presentation_fx_observer.lua")
+FAILURE_SCHEMA = repo_path(
+    "schemas/h3/map-script-entity-presentation-fx-callback-failure.schema.json"
+)
 H1_LISTING_PATH = Path("build/sf2build-h1.lst")
 SOURCE_PATH = Path("disasm/code/common/scripting/map/mapscriptengine_1.asm")
 MAP_SETUP_SOURCE_PATH = Path("disasm/code/common/scripting/map/mapsetupsfunctions_1.asm")
@@ -64,21 +72,7 @@ RUNTIME_QUESTIONS = [
     "map-script-entity-presentation-fx/persistence-and-map-entity-interactions",
 ]
 OBSERVER_OUTPUT_NAME = "map-script-entity-presentation-fx"
-OBSERVER_FAILURE_CONTRACT = {
-    "exitCode": 1,
-    "removeOutputBeforeExit": True,
-    "statusPrefix": "failure:observer-callback:",
-}
-_OBSERVER_FAILURE_FIELDS = {
-    "actualPc",
-    "caseId",
-    "error",
-    "expectedCallSiteAddress",
-    "expectedReturnAddress",
-    "expectedTargetAddress",
-    "pendingCallback",
-    "phase",
-}
+OBSERVER_FAILURE_CONTRACT = observer_failure_contract(OBSERVER_OUTPUT_NAME)
 _OBSERVER_PHASE_ORDER = (
     "callback-return",
     "number-prompt",
@@ -122,42 +116,19 @@ def _observer_output_path() -> Path:
 
 
 def _callback_failure_status(status_path: Path) -> dict[str, Any] | None:
-    """Return the observer's structured callback failure sentinel, if present."""
-    if not status_path.is_file():
-        return None
-    prefix = OBSERVER_FAILURE_CONTRACT["statusPrefix"]
-    failures = [
-        line.removeprefix(prefix)
-        for line in status_path.read_text(encoding="utf-8").splitlines()
-        if line.startswith(prefix)
-    ]
-    if not failures:
-        return None
-    if len(failures) != 1:
-        raise ValueError("entity-presentation FX callback failure status multiplicity drift")
-    try:
-        payload = json.loads(failures[0])
-    except json.JSONDecodeError as error:
-        raise ValueError("entity-presentation FX callback failure status JSON drift") from error
-    if not isinstance(payload, dict) or set(payload) != _OBSERVER_FAILURE_FIELDS:
-        raise ValueError("entity-presentation FX callback failure status shape drift")
-    if not isinstance(payload["phase"], str) or not isinstance(payload["error"], str):
-        raise ValueError("entity-presentation FX callback failure status text drift")
-    if payload["caseId"] is not None and not isinstance(payload["caseId"], str):
-        raise ValueError("entity-presentation FX callback failure case identity drift")
-    for field in (
-        "actualPc",
-        "expectedCallSiteAddress",
-        "expectedTargetAddress",
-        "expectedReturnAddress",
-    ):
-        if payload[field] is not None and (
-            not isinstance(payload[field], int) or isinstance(payload[field], bool)
-        ):
-            raise ValueError(f"entity-presentation FX callback failure {field} drift")
-    if payload["pendingCallback"] is not None and not isinstance(payload["pendingCallback"], dict):
-        raise ValueError("entity-presentation FX callback failure pending state drift")
-    return payload
+    return callback_failure_status(
+        status_path,
+        owner=OBSERVER_OUTPUT_NAME,
+        schema_path=FAILURE_SCHEMA,
+    )
+
+
+def _assert_success_status(status_path: Path) -> None:
+    assert_observer_status(
+        status_path,
+        owner=OBSERVER_OUTPUT_NAME,
+        schema_path=FAILURE_SCHEMA,
+    )
 
 
 def _raise_for_callback_failure_status(status_path: Path, output_path: Path) -> None:
@@ -1380,6 +1351,7 @@ def verify_map_script_entity_presentation_fx(
             f"{json.dumps(failure, sort_keys=True)}"
         ) from error
     _raise_for_callback_failure_status(_observer_status_path(), _observer_output_path())
+    _assert_success_status(_observer_status_path())
     validate_json(observed, OBSERVATION_SCHEMA, owner="entity-presentation FX runtime observation")
     for runtime_case, observed_case in zip(runtime_derived, observed["records"], strict=True):
         observed_dispatches = [

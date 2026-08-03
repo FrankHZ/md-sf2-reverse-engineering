@@ -390,6 +390,7 @@ def test_transition_fixture_derivation_schemas_and_shared_pc_roles_are_complete(
 def test_transition_callback_failure_pending_state_is_exact(tmp_path: Path) -> None:
     status = tmp_path / "transition.status.txt"
     payload = {
+        "owner": "map-script-transition",
         "caseId": "fade-load",
         "phase": "service-seam",
         "actualPc": 288196,
@@ -428,7 +429,7 @@ def test_transition_callback_failure_pending_state_is_exact(tmp_path: Path) -> N
         "failure:observer-callback:" + json.dumps(malformed) + "\n",
         encoding="utf-8",
     )
-    with pytest.raises(ValueError, match="pending service field-set"):
+    with pytest.raises(ValueError, match="pendingCallback.pendingService"):
         _callback_failure_status(status)
     malformed = deepcopy(payload)
     malformed["pendingCallback"]["scriptWordReadCount"] = -1
@@ -436,7 +437,7 @@ def test_transition_callback_failure_pending_state_is_exact(tmp_path: Path) -> N
         "failure:observer-callback:" + json.dumps(malformed) + "\n",
         encoding="utf-8",
     )
-    with pytest.raises(ValueError, match="pending script-word count"):
+    with pytest.raises(ValueError, match="pendingCallback.scriptWordReadCount"):
         _callback_failure_status(status)
 
 

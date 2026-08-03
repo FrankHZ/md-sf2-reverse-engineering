@@ -21,6 +21,12 @@ from sf2tool.h3.bizhawk import (
     run_observer,
     verify_runtime_contract,
 )
+from sf2tool.h3.observer_status import (
+    CALLBACK_FAILURE_PREFIX,
+    assert_observer_status,
+    callback_failure_status,
+    observer_failure_contract,
+)
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 
@@ -28,6 +34,7 @@ FIXTURE = repo_path("tests/fixtures/h3/random-services-v1.json")
 FIXTURE_SCHEMA = repo_path("schemas/h3/h3-random-services-fixture.schema.json")
 OBSERVATION_SCHEMA = repo_path("schemas/h3/h3-random-services-observation.schema.json")
 OBSERVER = repo_path("tools/bizhawk/random_services_observer.lua")
+FAILURE_SCHEMA = repo_path("schemas/h3/random-services-callback-failure.schema.json")
 TOOLCHAIN_MANIFEST = repo_path("manifests/toolchain.json")
 H2_OWNER_FIXTURE = repo_path("tests/fixtures/h2/tech-services-static-v1.json")
 H2_OWNER_FIXTURE_RELATIVE = "tests/fixtures/h2/tech-services-static-v1.json"
@@ -41,7 +48,9 @@ BATTLE_TEST_SOURCE = UPSTREAM / "code/gameflow/special/battletest.asm"
 TURN_ORDER_SOURCE = UPSTREAM / "code/gameflow/battle/battleloop/turnorderfunctions.asm"
 CONST_SOURCE = UPSTREAM / "sf2const.asm"
 
-STATUS_PREFIX = "failure:observer-callback:"
+OBSERVER_OUTPUT_NAME = "random-services"
+STATUS_PREFIX = CALLBACK_FAILURE_PREFIX
+OBSERVER_FAILURE_CONTRACT = observer_failure_contract(OBSERVER_OUTPUT_NAME)
 
 
 def _noncomment_lines(source: str) -> list[str]:
@@ -573,91 +582,26 @@ def validate_static_contract(fixture: dict[str, Any], rom_path: Path) -> None:
 
 
 def _failure_diagnostic(status_path: Path) -> str | None:
-    if not status_path.is_file():
+    payload = callback_failure_status(
+        status_path,
+        owner=OBSERVER_OUTPUT_NAME,
+        schema_path=FAILURE_SCHEMA,
+    )
+    if payload is None:
         return None
-    failure_lines = []
-    for line in status_path.read_text(encoding="utf-8").splitlines():
-        if STATUS_PREFIX in line:
-            if not line.startswith(STATUS_PREFIX):
-                raise ValueError("malformed random-services callback status line")
-            failure_lines.append(line)
-    if not failure_lines:
-        return None
-    if len(failure_lines) != 1:
-        raise ValueError("ambiguous random-services callback status lines")
-    try:
-        payload = json.loads(failure_lines[0].removeprefix(STATUS_PREFIX))
-    except json.JSONDecodeError as error:
-        raise ValueError("malformed random-services callback status JSON") from error
-    required = {
-        "caseId",
-        "phase",
-        "role",
-        "actualPc",
-        "expectedEventPc",
-        "expectedCallPc",
-        "expectedTargetPc",
-        "expectedReturnPc",
-        "pendingCallback",
-        "error",
-    }
-    if set(payload) != required or not isinstance(payload["pendingCallback"], dict):
-        raise ValueError("malformed random-services callback status fields")
-    if payload["caseId"] is not None and type(payload["caseId"]) is not str:
-        raise ValueError("malformed random-services callback status types")
-    for field in ("phase", "role", "error"):
-        if type(payload[field]) is not str or not payload[field]:
-            raise ValueError("malformed random-services callback status types")
-    if type(payload["actualPc"]) is not int or not 0 <= payload["actualPc"] <= 0xFFFFFF:
-        raise ValueError("malformed random-services callback status types")
-    for field in (
-        "expectedEventPc",
-        "expectedCallPc",
-        "expectedTargetPc",
-        "expectedReturnPc",
-    ):
-        value = payload[field]
-        if value is not None and (type(value) is not int or not 0 <= value <= 0xFFFFFF):
-            raise ValueError("malformed random-services callback status types")
-    pending = payload["pendingCallback"]
-    pending_required = {
-        "active",
-        "caseIndex",
-        "generatorCallCount",
-        "entrySeen",
-        "returnSeen",
-        "instructionTargetObserved",
-        "effectiveTargetObserved",
-        "sourceCopyWriteSeen",
-    }
-    if set(pending) != pending_required:
-        raise ValueError("malformed random-services pending callback state")
-    for field in (
-        "active",
-        "entrySeen",
-        "returnSeen",
-        "instructionTargetObserved",
-        "effectiveTargetObserved",
-        "sourceCopyWriteSeen",
-    ):
-        if type(pending[field]) is not bool:
-            raise ValueError("malformed random-services pending callback status types")
-    for field in ("caseIndex", "generatorCallCount"):
-        if type(pending[field]) is not int or pending[field] < 0:
-            raise ValueError("malformed random-services pending callback status types")
     return json.dumps(payload, sort_keys=True)
 
 
 def _assert_status(status_path: Path) -> None:
-    callback = _failure_diagnostic(status_path)
-    if callback is not None:
-        raise RuntimeError(f"random-services observer callback failure: {callback}")
-    lines = status_path.read_text(encoding="utf-8").splitlines() if status_path.is_file() else []
-    required = {"milestone:host-turn-order-redirect", "milestone:probe-entered"}
-    if not required.issubset(lines):
-        raise RuntimeError(f"random-services observer never reached post-start probe: {lines!r}")
-    if lines[-2:] != ["milestone:callbacks-cleared:0", "milestone:observer-finished"]:
-        raise RuntimeError(f"random-services observer status incomplete: {lines!r}")
+    assert_observer_status(
+        status_path,
+        owner=OBSERVER_OUTPUT_NAME,
+        schema_path=FAILURE_SCHEMA,
+        required_milestones=(
+            "milestone:host-turn-order-redirect",
+            "milestone:probe-entered",
+        ),
+    )
 
 
 def _observer_config(fixture: dict[str, Any]) -> dict[str, Any]:
@@ -669,6 +613,7 @@ def _observer_config(fixture: dict[str, Any]) -> dict[str, Any]:
         "ram": fixture["ram"],
         "instrumentation": fixture["instrumentation"],
         "callbackExpectations": callback_expectations(fixture),
+        "observerFailureContract": OBSERVER_FAILURE_CONTRACT,
     }
 
 

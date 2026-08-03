@@ -301,6 +301,7 @@ def test_callback_failure_status_blocks_stale_observation_output(tmp_path: Path)
     output = tmp_path / "map-script-entity-presentation-fx.observed.json"
     output.write_text('{"stale":true}\n', encoding="utf-8")
     payload = {
+        "owner": "map-script-entity-presentation-fx",
         "caseId": "transition-source-2",
         "phase": "callback-site",
         "actualPc": 289266,
@@ -328,6 +329,7 @@ def test_callback_failure_status_blocks_stale_observation_output(tmp_path: Path)
     )
 
     assert fx.OBSERVER_FAILURE_CONTRACT == {
+        "owner": "map-script-entity-presentation-fx",
         "exitCode": 1,
         "removeOutputBeforeExit": True,
         "statusPrefix": "failure:observer-callback:",
@@ -343,8 +345,14 @@ def test_callback_failure_status_blocks_stale_observation_output(tmp_path: Path)
         fx.OBSERVER_FAILURE_CONTRACT["statusPrefix"] + json.dumps(malformed) + "\n",
         encoding="utf-8",
     )
-    with pytest.raises(ValueError, match="status shape drift"):
+    with pytest.raises(ValueError, match="pendingCallback.*required property"):
         fx._callback_failure_status(status)
+
+    status.write_text(
+        "milestone:callbacks-cleared:0\nmilestone:observer-finished\n",
+        encoding="utf-8",
+    )
+    fx._assert_success_status(status)
 
 
 def test_research_index_headshake_return_has_its_own_address_binding() -> None:

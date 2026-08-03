@@ -22,6 +22,11 @@ from sf2tool.h3.map_lifecycle import (
 from sf2tool.h3.map_lifecycle import (
     _with_instrumented_rom_database,
 )
+from sf2tool.h3.observer_status import (
+    assert_observer_status,
+    callback_failure_status,
+    observer_failure_contract,
+)
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 from sf2tool.research_index import listing_symbol_addresses
@@ -33,6 +38,10 @@ OBSERVATION_SCHEMA = repo_path(
     "schemas/h3/h3-map-script-control-audio-observation.schema.json"
 )
 OBSERVER = repo_path("tools/bizhawk/map_script_control_audio_observer.lua")
+FAILURE_SCHEMA = repo_path(
+    "schemas/h3/map-script-control-audio-callback-failure.schema.json"
+)
+CALLBACK_AUDIT_SCHEMA = repo_path("schemas/h3/observer-callback-audit.schema.json")
 H1_LISTING_PATH = Path("build/sf2build-h1.lst")
 
 RUNTIME_QUESTIONS = (
@@ -58,30 +67,7 @@ HANDLER_BY_MACRO = {
     "jump": "csc0B_jump",
 }
 OBSERVER_OUTPUT_NAME = "map-script-control-audio"
-OBSERVER_FAILURE_CONTRACT = {
-    "exitCode": 1,
-    "removeOutputBeforeExit": True,
-    "statusPrefix": "failure:observer-callback:",
-}
-_OBSERVER_FAILURE_FIELDS = {
-    "actualPc",
-    "caseId",
-    "error",
-    "expectedCallSiteAddress",
-    "expectedReturnAddress",
-    "expectedTargetAddress",
-    "pendingCallback",
-    "phase",
-}
-_PENDING_CALLBACK_FIELDS = {
-    "active",
-    "handlerEntriesObserved",
-    "phase",
-    "role",
-    "scriptWordReadCount",
-    "subroutineEntryStackPointer",
-    "waitForVIntCallCount",
-}
+OBSERVER_FAILURE_CONTRACT = observer_failure_contract(OBSERVER_OUTPUT_NAME)
 _CASE_ROLE_BY_PHASE_KIND = {
     "opcode-dispatch": {
         "no-op": "opcode-dispatch/no-op",
@@ -105,59 +91,11 @@ def _observer_output_path() -> Path:
 
 
 def _callback_failure_status(status_path: Path) -> dict[str, Any] | None:
-    """Read the observer's structured callback failure sentinel, if any."""
-    if not status_path.is_file():
-        return None
-    prefix = OBSERVER_FAILURE_CONTRACT["statusPrefix"]
-    rows = [
-        line.removeprefix(prefix)
-        for line in status_path.read_text(encoding="utf-8").splitlines()
-        if line.startswith(prefix)
-    ]
-    if not rows:
-        return None
-    if len(rows) != 1:
-        raise ValueError("map-script control/audio callback failure multiplicity drift")
-    try:
-        payload = json.loads(rows[0])
-    except json.JSONDecodeError as error:
-        raise ValueError("map-script control/audio callback failure JSON drift") from error
-    if not isinstance(payload, dict) or set(payload) != _OBSERVER_FAILURE_FIELDS:
-        raise ValueError("map-script control/audio callback failure shape drift")
-    if payload["caseId"] is not None and not isinstance(payload["caseId"], str):
-        raise ValueError("map-script control/audio callback failure case identity drift")
-    if not isinstance(payload["phase"], str) or not isinstance(payload["error"], str):
-        raise ValueError("map-script control/audio callback failure text drift")
-    for field in (
-        "actualPc",
-        "expectedCallSiteAddress",
-        "expectedTargetAddress",
-        "expectedReturnAddress",
-    ):
-        if payload[field] is not None and (
-            not isinstance(payload[field], int) or isinstance(payload[field], bool)
-        ):
-            raise ValueError(f"map-script control/audio callback failure {field} drift")
-    pending = payload["pendingCallback"]
-    if not isinstance(pending, dict) or set(pending) != _PENDING_CALLBACK_FIELDS:
-        raise ValueError("map-script control/audio callback failure pending state drift")
-    if not isinstance(pending["phase"], str) or not isinstance(pending["role"], str):
-        raise ValueError("map-script control/audio callback failure pending role drift")
-    if not isinstance(pending["active"], bool):
-        raise ValueError("map-script control/audio callback failure pending active drift")
-    entries = pending["handlerEntriesObserved"]
-    if not isinstance(entries, list) or not all(isinstance(entry, str) for entry in entries):
-        raise ValueError("map-script control/audio callback failure pending handlers drift")
-    for field in ("scriptWordReadCount", "waitForVIntCallCount"):
-        value = pending[field]
-        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
-            raise ValueError(f"map-script control/audio callback failure pending {field} drift")
-    stack_pointer = pending["subroutineEntryStackPointer"]
-    if stack_pointer is not None and (
-        not isinstance(stack_pointer, int) or isinstance(stack_pointer, bool)
-    ):
-        raise ValueError("map-script control/audio callback failure pending stack drift")
-    return payload
+    return callback_failure_status(
+        status_path,
+        owner=OBSERVER_OUTPUT_NAME,
+        schema_path=FAILURE_SCHEMA,
+    )
 
 
 def _raise_for_callback_failure_status(status_path: Path, output_path: Path) -> None:
@@ -171,17 +109,11 @@ def _raise_for_callback_failure_status(status_path: Path, output_path: Path) -> 
 
 
 def _assert_success_status(status_path: Path) -> None:
-    """Require the observer's explicit callback cleanup completion milestone."""
-    if not status_path.is_file():
-        raise RuntimeError("map-script control/audio observer wrote no status record")
-    lines = status_path.read_text(encoding="utf-8").splitlines()
-    if _callback_failure_status(status_path) is not None:
-        raise RuntimeError("map-script control/audio observer reported callback failure")
-    if not lines or lines[-2:] != [
-        "milestone:callbacks-cleared:0",
-        "milestone:observer-finished",
-    ]:
-        raise RuntimeError("map-script control/audio observer cleanup milestone drift")
+    assert_observer_status(
+        status_path,
+        owner=OBSERVER_OUTPUT_NAME,
+        schema_path=FAILURE_SCHEMA,
+    )
 
 
 def _parse_equates(upstream_path: Path) -> dict[str, int]:
@@ -956,6 +888,11 @@ def verify_map_script_control_audio(
         fixture["instrumentation"],
         navigation["service"],
         runtime_cases,
+    )
+    validate_json(
+        failure_expectations,
+        CALLBACK_AUDIT_SCHEMA,
+        owner="map-script control/audio callback audit",
     )
 
     def observe() -> dict[str, Any]:
