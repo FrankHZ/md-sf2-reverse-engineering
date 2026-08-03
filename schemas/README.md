@@ -29,6 +29,12 @@ mutation, clamp, distance, and source-instruction components beside them. The tr
 the exact corpus, while `src/sf2tool/h2/stats.py` owns golden equality, provenance, function-address,
 summary, and canonical-digest checks.
 
+Common menus follows the same boundary. Its output and fixture roots reuse one service-state-machine
+component, five service components, and one common instruction-record component under `h2/`. Exact
+shop, church, Caravan, blacksmith, and shared-selection values and operation order remain in
+`tests/fixtures/h2/common-menus-static-v1.json`; `src/sf2tool/h2/menus.py` owns their equality,
+provenance, H1 function addresses, summary, and canonical digest.
+
 The measured problem, target architecture, staged migration order, and acceptance guardrails are
 documented in [ADR 0007](../docs/decisions/0007-schema-contract-composition-and-migration.md). Existing
 contracts are not weakened merely because they predate that decision; migrate one complete owner at a

@@ -189,6 +189,13 @@ schema-migration milestone or merge-readiness boundary.
   `tests/fixtures/h2/common-stats-static-v1.json` and are enforced by the owner verifier, including an
   explicit 12-field function-address join to `manifests/research-index.json`. The composition audit
   reports size, constant payloads, local reference closure, and duplicated schema bodies.
+- The common-menus stage replaces its 3,303,113-byte mirrored pair with output/fixture roots plus a
+  service-state-machine component, five service components, and one common instruction-record
+  component under `schemas/h2/`. The nine-schema set is below 200 KiB, contains no component-level
+  golden `const`, retains only four root identity constants, and resolves seven tracked resources with
+  no duplicate bodies. The unchanged fixture owns exact values and operation order; the production
+  verifier rejects schema-valid provenance, H1-address, domain-model, and alternate-source drift before
+  writing output.
 
 ## Acceptance and Guardrails
 

@@ -4,6 +4,7 @@ from copy import deepcopy
 
 import pytest
 
+import sf2tool.h2.menus as menus_module
 from sf2tool.h2.menus import (
     _blacksmith_static_contract,
     _caravan_static_contract,
@@ -11,14 +12,25 @@ from sf2tool.h2.menus import (
     _shared_selection_screen_contract,
     _shop_direct_call_occurrences,
     _shop_static_contract,
+    _verify_menu_fixture_owner,
     build_menu_inventory,
+    verify_menu_inventory,
 )
-from sf2tool.jsonio import load_json, validate_json
+from sf2tool.jsonio import load_json, schema_composition_audit, validate_json
 from sf2tool.paths import repo_path
 
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
-OUTPUT_SCHEMA = repo_path("schemas/common-menus-static.schema.json")
-FIXTURE_SCHEMA = repo_path("schemas/h2-common-menus-static-fixture.schema.json")
+OUTPUT_SCHEMA = repo_path("schemas/h2/common-menus-output.schema.json")
+FIXTURE_SCHEMA = repo_path("schemas/h2/common-menus-fixture.schema.json")
+INSTRUCTION_SCHEMA = repo_path("schemas/h2/common-menus-instruction.schema.json")
+SHOP_SCHEMA = repo_path("schemas/h2/common-menus-shop.schema.json")
+CHURCH_SCHEMA = repo_path("schemas/h2/common-menus-church.schema.json")
+CARAVAN_SCHEMA = repo_path("schemas/h2/common-menus-caravan.schema.json")
+BLACKSMITH_SCHEMA = repo_path("schemas/h2/common-menus-blacksmith.schema.json")
+SHARED_SELECTION_SCHEMA = repo_path("schemas/h2/common-menus-shared-selection.schema.json")
+SERVICE_STATE_MACHINES_SCHEMA = repo_path(
+    "schemas/h2/common-menus-service-state-machines.schema.json"
+)
 FIXTURE = repo_path("tests/fixtures/h2/common-menus-static-v1.json")
 
 
@@ -1059,39 +1071,18 @@ def test_shared_selection_contract_matches_fixture_and_rejects_nested_drift() ->
     assert (
         shared == fixture["expected"]["menuFacts"]["serviceStateMachines"]["sharedSelectionScreen"]
     )
-    output_schema = load_json(OUTPUT_SCHEMA)
-    fixture_schema = load_json(FIXTURE_SCHEMA)
-    assert (
-        output_schema["definitions"]["sharedSelectionInstructionRecord"]
-        == fixture_schema["definitions"]["sharedSelectionInstructionRecord"]
+    instruction_schema = load_json(INSTRUCTION_SCHEMA)
+    shared_schema = load_json(SHARED_SELECTION_SCHEMA)
+    assert instruction_schema["additionalProperties"] is False
+    instruction_ref = {"$ref": instruction_schema["$id"]}
+    routine_schemas = shared_schema["properties"]["routineOperations"]["properties"].values()
+    assert all(
+        records == {"type": "array", "items": instruction_ref}
+        for records in routine_schemas
     )
-    assert (
-        output_schema["definitions"]["sharedSelectionFacts"]
-        == fixture_schema["definitions"]["sharedSelectionFacts"]
-    )
-    for schema in (output_schema, fixture_schema):
-        assert (
-            schema["definitions"]["sharedSelectionInstructionRecord"]["additionalProperties"]
-            is False
-        )
-        facts = schema["definitions"]["sharedSelectionFacts"]
-        routine_schemas = facts["properties"]["routineOperations"]["properties"].values()
-        assert all(
-            records["allOf"][0]["items"]
-            == {"$ref": "#/definitions/sharedSelectionInstructionRecord"}
-            and isinstance(records["allOf"][1]["const"], list)
-            for records in routine_schemas
-        )
-        assert len(list(routine_schemas)) == 17
-        assert len(json.dumps(facts, sort_keys=True)) < 250_000
-        assert (
-            len(
-                json.dumps(
-                    schema["definitions"]["sharedSelectionInstructionRecord"], sort_keys=True
-                )
-            )
-            < 1_000
-        )
+    assert len(list(routine_schemas)) == 17
+    assert len(json.dumps(shared_schema, sort_keys=True)) < 50_000
+    assert len(json.dumps(instruction_schema, sort_keys=True)) < 1_000
 
     def expect_invalid(mutate) -> None:
         broken = deepcopy(fixture)
@@ -1108,10 +1099,24 @@ def test_shared_selection_contract_matches_fixture_and_rejects_nested_drift() ->
         lambda shared: shared["resourceTransfers"]["LoadPriceTagTiles"].pop("loopWrites")
     )
     expect_invalid(
-        lambda shared: shared["resourceTransfers"]["WriteItemNameAndGoldAmount"][
-            "namedOperations"
-        ][0].pop("preCallD1ArgumentValue")
+        lambda shared: shared["routineOperations"]["ExecuteShopScreen"][0].pop("opcode")
     )
+    expect_invalid(
+        lambda shared: shared["routineOperations"]["ExecuteShopScreen"][0].__setitem__(
+            "unexpectedOperand", 0
+        )
+    )
+    broken = deepcopy(fixture)
+    broken["expected"]["menuFacts"]["serviceStateMachines"]["sharedSelectionScreen"][
+        "resourceTransfers"
+    ]["WriteItemNameAndGoldAmount"]["namedOperations"][0].pop("preCallD1ArgumentValue")
+    validate_json(broken, FIXTURE_SCHEMA, owner="schema-valid shared-selection drift")
+    with pytest.raises(ValueError, match="common menus model drift"):
+        _verify_menu_fixture_owner(
+            broken,
+            build_menu_inventory(UPSTREAM),
+            rom_manifest=load_json(menus_module.ROM_MANIFEST),
+        )
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
@@ -1122,9 +1127,7 @@ def test_shop_contract_matches_fixture_and_schemas_are_closed() -> None:
         output["menuFacts"]["serviceStateMachines"]["shop"]
         == fixture["expected"]["menuFacts"]["serviceStateMachines"]["shop"]
     )
-    output_schema = load_json(OUTPUT_SCHEMA)
-    fixture_schema = load_json(FIXTURE_SCHEMA)
-    assert output_schema["definitions"]["shopFacts"] == fixture_schema["definitions"]["shopFacts"]
+    shop_schema = load_json(SHOP_SCHEMA)
 
     def closed(value):
         if isinstance(value, dict):
@@ -1137,65 +1140,79 @@ def test_shop_contract_matches_fixture_and_schemas_are_closed() -> None:
             for child in value:
                 closed(child)
 
-    closed(output_schema["definitions"]["shopFacts"])
+    closed(shop_schema)
 
-    def expect_invalid(mutate) -> None:
+    def expect_structurally_invalid(mutate) -> None:
         broken = deepcopy(fixture)
         mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["shop"])
         with pytest.raises(ValueError, match="shop"):
             validate_json(broken, FIXTURE_SCHEMA, owner="shop contract")
 
-    expect_invalid(lambda shop: shop.__setitem__("extra", True))
-    expect_invalid(lambda shop: shop.pop("prices"))
-    expect_invalid(lambda shop: shop.__setitem__("priceData", shop.pop("prices")))
-    expect_invalid(lambda shop: shop["prices"].__setitem__("sellMultiplier", 2))
-    expect_invalid(
+    def expect_owner_rejected(mutate) -> None:
+        broken = deepcopy(fixture)
+        mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["shop"])
+        validate_json(broken, FIXTURE_SCHEMA, owner="schema-valid shop drift")
+        with pytest.raises(ValueError, match="common menus model drift"):
+            _verify_menu_fixture_owner(
+                broken,
+                output,
+                rom_manifest=load_json(menus_module.ROM_MANIFEST),
+            )
+
+    expect_structurally_invalid(lambda shop: shop.__setitem__("extra", True))
+    expect_structurally_invalid(lambda shop: shop.pop("prices"))
+    expect_structurally_invalid(lambda shop: shop.__setitem__("priceData", shop.pop("prices")))
+    expect_owner_rejected(lambda shop: shop["prices"].__setitem__("sellMultiplier", 2))
+    expect_owner_rejected(
         lambda shop: shop["routeCalls"].__setitem__("buy", shop["routeCalls"]["buy"][::-1])
     )
-    expect_invalid(lambda shop: shop["eligibility"].__setitem__("inventoryCapacity", 5))
+    expect_owner_rejected(lambda shop: shop["eligibility"].__setitem__("inventoryCapacity", 5))
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
 def test_church_contract_matches_fixture_and_uses_compact_instruction_schema() -> None:
     fixture = load_json(FIXTURE)
-    church = build_menu_inventory(UPSTREAM)["menuFacts"]["serviceStateMachines"]["church"]
+    output = build_menu_inventory(UPSTREAM)
+    church = output["menuFacts"]["serviceStateMachines"]["church"]
     assert church == fixture["expected"]["menuFacts"]["serviceStateMachines"]["church"]
-    output_schema = load_json(OUTPUT_SCHEMA)
-    fixture_schema = load_json(FIXTURE_SCHEMA)
-    assert (
-        output_schema["definitions"]["churchFacts"]
-        == fixture_schema["definitions"]["churchFacts"]
-    )
-    assert (
-        output_schema["definitions"]["churchInstructionRecord"]
-        == fixture_schema["definitions"]["churchInstructionRecord"]
-    )
-    route_schemas = output_schema["definitions"]["churchFacts"]["properties"]["routeOperations"][
-        "properties"
-    ]
+    church_schema = load_json(CHURCH_SCHEMA)
+    instruction_schema = load_json(INSTRUCTION_SCHEMA)
+    route_schemas = church_schema["properties"]["routeOperations"]["properties"]
     assert all(
-        route_schema["allOf"][0]["items"] == {"$ref": "#/definitions/churchInstructionRecord"}
-        and isinstance(route_schema["allOf"][1]["const"], list)
+        route_schema
+        == {"type": "array", "items": {"$ref": instruction_schema["$id"]}}
         for route_schema in route_schemas.values()
     )
-    assert "properties" not in route_schemas["raise"]["allOf"][1]
 
-    def expect_invalid(mutate) -> None:
+    def expect_structurally_invalid(mutate) -> None:
         broken = deepcopy(fixture)
         mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["church"])
         with pytest.raises(ValueError, match="church"):
             validate_json(broken, FIXTURE_SCHEMA, owner="church contract")
 
-    expect_invalid(lambda church: church.__setitem__("extra", True))
-    expect_invalid(lambda church: church.pop("constants"))
-    expect_invalid(lambda church: church.__setitem__("constantData", church.pop("constants")))
-    expect_invalid(lambda church: church["constants"].__setitem__("STATUSEFFECT_POISON", 3))
-    expect_invalid(
+    def expect_owner_rejected(mutate) -> None:
+        broken = deepcopy(fixture)
+        mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["church"])
+        validate_json(broken, FIXTURE_SCHEMA, owner="schema-valid church drift")
+        with pytest.raises(ValueError, match="common menus model drift"):
+            _verify_menu_fixture_owner(
+                broken,
+                output,
+                rom_manifest=load_json(menus_module.ROM_MANIFEST),
+            )
+
+    expect_structurally_invalid(lambda church: church.__setitem__("extra", True))
+    expect_structurally_invalid(lambda church: church.pop("constants"))
+    expect_structurally_invalid(
+        lambda church: church.__setitem__("constantData", church.pop("constants"))
+    )
+    expect_owner_rejected(lambda church: church["constants"].__setitem__("STATUSEFFECT_POISON", 3))
+    expect_owner_rejected(
         lambda church: church["routeOperations"].__setitem__(
             "raise", church["routeOperations"]["raise"][::-1]
         )
     )
-    expect_invalid(
+    expect_owner_rejected(
         lambda church: church["routeDerived"]["promote"].__setitem__("minimumLevel", 19)
     )
 
@@ -1203,7 +1220,8 @@ def test_church_contract_matches_fixture_and_uses_compact_instruction_schema() -
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
 def test_blacksmith_contract_matches_fixture_and_uses_compact_instruction_schema() -> None:
     fixture = load_json(FIXTURE)
-    blacksmith = build_menu_inventory(UPSTREAM)["menuFacts"]["serviceStateMachines"]["blacksmith"]
+    output = build_menu_inventory(UPSTREAM)
+    blacksmith = output["menuFacts"]["serviceStateMachines"]["blacksmith"]
     assert blacksmith == fixture["expected"]["menuFacts"]["serviceStateMachines"]["blacksmith"]
     assert blacksmith["derived"] == fixture["expected"]["menuFacts"]["serviceStateMachines"][
         "blacksmith"
@@ -1222,49 +1240,55 @@ def test_blacksmith_contract_matches_fixture_and_uses_compact_instruction_schema
             "physicalSpanBytes": 140,
         },
     ]
-    output_schema = load_json(OUTPUT_SCHEMA)
-    fixture_schema = load_json(FIXTURE_SCHEMA)
-    assert (
-        output_schema["definitions"]["blacksmithFacts"]
-        == fixture_schema["definitions"]["blacksmithFacts"]
-    )
-    function_schemas = output_schema["definitions"]["blacksmithFacts"]["properties"][
-        "functionOperations"
-    ]["properties"]
+    blacksmith_schema = load_json(BLACKSMITH_SCHEMA)
+    instruction_schema = load_json(INSTRUCTION_SCHEMA)
+    function_schemas = blacksmith_schema["properties"]["functionOperations"]["properties"]
     assert all(
-        schema["allOf"][0]["items"] == {"$ref": "#/definitions/blacksmithInstructionRecord"}
-        and isinstance(schema["allOf"][1]["const"], list)
+        schema == {"type": "array", "items": {"$ref": instruction_schema["$id"]}}
         for schema in function_schemas.values()
     )
 
-    def expect_invalid(mutate) -> None:
+    def expect_structurally_invalid(mutate) -> None:
         broken = deepcopy(fixture)
         mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["blacksmith"])
         with pytest.raises(ValueError, match="blacksmith"):
             validate_json(broken, FIXTURE_SCHEMA, owner="blacksmith contract")
 
-    expect_invalid(lambda blacksmith: blacksmith.pop("constants"))
-    expect_invalid(lambda blacksmith: blacksmith.__setitem__("extra", True))
-    expect_invalid(lambda blacksmith: blacksmith["derived"]["orders"].pop("slotWidthBytes"))
-    expect_invalid(
+    def expect_owner_rejected(mutate) -> None:
+        broken = deepcopy(fixture)
+        mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["blacksmith"])
+        validate_json(broken, FIXTURE_SCHEMA, owner="schema-valid blacksmith drift")
+        with pytest.raises(ValueError, match="common menus model drift"):
+            _verify_menu_fixture_owner(
+                broken,
+                output,
+                rom_manifest=load_json(menus_module.ROM_MANIFEST),
+            )
+
+    expect_structurally_invalid(lambda blacksmith: blacksmith.pop("constants"))
+    expect_structurally_invalid(lambda blacksmith: blacksmith.__setitem__("extra", True))
+    expect_structurally_invalid(
+        lambda blacksmith: blacksmith["derived"]["orders"].pop("slotWidthBytes")
+    )
+    expect_structurally_invalid(
         lambda blacksmith: blacksmith["derived"]["process"]["forceCopy"].pop(
             "entryCopyOperands"
         )
     )
-    expect_invalid(
+    expect_structurally_invalid(
         lambda blacksmith: blacksmith["derived"]["process"]["readiness"].pop(
             "checkFlagLoad"
         )
     )
-    expect_invalid(
+    expect_structurally_invalid(
         lambda blacksmith: blacksmith["derived"]["fulfill"].__setitem__(
             "unexpectedMutation", True
         )
     )
-    expect_invalid(
+    expect_owner_rejected(
         lambda blacksmith: blacksmith["derived"]["pick"].__setitem__("rowStrideBytes", 4)
     )
-    expect_invalid(
+    expect_owner_rejected(
         lambda blacksmith: blacksmith["functionOperations"].__setitem__(
             "PickMithrilWeapon", blacksmith["functionOperations"]["PickMithrilWeapon"][::-1]
         )
@@ -1274,7 +1298,8 @@ def test_blacksmith_contract_matches_fixture_and_uses_compact_instruction_schema
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
 def test_caravan_contract_matches_fixture_and_uses_compact_instruction_schema() -> None:
     fixture = load_json(FIXTURE)
-    caravan = build_menu_inventory(UPSTREAM)["menuFacts"]["serviceStateMachines"]["caravan"]
+    output = build_menu_inventory(UPSTREAM)
+    caravan = output["menuFacts"]["serviceStateMachines"]["caravan"]
     assert caravan == fixture["expected"]["menuFacts"]["serviceStateMachines"]["caravan"]
     assert caravan["routeDerived"] == {
         "join": {
@@ -1369,44 +1394,158 @@ def test_caravan_contract_matches_fixture_and_uses_compact_instruction_schema() 
     }
     assert caravan["internalEffectiveDirectCallSiteCounts"]["CopyCaravanItems"] == 4
     assert caravan["externalEffectiveDirectCallSiteCounts"]["CaravanMenu"] == 2
-    output_schema = load_json(OUTPUT_SCHEMA)
-    fixture_schema = load_json(FIXTURE_SCHEMA)
-    assert (
-        output_schema["definitions"]["caravanFacts"]
-        == fixture_schema["definitions"]["caravanFacts"]
-    )
-    assert (
-        output_schema["definitions"]["caravanInstructionRecord"]
-        == fixture_schema["definitions"]["caravanInstructionRecord"]
-    )
+    caravan_schema = load_json(CARAVAN_SCHEMA)
+    instruction_schema = load_json(INSTRUCTION_SCHEMA)
     for collection in ("routeOperations", "helperOperations"):
-        schemas = output_schema["definitions"]["caravanFacts"]["properties"][collection][
-            "properties"
-        ]
+        schemas = caravan_schema["properties"][collection]["properties"]
         assert all(
-            schema["allOf"][0]["items"] == {"$ref": "#/definitions/caravanInstructionRecord"}
-            and isinstance(schema["allOf"][1]["const"], list)
+            schema == {"type": "array", "items": {"$ref": instruction_schema["$id"]}}
             for schema in schemas.values()
         )
 
-    def expect_invalid(mutate) -> None:
+    def expect_structurally_invalid(mutate) -> None:
         broken = deepcopy(fixture)
         mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["caravan"])
         with pytest.raises(ValueError, match="caravan"):
             validate_json(broken, FIXTURE_SCHEMA, owner="caravan contract")
 
-    expect_invalid(lambda caravan: caravan.__setitem__("extra", True))
-    expect_invalid(lambda caravan: caravan.pop("constants"))
-    expect_invalid(lambda caravan: caravan["constants"].__setitem__("FORCE_MAX_SIZE", 13))
-    expect_invalid(lambda caravan: caravan["sourceRanges"][0].pop("physicalSpanBytes"))
-    expect_invalid(lambda caravan: caravan["routeDerived"]["depot"].pop("lookPrice"))
-    expect_invalid(
+    def expect_owner_rejected(mutate) -> None:
+        broken = deepcopy(fixture)
+        mutate(broken["expected"]["menuFacts"]["serviceStateMachines"]["caravan"])
+        validate_json(broken, FIXTURE_SCHEMA, owner="schema-valid Caravan drift")
+        with pytest.raises(ValueError, match="common menus model drift"):
+            _verify_menu_fixture_owner(
+                broken,
+                output,
+                rom_manifest=load_json(menus_module.ROM_MANIFEST),
+            )
+
+    expect_structurally_invalid(lambda caravan: caravan.__setitem__("extra", True))
+    expect_structurally_invalid(lambda caravan: caravan.pop("constants"))
+    expect_owner_rejected(lambda caravan: caravan["constants"].__setitem__("FORCE_MAX_SIZE", 13))
+    expect_owner_rejected(
+        lambda caravan: caravan["sourceRanges"][0].pop("physicalSpanBytes")
+    )
+    expect_structurally_invalid(lambda caravan: caravan["routeDerived"]["depot"].pop("lookPrice"))
+    expect_owner_rejected(
         lambda caravan: caravan["dispatchTables"]["top"].__setitem__(
             "targets", caravan["dispatchTables"]["top"]["targets"][::-1]
         )
     )
-    expect_invalid(
+    expect_owner_rejected(
         lambda caravan: caravan["routeOperations"].__setitem__(
             "itemGive", caravan["routeOperations"]["itemGive"][::-1]
         )
     )
+
+
+def test_common_menus_roots_reuse_local_service_components() -> None:
+    output_schema = load_json(OUTPUT_SCHEMA)
+    fixture_schema = load_json(FIXTURE_SCHEMA)
+    service_schema = load_json(SERVICE_STATE_MACHINES_SCHEMA)
+    assert "definitions" not in output_schema
+    assert "definitions" not in fixture_schema
+    service_ref = {"$ref": service_schema["$id"]}
+    assert (
+        output_schema["properties"]["menuFacts"]["properties"]["serviceStateMachines"]
+        == service_ref
+    )
+    assert (
+        fixture_schema["properties"]["expected"]["properties"]["menuFacts"]["properties"]
+        ["serviceStateMachines"]
+        == service_ref
+    )
+    expected_refs = {
+        "sharedSelectionScreen": load_json(SHARED_SELECTION_SCHEMA)["$id"],
+        "shop": load_json(SHOP_SCHEMA)["$id"],
+        "church": load_json(CHURCH_SCHEMA)["$id"],
+        "caravan": load_json(CARAVAN_SCHEMA)["$id"],
+        "blacksmith": load_json(BLACKSMITH_SCHEMA)["$id"],
+    }
+    service_properties = service_schema["properties"]
+    for field, reference in expected_refs.items():
+        assert service_properties[field] == {"$ref": reference}
+
+
+def test_common_menus_schema_composition_audit_stays_local_and_golden_free() -> None:
+    schema_paths = [
+        INSTRUCTION_SCHEMA,
+        SHOP_SCHEMA,
+        CHURCH_SCHEMA,
+        CARAVAN_SCHEMA,
+        BLACKSMITH_SCHEMA,
+        SHARED_SELECTION_SCHEMA,
+        SERVICE_STATE_MACHINES_SCHEMA,
+        OUTPUT_SCHEMA,
+        FIXTURE_SCHEMA,
+    ]
+    report = schema_composition_audit(schema_paths)
+    assert report["schemaCount"] == 9
+    assert report["totalSizeBytes"] < 200_000
+    assert report["constCount"] == 4
+    assert report["constPayloadBytes"] == 58
+    assert report["largeConstCount"] == 0
+    assert report["referencedResourceCount"] == 7
+    assert report["unresolvedReferences"] == []
+    assert report["duplicateBodyGroups"] == []
+    components = report["files"][:7]
+    assert all(component["constCount"] == 0 for component in components)
+
+
+def test_common_menus_fixture_owner_rejects_schema_valid_exact_drift() -> None:
+    fixture = load_json(FIXTURE)
+    canonical_output = {
+        "upstream": {"commit": fixture["upstreamCommit"]},
+        "representativeAddresses": fixture["function"],
+        "menuFacts": fixture["expected"]["menuFacts"],
+        "alternateSource": fixture["expected"]["alternateSource"],
+    }
+    cases = [
+        (
+            lambda broken: broken.__setitem__("romSha256", "0" * 64),
+            "common menus provenance drift",
+        ),
+        (
+            lambda broken: broken.__setitem__("upstreamCommit", "0" * 40),
+            "common menus provenance drift",
+        ),
+        (
+            lambda broken: broken["function"].__setitem__("ShopMenu", 131174),
+            "common menus H1 address drift",
+        ),
+        (
+            lambda broken: broken["expected"]["alternateSource"].__setitem__(
+                "alternateExcludedFromStrictReach", False
+            ),
+            "common menus alternate-source drift",
+        ),
+    ]
+    for mutate, message in cases:
+        broken = deepcopy(fixture)
+        mutate(broken)
+        validate_json(broken, FIXTURE_SCHEMA, owner="schema-valid common-menu owner drift")
+        with pytest.raises(ValueError, match=message):
+            _verify_menu_fixture_owner(
+                broken,
+                canonical_output,
+                rom_manifest=load_json(menus_module.ROM_MANIFEST),
+            )
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_common_menus_verifier_rejects_schema_valid_golden_drift_before_write(
+    tmp_path, monkeypatch
+) -> None:
+    broken = deepcopy(load_json(FIXTURE))
+    broken["expected"]["menuFacts"]["serviceStateMachines"]["shop"]["prices"][
+        "sellMultiplier"
+    ] = 2
+    fixture_path = tmp_path / "common-menus.json"
+    fixture_path.write_text(json.dumps(broken, indent=2) + "\n", encoding="utf-8")
+    validate_json(broken, FIXTURE_SCHEMA, owner="schema-valid common-menu golden drift")
+
+    output_path = tmp_path / "output.json"
+    monkeypatch.setattr(menus_module, "FIXTURE", fixture_path)
+    with pytest.raises(ValueError, match="common menus model drift"):
+        verify_menu_inventory(UPSTREAM, output_path=output_path)
+    assert not output_path.exists()

@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Shining Force II common menus static inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "upstream",
+    "scope",
+    "summary",
+    "categoryFileCounts",
+    "indexedRecordIds",
+    "indexedSourcePaths",
+    "representativeSymbols",
+    "representativeAddresses",
+    "internalDirectCallTargets",
+    "externalDirectCallTargets",
+    "menuFacts",
+    "alternateSource",
+    "files"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-common-menus-static-v1"
+    },
+    "upstream": {
+      "type": "object"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "fileCount",
+        "sourceLineCount",
+        "statementCount",
+        "globalLabelCount",
+        "localLabelCount",
+        "directCallSiteCount",
+        "indirectCallSiteCount",
+        "uniqueDirectTargetCount",
+        "internalDirectTargetCount",
+        "externalDirectTargetCount",
+        "layoutIncludedFileCount",
+        "indexedRecordCount",
+        "indexedFileCount",
+        "excludedAlternateFileCount"
+      ],
+      "properties": {
+        "fileCount": {
+          "type": "integer"
+        },
+        "layoutIncludedFileCount": {
+          "type": "integer"
+        },
+        "indexedRecordCount": {
+          "type": "integer"
+        },
+        "indexedFileCount": {
+          "type": "integer"
+        },
+        "excludedAlternateFileCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "categoryFileCounts": {
+      "type": "object",
+      "minProperties": 7,
+      "maxProperties": 7
+    },
+    "indexedRecordIds": {
+      "type": "array",
+      "minItems": 42,
+      "maxItems": 42,
+      "uniqueItems": true
+    },
+    "indexedSourcePaths": {
+      "type": "array",
+      "minItems": 41,
+      "maxItems": 41,
+      "uniqueItems": true
+    },
+    "representativeSymbols": {
+      "type": "object",
+      "minProperties": 42,
+      "maxProperties": 42
+    },
+    "representativeAddresses": {
+      "type": "object",
+      "minProperties": 41,
+      "maxProperties": 41
+    },
+    "internalDirectCallTargets": {
+      "type": "array",
+      "uniqueItems": true
+    },
+    "externalDirectCallTargets": {
+      "type": "array",
+      "uniqueItems": true
+    },
+    "menuFacts": {
+      "type": "object",
+      "minProperties": 8,
+      "maxProperties": 8,
+      "required": [
+        "serviceStateMachines"
+      ],
+      "properties": {
+        "serviceStateMachines": {
+          "$ref": "https://sf2-research.example/schemas/h2/common-menus-service-state-machines.schema.json"
+        }
+      }
+    },
+    "alternateSource": {
+      "type": "object"
+    },
+    "files": {
+      "type": "array",
+      "minItems": 42,
+      "maxItems": 42
+    }
+  },
+  "$id": "https://sf2-research.example/schemas/h2/common-menus-output.schema.json"
+}

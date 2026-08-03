@@ -1,0 +1,682 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/common-menus-shop.schema.json",
+  "title": "Common menus shop facts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "entrySymbol",
+    "sourcePaths",
+    "choiceDispatch",
+    "routeCalls",
+    "routeOperations",
+    "prices",
+    "eligibility",
+    "listConstruction",
+    "mutations",
+    "unconditionalBranchTargets",
+    "entryControlFlow",
+    "helperControlFlow",
+    "selectionScreen",
+    "jumpInterfaceAliases",
+    "internalDirectCallerOccurrences",
+    "internalEffectiveDirectCallSiteCounts",
+    "externalDirectCallerOccurrences",
+    "externalEffectiveDirectCallSiteCounts",
+    "indirectBehavior"
+  ],
+  "properties": {
+    "entrySymbol": {
+      "type": "string"
+    },
+    "sourcePaths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "choiceDispatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "menuLabel",
+        "comparedChoiceValues",
+        "comparedRouteOrder",
+        "fallthroughRoute"
+      ],
+      "properties": {
+        "menuLabel": {
+          "type": "string"
+        },
+        "comparedChoiceValues": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "comparedRouteOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fallthroughRoute": {
+          "type": "string"
+        }
+      }
+    },
+    "routeCalls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "buy",
+        "sell",
+        "repair",
+        "deals"
+      ],
+      "properties": {
+        "buy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sell": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repair": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "routeOperations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "buy",
+        "sell",
+        "repair",
+        "deals"
+      ],
+      "properties": {
+        "buy": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "sell": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "repair": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        },
+        "deals": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/common-menus-instruction.schema.json"
+          }
+        }
+      }
+    },
+    "prices": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "itemDefinitionPriceOffsetBytes",
+        "routePriceDataflow",
+        "sellMultiplier",
+        "sellRightShiftBits",
+        "repairRightShiftBits"
+      ],
+      "properties": {
+        "itemDefinitionPriceOffsetBytes": {
+          "type": "integer"
+        },
+        "routePriceDataflow": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "buy",
+            "sell",
+            "repair",
+            "deals"
+          ],
+          "properties": {
+            "buy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "itemDefinitionPriceLoadWidthBits",
+                "transformOpcodes"
+              ],
+              "properties": {
+                "itemDefinitionPriceLoadWidthBits": {
+                  "type": "integer"
+                },
+                "transformOpcodes": {
+                  "type": "array"
+                }
+              }
+            },
+            "sell": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "itemDefinitionPriceLoadWidthBits",
+                "transformOpcodes"
+              ],
+              "properties": {
+                "itemDefinitionPriceLoadWidthBits": {
+                  "type": "integer"
+                },
+                "transformOpcodes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "repair": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "itemDefinitionPriceLoadWidthBits",
+                "transformOpcodes"
+              ],
+              "properties": {
+                "itemDefinitionPriceLoadWidthBits": {
+                  "type": "integer"
+                },
+                "transformOpcodes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "deals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "itemDefinitionPriceLoadWidthBits",
+                "transformOpcodes"
+              ],
+              "properties": {
+                "itemDefinitionPriceLoadWidthBits": {
+                  "type": "integer"
+                },
+                "transformOpcodes": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "sellMultiplier": {
+          "type": "integer"
+        },
+        "sellRightShiftBits": {
+          "type": "integer"
+        },
+        "repairRightShiftBits": {
+          "type": "integer"
+        }
+      }
+    },
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inventoryCapacity",
+        "unsellableTypeLabel",
+        "rareTypeLabel",
+        "brokenItemBitLabel"
+      ],
+      "properties": {
+        "inventoryCapacity": {
+          "type": "integer"
+        },
+        "unsellableTypeLabel": {
+          "type": "string"
+        },
+        "rareTypeLabel": {
+          "type": "string"
+        },
+        "brokenItemBitLabel": {
+          "type": "string"
+        }
+      }
+    },
+    "listConstruction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shopInventoryBuilder",
+        "dealsBuilder",
+        "pageItems",
+        "selectionAddressingInstructions",
+        "dealsCounterInclusive"
+      ],
+      "properties": {
+        "shopInventoryBuilder": {
+          "type": "string"
+        },
+        "dealsBuilder": {
+          "type": "string"
+        },
+        "pageItems": {
+          "type": "integer"
+        },
+        "selectionAddressingInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dealsCounterInclusive": {
+          "type": "integer"
+        }
+      }
+    },
+    "mutations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "buy",
+        "sell",
+        "repair",
+        "deals"
+      ],
+      "properties": {
+        "buy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sell": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repair": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "unconditionalBranchTargets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "buy",
+        "sell",
+        "repair",
+        "deals"
+      ],
+      "properties": {
+        "buy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sell": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repair": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entryControlFlow": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "helperControlFlow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "shopInventory",
+        "deals",
+        "currentShopMembership",
+        "shopInventoryAddress"
+      ],
+      "properties": {
+        "shopInventory": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deals": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "currentShopMembership": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "shopInventoryAddress": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "selectionScreen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cancelValue",
+        "confirmInputBits",
+        "cancelInputBit"
+      ],
+      "properties": {
+        "cancelValue": {
+          "type": "integer"
+        },
+        "confirmInputBits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "cancelInputBit": {
+          "type": "string"
+        }
+      }
+    },
+    "jumpInterfaceAliases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "j_ExecuteShopScreen",
+        "j_ShopMenu"
+      ],
+      "properties": {
+        "j_ExecuteShopScreen": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string"
+            },
+            "sourcePath": {
+              "type": "string"
+            }
+          }
+        },
+        "j_ShopMenu": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string"
+            },
+            "sourcePath": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "internalDirectCallerOccurrences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code/common/menus/shop/shopactions.asm",
+        "code/common/menus/shopscreen.asm"
+      ],
+      "properties": {
+        "code/common/menus/shop/shopactions.asm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "siteCount"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "siteCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "code/common/menus/shopscreen.asm": {
+          "type": "array"
+        }
+      }
+    },
+    "internalEffectiveDirectCallSiteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "DetermineDealsItemsNotInCurrentShop",
+        "DoesCurrentShopContainItem",
+        "ExecuteShopScreen",
+        "GetShopInventoryAddress",
+        "PopulateShopInventoryList",
+        "ShopMenu",
+        "WaitForMusicResumeAndPlayerInput_Shop"
+      ],
+      "properties": {
+        "DetermineDealsItemsNotInCurrentShop": {
+          "type": "integer"
+        },
+        "DoesCurrentShopContainItem": {
+          "type": "integer"
+        },
+        "ExecuteShopScreen": {
+          "type": "integer"
+        },
+        "GetShopInventoryAddress": {
+          "type": "integer"
+        },
+        "PopulateShopInventoryList": {
+          "type": "integer"
+        },
+        "ShopMenu": {
+          "type": "integer"
+        },
+        "WaitForMusicResumeAndPlayerInput_Shop": {
+          "type": "integer"
+        }
+      }
+    },
+    "externalDirectCallerOccurrences": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code/common/menus/caravan/caravanactions_1.asm",
+        "code/common/scripting/map/mapscriptengine_2.asm",
+        "code/gameflow/special/battletest.asm"
+      ],
+      "properties": {
+        "code/common/menus/caravan/caravanactions_1.asm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "siteCount"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "siteCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "code/common/scripting/map/mapscriptengine_2.asm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "siteCount"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "siteCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "code/gameflow/special/battletest.asm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "siteCount"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "siteCount": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "externalEffectiveDirectCallSiteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "DetermineDealsItemsNotInCurrentShop",
+        "DoesCurrentShopContainItem",
+        "ExecuteShopScreen",
+        "GetShopInventoryAddress",
+        "PopulateShopInventoryList",
+        "ShopMenu",
+        "WaitForMusicResumeAndPlayerInput_Shop"
+      ],
+      "properties": {
+        "DetermineDealsItemsNotInCurrentShop": {
+          "type": "integer"
+        },
+        "DoesCurrentShopContainItem": {
+          "type": "integer"
+        },
+        "ExecuteShopScreen": {
+          "type": "integer"
+        },
+        "GetShopInventoryAddress": {
+          "type": "integer"
+        },
+        "PopulateShopInventoryList": {
+          "type": "integer"
+        },
+        "ShopMenu": {
+          "type": "integer"
+        },
+        "WaitForMusicResumeAndPlayerInput_Shop": {
+          "type": "integer"
+        }
+      }
+    },
+    "indirectBehavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "directCallInventoryDoesNotEstablishReachability"
+      ],
+      "properties": {
+        "directCallInventoryDoesNotEstablishReachability": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
