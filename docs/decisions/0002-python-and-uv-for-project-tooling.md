@@ -69,9 +69,11 @@ The profile split is an operational contract, not merely a convenience:
 - ordinary commits run `uv run sf2 verify` plus the one narrow H2/H3 command that owns the change;
   `verify` always runs Ruff across `src` and `tests/python`, then the shared critical target
   `tests/python/test_native_harness.py`; it is not a broad Python regression suite;
-- `uv run pytest` runs the complete Python suite when that broader check is required;
+- `uv run pytest` runs the complete Python suite in one process when that broader check is required;
 - phase milestones, release/merge readiness, shared harness changes, and explicit parity requests run
-  `uv run sf2 verify --full`, which runs the complete Python suite before H1/H2/H3;
+  `uv run sf2 verify --full`, which runs the complete Python suite with four process-isolated pytest
+  workers before H1/H2/H3. `loadfile` scheduling keeps every test module and its module-scoped
+  fixtures on one worker, and worker crashes fail instead of being silently restarted;
 - related runtime cases share one generated case table and one BizHawk launch unless their setup or
   observation seams cannot safely be shared.
 
@@ -81,12 +83,24 @@ workstation. The milestone full profile completed its 866-test Python suite in 1
 pass/fail thresholds. Automation wrapping the full profile must allow the complete Python suite plus
 H1-H3; a 15-minute caller timeout cannot be treated as a parity failure.
 
+Tracked schema files and their validators are immutable inputs during one Python worker process, so
+the local-only schema registry and root validators are cached once per worker. Temporary schemas and
+callers supplying an explicit registry remain uncached; mutation and registry-resolution tests
+therefore continue to observe every on-disk change. The full profile reports its 25 slowest pytest
+durations so later performance drift remains visible without turning wall-clock timing into a flaky
+pass/fail threshold. Developers can reproduce only the parallel Python portion with:
+
+```powershell
+uv run pytest -n 4 --dist loadfile --max-worker-restart 0 --durations 25
+```
+
 ## Consequences
 
 - New project tooling and tests go under `src/sf2tool/` and `tests/python/`.
 - Root verification, index queries, and ROM checks no longer expose PowerShell commands.
 - `uv run ruff check src tests/python` remains the direct full Ruff gate, and `uv run pytest` remains
-  the direct complete Python-suite gate. `uv run sf2 verify` is the default ordinary-commit profile:
+  the direct single-process complete Python-suite gate. `uv run sf2 verify` is the default
+  ordinary-commit profile:
   it runs the full Ruff scan and only the shared critical `tests/python/test_native_harness.py`
   target, then design/index, ROM identity, and toolchain provenance. A changed runtime/extractor
   slice adds only its owning narrow command. `uv run sf2 verify --full` runs the full Python suite

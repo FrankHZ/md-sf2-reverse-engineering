@@ -124,6 +124,19 @@ def tracked_schema_registry() -> SchemaRegistry:
     return build_schema_registry(SCHEMA_ROOT)
 
 
+@cache
+def _tracked_schema_validator(schema_path: Path) -> Draft7Validator:
+    """Compile one immutable tracked schema once per Python worker process."""
+    resolved_path = schema_path.resolve(strict=True)
+    if not resolved_path.is_relative_to(SCHEMA_ROOT):
+        raise ValueError(f"tracked schema is outside the schema root: {resolved_path}")
+    return Draft7Validator(
+        load_json(resolved_path),
+        format_checker=FormatChecker(),
+        registry=tracked_schema_registry(),
+    )
+
+
 def schema_composition_audit(
     schema_paths: list[Path],
     *,
@@ -233,19 +246,19 @@ def validate_json(
     owner: str,
     registry: SchemaRegistry | None = None,
 ) -> None:
-    schema = load_json(schema_path)
     uses_tracked_registry = registry is None
-    active_registry = tracked_schema_registry() if registry is None else registry
-    if not (
-        uses_tracked_registry
-        and schema_path.resolve().is_relative_to(SCHEMA_ROOT)
-    ):
+    resolved_schema_path = schema_path.resolve(strict=True)
+    if uses_tracked_registry and resolved_schema_path.is_relative_to(SCHEMA_ROOT):
+        validator = _tracked_schema_validator(resolved_schema_path)
+    else:
+        schema = load_json(resolved_schema_path)
+        active_registry = tracked_schema_registry() if registry is None else registry
         _verify_registered_references(schema, registry=active_registry, owner=owner)
-    validator = Draft7Validator(
-        schema,
-        format_checker=FormatChecker(),
-        registry=active_registry,
-    )
+        validator = Draft7Validator(
+            schema,
+            format_checker=FormatChecker(),
+            registry=active_registry,
+        )
     try:
         errors = sorted(
             validator.iter_errors(instance),
