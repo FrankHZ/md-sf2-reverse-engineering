@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-events-fixture-shard.schema.json",
+  "title": "Map events semantic fixture shard",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "fixtureId",
+    "section",
+    "expected"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fixtureId": {
+      "const": "sf2-map-events-static-v1"
+    },
+    "section": {
+      "enum": [
+        "routing-setup",
+        "entity-programs",
+        "zone-programs",
+        "item-programs",
+        "operation-vocabulary",
+        "direct-flags",
+        "script-invocation",
+        "textbox",
+        "sound-commands"
+      ]
+    },
+    "expected": {
+      "type": "object",
+      "minProperties": 1
+    }
+  }
+}

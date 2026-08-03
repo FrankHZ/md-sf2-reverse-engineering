@@ -1054,7 +1054,8 @@ behavior, Z80/YM/PSG state, persistence, or caller-context lifetime. Provenance:
 source/H1 rows above, `sf2enums.asm`, local USA ROM SHA-256
 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`, and
 `uv run sf2 h2 map-events`; observed output is `sf2-map-events-static-v1`, fixture
-`tests/fixtures/h2/map-events-static-v1.json`, fields `expected.soundCommand*`. Evidence date:
+index `tests/fixtures/h2/map-events-static-v1.json`, semantic shard
+`tests/fixtures/h2/map-events/sound-commands.json`, recomposed fields `soundCommand*`. Evidence date:
 2026-08-02.
 
 **Confirmed (bounded H3):** `sf2-map-script-control-audio-runtime-v1` runs six RAM-owned streams in

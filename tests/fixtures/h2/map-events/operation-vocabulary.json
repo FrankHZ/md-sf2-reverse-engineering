@@ -1,0 +1,1911 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-events-static-v1:operation-vocabulary",
+  "fixtureId": "sf2-map-events-static-v1",
+  "section": "operation-vocabulary",
+  "expected": {
+    "operationDefinitions": [
+      {
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "sourceMacro": "csWait",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 8,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.b $80",
+          "dc.b \\1"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "sleep",
+          "opcode": null,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": null
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:nextSingleText",
+        "family": "map-script-macro",
+        "sourceMacro": "nextSingleText",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 13,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $0",
+          "dc.b \\1",
+          "dc.b \\2"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 0,
+          "encodedBytes": 4,
+          "aliasOf": null,
+          "handler": "csc00_displaySingleTextbox"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:playSound",
+        "family": "map-script-macro",
+        "sourceMacro": "playSound",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 47,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $5",
+          "dc.w \\1"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 5,
+          "encodedBytes": 4,
+          "aliasOf": null,
+          "handler": "csc05_playSound"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:warp",
+        "family": "map-script-macro",
+        "sourceMacro": "warp",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 56,
+        "formalParameterOrdinals": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $7",
+          "dc.b \\1",
+          "dc.b \\2",
+          "dc.b \\3",
+          "dc.b \\4"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 7,
+          "encodedBytes": 6,
+          "aliasOf": null,
+          "handler": "csc07_warp"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:executeSubroutine",
+        "family": "map-script-macro",
+        "sourceMacro": "executeSubroutine",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 73,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $a",
+          "dc.l \\1"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 10,
+          "encodedBytes": 6,
+          "aliasOf": null,
+          "handler": "csc0A_executeSubroutine"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:clearF",
+        "family": "map-script-macro",
+        "sourceMacro": "clearF",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 117,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $10",
+          "dc.w \\1",
+          "dc.w 0"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 16,
+          "encodedBytes": 6,
+          "aliasOf": "csc10",
+          "handler": "csc10_toggleFlag"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "entity-action-wrapper:customActscriptWait",
+        "family": "entity-action-wrapper",
+        "sourceMacro": "customActscriptWait",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 145,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $14",
+          "dc.b \\1",
+          "dc.b $ff"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 20,
+          "encodedBytes": 4,
+          "aliasOf": "csc14",
+          "handler": "csc14_setEntityActscriptManual"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:setActscriptWait",
+        "family": "map-script-macro",
+        "sourceMacro": "setActscriptWait",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 160,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $15",
+          "dc.b \\1",
+          "dc.b $ff",
+          "dc.l \\2"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 21,
+          "encodedBytes": 8,
+          "aliasOf": "csc15",
+          "handler": "csc15_setEntityActscript"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:setSprite",
+        "family": "map-script-macro",
+        "sourceMacro": "setSprite",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 191,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $1a",
+          "dc.w \\1",
+          "dc.w \\2"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 26,
+          "encodedBytes": 6,
+          "aliasOf": null,
+          "handler": "csc1A_setEntitySprite"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:setFacing",
+        "family": "map-script-macro",
+        "sourceMacro": "setFacing",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 237,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $23",
+          "dc.b \\1",
+          "dc.b \\2"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 35,
+          "encodedBytes": 4,
+          "aliasOf": null,
+          "handler": "csc23_setEntityFacing"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "entity-action-wrapper:entityActions",
+        "family": "entity-action-wrapper",
+        "sourceMacro": "entityActions",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 304,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $2d",
+          "dc.b \\1",
+          "dc.b 0"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 45,
+          "encodedBytes": 4,
+          "aliasOf": "csc2D",
+          "handler": "csc2D_entityActionSequence"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:setCamDest",
+        "family": "map-script-macro",
+        "sourceMacro": "setCamDest",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 334,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $32",
+          "dc.w \\1",
+          "dc.w \\2"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 50,
+          "encodedBytes": 6,
+          "aliasOf": null,
+          "handler": "csc32_setCameraDestInTiles"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:setQuake",
+        "family": "map-script-macro",
+        "sourceMacro": "setQuake",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 340,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $33",
+          "dc.w \\1"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 51,
+          "encodedBytes": 4,
+          "aliasOf": null,
+          "handler": "csc33_setQuakeAmount"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:setBlocks",
+        "family": "map-script-macro",
+        "sourceMacro": "setBlocks",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 345,
+        "formalParameterOrdinals": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $34",
+          "dc.b \\1",
+          "dc.b \\2",
+          "dc.b \\3",
+          "dc.b \\4",
+          "dc.b \\5",
+          "dc.b \\6"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 52,
+          "encodedBytes": 8,
+          "aliasOf": null,
+          "handler": "csc34_setBlocks"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:loadMapFadeIn",
+        "family": "map-script-macro",
+        "sourceMacro": "loadMapFadeIn",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 369,
+        "formalParameterOrdinals": [
+          1,
+          2,
+          3
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $37",
+          "dc.w \\1",
+          "dc.w \\2",
+          "dc.w \\3"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 55,
+          "encodedBytes": 8,
+          "aliasOf": null,
+          "handler": "csc37_loadMapAndFadeIn"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:fadeInB",
+        "family": "map-script-macro",
+        "sourceMacro": "fadeInB",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 376,
+        "formalParameterOrdinals": [],
+        "emissionStatementTemplates": [
+          "dc.w $39"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 57,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": "csc39_fadeInFromBlack"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:flashScreenWhite",
+        "family": "map-script-macro",
+        "sourceMacro": "flashScreenWhite",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 408,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $41",
+          "dc.w \\1"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 65,
+          "encodedBytes": 4,
+          "aliasOf": null,
+          "handler": "csc41_flashScreenWhite"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "map-script-macro:loadMapEntities",
+        "family": "map-script-macro",
+        "sourceMacro": "loadMapEntities",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 413,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $42",
+          "dc.l \\1"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "command",
+          "opcode": 66,
+          "encodedBytes": 6,
+          "aliasOf": null,
+          "handler": "csc42_loadMapEntities"
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "entity-action-payload-command:moveRight",
+        "family": "entity-action-payload-command",
+        "sourceMacro": "moveRight",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 508,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.b $0",
+          "dc.b \\1"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "entity-action-payload-command:moveUp",
+        "family": "entity-action-payload-command",
+        "sourceMacro": "moveUp",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 513,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.b $1",
+          "dc.b \\1"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "entity-action-payload-command:moveLeft",
+        "family": "entity-action-payload-command",
+        "sourceMacro": "moveLeft",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 518,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.b $2",
+          "dc.b \\1"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "entity-action-payload-command:moveDown",
+        "family": "entity-action-payload-command",
+        "sourceMacro": "moveDown",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 523,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.b $3",
+          "dc.b \\1"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "entity-action-payload-command:endActions",
+        "family": "entity-action-payload-command",
+        "sourceMacro": "endActions",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 588,
+        "formalParameterOrdinals": [],
+        "emissionStatementTemplates": [
+          "dc.w $8080"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "stream-terminator:csc_end",
+        "family": "stream-terminator",
+        "sourceMacro": "csc_end",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 595,
+        "formalParameterOrdinals": [],
+        "emissionStatementTemplates": [
+          "dc.w $ffff"
+        ],
+        "engineCatalog": {
+          "catalog": "map-script-engine",
+          "kind": "terminator",
+          "opcode": null,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": null
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "entity-action-command:ac_end",
+        "family": "entity-action-command",
+        "sourceMacro": "ac_end",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 635,
+        "formalParameterOrdinals": [],
+        "emissionStatementTemplates": [
+          "dc.w $8080"
+        ],
+        "engineCatalog": {
+          "catalog": "entity-action-scripts",
+          "handler": null,
+          "opcode": 32896,
+          "encodedBytes": 2,
+          "isInlineTerminator": true
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "entity-action-command:ac_setSpeed",
+        "family": "entity-action-command",
+        "sourceMacro": "ac_setSpeed",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 724,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $10",
+          "dc.b \\1",
+          "dc.b \\2"
+        ],
+        "engineCatalog": {
+          "catalog": "entity-action-scripts",
+          "handler": "esc10_setSpeed",
+          "opcode": 16,
+          "encodedBytes": 4,
+          "isInlineTerminator": false
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "entity-action-command:ac_jump",
+        "family": "entity-action-command",
+        "sourceMacro": "ac_jump",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 847,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "dc.w $34",
+          "dc.l \\1"
+        ],
+        "engineCatalog": {
+          "catalog": "entity-action-scripts",
+          "handler": "esc34_jump",
+          "opcode": 52,
+          "encodedBytes": 6,
+          "isInlineTerminator": false
+        },
+        "serviceTarget": null
+      },
+      {
+        "definitionId": "event-service-macro:sndCom",
+        "family": "event-service-macro",
+        "sourceMacro": "sndCom",
+        "sourcePath": "sf2macros.asm",
+        "definitionSourceLine": 27,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "trap #sound_command",
+          "dc.w \\1"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": "#SOUND_COMMAND"
+      },
+      {
+        "definitionId": "event-service-macro:chkFlg",
+        "family": "event-service-macro",
+        "sourceMacro": "chkFlg",
+        "sourcePath": "sf2macros.asm",
+        "definitionSourceLine": 32,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "trap #check_flag",
+          "dc.w \\1"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": "#CHECK_FLAG"
+      },
+      {
+        "definitionId": "event-service-macro:setFlg",
+        "family": "event-service-macro",
+        "sourceMacro": "setFlg",
+        "sourcePath": "sf2macros.asm",
+        "definitionSourceLine": 37,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "trap #set_flag",
+          "dc.w \\1"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": "#SET_FLAG"
+      },
+      {
+        "definitionId": "event-service-macro:clrFlg",
+        "family": "event-service-macro",
+        "sourceMacro": "clrFlg",
+        "sourcePath": "sf2macros.asm",
+        "definitionSourceLine": 42,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "trap #clear_flag",
+          "dc.w \\1"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": "#CLEAR_FLAG"
+      },
+      {
+        "definitionId": "event-service-macro:txt",
+        "family": "event-service-macro",
+        "sourceMacro": "txt",
+        "sourcePath": "sf2macros.asm",
+        "definitionSourceLine": 52,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "trap #textbox",
+          "dc.w \\1"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": "#TEXTBOX"
+      },
+      {
+        "definitionId": "event-service-macro:clsTxt",
+        "family": "event-service-macro",
+        "sourceMacro": "clsTxt",
+        "sourcePath": "sf2macros.asm",
+        "definitionSourceLine": 57,
+        "formalParameterOrdinals": [],
+        "emissionStatementTemplates": [
+          "trap #textbox",
+          "dc.w $ffff"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": "#TEXTBOX"
+      },
+      {
+        "definitionId": "event-service-macro:script",
+        "family": "event-service-macro",
+        "sourceMacro": "script",
+        "sourcePath": "sf2macros.asm",
+        "definitionSourceLine": 62,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "emissionStatementTemplates": [
+          "lea \\1(pc),a0",
+          "trap #mapscript"
+        ],
+        "engineCatalog": null,
+        "serviceTarget": "#MAPSCRIPT"
+      }
+    ],
+    "operationDefinitionOrder": [
+      "{\"definitionId\":\"map-script-macro:csWait\",\"family\":\"map-script-macro\",\"sourceMacro\":\"csWait\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":8,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.b $80\",\"dc.b \\\\1\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"sleep\",\"opcode\":null,\"encodedBytes\":2,\"aliasOf\":null,\"handler\":null},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:nextSingleText\",\"family\":\"map-script-macro\",\"sourceMacro\":\"nextSingleText\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":13,\"formalParameterOrdinals\":[1,2],\"emissionStatementTemplates\":[\"dc.w $0\",\"dc.b \\\\1\",\"dc.b \\\\2\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":0,\"encodedBytes\":4,\"aliasOf\":null,\"handler\":\"csc00_displaySingleTextbox\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:playSound\",\"family\":\"map-script-macro\",\"sourceMacro\":\"playSound\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":47,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.w $5\",\"dc.w \\\\1\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":5,\"encodedBytes\":4,\"aliasOf\":null,\"handler\":\"csc05_playSound\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:warp\",\"family\":\"map-script-macro\",\"sourceMacro\":\"warp\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":56,\"formalParameterOrdinals\":[1,2,3,4],\"emissionStatementTemplates\":[\"dc.w $7\",\"dc.b \\\\1\",\"dc.b \\\\2\",\"dc.b \\\\3\",\"dc.b \\\\4\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":7,\"encodedBytes\":6,\"aliasOf\":null,\"handler\":\"csc07_warp\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:executeSubroutine\",\"family\":\"map-script-macro\",\"sourceMacro\":\"executeSubroutine\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":73,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.w $a\",\"dc.l \\\\1\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":10,\"encodedBytes\":6,\"aliasOf\":null,\"handler\":\"csc0A_executeSubroutine\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:clearF\",\"family\":\"map-script-macro\",\"sourceMacro\":\"clearF\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":117,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.w $10\",\"dc.w \\\\1\",\"dc.w 0\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":16,\"encodedBytes\":6,\"aliasOf\":\"csc10\",\"handler\":\"csc10_toggleFlag\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"entity-action-wrapper:customActscriptWait\",\"family\":\"entity-action-wrapper\",\"sourceMacro\":\"customActscriptWait\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":145,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.w $14\",\"dc.b \\\\1\",\"dc.b $ff\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":20,\"encodedBytes\":4,\"aliasOf\":\"csc14\",\"handler\":\"csc14_setEntityActscriptManual\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:setActscriptWait\",\"family\":\"map-script-macro\",\"sourceMacro\":\"setActscriptWait\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":160,\"formalParameterOrdinals\":[1,2],\"emissionStatementTemplates\":[\"dc.w $15\",\"dc.b \\\\1\",\"dc.b $ff\",\"dc.l \\\\2\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":21,\"encodedBytes\":8,\"aliasOf\":\"csc15\",\"handler\":\"csc15_setEntityActscript\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:setSprite\",\"family\":\"map-script-macro\",\"sourceMacro\":\"setSprite\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":191,\"formalParameterOrdinals\":[1,2],\"emissionStatementTemplates\":[\"dc.w $1a\",\"dc.w \\\\1\",\"dc.w \\\\2\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":26,\"encodedBytes\":6,\"aliasOf\":null,\"handler\":\"csc1A_setEntitySprite\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:setFacing\",\"family\":\"map-script-macro\",\"sourceMacro\":\"setFacing\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":237,\"formalParameterOrdinals\":[1,2],\"emissionStatementTemplates\":[\"dc.w $23\",\"dc.b \\\\1\",\"dc.b \\\\2\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":35,\"encodedBytes\":4,\"aliasOf\":null,\"handler\":\"csc23_setEntityFacing\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"entity-action-wrapper:entityActions\",\"family\":\"entity-action-wrapper\",\"sourceMacro\":\"entityActions\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":304,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.w $2d\",\"dc.b \\\\1\",\"dc.b 0\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":45,\"encodedBytes\":4,\"aliasOf\":\"csc2D\",\"handler\":\"csc2D_entityActionSequence\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:setCamDest\",\"family\":\"map-script-macro\",\"sourceMacro\":\"setCamDest\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":334,\"formalParameterOrdinals\":[1,2],\"emissionStatementTemplates\":[\"dc.w $32\",\"dc.w \\\\1\",\"dc.w \\\\2\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":50,\"encodedBytes\":6,\"aliasOf\":null,\"handler\":\"csc32_setCameraDestInTiles\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:setQuake\",\"family\":\"map-script-macro\",\"sourceMacro\":\"setQuake\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":340,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.w $33\",\"dc.w \\\\1\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":51,\"encodedBytes\":4,\"aliasOf\":null,\"handler\":\"csc33_setQuakeAmount\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:setBlocks\",\"family\":\"map-script-macro\",\"sourceMacro\":\"setBlocks\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":345,\"formalParameterOrdinals\":[1,2,3,4,5,6],\"emissionStatementTemplates\":[\"dc.w $34\",\"dc.b \\\\1\",\"dc.b \\\\2\",\"dc.b \\\\3\",\"dc.b \\\\4\",\"dc.b \\\\5\",\"dc.b \\\\6\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":52,\"encodedBytes\":8,\"aliasOf\":null,\"handler\":\"csc34_setBlocks\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:loadMapFadeIn\",\"family\":\"map-script-macro\",\"sourceMacro\":\"loadMapFadeIn\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":369,\"formalParameterOrdinals\":[1,2,3],\"emissionStatementTemplates\":[\"dc.w $37\",\"dc.w \\\\1\",\"dc.w \\\\2\",\"dc.w \\\\3\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":55,\"encodedBytes\":8,\"aliasOf\":null,\"handler\":\"csc37_loadMapAndFadeIn\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:fadeInB\",\"family\":\"map-script-macro\",\"sourceMacro\":\"fadeInB\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":376,\"formalParameterOrdinals\":[],\"emissionStatementTemplates\":[\"dc.w $39\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":57,\"encodedBytes\":2,\"aliasOf\":null,\"handler\":\"csc39_fadeInFromBlack\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:flashScreenWhite\",\"family\":\"map-script-macro\",\"sourceMacro\":\"flashScreenWhite\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":408,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.w $41\",\"dc.w \\\\1\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":65,\"encodedBytes\":4,\"aliasOf\":null,\"handler\":\"csc41_flashScreenWhite\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"map-script-macro:loadMapEntities\",\"family\":\"map-script-macro\",\"sourceMacro\":\"loadMapEntities\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":413,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.w $42\",\"dc.l \\\\1\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"command\",\"opcode\":66,\"encodedBytes\":6,\"aliasOf\":null,\"handler\":\"csc42_loadMapEntities\"},\"serviceTarget\":null}",
+      "{\"definitionId\":\"entity-action-payload-command:moveRight\",\"family\":\"entity-action-payload-command\",\"sourceMacro\":\"moveRight\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":508,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.b $0\",\"dc.b \\\\1\"],\"engineCatalog\":null,\"serviceTarget\":null}",
+      "{\"definitionId\":\"entity-action-payload-command:moveUp\",\"family\":\"entity-action-payload-command\",\"sourceMacro\":\"moveUp\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":513,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.b $1\",\"dc.b \\\\1\"],\"engineCatalog\":null,\"serviceTarget\":null}",
+      "{\"definitionId\":\"entity-action-payload-command:moveLeft\",\"family\":\"entity-action-payload-command\",\"sourceMacro\":\"moveLeft\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":518,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.b $2\",\"dc.b \\\\1\"],\"engineCatalog\":null,\"serviceTarget\":null}",
+      "{\"definitionId\":\"entity-action-payload-command:moveDown\",\"family\":\"entity-action-payload-command\",\"sourceMacro\":\"moveDown\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":523,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.b $3\",\"dc.b \\\\1\"],\"engineCatalog\":null,\"serviceTarget\":null}",
+      "{\"definitionId\":\"entity-action-payload-command:endActions\",\"family\":\"entity-action-payload-command\",\"sourceMacro\":\"endActions\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":588,\"formalParameterOrdinals\":[],\"emissionStatementTemplates\":[\"dc.w $8080\"],\"engineCatalog\":null,\"serviceTarget\":null}",
+      "{\"definitionId\":\"stream-terminator:csc_end\",\"family\":\"stream-terminator\",\"sourceMacro\":\"csc_end\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":595,\"formalParameterOrdinals\":[],\"emissionStatementTemplates\":[\"dc.w $ffff\"],\"engineCatalog\":{\"catalog\":\"map-script-engine\",\"kind\":\"terminator\",\"opcode\":null,\"encodedBytes\":2,\"aliasOf\":null,\"handler\":null},\"serviceTarget\":null}",
+      "{\"definitionId\":\"entity-action-command:ac_end\",\"family\":\"entity-action-command\",\"sourceMacro\":\"ac_end\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":635,\"formalParameterOrdinals\":[],\"emissionStatementTemplates\":[\"dc.w $8080\"],\"engineCatalog\":{\"catalog\":\"entity-action-scripts\",\"handler\":null,\"opcode\":32896,\"encodedBytes\":2,\"isInlineTerminator\":true},\"serviceTarget\":null}",
+      "{\"definitionId\":\"entity-action-command:ac_setSpeed\",\"family\":\"entity-action-command\",\"sourceMacro\":\"ac_setSpeed\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":724,\"formalParameterOrdinals\":[1,2],\"emissionStatementTemplates\":[\"dc.w $10\",\"dc.b \\\\1\",\"dc.b \\\\2\"],\"engineCatalog\":{\"catalog\":\"entity-action-scripts\",\"handler\":\"esc10_setSpeed\",\"opcode\":16,\"encodedBytes\":4,\"isInlineTerminator\":false},\"serviceTarget\":null}",
+      "{\"definitionId\":\"entity-action-command:ac_jump\",\"family\":\"entity-action-command\",\"sourceMacro\":\"ac_jump\",\"sourcePath\":\"sf2cutscenemacros.asm\",\"definitionSourceLine\":847,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"dc.w $34\",\"dc.l \\\\1\"],\"engineCatalog\":{\"catalog\":\"entity-action-scripts\",\"handler\":\"esc34_jump\",\"opcode\":52,\"encodedBytes\":6,\"isInlineTerminator\":false},\"serviceTarget\":null}",
+      "{\"definitionId\":\"event-service-macro:sndCom\",\"family\":\"event-service-macro\",\"sourceMacro\":\"sndCom\",\"sourcePath\":\"sf2macros.asm\",\"definitionSourceLine\":27,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"trap #sound_command\",\"dc.w \\\\1\"],\"engineCatalog\":null,\"serviceTarget\":\"#SOUND_COMMAND\"}",
+      "{\"definitionId\":\"event-service-macro:chkFlg\",\"family\":\"event-service-macro\",\"sourceMacro\":\"chkFlg\",\"sourcePath\":\"sf2macros.asm\",\"definitionSourceLine\":32,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"trap #check_flag\",\"dc.w \\\\1\"],\"engineCatalog\":null,\"serviceTarget\":\"#CHECK_FLAG\"}",
+      "{\"definitionId\":\"event-service-macro:setFlg\",\"family\":\"event-service-macro\",\"sourceMacro\":\"setFlg\",\"sourcePath\":\"sf2macros.asm\",\"definitionSourceLine\":37,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"trap #set_flag\",\"dc.w \\\\1\"],\"engineCatalog\":null,\"serviceTarget\":\"#SET_FLAG\"}",
+      "{\"definitionId\":\"event-service-macro:clrFlg\",\"family\":\"event-service-macro\",\"sourceMacro\":\"clrFlg\",\"sourcePath\":\"sf2macros.asm\",\"definitionSourceLine\":42,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"trap #clear_flag\",\"dc.w \\\\1\"],\"engineCatalog\":null,\"serviceTarget\":\"#CLEAR_FLAG\"}",
+      "{\"definitionId\":\"event-service-macro:txt\",\"family\":\"event-service-macro\",\"sourceMacro\":\"txt\",\"sourcePath\":\"sf2macros.asm\",\"definitionSourceLine\":52,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"trap #textbox\",\"dc.w \\\\1\"],\"engineCatalog\":null,\"serviceTarget\":\"#TEXTBOX\"}",
+      "{\"definitionId\":\"event-service-macro:clsTxt\",\"family\":\"event-service-macro\",\"sourceMacro\":\"clsTxt\",\"sourcePath\":\"sf2macros.asm\",\"definitionSourceLine\":57,\"formalParameterOrdinals\":[],\"emissionStatementTemplates\":[\"trap #textbox\",\"dc.w $ffff\"],\"engineCatalog\":null,\"serviceTarget\":\"#TEXTBOX\"}",
+      "{\"definitionId\":\"event-service-macro:script\",\"family\":\"event-service-macro\",\"sourceMacro\":\"script\",\"sourcePath\":\"sf2macros.asm\",\"definitionSourceLine\":62,\"formalParameterOrdinals\":[1],\"emissionStatementTemplates\":[\"lea \\\\1(pc),a0\",\"trap #mapscript\"],\"engineCatalog\":null,\"serviceTarget\":\"#MAPSCRIPT\"}"
+    ],
+    "operationPayloadContexts": [
+      {
+        "contextId": "data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload",
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "openerSourceLine": 22,
+        "openerSourceMnemonic": "entityActionsWait",
+        "contextFamily": "entity-action-payload",
+        "parentContextId": null,
+        "terminatorMnemonic": "endActions",
+        "terminatorSourceLine": 29
+      },
+      {
+        "contextId": "data/maps/entries/map44/mapsetups/scripts.asm:65:entity-action-payload",
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "openerSourceLine": 65,
+        "openerSourceMnemonic": "entityActions",
+        "contextFamily": "entity-action-payload",
+        "parentContextId": null,
+        "terminatorMnemonic": "endActions",
+        "terminatorSourceLine": 68
+      },
+      {
+        "contextId": "data/maps/entries/map44/mapsetups/scripts.asm:80:entity-action-command-payload",
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "openerSourceLine": 80,
+        "openerSourceMnemonic": "customActscriptWait",
+        "contextFamily": "entity-action-command-payload",
+        "parentContextId": null,
+        "terminatorMnemonic": "ac_end",
+        "terminatorSourceLine": 83
+      },
+      {
+        "contextId": "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload",
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "openerSourceLine": 84,
+        "openerSourceMnemonic": "entityActions",
+        "contextFamily": "entity-action-payload",
+        "parentContextId": null,
+        "terminatorMnemonic": "endActions",
+        "terminatorSourceLine": 92
+      }
+    ],
+    "operationPayloadContextOrder": [
+      "{\"contextId\":\"data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload\",\"sourcePath\":\"data/maps/entries/map44/mapsetups/scripts.asm\",\"openerSourceLine\":22,\"openerSourceMnemonic\":\"entityActionsWait\",\"contextFamily\":\"entity-action-payload\",\"parentContextId\":null,\"terminatorMnemonic\":\"endActions\",\"terminatorSourceLine\":29}",
+      "{\"contextId\":\"data/maps/entries/map44/mapsetups/scripts.asm:65:entity-action-payload\",\"sourcePath\":\"data/maps/entries/map44/mapsetups/scripts.asm\",\"openerSourceLine\":65,\"openerSourceMnemonic\":\"entityActions\",\"contextFamily\":\"entity-action-payload\",\"parentContextId\":null,\"terminatorMnemonic\":\"endActions\",\"terminatorSourceLine\":68}",
+      "{\"contextId\":\"data/maps/entries/map44/mapsetups/scripts.asm:80:entity-action-command-payload\",\"sourcePath\":\"data/maps/entries/map44/mapsetups/scripts.asm\",\"openerSourceLine\":80,\"openerSourceMnemonic\":\"customActscriptWait\",\"contextFamily\":\"entity-action-command-payload\",\"parentContextId\":null,\"terminatorMnemonic\":\"ac_end\",\"terminatorSourceLine\":83}",
+      "{\"contextId\":\"data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload\",\"sourcePath\":\"data/maps/entries/map44/mapsetups/scripts.asm\",\"openerSourceLine\":84,\"openerSourceMnemonic\":\"entityActions\",\"contextFamily\":\"entity-action-payload\",\"parentContextId\":null,\"terminatorMnemonic\":\"endActions\",\"terminatorSourceLine\":92}"
+    ],
+    "operationVocabularySummary": {
+      "uniqueMnemonicCount": 54,
+      "definitionJoinCount": 34,
+      "unclassifiedOperationCount": 0,
+      "ambiguousMnemonicFamilyDefinitionCount": 0,
+      "categoryPhysicalOperationCounts": {
+        "entityEvents": 2624,
+        "zoneEvents": 809,
+        "itemEvents": 146
+      },
+      "definitionJoinCounts": {
+        "data-directive": 0,
+        "entity-action-command": 3,
+        "entity-action-payload-command": 5,
+        "entity-action-wrapper": 2,
+        "event-service-macro": 7,
+        "map-script-macro": 16,
+        "raw-68000-control-flow": 0,
+        "raw-68000-instruction": 0,
+        "stream-terminator": 1
+      },
+      "weightCounts": {
+        "uniquePhysicalOperationCount": 3579,
+        "physicalRecordWeightedOperationCount": 5115,
+        "setupRecordReferenceWeightedOperationCount": 6911,
+        "routeRecordReferenceWeightedOperationCount": 7377
+      }
+    },
+    "operationVocabulary": [
+      {
+        "mnemonic": "ac_end",
+        "family": "entity-action-command",
+        "definitionId": "entity-action-command:ac_end",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "ac_jump",
+        "family": "entity-action-command",
+        "definitionId": "entity-action-command:ac_jump",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "ac_setspeed",
+        "family": "entity-action-command",
+        "definitionId": "entity-action-command:ac_setSpeed",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "add",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 1,
+          "zoneEvents": 0,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 2,
+          "setupRecordReferenceWeightedOperationCount": 2,
+          "routeRecordReferenceWeightedOperationCount": 2
+        }
+      },
+      {
+        "mnemonic": "addq",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 1,
+          "zoneEvents": 0,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 2,
+          "routeRecordReferenceWeightedOperationCount": 2
+        }
+      },
+      {
+        "mnemonic": "andi",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 1,
+          "zoneEvents": 0,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 2,
+          "routeRecordReferenceWeightedOperationCount": 2
+        }
+      },
+      {
+        "mnemonic": "beq",
+        "family": "raw-68000-control-flow",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 17,
+          "zoneEvents": 34,
+          "itemEvents": 2
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 53,
+          "physicalRecordWeightedOperationCount": 79,
+          "setupRecordReferenceWeightedOperationCount": 144,
+          "routeRecordReferenceWeightedOperationCount": 163
+        }
+      },
+      {
+        "mnemonic": "bne",
+        "family": "raw-68000-control-flow",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 191,
+          "zoneEvents": 89,
+          "itemEvents": 7
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 287,
+          "physicalRecordWeightedOperationCount": 486,
+          "setupRecordReferenceWeightedOperationCount": 665,
+          "routeRecordReferenceWeightedOperationCount": 731
+        }
+      },
+      {
+        "mnemonic": "bra",
+        "family": "raw-68000-control-flow",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 147,
+          "zoneEvents": 18,
+          "itemEvents": 4
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 169,
+          "physicalRecordWeightedOperationCount": 326,
+          "setupRecordReferenceWeightedOperationCount": 431,
+          "routeRecordReferenceWeightedOperationCount": 494
+        }
+      },
+      {
+        "mnemonic": "bsr",
+        "family": "raw-68000-control-flow",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 3,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 4,
+          "physicalRecordWeightedOperationCount": 8,
+          "setupRecordReferenceWeightedOperationCount": 12,
+          "routeRecordReferenceWeightedOperationCount": 12
+        }
+      },
+      {
+        "mnemonic": "btst",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 3,
+          "zoneEvents": 0,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 3,
+          "physicalRecordWeightedOperationCount": 7,
+          "setupRecordReferenceWeightedOperationCount": 7,
+          "routeRecordReferenceWeightedOperationCount": 7
+        }
+      },
+      {
+        "mnemonic": "chkflg",
+        "family": "event-service-macro",
+        "definitionId": "event-service-macro:chkFlg",
+        "categoryOperationCounts": {
+          "entityEvents": 190,
+          "zoneEvents": 118,
+          "itemEvents": 8
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 316,
+          "physicalRecordWeightedOperationCount": 513,
+          "setupRecordReferenceWeightedOperationCount": 754,
+          "routeRecordReferenceWeightedOperationCount": 839
+        }
+      },
+      {
+        "mnemonic": "clearf",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:clearF",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 2,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 2,
+          "physicalRecordWeightedOperationCount": 2,
+          "setupRecordReferenceWeightedOperationCount": 8,
+          "routeRecordReferenceWeightedOperationCount": 8
+        }
+      },
+      {
+        "mnemonic": "clr",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 11,
+          "zoneEvents": 2,
+          "itemEvents": 1
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 14,
+          "physicalRecordWeightedOperationCount": 29,
+          "setupRecordReferenceWeightedOperationCount": 34,
+          "routeRecordReferenceWeightedOperationCount": 36
+        }
+      },
+      {
+        "mnemonic": "clrflg",
+        "family": "event-service-macro",
+        "definitionId": "event-service-macro:clrFlg",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 8,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 8,
+          "physicalRecordWeightedOperationCount": 14,
+          "setupRecordReferenceWeightedOperationCount": 21,
+          "routeRecordReferenceWeightedOperationCount": 23
+        }
+      },
+      {
+        "mnemonic": "clstxt",
+        "family": "event-service-macro",
+        "definitionId": "event-service-macro:clsTxt",
+        "categoryOperationCounts": {
+          "entityEvents": 23,
+          "zoneEvents": 0,
+          "itemEvents": 2
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 25,
+          "physicalRecordWeightedOperationCount": 41,
+          "setupRecordReferenceWeightedOperationCount": 48,
+          "routeRecordReferenceWeightedOperationCount": 50
+        }
+      },
+      {
+        "mnemonic": "cmpi",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 9,
+          "zoneEvents": 2,
+          "itemEvents": 1
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 12,
+          "physicalRecordWeightedOperationCount": 36,
+          "setupRecordReferenceWeightedOperationCount": 39,
+          "routeRecordReferenceWeightedOperationCount": 39
+        }
+      },
+      {
+        "mnemonic": "csc_end",
+        "family": "stream-terminator",
+        "definitionId": "stream-terminator:csc_end",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "cswait",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:csWait",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 17,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 17,
+          "physicalRecordWeightedOperationCount": 17,
+          "setupRecordReferenceWeightedOperationCount": 68,
+          "routeRecordReferenceWeightedOperationCount": 68
+        }
+      },
+      {
+        "mnemonic": "customactscriptwait",
+        "family": "entity-action-wrapper",
+        "definitionId": "entity-action-wrapper:customActscriptWait",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "dc",
+        "family": "data-directive",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 2,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 2,
+          "physicalRecordWeightedOperationCount": 2,
+          "setupRecordReferenceWeightedOperationCount": 2,
+          "routeRecordReferenceWeightedOperationCount": 2
+        }
+      },
+      {
+        "mnemonic": "endactions",
+        "family": "entity-action-payload-command",
+        "definitionId": "entity-action-payload-command:endActions",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 3,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 3,
+          "physicalRecordWeightedOperationCount": 3,
+          "setupRecordReferenceWeightedOperationCount": 12,
+          "routeRecordReferenceWeightedOperationCount": 12
+        }
+      },
+      {
+        "mnemonic": "entityactions",
+        "family": "entity-action-wrapper",
+        "definitionId": "entity-action-wrapper:entityActions",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 2,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 2,
+          "physicalRecordWeightedOperationCount": 2,
+          "setupRecordReferenceWeightedOperationCount": 8,
+          "routeRecordReferenceWeightedOperationCount": 8
+        }
+      },
+      {
+        "mnemonic": "executesubroutine",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:executeSubroutine",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "fadeinb",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:fadeInB",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "flashscreenwhite",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:flashScreenWhite",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 2,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 2,
+          "physicalRecordWeightedOperationCount": 2,
+          "setupRecordReferenceWeightedOperationCount": 8,
+          "routeRecordReferenceWeightedOperationCount": 8
+        }
+      },
+      {
+        "mnemonic": "jmp",
+        "family": "raw-68000-control-flow",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 61,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 62,
+          "physicalRecordWeightedOperationCount": 62,
+          "setupRecordReferenceWeightedOperationCount": 62,
+          "routeRecordReferenceWeightedOperationCount": 62
+        }
+      },
+      {
+        "mnemonic": "jsr",
+        "family": "raw-68000-control-flow",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 93,
+          "zoneEvents": 40,
+          "itemEvents": 6
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 139,
+          "physicalRecordWeightedOperationCount": 221,
+          "setupRecordReferenceWeightedOperationCount": 260,
+          "routeRecordReferenceWeightedOperationCount": 260
+        }
+      },
+      {
+        "mnemonic": "lea",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 2,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "loadmapentities",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:loadMapEntities",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "loadmapfadein",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:loadMapFadeIn",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "move",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 84,
+          "zoneEvents": 51,
+          "itemEvents": 9
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 144,
+          "physicalRecordWeightedOperationCount": 229,
+          "setupRecordReferenceWeightedOperationCount": 265,
+          "routeRecordReferenceWeightedOperationCount": 267
+        }
+      },
+      {
+        "mnemonic": "movedown",
+        "family": "entity-action-payload-command",
+        "definitionId": "entity-action-payload-command:moveDown",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "moveleft",
+        "family": "entity-action-payload-command",
+        "definitionId": "entity-action-payload-command:moveLeft",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "movem",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 2,
+          "zoneEvents": 0,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 2,
+          "physicalRecordWeightedOperationCount": 2,
+          "setupRecordReferenceWeightedOperationCount": 2,
+          "routeRecordReferenceWeightedOperationCount": 2
+        }
+      },
+      {
+        "mnemonic": "moveq",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 66,
+          "zoneEvents": 10,
+          "itemEvents": 8
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 84,
+          "physicalRecordWeightedOperationCount": 115,
+          "setupRecordReferenceWeightedOperationCount": 130,
+          "routeRecordReferenceWeightedOperationCount": 130
+        }
+      },
+      {
+        "mnemonic": "moveright",
+        "family": "entity-action-payload-command",
+        "definitionId": "entity-action-payload-command:moveRight",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 7,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 7,
+          "physicalRecordWeightedOperationCount": 7,
+          "setupRecordReferenceWeightedOperationCount": 28,
+          "routeRecordReferenceWeightedOperationCount": 28
+        }
+      },
+      {
+        "mnemonic": "moveup",
+        "family": "entity-action-payload-command",
+        "definitionId": "entity-action-payload-command:moveUp",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 4,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 4,
+          "physicalRecordWeightedOperationCount": 4,
+          "setupRecordReferenceWeightedOperationCount": 16,
+          "routeRecordReferenceWeightedOperationCount": 16
+        }
+      },
+      {
+        "mnemonic": "nextsingletext",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:nextSingleText",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 6,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 6,
+          "physicalRecordWeightedOperationCount": 6,
+          "setupRecordReferenceWeightedOperationCount": 24,
+          "routeRecordReferenceWeightedOperationCount": 24
+        }
+      },
+      {
+        "mnemonic": "playsound",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:playSound",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "rts",
+        "family": "raw-68000-control-flow",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 626,
+          "zoneEvents": 149,
+          "itemEvents": 80
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 855,
+          "physicalRecordWeightedOperationCount": 1078,
+          "setupRecordReferenceWeightedOperationCount": 1389,
+          "routeRecordReferenceWeightedOperationCount": 1439
+        }
+      },
+      {
+        "mnemonic": "script",
+        "family": "event-service-macro",
+        "definitionId": "event-service-macro:script",
+        "categoryOperationCounts": {
+          "entityEvents": 52,
+          "zoneEvents": 87,
+          "itemEvents": 8
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 147,
+          "physicalRecordWeightedOperationCount": 204,
+          "setupRecordReferenceWeightedOperationCount": 352,
+          "routeRecordReferenceWeightedOperationCount": 387
+        }
+      },
+      {
+        "mnemonic": "setactscriptwait",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:setActscriptWait",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 3,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 3,
+          "physicalRecordWeightedOperationCount": 3,
+          "setupRecordReferenceWeightedOperationCount": 12,
+          "routeRecordReferenceWeightedOperationCount": 12
+        }
+      },
+      {
+        "mnemonic": "setblocks",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:setBlocks",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 9,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 9,
+          "physicalRecordWeightedOperationCount": 9,
+          "setupRecordReferenceWeightedOperationCount": 36,
+          "routeRecordReferenceWeightedOperationCount": 36
+        }
+      },
+      {
+        "mnemonic": "setcamdest",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:setCamDest",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 4,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 4,
+          "physicalRecordWeightedOperationCount": 4,
+          "setupRecordReferenceWeightedOperationCount": 16,
+          "routeRecordReferenceWeightedOperationCount": 16
+        }
+      },
+      {
+        "mnemonic": "setfacing",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:setFacing",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 9,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 9,
+          "physicalRecordWeightedOperationCount": 9,
+          "setupRecordReferenceWeightedOperationCount": 36,
+          "routeRecordReferenceWeightedOperationCount": 36
+        }
+      },
+      {
+        "mnemonic": "setflg",
+        "family": "event-service-macro",
+        "definitionId": "event-service-macro:setFlg",
+        "categoryOperationCounts": {
+          "entityEvents": 80,
+          "zoneEvents": 84,
+          "itemEvents": 5
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 169,
+          "physicalRecordWeightedOperationCount": 230,
+          "setupRecordReferenceWeightedOperationCount": 373,
+          "routeRecordReferenceWeightedOperationCount": 404
+        }
+      },
+      {
+        "mnemonic": "setquake",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:setQuake",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 5,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 5,
+          "physicalRecordWeightedOperationCount": 5,
+          "setupRecordReferenceWeightedOperationCount": 20,
+          "routeRecordReferenceWeightedOperationCount": 20
+        }
+      },
+      {
+        "mnemonic": "setsprite",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:setSprite",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      },
+      {
+        "mnemonic": "sndcom",
+        "family": "event-service-macro",
+        "definitionId": "event-service-macro:sndCom",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 3,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 3,
+          "physicalRecordWeightedOperationCount": 3,
+          "setupRecordReferenceWeightedOperationCount": 3,
+          "routeRecordReferenceWeightedOperationCount": 3
+        }
+      },
+      {
+        "mnemonic": "trap",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 1,
+          "routeRecordReferenceWeightedOperationCount": 1
+        }
+      },
+      {
+        "mnemonic": "tst",
+        "family": "raw-68000-instruction",
+        "definitionId": null,
+        "categoryOperationCounts": {
+          "entityEvents": 5,
+          "zoneEvents": 3,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 8,
+          "physicalRecordWeightedOperationCount": 8,
+          "setupRecordReferenceWeightedOperationCount": 8,
+          "routeRecordReferenceWeightedOperationCount": 8
+        }
+      },
+      {
+        "mnemonic": "txt",
+        "family": "event-service-macro",
+        "definitionId": "event-service-macro:txt",
+        "categoryOperationCounts": {
+          "entityEvents": 958,
+          "zoneEvents": 18,
+          "itemEvents": 5
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 981,
+          "physicalRecordWeightedOperationCount": 1328,
+          "setupRecordReferenceWeightedOperationCount": 1551,
+          "routeRecordReferenceWeightedOperationCount": 1660
+        }
+      },
+      {
+        "mnemonic": "warp",
+        "family": "map-script-macro",
+        "definitionId": "map-script-macro:warp",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      }
+    ],
+    "operationVocabularyOrder": [
+      "ac_end:entity-action-command:entity-action-command:ac_end:0:1:0:1:1:4:4",
+      "ac_jump:entity-action-command:entity-action-command:ac_jump:0:1:0:1:1:4:4",
+      "ac_setspeed:entity-action-command:entity-action-command:ac_setSpeed:0:1:0:1:1:4:4",
+      "add:raw-68000-instruction:-:1:0:0:1:2:2:2",
+      "addq:raw-68000-instruction:-:1:0:0:1:1:2:2",
+      "andi:raw-68000-instruction:-:1:0:0:1:1:2:2",
+      "beq:raw-68000-control-flow:-:17:34:2:53:79:144:163",
+      "bne:raw-68000-control-flow:-:191:89:7:287:486:665:731",
+      "bra:raw-68000-control-flow:-:147:18:4:169:326:431:494",
+      "bsr:raw-68000-control-flow:-:3:1:0:4:8:12:12",
+      "btst:raw-68000-instruction:-:3:0:0:3:7:7:7",
+      "chkflg:event-service-macro:event-service-macro:chkFlg:190:118:8:316:513:754:839",
+      "clearf:map-script-macro:map-script-macro:clearF:0:2:0:2:2:8:8",
+      "clr:raw-68000-instruction:-:11:2:1:14:29:34:36",
+      "clrflg:event-service-macro:event-service-macro:clrFlg:0:8:0:8:14:21:23",
+      "clstxt:event-service-macro:event-service-macro:clsTxt:23:0:2:25:41:48:50",
+      "cmpi:raw-68000-instruction:-:9:2:1:12:36:39:39",
+      "csc_end:stream-terminator:stream-terminator:csc_end:0:1:0:1:1:4:4",
+      "cswait:map-script-macro:map-script-macro:csWait:0:17:0:17:17:68:68",
+      "customactscriptwait:entity-action-wrapper:entity-action-wrapper:customActscriptWait:0:1:0:1:1:4:4",
+      "dc:data-directive:-:0:2:0:2:2:2:2",
+      "endactions:entity-action-payload-command:entity-action-payload-command:endActions:0:3:0:3:3:12:12",
+      "entityactions:entity-action-wrapper:entity-action-wrapper:entityActions:0:2:0:2:2:8:8",
+      "executesubroutine:map-script-macro:map-script-macro:executeSubroutine:0:1:0:1:1:4:4",
+      "fadeinb:map-script-macro:map-script-macro:fadeInB:0:1:0:1:1:4:4",
+      "flashscreenwhite:map-script-macro:map-script-macro:flashScreenWhite:0:2:0:2:2:8:8",
+      "jmp:raw-68000-control-flow:-:61:1:0:62:62:62:62",
+      "jsr:raw-68000-control-flow:-:93:40:6:139:221:260:260",
+      "lea:raw-68000-instruction:-:0:1:0:1:2:4:4",
+      "loadmapentities:map-script-macro:map-script-macro:loadMapEntities:0:1:0:1:1:4:4",
+      "loadmapfadein:map-script-macro:map-script-macro:loadMapFadeIn:0:1:0:1:1:4:4",
+      "move:raw-68000-instruction:-:84:51:9:144:229:265:267",
+      "movedown:entity-action-payload-command:entity-action-payload-command:moveDown:0:1:0:1:1:4:4",
+      "moveleft:entity-action-payload-command:entity-action-payload-command:moveLeft:0:1:0:1:1:4:4",
+      "movem:raw-68000-instruction:-:2:0:0:2:2:2:2",
+      "moveq:raw-68000-instruction:-:66:10:8:84:115:130:130",
+      "moveright:entity-action-payload-command:entity-action-payload-command:moveRight:0:7:0:7:7:28:28",
+      "moveup:entity-action-payload-command:entity-action-payload-command:moveUp:0:4:0:4:4:16:16",
+      "nextsingletext:map-script-macro:map-script-macro:nextSingleText:0:6:0:6:6:24:24",
+      "playsound:map-script-macro:map-script-macro:playSound:0:1:0:1:1:4:4",
+      "rts:raw-68000-control-flow:-:626:149:80:855:1078:1389:1439",
+      "script:event-service-macro:event-service-macro:script:52:87:8:147:204:352:387",
+      "setactscriptwait:map-script-macro:map-script-macro:setActscriptWait:0:3:0:3:3:12:12",
+      "setblocks:map-script-macro:map-script-macro:setBlocks:0:9:0:9:9:36:36",
+      "setcamdest:map-script-macro:map-script-macro:setCamDest:0:4:0:4:4:16:16",
+      "setfacing:map-script-macro:map-script-macro:setFacing:0:9:0:9:9:36:36",
+      "setflg:event-service-macro:event-service-macro:setFlg:80:84:5:169:230:373:404",
+      "setquake:map-script-macro:map-script-macro:setQuake:0:5:0:5:5:20:20",
+      "setsprite:map-script-macro:map-script-macro:setSprite:0:1:0:1:1:4:4",
+      "sndcom:event-service-macro:event-service-macro:sndCom:0:3:0:3:3:3:3",
+      "trap:raw-68000-instruction:-:0:1:0:1:1:1:1",
+      "tst:raw-68000-instruction:-:5:3:0:8:8:8:8",
+      "txt:event-service-macro:event-service-macro:txt:958:18:5:981:1328:1551:1660",
+      "warp:map-script-macro:map-script-macro:warp:0:1:0:1:1:4:4"
+    ],
+    "operationFamilyOrder": [
+      "data-directive",
+      "entity-action-command",
+      "entity-action-payload-command",
+      "entity-action-wrapper",
+      "event-service-macro",
+      "map-script-macro",
+      "raw-68000-control-flow",
+      "raw-68000-instruction",
+      "stream-terminator"
+    ],
+    "operationFamilyCounts": [
+      {
+        "family": "data-directive",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 2,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 2,
+          "physicalRecordWeightedOperationCount": 2,
+          "setupRecordReferenceWeightedOperationCount": 2,
+          "routeRecordReferenceWeightedOperationCount": 2
+        }
+      },
+      {
+        "family": "entity-action-command",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 3,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 3,
+          "physicalRecordWeightedOperationCount": 3,
+          "setupRecordReferenceWeightedOperationCount": 12,
+          "routeRecordReferenceWeightedOperationCount": 12
+        }
+      },
+      {
+        "family": "entity-action-payload-command",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 16,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 16,
+          "physicalRecordWeightedOperationCount": 16,
+          "setupRecordReferenceWeightedOperationCount": 64,
+          "routeRecordReferenceWeightedOperationCount": 64
+        }
+      },
+      {
+        "family": "entity-action-wrapper",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 3,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 3,
+          "physicalRecordWeightedOperationCount": 3,
+          "setupRecordReferenceWeightedOperationCount": 12,
+          "routeRecordReferenceWeightedOperationCount": 12
+        }
+      },
+      {
+        "family": "event-service-macro",
+        "categoryOperationCounts": {
+          "entityEvents": 1303,
+          "zoneEvents": 318,
+          "itemEvents": 28
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1649,
+          "physicalRecordWeightedOperationCount": 2333,
+          "setupRecordReferenceWeightedOperationCount": 3102,
+          "routeRecordReferenceWeightedOperationCount": 3366
+        }
+      },
+      {
+        "family": "map-script-macro",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 64,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 64,
+          "physicalRecordWeightedOperationCount": 64,
+          "setupRecordReferenceWeightedOperationCount": 256,
+          "routeRecordReferenceWeightedOperationCount": 256
+        }
+      },
+      {
+        "family": "raw-68000-control-flow",
+        "categoryOperationCounts": {
+          "entityEvents": 1138,
+          "zoneEvents": 332,
+          "itemEvents": 99
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1569,
+          "physicalRecordWeightedOperationCount": 2260,
+          "setupRecordReferenceWeightedOperationCount": 2963,
+          "routeRecordReferenceWeightedOperationCount": 3161
+        }
+      },
+      {
+        "family": "raw-68000-instruction",
+        "categoryOperationCounts": {
+          "entityEvents": 183,
+          "zoneEvents": 70,
+          "itemEvents": 19
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 272,
+          "physicalRecordWeightedOperationCount": 433,
+          "setupRecordReferenceWeightedOperationCount": 496,
+          "routeRecordReferenceWeightedOperationCount": 500
+        }
+      },
+      {
+        "family": "stream-terminator",
+        "categoryOperationCounts": {
+          "entityEvents": 0,
+          "zoneEvents": 1,
+          "itemEvents": 0
+        },
+        "weightCounts": {
+          "uniquePhysicalOperationCount": 1,
+          "physicalRecordWeightedOperationCount": 1,
+          "setupRecordReferenceWeightedOperationCount": 4,
+          "routeRecordReferenceWeightedOperationCount": 4
+        }
+      }
+    ],
+    "operationFamilyCountOrder": [
+      "{\"family\":\"data-directive\",\"categoryOperationCounts\":{\"entityEvents\":0,\"zoneEvents\":2,\"itemEvents\":0},\"weightCounts\":{\"uniquePhysicalOperationCount\":2,\"physicalRecordWeightedOperationCount\":2,\"setupRecordReferenceWeightedOperationCount\":2,\"routeRecordReferenceWeightedOperationCount\":2}}",
+      "{\"family\":\"entity-action-command\",\"categoryOperationCounts\":{\"entityEvents\":0,\"zoneEvents\":3,\"itemEvents\":0},\"weightCounts\":{\"uniquePhysicalOperationCount\":3,\"physicalRecordWeightedOperationCount\":3,\"setupRecordReferenceWeightedOperationCount\":12,\"routeRecordReferenceWeightedOperationCount\":12}}",
+      "{\"family\":\"entity-action-payload-command\",\"categoryOperationCounts\":{\"entityEvents\":0,\"zoneEvents\":16,\"itemEvents\":0},\"weightCounts\":{\"uniquePhysicalOperationCount\":16,\"physicalRecordWeightedOperationCount\":16,\"setupRecordReferenceWeightedOperationCount\":64,\"routeRecordReferenceWeightedOperationCount\":64}}",
+      "{\"family\":\"entity-action-wrapper\",\"categoryOperationCounts\":{\"entityEvents\":0,\"zoneEvents\":3,\"itemEvents\":0},\"weightCounts\":{\"uniquePhysicalOperationCount\":3,\"physicalRecordWeightedOperationCount\":3,\"setupRecordReferenceWeightedOperationCount\":12,\"routeRecordReferenceWeightedOperationCount\":12}}",
+      "{\"family\":\"event-service-macro\",\"categoryOperationCounts\":{\"entityEvents\":1303,\"zoneEvents\":318,\"itemEvents\":28},\"weightCounts\":{\"uniquePhysicalOperationCount\":1649,\"physicalRecordWeightedOperationCount\":2333,\"setupRecordReferenceWeightedOperationCount\":3102,\"routeRecordReferenceWeightedOperationCount\":3366}}",
+      "{\"family\":\"map-script-macro\",\"categoryOperationCounts\":{\"entityEvents\":0,\"zoneEvents\":64,\"itemEvents\":0},\"weightCounts\":{\"uniquePhysicalOperationCount\":64,\"physicalRecordWeightedOperationCount\":64,\"setupRecordReferenceWeightedOperationCount\":256,\"routeRecordReferenceWeightedOperationCount\":256}}",
+      "{\"family\":\"raw-68000-control-flow\",\"categoryOperationCounts\":{\"entityEvents\":1138,\"zoneEvents\":332,\"itemEvents\":99},\"weightCounts\":{\"uniquePhysicalOperationCount\":1569,\"physicalRecordWeightedOperationCount\":2260,\"setupRecordReferenceWeightedOperationCount\":2963,\"routeRecordReferenceWeightedOperationCount\":3161}}",
+      "{\"family\":\"raw-68000-instruction\",\"categoryOperationCounts\":{\"entityEvents\":183,\"zoneEvents\":70,\"itemEvents\":19},\"weightCounts\":{\"uniquePhysicalOperationCount\":272,\"physicalRecordWeightedOperationCount\":433,\"setupRecordReferenceWeightedOperationCount\":496,\"routeRecordReferenceWeightedOperationCount\":500}}",
+      "{\"family\":\"stream-terminator\",\"categoryOperationCounts\":{\"entityEvents\":0,\"zoneEvents\":1,\"itemEvents\":0},\"weightCounts\":{\"uniquePhysicalOperationCount\":1,\"physicalRecordWeightedOperationCount\":1,\"setupRecordReferenceWeightedOperationCount\":4,\"routeRecordReferenceWeightedOperationCount\":4}}"
+    ]
+  }
+}

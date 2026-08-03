@@ -1,14 +1,13 @@
 import copy
+import json
 from pathlib import Path
 from typing import Any
 
 import pytest
-from jsonschema import Draft7Validator, FormatChecker
 
-from sf2tool.h2 import text_banks
+from sf2tool.h2 import map_events as map_events_module
+from sf2tool.h2 import map_events_fixture, text_banks
 from sf2tool.h2.map_events import (
-    FIXTURE,
-    FIXTURE_SCHEMA,
     RAW_ZONE_DEFAULT_SYMBOL,
     SCHEMA,
     _bind_operations_to_h1,
@@ -48,8 +47,14 @@ from sf2tool.h2.map_events import (
     _verify_complete_map_events_fixture,
     build_map_events_contract,
 )
+from sf2tool.h2.map_events_fixture import (
+    FIXTURE,
+    FIXTURE_SCHEMA,
+    SECTION_SCHEMAS,
+    load_map_events_fixture,
+)
 from sf2tool.h2.text_banks import build_text_line_domain_contract
-from sf2tool.jsonio import load_json, validate_json
+from sf2tool.jsonio import load_json, schema_composition_audit, validate_json
 
 
 @pytest.fixture(scope="module")
@@ -734,9 +739,8 @@ csc14_continue:
 
 def test_complete_map_event_contract_matches_full_fixture(complete_output: dict[str, Any]) -> None:
     output = complete_output
-    fixture = load_json(FIXTURE)
+    fixture = load_map_events_fixture()
     validate_json(output, SCHEMA, owner="map events complete output")
-    validate_json(fixture, FIXTURE_SCHEMA, owner="map events complete fixture")
     _verify_complete_map_events_fixture(fixture, output)
     assert fixture["expected"] == output
     assert output["summary"] == {
@@ -1561,413 +1565,131 @@ def test_complete_map_event_contract_matches_full_fixture(complete_output: dict[
             } == expected_sites
 
 
-def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutations(
+def test_map_events_schemas_reject_nested_missing_extra_and_boundary_mutations(
     complete_output: dict[str, Any],
 ) -> None:
     output = complete_output
-    output_schema = load_json(SCHEMA)
-    fixture_schema = load_json(FIXTURE_SCHEMA)
-    output_validator = Draft7Validator(output_schema, format_checker=FormatChecker())
-    fixture_validator = Draft7Validator(fixture_schema, format_checker=FormatChecker())
+    fixture = load_map_events_fixture()
+    validate_json(output, SCHEMA, owner="map events complete output")
 
-    direct_output_site_validator = Draft7Validator(
-        {
-            "$schema": output_schema["$schema"],
-            "definitions": output_schema["definitions"],
-            "$ref": "#/definitions/directFlagAccessSite",
-        },
-        format_checker=FormatChecker(),
-    )
-    direct_output_site_order_validator = Draft7Validator(
-        output_schema["properties"]["directFlagAccessSiteOrder"],
-        format_checker=FormatChecker(),
-    )
-    direct_fixture_site_validator = Draft7Validator(
-        {
-            "$schema": fixture_schema["$schema"],
-            "definitions": fixture_schema["definitions"],
-            "$ref": "#/definitions/outputContract/definitions/directFlagAccessSite",
-        },
-        format_checker=FormatChecker(),
-    )
-    direct_fixture_total_validator = Draft7Validator(
-        {
-            "$schema": fixture_schema["$schema"],
-            "definitions": fixture_schema["definitions"],
-            "$ref": "#/definitions/outputContract/definitions/directFlagTotal",
-        },
-        format_checker=FormatChecker(),
-    )
-    direct_fixture_output = fixture_schema["definitions"]["outputContract"]
-    direct_fixture_total_order_validator = Draft7Validator(
-        direct_fixture_output["properties"]["directFlagTotalOrder"],
-        format_checker=FormatChecker(),
-    )
-    script_output_site_validator = Draft7Validator(
-        {
-            "$schema": output_schema["$schema"],
-            "definitions": {
-                name: output_schema["definitions"][name]
-                for name in ("scriptInvocationWeightCounts", "scriptInvocationSite")
-            },
-            "$ref": "#/definitions/scriptInvocationSite",
-        },
-        format_checker=FormatChecker(),
-    )
-    script_output_site_order_validator = Draft7Validator(
-        output_schema["properties"]["scriptInvocationSiteOrder"],
-        format_checker=FormatChecker(),
-    )
-    script_fixture_site_validator = Draft7Validator(
-        {
-            "$schema": fixture_schema["$schema"],
-            "definitions": {
-                "outputContract": {
-                    "definitions": {
-                        name: direct_fixture_output["definitions"][name]
-                        for name in (
-                            "scriptInvocationWeightCounts",
-                            "scriptInvocationSite",
-                        )
-                    }
-                }
-            },
-            "$ref": "#/definitions/outputContract/definitions/scriptInvocationSite",
-        },
-        format_checker=FormatChecker(),
-    )
-    script_fixture_effective_order_validator = Draft7Validator(
-        direct_fixture_output["properties"]["scriptInvocationEffectiveTargetTotalOrder"],
-        format_checker=FormatChecker(),
-    )
-    textbox_output_site_validator = Draft7Validator(
-        {
-            "$schema": output_schema["$schema"],
-            "definitions": {
-                name: output_schema["definitions"][name]
-                for name in ("textboxWeightCounts", "textboxReferenceSite")
-            },
-            "$ref": "#/definitions/textboxReferenceSite",
-        },
-        format_checker=FormatChecker(),
-    )
-    textbox_output_line_total_validator = Draft7Validator(
-        {
-            "$schema": output_schema["$schema"],
-            "definitions": {
-                name: output_schema["definitions"][name]
-                for name in (
-                    "textboxWeightCounts",
-                    "textboxCategoryWeightCounts",
-                    "textboxLineTotal",
-                )
-            },
-            "$ref": "#/definitions/textboxLineTotal",
-        },
-        format_checker=FormatChecker(),
-    )
-    textbox_fixture_site_validator = Draft7Validator(
-        {
-            "$schema": fixture_schema["$schema"],
-            "definitions": {
-                "outputContract": {
-                    "definitions": {
-                        name: direct_fixture_output["definitions"][name]
-                        for name in ("textboxWeightCounts", "textboxReferenceSite")
-                    }
-                }
-            },
-            "$ref": "#/definitions/outputContract/definitions/textboxReferenceSite",
-        },
-        format_checker=FormatChecker(),
-    )
-    textbox_fixture_line_total_validator = Draft7Validator(
-        {
-            "$schema": fixture_schema["$schema"],
-            "definitions": {
-                "outputContract": {
-                    "definitions": {
-                        name: direct_fixture_output["definitions"][name]
-                        for name in (
-                            "textboxWeightCounts",
-                            "textboxCategoryWeightCounts",
-                            "textboxLineTotal",
-                        )
-                    }
-                }
-            },
-            "$ref": "#/definitions/outputContract/definitions/textboxLineTotal",
-        },
-        format_checker=FormatChecker(),
-    )
-
-    def output_rejects(instance: dict[str, Any]) -> None:
-        assert next(output_validator.iter_errors(instance), None) is not None
-
-    def fixture_rejects(instance: dict[str, Any]) -> None:
-        assert next(fixture_validator.iter_errors(instance), None) is not None
-
-    def direct_rejects(validator: Draft7Validator, instance: Any) -> None:
-        assert next(validator.iter_errors(instance), None) is not None
-
-    def direct_accepts(validator: Draft7Validator, instance: Any) -> None:
-        assert next(validator.iter_errors(instance), None) is None
+    def output_rejects(instance: dict[str, Any], owner: str) -> None:
+        with pytest.raises(ValueError, match=owner):
+            validate_json(instance, SCHEMA, owner=owner)
 
     missing = copy.deepcopy(output)
-    del missing["categories"]["entityEvents"]["tables"][0]["records"][0]["targetCanonicalSymbol"]
-    output_rejects(missing)
+    del missing["categories"]["entityEvents"]["tables"][0]["records"][0][
+        "targetCanonicalSymbol"
+    ]
+    output_rejects(missing, "missing nested field")
 
     extra = copy.deepcopy(output)
     extra["categories"]["zoneEvents"]["tables"][0]["records"][0]["unexpected"] = True
-    output_rejects(extra)
-
-    reordered = copy.deepcopy(output)
-    reordered["physicalRecordOrder"].reverse()
-    output_rejects(reordered)
+    output_rejects(extra, "extra nested field")
 
     boundary = copy.deepcopy(output)
     boundary["routeCategoryJoins"][0]["pointerTableAddress"] = -1
-    output_rejects(boundary)
+    output_rejects(boundary, "numeric boundary")
 
     operation_definition_missing = copy.deepcopy(output)
-    del operation_definition_missing["operationDefinitions"][0]["emissionStatementTemplates"]
-    output_rejects(operation_definition_missing)
+    del operation_definition_missing["operationDefinitions"][0][
+        "emissionStatementTemplates"
+    ]
+    output_rejects(operation_definition_missing, "operation definition missing field")
 
     operation_definition_extra = copy.deepcopy(output)
-    operation_definition_extra["operationDefinitions"][0]["engineCatalog"]["unexpected"] = True
-    output_rejects(operation_definition_extra)
-
-    operation_vocabulary_reordered = copy.deepcopy(output)
-    operation_vocabulary_reordered["operationVocabulary"].reverse()
-    output_rejects(operation_vocabulary_reordered)
+    operation_definition_extra["operationDefinitions"][0]["engineCatalog"][
+        "unexpected"
+    ] = True
+    output_rejects(operation_definition_extra, "operation definition extra field")
 
     operation_definition_boundary = copy.deepcopy(output)
     operation_definition_boundary["operationDefinitions"][0]["definitionSourceLine"] = 0
-    output_rejects(operation_definition_boundary)
+    output_rejects(operation_definition_boundary, "operation definition boundary")
 
-    direct_output_site = output["directFlagAccessSites"][0]
-    direct_accepts(direct_output_site_validator, direct_output_site)
-    direct_flag_missing = copy.deepcopy(direct_output_site)
-    del direct_flag_missing["conditionConsumer"]["branchPolarity"]
-    direct_rejects(direct_output_site_validator, direct_flag_missing)
+    direct_flag_missing = copy.deepcopy(output)
+    del direct_flag_missing["directFlagAccessSites"][0]["conditionConsumer"][
+        "branchPolarity"
+    ]
+    output_rejects(direct_flag_missing, "direct flag missing field")
 
-    direct_flag_extra = copy.deepcopy(direct_output_site)
-    direct_flag_extra["conditionConsumer"]["target"]["unexpected"] = True
-    direct_rejects(direct_output_site_validator, direct_flag_extra)
+    direct_flag_extra = copy.deepcopy(output)
+    direct_flag_extra["directFlagAccessSites"][0]["conditionConsumer"]["target"][
+        "unexpected"
+    ] = True
+    output_rejects(direct_flag_extra, "direct flag extra field")
 
-    direct_output_site_order = output["directFlagAccessSiteOrder"]
-    direct_accepts(direct_output_site_order_validator, direct_output_site_order)
-    direct_rejects(direct_output_site_order_validator, list(reversed(direct_output_site_order)))
-
-    direct_flag_boundary = copy.deepcopy(direct_output_site)
-    direct_flag_boundary["flagNumber"] = -1
-    direct_rejects(direct_output_site_validator, direct_flag_boundary)
+    direct_flag_boundary = copy.deepcopy(output)
+    direct_flag_boundary["directFlagAccessSites"][0]["flagNumber"] = -1
+    output_rejects(direct_flag_boundary, "direct flag boundary")
 
     operation_family_mutation = copy.deepcopy(output)
     operation_family_mutation["entityTargetPrograms"][0]["operations"][0]["family"] = (
         "raw-68000-instruction"
     )
-    output_rejects(operation_family_mutation)
+    output_rejects(operation_family_mutation, "operation family discriminator")
 
-    fixture = load_json(FIXTURE)
-    semantic = copy.deepcopy(output)
-    semantic["recordTargetProfiles"][0]["canonicalSymbol"] = "wrong-owner"
-    validate_json(semantic, SCHEMA, owner="wrong-shape-valid output target owner")
-    with pytest.raises(ValueError, match="complete semantic fixture drift"):
-        _verify_complete_map_events_fixture(fixture, semantic)
-
-    renamed = copy.deepcopy(fixture)
-    record = renamed["expected"]["categories"]["itemEvents"]["tables"][0]["records"][0]
-    record["renamedTargetCanonicalSymbol"] = record.pop("targetCanonicalSymbol")
-    fixture_rejects(renamed)
-
-    fixture_extra = copy.deepcopy(fixture)
-    fixture_extra["expected"]["recordTargetProfiles"][0]["unexpected"] = 1
-    fixture_rejects(fixture_extra)
-
-    fixture_semantic = copy.deepcopy(fixture)
-    fixture_semantic["expected"]["recordTargetProfiles"][0]["canonicalSymbol"] = "wrong-owner"
-    validate_json(fixture_semantic, FIXTURE_SCHEMA, owner="wrong-shape-valid fixture target owner")
-    with pytest.raises(ValueError, match="complete semantic fixture drift"):
-        _verify_complete_map_events_fixture(fixture_semantic, output)
-
-    fixture_order = copy.deepcopy(fixture)
-    fixture_order["expected"]["routeCategoryJoinOrder"].reverse()
-    fixture_rejects(fixture_order)
-
-    fixture_boundary = copy.deepcopy(fixture)
-    fixture_boundary["expected"]["categories"]["zoneEvents"]["tables"][0]["records"][0]["x"] = -1
-    fixture_rejects(fixture_boundary)
-
-    fixture_operation_definition_renamed = copy.deepcopy(fixture)
-    definition = fixture_operation_definition_renamed["expected"]["operationDefinitions"][0]
-    definition["renamedDefinitionSourceLine"] = definition.pop("definitionSourceLine")
-    fixture_rejects(fixture_operation_definition_renamed)
-
-    fixture_payload_context_extra = copy.deepcopy(fixture)
-    fixture_payload_context_extra["expected"]["operationPayloadContexts"][0]["unexpected"] = 1
-    fixture_rejects(fixture_payload_context_extra)
-
-    direct_fixture_site = fixture["expected"]["directFlagAccessSites"][0]
-    direct_accepts(direct_fixture_site_validator, direct_fixture_site)
-    fixture_direct_flag_renamed = copy.deepcopy(direct_fixture_site)
-    direct_reference_weights = fixture_direct_flag_renamed["referenceWeights"]
-    direct_reference_weights["renamedPhysicalRecordCount"] = direct_reference_weights.pop(
-        "physicalRecordCount"
-    )
-    direct_rejects(direct_fixture_site_validator, fixture_direct_flag_renamed)
-
-    fixture_direct_flag_extra = copy.deepcopy(direct_fixture_site)
-    fixture_direct_flag_extra["conditionConsumer"]["unexpected"] = True
-    direct_rejects(direct_fixture_site_validator, fixture_direct_flag_extra)
-
-    direct_fixture_total_order = fixture["expected"]["directFlagTotalOrder"]
-    direct_accepts(direct_fixture_total_order_validator, direct_fixture_total_order)
-    direct_rejects(
-        direct_fixture_total_order_validator, list(reversed(direct_fixture_total_order))
-    )
-
-    direct_fixture_total = fixture["expected"]["directFlagTotals"][0]
-    direct_accepts(direct_fixture_total_validator, direct_fixture_total)
-    fixture_direct_flag_boundary = copy.deepcopy(direct_fixture_total)
-    fixture_direct_flag_boundary["flagNumber"] = -1
-    direct_rejects(direct_fixture_total_validator, fixture_direct_flag_boundary)
-
-    script_output_site = output["scriptInvocationSites"][0]
-    direct_accepts(script_output_site_validator, script_output_site)
-    script_output_missing = copy.deepcopy(script_output_site)
-    del script_output_missing["weightCounts"]["routeRecordReferenceWeightedSiteCount"]
-    direct_rejects(script_output_site_validator, script_output_missing)
-
-    script_output_extra = copy.deepcopy(script_output_site)
-    script_output_extra["weightCounts"]["unexpected"] = True
-    direct_rejects(script_output_site_validator, script_output_extra)
-
-    script_output_site_order = output["scriptInvocationSiteOrder"]
-    direct_accepts(script_output_site_order_validator, script_output_site_order)
-    direct_rejects(script_output_site_order_validator, list(reversed(script_output_site_order)))
-
-    script_output_boundary = copy.deepcopy(script_output_site)
-    script_output_boundary["operationAddress"] = -1
-    direct_rejects(script_output_site_validator, script_output_boundary)
-
-    script_fixture_site = fixture["expected"]["scriptInvocationSites"][0]
-    direct_accepts(script_fixture_site_validator, script_fixture_site)
-    script_fixture_renamed = copy.deepcopy(script_fixture_site)
-    script_fixture_weights = script_fixture_renamed["weightCounts"]
-    script_fixture_weights["renamedPhysicalRecordWeightedSiteCount"] = script_fixture_weights.pop(
-        "physicalRecordWeightedSiteCount"
-    )
-    direct_rejects(script_fixture_site_validator, script_fixture_renamed)
-
-    script_fixture_extra = copy.deepcopy(script_fixture_site)
-    script_fixture_extra["weightCounts"]["unexpected"] = True
-    direct_rejects(script_fixture_site_validator, script_fixture_extra)
-
-    script_fixture_effective_order = fixture["expected"][
-        "scriptInvocationEffectiveTargetTotalOrder"
+    script_missing = copy.deepcopy(output)
+    del script_missing["scriptInvocationSites"][0]["weightCounts"][
+        "routeRecordReferenceWeightedSiteCount"
     ]
-    direct_accepts(script_fixture_effective_order_validator, script_fixture_effective_order)
-    direct_rejects(
-        script_fixture_effective_order_validator,
-        list(reversed(script_fixture_effective_order)),
-    )
+    output_rejects(script_missing, "script invocation missing field")
 
-    script_fixture_boundary = copy.deepcopy(script_fixture_site)
-    script_fixture_boundary["instructionTargetAddress"] = -1
-    direct_rejects(script_fixture_site_validator, script_fixture_boundary)
+    script_extra = copy.deepcopy(output)
+    script_extra["scriptInvocationSites"][0]["weightCounts"]["unexpected"] = True
+    output_rejects(script_extra, "script invocation extra field")
 
-    textbox_output_site = next(
-        site
-        for site in output["textboxReferenceSites"]
+    script_boundary = copy.deepcopy(output)
+    script_boundary["scriptInvocationSites"][0]["operationAddress"] = -1
+    output_rejects(script_boundary, "script invocation boundary")
+
+    textbox_site_index = next(
+        index
+        for index, site in enumerate(output["textboxReferenceSites"])
         if site["sourceKind"] == "line-reference"
     )
-    direct_accepts(textbox_output_site_validator, textbox_output_site)
-    textbox_output_missing = copy.deepcopy(textbox_output_site)
-    del textbox_output_missing["weightCounts"]["routeRecordReferenceWeightedSiteCount"]
-    direct_rejects(textbox_output_site_validator, textbox_output_missing)
+    textbox_missing = copy.deepcopy(output)
+    del textbox_missing["textboxReferenceSites"][textbox_site_index]["weightCounts"][
+        "routeRecordReferenceWeightedSiteCount"
+    ]
+    output_rejects(textbox_missing, "textbox missing field")
 
-    textbox_output_extra = copy.deepcopy(textbox_output_site)
-    textbox_output_extra["weightCounts"]["unexpected"] = True
-    direct_rejects(textbox_output_site_validator, textbox_output_extra)
+    textbox_extra = copy.deepcopy(output)
+    textbox_extra["textboxReferenceSites"][textbox_site_index]["weightCounts"][
+        "unexpected"
+    ] = True
+    output_rejects(textbox_extra, "textbox extra field")
 
-    textbox_output_boundary = copy.deepcopy(textbox_output_site)
-    textbox_output_boundary["lineId"] = -1
-    direct_rejects(textbox_output_site_validator, textbox_output_boundary)
+    textbox_boundary = copy.deepcopy(output)
+    textbox_boundary["textboxReferenceSites"][textbox_site_index]["lineId"] = -1
+    output_rejects(textbox_boundary, "textbox boundary")
 
-    textbox_output_line_total = output["textboxLineTotals"][0]
-    direct_accepts(textbox_output_line_total_validator, textbox_output_line_total)
-    textbox_output_line_boundary = copy.deepcopy(textbox_output_line_total)
-    textbox_output_line_boundary["lineId"] = -1
-    direct_rejects(textbox_output_line_total_validator, textbox_output_line_boundary)
+    textbox_line_boundary = copy.deepcopy(output)
+    textbox_line_boundary["textboxLineTotals"][0]["lineId"] = -1
+    output_rejects(textbox_line_boundary, "textbox line-total boundary")
 
-    textbox_fixture_site = next(
-        site
-        for site in fixture["expected"]["textboxReferenceSites"]
-        if site["sourceKind"] == "line-reference"
-    )
-    direct_accepts(textbox_fixture_site_validator, textbox_fixture_site)
-    textbox_fixture_renamed = copy.deepcopy(textbox_fixture_site)
-    textbox_fixture_weights = textbox_fixture_renamed["weightCounts"]
-    textbox_fixture_weights["renamedPhysicalProgramOccurrenceCount"] = (
-        textbox_fixture_weights.pop("physicalProgramOccurrenceCount")
-    )
-    direct_rejects(textbox_fixture_site_validator, textbox_fixture_renamed)
+    entity_program_missing = copy.deepcopy(output)
+    del entity_program_missing["entityTargetPrograms"][0]["termination"][
+        "sourceMnemonic"
+    ]
+    output_rejects(entity_program_missing, "entity program missing field")
 
-    textbox_fixture_extra = copy.deepcopy(textbox_fixture_site)
-    textbox_fixture_extra["weightCounts"]["unexpected"] = True
-    direct_rejects(textbox_fixture_site_validator, textbox_fixture_extra)
-
-    textbox_fixture_line_total = fixture["expected"]["textboxLineTotals"][0]
-    direct_accepts(textbox_fixture_line_total_validator, textbox_fixture_line_total)
-    textbox_fixture_boundary = copy.deepcopy(textbox_fixture_line_total)
-    textbox_fixture_boundary["lineId"] = -1
-    direct_rejects(textbox_fixture_line_total_validator, textbox_fixture_boundary)
-
-    textbox_fixture_order = {
-        **fixture,
-        "expected": {
-            **fixture["expected"],
-            "textboxLineTotalOrder": list(
-                reversed(fixture["expected"]["textboxLineTotalOrder"])
-            ),
-        },
-    }
-    with pytest.raises(ValueError, match="complete semantic fixture drift"):
-        _verify_complete_map_events_fixture(textbox_fixture_order, output)
-
-    program_missing = copy.deepcopy(output)
-    del program_missing["entityTargetPrograms"][0]["termination"]["sourceMnemonic"]
-    output_rejects(program_missing)
-
-    program_extra = copy.deepcopy(output)
-    target_operation = next(
+    entity_program_extra = copy.deepcopy(output)
+    entity_target_operation = next(
         operation
-        for program in program_extra["entityTargetPrograms"]
+        for program in entity_program_extra["entityTargetPrograms"]
         for operation in program["operations"]
         if operation["target"] is not None
     )
-    target_operation["target"]["unexpected"] = True
-    output_rejects(program_extra)
+    entity_target_operation["target"]["unexpected"] = True
+    output_rejects(entity_program_extra, "entity program extra field")
 
-    program_order = copy.deepcopy(output)
-    program_order["entityTargetProgramOperationOrders"].reverse()
-    output_rejects(program_order)
-
-    program_boundary = copy.deepcopy(output)
-    program_boundary["entityTargetPrograms"][0]["encodedSpanBytes"] = -1
-    output_rejects(program_boundary)
-
-    fixture_program_renamed = copy.deepcopy(fixture)
-    reference_counts = fixture_program_renamed["expected"]["entityTargetPrograms"][0][
-        "referenceCounts"
-    ]
-    reference_counts["renamedPhysicalRecordCount"] = reference_counts.pop("physicalRecordCount")
-    fixture_rejects(fixture_program_renamed)
+    entity_program_boundary = copy.deepcopy(output)
+    entity_program_boundary["entityTargetPrograms"][0]["encodedSpanBytes"] = -1
+    output_rejects(entity_program_boundary, "entity program boundary")
 
     zone_program_missing = copy.deepcopy(output)
     del zone_program_missing["zoneTargetPrograms"][0]["termination"]["sourceMnemonic"]
-    output_rejects(zone_program_missing)
+    output_rejects(zone_program_missing, "zone program missing field")
 
     item_program_extra = copy.deepcopy(output)
     item_target_operation = next(
@@ -1977,26 +1699,222 @@ def test_map_events_schemas_reject_nested_missing_extra_order_and_boundary_mutat
         if operation["target"] is not None
     )
     item_target_operation["target"]["unexpected"] = True
-    output_rejects(item_program_extra)
-
-    zone_program_order = copy.deepcopy(output)
-    zone_program_order["zoneTargetProgramOperationOrders"].reverse()
-    output_rejects(zone_program_order)
+    output_rejects(item_program_extra, "item program extra field")
 
     item_program_boundary = copy.deepcopy(output)
     item_program_boundary["itemTargetPrograms"][0]["encodedSpanBytes"] = -1
-    output_rejects(item_program_boundary)
+    output_rejects(item_program_boundary, "item program boundary")
 
     zone_exclusion_missing = copy.deepcopy(output)
     del zone_exclusion_missing["zoneTargetProgramExclusions"][0]["targetH1Address"]
-    output_rejects(zone_exclusion_missing)
+    output_rejects(zone_exclusion_missing, "zone exclusion missing field")
 
-    fixture_zone_exclusion_renamed = copy.deepcopy(fixture)
-    exclusion_counts = fixture_zone_exclusion_renamed["expected"]["zoneTargetProgramExclusions"][0][
-        "referenceCounts"
-    ]
-    exclusion_counts["renamedPhysicalRecordCount"] = exclusion_counts.pop("physicalRecordCount")
-    fixture_rejects(fixture_zone_exclusion_renamed)
+    # Ordering and complete corpus values are owner semantics, not reusable shape.
+    for mutate in (
+        lambda value: value["physicalRecordOrder"].reverse(),
+        lambda value: value["operationVocabulary"].reverse(),
+        lambda value: value["directFlagAccessSiteOrder"].reverse(),
+        lambda value: value["directFlagTotalOrder"].reverse(),
+        lambda value: value["scriptInvocationSiteOrder"].reverse(),
+        lambda value: value["scriptInvocationEffectiveTargetTotalOrder"].reverse(),
+        lambda value: value["textboxLineTotalOrder"].reverse(),
+        lambda value: value["entityTargetProgramOperationOrders"].reverse(),
+        lambda value: value["zoneTargetProgramOperationOrders"].reverse(),
+        lambda value: value["routeCategoryJoinOrder"].reverse(),
+    ):
+        semantic = copy.deepcopy(output)
+        mutate(semantic)
+        validate_json(semantic, SCHEMA, owner="schema-valid map events semantic drift")
+        with pytest.raises(ValueError, match="complete semantic fixture drift"):
+            _verify_complete_map_events_fixture(fixture, semantic)
+
+    fixture_semantic = copy.deepcopy(fixture)
+    fixture_semantic["expected"]["recordTargetProfiles"][0][
+        "canonicalSymbol"
+    ] = "wrong-owner"
+    validate_json(
+        fixture_semantic["expected"],
+        SCHEMA,
+        owner="schema-valid fixture target-owner drift",
+    )
+    with pytest.raises(ValueError, match="complete semantic fixture drift"):
+        _verify_complete_map_events_fixture(fixture_semantic, output)
+
+    for field, replacement in (
+        ("upstreamCommit", "0" * 40),
+        ("romSha256", "0" * 64),
+        (
+            "function",
+            {
+                **fixture["function"],
+                "RunMapSetupEntityEvent": fixture["function"][
+                    "RunMapSetupEntityEvent"
+                ]
+                + 2,
+            },
+        ),
+    ):
+        wrong_owner = copy.deepcopy(fixture)
+        wrong_owner[field] = replacement
+        with pytest.raises(ValueError, match="provenance/address drift"):
+            _verify_complete_map_events_fixture(wrong_owner, output)
+
+
+def test_map_events_fixture_shards_recompose_exactly_and_reject_inventory_drift(
+    complete_output: dict[str, Any],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    index = load_json(FIXTURE)
+    validate_json(index, FIXTURE_SCHEMA, owner="map events fixture index")
+    assert tuple(shard["section"] for shard in index["shards"]) == tuple(SECTION_SCHEMAS)
+    assert FIXTURE.stat().st_size < 12_000
+    assert len(index["shards"]) == 9
+
+    fixture = load_map_events_fixture()
+    assert list(fixture["expected"]) == index["fieldOrder"]
+    assert fixture["expected"] == complete_output
+
+    original_load_json = map_events_fixture.load_json
+    index_path = FIXTURE.resolve()
+    shard_paths = {
+        descriptor["section"]: map_events_fixture.repo_path(descriptor["path"]).resolve()
+        for descriptor in index["shards"]
+    }
+
+    def expect_loader_rejected(
+        mutations: dict[Path, Any],
+        message: str,
+    ) -> None:
+        def fake_load_json(path: Path) -> Any:
+            value = original_load_json(path)
+            mutate = mutations.get(Path(path).resolve())
+            if mutate is not None:
+                value = copy.deepcopy(value)
+                mutate(value)
+            return value
+
+        monkeypatch.setattr(map_events_fixture, "load_json", fake_load_json)
+        try:
+            with pytest.raises(ValueError, match=message):
+                load_map_events_fixture()
+        finally:
+            monkeypatch.setattr(map_events_fixture, "load_json", original_load_json)
+
+    expect_loader_rejected(
+        {index_path: lambda value: value["shards"].reverse()},
+        "section order drift",
+    )
+    expect_loader_rejected(
+        {index_path: lambda value: value["fieldOrder"].pop()},
+        "complete field coverage drift",
+    )
+    expect_loader_rejected(
+        {
+            index_path: lambda value: value["shards"][0].__setitem__(
+                "path", "tests/fixtures/h2/map-events/wrong.json"
+            )
+        },
+        "shard path drift",
+    )
+    expect_loader_rejected(
+        {
+            shard_paths["routing-setup"]: lambda value: value.__setitem__(
+                "section", "entity-programs"
+            )
+        },
+        "shard identity drift",
+    )
+
+    first_field = index["shards"][0]["fields"][0]
+    expect_loader_rejected(
+        {
+            shard_paths["routing-setup"]: lambda value: value["expected"].pop(
+                first_field
+            )
+        },
+        "field inventory drift",
+    )
+
+    duplicate_field = index["shards"][0]["fields"][0]
+
+    def add_duplicate_descriptor(value: dict[str, Any]) -> None:
+        value["shards"][1]["fields"].append(duplicate_field)
+
+    def add_duplicate_payload(value: dict[str, Any]) -> None:
+        value["expected"][duplicate_field] = copy.deepcopy(
+            complete_output[duplicate_field]
+        )
+
+    expect_loader_rejected(
+        {
+            index_path: add_duplicate_descriptor,
+            shard_paths["entity-programs"]: add_duplicate_payload,
+        },
+        "duplicate field drift",
+    )
+
+    original_repo_path = map_events_fixture.repo_path
+
+    def missing_shard_path(*parts: str) -> Path:
+        if parts == (index["shards"][0]["path"],):
+            return tmp_path / "missing-routing-shard.json"
+        return original_repo_path(*parts)
+
+    monkeypatch.setattr(map_events_fixture, "repo_path", missing_shard_path)
+    try:
+        with pytest.raises(FileNotFoundError):
+            load_map_events_fixture()
+    finally:
+        monkeypatch.setattr(map_events_fixture, "repo_path", original_repo_path)
+
+    wrong_index = copy.deepcopy(index)
+    wrong_index["romSha256"] = "0" * 64
+    wrong_index_path = tmp_path / "map-events-index.json"
+    wrong_index_path.write_text(
+        json.dumps(wrong_index, indent=2) + "\n", encoding="utf-8"
+    )
+    wrong_fixture = load_map_events_fixture(wrong_index_path)
+    with pytest.raises(ValueError, match="provenance/address drift"):
+        _verify_complete_map_events_fixture(wrong_fixture, complete_output)
+
+    semantic_shard = copy.deepcopy(fixture)
+    semantic_shard["expected"]["recordTargetProfiles"][0][
+        "canonicalSymbol"
+    ] = "wrong-owner"
+    validate_json(
+        semantic_shard["expected"],
+        SCHEMA,
+        owner="schema-valid sharded map events drift",
+    )
+    with pytest.raises(ValueError, match="complete semantic fixture drift"):
+        _verify_complete_map_events_fixture(semantic_shard, complete_output)
+
+
+def test_map_events_verifier_rejects_schema_valid_shard_drift_before_write(
+    complete_output: dict[str, Any],
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture = load_map_events_fixture()
+    broken = copy.deepcopy(fixture)
+    broken["expected"]["soundCommandSites"].reverse()
+    validate_json(broken["expected"], SCHEMA, owner="schema-valid map events golden drift")
+
+    output_path = tmp_path / "map-events.json"
+    monkeypatch.setattr(map_events_module, "load_map_events_fixture", lambda: broken)
+    monkeypatch.setattr(
+        map_events_module,
+        "build_map_events_contract",
+        lambda _rom_path, _upstream_path: complete_output,
+    )
+    with pytest.raises(ValueError, match="complete semantic fixture drift"):
+        map_events_module.verify_map_events_contract(
+            Path("unused-rom.bin"),
+            Path("unused-upstream"),
+            output_path=output_path,
+        )
+    assert not output_path.exists()
 
 
 def test_entity_target_program_parser_guards_comments_suffixes_and_h1_use_sites() -> None:
@@ -3434,225 +3352,99 @@ def test_reference_reconciliation_rejects_profile_and_category_counter_mutations
         )
 
 
-def test_map_events_schema_size_stays_compact_and_reuses_closed_shapes() -> None:
-    assert SCHEMA.stat().st_size < 850_000
-    assert FIXTURE_SCHEMA.stat().st_size < 850_000
-    schema = load_json(SCHEMA)
+def test_map_events_schema_composition_stays_local_and_golden_free() -> None:
+    report = schema_composition_audit(list(map_events_fixture.COMPOSED_SCHEMAS))
+
+    assert report["schemaCount"] == 13
+    assert report["totalSizeBytes"] < 300_000
+    assert report["constCount"] == 6
+    assert report["constPayloadBytes"] == 81
+    assert report["largeConstCount"] == 0
+    assert report["referencedResourceCount"] == 10
+    assert report["unresolvedReferences"] == []
+    assert report["duplicateBodyGroups"] == []
+    assert all(component["constCount"] == 0 for component in report["files"][:10])
+
+    def exact_cardinalities(value: Any) -> list[int]:
+        if isinstance(value, list):
+            return [count for item in value for count in exact_cardinalities(item)]
+        if not isinstance(value, dict):
+            return []
+        counts = []
+        if "minItems" in value and value.get("minItems") == value.get("maxItems"):
+            counts.append(value["minItems"])
+        return counts + [
+            count for child in value.values() for count in exact_cardinalities(child)
+        ]
+
+    for component_path in map_events_fixture.COMPOSED_SCHEMAS[:10]:
+        assert exact_cardinalities(load_json(component_path)) == []
+
+
+def test_map_events_roots_reuse_local_section_and_target_program_components() -> None:
+    output_schema = load_json(SCHEMA)
+    assert "definitions" not in output_schema
+    assert [entry["$ref"] for entry in output_schema["allOf"]] == [
+        load_json(schema_path)["$id"] for schema_path in SECTION_SCHEMAS.values()
+    ]
+
+    target_schema = load_json(map_events_fixture.TARGET_PROGRAM_SCHEMA)
+    target_id = target_schema["$id"]
     assert {
-        "entityEventRecord",
-        "zoneEventRecord",
-        "itemEventRecord",
-        "entityTargetSourceOwnerLabel",
-        "entityTargetProgramLabel",
-        "entityTargetProgramTarget",
-        "entityTargetProgramOperation",
-        "entityTargetProgramReferenceCounts",
         "entityTargetProgram",
-        "entityTargetProgramLabelOrder",
-        "entityTargetProgramOperationOrder",
-        "entityTargetJumpInterfaceAlias",
-        "entityTargetControlFlowTargetTotal",
-        "entityTargetControlFlowScopeTotals",
-        "entityTargetControlFlowTotals",
+        "entityTargetProgramOperation",
         "entityTargetProgramControlFlow",
-        "entityTargetProgramControlFlowTargetOrders",
-        "entityTargetProgramSummary",
         "mapEventTargetProgram",
-        "mapEventTargetProgramSummary",
         "mapEventTargetProgramExclusion",
-    } <= set(schema["definitions"])
-    assert {
-        "mapEventOperationWeightCounts",
-        "mapEventOperationEngineCatalog",
-        "mapEventOperationDefinition",
-        "mapEventPayloadContext",
-        "mapEventOperationVocabularyCounts",
-        "mapEventOperationVocabulary",
-        "mapEventOperationFamilyCount",
-        "mapEventOperationVocabularySummary",
-    } <= set(schema["definitions"])
-    assert {
-        "directFlagReferenceWeights",
-        "directFlagWeightCounts",
-        "directFlagAccessKindCounts",
-        "directFlagCategoryAccessKindCounts",
-        "directFlagConditionTarget",
-        "directFlagConditionConsumer",
-        "directFlagAccessSite",
-        "directFlagServiceDefinition",
-        "directFlagProgramTotal",
-        "directFlagTotal",
-        "directFlagReadConditionConsumerCounts",
-        "directFlagStateSummary",
-        "scriptInvocationWeightCounts",
-        "scriptInvocationCategoryWeightCounts",
-        "scriptInvocationServiceDefinition",
-        "scriptInvocationSite",
-        "scriptInvocationCallerTotal",
-        "scriptInvocationInstructionTargetTotal",
-        "scriptInvocationEffectiveTargetTotal",
-        "scriptInvocationSummary",
-        "textboxWeightCounts",
-        "textboxKindWeightCounts",
-        "textboxCategoryWeightCounts",
-        "textboxCategoryKindWeightCounts",
-        "textboxLineDomain",
-        "textboxServiceDefinition",
-        "textboxReferenceSite",
-        "textboxCallerTotal",
-        "textboxLineTotal",
-        "textboxSummary",
-    } <= set(schema["definitions"])
+    } <= set(target_schema["definitions"])
+
+    for section, prefix in (
+        ("entity-programs", "entity"),
+        ("zone-programs", "zone"),
+        ("item-programs", "item"),
+    ):
+        schema = load_json(SECTION_SCHEMAS[section])
+        programs = schema["properties"][f"{prefix}TargetPrograms"]
+        expected_definition = (
+            "entityTargetProgram" if prefix == "entity" else "mapEventTargetProgram"
+        )
+        assert programs["items"] == {
+            "$ref": f"{target_id}#/definitions/{expected_definition}"
+        }
+        assert schema["properties"][f"{prefix}TargetProgramControlFlow"] == {
+            "$ref": f"{target_id}#/definitions/entityTargetProgramControlFlow"
+        }
+
+    routing_schema = load_json(SECTION_SCHEMAS["routing-setup"])
     for category, definition in (
         ("entityEvents", "entityEventRecord"),
         ("zoneEvents", "zoneEventRecord"),
         ("itemEvents", "itemEventRecord"),
     ):
-        records = schema["properties"]["categories"]["properties"][category]["properties"][
-            "tables"
-        ]["items"]["properties"]["records"]
+        records = routing_schema["properties"]["categories"]["properties"][category][
+            "properties"
+        ]["tables"]["items"]["properties"]["records"]
         assert records["items"] == {"$ref": f"#/definitions/{definition}"}
-    assert schema["properties"]["entityTargetPrograms"]["items"] == {
-        "$ref": "#/definitions/entityTargetProgram"
-    }
-    assert schema["definitions"]["entityTargetProgram"]["properties"]["operations"]["items"] == {
-        "$ref": "#/definitions/entityTargetProgramOperation"
-    }
-    assert schema["definitions"]["entityTargetProgramOperation"]["properties"]["target"]["anyOf"][
-        1
-    ] == {"$ref": "#/definitions/entityTargetProgramTarget"}
-    for category in ("zone", "item"):
-        assert schema["properties"][f"{category}TargetPrograms"]["items"] == {
-            "$ref": "#/definitions/mapEventTargetProgram"
-        }
-        assert schema["properties"][f"{category}TargetProgramOperationOrders"]["const"]
-        assert schema["properties"][f"{category}TargetProgramBoundaryOrders"]["const"]
-    assert schema["definitions"]["mapEventTargetProgram"]["properties"]["operations"]["items"] == {
-        "$ref": "#/definitions/entityTargetProgramOperation"
-    }
-    assert schema["definitions"]["mapEventTargetProgramExclusion"]["additionalProperties"] is False
-    assert schema["properties"]["directFlagAccessSites"]["items"] == {
-        "$ref": "#/definitions/directFlagAccessSite"
-    }
-    assert schema["properties"]["directFlagProgramTotals"]["items"] == {
-        "$ref": "#/definitions/directFlagProgramTotal"
-    }
-    assert schema["properties"]["directFlagTotals"]["items"] == {
-        "$ref": "#/definitions/directFlagTotal"
-    }
-    assert schema["properties"]["scriptInvocationSites"]["items"] == {
-        "$ref": "#/definitions/scriptInvocationSite"
-    }
-    assert schema["properties"]["scriptInvocationCallerTotals"]["items"] == {
-        "$ref": "#/definitions/scriptInvocationCallerTotal"
-    }
-    assert schema["properties"]["scriptInvocationInstructionTargetTotals"]["items"] == {
-        "$ref": "#/definitions/scriptInvocationInstructionTargetTotal"
-    }
-    assert schema["properties"]["scriptInvocationEffectiveTargetTotals"]["items"] == {
-        "$ref": "#/definitions/scriptInvocationEffectiveTargetTotal"
-    }
-    assert schema["properties"]["textboxReferenceSites"]["items"] == {
-        "$ref": "#/definitions/textboxReferenceSite"
-    }
-    assert schema["properties"]["textboxCallerTotals"]["items"] == {
-        "$ref": "#/definitions/textboxCallerTotal"
-    }
-    assert schema["properties"]["textboxLineTotals"]["items"] == {
-        "$ref": "#/definitions/textboxLineTotal"
-    }
-    for definition in (
-        "directFlagReferenceWeights",
-        "directFlagWeightCounts",
-        "directFlagAccessKindCounts",
-        "directFlagCategoryAccessKindCounts",
-        "directFlagConditionTarget",
-        "directFlagConditionConsumer",
-        "directFlagAccessSite",
-        "directFlagServiceDefinition",
-        "directFlagProgramTotal",
-        "directFlagTotal",
-        "directFlagReadConditionConsumerCounts",
-        "directFlagStateSummary",
-        "scriptInvocationWeightCounts",
-        "scriptInvocationCategoryWeightCounts",
-        "scriptInvocationServiceDefinition",
-        "scriptInvocationSite",
-        "scriptInvocationCallerTotal",
-        "scriptInvocationInstructionTargetTotal",
-        "scriptInvocationEffectiveTargetTotal",
-        "scriptInvocationSummary",
-        "textboxWeightCounts",
-        "textboxKindWeightCounts",
-        "textboxCategoryWeightCounts",
-        "textboxCategoryKindWeightCounts",
-        "textboxLineDomain",
-        "textboxServiceDefinition",
-        "textboxReferenceSite",
-        "textboxCallerTotal",
-        "textboxLineTotal",
-        "textboxSummary",
+        assert routing_schema["definitions"][definition]["additionalProperties"] is False
+
+    for section, definitions in (
+        (
+            "direct-flags",
+            ("directFlagAccessSite", "directFlagProgramTotal", "directFlagTotal"),
+        ),
+        (
+            "script-invocation",
+            ("scriptInvocationSite", "scriptInvocationCallerTotal"),
+        ),
+        ("textbox", ("textboxReferenceSite", "textboxLineTotal")),
+        (
+            "sound-commands",
+            ("soundCommandSite", "soundCommandCallerTotal", "soundCommandSummary"),
+        ),
     ):
-        assert schema["definitions"][definition]["additionalProperties"] is False
-    for definition in (
-        "mapEventOperationWeightCounts",
-        "mapEventOperationDefinition",
-        "mapEventPayloadContext",
-        "mapEventOperationVocabularyCounts",
-        "mapEventOperationVocabulary",
-        "mapEventOperationFamilyCount",
-    ):
-        assert schema["definitions"][definition]["additionalProperties"] is False
-    operation = schema["definitions"]["entityTargetProgramOperation"]
-    assert operation["additionalProperties"] is False
-    assert {"family", "definitionId", "payloadContextIds"} <= set(operation["required"])
-    assert len(operation["allOf"]) == 54
-    for category in ("entity", "zone", "item"):
-        for suffix in ("OperationWeightOrders", "PayloadContextOrders"):
-            assert schema["properties"][f"{category}TargetProgram{suffix}"]["const"]
-    fixture_schema = load_json(FIXTURE_SCHEMA)
-    fixture_output = fixture_schema["definitions"]["outputContract"]
-    assert fixture_output["properties"]["directFlagAccessSites"]["items"] == {
-        "$ref": "#/definitions/outputContract/definitions/directFlagAccessSite"
-    }
-    assert fixture_output["properties"]["directFlagProgramTotals"]["items"] == {
-        "$ref": "#/definitions/outputContract/definitions/directFlagProgramTotal"
-    }
-    assert fixture_output["properties"]["directFlagTotals"]["items"] == {
-        "$ref": "#/definitions/outputContract/definitions/directFlagTotal"
-    }
-    assert fixture_output["properties"]["scriptInvocationSites"]["items"] == {
-        "$ref": "#/definitions/outputContract/definitions/scriptInvocationSite"
-    }
-    assert fixture_output["properties"]["scriptInvocationCallerTotals"]["items"] == {
-        "$ref": "#/definitions/outputContract/definitions/scriptInvocationCallerTotal"
-    }
-    assert fixture_output["properties"]["scriptInvocationInstructionTargetTotals"]["items"] == {
-        "$ref": "#/definitions/outputContract/definitions/scriptInvocationInstructionTargetTotal"
-    }
-    assert fixture_output["properties"]["scriptInvocationEffectiveTargetTotals"]["items"] == {
-        "$ref": "#/definitions/outputContract/definitions/scriptInvocationEffectiveTargetTotal"
-    }
-    assert fixture_output["properties"]["textboxReferenceSites"]["items"] == {
-        "$ref": "#/definitions/outputContract/definitions/textboxReferenceSite"
-    }
-    assert fixture_output["properties"]["textboxCallerTotals"]["items"] == {
-        "$ref": "#/definitions/outputContract/definitions/textboxCallerTotal"
-    }
-    assert fixture_output["properties"]["textboxLineTotals"]["items"] == {
-        "$ref": "#/definitions/outputContract/definitions/textboxLineTotal"
-    }
-    for category in ("zone", "item"):
-        assert fixture_output["properties"][f"{category}TargetPrograms"]["items"] == {
-            "$ref": "#/definitions/mapEventTargetProgram"
-        }
-        assert fixture_output["properties"][f"{category}TargetProgramExclusions"]["items"] == {
-            "$ref": "#/definitions/mapEventTargetProgramExclusion"
-        }
-    assert (
-        fixture_schema["definitions"]["mapEventOperationDefinition"]["additionalProperties"]
-        is False
-    )
+        schema = load_json(SECTION_SCHEMAS[section])
+        for definition in definitions:
+            assert schema["definitions"][definition]["additionalProperties"] is False
 
 
 def _sound_command_inputs(
@@ -3885,89 +3677,57 @@ def test_sound_command_contract_is_complete_and_guards_source_relations(
             )
 
 
-def test_sound_command_schemas_recursively_close_exact_corpus_mutations(
+def test_sound_command_schema_closes_structure_while_owner_closes_corpus(
     complete_output: dict[str, Any],
 ) -> None:
-    fixture = load_json(FIXTURE)
-    fixtures = (
-        (complete_output, SCHEMA),
-        (fixture, FIXTURE_SCHEMA),
-    )
-    for instance, schema in fixtures:
-        validate_json(instance, schema, owner="sound-command baseline")
-        output = instance if schema == SCHEMA else instance["expected"]
+    fixture = load_map_events_fixture()
+    validate_json(complete_output, SCHEMA, owner="sound-command baseline")
 
-        missing = copy.deepcopy(instance)
-        target = missing if schema == SCHEMA else missing["expected"]
-        del target["soundCommandSites"][0]["sourceOperand"]
-        with pytest.raises(ValueError, match="sound-command missing nested field"):
-            validate_json(missing, schema, owner="sound-command missing nested field")
-
-        extra = copy.deepcopy(instance)
-        target = extra if schema == SCHEMA else extra["expected"]
-        target["soundCommandCallerTotals"][0]["weightCounts"]["unexpected"] = {
-            "physicalProgramOccurrenceCount": 0,
-            "physicalRecordWeightedSiteCount": 0,
-            "setupRecordReferenceWeightedSiteCount": 0,
-            "routeRecordReferenceWeightedSiteCount": 0,
-        }
-        with pytest.raises(ValueError, match="sound-command extra nested field"):
-            validate_json(extra, schema, owner="sound-command extra nested field")
-
-        renamed = copy.deepcopy(instance)
-        target = renamed if schema == SCHEMA else renamed["expected"]
-        target["soundCommandSummary"]["siteCountRenamed"] = target[
-            "soundCommandSummary"
-        ].pop("siteCount")
-        with pytest.raises(ValueError, match="sound-command renamed field"):
-            validate_json(renamed, schema, owner="sound-command renamed field")
-
-        reordered = copy.deepcopy(instance)
-        target = reordered if schema == SCHEMA else reordered["expected"]
-        target["soundCommandSites"].reverse()
-        with pytest.raises(ValueError, match="sound-command order mutation"):
-            validate_json(reordered, schema, owner="sound-command order mutation")
-
-        out_of_range = copy.deepcopy(instance)
-        target = out_of_range if schema == SCHEMA else out_of_range["expected"]
-        target["soundCommandSites"][2]["resolvedValue"] = 65
-        with pytest.raises(ValueError, match="sound-command category boundary"):
-            validate_json(
-                out_of_range,
-                schema,
-                owner="sound-command category boundary",
-            )
-
-        wrong_zero_count = copy.deepcopy(instance)
-        target = wrong_zero_count if schema == SCHEMA else wrong_zero_count["expected"]
-        target["soundCommandSummary"]["zeroCallerProgramCount"] = 912
-        with pytest.raises(ValueError, match="sound-command caller total"):
-            validate_json(
-                wrong_zero_count,
-                schema,
-                owner="sound-command caller total",
-            )
-
-        assert output["soundCommandSummary"]["siteCount"] == 3
-
-    reordered_golden = copy.deepcopy(fixture)
-    reordered_golden["expected"]["soundCommandSites"].reverse()
-    with pytest.raises(ValueError, match="map events complete semantic fixture drift"):
-        _verify_complete_map_events_fixture(reordered_golden, complete_output)
-
-    output_schema = load_json(SCHEMA)
-    fixture_schema = load_json(FIXTURE_SCHEMA)
-    for schema, definition_root in (
-        (output_schema, output_schema["definitions"]),
+    for owner, mutate in (
         (
-            fixture_schema,
-            fixture_schema["definitions"]["outputContract"]["definitions"],
+            "sound-command missing nested field",
+            lambda target: target["soundCommandSites"][0].pop("sourceOperand"),
+        ),
+        (
+            "sound-command extra nested field",
+            lambda target: target["soundCommandCallerTotals"][0]["weightCounts"].__setitem__(
+                "unexpected",
+                {
+                    "physicalProgramOccurrenceCount": 0,
+                    "physicalRecordWeightedSiteCount": 0,
+                    "setupRecordReferenceWeightedSiteCount": 0,
+                    "routeRecordReferenceWeightedSiteCount": 0,
+                },
+            ),
+        ),
+        (
+            "sound-command renamed field",
+            lambda target: target["soundCommandSummary"].__setitem__(
+                "siteCountRenamed", target["soundCommandSummary"].pop("siteCount")
+            ),
+        ),
+        (
+            "sound-command category boundary",
+            lambda target: target["soundCommandSites"][2].__setitem__(
+                "resolvedValue", 65
+            ),
         ),
     ):
-        for definition in (
-            "soundCommandSite",
-            "soundCommandCallerTotal",
-            "soundCommandSummary",
-        ):
-            assert definition_root[definition]["additionalProperties"] is False
-        assert schema["$schema"] == "http://json-schema.org/draft-07/schema#"
+        broken = copy.deepcopy(complete_output)
+        mutate(broken)
+        with pytest.raises(ValueError, match=owner):
+            validate_json(broken, SCHEMA, owner=owner)
+
+    for mutate in (
+        lambda target: target["soundCommandSites"].reverse(),
+        lambda target: target["soundCommandSummary"].__setitem__(
+            "zeroCallerProgramCount", 912
+        ),
+    ):
+        semantic = copy.deepcopy(complete_output)
+        mutate(semantic)
+        validate_json(semantic, SCHEMA, owner="schema-valid sound-command corpus drift")
+        with pytest.raises(ValueError, match="complete semantic fixture drift"):
+            _verify_complete_map_events_fixture(fixture, semantic)
+
+    assert complete_output["soundCommandSummary"]["siteCount"] == 3

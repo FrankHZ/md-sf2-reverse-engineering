@@ -198,10 +198,12 @@ intended behavior is inferred from the bad pointer.
 
 The complete tables and decoded branch targets stay in ignored
 `local/derived/map-events-static.json`. The tracked fixture
-`tests/fixtures/h2/map-events-static-v1.json` carries the complete structured semantic object; its
-closed output/fixture schemas use reusable category record definitions plus compact exact-order arrays.
-It preserves macro contracts, source/ROM/owner joins, target profiles, pointer and selector-route
-multiplicities, and both exception families without redistributing event content.
+`tests/fixtures/h2/map-events-static-v1.json` indexes nine semantic shards under
+`tests/fixtures/h2/map-events/`; the project loader validates their identities and exact field ownership,
+then recomposes the complete 103-field structured semantic object in canonical order. Local-reference
+schemas own closed reusable shape, while the shards and complete owner comparison retain exact order and
+values. Together they preserve macro contracts, source/ROM/owner joins, target profiles, pointer and
+selector-route multiplicities, and both exception families without redistributing event content.
 
 The H2 rail now evaluates nine representative queries directly against those complete decoded tables.
 Entity cases cover a late specific match and the default; zone cases cover exact coordinates,

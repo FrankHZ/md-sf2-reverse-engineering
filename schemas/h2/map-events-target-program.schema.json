@@ -1,0 +1,2407 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json",
+  "title": "Map events shared target-program shapes",
+  "definitions": {
+    "entityTargetSourceOwnerLabel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceLine",
+        "sourcePath",
+        "symbol"
+      ],
+      "properties": {
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "symbol": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "entityTargetProgramLabel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "sourceLine",
+        "sourceOrder",
+        "symbol"
+      ],
+      "properties": {
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "symbol": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "entityTargetProgramTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effectiveTargetAddress",
+        "effectiveTargetAddressLabels",
+        "effectiveTargetScope",
+        "effectiveTargetSymbol",
+        "instructionTargetAddress",
+        "instructionTargetAddressLabels",
+        "instructionTargetSymbol"
+      ],
+      "properties": {
+        "effectiveTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effectiveTargetAddressLabels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/entityTargetSourceOwnerLabel"
+          }
+        },
+        "effectiveTargetScope": {
+          "enum": [
+            "internal",
+            "external"
+          ]
+        },
+        "effectiveTargetSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instructionTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instructionTargetAddressLabels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/entityTargetSourceOwnerLabel"
+          }
+        },
+        "instructionTargetSymbol": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "entityTargetProgramOperation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "controlFlowKind",
+        "mnemonic",
+        "operandTexts",
+        "sizeSuffix",
+        "sourceLine",
+        "sourceMnemonic",
+        "sourceOrder",
+        "target",
+        "family",
+        "definitionId",
+        "payloadContextIds"
+      ],
+      "properties": {
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "controlFlowKind": {
+          "enum": [
+            "ordinary",
+            "conditional-branch",
+            "unconditional-branch",
+            "direct-call",
+            "direct-jump",
+            "return"
+          ]
+        },
+        "mnemonic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operandTexts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "sizeSuffix": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "enum": [
+                ".b",
+                ".w",
+                ".l",
+                ".s"
+              ]
+            }
+          ]
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sourceMnemonic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/entityTargetProgramTarget"
+            }
+          ]
+        },
+        "family": {
+          "enum": [
+            "data-directive",
+            "entity-action-command",
+            "entity-action-payload-command",
+            "entity-action-wrapper",
+            "event-service-macro",
+            "map-script-macro",
+            "raw-68000-control-flow",
+            "raw-68000-instruction",
+            "stream-terminator"
+          ]
+        },
+        "definitionId": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        },
+        "payloadContextIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "ac_end"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "entity-action-command"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "entity-action-command:ac_end"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "ac_jump"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "entity-action-command"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "entity-action-command:ac_jump"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "ac_setspeed"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "entity-action-command"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "entity-action-command:ac_setSpeed"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "add"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "addq"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "andi"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "beq"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-control-flow"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "bne"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-control-flow"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "bra"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-control-flow"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "bsr"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-control-flow"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "btst"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "chkflg"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "event-service-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "event-service-macro:chkFlg"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "clearf"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:clearF"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "clr"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "clrflg"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "event-service-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "event-service-macro:clrFlg"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "clstxt"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "event-service-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "event-service-macro:clsTxt"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "cmpi"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "csc_end"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "stream-terminator"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "stream-terminator:csc_end"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "cswait"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:csWait"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "customactscriptwait"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "entity-action-wrapper"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "entity-action-wrapper:customActscriptWait"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "dc"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "data-directive"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "endactions"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "entity-action-payload-command"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "entity-action-payload-command:endActions"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "entityactions"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "entity-action-wrapper"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "entity-action-wrapper:entityActions"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "executesubroutine"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:executeSubroutine"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "fadeinb"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:fadeInB"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "flashscreenwhite"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:flashScreenWhite"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "jmp"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-control-flow"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "jsr"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-control-flow"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "lea"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "loadmapentities"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:loadMapEntities"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "loadmapfadein"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:loadMapFadeIn"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "move"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "movedown"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "entity-action-payload-command"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "entity-action-payload-command:moveDown"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "moveleft"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "entity-action-payload-command"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "entity-action-payload-command:moveLeft"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "movem"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "moveq"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "moveright"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "entity-action-payload-command"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "entity-action-payload-command:moveRight"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "moveup"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "entity-action-payload-command"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "entity-action-payload-command:moveUp"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "nextsingletext"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:nextSingleText"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "playsound"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:playSound"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "rts"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-control-flow"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "script"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "event-service-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "event-service-macro:script"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "setactscriptwait"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:setActscriptWait"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "setblocks"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:setBlocks"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "setcamdest"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:setCamDest"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "setfacing"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:setFacing"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "setflg"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "event-service-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "event-service-macro:setFlg"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "setquake"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:setQuake"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "setsprite"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:setSprite"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "sndcom"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "event-service-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "event-service-macro:sndCom"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "trap"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "tst"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "raw-68000-instruction"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "txt"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "event-service-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "event-service-macro:txt"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mnemonic": {
+                "enum": [
+                  "warp"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "family": {
+                "enum": [
+                  "map-script-macro"
+                ]
+              },
+              "definitionId": {
+                "enum": [
+                  "map-script-macro:warp"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "entityTargetProgramReferenceCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "physicalRecordCount",
+        "routeRecordReferenceCount",
+        "setupRecordReferenceCount"
+      ],
+      "properties": {
+        "physicalRecordCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "entityTargetProgram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonicalSymbol",
+        "encodedSpanBytes",
+        "endAddressExclusive",
+        "endFunctionSymbol",
+        "endSourceLine",
+        "entryAddress",
+        "entrySourceLine",
+        "labels",
+        "operations",
+        "programOrder",
+        "referenceCounts",
+        "sourcePath",
+        "termination",
+        "operationWeightCounts",
+        "payloadContextIds",
+        "inheritedPayloadContextIds"
+      ],
+      "properties": {
+        "canonicalSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "encodedSpanBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "endAddressExclusive": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "endFunctionSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "endSourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "entryAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "entrySourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "labels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/entityTargetProgramLabel"
+          }
+        },
+        "operations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/entityTargetProgramOperation"
+          }
+        },
+        "programOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "referenceCounts": {
+          "$ref": "#/definitions/entityTargetProgramReferenceCounts"
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "termination": {
+          "$ref": "#/definitions/entityTargetProgramOperation"
+        },
+        "operationWeightCounts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-events-operation-vocabulary.schema.json#/definitions/mapEventOperationWeightCounts"
+        },
+        "payloadContextIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "inheritedPayloadContextIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "entityTargetProgramLabelOrder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "labelOrder",
+        "programKey"
+      ],
+      "properties": {
+        "labelOrder": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "programKey": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "entityTargetProgramOperationOrder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operationOrder",
+        "programKey",
+        "operationJoinOrder"
+      ],
+      "properties": {
+        "operationOrder": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "programKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operationJoinOrder": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "entityTargetJumpInterfaceAlias": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "aliasAddress",
+        "aliasSymbol",
+        "definitionSourceLine",
+        "directTargetAddress",
+        "directTargetAddressLabels",
+        "directTargetSymbol",
+        "listingAddress",
+        "mnemonic",
+        "operandTexts",
+        "sizeSuffix",
+        "sourceLine",
+        "sourceMnemonic",
+        "sourcePath"
+      ],
+      "properties": {
+        "aliasAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "aliasSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definitionSourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "directTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directTargetAddressLabels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/entityTargetSourceOwnerLabel"
+          }
+        },
+        "directTargetSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "listingAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mnemonic": {
+          "type": "string"
+        },
+        "operandTexts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "sizeSuffix": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "enum": [
+                ".b",
+                ".w",
+                ".l",
+                ".s"
+              ]
+            }
+          ]
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sourceMnemonic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "entityTargetControlFlowTargetTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "addressLabels",
+        "conditionalBranchSiteCount",
+        "directCallSiteCount",
+        "directJumpSiteCount",
+        "symbol",
+        "totalSiteCount",
+        "unconditionalBranchSiteCount"
+      ],
+      "properties": {
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "addressLabels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/entityTargetSourceOwnerLabel"
+          }
+        },
+        "conditionalBranchSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directCallSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directJumpSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "symbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "totalSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unconditionalBranchSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "entityTargetControlFlowScopeTotals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "external",
+        "internal"
+      ],
+      "properties": {
+        "external": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entityTargetControlFlowTargetTotal"
+          }
+        },
+        "internal": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entityTargetControlFlowTargetTotal"
+          }
+        }
+      }
+    },
+    "entityTargetControlFlowTotals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effectiveTargets",
+        "instructionTargets"
+      ],
+      "properties": {
+        "effectiveTargets": {
+          "$ref": "#/definitions/entityTargetControlFlowScopeTotals"
+        },
+        "instructionTargets": {
+          "$ref": "#/definitions/entityTargetControlFlowScopeTotals"
+        }
+      }
+    },
+    "entityTargetProgramControlFlow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "aliasDefinitions",
+        "targetTotals"
+      ],
+      "properties": {
+        "aliasDefinitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entityTargetJumpInterfaceAlias"
+          }
+        },
+        "targetTotals": {
+          "$ref": "#/definitions/entityTargetControlFlowTotals"
+        }
+      }
+    },
+    "entityTargetProgramControlFlowTargetOrders": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "aliasOrder",
+        "effectiveTargetOrder",
+        "instructionTargetOrder",
+        "instructionInternalTargetTotalOrder",
+        "instructionExternalTargetTotalOrder",
+        "effectiveInternalTargetTotalOrder",
+        "effectiveExternalTargetTotalOrder"
+      ],
+      "properties": {
+        "aliasOrder": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "effectiveTargetOrder": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "instructionTargetOrder": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "instructionInternalTargetTotalOrder": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "instructionExternalTargetTotalOrder": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "effectiveInternalTargetTotalOrder": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "effectiveExternalTargetTotalOrder": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "entityTargetProgramSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programCount",
+        "sourceFileCount",
+        "labelCount",
+        "operationCount",
+        "ordinaryOperationCount",
+        "conditionalBranchCount",
+        "unconditionalBranchCount",
+        "directCallCount",
+        "directJumpCount",
+        "returnCount",
+        "encodedSpanBytes",
+        "physicalRecordCount",
+        "setupRecordReferenceCount",
+        "routeRecordReferenceCount",
+        "internalControlFlowSiteCount",
+        "externalControlFlowSiteCount",
+        "instructionTargetCount",
+        "effectiveTargetCount",
+        "jumpInterfaceAliasCount"
+      ],
+      "properties": {
+        "programCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceFileCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "labelCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ordinaryOperationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "conditionalBranchCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unconditionalBranchCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directCallCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directJumpCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "returnCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "encodedSpanBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "physicalRecordCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "internalControlFlowSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalControlFlowSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instructionTargetCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effectiveTargetCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jumpInterfaceAliasCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapEventTargetProgram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonicalSymbol",
+        "encodedSpanBytes",
+        "endAddressExclusive",
+        "endFunctionSymbol",
+        "endSourceLine",
+        "entryAddress",
+        "entrySourceLine",
+        "labels",
+        "operations",
+        "programOrder",
+        "referenceCounts",
+        "sourcePath",
+        "termination",
+        "operationWeightCounts",
+        "payloadContextIds",
+        "inheritedPayloadContextIds"
+      ],
+      "properties": {
+        "canonicalSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "encodedSpanBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "endAddressExclusive": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "endFunctionSymbol": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        },
+        "endSourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "entryAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "entrySourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "labels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/entityTargetProgramLabel"
+          }
+        },
+        "operations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/entityTargetProgramOperation"
+          }
+        },
+        "programOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "referenceCounts": {
+          "$ref": "#/definitions/entityTargetProgramReferenceCounts"
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "termination": {
+          "$ref": "#/definitions/entityTargetProgramOperation"
+        },
+        "operationWeightCounts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-events-operation-vocabulary.schema.json#/definitions/mapEventOperationWeightCounts"
+        },
+        "payloadContextIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "inheritedPayloadContextIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "mapEventTargetProgramSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programCount",
+        "sourceFileCount",
+        "labelCount",
+        "operationCount",
+        "ordinaryOperationCount",
+        "conditionalBranchCount",
+        "unconditionalBranchCount",
+        "directCallCount",
+        "directJumpCount",
+        "returnCount",
+        "encodedSpanBytes",
+        "physicalRecordCount",
+        "setupRecordReferenceCount",
+        "routeRecordReferenceCount",
+        "internalControlFlowSiteCount",
+        "externalControlFlowSiteCount",
+        "instructionTargetCount",
+        "effectiveTargetCount",
+        "jumpInterfaceAliasCount",
+        "profileCount",
+        "explicitNonProgramExclusionCount",
+        "functionEndBoundaryCount",
+        "sourceStreamTerminatorCount",
+        "excludedPhysicalRecordCount",
+        "excludedSetupRecordReferenceCount",
+        "excludedRouteRecordReferenceCount"
+      ],
+      "properties": {
+        "programCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceFileCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "labelCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ordinaryOperationCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "conditionalBranchCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unconditionalBranchCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directCallCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directJumpCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "returnCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "encodedSpanBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "physicalRecordCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "internalControlFlowSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalControlFlowSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instructionTargetCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effectiveTargetCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jumpInterfaceAliasCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "profileCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "explicitNonProgramExclusionCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "functionEndBoundaryCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceStreamTerminatorCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "excludedPhysicalRecordCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "excludedSetupRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "excludedRouteRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapEventTargetProgramExclusion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exclusionOrder",
+        "canonicalSymbol",
+        "targetAddress",
+        "targetH1Address",
+        "targetBaseH1Address",
+        "targetAddressLabels",
+        "sourcePath",
+        "sourceLine",
+        "ownershipClass",
+        "referenceCounts"
+      ],
+      "properties": {
+        "exclusionOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "canonicalSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetH1Address": {
+          "type": "null"
+        },
+        "targetBaseH1Address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetAddressLabels": {
+          "type": "array"
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "ownershipClass": {
+          "type": "string"
+        },
+        "referenceCounts": {
+          "$ref": "#/definitions/entityTargetProgramReferenceCounts"
+        }
+      }
+    }
+  }
+}

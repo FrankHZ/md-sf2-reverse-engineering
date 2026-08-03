@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-events-zone-programs.schema.json",
+  "title": "Map events zone-programs section",
+  "type": "object",
+  "required": [
+    "zoneTargetProgramSummary",
+    "zoneTargetPrograms",
+    "zoneTargetProgramOrder",
+    "zoneTargetProgramBoundaryOrders",
+    "zoneTargetProgramLabelOrders",
+    "zoneTargetProgramOperationOrders",
+    "zoneTargetProgramControlFlowTargetOrders",
+    "zoneTargetProgramControlFlow",
+    "zoneTargetProgramExclusions",
+    "zoneTargetProgramExclusionOrder",
+    "zoneTargetProgramOperationWeightOrders",
+    "zoneTargetProgramPayloadContextOrders"
+  ],
+  "properties": {
+    "zoneTargetProgramSummary": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/mapEventTargetProgramSummary",
+      "type": "object"
+    },
+    "zoneTargetPrograms": {
+      "type": "array",
+      "items": {
+        "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/mapEventTargetProgram"
+      }
+    },
+    "zoneTargetProgramOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "zoneTargetProgramBoundaryOrders": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "zoneTargetProgramLabelOrders": {
+      "type": "array",
+      "items": {
+        "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetProgramLabelOrder"
+      }
+    },
+    "zoneTargetProgramOperationOrders": {
+      "type": "array",
+      "items": {
+        "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetProgramOperationOrder"
+      }
+    },
+    "zoneTargetProgramControlFlowTargetOrders": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetProgramControlFlowTargetOrders",
+      "type": "object"
+    },
+    "zoneTargetProgramControlFlow": {
+      "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/entityTargetProgramControlFlow"
+    },
+    "zoneTargetProgramExclusions": {
+      "type": "array",
+      "items": {
+        "$ref": "https://sf2-research.example/schemas/h2/map-events-target-program.schema.json#/definitions/mapEventTargetProgramExclusion"
+      }
+    },
+    "zoneTargetProgramExclusionOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "zoneTargetProgramOperationWeightOrders": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "zoneTargetProgramPayloadContextOrders": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

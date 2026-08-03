@@ -1,0 +1,3470 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-events-routing-setup.schema.json",
+  "title": "Map events routing-setup section",
+  "type": "object",
+  "required": [
+    "ambiguousRecordTargets",
+    "categories",
+    "categoryDecodedTableOrders",
+    "categorySourceFileOrders",
+    "categorySummaries",
+    "consumerFacts",
+    "directReturnStubs",
+    "entityEventReachabilityFacts",
+    "eventMacroDefinitions",
+    "function",
+    "id",
+    "physicalRecordOrder",
+    "rawZoneDefaultException",
+    "recordTargetProfileOrder",
+    "recordTargetProfiles",
+    "romSha256",
+    "routeCategoryJoinOrder",
+    "routeCategoryJoins",
+    "runtimeQuestions",
+    "schemaVersion",
+    "scope",
+    "selectionCases",
+    "setupCategoryJoinOrder",
+    "setupCategoryJoins",
+    "sourceMacroCounts",
+    "summary",
+    "unresolvedRecordTargets",
+    "upstream"
+  ],
+  "properties": {
+    "ambiguousRecordTargets": {
+      "type": "array"
+    },
+    "categories": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityEvents",
+        "itemEvents",
+        "zoneEvents"
+      ],
+      "properties": {
+        "entityEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "duplicatePointerTargets",
+            "sourceFiles",
+            "sourceMacroCounts",
+            "summary",
+            "tables"
+          ],
+          "properties": {
+            "duplicatePointerTargets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "setupReferenceCount",
+                  "symbol"
+                ],
+                "properties": {
+                  "setupReferenceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "sourceFiles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "address",
+                  "category",
+                  "defaultRecordCount",
+                  "directReturnStub",
+                  "encodedRecordBytes",
+                  "macroCounts",
+                  "path",
+                  "rawDefaultException",
+                  "recordCount",
+                  "recordSourceOrderEndInclusive",
+                  "recordSourceOrderStart",
+                  "recordSpanEndAddressExclusive",
+                  "recordSpanStartAddress",
+                  "routeReferenceCount",
+                  "setupReferenceCount",
+                  "sourceOrder",
+                  "specificRecordCount",
+                  "symbol"
+                ],
+                "properties": {
+                  "address": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "category": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "defaultRecordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "directReturnStub": {
+                    "type": "boolean"
+                  },
+                  "encodedRecordBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "macroCounts": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "msDefaultEntityEvent"
+                        ],
+                        "properties": {
+                          "msDefaultEntityEvent": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "msDefaultEntityEvent",
+                          "msEntityEvent"
+                        ],
+                        "properties": {
+                          "msDefaultEntityEvent": {
+                            "type": "integer"
+                          },
+                          "msEntityEvent": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "msDftEntityEvent",
+                          "msEntityEvent"
+                        ],
+                        "properties": {
+                          "msDftEntityEvent": {
+                            "type": "integer"
+                          },
+                          "msEntityEvent": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [],
+                        "properties": {}
+                      }
+                    ]
+                  },
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rawDefaultException": {
+                    "type": "boolean"
+                  },
+                  "recordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSourceOrderEndInclusive": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "recordSourceOrderStart": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "recordSpanEndAddressExclusive": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "recordSpanStartAddress": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      {
+                        "enum": [
+                          null
+                        ]
+                      }
+                    ]
+                  },
+                  "routeReferenceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "setupReferenceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sourceOrder": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "specificRecordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "sourceMacroCounts": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "msDefaultEntityEvent",
+                "msDftEntityEvent",
+                "msEntityEvent"
+              ],
+              "properties": {
+                "msDefaultEntityEvent": {
+                  "type": "integer"
+                },
+                "msDftEntityEvent": {
+                  "type": "integer"
+                },
+                "msEntityEvent": {
+                  "type": "integer"
+                }
+              }
+            },
+            "summary": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "aliasedTargetCount",
+                "decodedTableCount",
+                "defaultPhysicalRecordCount",
+                "defaultSetupRecordReferenceCount",
+                "directReturnStubCount",
+                "directReturnStubReferenceCount",
+                "maximumTableRecordCount",
+                "physicalRecordCount",
+                "rawDefaultExceptionCount",
+                "routeCategoryJoinCount",
+                "routeDirectReturnStubReferenceCount",
+                "routeRecordReferenceCount",
+                "routeSelectorReferenceCount",
+                "setupPointerReferenceCount",
+                "setupRecordReferenceCount",
+                "sourceFileCount",
+                "specificPhysicalRecordCount",
+                "specificSetupRecordReferenceCount",
+                "uniqueTargetCount"
+              ],
+              "properties": {
+                "aliasedTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "decodedTableCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "defaultPhysicalRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "defaultSetupRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directReturnStubCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directReturnStubReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "maximumTableRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "physicalRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rawDefaultExceptionCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeCategoryJoinCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeDirectReturnStubReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeSelectorReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "setupPointerReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "setupRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourceFileCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "specificPhysicalRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "specificSetupRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "uniqueTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "tables": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "address",
+                  "directReturnStub",
+                  "encodedRecordBytes",
+                  "recordCount",
+                  "recordSourceOrderEndInclusive",
+                  "recordSourceOrderStart",
+                  "recordSpanEndAddressExclusive",
+                  "recordSpanStartAddress",
+                  "records",
+                  "sourcePath",
+                  "symbol"
+                ],
+                "properties": {
+                  "address": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "directReturnStub": {
+                    "type": "boolean"
+                  },
+                  "encodedRecordBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSourceOrderEndInclusive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSourceOrderStart": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSpanEndAddressExclusive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSpanStartAddress": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "records": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/entityEventRecord"
+                    }
+                  },
+                  "sourcePath": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "itemEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "duplicatePointerTargets",
+            "sourceFiles",
+            "sourceMacroCounts",
+            "summary",
+            "tables"
+          ],
+          "properties": {
+            "duplicatePointerTargets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "setupReferenceCount",
+                  "symbol"
+                ],
+                "properties": {
+                  "setupReferenceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "sourceFiles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "address",
+                  "category",
+                  "defaultRecordCount",
+                  "directReturnStub",
+                  "encodedRecordBytes",
+                  "macroCounts",
+                  "path",
+                  "rawDefaultException",
+                  "recordCount",
+                  "recordSourceOrderEndInclusive",
+                  "recordSourceOrderStart",
+                  "recordSpanEndAddressExclusive",
+                  "recordSpanStartAddress",
+                  "routeReferenceCount",
+                  "setupReferenceCount",
+                  "sourceOrder",
+                  "specificRecordCount",
+                  "symbol"
+                ],
+                "properties": {
+                  "address": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "category": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "defaultRecordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "directReturnStub": {
+                    "type": "boolean"
+                  },
+                  "encodedRecordBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "macroCounts": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "msDefaultItemEvent"
+                        ],
+                        "properties": {
+                          "msDefaultItemEvent": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "msDefaultItemEvent",
+                          "msItemEvent"
+                        ],
+                        "properties": {
+                          "msDefaultItemEvent": {
+                            "type": "integer"
+                          },
+                          "msItemEvent": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rawDefaultException": {
+                    "type": "boolean"
+                  },
+                  "recordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSourceOrderEndInclusive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSourceOrderStart": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSpanEndAddressExclusive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSpanStartAddress": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "routeReferenceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "setupReferenceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sourceOrder": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "specificRecordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "sourceMacroCounts": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "msDefaultItemEvent",
+                "msItemEvent"
+              ],
+              "properties": {
+                "msDefaultItemEvent": {
+                  "type": "integer"
+                },
+                "msItemEvent": {
+                  "type": "integer"
+                }
+              }
+            },
+            "summary": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "aliasedTargetCount",
+                "decodedTableCount",
+                "defaultPhysicalRecordCount",
+                "defaultSetupRecordReferenceCount",
+                "directReturnStubCount",
+                "directReturnStubReferenceCount",
+                "maximumTableRecordCount",
+                "physicalRecordCount",
+                "rawDefaultExceptionCount",
+                "routeCategoryJoinCount",
+                "routeDirectReturnStubReferenceCount",
+                "routeRecordReferenceCount",
+                "routeSelectorReferenceCount",
+                "setupPointerReferenceCount",
+                "setupRecordReferenceCount",
+                "sourceFileCount",
+                "specificPhysicalRecordCount",
+                "specificSetupRecordReferenceCount",
+                "uniqueTargetCount"
+              ],
+              "properties": {
+                "aliasedTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "decodedTableCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "defaultPhysicalRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "defaultSetupRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directReturnStubCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directReturnStubReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "maximumTableRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "physicalRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rawDefaultExceptionCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeCategoryJoinCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeDirectReturnStubReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeSelectorReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "setupPointerReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "setupRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourceFileCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "specificPhysicalRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "specificSetupRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "uniqueTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "tables": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "address",
+                  "directReturnStub",
+                  "encodedRecordBytes",
+                  "recordCount",
+                  "recordSourceOrderEndInclusive",
+                  "recordSourceOrderStart",
+                  "recordSpanEndAddressExclusive",
+                  "recordSpanStartAddress",
+                  "records",
+                  "sourcePath",
+                  "symbol"
+                ],
+                "properties": {
+                  "address": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "directReturnStub": {
+                    "type": "boolean"
+                  },
+                  "encodedRecordBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSourceOrderEndInclusive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSourceOrderStart": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSpanEndAddressExclusive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSpanStartAddress": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "records": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/itemEventRecord"
+                    }
+                  },
+                  "sourcePath": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "zoneEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "duplicatePointerTargets",
+            "sourceFiles",
+            "sourceMacroCounts",
+            "summary",
+            "tables"
+          ],
+          "properties": {
+            "duplicatePointerTargets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "setupReferenceCount",
+                  "symbol"
+                ],
+                "properties": {
+                  "setupReferenceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "sourceFiles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "address",
+                  "category",
+                  "defaultRecordCount",
+                  "directReturnStub",
+                  "encodedRecordBytes",
+                  "macroCounts",
+                  "path",
+                  "rawDefaultException",
+                  "recordCount",
+                  "recordSourceOrderEndInclusive",
+                  "recordSourceOrderStart",
+                  "recordSpanEndAddressExclusive",
+                  "recordSpanStartAddress",
+                  "routeReferenceCount",
+                  "setupReferenceCount",
+                  "sourceOrder",
+                  "specificRecordCount",
+                  "symbol"
+                ],
+                "properties": {
+                  "address": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "category": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "defaultRecordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "directReturnStub": {
+                    "type": "boolean"
+                  },
+                  "encodedRecordBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "macroCounts": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "msDefaultZoneEvent",
+                          "msZoneEvent"
+                        ],
+                        "properties": {
+                          "msDefaultZoneEvent": {
+                            "type": "integer"
+                          },
+                          "msZoneEvent": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "msDefaultZoneEvent"
+                        ],
+                        "properties": {
+                          "msDefaultZoneEvent": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "raw-zone-default-expression"
+                        ],
+                        "properties": {
+                          "raw-zone-default-expression": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "rawDefaultException": {
+                    "type": "boolean"
+                  },
+                  "recordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSourceOrderEndInclusive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSourceOrderStart": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSpanEndAddressExclusive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSpanStartAddress": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "routeReferenceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "setupReferenceCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sourceOrder": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "specificRecordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "sourceMacroCounts": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "msDefaultZoneEvent",
+                "msZoneEvent",
+                "raw-zone-default-expression"
+              ],
+              "properties": {
+                "msDefaultZoneEvent": {
+                  "type": "integer"
+                },
+                "msZoneEvent": {
+                  "type": "integer"
+                },
+                "raw-zone-default-expression": {
+                  "type": "integer"
+                }
+              }
+            },
+            "summary": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "aliasedTargetCount",
+                "decodedTableCount",
+                "defaultPhysicalRecordCount",
+                "defaultSetupRecordReferenceCount",
+                "directReturnStubCount",
+                "directReturnStubReferenceCount",
+                "maximumTableRecordCount",
+                "physicalRecordCount",
+                "rawDefaultExceptionCount",
+                "routeCategoryJoinCount",
+                "routeDirectReturnStubReferenceCount",
+                "routeRecordReferenceCount",
+                "routeSelectorReferenceCount",
+                "setupPointerReferenceCount",
+                "setupRecordReferenceCount",
+                "sourceFileCount",
+                "specificPhysicalRecordCount",
+                "specificSetupRecordReferenceCount",
+                "uniqueTargetCount"
+              ],
+              "properties": {
+                "aliasedTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "decodedTableCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "defaultPhysicalRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "defaultSetupRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directReturnStubCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "directReturnStubReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "maximumTableRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "physicalRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rawDefaultExceptionCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeCategoryJoinCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeDirectReturnStubReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "routeSelectorReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "setupPointerReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "setupRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourceFileCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "specificPhysicalRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "specificSetupRecordReferenceCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "uniqueTargetCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "tables": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "address",
+                  "directReturnStub",
+                  "encodedRecordBytes",
+                  "recordCount",
+                  "recordSourceOrderEndInclusive",
+                  "recordSourceOrderStart",
+                  "recordSpanEndAddressExclusive",
+                  "recordSpanStartAddress",
+                  "records",
+                  "sourcePath",
+                  "symbol"
+                ],
+                "properties": {
+                  "address": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "directReturnStub": {
+                    "type": "boolean"
+                  },
+                  "encodedRecordBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSourceOrderEndInclusive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSourceOrderStart": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSpanEndAddressExclusive": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "recordSpanStartAddress": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "records": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/zoneEventRecord"
+                    }
+                  },
+                  "sourcePath": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "categoryDecodedTableOrders": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityEvents",
+        "itemEvents",
+        "zoneEvents"
+      ],
+      "properties": {
+        "entityEvents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "itemEvents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "zoneEvents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "categorySourceFileOrders": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityEvents",
+        "itemEvents",
+        "zoneEvents"
+      ],
+      "properties": {
+        "entityEvents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "itemEvents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "zoneEvents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "categorySummaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityEvents",
+        "itemEvents",
+        "zoneEvents"
+      ],
+      "properties": {
+        "entityEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "aliasedTargetCount",
+            "decodedTableCount",
+            "defaultPhysicalRecordCount",
+            "defaultSetupRecordReferenceCount",
+            "directReturnStubCount",
+            "directReturnStubReferenceCount",
+            "maximumTableRecordCount",
+            "physicalRecordCount",
+            "rawDefaultExceptionCount",
+            "routeCategoryJoinCount",
+            "routeDirectReturnStubReferenceCount",
+            "routeRecordReferenceCount",
+            "routeSelectorReferenceCount",
+            "setupPointerReferenceCount",
+            "setupRecordReferenceCount",
+            "sourceFileCount",
+            "specificPhysicalRecordCount",
+            "specificSetupRecordReferenceCount",
+            "uniqueTargetCount"
+          ],
+          "properties": {
+            "aliasedTargetCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "decodedTableCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "defaultPhysicalRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "defaultSetupRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "directReturnStubCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "directReturnStubReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maximumTableRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "physicalRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rawDefaultExceptionCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeCategoryJoinCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeDirectReturnStubReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeSelectorReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setupPointerReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setupRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sourceFileCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "specificPhysicalRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "specificSetupRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "uniqueTargetCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "itemEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "aliasedTargetCount",
+            "decodedTableCount",
+            "defaultPhysicalRecordCount",
+            "defaultSetupRecordReferenceCount",
+            "directReturnStubCount",
+            "directReturnStubReferenceCount",
+            "maximumTableRecordCount",
+            "physicalRecordCount",
+            "rawDefaultExceptionCount",
+            "routeCategoryJoinCount",
+            "routeDirectReturnStubReferenceCount",
+            "routeRecordReferenceCount",
+            "routeSelectorReferenceCount",
+            "setupPointerReferenceCount",
+            "setupRecordReferenceCount",
+            "sourceFileCount",
+            "specificPhysicalRecordCount",
+            "specificSetupRecordReferenceCount",
+            "uniqueTargetCount"
+          ],
+          "properties": {
+            "aliasedTargetCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "decodedTableCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "defaultPhysicalRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "defaultSetupRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "directReturnStubCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "directReturnStubReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maximumTableRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "physicalRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rawDefaultExceptionCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeCategoryJoinCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeDirectReturnStubReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeSelectorReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setupPointerReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setupRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sourceFileCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "specificPhysicalRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "specificSetupRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "uniqueTargetCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "zoneEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "aliasedTargetCount",
+            "decodedTableCount",
+            "defaultPhysicalRecordCount",
+            "defaultSetupRecordReferenceCount",
+            "directReturnStubCount",
+            "directReturnStubReferenceCount",
+            "maximumTableRecordCount",
+            "physicalRecordCount",
+            "rawDefaultExceptionCount",
+            "routeCategoryJoinCount",
+            "routeDirectReturnStubReferenceCount",
+            "routeRecordReferenceCount",
+            "routeSelectorReferenceCount",
+            "setupPointerReferenceCount",
+            "setupRecordReferenceCount",
+            "sourceFileCount",
+            "specificPhysicalRecordCount",
+            "specificSetupRecordReferenceCount",
+            "uniqueTargetCount"
+          ],
+          "properties": {
+            "aliasedTargetCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "decodedTableCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "defaultPhysicalRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "defaultSetupRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "directReturnStubCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "directReturnStubReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maximumTableRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "physicalRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rawDefaultExceptionCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeCategoryJoinCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeDirectReturnStubReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "routeSelectorReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setupPointerReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setupRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sourceFileCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "specificPhysicalRecordCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "specificSetupRecordReferenceCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "uniqueTargetCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "consumerFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "defaultMarker",
+        "entityEvents",
+        "firstMatchingEntryWins",
+        "itemEvents",
+        "relativeOffsetsResolveFromTableBase",
+        "zoneEvents"
+      ],
+      "properties": {
+        "defaultMarker": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "entityEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "defaultMarker",
+            "entryBytes",
+            "flagsByteOffset",
+            "matchOrder",
+            "pointerOffset",
+            "restoreFacingAfterScriptBit",
+            "turnTowardActorBit"
+          ],
+          "properties": {
+            "defaultMarker": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "entryBytes": {
+              "type": "integer"
+            },
+            "flagsByteOffset": {
+              "type": "integer"
+            },
+            "matchOrder": {
+              "type": "string",
+              "minLength": 1
+            },
+            "pointerOffset": {
+              "type": "integer"
+            },
+            "restoreFacingAfterScriptBit": {
+              "type": "integer"
+            },
+            "turnTowardActorBit": {
+              "type": "integer"
+            }
+          }
+        },
+        "firstMatchingEntryWins": {
+          "type": "boolean"
+        },
+        "itemEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "defaultMarker",
+            "entryBytes",
+            "itemIndexMask",
+            "itemIndexMaskedBeforeMatch",
+            "matchOrder",
+            "pointerOffset",
+            "wildcardFields",
+            "wildcardValue"
+          ],
+          "properties": {
+            "defaultMarker": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "entryBytes": {
+              "type": "integer"
+            },
+            "itemIndexMask": {
+              "type": "integer"
+            },
+            "itemIndexMaskedBeforeMatch": {
+              "type": "boolean"
+            },
+            "matchOrder": {
+              "type": "string",
+              "minLength": 1
+            },
+            "pointerOffset": {
+              "type": "integer"
+            },
+            "wildcardFields": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "wildcardValue": {
+              "type": "integer"
+            }
+          }
+        },
+        "relativeOffsetsResolveFromTableBase": {
+          "type": "boolean"
+        },
+        "zoneEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "defaultMarker",
+            "entryBytes",
+            "matchOrder",
+            "pointerOffset",
+            "wildcardFields",
+            "wildcardValue"
+          ],
+          "properties": {
+            "defaultMarker": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "entryBytes": {
+              "type": "integer"
+            },
+            "matchOrder": {
+              "type": "string",
+              "minLength": 1
+            },
+            "pointerOffset": {
+              "type": "integer"
+            },
+            "wildcardFields": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "wildcardValue": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "directReturnStubs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "address",
+          "nonEmptyPairedEntityListReferenceCount",
+          "pairedEntityListRecordCounts",
+          "setupPairings",
+          "setupReferenceCount",
+          "symbol"
+        ],
+        "properties": {
+          "address": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "nonEmptyPairedEntityListReferenceCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "pairedEntityListRecordCounts": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "setupPairings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "cleanStateEventIndices",
+                "entityListSymbol",
+                "entityRecordCount",
+                "normalStoryRouteReachability",
+                "setupSymbol",
+                "wrapperReachableWithAdjacentNonFollower"
+              ],
+              "properties": {
+                "cleanStateEventIndices": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "entityListSymbol": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "entityRecordCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "normalStoryRouteReachability": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "setupSymbol": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "wrapperReachableWithAdjacentNonFollower": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "setupReferenceCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "symbol": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "entityEventReachabilityFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "activatedEntityScanSlots",
+        "adjacentDistanceIsStrictlyBelowMapTileSize",
+        "enemyEventIndexBase",
+        "entityIndexListSlotsScanned",
+        "followersAreSkipped",
+        "functionAddresses",
+        "processActionCallsWrapperAfterNonnegativeActivation"
+      ],
+      "properties": {
+        "activatedEntityScanSlots": {
+          "type": "integer"
+        },
+        "adjacentDistanceIsStrictlyBelowMapTileSize": {
+          "type": "boolean"
+        },
+        "enemyEventIndexBase": {
+          "type": "integer"
+        },
+        "entityIndexListSlotsScanned": {
+          "type": "integer"
+        },
+        "followersAreSkipped": {
+          "type": "boolean"
+        },
+        "functionAddresses": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "GetActivatedEntity",
+            "GetEntityEventIndex",
+            "ProcessPlayerAction"
+          ],
+          "properties": {
+            "GetActivatedEntity": {
+              "type": "integer"
+            },
+            "GetEntityEventIndex": {
+              "type": "integer"
+            },
+            "ProcessPlayerAction": {
+              "type": "integer"
+            }
+          }
+        },
+        "processActionCallsWrapperAfterNonnegativeActivation": {
+          "type": "boolean"
+        }
+      }
+    },
+    "eventMacroDefinitions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "categories",
+        "sourcePath"
+      ],
+      "properties": {
+        "categories": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "entityEvents",
+            "itemEvents",
+            "zoneEvents"
+          ],
+          "properties": {
+            "entityEvents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "argumentCount",
+                  "defaultMarker",
+                  "definitionLine",
+                  "emittedDirectives",
+                  "encodedRecordBytes",
+                  "kind",
+                  "macro",
+                  "targetOperandPosition"
+                ],
+                "properties": {
+                  "argumentCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "defaultMarker": {
+                    "oneOf": [
+                      {
+                        "enum": [
+                          null
+                        ]
+                      },
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                      }
+                    ]
+                  },
+                  "definitionLine": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emittedDirectives": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "argumentPositions",
+                        "directive",
+                        "operandText",
+                        "sourceOrder",
+                        "widthBytes"
+                      ],
+                      "properties": {
+                        "argumentPositions": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer"
+                          }
+                        },
+                        "directive": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "operandText": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "sourceOrder": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "widthBytes": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  },
+                  "encodedRecordBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "kind": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "macro": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "targetOperandPosition": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "itemEvents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "argumentCount",
+                  "defaultMarker",
+                  "definitionLine",
+                  "emittedDirectives",
+                  "encodedRecordBytes",
+                  "kind",
+                  "macro",
+                  "targetOperandPosition"
+                ],
+                "properties": {
+                  "argumentCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "defaultMarker": {
+                    "oneOf": [
+                      {
+                        "enum": [
+                          null
+                        ]
+                      },
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                      }
+                    ]
+                  },
+                  "definitionLine": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emittedDirectives": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "argumentPositions",
+                        "directive",
+                        "operandText",
+                        "sourceOrder",
+                        "widthBytes"
+                      ],
+                      "properties": {
+                        "argumentPositions": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer"
+                          }
+                        },
+                        "directive": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "operandText": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "sourceOrder": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "widthBytes": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  },
+                  "encodedRecordBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "kind": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "macro": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "targetOperandPosition": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "zoneEvents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "argumentCount",
+                  "defaultMarker",
+                  "definitionLine",
+                  "emittedDirectives",
+                  "encodedRecordBytes",
+                  "kind",
+                  "macro",
+                  "targetOperandPosition"
+                ],
+                "properties": {
+                  "argumentCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "defaultMarker": {
+                    "oneOf": [
+                      {
+                        "enum": [
+                          null
+                        ]
+                      },
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255
+                      }
+                    ]
+                  },
+                  "definitionLine": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "emittedDirectives": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "argumentPositions",
+                        "directive",
+                        "operandText",
+                        "sourceOrder",
+                        "widthBytes"
+                      ],
+                      "properties": {
+                        "argumentPositions": {
+                          "type": "array",
+                          "items": {
+                            "type": "integer"
+                          }
+                        },
+                        "directive": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "operandText": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "sourceOrder": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "widthBytes": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      }
+                    }
+                  },
+                  "encodedRecordBytes": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "kind": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "macro": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "targetOperandPosition": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "function": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "RunMapSetupEntityEvent",
+        "RunMapSetupItemEvent",
+        "RunMapSetupZoneEvent"
+      ],
+      "properties": {
+        "RunMapSetupEntityEvent": {
+          "type": "integer"
+        },
+        "RunMapSetupItemEvent": {
+          "type": "integer"
+        },
+        "RunMapSetupZoneEvent": {
+          "type": "integer"
+        }
+      }
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "physicalRecordOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "rawZoneDefaultException": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "pointsInsideCutsceneEntityList",
+        "relativeOffset",
+        "resolvedTargetAddress",
+        "symbol",
+        "targetBaseAdjustment",
+        "targetBaseH1Address",
+        "targetBaseSymbol",
+        "targetExpression",
+        "targetOwnerSourceLine",
+        "targetOwnerSourcePath"
+      ],
+      "properties": {
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pointsInsideCutsceneEntityList": {
+          "type": "boolean"
+        },
+        "relativeOffset": {
+          "type": "integer",
+          "minimum": -32768,
+          "maximum": 32767
+        },
+        "resolvedTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "symbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetBaseAdjustment": {
+          "type": "integer"
+        },
+        "targetBaseH1Address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetBaseSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetExpression": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetOwnerSourceLine": {
+          "type": "integer"
+        },
+        "targetOwnerSourcePath": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "recordTargetProfileOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recordTargetProfiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "canonicalSymbol",
+          "categories",
+          "ownerSourceLine",
+          "ownerSourcePath",
+          "ownershipClass",
+          "physicalRecordCount",
+          "profileOrder",
+          "routeRecordReferenceCount",
+          "setupRecordReferenceCount",
+          "targetAddress",
+          "targetAddressLabels",
+          "targetBaseH1Address",
+          "targetH1Address"
+        ],
+        "properties": {
+          "canonicalSymbol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "ownerSourceLine": {
+            "type": "integer"
+          },
+          "ownerSourcePath": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ownershipClass": {
+            "type": "string",
+            "minLength": 1
+          },
+          "physicalRecordCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "profileOrder": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "routeRecordReferenceCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "setupRecordReferenceCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "targetAddress": {
+            "type": "integer"
+          },
+          "targetAddressLabels": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourceLine",
+                "sourcePath",
+                "symbol"
+              ],
+              "properties": {
+                "sourceLine": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "symbol": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "targetBaseH1Address": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "targetH1Address": {
+            "oneOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "enum": [
+                  null
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "romSha256": {
+      "type": "string",
+      "minLength": 1
+    },
+    "routeCategoryJoinOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "routeCategoryJoins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "directReturnStub",
+          "eventTableAddress",
+          "eventTableSymbol",
+          "flag",
+          "physicalRecordCount",
+          "pointerTableAddress",
+          "pointerTableSymbol",
+          "routeMap",
+          "routeSelectorSourceOrder",
+          "routeSourceOrder",
+          "selectorKind",
+          "selectorSourceOrder",
+          "sourceOrder"
+        ],
+        "properties": {
+          "category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "directReturnStub": {
+            "type": "boolean"
+          },
+          "eventTableAddress": {
+            "type": "integer"
+          },
+          "eventTableSymbol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "flag": {
+            "oneOf": [
+              {
+                "enum": [
+                  null
+                ]
+              },
+              {
+                "type": "integer"
+              }
+            ]
+          },
+          "physicalRecordCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "pointerTableAddress": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "pointerTableSymbol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "routeMap": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "routeSelectorSourceOrder": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "routeSourceOrder": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "selectorKind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "selectorSourceOrder": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sourceOrder": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "runtimeQuestions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "schemaVersion": {
+      "type": "integer"
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "selectionCases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "eventFlags",
+          "id",
+          "map",
+          "query",
+          "resolvedTargetAddress",
+          "selectedRecordAddress",
+          "selectedRecordKind",
+          "selectedSetup",
+          "selectedTable",
+          "setFlags"
+        ],
+        "properties": {
+          "category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "eventFlags": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "enum": [
+                  null
+                ]
+              }
+            ]
+          },
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "map": {
+            "type": "integer"
+          },
+          "query": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "entity"
+                ],
+                "properties": {
+                  "entity": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "x",
+                  "y"
+                ],
+                "properties": {
+                  "x": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  },
+                  "y": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "facing",
+                  "item",
+                  "x",
+                  "y"
+                ],
+                "properties": {
+                  "facing": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  },
+                  "item": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  },
+                  "x": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  },
+                  "y": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 255
+                  }
+                }
+              }
+            ]
+          },
+          "resolvedTargetAddress": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "selectedRecordAddress": {
+            "type": "integer"
+          },
+          "selectedRecordKind": {
+            "type": "string",
+            "minLength": 1
+          },
+          "selectedSetup": {
+            "type": "string",
+            "minLength": 1
+          },
+          "selectedTable": {
+            "type": "string",
+            "minLength": 1
+          },
+          "setFlags": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "setupCategoryJoinOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "setupCategoryJoins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "directReturnStub",
+          "eventTableAddress",
+          "eventTableSymbol",
+          "physicalRecordCount",
+          "pointerTableAddress",
+          "pointerTableSourceOrder",
+          "pointerTableSymbol",
+          "sourceOrder"
+        ],
+        "properties": {
+          "category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "directReturnStub": {
+            "type": "boolean"
+          },
+          "eventTableAddress": {
+            "type": "integer"
+          },
+          "eventTableSymbol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "physicalRecordCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "pointerTableAddress": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "pointerTableSourceOrder": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "pointerTableSymbol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceOrder": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "sourceMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityEvents",
+        "itemEvents",
+        "zoneEvents"
+      ],
+      "properties": {
+        "entityEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "msDefaultEntityEvent",
+            "msDftEntityEvent",
+            "msEntityEvent"
+          ],
+          "properties": {
+            "msDefaultEntityEvent": {
+              "type": "integer"
+            },
+            "msDftEntityEvent": {
+              "type": "integer"
+            },
+            "msEntityEvent": {
+              "type": "integer"
+            }
+          }
+        },
+        "itemEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "msDefaultItemEvent",
+            "msItemEvent"
+          ],
+          "properties": {
+            "msDefaultItemEvent": {
+              "type": "integer"
+            },
+            "msItemEvent": {
+              "type": "integer"
+            }
+          }
+        },
+        "zoneEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "msDefaultZoneEvent",
+            "msZoneEvent",
+            "raw-zone-default-expression"
+          ],
+          "properties": {
+            "msDefaultZoneEvent": {
+              "type": "integer"
+            },
+            "msZoneEvent": {
+              "type": "integer"
+            },
+            "raw-zone-default-expression": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "defaultPhysicalRecordCount",
+        "defaultSetupRecordReferenceCount",
+        "directReturnStubCount",
+        "directReturnStubReferenceCount",
+        "maximumTableRecordCount",
+        "physicalRecordCount",
+        "rawDefaultExceptionCount",
+        "recordTargetProfileCount",
+        "routeCategoryJoinCount",
+        "routeRecordReferenceCount",
+        "routeSelectorReferenceCount",
+        "selectionCaseCount",
+        "setupCategoryJoinCount",
+        "setupPointerReferenceCount",
+        "setupRecordReferenceCount",
+        "sourceFileCount",
+        "specificPhysicalRecordCount",
+        "specificSetupRecordReferenceCount",
+        "uniqueTargetCount"
+      ],
+      "properties": {
+        "defaultPhysicalRecordCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "defaultSetupRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directReturnStubCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "directReturnStubReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximumTableRecordCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "physicalRecordCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rawDefaultExceptionCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recordTargetProfileCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeCategoryJoinCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeSelectorReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "selectionCaseCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupCategoryJoinCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupPointerReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceFileCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "specificPhysicalRecordCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "specificSetupRecordReferenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "uniqueTargetCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "unresolvedRecordTargets": {
+      "type": "array"
+    },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commit",
+        "repository"
+      ],
+      "properties": {
+        "commit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  },
+  "definitions": {
+    "entityEventRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "category",
+        "entity",
+        "flags",
+        "kind",
+        "macro",
+        "maskedTo16Bits",
+        "operandTexts",
+        "recordAddress",
+        "recordSourceOrder",
+        "relativeBaseSymbol",
+        "relativeOffset",
+        "resolvedTargetAddress",
+        "sourceDefaultMarker",
+        "sourceLine",
+        "sourceMarkerWord",
+        "sourceOrder",
+        "sourcePath",
+        "sourceTableSymbol",
+        "tableRecordIndex",
+        "targetAddressLabels",
+        "targetBaseAdjustment",
+        "targetBaseH1Address",
+        "targetBaseSymbol",
+        "targetCanonicalSymbol",
+        "targetExpression",
+        "targetH1Address",
+        "targetOwnerSourceLine",
+        "targetOwnerSourcePath",
+        "targetOwnershipClass"
+      ],
+      "properties": {
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entity": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "flags": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "macro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "maskedTo16Bits": {
+          "type": "boolean"
+        },
+        "operandTexts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "recordAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recordSourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "relativeBaseSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "relativeOffset": {
+          "type": "integer",
+          "minimum": -32768,
+          "maximum": 32767
+        },
+        "resolvedTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceDefaultMarker": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            {
+              "enum": [
+                null
+              ]
+            }
+          ]
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceMarkerWord": {
+          "type": "null"
+        },
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceTableSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tableRecordIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetAddressLabels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sourceLine",
+              "sourcePath",
+              "symbol"
+            ],
+            "properties": {
+              "sourceLine": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourcePath": {
+                "type": "string",
+                "minLength": 1
+              },
+              "symbol": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "targetBaseAdjustment": {
+          "type": "integer"
+        },
+        "targetBaseH1Address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetBaseSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetCanonicalSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetExpression": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetH1Address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetOwnerSourceLine": {
+          "type": "integer"
+        },
+        "targetOwnerSourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetOwnershipClass": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "zoneEventRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "category",
+        "kind",
+        "macro",
+        "maskedTo16Bits",
+        "operandTexts",
+        "recordAddress",
+        "recordSourceOrder",
+        "relativeBaseSymbol",
+        "relativeOffset",
+        "resolvedTargetAddress",
+        "sourceDefaultMarker",
+        "sourceLine",
+        "sourceMarkerWord",
+        "sourceOrder",
+        "sourcePath",
+        "sourceTableSymbol",
+        "tableRecordIndex",
+        "targetAddressLabels",
+        "targetBaseAdjustment",
+        "targetBaseH1Address",
+        "targetBaseSymbol",
+        "targetCanonicalSymbol",
+        "targetExpression",
+        "targetH1Address",
+        "targetOwnerSourceLine",
+        "targetOwnerSourcePath",
+        "targetOwnershipClass",
+        "x",
+        "y"
+      ],
+      "properties": {
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "macro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "maskedTo16Bits": {
+          "type": "boolean"
+        },
+        "operandTexts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "recordAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recordSourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "relativeBaseSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "relativeOffset": {
+          "type": "integer",
+          "minimum": -32768,
+          "maximum": 32767
+        },
+        "resolvedTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceDefaultMarker": {
+          "oneOf": [
+            {
+              "enum": [
+                null
+              ]
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            }
+          ]
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceMarkerWord": {
+          "oneOf": [
+            {
+              "enum": [
+                null
+              ]
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            }
+          ]
+        },
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceTableSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tableRecordIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetAddressLabels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sourceLine",
+              "sourcePath",
+              "symbol"
+            ],
+            "properties": {
+              "sourceLine": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourcePath": {
+                "type": "string",
+                "minLength": 1
+              },
+              "symbol": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "targetBaseAdjustment": {
+          "type": "integer"
+        },
+        "targetBaseH1Address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetBaseSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetCanonicalSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetExpression": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetH1Address": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "enum": [
+                null
+              ]
+            }
+          ]
+        },
+        "targetOwnerSourceLine": {
+          "type": "integer"
+        },
+        "targetOwnerSourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetOwnershipClass": {
+          "type": "string",
+          "minLength": 1
+        },
+        "x": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      }
+    },
+    "itemEventRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "category",
+        "facing",
+        "item",
+        "kind",
+        "macro",
+        "maskedTo16Bits",
+        "operandTexts",
+        "recordAddress",
+        "recordSourceOrder",
+        "relativeBaseSymbol",
+        "relativeOffset",
+        "resolvedTargetAddress",
+        "sourceDefaultMarker",
+        "sourceLine",
+        "sourceMarkerWord",
+        "sourceOrder",
+        "sourcePath",
+        "sourceTableSymbol",
+        "tableRecordIndex",
+        "targetAddressLabels",
+        "targetBaseAdjustment",
+        "targetBaseH1Address",
+        "targetBaseSymbol",
+        "targetCanonicalSymbol",
+        "targetExpression",
+        "targetH1Address",
+        "targetOwnerSourceLine",
+        "targetOwnerSourcePath",
+        "targetOwnershipClass",
+        "x",
+        "y"
+      ],
+      "properties": {
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "facing": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "item": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "macro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "maskedTo16Bits": {
+          "type": "boolean"
+        },
+        "operandTexts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "recordAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recordSourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "relativeBaseSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "relativeOffset": {
+          "type": "integer",
+          "minimum": -32768,
+          "maximum": 32767
+        },
+        "resolvedTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceDefaultMarker": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            {
+              "enum": [
+                null
+              ]
+            }
+          ]
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceMarkerWord": {
+          "type": "null"
+        },
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceTableSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tableRecordIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetAddressLabels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sourceLine",
+              "sourcePath",
+              "symbol"
+            ],
+            "properties": {
+              "sourceLine": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourcePath": {
+                "type": "string",
+                "minLength": 1
+              },
+              "symbol": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "targetBaseAdjustment": {
+          "type": "integer"
+        },
+        "targetBaseH1Address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetBaseSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetCanonicalSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetExpression": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetH1Address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "targetOwnerSourceLine": {
+          "type": "integer"
+        },
+        "targetOwnerSourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetOwnershipClass": {
+          "type": "string",
+          "minLength": 1
+        },
+        "x": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      }
+    }
+  }
+}

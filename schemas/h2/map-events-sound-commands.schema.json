@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-events-sound-commands.schema.json",
+  "title": "Map events sound-commands section",
+  "type": "object",
+  "required": [
+    "soundCommandSites",
+    "soundCommandCallerTotals",
+    "soundCommandSummary"
+  ],
+  "properties": {
+    "soundCommandSites": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/soundCommandSite"
+      },
+      "allOf": [
+        {
+          "items": [
+            {
+              "properties": {
+                "resolvedValue": {
+                  "type": "integer"
+                }
+              }
+            },
+            {
+              "properties": {
+                "resolvedValue": {
+                  "type": "integer"
+                }
+              }
+            },
+            {
+              "properties": {
+                "resolvedValue": {
+                  "type": "integer"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "soundCommandCallerTotals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/soundCommandCallerTotal"
+      }
+    },
+    "soundCommandSummary": {
+      "$ref": "#/definitions/soundCommandSummary"
+    }
+  },
+  "definitions": {
+    "soundCommandNamespaceRelation": {
+      "oneOf": [
+        {
+          "properties": {
+            "sourceCategory": {
+              "enum": [
+                "music"
+              ]
+            },
+            "sourceOperand": {
+              "pattern": "^MUSIC_[A-Z0-9_]+$"
+            },
+            "resolvedValue": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 64
+            }
+          }
+        },
+        {
+          "properties": {
+            "sourceCategory": {
+              "enum": [
+                "sfx"
+              ]
+            },
+            "sourceOperand": {
+              "pattern": "^SFX_[A-Z0-9_]+$"
+            },
+            "resolvedValue": {
+              "type": "integer",
+              "minimum": 65,
+              "maximum": 120
+            }
+          }
+        },
+        {
+          "properties": {
+            "sourceCategory": {
+              "enum": [
+                "sound-command"
+              ]
+            },
+            "sourceOperand": {
+              "pattern": "^SOUND_COMMAND_[A-Z0-9_]+$"
+            },
+            "resolvedValue": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            }
+          }
+        }
+      ]
+    },
+    "soundCommandSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "callerProgramKey",
+        "operationSourceOrder",
+        "sourceOperand",
+        "resolvedValue",
+        "sourceCategory",
+        "weightCounts"
+      ],
+      "properties": {
+        "category": {
+          "enum": [
+            "entityEvents",
+            "zoneEvents",
+            "itemEvents"
+          ]
+        },
+        "callerProgramKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operationSourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weightCounts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-events-script-invocation.schema.json#/definitions/scriptInvocationWeightCounts"
+        },
+        "sourceOperand": {},
+        "resolvedValue": {},
+        "sourceCategory": {}
+      },
+      "allOf": [
+        {
+          "$ref": "#/definitions/soundCommandNamespaceRelation"
+        }
+      ]
+    },
+    "soundCommandCallerTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerProgramKey",
+        "siteCount",
+        "weightCounts"
+      ],
+      "properties": {
+        "callerProgramKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "weightCounts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-events-script-invocation.schema.json#/definitions/scriptInvocationWeightCounts"
+        },
+        "siteCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "soundCommandSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "siteCount",
+        "observedSourceSymbolCount",
+        "observedResolvedValueCount",
+        "completeCallerProgramCount",
+        "positiveCallerProgramCount",
+        "zeroCallerProgramCount",
+        "weightCounts",
+        "soundDataContractId",
+        "sourceCategorySiteCounts"
+      ],
+      "properties": {
+        "siteCount": {
+          "type": "integer"
+        },
+        "observedSourceSymbolCount": {
+          "type": "integer"
+        },
+        "observedResolvedValueCount": {
+          "type": "integer"
+        },
+        "completeCallerProgramCount": {
+          "type": "integer"
+        },
+        "positiveCallerProgramCount": {
+          "type": "integer"
+        },
+        "zeroCallerProgramCount": {
+          "type": "integer"
+        },
+        "weightCounts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-events-script-invocation.schema.json#/definitions/scriptInvocationWeightCounts"
+        },
+        "soundDataContractId": {
+          "type": "string"
+        },
+        "sourceCategorySiteCounts": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

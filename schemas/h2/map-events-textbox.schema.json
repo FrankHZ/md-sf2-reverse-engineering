@@ -1,0 +1,700 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-events-textbox.schema.json",
+  "title": "Map events textbox section",
+  "type": "object",
+  "required": [
+    "textboxLineDomain",
+    "textboxServiceDefinitions",
+    "textboxReferenceSites",
+    "textboxReferenceSiteOrder",
+    "textboxCallerTotals",
+    "textboxCallerTotalOrder",
+    "textboxLineTotals",
+    "textboxLineTotalOrder",
+    "textboxServiceDefinitionOrder",
+    "textboxSummary"
+  ],
+  "properties": {
+    "textboxLineDomain": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/textboxLineDomain"
+        },
+        {
+          "type": "object"
+        }
+      ]
+    },
+    "textboxServiceDefinitions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/textboxServiceDefinition"
+      }
+    },
+    "textboxReferenceSites": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/textboxReferenceSite"
+      }
+    },
+    "textboxReferenceSiteOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "textboxCallerTotals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/textboxCallerTotal"
+      }
+    },
+    "textboxCallerTotalOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "textboxLineTotals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/textboxLineTotal"
+      }
+    },
+    "textboxLineTotalOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "textboxServiceDefinitionOrder": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "line-reference",
+          "close-sentinel"
+        ]
+      }
+    },
+    "textboxSummary": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/textboxSummary"
+        },
+        {
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "textboxWeightCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "physicalProgramOccurrenceCount",
+        "physicalRecordWeightedSiteCount",
+        "setupRecordReferenceWeightedSiteCount",
+        "routeRecordReferenceWeightedSiteCount"
+      ],
+      "properties": {
+        "physicalProgramOccurrenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "physicalRecordWeightedSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupRecordReferenceWeightedSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeRecordReferenceWeightedSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "textboxKindWeightCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line-reference",
+        "close-sentinel"
+      ],
+      "properties": {
+        "line-reference": {
+          "$ref": "#/definitions/textboxWeightCounts"
+        },
+        "close-sentinel": {
+          "$ref": "#/definitions/textboxWeightCounts"
+        }
+      }
+    },
+    "textboxCategoryWeightCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityEvents",
+        "zoneEvents",
+        "itemEvents"
+      ],
+      "properties": {
+        "entityEvents": {
+          "$ref": "#/definitions/textboxWeightCounts"
+        },
+        "zoneEvents": {
+          "$ref": "#/definitions/textboxWeightCounts"
+        },
+        "itemEvents": {
+          "$ref": "#/definitions/textboxWeightCounts"
+        }
+      }
+    },
+    "textboxCategoryKindWeightCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityEvents",
+        "zoneEvents",
+        "itemEvents"
+      ],
+      "properties": {
+        "entityEvents": {
+          "$ref": "#/definitions/textboxKindWeightCounts"
+        },
+        "zoneEvents": {
+          "$ref": "#/definitions/textboxKindWeightCounts"
+        },
+        "itemEvents": {
+          "$ref": "#/definitions/textboxKindWeightCounts"
+        }
+      }
+    },
+    "textboxLineDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contractId",
+        "upstreamCommit",
+        "romSha256",
+        "sourcePath",
+        "lineIdCount",
+        "firstLineId",
+        "lastLineId",
+        "idsAreContiguous"
+      ],
+      "properties": {
+        "contractId": {
+          "type": "string"
+        },
+        "upstreamCommit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "romSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lineIdCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "firstLineId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lastLineId": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "idsAreContiguous": {
+          "type": "boolean"
+        }
+      }
+    },
+    "textboxServiceDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceKind",
+        "definitionId",
+        "sourceMacro",
+        "sourcePath",
+        "definitionSourceLine",
+        "serviceTarget",
+        "formalParameterOrdinals",
+        "emissionStatementTemplates",
+        "sentinelEncoding"
+      ],
+      "properties": {
+        "sourceKind": {
+          "enum": [
+            "line-reference",
+            "close-sentinel"
+          ]
+        },
+        "definitionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceMacro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definitionSourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "serviceTarget": {
+          "type": "string"
+        },
+        "formalParameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "emissionStatementTemplates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "sentinelEncoding": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "sourceKind": {
+              "enum": [
+                "line-reference"
+              ]
+            },
+            "definitionId": {
+              "enum": [
+                "event-service-macro:txt"
+              ]
+            },
+            "sourceMacro": {
+              "enum": [
+                "txt"
+              ]
+            },
+            "formalParameterOrdinals": {
+              "enum": [
+                [
+                  1
+                ]
+              ]
+            },
+            "emissionStatementTemplates": {
+              "enum": [
+                [
+                  "trap #textbox",
+                  "dc.w \\1"
+                ]
+              ]
+            },
+            "sentinelEncoding": {
+              "enum": [
+                null
+              ]
+            }
+          }
+        },
+        {
+          "properties": {
+            "sourceKind": {
+              "enum": [
+                "close-sentinel"
+              ]
+            },
+            "definitionId": {
+              "enum": [
+                "event-service-macro:clsTxt"
+              ]
+            },
+            "sourceMacro": {
+              "enum": [
+                "clsTxt"
+              ]
+            },
+            "formalParameterOrdinals": {
+              "enum": [
+                []
+              ]
+            },
+            "emissionStatementTemplates": {
+              "enum": [
+                [
+                  "trap #textbox",
+                  "dc.w $ffff"
+                ]
+              ]
+            },
+            "sentinelEncoding": {
+              "enum": [
+                "$FFFF"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "textboxReferenceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "siteOrder",
+        "sourceKind",
+        "sourceMacro",
+        "definitionId",
+        "category",
+        "callerProgramKey",
+        "callerProgramCanonicalSymbol",
+        "callerProgramEntryAddress",
+        "callerProgramOrder",
+        "callerSourcePath",
+        "operationSourceOrder",
+        "sourceLine",
+        "operationAddress",
+        "rawOperand",
+        "lineId",
+        "sentinelEncoding",
+        "weightCounts"
+      ],
+      "properties": {
+        "siteOrder": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1005
+        },
+        "sourceKind": {
+          "enum": [
+            "line-reference",
+            "close-sentinel"
+          ]
+        },
+        "sourceMacro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definitionId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "enum": [
+            "entityEvents",
+            "zoneEvents",
+            "itemEvents"
+          ]
+        },
+        "callerProgramKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "callerProgramCanonicalSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "callerProgramEntryAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "callerProgramOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "callerSourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operationSourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "operationAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rawOperand": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        },
+        "lineId": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4266
+            }
+          ]
+        },
+        "sentinelEncoding": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "weightCounts": {
+          "$ref": "#/definitions/textboxWeightCounts"
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "sourceKind": {
+              "enum": [
+                "line-reference"
+              ]
+            },
+            "sourceMacro": {
+              "enum": [
+                "txt"
+              ]
+            },
+            "definitionId": {
+              "enum": [
+                "event-service-macro:txt"
+              ]
+            },
+            "rawOperand": {
+              "type": "string",
+              "pattern": "^(?:0|[1-9][0-9]*|\\$[0-9A-Fa-f]+)$"
+            },
+            "lineId": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4266
+            },
+            "sentinelEncoding": {
+              "enum": [
+                null
+              ]
+            }
+          }
+        },
+        {
+          "properties": {
+            "sourceKind": {
+              "enum": [
+                "close-sentinel"
+              ]
+            },
+            "sourceMacro": {
+              "enum": [
+                "clsTxt"
+              ]
+            },
+            "definitionId": {
+              "enum": [
+                "event-service-macro:clsTxt"
+              ]
+            },
+            "rawOperand": {
+              "enum": [
+                null
+              ]
+            },
+            "lineId": {
+              "enum": [
+                null
+              ]
+            },
+            "sentinelEncoding": {
+              "enum": [
+                "$FFFF"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "textboxCallerTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "callerProgramKey",
+        "callerProgramCanonicalSymbol",
+        "callerProgramEntryAddress",
+        "callerProgramOrder",
+        "siteOrders",
+        "kindWeightCounts"
+      ],
+      "properties": {
+        "category": {
+          "enum": [
+            "entityEvents",
+            "zoneEvents",
+            "itemEvents"
+          ]
+        },
+        "callerProgramKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "callerProgramCanonicalSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "callerProgramEntryAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "callerProgramOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "siteOrders": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1005
+          }
+        },
+        "kindWeightCounts": {
+          "$ref": "#/definitions/textboxKindWeightCounts"
+        }
+      }
+    },
+    "textboxLineTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lineId",
+        "siteOrders",
+        "weightCounts",
+        "categoryWeightCounts"
+      ],
+      "properties": {
+        "lineId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4266
+        },
+        "siteOrders": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1005
+          }
+        },
+        "weightCounts": {
+          "$ref": "#/definitions/textboxWeightCounts"
+        },
+        "categoryWeightCounts": {
+          "$ref": "#/definitions/textboxCategoryWeightCounts"
+        }
+      }
+    },
+    "textboxSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "serviceDefinitionCount",
+        "siteCount",
+        "lineReferenceSiteCount",
+        "closeSentinelSiteCount",
+        "declaredLineIdCount",
+        "observedLineIdCount",
+        "minimumObservedLineId",
+        "maximumObservedLineId",
+        "weightCounts",
+        "kindWeightCounts",
+        "categoryKindWeightCounts"
+      ],
+      "properties": {
+        "serviceDefinitionCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "siteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lineReferenceSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "closeSentinelSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "declaredLineIdCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observedLineIdCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minimumObservedLineId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4266
+        },
+        "maximumObservedLineId": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4266
+        },
+        "weightCounts": {
+          "$ref": "#/definitions/textboxWeightCounts"
+        },
+        "kindWeightCounts": {
+          "$ref": "#/definitions/textboxKindWeightCounts"
+        },
+        "categoryKindWeightCounts": {
+          "$ref": "#/definitions/textboxCategoryKindWeightCounts"
+        }
+      }
+    }
+  }
+}

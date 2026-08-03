@@ -1,0 +1,545 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-events-script-invocation.schema.json",
+  "title": "Map events script-invocation section",
+  "type": "object",
+  "required": [
+    "scriptInvocationServiceDefinition",
+    "scriptInvocationSites",
+    "scriptInvocationSiteOrder",
+    "scriptInvocationCallerTotals",
+    "scriptInvocationCallerTotalOrder",
+    "scriptInvocationInstructionTargetTotals",
+    "scriptInvocationInstructionTargetTotalOrder",
+    "scriptInvocationEffectiveTargetTotals",
+    "scriptInvocationEffectiveTargetTotalOrder",
+    "scriptInvocationSummary"
+  ],
+  "properties": {
+    "scriptInvocationServiceDefinition": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/scriptInvocationServiceDefinition"
+        },
+        {
+          "type": "object"
+        }
+      ]
+    },
+    "scriptInvocationSites": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/scriptInvocationSite"
+      }
+    },
+    "scriptInvocationSiteOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "scriptInvocationCallerTotals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/scriptInvocationCallerTotal"
+      }
+    },
+    "scriptInvocationCallerTotalOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "scriptInvocationInstructionTargetTotals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/scriptInvocationInstructionTargetTotal"
+      }
+    },
+    "scriptInvocationInstructionTargetTotalOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "scriptInvocationEffectiveTargetTotals": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/scriptInvocationEffectiveTargetTotal"
+      }
+    },
+    "scriptInvocationEffectiveTargetTotalOrder": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "scriptInvocationSummary": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/scriptInvocationSummary"
+        },
+        {
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "scriptInvocationWeightCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "physicalProgramOccurrenceCount",
+        "physicalRecordWeightedSiteCount",
+        "setupRecordReferenceWeightedSiteCount",
+        "routeRecordReferenceWeightedSiteCount"
+      ],
+      "properties": {
+        "physicalProgramOccurrenceCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "physicalRecordWeightedSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupRecordReferenceWeightedSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routeRecordReferenceWeightedSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "scriptInvocationCategoryWeightCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entityEvents",
+        "zoneEvents",
+        "itemEvents"
+      ],
+      "properties": {
+        "entityEvents": {
+          "$ref": "#/definitions/scriptInvocationWeightCounts"
+        },
+        "zoneEvents": {
+          "$ref": "#/definitions/scriptInvocationWeightCounts"
+        },
+        "itemEvents": {
+          "$ref": "#/definitions/scriptInvocationWeightCounts"
+        }
+      }
+    },
+    "scriptInvocationServiceDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "definitionId",
+        "sourceMacro",
+        "sourcePath",
+        "definitionSourceLine",
+        "serviceTarget",
+        "targetOperandOrdinal",
+        "emissionStatementTemplates"
+      ],
+      "properties": {
+        "definitionId": {
+          "type": "string"
+        },
+        "sourceMacro": {
+          "type": "string"
+        },
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "definitionSourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "serviceTarget": {
+          "type": "string"
+        },
+        "targetOperandOrdinal": {
+          "type": "integer"
+        },
+        "emissionStatementTemplates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "scriptInvocationSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "siteOrder",
+        "category",
+        "sourceMacro",
+        "definitionId",
+        "callerProgramKey",
+        "callerProgramCanonicalSymbol",
+        "callerProgramEntryAddress",
+        "callerProgramOrder",
+        "callerSourcePath",
+        "operationSourceOrder",
+        "sourceLine",
+        "operationAddress",
+        "rawOperand",
+        "instructionTargetLabel",
+        "instructionTargetAddress",
+        "effectiveOwnerProgramId",
+        "effectiveOwnerProgramOrder",
+        "effectiveOwnerEntryLabel",
+        "effectiveOwnerEntryAddress",
+        "effectiveOwnerSourcePath",
+        "effectiveOwnerTermination",
+        "weightCounts"
+      ],
+      "properties": {
+        "siteOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "category": {
+          "enum": [
+            "entityEvents",
+            "zoneEvents",
+            "itemEvents"
+          ]
+        },
+        "sourceMacro": {
+          "type": "string"
+        },
+        "definitionId": {
+          "type": "string"
+        },
+        "callerProgramKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "callerProgramCanonicalSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "callerProgramEntryAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "callerProgramOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "callerSourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operationSourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "operationAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rawOperand": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instructionTargetLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instructionTargetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effectiveOwnerProgramId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effectiveOwnerProgramOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effectiveOwnerEntryLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effectiveOwnerEntryAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effectiveOwnerSourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effectiveOwnerTermination": {
+          "enum": [
+            "absolute-jump",
+            "csc-end"
+          ]
+        },
+        "weightCounts": {
+          "$ref": "#/definitions/scriptInvocationWeightCounts"
+        }
+      }
+    },
+    "scriptInvocationCallerTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "callerProgramKey",
+        "callerProgramOrder",
+        "siteOrders",
+        "weightCounts"
+      ],
+      "properties": {
+        "category": {
+          "enum": [
+            "entityEvents",
+            "zoneEvents",
+            "itemEvents"
+          ]
+        },
+        "callerProgramKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "callerProgramOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "siteOrders": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "weightCounts": {
+          "$ref": "#/definitions/scriptInvocationWeightCounts"
+        }
+      }
+    },
+    "scriptInvocationInstructionTargetTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTargetLabel",
+        "instructionTargetAddress",
+        "effectiveOwnerProgramId",
+        "effectiveOwnerProgramOrder",
+        "effectiveOwnerEntryLabel",
+        "effectiveOwnerEntryAddress",
+        "effectiveOwnerSourcePath",
+        "effectiveOwnerTermination",
+        "siteOrders",
+        "weightCounts",
+        "categoryWeightCounts"
+      ],
+      "properties": {
+        "instructionTargetLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instructionTargetAddress": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            }
+          ]
+        },
+        "effectiveOwnerProgramId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effectiveOwnerProgramOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effectiveOwnerEntryLabel": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        },
+        "effectiveOwnerEntryAddress": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            }
+          ]
+        },
+        "effectiveOwnerSourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effectiveOwnerTermination": {
+          "enum": [
+            "absolute-jump",
+            "csc-end"
+          ]
+        },
+        "siteOrders": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "weightCounts": {
+          "$ref": "#/definitions/scriptInvocationWeightCounts"
+        },
+        "categoryWeightCounts": {
+          "$ref": "#/definitions/scriptInvocationCategoryWeightCounts"
+        }
+      }
+    },
+    "scriptInvocationEffectiveTargetTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "effectiveOwnerProgramId",
+        "effectiveOwnerProgramOrder",
+        "effectiveOwnerEntryLabel",
+        "effectiveOwnerEntryAddress",
+        "effectiveOwnerSourcePath",
+        "effectiveOwnerTermination",
+        "siteOrders",
+        "weightCounts",
+        "categoryWeightCounts"
+      ],
+      "properties": {
+        "effectiveOwnerProgramId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effectiveOwnerProgramOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effectiveOwnerEntryLabel": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ]
+        },
+        "effectiveOwnerEntryAddress": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            }
+          ]
+        },
+        "effectiveOwnerSourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effectiveOwnerTermination": {
+          "enum": [
+            "absolute-jump",
+            "csc-end"
+          ]
+        },
+        "siteOrders": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "weightCounts": {
+          "$ref": "#/definitions/scriptInvocationWeightCounts"
+        },
+        "categoryWeightCounts": {
+          "$ref": "#/definitions/scriptInvocationCategoryWeightCounts"
+        }
+      }
+    },
+    "scriptInvocationSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "serviceDefinitionCount",
+        "siteCount",
+        "declaredInstructionTargetCount",
+        "observedInstructionTargetCount",
+        "declaredEffectiveTargetCount",
+        "observedEffectiveTargetCount",
+        "weightCounts",
+        "categoryWeightCounts"
+      ],
+      "properties": {
+        "serviceDefinitionCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "siteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "declaredInstructionTargetCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observedInstructionTargetCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "declaredEffectiveTargetCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observedEffectiveTargetCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "weightCounts": {
+          "$ref": "#/definitions/scriptInvocationWeightCounts"
+        },
+        "categoryWeightCounts": {
+          "$ref": "#/definitions/scriptInvocationCategoryWeightCounts"
+        }
+      }
+    }
+  }
+}

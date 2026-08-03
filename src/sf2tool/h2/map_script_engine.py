@@ -10,6 +10,7 @@ from typing import Any
 from sf2tool.h2.battle_scene_engine import _resolve_upstream
 from sf2tool.h2.entity_action_scripts import _access_rows, _global_access_rows
 from sf2tool.h2.map_content import build_map_content_contract
+from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.h2.sound_data import FIXTURE as SOUND_DATA_FIXTURE
 from sf2tool.h2.sound_data import ID as SOUND_DATA_ID
 from sf2tool.h2.sprite_dialogue import build_sprite_dialogue_contract
@@ -9635,7 +9636,7 @@ def _entity_action_bridge_source_identity_joins(
         or handler_facts.get("inlineTerminatorWord") != 0x8080
     ):
         raise ValueError("entity-action bridge entity-action static contract join drift")
-    map_events = load_json(repo_path("tests/fixtures/h2/map-events-static-v1.json"))
+    map_events = load_map_events_fixture()
     expected = map_events.get("expected")
     if map_events.get("id") != "sf2-map-events-static-v1" or not isinstance(expected, dict):
         raise ValueError("entity-action bridge map-event static contract join drift")

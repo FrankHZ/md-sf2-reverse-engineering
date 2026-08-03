@@ -35,6 +35,15 @@ shop, church, Caravan, blacksmith, and shared-selection values and operation ord
 `tests/fixtures/h2/common-menus-static-v1.json`; `src/sf2tool/h2/menus.py` owns their equality,
 provenance, H1 function addresses, summary, and canonical digest.
 
+Map events composes nine semantic section schemas through
+`h2/map-events-output.schema.json` and reuses one target-program definition resource across the entity,
+zone, and item sections. Its root fixture is a small tracked index; nine files under
+`tests/fixtures/h2/map-events/` own the corresponding exact corpora. The project loader validates each
+shard's local path, identity, field inventory, and section schema, then reconstructs the complete
+103-field fixture in canonical order. Component schemas carry neither golden `const` payloads nor exact
+corpus cardinalities; `src/sf2tool/h2/map_events.py` retains complete fixture equality,
+provenance/address, summary, and canonical-digest ownership.
+
 The measured problem, target architecture, staged migration order, and acceptance guardrails are
 documented in [ADR 0007](../docs/decisions/0007-schema-contract-composition-and-migration.md). Existing
 contracts are not weakened merely because they predate that decision; migrate one complete owner at a
