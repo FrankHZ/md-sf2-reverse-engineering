@@ -215,6 +215,14 @@ schema-migration milestone or merge-readiness boundary.
   exact values and order stay fixture-owned, while the production verifier rejects schema-valid
   provenance, address, corpus, summary, and runtime-question drift before writing output. The canonical
   H2 digest remains the final whole-output gate.
+- The H3 observer stage gives the four maintained structured callback-failure owners one tracked
+  callback/pending-audit component, four closed owner payload roots, and shared physical-PC role-audit
+  and failure-contract roots under `schemas/h3/`. Their Python owners use one append-log parser and one
+  exact terminal cleanup/finish check; malformed, ambiguous, cross-owner, missing, extra, and
+  wrong-type callback state is rejected through the local registry. The random-services observer now
+  consumes the same generated failure contract as the other three owners, and entity-presentation-FX
+  now requires the same zero-callback-residue terminal tail. Case matrices, fixtures, observation
+  schemas, callback PCs, and emulator launch behavior remain unchanged.
 
 ## Acceptance and Guardrails
 

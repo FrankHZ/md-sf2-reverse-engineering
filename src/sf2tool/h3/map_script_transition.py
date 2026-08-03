@@ -17,6 +17,11 @@ from sf2tool.h2.map_script_engine import build_map_script_engine_contract
 from sf2tool.h3.bizhawk import DERIVED_ROOT, run_observer, verify_runtime_contract
 from sf2tool.h3.map_lifecycle import _instrument_rom as _instrument_map_lifecycle_rom
 from sf2tool.h3.map_lifecycle import _with_instrumented_rom_database
+from sf2tool.h3.observer_status import (
+    assert_observer_status,
+    callback_failure_status,
+    observer_failure_contract,
+)
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 from sf2tool.research_index import listing_symbol_addresses
@@ -27,38 +32,12 @@ FIXTURE = repo_path("tests/fixtures/h3/map-script-transition-v1.json")
 FIXTURE_SCHEMA = repo_path("schemas/h3/h3-map-script-transition-fixture.schema.json")
 OBSERVATION_SCHEMA = repo_path("schemas/h3/h3-map-script-transition-observation.schema.json")
 OBSERVER = repo_path("tools/bizhawk/map_script_transition_observer.lua")
+FAILURE_SCHEMA = repo_path(
+    "schemas/h3/map-script-transition-callback-failure.schema.json"
+)
+CALLBACK_AUDIT_SCHEMA = repo_path("schemas/h3/observer-callback-audit.schema.json")
 OBSERVER_OUTPUT_NAME = "map-script-transition"
-OBSERVER_FAILURE_CONTRACT = {
-    "exitCode": 1,
-    "removeOutputBeforeExit": True,
-    "statusPrefix": "failure:observer-callback:",
-}
-_FAILURE_FIELDS = {
-    "actualPc",
-    "caseId",
-    "error",
-    "expectedCallSiteAddress",
-    "expectedReturnAddress",
-    "expectedTargetAddress",
-    "pendingCallback",
-    "phase",
-}
-_PENDING_FIELDS = {
-    "active",
-    "dispatchTargetAddress",
-    "handlerEntriesObserved",
-    "pendingService",
-    "phase",
-    "role",
-    "scriptWordReadCount",
-}
-_PENDING_SERVICE_FIELDS = {
-    "callSiteAddress",
-    "returnAddress",
-    "role",
-    "target",
-    "targetAddress",
-}
+OBSERVER_FAILURE_CONTRACT = observer_failure_contract(OBSERVER_OUTPUT_NAME)
 TRANSITION_MACROS = (
     "warp",
     "resetMap",
@@ -506,84 +485,19 @@ def _observer_output_path() -> Path:
 
 
 def _callback_failure_status(status_path: Path) -> dict[str, Any] | None:
-    """Parse the observer failure sentinel with no lossy pending-state fields."""
-    if not status_path.is_file():
-        return None
-    rows = [
-        line.removeprefix(OBSERVER_FAILURE_CONTRACT["statusPrefix"])
-        for line in status_path.read_text(encoding="utf-8").splitlines()
-        if line.startswith(OBSERVER_FAILURE_CONTRACT["statusPrefix"])
-    ]
-    if not rows:
-        return None
-    if len(rows) != 1:
-        raise ValueError("map-script transition callback failure multiplicity drift")
-    try:
-        payload = json.loads(rows[0])
-    except json.JSONDecodeError as error:
-        raise ValueError("map-script transition callback failure JSON drift") from error
-    if not isinstance(payload, dict) or set(payload) != _FAILURE_FIELDS:
-        raise ValueError("map-script transition callback failure field-set drift")
-    if payload["caseId"] is not None and (
-        not isinstance(payload["caseId"], str) or not payload["caseId"]
-    ):
-        raise ValueError("map-script transition callback failure case identity drift")
-    if not isinstance(payload["phase"], str) or not isinstance(payload["error"], str):
-        raise ValueError("map-script transition callback failure text drift")
-    for name in (
-        "actualPc",
-        "expectedCallSiteAddress",
-        "expectedTargetAddress",
-        "expectedReturnAddress",
-    ):
-        value = payload[name]
-        if value is not None and (not isinstance(value, int) or isinstance(value, bool)):
-            raise ValueError(f"map-script transition callback failure {name} drift")
-    pending = payload["pendingCallback"]
-    if not isinstance(pending, dict) or set(pending) != _PENDING_FIELDS:
-        raise ValueError("map-script transition callback pending field-set drift")
-    if not isinstance(pending["active"], bool):
-        raise ValueError("map-script transition callback pending active drift")
-    for name in ("phase", "role"):
-        if not isinstance(pending[name], str) or not pending[name]:
-            raise ValueError(f"map-script transition callback pending {name} drift")
-    dispatch_target = pending["dispatchTargetAddress"]
-    if dispatch_target is not None and (
-        not isinstance(dispatch_target, int) or isinstance(dispatch_target, bool)
-    ):
-        raise ValueError("map-script transition callback pending dispatchTargetAddress drift")
-    script_word_count = pending["scriptWordReadCount"]
-    if (
-        not isinstance(script_word_count, int)
-        or isinstance(script_word_count, bool)
-        or script_word_count < 0
-    ):
-        raise ValueError("map-script transition callback pending script-word count drift")
-    entries = pending["handlerEntriesObserved"]
-    if not isinstance(entries, list) or not all(isinstance(value, str) for value in entries):
-        raise ValueError("map-script transition callback pending handler entries drift")
-    service = pending["pendingService"]
-    if service is not None:
-        if not isinstance(service, dict) or set(service) != _PENDING_SERVICE_FIELDS:
-            raise ValueError("map-script transition callback pending service field-set drift")
-        if not isinstance(service["target"], str) or not service["target"]:
-            raise ValueError("map-script transition callback pending service target drift")
-        if not isinstance(service["role"], str) or not service["role"]:
-            raise ValueError("map-script transition callback pending service role drift")
-        for name in ("callSiteAddress", "returnAddress", "targetAddress"):
-            if not isinstance(service[name], int) or isinstance(service[name], bool):
-                raise ValueError(f"map-script transition callback pending service {name} drift")
-    return payload
+    return callback_failure_status(
+        status_path,
+        owner=OBSERVER_OUTPUT_NAME,
+        schema_path=FAILURE_SCHEMA,
+    )
 
 
 def _assert_success_status(status_path: Path) -> None:
-    if not status_path.is_file():
-        raise RuntimeError("map-script transition observer wrote no status record")
-    if _callback_failure_status(status_path) is not None:
-        raise RuntimeError("map-script transition observer reported callback failure")
-    lines = status_path.read_text(encoding="utf-8").splitlines()
-    if lines[-2:] != ["milestone:callbacks-cleared:0", "milestone:observer-finished"]:
-        raise RuntimeError("map-script transition callback cleanup milestone drift")
+    assert_observer_status(
+        status_path,
+        owner=OBSERVER_OUTPUT_NAME,
+        schema_path=FAILURE_SCHEMA,
+    )
 
 
 def _h1_instruction_bytes(section: str, instruction: str, *, owner: str) -> bytes:
@@ -858,6 +772,11 @@ def verify_map_script_transition(
     _validate_trampoline(listing, fixture)
     cases = _runtime_cases(static, fixture, navigation, listing)
     expectations = _failure_expectations(navigation, fixture, cases, listing)
+    validate_json(
+        expectations,
+        CALLBACK_AUDIT_SCHEMA,
+        owner="map-script transition callback audit",
+    )
     instrumented = _instrument_rom(rom_path, fixture)
     harness = load_json(repo_path(fixture["sharedHarnessFixture"]))["harness"]
 

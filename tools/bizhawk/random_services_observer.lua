@@ -55,9 +55,11 @@ local function fail_callback(message)
   if observer_failed then return end
   observer_failed=true
   local c=callback_case();local e=current_expectation or {}
-  local payload="{\"caseId\":"..(c and json_string(c.id) or "null")..",\"phase\":"..json_string(current_phase)..",\"role\":"..json_string(current_role)..",\"actualPc\":"..nullable(emu.getregister("M68K PC"))..",\"expectedEventPc\":"..nullable(e.expectedEventPc)..",\"expectedCallPc\":"..nullable(e.expectedCallPc)..",\"expectedTargetPc\":"..nullable(e.expectedTargetPc)..",\"expectedReturnPc\":"..nullable(e.expectedReturnPc)..",\"pendingCallback\":"..pending_callback_state()..",\"error\":"..json_string(tostring(message)).."}"
-  local diagnostic="failure:observer-callback:"..payload
-  status(diagnostic);print(diagnostic);os.remove(config.outputPath);cleanup_session();client.exitCode(1)
+  local payload="{\"owner\":"..json_string(config.observerFailureContract.owner)..",\"caseId\":"..(c and json_string(c.id) or "null")..",\"phase\":"..json_string(current_phase)..",\"role\":"..json_string(current_role)..",\"actualPc\":"..nullable(emu.getregister("M68K PC"))..",\"expectedEventPc\":"..nullable(e.expectedEventPc)..",\"expectedCallPc\":"..nullable(e.expectedCallPc)..",\"expectedTargetPc\":"..nullable(e.expectedTargetPc)..",\"expectedReturnPc\":"..nullable(e.expectedReturnPc)..",\"pendingCallback\":"..pending_callback_state()..",\"error\":"..json_string(tostring(message)).."}"
+  local diagnostic=config.observerFailureContract.statusPrefix..payload
+  status(diagnostic);print(diagnostic)
+  if config.observerFailureContract.removeOutputBeforeExit then os.remove(config.outputPath) end
+  cleanup_session();client.exitCode(config.observerFailureContract.exitCode)
 end
 local function set_role(role) current_role=role end
 local function require_equal(actual,expected,label) if actual~=expected then error(label..": expected="..tostring(expected)..", actual="..tostring(actual)) end end

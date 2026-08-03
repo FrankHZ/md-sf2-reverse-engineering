@@ -321,6 +321,7 @@ def test_failure_expectation_contract_rejects_role_mutations() -> None:
 def test_callback_failure_status_and_cleanup_milestone_are_strict(tmp_path: Path) -> None:
     status = tmp_path / "observer.status.txt"
     payload = {
+        "owner": "map-script-control-audio",
         "caseId": "execute-subroutine-return",
         "phase": "csc0a-call",
         "actualPc": 291854,

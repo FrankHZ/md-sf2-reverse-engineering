@@ -1,0 +1,248 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:observer-callback-contract",
+  "title": "Shared SF2 H3 observer callback failure and audit components",
+  "definitions": {
+    "pc": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 16777215
+    },
+    "nullablePc": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "maximum": 16777215
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nullableNonEmptyString": {
+      "anyOf": [
+        {"type": "null"},
+        {"$ref": "#/definitions/nonEmptyString"}
+      ]
+    },
+    "stringArray": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "observerFailureContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "exitCode", "removeOutputBeforeExit", "statusPrefix"],
+      "properties": {
+        "owner": {"$ref": "#/definitions/nonEmptyString"},
+        "exitCode": {"const": 1},
+        "removeOutputBeforeExit": {"const": true},
+        "statusPrefix": {"const": "failure:observer-callback:"}
+      }
+    },
+    "callbackExpectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["callSiteAddress", "returnAddress", "targetAddress"],
+      "properties": {
+        "callSiteAddress": {"$ref": "#/definitions/nullablePc"},
+        "returnAddress": {"$ref": "#/definitions/nullablePc"},
+        "targetAddress": {"$ref": "#/definitions/nullablePc"}
+      }
+    },
+    "callbackAudit": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"pattern": "^[0-9]+$"},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["roles"],
+        "properties": {
+          "roles": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {"$ref": "#/definitions/callbackExpectation"}
+          }
+        }
+      }
+    },
+    "controlAudioPendingCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active",
+        "handlerEntriesObserved",
+        "phase",
+        "role",
+        "scriptWordReadCount",
+        "subroutineEntryStackPointer",
+        "waitForVIntCallCount"
+      ],
+      "properties": {
+        "active": {"type": "boolean"},
+        "handlerEntriesObserved": {"$ref": "#/definitions/stringArray"},
+        "phase": {"$ref": "#/definitions/nonEmptyString"},
+        "role": {"$ref": "#/definitions/nonEmptyString"},
+        "scriptWordReadCount": {"type": "integer", "minimum": 0},
+        "subroutineEntryStackPointer": {"$ref": "#/definitions/nullablePc"},
+        "waitForVIntCallCount": {"type": "integer", "minimum": 0}
+      }
+    },
+    "transitionPendingService": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["callSiteAddress", "returnAddress", "role", "target", "targetAddress"],
+      "properties": {
+        "callSiteAddress": {"$ref": "#/definitions/pc"},
+        "returnAddress": {"$ref": "#/definitions/pc"},
+        "role": {"$ref": "#/definitions/nonEmptyString"},
+        "target": {"$ref": "#/definitions/nonEmptyString"},
+        "targetAddress": {"$ref": "#/definitions/pc"}
+      }
+    },
+    "transitionPendingCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active",
+        "dispatchTargetAddress",
+        "handlerEntriesObserved",
+        "pendingService",
+        "phase",
+        "role",
+        "scriptWordReadCount"
+      ],
+      "properties": {
+        "active": {"type": "boolean"},
+        "dispatchTargetAddress": {"$ref": "#/definitions/nullablePc"},
+        "handlerEntriesObserved": {"$ref": "#/definitions/stringArray"},
+        "pendingService": {
+          "anyOf": [
+            {"type": "null"},
+            {"$ref": "#/definitions/transitionPendingService"}
+          ]
+        },
+        "phase": {"$ref": "#/definitions/nonEmptyString"},
+        "role": {"$ref": "#/definitions/nonEmptyString"},
+        "scriptWordReadCount": {"type": "integer", "minimum": 0}
+      }
+    },
+    "entityPresentationPendingCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callSiteAddressExpected",
+        "callSiteAddressObserved",
+        "effectiveTarget",
+        "instructionTarget",
+        "returnAddressExpected",
+        "targetAddressExpected",
+        "targetRole"
+      ],
+      "properties": {
+        "callSiteAddressExpected": {"$ref": "#/definitions/pc"},
+        "callSiteAddressObserved": {"$ref": "#/definitions/pc"},
+        "effectiveTarget": {"$ref": "#/definitions/nonEmptyString"},
+        "instructionTarget": {"$ref": "#/definitions/nonEmptyString"},
+        "returnAddressExpected": {"$ref": "#/definitions/pc"},
+        "targetAddressExpected": {"$ref": "#/definitions/pc"},
+        "targetAddressObserved": {"$ref": "#/definitions/pc"},
+        "targetRole": {"enum": ["instruction", "effective"]}
+      }
+    },
+    "randomServicesPendingCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "active",
+        "caseIndex",
+        "effectiveTargetObserved",
+        "entrySeen",
+        "generatorCallCount",
+        "instructionTargetObserved",
+        "returnSeen",
+        "sourceCopyWriteSeen"
+      ],
+      "properties": {
+        "active": {"type": "boolean"},
+        "caseIndex": {"type": "integer", "minimum": 0},
+        "effectiveTargetObserved": {"type": "boolean"},
+        "entrySeen": {"type": "boolean"},
+        "generatorCallCount": {"type": "integer", "minimum": 0},
+        "instructionTargetObserved": {"type": "boolean"},
+        "returnSeen": {"type": "boolean"},
+        "sourceCopyWriteSeen": {"type": "boolean"}
+      }
+    },
+    "controlAudioFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actualPc", "caseId", "error", "expectedCallSiteAddress", "expectedReturnAddress", "expectedTargetAddress", "owner", "pendingCallback", "phase"],
+      "properties": {
+        "actualPc": {"$ref": "#/definitions/nullablePc"},
+        "caseId": {"$ref": "#/definitions/nullableNonEmptyString"},
+        "error": {"$ref": "#/definitions/nonEmptyString"},
+        "expectedCallSiteAddress": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnAddress": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetAddress": {"$ref": "#/definitions/nullablePc"},
+        "owner": {"const": "map-script-control-audio"},
+        "pendingCallback": {"$ref": "#/definitions/controlAudioPendingCallback"},
+        "phase": {"$ref": "#/definitions/nonEmptyString"}
+      }
+    },
+    "transitionFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actualPc", "caseId", "error", "expectedCallSiteAddress", "expectedReturnAddress", "expectedTargetAddress", "owner", "pendingCallback", "phase"],
+      "properties": {
+        "actualPc": {"$ref": "#/definitions/nullablePc"},
+        "caseId": {"$ref": "#/definitions/nullableNonEmptyString"},
+        "error": {"$ref": "#/definitions/nonEmptyString"},
+        "expectedCallSiteAddress": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnAddress": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetAddress": {"$ref": "#/definitions/nullablePc"},
+        "owner": {"const": "map-script-transition"},
+        "pendingCallback": {"$ref": "#/definitions/transitionPendingCallback"},
+        "phase": {"$ref": "#/definitions/nonEmptyString"}
+      }
+    },
+    "entityPresentationFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actualPc", "caseId", "error", "expectedCallSiteAddress", "expectedReturnAddress", "expectedTargetAddress", "owner", "pendingCallback", "phase"],
+      "properties": {
+        "actualPc": {"$ref": "#/definitions/nullablePc"},
+        "caseId": {"$ref": "#/definitions/nullableNonEmptyString"},
+        "error": {"$ref": "#/definitions/nonEmptyString"},
+        "expectedCallSiteAddress": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnAddress": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetAddress": {"$ref": "#/definitions/nullablePc"},
+        "owner": {"const": "map-script-entity-presentation-fx"},
+        "pendingCallback": {
+          "anyOf": [
+            {"type": "null"},
+            {"$ref": "#/definitions/entityPresentationPendingCallback"}
+          ]
+        },
+        "phase": {"$ref": "#/definitions/nonEmptyString"}
+      }
+    },
+    "randomServicesFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actualPc", "caseId", "error", "expectedCallPc", "expectedEventPc", "expectedReturnPc", "expectedTargetPc", "owner", "pendingCallback", "phase", "role"],
+      "properties": {
+        "actualPc": {"$ref": "#/definitions/pc"},
+        "caseId": {"$ref": "#/definitions/nullableNonEmptyString"},
+        "error": {"$ref": "#/definitions/nonEmptyString"},
+        "expectedCallPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedEventPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetPc": {"$ref": "#/definitions/nullablePc"},
+        "owner": {"const": "random-services"},
+        "pendingCallback": {"$ref": "#/definitions/randomServicesPendingCallback"},
+        "phase": {"$ref": "#/definitions/nonEmptyString"},
+        "role": {"$ref": "#/definitions/nonEmptyString"}
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:observer-failure-contract",
+  "$ref": "urn:sf2:h3:observer-callback-contract#/definitions/observerFailureContract"
+}

@@ -1065,8 +1065,9 @@ def test_random_services_observer_has_callback_failure_and_cleanup_contract() ->
     for required_text in (
         "pcall(function()",
         "callback()",
-        "failure:observer-callback:",
-        "client.exitCode(1)",
+        "config.observerFailureContract.statusPrefix",
+        "client.exitCode(config.observerFailureContract.exitCode)",
+        "config.observerFailureContract.removeOutputBeforeExit",
         "event.unregisterbyid",
         "duplicate physical-PC callback",
         "callbacks-cleared:0",
