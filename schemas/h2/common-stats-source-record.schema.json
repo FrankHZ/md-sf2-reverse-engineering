@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/common-stats-source-record.schema.json",
+  "title": "Common stats source instruction record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "labels",
+    "opcode",
+    "operands",
+    "directTarget",
+    "branchTarget"
+  ],
+  "properties": {
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "opcode": {
+      "type": "string"
+    },
+    "operands": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "directTarget": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "branchTarget": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

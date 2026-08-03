@@ -1,0 +1,2447 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/common-stats-distance.schema.json",
+  "title": "Common stats distance contract shape",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sourcePath",
+    "sourceRange",
+    "instructionEncodedByteCount",
+    "routineOperations",
+    "abi",
+    "controlFlow",
+    "jumpInterfaceAliases",
+    "internalDirectCallerSites",
+    "externalDirectCallerSites",
+    "internalAliasCallerSites",
+    "externalAliasCallerSites",
+    "directCallerSites",
+    "aliasCallerSites",
+    "callerCounts",
+    "callerTargetCounts",
+    "callerBoundary",
+    "h3Boundary"
+  ],
+  "properties": {
+    "sourcePath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sourceRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "startAddress",
+        "endAddressExclusive",
+        "physicalSpanBytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "endAddressExclusive": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "physicalSpanBytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "instructionEncodedByteCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "routineOperations": {
+      "type": "array",
+      "minItems": 34,
+      "maxItems": 34,
+      "items": {
+        "$ref": "https://sf2-research.example/schemas/h2/common-stats-source-record.schema.json"
+      }
+    },
+    "abi": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "inputSelectors",
+        "result",
+        "preservedRegisters",
+        "coordinateValueWidthBits",
+        "coordinateWidthUseSites",
+        "deltaWorkingRegisters"
+      ],
+      "properties": {
+        "inputSelectors": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "meaningfulWidthBits",
+                "widthUseSite"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "meaningfulWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "widthUseSite": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "register",
+                "meaningfulWidthBits",
+                "widthUseSite"
+              ],
+              "properties": {
+                "register": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "meaningfulWidthBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "widthUseSite": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                }
+              }
+            }
+          ],
+          "additionalItems": false
+        },
+        "result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "register",
+            "meaningfulWidthBits",
+            "widthUseSites"
+          ],
+          "properties": {
+            "register": {
+              "type": "string",
+              "minLength": 1
+            },
+            "meaningfulWidthBits": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "widthUseSites": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "items": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                }
+              ],
+              "additionalItems": false
+            }
+          }
+        },
+        "preservedRegisters": {
+          "type": "string",
+          "minLength": 1
+        },
+        "coordinateValueWidthBits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "coordinateWidthUseSites": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            }
+          ],
+          "additionalItems": false
+        },
+        "deltaWorkingRegisters": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ],
+          "additionalItems": false
+        }
+      }
+    },
+    "controlFlow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "save",
+        "targetSelectorCopy",
+        "clears",
+        "coordinateCalls",
+        "targetSelectorRestore",
+        "firstAxis",
+        "secondAxis",
+        "axisCombination",
+        "successConvergenceBranch",
+        "invalidResult",
+        "restore",
+        "terminal",
+        "instructionOrder",
+        "labelInstructionIndices"
+      ],
+      "properties": {
+        "save": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "instructionIndex",
+            "opcode",
+            "operands"
+          ],
+          "properties": {
+            "instructionIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ],
+              "additionalItems": false
+            }
+          }
+        },
+        "targetSelectorCopy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "instructionIndex",
+            "opcode",
+            "operands"
+          ],
+          "properties": {
+            "instructionIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ],
+              "additionalItems": false
+            }
+          }
+        },
+        "clears": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            }
+          ],
+          "additionalItems": false
+        },
+        "coordinateCalls": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "actorX",
+            "actorY",
+            "targetX",
+            "targetY"
+          ],
+          "properties": {
+            "actorX": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "call",
+                "invalidCoordinateComparison",
+                "invalidCoordinateBranch",
+                "coordinateCopy"
+              ],
+              "properties": {
+                "call": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                "invalidCoordinateComparison": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                "invalidCoordinateBranch": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands",
+                    "sourceTarget",
+                    "parsedBranchTarget",
+                    "conditionCode",
+                    "targetInstructionIndex"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "sourceTarget": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "parsedBranchTarget": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "conditionCode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "targetInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "coordinateCopy": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                }
+              }
+            },
+            "actorY": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "call",
+                "invalidCoordinateComparison",
+                "invalidCoordinateBranch",
+                "coordinateCopy"
+              ],
+              "properties": {
+                "call": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                "invalidCoordinateComparison": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                "invalidCoordinateBranch": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands",
+                    "sourceTarget",
+                    "parsedBranchTarget",
+                    "conditionCode",
+                    "targetInstructionIndex"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "sourceTarget": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "parsedBranchTarget": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "conditionCode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "targetInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "coordinateCopy": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                }
+              }
+            },
+            "targetX": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "call",
+                "invalidCoordinateComparison",
+                "invalidCoordinateBranch",
+                "coordinateCopy"
+              ],
+              "properties": {
+                "call": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                "invalidCoordinateComparison": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                "invalidCoordinateBranch": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands",
+                    "sourceTarget",
+                    "parsedBranchTarget",
+                    "conditionCode",
+                    "targetInstructionIndex"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "sourceTarget": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "parsedBranchTarget": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "conditionCode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "targetInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "coordinateCopy": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                }
+              }
+            },
+            "targetY": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "call",
+                "invalidCoordinateComparison",
+                "invalidCoordinateBranch",
+                "coordinateCopy"
+              ],
+              "properties": {
+                "call": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                "invalidCoordinateComparison": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                },
+                "invalidCoordinateBranch": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands",
+                    "sourceTarget",
+                    "parsedBranchTarget",
+                    "conditionCode",
+                    "targetInstructionIndex"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 1,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    },
+                    "sourceTarget": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "parsedBranchTarget": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "conditionCode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "targetInstructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "coordinateCopy": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "instructionIndex",
+                    "opcode",
+                    "operands"
+                  ],
+                  "properties": {
+                    "instructionIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "opcode": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "operands": {
+                      "type": "array",
+                      "minItems": 2,
+                      "maxItems": 2,
+                      "items": [
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      ],
+                      "additionalItems": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "targetSelectorRestore": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "instructionIndex",
+            "opcode",
+            "operands"
+          ],
+          "properties": {
+            "instructionIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ],
+              "additionalItems": false
+            }
+          }
+        },
+        "firstAxis": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "subtraction",
+            "noBorrowBranch",
+            "negativeAdjustment"
+          ],
+          "properties": {
+            "subtraction": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            "noBorrowBranch": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands",
+                "sourceTarget",
+                "parsedBranchTarget",
+                "conditionCode",
+                "targetInstructionIndex"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "sourceTarget": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "parsedBranchTarget": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "conditionCode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "targetInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "negativeAdjustment": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            }
+          }
+        },
+        "secondAxis": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "subtraction",
+            "noBorrowBranch",
+            "negativeAdjustment"
+          ],
+          "properties": {
+            "subtraction": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            },
+            "noBorrowBranch": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands",
+                "sourceTarget",
+                "parsedBranchTarget",
+                "conditionCode",
+                "targetInstructionIndex"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                },
+                "sourceTarget": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "parsedBranchTarget": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "conditionCode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "targetInstructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "negativeAdjustment": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "instructionIndex",
+                "opcode",
+                "operands"
+              ],
+              "properties": {
+                "instructionIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "opcode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "operands": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 1,
+                  "items": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  ],
+                  "additionalItems": false
+                }
+              }
+            }
+          }
+        },
+        "axisCombination": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "instructionIndex",
+            "opcode",
+            "operands"
+          ],
+          "properties": {
+            "instructionIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ],
+              "additionalItems": false
+            }
+          }
+        },
+        "successConvergenceBranch": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "instructionIndex",
+            "opcode",
+            "operands",
+            "sourceTarget",
+            "parsedBranchTarget",
+            "conditionCode",
+            "targetInstructionIndex"
+          ],
+          "properties": {
+            "instructionIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1,
+              "items": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ],
+              "additionalItems": false
+            },
+            "sourceTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "parsedBranchTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "conditionCode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "targetInstructionIndex": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "invalidResult": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "instructionIndex",
+            "opcode",
+            "operands"
+          ],
+          "properties": {
+            "instructionIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ],
+              "additionalItems": false
+            }
+          }
+        },
+        "restore": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "instructionIndex",
+            "opcode",
+            "operands"
+          ],
+          "properties": {
+            "instructionIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "string",
+                  "minLength": 1
+                }
+              ],
+              "additionalItems": false
+            }
+          }
+        },
+        "terminal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "instructionIndex",
+            "opcode",
+            "operands"
+          ],
+          "properties": {
+            "instructionIndex": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "operands": {
+              "type": "array",
+              "minItems": 0,
+              "maxItems": 0,
+              "items": [],
+              "additionalItems": false
+            }
+          }
+        },
+        "instructionOrder": {
+          "type": "array",
+          "minItems": 34,
+          "maxItems": 34,
+          "items": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "integer",
+              "minimum": 0
+            }
+          ],
+          "additionalItems": false
+        },
+        "labelInstructionIndices": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "GetDistanceBetweenCombatants",
+            "@loc_1",
+            "@loc_2",
+            "@loc_3",
+            "@Done"
+          ],
+          "properties": {
+            "GetDistanceBetweenCombatants": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "@loc_1": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "@loc_2": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "@loc_3": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "@Done": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "jumpInterfaceAliases": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "j_GetDistanceBetweenCombatants"
+      ],
+      "properties": {
+        "j_GetDistanceBetweenCombatants": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "effectiveTarget",
+            "sourcePath"
+          ],
+          "properties": {
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "internalDirectCallerSites": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 0,
+      "items": [],
+      "additionalItems": false
+    },
+    "externalDirectCallerSites": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourcePath",
+            "lineNumber",
+            "opcode",
+            "instructionTarget",
+            "effectiveTarget"
+          ],
+          "properties": {
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            },
+            "lineNumber": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "instructionTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourcePath",
+            "lineNumber",
+            "opcode",
+            "instructionTarget",
+            "effectiveTarget"
+          ],
+          "properties": {
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            },
+            "lineNumber": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "instructionTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ],
+      "additionalItems": false
+    },
+    "internalAliasCallerSites": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 0,
+      "items": [],
+      "additionalItems": false
+    },
+    "externalAliasCallerSites": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 0,
+      "items": [],
+      "additionalItems": false
+    },
+    "directCallerSites": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourcePath",
+            "lineNumber",
+            "opcode",
+            "instructionTarget",
+            "effectiveTarget"
+          ],
+          "properties": {
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            },
+            "lineNumber": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "instructionTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourcePath",
+            "lineNumber",
+            "opcode",
+            "instructionTarget",
+            "effectiveTarget"
+          ],
+          "properties": {
+            "sourcePath": {
+              "type": "string",
+              "minLength": 1
+            },
+            "lineNumber": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "opcode": {
+              "type": "string",
+              "minLength": 1
+            },
+            "instructionTarget": {
+              "type": "string",
+              "minLength": 1
+            },
+            "effectiveTarget": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ],
+      "additionalItems": false
+    },
+    "aliasCallerSites": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 0,
+      "items": [],
+      "additionalItems": false
+    },
+    "callerCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "directSiteCount",
+        "aliasSiteCount",
+        "effectiveSiteCount"
+      ],
+      "properties": {
+        "directSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "aliasSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "effectiveSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "callerTargetCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "internalDirect",
+        "externalDirect",
+        "internalAlias",
+        "externalAlias"
+      ],
+      "properties": {
+        "internalDirect": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "GetDistanceBetweenCombatants"
+          ],
+          "properties": {
+            "GetDistanceBetweenCombatants": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "externalDirect": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "GetDistanceBetweenCombatants"
+          ],
+          "properties": {
+            "GetDistanceBetweenCombatants": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "internalAlias": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "GetDistanceBetweenCombatants"
+          ],
+          "properties": {
+            "GetDistanceBetweenCombatants": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "externalAlias": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "GetDistanceBetweenCombatants"
+          ],
+          "properties": {
+            "GetDistanceBetweenCombatants": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "callerBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "internalDirectSiteCount",
+        "externalDirectSiteCount",
+        "internalAliasSiteCount",
+        "externalAliasSiteCount",
+        "aliasDefinitionsAreNotCallSites"
+      ],
+      "properties": {
+        "internalDirectSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalDirectSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "internalAliasSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "externalAliasSiteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "aliasDefinitionsAreNotCallSites": {
+          "type": "boolean"
+        }
+      }
+    },
+    "h3Boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fixtureIds",
+        "runtimeBehavior",
+        "groupedQuestions"
+      ],
+      "properties": {
+        "fixtureIds": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 0,
+          "items": [],
+          "additionalItems": false
+        },
+        "runtimeBehavior": {
+          "type": "string",
+          "minLength": 1
+        },
+        "groupedQuestions": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "string",
+              "minLength": 1
+            }
+          ],
+          "additionalItems": false
+        }
+      }
+    }
+  }
+}

@@ -23,6 +23,12 @@ Do not copy complete corpora or large order arrays into output and fixture schem
 local-only `$ref` resources once the repository registry is available. Structural schemas must never
 reference golden fixtures, and schema validation must never retrieve a reference from the network.
 
+The first composed owner is common stats. Its output and fixture roots live at
+`h2/common-stats-output.schema.json` and `h2/common-stats-fixture.schema.json`; both reuse the getter,
+mutation, clamp, distance, and source-instruction components beside them. The tracked fixture keeps
+the exact corpus, while `src/sf2tool/h2/stats.py` owns golden equality, provenance, function-address,
+summary, and canonical-digest checks.
+
 The measured problem, target architecture, staged migration order, and acceptance guardrails are
 documented in [ADR 0007](../docs/decisions/0007-schema-contract-composition-and-migration.md). Existing
 contracts are not weakened merely because they predate that decision; migrate one complete owner at a

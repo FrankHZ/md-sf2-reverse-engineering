@@ -142,6 +142,8 @@ For example, a common-stats pilot may own:
 schemas/h2/common-stats-source-record.schema.json
 schemas/h2/common-stats-getters.schema.json
 schemas/h2/common-stats-mutations.schema.json
+schemas/h2/common-stats-clamps.schema.json
+schemas/h2/common-stats-distance.schema.json
 schemas/h2/common-stats-output.schema.json
 schemas/h2/common-stats-fixture.schema.json
 ```
@@ -176,6 +178,17 @@ Do not rewrite all 254 files in one branch.
 Each bounded migration reruns its focused H2/H3 command, relevant mutation suite, complete Python suite,
 and `uv run sf2 verify`. Run `uv run sf2 verify --full` for the shared registry change and again at the
 schema-migration milestone or merge-readiness boundary.
+
+### Implemented stages
+
+- The registry-infrastructure stage preloads tracked `$id` resources and rejects duplicate IDs,
+  unknown references, and network retrieval while retaining bounded cyclic references.
+- The common-stats pilot moves its output/fixture roots and five shared components under `schemas/h2/`.
+  The component layer contains no golden `const` payloads; only the two roots retain their small
+  schema-version and contract-ID constants. Exact corpus values stay in
+  `tests/fixtures/h2/common-stats-static-v1.json` and are enforced by the owner verifier, including an
+  explicit 12-field function-address join to `manifests/research-index.json`. The composition audit
+  reports size, constant payloads, local reference closure, and duplicated schema bodies.
 
 ## Acceptance and Guardrails
 
