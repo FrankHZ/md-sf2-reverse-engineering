@@ -1,4 +1,5 @@
 local config=assert(dofile(assert(os.getenv("SF2_H3_CONFIG"),"SF2_H3_CONFIG is not set")))
+local bootstrap=assert(dofile(config.bootstrapLibraryPath))
 local f,i=config["function"],config.instrumentation
 local case_index,active,observer_failed,session_cleaned=1,false,false,false
 local records,event_ids,registered_addresses={},{},{}
@@ -179,7 +180,7 @@ end
 local function host_number_prompt()
   set_role("host-number-prompt");require_expectation(nil,nil,nil,"host number prompt")
   prompt_count=prompt_count+1;status("milestone:host-number-prompt:"..prompt_count)
-  if prompt_count==1 then pulse("Right");pulse("C") elseif prompt_count==2 then pulse("C") end
+  bootstrap.battle01_intro_skip(config.bootstrap.profile,prompt_count,pulse)
 end
 local function host_flag_prompt() set_role("host-flag-prompt");require_expectation(nil,nil,nil,"host flag prompt");pulse("B");status("milestone:host-flag-prompt") end
 local function finish_case()

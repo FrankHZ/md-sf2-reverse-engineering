@@ -1,5 +1,6 @@
 local config_path = assert(os.getenv("SF2_H3_CONFIG"), "SF2_H3_CONFIG is not set")
 local config = assert(dofile(config_path))
+local bootstrap = assert(dofile(config.bootstrapLibraryPath))
 
 local results = {}
 local current = 1
@@ -59,8 +60,7 @@ if config.mode == "debug" then
     event.on_bus_exec(function()
         prompt_count = prompt_count + 1
         status("milestone:number-prompt:" .. prompt_count)
-        if prompt_count == 1 then pulse("Right"); pulse("C")
-        elseif prompt_count == 2 then pulse("C") end
+        bootstrap.battle01_intro_skip(config.bootstrap.profile, prompt_count, pulse)
     end, 0x16282, "sf2-rng-number-prompt", "M68K BUS")
 
     event.on_bus_exec(function()
