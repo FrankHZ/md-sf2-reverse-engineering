@@ -1,0 +1,280 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-script-engine-core.schema.json",
+  "title": "Map-script engine core structural definitions",
+  "definitions": {
+    "callerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalInstructionTargetTotals",
+        "externalInstructionTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/callerHandler"
+          }
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/targetResolution"
+          }
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/callerTargetTotals"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/callerTargetTotals"
+        },
+        "internalInstructionTargetTotals": {
+          "$ref": "#/definitions/callerTargetTotals"
+        },
+        "externalInstructionTargetTotals": {
+          "$ref": "#/definitions/callerTargetTotals"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/callerTargetTotals"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/callerTargetTotals"
+        }
+      }
+    },
+    "callerHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "sourcePath",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "sourcePath": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/callerTargetSiteCounts"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/callerTargetSiteCounts"
+        }
+      }
+    },
+    "callerTargetSiteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "csc1D_showPortrait",
+        "GetEntityPortaitAndSpeechSfx"
+      ],
+      "properties": {
+        "csc1D_showPortrait": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "GetEntityPortaitAndSpeechSfx": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "callerTargetTotals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "csc1D_showPortrait",
+        "GetEntityPortaitAndSpeechSfx"
+      ],
+      "properties": {
+        "csc1D_showPortrait": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetEntityPortaitAndSpeechSfx": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "countRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "count"
+      ],
+      "properties": {
+        "value": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "emissionRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "properties": {
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expression": {
+          "type": "string"
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "encoding": {
+          "type": "string"
+        }
+      }
+    },
+    "operandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constants",
+        "modifierByteCounts",
+        "modifierSourceLabels",
+        "entityByteCounts",
+        "textCursorValueCounts",
+        "textCursorValueBounds"
+      ],
+      "properties": {
+        "constants": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-dialogue.schema.json#/definitions/dialogueConstants"
+        },
+        "modifierByteCounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/countRow"
+          }
+        },
+        "modifierSourceLabels": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-dialogue.schema.json#/definitions/modifierSourceLabel"
+          }
+        },
+        "entityByteCounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/countRow"
+          }
+        },
+        "textCursorValueCounts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/countRow"
+          }
+        },
+        "textCursorValueBounds": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-dialogue.schema.json#/definitions/textCursorValueBounds"
+        }
+      }
+    },
+    "programTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-dialogue.schema.json#/definitions/dialogueMacroCounts"
+        }
+      }
+    },
+    "sourceSiteReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandIndexes"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandIndexes": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "targetResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "effectiveTargetSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "effectiveTargetSourcePath": {
+          "type": "string"
+        },
+        "effectiveTargetScope": {
+          "type": "string",
+          "enum": [
+            "internal",
+            "external"
+          ]
+        }
+      }
+    }
+  }
+}

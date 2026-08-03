@@ -1,0 +1,6190 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-script-engine-presentation-ui.schema.json",
+  "title": "Map-script engine presentation-ui structural definitions",
+  "definitions": {
+    "entityPresentationFxCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer"
+        },
+        "sourceLine": {
+          "type": "integer"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterOrdinal",
+              "sourceComment",
+              "streamOffset",
+              "widthBytes",
+              "rawValue",
+              "resolvedValue",
+              "resolution",
+              "encoding"
+            ],
+            "properties": {
+              "parameterOrdinal": {
+                "type": "integer"
+              },
+              "sourceComment": {
+                "type": "string"
+              },
+              "streamOffset": {
+                "type": "integer"
+              },
+              "widthBytes": {
+                "type": "integer"
+              },
+              "rawValue": {
+                "type": "string"
+              },
+              "resolvedValue": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "resolution": {
+                "type": "string"
+              },
+              "encoding": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "entityPresentationFxCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "handlers",
+        "callerBreakdown",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandAnnotations",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "encodedBytes": {
+                "type": "integer"
+              },
+              "operandBytes": {
+                "type": "integer"
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entityPresentationFxSourceSite"
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entityPresentationFxProgramTotal"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "operandAnnotations",
+              "statementCount",
+              "sectionGuard",
+              "directCalls"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              },
+              "operandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "statementCount": {
+                "type": "integer"
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "scriptCursorReadUseSites",
+                  "sourceImmediateUseSites",
+                  "sourceOperandInstructions",
+                  "branchRecords",
+                  "loopRecords",
+                  "directCallOrder",
+                  "returnInstruction"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scriptCursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationOperand",
+                        "transferredByteCount",
+                        "cursorAdvanceByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationOperand": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer"
+                        },
+                        "cursorAdvanceByteCount": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceImmediateUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instruction",
+                        "rawValue",
+                        "resolvedValue",
+                        "resolution"
+                      ],
+                      "properties": {
+                        "instruction": {
+                          "type": "string"
+                        },
+                        "rawValue": {
+                          "type": "string"
+                        },
+                        "resolvedValue": {
+                          "type": "integer"
+                        },
+                        "resolution": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceOperandInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "branchRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "branchInstruction",
+                        "branchTarget"
+                      ],
+                      "properties": {
+                        "branchInstruction": {
+                          "type": "string"
+                        },
+                        "branchTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex",
+                            "targetSectionAnchor"
+                          ],
+                          "properties": {
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            },
+                            "targetSectionAnchor": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "loopRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "loopInstruction",
+                        "loopTarget"
+                      ],
+                      "properties": {
+                        "loopInstruction": {
+                          "type": "string"
+                        },
+                        "loopTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "counterRegister",
+                            "loopInstruction",
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex",
+                            "targetSectionAnchor"
+                          ],
+                          "properties": {
+                            "counterRegister": {
+                              "type": "string"
+                            },
+                            "loopInstruction": {
+                              "type": "string"
+                            },
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            },
+                            "targetSectionAnchor": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget",
+                    "addressingForm"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    },
+                    "addressingForm": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalInstructionTargetTotals",
+            "externalInstructionTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter",
+                      "LoadMapsprite",
+                      "ApplySpriteCropEffect",
+                      "DmaMapsprite",
+                      "WaitForVInt",
+                      "sub_45E10",
+                      "sub_45D1C",
+                      "UpdateEntitySprite_0",
+                      "sub_45D46"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      },
+                      "LoadMapsprite": {
+                        "type": "integer"
+                      },
+                      "ApplySpriteCropEffect": {
+                        "type": "integer"
+                      },
+                      "DmaMapsprite": {
+                        "type": "integer"
+                      },
+                      "WaitForVInt": {
+                        "type": "integer"
+                      },
+                      "sub_45E10": {
+                        "type": "integer"
+                      },
+                      "sub_45D1C": {
+                        "type": "integer"
+                      },
+                      "UpdateEntitySprite_0": {
+                        "type": "integer"
+                      },
+                      "sub_45D46": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter",
+                      "LoadMapsprite",
+                      "ApplySpriteCropEffect",
+                      "DmaMapsprite",
+                      "WaitForVInt",
+                      "sub_45E10",
+                      "sub_45D1C",
+                      "UpdateEntitySprite_0",
+                      "sub_45D46"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      },
+                      "LoadMapsprite": {
+                        "type": "integer"
+                      },
+                      "ApplySpriteCropEffect": {
+                        "type": "integer"
+                      },
+                      "DmaMapsprite": {
+                        "type": "integer"
+                      },
+                      "WaitForVInt": {
+                        "type": "integer"
+                      },
+                      "sub_45E10": {
+                        "type": "integer"
+                      },
+                      "sub_45D1C": {
+                        "type": "integer"
+                      },
+                      "UpdateEntitySprite_0": {
+                        "type": "integer"
+                      },
+                      "sub_45D46": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetResolutions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": "null"
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entityPresentationFxFixtureCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "handlers",
+        "callerBreakdown",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandAnnotations",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "encodedBytes": {
+                "type": "integer"
+              },
+              "operandBytes": {
+                "type": "integer"
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "operandAnnotations",
+              "statementCount",
+              "sectionGuard",
+              "directCalls"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              },
+              "operandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "statementCount": {
+                "type": "integer"
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "scriptCursorReadUseSites",
+                  "sourceImmediateUseSites",
+                  "sourceOperandInstructions",
+                  "branchRecords",
+                  "loopRecords",
+                  "directCallOrder",
+                  "returnInstruction"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scriptCursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationOperand",
+                        "transferredByteCount",
+                        "cursorAdvanceByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationOperand": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer"
+                        },
+                        "cursorAdvanceByteCount": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceImmediateUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instruction",
+                        "rawValue",
+                        "resolvedValue",
+                        "resolution"
+                      ],
+                      "properties": {
+                        "instruction": {
+                          "type": "string"
+                        },
+                        "rawValue": {
+                          "type": "string"
+                        },
+                        "resolvedValue": {
+                          "type": "integer"
+                        },
+                        "resolution": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceOperandInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "branchRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "branchInstruction",
+                        "branchTarget"
+                      ],
+                      "properties": {
+                        "branchInstruction": {
+                          "type": "string"
+                        },
+                        "branchTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex",
+                            "targetSectionAnchor"
+                          ],
+                          "properties": {
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            },
+                            "targetSectionAnchor": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "loopRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "loopInstruction",
+                        "loopTarget"
+                      ],
+                      "properties": {
+                        "loopInstruction": {
+                          "type": "string"
+                        },
+                        "loopTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "counterRegister",
+                            "loopInstruction",
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex",
+                            "targetSectionAnchor"
+                          ],
+                          "properties": {
+                            "counterRegister": {
+                              "type": "string"
+                            },
+                            "loopInstruction": {
+                              "type": "string"
+                            },
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            },
+                            "targetSectionAnchor": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget",
+                    "addressingForm"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    },
+                    "addressingForm": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalInstructionTargetTotals",
+            "externalInstructionTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter",
+                      "LoadMapsprite",
+                      "ApplySpriteCropEffect",
+                      "DmaMapsprite",
+                      "WaitForVInt",
+                      "sub_45E10",
+                      "sub_45D1C",
+                      "UpdateEntitySprite_0",
+                      "sub_45D46"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      },
+                      "LoadMapsprite": {
+                        "type": "integer"
+                      },
+                      "ApplySpriteCropEffect": {
+                        "type": "integer"
+                      },
+                      "DmaMapsprite": {
+                        "type": "integer"
+                      },
+                      "WaitForVInt": {
+                        "type": "integer"
+                      },
+                      "sub_45E10": {
+                        "type": "integer"
+                      },
+                      "sub_45D1C": {
+                        "type": "integer"
+                      },
+                      "UpdateEntitySprite_0": {
+                        "type": "integer"
+                      },
+                      "sub_45D46": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "GetEntityAddressFromCharacter",
+                      "LoadMapsprite",
+                      "ApplySpriteCropEffect",
+                      "DmaMapsprite",
+                      "WaitForVInt",
+                      "sub_45E10",
+                      "sub_45D1C",
+                      "UpdateEntitySprite_0",
+                      "sub_45D46"
+                    ],
+                    "properties": {
+                      "GetEntityAddressFromCharacter": {
+                        "type": "integer"
+                      },
+                      "LoadMapsprite": {
+                        "type": "integer"
+                      },
+                      "ApplySpriteCropEffect": {
+                        "type": "integer"
+                      },
+                      "DmaMapsprite": {
+                        "type": "integer"
+                      },
+                      "WaitForVInt": {
+                        "type": "integer"
+                      },
+                      "sub_45E10": {
+                        "type": "integer"
+                      },
+                      "sub_45D1C": {
+                        "type": "integer"
+                      },
+                      "UpdateEntitySprite_0": {
+                        "type": "integer"
+                      },
+                      "sub_45D46": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetResolutions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": "null"
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "GetEntityAddressFromCharacter",
+                "LoadMapsprite",
+                "ApplySpriteCropEffect",
+                "DmaMapsprite",
+                "WaitForVInt",
+                "sub_45E10",
+                "sub_45D1C",
+                "UpdateEntitySprite_0",
+                "sub_45D46"
+              ],
+              "properties": {
+                "GetEntityAddressFromCharacter": {
+                  "type": "integer"
+                },
+                "LoadMapsprite": {
+                  "type": "integer"
+                },
+                "ApplySpriteCropEffect": {
+                  "type": "integer"
+                },
+                "DmaMapsprite": {
+                  "type": "integer"
+                },
+                "WaitForVInt": {
+                  "type": "integer"
+                },
+                "sub_45E10": {
+                  "type": "integer"
+                },
+                "sub_45D1C": {
+                  "type": "integer"
+                },
+                "UpdateEntitySprite_0": {
+                  "type": "integer"
+                },
+                "sub_45D46": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "entityPresentationFxProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer"
+        },
+        "macroCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "animEntityFX",
+            "headshake",
+            "entityFlashWhite"
+          ],
+          "properties": {
+            "animEntityFX": {
+              "type": "integer"
+            },
+            "headshake": {
+              "type": "integer"
+            },
+            "entityFlashWhite": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "entityPresentationFxSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/entityPresentationFxCommand"
+          }
+        }
+      }
+    },
+    "mapCameraControlBranchRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "testInstruction",
+        "branchInstruction",
+        "branchTargetLabel",
+        "branchTarget"
+      ],
+      "properties": {
+        "testInstruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branchInstruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branchTargetLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "branchTarget": {
+          "$ref": "#/definitions/mapCameraControlBranchTarget"
+        }
+      }
+    },
+    "mapCameraControlBranchTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "targetLabel",
+        "targetInstruction",
+        "targetStatementIndex"
+      ],
+      "properties": {
+        "targetLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetInstruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "targetStatementIndex": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapCameraControlCallerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalInstructionTargetTotals",
+        "externalInstructionTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlCallerHandler"
+          }
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlTargetResolution"
+          }
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlInstructionCounts"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlEffectiveCounts"
+        },
+        "internalInstructionTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlInstructionCounts"
+        },
+        "externalInstructionTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlInstructionCounts"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlEffectiveCounts"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/mapCameraControlEffectiveCounts"
+        }
+      }
+    },
+    "mapCameraControlCallerHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/mapCameraControlInstructionCounts"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/mapCameraControlEffectiveCounts"
+        }
+      }
+    },
+    "mapCameraControlCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "handlers",
+        "cameraDestinationServiceFacts",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlMacro"
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlSourceSite"
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlProgramTotal"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlHandler"
+          }
+        },
+        "cameraDestinationServiceFacts": {
+          "$ref": "#/definitions/mapCameraControlDestinationServiceFacts"
+        },
+        "callerBreakdown": {
+          "$ref": "#/definitions/mapCameraControlCallerBreakdown"
+        },
+        "sourceIdentityJoins": {
+          "$ref": "#/definitions/mapCameraControlSourceIdentityJoins"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "mapCameraControlConstantUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbol",
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "symbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "mapCameraControlCursorRead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceRegister",
+        "destinationRegister",
+        "transferredByteCount",
+        "cursorAdvanceByteCount",
+        "instruction"
+      ],
+      "properties": {
+        "sourceRegister": {
+          "type": "string"
+        },
+        "destinationRegister": {
+          "type": "string",
+          "pattern": "^d[0-7]$"
+        },
+        "transferredByteCount": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "cursorAdvanceByteCount": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "mapCameraControlCursorWrite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceRegister",
+        "destinationOperand",
+        "transferredByteCount",
+        "cursorAdvanceByteCount",
+        "instruction"
+      ],
+      "properties": {
+        "sourceRegister": {
+          "type": "string"
+        },
+        "destinationOperand": {
+          "type": "string",
+          "minLength": 1
+        },
+        "transferredByteCount": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "cursorAdvanceByteCount": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "mapCameraControlDestinationServiceFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "handler",
+        "address",
+        "statementCount",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handler": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/mapCameraControlDestinationServiceGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlDirectCall"
+          }
+        }
+      }
+    },
+    "mapCameraControlDestinationServiceGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "tileSizeUseSites",
+        "directCallOrder",
+        "returnInstruction"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "tileSizeUseSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlConstantUse"
+          }
+        },
+        "directCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "returnInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapCameraControlDirectCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opcode",
+        "instructionTarget"
+      ],
+      "properties": {
+        "opcode": {
+          "enum": [
+            "bsr",
+            "jsr"
+          ]
+        },
+        "instructionTarget": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "mapCameraControlEffectiveCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "SetCameraDestination",
+        "WaitForViewScrollEnd"
+      ],
+      "properties": {
+        "SetCameraDestination": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "WaitForViewScrollEnd": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapCameraControlEmission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "properties": {
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "expression": {
+          "type": "string"
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "encoding": {
+          "type": "string"
+        }
+      }
+    },
+    "mapCameraControlHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macro",
+        "handler",
+        "address",
+        "opcode",
+        "sourceCommandCount",
+        "operandAnnotations",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "handler": {
+          "type": "string",
+          "minLength": 1
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandAnnotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlOperandAnnotation"
+          }
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "guardedStatements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/mapCameraControlSectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlDirectCall"
+          }
+        }
+      }
+    },
+    "mapCameraControlInstructionCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "j_SetCameraDestination",
+        "WaitForViewScrollEnd"
+      ],
+      "properties": {
+        "j_SetCameraDestination": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "WaitForViewScrollEnd": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapCameraControlMacro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "handler",
+        "sourceOperandAnnotations",
+        "sourceCommandCount"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "encodedBytes": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "operandBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandLayout": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlEmission"
+          }
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "handler": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceOperandAnnotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlOperandAnnotation"
+          }
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapCameraControlMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "setCameraEntity",
+        "setCamDest",
+        "cameraSpeed"
+      ],
+      "properties": {
+        "setCameraEntity": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setCamDest": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cameraSpeed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapCameraControlOperandAnnotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sourceComment": {
+          "type": "string"
+        },
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        }
+      }
+    },
+    "mapCameraControlOperandValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceComment",
+        "streamOffset",
+        "widthBytes",
+        "rawValue",
+        "resolvedValue",
+        "resolution"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sourceComment": {
+          "type": "string"
+        },
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "enum": [
+            1,
+            2,
+            4
+          ]
+        },
+        "rawValue": {
+          "type": "string"
+        },
+        "resolvedValue": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "enum": [
+                null
+              ]
+            }
+          ]
+        },
+        "resolution": {
+          "enum": [
+            "equate",
+            "literal",
+            "symbol"
+          ]
+        }
+      }
+    },
+    "mapCameraControlProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "$ref": "#/definitions/mapCameraControlMacroCounts"
+        }
+      }
+    },
+    "mapCameraControlSectionGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "scriptCursorReadUseSites",
+        "scriptCursorWriteUseSites",
+        "branchRecords",
+        "sourceConstantUses",
+        "sourceStateWrites",
+        "directCallOrder",
+        "returnInstruction"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "scriptCursorReadUseSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlCursorRead"
+          }
+        },
+        "scriptCursorWriteUseSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlCursorWrite"
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlBranchRecord"
+          }
+        },
+        "sourceConstantUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlConstantUse"
+          }
+        },
+        "sourceStateWrites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlStateWrite"
+          }
+        },
+        "directCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "returnInstruction": {
+          "oneOf": [
+            {
+              "enum": [
+                "rts"
+              ]
+            },
+            {
+              "enum": [
+                null
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "mapCameraControlSourceCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "macro": {
+          "type": "string",
+          "minLength": 1
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceOrderKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlOperandValue"
+          }
+        }
+      }
+    },
+    "mapCameraControlSourceIdentityJoins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceOwners"
+      ],
+      "properties": {
+        "sourceOwners": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlSourceOwner"
+          }
+        }
+      }
+    },
+    "mapCameraControlSourceOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "mapCameraControlSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapCameraControlSourceCommand"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "mapCameraControlStateWrite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceSymbol",
+        "valueKind",
+        "valueReference",
+        "instruction"
+      ],
+      "properties": {
+        "sourceSymbol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "valueKind": {
+          "enum": [
+            "register",
+            "literal",
+            "script-cursor"
+          ]
+        },
+        "valueReference": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "mapCameraControlTargetResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string",
+          "minLength": 1
+        },
+        "effectiveTarget": {
+          "type": "string",
+          "minLength": 1
+        },
+        "aliasSourcePath": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "enum": [
+                null
+              ]
+            }
+          ]
+        },
+        "effectiveTargetScope": {
+          "type": "string"
+        }
+      }
+    },
+    "mapScriptUiPrimaryCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer"
+        },
+        "sourceLine": {
+          "type": "integer"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterOrdinal",
+              "sourceComment",
+              "streamOffset",
+              "widthBytes",
+              "rawValue",
+              "resolvedValue",
+              "resolution",
+              "encoding"
+            ],
+            "properties": {
+              "parameterOrdinal": {
+                "type": "integer"
+              },
+              "sourceComment": {
+                "type": "string"
+              },
+              "streamOffset": {
+                "type": "integer"
+              },
+              "widthBytes": {
+                "type": "integer"
+              },
+              "rawValue": {
+                "type": "string"
+              },
+              "resolvedValue": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "resolution": {
+                "type": "string"
+              },
+              "encoding": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "mapScriptUiPrimaryCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "handlers",
+        "callerBreakdown",
+        "runtimeQuestions",
+        "portraitHelperJoin"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandAnnotations",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "encodedBytes": {
+                "type": "integer"
+              },
+              "operandBytes": {
+                "type": "integer"
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapScriptUiPrimarySourceSite"
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapScriptUiPrimaryProgramTotal"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "operandAnnotations",
+              "statementCount",
+              "sectionGuard",
+              "directCalls",
+              "sourcePath"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              },
+              "operandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "statementCount": {
+                "type": "integer"
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "scriptCursorReadUseSites",
+                  "sourceImmediateUseSites",
+                  "sourceOperandInstructions",
+                  "branchRecords",
+                  "loopRecords",
+                  "directCallOrder",
+                  "returnInstruction",
+                  "stackPointerTransferInstructions"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scriptCursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationOperand",
+                        "transferredByteCount",
+                        "cursorAdvanceByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationOperand": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer"
+                        },
+                        "cursorAdvanceByteCount": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceImmediateUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instruction",
+                        "rawValue",
+                        "resolvedValue",
+                        "resolution"
+                      ],
+                      "properties": {
+                        "instruction": {
+                          "type": "string"
+                        },
+                        "rawValue": {
+                          "type": "string"
+                        },
+                        "resolvedValue": {
+                          "type": "integer"
+                        },
+                        "resolution": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceOperandInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "branchRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "branchInstruction",
+                        "branchTarget"
+                      ],
+                      "properties": {
+                        "branchInstruction": {
+                          "type": "string"
+                        },
+                        "branchTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex"
+                          ],
+                          "properties": {
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "loopRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "loopInstruction",
+                        "loopTarget"
+                      ],
+                      "properties": {
+                        "loopInstruction": {
+                          "type": "string"
+                        },
+                        "loopTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "counterRegister",
+                            "loopInstruction",
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex"
+                          ],
+                          "properties": {
+                            "counterRegister": {
+                              "type": "string"
+                            },
+                            "loopInstruction": {
+                              "type": "string"
+                            },
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  },
+                  "stackPointerTransferInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget",
+                    "addressingForm"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    },
+                    "addressingForm": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "sourcePath": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalInstructionTargetTotals",
+            "externalInstructionTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "WaitForViewScrollEnd",
+                      "GetEntityPortaitAndSpeechSfx",
+                      "j_OpenPortraitWindow",
+                      "j_ClosePortraitWindow",
+                      "j_ChurchMenu",
+                      "j_ShopMenu",
+                      "j_BlacksmithMenu"
+                    ],
+                    "properties": {
+                      "WaitForViewScrollEnd": {
+                        "type": "integer"
+                      },
+                      "GetEntityPortaitAndSpeechSfx": {
+                        "type": "integer"
+                      },
+                      "j_OpenPortraitWindow": {
+                        "type": "integer"
+                      },
+                      "j_ClosePortraitWindow": {
+                        "type": "integer"
+                      },
+                      "j_ChurchMenu": {
+                        "type": "integer"
+                      },
+                      "j_ShopMenu": {
+                        "type": "integer"
+                      },
+                      "j_BlacksmithMenu": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "WaitForViewScrollEnd",
+                      "GetEntityPortaitAndSpeechSfx",
+                      "OpenPortraitWindow",
+                      "ClosePortraitWindow",
+                      "ChurchMenu",
+                      "ShopMenu",
+                      "BlacksmithMenu"
+                    ],
+                    "properties": {
+                      "WaitForViewScrollEnd": {
+                        "type": "integer"
+                      },
+                      "GetEntityPortaitAndSpeechSfx": {
+                        "type": "integer"
+                      },
+                      "OpenPortraitWindow": {
+                        "type": "integer"
+                      },
+                      "ClosePortraitWindow": {
+                        "type": "integer"
+                      },
+                      "ChurchMenu": {
+                        "type": "integer"
+                      },
+                      "ShopMenu": {
+                        "type": "integer"
+                      },
+                      "BlacksmithMenu": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetResolutions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "j_OpenPortraitWindow",
+                "j_ClosePortraitWindow",
+                "j_ChurchMenu",
+                "j_ShopMenu",
+                "j_BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "j_OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ChurchMenu": {
+                  "type": "integer"
+                },
+                "j_ShopMenu": {
+                  "type": "integer"
+                },
+                "j_BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "OpenPortraitWindow",
+                "ClosePortraitWindow",
+                "ChurchMenu",
+                "ShopMenu",
+                "BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "ChurchMenu": {
+                  "type": "integer"
+                },
+                "ShopMenu": {
+                  "type": "integer"
+                },
+                "BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "j_OpenPortraitWindow",
+                "j_ClosePortraitWindow",
+                "j_ChurchMenu",
+                "j_ShopMenu",
+                "j_BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "j_OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ChurchMenu": {
+                  "type": "integer"
+                },
+                "j_ShopMenu": {
+                  "type": "integer"
+                },
+                "j_BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "j_OpenPortraitWindow",
+                "j_ClosePortraitWindow",
+                "j_ChurchMenu",
+                "j_ShopMenu",
+                "j_BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "j_OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ChurchMenu": {
+                  "type": "integer"
+                },
+                "j_ShopMenu": {
+                  "type": "integer"
+                },
+                "j_BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "OpenPortraitWindow",
+                "ClosePortraitWindow",
+                "ChurchMenu",
+                "ShopMenu",
+                "BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "ChurchMenu": {
+                  "type": "integer"
+                },
+                "ShopMenu": {
+                  "type": "integer"
+                },
+                "BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "OpenPortraitWindow",
+                "ClosePortraitWindow",
+                "ChurchMenu",
+                "ShopMenu",
+                "BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "ChurchMenu": {
+                  "type": "integer"
+                },
+                "ShopMenu": {
+                  "type": "integer"
+                },
+                "BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "portraitHelperJoin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceFactPath",
+            "macro",
+            "handler",
+            "handlerAddress",
+            "sourcePath",
+            "macroOperandWidths",
+            "macroOperandByteCount",
+            "handlerModifierEntityWordRead",
+            "handlerTestedModifierByteMask",
+            "modifierBitTests"
+          ],
+          "properties": {
+            "sourceFactPath": {
+              "type": "string"
+            },
+            "macro": {
+              "type": "string"
+            },
+            "handler": {
+              "type": "string"
+            },
+            "handlerAddress": {
+              "type": "integer"
+            },
+            "sourcePath": {
+              "type": "string"
+            },
+            "macroOperandWidths": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "macroOperandByteCount": {
+              "type": "integer"
+            },
+            "handlerModifierEntityWordRead": {
+              "type": "string"
+            },
+            "handlerTestedModifierByteMask": {
+              "type": "integer"
+            },
+            "modifierBitTests": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bit",
+                  "destination"
+                ],
+                "properties": {
+                  "bit": {
+                    "type": "integer"
+                  },
+                  "destination": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "mapScriptUiPrimaryFixtureCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "handlers",
+        "callerBreakdown",
+        "runtimeQuestions",
+        "portraitHelperJoin"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandAnnotations",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "encodedBytes": {
+                "type": "integer"
+              },
+              "operandBytes": {
+                "type": "integer"
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "operandAnnotations",
+              "statementCount",
+              "sectionGuard",
+              "directCalls",
+              "sourcePath"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              },
+              "operandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "statementCount": {
+                "type": "integer"
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "scriptCursorReadUseSites",
+                  "sourceImmediateUseSites",
+                  "sourceOperandInstructions",
+                  "branchRecords",
+                  "loopRecords",
+                  "directCallOrder",
+                  "returnInstruction",
+                  "stackPointerTransferInstructions"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scriptCursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationOperand",
+                        "transferredByteCount",
+                        "cursorAdvanceByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationOperand": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer"
+                        },
+                        "cursorAdvanceByteCount": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceImmediateUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instruction",
+                        "rawValue",
+                        "resolvedValue",
+                        "resolution"
+                      ],
+                      "properties": {
+                        "instruction": {
+                          "type": "string"
+                        },
+                        "rawValue": {
+                          "type": "string"
+                        },
+                        "resolvedValue": {
+                          "type": "integer"
+                        },
+                        "resolution": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceOperandInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "branchRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "branchInstruction",
+                        "branchTarget"
+                      ],
+                      "properties": {
+                        "branchInstruction": {
+                          "type": "string"
+                        },
+                        "branchTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex"
+                          ],
+                          "properties": {
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "loopRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "loopInstruction",
+                        "loopTarget"
+                      ],
+                      "properties": {
+                        "loopInstruction": {
+                          "type": "string"
+                        },
+                        "loopTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "counterRegister",
+                            "loopInstruction",
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex"
+                          ],
+                          "properties": {
+                            "counterRegister": {
+                              "type": "string"
+                            },
+                            "loopInstruction": {
+                              "type": "string"
+                            },
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  },
+                  "stackPointerTransferInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget",
+                    "addressingForm"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    },
+                    "addressingForm": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "sourcePath": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalInstructionTargetTotals",
+            "externalInstructionTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "WaitForViewScrollEnd",
+                      "GetEntityPortaitAndSpeechSfx",
+                      "j_OpenPortraitWindow",
+                      "j_ClosePortraitWindow",
+                      "j_ChurchMenu",
+                      "j_ShopMenu",
+                      "j_BlacksmithMenu"
+                    ],
+                    "properties": {
+                      "WaitForViewScrollEnd": {
+                        "type": "integer"
+                      },
+                      "GetEntityPortaitAndSpeechSfx": {
+                        "type": "integer"
+                      },
+                      "j_OpenPortraitWindow": {
+                        "type": "integer"
+                      },
+                      "j_ClosePortraitWindow": {
+                        "type": "integer"
+                      },
+                      "j_ChurchMenu": {
+                        "type": "integer"
+                      },
+                      "j_ShopMenu": {
+                        "type": "integer"
+                      },
+                      "j_BlacksmithMenu": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "WaitForViewScrollEnd",
+                      "GetEntityPortaitAndSpeechSfx",
+                      "OpenPortraitWindow",
+                      "ClosePortraitWindow",
+                      "ChurchMenu",
+                      "ShopMenu",
+                      "BlacksmithMenu"
+                    ],
+                    "properties": {
+                      "WaitForViewScrollEnd": {
+                        "type": "integer"
+                      },
+                      "GetEntityPortaitAndSpeechSfx": {
+                        "type": "integer"
+                      },
+                      "OpenPortraitWindow": {
+                        "type": "integer"
+                      },
+                      "ClosePortraitWindow": {
+                        "type": "integer"
+                      },
+                      "ChurchMenu": {
+                        "type": "integer"
+                      },
+                      "ShopMenu": {
+                        "type": "integer"
+                      },
+                      "BlacksmithMenu": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetResolutions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "j_OpenPortraitWindow",
+                "j_ClosePortraitWindow",
+                "j_ChurchMenu",
+                "j_ShopMenu",
+                "j_BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "j_OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ChurchMenu": {
+                  "type": "integer"
+                },
+                "j_ShopMenu": {
+                  "type": "integer"
+                },
+                "j_BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "OpenPortraitWindow",
+                "ClosePortraitWindow",
+                "ChurchMenu",
+                "ShopMenu",
+                "BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "ChurchMenu": {
+                  "type": "integer"
+                },
+                "ShopMenu": {
+                  "type": "integer"
+                },
+                "BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "j_OpenPortraitWindow",
+                "j_ClosePortraitWindow",
+                "j_ChurchMenu",
+                "j_ShopMenu",
+                "j_BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "j_OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ChurchMenu": {
+                  "type": "integer"
+                },
+                "j_ShopMenu": {
+                  "type": "integer"
+                },
+                "j_BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "j_OpenPortraitWindow",
+                "j_ClosePortraitWindow",
+                "j_ChurchMenu",
+                "j_ShopMenu",
+                "j_BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "j_OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "j_ChurchMenu": {
+                  "type": "integer"
+                },
+                "j_ShopMenu": {
+                  "type": "integer"
+                },
+                "j_BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "OpenPortraitWindow",
+                "ClosePortraitWindow",
+                "ChurchMenu",
+                "ShopMenu",
+                "BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "ChurchMenu": {
+                  "type": "integer"
+                },
+                "ShopMenu": {
+                  "type": "integer"
+                },
+                "BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "WaitForViewScrollEnd",
+                "GetEntityPortaitAndSpeechSfx",
+                "OpenPortraitWindow",
+                "ClosePortraitWindow",
+                "ChurchMenu",
+                "ShopMenu",
+                "BlacksmithMenu"
+              ],
+              "properties": {
+                "WaitForViewScrollEnd": {
+                  "type": "integer"
+                },
+                "GetEntityPortaitAndSpeechSfx": {
+                  "type": "integer"
+                },
+                "OpenPortraitWindow": {
+                  "type": "integer"
+                },
+                "ClosePortraitWindow": {
+                  "type": "integer"
+                },
+                "ChurchMenu": {
+                  "type": "integer"
+                },
+                "ShopMenu": {
+                  "type": "integer"
+                },
+                "BlacksmithMenu": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "portraitHelperJoin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceFactPath",
+            "macro",
+            "handler",
+            "handlerAddress",
+            "sourcePath",
+            "macroOperandWidths",
+            "macroOperandByteCount",
+            "handlerModifierEntityWordRead",
+            "handlerTestedModifierByteMask",
+            "modifierBitTests"
+          ],
+          "properties": {
+            "sourceFactPath": {
+              "type": "string"
+            },
+            "macro": {
+              "type": "string"
+            },
+            "handler": {
+              "type": "string"
+            },
+            "handlerAddress": {
+              "type": "integer"
+            },
+            "sourcePath": {
+              "type": "string"
+            },
+            "macroOperandWidths": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "macroOperandByteCount": {
+              "type": "integer"
+            },
+            "handlerModifierEntityWordRead": {
+              "type": "string"
+            },
+            "handlerTestedModifierByteMask": {
+              "type": "integer"
+            },
+            "modifierBitTests": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bit",
+                  "destination"
+                ],
+                "properties": {
+                  "bit": {
+                    "type": "integer"
+                  },
+                  "destination": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "mapScriptUiPrimaryProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer"
+        },
+        "macroCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "showPortrait",
+            "hidePortrait",
+            "menu"
+          ],
+          "properties": {
+            "showPortrait": {
+              "type": "integer"
+            },
+            "hidePortrait": {
+              "type": "integer"
+            },
+            "menu": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "mapScriptUiPrimarySourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mapScriptUiPrimaryCommand"
+          }
+        }
+      }
+    },
+    "screenPresentationCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer"
+        },
+        "sourceLine": {
+          "type": "integer"
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterOrdinal",
+              "sourceComment",
+              "streamOffset",
+              "widthBytes",
+              "rawValue",
+              "resolvedValue",
+              "resolution"
+            ],
+            "properties": {
+              "parameterOrdinal": {
+                "type": "integer"
+              },
+              "sourceComment": {
+                "type": "string"
+              },
+              "streamOffset": {
+                "type": "integer"
+              },
+              "widthBytes": {
+                "type": "integer"
+              },
+              "rawValue": {
+                "type": "string"
+              },
+              "resolvedValue": {
+                "type": "integer"
+              },
+              "resolution": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "screenPresentationCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "handlers",
+        "callerBreakdown",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandAnnotations",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "encodedBytes": {
+                "type": "integer"
+              },
+              "operandBytes": {
+                "type": "integer"
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/screenPresentationSourceSite"
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/screenPresentationProgramTotal"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "operandAnnotations",
+              "statementCount",
+              "sectionGuard",
+              "directCalls"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              },
+              "operandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "statementCount": {
+                "type": "integer"
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "scriptCursorReadUseSites",
+                  "sourceImmediateUseSites",
+                  "sourceOperandInstructions",
+                  "branchRecords",
+                  "loopRecords",
+                  "directCallOrder",
+                  "returnInstruction"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scriptCursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationOperand",
+                        "transferredByteCount",
+                        "cursorAdvanceByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationOperand": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer"
+                        },
+                        "cursorAdvanceByteCount": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceImmediateUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instruction",
+                        "rawValue",
+                        "resolvedValue",
+                        "resolution"
+                      ],
+                      "properties": {
+                        "instruction": {
+                          "type": "string"
+                        },
+                        "rawValue": {
+                          "type": "string"
+                        },
+                        "resolvedValue": {
+                          "type": "integer"
+                        },
+                        "resolution": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceOperandInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "branchRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "branchInstruction",
+                        "branchTarget"
+                      ],
+                      "properties": {
+                        "branchInstruction": {
+                          "type": "string"
+                        },
+                        "branchTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex"
+                          ],
+                          "properties": {
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "loopRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "loopInstruction",
+                        "loopTarget"
+                      ],
+                      "properties": {
+                        "loopInstruction": {
+                          "type": "string"
+                        },
+                        "loopTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "counterRegister",
+                            "loopInstruction",
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex"
+                          ],
+                          "properties": {
+                            "counterRegister": {
+                              "type": "string"
+                            },
+                            "loopInstruction": {
+                              "type": "string"
+                            },
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget",
+                    "addressingForm"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    },
+                    "addressingForm": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalInstructionTargetTotals",
+            "externalInstructionTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "Sleep",
+                      "FadeInFromBlack",
+                      "FadeOutToBlack",
+                      "LaunchFading",
+                      "DuplicatePalettes"
+                    ],
+                    "properties": {
+                      "Sleep": {
+                        "type": "integer"
+                      },
+                      "FadeInFromBlack": {
+                        "type": "integer"
+                      },
+                      "FadeOutToBlack": {
+                        "type": "integer"
+                      },
+                      "LaunchFading": {
+                        "type": "integer"
+                      },
+                      "DuplicatePalettes": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "Sleep",
+                      "FadeInFromBlack",
+                      "FadeOutToBlack",
+                      "LaunchFading",
+                      "DuplicatePalettes"
+                    ],
+                    "properties": {
+                      "Sleep": {
+                        "type": "integer"
+                      },
+                      "FadeInFromBlack": {
+                        "type": "integer"
+                      },
+                      "FadeOutToBlack": {
+                        "type": "integer"
+                      },
+                      "LaunchFading": {
+                        "type": "integer"
+                      },
+                      "DuplicatePalettes": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetResolutions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": "null"
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "screenPresentationFixtureCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "handlers",
+        "callerBreakdown",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandAnnotations",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "encodedBytes": {
+                "type": "integer"
+              },
+              "operandBytes": {
+                "type": "integer"
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "macro",
+              "handler",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "operandAnnotations",
+              "statementCount",
+              "sectionGuard",
+              "directCalls"
+            ],
+            "properties": {
+              "macro": {
+                "type": "string"
+              },
+              "handler": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer"
+              },
+              "opcode": {
+                "type": "integer"
+              },
+              "sourceCommandCount": {
+                "type": "integer"
+              },
+              "operandAnnotations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceComment",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceComment": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer"
+                    },
+                    "widthBytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "statementCount": {
+                "type": "integer"
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "scriptCursorReadUseSites",
+                  "sourceImmediateUseSites",
+                  "sourceOperandInstructions",
+                  "branchRecords",
+                  "loopRecords",
+                  "directCallOrder",
+                  "returnInstruction"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "scriptCursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "sourceRegister",
+                        "destinationOperand",
+                        "transferredByteCount",
+                        "cursorAdvanceByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "sourceRegister": {
+                          "type": "string"
+                        },
+                        "destinationOperand": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer"
+                        },
+                        "cursorAdvanceByteCount": {
+                          "type": "integer"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceImmediateUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "instruction",
+                        "rawValue",
+                        "resolvedValue",
+                        "resolution"
+                      ],
+                      "properties": {
+                        "instruction": {
+                          "type": "string"
+                        },
+                        "rawValue": {
+                          "type": "string"
+                        },
+                        "resolvedValue": {
+                          "type": "integer"
+                        },
+                        "resolution": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "sourceOperandInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "branchRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "branchInstruction",
+                        "branchTarget"
+                      ],
+                      "properties": {
+                        "branchInstruction": {
+                          "type": "string"
+                        },
+                        "branchTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex"
+                          ],
+                          "properties": {
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "loopRecords": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "loopInstruction",
+                        "loopTarget"
+                      ],
+                      "properties": {
+                        "loopInstruction": {
+                          "type": "string"
+                        },
+                        "loopTarget": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "counterRegister",
+                            "loopInstruction",
+                            "targetLabel",
+                            "targetInstruction",
+                            "targetStatementIndex"
+                          ],
+                          "properties": {
+                            "counterRegister": {
+                              "type": "string"
+                            },
+                            "loopInstruction": {
+                              "type": "string"
+                            },
+                            "targetLabel": {
+                              "type": "string"
+                            },
+                            "targetInstruction": {
+                              "type": "string"
+                            },
+                            "targetStatementIndex": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget",
+                    "addressingForm"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    },
+                    "addressingForm": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalInstructionTargetTotals",
+            "externalInstructionTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "Sleep",
+                      "FadeInFromBlack",
+                      "FadeOutToBlack",
+                      "LaunchFading",
+                      "DuplicatePalettes"
+                    ],
+                    "properties": {
+                      "Sleep": {
+                        "type": "integer"
+                      },
+                      "FadeInFromBlack": {
+                        "type": "integer"
+                      },
+                      "FadeOutToBlack": {
+                        "type": "integer"
+                      },
+                      "LaunchFading": {
+                        "type": "integer"
+                      },
+                      "DuplicatePalettes": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "Sleep",
+                      "FadeInFromBlack",
+                      "FadeOutToBlack",
+                      "LaunchFading",
+                      "DuplicatePalettes"
+                    ],
+                    "properties": {
+                      "Sleep": {
+                        "type": "integer"
+                      },
+                      "FadeInFromBlack": {
+                        "type": "integer"
+                      },
+                      "FadeOutToBlack": {
+                        "type": "integer"
+                      },
+                      "LaunchFading": {
+                        "type": "integer"
+                      },
+                      "DuplicatePalettes": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetResolutions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": "null"
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalInstructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "Sleep",
+                "FadeInFromBlack",
+                "FadeOutToBlack",
+                "LaunchFading",
+                "DuplicatePalettes"
+              ],
+              "properties": {
+                "Sleep": {
+                  "type": "integer"
+                },
+                "FadeInFromBlack": {
+                  "type": "integer"
+                },
+                "FadeOutToBlack": {
+                  "type": "integer"
+                },
+                "LaunchFading": {
+                  "type": "integer"
+                },
+                "DuplicatePalettes": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "screenPresentationProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer"
+        },
+        "macroCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "setQuake",
+            "fadeInB",
+            "fadeOutB",
+            "slowFadeInB",
+            "slowFadeOutB",
+            "tintMap",
+            "flickerOnce",
+            "mapFadeOutToWhite",
+            "mapFadeInFromWhite",
+            "flashScreenWhite",
+            "fadeInFromBlackHalf",
+            "fadeOutToBlackHalf"
+          ],
+          "properties": {
+            "setQuake": {
+              "type": "integer"
+            },
+            "fadeInB": {
+              "type": "integer"
+            },
+            "fadeOutB": {
+              "type": "integer"
+            },
+            "slowFadeInB": {
+              "type": "integer"
+            },
+            "slowFadeOutB": {
+              "type": "integer"
+            },
+            "tintMap": {
+              "type": "integer"
+            },
+            "flickerOnce": {
+              "type": "integer"
+            },
+            "mapFadeOutToWhite": {
+              "type": "integer"
+            },
+            "mapFadeInFromWhite": {
+              "type": "integer"
+            },
+            "flashScreenWhite": {
+              "type": "integer"
+            },
+            "fadeInFromBlackHalf": {
+              "type": "integer"
+            },
+            "fadeOutToBlackHalf": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "screenPresentationSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/screenPresentationCommand"
+          }
+        }
+      }
+    }
+  }
+}

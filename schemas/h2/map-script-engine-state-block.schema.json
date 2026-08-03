@@ -1,0 +1,4079 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/map-script-engine-state-block.schema.json",
+  "title": "Map-script engine state-block structural definitions",
+  "definitions": {
+    "activePartyCaller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/activePartyInstructionCounts"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/activePartyEffectiveCounts"
+        }
+      }
+    },
+    "activePartyCallerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartyCaller"
+          }
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartyResolution"
+          }
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/activePartyInstructionCounts"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/activePartyEffectiveCounts"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/activePartyEffectiveCounts"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/activePartyEffectiveCounts"
+        }
+      }
+    },
+    "activePartyCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "programTotals",
+        "handlers",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateMacro"
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateSourceSite"
+          }
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartyProgramTotal"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartyHandler"
+          }
+        },
+        "callerBreakdown": {
+          "$ref": "#/definitions/activePartyCallerBreakdown"
+        },
+        "sourceIdentityJoins": {
+          "$ref": "#/definitions/activePartySourceIdentityJoins"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "activePartyCommonStats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contractId",
+        "upstreamCommit",
+        "sources"
+      ],
+      "properties": {
+        "contractId": {
+          "type": "string"
+        },
+        "upstreamCommit": {
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartySourceOwner"
+          }
+        }
+      }
+    },
+    "activePartyEffectiveCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "AddFollower",
+        "GetActivationBitfield",
+        "GetCurrentHp",
+        "GetEntityAddressFromCharacter",
+        "IsInBattleParty",
+        "JoinBattleParty",
+        "JoinForce",
+        "LeaveBattleParty",
+        "ResetAlliesBattleStats",
+        "SetActivationBitfield",
+        "UpdateForce"
+      ],
+      "properties": {
+        "AddFollower": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetActivationBitfield": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetEntityAddressFromCharacter": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "IsInBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "JoinBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "JoinForce": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "LeaveBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ResetAlliesBattleStats": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "SetActivationBitfield": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "UpdateForce": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "activePartyHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macro",
+        "handler",
+        "address",
+        "opcode",
+        "cursorReadWidths",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cursorReadWidths": {
+          "type": "array",
+          "items": {
+            "enum": [
+              1,
+              2,
+              4
+            ]
+          }
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "guardedStatements": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/activePartySectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateDirectCall"
+          }
+        }
+      }
+    },
+    "activePartyInstructionCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "AddFollower",
+        "GetEntityAddressFromCharacter",
+        "ResetAlliesBattleStats",
+        "j_GetActivationBitfield",
+        "j_GetCurrentHp",
+        "j_IsInBattleParty",
+        "j_JoinBattleParty",
+        "j_JoinForce",
+        "j_LeaveBattleParty",
+        "j_SetActivationBitfield",
+        "j_UpdateForce"
+      ],
+      "properties": {
+        "AddFollower": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetEntityAddressFromCharacter": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ResetAlliesBattleStats": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_GetActivationBitfield": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_GetCurrentHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_IsInBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_JoinBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_JoinForce": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_LeaveBattleParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_SetActivationBitfield": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_UpdateForce": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "activePartyMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "joinBatParty",
+        "joinForceAI",
+        "resetForceBattleStats",
+        "addNewFollower"
+      ],
+      "properties": {
+        "joinBatParty": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "joinForceAI": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "resetForceBattleStats": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "addNewFollower": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "activePartyProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "$ref": "#/definitions/activePartyMacroCounts"
+        }
+      }
+    },
+    "activePartyResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "aliasSourcePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effectiveTargetScope": {
+          "enum": [
+            "internal",
+            "external"
+          ]
+        }
+      }
+    },
+    "activePartySectionGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "branchRecords",
+        "sourceConstantUses",
+        "sourceExpressionUses",
+        "sourceLiteralUses",
+        "mutationCallOrder"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateBranchRecord"
+          }
+        },
+        "sourceConstantUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateConstantUse"
+          }
+        },
+        "sourceExpressionUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartySourceExpressionUse"
+          }
+        },
+        "sourceLiteralUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/activePartySourceLiteralUse"
+          }
+        },
+        "mutationCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "activePartySourceExpressionUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expression",
+        "resolvedValue",
+        "instruction"
+      ],
+      "properties": {
+        "expression": {
+          "type": "string"
+        },
+        "resolvedValue": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "activePartySourceIdentityJoins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commonStats",
+        "followerOwner",
+        "battleStatsOwner"
+      ],
+      "properties": {
+        "commonStats": {
+          "$ref": "#/definitions/activePartyCommonStats"
+        },
+        "followerOwner": {
+          "$ref": "#/definitions/activePartySourceOwner"
+        },
+        "battleStatsOwner": {
+          "$ref": "#/definitions/activePartySourceOwner"
+        }
+      }
+    },
+    "activePartySourceLiteralUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "activePartySourceOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "forceStateBranchRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "testInstruction",
+        "branchInstruction",
+        "fallthroughInstruction",
+        "branchTargetInstruction"
+      ],
+      "properties": {
+        "testInstruction": {
+          "type": "string"
+        },
+        "branchInstruction": {
+          "type": "string"
+        },
+        "fallthroughInstruction": {
+          "type": "string"
+        },
+        "branchTargetInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "forceStateCaller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/forceStateInstructionCounts"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/forceStateEffectiveCounts"
+        }
+      }
+    },
+    "forceStateCallerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateCaller"
+          }
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateResolution"
+          }
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/forceStateInstructionCounts"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/forceStateEffectiveCounts"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/forceStateEffectiveCounts"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/forceStateEffectiveCounts"
+        }
+      }
+    },
+    "forceStateCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "programTotals",
+        "handlers",
+        "callerBreakdown",
+        "commonStatsIdentity",
+        "runtimeQuestions",
+        "activePartyCommandFacts"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateMacro"
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateSourceSite"
+          }
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateProgramTotal"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateHandler"
+          }
+        },
+        "callerBreakdown": {
+          "$ref": "#/definitions/forceStateCallerBreakdown"
+        },
+        "commonStatsIdentity": {
+          "$ref": "#/definitions/forceStateCommonStatsIdentity"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "activePartyCommandFacts": {
+          "$ref": "#/definitions/activePartyCommandFacts"
+        }
+      }
+    },
+    "forceStateCommonStatsIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contractId",
+        "upstreamCommit",
+        "sourcePath",
+        "sourceSha256",
+        "services"
+      ],
+      "properties": {
+        "contractId": {
+          "type": "string"
+        },
+        "upstreamCommit": {
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "JoinForce",
+              "UpdateForce"
+            ]
+          }
+        }
+      }
+    },
+    "forceStateConstantUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constant",
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "constant": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "forceStateDirectCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opcode",
+        "instructionTarget"
+      ],
+      "properties": {
+        "opcode": {
+          "enum": [
+            "bsr",
+            "jsr"
+          ]
+        },
+        "instructionTarget": {
+          "type": "string"
+        }
+      }
+    },
+    "forceStateEffectiveCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "FadeOut_WaitForP1Input",
+        "GetClass",
+        "GetCombatantX",
+        "GetCurrentHp",
+        "JoinForce",
+        "Sleep",
+        "WaitForViewScrollEnd"
+      ],
+      "properties": {
+        "FadeOut_WaitForP1Input": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetClass": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCombatantX": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "GetCurrentHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "JoinForce": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "Sleep": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "WaitForViewScrollEnd": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "forceStateHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macro",
+        "handler",
+        "address",
+        "opcode",
+        "cursorReadWidths",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "macro": {
+          "type": "string"
+        },
+        "handler": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cursorReadWidths": {
+          "type": "array",
+          "items": {
+            "enum": [
+              1,
+              2,
+              4
+            ]
+          }
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "guardedStatements": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/forceStateSectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateDirectCall"
+          }
+        }
+      }
+    },
+    "forceStateInstructionCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "Sleep",
+        "WaitForViewScrollEnd",
+        "j_FadeOut_WaitForP1Input",
+        "j_GetClass",
+        "j_GetCombatantX",
+        "j_GetCurrentHp",
+        "j_JoinForce"
+      ],
+      "properties": {
+        "Sleep": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "WaitForViewScrollEnd": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_FadeOut_WaitForP1Input": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_GetClass": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_GetCombatantX": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_GetCurrentHp": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_JoinForce": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "forceStateMacro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "handler",
+        "sourceCommandCount"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "encodedBytes": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "operandBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandLayout": {
+          "type": "array",
+          "items": {
+            "$ref": "https://sf2-research.example/schemas/h2/map-script-engine-core.schema.json#/definitions/emissionRow"
+          }
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "handler": {
+          "type": "string"
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "forceStateMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "join",
+        "jumpIfDefeatedByLastAttack",
+        "jumpIfDead",
+        "allyDefeated",
+        "updateDefeatedAllies",
+        "reviveAlly"
+      ],
+      "properties": {
+        "join": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jumpIfDefeatedByLastAttack": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jumpIfDead": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "allyDefeated": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "updateDefeatedAllies": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reviveAlly": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "forceStateProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "$ref": "#/definitions/forceStateMacroCounts"
+        }
+      }
+    },
+    "forceStateResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "aliasSourcePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effectiveTargetScope": {
+          "enum": [
+            "internal",
+            "external"
+          ]
+        }
+      }
+    },
+    "forceStateSectionGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "branchRecords",
+        "sourceConstantUses"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateBranchRecord"
+          }
+        },
+        "sourceConstantUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/forceStateConstantUse"
+          }
+        }
+      }
+    },
+    "forceStateSourceCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "forceStateSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/forceStateSourceCommand"
+          }
+        }
+      }
+    },
+    "mapBlockMutationBitSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bitIndex",
+        "sourceTarget",
+        "instruction"
+      ],
+      "properties": {
+        "bitIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceTarget": {
+          "type": "string"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapBlockMutationCaller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "CopyMapBlocks"
+          ],
+          "properties": {
+            "CopyMapBlocks": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "effectiveTargetSiteCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "CopyMapBlocks"
+          ],
+          "properties": {
+            "CopyMapBlocks": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "mapBlockMutationCallerBreakdown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "handler",
+              "instructionTargetSiteCounts",
+              "effectiveTargetSiteCounts"
+            ],
+            "properties": {
+              "handler": {
+                "type": "string"
+              },
+              "instructionTargetSiteCounts": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "CopyMapBlocks"
+                ],
+                "properties": {
+                  "CopyMapBlocks": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              },
+              "effectiveTargetSiteCounts": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "CopyMapBlocks"
+                ],
+                "properties": {
+                  "CopyMapBlocks": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "instructionTarget",
+              "effectiveTarget",
+              "aliasSourcePath",
+              "effectiveTargetScope"
+            ],
+            "properties": {
+              "instructionTarget": {
+                "type": "string"
+              },
+              "effectiveTarget": {
+                "type": "string"
+              },
+              "aliasSourcePath": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "effectiveTargetScope": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "instructionTargetTotals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "CopyMapBlocks"
+          ],
+          "properties": {
+            "CopyMapBlocks": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "effectiveTargetTotals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "CopyMapBlocks"
+          ],
+          "properties": {
+            "CopyMapBlocks": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "internalEffectiveTargetTotals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "CopyMapBlocks"
+          ],
+          "properties": {
+            "CopyMapBlocks": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "externalEffectiveTargetTotals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "CopyMapBlocks"
+          ],
+          "properties": {
+            "CopyMapBlocks": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "mapBlockMutationCallerCountMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "CopyMapBlocks"
+      ],
+      "properties": {
+        "CopyMapBlocks": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapBlockMutationCommandFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "operandValueBounds",
+        "inputWordGroups",
+        "handlers",
+        "copyMapBlocksHelperFacts",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "opcode",
+              "encodedBytes",
+              "operandBytes",
+              "operandLayout",
+              "parameterOrdinals",
+              "handler",
+              "sourceOperandFields",
+              "sourceCommandCount"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "opcode": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "encodedBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "operandBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "operandLayout": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "streamOffset",
+                    "widthBytes",
+                    "expression",
+                    "parameterOrdinals",
+                    "encoding"
+                  ],
+                  "properties": {
+                    "streamOffset": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "widthBytes": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "expression": {
+                      "type": "string"
+                    },
+                    "parameterOrdinals": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      },
+                      "minItems": 1
+                    },
+                    "encoding": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "handler": {
+                "type": "string"
+              },
+              "sourceOperandFields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceLabel",
+                    "streamOffset",
+                    "widthBytes"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceLabel": {
+                      "type": "string"
+                    },
+                    "streamOffset": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "widthBytes": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  }
+                }
+              },
+              "sourceCommandCount": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "programId",
+              "commands"
+            ],
+            "properties": {
+              "programId": {
+                "type": "string"
+              },
+              "commands": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "commandIndex",
+                    "sourceLine",
+                    "macro",
+                    "arguments",
+                    "sourceOrderKey",
+                    "operandValues"
+                  ],
+                  "properties": {
+                    "commandIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "sourceLine": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "macro": {
+                      "type": "string"
+                    },
+                    "arguments": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "sourceOrderKey": {
+                      "type": "string"
+                    },
+                    "operandValues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "parameterOrdinal",
+                          "sourceLabel",
+                          "rawValue",
+                          "value"
+                        ],
+                        "properties": {
+                          "parameterOrdinal": {
+                            "type": "integer"
+                          },
+                          "sourceLabel": {
+                            "type": "string"
+                          },
+                          "rawValue": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "minItems": 1
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "sourceSitesSha256": {
+          "type": "string"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "programTotalsSha256": {
+          "type": "string"
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "programId",
+              "commandCount",
+              "macroCounts"
+            ],
+            "properties": {
+              "programId": {
+                "type": "string"
+              },
+              "commandCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "macroCounts": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "setBlocks",
+                  "setBlocksVar"
+                ],
+                "properties": {
+                  "setBlocks": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "setBlocksVar": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          },
+          "minItems": 1
+        },
+        "operandValueBounds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterOrdinal",
+              "sourceLabel",
+              "minimumValue",
+              "minimumSourceSiteKey",
+              "maximumValue",
+              "maximumSourceSiteKey",
+              "sourceValueCount"
+            ],
+            "properties": {
+              "parameterOrdinal": {
+                "type": "integer"
+              },
+              "sourceLabel": {
+                "type": "string"
+              },
+              "minimumValue": {
+                "type": "integer"
+              },
+              "minimumSourceSiteKey": {
+                "type": "string"
+              },
+              "maximumValue": {
+                "type": "integer"
+              },
+              "maximumSourceSiteKey": {
+                "type": "string"
+              },
+              "sourceValueCount": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "inputWordGroups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "handlerRegister",
+              "sourceParameterOrdinals",
+              "sourceLabels",
+              "streamOffset",
+              "transferredByteCount",
+              "cursorReadInstruction"
+            ],
+            "properties": {
+              "handlerRegister": {
+                "type": "string"
+              },
+              "sourceParameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "sourceLabels": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "streamOffset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "transferredByteCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cursorReadInstruction": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "handler",
+              "macros",
+              "address",
+              "opcode",
+              "sourceCommandCount",
+              "cursorReadWidths",
+              "statementCount",
+              "guardedStatements",
+              "sectionGuard",
+              "directCalls"
+            ],
+            "properties": {
+              "handler": {
+                "type": "string"
+              },
+              "macros": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "address": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "opcode": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourceCommandCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cursorReadWidths": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "statementCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "guardedStatements": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 5
+              },
+              "sectionGuard": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "orderedInstructions",
+                  "cursorReadUseSites",
+                  "directCallOrder",
+                  "postCallBitSetUseSites",
+                  "returnInstruction"
+                ],
+                "properties": {
+                  "orderedInstructions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 5
+                  },
+                  "cursorReadUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "handlerRegister",
+                        "transferredByteCount",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "handlerRegister": {
+                          "type": "string"
+                        },
+                        "transferredByteCount": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "directCallOrder": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "postCallBitSetUseSites": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "bitIndex",
+                        "sourceTarget",
+                        "instruction"
+                      ],
+                      "properties": {
+                        "bitIndex": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "sourceTarget": {
+                          "type": "string"
+                        },
+                        "instruction": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "maxItems": 2
+                  },
+                  "returnInstruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "directCalls": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "opcode",
+                    "instructionTarget"
+                  ],
+                  "properties": {
+                    "opcode": {
+                      "type": "string"
+                    },
+                    "instructionTarget": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "copyMapBlocksHelperFacts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "helper",
+            "address",
+            "orderedInstructions",
+            "inputByteShiftConstantUses",
+            "addressRowShiftUses",
+            "wordCopyByteStrideUses",
+            "rowByteStrideUses",
+            "copyInstruction",
+            "innerLoop",
+            "outerLoop",
+            "derivedAddressStride"
+          ],
+          "properties": {
+            "helper": {
+              "type": "string"
+            },
+            "address": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "orderedInstructions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            },
+            "inputByteShiftConstantUses": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "constant",
+                  "value",
+                  "instruction"
+                ],
+                "properties": {
+                  "constant": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "integer"
+                  },
+                  "instruction": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "addressRowShiftUses": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "value",
+                  "instruction"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "integer"
+                  },
+                  "instruction": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "wordCopyByteStrideUses": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "value",
+                  "instruction"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "integer"
+                  },
+                  "instruction": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "rowByteStrideUses": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "value",
+                  "instruction"
+                ],
+                "properties": {
+                  "value": {
+                    "type": "integer"
+                  },
+                  "instruction": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "copyInstruction": {
+              "type": "string"
+            },
+            "innerLoop": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "counterRegister",
+                "seedInstruction",
+                "decrementInstruction",
+                "loopInstruction"
+              ],
+              "properties": {
+                "counterRegister": {
+                  "type": "string"
+                },
+                "seedInstruction": {
+                  "type": "string"
+                },
+                "decrementInstruction": {
+                  "type": "string"
+                },
+                "loopInstruction": {
+                  "type": "string"
+                }
+              }
+            },
+            "outerLoop": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "counterRegister",
+                "seedInstruction",
+                "decrementInstruction",
+                "loopInstruction"
+              ],
+              "properties": {
+                "counterRegister": {
+                  "type": "string"
+                },
+                "seedInstruction": {
+                  "type": "string"
+                },
+                "decrementInstruction": {
+                  "type": "string"
+                },
+                "loopInstruction": {
+                  "type": "string"
+                }
+              }
+            },
+            "derivedAddressStride": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "addressRowShiftBits",
+                "wordCopyByteStride",
+                "rowByteStride"
+              ],
+              "properties": {
+                "addressRowShiftBits": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "wordCopyByteStride": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "rowByteStride": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "callerBreakdown": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "callerHandlers",
+            "targetResolutions",
+            "instructionTargetTotals",
+            "effectiveTargetTotals",
+            "internalEffectiveTargetTotals",
+            "externalEffectiveTargetTotals"
+          ],
+          "properties": {
+            "callerHandlers": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handler",
+                  "instructionTargetSiteCounts",
+                  "effectiveTargetSiteCounts"
+                ],
+                "properties": {
+                  "handler": {
+                    "type": "string"
+                  },
+                  "instructionTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "CopyMapBlocks"
+                    ],
+                    "properties": {
+                      "CopyMapBlocks": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
+                  },
+                  "effectiveTargetSiteCounts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "CopyMapBlocks"
+                    ],
+                    "properties": {
+                      "CopyMapBlocks": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "targetResolutions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "instructionTarget",
+                  "effectiveTarget",
+                  "aliasSourcePath",
+                  "effectiveTargetScope"
+                ],
+                "properties": {
+                  "instructionTarget": {
+                    "type": "string"
+                  },
+                  "effectiveTarget": {
+                    "type": "string"
+                  },
+                  "aliasSourcePath": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "effectiveTargetScope": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "instructionTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CopyMapBlocks"
+              ],
+              "properties": {
+                "CopyMapBlocks": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "effectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CopyMapBlocks"
+              ],
+              "properties": {
+                "CopyMapBlocks": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "internalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CopyMapBlocks"
+              ],
+              "properties": {
+                "CopyMapBlocks": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "externalEffectiveTargetTotals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "CopyMapBlocks"
+              ],
+              "properties": {
+                "CopyMapBlocks": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "sourceIdentityJoins": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "copyMapBlocksOwner"
+          ],
+          "properties": {
+            "copyMapBlocksOwner": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "sourcePath",
+                "sourceSha256",
+                "symbols"
+              ],
+              "properties": {
+                "sourcePath": {
+                  "type": "string"
+                },
+                "sourceSha256": {
+                  "type": "string"
+                },
+                "symbols": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "mapBlockMutationConstantUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constant",
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "constant": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapBlockMutationCopyHelperFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "helper",
+        "address",
+        "orderedInstructions",
+        "inputByteShiftConstantUses",
+        "addressRowShiftUses",
+        "wordCopyByteStrideUses",
+        "rowByteStrideUses",
+        "copyInstruction",
+        "innerLoop",
+        "outerLoop",
+        "derivedAddressStride"
+      ],
+      "properties": {
+        "helper": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "inputByteShiftConstantUses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "constant",
+              "value",
+              "instruction"
+            ],
+            "properties": {
+              "constant": {
+                "type": "string"
+              },
+              "value": {
+                "type": "integer"
+              },
+              "instruction": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "addressRowShiftUses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "value",
+              "instruction"
+            ],
+            "properties": {
+              "value": {
+                "type": "integer"
+              },
+              "instruction": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "wordCopyByteStrideUses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "value",
+              "instruction"
+            ],
+            "properties": {
+              "value": {
+                "type": "integer"
+              },
+              "instruction": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "rowByteStrideUses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "value",
+              "instruction"
+            ],
+            "properties": {
+              "value": {
+                "type": "integer"
+              },
+              "instruction": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "copyInstruction": {
+          "type": "string"
+        },
+        "innerLoop": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "counterRegister",
+            "seedInstruction",
+            "decrementInstruction",
+            "loopInstruction"
+          ],
+          "properties": {
+            "counterRegister": {
+              "type": "string"
+            },
+            "seedInstruction": {
+              "type": "string"
+            },
+            "decrementInstruction": {
+              "type": "string"
+            },
+            "loopInstruction": {
+              "type": "string"
+            }
+          }
+        },
+        "outerLoop": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "counterRegister",
+            "seedInstruction",
+            "decrementInstruction",
+            "loopInstruction"
+          ],
+          "properties": {
+            "counterRegister": {
+              "type": "string"
+            },
+            "seedInstruction": {
+              "type": "string"
+            },
+            "decrementInstruction": {
+              "type": "string"
+            },
+            "loopInstruction": {
+              "type": "string"
+            }
+          }
+        },
+        "derivedAddressStride": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "addressRowShiftBits",
+            "wordCopyByteStride",
+            "rowByteStride"
+          ],
+          "properties": {
+            "addressRowShiftBits": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "wordCopyByteStride": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "rowByteStride": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "mapBlockMutationCursorRead": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handlerRegister",
+        "transferredByteCount",
+        "instruction"
+      ],
+      "properties": {
+        "handlerRegister": {
+          "type": "string"
+        },
+        "transferredByteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapBlockMutationDerivedStride": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "addressRowShiftBits",
+        "wordCopyByteStride",
+        "rowByteStride"
+      ],
+      "properties": {
+        "addressRowShiftBits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "wordCopyByteStride": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rowByteStride": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapBlockMutationDirectCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opcode",
+        "instructionTarget"
+      ],
+      "properties": {
+        "opcode": {
+          "type": "string"
+        },
+        "instructionTarget": {
+          "type": "string"
+        }
+      }
+    },
+    "mapBlockMutationHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handler",
+        "macros",
+        "address",
+        "opcode",
+        "sourceCommandCount",
+        "cursorReadWidths",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cursorReadWidths": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "guardedStatements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 5
+        },
+        "sectionGuard": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "orderedInstructions",
+            "cursorReadUseSites",
+            "directCallOrder",
+            "postCallBitSetUseSites",
+            "returnInstruction"
+          ],
+          "properties": {
+            "orderedInstructions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 5
+            },
+            "cursorReadUseSites": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "handlerRegister",
+                  "transferredByteCount",
+                  "instruction"
+                ],
+                "properties": {
+                  "handlerRegister": {
+                    "type": "string"
+                  },
+                  "transferredByteCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "instruction": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "directCallOrder": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "postCallBitSetUseSites": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "bitIndex",
+                  "sourceTarget",
+                  "instruction"
+                ],
+                "properties": {
+                  "bitIndex": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sourceTarget": {
+                    "type": "string"
+                  },
+                  "instruction": {
+                    "type": "string"
+                  }
+                }
+              },
+              "maxItems": 2
+            },
+            "returnInstruction": {
+              "type": "string"
+            }
+          }
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "opcode",
+              "instructionTarget"
+            ],
+            "properties": {
+              "opcode": {
+                "type": "string"
+              },
+              "instructionTarget": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "mapBlockMutationInputWordGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "handlerRegister",
+        "sourceParameterOrdinals",
+        "sourceLabels",
+        "streamOffset",
+        "transferredByteCount",
+        "cursorReadInstruction"
+      ],
+      "properties": {
+        "handlerRegister": {
+          "type": "string"
+        },
+        "sourceParameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "sourceLabels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "transferredByteCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cursorReadInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapBlockMutationLiteralUse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "instruction"
+      ],
+      "properties": {
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapBlockMutationLoop": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "counterRegister",
+        "seedInstruction",
+        "decrementInstruction",
+        "loopInstruction"
+      ],
+      "properties": {
+        "counterRegister": {
+          "type": "string"
+        },
+        "seedInstruction": {
+          "type": "string"
+        },
+        "decrementInstruction": {
+          "type": "string"
+        },
+        "loopInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapBlockMutationMacro": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "handler",
+        "sourceOperandFields",
+        "sourceCommandCount"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "encodedBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandLayout": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "streamOffset",
+              "widthBytes",
+              "expression",
+              "parameterOrdinals",
+              "encoding"
+            ],
+            "properties": {
+              "streamOffset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "widthBytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "expression": {
+                "type": "string"
+              },
+              "parameterOrdinals": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                },
+                "minItems": 1
+              },
+              "encoding": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "handler": {
+          "type": "string"
+        },
+        "sourceOperandFields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterOrdinal",
+              "sourceLabel",
+              "streamOffset",
+              "widthBytes"
+            ],
+            "properties": {
+              "parameterOrdinal": {
+                "type": "integer"
+              },
+              "sourceLabel": {
+                "type": "string"
+              },
+              "streamOffset": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "widthBytes": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapBlockMutationMacroCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "setBlocks",
+        "setBlocksVar"
+      ],
+      "properties": {
+        "setBlocks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setBlocksVar": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapBlockMutationOperandField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceLabel",
+        "streamOffset",
+        "widthBytes"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer"
+        },
+        "sourceLabel": {
+          "type": "string"
+        },
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapBlockMutationOperandLayout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "properties": {
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expression": {
+          "type": "string"
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1
+        },
+        "encoding": {
+          "type": "string"
+        }
+      }
+    },
+    "mapBlockMutationOperandValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceLabel",
+        "rawValue",
+        "value"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer"
+        },
+        "sourceLabel": {
+          "type": "string"
+        },
+        "rawValue": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        }
+      }
+    },
+    "mapBlockMutationOperandValueBound": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parameterOrdinal",
+        "sourceLabel",
+        "minimumValue",
+        "minimumSourceSiteKey",
+        "maximumValue",
+        "maximumSourceSiteKey",
+        "sourceValueCount"
+      ],
+      "properties": {
+        "parameterOrdinal": {
+          "type": "integer"
+        },
+        "sourceLabel": {
+          "type": "string"
+        },
+        "minimumValue": {
+          "type": "integer"
+        },
+        "minimumSourceSiteKey": {
+          "type": "string"
+        },
+        "maximumValue": {
+          "type": "integer"
+        },
+        "maximumSourceSiteKey": {
+          "type": "string"
+        },
+        "sourceValueCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "mapBlockMutationProgramTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "setBlocks",
+            "setBlocksVar"
+          ],
+          "properties": {
+            "setBlocks": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "setBlocksVar": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    "mapBlockMutationSectionGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "orderedInstructions",
+        "cursorReadUseSites",
+        "directCallOrder",
+        "postCallBitSetUseSites",
+        "returnInstruction"
+      ],
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 5
+        },
+        "cursorReadUseSites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "handlerRegister",
+              "transferredByteCount",
+              "instruction"
+            ],
+            "properties": {
+              "handlerRegister": {
+                "type": "string"
+              },
+              "transferredByteCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "instruction": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "directCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "postCallBitSetUseSites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "bitIndex",
+              "sourceTarget",
+              "instruction"
+            ],
+            "properties": {
+              "bitIndex": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourceTarget": {
+                "type": "string"
+              },
+              "instruction": {
+                "type": "string"
+              }
+            }
+          },
+          "maxItems": 2
+        },
+        "returnInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "mapBlockMutationSourceCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "sourceOrderKey",
+        "operandValues"
+      ],
+      "properties": {
+        "commandIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macro": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceOrderKey": {
+          "type": "string"
+        },
+        "operandValues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "parameterOrdinal",
+              "sourceLabel",
+              "rawValue",
+              "value"
+            ],
+            "properties": {
+              "parameterOrdinal": {
+                "type": "integer"
+              },
+              "sourceLabel": {
+                "type": "string"
+              },
+              "rawValue": {
+                "type": "string"
+              },
+              "value": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    },
+    "mapBlockMutationSourceIdentityJoins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "copyMapBlocksOwner"
+      ],
+      "properties": {
+        "copyMapBlocksOwner": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourcePath",
+            "sourceSha256",
+            "symbols"
+          ],
+          "properties": {
+            "sourcePath": {
+              "type": "string"
+            },
+            "sourceSha256": {
+              "type": "string"
+            },
+            "symbols": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
+          }
+        }
+      }
+    },
+    "mapBlockMutationSourceOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "mapBlockMutationSourceSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "commandIndex",
+              "sourceLine",
+              "macro",
+              "arguments",
+              "sourceOrderKey",
+              "operandValues"
+            ],
+            "properties": {
+              "commandIndex": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourceLine": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "macro": {
+                "type": "string"
+              },
+              "arguments": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sourceOrderKey": {
+                "type": "string"
+              },
+              "operandValues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "parameterOrdinal",
+                    "sourceLabel",
+                    "rawValue",
+                    "value"
+                  ],
+                  "properties": {
+                    "parameterOrdinal": {
+                      "type": "integer"
+                    },
+                    "sourceLabel": {
+                      "type": "string"
+                    },
+                    "rawValue": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "mapBlockMutationTargetResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "properties": {
+        "instructionTarget": {
+          "type": "string"
+        },
+        "effectiveTarget": {
+          "type": "string"
+        },
+        "aliasSourcePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effectiveTargetScope": {
+          "type": "string"
+        }
+      }
+    },
+    "storyStateBranchRecord": {
+      "type": "object",
+      "required": [
+        "testInstruction",
+        "branchInstruction",
+        "fallthroughInstruction",
+        "branchTargetInstruction"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "testInstruction": {
+          "type": "string"
+        },
+        "branchInstruction": {
+          "type": "string"
+        },
+        "fallthroughInstruction": {
+          "type": "string"
+        },
+        "branchTargetInstruction": {
+          "type": "string"
+        }
+      }
+    },
+    "storyStateCaller": {
+      "type": "object",
+      "required": [
+        "handler",
+        "instructionTargetSiteCounts",
+        "effectiveTargetSiteCounts"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "instructionTargetSiteCounts": {
+          "$ref": "#/definitions/storyStateInstructionCounts"
+        },
+        "effectiveTargetSiteCounts": {
+          "$ref": "#/definitions/storyStateEffectiveCounts"
+        }
+      }
+    },
+    "storyStateCallerBreakdown": {
+      "type": "object",
+      "required": [
+        "callerHandlers",
+        "targetResolutions",
+        "instructionTargetTotals",
+        "effectiveTargetTotals",
+        "internalEffectiveTargetTotals",
+        "externalEffectiveTargetTotals"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "callerHandlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateCaller"
+          }
+        },
+        "targetResolutions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateResolution"
+          }
+        },
+        "instructionTargetTotals": {
+          "$ref": "#/definitions/storyStateInstructionCounts"
+        },
+        "effectiveTargetTotals": {
+          "$ref": "#/definitions/storyStateEffectiveCounts"
+        },
+        "internalEffectiveTargetTotals": {
+          "$ref": "#/definitions/storyStateEffectiveCounts"
+        },
+        "externalEffectiveTargetTotals": {
+          "$ref": "#/definitions/storyStateEffectiveCounts"
+        }
+      }
+    },
+    "storyStateCommandFacts": {
+      "type": "object",
+      "required": [
+        "macros",
+        "sourceSites",
+        "sourceSiteOrderKeys",
+        "sourceSitesSha256",
+        "programTotalOrderKeys",
+        "programTotalsSha256",
+        "programTotals",
+        "programCorpusReferences",
+        "handlers",
+        "callerBreakdown",
+        "sourceIdentityJoins",
+        "runtimeQuestions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "macros": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateMacro"
+          }
+        },
+        "sourceSites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateSourceSite"
+          }
+        },
+        "programTotals": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateProgramTotal"
+          }
+        },
+        "programCorpusReferences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateReferenceCount"
+          }
+        },
+        "handlers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateHandler"
+          }
+        },
+        "callerBreakdown": {
+          "$ref": "#/definitions/storyStateCallerBreakdown"
+        },
+        "sourceIdentityJoins": {
+          "$ref": "#/definitions/storyStateSourceIdentityJoins"
+        },
+        "runtimeQuestions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSiteOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceSitesSha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        },
+        "programTotalOrderKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "programTotalsSha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        }
+      }
+    },
+    "storyStateCommonStatsFlags": {
+      "type": "object",
+      "required": [
+        "contractId",
+        "upstreamCommit",
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "contractId": {
+          "type": "string"
+        },
+        "upstreamCommit": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "storyStateConstantUse": {
+      "type": "object",
+      "required": [
+        "constant",
+        "value",
+        "instruction"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "constant": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "storyStateDirectCall": {
+      "type": "object",
+      "required": [
+        "opcode",
+        "instructionTarget"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "opcode": {
+          "enum": [
+            "bsr",
+            "jsr"
+          ]
+        },
+        "instructionTarget": {
+          "type": "string"
+        }
+      }
+    },
+    "storyStateEffectiveCounts": {
+      "type": "object",
+      "required": [
+        "CheckFlag",
+        "ClearFlag",
+        "SetFlag",
+        "Sleep",
+        "YesNoPrompt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "CheckFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ClearFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "SetFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "Sleep": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "YesNoPrompt": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateEmissionRow": {
+      "type": "object",
+      "required": [
+        "streamOffset",
+        "widthBytes",
+        "expression",
+        "parameterOrdinals",
+        "encoding"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "streamOffset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "widthBytes": {
+          "type": "integer",
+          "enum": [
+            2,
+            4
+          ]
+        },
+        "expression": {
+          "type": "string"
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "encoding": {
+          "type": "string"
+        }
+      }
+    },
+    "storyStateHandler": {
+      "type": "object",
+      "required": [
+        "handler",
+        "macros",
+        "address",
+        "opcode",
+        "sourceCommandCount",
+        "cursorReadWidths",
+        "statementCount",
+        "guardedStatements",
+        "sectionGuard",
+        "directCalls"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "handler": {
+          "type": "string"
+        },
+        "macros": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 89
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cursorReadWidths": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "enum": [
+              2,
+              4
+            ]
+          }
+        },
+        "statementCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "guardedStatements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sectionGuard": {
+          "$ref": "#/definitions/storyStateSectionGuard"
+        },
+        "directCalls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateDirectCall"
+          }
+        }
+      }
+    },
+    "storyStateInstructionCounts": {
+      "type": "object",
+      "required": [
+        "Sleep",
+        "j_CheckFlag",
+        "j_ClearFlag",
+        "j_SetFlag",
+        "j_YesNoPrompt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "Sleep": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_CheckFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_ClearFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_SetFlag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "j_YesNoPrompt": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateMacro": {
+      "type": "object",
+      "required": [
+        "name",
+        "opcode",
+        "encodedBytes",
+        "operandBytes",
+        "operandLayout",
+        "parameterOrdinals",
+        "aliasOf",
+        "handler",
+        "sourceCommandCount"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "enum": [
+            "jumpIfFlagSet",
+            "jumpIfFlagClear",
+            "csc10",
+            "setF",
+            "clearF",
+            "yesNo",
+            "setStoryFlag"
+          ]
+        },
+        "opcode": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 89
+        },
+        "encodedBytes": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "operandBytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "operandLayout": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateEmissionRow"
+          }
+        },
+        "parameterOrdinals": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "aliasOf": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "handler": {
+          "type": "string"
+        },
+        "sourceCommandCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateMacroCounts": {
+      "type": "object",
+      "required": [
+        "jumpIfFlagSet",
+        "jumpIfFlagClear",
+        "csc10",
+        "setF",
+        "clearF",
+        "yesNo",
+        "setStoryFlag"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "jumpIfFlagSet": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "jumpIfFlagClear": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "csc10": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setF": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "clearF": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "yesNo": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setStoryFlag": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateProgramTotal": {
+      "type": "object",
+      "required": [
+        "programId",
+        "commandCount",
+        "macroCounts"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commandCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "macroCounts": {
+          "$ref": "#/definitions/storyStateMacroCounts"
+        }
+      }
+    },
+    "storyStateReference": {
+      "type": "object",
+      "required": [
+        "field",
+        "entryIndex"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "enum": [
+            "conditionalReads",
+            "directWrites",
+            "yesNoPromptWrites",
+            "battleUnlockWrites"
+          ]
+        },
+        "entryIndex": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateReferenceCount": {
+      "type": "object",
+      "required": [
+        "field",
+        "entryCount"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "enum": [
+            "conditionalReads",
+            "directWrites",
+            "yesNoPromptWrites",
+            "battleUnlockWrites"
+          ]
+        },
+        "entryCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "storyStateResolution": {
+      "type": "object",
+      "required": [
+        "instructionTarget",
+        "effectiveTarget",
+        "aliasSourcePath",
+        "effectiveTargetScope"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "instructionTarget": {
+          "enum": [
+            "Sleep",
+            "j_CheckFlag",
+            "j_ClearFlag",
+            "j_SetFlag",
+            "j_YesNoPrompt"
+          ]
+        },
+        "effectiveTarget": {
+          "enum": [
+            "CheckFlag",
+            "ClearFlag",
+            "SetFlag",
+            "Sleep",
+            "YesNoPrompt"
+          ]
+        },
+        "aliasSourcePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "effectiveTargetScope": {
+          "enum": [
+            "internal",
+            "external"
+          ]
+        }
+      }
+    },
+    "storyStateSectionGuard": {
+      "type": "object",
+      "required": [
+        "orderedInstructions",
+        "branchRecords",
+        "sourceConstantUses",
+        "sourceLiteralUses",
+        "mutationCallOrder"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "orderedInstructions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "branchRecords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateBranchRecord"
+          }
+        },
+        "sourceConstantUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateConstantUse"
+          }
+        },
+        "sourceLiteralUses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/storyStateSourceLiteralUse"
+          }
+        },
+        "mutationCallOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "storyStateSourceCommand": {
+      "type": "object",
+      "required": [
+        "commandIndex",
+        "sourceLine",
+        "macro",
+        "arguments",
+        "storyStateReference"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "commandIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "macro": {
+          "enum": [
+            "jumpIfFlagSet",
+            "jumpIfFlagClear",
+            "setF",
+            "clearF",
+            "yesNo",
+            "setStoryFlag"
+          ]
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "storyStateReference": {
+          "$ref": "#/definitions/storyStateReference"
+        }
+      }
+    },
+    "storyStateSourceIdentityJoins": {
+      "type": "object",
+      "required": [
+        "commonStatsFlags",
+        "yesNoOwner"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "commonStatsFlags": {
+          "$ref": "#/definitions/storyStateCommonStatsFlags"
+        },
+        "yesNoOwner": {
+          "$ref": "#/definitions/storyStateSourceOwner"
+        }
+      }
+    },
+    "storyStateSourceLiteralUse": {
+      "type": "object",
+      "required": [
+        "value",
+        "instruction"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "integer"
+        },
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "storyStateSourceOwner": {
+      "type": "object",
+      "required": [
+        "sourcePath",
+        "sourceSha256",
+        "symbols"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sourcePath": {
+          "type": "string"
+        },
+        "sourceSha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        },
+        "symbols": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "storyStateSourceSite": {
+      "type": "object",
+      "required": [
+        "programId",
+        "commands"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "programId": {
+          "type": "string"
+        },
+        "commands": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/storyStateSourceCommand"
+          }
+        }
+      }
+    }
+  }
+}

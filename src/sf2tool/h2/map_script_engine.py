@@ -11,6 +11,7 @@ from sf2tool.h2.battle_scene_engine import _resolve_upstream
 from sf2tool.h2.entity_action_scripts import _access_rows, _global_access_rows
 from sf2tool.h2.map_content import build_map_content_contract
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
+from sf2tool.h2.map_script_schema import FIXTURE_SCHEMA, OUTPUT_SCHEMA
 from sf2tool.h2.sound_data import FIXTURE as SOUND_DATA_FIXTURE
 from sf2tool.h2.sound_data import ID as SOUND_DATA_ID
 from sf2tool.h2.sprite_dialogue import build_sprite_dialogue_contract
@@ -24,9 +25,8 @@ from sf2tool.source_text import read_upstream_text
 
 ID = "sf2-map-script-engine-static-v1"
 MANIFEST = repo_path("manifests/extractions/map-script-engine-static.json")
-SCHEMA = repo_path("schemas/map-script-engine-static.schema.json")
+SCHEMA = OUTPUT_SCHEMA
 FIXTURE = repo_path("tests/fixtures/h2/map-script-engine-static-v1.json")
-FIXTURE_SCHEMA = repo_path("schemas/h2-map-script-engine-static-fixture.schema.json")
 
 MACRO_PATH = Path("sf2cutscenemacros.asm")
 ENGINE_PATHS = (
@@ -13077,15 +13077,10 @@ def build_map_script_engine_contract(
     }
 
 
-def verify_map_script_engine_contract(
-    rom_path: Path, upstream_path: Path, *, output_path: Path | None = None
-) -> dict[str, Any]:
-    fixture = load_json(FIXTURE)
-    validate_json(fixture, FIXTURE_SCHEMA, owner="map-script engine fixture")
-    manifest = load_json(MANIFEST)
-    output = build_map_script_engine_contract(rom_path, upstream_path)
-    _script_control_validate_corpus_hashes(output["scriptControlCommandFacts"])
-    validate_json(output, SCHEMA, owner="map-script engine static contract")
+def _verify_map_script_engine_fixture(
+    fixture: dict[str, Any],
+    output: dict[str, Any],
+) -> None:
     if (
         fixture["upstreamCommit"] != output["upstream"]["commit"]
         or fixture["romSha256"] != output["rom"]["sha256"]
@@ -13251,6 +13246,18 @@ def verify_map_script_engine_contract(
             actual = output[field]
         if fixture["expected"][field] != actual:
             raise ValueError(f"map-script engine {field} drift")
+
+
+def verify_map_script_engine_contract(
+    rom_path: Path, upstream_path: Path, *, output_path: Path | None = None
+) -> dict[str, Any]:
+    fixture = load_json(FIXTURE)
+    validate_json(fixture, FIXTURE_SCHEMA, owner="map-script engine fixture")
+    manifest = load_json(MANIFEST)
+    output = build_map_script_engine_contract(rom_path, upstream_path)
+    _script_control_validate_corpus_hashes(output["scriptControlCommandFacts"])
+    validate_json(output, SCHEMA, owner="map-script engine static contract")
+    _verify_map_script_engine_fixture(fixture, output)
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"] or output["summary"] != manifest["summary"]:
         raise ValueError("map-script engine canonical output drift")
