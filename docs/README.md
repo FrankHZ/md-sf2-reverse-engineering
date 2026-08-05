@@ -1,6 +1,9 @@
 # Documentation Index
 
-文档按“证据 → 合同 → 实现选择”分层，避免把原版事实、推断和重制偏好混在一起。
+> 中文阅读版见 [`README.zh-CN.md`](./README.zh-CN.md). The English version is the canonical index.
+
+Documentation is layered as "evidence → contract → implementation choice" to keep original-game
+facts, inferences, and remake preferences separate.
 
 ## Continuity Without External Memory
 
@@ -33,256 +36,292 @@ migrated into ADR 0001 during this audit. No continuing memory synchronization i
 
 ## Research
 
-`research/` 保存可复现的逆向结论。每篇必须标明 Confirmed、Inferred 和 Unknown，并提供 ROM
-hash、上游 commit、地址/符号或运行时观察以及复现命令。
+`research/` stores reproducible reverse-engineering findings. Each entry must carry Confirmed,
+Inferred, or Unknown labels, and provide a ROM hash, an upstream commit, an address/symbol or runtime
+observation, and reproduction commands.
 
-- [`reproducible-original.md`](./research/reproducible-original.md)：ROM H0、固定工具链与
-  bit-perfect H1 基线。
-- [`static-core-data.md`](./research/static-core-data.md)：角色槽位、职业、物品、法术的 ROM
-  ranges、ROM byte packing、双路径 parity 和待验证语义。
-- [`ally-growth.md`](./research/ally-growth.md)：成长曲线、职业成长投影、跨角色职业块扫描、法术学习与继承控制码，以及升级后的当前/派生属性刷新。
-- [`runtime-rng-and-battle-math.md`](./research/runtime-rng-and-battle-math.md)：基础/调试覆盖 RNG、成长计算/完整升级、投影/等级上限/法术继承边界与
-  Battle 01 行动顺序、AGI 127/128 边界、区域激活，以及物理伤害从地形/弓手加成到
-  dodge、critical、spread、double/counter、死亡/距离/状态/阵营/特殊敌人后续校验及完整 double validator、HP/EXP 构造、击杀等级差、最终 EXP 减半/随机化/最低值、EXP 200 饱和/单阈值命令、gold 9,999,999/carry 饱和、敌人物品稀有/必掉/重复 flag、持久回放、99 EXP 自然升级、BLAZE 2 四档 FIRE 抗性矩阵、DAO/APOLLO/NEPTUN/ATLAS 四索引 target-count division、攻击法术 EXP、HEAL 1、SLEEP/SLOW 1 四档 STATUS 抗性、DESOUL 四档成败与多目标 kill reward、SPOIT 目标/施法者 MP 边界矩阵、BOOST 1 首次/重施、DISPEL/SILENCE 消费链，以及回合后状态过期/继续的 H3 动态 fixture。
-- [`enemy-promotions.md`](./research/enemy-promotions.md)：五段转职映射、103 个敌人名称、
-  56-byte 敌人定义、30 条敌人掉落与 103 条敌人 gold word 的 source/ROM 合同，以及 drop
-  终止/flag/RNG 特例、gold 表后 69-word unused 尾部边界、教堂与敌人初始化的静态消费者。
-- [`battle01-placement.md`](./research/battle01-placement.md)：第一场剧情战斗的 map link、Stack
-  压缩 terrain、背景/经验/胜负全局规则、9 个实体记录、三个 region polygon 及 primary/secondary AI 激活语义。
-- [`indexing.md`](./research/indexing.md)：机器可读的 symbol → ROM/RAM address → fixture → 文档/设计
-  合同索引、校验规则和新增发现的落地流程。
-- [`source-coverage.md`](./research/source-coverage.md)：当前覆盖分母、98.45% code-file reach、
-  100% data-ASM H2 inventory、60.18% domain-aware data-file reach 的不同边界，以及静态优先、集中运行
-  H3 的子系统批处理节奏。
-- [`battle-ai.md`](./research/battle-ai.md)：完整 battle AI 源码 inventory、action filter、攻击、
-  治疗、支援、最终行动/目标选择、terrain/swarm/special-attacker 控制，以及单启动 14 case 的首组集中 H3 和后续问题矩阵。
-- [`battlefield-pathfinding.md`](./research/battlefield-pathfinding.md)：战场/寻路 17 文件完整静态
-  inventory、移动/范围/目标/move-string 合同，以及单次启动 5 case 的传播和边界 H3 矩阵。
-- [`battle-loop.md`](./research/battle-loop.md)：战斗循环 18 文件与顶层控制 9 文件的完整静态
-  inventory，以及主循环、胜负、roster、terrain、spawn、死亡清理和战后恢复合同。
-- [`battle-actions.md`](./research/battle-actions.md)：战斗动作 29 文件完整静态 inventory、动作管线、
-  物理分支顺序、物品损坏、Taros 特例和目标排序合同。
-- [`battle-functions.md`](./research/battle-functions.md)：共享战斗函数 7 文件 inventory、单回合控制、
-  Kiwi 火焰、EGRESS/Angel Wing、battle load、移动音效，以及 6 个 player-control/cursor/menu
-  入口和装备、give/drop、宝箱结果的静态状态机合同。
-- [`battle-scene-engine.md`](./research/battle-scene-engine.md)：battle scene 根引擎 12 文件和动画
-  实现 55 文件、21 条 scene-script 命令、初始化/选择器、32×2 setup/update 配对，以及完整
-  87 ally/121 enemy battle-sprite sequence 和 421 条 frame entry 合同。
-- [`battle-cutscenes.md`](./research/battle-cutscenes.md)：战前/开战/战后/败敌/区域 cutscene 的
-  10 文件路由、flag 准入、leader-death position 准备和 map-script 调度。
-- [`common-scripting.md`](./research/common-scripting.md)：entity/map/text/credits 的 29 文件
-  inventory、90/80 槽解释器、完整 255-entry/86-tree/1,536-leaf context-Huffman corpus、
-  17-bank/4,267-string/152,679-symbol 静态解码、80-glyph variable-width font/256-entry ASCII
-  map 数据流、六个 map-script dialogue command 的 2,883 条 ordered program reference/handler/
-  text-line/sprite-dialogue consumer 合同、五个 map-script transition command 的 146 条 ordered
-  program-site/handler/caller 合同、六个 map-script roster/death command 的 43 条 ordered
-  program-site/handler/caller 合同、两个 map-script block-copy command 的 208 条 ordered
-  program-site/handler/cursor/helper/caller 合同、四个 map-script entity population/reload command 的
-  96 条 ordered program-site/handler/caller 合同、单个 source-named `cloneEntity` command 的 9 条
-  ordered program-site/handler/caller 合同、七个 map-script control/audio form 的 2,336 条 ordered
-  source-site/static-control 合同与单启动六 case wait/skip/no-op/sound/subroutine/jump/end H3 边界、
-  三个 map-script camera-control command 的 415 条
-  ordered program-site/handler/caller/service 合同、四个 map-script map lifecycle command 的 108 条
-  ordered program-site/handler/caller 合同，以及单启动五 case 的 handler return、direct-H1-JSR-site
-  order、map/camera word 和双 marker H3 合同、三个 map-script camera-control command 的单启动七 case
-  target branch/destination word-transfer/speed/wait H3 合同、四个 map-script entity-placement command 的单启动七 case
-  alive/dead cursor、record-word/facing、31 次 flash loop/shared-tail 与 destination wait/bypass H3 合同、两个 source-named map-script trigger command 的 8 条
-  ordered program-site/handler/caller/table-boundary 合同、四个 source-named map-script entity-placement
-  command 的 2,288 条 ordered program-site/handler/caller 合同、六个 map-script 到 entity-action bridge
-  command 的 3,256 条 ordered program-site/payload/handler/caller 合同、八个 source-named entity lifecycle/presentation
-  command 的 464 条 ordered program-site/handler/caller 合同、七个 source-named entity gesture/relationship/motion
-  command 的 545 条 ordered program-site/handler/caller 合同、十二个 source-named screen/map-presentation
-  command 的 459 条 ordered program-site/handler/caller 合同、完整 entity-action 静态链和单启动 13-case/20-tick entity
-  movement H3。
-- [`common-maps.md`](./research/common-maps.md)：共享 map engine 7 文件、map switch、battle
-  trigger、egress/savepoint、8 KiB layout 解压边界和 VInt gates。
-- [`common-stats.md`](./research/common-stats.md)：共享 stats 20 文件、flags/party/inventory、
-  field-item dispatch、spell learning、新游戏顺序、getter/mutation/clamp 静态合同和
-  未 include 的 alternate source 边界。
-- [`common-menus.md`](./research/common-menus.md)：共享菜单 42 文件、提示框/文本控制、field-item
-  dispatch、商店/教堂/车队/铁匠的完整静态服务状态机、diamond/yes-no 压缩图形、完整 icon storage/copy/highlight
-  合同、27 个 leaf UI layout/2,394 个 VDP word、spell-level pointer 与 diamond-border 合同及
-  alternate 边界。
-- [`technical-interrupts.md`](./research/technical-interrupts.md)：VInt、DMA、fade、输入重复、wait/sleep
-  handshake、trap 路由和待集中验证的硬件时序。
-- [`technical-graphics.md`](./research/technical-graphics.md)：解压、显示初始化、sprite/palette、视差、
-  battle terrain/background/sprite/weapon/ground/portrait/special-sprite 完整 Stack corpus、flash
-  script 及渲染 parity 边界，以及 720 槽 regular map-sprite Basic-compression 与 9 条
-  special-screen、8 条 base/menu UI Stack stream 与 7-icon uncompressed main-menu、56 条
-  battle-effect、115 条 map-tileset
-  Stack-compression corpus、208 张 battle-sprite animation table、163 槽 icon
-  storage/menu-copy/highlight 合同、19 个 vanilla-built UI-layout owner 与 5,614-byte 静态 corpus、
-  80-glyph variable-width font/ASCII map/loader 与完整 context-Huffman 合同、witch menu
-  16-color palette/12-frame bubble
-  table、12-resource/8,832-byte special-screen palette/layout corpus、4-stream/32,768-byte
-  unused-cloud 与双 unused-base palette、16 套 map palette/79-map
-  使用与有效 color-zero 合同，以及 46/46 direct named compression consumer 的 owner inventory。
-- [`technical-interfaces.md`](./research/technical-interfaces.md)：331 个 jump stub 与 60 个 longword
-  pointer 的完整静态路由表。
-- [`technical-services.md`](./research/technical-services.md)：资源 incbin、byte copy、输入、SRAM、
-  variable-width font、context-Huffman 与 witch-menu direct payload、68000 sound bridge、RNG 和
-  独立 Z80 driver 构建链、RNG range-low-byte retry 与 controlled source-shaped copy 单启动矩阵、没有 symbolic consumer 的 cloud/base payload 边界，以及 20/20
-  technical incbin 到 8 个深层 H2 owner 的可执行归属审计。
-- [`gameflow-core.md`](./research/gameflow-core.md)：冷启动、系统初始化、主循环、战斗/探索分流、
-  map event、交互和物品 handoff。
-- [`special-screens.md`](./research/special-screens.md)：logo/title、witch save（四行 New/Load/Delete/Copy
-  dispatcher、page selector、118 条 source-use provenance、SRAM action routing 与单启动 9 service/2 Load-branch
-  及 4-case New/core-replay runtime matrix）、suspend/reset、ending 等 19 文件特殊画面边界，以及
-  全部 9 条压缩 tile stream、DMA transfer/tail、choice palette 与 4×3 bubble-animation、7 套 palette/5 个
-  layout 合同。
-- [`remaining-core.md`](./research/remaining-core.md)：ROM header/vector、window engine、battle test、
-  configuration 与 debug action 的最后主代码边界。
+- [`reproducible-original.md`](./research/reproducible-original.md): ROM H0, the pinned toolchain, and
+  the bit-perfect H1 baseline.
+- [`static-core-data.md`](./research/static-core-data.md): character slots, classes, items, and spells:
+  ROM ranges, ROM byte packing, dual-path parity, and semantics awaiting verification.
+- [`ally-growth.md`](./research/ally-growth.md): growth curves, class-growth projections, cross-ally
+  class-block scanning, spell-learning and inheritance control codes, and post-level-up current/derived
+  stat refresh.
+- [`runtime-rng-and-battle-math.md`](./research/runtime-rng-and-battle-math.md): base/debug-override
+  RNG, growth math/complete level-up, projection/level-cap/spell-inheritance boundaries, and Battle 01
+  turn order, AGI 127/128 boundary, region activation, and physical damage from terrain/archer bonuses
+  through dodge, critical, spread, double/counter, and death/distance/status/side/special-enemy
+  follow-up validation with the complete double validator; HP/EXP construction, kill level
+  differences, final EXP halving/randomization/minimum, EXP 200 saturation/single-threshold command,
+  gold 9,999,999/carry saturation, enemy-item rare/guaranteed/duplicate flags, persistent replay, 99
+  EXP natural level-up, the BLAZE 2 four-tier FIRE resistance matrix, DAO/APOLLO/NEPTUN/ATLAS
+  four-index target-count division, attack-spell EXP, HEAL 1, the SLEEP/SLOW 1 four-tier STATUS
+  resistance matrices, the DESOUL four-tier success and multi-target kill reward, the SPOIT
+  target/caster MP boundary matrix, BOOST 1 first/cast-again behavior, the DISPEL/SILENCE consumption
+  chain, and the post-turn status expiry/continuation H3 dynamic fixtures.
+- [`enemy-promotions.md`](./research/enemy-promotions.md): the five-section promotion mapping, 103 enemy
+  names, 56-byte enemy definitions, and the 30-enemy-drop/103-enemy-gold-word source/ROM contracts,
+  plus drop termination/flag/RNG special cases, the 69-word unused tail after the gold table, and the
+  static church/enemy-initialization consumers.
+- [`battle01-placement.md`](./research/battle01-placement.md): the first story battle's map link,
+  Stack-compressed terrain, background/EXP/win-loss global rules, nine entity records, three region
+  polygons, and primary/secondary AI activation semantics.
+- [`indexing.md`](./research/indexing.md): the machine-readable symbol → ROM/RAM address → fixture →
+  document/design-contract index, its validation rules, and the landing flow for new findings.
+- [`source-coverage.md`](./research/source-coverage.md): the current coverage denominators, 98.45%
+  code-file reach, 100% data-ASM H2 inventory, the 60.18% domain-aware data-file reach boundaries, and
+  the static-first, batch-run H3 subsystem cadence.
+- [`battle-ai.md`](./research/battle-ai.md): the complete battle-AI source inventory, action filter,
+  attack, healing, support, final action/target selection, terrain/swarm/special-attacker control, and
+  the first grouped 14-case H3 launch plus the follow-up question matrix.
+- [`battlefield-pathfinding.md`](./research/battlefield-pathfinding.md): the complete static
+  inventory of the 17 battlefield/pathfinding files, movement/range/target/move-string contracts, and
+  the single-launch five-case propagation and boundary H3 matrix.
+- [`battle-loop.md`](./research/battle-loop.md): the complete static inventory of the 18 battle-loop
+  files and nine top-level control files, plus main-loop, win/loss, roster, terrain, spawn, death
+  cleanup, and post-battle recovery contracts.
+- [`battle-actions.md`](./research/battle-actions.md): the complete static inventory of the 29
+  battle-action files, the action pipeline, physical-branch order, item breakage, the Taros special
+  case, and target-sorting contracts.
+- [`battle-functions.md`](./research/battle-functions.md): the seven shared battle-function files
+  inventory, individual-turn control, Kiwi flame breath, EGRESS/Angel Wing, battle load, move SFX, and
+  the static state-machine contracts for six player-control/cursor/menu entry points plus equip,
+  give/drop, and chest outcomes.
+- [`battle-scene-engine.md`](./research/battle-scene-engine.md): the twelve battle-scene root-engine
+  files and 55 animation-implementation files, 21 scene-script commands, initialization/selectors,
+  32×2 setup/update pairs, and the complete 87-ally/121-enemy battle-sprite sequence and 421-frame-entry
+  contracts.
+- [`battle-cutscenes.md`](./research/battle-cutscenes.md): the ten-file routing for pre-battle/
+  opening/post-battle/enemy-defeat/region cutscenes, flag admission, leader-death position prep, and
+  map-script scheduling.
+- [`common-scripting.md`](./research/common-scripting.md): the 29-file entity/map/text/credits
+  inventory, the 90/80-slot interpreters, the complete 255-entry/86-tree/1,536-leaf context-Huffman
+  corpus, the 17-bank/4,267-string/152,679-symbol static decode, the 80-glyph variable-width
+  font/256-entry ASCII map data path, the six map-script dialogue commands' 2,883 ordered
+  program-reference/handler/text-line/sprite-dialogue consumer contracts, the five map-script
+  transition commands' 146 ordered program-site/handler/caller contracts, the six map-script
+  roster/death commands' 43 ordered program-site/handler/caller contracts, the two map-script
+  block-copy commands' 208 ordered program-site/handler/cursor/helper/caller contracts, the four
+  map-script entity population/reload commands' 96 ordered program-site/handler/caller contracts, the
+  single source-named `cloneEntity` command's nine ordered program-site/handler/caller contracts, the
+  seven map-script control/audio forms' 2,336 ordered source-site/static-control contracts with a
+  single-launch six-case wait/skip/no-op/sound/subroutine/jump/end H3 boundary, the three map-script
+  camera-control commands' 415 ordered program-site/handler/caller/service contracts, the four
+  map-script map-lifecycle commands' 108 ordered program-site/handler/caller contracts plus a
+  single-launch five-case handler-return/direct-H1-JSR-site-order/map-camera-word/two-marker H3
+  contract, the three map-script camera-control commands' single-launch seven-case
+  target-branch/destination-word-transfer/speed/wait H3 contract, the four map-script entity-placement
+  commands' single-launch seven-case alive/dead-cursor, record-word/facing, 31-flash-loop/shared-tail,
+  and destination-wait/bypass H3 contract, the two source-named map-script trigger commands' eight
+  ordered program-site/handler/caller/table-boundary contracts, the four source-named map-script
+  entity-placement commands' 2,288 ordered program-site/handler/caller contracts, the six map-script
+  to-entity-action bridge commands' 3,256 ordered program-site/payload/handler/caller contracts, the
+  eight source-named entity lifecycle/presentation commands' 464 ordered
+  program-site/handler/caller contracts, the seven source-named entity gesture/relationship/motion
+  commands' 545 ordered program-site/handler/caller contracts, the twelve source-named
+  screen/map-presentation commands' 459 ordered program-site/handler/caller contracts, and the complete
+  entity-action static chain plus the single-launch 13-case/20-tick entity movement H3.
+- [`common-maps.md`](./research/common-maps.md): the seven shared map-engine files, map switch, battle
+  trigger, egress/savepoint, 8 KiB layout-decompression boundary, and VInt gates.
+- [`common-stats.md`](./research/common-stats.md): the 20 shared stats files, flags/party/inventory,
+  field-item dispatch, spell learning, new-game order, getter/mutation/clamp static contracts, and the
+  un-included alternate-source boundary.
+- [`common-menus.md`](./research/common-menus.md): the 42 shared menu files, prompt/text control,
+  field-item dispatch, the complete static shop/church/caravan/blacksmith service state machines,
+  diamond/yes-no compressed graphics, the complete icon storage/copy/highlight contracts, the 27 leaf
+  UI layouts/2,394 VDP words, the spell-level pointer and diamond-border contracts, and alternate
+  boundaries.
+- [`technical-interrupts.md`](./research/technical-interrupts.md): VInt, DMA, fade, input repeat,
+  wait/sleep handshake, trap routing, and hardware timing awaiting batched verification.
+- [`technical-graphics.md`](./research/technical-graphics.md): decompression, display initialization,
+  sprite/palette, parallax, the complete battle terrain/background/sprite/weapon/ground/portrait/
+  special-sprite Stack corpora, flash scripts and rendering-parity boundaries, plus the 720-slot
+  regular map-sprite Basic-compression corpus, nine special-screen and eight base/menu UI Stack streams
+  with the seven-icon uncompressed main menu, the 56 battle-effect and 115 map-tileset
+  Stack-compression corpora, the 208 battle-sprite animation tables, the 163-slot icon
+  storage/menu-copy/highlight contracts, the 19 vanilla-built UI-layout owners and the 5,614-byte static
+  corpus, the 80-glyph variable-width font/ASCII map/loader and the complete context-Huffman contract,
+  the witch-menu 16-color palette/12-frame bubble table, the 12-resource/8,832-byte special-screen
+  palette/layout corpus, the four-stream/32,768-byte unused-cloud and two unused-base palettes, the 16
+  map palettes/79-map usage with the effective color-zero contract, and the 46/46 direct named
+  compression-consumer owner inventory.
+- [`technical-interfaces.md`](./research/technical-interfaces.md): the complete static routing table
+  of 331 jump stubs and 60 longword pointers.
+- [`technical-services.md`](./research/technical-services.md): resource incbin, byte copy, input,
+  SRAM, variable-width font, context-Huffman and witch-menu direct payloads, the 68000 sound bridge,
+  RNG, and the standalone Z80 driver build chain; the RNG range-low-byte retry and controlled
+  source-shaped-copy single-launch matrix; the cloud/base payload boundary with no symbolic consumer;
+  and the executable 20/20 technical-incbin to 8-deep-H2-owner attribution audit.
+- [`gameflow-core.md`](./research/gameflow-core.md): cold start, system initialization, the main loop,
+  battle/exploration routing, map events, interaction, and item handoff.
+- [`special-screens.md`](./research/special-screens.md): the 19-file special-screen boundaries across
+  logo/title, witch save (the four-row New/Load/Delete/Copy dispatcher, page selector, 118
+  source-use provenance records, SRAM action routing, and the single-launch nine-service/two-Load-branch
+  and four-case New/core-replay runtime matrices), suspend/reset, and ending, plus all nine compressed
+  tile streams, DMA transfer/tail, the choice palette and 4×3 bubble animation, and the seven-palette/
+  five-layout contracts.
+- [`remaining-core.md`](./research/remaining-core.md): the final main-code boundaries of the ROM
+  header/vector, window engine, battle test, configuration, and debug actions.
 
-数据侧目录 inventory 与 ROM parity：
+Data-side directory inventory and ROM parity:
 
-- [`battle-global-data.md`](./research/battle-global-data.md)：全局战斗数据 18/18 H2 inventory 与
-  17 个 H1-bound canonical tables。
-- [`ally-data-inventory.md`](./research/ally-data-inventory.md)：ally/class 42 个直接或传递 include
-  文件，以及对既有成长/法术学习 rails 的复用关系。
-- [`core-stats-data-inventory.md`](./research/core-stats-data-inventory.md)：items/spells/enemies 的
-  19 个 source 文件与表维度，以及 shops/debug shop/chest gold/break messages/mithril/Caravan/
-  field items/weapon graphics 的 9-range 深层 source/H1/ROM 合同和 166-row enemy map-sprite
-  normal-vs-tail reachability contract。
-- [`battle-cutscene-data.md`](./research/battle-cutscene-data.md)：61 个 battle cutscene data 文件、
-  59 个构建内脚本及两个显式例外。
-- [`battle-spriteset-data.md`](./research/battle-spriteset-data.md)：46 文件 spriteset pointer/include
-  图、header ranges 与 combatant macro 计数。
-- [`battle-routing-data.md`](./research/battle-routing-data.md)：cutscene slots、region routes、terrain
-  aliases、43 个 Stack-compressed terrain payload 的完整解码/ROM parity、unused joins 和旧
-  aggregate 边界。
-- [`map-data-inventory.md`](./research/map-data-inventory.md)：完整 1,390-file map ASM build graph、
-  727 个内部 H1 binding、662 个 include-site-only body、64+66 setup selection rows、126 张六指针
-  setup table 的 ROM parity、125 个 entity-list source/980 个物理记录与 suffix fallthrough、完整
-  263 个 entity/zone/item event source/1,134 个物理记录、915 个 source/H1 target profile、
-  684 个 entity-event、150 个 zone-event 与 80 个 item-event target program（另有 1 个 raw-expression
-  exclusion）、3,579 个非注释操作（54 个 mnemonic、9 个 source-faithful family、34 个 macro/engine
-  definition join 与 4 个 Map 21 action-payload context）、493 个 direct numeric flag source use
-  （316 read / 169 set / 8 clear，151 个 operand、316 个 immediate conditional consumer）/各 category
-  合计 469 个 instruction 与 effective target identity、147 个 direct `script` source reference
-  （138 个 instruction label、135 个 effective map-script owner；348/304 个零计数完整 target domain）、
-  以及 1,006 个 direct `TEXTBOX` source/H1 reference（981 个 numeric line-reference、25 个 `$FFFF`
-  sentinel；914 个 caller 与 4,267 个 declared text-line ID 的零计数完整表，未解码 text）、
-  378 个 pointer-table 与 390 个 selector-route category join、map44 raw-target boundary、9 个
-  first-match 选择案例，以及 75 个 description target/227 个物理
-  entry、正常调用链上的 `d6` 条件、84 个 init source/90 个 callable entry，以及 47 个 standalone
-  script/8,058 条语句；十案例 selector 与六案例 init-dispatch 单启动 H3 另确认 missing/default、
-  last-set-flag-wins、alias route 及 active/scripted/direct-return init 调用。
-- [`map-content.md`](./research/map-content.md)：79 个 46-byte map entry、662 个 source-form content
-  section、154 个私有 blocks/layout payload 的完整 source/H1/ROM parity，77 组 bitstream 的
-  canonical Python 解码、1,859-resource/79-map engine-neutral import（含 64 route、126 setup、
-  178 个 standalone 与 201 个 init-source program）、
-  record/consumer 规则与
-  `MAPDATA_OFFSET_LAYOUT` 上游常量缺陷。
-- [`auxiliary-data-inventory.md`](./research/auxiliary-data-inventory.md)：graphics/scripting/technical/
-  sprite-dialogue 的 65 文件边界、77 个 indexed symbol/63 个 source file、两个 alternate，以及
-  56 槽/52 payload 的 portrait header、动画元数据、palette 与 Stack 图形解码合同和 30 槽/27
-  payload 的 battle background 双 tileset 解码合同、86 个 battle-sprite 容器/408 个图形 frame、208 个 animation
-  sequence/421 个 frame entry，以及 weapon/ground graphics/palette、670 个 regular map-sprite
-  payload、6 个 special-sprite stream 与 9 个
-  special-screen tile stream、8 个 base/menu UI stream，以及 56 条 spell/invocation/status/
-  transition stream、115 条 map-tileset stream、163 个 assembled icon/4 个 source-only icon 例外、
-  27 个 UI layout/16 槽 spell pointer/4 套 border/4 个 direct tile payload，以及 16 套 map
-  palette/79 个 header reference 的完整 parity；并单独闭合 119 行 map-sprite/portrait/speech-SFX
-  属性、`0xFFFF` sentinel、first-match 与 fallback 消费规则的完整 source/H1/ROM parity，以及
-  5 个 sprite 写入点、81 个脚本赋值、20 个 property-update caller 和 ally/enemy 派生域的
-  237-250 排除审计，以及三个 shared entity-action corpus 的 2,864 bytes、118 labels、
-  732 commands、38 个 relative branch 与 61-entry external-reference graph，并继续闭合 75 个
-  distributed source、361 个 inline program、11 个 standalone ROM range、1,472 commands 和
-  17 个具名入口，以及 80-slot dispatcher 的 37 filler/43 handler、40 个宏可达 opcode、三个
-  handler-only branch opcode 与 `$8080` inline terminator 边界；handler catalog 还分类了 18 个
-  实体字段的 11 read/17 write、15 个全局状态的 10 read/5 write、参数读取宽度、八个 handler
-  家族、22 条实体 bit access、46 条脚本指针动作，以及 46 个宏参数/86 bytes 到 handler 读取的
-  完整/低字节/跳过分类；另闭合 `ac_branch` 的宏外相对位移、三个 handler-only 6-byte layout 与
-  35/43 handler 的完整源码使用边界，以及 39 redispatch/11 yield/7 dual 的全 handler flow
-  outcome 分类；46 个参数的 10 signed/20 unsigned/15 boolean/1 ignored 解释与七个 dual
-  predicate 也已绑定源码证据；后续 `UpdateEntityData` 另闭合 560 bytes、190 instructions、九个
-  movement phase、15 个字段、5 个 bit access 和 16-byte facing table ROM parity；四个 update
-  helper 再闭合 434 bytes、135 instructions、22 callers、目的地冲突 CCR、sprite fallthrough 与
-  map-offset hash 公式；map-script engine 则闭合 90-slot dispatcher 的 82 个有效 opcode/8 个
-  filler、83 个唯一 handler、82 主宏/8 alias/3 special，以及 169 个源码文件中的 13,515 次调用、
-  955 条 handler 语句、16 个实体字段、25 个全局状态与 62 个 direct-call target；ABI 再闭合
-  133 个主宏参数/operand field、234 个 operand bytes、2/4/6/8-byte 宽度分布，以及 77 sequential/
-  1 absolute/4 conditional/1 inline 的 cursor-flow 分类；完整源码进一步归属为 304 个 program/
-  348 个 label，303 个 `csc_end` 加一个 jump 终止，并解析 42 条同 program、20 条跨 program
-  script jump 和 122 条 68000 subroutine call；全 2,077 个 code/data ASM 的引用图再区分 187 个
-  跨文件可引用、110 个仅同文件可引用和 7 个零引用 program，347/348 label 有引用。
-  进一步闭合 89 个 program 的 story-state surface：51 条条件读取覆盖 6 个 flag，53 条直接写入、
-  22 条 prompt 写入和 20 条 battle-unlock 写入覆盖 56 个 flag，读写域仅交于 71/76/89。
-  同一 fixture 还以 304-row 零计数 program corpus 固定七个 story-state 分支/prompt form（146
-  sites）、primary `csc10` 与 `setF`/`clearF` alias 的物理布局、五个 handler guard 和唯一 H3
-  `story-state/branch-prompt-persistence-matrix`。
-  相同 304-row 零计数 corpus 还固定四个 entity population/reload form（96 sites）、四个
-  cursor/VInt/call/constant handler guard，以及保留 direct `j_InitializeMapEntities` 与 resolved
-  `InitializeMapEntities` identity 的 zero-inclusive caller map；H3 的一启动 12 case fixture 现在固定
-  handler-local callback/cursor/list/record 结果（含三个 selected `newEntity` index seed、direct table、
-  identity-list-selected reload，以及七个 map-setup input）；剩余 queue 为 observed-high-water 之外的
-  capacity、normal-story/save/map-reload persistence、player-visible rendering/animation/VDP timing、及
-  collision/pathfinding consumer effects。
-  同一 304-row 零计数 corpus 还固定四个 map lifecycle form（108 sites）、四个 named handler 的
-  cursor/probe、VInt、branch、call/fall-through guards，以及 five-target zero-inclusive caller map；
-  H3 以一个五 case/单启动 fixture 固定 handler return、direct-H1-JSR-site order、post-handler
-  map/camera word 与双 nonasset marker，而剩余 queue 为 layout/collision/pathfinding、entity reload/
-  player placement、presentation/fade/hardware timing 与 story reachability/persistence。
-  同一 304-row 零计数 corpus 还固定两个 source-named trigger form（8 sites）、两段 named handler 的
-  A6 word-read、`MAP_TILE_SIZE` use-site、call/return guards、two-target zero-inclusive caller map，
-  以及独立解析的 94-step/114-roof table boundary；H3 以六 case/单启动 fixture 固定 Map 02
-  record-0 hit、terminator miss、busy/battle gate、direct-H1-JSR-site、D0/D1 word、hash/table
-  boundary、post-handler word 与双 marker。剩余 queue 为 full layout/collision/pathfinding、
-  presentation/audio/timing/hardware 与 persistence/story reachability。
-  同一 304-row 零计数 corpus 还固定八个 source-named entity lifecycle/presentation form（464
-  sites）、八个 named handler 的 cursor/branch/callback/return guards，以及 nine-target
-  zero-inclusive caller map。H3 以 11 case/单启动 fixture 固定所有八个 handler entry、live/zero-HP
-  start/stop boundary、受控第二次 `waitIdle` compare、两侧 sprite selector、priority byte、完整
-  remove-shadow callback chain，以及 source-backed temporary/restored sprite-size word 与 flags-B
-  record；剩余 queue 为 normal-story reachability、full entity-state/callback effects 与
-  player-visible presentation/timing/collision/persistence。
-  同一 304-row 零计数 corpus 还固定七个 source-named entity gesture/relationship/motion form（545
-  sites）、七个 named handler 的 A6 cursor、source operand/literal、branch/loop/call/return guards，
-  以及 ten-target zero-inclusive caller map；其单启动 17-case H3 已覆盖七个 handler 的受控
-  callback/state seam（包括 shiver 三轮 temporary/restore、follow high-byte zero-HP boundary、
-  face/move word boundary、fly 两侧和 above register record）；剩余 queue 为 normal-story
-  reachability、full entity-state/callback effects 与 player-visible presentation/timing/collision/persistence。
-  同一 304-row 零计数 corpus 还固定十二个 source-named screen/map-presentation form（459 sites）、
-  十二个 named handler 的 A6 cursor、immediate/operand、branch/loop/call/return guards，以及保留
-  seven PC-relative `LaunchFading` target 的 five-target zero-inclusive caller map；其一启动 22-case
-  H3 已固定 handler-local entry/return、cursor、direct-call/target/return、quake write、slow-counter
-  和 flash-loop seam；visible/palette/VDP/timing/service body/persistence/reachability 仍保留四组
-  Unknown queue。
-  同一 304-row 零计数 corpus 还固定三个 source-named entity-presentation-FX form（177 sites）、
-  三个 named handler 的 A6 cursor、immediate/operand、branch/function-chunk/loop/call/return guards，
-  以及 nine-target zero-inclusive caller map；单启动 10-case H3 已固定 handler-local 的
-  entry/operand/branch/loop/callback/return 记录及两个直接 entity-byte-write seam；剩余四组
-  Unknown queue 为 normal-story reachability、player-visible output/timing/completion/repeat、
-  bypassed-service/`WaitForVInt` effects 与 persistence/map-entity interactions。
-  同一 304-row 零计数 corpus 还固定三个 source-named UI primary form（5 sites，含零使用 `menu`）、
-  三个 named handler 的 A6 cursor、immediate/operand、branch/stack/call/return guards，及
-  provenance join 的 portrait-helper 与 seven-target alias-aware caller map；单启动 11-case H3
-  已验证 source-row input、busy/sentinel handler return、hide chronology 和 menu selector/A6/stack
-  边界；正常剧情、完整 window/VDP timing、真实 choice/service side effect 与 persistence 仍为四组
-  Unknown queue。
-  同一 304-row 零计数 corpus 还固定单个 source-named `cloneEntity` `$25` form（9 sites）、完整
-  `csc25_cloneEntity` 的两次 A6 word read/lookup 及唯一一字节 `ENTITYDEF_OFFSET_ENTNUM` transfer，
-  而不把它提升为 whole-record copy/span；单启动 9-case H3 已固定 handler entry/RTS、A6 4/8
-  cursor boundary、两次 word/lookup PC chronology、offset-18 byte before/after 和相邻字节 sentinel；
-  其余 Unknown 为 neutral state、external-consumer 与 context 三组矩阵。
-- [`sound-data-inventory.md`](./research/sound-data-inventory.md)：41-file Z80 music include graph、
-  两个 32 KiB bank 的 canonical ROM parity、37 个 song range/address binding、29-macro/
-  39,290-invocation 静态命令语料，以及单次启动 4 command/12 checkpoint/120 channel snapshot
-  的 Z80 live-state H3 矩阵；同一 rail 还闭合驱动内嵌 56-entry SFX command/header 域及全部
-  66 个 active stream 的 786-token/7-counted-loop 静态控制流。
+- [`battle-global-data.md`](./research/battle-global-data.md): the 18/18 H2 inventory of global battle
+  data and 17 H1-bound canonical tables.
+- [`ally-data-inventory.md`](./research/ally-data-inventory.md): the 42 directly or transitively
+  included ally/class files, and the reuse relationship with the existing growth/spell-learning rails.
+- [`core-stats-data-inventory.md`](./research/core-stats-data-inventory.md): the 19 items/spells/enemies
+  source files with table dimensions, plus the 9-range deep source/H1/ROM contracts for shops/debug
+  shop/chest gold/break messages/mithril/Caravan/field items/weapon graphics and the 166-row enemy
+  map-sprite normal-vs-tail reachability contract.
+- [`battle-cutscene-data.md`](./research/battle-cutscene-data.md): the 61 battle-cutscene data files,
+  59 in-build scripts, and two explicit exceptions.
+- [`battle-spriteset-data.md`](./research/battle-spriteset-data.md): the 46-file spriteset
+  pointer/include graph, header ranges, and combatant-macro counts.
+- [`battle-routing-data.md`](./research/battle-routing-data.md): cutscene slots, region routes, terrain
+  aliases, the complete decode/ROM parity of the 43 Stack-compressed terrain payloads, unused joins,
+  and old aggregate boundaries.
+- [`map-data-inventory.md`](./research/map-data-inventory.md): the complete 1,390-file map ASM build
+  graph, 727 internal H1 bindings, 662 include-site-only bodies, 64+66 setup-selection rows, ROM
+  parity of the 126 six-pointer setup tables, 125 entity-list sources/980 physical records with suffix
+  fallthrough, the complete 263 entity/zone/item-event sources/1,134 physical records, 915
+  source/H1 target profiles, 684 entity-event, 150 zone-event, and 80 item-event target programs (plus
+  one raw-expression exclusion), 3,579 non-comment operations (54 mnemonics, nine source-faithful
+  families, 34 macro/engine definition joins, and four Map 21 action-payload contexts), 493 direct
+  numeric flag source uses (316 read / 169 set / 8 clear, 151 operands, 316 immediate conditional
+  consumers) with 469 instructions and effective target identities per category, 147 direct `script`
+  source references (138 instruction labels, 135 effective map-script owners; complete zero-count
+  target domains of 348/304), and 1,006 direct `TEXTBOX` source/H1 references (981 numeric
+  line-references, 25 `$FFFF` sentinels; complete zero-count table of 914 callers and 4,267 declared
+  text-line IDs, without decoding text), 378 pointer-table and 390 selector-route category joins, the
+  map44 raw-target boundary, nine first-match selection cases, 75 description targets/227 physical
+  entries, the `d6` condition on the normal call chain, 84 init sources/90 callable entries, and 47
+  standalone scripts/8,058 statements; the ten-case selector and six-case init-dispatch single-launch
+  H3 matrices additionally confirm missing/default, last-set-flag-wins, alias route, and
+  active/scripted/direct-return init calls.
+- [`map-content.md`](./research/map-content.md): the complete source/H1/ROM parity of 79 46-byte map
+  entries, 662 source-form content sections, and 154 private blocks/layout payloads, the canonical
+  Python decode of 77 bitstream pairs, the 1,859-resource/79-map engine-neutral import (including 64
+  routes, 126 setups, 178 standalone, and 201 init-source programs), record/consumer rules, and the
+  upstream `MAPDATA_OFFSET_LAYOUT` constant defect.
+- [`auxiliary-data-inventory.md`](./research/auxiliary-data-inventory.md): the 65-file
+  graphics/scripting/technical/sprite-dialogue boundary, 77 indexed symbols/63 source files, two
+  alternates, the 56-slot/52-payload portrait header, animation metadata, palette, and Stack-graphics
+  decode contracts, the 30-slot/27-payload battle-background dual-tileset decode contract, 86
+  battle-sprite containers/408 graphic frames, 208 animation sequences/421 frame entries, weapon/ground
+  graphics and palettes, 670 regular map-sprite payloads, six special-sprite streams, nine
+  special-screen tile streams, eight base/menu UI streams, 56 spell/invocation/status/transition
+  streams, 115 map-tileset streams, 163 assembled icons with four source-only icon exceptions, 27 UI
+  layouts/16-slot spell pointers/four borders/four direct tile payloads, and complete parity of 16 map
+  palettes/79 header references; it also closes the 119-row map-sprite/portrait/speech-SFX property
+  table with the `0xFFFF` sentinel, first-match, and fallback consumption rules at complete
+  source/H1/ROM parity, the five sprite-write sites, 81 script assignments, 20 property-update callers,
+  and the ally/enemy derivation-domain 237-250 exclusion audit, plus the three shared entity-action
+  corpora (2,864 bytes, 118 labels, 732 commands, 38 relative branches, 61-entry external-reference
+  graph) and continued closure of 75 distributed sources, 361 inline programs, 11 standalone ROM
+  ranges, 1,472 commands, and 17 named entries, and the 80-slot dispatcher's 37 filler/43 handler
+  slots, 40 macro-reachable opcodes, three handler-only branch opcodes, and the `$8080` inline
+  terminator boundary; the handler catalog further classifies 11 read/17 write accesses over 18 entity
+  fields, 10 read/5 write over 15 global states, parameter-read widths, eight handler families, 22
+  entity bit accesses, 46 script-pointer actions, and the complete/low-byte/skip classification of 46
+  macro parameters/86 bytes to handler reads; it closes `ac_branch`'s out-of-macro relative
+  displacement, the three handler-only 6-byte layouts, the complete source-use boundary for 35/43
+  handlers, and the full handler-flow outcome classification of 39 redispatch/11 yield/7 dual, with
+  the 10 signed/20 unsigned/15 boolean/1 ignored interpretations of all 46 parameters and the seven
+  dual predicates bound to source evidence; the follow-on `UpdateEntityData` closes 560 bytes, 190
+  instructions, nine movement phases, 15 fields, five bit accesses, and the 16-byte facing table at
+  ROM parity; the four update helpers close 434 bytes, 135 instructions, 22 callers, the
+  destination-conflict CCR, sprite fallthrough, and the map-offset hash formula; the map-script engine
+  closes the 90-slot dispatcher's 82 valid opcodes/8 fillers, 83 unique handlers, 82 primary
+  macros/8 aliases/3 specials, and 13,515 invocations across 169 source files, 955 handler
+  statements, 16 entity fields, 25 global states, and 62 direct-call targets; the ABI closes 133
+  primary macro parameters/operand fields, 234 operand bytes, 2/4/6/8-byte width distributions, and the
+  77 sequential/1 absolute/4 conditional/1 inline cursor-flow classification; the complete source
+  further attributes 304 programs/348 labels, 303 `csc_end` terminations plus one jump termination,
+  and resolves 42 same-program and 20 cross-program script jumps plus 122 68000 subroutine calls; the
+  full 2,077 code/data-ASM reference graph further distinguishes 187 cross-file-referencable, 110
+  same-file-only, and seven zero-reference programs, with 347/348 labels referenced. It further closes
+  the 89-program story-state surface: 51 conditional reads over six flags, 53 direct writes, 22 prompt
+  writes, and 20 battle-unlock writes over 56 flags, with the read/write domains intersecting only at
+  71/76/89. The same fixture fixes the seven story-state branch/prompt forms (146 sites) with a
+  304-row zero-count program corpus, the primary `csc10` and `setF`/`clearF` alias physical layouts,
+  five handler guards, and the sole H3 `story-state/branch-prompt-persistence-matrix`. The same
+  304-row zero-count corpus fixes four entity population/reload forms (96 sites), four
+  cursor/VInt/call/constant handler guards, and the zero-inclusive caller map retaining the direct
+  `j_InitializeMapEntities` identity versus the resolved `InitializeMapEntities`; the single-launch
+  12-case H3 fixture now fixes handler-local callback/cursor/list/record results (including three
+  selected `newEntity` index seeds, a direct table, identity-list-selected reload, and seven map-setup
+  inputs); the remaining queue covers capacity beyond the observed high-water, normal-story/save/
+  map-reload persistence, player-visible rendering/animation/VDP timing, and collision/pathfinding
+  consumer effects. The same corpus fixes four map-lifecycle forms (108 sites), four named handlers'
+  cursor/probe, VInt, branch, and call/fall-through guards, and a five-target zero-inclusive caller
+  map; the H3 five-case/single-launch fixture fixes handler return, direct-H1-JSR-site order,
+  post-handler map/camera words, and two nonasset markers, while the remaining queue covers
+  layout/collision/pathfinding, entity reload/player placement, presentation/fade/hardware timing, and
+  story reachability/persistence. The same corpus fixes two source-named trigger forms (8 sites), two
+  named handlers' A6 word-read, `MAP_TILE_SIZE` use-sites, call/return guards, a two-target
+  zero-inclusive caller map, and the independently parsed 94-step/114-roof table boundary; the H3
+  six-case/single-launch fixture fixes Map 02 record-0 hit, terminator miss, busy/battle gate,
+  direct-H1-JSR-site, D0/D1 words, hash/table boundary, post-handler words, and two markers, with the
+  remaining queue covering full layout/collision/pathfinding, presentation/audio/timing/hardware, and
+  persistence/story reachability. The same corpus fixes eight source-named entity
+  lifecycle/presentation forms (464 sites), eight named handlers' cursor/branch/callback/return
+  guards, and a nine-target zero-inclusive caller map; the H3 11-case/single-launch fixture fixes all
+  eight handler entries, the live/zero-HP start/stop boundary, the controlled second `waitIdle`
+  compare, both sprite-selector sides, the priority byte, the complete remove-shadow callback chain,
+  and source-backed temporary/restored sprite-size words plus the flags-B record; the remaining queue
+  covers normal-story reachability, full entity-state/callback effects, and player-visible
+  presentation/timing/collision/persistence. The same corpus fixes seven source-named entity
+  gesture/relationship/motion forms (545 sites), seven named handlers' A6 cursor,
+  source-operand/literal, branch/loop/call/return guards, and a ten-target zero-inclusive caller map;
+  its single-launch 17-case H3 covers seven handlers' controlled callback/state seams (including
+  shiver's three temporary/restore cycles, the follow high-byte zero-HP boundary, the face/move word
+  boundary, both fly sides, and the above-register record); the remaining queue covers normal-story
+  reachability, full entity-state/callback effects, and player-visible
+  presentation/timing/collision/persistence. The same corpus fixes twelve source-named
+  screen/map-presentation forms (459 sites), twelve named handlers' A6 cursor, immediate/operand,
+  branch/loop/call/return guards, and a five-target zero-inclusive caller map preserving seven
+  PC-relative `LaunchFading` targets; its single-launch 22-case H3 fixes handler-local entry/return,
+  cursor, direct-call/target/return, quake write, slow-counter, and flash-loop seams, while four
+  Unknown queues remain for visible/palette/VDP/timing/service body/persistence/reachability. The
+  same corpus fixes three source-named entity-presentation-FX forms (177 sites), three named handlers'
+  A6 cursor, immediate/operand, branch/function-chunk/loop/call/return guards, and a nine-target
+  zero-inclusive caller map; the single-launch ten-case H3 fixes handler-local
+  entry/operand/branch/loop/callback/return records and two direct entity-byte-write seams, with four
+  Unknown queues for normal-story reachability, player-visible output/timing/completion/repeat,
+  bypassed-service/`WaitForVInt` effects, and persistence/map-entity interactions. The same corpus
+  fixes three source-named UI primary forms (5 sites, including the zero-use `menu`), three named
+  handlers' A6 cursor, immediate/operand, branch/stack/call/return guards, and a provenance-joined
+  portrait-helper plus seven-target alias-aware caller map; the single-launch 11-case H3 verifies
+  source-row input, busy/sentinel handler return, hide chronology, and the menu selector/A6/stack
+  boundary, with four Unknown queues for normal story, complete window/VDP timing, real choice/service
+  side effects, and persistence. The same corpus fixes the single source-named `cloneEntity` `$25` form
+  (9 sites), the complete `csc25_cloneEntity` two A6 word reads/lookup, and the single-byte
+  `ENTITYDEF_OFFSET_ENTNUM` transfer without promoting it to a whole-record copy/span; the
+  single-launch nine-case H3 fixes handler entry/RTS, the A6 4/8 cursor boundary, two word/lookup PC
+  chronologies, the offset-18 byte before/after, and adjacent-byte sentinels, with three Unknown
+  matrices remaining for neutral state, external consumers, and context.
+- [`sound-data-inventory.md`](./research/sound-data-inventory.md): the 41-file Z80 music include graph,
+  canonical ROM parity of the two 32 KiB banks, 37 song range/address bindings, the 29-macro/
+  39,290-invocation static command corpus, and the single-launch 4-command/12-checkpoint/120-channel-
+  snapshot Z80 live-state H3 matrix; the same rail also closes the driver-embedded 56-entry SFX
+  command/header domain and the complete 786-token/7-counted-loop static control flow of all 66 active
+  streams.
 
 ## Design
 
-`design/` 将已确认行为整理成实现无关的游戏设计规格。Phase 2 开始按 subsystem 创建；不能用
-设计文档反向“证明”逆向结论。
+`design/` organizes confirmed behavior into implementation-neutral game design specifications,
+created per subsystem from Phase 2 onward; a design document cannot be used to "prove" a
+reverse-engineering conclusion backwards.
 
-中文本地化从英文 canonical 源以专用批次进行：术语表
-[`glossary.md`](./design/glossary.md) 是英文→中文术语的单一绑定来源，镜像存于
-`design/zh-CN/`（同文件名，英文文件始终是审阅基线）。
+zh-CN localization proceeds from the English canonical source in dedicated batches: the glossary
+[`glossary.md`](./design/glossary.md) is the single binding source for English-to-Chinese terminology,
+and mirrors live under `design/zh-CN/` (same filename; the English file remains the review baseline).
+The translation index is tracked in `manifests/zh-translation-index.json` and maintained with
+`uv run sf2 zh-meta test` (verify) and `uv run sf2 zh-meta update` (regenerate).
 
-- [`glossary.md`](./design/glossary.md): accepted EN→中文 glossary and rules for zh-CN localization;
-  fixed evidence-label translations, preserved source identifiers, one-term-one-translation, proper
-  nouns kept in English, and `design/zh-CN/` mirror conventions.
+- [`glossary.md`](./design/glossary.md): the accepted EN→中文 glossary and rules for zh-CN
+  localization; fixed evidence-label translations, preserved source identifiers, one-term-one-
+  translation, proper nouns kept in English, and `design/zh-CN/` mirror conventions.
 - [`documentation-roadmap.md`](./design/documentation-roadmap.md): three-layer evidence/explanation/
   modernization boundaries, the English authoring baseline, near-term synthesis order, long-term
   directions, reusable authoring structure, and collaboration governance; it is neither evidence of
@@ -308,68 +347,89 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   layouts into evidence-bounded structural principles after an adversarial owner/fixture audit,
   while retaining route quality, pacing, collision/pathfinding, reachability, visible presentation,
   and authorial intent as Unknown boundaries.
-- [`combat-resolution.md`](./design/combat-resolution.md)：物理攻击从 dodge、地形/克制、critical、
-  spread、double/counter 到临时 HP、reaction 回放、EXP 入账与升级连接的实现无关合同，以及未来 H4 的共享
-  fixture 边界。
-- [`map-exploration.md`](./design/map-exploration.md)：79-map import boundary、共享 block/layout
-  ownership、64x64 geometry、可执行 canonical import、area/event/item/animation 顺序、
-  working-layout mutation、两个 source-faithful map-script block-copy form、四个 source-shaped
-  entity population/reload form、单个 source-faithful `cloneEntity` form、三个 source-faithful map-script camera-control form、四个 source-faithful map lifecycle form、两个 source-named
-  trigger form、四个 source-named entity-placement form、六个 source-named entity-action bridge form、八个 source-named
-  entity lifecycle/presentation form、七个 source-named entity gesture/relationship/motion form、十二个 source-named
-  screen/map-presentation form 与现代 renderer 的
-  原版事实/未知/可现代化边界。
-- [`level-up.md`](./design/level-up.md)：成长曲线随机增益、最低成长补偿、战斗 EXP 阈值入口、完整升级顺序、
-  投影后固定成长、职业等级上限、跨角色职业块扫描、当前/派生属性与装备刷新、属性上限/下溢夹断、敌人诅咒抑制、继承法术升级、Karna/HEAL 3 完整 prowess 高半字节矩阵、`LEVELUP_ARGUMENTS` 结果合同，以及 TORT
-  effective-level 缺陷的原版事实和重制选择边界。
-- [`spell-resolution.md`](./design/spell-resolution.md)：攻击法术的元素抗性位域、整数伤害调整、
-  promoted power、DAO target-count division、spell critical、共用 downward spread、攻击法术 EXP、
-  HEAL 1 治疗与治疗 EXP、SLEEP/SLOW 1 状态抗性与免疫、DESOUL 成败/即死/多目标 kill EXP/gold、SPOIT MP 吸收与边界截断、BOOST 1 属性/重施时序、SILENCE 施法门，以及临时状态回合后生命周期/持久场景回放边界的实现无关合同。
-- [`service-interactions.md`](./design/service-interactions.md)：shop、church、caravan/depot 与
-  blacksmith 的动作顺序、取消边界与静态资源 mutation 合同，以及明确保留的持久化/时序未知项。
-- [`save-system.md`](./design/save-system.md)：两槽 SRAM、交错字节布局、checksum、occupied flag 与
-  save/load/copy/delete 静态合同、单启动 in-process service matrix，以及仍留给 H3 的跨进程持久化和断电边界。
-- [`input-system.md`](./design/input-system.md)：双端口原始采样、VInt current/repeat 过滤、输入等待
-  helper 与控制器/时序未知边界。
-- [`window-system.md`](./design/window-system.md)：八槽 window entry、layout 分配/回收、packed
-  coordinate 寻址、VInt composition/DMA 调用顺序，以及呈现时序未知边界。
-- [`dialogue-system.md`](./design/dialogue-system.md)：六个 map-script dialogue command 的物理
-  layout、cursor/name-index/portrait consumer 静态顺序，以及 21-case 单启动 handler-local H3 合同和
-  三个明确的 presentation/runtime Unknown 边界。
-- [`party-roster-state.md`](./design/party-roster-state.md)：十个 map-script roster/death 与
-  active-party/AI/follower source form 的 physical layout、named handler branch/mutation/call order、
-  alias-aware caller identity，以及两个 grouped H3 runtime 边界。
-- [`randomness.md`](./design/randomness.md)：主 RNG、debug 方向覆盖、AI byte RNG、有界采样、helper-return state 与 controlled source-shaped copy 的
-  静态/运行时合同，以及 retry 与 seed-copy 隔离边界。
+- [`combat-resolution.md`](./design/combat-resolution.md): the implementation-neutral contract from
+  physical attacks through dodge, terrain/countering, critical, spread, and double/counter to
+  temporary HP, reaction replay, EXP booking, and level-up connection, plus the shared fixture
+  boundary for a future H4.
+- [`map-exploration.md`](./design/map-exploration.md): the 79-map import boundary, shared
+  block/layout ownership, 64x64 geometry, the executable canonical import, area/event/item/animation
+  ordering, working-layout mutation, the two source-faithful map-script block-copy forms, the four
+  source-shaped entity population/reload forms, the single source-faithful `cloneEntity` form, the
+  three source-faithful map-script camera-control forms, the four source-faithful map-lifecycle forms,
+  the two source-named trigger forms, the four source-named entity-placement forms, the six
+  source-named entity-action bridge forms, the eight source-named entity lifecycle/presentation forms,
+  the seven source-named entity gesture/relationship/motion forms, the twelve source-named
+  screen/map-presentation forms, and the original-fact/Unknown/modernizable boundary with a modern
+  renderer.
+- [`level-up.md`](./design/level-up.md): growth-curve randomized gains, minimum-growth pity, the battle
+  EXP threshold entry, the complete level-up order, post-projection fixed growth, class level caps,
+  cross-ally class-block scanning, current/derived stat and equipment refresh, stat
+  clamp/underflow bounds, enemy curse suppression, inherited spell upgrades, the Karna/HEAL 3 complete
+  prowess high-nibble matrix, the `LEVELUP_ARGUMENTS` result contract, and the original-fact and
+  remake-choice boundary for the TORT effective-level defect.
+- [`spell-resolution.md`](./design/spell-resolution.md): the implementation-neutral contract for
+  attack-spell elemental resistance bit fields, integer damage adjustment, promoted power, DAO
+  target-count division, spell critical, the shared downward spread, attack-spell EXP, HEAL 1 healing
+  and healing EXP, SLEEP/SLOW 1 status resistance and immunity, DESOUL success/instant-death/
+  multi-target kill EXP/gold, SPOIT MP absorption with boundary truncation, BOOST 1
+  attribute/recast timing, the SILENCE cast gate, and the temporary-status post-turn lifecycle and
+  persistent-scenario replay boundary.
+- [`service-interactions.md`](./design/service-interactions.md): the shop, church, caravan/depot, and
+  blacksmith action order, cancel boundaries, and static resource mutation contracts, with explicitly
+  retained persistence/timing unknowns.
+- [`save-system.md`](./design/save-system.md): the two-slot SRAM, interleaved byte layout, checksum,
+  occupied flag, the save/load/copy/delete static contracts, the single-launch in-process service
+  matrix, and the cross-process persistence and power-loss boundaries still left to H3.
+- [`input-system.md`](./design/input-system.md): two-port raw sampling, VInt current/repeat filtering,
+  input-wait helpers, and the controller/timing Unknown boundary.
+- [`window-system.md`](./design/window-system.md): the eight-slot window entry, layout
+  allocation/reclamation, packed-coordinate addressing, VInt composition/DMA call order, and the
+  presentation-timing Unknown boundary.
+- [`dialogue-system.md`](./design/dialogue-system.md): the physical layout of the six map-script
+  dialogue commands, the static cursor/name-index/portrait consumer order, the 21-case single-launch
+  handler-local H3 contract, and three explicit presentation/runtime Unknown boundaries.
+- [`party-roster-state.md`](./design/party-roster-state.md): the physical layout of the ten map-script
+  roster/death and active-party/AI/follower source forms, named-handler branch/mutation/call order,
+  alias-aware caller identity, and two grouped H3 runtime boundaries.
+- [`randomness.md`](./design/randomness.md): the static/runtime contracts for the main RNG, debug
+  directional override, AI byte RNG, bounded sampling, helper-return state, and controlled
+  source-shaped copy, plus the retry and seed-copy isolation boundary.
 
 ## Decisions
 
-`decisions/` 记录引擎、模拟器、数据格式和工具链等耐久选择。只有出现真实分歧且选择会约束
-后续实现时才创建 decision record。
+`decisions/` records durable engine, emulator, data-format, and toolchain choices. A decision record
+is created only when a real disagreement appears and the choice constrains later implementation.
 
-- [`0001-bizhawk-for-h3-runtime-observation.md`](./decisions/0001-bizhawk-for-h3-runtime-observation.md)：
-  固定 BizHawk 2.11.1，并记录 Genesis Plus GX 寄存器写入的实测边界。
-- [`0002-python-and-uv-for-project-tooling.md`](./decisions/0002-python-and-uv-for-project-tooling.md)：
-  Python/uv 工具链、稳定 CLI，以及现有 PowerShell rails 的冻结迁移边界。
-- [`0003-static-first-batched-runtime-research.md`](./decisions/0003-static-first-batched-runtime-research.md)：
-  Phase 2 先整批静态审计，再把不可静态判定的问题集中到单次 BizHawk 矩阵。
-- [`0004-single-terra-worker-with-root-acceptance.md`](./decisions/0004-single-terra-worker-with-root-acceptance.md)：
-  单一 Terra worker 完成 Phase 2 证据切片，root 线程独立复核、验证、扫描并提交的工作流边界。
-- [`0005-remake-value-driven-driver-freeze.md`](./decisions/0005-remake-value-driven-driver-freeze.md)：
-  保留既有证据与验证，同时冻结低重制价值的 driver/hardware 精确度，把 Phase 2 主线转向事件、地图、
-  UI/存档与实现无关内容合同。
-- [`0006-parallel-worktrees-and-topic-branch-integration.md`](./decisions/0006-parallel-worktrees-and-topic-branch-integration.md)：
-  `main` 串行集成、research/design 双 worktree 车道、短生命周期 topic branch、共享文件所有权与
-  tracked-only 远端检查的协作边界。
-- [`0007-schema-contract-composition-and-migration.md`](./decisions/0007-schema-contract-composition-and-migration.md)：
-  审计巨型 schema 的 golden/shape 重复，规定本地 `$ref` registry、结构合同与精确 fixture 分层，
-  并按 common-stats、common-menus、map-events、map-script/H3 的顺序迁移且不削弱负向门禁。
+- [`0001-bizhawk-for-h3-runtime-observation.md`](./decisions/0001-bizhawk-for-h3-runtime-observation.md):
+  pins BizHawk 2.11.1 and records the measured Genesis Plus GX register-write boundary.
+- [`0002-python-and-uv-for-project-tooling.md`](./decisions/0002-python-and-uv-for-project-tooling.md):
+  the Python/uv toolchain, the stable CLI, and the frozen migration boundary of the existing
+  PowerShell rails.
+- [`0003-static-first-batched-runtime-research.md`](./decisions/0003-static-first-batched-runtime-research.md):
+  Phase 2 first audits static batches, then concentrates questions that cannot be decided statically
+  into single BizHawk matrices.
+- [`0004-single-terra-worker-with-root-acceptance.md`](./decisions/0004-single-terra-worker-with-root-acceptance.md):
+  the workflow boundary where a single Terra worker completes a Phase 2 evidence slice and the root
+  thread independently reviews, verifies, scans, and commits.
+- [`0005-remake-value-driven-driver-freeze.md`](./decisions/0005-remake-value-driven-driver-freeze.md):
+  preserves existing evidence and verification while freezing low-remake-value driver/hardware
+  exactness, redirecting the Phase 2 main line to events, maps, UI/save, and implementation-neutral
+  content contracts.
+- [`0006-parallel-worktrees-and-topic-branch-integration.md`](./decisions/0006-parallel-worktrees-and-topic-branch-integration.md):
+  the collaboration boundary of serialized `main` integration, research/design dual-worktree lanes,
+  short-lived topic branches, shared-file ownership, and tracked-only remote checks.
+- [`0007-schema-contract-composition-and-migration.md`](./decisions/0007-schema-contract-composition-and-migration.md):
+  audits large schemas for golden/shape duplication, prescribes a local `$ref` registry, structural
+  contracts, and exact fixture layering, and migrates common-stats, common-menus, map-events, and
+  map-script/H3 in order without weakening negative gates.
 
 ## Evidence Vocabulary
 
-- **Confirmed**：脚本/test 可复现，或由具体反汇编位置与运行时观察共同支持。
-- **Inferred**：证据充分但尚未独立复现。
-- **Unknown**：仍需实验的问题，不允许用便利假设填空。
+- **Confirmed**: reproduced by a script/test, or directly supported by specific disassembly locations
+  and observed runtime behavior.
+- **Inferred**: the evidence is strong but not yet reproduced independently.
+- **Unknown**: an open question that still needs experiments; convenient assumptions are not allowed.
 
-根 [`README.md`](../README.md) 是范围与路线的 source of truth；根 [`AGENTS.md`](../AGENTS.md)
-是工作约束；本目录只拥有研究与设计内容。
+The root [`README.md`](../README.md) is the source of truth for scope and route; the root
+[`AGENTS.md`](../AGENTS.md) is the working constraint; this directory owns research and design
+content.
