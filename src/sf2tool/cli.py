@@ -153,6 +153,7 @@ from sf2tool.output import print_json, print_record
 from sf2tool.paths import repo_path
 from sf2tool.research_index import index_rows, index_summary, query_index, verify_index
 from sf2tool.rom import verify_rom
+from sf2tool.zh_translation import generate_zh_translation, translation_rows, verify_zh_translation
 
 DEFAULT_ROM = repo_path("local/roms/sf2-us.bin")
 DEFAULT_UPSTREAM = repo_path("local/upstream/SF2DISASM")
@@ -234,6 +235,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     design_parser = commands.add_parser("design-contracts")
     design_parser.add_subparsers(dest="design_command", required=True).add_parser("test")
+
+    zh_parser = commands.add_parser("zh-meta", help="verify or update the zh-CN translation index")
+    zh_commands = zh_parser.add_subparsers(dest="zh_command", required=True)
+    zh_commands.add_parser("test", help="validate the zh-CN translation index against the files")
+    zh_commands.add_parser(
+        "update", help="regenerate the zh-CN translation index from the repository files"
+    )
+    zh_list = zh_commands.add_parser("list", help="list zh-CN translation status per document")
+    zh_list.add_argument("--json", action="store_true")
 
     h2_parser = commands.add_parser("h2", help="run a narrow deterministic extraction rail")
     h2_commands = h2_parser.add_subparsers(dest="h2_command", required=True)
@@ -984,6 +994,17 @@ def dispatch(args: argparse.Namespace) -> None:
                 _print_rows(result)
     elif args.command == "design-contracts":
         print_record(verify_design_contracts())
+    elif args.command == "zh-meta":
+        if args.zh_command == "test":
+            print_record(verify_zh_translation())
+        elif args.zh_command == "update":
+            print_record(generate_zh_translation())
+        else:
+            rows = translation_rows()
+            if args.json:
+                print_json(rows)
+            else:
+                _print_rows(rows)
     elif args.command == "h2" and args.h2_command == "enemy-gold":
         print_record(
             verify_enemy_gold(

@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.invalid/md-sf2/schemas/core/zh-translation-index.schema.json",
+  "title": "zh-CN design translation index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "glossary", "mirrorRoot", "documents"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "glossary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "const": "docs/design/glossary.md" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "mirrorRoot": { "const": "docs/design/zh-CN" },
+    "documents": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "status"],
+        "properties": {
+          "source": {
+            "type": "string",
+            "pattern": "^docs/design/[A-Za-z0-9_.-]+\\.md$"
+          },
+          "status": { "enum": ["translated", "pending"] },
+          "mirror": {
+            "type": "string",
+            "pattern": "^docs/design/zh-CN/[A-Za-z0-9_.-]+\\.md$"
+          },
+          "sourceSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "mirrorSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "glossarySha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "translatedDate": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          }
+        },
+        "if": {
+          "properties": { "status": { "const": "translated" } },
+          "required": ["status"]
+        },
+        "then": {
+          "required": ["mirror", "sourceSha256", "mirrorSha256", "glossarySha256", "translatedDate"]
+        },
+        "else": {
+          "not": {
+            "anyOf": [
+              { "required": ["mirror"] },
+              { "required": ["sourceSha256"] },
+              { "required": ["mirrorSha256"] },
+              { "required": ["glossarySha256"] },
+              { "required": ["translatedDate"] }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
