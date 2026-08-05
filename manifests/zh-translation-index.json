@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "glossary": {
+    "path": "docs/design/glossary.md",
+    "sha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8"
+  },
+  "mirrorRoot": "docs/design/zh-CN",
+  "documents": [
+    {
+      "source": "docs/design/combat-resolution.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/dialogue-system.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/documentation-roadmap.md",
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/documentation-roadmap.md",
+      "sourceSha256": "a40d8a1c024b62c75aba085e51a12f5db3a3da2bdf9beb508807a73ebc1f5e0c",
+      "mirrorSha256": "9143955ce8a54890e81d76157dfd59aad197658e383406e575bba832e238383a",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
+    },
+    {
+      "source": "docs/design/gameplay-overview.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/input-system.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/level-up.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/map-design-principles.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/map-exploration.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/party-roster-state.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/progression-and-economy.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/randomness.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/save-system.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/service-interactions.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/spell-resolution.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/story-progression.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/tactical-battle-loop.md",
+      "status": "pending"
+    },
+    {
+      "source": "docs/design/window-system.md",
+      "status": "pending"
+    }
+  ]
+}
