@@ -276,6 +276,13 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 `design/` 将已确认行为整理成实现无关的游戏设计规格。Phase 2 开始按 subsystem 创建；不能用
 设计文档反向“证明”逆向结论。
 
+中文本地化从英文 canonical 源以专用批次进行：术语表
+[`glossary.md`](./design/glossary.md) 是英文→中文术语的单一绑定来源，镜像存于
+`design/zh-CN/`（同文件名，英文文件始终是审阅基线）。
+
+- [`glossary.md`](./design/glossary.md): accepted EN→中文 glossary and rules for zh-CN localization;
+  fixed evidence-label translations, preserved source identifiers, one-term-one-translation, proper
+  nouns kept in English, and `design/zh-CN/` mirror conventions.
 - [`documentation-roadmap.md`](./design/documentation-roadmap.md): three-layer evidence/explanation/
   modernization boundaries, the English authoring baseline, near-term synthesis order, long-term
   directions, reusable authoring structure, and collaboration governance; it is neither evidence of
