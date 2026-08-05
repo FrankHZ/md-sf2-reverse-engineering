@@ -54,8 +54,10 @@ documents include:
 - [`progression-and-economy.md`](./docs/design/progression-and-economy.md);
 - [`story-progression.md`](./docs/design/story-progression.md).
 
-English is the canonical authoring and review language for current design synthesis. Non-English
-localization waits for an accepted glossary and a dedicated QA pass.
+English is the canonical authoring and review language for current design synthesis. zh-CN
+localization proceeds as dedicated batches under the accepted glossary at
+[`docs/design/glossary.md`](./docs/design/glossary.md), with mirrors under `docs/design/zh-CN/`
+and English as the review baseline.
 
 ## Project Goals
 

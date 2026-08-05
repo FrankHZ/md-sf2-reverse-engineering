@@ -14,11 +14,17 @@ authoring and review language for new or materially revised design-synthesis doc
 source-faithful identifiers, fixture IDs, evidence labels, and code vocabulary rather than inventing
 translated equivalents.
 
-Do not create ad hoc bilingual terminology while the glossary is unsettled. Once a project glossary
-has been accepted, non-English localization from the canonical English source should happen as a
-dedicated batch with terminology consistency, link integrity, evidence-label preservation, and
-fixture-trace QA. The English source remains the review baseline unless that localization batch
-defines another explicit policy.
+**Confirmed repository decision (2026-08-04):** the project glossary is accepted at
+[`glossary.md`](./glossary.md). It is the single binding source for English-to-Chinese terminology
+in design-synthesis documents and governs the zh-CN mirror conventions under
+`docs/design/zh-CN/`. Do not create ad hoc bilingual terminology; use the glossary's fixed terms and
+rules (evidence-label translations, preserved source identifiers, one-term-one-translation, proper
+nouns kept in English with suggested annotations, and entry revision process).
+
+Non-English localization from the canonical English source proceeds as a dedicated batch per the
+glossary's rules, with terminology consistency, link integrity, evidence-label preservation, and
+fixture-trace QA. A zh-CN mirror under `docs/design/zh-CN/` is a derivative; the English source
+remains the review baseline unless a localization batch defines another explicit policy.
 
 ## Three-Layer Boundary
 
