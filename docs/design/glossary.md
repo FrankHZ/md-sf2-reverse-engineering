@@ -125,6 +125,13 @@ documents; a proper-noun suggestion (R4) may be changed per entry.
 - A mirror is not registered in `src/sf2tool/design_contracts.py`; the English file owns contract
   traceability.
 
+### R7 — Docs-index counterpart
+
+The docs index `docs/README.md` stays English-only and does not list zh-CN mirrors. Its Chinese
+reading copy lives as the sibling file `docs/README.zh-CN.md`, which is not a mirror of a design
+synthesis document and is outside the zh-meta translatable set. Each file cross-links the other at
+the top; the English file remains the review baseline.
+
 ## Term Tables
 
 ### A. Evidence and verification vocabulary
