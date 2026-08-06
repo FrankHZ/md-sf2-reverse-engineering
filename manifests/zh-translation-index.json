@@ -8,11 +8,21 @@
   "documents": [
     {
       "source": "docs/design/combat-resolution.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/combat-resolution.md",
+      "sourceSha256": "f4f2555f887f1249fa6ed50c6c4bad1e96183d35d3e055b144620024965ccc07",
+      "mirrorSha256": "6ba3b753495a02c7b5c2ad74d794e74d624bdf4bb8cd544707c344711cc56106",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/dialogue-system.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/dialogue-system.md",
+      "sourceSha256": "039bab8f24d80ddf546d8a85406a57c0f4ae7ad062d41af3d5211124e1e39dca",
+      "mirrorSha256": "36296792a130e6a924f735e04780f98d0f81221715c19c65c5368eda2bbcfd8c",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/documentation-roadmap.md",
@@ -25,59 +35,129 @@
     },
     {
       "source": "docs/design/gameplay-overview.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/gameplay-overview.md",
+      "sourceSha256": "a06c7c24d863455b9b93c963716fab4f5c53115ad1342d95ce2aa402f0bb578a",
+      "mirrorSha256": "015e115274331fd07f7b943ff62bc6cf994d7f9b8d17e62f42a14e65c51c2e5a",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/input-system.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/input-system.md",
+      "sourceSha256": "410be160afa1a70c26c382d395defa2530d325412ab671816159f57359498d33",
+      "mirrorSha256": "b470c2402a1f3c5411e8b36b8174a7b2d1cfff053fe16e562e1bba56b13ad988",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/level-up.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/level-up.md",
+      "sourceSha256": "5644b7fe22dd27e7fe1acc8635043897620c45ec85e61eb5ebd2e94506baf615",
+      "mirrorSha256": "f8ca126b9f951639fb16261d64e16295ea4872fb7b07bba502d025937b4bdb59",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/map-design-principles.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/map-design-principles.md",
+      "sourceSha256": "9cd1d39ec8d4a2b9f198f426a0d5f22784a4d425706ca0e70a75e7e2d5ce0299",
+      "mirrorSha256": "d8b85888151030f2a38f815a45deee898949a63207051359d65bf70f66372d76",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/map-exploration.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/map-exploration.md",
+      "sourceSha256": "70524e1aa86cb58cfd4e07c4f589d67ac8e6af6e9f1998afb8e00566fd7152bc",
+      "mirrorSha256": "20601c390fc2267976a388de2221a48e68adf0a9dd64ff8ba6030ab8389dfabf",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/party-roster-state.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/party-roster-state.md",
+      "sourceSha256": "8035038c31e9fc2239f2bf331089fcbd5bacd7342e46dd7461d8d9b744350660",
+      "mirrorSha256": "2bac88b2779193f2fbbdc53bcd09f487741036d4fb08d3b9369048dc8a4763a7",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/progression-and-economy.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/progression-and-economy.md",
+      "sourceSha256": "8dcd6cb4615c3e54be83aa31f2f2f509006acb6dbf875335fff0a5f3b1ac7974",
+      "mirrorSha256": "5f6fa728d647096785a4472ce2d34b8947bf3cc34019ea4e0ba51c93a2323168",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/randomness.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/randomness.md",
+      "sourceSha256": "d9b0bb614fbc803e2e4c5b107fe4603defd3ab7e6d8ad49ce290359030798029",
+      "mirrorSha256": "fc0cdee17e3d435fd62137fd5012328de827124a901159662aea06625818d2fd",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/save-system.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/save-system.md",
+      "sourceSha256": "fdd232686fa313170fd6696d3200ed0358560c3c60d245f4c6012d2aba4df70e",
+      "mirrorSha256": "72457c1b8ff8ec2fb595d4842f7517b8eabd76f723152a15b26a62eee2ea21fe",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/service-interactions.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/service-interactions.md",
+      "sourceSha256": "9a524bd94808b802f2e5e241fb44b12a6d1783f9f9c902e1587af996bbbbdcb1",
+      "mirrorSha256": "df91b9971d265e3f71355b6efb33abd0d984b6c885700246097f763b226d4cda",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/spell-resolution.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/spell-resolution.md",
+      "sourceSha256": "e6ad14931dee2358f1e6fddc353a6f95419fa11c28fae4a72453f92d41d5aa33",
+      "mirrorSha256": "b927807809b124fa2e3d2d1a19f132ddfe64c269a9ae9024b1b1267249a6476e",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/story-progression.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/story-progression.md",
+      "sourceSha256": "98a2addeeefbd5fd7f61c2f6304409069db9bd009f574c883828086de57b3704",
+      "mirrorSha256": "598198233ba40213f84e23ddda845af9522b54345b5210d39ead654a3c4cb59d",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/tactical-battle-loop.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/tactical-battle-loop.md",
+      "sourceSha256": "5cc470f46f195e10c34d10a0e099e5924c582db5e407c79bbe2a86b55add64e3",
+      "mirrorSha256": "5c003de2fe12199229a7e72e587bf46c200da18ec0dc23c19caa5a895ec618a4",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     },
     {
       "source": "docs/design/window-system.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/window-system.md",
+      "sourceSha256": "445009fa1e9d55e6e30adbfc634c3266c3daf148b9e62d0f618acdcc518fa1de",
+      "mirrorSha256": "1ccfde25553f2ab432d8f0a8dac36082c6a13bb3aada1974df567936011cadcd",
+      "glossarySha256": "341d976670c8d515346d7d312c97ebd80fc73f49a00264d49f7c1a63b95750a8",
+      "translatedDate": "2026-08-05"
     }
   ]
 }
