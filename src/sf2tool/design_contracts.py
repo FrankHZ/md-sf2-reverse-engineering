@@ -6,6 +6,11 @@ from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 
 CONTRACTS = {
+    "docs/design/contracts/battle-action-construction.md": {
+        "tests/fixtures/h2/battle-actions-static-v1.json": (
+            "sf2-battle-actions-static-v1"
+        ),
+    },
     "docs/design/contracts/battle-control-lifecycle.md": {
         "tests/fixtures/h2/battle-loop-static-v1.json": "sf2-battle-loop-static-v1",
         "tests/fixtures/h2/battle-control-static-v1.json": (
