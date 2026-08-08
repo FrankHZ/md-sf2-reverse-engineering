@@ -367,6 +367,11 @@ document whose anchors may be updated.
   the seven source-named entity gesture/relationship/motion forms, the twelve source-named
   screen/map-presentation forms, and the original-fact/Unknown/modernizable boundary with a modern
   renderer.
+- [`battle-action-construction.md`](./design/contracts/battle-action-construction.md): the implementation-neutral
+  contract for action-family routing, target and per-target order, physical early exits, item
+  use/break routing, Taros and Burst Rock gates, message-command records, and the complete static
+  54-site message corpus, while retaining caller reachability, timing, presentation, unmodeled
+  sub-routes, action choice, and downstream resolution as Unknown or separate-owner boundaries.
 - [`battle-control-lifecycle.md`](./design/contracts/battle-control-lifecycle.md): the implementation-neutral
   contract for new/resumed battle entry, round activation/spawn/turn scheduling, combatant death
   worklists and cleanup, bounded Battle 01 region and turn-order runtime behavior, double faction
