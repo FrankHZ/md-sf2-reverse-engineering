@@ -22,8 +22,10 @@ semantically understood.
 
 The canonical inventory contains 2,299 source lines, 126 global labels, 94 local labels, 116 direct
 call sites, and 45 unique direct targets. Of those targets, 26 resolve inside the directory and 19
-cross the subsystem boundary. Eighteen research-index records currently touch the directory: the
-17 inventory footholds plus the earlier `PopulateTargetsListForSpell` runtime contract.
+cross the subsystem boundary. The research index binds the 17 inventory footholds plus supporting
+cross-owner battle-loop, terrain, spell-range, and decompression records to this document. That
+evidence relationship evolves with accepted work; [`research-index.json`](../../manifests/research-index.json)
+and `uv run sf2 research-index test` are the durable current source rather than a copied record total.
 
 ## Confirmed Inventory Boundary
 
