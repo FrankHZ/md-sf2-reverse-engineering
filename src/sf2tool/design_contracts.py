@@ -308,6 +308,17 @@ CONTRACTS = {
             "sf2-battle-ai-action-choice-runtime-v1"
         ),
     },
+    "docs/design/contracts/text-and-font-system.md": {
+        "tests/fixtures/h2/text-huffman-static-v1.json": (
+            "sf2-text-huffman-static-v1"
+        ),
+        "tests/fixtures/h2/text-banks-static-v1.json": (
+            "sf2-text-banks-static-v1"
+        ),
+        "tests/fixtures/h2/variable-width-font-static-v1.json": (
+            "sf2-variable-width-font-static-v1"
+        ),
+    },
     "docs/design/contracts/window-system.md": {
         "tests/fixtures/h2/remaining-core-static-v1.json": "sf2-remaining-core-static-v1",
         "tests/fixtures/h2/ui-layout-static-v1.json": "sf2-ui-layout-static-v1",
