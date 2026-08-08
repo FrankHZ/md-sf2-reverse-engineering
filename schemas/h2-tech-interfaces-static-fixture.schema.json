@@ -1,13 +1,88 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SF2 technical interfaces static fixture",
-  "type": "object", "additionalProperties": false,
+  "type": "object",
+  "additionalProperties": false,
   "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
   "properties": {
-    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-tech-interfaces-static-v1" },
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-tech-interfaces-static-v1" },
     "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
     "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
-    "function": { "type": "object", "minProperties": 25, "maxProperties": 25, "additionalProperties": { "type": "integer", "minimum": 0 } },
-    "expected": { "type": "object", "additionalProperties": false, "required": ["interfaceFacts"], "properties": { "interfaceFacts": { "type": "object", "minProperties": 9, "maxProperties": 9 } } }
+    "function": {
+      "type": "object", "minProperties": 25, "maxProperties": 25,
+      "patternProperties": {
+        "^[A-Za-z_][A-Za-z0-9_]*$": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "indexedRecordIds", "indexedSourcePaths", "indexedRecordsBySourcePath",
+        "interfaceFacts"
+      ],
+      "properties": {
+        "indexedRecordIds": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/recordId" }
+        },
+        "indexedSourcePaths": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/sourcePath" }
+        },
+        "indexedRecordsBySourcePath": {
+          "type": "array", "minItems": 1,
+          "items": { "$ref": "#/definitions/indexedRecordsBySourcePath" }
+        },
+        "interfaceFacts": { "$ref": "#/definitions/interfaceFacts" }
+      }
+    }
+  },
+  "definitions": {
+    "recordId": {
+      "type": "string", "pattern": "^[a-z0-9.-]+$"
+    },
+    "sourcePath": {
+      "type": "string",
+      "pattern": "^code/common/tech/(?:jumpinterfaces|pointers)(?:/[A-Za-z0-9_.-]+)+\\.asm$"
+    },
+    "interfaceFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "jumpStubCount", "prefixedJumpStubCount", "nonPrefixedJumpStubCount",
+        "pointerEntryCount", "allJumpEntriesAreSinglePcRelativeJumps",
+        "allPointerEntriesAreSingleLongwordTargets", "jumpSections", "pointerSections",
+        "runtimeQuestionsRequired"
+      ],
+      "properties": {
+        "jumpStubCount": { "type": "integer", "minimum": 0 },
+        "prefixedJumpStubCount": { "type": "integer", "minimum": 0 },
+        "nonPrefixedJumpStubCount": { "type": "integer", "minimum": 0 },
+        "pointerEntryCount": { "type": "integer", "minimum": 0 },
+        "allJumpEntriesAreSinglePcRelativeJumps": { "type": "boolean" },
+        "allPointerEntriesAreSingleLongwordTargets": { "type": "boolean" },
+        "jumpSections": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 0 }
+        },
+        "pointerSections": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 0 }
+        },
+        "runtimeQuestionsRequired": { "type": "boolean" }
+      }
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourcePath", "recordIds"],
+      "properties": {
+        "sourcePath": { "$ref": "#/definitions/sourcePath" },
+        "recordIds": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/recordId" }
+        }
+      }
+    }
   }
 }

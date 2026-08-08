@@ -1,22 +1,193 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Shining Force II technical interfaces static inventory",
-  "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scopes", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "internalDirectCallTargets", "externalDirectCallTargets", "interfaceFacts", "jumpTargets", "pointerTargets", "files"],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "scopes", "summary", "indexedRecordIds",
+    "indexedSourcePaths", "indexedRecordsBySourcePath", "representativeSymbols",
+    "representativeAddresses", "internalDirectCallTargets", "externalDirectCallTargets",
+    "interfaceFacts", "jumpTargets", "pointerTargets", "files"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-tech-interfaces-static-v1" },
-    "upstream": { "type": "object" },
-    "scopes": { "const": ["code/common/tech/jumpinterfaces", "code/common/tech/pointers"] },
-    "summary": { "type": "object", "required": ["fileCount", "jumpInterfaceFileCount", "pointerFileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "layoutIncludedFileCount", "indexedRecordCount", "indexedFileCount"], "properties": { "fileCount": { "const": 25 }, "jumpInterfaceFileCount": { "const": 10 }, "pointerFileCount": { "const": 15 }, "layoutIncludedFileCount": { "const": 25 }, "indexedRecordCount": { "const": 25 }, "indexedFileCount": { "const": 25 } } },
-    "indexedRecordIds": { "type": "array", "minItems": 25, "maxItems": 25, "uniqueItems": true },
-    "indexedSourcePaths": { "type": "array", "minItems": 25, "maxItems": 25, "uniqueItems": true },
-    "representativeSymbols": { "type": "object", "minProperties": 25, "maxProperties": 25 },
-    "representativeAddresses": { "type": "object", "minProperties": 25, "maxProperties": 25 },
-    "internalDirectCallTargets": { "type": "array", "uniqueItems": true },
-    "externalDirectCallTargets": { "type": "array", "uniqueItems": true },
-    "interfaceFacts": { "type": "object", "minProperties": 9, "maxProperties": 9 },
-    "jumpTargets": { "type": "object", "minProperties": 331, "maxProperties": 331 },
-    "pointerTargets": { "type": "object", "minProperties": 60, "maxProperties": 60 },
-    "files": { "type": "array", "minItems": 25, "maxItems": 25 }
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-tech-interfaces-static-v1" },
+    "upstream": { "$ref": "#/definitions/upstream" },
+    "scopes": {
+      "const": [
+        "code/common/tech/jumpinterfaces",
+        "code/common/tech/pointers"
+      ]
+    },
+    "summary": { "$ref": "#/definitions/summary" },
+    "indexedRecordIds": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "$ref": "#/definitions/recordId" }
+    },
+    "indexedSourcePaths": {
+      "type": "array", "minItems": 25, "maxItems": 25, "uniqueItems": true,
+      "items": { "$ref": "#/definitions/sourcePath" }
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "array", "minItems": 1,
+      "items": { "$ref": "#/definitions/indexedRecordsBySourcePath" }
+    },
+    "representativeSymbols": {
+      "type": "object", "minProperties": 25, "maxProperties": 25,
+      "patternProperties": {
+        "^code/common/tech/(?:jumpinterfaces|pointers)(?:/[A-Za-z0-9_.-]+)+\\.asm$": {
+          "$ref": "#/definitions/symbol"
+        }
+      },
+      "additionalProperties": false
+    },
+    "representativeAddresses": {
+      "type": "object", "minProperties": 25, "maxProperties": 25,
+      "patternProperties": {
+        "^[A-Za-z_][A-Za-z0-9_]*$": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "internalDirectCallTargets": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "#/definitions/symbol" }
+    },
+    "externalDirectCallTargets": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "#/definitions/symbol" }
+    },
+    "interfaceFacts": { "$ref": "#/definitions/interfaceFacts" },
+    "jumpTargets": {
+      "type": "object", "minProperties": 331, "maxProperties": 331,
+      "patternProperties": {
+        "^[A-Za-z_][A-Za-z0-9_]*$": { "$ref": "#/definitions/symbol" }
+      },
+      "additionalProperties": false
+    },
+    "pointerTargets": {
+      "type": "object", "minProperties": 60, "maxProperties": 60,
+      "patternProperties": {
+        "^[A-Za-z_][A-Za-z0-9_]*$": { "$ref": "#/definitions/symbol" }
+      },
+      "additionalProperties": false
+    },
+    "files": {
+      "type": "array", "minItems": 25, "maxItems": 25,
+      "items": { "$ref": "#/definitions/sourceFile" }
+    }
+  },
+  "definitions": {
+    "recordId": {
+      "type": "string", "pattern": "^[a-z0-9.-]+$"
+    },
+    "sourcePath": {
+      "type": "string",
+      "pattern": "^code/common/tech/(?:jumpinterfaces|pointers)(?:/[A-Za-z0-9_.-]+)+\\.asm$"
+    },
+    "symbol": {
+      "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "upstream": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "summary": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "fileCount", "jumpInterfaceFileCount", "pointerFileCount", "sourceLineCount",
+        "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount",
+        "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount",
+        "externalDirectTargetCount", "layoutIncludedFileCount", "indexedRecordCount",
+        "indexedFileCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 25 },
+        "jumpInterfaceFileCount": { "const": 10 },
+        "pointerFileCount": { "const": 15 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "globalLabelCount": { "type": "integer", "minimum": 1 },
+        "localLabelCount": { "type": "integer", "minimum": 0 },
+        "directCallSiteCount": { "type": "integer", "minimum": 0 },
+        "indirectCallSiteCount": { "type": "integer", "minimum": 0 },
+        "uniqueDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "internalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "externalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "layoutIncludedFileCount": { "const": 25 },
+        "indexedRecordCount": { "type": "integer", "minimum": 0 },
+        "indexedFileCount": { "const": 25 }
+      }
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourcePath", "recordIds"],
+      "properties": {
+        "sourcePath": { "$ref": "#/definitions/sourcePath" },
+        "recordIds": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/recordId" }
+        }
+      }
+    },
+    "interfaceFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "jumpStubCount", "prefixedJumpStubCount", "nonPrefixedJumpStubCount",
+        "pointerEntryCount", "allJumpEntriesAreSinglePcRelativeJumps",
+        "allPointerEntriesAreSingleLongwordTargets", "jumpSections", "pointerSections",
+        "runtimeQuestionsRequired"
+      ],
+      "properties": {
+        "jumpStubCount": { "type": "integer", "minimum": 0 },
+        "prefixedJumpStubCount": { "type": "integer", "minimum": 0 },
+        "nonPrefixedJumpStubCount": { "type": "integer", "minimum": 0 },
+        "pointerEntryCount": { "type": "integer", "minimum": 0 },
+        "allJumpEntriesAreSinglePcRelativeJumps": { "type": "boolean" },
+        "allPointerEntriesAreSingleLongwordTargets": { "type": "boolean" },
+        "jumpSections": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 0 }
+        },
+        "pointerSections": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 0 }
+        },
+        "runtimeQuestionsRequired": { "type": "boolean" }
+      }
+    },
+    "sourceFile": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "path", "sha256", "sourceLineCount", "statementCount", "globalLabels",
+        "localLabelCount", "directCalls", "indirectCallSiteCount"
+      ],
+      "properties": {
+        "path": { "$ref": "#/definitions/sourcePath" },
+        "sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 0 },
+        "globalLabels": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/symbol" }
+        },
+        "localLabelCount": { "type": "integer", "minimum": 0 },
+        "directCalls": {
+          "type": "array", "items": { "$ref": "#/definitions/directCall" }
+        },
+        "indirectCallSiteCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "directCall": {
+      "type": "object", "additionalProperties": false,
+      "required": ["target", "siteCount"],
+      "properties": {
+        "target": { "$ref": "#/definitions/symbol" },
+        "siteCount": { "type": "integer", "minimum": 1 }
+      }
+    }
   }
 }

@@ -23,6 +23,7 @@ FIXTURE = repo_path("tests/fixtures/h2/tech-interfaces-static-v1.json")
 FIXTURE_SCHEMA = repo_path("schemas/h2-tech-interfaces-static-fixture.schema.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
+TOOLCHAIN_MANIFEST = repo_path("manifests/toolchain.json")
 
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
@@ -81,6 +82,94 @@ def _section_numbers(paths: list[Path]) -> list[int]:
     )
 
 
+def _index_records_for_source_roots(source_paths: set[str]) -> dict[str, Any]:
+    """Join every index record whose source lies under either owned root.
+
+    Membership is intentionally based only on the record's source path.  The
+    same jump-interface source can carry evidence for another subsystem, so a
+    record ID, subsystem, document, or evidence level must not affect this
+    routing-owner join.
+    """
+    records_by_source_path: dict[str, list[str]] = {}
+    for record in load_json(RESEARCH_INDEX)["records"]:
+        source_path = record["sourcePath"]
+        if not any(Path(source_path).is_relative_to(root) for root in SOURCE_ROOTS):
+            continue
+        if source_path not in source_paths:
+            raise ValueError(
+                "tech interfaces indexed source is absent from the discovered root "
+                f"inventory: {source_path}"
+            )
+        records_by_source_path.setdefault(source_path, []).append(record["id"])
+
+    indexed_records_by_source_path = [
+        {"sourcePath": source_path, "recordIds": sorted(record_ids)}
+        for source_path, record_ids in sorted(records_by_source_path.items())
+    ]
+    indexed_record_ids = [
+        record_id
+        for row in indexed_records_by_source_path
+        for record_id in row["recordIds"]
+    ]
+    if len(indexed_record_ids) != len(set(indexed_record_ids)):
+        raise ValueError("tech interfaces research-index duplicate record ID")
+    return {
+        "indexedRecordIds": sorted(indexed_record_ids),
+        "indexedSourcePaths": [
+            row["sourcePath"] for row in indexed_records_by_source_path
+        ],
+        "indexedRecordsBySourcePath": indexed_records_by_source_path,
+    }
+
+
+def _verify_indexed_record_join(output: dict[str, Any]) -> None:
+    """Reject schema-valid drift between the index join's related fields."""
+    relation = output["indexedRecordsBySourcePath"]
+    relation_source_paths = [row["sourcePath"] for row in relation]
+    relation_record_ids = [record_id for row in relation for record_id in row["recordIds"]]
+    if len(relation_source_paths) != len(set(relation_source_paths)):
+        raise ValueError("tech interfaces indexed relation duplicate source path")
+    if len(relation_record_ids) != len(set(relation_record_ids)):
+        raise ValueError("tech interfaces indexed relation duplicate record ID")
+    if any(row["recordIds"] != sorted(row["recordIds"]) for row in relation):
+        raise ValueError("tech interfaces indexed relation record order drift")
+
+    indexed_record_ids = output["indexedRecordIds"]
+    indexed_source_paths = output["indexedSourcePaths"]
+    if indexed_record_ids != sorted(relation_record_ids):
+        raise ValueError("tech interfaces indexedRecordIds relation drift")
+    if indexed_source_paths != relation_source_paths:
+        raise ValueError("tech interfaces indexedSourcePaths relation order drift")
+    file_paths = [row["path"] for row in output["files"]]
+    if len(file_paths) != len(set(file_paths)) or file_paths != sorted(file_paths):
+        raise ValueError("tech interfaces source inventory path order drift")
+    if indexed_source_paths != file_paths:
+        raise ValueError("tech interfaces indexedSourcePaths source inventory drift")
+
+    summary = output["summary"]
+    if summary["indexedRecordCount"] != len(indexed_record_ids) or summary[
+        "indexedRecordCount"
+    ] != len(relation_record_ids):
+        raise ValueError("tech interfaces summary indexedRecordCount relation drift")
+    if summary["indexedFileCount"] != len(indexed_source_paths) or summary[
+        "indexedFileCount"
+    ] != len(relation_source_paths):
+        raise ValueError("tech interfaces summary indexedFileCount relation drift")
+
+
+def _verify_fixture_provenance(fixture: dict[str, Any], output: dict[str, Any]) -> None:
+    """Derive fixture provenance from the pinned toolchain and ROM owners."""
+    toolchain = load_json(TOOLCHAIN_MANIFEST)["sf2disasm"]
+    fixture_commit = fixture["upstreamCommit"]
+    output_upstream = output["upstream"]
+    if fixture_commit != toolchain["commit"] or fixture_commit != output_upstream["commit"]:
+        raise ValueError("tech interfaces fixture upstream provenance drift")
+    if output_upstream["repository"] != toolchain["repository"]:
+        raise ValueError("tech interfaces output upstream provenance drift")
+    if fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]:
+        raise ValueError("tech interfaces fixture ROM provenance drift")
+
+
 def build_interface_inventory(upstream_path: Path) -> dict[str, Any]:
     upstream_path = upstream_path.resolve(strict=True)
     disasm, commit, toolchain = _resolve_upstream(upstream_path)
@@ -88,8 +177,8 @@ def build_interface_inventory(upstream_path: Path) -> dict[str, Any]:
     if not listing_path.is_file():
         raise ValueError(f"tech interfaces H1 listing is missing: {listing_path}")
     listing = listing_path.read_text(encoding="utf-8")
-    jump_paths = sorted((disasm / JUMP_ROOT).glob("*.asm"), key=lambda path: path.as_posix())
-    pointer_paths = sorted((disasm / POINTER_ROOT).glob("*.asm"), key=lambda path: path.as_posix())
+    jump_paths = sorted((disasm / JUMP_ROOT).rglob("*.asm"), key=lambda path: path.as_posix())
+    pointer_paths = sorted((disasm / POINTER_ROOT).rglob("*.asm"), key=lambda path: path.as_posix())
     if len(jump_paths) != 10 or len(pointer_paths) != 15:
         raise ValueError("tech interface file-count drift")
     paths = jump_paths + pointer_paths
@@ -113,11 +202,7 @@ def build_interface_inventory(upstream_path: Path) -> dict[str, Any]:
         labels.update(row["globalLabels"])
         for call in row["directCalls"]:
             calls[call["target"]] += call["siteCount"]
-    records = [
-        record
-        for record in load_json(RESEARCH_INDEX)["records"]
-        if any(Path(record["sourcePath"]).parent == root for root in SOURCE_ROOTS)
-    ]
+    indexed_records = _index_records_for_source_roots({row["path"] for row in files})
     jump_targets = _jump_targets(jump_paths)
     pointer_targets = _pointer_targets(pointer_paths)
     summary = {
@@ -134,8 +219,8 @@ def build_interface_inventory(upstream_path: Path) -> dict[str, Any]:
         "internalDirectTargetCount": sum(target in labels for target in calls),
         "externalDirectTargetCount": sum(target not in labels for target in calls),
         "layoutIncludedFileCount": len(files),
-        "indexedRecordCount": len(records),
-        "indexedFileCount": len({record["sourcePath"] for record in records}),
+        "indexedRecordCount": len(indexed_records["indexedRecordIds"]),
+        "indexedFileCount": len(indexed_records["indexedSourcePaths"]),
     }
     return {
         "schemaVersion": 1,
@@ -143,8 +228,7 @@ def build_interface_inventory(upstream_path: Path) -> dict[str, Any]:
         "upstream": {"repository": toolchain["sf2disasm"]["repository"], "commit": commit},
         "scopes": [root.as_posix() for root in SOURCE_ROOTS],
         "summary": summary,
-        "indexedRecordIds": sorted(record["id"] for record in records),
-        "indexedSourcePaths": sorted({record["sourcePath"] for record in records}),
+        **indexed_records,
         "representativeSymbols": representative_symbols,
         "representativeAddresses": representative_addresses,
         "internalDirectCallTargets": sorted(target for target in calls if target in labels),
@@ -174,17 +258,20 @@ def verify_interface_inventory(
     manifest = load_json(MANIFEST)
     output = build_interface_inventory(upstream_path)
     validate_json(output, SCHEMA, owner="tech interfaces static inventory")
-    if (
-        fixture["upstreamCommit"] != output["upstream"]["commit"]
-        or fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]
+    _verify_indexed_record_join(output)
+    _verify_fixture_provenance(fixture, output)
+    for field in (
+        "indexedRecordIds",
+        "indexedSourcePaths",
+        "indexedRecordsBySourcePath",
+        "interfaceFacts",
     ):
-        raise ValueError("tech interfaces provenance drift")
-    if output["summary"] != manifest["summary"]:
-        raise ValueError("tech interfaces summary drift")
+        if output[field] != fixture["expected"][field]:
+            raise ValueError(f"tech interfaces {field} drift")
     if output["representativeAddresses"] != fixture["function"]:
         raise ValueError("tech interfaces H1 address drift")
-    if output["interfaceFacts"] != fixture["expected"]["interfaceFacts"]:
-        raise ValueError("tech interfaces model drift")
+    if output["summary"] != manifest["summary"]:
+        raise ValueError("tech interfaces summary drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("tech interfaces canonical hash drift")

@@ -4,7 +4,7 @@
   mappings, and 60 longword-pointer mappings
 - Status: **Unknown** only for the behavior of mapped targets not covered by their owning subsystem;
   the interface structure itself has no runtime ambiguity
-- Evidence date: 2026-07-19
+- Evidence date: 2026-08-08
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -19,6 +19,12 @@ The jump interfaces span ROM sections 2, 3, 4, 5, 6, 7, and 13. Of the 331 stubs
 prefix and five retain older `sub_` names. Every global entry in these files is verified as one
 PC-relative `jmp` with a named target. The complete source/target mapping is included in canonical
 generated output and protected by its hash.
+
+The research-index join owns source-root membership, not a `tech.interfaces` ID or subsystem
+prefix. It therefore retains all 25 historical interface records and the `tech.services`
+`thinking-rng-alias` record: the latter shares `s13_jumpinterface.asm` with the section-13 routing
+record. The complete association is 26 ordered records over the unchanged 25 ordered source paths;
+the fixture owns those IDs, paths, and their per-source relation.
 
 The pointer files span sections 2, 3, 6, 8, 10, 11, 12, 13, 14, 15, 16, and 17. Every global entry is
 one `dc.l` target. These tables connect names, definitions, text banks, menus, maps, backgrounds,
