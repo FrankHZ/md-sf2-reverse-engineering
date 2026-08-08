@@ -7,6 +7,10 @@
   "mirrorRoot": "docs/design/zh-CN",
   "documents": [
     {
+      "source": "docs/design/contracts/ally-definition-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/audio-system.md",
       "status": "pending"
     },
