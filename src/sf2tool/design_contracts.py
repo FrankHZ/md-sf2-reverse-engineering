@@ -136,6 +136,14 @@ CONTRACTS = {
             "sf2-enemy-map-sprites-static-v1"
         ),
     },
+    "docs/design/contracts/item-definition-data.md": {
+        "tests/fixtures/h2/core-stats-data-static-v1.json": (
+            "sf2-core-stats-data-static-v1"
+        ),
+        "tests/fixtures/h2/item-auxiliary-static-v1.json": (
+            "sf2-item-auxiliary-static-v1"
+        ),
+    },
     "docs/design/contracts/party-roster-state.md": {
         "tests/fixtures/h2/map-script-engine-static-v1.json": (
             "sf2-map-script-engine-static-v1"

@@ -364,6 +364,11 @@ document whose anchors may be updated.
   references, the distinct 63-row NPC map-sprite tail, and the unchecked map-sprite lookup boundary,
   while retaining nonstandard tail reachability, runtime transforms, encounter design, AI, combat,
   rewards, presentation, and balance as separate-owner or Unknown boundaries.
+- [`item-definition-data.md`](./design/contracts/item-definition-data.md): the implementation-neutral
+  contract for 128 item identities and fixed definitions, shop/debug/chest/break/mithril/Caravan/
+  field-use catalogs, weapon-graphics references, and bounded lookup rules, while retaining runtime
+  transactions, effects, RNG, persistence, presentation, economy balance, and replacement content
+  as separate-owner, Unknown, or deliberate-design boundaries.
 - [`audio-system.md`](./design/contracts/audio-system.md): the implementation-neutral contract for
   music/SFX command identities, two-bank slot and target aliases, headers and channel roles, the
   static macro/note/sample/instrument/SFX domains, and the bounded four-command playback-state
