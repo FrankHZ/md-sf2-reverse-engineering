@@ -6,6 +6,17 @@ from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 
 CONTRACTS = {
+    "docs/design/contracts/audio-system.md": {
+        "tests/fixtures/h2/gameflow-core-static-v1.json": (
+            "sf2-gameflow-core-static-v1"
+        ),
+        "tests/fixtures/h2/sound-data-static-v1.json": (
+            "sf2-sound-data-static-v1"
+        ),
+        "tests/fixtures/h3/sound-timing-v1.json": (
+            "sf2-sound-timing-runtime-v1"
+        ),
+    },
     "docs/design/contracts/battle-ai-decision.md": {
         "tests/fixtures/h2/battle-ai-static-v1.json": "sf2-battle-ai-static-v1",
         "tests/fixtures/h2/battle-ai-priority-static-v1.json": (
