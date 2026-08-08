@@ -1,7 +1,8 @@
 # Remaining Technical Services
 
 - Status: **Confirmed** for the complete 12-file source boundary, eleven main-ROM representative
-  addresses, twenty technical-resource incbin mappings, byte-copy direction, input scan/wait shape,
+  addresses, twenty technical-resource incbin mappings, byte-copy direction, input scan and bounded
+  direct wait/VInt behavior,
   SRAM slot/checksum structure, the complete variable-width-font, context-Huffman, and witch-menu
   direct payload/pointer boundaries, the four-stream unused-cloud and two-palette unused-base
   boundaries, the 68000 music-wait command, Z80 driver build chain, and the complete six-entry RNG
@@ -10,7 +11,7 @@
 - Status: **Inferred** for caller-visible retry distribution and perceived RNG delay
 - Status: **Unknown** for controller hardware edge cases, SRAM persistence/corruption behavior, and
   rendered/audio timing
-- Evidence date: 2026-08-03
+- Evidence date: 2026-08-08
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -82,8 +83,8 @@ state bytes per port, and stores contiguous Player 1 then Player 2 raw state. Ea
 TH low then high, shifts/masks `$C0`, combines a `$3F` read, and inverts before storing. The VInt repeat
 stage is owned by the technical-interrupt rail: it transforms raw input into current/last input with a
 24-frame initial delay and six-frame cadence. The H2 source inventory additionally records the static
-shapes of `WaitForPlayerInput`, `WaitForPlayer1NewInput`, the one/three-second waits, and `sub_15A4`,
-but does not promote their caller-dependent runtime behavior here. The comment-stripping parser finds
+shapes of `WaitForPlayerInput`, `WaitForPlayer1NewInput`, the one/three-second waits, and `sub_15A4`.
+The comment-stripping parser finds
 four source-local `WaitForVInt` call sites and eleven external sites across nine callers: one
 `UpdatePlayerInputs` site and ten `WaitForPlayerInput` sites; the remaining four entry points have
 zero static direct-call sites, which does not establish runtime reachability.
@@ -97,13 +98,25 @@ with the six-frame cadence. The observer confirms the direct call/target/return 
 repeat cases, the original nested `ApplyZ80BusUpdates` call to `UpdatePlayerInputs` at H1
 `0x09F6`/`0x09FA`. `CheckSram` return redirection is bootstrap-only. This is direct VInt input-stage
 observation, not normal `WaitForVInt` caller progression, UI behavior, or a hardware-latency result.
-The temporary work-RAM gate arms one direct call after each host frame boundary and pauses after its
-return, so the fixture's real joypad input is visible before every observed original call.
-Reproduce with `uv run sf2 h3 controller-input --timeout-seconds 180`.
+The same launch directly calls the four original wait helpers. `WaitForPlayerInput` returns from a
+preloaded recognized current input or after two original `WaitForVInt` cycles. `WaitForPlayer1NewInput`
+observes neutral-to-press and held-to-release-to-repress. The one- and three-second helpers return on a
+preloaded recognized Player 1 input or after exactly 60 and 180 original `WaitForVInt` cycles,
+respectively. Each cycle records the original `WaitForVInt` call, entry, RTS, and caller return; the
+enabled original `VInt` entry and its `ApplyZ80BusUpdates` input stage; raw/repeat state; and the
+timed helpers' restored `d5`. The observer counts VInt input only while the source-owned wait window is active and
+`WAITING_NEXT_VINT` at `$FFDEF7` is nonzero before VInt clears it, excluding the harness's SR-unmask
+edge from evidence. The SR-unmask probe can also permit an unowned preamble VInt before the first
+source-owned wait cycle. At that first original `WaitForVInt` call site only, the harness writes and
+reads back `CURRENT_PLAYER_INPUT` and `LAST_PLAYER_INPUT` from the fixture's initial Player 1 byte and
+sets `INPUT_REPEAT_DELAYER` to zero; later original wait cycles are untouched. This one-time RAM
+normalization excludes that unowned preamble side effect and is not evidence for natural normal-caller
+state. Joypad changes occur at the original wait-to-VInt call seam. This confirms that bounded helper
+execution progresses through the enabled VInt input stage, not a normal game/UI caller or hardware
+latency boundary. Reproduce with `uv run sf2 h3 controller-input --timeout-seconds 180`.
 
-**Unknown:** runtime `WaitForPlayerInput`, `WaitForPlayer1NewInput`, one/three-second waits, and
-`sub_15A4`; controller-model and three-/six-button negotiation; hardware latency; and user-visible
-UI/menu timing. The implementation-neutral contract is
+**Unknown:** `sub_15A4`; controller-model and three-/six-button negotiation; hardware latency; normal
+game/UI caller meaning or reachability; and user-visible UI/menu timing. The implementation-neutral contract is
 [`input-system.md`](../design/contracts/input-system.md).
 ADR 0005's 2026-07-23 priority decision freezes raw controller electrical/model/latency exactness
 after the visible input contract is adequate; it does not freeze a concrete UI/menu acceptance gap in

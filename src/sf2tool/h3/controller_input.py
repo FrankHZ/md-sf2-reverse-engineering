@@ -1,8 +1,10 @@
-"""One-launch raw controller sampling and VInt repeat matrix.
+"""One-launch controller raw-sampling, repeat, and bounded direct-wait matrix.
 
-This H3 rail deliberately stops at the direct ``UpdatePlayerInputs`` seam and
-the input portion of the original ``ApplyZ80BusUpdates`` VInt stage.  It does
-not model input wait helpers, controller negotiation, or any UI consumer.
+The rail observes five direct ``UpdatePlayerInputs`` raw two-port cases, three
+direct ``ApplyZ80BusUpdates`` repeat cases, and eight direct original wait-helper
+cases through their owned ``WaitForVInt``/enabled-VInt input-stage progression.
+It does not establish ``sub_15A4``, controller negotiation or latency, normal
+game/UI caller progression, or user-visible UI behavior.
 """
 
 from __future__ import annotations
@@ -36,6 +38,8 @@ STATUS_PREFIX = CALLBACK_FAILURE_PREFIX
 OBSERVER_FAILURE_CONTRACT = observer_failure_contract(OWNER)
 INPUT_SOURCE = Path("code/common/tech/input.asm")
 INTERRUPT_SOURCE = Path("code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm")
+VINT_ENGINE_SOURCE = Path("code/common/tech/interrupts/vintengine_1.asm")
+VINT_SOURCE = Path("code/common/tech/interrupts/vint.asm")
 CONST_SOURCE = Path("sf2const.asm")
 ENUM_SOURCE = Path("sf2enums.asm")
 LISTING = Path("build/sf2build-h1.lst")
@@ -70,9 +74,16 @@ INPUT_ADDRESS_NAMES = (
 )
 DIRECT_CALL_PC = 0xFF6820
 DIRECT_RETURN_PC = DIRECT_CALL_PC + 6
+WAIT_HELPERS = (
+    "WaitForPlayerInput",
+    "WaitForPlayer1NewInput",
+    "WaitForInputFor1Second",
+    "WaitForInputFor3Seconds",
+)
+WAIT_D5_SENTINEL = 0x13579BDF
 
 
-def callback_expectations(static: dict[str, Any]) -> dict[str, list[dict[str, int | str]]]:
+def callback_expectations(static: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
     """The exact source/H1 callback roles used by the one physical-PC dispatcher."""
     update = static["functionEntries"]["UpdatePlayerInputs"]
     apply = static["functionEntries"]["ApplyZ80BusUpdates"]
@@ -92,25 +103,106 @@ def callback_expectations(static: dict[str, Any]) -> dict[str, list[dict[str, in
         "targetAddress": update,
         "returnAddress": source_return,
     }
-    return {
+    expectations: dict[str, list[dict[str, Any]]] = {
         "sample": [
-            {"role": "direct-call", **direct_sample},
-            {"role": "update-target", **direct_sample},
-            {"role": "direct-return", **direct_sample},
+            {"role": "direct-call", "callbackAddress": DIRECT_CALL_PC, **direct_sample},
+            {"role": "update-target", "callbackAddress": update, **direct_sample},
+            {"role": "direct-return", "callbackAddress": DIRECT_RETURN_PC, **direct_sample},
         ],
         "repeat": [
-            {"role": "direct-call", **direct_repeat},
-            {"role": "apply-target", **direct_repeat},
-            {"role": "source-call", **nested_repeat},
-            {"role": "update-target", **nested_repeat},
-            {"role": "source-return", **nested_repeat},
-            {"role": "direct-return", **direct_repeat},
+            {"role": "direct-call", "callbackAddress": DIRECT_CALL_PC, **direct_repeat},
+            {"role": "apply-target", "callbackAddress": apply, **direct_repeat},
+            {"role": "source-call", "callbackAddress": source_call, **nested_repeat},
+            {"role": "update-target", "callbackAddress": update, **nested_repeat},
+            {"role": "source-return", "callbackAddress": source_return, **nested_repeat},
+            {"role": "direct-return", "callbackAddress": DIRECT_RETURN_PC, **direct_repeat},
         ],
     }
+    vint_apply_call, vint_apply_return = static["flow"]["vIntApplyInput"]
+    for helper in WAIT_HELPERS:
+        target = static["functionEntries"][helper]
+        direct_wait = {
+            "callSiteAddress": DIRECT_CALL_PC,
+            "targetAddress": target,
+            "returnAddress": DIRECT_RETURN_PC,
+        }
+        entries = [
+            {"role": "direct-call", "callbackAddress": DIRECT_CALL_PC, **direct_wait},
+            {"role": "wait-helper-target", "callbackAddress": target, **direct_wait},
+            {
+                "role": "wait-helper-return",
+                "callbackAddress": static["flow"]["waitHelper"][helper]["rtsPc"],
+                **direct_wait,
+            },
+            {"role": "direct-return", "callbackAddress": DIRECT_RETURN_PC, **direct_wait},
+            {
+                "role": "vint-target",
+                "callbackAddress": static["functionEntries"]["VInt"],
+                "callSiteAddress": None,
+                "targetAddress": None,
+                "returnAddress": None,
+            },
+            {
+                "role": "vint-input-call",
+                "callbackAddress": vint_apply_call,
+                "callSiteAddress": vint_apply_call,
+                "targetAddress": apply,
+                "returnAddress": vint_apply_return,
+            },
+            {
+                "role": "vint-input-stage",
+                "callbackAddress": apply,
+                "callSiteAddress": vint_apply_call,
+                "targetAddress": apply,
+                "returnAddress": vint_apply_return,
+            },
+            {
+                "role": "vint-input-return",
+                "callbackAddress": vint_apply_return,
+                "callSiteAddress": vint_apply_call,
+                "targetAddress": apply,
+                "returnAddress": vint_apply_return,
+            },
+        ]
+        for flow_index, (call, returned) in enumerate(
+            static["flow"]["waitHelper"][helper]["vintCalls"]
+        ):
+            wait_for_vint = {
+                "flowIndex": flow_index,
+                "callSiteAddress": call,
+                "targetAddress": static["functionEntries"]["WaitForVInt"],
+                "returnAddress": returned,
+            }
+            entries.extend(
+                (
+                    {
+                        "role": "wait-for-vint-call",
+                        "callbackAddress": call,
+                        **wait_for_vint,
+                    },
+                    {
+                        "role": "wait-for-vint-target",
+                        "callbackAddress": static["functionEntries"]["WaitForVInt"],
+                        **wait_for_vint,
+                    },
+                    {
+                        "role": "wait-for-vint-rts",
+                        "callbackAddress": static["flow"]["waitForVIntRtsPc"],
+                        **wait_for_vint,
+                    },
+                    {
+                        "role": "wait-for-vint-return",
+                        "callbackAddress": returned,
+                        **wait_for_vint,
+                    },
+                )
+            )
+        expectations[helper] = entries
+    return expectations
 
 
 def validate_callback_expectations(
-    static: dict[str, Any], actual: dict[str, list[dict[str, int | str]]]
+    static: dict[str, Any], actual: dict[str, list[dict[str, Any]]]
 ) -> None:
     if actual != callback_expectations(static):
         raise ValueError("controller-input callback role expectation drift")
@@ -118,10 +210,17 @@ def validate_callback_expectations(
 
 def observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     """Build the input-only runtime request plus exact callback control-flow guards."""
-    runtime_static = {
-        **static,
-        "flow": {**static["flow"], "applyInputCall": list(static["flow"]["applyInputCall"])},
-    }
+
+    def lua_value(value: Any) -> Any:
+        if isinstance(value, tuple):
+            return [lua_value(item) for item in value]
+        if isinstance(value, list):
+            return [lua_value(item) for item in value]
+        if isinstance(value, dict):
+            return {key: lua_value(item) for key, item in value.items()}
+        return value
+
+    runtime_static = lua_value(static)
     return {
         "id": fixture["id"],
         "core": fixture["emulator"]["core"],
@@ -129,6 +228,8 @@ def observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str
         "cases": fixture["cases"],
         "static": runtime_static,
         "callbackExpectations": callback_expectations(static),
+        "waitExpectations": wait_expectations(fixture, static),
+        "probeD5": WAIT_D5_SENTINEL,
         "observerFailureContract": OBSERVER_FAILURE_CONTRACT,
     }
 
@@ -218,6 +319,13 @@ def _h1_return_address(listing: str, symbol: str) -> int:
     return records[0][0]
 
 
+def _h1_label_address(listing: str, label: str) -> int:
+    records = re.findall(rf"^([0-9A-F]{{8}})\s+{re.escape(label)}:\s*$", listing, re.MULTILINE)
+    if len(records) != 1:
+        raise ValueError(f"controller-input H1 guard expected one label: {label}")
+    return int(records[0], 16)
+
+
 def _h1_first_instruction(listing: str, symbol: str) -> bytes:
     start = re.search(rf"^[0-9A-F]{{8}}\s+{re.escape(symbol)}:\s*$", listing, re.MULTILINE)
     if not start:
@@ -226,6 +334,26 @@ def _h1_first_instruction(listing: str, symbol: str) -> bytes:
     if not match:
         raise ValueError(f"controller-input H1 guard missing first instruction: {symbol}")
     return bytes.fromhex(re.sub(r"\s+", "", match.group(1)))
+
+
+def _h1_instruction_bytes(listing: str, symbol: str, instruction: str) -> bytes:
+    start = re.search(rf"^[0-9A-F]{{8}}\s+{re.escape(symbol)}:\s*$", listing, re.MULTILINE)
+    if not start:
+        raise ValueError(f"controller-input H1 guard missing symbol: {symbol}")
+    end = listing.find(f"; End of function {symbol}", start.end())
+    if end < 0:
+        raise ValueError(f"controller-input H1 guard missing end marker: {symbol}")
+    encoded_matches: list[bytes] = []
+    normalized = re.sub(r"\s+", " ", instruction.strip())
+    for line in listing[start.end() : end].splitlines():
+        match = re.fullmatch(r"[0-9A-F]{8}\s+((?:[0-9A-F]{4}\s+)+)\s+(.+?)\s*", line)
+        if match and re.sub(r"\s+", " ", match.group(2).strip()) == normalized:
+            encoded_matches.append(bytes.fromhex(re.sub(r"\s+", "", match.group(1))))
+    if len(encoded_matches) != 1:
+        raise ValueError(
+            f"controller-input H1 guard expected one {symbol} instruction: {instruction}"
+        )
+    return encoded_matches[0]
 
 
 def _owner_facts(
@@ -252,12 +380,15 @@ def _owner_facts(
     repeat = interrupts["expected"]["interruptFacts"]["inputRepeat"]
     bootstrap = services["expected"]["sramFacts"]["functionEntries"]["CheckSram"]
     apply = interrupts["function"].get("ApplyZ80BusUpdates")
+    vint = interrupts["function"].get("VInt")
     if (
         facts["sourcePath"] != INPUT_SOURCE.as_posix()
         or provenance["inputSourcePath"] != facts["sourcePath"]
         or provenance["interruptSourcePath"] != INTERRUPT_SOURCE.as_posix()
         or facts["functionEntries"].get("UpdatePlayerInputs") is None
         or not isinstance(apply, int)
+        or not isinstance(vint, int)
+        or any(not isinstance(facts["functionEntries"].get(name), int) for name in WAIT_HELPERS)
     ):
         raise ValueError("controller-input H2 owner shape drift")
     if (
@@ -267,6 +398,14 @@ def _owner_facts(
         raise ValueError("controller-input source context disagrees with H2 input entry")
     if fixture["sourceContext"]["applyZ80BusUpdatesEntryAddress"] != apply:
         raise ValueError("controller-input source context disagrees with H2 interrupt entry")
+    for name in WAIT_HELPERS:
+        field = name[0].lower() + name[1:] + "EntryAddress"
+        if fixture["sourceContext"][field] != facts["functionEntries"][name]:
+            raise ValueError(
+                f"controller-input source context disagrees with H2 input entry: {name}"
+            )
+    if fixture["sourceContext"]["vIntEntryAddress"] != vint:
+        raise ValueError("controller-input source context disagrees with H2 VInt entry")
     return facts, repeat, bootstrap
 
 
@@ -275,6 +414,8 @@ def _source_contract(
     repeat: dict[str, Any],
     input_source: str,
     interrupt_source: str,
+    vint_engine_source: str,
+    vint_source: str,
     const_source: str,
     enum_source: str,
 ) -> tuple[dict[str, int], dict[str, int], int]:
@@ -347,6 +488,97 @@ def _source_contract(
         "unchangedInputSuppressedBeforeDelay": True,
     }:
         raise ValueError("controller-input H2 repeat derivation drift")
+    waits = facts["waits"]
+    expected_waits = {
+        "recognizedButtonMask": recognized_mask,
+        "waitForPlayerInputUsesCurrentInput": True,
+        "waitForPlayerInputReturnsWhenRecognizedInputIsNonzero": True,
+        "waitForPlayer1NewInputRequiresReleaseThenRecognizedPress": True,
+        "oneSecondMaximumVintWaits": 60,
+        "threeSecondMaximumVintWaits": 180,
+        "boundedWaitsReturnEarlyOnRecognizedPlayer1Input": True,
+    }
+    if waits != expected_waits:
+        raise ValueError("controller-input H2 wait derivation drift")
+    button_mask_operands = (
+        "#input_up|input_down|input_left|input_right|input_b|input_c|input_a|input_start"
+    )
+    current_mask = button_mask_operands + ",((current_player_input-$1000000)).w"
+    player1_mask = button_mask_operands + ",((player_1_input-$1000000)).w"
+    _require_order(
+        input_source,
+        "WaitForPlayerInput",
+        (
+            ("andi.b", current_mask),
+            ("bne.s", "@return"),
+            ("bsr.w", "waitforvint"),
+            ("bra.s", "waitforplayerinput"),
+            ("rts", ""),
+        ),
+    )
+    _require_order(
+        input_source,
+        "WaitForPlayer1NewInput",
+        (
+            ("andi.b", player1_mask),
+            ("beq.s", "@wait"),
+            ("bsr.w", "waitforvint"),
+            ("bra.s", "waitforplayer1newinput"),
+            ("andi.b", player1_mask),
+            ("bne.s", "@return"),
+            ("bsr.w", "waitforvint"),
+            ("bra.s", "@wait"),
+            ("rts", ""),
+        ),
+    )
+    _require_order(
+        input_source,
+        "WaitForInputFor1Second",
+        (
+            ("movem.l", "d5,-(sp)"),
+            ("moveq", "#59,d5"),
+            ("andi.b", player1_mask),
+            ("bne.s", "@done"),
+            ("bsr.w", "waitforvint"),
+            ("dbf", "d5,waitforinput_loop"),
+            ("movem.l", "(sp)+,d5"),
+            ("rts", ""),
+        ),
+    )
+    _require_order(
+        input_source,
+        "WaitForInputFor3Seconds",
+        (
+            ("movem.l", "d5,-(sp)"),
+            ("move.l", "#179,d5"),
+            ("bra.s", "waitforinput_loop"),
+        ),
+    )
+    _require_count(input_source, "WaitForPlayerInput", ("bsr.w", "waitforvint"), 1)
+    _require_count(input_source, "WaitForPlayer1NewInput", ("bsr.w", "waitforvint"), 2)
+    _require_count(input_source, "WaitForInputFor1Second", ("bsr.w", "waitforvint"), 1)
+    _require_order(
+        vint_engine_source,
+        "WaitForVInt",
+        (
+            ("bset", "#enable_vint,(vint_parameters).l"),
+            ("move.b", "#1,((waiting_next_vint-$1000000)).w"),
+            ("tst.b", "((waiting_next_vint-$1000000)).w"),
+            ("bne.s", "@wait"),
+            ("rts", ""),
+        ),
+    )
+    _require_order(
+        vint_source,
+        "VInt",
+        (
+            ("bclr", "#enable_vint,(vint_parameters).l"),
+            ("beq.s", "@skipupdates"),
+            ("bsr.w", "applyz80busupdates"),
+            ("bsr.w", "callcontextualfunctions"),
+            ("clr.b", "((waiting_next_vint-$1000000)).w"),
+        ),
+    )
     return addresses, masks, recognized_mask
 
 
@@ -358,6 +590,9 @@ def build_static_contract(
     h2_interrupts_fixture_path: Path = H2_INTERRUPTS_FIXTURE,
     input_source_text: str | None = None,
     interrupt_source_text: str | None = None,
+    vint_engine_source_text: str | None = None,
+    vint_source_text: str | None = None,
+    const_source_text: str | None = None,
     listing_text: str | None = None,
 ) -> dict[str, Any]:
     """Derive all runtime addresses/masks from accepted H2, H1, and source use sites."""
@@ -370,28 +605,138 @@ def build_static_contract(
     interrupt_source = interrupt_source_text or (disasm / INTERRUPT_SOURCE).read_text(
         encoding="utf-8"
     )
-    const_source = (disasm / CONST_SOURCE).read_text(encoding="utf-8")
+    vint_engine_source = vint_engine_source_text or (disasm / VINT_ENGINE_SOURCE).read_text(
+        encoding="utf-8"
+    )
+    vint_source = vint_source_text or (disasm / VINT_SOURCE).read_text(encoding="utf-8")
+    const_source = const_source_text or (disasm / CONST_SOURCE).read_text(encoding="utf-8")
     enum_source = (disasm / ENUM_SOURCE).read_text(encoding="utf-8")
     listing = listing_text or (upstream / LISTING).read_text(encoding="utf-8")
     addresses, masks, recognized_mask = _source_contract(
-        facts, repeat, input_source, interrupt_source, const_source, enum_source
+        facts,
+        repeat,
+        input_source,
+        interrupt_source,
+        vint_engine_source,
+        vint_source,
+        const_source,
+        enum_source,
     )
+    waiting_next_vint = _equate(const_source, "WAITING_NEXT_VINT")
+    if fixture["sourceContext"]["waitingNextVIntAddress"] != waiting_next_vint:
+        raise ValueError("controller-input source context disagrees with WAITING_NEXT_VINT")
     symbols = listing_symbol_addresses(listing)
     update = facts["functionEntries"]["UpdatePlayerInputs"]
     apply = interrupts["function"]["ApplyZ80BusUpdates"]
+    vint = interrupts["function"]["VInt"]
+    wait_entries = {name: facts["functionEntries"][name] for name in WAIT_HELPERS}
+    wait_for_vint = symbols.get("WaitForVInt")
     if (
         symbols.get("UpdatePlayerInputs") != update
         or symbols.get("ApplyZ80BusUpdates") != apply
+        or symbols.get("VInt") != vint
+        or not isinstance(wait_for_vint, int)
+        or any(symbols.get(name) != address for name, address in wait_entries.items())
         or symbols.get("CheckSram") != check_sram
     ):
         raise ValueError("controller-input H2/H1 entry derivation drift")
+    wait_for_vint_rts = _h1_return_address(listing, "WaitForVInt")
+    wait_for_vint_waiting_set = _one_h1_instruction(
+        listing, "WaitForVInt", "move.b  #1,((WAITING_NEXT_VINT-$1000000)).w"
+    )
+    vint_waiting_clear = _one_h1_instruction(
+        listing, "VInt", "clr.b   ((WAITING_NEXT_VINT-$1000000)).w"
+    )
+    wait_helper_flow = {
+        "WaitForPlayerInput": {
+            "entry": wait_entries["WaitForPlayerInput"],
+            "rtsPc": _h1_return_address(listing, "WaitForPlayerInput"),
+            "vintCalls": [
+                _one_h1_instruction(listing, "WaitForPlayerInput", "bsr.w   WaitForVInt")
+            ],
+        },
+        "WaitForPlayer1NewInput": {
+            "entry": wait_entries["WaitForPlayer1NewInput"],
+            "rtsPc": _h1_return_address(listing, "WaitForPlayer1NewInput"),
+            "vintCalls": [
+                (address, address + width)
+                for address, width in _h1_instruction_addresses(
+                    listing, "WaitForPlayer1NewInput", "bsr.w   WaitForVInt"
+                )
+            ],
+        },
+        "WaitForInputFor1Second": {
+            "entry": wait_entries["WaitForInputFor1Second"],
+            "rtsPc": _h1_return_address(listing, "WaitForInputFor1Second"),
+            "vintCalls": [
+                _one_h1_instruction(listing, "WaitForInputFor1Second", "bsr.w   WaitForVInt")
+            ],
+        },
+        "WaitForInputFor3Seconds": {
+            "entry": wait_entries["WaitForInputFor3Seconds"],
+            "rtsPc": _h1_return_address(listing, "WaitForInputFor1Second"),
+            "vintCalls": [
+                _one_h1_instruction(listing, "WaitForInputFor1Second", "bsr.w   WaitForVInt")
+            ],
+            "loopBranch": _one_h1_instruction(
+                listing, "WaitForInputFor3Seconds", "bra.s   WaitForInput_Loop"
+            ),
+        },
+    }
+    if len(wait_helper_flow["WaitForPlayer1NewInput"]["vintCalls"]) != 2:
+        raise ValueError("controller-input H1 guard expected two WaitForPlayer1NewInput VInt calls")
     if (
-        fixture["sourceContext"]["updatePlayerInputsEntryAddress"]
-        != symbols["UpdatePlayerInputs"]
+        fixture["sourceContext"]["updatePlayerInputsEntryAddress"] != symbols["UpdatePlayerInputs"]
         or fixture["sourceContext"]["applyZ80BusUpdatesEntryAddress"]
         != symbols["ApplyZ80BusUpdates"]
+        or fixture["sourceContext"]["waitForVIntEntryAddress"] != wait_for_vint
+        or fixture["sourceContext"]["waitForVIntRtsPc"] != wait_for_vint_rts
+        or fixture["sourceContext"]["vIntEntryAddress"] != vint
+        or fixture["sourceContext"]["timedWaitLoopEntryAddress"]
+        != _h1_label_address(listing, "WaitForInput_Loop")
     ):
         raise ValueError("controller-input source context disagrees with H1 entry")
+    for name, flow in wait_helper_flow.items():
+        prefix = name[0].lower() + name[1:]
+        if fixture["sourceContext"][prefix + "RtsPc"] != flow["rtsPc"]:
+            raise ValueError(f"controller-input source context disagrees with H1 return: {name}")
+    expected_context = {
+        "waitForPlayerInputVIntCallAddress": wait_helper_flow["WaitForPlayerInput"]["vintCalls"][0][
+            0
+        ],
+        "waitForPlayerInputVIntReturnAddress": wait_helper_flow["WaitForPlayerInput"]["vintCalls"][
+            0
+        ][1],
+        "waitForPlayer1NewInputReleaseVIntCallAddress": wait_helper_flow["WaitForPlayer1NewInput"][
+            "vintCalls"
+        ][0][0],
+        "waitForPlayer1NewInputReleaseVIntReturnAddress": wait_helper_flow[
+            "WaitForPlayer1NewInput"
+        ]["vintCalls"][0][1],
+        "waitForPlayer1NewInputPressVIntCallAddress": wait_helper_flow["WaitForPlayer1NewInput"][
+            "vintCalls"
+        ][1][0],
+        "waitForPlayer1NewInputPressVIntReturnAddress": wait_helper_flow["WaitForPlayer1NewInput"][
+            "vintCalls"
+        ][1][1],
+        "timedWaitVIntCallAddress": wait_helper_flow["WaitForInputFor1Second"]["vintCalls"][0][0],
+        "timedWaitVIntReturnAddress": wait_helper_flow["WaitForInputFor1Second"]["vintCalls"][0][1],
+        "waitForInputFor3SecondsLoopBranchAddress": wait_helper_flow["WaitForInputFor3Seconds"][
+            "loopBranch"
+        ][0],
+        "waitForInputFor3SecondsLoopReturnAddress": wait_helper_flow["WaitForInputFor3Seconds"][
+            "loopBranch"
+        ][1],
+        "vIntApplyInputCallAddress": _one_h1_instruction(
+            listing, "VInt", "bsr.w   ApplyZ80BusUpdates"
+        )[0],
+        "vIntApplyInputReturnAddress": _one_h1_instruction(
+            listing, "VInt", "bsr.w   ApplyZ80BusUpdates"
+        )[1],
+    }
+    for key, value in expected_context.items():
+        if fixture["sourceContext"][key] != value:
+            raise ValueError(f"controller-input source context disagrees with H1: {key}")
     apply_input_call = _one_h1_instruction(
         listing, "ApplyZ80BusUpdates", "bsr.w   UpdatePlayerInputs"
     )
@@ -400,16 +745,26 @@ def build_static_contract(
             "CheckSram": check_sram,
             "UpdatePlayerInputs": update,
             "ApplyZ80BusUpdates": apply,
+            "WaitForVInt": wait_for_vint,
+            "VInt": vint,
+            **wait_entries,
         },
         "addresses": addresses,
         "buttonMasks": masks,
         "recognizedButtonMask": recognized_mask,
         "sampling": facts["sampling"],
         "repeat": repeat,
+        "waits": facts["waits"],
         "flow": {
             "applyInputCall": apply_input_call,
             "updateRtsPc": _h1_return_address(listing, "UpdatePlayerInputs"),
             "applyRtsPc": _h1_return_address(listing, "ApplyZ80BusUpdates"),
+            "waitForVIntRtsPc": wait_for_vint_rts,
+            "waitingNextVIntAddress": waiting_next_vint,
+            "waitForVIntWaitingFlagSet": wait_for_vint_waiting_set,
+            "vIntWaitingFlagClear": vint_waiting_clear,
+            "waitHelper": wait_helper_flow,
+            "vIntApplyInput": _one_h1_instruction(listing, "VInt", "bsr.w   ApplyZ80BusUpdates"),
         },
     }
 
@@ -420,11 +775,26 @@ def validate_static_contract(
     static = build_static_contract(fixture, upstream_path)
     listing = (upstream_path.resolve(strict=True) / LISTING).read_text(encoding="utf-8")
     rom = rom_path.resolve(strict=True).read_bytes()
-    for symbol in ("UpdatePlayerInputs", "ApplyZ80BusUpdates", "CheckSram"):
+    for symbol in (
+        "UpdatePlayerInputs",
+        "ApplyZ80BusUpdates",
+        "CheckSram",
+        "WaitForVInt",
+        "VInt",
+        *WAIT_HELPERS,
+    ):
         address = static["functionEntries"][symbol]
         opcode = _h1_first_instruction(listing, symbol)
         if rom[address : address + len(opcode)] != opcode:
             raise ValueError(f"controller-input H1/ROM first-instruction guard drift: {symbol}")
+    for symbol, instruction in (
+        ("WaitForVInt", "move.b  #1,((WAITING_NEXT_VINT-$1000000)).w"),
+        ("VInt", "clr.b   ((WAITING_NEXT_VINT-$1000000)).w"),
+    ):
+        address, _ = _one_h1_instruction(listing, symbol, instruction)
+        opcode = _h1_instruction_bytes(listing, symbol, instruction)
+        if rom[address : address + len(opcode)] != opcode:
+            raise ValueError(f"controller-input H1/ROM operand guard drift: {symbol}")
     return static
 
 
@@ -464,6 +834,98 @@ def _repeat_step(raw: int, state: dict[str, int], repeat: dict[str, Any]) -> dic
     }
 
 
+def _wait_vint_input(case: dict[str, Any], index: int) -> dict[str, list[str]]:
+    frames = case["vintInputs"]
+    if not frames:
+        return {"player1Buttons": [], "player2Buttons": []}
+    return frames[min(index, len(frames) - 1)]
+
+
+def _wait_vint_step(
+    case: dict[str, Any],
+    index: int,
+    state: dict[str, int],
+    masks: dict[str, int],
+    repeat: dict[str, Any],
+) -> dict[str, int | list[int]]:
+    raw = _raw_states(_wait_vint_input(case, index), masks)
+    state.update(_repeat_step(raw[0], state, repeat))
+    return {"rawStateBytes": raw, **state}
+
+
+def _wait_result(case: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
+    masks = static["buttonMasks"]
+    recognized = static["recognizedButtonMask"]
+    initial = case["initial"]
+    raw_player1 = _button_value(initial["player1Buttons"], masks)
+    state = {
+        "currentPlayerInput": raw_player1,
+        "lastPlayerInput": raw_player1,
+        "inputRepeatDelayer": 0,
+    }
+    frames: list[dict[str, int | list[int]]] = []
+
+    def wait_once() -> None:
+        frames.append(_wait_vint_step(case, len(frames), state, masks, static["repeat"]))
+
+    helper = case["helper"]
+    helper_entry_count = 1
+    if helper == "WaitForPlayerInput":
+        while not (state["currentPlayerInput"] & recognized):
+            if len(frames) >= 255:
+                raise ValueError(
+                    "controller-input delayed player-input fixture never presses a button"
+                )
+            wait_once()
+        helper_entry_count = len(frames) + 1
+    elif helper == "WaitForPlayer1NewInput":
+        started_held = bool(raw_player1 & recognized)
+        while raw_player1 & recognized:
+            if len(frames) >= 255:
+                raise ValueError(
+                    "controller-input new-input fixture never releases its held button"
+                )
+            wait_once()
+            raw_player1 = frames[-1]["rawStateBytes"][0]  # type: ignore[index]
+        while not (raw_player1 & recognized):
+            if len(frames) >= 255:
+                raise ValueError("controller-input new-input fixture never represses a button")
+            wait_once()
+            raw_player1 = frames[-1]["rawStateBytes"][0]  # type: ignore[index]
+        helper_entry_count = 2 if started_held else 1
+    elif helper in {"WaitForInputFor1Second", "WaitForInputFor3Seconds"}:
+        maximum = static["waits"][
+            "oneSecondMaximumVintWaits"
+            if helper == "WaitForInputFor1Second"
+            else "threeSecondMaximumVintWaits"
+        ]
+        for _ in range(maximum):
+            if raw_player1 & recognized:
+                break
+            wait_once()
+            raw_player1 = frames[-1]["rawStateBytes"][0]  # type: ignore[index]
+        else:
+            pass
+    else:
+        raise ValueError(f"controller-input unknown wait helper: {helper}")
+    wait_count = len(frames)
+    result: dict[str, Any] = {
+        "helperEntryCount": helper_entry_count,
+        "helperReturnCount": 1,
+        "waitForVIntEntryCount": wait_count,
+        "waitForVIntReturnCount": wait_count,
+        "vIntEntryCount": wait_count,
+        "vIntInputStageCount": wait_count,
+        "frames": frames,
+    }
+    # The two timed helpers explicitly save and restore D5.  The player-input
+    # helpers do not own that register, so a harness observation must not turn
+    # their incidental register value into a contract.
+    if helper in {"WaitForInputFor1Second", "WaitForInputFor3Seconds"}:
+        result["d5After"] = WAIT_D5_SENTINEL
+    return result
+
+
 def model_case(case: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     """Independent expected model; the fixture contains inputs only."""
     masks = static["buttonMasks"]
@@ -477,6 +939,8 @@ def model_case(case: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
             state = _repeat_step(raw[0], state, static["repeat"])
             frames.append({"rawStateBytes": raw, **state})
         return {"frames": frames}
+    if case["kind"] == "wait":
+        return _wait_result(case, static)
     raise ValueError(f"controller-input unknown case kind: {case['kind']}")
 
 
@@ -492,6 +956,17 @@ def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dic
             {"id": case["id"], "result": model_case(case, static)} for case in fixture["cases"]
         ],
         "callbacksCleared": 0,
+    }
+
+
+def wait_expectations(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, dict[str, int]]:
+    """Derived wait callback counts sent to the observer; the fixture contains input only."""
+    return {
+        case["id"]: {
+            key: value for key, value in model_case(case, static).items() if key.endswith("Count")
+        }
+        for case in fixture["cases"]
+        if case["kind"] == "wait"
     }
 
 
@@ -528,7 +1003,6 @@ def verify_controller_input(
     verify_runtime_contract(fixture, rom_path)
     static = validate_static_contract(fixture, rom_path, upstream_path)
     config = observer_config(fixture, static)
-    validate_callback_expectations(static, config["callbackExpectations"])
     try:
         observed = run_observer(
             rom_path=rom_path,

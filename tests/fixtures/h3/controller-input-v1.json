@@ -13,7 +13,35 @@
     "inputSourcePath": "code/common/tech/input.asm",
     "interruptSourcePath": "code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm"
   },
-  "sourceContext": {"updatePlayerInputsEntryAddress": 5390, "applyZ80BusUpdatesEntryAddress": 2270},
+  "sourceContext": {
+    "updatePlayerInputsEntryAddress": 5390,
+    "applyZ80BusUpdatesEntryAddress": 2270,
+    "waitForPlayerInputEntryAddress": 5494,
+    "waitForPlayer1NewInputEntryAddress": 5510,
+    "waitForInputFor1SecondEntryAddress": 5592,
+    "waitForInputFor3SecondsEntryAddress": 5620,
+    "waitForVIntEntryAddress": 3822,
+    "waitForVIntRtsPc": 3842,
+    "waitingNextVIntAddress": 16768759,
+    "vIntEntryAddress": 1428,
+    "timedWaitLoopEntryAddress": 5598,
+    "waitForPlayerInputRtsPc": 5508,
+    "waitForPlayer1NewInputRtsPc": 5538,
+    "waitForInputFor1SecondRtsPc": 5618,
+    "waitForInputFor3SecondsRtsPc": 5618,
+    "waitForPlayerInputVIntCallAddress": 5502,
+    "waitForPlayerInputVIntReturnAddress": 5506,
+    "waitForPlayer1NewInputReleaseVIntCallAddress": 5518,
+    "waitForPlayer1NewInputReleaseVIntReturnAddress": 5522,
+    "waitForPlayer1NewInputPressVIntCallAddress": 5532,
+    "waitForPlayer1NewInputPressVIntReturnAddress": 5536,
+    "timedWaitVIntCallAddress": 5606,
+    "timedWaitVIntReturnAddress": 5610,
+    "waitForInputFor3SecondsLoopBranchAddress": 5630,
+    "waitForInputFor3SecondsLoopReturnAddress": 5632,
+    "vIntApplyInputCallAddress": 1466,
+    "vIntApplyInputReturnAddress": 1470
+  },
   "caseOrder": [
     "sample-neutral",
     "sample-p1-up-b",
@@ -22,7 +50,15 @@
     "sample-release",
     "repeat-new-press",
     "repeat-release-repress",
-    "repeat-held-threshold-cadence"
+    "repeat-held-threshold-cadence",
+    "wait-player-input-immediate",
+    "wait-player-input-delayed",
+    "wait-player1-new-input-neutral-press",
+    "wait-player1-new-input-release-repress",
+    "wait-one-second-early-input",
+    "wait-one-second-timeout",
+    "wait-three-seconds-early-input",
+    "wait-three-seconds-timeout"
   ],
   "cases": [
     {"id": "sample-neutral", "kind": "sample", "frames": [{"player1Buttons": [], "player2Buttons": []}]},
@@ -39,6 +75,14 @@
       {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []},
       {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []},
       {"player1Buttons": ["C"], "player2Buttons": []}
-    ]}
+    ]},
+    {"id": "wait-player-input-immediate", "kind": "wait", "helper": "WaitForPlayerInput", "initial": {"player1Buttons": ["C"], "player2Buttons": []}, "vintInputs": []},
+    {"id": "wait-player-input-delayed", "kind": "wait", "helper": "WaitForPlayerInput", "initial": {"player1Buttons": [], "player2Buttons": []}, "vintInputs": [{"player1Buttons": [], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}]},
+    {"id": "wait-player1-new-input-neutral-press", "kind": "wait", "helper": "WaitForPlayer1NewInput", "initial": {"player1Buttons": [], "player2Buttons": []}, "vintInputs": [{"player1Buttons": ["C"], "player2Buttons": []}]},
+    {"id": "wait-player1-new-input-release-repress", "kind": "wait", "helper": "WaitForPlayer1NewInput", "initial": {"player1Buttons": ["C"], "player2Buttons": []}, "vintInputs": [{"player1Buttons": [], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}]},
+    {"id": "wait-one-second-early-input", "kind": "wait", "helper": "WaitForInputFor1Second", "initial": {"player1Buttons": ["B"], "player2Buttons": []}, "vintInputs": []},
+    {"id": "wait-one-second-timeout", "kind": "wait", "helper": "WaitForInputFor1Second", "initial": {"player1Buttons": [], "player2Buttons": []}, "vintInputs": [{"player1Buttons": [], "player2Buttons": []}]},
+    {"id": "wait-three-seconds-early-input", "kind": "wait", "helper": "WaitForInputFor3Seconds", "initial": {"player1Buttons": ["B"], "player2Buttons": []}, "vintInputs": []},
+    {"id": "wait-three-seconds-timeout", "kind": "wait", "helper": "WaitForInputFor3Seconds", "initial": {"player1Buttons": [], "player2Buttons": []}, "vintInputs": [{"player1Buttons": [], "player2Buttons": []}]}
   ]
 }
