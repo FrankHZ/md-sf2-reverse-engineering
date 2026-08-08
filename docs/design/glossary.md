@@ -27,8 +27,8 @@ It does not govern:
 - `docs/research/`, `schemas/`, `manifests/`, fixtures, or source-adjacent vocabulary, whose content
   stays source-faithful and English-first; this glossary may later be extended by an explicit
   governance decision if those lanes adopt localization;
-- code vocabulary, symbol names, fixture IDs, or evidence labels, which are preserved verbatim under
-  rule R2 below rather than translated.
+- code vocabulary, symbol names, or fixture IDs, which are preserved verbatim under rule R2 below;
+  evidence labels are the explicit exception and use the fixed R1 translations.
 
 ## Terminology Rules
 
@@ -59,9 +59,10 @@ numbers are identifiers and are never translated or renumbered.
 
 ### R2 — Source-faithful identifiers are never translated
 
-The Authoring Language Policy requires preserving source-faithful identifiers, fixture IDs, evidence
-labels, and code vocabulary rather than inventing translated equivalents. A zh-CN translation must
-copy the following classes verbatim:
+The Authoring Language Policy requires preserving source-faithful identifiers, fixture IDs, and code
+vocabulary rather than inventing translated equivalents. Evidence labels are the explicit exception:
+they must use the fixed Chinese forms in R1. A zh-CN translation must copy the following classes
+verbatim:
 
 - source symbols and memory labels, e.g. `CURRENT_BATTLEACTION`, `RANDOM_SEED`,
   `CUTSCENE_DIALOG_INDEX`, `LEVELUP_ARGUMENTS`, `UpdatePlayerInputs`, `CheckSram`, `LevelUp`;
@@ -71,13 +72,15 @@ copy the following classes verbatim:
   `csc0E_jumpIfForceMemberInList`;
 - fixture IDs and file paths, e.g. `sf2-map-script-engine-static-v1`,
   `tests/fixtures/h3/map-script-dialogue-v1.json`;
-- numeric literals, packed bytes, opcodes, operand widths, addresses, and register names
-  (`$00`, `0xFF`, `$FFFF`, 6-byte, `d1`, `a6`, VDP, DMA, VInt, SRAM, Z80, 68000);
+- source- or contract-significant numeric literals, packed bytes, opcodes, operand widths, addresses,
+  and register names (`$00`, `0xFF`, `$FFFF`, 6-byte, `d1`, `a6`, VDP, DMA, VInt, SRAM, Z80, 68000);
 - verification layer names, command names, and any identifier spelled in `code` or `UPPER_SNAKE`.
 
 A translation may add a Chinese gloss after the identifier the first time it appears, e.g.
 `UpdateCombatantStats（刷新战斗员派生属性）`, but it must not replace the identifier or change its
-spelling, case, or separators.
+spelling, case, or separators. Ordinary prose ordinals and quantities may use natural Chinese
+wording only when their value and unit remain unchanged; values that identify a source record,
+fixture case, field, byte, offset, address, or executable boundary stay verbatim.
 
 ### R3 — Mechanics and process terms use one term, one translation
 
@@ -110,13 +113,15 @@ documents; a proper-noun suggestion (R4) may be changed per entry.
 
 - A mirror lives at `docs/design/zh-CN/<same-filename>.md` and translates the English file of the
   same name. It is a derivative; the English file remains the review baseline.
-- Preserve verbatim under R2: identifiers, fixture IDs and paths, labels, numeric literals, header
-  field values, and evidence-layer/phase/ADR names.
+- Preserve verbatim under R2: identifiers, fixture IDs and paths, source/code labels,
+  contract-significant numeric literals, header field values, and evidence-layer/phase/ADR names.
 - Rewrite relative links by adding one `../` level because the mirror sits one directory deeper
   (`../research/x.md` → `../../research/x.md`, `../../tests/...` → `../../../tests/...`). Link
   integrity is an acceptance criterion of every batch.
 - Keep the evidence-label translations from R1 so a Chinese reader can still recognize label
   boundaries.
+- Translate player- or reader-visible prose inside diagrams, including Mermaid node and edge labels;
+  preserve only the source identifiers embedded in those labels.
 - A mirror is not registered in `src/sf2tool/design_contracts.py`; the English file owns contract
   traceability.
 
@@ -171,7 +176,7 @@ documents; a proper-noun suggestion (R4) may be changed per entry.
 | prowess | 特殊攻击概率（会心/二连/反击） | SF2 特有的打包字节：低半字节为会心率、高半字节为二连/反击率；被动概率设定而非可主动施放的技能 |
 | spell | 法术 | |
 | spell level | 法术等级 | |
-| element | 属性 | spell element, e.g. FIRE 火属性 |
+| element | 元素 | spell element, e.g. FIRE 火元素 |
 | elemental resistance | 属性抗性 | two-bit packed resistance setting |
 | weakness | 弱点 | resistance setting 3 for damage |
 | immunity | 免疫 | resistance setting 3 for status |
@@ -204,7 +209,7 @@ documents; a proper-noun suggestion (R4) may be changed per entry.
 | level-up | 升级 | |
 | level | 等级 | |
 | level cap | 等级上限 | class level cap |
-| stat | 属性 | HP/MP/ATT/DEF/AGI |
+| stat | 属性值 | HP/MP/ATT/DEF/AGI |
 | stat gain | 属性增益 | randomized gain per level |
 | stat growth | 属性成长 | growth-curve behavior |
 | growth curve | 成长曲线 | |
@@ -242,7 +247,7 @@ documents; a proper-noun suggestion (R4) may be changed per entry.
 | EXP command | EXP 指令 | battle EXP award command |
 | EXP threshold | EXP 阈值 | 100-point level-up threshold |
 | kill EXP | 击杀 EXP | kill-level-difference EXP |
-| clamp | 夹断 | clamp/underflow/saturation bounds |
+| clamp | 钳位 | clamp/underflow/saturation bounds |
 | saturation | 饱和 | byte/word carry saturation |
 | underflow | 下溢 | byte underflow |
 | threshold | 阈值 | |
@@ -260,7 +265,7 @@ documents; a proper-noun suggestion (R4) may be changed per entry.
 | blockset | 图块集 | keep "blockset" glossed |
 | layout | 布局 | 64x64 map layout |
 | tileset | 瓦片集 | |
-| tile | 格子（图块） | map tile |
+| tile | 瓦片 | map tile |
 | block | 图块 | 3x3-tile block |
 | palette | 调色板 | |
 | area | 区域 | area description records |
