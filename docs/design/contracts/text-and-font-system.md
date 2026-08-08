@@ -152,8 +152,9 @@ import/layout rule, not permission to read beyond the actual 171 rows in the par
 
 Complete deterministic replay yields 152,679 decoded symbols, of which 4,267 are the single
 terminator 254 for each record and 148,412 are non-terminators. All 86 defined contexts occur. The
-compressed record size ranges from 3 through 116 bytes, decoded record length from 2 through 243
-symbols, and the terminator leaves 8 through 15 stored bits in every record.
+stored compressed payload length ranges from 3 through 116 bytes, excluding its one-byte prefix;
+decoded record length ranges from 2 through 243 symbols, and the terminator leaves 8 through 15
+stored bits in every record.
 
 The adjacent source script has exactly the contiguous IDs 0 through 4,266. Its plaintext and the
 per-record decoded symbol sequences remain private/generated; tracked evidence retains only aggregate
