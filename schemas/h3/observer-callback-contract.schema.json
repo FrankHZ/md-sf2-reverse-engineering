@@ -275,6 +275,36 @@
         "phase": {"$ref": "#/definitions/nonEmptyString"},
         "role": {"$ref": "#/definitions/nonEmptyString"}
       }
+    },
+    "controllerInputPendingCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "caseIndex", "frameIndex", "expectedFunctionPc", "pendingReturnPc", "rolesAtPc"],
+      "properties": {
+        "active": {"type": "boolean"},
+        "caseIndex": {"type": "integer", "minimum": 0},
+        "frameIndex": {"type": "integer", "minimum": 0},
+        "expectedFunctionPc": {"$ref": "#/definitions/nullablePc"},
+        "pendingReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"enum": ["bootstrap-entry", "bootstrap-return", "direct-call", "apply-target", "source-call", "update-target", "source-return", "direct-return"]}}
+      }
+    },
+    "controllerInputFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actualPc", "caseId", "error", "expectedCallPc", "expectedReturnPc", "expectedTargetPc", "owner", "pendingCallback", "phase", "role"],
+      "properties": {
+        "actualPc": {"$ref": "#/definitions/nullablePc"},
+        "caseId": {"$ref": "#/definitions/nullableNonEmptyString"},
+        "error": {"$ref": "#/definitions/nonEmptyString"},
+        "expectedCallPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetPc": {"$ref": "#/definitions/nullablePc"},
+        "owner": {"const": "controller-input"},
+        "pendingCallback": {"$ref": "#/definitions/controllerInputPendingCallback"},
+        "phase": {"$ref": "#/definitions/nonEmptyString"},
+        "role": {"enum": ["registration", "bootstrap-return-redirect", "direct-input-probe", "direct-call", "apply-target", "source-call", "update-target", "source-return", "direct-return"]}
+      }
     }
   }
 }

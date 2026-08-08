@@ -26,8 +26,8 @@ It says that the file has been reached, not that every instruction in the file i
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 81 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,493 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 83 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,496 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -140,7 +140,10 @@ The current evidence is deep but narrow:
   single-launch direct-service H3 matrix validates its in-process initialization, valid/invalid slot,
   save/load/copy/delete behavior over full compact 4,016-byte spans; durable-media hardware behavior
   remains Unknown and priority-frozen. Its six-entry input surface now binds two-port
-  raw sampling, state storage, wait helpers, 11 direct call sites, and one controller/input H3 matrix.
+  raw sampling, state storage, wait-helper/source-call inventory, and an eight-case one-launch H3
+  matrix limited to direct `UpdatePlayerInputs` two-port sampling plus direct
+  `ApplyZ80BusUpdates` input-repeat behavior. Runtime wait helpers, `sub_15A4`, controller
+  negotiation, hardware latency, and user-visible UI timing remain Unknown.
   The paired six-entry RNG surface now records both seed states, base/debug control flow, exact
   low-byte bounded domains, 163 direct named call sites, and the six-site jump-alias boundary; retry
   behavior and seed-copy isolation remain one grouped H3 question.

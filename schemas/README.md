@@ -53,11 +53,12 @@ H3 consumers. `src/sf2tool/h2/map_script_engine.py` retains complete fixture-fie
 provenance/address, summary, runtime-question, and canonical-digest checks before output is written.
 
 The maintained structured H3 observers reuse the callback failure, pending-callback audit,
-physical-PC role audit, failure-contract, and terminal-status protocol under `h3/`. Four owner roots
-close the control/audio, transition, entity-presentation-FX, and random-services failure payloads;
-case-specific matrices remain in their unchanged fixtures and observation schemas. The shared Python
-status reader validates append-style failure records through those roots, rejects malformed or
-ambiguous failure lines, and requires exact callback cleanup plus observer-finished terminal records.
+physical-PC role audit, failure-contract, and terminal-status protocol under `h3/`. The maintained
+owner roots include control/audio, transition, entity-presentation-FX, random-services, SRAM
+lifecycle, and controller input; case-specific matrices remain in their unchanged fixtures and
+observation schemas. The shared Python status reader validates append-style failure records through
+those roots, rejects malformed or ambiguous failure lines, and requires exact callback cleanup plus
+observer-finished terminal records.
 
 The measured problem, target architecture, staged migration order, and acceptance guardrails are
 documented in [ADR 0007](../docs/decisions/0007-schema-contract-composition-and-migration.md). Existing

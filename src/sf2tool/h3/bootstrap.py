@@ -148,6 +148,7 @@ MAP_DEBUG_HOST_OBSERVERS = (
 
 DIRECT_FUNCTION_SEAM_OBSERVERS = (
     "tools/bizhawk/ally_initialization_prowess_observer.lua",
+    "tools/bizhawk/controller_input_observer.lua",
     "tools/bizhawk/level_up_boundaries_observer.lua",
     "tools/bizhawk/level_up_observer.lua",
     "tools/bizhawk/level_up_refresh_observer.lua",
@@ -203,6 +204,10 @@ COMMAND_LAUNCHES = {
     "sram-lifecycle": _command(
         "sf2tool.h3.sram_lifecycle", "verify_sram_lifecycle", "direct-function-seam",
         _launch("tools/bizhawk/sram_lifecycle_observer.lua"),
+    ),
+    "controller-input": _command(
+        "sf2tool.h3.controller_input", "verify_controller_input", "direct-function-seam",
+        _launch("tools/bizhawk/controller_input_observer.lua"),
     ),
     "growth": _command(
         "sf2tool.h3.growth", "verify_growth", "direct-function-seam",

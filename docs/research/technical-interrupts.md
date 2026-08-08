@@ -2,12 +2,12 @@
 
 - Status: **Confirmed** for the pinned 21-file layout-owned inventory, representative H1 addresses,
   VInt call order, contextual slots, wait/sleep handshake, DMA queue routing, fade control, input-repeat
-  counters, and trap dispatch rules
+  counters, trap dispatch rules, and the bounded direct input-stage H3 observation below
 - Status: **Inferred** for hardware-facing intent where static register writes are clear but exact cycle
   behavior has not been observed
 - Status: **Unknown** for Z80/VDP bus timing, DMA queue overflow behavior, visual fade timing, and
   hardware/emulator differences
-- Evidence date: 2026-07-20
+- Evidence date: 2026-08-08
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -35,6 +35,11 @@ runtime question.
 `WaitForVInt` sets the update-enable bit and spins until VInt clears its waiting flag. `Sleep(0)`
 returns without waiting; positive values invoke that handshake for the requested frame count.
 
+The accepted controller H3 launch does not reproduce that normal VInt caller progression. It invokes
+the original `ApplyZ80BusUpdates` entry directly and observes only its input stage. Therefore normal
+VInt caller progression, skipped/enabled VInt ordering, contextual-slot scheduling, and fade completion
+remain **Unknown**.
+
 ## DMA, Fading, and Input
 
 The immediate VRAM DMA path masks interrupts and acquires the Z80 bus. The queued path temporarily
@@ -48,9 +53,14 @@ its nibble range before a CRAM DMA is queued.
 
 After `UpdatePlayerInputs` samples raw controller state, unchanged input is suppressed until the repeat
 delay reaches 24 frames. After a repeated input is emitted, subtracting six from the delay produces a
-six-frame repeat cadence. This is a VInt-derived current/last-input static counter contract, not yet a
-controller-latency measurement; the raw sampling and wait-helper boundary is in
-[`input-system.md`](../design/contracts/input-system.md).
+six-frame repeat cadence. The bounded one-launch H3 fixture
+`sf2-controller-input-runtime-v1` in `tests/fixtures/h3/controller-input-v1.json`, verified by
+`src/sf2tool/h3/controller_input.py`, directly calls the original `ApplyZ80BusUpdates` input stage and
+observes new press, release/repress, held-input suppression through the 24-frame threshold, and the
+six-frame cadence. Run `uv run sf2 h3 controller-input --timeout-seconds 180` to reproduce it. This
+confirms the input-stage delay/cadence boundary only: normal VInt caller progression, latency,
+UI behavior, controller hardware behavior, and the wait-helper boundary remain **Unknown**. The raw
+sampling and wait-helper boundary is in [`input-system.md`](../design/contracts/input-system.md).
 
 ## Trap Boundary
 
@@ -61,17 +71,18 @@ executing a map script.
 
 ## Concentrated Runtime Queue
 
-No emulator is started for this batch. Under ADR 0005's 2026-07-23 priority decision, exact VDP/DMA/
-Z80 cycle timing, DMA queue-capacity behavior, and raw controller latency are frozen once the visible
-contract is adequate. A future shared matrix is active only for a concrete user-visible acceptance gap:
-skipped/enabled VInt ordering, the 24/6 input-repeat boundary, contextual slot activation, or fade
-completion behavior. It must reuse this VInt/DMA seam; do not start a hardware-fidelity matrix merely
-to refine cycle counts or a second-emulator comparison.
+The accepted direct input-stage launch closes only the 24/6 repeat boundary. Under ADR 0005's
+2026-07-23 priority decision, exact VDP/DMA/Z80 cycle timing, DMA queue-capacity behavior, and raw
+controller latency are frozen once the visible contract is adequate. A future shared matrix is active
+only for a concrete user-visible acceptance gap: skipped/enabled VInt ordering, contextual slot
+activation, or fade completion behavior. It must reuse this VInt/DMA seam; do not start a
+hardware-fidelity matrix merely to refine cycle counts or a second-emulator comparison.
 
 ## Reproduction
 
 ```powershell
 uv run sf2 h2 tech-interrupts
+uv run sf2 h3 controller-input --timeout-seconds 180
 uv run sf2 research-index test
 ```
 

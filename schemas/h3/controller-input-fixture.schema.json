@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:controller-input-fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "romSha256", "emulator", "provenance", "sourceContext", "caseOrder", "cases"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "id": {"const": "sf2-controller-input-runtime-v1"},
+    "romSha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "emulator": {"$ref": "#/definitions/emulator"},
+    "provenance": {"$ref": "#/definitions/provenance"},
+    "sourceContext": {"$ref": "#/definitions/sourceContext"},
+    "caseOrder": {"const": ["sample-neutral", "sample-p1-up-b", "sample-p2-c-start", "sample-two-port-combined", "sample-release", "repeat-new-press", "repeat-release-repress", "repeat-held-threshold-cadence"]},
+    "cases": {"type": "array", "minItems": 8, "maxItems": 8, "items": [{"allOf": [{"$ref": "#/definitions/sample"}, {"properties": {"id": {"const": "sample-neutral"}}}]}, {"allOf": [{"$ref": "#/definitions/sample"}, {"properties": {"id": {"const": "sample-p1-up-b"}}}]}, {"allOf": [{"$ref": "#/definitions/sample"}, {"properties": {"id": {"const": "sample-p2-c-start"}}}]}, {"allOf": [{"$ref": "#/definitions/sample"}, {"properties": {"id": {"const": "sample-two-port-combined"}}}]}, {"allOf": [{"$ref": "#/definitions/sample"}, {"properties": {"id": {"const": "sample-release"}}}]}, {"allOf": [{"$ref": "#/definitions/repeat"}, {"properties": {"id": {"const": "repeat-new-press"}}}]}, {"allOf": [{"$ref": "#/definitions/repeat"}, {"properties": {"id": {"const": "repeat-release-repress"}}}]}, {"allOf": [{"$ref": "#/definitions/repeat"}, {"properties": {"id": {"const": "repeat-held-threshold-cadence"}}}]}], "additionalItems": false}
+  },
+  "definitions": {
+    "emulator": {"type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": {"name": {"const": "BizHawk"}, "version": {"const": "2.11.1"}, "core": {"const": "Genesis Plus GX"}}},
+    "provenance": {"type": "object", "additionalProperties": false, "required": ["upstreamRepository", "upstreamCommit", "h2TechServicesFixture", "h2TechServicesFixtureId", "h2TechInterruptsFixture", "h2TechInterruptsFixtureId", "inputSourcePath", "interruptSourcePath"], "properties": {"upstreamRepository": {"const": "https://github.com/ShiningForceCentral/SF2DISASM"}, "upstreamCommit": {"pattern": "^[0-9a-f]{40}$"}, "h2TechServicesFixture": {"const": "tests/fixtures/h2/tech-services-static-v1.json"}, "h2TechServicesFixtureId": {"const": "sf2-tech-services-static-v1"}, "h2TechInterruptsFixture": {"const": "tests/fixtures/h2/tech-interrupts-static-v1.json"}, "h2TechInterruptsFixtureId": {"const": "sf2-tech-interrupts-static-v1"}, "inputSourcePath": {"const": "code/common/tech/input.asm"}, "interruptSourcePath": {"const": "code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm"}}},
+    "sourceContext": {"type": "object", "additionalProperties": false, "required": ["updatePlayerInputsEntryAddress", "applyZ80BusUpdatesEntryAddress"], "properties": {"updatePlayerInputsEntryAddress": {"type": "integer", "minimum": 0, "maximum": 16777215}, "applyZ80BusUpdatesEntryAddress": {"type": "integer", "minimum": 0, "maximum": 16777215}}},
+    "buttons": {"type": "array", "uniqueItems": true, "items": {"enum": ["Up", "Down", "Left", "Right", "B", "C", "A", "Start"]}},
+    "frame": {"type": "object", "additionalProperties": false, "required": ["player1Buttons", "player2Buttons"], "properties": {"player1Buttons": {"$ref": "#/definitions/buttons"}, "player2Buttons": {"$ref": "#/definitions/buttons"}}},
+    "sample": {"type": "object", "additionalProperties": false, "required": ["id", "kind", "frames"], "properties": {"id": {"enum": ["sample-neutral", "sample-p1-up-b", "sample-p2-c-start", "sample-two-port-combined", "sample-release"]}, "kind": {"const": "sample"}, "frames": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"$ref": "#/definitions/frame"}}}},
+    "repeat": {"type": "object", "additionalProperties": false, "required": ["id", "kind", "frames"], "properties": {"id": {"enum": ["repeat-new-press", "repeat-release-repress", "repeat-held-threshold-cadence"]}, "kind": {"const": "repeat"}, "frames": {"type": "array", "minItems": 1, "maxItems": 31, "items": {"$ref": "#/definitions/frame"}}}},
+    "case": {"oneOf": [{"$ref": "#/definitions/sample"}, {"$ref": "#/definitions/repeat"}]}
+  }
+}

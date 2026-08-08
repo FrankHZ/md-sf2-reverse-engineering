@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:controller-input-observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "core", "id", "caseOrder", "records", "callbacksCleared"],
+  "properties": {
+    "system": {"const": "GEN"},
+    "core": {"const": "Genesis Plus GX"},
+    "id": {"const": "sf2-controller-input-runtime-v1"},
+    "caseOrder": {"const": ["sample-neutral", "sample-p1-up-b", "sample-p2-c-start", "sample-two-port-combined", "sample-release", "repeat-new-press", "repeat-release-repress", "repeat-held-threshold-cadence"]},
+    "records": {"type": "array", "minItems": 8, "maxItems": 8, "items": [{"allOf": [{"$ref": "#/definitions/record"}, {"properties": {"id": {"const": "sample-neutral"}, "result": {"$ref": "#/definitions/sampleResult"}}}]}, {"allOf": [{"$ref": "#/definitions/record"}, {"properties": {"id": {"const": "sample-p1-up-b"}, "result": {"$ref": "#/definitions/sampleResult"}}}]}, {"allOf": [{"$ref": "#/definitions/record"}, {"properties": {"id": {"const": "sample-p2-c-start"}, "result": {"$ref": "#/definitions/sampleResult"}}}]}, {"allOf": [{"$ref": "#/definitions/record"}, {"properties": {"id": {"const": "sample-two-port-combined"}, "result": {"$ref": "#/definitions/sampleResult"}}}]}, {"allOf": [{"$ref": "#/definitions/record"}, {"properties": {"id": {"const": "sample-release"}, "result": {"$ref": "#/definitions/sampleResult"}}}]}, {"allOf": [{"$ref": "#/definitions/record"}, {"properties": {"id": {"const": "repeat-new-press"}, "result": {"$ref": "#/definitions/repeatResult"}}}]}, {"allOf": [{"$ref": "#/definitions/record"}, {"properties": {"id": {"const": "repeat-release-repress"}, "result": {"$ref": "#/definitions/repeatResult"}}}]}, {"allOf": [{"$ref": "#/definitions/record"}, {"properties": {"id": {"const": "repeat-held-threshold-cadence"}, "result": {"$ref": "#/definitions/repeatResult"}}}]}], "additionalItems": false},
+    "callbacksCleared": {"const": 0}
+  },
+  "definitions": {
+    "rawStateBytes": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "integer", "minimum": 0, "maximum": 255}},
+    "repeatFrame": {"type": "object", "additionalProperties": false, "required": ["rawStateBytes", "currentPlayerInput", "lastPlayerInput", "inputRepeatDelayer"], "properties": {"rawStateBytes": {"$ref": "#/definitions/rawStateBytes"}, "currentPlayerInput": {"type": "integer", "minimum": 0, "maximum": 255}, "lastPlayerInput": {"type": "integer", "minimum": 0, "maximum": 255}, "inputRepeatDelayer": {"type": "integer", "minimum": 0, "maximum": 255}}},
+    "sampleResult": {"type": "object", "additionalProperties": false, "required": ["rawStateBytes"], "properties": {"rawStateBytes": {"$ref": "#/definitions/rawStateBytes"}}},
+    "repeatResult": {"type": "object", "additionalProperties": false, "required": ["frames"], "properties": {"frames": {"type": "array", "minItems": 1, "maxItems": 31, "items": {"$ref": "#/definitions/repeatFrame"}}}},
+    "record": {"type": "object", "additionalProperties": false, "required": ["id", "result"], "properties": {"id": {"enum": ["sample-neutral", "sample-p1-up-b", "sample-p2-c-start", "sample-two-port-combined", "sample-release", "repeat-new-press", "repeat-release-repress", "repeat-held-threshold-cadence"]}, "result": {"oneOf": [{"$ref": "#/definitions/sampleResult"}, {"$ref": "#/definitions/repeatResult"}]}}}
+  }
+}

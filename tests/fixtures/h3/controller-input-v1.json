@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-controller-input-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {"name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX"},
+  "provenance": {
+    "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM",
+    "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "h2TechServicesFixture": "tests/fixtures/h2/tech-services-static-v1.json",
+    "h2TechServicesFixtureId": "sf2-tech-services-static-v1",
+    "h2TechInterruptsFixture": "tests/fixtures/h2/tech-interrupts-static-v1.json",
+    "h2TechInterruptsFixtureId": "sf2-tech-interrupts-static-v1",
+    "inputSourcePath": "code/common/tech/input.asm",
+    "interruptSourcePath": "code/common/tech/interrupts/applyfadingeffectandz80busupdate.asm"
+  },
+  "sourceContext": {"updatePlayerInputsEntryAddress": 5390, "applyZ80BusUpdatesEntryAddress": 2270},
+  "caseOrder": [
+    "sample-neutral",
+    "sample-p1-up-b",
+    "sample-p2-c-start",
+    "sample-two-port-combined",
+    "sample-release",
+    "repeat-new-press",
+    "repeat-release-repress",
+    "repeat-held-threshold-cadence"
+  ],
+  "cases": [
+    {"id": "sample-neutral", "kind": "sample", "frames": [{"player1Buttons": [], "player2Buttons": []}]},
+    {"id": "sample-p1-up-b", "kind": "sample", "frames": [{"player1Buttons": ["Up", "B"], "player2Buttons": []}]},
+    {"id": "sample-p2-c-start", "kind": "sample", "frames": [{"player1Buttons": [], "player2Buttons": ["C", "Start"]}]},
+    {"id": "sample-two-port-combined", "kind": "sample", "frames": [{"player1Buttons": ["Left", "A"], "player2Buttons": ["Down", "C"]}]},
+    {"id": "sample-release", "kind": "sample", "frames": [{"player1Buttons": [], "player2Buttons": []}]},
+    {"id": "repeat-new-press", "kind": "repeat", "frames": [{"player1Buttons": ["C"], "player2Buttons": []}]},
+    {"id": "repeat-release-repress", "kind": "repeat", "frames": [{"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": [], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}]},
+    {"id": "repeat-held-threshold-cadence", "kind": "repeat", "frames": [
+      {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []},
+      {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []},
+      {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []},
+      {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []},
+      {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []}, {"player1Buttons": ["C"], "player2Buttons": []},
+      {"player1Buttons": ["C"], "player2Buttons": []}
+    ]}
+  ]
+}
