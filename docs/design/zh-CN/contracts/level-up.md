@@ -4,7 +4,7 @@
 - 证据日期：2026-07-18
 - 范围：原版属性增益、等级递增、习得法术阈值与升级结果载荷
 
-> 本文件是 [`level-up.md`](../level-up.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`level-up.md`](../../contracts/level-up.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 证据所有者
 
@@ -18,7 +18,7 @@
 - `tests/fixtures/h3/enemy-curse-suppression-v1.json` / `sf2-enemy-curse-suppression-v1` 拥有一次带受控被诅咒装备的自然 Battle 01 敌人刷新。
 - `tests/fixtures/h3/battle-exp-level-up-v1.json` / `sf2-battle-exp-level-up-v1` 拥有从一次 24 点 EXP 指令经 100 点阈值、一次源码建模的 Bowie/SDMN `LevelUp` 与最终持久战斗员状态的自然 Battle 01 连接路径。
 - `tests/fixtures/h3/exp-command-boundaries-v1.json` / `sf2-exp-command-boundaries-v1` 拥有 99 以下/精确 100/EXP 上限 200 的指令边界、基础/转职后上限结果 255，并证明一条指令至多处理一次 100 点阈值。用 `uv run sf2 h3 exp-command` 独立运行它。
-- [`../research/ally-growth.md`](../../research/ally-growth.md) 拥有静态成长曲线与职业块存储合同；[`../research/runtime-rng-and-battle-math.md`](../../research/runtime-rng-and-battle-math.md) 拥有地址与运行时解读。
+- [`../research/ally-growth.md`](../../../research/ally-growth.md) 拥有静态成长曲线与职业块存储合同；[`../research/runtime-rng-and-battle-math.md`](../../../research/runtime-rng-and-battle-math.md) 拥有地址与运行时解读。
 
 ## 已确认的原版顺序
 

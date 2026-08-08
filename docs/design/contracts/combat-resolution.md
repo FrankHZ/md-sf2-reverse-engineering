@@ -4,7 +4,7 @@
 - Scope: normal physical attacks, MUDDLE confusion predicate, successful dodge, critical damage,
   double attack, counterattack, HP reaction replay, kill EXP levels, and Battle 01 EXP award
 - Evidence state: **Confirmed subset**; incomplete systems stay **Unknown** and are not defaulted here
-- Evidence owner: [`runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
+- Evidence owner: [`runtime-rng-and-battle-math.md`](../../research/runtime-rng-and-battle-math.md)
 
 This document translates reproduced original behavior into an implementation-neutral contract. It
 does not prescribe an engine, UI, animation timing, or asset format. A remake may implement the

@@ -4,7 +4,8 @@
   documents; this document adds no original-game fact and selects no remake product direction.
 - Record date: 2026-08-04
 - Owner: design-synthesis lane
-- Scope: `docs/design/*.md` and their zh-CN mirrors under `docs/design/zh-CN/`
+- Scope: canonical English Markdown under `docs/design/` and hierarchy-preserving zh-CN mirrors
+  under `docs/design/zh-CN/`
 - Authority: the Authoring Language Policy in
   [`documentation-roadmap.md`](./documentation-roadmap.md) accepts this glossary as the project
   glossary required before non-English localization begins.
@@ -18,7 +19,8 @@ unsettled.
 
 It governs:
 
-- future zh-CN translations of `docs/design/*.md` under `docs/design/zh-CN/`;
+- future zh-CN translations of canonical English design Markdown under `docs/design/`, mirrored
+  beneath `docs/design/zh-CN/` with the same relative path;
 - bilingual annotations already allowed inside English design documents (for example a parenthetical
   Chinese term next to a proper noun at first occurrence).
 
@@ -111,13 +113,15 @@ documents; a proper-noun suggestion (R4) may be changed per entry.
 
 ### R6 — zh-CN mirror conventions
 
-- A mirror lives at `docs/design/zh-CN/<same-filename>.md` and translates the English file of the
-  same name. It is a derivative; the English file remains the review baseline.
+- A mirror preserves its canonical English source's relative path beneath `docs/design/zh-CN/`.
+  For example, `docs/design/contracts/save-system.md` maps to
+  `docs/design/zh-CN/contracts/save-system.md`. It is a derivative; the English file remains the
+  review baseline.
 - Preserve verbatim under R2: identifiers, fixture IDs and paths, source/code labels,
   contract-significant numeric literals, header field values, and evidence-layer/phase/ADR names.
-- Rewrite relative links by adding one `../` level because the mirror sits one directory deeper
-  (`../research/x.md` → `../../research/x.md`, `../../tests/...` → `../../../tests/...`). Link
-  integrity is an acceptance criterion of every batch.
+- Rewrite relative links for the mirror's actual location. Because inserting `zh-CN/` makes every
+  mirror one directory deeper than its parallel English source, repository-external targets usually
+  add one `../` level. Link integrity is an acceptance criterion of every batch.
 - Keep the evidence-label translations from R1 so a Chinese reader can still recognize label
   boundaries.
 - Translate player- or reader-visible prose inside diagrams, including Mermaid node and edge labels;

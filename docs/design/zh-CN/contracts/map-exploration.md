@@ -4,7 +4,7 @@
 - **未知的原版行为：** 非空地图 52 直接 `rts` 事件配置的正常剧情可达性、精确的 VDP 可见滚动时序、硬件级动画扫描线时序，以及最终的 VDP 可见渲染一致性
 - 重制状态：实现无关的 Phase 3 合同；尚未选择引擎
 
-> 本文件是 [`map-exploration.md`](../map-exploration.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-exploration.md`](../../contracts/map-exploration.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 
@@ -73,7 +73,7 @@ canonical import 现在解析全部 64 条配置路由与 126 个配置定义。
 
 **已确认的运行时边界：** `sf2-map-script-control-audio-runtime-v1` 保留六次单启动解释器观察：D0=1 与一次 `WaitForVInt` 入口对比调试 P2-START 跳过、`$06` 分发/返回、`$05` 原始声音字与 trap 边界、`$0A` 游标/栈/被调用方返回边界、`$0B` 游标替换，以及 `$FFFF` 结束/返回。其仅会话的入口接缝在观察器记录完成之前保留源码包装器尾声；它是 H3 测试台边界，而不是游戏玩法合同。在共享物理回调 PC 处，观察器在保留一次注册的同时按精确 fixture 用例角色选择失败诊断；这同样不是适配器行为。原版保真适配器必须保留这些控制与游标事实，而不把源码 enum 或观察到的 trap 转换成可听、时序、持久性或玩家可见合同。
 
-**未知：** [`common-scripting.md`](../../research/common-scripting.md#confirmed-map-script-controlaudio-macro-boundary) 中分组的 `map-script-control-audio/*` 队列保留更长的时长时序、声音驱动/可听结果、任意被调用方效果、正常剧情可达性与呈现行为。
+**未知：** [`common-scripting.md`](../../../research/common-scripting.md#confirmed-map-script-controlaudio-macro-boundary) 中分组的 `map-script-control-audio/*` 队列保留更长的时长时序、声音驱动/可听结果、任意被调用方效果、正常剧情可达性与呈现行为。
 
 直接地图事件 `txt` 与无操作数的 `clsTxt` 形式同样是源码同一性，而不是显示合同。导入器必须把每个有序位置保留为数字文本行标识符或字面量 `$FFFF` 哨兵源码形式，加上其调用方与独立命名的物理/setup/route 引用权重。它必须保留完整的 0–4,266 已声明 ID 域，包括零引用 ID，而不把原版文本复制或解码进地图合同。这不规定显示内容、说话者、窗口、等待、输入、剧情推进或呈现行为；它们保持在这个静态导入规则之外。
 

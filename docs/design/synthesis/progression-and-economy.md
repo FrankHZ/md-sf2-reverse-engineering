@@ -11,9 +11,9 @@
 ## Judgment Boundary
 
 This document explains how several accepted contracts connect. It does not replace the
-[level-up contract](./level-up.md), [physical combat contract](./combat-resolution.md),
-[spell contract](./spell-resolution.md), [service contract](./service-interactions.md), or
-[save contract](./save-system.md), and it is not independent evidence about the original game.
+[level-up contract](../contracts/level-up.md), [physical combat contract](../contracts/combat-resolution.md),
+[spell contract](../contracts/spell-resolution.md), [service contract](../contracts/service-interactions.md), or
+[save contract](../contracts/save-system.md), and it is not independent evidence about the original game.
 
 The supported judgment is narrow: for the listed fixtures and source-static service routes, the
 original has distinct action-reward construction, persistent resource mutation, threshold-driven
@@ -165,7 +165,7 @@ intentional deviation.
 
 For a matching class block below its cap, `LevelUp` processes maximum HP, maximum MP, base ATT, base
 DEF, and base AGI in that order; increments stored level; resolves the exact spell threshold; then
-refreshes derived combatant state. The [level-up contract](./level-up.md) owns the random-growth
+refreshes derived combatant state. The [level-up contract](../contracts/level-up.md) owns the random-growth
 formula, post-level-30 projection rule, class-block scan, learned-spell payload, caps, clamps, and
 known original defects.
 
@@ -222,7 +222,7 @@ levels must not be merged merely because they touch the same stored field.
 
 ## Persistence Boundary
 
-The [save-system contract](./save-system.md) confirms a two-slot representation, checksums,
+The [save-system contract](../contracts/save-system.md) confirms a two-slot representation, checksums,
 save/load/copy/delete helper order, and a bounded in-process action matrix. It does not establish
 cross-process SRAM survival, interrupted writes, or the persistence of every service, Deals, caravan,
 order, drop-flag, gold, EXP, or combatant mutation across all lifecycle paths.
@@ -236,16 +236,16 @@ existence of `SaveGame` as proof for every subsystem.
 
 | Boundary | Evidence label and bounded claim | Exact owners | Remaining question |
 | --- | --- | --- | --- |
-| growth storage and level-up | **Confirmed** curves/class blocks plus runtime gain, cap, spell, scan, and refresh cases | [ally-growth research](../research/ally-growth.md), [growth manifest](../../manifests/extractions/growth-data.json), [growth schema](../../schemas/growth-data.schema.json); `sf2-calculate-stat-gain-startup-v1` ([`stat-gain-v1.json`](../../tests/fixtures/h3/stat-gain-v1.json)), `sf2-level-up-tort-boundary-v1` ([`level-up-v1.json`](../../tests/fixtures/h3/level-up-v1.json)), `sf2-level-up-boundaries-v1` ([`level-up-boundaries-v1.json`](../../tests/fixtures/h3/level-up-boundaries-v1.json)), and `sf2-level-up-refresh-v1` ([`level-up-refresh-v1.json`](../../tests/fixtures/h3/level-up-refresh-v1.json)) | Natural campaign distributions, intended curves, remaining clamp edges |
-| battle EXP to level-up | **Confirmed runtime** command replay through one threshold and persistent refresh | [runtime battle-math research](../research/runtime-rng-and-battle-math.md); `sf2-battle-exp-level-up-v1` ([`battle-exp-level-up-v1.json`](../../tests/fixtures/h3/battle-exp-level-up-v1.json)) | Other award modifiers and repeated commands |
-| reward bracket, finalization, and storage | **Confirmed runtime** effective-level brackets, Battle 01 adjustment/randomization/minimum, stored cap 200, and one threshold | `sf2-kill-exp-level-difference-v1` ([`kill-exp-level-difference-v1.json`](../../tests/fixtures/h3/kill-exp-level-difference-v1.json)), `sf2-award-exp-randomization-v1` ([`award-exp-randomization-v1.json`](../../tests/fixtures/h3/award-exp-randomization-v1.json)), and `sf2-exp-command-boundaries-v1` ([`exp-command-boundaries-v1.json`](../../tests/fixtures/h3/exp-command-boundaries-v1.json)) | Other battles, same-side routing, multiple-action/cap lifecycle |
-| physical action construction and replay | **Confirmed runtime subset** damage/kill accumulator cap and persistent command replay | [combat contract](./combat-resolution.md); `sf2-physical-damage-application-v1` ([`physical-damage-application-v1.json`](../../tests/fixtures/h3/physical-damage-application-v1.json)) and `sf2-battle-scene-replay-v1` ([`battle-scene-replay-v1.json`](../../tests/fixtures/h3/battle-scene-replay-v1.json)) | Complete action set and presentation timing |
-| spell progression contributions | **Confirmed runtime subsets** attack-spell bracket/cap and healer eligibility/minimum/cap | [spell contract](./spell-resolution.md); `sf2-spell-damage-exp-v1` ([`spell-damage-exp-v1.json`](../../tests/fixtures/h3/spell-damage-exp-v1.json)) and `sf2-healing-exp-boundaries-v1` ([`spell-healing-exp-boundaries-v1.json`](../../tests/fixtures/h3/spell-healing-exp-boundaries-v1.json)) | Unsupported spell families and generalized action policy |
-| enemy gold | **Confirmed static/runtime** 103 used rows plus unused tail, and increase/cap/carry cases | [enemy rewards research](../research/enemy-promotions.md); `sf2-enemy-gold-v1` ([`enemy-gold-v1.json`](../../tests/fixtures/h2/enemy-gold-v1.json)) and `sf2-gold-boundaries-v1` ([`gold-boundaries-v1.json`](../../tests/fixtures/h3/gold-boundaries-v1.json)) | DecreaseGold and non-battle callers |
-| enemy item drops and Deals routing | **Confirmed static/runtime** 30 records, three random items, one-time flags, recipient routing, and nibble saturation | `sf2-enemy-item-drops-v1` ([`enemy-item-drops-v1.json`](../../tests/fixtures/h2/enemy-item-drops-v1.json)) and `sf2-enemy-item-drop-behavior-v1` ([`enemy-item-drop-behavior-v1.json`](../../tests/fixtures/h3/enemy-item-drop-behavior-v1.json)) | Player-visible reward flow and full save lifecycle |
-| service economy | **Confirmed static** price/gate dataflow and ordered direct mutation calls only | [common-menu research](../research/common-menus.md); `sf2-common-menus-static-v1` ([`common-menus-static-v1.json`](../../tests/fixtures/h2/common-menus-static-v1.json)) | Grouped service H3, atomicity, final states, admission, return, persistence |
-| shared state helpers | **Confirmed static**, with only itemized runtime clamp coverage | [common-stats research](../research/common-stats.md); `sf2-common-stats-static-v1` ([`common-stats-static-v1.json`](../../tests/fixtures/h2/common-stats-static-v1.json)) | Caller-dependent mutation outcomes outside existing H3 fixtures |
-| save handoff | **Confirmed representation and bounded in-process actions** | [save contract](./save-system.md); `sf2-tech-services-static-v1` ([`tech-services-static-v1.json`](../../tests/fixtures/h2/tech-services-static-v1.json)) and `sf2-witch-save-actions-runtime-v1` ([`witch-save-actions-v1.json`](../../tests/fixtures/h3/witch-save-actions-v1.json)) | Cross-process/power-loss behavior and subsystem-complete persistence |
+| growth storage and level-up | **Confirmed** curves/class blocks plus runtime gain, cap, spell, scan, and refresh cases | [ally-growth research](../../research/ally-growth.md), [growth manifest](../../../manifests/extractions/growth-data.json), [growth schema](../../../schemas/growth-data.schema.json); `sf2-calculate-stat-gain-startup-v1` ([`stat-gain-v1.json`](../../../tests/fixtures/h3/stat-gain-v1.json)), `sf2-level-up-tort-boundary-v1` ([`level-up-v1.json`](../../../tests/fixtures/h3/level-up-v1.json)), `sf2-level-up-boundaries-v1` ([`level-up-boundaries-v1.json`](../../../tests/fixtures/h3/level-up-boundaries-v1.json)), and `sf2-level-up-refresh-v1` ([`level-up-refresh-v1.json`](../../../tests/fixtures/h3/level-up-refresh-v1.json)) | Natural campaign distributions, intended curves, remaining clamp edges |
+| battle EXP to level-up | **Confirmed runtime** command replay through one threshold and persistent refresh | [runtime battle-math research](../../research/runtime-rng-and-battle-math.md); `sf2-battle-exp-level-up-v1` ([`battle-exp-level-up-v1.json`](../../../tests/fixtures/h3/battle-exp-level-up-v1.json)) | Other award modifiers and repeated commands |
+| reward bracket, finalization, and storage | **Confirmed runtime** effective-level brackets, Battle 01 adjustment/randomization/minimum, stored cap 200, and one threshold | `sf2-kill-exp-level-difference-v1` ([`kill-exp-level-difference-v1.json`](../../../tests/fixtures/h3/kill-exp-level-difference-v1.json)), `sf2-award-exp-randomization-v1` ([`award-exp-randomization-v1.json`](../../../tests/fixtures/h3/award-exp-randomization-v1.json)), and `sf2-exp-command-boundaries-v1` ([`exp-command-boundaries-v1.json`](../../../tests/fixtures/h3/exp-command-boundaries-v1.json)) | Other battles, same-side routing, multiple-action/cap lifecycle |
+| physical action construction and replay | **Confirmed runtime subset** damage/kill accumulator cap and persistent command replay | [combat contract](../contracts/combat-resolution.md); `sf2-physical-damage-application-v1` ([`physical-damage-application-v1.json`](../../../tests/fixtures/h3/physical-damage-application-v1.json)) and `sf2-battle-scene-replay-v1` ([`battle-scene-replay-v1.json`](../../../tests/fixtures/h3/battle-scene-replay-v1.json)) | Complete action set and presentation timing |
+| spell progression contributions | **Confirmed runtime subsets** attack-spell bracket/cap and healer eligibility/minimum/cap | [spell contract](../contracts/spell-resolution.md); `sf2-spell-damage-exp-v1` ([`spell-damage-exp-v1.json`](../../../tests/fixtures/h3/spell-damage-exp-v1.json)) and `sf2-healing-exp-boundaries-v1` ([`spell-healing-exp-boundaries-v1.json`](../../../tests/fixtures/h3/spell-healing-exp-boundaries-v1.json)) | Unsupported spell families and generalized action policy |
+| enemy gold | **Confirmed static/runtime** 103 used rows plus unused tail, and increase/cap/carry cases | [enemy rewards research](../../research/enemy-promotions.md); `sf2-enemy-gold-v1` ([`enemy-gold-v1.json`](../../../tests/fixtures/h2/enemy-gold-v1.json)) and `sf2-gold-boundaries-v1` ([`gold-boundaries-v1.json`](../../../tests/fixtures/h3/gold-boundaries-v1.json)) | DecreaseGold and non-battle callers |
+| enemy item drops and Deals routing | **Confirmed static/runtime** 30 records, three random items, one-time flags, recipient routing, and nibble saturation | `sf2-enemy-item-drops-v1` ([`enemy-item-drops-v1.json`](../../../tests/fixtures/h2/enemy-item-drops-v1.json)) and `sf2-enemy-item-drop-behavior-v1` ([`enemy-item-drop-behavior-v1.json`](../../../tests/fixtures/h3/enemy-item-drop-behavior-v1.json)) | Player-visible reward flow and full save lifecycle |
+| service economy | **Confirmed static** price/gate dataflow and ordered direct mutation calls only | [common-menu research](../../research/common-menus.md); `sf2-common-menus-static-v1` ([`common-menus-static-v1.json`](../../../tests/fixtures/h2/common-menus-static-v1.json)) | Grouped service H3, atomicity, final states, admission, return, persistence |
+| shared state helpers | **Confirmed static**, with only itemized runtime clamp coverage | [common-stats research](../../research/common-stats.md); `sf2-common-stats-static-v1` ([`common-stats-static-v1.json`](../../../tests/fixtures/h2/common-stats-static-v1.json)) | Caller-dependent mutation outcomes outside existing H3 fixtures |
+| save handoff | **Confirmed representation and bounded in-process actions** | [save contract](../contracts/save-system.md); `sf2-tech-services-static-v1` ([`tech-services-static-v1.json`](../../../tests/fixtures/h2/tech-services-static-v1.json)) and `sf2-witch-save-actions-runtime-v1` ([`witch-save-actions-v1.json`](../../../tests/fixtures/h3/witch-save-actions-v1.json)) | Cross-process/power-loss behavior and subsystem-complete persistence |
 
 ## Original Fidelity and Modernization
 
@@ -275,5 +275,5 @@ original command-buffer representation. It must expose an equivalent ordered tra
 Expansion stops until accepted evidence closes the grouped service runtime matrix, complete
 promotion effects, non-battle gold callers, campaign service/reward reachability, and end-to-end
 save/load persistence. Numerical-curve analysis, roster choice, map-design principles, and battle
-simulation remain later synthesis directions under the [documentation roadmap](./documentation-roadmap.md),
+simulation remain later synthesis directions under the [documentation roadmap](../documentation-roadmap.md),
 not implied deliverables of this resource-flow document.

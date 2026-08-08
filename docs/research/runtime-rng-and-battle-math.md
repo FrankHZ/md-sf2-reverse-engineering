@@ -153,7 +153,7 @@ effective level 7 → 27 at `0x9628` and the first level-up changes 2 → 22 at 
 spell list, so this scenario proves the internal threshold defect without claiming a learned-spell
 side effect. Its applied gains are HP/MP/ATT/DEF/AGI `[1,0,1,1,1]`, producing payload
 `[2,1,0,1,1,1,255]`. The remake decision boundary is specified in
-[`../design/level-up.md`](../design/level-up.md).
+[`../design/level-up.md`](../design/contracts/level-up.md).
 
 A third growth fixture observes seven more natural startup `LevelUp` calls. At entry it controls the
 selected combatant's class, level, base stats, spells, and seed, without changing the PC or CPU

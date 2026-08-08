@@ -5,7 +5,7 @@
 - 读者：研究者、保真实现者与未来地图设计者，需要一份原版证据已经约束了什么因素的简明模型。
 - 范围：可观察的结构、状态选择、变更阶段、交互排序，以及在空间或体验式地图分析开始之前所需的证据。
 
-> 本文件是 [`map-design-principles.md`](../map-design-principles.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-design-principles.md`](../../synthesis/map-design-principles.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -23,15 +23,15 @@
 
 ## 综合前证据审计
 
-该审计比较了所属研究文章、证据绑定的[地图与探索合同](../map-exploration.md)、fixture 载荷与 ID，以及每个所有者命名的聚焦命令。它特意检查了聚合单位、别名计数、选择量词、变更生命周期，以及运行时测试台是否执行后期剧情或呈现效果。
+该审计比较了所属研究文章、证据绑定的[地图与探索合同](../../contracts/map-exploration.md)、fixture 载荷与 ID，以及每个所有者命名的聚焦命令。它特意检查了聚合单位、别名计数、选择量词、变更生命周期，以及运行时测试台是否执行后期剧情或呈现效果。
 
 | 审查面 | 交叉检查与处置 | 保留的边界 |
 | --- | --- | --- |
-| 地图内容与几何 | [地图内容研究](../../research/map-content.md)、`sf2-map-content-static-v1`、`sf2-map-layout-decode-v1` 与 `sf2-canonical-map-import-v1` 一致：79 个地图定义、77 对图块/布局载荷、两个地图别名、64x64 布局、3x3 瓦片图块与 1,027 条地图内容逻辑记录。在下方记录的所有者修正之后，内容、布局与规范导入复现均通过。 | 受追踪 fixture 保留聚合结构，而非可分发的布局或渲染地图结果。 |
-| 配置变体 | [地图数据研究](../../research/map-data-inventory.md)、静态配置 fixture 与十案例运行时选择器一致：64 个有路由的地图 ID、126 个配置定义、15 条缺失路由、有序标志扫描与最后设置标志胜出。 | 运行时矩阵使用调试 Map Test 路径；正常存档标志组合与剧情可达性为 **未知**。 |
+| 地图内容与几何 | [地图内容研究](../../../research/map-content.md)、`sf2-map-content-static-v1`、`sf2-map-layout-decode-v1` 与 `sf2-canonical-map-import-v1` 一致：79 个地图定义、77 对图块/布局载荷、两个地图别名、64x64 布局、3x3 瓦片图块与 1,027 条地图内容逻辑记录。在下方记录的所有者修正之后，内容、布局与规范导入复现均通过。 | 受追踪 fixture 保留聚合结构，而非可分发的布局或渲染地图结果。 |
+| 配置变体 | [地图数据研究](../../../research/map-data-inventory.md)、静态配置 fixture 与十案例运行时选择器一致：64 个有路由的地图 ID、126 个配置定义、15 条缺失路由、有序标志扫描与最后设置标志胜出。 | 运行时矩阵使用调试 Map Test 路径；正常存档标志组合与剧情可达性为 **未知**。 |
 | 实体、区域（事件）与物品选择 | 静态事件所有者记录 1,134 条物理记录与首匹配分发。九案例运行时矩阵在把每个选中脚本条目替换为 `rts` 的同时确认所选偏移/目标。 | 脚本效果、过渡持久性、朝向/呈现后果与正常剧情准入在该 fixture 之外。 |
 | 区域描述 | `sf2-map-descriptions-static-v1` 拥有 75 个目标与 227 条物理条目以及首匹配使用方形状。它还区分正常探索的 `d6=1` 路径与条件函数。 | 没有运行时 fixture 闭合文本内容、玩家可见呈现或非标准调用方。 |
-| 工作布局变更 | [地图内容研究](../../research/map-content.md) 拥有重建/保留阶段。七案例图块变更 fixture 在有界布局窗口上确认有序字复制与更新位接缝。 | 碰撞、寻路、存档/读档持久性、正常剧情可达性与可见 VDP 效果仍为 **未知**。 |
+| 工作布局变更 | [地图内容研究](../../../research/map-content.md) 拥有重建/保留阶段。七案例图块变更 fixture 在有界布局窗口上确认有序字复制与更新位接缝。 | 碰撞、寻路、存档/读档持久性、正常剧情可达性与可见 VDP 效果仍为 **未知**。 |
 | 触发、摄像机与过渡 | 交互、摄像机与过渡 fixture 只确认有界的处理器进入/返回、状态传递与服务接缝。 | 源码标签与成功返回并不能证明玩家可见的移动、摄像机构图、淡入淡出时长、事件消耗或路线含义。 |
 
 在已接受 fixture 载荷或其所属文章之间没有发现语义矛盾。在初始基线 `e9b60f18832e9e74ed8749239d7726e871710d7b` 上复现时确实发现一个所有者集成不匹配：`uv run sf2 h2 map-import` 从 map-init 源码行读取了过期的 `callTargets`，而该行暴露的是 `directCallTargets`，并以 `KeyError` 退出。设计车道没有改动该工具、fixture 或 schema 表面。研究所有者通过 [Issue #22](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/22) 修正了该不匹配；在本分支更新到 main `5f1dbcca961a678cac774a4eadf1e21e3bd1c03b` 之后，一次新的 map-import 运行以 79 个地图、1,859 个资源与 15,805 条逻辑记录通过。这段历史记录了对抗性审查，而不把早期失败当作当前的证据边界。
@@ -136,16 +136,16 @@ flowchart TD
 
 | 设计面 | 有界证据 | 所有者与精确可执行溯源 | 剩余边界 |
 | --- | --- | --- | --- |
-| 内容包 | **已确认静态** 79 个定义、662 个源码区段、154 个私有载荷、可选指针边界 | [地图内容研究](../../research/map-content.md)；`sf2-map-content-static-v1`（[`map-content-static-v1.json`](../../../tests/fixtures/h2/map-content-static-v1.json)） | 渲染内容与私有载荷不受追踪 |
-| 几何与别名 | **已确认静态** 77 对载荷服务 79 个引用，含两个别名；每个解码布局都是 64x64，且每个图块引用都在范围内 | [通用地图研究](../../research/common-maps.md)；`sf2-map-layout-decode-v1`（[`map-layout-decode-v1.json`](../../../tests/fixtures/h2/map-layout-decode-v1.json)） | 可通过性、碰撞图与渲染一致性 |
-| 引擎中立资源图 | **已确认静态** 79 个定义与 1,859 个保留同一性的资源，含已解析的非空引用与原始标志 | [地图内容研究](../../research/map-content.md)；`sf2-canonical-map-import-v1`（[`canonical-map-import-v1.json`](../../../tests/fixtures/h2/canonical-map-import-v1.json)） | 完整生成的导入为私有；无引擎/编辑器决定 |
-| 状态选择的配置 | **已确认静态/运行时** 64 条路由、126 个配置定义、15 条缺失路由、全行扫描、最后设置胜出与有界的默认/别名用例 | [地图数据研究](../../research/map-data-inventory.md)；`sf2-map-setup-static-v1`（[`map-setup-static-v1.json`](../../../tests/fixtures/h2/map-setup-static-v1.json)）与 `sf2-map-setup-selection-runtime-v1`（[`map-setup-selection-v1.json`](../../../tests/fixtures/h3/map-setup-selection-v1.json)） | 正常存档组合、所选配置含义与剧情可达性 |
-| 实体/区域（事件）/物品选择器 | **已确认静态/运行时** 1,134 条物理记录、首匹配规则与九个有界选中目标用例 | [地图数据研究](../../research/map-data-inventory.md)；`sf2-map-events-static-v1`（[`map-events-static-v1.json`](../../../tests/fixtures/h2/map-events-static-v1.json)）与 `sf2-map-event-dispatch-runtime-v1`（[`map-event-dispatch-v1.json`](../../../tests/fixtures/h3/map-event-dispatch-v1.json)） | 所选脚本被 stub；后续效果与呈现为 **未知** |
-| 区域描述 | **已确认静态** 75 个目标、227 条物理条目、首匹配形状与正常探索 `d6` 边界 | [地图数据研究](../../research/map-data-inventory.md)；`sf2-map-descriptions-static-v1`（[`map-descriptions-static-v1.json`](../../../tests/fixtures/h2/map-descriptions-static-v1.json)） | 文本、非标准调用方、运行时可达性与呈现 |
-| 脚本化图块变更 | **已确认静态/运行时接缝** 源码形状的图块复制命令加上七个有界前向复制/更新观察 | [地图/探索合同](../map-exploration.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-block-mutation-runtime-v1`（[`map-block-mutation-v1.json`](../../../tests/fixtures/h3/map-block-mutation-v1.json)） | 碰撞/寻路使用方、持久性、正常可达性与可见时序 |
-| 屋顶与踩踏触发 | **已确认有界运行时** 原始处理器与表扫描上的六个命中/未命中/门控用例 | [地图/探索合同](../map-exploration.md)；`sf2-map-interaction-trigger-runtime-v1`（[`map-interaction-trigger-v1.json`](../../../tests/fixtures/h3/map-interaction-trigger-v1.json)） | 完整布局效果、碰撞/寻路、音频/呈现、持久性与剧情可达性 |
-| 摄像机接缝 | **已确认有界运行时** 七个目标/目的地/速度处理器用例与状态/服务时间线 | [通用脚本研究](../../research/common-scripting.md)；`sf2-map-camera-control-runtime-v1`（[`map-camera-control-v1.json`](../../../tests/fixtures/h3/map-camera-control-v1.json)） | 玩家可见摄像机行为与正常剧情可达性 |
-| 过渡接缝 | **已确认有界运行时** 五条解释器流，含 `warp`、有界事件字节、状态字段与直接服务进入/返回 | [通用脚本研究](../../research/common-scripting.md)；`sf2-map-script-transition-runtime-v1`（[`map-script-transition-v1.json`](../../../tests/fixtures/h3/map-script-transition-v1.json)） | 事件消耗、淡入淡出/显示时序、持久性、碰撞/寻路与正常剧情可达性 |
+| 内容包 | **已确认静态** 79 个定义、662 个源码区段、154 个私有载荷、可选指针边界 | [地图内容研究](../../../research/map-content.md)；`sf2-map-content-static-v1`（[`map-content-static-v1.json`](../../../../tests/fixtures/h2/map-content-static-v1.json)） | 渲染内容与私有载荷不受追踪 |
+| 几何与别名 | **已确认静态** 77 对载荷服务 79 个引用，含两个别名；每个解码布局都是 64x64，且每个图块引用都在范围内 | [通用地图研究](../../../research/common-maps.md)；`sf2-map-layout-decode-v1`（[`map-layout-decode-v1.json`](../../../../tests/fixtures/h2/map-layout-decode-v1.json)） | 可通过性、碰撞图与渲染一致性 |
+| 引擎中立资源图 | **已确认静态** 79 个定义与 1,859 个保留同一性的资源，含已解析的非空引用与原始标志 | [地图内容研究](../../../research/map-content.md)；`sf2-canonical-map-import-v1`（[`canonical-map-import-v1.json`](../../../../tests/fixtures/h2/canonical-map-import-v1.json)） | 完整生成的导入为私有；无引擎/编辑器决定 |
+| 状态选择的配置 | **已确认静态/运行时** 64 条路由、126 个配置定义、15 条缺失路由、全行扫描、最后设置胜出与有界的默认/别名用例 | [地图数据研究](../../../research/map-data-inventory.md)；`sf2-map-setup-static-v1`（[`map-setup-static-v1.json`](../../../../tests/fixtures/h2/map-setup-static-v1.json)）与 `sf2-map-setup-selection-runtime-v1`（[`map-setup-selection-v1.json`](../../../../tests/fixtures/h3/map-setup-selection-v1.json)） | 正常存档组合、所选配置含义与剧情可达性 |
+| 实体/区域（事件）/物品选择器 | **已确认静态/运行时** 1,134 条物理记录、首匹配规则与九个有界选中目标用例 | [地图数据研究](../../../research/map-data-inventory.md)；`sf2-map-events-static-v1`（[`map-events-static-v1.json`](../../../../tests/fixtures/h2/map-events-static-v1.json)）与 `sf2-map-event-dispatch-runtime-v1`（[`map-event-dispatch-v1.json`](../../../../tests/fixtures/h3/map-event-dispatch-v1.json)） | 所选脚本被 stub；后续效果与呈现为 **未知** |
+| 区域描述 | **已确认静态** 75 个目标、227 条物理条目、首匹配形状与正常探索 `d6` 边界 | [地图数据研究](../../../research/map-data-inventory.md)；`sf2-map-descriptions-static-v1`（[`map-descriptions-static-v1.json`](../../../../tests/fixtures/h2/map-descriptions-static-v1.json)） | 文本、非标准调用方、运行时可达性与呈现 |
+| 脚本化图块变更 | **已确认静态/运行时接缝** 源码形状的图块复制命令加上七个有界前向复制/更新观察 | [地图/探索合同](../../contracts/map-exploration.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-block-mutation-runtime-v1`（[`map-block-mutation-v1.json`](../../../../tests/fixtures/h3/map-block-mutation-v1.json)） | 碰撞/寻路使用方、持久性、正常可达性与可见时序 |
+| 屋顶与踩踏触发 | **已确认有界运行时** 原始处理器与表扫描上的六个命中/未命中/门控用例 | [地图/探索合同](../../contracts/map-exploration.md)；`sf2-map-interaction-trigger-runtime-v1`（[`map-interaction-trigger-v1.json`](../../../../tests/fixtures/h3/map-interaction-trigger-v1.json)） | 完整布局效果、碰撞/寻路、音频/呈现、持久性与剧情可达性 |
+| 摄像机接缝 | **已确认有界运行时** 七个目标/目的地/速度处理器用例与状态/服务时间线 | [通用脚本研究](../../../research/common-scripting.md)；`sf2-map-camera-control-runtime-v1`（[`map-camera-control-v1.json`](../../../../tests/fixtures/h3/map-camera-control-v1.json)） | 玩家可见摄像机行为与正常剧情可达性 |
+| 过渡接缝 | **已确认有界运行时** 五条解释器流，含 `warp`、有界事件字节、状态字段与直接服务进入/返回 | [通用脚本研究](../../../research/common-scripting.md)；`sf2-map-script-transition-runtime-v1`（[`map-script-transition-v1.json`](../../../../tests/fixtures/h3/map-script-transition-v1.json)） | 事件消耗、淡入淡出/显示时序、持久性、碰撞/寻路与正常剧情可达性 |
 
 ## 原版保真与未来地图设计
 

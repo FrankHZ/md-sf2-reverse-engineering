@@ -86,7 +86,7 @@ count, queue capacity, completion frame, or hardware transfer result.
 
 **Inferred.** The external callers show extensive menu, text, map, battle, and witch use, but do not
 by themselves prove admission conditions, caller-visible result meanings, or user-visible movement.
-The engine-neutral static boundary is in [`window-system.md`](../design/window-system.md).
+The engine-neutral static boundary is in [`window-system.md`](../design/contracts/window-system.md).
 
 ## Development and Debug Flows
 

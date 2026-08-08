@@ -12,7 +12,7 @@
   `src/sf2tool/h2/remaining_core.py`；以及
   `docs/research/remaining-core.md`。
 
-> 本文件是 [`window-system.md`](../window-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`window-system.md`](../../contracts/window-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 已确认的静态合同
 

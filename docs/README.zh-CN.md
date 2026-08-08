@@ -269,41 +269,42 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 
 ## Design
 
-`design/` 将已确认行为整理成实现无关的游戏设计规格。Phase 2 开始按 subsystem 创建；不能用
-设计文档反向“证明”逆向结论。
+`design/contracts/` 存放受证据约束、实现无关的子系统合同；`design/synthesis/` 存放消费已接受
+证据的跨子系统或面向玩家的综合说明。共享治理文档保留在 `design/` 根目录。不能用设计文档
+反向“证明”逆向结论。
 
 中文本地化从英文 canonical 源以专用批次进行：术语表
 [`glossary.md`](./design/glossary.md) 是英文→中文术语的单一绑定来源，镜像存于
-`design/zh-CN/`（同文件名，英文文件始终是审阅基线）。翻译索引由
+`design/zh-CN/`，并保留 canonical 英文源的相对层级（英文文件始终是审阅基线）。翻译索引由
 `manifests/zh-translation-index.json` 追踪，用 `uv run sf2 zh-meta test`（严格校验）与
 `uv run sf2 zh-meta update`（保留已接受锚点的重生成）维护。只有在对照英文源码和当前术语表
 审阅完变更镜像后，才能为每个允许更新锚点的文档重复传入
-`--reanchor-source docs/design/<file>.md`。下列 design 文档条目均链接到 `design/zh-CN/`
+`--reanchor-source docs/design/<category>/<file>.md`。下列 design 文档条目均链接到 `design/zh-CN/`
 下的中文镜像。
 
 - [`glossary.md`](./design/glossary.md)：已接受的英文→中文术语表及 zh-CN 本地化规则；固定证据标签
   译法、保留源码标识符、一词一译、专有名词保留英文，以及 `design/zh-CN/` 镜像约定。
 - [`documentation-roadmap.md`](./design/zh-CN/documentation-roadmap.md)：三层 证据/解释/现代化 边界、英文
   编写基线、近期综合顺序、长期方向、可复用编写结构与协作治理；它不是原版行为的证据，也不是重制产品决定。
-- [`gameplay-overview.md`](./design/zh-CN/gameplay-overview.md)：综合玩家动作、顶层状态流、本地循环与子系统
+- [`gameplay-overview.md`](./design/zh-CN/synthesis/gameplay-overview.md)：综合玩家动作、顶层状态流、本地循环与子系统
   交接，基于已接受的 gameflow、地图、输入、对话、队伍/名册、服务、战斗、成长与存档合同，同时保留
   战役、体验、平衡与上层设计 未知/决策 边界。
-- [`tactical-battle-loop.md`](./design/zh-CN/tactical-battle-loop.md)：综合一个受限的战术战斗循环，基于
+- [`tactical-battle-loop.md`](./design/zh-CN/synthesis/tactical-battle-loop.md)：综合一个受限的战术战斗循环，基于
   已接受的战斗控制、玩家/AI 控制、移动/目标、行动构建、战斗/法术解决、状态回放与结果证据，同时
   保留战术、平衡、呈现与一般模拟 未知/决策 边界。
-- [`progression-and-economy.md`](./design/zh-CN/progression-and-economy.md)：在对抗性 owner/fixture 审计后
+- [`progression-and-economy.md`](./design/zh-CN/synthesis/progression-and-economy.md)：在对抗性 owner/fixture 审计后
   连接动作局部 EXP、持久 EXP 与升级、属性刷新、金币、敌人掉落、物品去向、源码静态服务交换与存档
   边界，同时保留平衡、战役可达性、服务运行时与端到端持久性 未知 边界。
-- [`story-progression.md`](./design/zh-CN/story-progression.md)：在对抗性 owner/fixture 审计后映射受限的
+- [`story-progression.md`](./design/zh-CN/synthesis/story-progression.md)：在对抗性 owner/fixture 审计后映射受限的
   顶层路线、有序配置/事件选择、脚本图、故事状态、对话、名册、过渡与存档交接，同时把剧情时间线、
   选择后果、常规存档可达性、完整持久性与呈现保留为 未知 边界。
-- [`map-design-principles.md`](./design/zh-CN/map-design-principles.md)：在对抗性 owner/fixture 审计后，把
+- [`map-design-principles.md`](./design/zh-CN/synthesis/map-design-principles.md)：在对抗性 owner/fixture 审计后，把
   地图定义、几何/资源同一性、有序配置变体、交互选择与可变工作布局综合为证据受限的结构原则，同时把
   路线质量、节奏、碰撞/寻路、可达性、可见呈现与作者意图保留为 未知 边界。
-- [`combat-resolution.md`](./design/zh-CN/combat-resolution.md)：物理攻击从 dodge、地形/克制、critical、
+- [`combat-resolution.md`](./design/zh-CN/contracts/combat-resolution.md)：物理攻击从 dodge、地形/克制、critical、
   spread、double/counter 到临时 HP、reaction 回放、EXP 入账与升级连接的实现无关合同，以及未来 H4 的共享
   fixture 边界。
-- [`map-exploration.md`](./design/zh-CN/map-exploration.md)：79-map import boundary、共享 block/layout
+- [`map-exploration.md`](./design/zh-CN/contracts/map-exploration.md)：79-map import boundary、共享 block/layout
   ownership、64x64 geometry、可执行 canonical import、area/event/item/animation 顺序、
   working-layout mutation、两个 source-faithful map-script block-copy form、四个 source-shaped
   entity population/reload form、单个 source-faithful `cloneEntity` form、三个 source-faithful map-script camera-control form、四个 source-faithful map lifecycle form、两个 source-named
@@ -311,27 +312,27 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   entity lifecycle/presentation form、七个 source-named entity gesture/relationship/motion form、十二个 source-named
   screen/map-presentation form 与现代 renderer 的
   原版事实/未知/可现代化边界。
-- [`level-up.md`](./design/zh-CN/level-up.md)：成长曲线随机增益、最低成长补偿、战斗 EXP 阈值入口、完整升级顺序、
+- [`level-up.md`](./design/zh-CN/contracts/level-up.md)：成长曲线随机增益、最低成长补偿、战斗 EXP 阈值入口、完整升级顺序、
   投影后固定成长、职业等级上限、跨角色职业块扫描、当前/派生属性与装备刷新、属性上限/下溢夹断、敌人诅咒抑制、继承法术升级、Karna/HEAL 3 完整 prowess 高半字节矩阵、`LEVELUP_ARGUMENTS` 结果合同，以及 TORT
   effective-level 缺陷的原版事实和重制选择边界。
-- [`spell-resolution.md`](./design/zh-CN/spell-resolution.md)：攻击法术的元素抗性位域、整数伤害调整、
+- [`spell-resolution.md`](./design/zh-CN/contracts/spell-resolution.md)：攻击法术的元素抗性位域、整数伤害调整、
   promoted power、DAO target-count division、spell critical、共用 downward spread、攻击法术 EXP、
   HEAL 1 治疗与治疗 EXP、SLEEP/SLOW 1 状态抗性与免疫、DESOUL 成败/即死/多目标 kill EXP/gold、SPOIT MP 吸收与边界截断、BOOST 1 属性/重施时序、SILENCE 施法门，以及临时状态回合后生命周期/持久场景回放边界的实现无关合同。
-- [`service-interactions.md`](./design/zh-CN/service-interactions.md)：shop、church、caravan/depot 与
+- [`service-interactions.md`](./design/zh-CN/contracts/service-interactions.md)：shop、church、caravan/depot 与
   blacksmith 的动作顺序、取消边界与静态资源 mutation 合同，以及明确保留的持久化/时序未知项。
-- [`save-system.md`](./design/zh-CN/save-system.md)：两槽 SRAM、交错字节布局、checksum、occupied flag 与
+- [`save-system.md`](./design/zh-CN/contracts/save-system.md)：两槽 SRAM、交错字节布局、checksum、occupied flag 与
   save/load/copy/delete 静态合同、单启动 in-process service matrix，以及仍留给 H3 的跨进程持久化和断电边界。
-- [`input-system.md`](./design/zh-CN/input-system.md)：双端口原始采样、VInt current/repeat 过滤、输入等待
+- [`input-system.md`](./design/zh-CN/contracts/input-system.md)：双端口原始采样、VInt current/repeat 过滤、输入等待
   helper 与控制器/时序未知边界。
-- [`window-system.md`](./design/zh-CN/window-system.md)：八槽 window entry、layout 分配/回收、packed
+- [`window-system.md`](./design/zh-CN/contracts/window-system.md)：八槽 window entry、layout 分配/回收、packed
   coordinate 寻址、VInt composition/DMA 调用顺序，以及呈现时序未知边界。
-- [`dialogue-system.md`](./design/zh-CN/dialogue-system.md)：六个 map-script dialogue command 的物理
+- [`dialogue-system.md`](./design/zh-CN/contracts/dialogue-system.md)：六个 map-script dialogue command 的物理
   layout、cursor/name-index/portrait consumer 静态顺序，以及 21-case 单启动 handler-local H3 合同和
   三个明确的 presentation/runtime Unknown 边界。
-- [`party-roster-state.md`](./design/zh-CN/party-roster-state.md)：十个 map-script roster/death 与
+- [`party-roster-state.md`](./design/zh-CN/contracts/party-roster-state.md)：十个 map-script roster/death 与
   active-party/AI/follower source form 的 physical layout、named handler branch/mutation/call order、
   alias-aware caller identity，以及两个 grouped H3 runtime 边界。
-- [`randomness.md`](./design/zh-CN/randomness.md)：主 RNG、debug 方向覆盖、AI byte RNG、有界采样、helper-return state 与 controlled source-shaped copy 的
+- [`randomness.md`](./design/zh-CN/contracts/randomness.md)：主 RNG、debug 方向覆盖、AI byte RNG、有界采样、helper-return state 与 controlled source-shaped copy 的
   静态/运行时合同，以及 retry 与 seed-copy 隔离边界。
 
 ## Decisions

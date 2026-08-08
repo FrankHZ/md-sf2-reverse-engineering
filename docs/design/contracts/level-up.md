@@ -33,8 +33,8 @@
   99-below/exact-100/EXP-cap-200 command boundaries, base/promoted cap result 255, and proves that
   one command processes at most one 100-point threshold. Run it independently with
   `uv run sf2 h3 exp-command`.
-- [`../research/ally-growth.md`](../research/ally-growth.md) owns the static curve and class-block
-  storage contract; [`../research/runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
+- [`../research/ally-growth.md`](../../research/ally-growth.md) owns the static curve and class-block
+  storage contract; [`../research/runtime-rng-and-battle-math.md`](../../research/runtime-rng-and-battle-math.md)
   owns addresses and runtime interpretation.
 
 ## Confirmed Original Sequence
