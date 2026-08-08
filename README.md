@@ -49,15 +49,15 @@ The design-synthesis entry point is
 [`docs/design/documentation-roadmap.md`](./docs/design/documentation-roadmap.md). Current synthesis
 documents include:
 
-- [`gameplay-overview.md`](./docs/design/gameplay-overview.md);
-- [`tactical-battle-loop.md`](./docs/design/tactical-battle-loop.md);
-- [`progression-and-economy.md`](./docs/design/progression-and-economy.md);
-- [`story-progression.md`](./docs/design/story-progression.md).
+- [`gameplay-overview.md`](./docs/design/synthesis/gameplay-overview.md);
+- [`tactical-battle-loop.md`](./docs/design/synthesis/tactical-battle-loop.md);
+- [`progression-and-economy.md`](./docs/design/synthesis/progression-and-economy.md);
+- [`story-progression.md`](./docs/design/synthesis/story-progression.md).
 
 English is the canonical authoring and review language for current design synthesis. zh-CN
 localization proceeds as dedicated batches under the accepted glossary at
 [`docs/design/glossary.md`](./docs/design/glossary.md), with mirrors under `docs/design/zh-CN/`
-and English as the review baseline.
+that preserve each English source's relative hierarchy; English remains the review baseline.
 
 ## Project Goals
 
@@ -134,7 +134,9 @@ Directories are added only when a concrete slice owns content:
 AGENTS.md              Workflow, evidence, safety, and completion contract
 README.md              Stable project entry point
 docs/research/          Source-backed reverse-engineering findings
-docs/design/            Implementation-neutral original behavior and synthesis
+docs/design/contracts/  Evidence-bound implementation-neutral subsystem contracts
+docs/design/synthesis/  Cross-subsystem and player-facing design synthesis
+docs/design/            Shared design governance and localization roots
 docs/decisions/         Durable architecture and tooling decisions
 schemas/                Canonical extracted-data and fixture contracts
 manifests/              Input, extraction, toolchain, and research indexes

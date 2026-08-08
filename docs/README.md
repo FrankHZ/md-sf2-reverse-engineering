@@ -310,18 +310,20 @@ Data-side directory inventory and ROM parity:
 
 ## Design
 
-`design/` organizes confirmed behavior into implementation-neutral game design specifications,
-created per subsystem from Phase 2 onward; a design document cannot be used to "prove" a
-reverse-engineering conclusion backwards.
+`design/contracts/` contains evidence-bound implementation-neutral subsystem contracts, while
+`design/synthesis/` contains cross-subsystem or player-facing explanations that consume accepted
+evidence. Shared governance remains at the `design/` root. A design document cannot be used to
+"prove" a reverse-engineering conclusion backwards.
 
 zh-CN localization proceeds from the English canonical source in dedicated batches: the glossary
 [`glossary.md`](./design/glossary.md) is the single binding source for English-to-Chinese terminology,
-and mirrors live under `design/zh-CN/` (same filename; the English file remains the review baseline).
+and mirrors live under `design/zh-CN/`, preserving each canonical English source's relative path (the
+English file remains the review baseline).
 The translation index is tracked in `manifests/zh-translation-index.json` and maintained with
 `uv run sf2 zh-meta test` (strict verification) and `uv run sf2 zh-meta update` (regenerate while
 preserving accepted anchors). After reviewing a changed mirror against its English source and the
-current glossary, repeat `--reanchor-source docs/design/<file>.md` for each reviewed document whose
-anchors may be updated.
+current glossary, repeat `--reanchor-source docs/design/<category>/<file>.md` for each reviewed
+document whose anchors may be updated.
 
 - [`glossary.md`](./design/glossary.md): the accepted English-to-Chinese glossary and rules for zh-CN
   localization; fixed evidence-label translations, preserved source identifiers, one-term-one-
@@ -330,32 +332,32 @@ anchors may be updated.
   modernization boundaries, the English authoring baseline, near-term synthesis order, long-term
   directions, reusable authoring structure, and collaboration governance; it is neither evidence of
   original behavior nor a remake product decision.
-- [`gameplay-overview.md`](./design/gameplay-overview.md): synthesizes player verbs, top-level state
+- [`gameplay-overview.md`](./design/synthesis/gameplay-overview.md): synthesizes player verbs, top-level state
   flow, local loops, and subsystem handoffs from accepted gameflow, map, input, dialogue,
   party/roster, service, battle, growth, and save contracts while retaining campaign, experience,
   balance, and upper-layer design Unknown/decision boundaries.
-- [`tactical-battle-loop.md`](./design/tactical-battle-loop.md): synthesizes a bounded tactical battle
+- [`tactical-battle-loop.md`](./design/synthesis/tactical-battle-loop.md): synthesizes a bounded tactical battle
   loop from accepted battle control, player/AI control, movement/target, action construction,
   combat/spell resolution, state replay, and outcome evidence while retaining tactics, balance,
   presentation, and general-simulation Unknown/decision boundaries.
-- [`progression-and-economy.md`](./design/progression-and-economy.md): connects action-local EXP,
+- [`progression-and-economy.md`](./design/synthesis/progression-and-economy.md): connects action-local EXP,
   persistent EXP and level-up, stat refresh, gold, enemy drops, item destinations, source-static
   service exchanges, and save boundaries after an adversarial owner/fixture audit, while retaining
   balance, campaign reachability, service-runtime, and end-to-end persistence Unknown boundaries.
-- [`story-progression.md`](./design/story-progression.md): maps the bounded top-level route, ordered
+- [`story-progression.md`](./design/synthesis/story-progression.md): maps the bounded top-level route, ordered
   setup/event selection, script graph, story-state, dialogue, roster, transition, and save handoffs
   after an adversarial owner/fixture audit, while retaining plot chronology, choice consequences,
   normal-save reachability, full persistence, and presentation as Unknown boundaries.
-- [`map-design-principles.md`](./design/map-design-principles.md): synthesizes map definitions,
+- [`map-design-principles.md`](./design/synthesis/map-design-principles.md): synthesizes map definitions,
   geometry/resource identity, ordered setup variants, interaction selection, and mutable working
   layouts into evidence-bounded structural principles after an adversarial owner/fixture audit,
   while retaining route quality, pacing, collision/pathfinding, reachability, visible presentation,
   and authorial intent as Unknown boundaries.
-- [`combat-resolution.md`](./design/combat-resolution.md): the implementation-neutral contract from
+- [`combat-resolution.md`](./design/contracts/combat-resolution.md): the implementation-neutral contract from
   physical attacks through dodge, terrain/countering, critical, spread, and double/counter to
   temporary HP, reaction replay, EXP booking, and level-up connection, plus the shared fixture
   boundary for a future H4.
-- [`map-exploration.md`](./design/map-exploration.md): the 79-map import boundary, shared
+- [`map-exploration.md`](./design/contracts/map-exploration.md): the 79-map import boundary, shared
   block/layout ownership, 64x64 geometry, the executable canonical import, area/event/item/animation
   ordering, working-layout mutation, the two source-faithful map-script block-copy forms, the four
   source-shaped entity population/reload forms, the single source-faithful `cloneEntity` form, the
@@ -365,37 +367,37 @@ anchors may be updated.
   the seven source-named entity gesture/relationship/motion forms, the twelve source-named
   screen/map-presentation forms, and the original-fact/Unknown/modernizable boundary with a modern
   renderer.
-- [`level-up.md`](./design/level-up.md): growth-curve randomized gains, minimum-growth pity, the battle
+- [`level-up.md`](./design/contracts/level-up.md): growth-curve randomized gains, minimum-growth pity, the battle
   EXP threshold entry, the complete level-up order, post-projection fixed growth, class level caps,
   cross-ally class-block scanning, current/derived stat and equipment refresh, stat
   clamp/underflow bounds, enemy curse suppression, inherited spell upgrades, the Karna/HEAL 3 complete
   prowess high-nibble matrix, the `LEVELUP_ARGUMENTS` result contract, and the original-fact and
   remake-choice boundary for the TORT effective-level defect.
-- [`spell-resolution.md`](./design/spell-resolution.md): the implementation-neutral contract for
+- [`spell-resolution.md`](./design/contracts/spell-resolution.md): the implementation-neutral contract for
   attack-spell elemental resistance bit fields, integer damage adjustment, promoted power, DAO
   target-count division, spell critical, the shared downward spread, attack-spell EXP, HEAL 1 healing
   and healing EXP, SLEEP/SLOW 1 status resistance and immunity, DESOUL success/instant-death/
   multi-target kill EXP/gold, SPOIT MP absorption with boundary truncation, BOOST 1
   attribute/recast timing, the SILENCE cast gate, and the temporary-status post-turn lifecycle and
   persistent-scenario replay boundary.
-- [`service-interactions.md`](./design/service-interactions.md): the shop, church, caravan/depot, and
+- [`service-interactions.md`](./design/contracts/service-interactions.md): the shop, church, caravan/depot, and
   blacksmith action order, cancel boundaries, and static resource mutation contracts, with explicitly
   retained persistence/timing unknowns.
-- [`save-system.md`](./design/save-system.md): the two-slot SRAM, interleaved byte layout, checksum,
+- [`save-system.md`](./design/contracts/save-system.md): the two-slot SRAM, interleaved byte layout, checksum,
   occupied flag, the save/load/copy/delete static contracts, the single-launch in-process service
   matrix, and the cross-process persistence and power-loss boundaries still left to H3.
-- [`input-system.md`](./design/input-system.md): two-port raw sampling, VInt current/repeat filtering,
+- [`input-system.md`](./design/contracts/input-system.md): two-port raw sampling, VInt current/repeat filtering,
   input-wait helpers, and the controller/timing Unknown boundary.
-- [`window-system.md`](./design/window-system.md): the eight-slot window entry, layout
+- [`window-system.md`](./design/contracts/window-system.md): the eight-slot window entry, layout
   allocation/reclamation, packed-coordinate addressing, VInt composition/DMA call order, and the
   presentation-timing Unknown boundary.
-- [`dialogue-system.md`](./design/dialogue-system.md): the physical layout of the six map-script
+- [`dialogue-system.md`](./design/contracts/dialogue-system.md): the physical layout of the six map-script
   dialogue commands, the static cursor/name-index/portrait consumer order, the 21-case single-launch
   handler-local H3 contract, and three explicit presentation/runtime Unknown boundaries.
-- [`party-roster-state.md`](./design/party-roster-state.md): the physical layout of the ten map-script
+- [`party-roster-state.md`](./design/contracts/party-roster-state.md): the physical layout of the ten map-script
   roster/death and active-party/AI/follower source forms, named-handler branch/mutation/call order,
   alias-aware caller identity, and two grouped H3 runtime boundaries.
-- [`randomness.md`](./design/randomness.md): the static/runtime contracts for the main RNG, debug
+- [`randomness.md`](./design/contracts/randomness.md): the static/runtime contracts for the main RNG, debug
   directional override, AI byte RNG, bounded sampling, helper-return state, and controlled
   source-shaped copy, plus the retry and seed-copy isolation boundary.
 

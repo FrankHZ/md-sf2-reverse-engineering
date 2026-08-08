@@ -5,9 +5,9 @@
 - 读者：需要理解玩家动作、顶层状态与子系统交接的研究者、设计文档作者与保真实现者。
 - 范围：只连接当前 `main` 上已接受的 gameflow、地图、输入、对话、队伍/名册、服务、战斗、成长与存档合同；每个解读都保留其 **已确认**、**推断** 或 **未知** 标签。
 
-> 本文件是 [`gameplay-overview.md`](../gameplay-overview.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`gameplay-overview.md`](../../synthesis/gameplay-overview.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
-这是[文档路线图](../documentation-roadmap.md) 所述的第一篇 Layer B 综合。它提供导航，不替换任何研究所有者、测试夹具或子系统合同。**已确认** 指所述边界有链接的 Layer A 证据支持。**推断** 指多个已确认边界被连接成中性的面向玩家解释。**未知** 指当前证据不支持进一步解释。
+这是[文档路线图](../../documentation-roadmap.md) 所述的第一篇 Layer B 综合。它提供导航，不替换任何研究所有者、测试夹具或子系统合同。**已确认** 指所述边界有链接的 Layer A 证据支持。**推断** 指多个已确认边界被连接成中性的面向玩家解释。**未知** 指当前证据不支持进一步解释。
 
 ## 支持与不支持的判断
 
@@ -109,16 +109,16 @@ flowchart TD
 
 | 综合边界 | 标签与受限主张 | 证据所有者 / 可执行追踪 | 剩余问题 |
 | --- | --- | --- | --- |
-| 主循环与探索路由 | **已确认** 地图切换、战斗哨兵、事件先于输入的顺序与交互准入/顺序 | [gameflow 研究](../../research/gameflow-core.md)；`sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../tests/fixtures/h2/gameflow-core-static-v1.json)） | VInt 边界、过渡帧、正常剧情可达性 |
-| 地图状态与移动/事件 | **已确认** 地图导入、配置/事件顺序、工作布局与受限移动/动作行为 | [地图合同](../map-exploration.md) 及其分项的 H2/H3 测试夹具列表；`sf2-map-interaction-trigger-runtime-v1`（[`map-interaction-trigger-v1.json`](../../../tests/fixtures/h3/map-interaction-trigger-v1.json)） | 最终渲染、完整玩家路线、所选持久性 |
-| 输入接缝 | **已确认** 原始采样、当前/重复状态与等待辅助 | [输入合同](../input-system.md)；`sf2-tech-services-static-v1`（[`tech-services-static-v1.json`](../../../tests/fixtures/h2/tech-services-static-v1.json)）拥有原始采样与等待辅助，而 `sf2-tech-interrupts-static-v1`（[`tech-interrupts-static-v1.json`](../../../tests/fixtures/h2/tech-interrupts-static-v1.json)）拥有 VInt 派生的当前/重复阶段 | 控制器协议、帧级延迟、玩家可见重复节奏 |
-| 对话交接 | **已确认** 六种命令布局、处理器顺序与 21 用例处理器局部运行时接缝 | [对话合同](../dialogue-system.md)；`sf2-map-script-dialogue-runtime-v1`（[`map-script-dialogue-v1.json`](../../../tests/fixtures/h3/map-script-dialogue-v1.json)） | 文本/立绘/音频渲染、剧情可达性、持久性 |
-| 队伍/名册交接 | **已确认** 十个源码形式、分支/变更/调用顺序与受限活跃队伍效果 | [队伍/名册合同](../party-roster-state.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-force-state-active-party-runtime-v1`（[`force-state-active-party-v1.json`](../../../tests/fixtures/h3/force-state-active-party-v1.json)） | 名册/列表容量、剧情生命周期、存档持久性、玩家选择空间 |
-| 服务动作 | **已确认静态** 商店/教堂/车队/铁匠动作与资源变更顺序 | [服务合同](../service-interactions.md)；`sf2-common-menus-static-v1`（[`common-menus-static-v1.json`](../../../tests/fixtures/h2/common-menus-static-v1.json)） | 准入、返回、呈现、持久结果 |
-| 战斗入口、回合与结果 | **已确认静态** 新/恢复、回合/动作/死亡/结果顺序 | [battle-loop 研究](../../research/battle-loop.md)；顶层可执行追踪 `sf2-battle-control-static-v1`（[`battle-control-static-v1.json`](../../../tests/fixtures/h2/battle-control-static-v1.json)）。[battle-functions 研究](../../research/battle-functions.md) 与 `sf2-battle-functions-static-v1`（[`battle-functions-static-v1.json`](../../../tests/fixtures/h2/battle-functions-static-v1.json)）只支持共享的单回合/玩家控制面 | 完整玩家可见循环、运行时调用方状态、战术解读 |
-| 动作解决 | **已确认** 实现无关的物理、法术、状态、EXP 与所选回放边界 | [战斗合同](../combat-resolution.md)、[法术合同](../spell-resolution.md)、[随机性合同](../randomness.md) 及其测试夹具列表 | 未观察分支、分布隔离、一般战斗模拟 |
-| 成长 | **已确认** 升级顺序、成长、钳位、法术与刷新边界 | [升级合同](../level-up.md) 及其 H2/H3 测试夹具列表 | 战役上下文、名册选择、预期曲线、平衡意图 |
-| 存档与挂起 | **已确认** 双槽布局、校验和、动作路由与受限进程内回放 | [存档合同](../save-system.md)；`sf2-witch-save-actions-runtime-v1`（[`witch-save-actions-v1.json`](../../../tests/fixtures/h3/witch-save-actions-v1.json)） | 跨进程行为、断电、完整子系统持久性、可见 UX |
+| 主循环与探索路由 | **已确认** 地图切换、战斗哨兵、事件先于输入的顺序与交互准入/顺序 | [gameflow 研究](../../../research/gameflow-core.md)；`sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../tests/fixtures/h2/gameflow-core-static-v1.json)） | VInt 边界、过渡帧、正常剧情可达性 |
+| 地图状态与移动/事件 | **已确认** 地图导入、配置/事件顺序、工作布局与受限移动/动作行为 | [地图合同](../../contracts/map-exploration.md) 及其分项的 H2/H3 测试夹具列表；`sf2-map-interaction-trigger-runtime-v1`（[`map-interaction-trigger-v1.json`](../../../../tests/fixtures/h3/map-interaction-trigger-v1.json)） | 最终渲染、完整玩家路线、所选持久性 |
+| 输入接缝 | **已确认** 原始采样、当前/重复状态与等待辅助 | [输入合同](../../contracts/input-system.md)；`sf2-tech-services-static-v1`（[`tech-services-static-v1.json`](../../../../tests/fixtures/h2/tech-services-static-v1.json)）拥有原始采样与等待辅助，而 `sf2-tech-interrupts-static-v1`（[`tech-interrupts-static-v1.json`](../../../../tests/fixtures/h2/tech-interrupts-static-v1.json)）拥有 VInt 派生的当前/重复阶段 | 控制器协议、帧级延迟、玩家可见重复节奏 |
+| 对话交接 | **已确认** 六种命令布局、处理器顺序与 21 用例处理器局部运行时接缝 | [对话合同](../../contracts/dialogue-system.md)；`sf2-map-script-dialogue-runtime-v1`（[`map-script-dialogue-v1.json`](../../../../tests/fixtures/h3/map-script-dialogue-v1.json)） | 文本/立绘/音频渲染、剧情可达性、持久性 |
+| 队伍/名册交接 | **已确认** 十个源码形式、分支/变更/调用顺序与受限活跃队伍效果 | [队伍/名册合同](../../contracts/party-roster-state.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-force-state-active-party-runtime-v1`（[`force-state-active-party-v1.json`](../../../../tests/fixtures/h3/force-state-active-party-v1.json)） | 名册/列表容量、剧情生命周期、存档持久性、玩家选择空间 |
+| 服务动作 | **已确认静态** 商店/教堂/车队/铁匠动作与资源变更顺序 | [服务合同](../../contracts/service-interactions.md)；`sf2-common-menus-static-v1`（[`common-menus-static-v1.json`](../../../../tests/fixtures/h2/common-menus-static-v1.json)） | 准入、返回、呈现、持久结果 |
+| 战斗入口、回合与结果 | **已确认静态** 新/恢复、回合/动作/死亡/结果顺序 | [battle-loop 研究](../../../research/battle-loop.md)；顶层可执行追踪 `sf2-battle-control-static-v1`（[`battle-control-static-v1.json`](../../../../tests/fixtures/h2/battle-control-static-v1.json)）。[battle-functions 研究](../../../research/battle-functions.md) 与 `sf2-battle-functions-static-v1`（[`battle-functions-static-v1.json`](../../../../tests/fixtures/h2/battle-functions-static-v1.json)）只支持共享的单回合/玩家控制面 | 完整玩家可见循环、运行时调用方状态、战术解读 |
+| 动作解决 | **已确认** 实现无关的物理、法术、状态、EXP 与所选回放边界 | [战斗合同](../../contracts/combat-resolution.md)、[法术合同](../../contracts/spell-resolution.md)、[随机性合同](../../contracts/randomness.md) 及其测试夹具列表 | 未观察分支、分布隔离、一般战斗模拟 |
+| 成长 | **已确认** 升级顺序、成长、钳位、法术与刷新边界 | [升级合同](../../contracts/level-up.md) 及其 H2/H3 测试夹具列表 | 战役上下文、名册选择、预期曲线、平衡意图 |
+| 存档与挂起 | **已确认** 双槽布局、校验和、动作路由与受限进程内回放 | [存档合同](../../contracts/save-system.md)；`sf2-witch-save-actions-runtime-v1`（[`witch-save-actions-v1.json`](../../../../tests/fixtures/h3/witch-save-actions-v1.json)） | 跨进程行为、断电、完整子系统持久性、可见 UX |
 
 该表只提供所有者导航。精确预期仍由每个测试夹具的 schema、提取器/验证器与所属合同定义；本文档不得复制更弱的预期集。
 
@@ -148,4 +148,4 @@ flowchart TD
 - 必须选择引擎架构、产品体验或刻意偏差；
 - 需要完整地图设计原则、名册选择空间、玩家/敌人曲线或战斗模拟。
 
-这四个上层方向在满足其入场标准且开始独立的设计综合切片之前，保持在文档路线图的[长期方向](../documentation-roadmap.md#long-term-directions)中。
+这四个上层方向在满足其入场标准且开始独立的设计综合切片之前，保持在文档路线图的[长期方向](../../documentation-roadmap.md#long-term-directions)中。

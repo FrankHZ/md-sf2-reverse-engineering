@@ -77,6 +77,50 @@ def test_generate_is_deterministic(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     assert first.read_bytes() == second.read_bytes()
 
 
+def test_generate_preserves_nested_source_hierarchy(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    design, mirror, _ = _install_repo(monkeypatch, tmp_path)
+    source_directory = design / "contracts"
+    mirror_directory = mirror / "contracts"
+    source_directory.mkdir()
+    mirror_directory.mkdir()
+    design.joinpath("a.md").replace(source_directory / "a.md")
+    mirror.joinpath("a.md").replace(mirror_directory / "a.md")
+    synthesis_source = design / "synthesis"
+    synthesis_mirror = mirror / "synthesis"
+    synthesis_source.mkdir()
+    synthesis_mirror.mkdir()
+    (synthesis_source / "a.md").write_text(
+        source_directory.joinpath("a.md").read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    (synthesis_mirror / "a.md").write_text(
+        mirror_directory.joinpath("a.md").read_text(encoding="utf-8"), encoding="utf-8"
+    )
+
+    manifest = tmp_path / "zh-index.json"
+    generate_zh_translation(output_path=manifest, translated_date="2026-08-04")
+    records = json.loads(manifest.read_text(encoding="utf-8"))["documents"]
+    paths = {doc["source"]: doc["mirror"] for doc in records if doc["status"] == "translated"}
+    assert paths["docs/design/contracts/a.md"] == "docs/design/zh-CN/contracts/a.md"
+    assert paths["docs/design/synthesis/a.md"] == "docs/design/zh-CN/synthesis/a.md"
+
+
+def test_verify_rejects_mirror_outside_source_hierarchy(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _install_repo(monkeypatch, tmp_path)
+    manifest = tmp_path / "zh-index.json"
+    generate_zh_translation(output_path=manifest, translated_date="2026-08-04")
+    records = json.loads(manifest.read_text(encoding="utf-8"))
+    translated = next(doc for doc in records["documents"] if doc["status"] == "translated")
+    translated["mirror"] = "docs/design/zh-CN/synthesis/a.md"
+    manifest.write_bytes((json.dumps(records, indent=2) + "\n").encode("utf-8"))
+
+    with pytest.raises(ValueError, match="mirror path does not match source hierarchy"):
+        verify_zh_translation(manifest_path=manifest)
+
+
 def test_generate_reports_stale_after_source_edit(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

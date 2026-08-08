@@ -18,9 +18,10 @@ SCHEMA_PATH = REPO_ROOT / "schemas" / "core" / "zh-translation-index.schema.json
 _DESIGN_ROOT = REPO_ROOT / "docs" / "design"
 _MIRROR_ROOT = REPO_ROOT / "docs" / "design" / "zh-CN"
 _GLOSSARY = _DESIGN_ROOT / "glossary.md"
+_DESIGN_PREFIX = Path("docs/design")
 
 # The glossary is the translation key itself, never a mirror target.
-NON_TRANSLATABLE = {"glossary.md"}
+NON_TRANSLATABLE = {"docs/design/glossary.md"}
 
 # R1 fixed evidence-label translations. A mirror must retain every label class
 # used by its English source, but it may add labels where Chinese prose needs an
@@ -48,23 +49,40 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _relative_source_path(source: str) -> Path:
+    path = Path(source)
+    try:
+        relative = path.relative_to(_DESIGN_PREFIX)
+    except ValueError as exc:
+        raise ValueError(f"zh source is outside docs/design: {source}") from exc
+    if (
+        not relative.parts
+        or relative.parts[0] == "zh-CN"
+        or any(part in {"", ".", ".."} for part in relative.parts)
+    ):
+        raise ValueError(f"zh source is not a canonical English design document: {source}")
+    return relative
+
+
 def _source_path(source: str) -> Path:
-    return _DESIGN_ROOT / Path(source).name
+    return _DESIGN_ROOT / _relative_source_path(source)
 
 
 def _mirror_path(source: str) -> Path:
-    return _MIRROR_ROOT / Path(source).name
+    return _MIRROR_ROOT / _relative_source_path(source)
 
 
 def _translatable_sources() -> list[str]:
     if not _DESIGN_ROOT.is_dir():
         raise ValueError(f"missing design root: {_DESIGN_ROOT}")
-    sources = [
-        f"docs/design/{path.name}"
-        for path in sorted(_DESIGN_ROOT.glob("*.md"))
-        if path.name not in NON_TRANSLATABLE
-    ]
-    return sources
+    sources: list[str] = []
+    for path in _DESIGN_ROOT.rglob("*.md"):
+        if _MIRROR_ROOT in path.parents:
+            continue
+        source = (_DESIGN_PREFIX / path.relative_to(_DESIGN_ROOT)).as_posix()
+        if source not in NON_TRANSLATABLE:
+            sources.append(source)
+    return sorted(sources)
 
 
 def _markdown_links(text: str) -> list[str]:
@@ -250,7 +268,7 @@ def _compute_status(source: str) -> dict[str, Any]:
     return {
         "source": source,
         "status": "translated",
-        "mirror": f"docs/design/zh-CN/{mirror.name}",
+        "mirror": f"docs/design/zh-CN/{_relative_source_path(source).as_posix()}",
         "sourceSha256": _sha256(_source_path(source)),
         "mirrorSha256": _sha256(mirror),
     }
@@ -378,6 +396,12 @@ def verify_zh_translation(
         mirror = _mirror_path(source)
         if not mirror.is_file():
             raise ValueError(f"translated document is missing its mirror: {source}")
+        expected_mirror = f"docs/design/zh-CN/{_relative_source_path(source).as_posix()}"
+        if document["mirror"] != expected_mirror:
+            raise ValueError(
+                f"indexed mirror path does not match source hierarchy: "
+                f"{document['mirror']} vs {expected_mirror}"
+            )
         if mirror.name != Path(source).name:
             raise ValueError(
                 f"mirror filename does not match source: {source} vs {mirror.name}"

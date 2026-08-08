@@ -6,7 +6,7 @@ from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 
 CONTRACTS = {
-    "docs/design/dialogue-system.md": {
+    "docs/design/contracts/dialogue-system.md": {
         "tests/fixtures/h2/map-script-engine-static-v1.json": (
             "sf2-map-script-engine-static-v1"
         ),
@@ -14,7 +14,7 @@ CONTRACTS = {
             "sf2-map-script-dialogue-runtime-v1"
         ),
     },
-    "docs/design/party-roster-state.md": {
+    "docs/design/contracts/party-roster-state.md": {
         "tests/fixtures/h2/map-script-engine-static-v1.json": (
             "sf2-map-script-engine-static-v1"
         ),
@@ -22,7 +22,7 @@ CONTRACTS = {
             "sf2-force-state-active-party-runtime-v1"
         ),
     },
-    "docs/design/map-exploration.md": {
+    "docs/design/contracts/map-exploration.md": {
         "tests/fixtures/h2/map-content-static-v1.json": "sf2-map-content-static-v1",
         "tests/fixtures/h2/map-layout-decode-v1.json": "sf2-map-layout-decode-v1",
         "tests/fixtures/h2/canonical-map-import-v1.json": "sf2-canonical-map-import-v1",
@@ -66,7 +66,7 @@ CONTRACTS = {
             "sf2-map-script-screen-presentation-runtime-v1"
         ),
     },
-    "docs/design/combat-resolution.md": {
+    "docs/design/contracts/combat-resolution.md": {
         "tests/fixtures/h3/muddle-action-guard-v1.json": (
             "sf2-muddle-action-guard-both-sides-v1"
         ),
@@ -109,7 +109,7 @@ CONTRACTS = {
         ),
         "tests/fixtures/h3/double-validation-v1.json": "sf2-double-validation-gates-v1",
     },
-    "docs/design/level-up.md": {
+    "docs/design/contracts/level-up.md": {
         "tests/fixtures/h3/stat-gain-v1.json": "sf2-calculate-stat-gain-startup-v1",
         "tests/fixtures/h3/level-up-v1.json": "sf2-level-up-tort-boundary-v1",
         "tests/fixtures/h3/level-up-boundaries-v1.json": "sf2-level-up-boundaries-v1",
@@ -124,7 +124,7 @@ CONTRACTS = {
             "sf2-exp-command-boundaries-v1"
         ),
     },
-    "docs/design/spell-resolution.md": {
+    "docs/design/contracts/spell-resolution.md": {
         "tests/fixtures/h3/spell-damage-resistance-v1.json": (
             "sf2-spell-damage-resistance-v1"
         ),
@@ -168,21 +168,21 @@ CONTRACTS = {
             "sf2-after-turn-status-lifecycle-v1"
         ),
     },
-    "docs/design/service-interactions.md": {
+    "docs/design/contracts/service-interactions.md": {
         "tests/fixtures/h2/common-menus-static-v1.json": "sf2-common-menus-static-v1",
     },
-    "docs/design/save-system.md": {
+    "docs/design/contracts/save-system.md": {
         "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",
         "tests/fixtures/h3/witch-save-actions-v1.json": "sf2-witch-save-actions-runtime-v1",
         "tests/fixtures/h3/witch-new-game-lifecycle-v1.json": (
             "sf2-witch-new-game-lifecycle-runtime-v1"
         ),
     },
-    "docs/design/input-system.md": {
+    "docs/design/contracts/input-system.md": {
         "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",
         "tests/fixtures/h2/tech-interrupts-static-v1.json": "sf2-tech-interrupts-static-v1",
     },
-    "docs/design/randomness.md": {
+    "docs/design/contracts/randomness.md": {
         "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",
         "tests/fixtures/h3/rng-v1.json": "sf2-rng-generate-random-number-v1",
         "tests/fixtures/h3/debug-rng-v1.json": "sf2-rng-debug-override-v1",
@@ -193,7 +193,7 @@ CONTRACTS = {
             "sf2-battle-ai-action-choice-runtime-v1"
         ),
     },
-    "docs/design/window-system.md": {
+    "docs/design/contracts/window-system.md": {
         "tests/fixtures/h2/remaining-core-static-v1.json": "sf2-remaining-core-static-v1",
         "tests/fixtures/h2/ui-layout-static-v1.json": "sf2-ui-layout-static-v1",
         "tests/fixtures/h2/tech-interrupts-static-v1.json": "sf2-tech-interrupts-static-v1",
@@ -209,7 +209,7 @@ def verify_design_contracts() -> dict[str, Any]:
         if not document_path.is_file():
             raise ValueError(f"missing design contract: {document_relative}")
         document = document_path.read_text(encoding="utf-8")
-        index_reference = f"./design/{document_path.name}"
+        index_reference = f"./{document_path.relative_to(repo_path('docs')).as_posix()}"
         if index_reference not in docs_index:
             raise ValueError(f"docs/README.md does not index {document_relative}")
         if "**Confirmed" not in document or "**Unknown" not in document:

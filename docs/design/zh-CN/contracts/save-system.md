@@ -17,7 +17,7 @@
   `tests/fixtures/h3/sram-lifecycle-v1.json` 中的 `sf2-sram-lifecycle-runtime-v1`；
   `src/sf2tool/h3/sram_lifecycle.py`；以及 `docs/research/technical-services.md`。
 
-> 本文件是 [`save-system.md`](../save-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`save-system.md`](../../contracts/save-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 已确认的静态合同
 

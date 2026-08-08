@@ -312,7 +312,7 @@ Persistence, RNG distribution, prompt meaning/timing, caller admission, and dire
 remain **Inferred** or **Unknown** in the existing grouped H3 queue.
 
 The interaction-level handoff is recorded in
-[`service-interactions.md`](../design/service-interactions.md). It deliberately consumes only the
+[`service-interactions.md`](../design/contracts/service-interactions.md). It deliberately consumes only the
 confirmed action ordering, cancellation boundary, and direct mutation calls; it is not a claim about
 the original presentation or persistence lifecycle.
 

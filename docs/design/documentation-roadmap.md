@@ -26,6 +26,24 @@ glossary's rules, with terminology consistency, link integrity, evidence-label p
 fixture-trace QA. A zh-CN mirror under `docs/design/zh-CN/` is a derivative; the English source
 remains the review baseline unless a localization batch defines another explicit policy.
 
+## Design Information Architecture
+
+**Confirmed repository policy:** `docs/design/` uses ownership and evidence role, rather than game
+feature alone, as its first-level information architecture:
+
+- `contracts/` contains evidence-bound subsystem contracts. These remain owned by the research slice
+  when accepted findings change.
+- `synthesis/` contains cross-subsystem or player-facing explanations that consume accepted evidence
+  from `main` and remain owned by the design-synthesis lane.
+- repository-governance documents, including this roadmap and `glossary.md`, remain at the design
+  root because they govern both categories.
+- `zh-CN/` preserves the canonical English relative hierarchy: for example,
+  `contracts/save-system.md` maps to `zh-CN/contracts/save-system.md`.
+
+This split is an ownership boundary, not a claim about original-game architecture and not a future
+engine module layout. Add deeper subdirectories only when a concrete slice establishes a durable
+navigation or ownership need; do not create empty category scaffolding.
+
 ## Three-Layer Boundary
 
 | Layer | Ownership and allowed content | Prohibited shortcut |
@@ -71,10 +89,10 @@ are stable.
 
 | Order | Candidate document | Scope and prerequisites | Existing contract/evidence links | Non-goal / stop condition |
 | ---: | --- | --- | --- | --- |
-| 1 | gameplay overview | Explain currently supported player actions, state boundaries, and major subsystem handoffs, beginning only from accepted map, dialogue, roster, service, and input facts. | [map exploration](./map-exploration.md), [dialogue](./dialogue-system.md), [party/roster](./party-roster-state.md), [services](./service-interactions.md), [map-script fixture](../../tests/fixtures/h2/map-script-engine-static-v1.json) | Do not promise a complete campaign flow, interface feel, or narrative experience; these remain **Unknown**. |
-| 2 | tactical battle loop | Explain the bounded order from player input/control through battle action, resolution, state replay, and known outcomes while retaining every unresolved branch; requires accepted battle-loop/action/AI research and combat/spell contracts. | [battle-loop research](../research/battle-loop.md), [battle-actions research](../research/battle-actions.md), [combat](./combat-resolution.md), [spell resolution](./spell-resolution.md), [physical-damage fixture](../../tests/fixtures/h3/physical-damage-v1.json) | Do not invent tactics, balance intent, target-selection meaning, or a general simulation from isolated cases. |
-| 3 | progression and economy | Connect growth, EXP/gold/item, and service boundaries into a resource-flow explanation only where inputs, outputs, order, and persistence have evidence. | [ally-growth research](../research/ally-growth.md), [common-stats research](../research/common-stats.md), [level-up](./level-up.md), [services](./service-interactions.md), [level-up fixture](../../tests/fixtures/h3/level-up-boundaries-v1.json) | Do not claim an intended difficulty curve, intended prices, an optimal build, or a long-term economy. |
-| 4 | story progression | Explain Confirmed state/route/dialogue/roster boundaries as a traceable progression map while retaining normal-story reachability and presentation labels; these least-stable dependencies place it after the preceding documents. | [gameflow research](../research/gameflow-core.md), [common-scripting research](../research/common-scripting.md), [dialogue](./dialogue-system.md), [party/roster](./party-roster-state.md), [dialogue runtime fixture](../../tests/fixtures/h3/map-script-dialogue-v1.json) | Do not reconstruct plot beats, player-choice consequences, or a complete story route from source labels or isolated program references. |
+| 1 | gameplay overview | Explain currently supported player actions, state boundaries, and major subsystem handoffs, beginning only from accepted map, dialogue, roster, service, and input facts. | [map exploration](contracts/map-exploration.md), [dialogue](contracts/dialogue-system.md), [party/roster](contracts/party-roster-state.md), [services](contracts/service-interactions.md), [map-script fixture](../../tests/fixtures/h2/map-script-engine-static-v1.json) | Do not promise a complete campaign flow, interface feel, or narrative experience; these remain **Unknown**. |
+| 2 | tactical battle loop | Explain the bounded order from player input/control through battle action, resolution, state replay, and known outcomes while retaining every unresolved branch; requires accepted battle-loop/action/AI research and combat/spell contracts. | [battle-loop research](../research/battle-loop.md), [battle-actions research](../research/battle-actions.md), [combat](contracts/combat-resolution.md), [spell resolution](contracts/spell-resolution.md), [physical-damage fixture](../../tests/fixtures/h3/physical-damage-v1.json) | Do not invent tactics, balance intent, target-selection meaning, or a general simulation from isolated cases. |
+| 3 | progression and economy | Connect growth, EXP/gold/item, and service boundaries into a resource-flow explanation only where inputs, outputs, order, and persistence have evidence. | [ally-growth research](../research/ally-growth.md), [common-stats research](../research/common-stats.md), [level-up](contracts/level-up.md), [services](contracts/service-interactions.md), [level-up fixture](../../tests/fixtures/h3/level-up-boundaries-v1.json) | Do not claim an intended difficulty curve, intended prices, an optimal build, or a long-term economy. |
+| 4 | story progression | Explain Confirmed state/route/dialogue/roster boundaries as a traceable progression map while retaining normal-story reachability and presentation labels; these least-stable dependencies place it after the preceding documents. | [gameflow research](../research/gameflow-core.md), [common-scripting research](../research/common-scripting.md), [dialogue](contracts/dialogue-system.md), [party/roster](contracts/party-roster-state.md), [dialogue runtime fixture](../../tests/fixtures/h3/map-script-dialogue-v1.json) | Do not reconstruct plot beats, player-choice consequences, or a complete story route from source labels or isolated program references. |
 
 This order establishes reader navigation first, then covers the most bounded tactical loop, connected
 resource flows, and finally story explanation that depends on reachability. A document waits when an
@@ -110,7 +128,7 @@ document shape, not a parallel workspace or a mandatory full GDD template.
    owner, contract, fixture ID/path when applicable, and remaining question. Local links such as
    [runtime RNG and battle math](../research/runtime-rng-and-battle-math.md),
    [combat fixture](../../tests/fixtures/h3/physical-damage-v1.json), and
-   [combat contract](./combat-resolution.md) are the canonical trace; do not copy another evidence
+   [combat contract](contracts/combat-resolution.md) are the canonical trace; do not copy another evidence
    ledger.
 5. **Original fidelity and modernization.** State the original-fidelity rule first, then mark a
    deliberate deviation as a future decision with a separate expected-deviation fixture. In the
@@ -155,7 +173,7 @@ reverse engineering continues, but they must not rewrite a subsystem contract in
 active worker. When a future finding changes a conclusion, update the owning research note,
 fixture/contract, and design explanation together so the trace remains bidirectional.
 
-**Confirmed repository hygiene closure:** [`party-roster-state.md`](./party-roster-state.md) is now
+**Confirmed repository hygiene closure:** [`party-roster-state.md`](contracts/party-roster-state.md) is now
 registered in `src/sf2tool/design_contracts.py` with its H2 map-script and H3 active-party fixtures.
 The public tracked-input gate validates document path, fixture path, and fixture ID traceability in
 both directions. This closure does not change any original-game finding.

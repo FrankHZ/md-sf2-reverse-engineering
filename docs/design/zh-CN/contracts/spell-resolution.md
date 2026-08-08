@@ -3,9 +3,9 @@
 - 合同版本：`0.1`
 - 范围：攻击法术元素查找、伤害抗性、法术会心一击、共用向下浮动、伤害/状态 EXP、治疗、即死、MP 吸收、临时状态生命周期与命令回放
 - 证据状态：**已确认的子集**；不支持的法术族保持 **未知**
-- 证据所有者：[`runtime-rng-and-battle-math.md`](../../research/runtime-rng-and-battle-math.md)
+- 证据所有者：[`runtime-rng-and-battle-math.md`](../../../research/runtime-rng-and-battle-math.md)
 
-> 本文件是 [`spell-resolution.md`](../spell-resolution.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`spell-resolution.md`](../../contracts/spell-resolution.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
 本合同独立于引擎或呈现层描述原版保真算术。它目前拥有一个 BLAZE（烈焰）2 抗性矩阵、一个四目标 DAO（达欧）1 除法用例、一个 HEAL（治愈）1 自恢复用例、一个 AURA（灵光）目标几何矩阵、一个 DETOX（解毒）等级矩阵、一个 SLEEP（沉睡）1 状态抗性矩阵、一个 ATTACK（攻击）1 首次/重施用例、MUDDLE（混乱）1 守卫/重施与 MUDDLE 2 抗性矩阵、一个 DESOUL（即死术）1 成功用例、一个 SPOIT（汲取）MP 吸收用例、BOOST（强化）1 首次/重施行为、一个 SLOW（迟缓）1 抗性矩阵、一个 DISPEL（驱散）1 法术计数/抗性/重施用例、对标记与未标记法术动作的 SILENCE（沉默）门控，以及一个组合的回合后到期用例。在这些路径拥有自己的 H3 证据之前，不得把它们泛化到相邻分支。
 

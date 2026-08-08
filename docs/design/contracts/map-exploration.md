@@ -130,7 +130,7 @@ original-fidelity adapter MUST retain these control and cursor facts without con
 observed trap into an audible, timing, persistence, or player-visible contract.
 
 **Unknown:** the grouped `map-script-control-audio/*` queue in
-[`common-scripting.md`](../research/common-scripting.md#confirmed-map-script-controlaudio-macro-boundary)
+[`common-scripting.md`](../../research/common-scripting.md#confirmed-map-script-controlaudio-macro-boundary)
 retains larger-duration timing, sound-driver/audible outcome, arbitrary callee effects, normal-story reachability,
 and presentation behavior.
 

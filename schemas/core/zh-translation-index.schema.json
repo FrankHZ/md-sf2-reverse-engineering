@@ -27,12 +27,12 @@
         "properties": {
           "source": {
             "type": "string",
-            "pattern": "^docs/design/[A-Za-z0-9_.-]+\\.md$"
+            "pattern": "^docs/design/(?!zh-CN/)(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+\\.md$"
           },
           "status": { "enum": ["translated", "pending"] },
           "mirror": {
             "type": "string",
-            "pattern": "^docs/design/zh-CN/[A-Za-z0-9_.-]+\\.md$"
+            "pattern": "^docs/design/zh-CN/(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+\\.md$"
           },
           "sourceSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
           "mirrorSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },

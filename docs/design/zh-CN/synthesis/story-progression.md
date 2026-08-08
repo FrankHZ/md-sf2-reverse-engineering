@@ -7,7 +7,7 @@
 - 证据日期：2026-08-02。
 - 源码基线：`ShiningForceCentral/SF2DISASM` `master` `c834c652b6862bc5679fd7f69a38a7093206efc6`。
 
-> 本文件是 [`story-progression.md`](../story-progression.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`story-progression.md`](../../synthesis/story-progression.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
@@ -22,18 +22,18 @@
 5. warp 式探索返回与返回的 `BattleLoop` 交接重入顶层路线；
 6. 存档服务可以序列化受限战斗员数据区域，但完整子系统持久性尚未被证明。
 
-[文档路线图](../documentation-roadmap.md) 刻意把本综合放在[游戏总览](../gameplay-overview.md)、[战术战斗循环](../tactical-battle-loop.md)与[推进/经济综合](../progression-and-economy.md)之后。那些文档解释故事推进所协调的局部系统；没有一份提供缺失的叙事时间线。
+[文档路线图](../../documentation-roadmap.md) 刻意把本综合放在[游戏总览](../../synthesis/gameplay-overview.md)、[战术战斗循环](../../synthesis/tactical-battle-loop.md)与[推进/经济综合](../../synthesis/progression-and-economy.md)之后。那些文档解释故事推进所协调的局部系统；没有一份提供缺失的叙事时间线。
 
 ## 综合前证据审计
 
 本综合对照精确可执行所有者检查，而不是只依赖文章或源码名。审计保持以下区分不变：
 
-- [gameflow 研究](../../research/gameflow-core.md) 拥有静态 `MainLoop` 与 `ExplorationLoop` 顺序。它没有精确过渡帧或中断边缘事件/输入时序的运行时测试夹具。
-- [map-data 研究](../../research/map-data-inventory.md) 与配置测试夹具拥有有序配置与事件选择。配置选择是**最后设置标志胜出**；事件分发是**首个匹配记录胜出**。这两个规则不可互换。
-- [common-scripting 研究](../../research/common-scripting.md) 拥有完整程序语料与处理器局部命令族。静态引用证明图拓扑，而非正常剧情可达性。
+- [gameflow 研究](../../../research/gameflow-core.md) 拥有静态 `MainLoop` 与 `ExplorationLoop` 顺序。它没有精确过渡帧或中断边缘事件/输入时序的运行时测试夹具。
+- [map-data 研究](../../../research/map-data-inventory.md) 与配置测试夹具拥有有序配置与事件选择。配置选择是**最后设置标志胜出**；事件分发是**首个匹配记录胜出**。这两个规则不可互换。
+- [common-scripting 研究](../../../research/common-scripting.md) 拥有完整程序语料与处理器局部命令族。静态引用证明图拓扑，而非正常剧情可达性。
 - map-lifecycle 运行时测试夹具拥有五个直接处理器回放、直接 JSR 站点顺序、重置尾与受限布局/当前地图字段。独立的 map-script transition 测试夹具拥有五个 `ExecuteMapScript` 流，包括 `warp`、opcode/A6/dispatcher/handler/fall-through 时间线、受限 `csc07` 事件字节与直接服务进入/返回接缝。两者都不拥有事件消费、可见过渡行为、正常剧情可达性或持久性。
-- [对话](../dialogue-system.md) 与[队伍/名册](../party-roster-state.md) 拥有其状态与运行时边界。两者都不证明谁说话、成员为何加入或任一事件在正常游玩中如何呈现。
-- [存档](../save-system.md) 拥有双槽表示与受限进程内动作矩阵。它不证明每个故事相关子系统在进程重启或断电后存活。
+- [对话](../../contracts/dialogue-system.md) 与[队伍/名册](../../contracts/party-roster-state.md) 拥有其状态与运行时边界。两者都不证明谁说话、成员为何加入或任一事件在正常游玩中如何呈现。
+- [存档](../../contracts/save-system.md) 拥有双槽表示与受限进程内动作矩阵。它不证明每个故事相关子系统在进程重启或断电后存活。
 
 聚焦审计复现了 map-script、配置、事件、故事状态、对话、force-state、控制/音频、map-lifecycle、map-script-transition、New-game 与存档动作测试夹具。这些所有者之间没有发现不一致。其精确 fixture 身份在[证据矩阵](#证据矩阵)中保持可见。
 
@@ -192,18 +192,18 @@ flowchart TD
 
 | 边界 | 证据标签与受限主张 | 精确可执行所有者 | 剩余问题 |
 | --- | --- | --- | --- |
-| 顶层 gameflow | **已确认静态** 地图切换、战斗哨兵/调用顺序、返回的 `BattleLoop` 调用再次经过地图切换、探索返回与事件先于动作分支优先级 | [gameflow 研究](../../research/gameflow-core.md)；`sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../tests/fixtures/h2/gameflow-core-static-v1.json)） | 运行时时序、战斗结果语义、过渡帧、正常战役时间线 |
-| 完整脚本图 | **已确认静态** 304 程序/13,515 命令语料与已解析显式转移 | [common-scripting 研究](../../research/common-scripting.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../tests/fixtures/h2/map-script-engine-static-v1.json)） | 正常存档准入与可达路线顺序 |
-| 配置选择 | **已确认静态/运行时** 有序地图/标志扫描、最后设置胜出、别名与缺失/默认用例 | [map-data 研究](../../research/map-data-inventory.md)；`sf2-map-setup-static-v1`（[`map-setup-static-v1.json`](../../../tests/fixtures/h2/map-setup-static-v1.json)）与 `sf2-map-setup-selection-runtime-v1`（[`map-setup-selection-v1.json`](../../../tests/fixtures/h3/map-setup-selection-v1.json)） | 可达地图/标志组合与所选配置效果 |
-| 事件选择 | **已确认静态/运行时** 有序记录与首匹配实体/区域/物品目标选择 | [地图探索](../map-exploration.md)；`sf2-map-events-static-v1`（[`map-events-static-v1.json`](../../../tests/fixtures/h2/map-events-static-v1.json)）与 `sf2-map-event-dispatch-runtime-v1`（[`map-event-dispatch-v1.json`](../../../tests/fixtures/h3/map-event-dispatch-v1.json)） | 所选脚本效果、正常可达性、呈现 |
-| 故事状态命令 | **已确认静态/运行时** 条件极性、直接设置/清除、标志 89 提示极性与 400 基础写入算术 | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-story-state-runtime-v1`（[`story-state-v1.json`](../../../tests/fixtures/h3/story-state-v1.json)） | 标志含义、提示后果、持久性、正常可达性 |
-| 对话接缝 | **已确认静态/运行时** 六形式语料加处理器局部游标、分支、状态写入与服务调用边界 | [对话合同](../dialogue-system.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-script-dialogue-runtime-v1`（[`map-script-dialogue-v1.json`](../../../tests/fixtures/h3/map-script-dialogue-v1.json)） | 内容、说话者、未垫片服务、输入/时序、正常路线 |
-| 名册/队伍接缝 | **已确认静态/运行时子集** 名册/死亡形式与九个活跃队伍/AI/重置/随从用例 | [队伍/名册合同](../party-roster-state.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-force-state-active-party-runtime-v1`（[`force-state-active-party-v1.json`](../../../tests/fixtures/h3/force-state-active-party-v1.json)） | 招募含义、容量生命周期、持久性、呈现 |
-| 脚本控制 | **已确认静态/运行时** 等待/跳过、no-op、声音陷阱、子程序、跳转与结束接缝 | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-script-control-audio-runtime-v1`（[`map-script-control-audio-v1.json`](../../../tests/fixtures/h3/map-script-control-audio-v1.json)） | 时长、服务效果、可听结果、正常可达性 |
-| 地图生命周期 | **已确认静态/运行时** 重置/加载/重新加载处理器与有序直接调用站点边界 | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-lifecycle-runtime-v1`（[`map-lifecycle-v1.json`](../../../tests/fixtures/h3/map-lifecycle-v1.json)） | 可见过渡、实体/布局后果、持久性、正常路线 |
-| map-script 过渡 | **已确认受限运行时** 五个解释器流，包括 `warp`，带 opcode/A6/handler/dispatcher/fall-through 时间线、受限事件字节、直接服务接缝与源码 `OUT_TO_BLACK=2` 对观察到的首次等待 `FADING_SETTING=0` | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-script-transition-runtime-v1`（[`map-script-transition-v1.json`](../../../tests/fixtures/h3/map-script-transition-v1.json)） | 事件消费、呈现/淡入/显示时序、正常可达性、持久性、碰撞/寻路、未观察效果 |
-| New-game 与读取重入 | **已确认受限运行时** 受控地图 3/存档/MainLoop 交接与标志 88 读取路由 | [存档合同](../save-system.md)；`sf2-witch-new-game-lifecycle-runtime-v1`（[`witch-new-game-lifecycle-v1.json`](../../../tests/fixtures/h3/witch-new-game-lifecycle-v1.json)）与 `sf2-witch-save-actions-runtime-v1`（[`witch-save-actions-v1.json`](../../../tests/fixtures/h3/witch-save-actions-v1.json)） | 玩家驱动 UX、标志含义、完整持久性、跨进程行为 |
-| 存档表示 | **已确认静态** 双槽、校验和/检查顺序、占用与受限战斗员数据复制方向 | `sf2-tech-services-static-v1`（[`tech-services-static-v1.json`](../../../tests/fixtures/h2/tech-services-static-v1.json)） | 规范故事存档 schema 与持久介质行为 |
+| 顶层 gameflow | **已确认静态** 地图切换、战斗哨兵/调用顺序、返回的 `BattleLoop` 调用再次经过地图切换、探索返回与事件先于动作分支优先级 | [gameflow 研究](../../../research/gameflow-core.md)；`sf2-gameflow-core-static-v1`（[`gameflow-core-static-v1.json`](../../../../tests/fixtures/h2/gameflow-core-static-v1.json)） | 运行时时序、战斗结果语义、过渡帧、正常战役时间线 |
+| 完整脚本图 | **已确认静态** 304 程序/13,515 命令语料与已解析显式转移 | [common-scripting 研究](../../../research/common-scripting.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../tests/fixtures/h2/map-script-engine-static-v1.json)） | 正常存档准入与可达路线顺序 |
+| 配置选择 | **已确认静态/运行时** 有序地图/标志扫描、最后设置胜出、别名与缺失/默认用例 | [map-data 研究](../../../research/map-data-inventory.md)；`sf2-map-setup-static-v1`（[`map-setup-static-v1.json`](../../../../tests/fixtures/h2/map-setup-static-v1.json)）与 `sf2-map-setup-selection-runtime-v1`（[`map-setup-selection-v1.json`](../../../../tests/fixtures/h3/map-setup-selection-v1.json)） | 可达地图/标志组合与所选配置效果 |
+| 事件选择 | **已确认静态/运行时** 有序记录与首匹配实体/区域/物品目标选择 | [地图探索](../../contracts/map-exploration.md)；`sf2-map-events-static-v1`（[`map-events-static-v1.json`](../../../../tests/fixtures/h2/map-events-static-v1.json)）与 `sf2-map-event-dispatch-runtime-v1`（[`map-event-dispatch-v1.json`](../../../../tests/fixtures/h3/map-event-dispatch-v1.json)） | 所选脚本效果、正常可达性、呈现 |
+| 故事状态命令 | **已确认静态/运行时** 条件极性、直接设置/清除、标志 89 提示极性与 400 基础写入算术 | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-story-state-runtime-v1`（[`story-state-v1.json`](../../../../tests/fixtures/h3/story-state-v1.json)） | 标志含义、提示后果、持久性、正常可达性 |
+| 对话接缝 | **已确认静态/运行时** 六形式语料加处理器局部游标、分支、状态写入与服务调用边界 | [对话合同](../../contracts/dialogue-system.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-script-dialogue-runtime-v1`（[`map-script-dialogue-v1.json`](../../../../tests/fixtures/h3/map-script-dialogue-v1.json)） | 内容、说话者、未垫片服务、输入/时序、正常路线 |
+| 名册/队伍接缝 | **已确认静态/运行时子集** 名册/死亡形式与九个活跃队伍/AI/重置/随从用例 | [队伍/名册合同](../../contracts/party-roster-state.md)；`sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-force-state-active-party-runtime-v1`（[`force-state-active-party-v1.json`](../../../../tests/fixtures/h3/force-state-active-party-v1.json)） | 招募含义、容量生命周期、持久性、呈现 |
+| 脚本控制 | **已确认静态/运行时** 等待/跳过、no-op、声音陷阱、子程序、跳转与结束接缝 | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-script-control-audio-runtime-v1`（[`map-script-control-audio-v1.json`](../../../../tests/fixtures/h3/map-script-control-audio-v1.json)） | 时长、服务效果、可听结果、正常可达性 |
+| 地图生命周期 | **已确认静态/运行时** 重置/加载/重新加载处理器与有序直接调用站点边界 | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-lifecycle-runtime-v1`（[`map-lifecycle-v1.json`](../../../../tests/fixtures/h3/map-lifecycle-v1.json)） | 可见过渡、实体/布局后果、持久性、正常路线 |
+| map-script 过渡 | **已确认受限运行时** 五个解释器流，包括 `warp`，带 opcode/A6/handler/dispatcher/fall-through 时间线、受限事件字节、直接服务接缝与源码 `OUT_TO_BLACK=2` 对观察到的首次等待 `FADING_SETTING=0` | `sf2-map-script-engine-static-v1`（[`map-script-engine-static-v1.json`](../../../../tests/fixtures/h2/map-script-engine-static-v1.json)）与 `sf2-map-script-transition-runtime-v1`（[`map-script-transition-v1.json`](../../../../tests/fixtures/h3/map-script-transition-v1.json)） | 事件消费、呈现/淡入/显示时序、正常可达性、持久性、碰撞/寻路、未观察效果 |
+| New-game 与读取重入 | **已确认受限运行时** 受控地图 3/存档/MainLoop 交接与标志 88 读取路由 | [存档合同](../../contracts/save-system.md)；`sf2-witch-new-game-lifecycle-runtime-v1`（[`witch-new-game-lifecycle-v1.json`](../../../../tests/fixtures/h3/witch-new-game-lifecycle-v1.json)）与 `sf2-witch-save-actions-runtime-v1`（[`witch-save-actions-v1.json`](../../../../tests/fixtures/h3/witch-save-actions-v1.json)） | 玩家驱动 UX、标志含义、完整持久性、跨进程行为 |
+| 存档表示 | **已确认静态** 双槽、校验和/检查顺序、占用与受限战斗员数据复制方向 | `sf2-tech-services-static-v1`（[`tech-services-static-v1.json`](../../../../tests/fixtures/h2/tech-services-static-v1.json)） | 规范故事存档 schema 与持久介质行为 |
 
 ## 原版保真与现代化
 

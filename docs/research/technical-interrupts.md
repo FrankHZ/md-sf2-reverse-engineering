@@ -50,7 +50,7 @@ After `UpdatePlayerInputs` samples raw controller state, unchanged input is supp
 delay reaches 24 frames. After a repeated input is emitted, subtracting six from the delay produces a
 six-frame repeat cadence. This is a VInt-derived current/last-input static counter contract, not yet a
 controller-latency measurement; the raw sampling and wait-helper boundary is in
-[`input-system.md`](../design/input-system.md).
+[`input-system.md`](../design/contracts/input-system.md).
 
 ## Trap Boundary
 

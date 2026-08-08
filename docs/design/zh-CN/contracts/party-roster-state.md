@@ -5,7 +5,7 @@
 - **未知的原版行为：** 正常剧情可达性、名册/列表容量、存档持久化，以及玩家可见的名册/败北结果。
 - 重制状态：实现无关的 Phase 3 合同；尚未选择任何引擎。
 
-> 本文件是 [`party-roster-state.md`](../party-roster-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`party-roster-state.md`](../../contracts/party-roster-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 导入边界
 

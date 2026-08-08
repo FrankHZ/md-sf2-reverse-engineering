@@ -99,4 +99,4 @@ Extend the committed emulator-backed fixtures with current-ATT decrease and word
 plus critical ailment/cap inputs where a defensible natural or controlled seam exists. The existing stat-gain, complete-caller, boundary,
 refresh, initialization-prowess, stat-clamp, and enemy-curse fixtures are the first
 implementation-neutral inputs for a later remake growth module; see
-[`../design/level-up.md`](../design/level-up.md).
+[`../design/level-up.md`](../design/contracts/level-up.md).

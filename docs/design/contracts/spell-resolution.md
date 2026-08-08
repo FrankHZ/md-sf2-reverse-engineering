@@ -5,7 +5,7 @@
   damage/status EXP, healing, instant death, MP absorption, temporary-state lifecycle, and command
   replay
 - Evidence state: **Confirmed subset**; unsupported spell families remain **Unknown**
-- Evidence owner: [`runtime-rng-and-battle-math.md`](../research/runtime-rng-and-battle-math.md)
+- Evidence owner: [`runtime-rng-and-battle-math.md`](../../research/runtime-rng-and-battle-math.md)
 
 This contract describes original-fidelity arithmetic independently of an engine or presentation
 layer. It currently owns one BLAZE 2 resistance matrix, one four-target DAO 1 division case, one

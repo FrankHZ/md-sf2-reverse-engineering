@@ -89,7 +89,7 @@ across nine callers: one `UpdatePlayerInputs` site and ten `WaitForPlayerInput` 
 four entry points have zero static direct-call sites, which does not establish runtime reachability.
 **Unknown:** hardware latency, controller-model
 and three-/six-button behavior, and player-visible repeat timing. The implementation-neutral contract
-is [`input-system.md`](../design/input-system.md). ADR 0005's 2026-07-23 priority decision freezes
+is [`input-system.md`](../design/contracts/input-system.md). ADR 0005's 2026-07-23 priority decision freezes
 raw controller electrical/model/latency exactness after that visible input contract is adequate; it
 does not freeze a concrete UI/menu acceptance gap in repeat or wait behavior.
 
@@ -161,7 +161,7 @@ data/checksum/flag writes, torn-write recovery, corruption beyond this checksum,
 behavior, emulator storage behavior, normal story/church/battle caller persistence, and the resulting
 player-visible timing. The matrix deliberately does not reopen ADR 0005 hardware exactness. The
 remake-facing extraction is
-[`save-system.md`](../design/save-system.md). Physical-media/failure exactness is priority-frozen by
+[`save-system.md`](../design/contracts/save-system.md). Physical-media/failure exactness is priority-frozen by
 ADR 0005 once save/load/copy/delete behavior is adequate; a user-visible save-flow acceptance failure
 remains a reason to reopen one bounded question.
 
@@ -220,7 +220,7 @@ same byte-store encoding. **Unknown:** their full caller loops, VInt/input/menu/
 cross-caller seed-copy lifetime/isolation. The grouped H3 queue remains
 `random-services-matrix-range-retry-and-seed-copy-isolation` for that caller-context boundary; existing range-two action evidence is
 `battle-ai-action-choice-v1.json` (`sf2-battle-ai-action-choice-runtime-v1`). The implementation
-boundary is [`randomness.md`](../design/randomness.md).
+boundary is [`randomness.md`](../design/contracts/randomness.md).
 
 ## Concentrated Runtime Queue
 

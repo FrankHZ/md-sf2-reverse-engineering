@@ -123,7 +123,11 @@ parallel-worktree contract above.
 When more documents exist, use these ownership boundaries:
 
 - `docs/research/`: source-backed reverse-engineering findings.
-- `docs/design/`: implementation-neutral game design reconstructed from evidence.
+- `docs/design/contracts/`: evidence-bound, implementation-neutral subsystem contracts reconstructed
+  from accepted research.
+- `docs/design/synthesis/`: cross-subsystem or player-facing design explanations that consume
+  accepted evidence.
+- `docs/design/`: shared design governance and localization roots for both categories.
 - `docs/decisions/`: durable architecture and tool decisions.
 - `schemas/`: canonical extracted-data contracts; follow `schemas/README.md` for the frozen legacy root
   and the `core/`, `h2/`, and `h3/` layout used by new contracts.
@@ -133,9 +137,10 @@ When more documents exist, use these ownership boundaries:
 - `tests/fixtures/`: small redistributable metadata and behavioral expectations.
 - `remake/`: modern-engine implementation after its contracts are accepted.
 
-Evidence-bound subsystem documents in `docs/design/` remain part of their research slice when accepted
-findings change. Cross-subsystem or player-facing synthesis documents use the design-synthesis lane and
-may explain only accepted evidence from `main`; that lane does not edit `docs/research/`, schemas,
+Evidence-bound subsystem documents in `docs/design/contracts/` remain part of their research slice when
+accepted findings change. Cross-subsystem or player-facing documents in `docs/design/synthesis/` use
+the design-synthesis lane and may explain only accepted evidence from `main`; that lane does not edit
+`docs/research/`, schemas,
 fixtures, manifests, extractors, or evidence-bound design contracts unless a separate research slice and
 merge dependency explicitly assigns those files. Shared indexes and registries receive one branch owner
 per change.

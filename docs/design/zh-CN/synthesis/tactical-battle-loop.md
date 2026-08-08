@@ -5,9 +5,9 @@
 - 读者：需要理解玩家/AI 控制、动作构建、解决、状态回放与战斗内结果交接的研究者、设计文档作者与保真实现者。
 - 范围：只消费当前 `main` 上已接受的 battle-loop、battle-functions、battle-actions、battle-AI、战场/寻路、battle-scene、战斗、法术、随机性与存档证据。
 
-> 本文件是 [`tactical-battle-loop.md`](../tactical-battle-loop.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`tactical-battle-loop.md`](../../synthesis/tactical-battle-loop.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
-这是[文档路线图](../documentation-roadmap.md) 所述的第二篇 Layer B 综合，扩展了[游戏总览](../gameplay-overview.md)中的战斗边界。它不替换研究所有者、测试夹具或证据绑定子系统合同。**已确认** 指边界有链接的 Layer A 支持。**推断** 指多个已确认边界被连接成中性的面向玩家循环。**未知** 指当前证据不允许进一步解读。
+这是[文档路线图](../../documentation-roadmap.md) 所述的第二篇 Layer B 综合，扩展了[游戏总览](../../synthesis/gameplay-overview.md)中的战斗边界。它不替换研究所有者、测试夹具或证据绑定子系统合同。**已确认** 指边界有链接的 Layer A 支持。**推断** 指多个已确认边界被连接成中性的面向玩家循环。**未知** 指当前证据不允许进一步解读。
 
 ## 支持与不支持的判断
 
@@ -107,7 +107,7 @@ flowchart TD
 
 **已确认运行时，受限：** 一个 14 用例 H3 矩阵观察最终攻击动作的七种非空可行形状、相关 RNG 族、AQUA 绕过、普通目标优先级、移动平局打破与等移动结果。
 
-**推断/未知：** 其余调用方可视 AI 行为、带符号/溢出边界、完整指令集语义、自然地图上的路径选择与 AI“意图”。AI 潜在伤害模型是目标打分输入，不是[物理战斗](../combat-resolution.md)或[法术解决](../spell-resolution.md)中的真实结果公式。
+**推断/未知：** 其余调用方可视 AI 行为、带符号/溢出边界、完整指令集语义、自然地图上的路径选择与 AI“意图”。AI 潜在伤害模型是目标打分输入，不是[物理战斗](../../contracts/combat-resolution.md)或[法术解决](../../contracts/spell-resolution.md)中的真实结果公式。
 
 ## 动作提交、构建与回放
 
@@ -174,16 +174,16 @@ flowchart TD
 
 | 综合边界 | 标签与受限主张 | 证据所有者 / 可执行追踪 | 剩余问题 |
 | --- | --- | --- | --- |
-| 战斗入口、回合、动作后与结果 | **已确认静态** 新/恢复、回合、双重死亡/阵营检查与返回顺序 | [battle-loop 研究](../../research/battle-loop.md)；`sf2-battle-control-static-v1`（[`battle-control-static-v1.json`](../../../tests/fixtures/h2/battle-control-static-v1.json)）与 `sf2-battle-loop-static-v1`（[`battle-loop-static-v1.json`](../../../tests/fixtures/h2/battle-loop-static-v1.json)） | 挂起持久性、特例、视觉时序 |
-| 行动顺序与区域激活 | 特定 Battle 01/边界 H3 调度与激活事实 | `sf2-battle01-turn-order-v1`（[`battle01-turn-order-v1.json`](../../../tests/fixtures/h3/battle01-turn-order-v1.json)）、`sf2-turn-order-boundaries-v1`（[`turn-order-boundaries-v1.json`](../../../tests/fixtures/h3/turn-order-boundaries-v1.json)）与 `sf2-battle01-region-activation-v1`（[`battle01-region-activation-v1.json`](../../../tests/fixtures/h3/battle01-region-activation-v1.json)） | 其他战斗/调用方状态；不得外推全局遭遇节奏 |
-| 单回合与玩家控制 | **已确认静态** 控制路由、光标/目标/菜单、挂起/物品/宝箱分支 | [battle-functions 研究](../../research/battle-functions.md)；`sf2-battle-functions-static-v1`（[`battle-functions-static-v1.json`](../../../tests/fixtures/h2/battle-functions-static-v1.json)） | 运行时输入、呈现、完整取消嵌套 |
-| 移动、范围与目标网格 | **已确认** 48x48 数组、加权传播、范围/占用/目标接缝与五个运行时用例 | [战场/寻路研究](../../research/battlefield-pathfinding.md)；`sf2-battlefield-static-v1`（[`battlefield-static-v1.json`](../../../tests/fixtures/h2/battlefield-static-v1.json)）与 `sf2-battlefield-movement-runtime-v1`（[`battlefield-movement-matrix-v1.json`](../../../tests/fixtures/h3/battlefield-movement-matrix-v1.json)） | 发布排跨越可达性、晚期调用方、带符号/溢出边界 |
-| AI 动作/移动/目标选择 | 完整源码清单与主要命令静态所有者；14 用例最终动作 H3 | [battle-AI 研究](../../research/battle-ai.md)；`sf2-battle-ai-static-v1`（[`battle-ai-static-v1.json`](../../../tests/fixtures/h2/battle-ai-static-v1.json)）、`sf2-battle-ai-action-choice-static-v1`（[`battle-ai-action-choice-static-v1.json`](../../../tests/fixtures/h2/battle-ai-action-choice-static-v1.json)）与 `sf2-battle-ai-action-choice-runtime-v1`（[`battle-ai-action-choice-v1.json`](../../../tests/fixtures/h3/battle-ai-action-choice-v1.json)） | 分组 H3 队列、调用方可视缺陷、AI 意图/公平性 |
-| 动作构建 | **已确认静态** 累加器重置、目标族/排序、逐目标顺序、物品/损坏与后续序列 | [battle-actions 研究](../../research/battle-actions.md)；`sf2-battle-actions-static-v1`（[`battle-actions-static-v1.json`](../../../tests/fixtures/h2/battle-actions-static-v1.json)） | 未建模的异常/特殊辅助、消息/动画时序 |
-| 物理解决 | fixture 拥有的算术、分支、反应、后续、奖励与回放子集 | [战斗合同](../combat-resolution.md)；`sf2-physical-damage-land-archer-v1`（[`physical-damage-v1.json`](../../../tests/fixtures/h3/physical-damage-v1.json)）、`sf2-attack-chain-double-counter-v1`（[`attack-chain-v1.json`](../../../tests/fixtures/h3/attack-chain-v1.json)）与 `sf2-battle-scene-replay-v1`（[`battle-scene-replay-v1.json`](../../../tests/fixtures/h3/battle-scene-replay-v1.json)） | 合同中分项的 **未知** 边界；不得泛化到完整动作集 |
-| 法术/状态解决 | 合同中列出的伤害/治疗/状态/支援/消耗/回放子集 | [法术合同](../spell-resolution.md)；`sf2-spell-damage-resistance-v1`（[`spell-damage-resistance-v1.json`](../../../tests/fixtures/h3/spell-damage-resistance-v1.json)）与 `sf2-after-turn-status-lifecycle-v1`（[`after-turn-status-lifecycle-v1.json`](../../../tests/fixtures/h3/after-turn-status-lifecycle-v1.json)） | 不受支持的法术、自然目标顺序、完整多回合状态 |
-| 演出命令/呈现边界 | **已确认静态** 21 命令分发、初始化/加载器与设置/更新配对 | [battle-scene 研究](../../research/battle-scene-engine.md)；`sf2-battle-scene-engine-static-v1`（[`battle-scene-engine-static-v1.json`](../../../tests/fixtures/h2/battle-scene-engine-static-v1.json)） | 精确帧/VDP/调色板/音频/渲染输出 |
-| 挂起交接 | **已确认静态** 菜单/存档/标志/转移接缝与受限存档格式/动作 | [battle-functions 研究](../../research/battle-functions.md) 与 `sf2-battle-functions-static-v1`（[`battle-functions-static-v1.json`](../../../tests/fixtures/h2/battle-functions-static-v1.json)）拥有战场菜单 → 秒数/存档/标志/转移接缝；[存档合同](../save-system.md) 提供受限格式/动作上下文 | 跨进程战斗持久性、断电、可见 UX |
+| 战斗入口、回合、动作后与结果 | **已确认静态** 新/恢复、回合、双重死亡/阵营检查与返回顺序 | [battle-loop 研究](../../../research/battle-loop.md)；`sf2-battle-control-static-v1`（[`battle-control-static-v1.json`](../../../../tests/fixtures/h2/battle-control-static-v1.json)）与 `sf2-battle-loop-static-v1`（[`battle-loop-static-v1.json`](../../../../tests/fixtures/h2/battle-loop-static-v1.json)） | 挂起持久性、特例、视觉时序 |
+| 行动顺序与区域激活 | 特定 Battle 01/边界 H3 调度与激活事实 | `sf2-battle01-turn-order-v1`（[`battle01-turn-order-v1.json`](../../../../tests/fixtures/h3/battle01-turn-order-v1.json)）、`sf2-turn-order-boundaries-v1`（[`turn-order-boundaries-v1.json`](../../../../tests/fixtures/h3/turn-order-boundaries-v1.json)）与 `sf2-battle01-region-activation-v1`（[`battle01-region-activation-v1.json`](../../../../tests/fixtures/h3/battle01-region-activation-v1.json)） | 其他战斗/调用方状态；不得外推全局遭遇节奏 |
+| 单回合与玩家控制 | **已确认静态** 控制路由、光标/目标/菜单、挂起/物品/宝箱分支 | [battle-functions 研究](../../../research/battle-functions.md)；`sf2-battle-functions-static-v1`（[`battle-functions-static-v1.json`](../../../../tests/fixtures/h2/battle-functions-static-v1.json)） | 运行时输入、呈现、完整取消嵌套 |
+| 移动、范围与目标网格 | **已确认** 48x48 数组、加权传播、范围/占用/目标接缝与五个运行时用例 | [战场/寻路研究](../../../research/battlefield-pathfinding.md)；`sf2-battlefield-static-v1`（[`battlefield-static-v1.json`](../../../../tests/fixtures/h2/battlefield-static-v1.json)）与 `sf2-battlefield-movement-runtime-v1`（[`battlefield-movement-matrix-v1.json`](../../../../tests/fixtures/h3/battlefield-movement-matrix-v1.json)） | 发布排跨越可达性、晚期调用方、带符号/溢出边界 |
+| AI 动作/移动/目标选择 | 完整源码清单与主要命令静态所有者；14 用例最终动作 H3 | [battle-AI 研究](../../../research/battle-ai.md)；`sf2-battle-ai-static-v1`（[`battle-ai-static-v1.json`](../../../../tests/fixtures/h2/battle-ai-static-v1.json)）、`sf2-battle-ai-action-choice-static-v1`（[`battle-ai-action-choice-static-v1.json`](../../../../tests/fixtures/h2/battle-ai-action-choice-static-v1.json)）与 `sf2-battle-ai-action-choice-runtime-v1`（[`battle-ai-action-choice-v1.json`](../../../../tests/fixtures/h3/battle-ai-action-choice-v1.json)） | 分组 H3 队列、调用方可视缺陷、AI 意图/公平性 |
+| 动作构建 | **已确认静态** 累加器重置、目标族/排序、逐目标顺序、物品/损坏与后续序列 | [battle-actions 研究](../../../research/battle-actions.md)；`sf2-battle-actions-static-v1`（[`battle-actions-static-v1.json`](../../../../tests/fixtures/h2/battle-actions-static-v1.json)） | 未建模的异常/特殊辅助、消息/动画时序 |
+| 物理解决 | fixture 拥有的算术、分支、反应、后续、奖励与回放子集 | [战斗合同](../../contracts/combat-resolution.md)；`sf2-physical-damage-land-archer-v1`（[`physical-damage-v1.json`](../../../../tests/fixtures/h3/physical-damage-v1.json)）、`sf2-attack-chain-double-counter-v1`（[`attack-chain-v1.json`](../../../../tests/fixtures/h3/attack-chain-v1.json)）与 `sf2-battle-scene-replay-v1`（[`battle-scene-replay-v1.json`](../../../../tests/fixtures/h3/battle-scene-replay-v1.json)） | 合同中分项的 **未知** 边界；不得泛化到完整动作集 |
+| 法术/状态解决 | 合同中列出的伤害/治疗/状态/支援/消耗/回放子集 | [法术合同](../../contracts/spell-resolution.md)；`sf2-spell-damage-resistance-v1`（[`spell-damage-resistance-v1.json`](../../../../tests/fixtures/h3/spell-damage-resistance-v1.json)）与 `sf2-after-turn-status-lifecycle-v1`（[`after-turn-status-lifecycle-v1.json`](../../../../tests/fixtures/h3/after-turn-status-lifecycle-v1.json)） | 不受支持的法术、自然目标顺序、完整多回合状态 |
+| 演出命令/呈现边界 | **已确认静态** 21 命令分发、初始化/加载器与设置/更新配对 | [battle-scene 研究](../../../research/battle-scene-engine.md)；`sf2-battle-scene-engine-static-v1`（[`battle-scene-engine-static-v1.json`](../../../../tests/fixtures/h2/battle-scene-engine-static-v1.json)） | 精确帧/VDP/调色板/音频/渲染输出 |
+| 挂起交接 | **已确认静态** 菜单/存档/标志/转移接缝与受限存档格式/动作 | [battle-functions 研究](../../../research/battle-functions.md) 与 `sf2-battle-functions-static-v1`（[`battle-functions-static-v1.json`](../../../../tests/fixtures/h2/battle-functions-static-v1.json)）拥有战场菜单 → 秒数/存档/标志/转移接缝；[存档合同](../../contracts/save-system.md) 提供受限格式/动作上下文 | 跨进程战斗持久性、断电、可见 UX |
 
 该表只提供精确所有者导航。本文档不得复制更弱的聚合预期，也不得用某个测试夹具的自然/受控设置替代另一个子系统的输入前置条件。
 
@@ -214,4 +214,4 @@ flowchart TD
 - 需要精确呈现、输入时序、正常战役可达性或挂起持久性；
 - 必须选择模拟架构、预测模型、现代 UI 或有意的重平衡。
 
-完整战斗模拟仍保留在路线图的[长期方向](../documentation-roadmap.md#long-term-directions)中。在该切片开始前，它需要互相兼容的 battle-loop、动作、AI、寻路与状态合同，加上受限的 H4 适配器验收面。本文档只提供导航，不声称每个入场标准都已满足。
+完整战斗模拟仍保留在路线图的[长期方向](../../documentation-roadmap.md#long-term-directions)中。在该切片开始前，它需要互相兼容的 battle-loop、动作、AI、寻路与状态合同，加上受限的 H4 适配器验收面。本文档只提供导航，不声称每个入场标准都已满足。
