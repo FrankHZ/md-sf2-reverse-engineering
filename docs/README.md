@@ -377,6 +377,12 @@ document whose anchors may be updated.
   use/break routing, Taros and Burst Rock gates, message-command records, and the complete static
   54-site message corpus, while retaining caller reachability, timing, presentation, unmodeled
   sub-routes, action choice, and downstream resolution as Unknown or separate-owner boundaries.
+- [`battle-scene-presentation.md`](./design/contracts/battle-scene-presentation.md): the
+  implementation-neutral contract for the 21-command scene interpreter, initialization and selector
+  order, 208 actor-animation sequences, spell setup/update dispatch, and complete background,
+  sprite, weapon, ground, and battle-effect container boundaries, while retaining command/frame
+  timing, VInt/VDP effects, palette/layer composition, invocation transfer tails, reachability, and
+  rendered output as Unknown.
 - [`battle-control-lifecycle.md`](./design/contracts/battle-control-lifecycle.md): the implementation-neutral
   contract for new/resumed battle entry, round activation/spawn/turn scheduling, combatant death
   worklists and cleanup, bounded Battle 01 region and turn-order runtime behavior, double faction
