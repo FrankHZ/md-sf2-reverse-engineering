@@ -44,31 +44,31 @@
 
 ```mermaid
 flowchart TD
-    A["BattleLoop entry"] --> B{"New or suspended?"}
-    B -->|"new"| C["Cutscenes, flags, heal, rosters, LoadBattle"]
-    B -->|"suspended"| D["Restore seconds, clear suspend flag / AI memory, reload"]
-    C --> E["Round: activate, region cutscene, spawn, turn order"]
-    D --> F["Individual-turn loop"]
+    A["BattleLoop 入口"] --> B{"新战斗还是挂起战斗？"}
+    B -->|"新战斗"| C["过场、标志、治疗、名册、LoadBattle"]
+    B -->|"挂起战斗"| D["恢复秒数，清除挂起标志 / AI 记忆并重新加载"]
+    C --> E["整轮：激活、区域过场、生成、行动顺序"]
+    D --> F["单次行动循环"]
     E --> F
-    F --> G{"Actor/control gate"}
-    G -->|"dead"| N["Post-action controller"]
-    G -->|"sleep / stun / stay"| N
-    G -->|"player"| H["Move, target, menu, commit action"]
-    G -->|"AI"| I["Commandset, movement/target score, first success"]
-    H --> J{"Exit or ordinary action?"}
+    F --> G{"行动者 / 控制门禁"}
+    G -->|"已死亡"| N["行动后控制器"]
+    G -->|"睡眠 / 眩晕 / 待机"| N
+    G -->|"玩家"| H["移动、选择目标、菜单、提交行动"]
+    G -->|"AI"| I["指令集、移动 / 目标评分、首个成功"]
+    H --> J{"退出还是普通行动？"}
     I --> J
-    J -->|"EGRESS / Angel Wing"| O["Battle exit state"]
-    J -->|"ordinary"| K["WriteBattlesceneScript"]
+    J -->|"EGRESS / Angel Wing"| O["战斗退出状态"]
+    J -->|"普通行动"| K["WriteBattlesceneScript"]
     K --> L["ExecuteBattlesceneScript"]
-    L --> M["Reload battlefield / persistent state"]
+    L --> M["重新加载战场 / 持久状态"]
     M --> N
-    N --> P["Deaths + faction checks"]
-    P -->|"battle continues"| Q["After-turn effects"]
-    Q --> R["Deaths + faction checks again"]
-    R -->|"next actor"| F
-    R -->|"turn-order 0xFF"| E
-    P -->|"outcome"| S["Victory / defeat / special loss"]
-    R -->|"outcome"| S
+    N --> P["死亡 + 阵营检查"]
+    P -->|"战斗继续"| Q["回合后效果"]
+    Q --> R["再次检查死亡 + 阵营"]
+    R -->|"下一行动者"| F
+    R -->|"行动顺序 0xFF"| E
+    P -->|"结果"| S["胜利 / 败北 / 特殊失败"]
+    R -->|"结果"| S
 ```
 
 ### 入口与回合锚点
@@ -125,7 +125,7 @@ flowchart TD
 ### 物理、法术与物品解决
 
 - **已确认：** 物理路径按顺序处理闪避、基础伤害、会心一击、伤害应用、异常、诅咒伤害与 double/counter 判定。闪避与致命分支跳过已显式记录的后续阶段。
-- **已确认于所属 fixture 接缝：** 物理合同保留整数中间值、HP 夹断、反应顺序、后续验证、快照恢复、持久回放与 EXP/奖励边界。
+- **已确认于所属 fixture 接缝：** 物理合同保留整数中间值、HP 钳位、反应顺序、后续验证、快照恢复、持久回放与 EXP/奖励边界。
 - **已确认于所属 fixture 接缝：** 法术合同覆盖其列出的伤害、治疗、状态、支援、MP、EXP 与回合后状态子集。本文档无法补全未列出的法术或自然多目标顺序。
 - **已确认静态：** 战斗物品通过普通施法法术路由使用其法术索引/等级。消耗与损坏路由保留装备、己方使用与 RNG 门。
 

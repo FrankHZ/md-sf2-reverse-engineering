@@ -275,8 +275,10 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 中文本地化从英文 canonical 源以专用批次进行：术语表
 [`glossary.md`](./design/glossary.md) 是英文→中文术语的单一绑定来源，镜像存于
 `design/zh-CN/`（同文件名，英文文件始终是审阅基线）。翻译索引由
-`manifests/zh-translation-index.json` 追踪，用 `uv run sf2 zh-meta test`（校验）与
-`uv run sf2 zh-meta update`（重生成）维护。下列 design 文档条目均链接到 `design/zh-CN/`
+`manifests/zh-translation-index.json` 追踪，用 `uv run sf2 zh-meta test`（严格校验）与
+`uv run sf2 zh-meta update`（保留已接受锚点的重生成）维护。只有在对照英文源码和当前术语表
+审阅完变更镜像后，才能为每个允许更新锚点的文档重复传入
+`--reanchor-source docs/design/<file>.md`。下列 design 文档条目均链接到 `design/zh-CN/`
 下的中文镜像。
 
 - [`glossary.md`](./design/glossary.md)：已接受的英文→中文术语表及 zh-CN 本地化规则；固定证据标签

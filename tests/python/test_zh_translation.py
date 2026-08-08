@@ -22,11 +22,13 @@ def _build_mini_repo(tmp_path: Path) -> tuple[Path, Path, Path]:
     glossary.write_text("# Glossary\n已确认 未知\n", encoding="utf-8")
     source_a = design / "a.md"
     source_a.write_text(
-        "# A\n**已确认** x **未知**\nfixture tests/fixtures/h2/a-v1.json\n",
+        "# A\n**Confirmed** x **Inferred** y **Unknown**\n"
+        "fixture sf2-a-v1 tests/fixtures/h2/a-v1.json\n",
         encoding="utf-8",
     )
     (mirror / "a.md").write_text(
-        "# A\n**已确认** x **未知**\nfixture tests/fixtures/h2/a-v1.json\n",
+        "# A\n**已确认** x **推断** y **未知**\n"
+        "fixture sf2-a-v1 tests/fixtures/h2/a-v1.json\n",
         encoding="utf-8",
     )
     (design / "b.md").write_text("# B\n", encoding="utf-8")
@@ -56,7 +58,8 @@ def test_generate_and_verify_roundtrip(monkeypatch: pytest.MonkeyPatch, tmp_path
     assert result["GlossaryDrift"] == 0
     assert result["MirrorDirty"] == 0
     assert result["LinksChecked"] == 0
-    assert result["FixturePathsPreserved"] == 1
+    assert result["FixtureIdentitySequencesPreserved"] == 1
+    assert result["StructuralDocuments"] == 1
 
 
 def test_generate_is_deterministic(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -84,17 +87,20 @@ def test_generate_reports_stale_after_source_edit(
         translated_date="2026-08-04",
     )
     design.joinpath("a.md").write_text(
-        "# A revised\n**已确认** x **未知**\nfixture tests/fixtures/h2/a-v1.json\n",
+        "# A revised\n**Confirmed** x **Inferred** y **Unknown**\n"
+        "fixture sf2-a-v1 tests/fixtures/h2/a-v1.json\n",
         encoding="utf-8",
     )
-    result = verify_zh_translation(manifest_path=manifest)
-    assert result["Status"] == "PASS"
+    with pytest.raises(ValueError, match="anchors are not current"):
+        verify_zh_translation(manifest_path=manifest)
+    result = verify_zh_translation(manifest_path=manifest, require_current=False)
+    assert result["Status"] == "FAIL"
     assert result["Stale"] == 1
     assert result["GlossaryDrift"] == 0
     assert result["MirrorDirty"] == 0
 
 
-def test_generate_reanchors_after_mirror_edit(
+def test_generate_requires_explicit_reanchor_after_mirror_edit(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     design, mirror, _ = _install_repo(monkeypatch, tmp_path)
@@ -104,16 +110,28 @@ def test_generate_reanchors_after_mirror_edit(
         translated_date="2026-08-04",
     )
     design.joinpath("a.md").write_text(
-        "# A revised\n**已确认** x **未知**\nfixture tests/fixtures/h2/a-v1.json\n",
+        "# A revised\n**Confirmed** x **Inferred** y **Unknown**\n"
+        "fixture sf2-a-v1 tests/fixtures/h2/a-v1.json\n",
         encoding="utf-8",
     )
     mirror.joinpath("a.md").write_text(
-        "# A 修订\n**已确认** x **未知**\nfixture tests/fixtures/h2/a-v1.json\n",
+        "# A 修订\n**已确认** x **推断** y **未知**\n"
+        "fixture sf2-a-v1 tests/fixtures/h2/a-v1.json\n",
         encoding="utf-8",
     )
+    original = manifest.read_bytes()
+    with pytest.raises(ValueError, match="anchors are not current"):
+        generate_zh_translation(output_path=manifest, translated_date="2026-08-05")
+    assert manifest.read_bytes() == original
+    result = verify_zh_translation(manifest_path=manifest, require_current=False)
+    assert result["Status"] == "FAIL"
+    assert result["Stale"] == 1
+    assert result["MirrorDirty"] == 1
+
     generate_zh_translation(
         output_path=manifest,
         translated_date="2026-08-05",
+        reanchor_sources={"docs/design/a.md"},
     )
     result = verify_zh_translation(manifest_path=manifest)
     assert result["Status"] == "PASS"
@@ -180,9 +198,9 @@ def test_verify_rejects_missing_evidence_labels(
         translated_date="2026-08-04",
     )
     mirror.joinpath("a.md").write_text(
-        "# A\nfixture tests/fixtures/h2/a-v1.json\n", encoding="utf-8"
+        "# A\nfixture sf2-a-v1 tests/fixtures/h2/a-v1.json\n", encoding="utf-8"
     )
-    with pytest.raises(ValueError, match="evidence labels"):
+    with pytest.raises(ValueError, match="evidence-label"):
         verify_zh_translation(manifest_path=manifest)
 
 
@@ -196,10 +214,11 @@ def test_verify_rejects_broken_relative_link(
         translated_date="2026-08-04",
     )
     mirror.joinpath("a.md").write_text(
-        "# A\n**已确认** x **未知**\n[missing](../nope.md)\nfixture tests/fixtures/h2/a-v1.json\n",
+        "# A\n**已确认** x **推断** y **未知**\n[missing](../nope.md)\n"
+        "fixture sf2-a-v1 tests/fixtures/h2/a-v1.json\n",
         encoding="utf-8",
     )
-    with pytest.raises(ValueError, match="broken relative link"):
+    with pytest.raises(ValueError, match="broken relative link or anchor"):
         verify_zh_translation(manifest_path=manifest)
 
 
@@ -213,15 +232,16 @@ def test_verify_rejects_dropped_fixture_path(
         translated_date="2026-08-04",
     )
     design.joinpath("a.md").write_text(
-        "# A\n**已确认** x **未知**\nfixture tests/fixtures/h2/a-v1.json\n"
-        "also tests/fixtures/h2/extra-v1.json\n",
+        "# A\n**Confirmed** x **Inferred** y **Unknown**\n"
+        "fixture sf2-a-v1 tests/fixtures/h2/a-v1.json\n"
+        "also sf2-extra-v1 tests/fixtures/h2/extra-v1.json\n",
         encoding="utf-8",
     )
-    with pytest.raises(ValueError, match="dropped fixture path"):
+    with pytest.raises(ValueError, match="preserved fixture identity"):
         verify_zh_translation(manifest_path=manifest)
 
 
-def test_verify_reports_glossary_drift_without_failing(
+def test_verify_rejects_glossary_drift_by_default(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     design, _, _ = _install_repo(monkeypatch, tmp_path)
@@ -233,11 +253,50 @@ def test_verify_reports_glossary_drift_without_failing(
     design.joinpath("glossary.md").write_text(
         "# Glossary revised\n已确认 推断 未知\n", encoding="utf-8"
     )
-    result = verify_zh_translation(manifest_path=manifest)
-    assert result["Status"] == "PASS"
+    with pytest.raises(ValueError, match="anchors are not current"):
+        verify_zh_translation(manifest_path=manifest)
+    result = verify_zh_translation(manifest_path=manifest, require_current=False)
+    assert result["Status"] == "FAIL"
     assert result["GlossaryDrift"] == 1
     assert result["GlossaryIndexStale"] is True
     assert result["Stale"] == 0
+
+
+def test_verify_checks_relative_heading_fragments(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    design, mirror, _ = _install_repo(monkeypatch, tmp_path)
+    design.joinpath("target.md").write_text("# Target\n## Evidence Matrix\n", encoding="utf-8")
+    mirror.joinpath("a.md").write_text(
+        "# A\n**已确认** x **推断** y **未知**\n"
+        "[matrix](../target.md#missing)\n"
+        "fixture sf2-a-v1 tests/fixtures/h2/a-v1.json\n",
+        encoding="utf-8",
+    )
+    manifest = tmp_path / "zh-index.json"
+    with pytest.raises(ValueError, match="broken relative link or anchor"):
+        generate_zh_translation(output_path=manifest, translated_date="2026-08-04")
+
+
+def test_verify_rejects_structure_or_untranslated_mermaid_labels(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    design, mirror, _ = _install_repo(monkeypatch, tmp_path)
+    design.joinpath("a.md").write_text(
+        "# A\n## Flow\n**Confirmed** x **Inferred** y **Unknown**\n"
+        "fixture sf2-a-v1 tests/fixtures/h2/a-v1.json\n"
+        "```mermaid\nflowchart TD\nA[\"Source state\"] --> B[\"BattleLoop\"]\n```\n",
+        encoding="utf-8",
+    )
+    mirror.joinpath("a.md").write_text(
+        "# A\n## 流程\n**已确认** x **推断** y **未知**\n"
+        "fixture sf2-a-v1 tests/fixtures/h2/a-v1.json\n"
+        "```mermaid\nflowchart TD\nA[\"Source state\"] --> B[\"BattleLoop\"]\n```\n",
+        encoding="utf-8",
+    )
+    manifest = tmp_path / "zh-index.json"
+    with pytest.raises(ValueError, match="untranslated Mermaid label"):
+        generate_zh_translation(output_path=manifest, translated_date="2026-08-04")
 
 
 def test_schema_rejects_translated_without_anchor(

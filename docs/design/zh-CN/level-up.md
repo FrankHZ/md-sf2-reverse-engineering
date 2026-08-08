@@ -14,7 +14,7 @@
 - `tests/fixtures/h3/level-up-refresh-v1.json` / `sf2-level-up-refresh-v1` 拥有八次受控 Slade 刷新调用，经过 `UpdateCombatantStats`，包括当前/基础分离、完整与部分状态计数器、普通/被诅咒装备，以及原版物品表引用的全部四种特殊攻击概率（会心/二连/反击）效果。用 `uv run sf2 h3 growth-refresh` 独立运行它。
 - `tests/fixtures/h3/ally-initialization-prowess-v1.json` /
   `sf2-karna-heal3-prowess-v1` 拥有 Karna 未修改的启动路径，加上覆盖 `InitializeAllyStats` 中完整 HEAL 3 double/counter 高半字节矩阵的十五个受控输入。
-- `tests/fixtures/h3/stat-clamp-boundaries-v1.json` / `sf2-stat-clamp-boundaries-v1` 在 Slade 一次自然升级期间拥有九次受控包装器调用，覆盖字节进位饱和、字回绕、普通上限与三次字节下溢夹断。
+- `tests/fixtures/h3/stat-clamp-boundaries-v1.json` / `sf2-stat-clamp-boundaries-v1` 在 Slade 一次自然升级期间拥有九次受控包装器调用，覆盖字节进位饱和、字回绕、普通上限与三次字节下溢钳位。
 - `tests/fixtures/h3/enemy-curse-suppression-v1.json` / `sf2-enemy-curse-suppression-v1` 拥有一次带受控被诅咒装备的自然 Battle 01 敌人刷新。
 - `tests/fixtures/h3/battle-exp-level-up-v1.json` / `sf2-battle-exp-level-up-v1` 拥有从一次 24 点 EXP 指令经 100 点阈值、一次源码建模的 Bowie/SDMN `LevelUp` 与最终持久战斗员状态的自然 Battle 01 连接路径。
 - `tests/fixtures/h3/exp-command-boundaries-v1.json` / `sf2-exp-command-boundaries-v1` 拥有 99 以下/精确 100/EXP 上限 200 的指令边界、基础/转职后上限结果 255，并证明一条指令至多处理一次 100 点阈值。用 `uv run sf2 h3 exp-command` 独立运行它。
@@ -81,11 +81,11 @@ refresh fixture 让 Slade/THIF 从 39 级开始，投影基础属性为 `[HP 42,
 
 重制应把最大/当前资源与基础/派生战斗属性建模为独立字段。升级不得仅仅通过把新最大值复制进当前 HP/MP 来治疗，装备效果必须从新基础重算，而不是增量堆叠到过期的派生值上。
 
-## 已确认的属性夹断边界
+## 已确认的属性值钳位边界
 
-一次 Slade/THIF 39→40 调用提供自然增益 ATT +2、DEF +1 与 AGI +2。在相应包装器入口处，夹断 fixture 只替换目标字节。基础 ATT `199+2` 与 DEF `199+1` 都在 200 饱和。基础 AGI 从 `0xE3` 开始：原版分离第 7 位，把低七位 `99+2` 夹断到基础 AGI 上限 100，然后恢复标志，产生 `0xE4`。
+一次 Slade/THIF 39→40 调用提供自然增益 ATT +2、DEF +1 与 AGI +2。在相应包装器入口处，钳位 fixture 只替换目标字节。基础 ATT `199+2` 与 DEF `199+1` 都在 200 饱和。基础 AGI 从 `0xE3` 开始：原版分离第 7 位，把低七位 `99+2` 钳位到基础 AGI 上限 100，然后恢复标志，产生 `0xE4`。
 
-同一次刷新装备源码定义的物品到达当前属性包装器。Running Ring 使 MOV `199+2→200`；Evil Axe 当前 ATT `250+50` 设置字节进位并夹断到 200。受控低输入确认无符号减法夹断而不是回绕：Evil Axe DEF `3-5→0`、Evil Lance MOV `1-2→0` 与 Demon Rod AGI `5-10→0`。观察器在每次匹配包装器入口之前重新应用每个受控输入，然后确认原版 `IncreaseAndClampByte`、`IncreaseAndClampWord`、`IncreaseAndClamp7Bits` 与 `DecreaseAndClampByte` helper 都被到达。这些是验证接缝事实，不是声称这样的极端值在未修改战役中自然出现。
+同一次刷新装备源码定义的物品到达当前属性值包装器。Running Ring 使 MOV `199+2→200`；Evil Axe 当前 ATT `250+50` 设置字节进位并钳位到 200。受控低输入确认无符号减法钳位而不是回绕：Evil Axe DEF `3-5→0`、Evil Lance MOV `1-2→0` 与 Demon Rod AGI `5-10→0`。观察器在每次匹配包装器入口之前重新应用每个受控输入，然后确认原版 `IncreaseAndClampByte`、`IncreaseAndClampWord`、`IncreaseAndClamp7Bits` 与 `DecreaseAndClampByte` helper 都被到达。这些是验证接缝事实，不是声称这样的极端值在未修改战役中自然出现。
 
 自然 HP +2 包装器也到达 `IncreaseAndClampWord`。与字节 helper 不同，它通过带符号负标志而非进位检测溢出。受控最大 HP `65535+2` 回绕为正 1，因此它绕过 200 上限并存储 1。这是在一个极端验证接缝处的已确认原版行为；保真代码不得静默地用理想的饱和加法替换它。
 
@@ -123,7 +123,7 @@ Battle 01 自然为战斗员 `0x80` 调用 `InitializeEnemyStats`，它到达 `U
 
 **未知** 仍需专用 fixtures 的运行时边界：
 
-- 当前 ATT 递减下溢、剩余字边界与未使用的 long 夹断 helpers；
+- 当前 ATT 递减下溢、剩余字边界与未使用的 long 钳位 helpers；
 - 自然引用物品/职业组合之外的关键病变与会心上限输入。
 
 未来的重制成长模块应首先消费同样的九个 fixtures，然后扩展它们，而不是把未经测试的曲线或职业假设嵌入引擎代码。

@@ -55,24 +55,24 @@
 
 ```mermaid
 flowchart TD
-    New["New action: controlled map 3/save/MainLoop handoff"] --> Main["MainLoop: static top-level route"]
-    Load["Load action: bounded flag-88 re-entry branch"] --> Main
-    Main --> Switch["Apply flag-driven map switching"]
-    Switch --> BattleGate{"Battle index is -1?"}
-    BattleGate -->|"no"| Battle["BattleLoop"]
-    Battle --> PostBattle["Apply map switching again"]
+    New["New 行动：受控地图 3 / 存档 / MainLoop 交接"] --> Main["MainLoop：静态顶层路线"]
+    Load["Load 行动：受限标志 88 重入分支"] --> Main
+    Main --> Switch["应用标志驱动的地图切换"]
+    Switch --> BattleGate{"战斗索引是否为 -1？"}
+    BattleGate -->|"否"| Battle["BattleLoop"]
+    Battle --> PostBattle["再次应用地图切换"]
     PostBattle --> Explore["ExplorationLoop"]
-    BattleGate -->|"yes"| Explore
-    Explore --> Setup["Select setup from current map and ordered flags"]
-    Setup --> Event["Run setup/init and ordered event selection"]
-    Event -.-> Script["Map-script program"]
-    Script -.-> Flags["Game flags and battle-unlock flag range"]
-    Script -.-> Dialogue["Dialogue state seam"]
-    Script -.-> Roster["Roster/party/follower state seam"]
-    Script -.-> Lifecycle["Map lifecycle and transition seams"]
+    BattleGate -->|"是"| Explore
+    Explore --> Setup["根据当前地图与有序标志选择配置"]
+    Setup --> Event["运行配置 / 初始化与有序事件选择"]
+    Event -.-> Script["地图脚本程序"]
+    Script -.-> Flags["游戏标志与战斗解锁标志范围"]
+    Script -.-> Dialogue["对话状态接缝"]
+    Script -.-> Roster["名册 / 队伍 / 随从状态接缝"]
+    Script -.-> Lifecycle["地图生命周期与过渡接缝"]
     Lifecycle -.-> Script
-    Explore -->|"warp-style transition return"| Main
-    Flags -.-> Save["Two-slot save representation"]
+    Explore -->|"warp 式过渡返回"| Main
+    Flags -.-> Save["双槽存档表示"]
     Roster -.-> Save
 ```
 

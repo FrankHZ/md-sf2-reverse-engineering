@@ -55,29 +55,29 @@ uv run sf2 h3 enemy-drops
 | --- | --- | --- |
 | 动作 EXP 累加器 | 动作解决时构建的临时战斗演出值。已确认的伤害/击杀路径饱和于 49；已确认的治疗累积饱和于 25。 | 这些是动作族边界，不是每个法术或命令的通用 EXP 上限。 |
 | 最终 EXP 命令 | 应用适用的战斗表调整、两次有序随机检查与已确认敌人目标最低值后发出的动作后金额。 | 它既不是累加器也不是已存储 EXP。同侧与不受支持的动作路径不得自动继承敌人目标规则。 |
-| 已存储 EXP | 由 EXP 命令增加并在阈值处理前夹断于 200 的持久行动者字节。 | 一条命令最多减去一个 100 点阈值；之后已存储 EXP 可能仍为 100。 |
+| 已存储 EXP | 由 EXP 命令增加并在阈值处理前钳位于 200 的持久行动者字节。 | 一条命令最多减去一个 100 点阈值；之后已存储 EXP 可能仍为 100。 |
 | 已存储等级 | 保留在战斗员上的职业局部值。已确认上限为 ID 12 以下职业的 40 与 ID 12 起职业的 99。 | 它不一定是被每个比较使用的等级。 |
 | 有效奖励等级 | 对已确认的伤害/击杀档位，转职后的行动者在与目标已存储等级比较前加 20。 | 该偏移只限于已确认的比较；不要改写持久等级。 |
 | 升级法术阈值 | `LevelUp` 递增已存储等级，然后应用其职业相关的有效等级规则学习法术。 | TORT 的类 11 比较缺陷与 `$FE` 法术列表继承仍是原版保真事实。 |
 | 当前对最大/基础/派生属性 | 升级改变最大值与基础属性，然后刷新派生战斗属性与装备/状态效果。 | 当前 HP 与 MP 不会只因最大值增长而增加。 |
-| 金币 | 持久无符号 32 位资源；已确认的增加行为在进位或超上限加法时把它夹断于 9,999,999。 | 减少行为与非战斗变更结果不在金币 H3 测试夹具覆盖内。 |
+| 金币 | 持久无符号 32 位资源；已确认的增加行为在进位或超上限加法时把它钳位于 9,999,999。 | 减少行为与非战斗变更结果不在金币 H3 测试夹具覆盖内。 |
 | 持有物品、Deals 计数与车队存储 | 具有独立容量与顺序规则的独立物品去向。Deals 计数是打包的四位量，饱和于 15。 | 静态服务辅助顺序本身不证明持久性或最终运行时状态。 |
 
 ## 连接起来的资源流
 
 ```mermaid
 flowchart LR
-    action["Resolve a confirmed battle action"] --> build["Build temporary EXP, gold, and drop state"]
-    build --> finalize["Finalize reward commands"]
-    finalize --> replay["Replay commands into persistent combatant and force state"]
-    replay --> threshold{"Stored EXP at least 100?"}
-    threshold -->|"No"| retained["Retain level and residual EXP"]
-    threshold -->|"Yes, once per command"| levelup["Run one LevelUp call"]
-    levelup --> refresh["Refresh base-derived stats, status, and equipment effects"]
-    refresh --> future["Later actions consume the refreshed combatant state"]
-    replay --> economy["Gold and item destinations become later service inputs"]
-    economy --> service["Source-static shop, church, caravan, and blacksmith routes"]
-    service --> unknown["Final service mutation and persistence remain partly Unknown"]
+    action["结算一项已确认的战斗行动"] --> build["构建临时 EXP、金币与掉落状态"]
+    build --> finalize["确定奖励指令"]
+    finalize --> replay["将指令重放到持久战斗员与军团状态"]
+    replay --> threshold{"已存储 EXP 至少为 100？"}
+    threshold -->|"否"| retained["保留等级与剩余 EXP"]
+    threshold -->|"是，每条指令至多一次"| levelup["调用一次 LevelUp"]
+    levelup --> refresh["刷新基础派生属性值、状态与装备效果"]
+    refresh --> future["后续行动使用已刷新的战斗员状态"]
+    replay --> economy["金币与物品去向成为后续服务输入"]
+    economy --> service["源码静态商店、教堂、车队与铁匠路线"]
+    service --> unknown["最终服务变更与持久性仍有部分未知"]
 ```
 
 进入后续动作使用与后续服务选择使用的链接是 **推断 系统关系**：更强的战斗员状态与保留资源可以影响后续选择，因为后续系统读取这些字段。该图不声称原版设计师意图某种特定强度曲线、消费节奏或最优循环。
@@ -118,7 +118,7 @@ EXP 命令首先以 200 为上限增加已存储 EXP。然后测试 100、减去
 
 ### 4. 应用升级并刷新战斗员状态
 
-对低于其上限的匹配职业块，`LevelUp` 按顺序处理最大 HP、最大 MP、基础 ATT、基础 DEF 与基础 AGI；递增已存储等级；解决精确法术阈值；然后刷新派生战斗员状态。[升级合同](../level-up.md) 拥有随机成长公式、30 级后投影规则、职业块扫描、习得法术载荷、上限、夹断与已知原版缺陷。
+对低于其上限的匹配职业块，`LevelUp` 按顺序处理最大 HP、最大 MP、基础 ATT、基础 DEF 与基础 AGI；递增已存储等级；解决精确法术阈值；然后刷新派生战斗员状态。[升级合同](../level-up.md) 拥有随机成长公式、30 级后投影规则、职业块扫描、习得法术载荷、上限、钳位与已知原版缺陷。
 
 连接的战斗测试夹具展示了为什么这是持久回放阶段的一部分，而不是孤立的属性计算器。Bowie 从 99 EXP 的 1 级开始，接收 24 点命令，从已存储 EXP 123 经过残差 23，到达 2 级，并刷新基础与派生属性。当前 HP/MP 保持 `12/8`，即使最大 HP 变为 14。仅动作的 ATT/AGI 值被刷新值替换而不是沿用。
 
@@ -164,7 +164,7 @@ EXP 命令首先以 200 为上限增加已存储 EXP。然后测试 100、减去
 
 | 边界 | 证据标签与受限主张 | 精确所有者 | 剩余问题 |
 | --- | --- | --- | --- |
-| 成长存储与升级 | **已确认** 曲线/职业块加运行时增益、上限、法术、扫描与刷新用例 | [ally-growth 研究](../../research/ally-growth.md)、[成长 manifest](../../../manifests/extractions/growth-data.json)、[成长 schema](../../../schemas/growth-data.schema.json)；`sf2-calculate-stat-gain-startup-v1`（[`stat-gain-v1.json`](../../../tests/fixtures/h3/stat-gain-v1.json)）、`sf2-level-up-tort-boundary-v1`（[`level-up-v1.json`](../../../tests/fixtures/h3/level-up-v1.json)）、`sf2-level-up-boundaries-v1`（[`level-up-boundaries-v1.json`](../../../tests/fixtures/h3/level-up-boundaries-v1.json)）与 `sf2-level-up-refresh-v1`（[`level-up-refresh-v1.json`](../../../tests/fixtures/h3/level-up-refresh-v1.json)） | 自然战役分布、预期曲线、剩余夹断边界 |
+| 成长存储与升级 | **已确认** 曲线/职业块加运行时增益、上限、法术、扫描与刷新用例 | [ally-growth 研究](../../research/ally-growth.md)、[成长 manifest](../../../manifests/extractions/growth-data.json)、[成长 schema](../../../schemas/growth-data.schema.json)；`sf2-calculate-stat-gain-startup-v1`（[`stat-gain-v1.json`](../../../tests/fixtures/h3/stat-gain-v1.json)）、`sf2-level-up-tort-boundary-v1`（[`level-up-v1.json`](../../../tests/fixtures/h3/level-up-v1.json)）、`sf2-level-up-boundaries-v1`（[`level-up-boundaries-v1.json`](../../../tests/fixtures/h3/level-up-boundaries-v1.json)）与 `sf2-level-up-refresh-v1`（[`level-up-refresh-v1.json`](../../../tests/fixtures/h3/level-up-refresh-v1.json)） | 自然战役分布、预期曲线、剩余钳位边界 |
 | 战斗 EXP 到升级 | **已确认运行时** 命令经一个阈值回放与持久刷新 | [运行时战斗数学研究](../../research/runtime-rng-and-battle-math.md)；`sf2-battle-exp-level-up-v1`（[`battle-exp-level-up-v1.json`](../../../tests/fixtures/h3/battle-exp-level-up-v1.json)） | 其他奖励修饰符与重复命令 |
 | 奖励档位、确定与存储 | **已确认运行时** 有效等级档位、Battle 01 调整/随机化/最低值、存储上限 200 与一个阈值 | `sf2-kill-exp-level-difference-v1`（[`kill-exp-level-difference-v1.json`](../../../tests/fixtures/h3/kill-exp-level-difference-v1.json)）、`sf2-award-exp-randomization-v1`（[`award-exp-randomization-v1.json`](../../../tests/fixtures/h3/award-exp-randomization-v1.json)）与 `sf2-exp-command-boundaries-v1`（[`exp-command-boundaries-v1.json`](../../../tests/fixtures/h3/exp-command-boundaries-v1.json)） | 其他战斗、同侧路由、多动作/上限生命周期 |
 | 物理动作构建与回放 | **已确认运行时子集** 伤害/击杀累加器上限与持久命令回放 | [战斗合同](../combat-resolution.md)；`sf2-physical-damage-application-v1`（[`physical-damage-application-v1.json`](../../../tests/fixtures/h3/physical-damage-application-v1.json)）与 `sf2-battle-scene-replay-v1`（[`battle-scene-replay-v1.json`](../../../tests/fixtures/h3/battle-scene-replay-v1.json)） | 完整动作集与呈现时序 |
@@ -172,7 +172,7 @@ EXP 命令首先以 200 为上限增加已存储 EXP。然后测试 100、减去
 | 敌人金币 | **已确认静态/运行时** 103 条已用行加未用尾部，以及增加/上限/进位用例 | [敌人奖励研究](../../research/enemy-promotions.md)；`sf2-enemy-gold-v1`（[`enemy-gold-v1.json`](../../../tests/fixtures/h2/enemy-gold-v1.json)）与 `sf2-gold-boundaries-v1`（[`gold-boundaries-v1.json`](../../../tests/fixtures/h3/gold-boundaries-v1.json)） | DecreaseGold 与非战斗调用方 |
 | 敌人物品掉落与 Deals 路由 | **已确认静态/运行时** 30 条记录、三个随机物品、一次性标志、接收方路由与半字节饱和 | `sf2-enemy-item-drops-v1`（[`enemy-item-drops-v1.json`](../../../tests/fixtures/h2/enemy-item-drops-v1.json)）与 `sf2-enemy-item-drop-behavior-v1`（[`enemy-item-drop-behavior-v1.json`](../../../tests/fixtures/h3/enemy-item-drop-behavior-v1.json)） | 玩家可见奖励流与完整存档生命周期 |
 | 服务经济 | **已确认静态** 仅价格/门数据流与有序直接变更调用 | [common-menu 研究](../../research/common-menus.md)；`sf2-common-menus-static-v1`（[`common-menus-static-v1.json`](../../../tests/fixtures/h2/common-menus-static-v1.json)） | 分组服务 H3、原子性、最终状态、准入、返回、持久性 |
-| 共享状态辅助 | **已确认静态**，只有分项运行时夹断覆盖 | [common-stats 研究](../../research/common-stats.md)；`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../tests/fixtures/h2/common-stats-static-v1.json)） | 现有 H3 测试夹具之外的调用方相关变更结果 |
+| 共享状态辅助 | **已确认静态**，只有分项运行时钳位覆盖 | [common-stats 研究](../../research/common-stats.md)；`sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../tests/fixtures/h2/common-stats-static-v1.json)） | 现有 H3 测试夹具之外的调用方相关变更结果 |
 | 存档交接 | **已确认表示与受限进程内动作** | [存档合同](../save-system.md)；`sf2-tech-services-static-v1`（[`tech-services-static-v1.json`](../../../tests/fixtures/h2/tech-services-static-v1.json)）与 `sf2-witch-save-actions-runtime-v1`（[`witch-save-actions-v1.json`](../../../tests/fixtures/h3/witch-save-actions-v1.json)） | 跨进程/断电行为与子系统完整持久性 |
 
 ## 原版保真与现代化
