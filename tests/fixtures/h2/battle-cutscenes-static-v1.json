@@ -32,7 +32,32 @@
       "intro": { "beforeBattleChecksSharedIntroFlag": true, "beforeBattleSetsFlag": false, "battleStartChecksSharedIntroFlag": true, "battleStartSetsFlagBeforeScript": true, "dispatchesByCurrentBattle": true },
       "afterBattle": { "skipsScriptWhenBattleCompleted": true, "dispatchesByCurrentBattle": true, "joinTableRunsAtSharedEnd": true },
       "enemyDefeated": { "requiresBowieAlive": true, "requiresLeaderSlotDead": true, "skipsScriptWhenBattleCompleted": true, "queuesLivingEnemiesWhenLeaderPresent": true, "deadListEntryTerminator": 255 },
-      "leaderDeathPositions": { "requiresBowieAliveAndLeaderDead": true, "battleTableEntryBytes": 6, "movesAllSlotsOffscreen": true, "setsAllEnemyHpToZero": true, "positionEntryBytes": 4, "positionTerminator": -1, "unreachableDeadListWritePresent": true },
+      "leaderDeathPositions": {
+        "requiresBowieAliveAndLeaderDead": true,
+        "battleTableEntryBytes": 6,
+        "offscreenLoop": {
+          "allySlotRange": [0, 29],
+          "allySlotCount": 30,
+          "allyX": -1,
+          "enemySlotRange": [128, 157],
+          "enemySlotCount": 30,
+          "enemyX": -1
+        },
+        "hpZeroLoop": {
+          "enemySlotRange": [128, 157],
+          "enemySlotCount": 30,
+          "hp": 0
+        },
+        "positionOnlyTail": {
+          "enemySlots": [158, 159],
+          "enemySlotCount": 2,
+          "x": 0,
+          "hasSetCurrentHp": false
+        },
+        "positionEntryBytes": 4,
+        "positionTerminator": -1,
+        "unreachableDeadListWritePresent": true
+      },
       "region": { "tableEntryBytes": 8, "terminator": -1, "checksBattleThenPlayedFlagThenRegion": true, "setsPlayedFlagBeforeMapScript": true, "scriptDispatch": "MAPSCRIPT trap" }
     }
   }

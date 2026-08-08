@@ -1,13 +1,157 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SF2 battle cutscenes static fixture",
-  "type": "object", "additionalProperties": false,
+  "type": "object",
+  "additionalProperties": false,
   "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
   "properties": {
-    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-battle-cutscenes-static-v1" },
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-cutscenes-static-v1" },
     "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
     "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
-    "function": { "type": "object", "minProperties": 10, "maxProperties": 10, "additionalProperties": { "type": "integer", "minimum": 0 } },
-    "expected": { "type": "object", "required": ["representativeSymbols", "cutsceneFacts"], "properties": { "representativeSymbols": { "type": "object", "minProperties": 10, "maxProperties": 10 }, "cutsceneFacts": { "type": "object", "minProperties": 5, "maxProperties": 5 } } }
+    "function": { "$ref": "#/definitions/functions" },
+    "expected": { "$ref": "#/definitions/expected" }
+  },
+  "definitions": {
+    "address": { "type": "integer", "minimum": 0 },
+    "functions": {
+      "type": "object", "additionalProperties": false,
+      "required": ["afterBattleEndAddress", "afterBattleStartAddress", "leaderDeathPositionsAddress", "battleEndAddress", "battleEndStartAddress", "battleStartEndAddress", "battleStartAddress", "beforeBattleEndAddress", "beforeBattleAddress", "regionCutsceneAddress"],
+      "properties": {
+        "afterBattleEndAddress": { "$ref": "#/definitions/address" },
+        "afterBattleStartAddress": { "$ref": "#/definitions/address" },
+        "leaderDeathPositionsAddress": { "$ref": "#/definitions/address" },
+        "battleEndAddress": { "$ref": "#/definitions/address" },
+        "battleEndStartAddress": { "$ref": "#/definitions/address" },
+        "battleStartEndAddress": { "$ref": "#/definitions/address" },
+        "battleStartAddress": { "$ref": "#/definitions/address" },
+        "beforeBattleEndAddress": { "$ref": "#/definitions/address" },
+        "beforeBattleAddress": { "$ref": "#/definitions/address" },
+        "regionCutsceneAddress": { "$ref": "#/definitions/address" }
+      }
+    },
+    "representativeSymbols": {
+      "type": "object", "additionalProperties": false,
+      "required": ["afterbattlecutscenesend.asm", "afterbattlecutscenesstart.asm", "afterenemyleaderdeathpositions.asm", "battleendcutscenesend.asm", "battleendcutscenesstart.asm", "battlestartcutscenesend.asm", "battlestartcutscenesstart.asm", "beforebattlecutscenesend.asm", "beforebattlecutscenesstart.asm", "regionactivatedcutscenes.asm"],
+      "properties": {
+        "afterbattlecutscenesend.asm": { "type": "string", "minLength": 1 },
+        "afterbattlecutscenesstart.asm": { "type": "string", "minLength": 1 },
+        "afterenemyleaderdeathpositions.asm": { "type": "string", "minLength": 1 },
+        "battleendcutscenesend.asm": { "type": "string", "minLength": 1 },
+        "battleendcutscenesstart.asm": { "type": "string", "minLength": 1 },
+        "battlestartcutscenesend.asm": { "type": "string", "minLength": 1 },
+        "battlestartcutscenesstart.asm": { "type": "string", "minLength": 1 },
+        "beforebattlecutscenesend.asm": { "type": "string", "minLength": 1 },
+        "beforebattlecutscenesstart.asm": { "type": "string", "minLength": 1 },
+        "regionactivatedcutscenes.asm": { "type": "string", "minLength": 1 }
+      }
+    },
+    "range": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0, "maximum": 255 } },
+    "offscreenLoop": {
+      "type": "object", "additionalProperties": false,
+      "required": ["allySlotRange", "allySlotCount", "allyX", "enemySlotRange", "enemySlotCount", "enemyX"],
+      "properties": {
+        "allySlotRange": { "$ref": "#/definitions/range" },
+        "allySlotCount": { "type": "integer", "minimum": 1, "maximum": 32 },
+        "allyX": { "type": "integer", "minimum": -32768, "maximum": 65535 },
+        "enemySlotRange": { "$ref": "#/definitions/range" },
+        "enemySlotCount": { "type": "integer", "minimum": 1, "maximum": 32 },
+        "enemyX": { "type": "integer", "minimum": -32768, "maximum": 65535 }
+      }
+    },
+    "hpZeroLoop": {
+      "type": "object", "additionalProperties": false,
+      "required": ["enemySlotRange", "enemySlotCount", "hp"],
+      "properties": {
+        "enemySlotRange": { "$ref": "#/definitions/range" },
+        "enemySlotCount": { "type": "integer", "minimum": 1, "maximum": 32 },
+        "hp": { "type": "integer", "minimum": -32768, "maximum": 65535 }
+      }
+    },
+    "positionOnlyTail": {
+      "type": "object", "additionalProperties": false,
+      "required": ["enemySlots", "enemySlotCount", "x", "hasSetCurrentHp"],
+      "properties": {
+        "enemySlots": { "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true, "items": { "type": "integer", "minimum": 0, "maximum": 255 } },
+        "enemySlotCount": { "type": "integer", "minimum": 1, "maximum": 32 },
+        "x": { "type": "integer", "minimum": -32768, "maximum": 65535 },
+        "hasSetCurrentHp": { "type": "boolean" }
+      }
+    },
+    "leaderDeathPositions": {
+      "type": "object", "additionalProperties": false,
+      "required": ["requiresBowieAliveAndLeaderDead", "battleTableEntryBytes", "offscreenLoop", "hpZeroLoop", "positionOnlyTail", "positionEntryBytes", "positionTerminator", "unreachableDeadListWritePresent"],
+      "properties": {
+        "requiresBowieAliveAndLeaderDead": { "type": "boolean" },
+        "battleTableEntryBytes": { "type": "integer", "minimum": 1 },
+        "offscreenLoop": { "$ref": "#/definitions/offscreenLoop" },
+        "hpZeroLoop": { "$ref": "#/definitions/hpZeroLoop" },
+        "positionOnlyTail": { "$ref": "#/definitions/positionOnlyTail" },
+        "positionEntryBytes": { "type": "integer", "minimum": 1 },
+        "positionTerminator": { "type": "integer", "minimum": -1, "maximum": -1 },
+        "unreachableDeadListWritePresent": { "type": "boolean" }
+      }
+    },
+    "intro": {
+      "type": "object", "additionalProperties": false,
+      "required": ["beforeBattleChecksSharedIntroFlag", "beforeBattleSetsFlag", "battleStartChecksSharedIntroFlag", "battleStartSetsFlagBeforeScript", "dispatchesByCurrentBattle"],
+      "properties": {
+        "beforeBattleChecksSharedIntroFlag": { "type": "boolean" },
+        "beforeBattleSetsFlag": { "type": "boolean" },
+        "battleStartChecksSharedIntroFlag": { "type": "boolean" },
+        "battleStartSetsFlagBeforeScript": { "type": "boolean" },
+        "dispatchesByCurrentBattle": { "type": "boolean" }
+      }
+    },
+    "afterBattle": {
+      "type": "object", "additionalProperties": false,
+      "required": ["skipsScriptWhenBattleCompleted", "dispatchesByCurrentBattle", "joinTableRunsAtSharedEnd"],
+      "properties": {
+        "skipsScriptWhenBattleCompleted": { "type": "boolean" },
+        "dispatchesByCurrentBattle": { "type": "boolean" },
+        "joinTableRunsAtSharedEnd": { "type": "boolean" }
+      }
+    },
+    "enemyDefeated": {
+      "type": "object", "additionalProperties": false,
+      "required": ["requiresBowieAlive", "requiresLeaderSlotDead", "skipsScriptWhenBattleCompleted", "queuesLivingEnemiesWhenLeaderPresent", "deadListEntryTerminator"],
+      "properties": {
+        "requiresBowieAlive": { "type": "boolean" },
+        "requiresLeaderSlotDead": { "type": "boolean" },
+        "skipsScriptWhenBattleCompleted": { "type": "boolean" },
+        "queuesLivingEnemiesWhenLeaderPresent": { "type": "boolean" },
+        "deadListEntryTerminator": { "type": "integer", "minimum": 0, "maximum": 255 }
+      }
+    },
+    "region": {
+      "type": "object", "additionalProperties": false,
+      "required": ["tableEntryBytes", "terminator", "checksBattleThenPlayedFlagThenRegion", "setsPlayedFlagBeforeMapScript", "scriptDispatch"],
+      "properties": {
+        "tableEntryBytes": { "type": "integer", "minimum": 1 },
+        "terminator": { "type": "integer", "minimum": -1, "maximum": -1 },
+        "checksBattleThenPlayedFlagThenRegion": { "type": "boolean" },
+        "setsPlayedFlagBeforeMapScript": { "type": "boolean" },
+        "scriptDispatch": { "type": "string", "minLength": 1 }
+      }
+    },
+    "cutsceneFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["intro", "afterBattle", "enemyDefeated", "leaderDeathPositions", "region"],
+      "properties": {
+        "intro": { "$ref": "#/definitions/intro" },
+        "afterBattle": { "$ref": "#/definitions/afterBattle" },
+        "enemyDefeated": { "$ref": "#/definitions/enemyDefeated" },
+        "leaderDeathPositions": { "$ref": "#/definitions/leaderDeathPositions" },
+        "region": { "$ref": "#/definitions/region" }
+      }
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": ["representativeSymbols", "cutsceneFacts"],
+      "properties": {
+        "representativeSymbols": { "$ref": "#/definitions/representativeSymbols" },
+        "cutsceneFacts": { "$ref": "#/definitions/cutsceneFacts" }
+      }
+    }
   }
 }
