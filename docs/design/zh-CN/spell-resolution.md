@@ -1,7 +1,7 @@
 # 法术伤害解决合同
 
 - 合同版本：`0.1`
-- 范围：攻击法术属性查找、伤害抗性、法术会心一击、共用向下浮动、伤害/状态 EXP、治疗、即死、MP 吸收、临时状态生命周期与命令回放
+- 范围：攻击法术元素查找、伤害抗性、法术会心一击、共用向下浮动、伤害/状态 EXP、治疗、即死、MP 吸收、临时状态生命周期与命令回放
 - 证据状态：**已确认的子集**；不支持的法术族保持 **未知**
 - 证据所有者：[`runtime-rng-and-battle-math.md`](../../research/runtime-rng-and-battle-math.md)
 
@@ -11,9 +11,9 @@
 
 ## 必需输入
 
-解决器接收动作法术条目、施法者职业、有序目标、每个目标的打包抗性字与 HP，以及一个确定性 RNG 源。原版动作条目在低六位携带基础法术索引，在高位携带法术等级。抗性查找使用基础法术的属性，并从目标的当前抗性中选择匹配的两位设置。
+解决器接收动作法术条目、施法者职业、有序目标、每个目标的打包抗性字与 HP，以及一个确定性 RNG 源。原版动作条目在低六位携带基础法术索引，在高位携带法术等级。抗性查找使用基础法术的元素，并从目标的当前抗性中选择匹配的两位设置。
 
-对于已确认的 BLAZE 路径，属性 FIRE 选择第 6-7 位：
+对于已确认的 BLAZE 路径，元素 FIRE 选择第 6-7 位：
 
 | 打包 FIRE 位 | 设置 | 在伤害计算中的含义 |
 | --- | --- | --- |
@@ -34,7 +34,7 @@
 
 **已确认在计算接缝处对所有四个调用索引：** 一个转职后的 DAO 施法者首先把威力从 `18 -> floor(18 * 5 / 4) = 22` 改变。在每个目标的 `AdjustSpellPower` 调用之前，fixture 提供 DAO、APOLLO、NEPTUN 或 ATLAS 作为场景法术索引。每个索引都到达按当前目标列表长度的同一个无符号除法，并把 `22 -> floor(22 / 4) = 5` 改变。除法按目标执行，但不消耗或收缩列表。这确认了四个硬编码比较器分支；因为包围的施法保持 DAO，它不确立其他法术的完整自然分发、会心概率或动画路径。
 
-### 2. 以整数截断应用属性抗性
+### 2. 以整数截断应用元素抗性
 
 设 `quarter = floor(adjustedPower / 4)`。原版应用恰好一个设置分支：
 
@@ -180,7 +180,7 @@ MUDDLE 1 不添加也不检查目标的 STATUS 抗性设置。它以阈值 8 开
 
 ## 已确认的 SLEEP 1 状态抗性矩阵
 
-SLEEP 使用 STATUS 属性，其设置占据抗性位 14-15。对每个目标，效果把基础阈值 5 加到提取的设置，掷 `rng.next(8)`，当 `roll >= threshold` 时成功：
+SLEEP 使用 STATUS 元素，其设置占据抗性位 14-15。对每个目标，效果把基础阈值 5 加到提取的设置，掷 `rng.next(8)`，当 `roll >= threshold` 时成功：
 
 | STATUS 设置 | 阈值 | 受控掷骰 | 结果 |
 | --- | --- | --- | --- |
@@ -205,10 +205,10 @@ DESOUL 1 复用 STATUS 有效性规则。在受控范围 8 掷骰 7 下，设置
 
 ## 已确认的 SPOIT MP 吸收边界矩阵
 
-SPOIT 有零 MP 消耗。对每个目标它掷 `rng.next(3)`，加 3，并把该候选夹断到目标的当前 MP。在受控掷骰 2 下，候选 5 对持有 0、2 与 10 MP 的目标发出传递 0、2 与 5。即使是空目标也发出一个目标 MP 零反应、一个施法者 MP 零反应与标准 5 状态效果 EXP。因此三个目标累积 15 EXP，而构建让施法者与目标 MP 保持不变。
+SPOIT 有零 MP 消耗。对每个目标它掷 `rng.next(3)`，加 3，并把该候选钳位到目标的当前 MP。在受控掷骰 2 下，候选 5 对持有 0、2 与 10 MP 的目标发出传递 0、2 与 5。即使是空目标也发出一个目标 MP 零反应、一个施法者 MP 零反应与标准 5 状态效果 EXP。因此三个目标累积 15 EXP，而构建让施法者与目标 MP 保持不变。
 
 命令顺序可观察且重要。共用的零消耗反应先于目标/施法者配对，按目标列表顺序：
-`ally:0 -> enemy:0 -> ally:0 -> enemy:-2 -> ally:2 -> enemy:-5 -> ally:5`。回放把目标抽到 `0/0/5`。施法者 MP 从 18 开始，在 `+2` 命令到达其最大值 20，并在之后应用 `+5` 载荷时保持 20。回放状态原语（而非 SPOIT 构建）拥有这次到施法者最大 MP 的第二次夹断。使用方必须把命令载荷与命令后状态分开保留。
+`ally:0 -> enemy:0 -> ally:0 -> enemy:-2 -> ally:2 -> enemy:-5 -> ally:5`。回放把目标抽到 `0/0/5`。施法者 MP 从 18 开始，在 `+2` 命令到达其最大值 20，并在之后应用 `+5` 载荷时保持 20。回放状态原语（而非 SPOIT 构建）拥有这次到施法者最大 MP 的第二次钳位。使用方必须把命令载荷与命令后状态分开保留。
 
 Battle 01 把累积 EXP `15 -> 7` 减半；范围 16 奖励掷骰 0 与 3 把指令提高到 8，因此在 MP 反应之后施法者 EXP `0 -> 8` 改变。施法者以 SILENCE 状态 `0x0300` 开始，但 SPOIT 的属性恰好是 `TYPE_SPECIAL` 且省略 `AFFECTEDBYSILENCE`，因此法术正常执行并保留那个状态。这保持为下方标记法术门控的阴性对照。敌人施法者行为、自然选择的多目标几何与其他吸取效果保持在该用例之外。
 
@@ -298,7 +298,7 @@ SPOIT 提供未标记对照：在同样的 `0x0300` 施法者状态下它执行�
 | `sf2-muddle1-fresh-recast-guard-v1` | `tests/fixtures/h3/spell-muddle1-v1.json` | 抗性无关阈值 5；MUDDLE 1 刷新；无关状态保留；MUDDLE 2 阈值 8 守卫；MP/状态/EXP 回放 |
 | `sf2-sleep-resistance-matrix-v1` | `tests/fixtures/h3/spell-status-sleep-v1.json` | STATUS 设置 0-3；阈值 5-8；成功/失败回退；每次成功 5 EXP；setting-3 免疫；MP/状态/EXP 回放 |
 | `sf2-desoul-instant-death-v1` | `tests/fixtures/h3/spell-desoul-v1.json` | STATUS 设置 0-3；成功/失败回退；三条有序 `0x8000` 命令；targetDies 重置；逐动作 49 EXP 饱和；累积敌人金币；HP/MP/EXP/金币回放 |
-| `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | 被沉默施法者未标记法术对照；空/夹断/未夹断目标 MP 矩阵；零增量与有序吸取/给予命令；累积状态 EXP；施法者最大 MP 夹断；持久状态/MP/EXP 回放 |
+| `sf2-spoit-mp-absorb-v1` | `tests/fixtures/h3/spell-mp-absorb-v1.json` | 被沉默施法者未标记法术对照；空/钳位/未钳位目标 MP 矩阵；零增量与有序吸取/给予命令；累积状态 EXP；施法者最大 MP 钳位；持久状态/MP/EXP 回放 |
 | `sf2-boost1-fresh-and-recast-v1` | `tests/fixtures/h3/spell-boost-v1.json` | `0x3000` 计数器；3/8 DEF/AGI 向下取整；同侧状态 EXP；消耗/状态回放；失败重施状态写入/属性刷新不匹配 |
 | `sf2-slow1-status-resistance-v1` | `tests/fixtures/h3/spell-slow-v1.json` | STATUS 阈值 0/6/7/8；setting-3 免疫；`0x0C00` 计数器；3/8 DEF/AGI 惩罚；构建/回放时序；MP/EXP 持久性 |
 | `sf2-dispel1-spell-gate-and-recast-v1` | `tests/fixtures/h3/spell-dispel-v1.json` | 已知法术计数门控；阈值 5/6/7/8 与无法术 8；`0x0300` 计数器；成功 `0x0100` 重施刷新；构建/回放时序；MP/EXP 持久性 |
@@ -313,7 +313,7 @@ H4 适配器必须消费这个 fixture，而不是把其期望数字复制进引
 
 ## 未知 / 扩展门禁
 
-- **运行时未知：** 自然的完整 APOLLO/NEPTUN/ATLAS 施法与自然转职后的完整 BLAZE 动作。
+- **未知（运行时）：** 自然的完整 APOLLO/NEPTUN/ATLAS 施法与自然转职后的完整 BLAZE 动作。
 - **未知：** 一个完整的自然排程的非 Battle-01 攻击法术动作。奖励表未命中本身在其原始入口接缝处被确认。
 - **未知：** 已确认的 ATTACK/DETOX/MUDDLE/SLEEP/DESOUL/BOOST/SLOW/DISPEL 子集之外的状态法术，MUDDLE 2/BOOST/SLOW 重新应用与重复生命周期边，BOOST/SLOW 2 几何，MUDDLE 混乱动作行为，敌人施法者 SPOIT 与其他吸取分支，DESOUL 2 自然几何，吐息攻击与特殊法术效果分发。
 - **未知：** 多目标攻击与状态法术的自然地图生成排序。其算术 fixtures 在预初始化接缝处提供有序列表；AURA 排序从原版几何生成独立确认。

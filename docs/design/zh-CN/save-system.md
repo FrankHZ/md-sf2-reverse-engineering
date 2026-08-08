@@ -3,7 +3,7 @@
 - **已确认的原版行为：** 静态的两槽位 SRAM 表示、字节交错复制方向、加法校验和/校验顺序、占用标志操作、save/load/copy/delete 辅助序列、女巫菜单选择器/行动路由，以及下文描述的有界进程内 H3 矩阵。
 - **未知的原版行为：** 跨进程物理持久化、断电/部分写入结果、已检查字节校验和之外的损坏行为、玩家驱动的 New-game 命名/菜单呈现或输入节奏，以及调用方可见的像素/音频/挂起时序。
 - 重制状态：实现无关的合同；进程内服务效果已被观察，而耐久介质行为仍未观察。
-- 证据日期：2026-07-29
+- 证据日期：2026-08-03
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - 可追溯性：`tests/fixtures/h2/tech-services-static-v1.json` 中的 `sf2-tech-services-static-v1`；`src/sf2tool/h2/services.py`；以及
@@ -13,7 +13,9 @@
   `tests/fixtures/h3/witch-save-actions-v1.json` 中的 `sf2-witch-save-actions-runtime-v1`；`src/sf2tool/h3/witch_save_actions.py`；以及
   `docs/research/special-screens.md`。有界 New-game 运行时合同是
   `tests/fixtures/h3/witch-new-game-lifecycle-v1.json` 中的 `sf2-witch-new-game-lifecycle-runtime-v1`；
-  `src/sf2tool/h3/witch_new_game_lifecycle.py`；以及 `docs/research/special-screens.md`。
+  `src/sf2tool/h3/witch_new_game_lifecycle.py`；以及 `docs/research/special-screens.md`。直接服务生命周期合同是
+  `tests/fixtures/h3/sram-lifecycle-v1.json` 中的 `sf2-sram-lifecycle-runtime-v1`；
+  `src/sf2tool/h3/sram_lifecycle.py`；以及 `docs/research/technical-services.md`。
 
 > 本文件是 [`save-system.md`](../save-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
@@ -32,6 +34,26 @@
 **已确认：** 来源标志 88 清除时 Load 到达 `GetSavepointForMap`，作为 30188 处的指令目标与有效目标。标志 88 设置时，它到达 131124 处的指令目标 `j_BattleLoop` 与 146052 处的跳转接口有效目标 `BattleLoop`。来源标签 `flag 88` 被保留；其面向玩家的生命周期含义不被推断。
 
 **未知：** 单进程服务 fixture 不确立跨进程 SRAM 存续、物理断电行为、部分/中断写入恢复、玩家驱动的 New-game 命名/菜单结果、像素、音频、输入节奏或挂起呈现。那些仍是 `docs/research/special-screens.md` 中命名的分组 H3 问题。
+
+## 已确认的直接服务生命周期矩阵
+
+**已确认：** 一个独立、单次启动的十四案例直接服务矩阵从测试台定义的工作 RAM 探针演练
+`CheckSram`、`SaveGame`、`LoadGame`、`CopySave` 与 `ClearSaveSlotFlag`。它只把原版
+`CheckSram` 的返回用作引导，不把标题画面或 Witch UI 当作已观察的服务调用方。fixture 定义的用例
+覆盖签名初始化、空/有效/无效槽位、两个 save 与 load 选择器、两个 copy 方向，以及两个占用标志清除。
+
+fixture 使用紧凑的校验和、不匹配计数、边界与哨兵事实，对每个被追踪槽位的全部 4,016 个逻辑字节
+进行比较。它独立检查签名不匹配时清除全部 8,192 个逻辑字节，随后检查源码定义的 17 字节签名前缀
+与已清除的标志。运行时确认两个嵌套函数入口，而源码守卫确立 `CopySave` 的
+`LoadGame` 后接 `SaveGame` 顺序。这些只是进程内 helper 效果；它们不确立玩家路线、持久物理介质或
+恢复政策。
+
+**已确认的测试台边界：** 回调异常会产生非零观察器状态/退出结果，并给出 case、phase、role 与
+expected/actual PC 诊断。共享 PC 角色以确定方式分发。已接受运行不留下 Lua Console 错误、不留下
+已注册回调，且逻辑 SRAM 残留为零。
+
+**未知：** 跨进程存续、断电或撕裂写入行为、硬件总线/存储区/周期细节、正常剧情/教堂/战斗持久性，
+以及面向玩家的存档 UI 均在该直接矩阵之外，也不会重新打开 ADR 0005 的硬件保真度决策。
 
 ## 已确认的 New-game 运行时矩阵
 

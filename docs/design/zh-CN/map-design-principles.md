@@ -27,7 +27,7 @@
 
 | 审查面 | 交叉检查与处置 | 保留的边界 |
 | --- | --- | --- |
-| 地图内容与几何 | [地图内容研究](../../research/map-content.md)、`sf2-map-content-static-v1`、`sf2-map-layout-decode-v1` 与 `sf2-canonical-map-import-v1` 一致：79 个地图定义、77 对图块/布局载荷、两个地图别名、64x64 布局、3x3 格子图块与 1,027 条地图内容逻辑记录。在下方记录的所有者修正之后，内容、布局与规范导入复现均通过。 | 受追踪 fixture 保留聚合结构，而非可分发的布局或渲染地图结果。 |
+| 地图内容与几何 | [地图内容研究](../../research/map-content.md)、`sf2-map-content-static-v1`、`sf2-map-layout-decode-v1` 与 `sf2-canonical-map-import-v1` 一致：79 个地图定义、77 对图块/布局载荷、两个地图别名、64x64 布局、3x3 瓦片图块与 1,027 条地图内容逻辑记录。在下方记录的所有者修正之后，内容、布局与规范导入复现均通过。 | 受追踪 fixture 保留聚合结构，而非可分发的布局或渲染地图结果。 |
 | 配置变体 | [地图数据研究](../../research/map-data-inventory.md)、静态配置 fixture 与十案例运行时选择器一致：64 个有路由的地图 ID、126 个配置定义、15 条缺失路由、有序标志扫描与最后设置标志胜出。 | 运行时矩阵使用调试 Map Test 路径；正常存档标志组合与剧情可达性为 **未知**。 |
 | 实体、区域（事件）与物品选择 | 静态事件所有者记录 1,134 条物理记录与首匹配分发。九案例运行时矩阵在把每个选中脚本条目替换为 `rts` 的同时确认所选偏移/目标。 | 脚本效果、过渡持久性、朝向/呈现后果与正常剧情准入在该 fixture 之外。 |
 | 区域描述 | `sf2-map-descriptions-static-v1` 拥有 75 个目标与 227 条物理条目以及首匹配使用方形状。它还区分正常探索的 `d6=1` 路径与条件函数。 | 没有运行时 fixture 闭合文本内容、玩家可见呈现或非标准调用方。 |
@@ -54,23 +54,23 @@
 
 ```mermaid
 flowchart TD
-    ID["Current map ID"] --> DEF["Map definition"]
-    DEF --> IMM["Shared blockset + source layout"]
-    DEF --> TABLES["Ordered area, mutation, warp, item, and animation tables"]
-    ID --> ROUTE["Ordered setup route"]
-    FLAGS["Current flags"] --> ROUTE
-    ROUTE --> SETUP["Selected six-pointer setup"]
-    SETUP --> ENT["Entities and event/description handlers"]
-    SETUP --> INIT["Initialization function"]
-    IMM --> WORK["Mutable working layout"]
+    ID["当前地图 ID"] --> DEF["地图定义"]
+    DEF --> IMM["共享 blockset + 源布局"]
+    DEF --> TABLES["有序区域、变更、warp、物品与动画表"]
+    ID --> ROUTE["有序配置路由"]
+    FLAGS["当前标志"] --> ROUTE
+    ROUTE --> SETUP["已选六指针配置"]
+    SETUP --> ENT["实体与事件 / 描述处理器"]
+    SETUP --> INIT["初始化函数"]
+    IMM --> WORK["可变工作布局"]
     TABLES --> WORK
-    INIT -. "bounded mutation seams" .-> WORK
-    INPUT["Position, facing, action, or pending event"] --> SELECT["Phase-specific ordered selector"]
+    INIT -. "受限变更接缝" .-> WORK
+    INPUT["位置、朝向、行动或待处理事件"] --> SELECT["阶段专用的有序选择器"]
     TABLES --> SELECT
     ENT --> SELECT
-    SELECT --> SCRIPT["Selected handler or script seam"]
-    WORK --> PRESENT["Camera and presentation adapters"]
-    SCRIPT -. "bounded service handoff" .-> PRESENT
+    SELECT --> SCRIPT["已选处理器或脚本接缝"]
+    WORK --> PRESENT["摄像机与呈现适配器"]
+    SCRIPT -. "受限服务交接" .-> PRESENT
 ```
 
 实线边代表直接拥有的数据引用或使用方输入。虚线边是 **推断** 的系统关系，由分别确认的处理器局部接缝组装而成；它们不声称端到端可见效果、正常剧情可达性或重制引擎架构。
@@ -117,7 +117,7 @@ flowchart TD
 
 ### 6. 把导航、交互与呈现作为独立问题
 
-几何被确认为引用 3x3 格子图块的 64x64 原始字，但受追踪语料不提供完整的玩家可遍历图。实体阻挡有有界的移动合同，特定标记使用方有已确认的顺序，但所有布局上的完整碰撞/寻路行为尚未闭合。摄像机与过渡 fixture 同样观察处理器局部状态与服务接缝，而非最终构图或路线体验。
+几何被确认为引用 3x3 瓦片图块的 64x64 原始字，但受追踪语料不提供完整的玩家可遍历图。实体阻挡有有界的移动合同，特定标记使用方有已确认的顺序，但所有布局上的完整碰撞/寻路行为尚未闭合。摄像机与过渡 fixture 同样观察处理器局部状态与服务接缝，而非最终构图或路线体验。
 
 **推断设计后果：** 空间分析不得用原始图块索引替代可通过性，呈现分析不得用摄像机命令名替代可见取景。导航度量、交互可达与视觉地标是三个未来的证据产品，而不是对同一布局数组的三种可互换解读。
 

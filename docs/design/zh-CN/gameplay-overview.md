@@ -32,11 +32,11 @@
 | --- | --- | --- |
 | 开始、读取或继续 | 进入新的或既有游戏状态；继续被挂起的战斗 | Witch/存档动作路由、双槽数据边界与战斗恢复入口为 **已确认**。完整可见选择流程、跨进程持久性与断电行为保持 **未知**。 |
 | 在地图上移动 | 改变受控实体位置并让地图移动/事件逻辑继续求值 | 实体移动/动作更新顺序、位置/碰撞单位与地图事件轮询为 **已确认**。路线用途、移动手感与每个可见帧保持 **未知**。 |
-| 激活或查看 | 面向附近实体、区域或可检查图块，并请求脚本、事件或物品结果 | 准入、优先级、对象类别与物品交接为 **已确认**。正常剧情可达性、文本/动画/音频呈现与大多数结果的长期持久性保持 **未知**。 |
+| 激活或查看 | 面向附近实体、区域或可检查瓦片，并请求脚本、事件或物品结果 | 准入、优先级、对象类别与物品交接为 **已确认**。正常剧情可达性、文本/动画/音频呈现与大多数结果的长期持久性保持 **未知**。 |
 | 打开菜单并管理物品 | 选择野外/战斗菜单动作并使用、给予、装备或丢弃合法物品 | 战斗玩家控制与服务/属性所有者确认受限分支与变更顺序。本文档不声称每个野外菜单页、取消手感或完整可见反馈。 |
 | 使用服务 | 通过已确认的商店、教堂、车队/仓库或铁匠动作面交换资源或改变成员状态 | 动作、取消与金币/物品/成员变更顺序为 **已确认静态**。地图/NPC 准入、返回探索、持久性与呈现保持 **未知**。 |
 | 在战斗中定位、瞄准并行动 | 选择合法格子/目标以及攻击、魔法、物品、待机/搜索或其他受支持结果 | 玩家控制状态机与动作解决边界为 **已确认静态**，对所选数学/状态路径有 H3 覆盖。战术意图、AI 公平性、完整战斗节奏与一般模拟精度在本文档范围之外。 |
-| 获得成长或恢复 | 对角色状态应用 EXP、升级、状态恢复或服务变更 | 既有合同确认所选输入、顺序、夹断与输出。玩家名册权衡、构筑意图、成长体验与完整数值曲线保持 **未知**。 |
+| 获得成长或恢复 | 对角色状态应用 EXP、升级、状态恢复或服务变更 | 既有合同确认所选输入、顺序、钳位与输出。玩家名册权衡、构筑意图、成长体验与完整数值曲线保持 **未知**。 |
 | 存档、复制、删除或挂起 | 在已确认的存储接缝处保留、复制、清除或临时中断状态 | SRAM 布局、校验和、槽位动作与进程内 H3 行为为 **已确认**。原版断电原子性与长期物理设备耐用性保持 **未知**。 |
 
 **推断 的动作-目标对齐：** 这些动作合起来让玩家推进当前可达状态、解决局部战斗或资源约束，并保留可恢复的进度。进一步把它们解读为“探索世界”“组建理想部队”或“精通某种战术”可能符合类型期待，但本仓库中的战役可达性、玩家观察与作者意图证据尚未确认这些含义。
@@ -47,24 +47,24 @@
 
 ```mermaid
 flowchart TD
-    A["Startup / witch state"] --> B["New, Load, or Resume boundary"]
-    B --> C["MainLoop: map switch and battle check"]
-    C -->|"no battle"| D["ExplorationLoop"]
-    C -->|"battle selected"| E["BattleLoop"]
-    D --> F["Map event has priority"]
-    D --> G["A/C player action"]
-    F --> H["Map transition or script boundary"]
-    G --> I["Entity / area interaction"]
-    G --> J["Field menu or caravan boundary"]
-    I -.-> K["Dialogue, roster, item, or map-state mutation"]
-    J -.-> L["Items, services, party, or save state"]
+    A["启动 / 女巫状态"] --> B["New、Load 或 Resume 边界"]
+    B --> C["MainLoop：地图切换与战斗检查"]
+    C -->|"无战斗"| D["ExplorationLoop"]
+    C -->|"已选择战斗"| E["BattleLoop"]
+    D --> F["地图事件优先"]
+    D --> G["A/C 玩家行动"]
+    F --> H["地图过渡或脚本边界"]
+    G --> I["实体 / 区域交互"]
+    G --> J["野外菜单或车队边界"]
+    I -.-> K["对话、名册、物品或地图状态变更"]
+    J -.-> L["物品、服务、队伍或存档状态"]
     H --> C
     K -.-> D
     L -.-> D
-    E --> M["Player or AI turn and action resolution"]
-    M --> N["Death, after-turn, and faction checks"]
-    N -->|"continue"| M
-    N -->|"victory / defeat / special loss"| O["Outcome state and egress"]
+    E --> M["玩家或 AI 回合及行动结算"]
+    M --> N["死亡、回合后与阵营检查"]
+    N -->|"继续"| M
+    N -->|"胜利 / 败北 / 特殊失败"| O["结果状态与退出"]
     O --> C
 ```
 
@@ -117,7 +117,7 @@ flowchart TD
 | 服务动作 | **已确认静态** 商店/教堂/车队/铁匠动作与资源变更顺序 | [服务合同](../service-interactions.md)；`sf2-common-menus-static-v1`（[`common-menus-static-v1.json`](../../../tests/fixtures/h2/common-menus-static-v1.json)） | 准入、返回、呈现、持久结果 |
 | 战斗入口、回合与结果 | **已确认静态** 新/恢复、回合/动作/死亡/结果顺序 | [battle-loop 研究](../../research/battle-loop.md)；顶层可执行追踪 `sf2-battle-control-static-v1`（[`battle-control-static-v1.json`](../../../tests/fixtures/h2/battle-control-static-v1.json)）。[battle-functions 研究](../../research/battle-functions.md) 与 `sf2-battle-functions-static-v1`（[`battle-functions-static-v1.json`](../../../tests/fixtures/h2/battle-functions-static-v1.json)）只支持共享的单回合/玩家控制面 | 完整玩家可见循环、运行时调用方状态、战术解读 |
 | 动作解决 | **已确认** 实现无关的物理、法术、状态、EXP 与所选回放边界 | [战斗合同](../combat-resolution.md)、[法术合同](../spell-resolution.md)、[随机性合同](../randomness.md) 及其测试夹具列表 | 未观察分支、分布隔离、一般战斗模拟 |
-| 成长 | **已确认** 升级顺序、成长、夹断、法术与刷新边界 | [升级合同](../level-up.md) 及其 H2/H3 测试夹具列表 | 战役上下文、名册选择、预期曲线、平衡意图 |
+| 成长 | **已确认** 升级顺序、成长、钳位、法术与刷新边界 | [升级合同](../level-up.md) 及其 H2/H3 测试夹具列表 | 战役上下文、名册选择、预期曲线、平衡意图 |
 | 存档与挂起 | **已确认** 双槽布局、校验和、动作路由与受限进程内回放 | [存档合同](../save-system.md)；`sf2-witch-save-actions-runtime-v1`（[`witch-save-actions-v1.json`](../../../tests/fixtures/h3/witch-save-actions-v1.json)） | 跨进程行为、断电、完整子系统持久性、可见 UX |
 
 该表只提供所有者导航。精确预期仍由每个测试夹具的 schema、提取器/验证器与所属合同定义；本文档不得复制更弱的预期集。
@@ -129,7 +129,7 @@ flowchart TD
 声称对本文档覆盖边界保真的未来实现至少应：
 
 1. 从所属合同/测试夹具消费地图、输入、脚本、队伍、服务、战斗、成长与存档状态，而不是从本图或面向玩家的短语推导数据结构；
-2. 保留已确认的选择器、优先级、分支极性、变更/调用顺序、夹断与哨兵；
+2. 保留已确认的选择器、优先级、分支极性、变更/调用顺序、钳位与哨兵；
 3. 不对 **未知** 的可达性、呈现、时序、容量或持久性作原版游戏主张；
 4. 把刻意偏差与兼容原版的预期分开报告。
 

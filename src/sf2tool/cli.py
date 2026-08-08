@@ -239,8 +239,18 @@ def build_parser() -> argparse.ArgumentParser:
     zh_parser = commands.add_parser("zh-meta", help="verify or update the zh-CN translation index")
     zh_commands = zh_parser.add_subparsers(dest="zh_command", required=True)
     zh_commands.add_parser("test", help="validate the zh-CN translation index against the files")
-    zh_commands.add_parser(
+    zh_update = zh_commands.add_parser(
         "update", help="regenerate the zh-CN translation index from the repository files"
+    )
+    zh_update.add_argument(
+        "--reanchor-source",
+        action="append",
+        default=[],
+        metavar="DOCS/DESIGN/FILE.MD",
+        help=(
+            "accept current source, mirror, and glossary hashes for one reviewed mirror; "
+            "repeat for each reviewed source"
+        ),
     )
     zh_list = zh_commands.add_parser("list", help="list zh-CN translation status per document")
     zh_list.add_argument("--json", action="store_true")
@@ -998,7 +1008,9 @@ def dispatch(args: argparse.Namespace) -> None:
         if args.zh_command == "test":
             print_record(verify_zh_translation())
         elif args.zh_command == "update":
-            print_record(generate_zh_translation())
+            print_record(
+                generate_zh_translation(reanchor_sources=args.reanchor_source)
+            )
         else:
             rows = translation_rows()
             if args.json:

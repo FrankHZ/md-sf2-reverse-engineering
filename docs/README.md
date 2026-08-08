@@ -317,7 +317,10 @@ zh-CN localization proceeds from the English canonical source in dedicated batch
 [`glossary.md`](./design/glossary.md) is the single binding source for English-to-Chinese terminology,
 and mirrors live under `design/zh-CN/` (same filename; the English file remains the review baseline).
 The translation index is tracked in `manifests/zh-translation-index.json` and maintained with
-`uv run sf2 zh-meta test` (verify) and `uv run sf2 zh-meta update` (regenerate).
+`uv run sf2 zh-meta test` (strict verification) and `uv run sf2 zh-meta update` (regenerate while
+preserving accepted anchors). After reviewing a changed mirror against its English source and the
+current glossary, repeat `--reanchor-source docs/design/<file>.md` for each reviewed document whose
+anchors may be updated.
 
 - [`glossary.md`](./design/glossary.md): the accepted EN→中文 glossary and rules for zh-CN
   localization; fixed evidence-label translations, preserved source identifiers, one-term-one-
