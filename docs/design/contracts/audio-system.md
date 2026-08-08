@@ -4,10 +4,10 @@
   39 unique music targets, 24-byte music headers, ten channel-state roles, 29-macro source
   language, frequency/sample/instrument index domains, 56 embedded SFX commands, and the bounded
   four-command runtime state matrix described below.
-- **Inferred original behavior:** audible instrument and envelope meaning, and the player-facing
-  meaning suggested by source enum names.
+- **Inferred original behavior:** audible instrument and envelope meaning.
 - **Unknown original behavior:** wall-clock tempo, PCM sample rate, exact YM2612/PSG output,
-  audible waveform parity, complete loop/fade/resume semantics, and SFX priority/interruption.
+  audible waveform parity, player-facing command meaning, complete loop/fade/resume semantics, and
+  SFX priority/interruption.
 - Remake status: implementation-neutral Phase 3 contract; no audio middleware, asset format,
   replacement soundtrack, mixing policy, or hardware-fidelity target has been selected.
 - Evidence date: 2026-08-08
@@ -101,8 +101,8 @@ reviewable.
 **Confirmed static:** command `0` is ignored by the driver's main loop. Commands `0x01..0x20`
 select bank register value `1`, map the bank stored at ROM `0x1F8000`, and index bank 0 with
 `command - 1`. Commands `0x21..0x40` select register value `0`, map ROM `0x1F0000`, and index bank 1
-with `command - 33`. Values from `0x41` enter the embedded SFX path after the driver's earlier
-special-operation comparisons.
+with `command - 33`. After the earlier special-operation comparisons, accepted embedded SFX
+commands `0x41..0x78` enter the SFX table path. Behavior for other raw values is not claimed here.
 
 Each bank is exactly 32 KiB and byte-matches its canonical ROM slice:
 
@@ -265,7 +265,9 @@ and derived playable assets remain private/generated inputs and MUST NOT be comm
 
 A remake-side adapter can claim this contract only when automated tests prove:
 
-1. all imported original command IDs retain their music/SFX/special-operation class;
+1. imported music commands `0x01..0x40` and embedded SFX commands `0x41..0x78` retain their exact
+   identities and separate classes; special-operation branches remain outside these two accepted
+   domains and require a separate owner boundary;
 2. all 64 music slots retain selected bank, ordered slot, target identity, and alias relation;
 3. all 39 headers retain their four control bytes and ten ordered pointer-role identities;
 4. imported macro/control-flow records and note/sample/instrument indices remain within the accepted
