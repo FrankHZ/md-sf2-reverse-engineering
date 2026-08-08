@@ -23,6 +23,7 @@ FIXTURE = repo_path("tests/fixtures/h2/common-scripting-static-v1.json")
 FIXTURE_SCHEMA = repo_path("schemas/h2-common-scripting-static-fixture.schema.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
+TOOLCHAIN_MANIFEST = repo_path("manifests/toolchain.json")
 
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
@@ -69,6 +70,104 @@ def _unlabeled_data_fact(path: Path) -> dict[str, Any]:
         "hasGlobalLabel": False,
         "excludedFromStrictSymbolReach": True,
     }
+
+
+def _index_records_for_source_root(source_paths: set[str]) -> dict[str, Any]:
+    """Join every research record whose source is recursively under this owner.
+
+    A common-scripting source can be evidence for a map, entity, text, or
+    runtime owner.  Membership therefore depends exclusively on the canonical
+    recursive source path; record ID, subsystem, document, and evidence level
+    do not participate in this inventory-owner join.
+    """
+    records_by_source_path: dict[str, list[str]] = {}
+    for record in load_json(RESEARCH_INDEX)["records"]:
+        source_path = record["sourcePath"]
+        path = Path(source_path)
+        if not path.is_relative_to(SOURCE_ROOT):
+            continue
+        if ".." in path.parts or source_path != path.as_posix():
+            raise ValueError(f"invalid common scripting indexed source path: {source_path}")
+        if source_path not in source_paths:
+            raise ValueError(
+                "common scripting indexed source is absent from the discovered root "
+                f"inventory: {source_path}"
+            )
+        records_by_source_path.setdefault(source_path, []).append(record["id"])
+
+    indexed_records_by_source_path = [
+        {"sourcePath": source_path, "recordIds": sorted(record_ids)}
+        for source_path, record_ids in sorted(records_by_source_path.items())
+    ]
+    indexed_record_ids = [
+        record_id
+        for row in indexed_records_by_source_path
+        for record_id in row["recordIds"]
+    ]
+    if len(indexed_record_ids) != len(set(indexed_record_ids)):
+        raise ValueError("common scripting research-index duplicate record ID")
+    return {
+        "indexedRecordIds": sorted(indexed_record_ids),
+        "indexedSourcePaths": [
+            row["sourcePath"] for row in indexed_records_by_source_path
+        ],
+        "indexedRecordsBySourcePath": indexed_records_by_source_path,
+    }
+
+
+def _verify_indexed_record_join(output: dict[str, Any]) -> None:
+    """Reject schema-valid drift between the recursive index join's fields."""
+    relation = output["indexedRecordsBySourcePath"]
+    relation_source_paths = [row["sourcePath"] for row in relation]
+    relation_record_ids = [record_id for row in relation for record_id in row["recordIds"]]
+    if len(relation_source_paths) != len(set(relation_source_paths)):
+        raise ValueError("common scripting indexed relation duplicate source path")
+    if len(relation_record_ids) != len(set(relation_record_ids)):
+        raise ValueError("common scripting indexed relation duplicate record ID")
+    if relation_source_paths != sorted(relation_source_paths):
+        raise ValueError("common scripting indexed relation source order drift")
+    if any(row["recordIds"] != sorted(row["recordIds"]) for row in relation):
+        raise ValueError("common scripting indexed relation record order drift")
+
+    indexed_record_ids = output["indexedRecordIds"]
+    indexed_source_paths = output["indexedSourcePaths"]
+    if indexed_record_ids != sorted(relation_record_ids):
+        raise ValueError("common scripting indexedRecordIds relation drift")
+    if indexed_source_paths != relation_source_paths:
+        raise ValueError("common scripting indexedSourcePaths relation order drift")
+    file_paths = [row["path"] for row in output["files"]]
+    if len(file_paths) != len(set(file_paths)) or file_paths != sorted(file_paths):
+        raise ValueError("common scripting source inventory path order drift")
+    if not set(indexed_source_paths).issubset(file_paths):
+        raise ValueError("common scripting indexedSourcePaths source inventory drift")
+    unlabeled_paths = [row["path"] for row in output["files"] if not row["globalLabels"]]
+    if set(file_paths) - set(indexed_source_paths) != set(unlabeled_paths):
+        raise ValueError("common scripting indexedSourcePaths unlabeled relation drift")
+
+    summary = output["summary"]
+    if summary["indexedRecordCount"] != len(indexed_record_ids) or summary[
+        "indexedRecordCount"
+    ] != len(relation_record_ids):
+        raise ValueError("common scripting summary indexedRecordCount relation drift")
+    if summary["indexedFileCount"] != len(indexed_source_paths) or summary[
+        "indexedFileCount"
+    ] != len(relation_source_paths):
+        raise ValueError("common scripting summary indexedFileCount relation drift")
+    if summary["unlabeledFileCount"] != len(file_paths) - len(indexed_source_paths):
+        raise ValueError("common scripting summary unlabeledFileCount relation drift")
+
+
+def _verify_fixture_provenance(fixture: dict[str, Any], output: dict[str, Any]) -> None:
+    """Derive fixture provenance from the independently pinned owners."""
+    toolchain = load_json(TOOLCHAIN_MANIFEST)["sf2disasm"]
+    fixture_commit = fixture["upstreamCommit"]
+    output_upstream = output["upstream"]
+    if fixture_commit != toolchain["commit"] or fixture_commit != output_upstream["commit"]:
+        raise ValueError("common scripting fixture upstream provenance drift")
+    if output_upstream["repository"] != toolchain["repository"]:
+        raise ValueError("common scripting output upstream provenance drift")
+    if fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]:
+        raise ValueError("common scripting fixture ROM provenance drift")
 
 
 def _core_facts(disasm: Path, map_targets: list[str], entity_targets: list[str]) -> dict[str, Any]:
@@ -217,11 +316,7 @@ def build_scripting_inventory(upstream_path: Path) -> dict[str, Any]:
             representative_addresses[symbol] = _listing_address(listing, symbol)
         elif row["path"] != UNLABELED_DATA_PATH.as_posix():
             raise ValueError(f"unexpected unlabeled common scripting file: {row['path']}")
-    records = [
-        record
-        for record in load_json(RESEARCH_INDEX)["records"]
-        if Path(record["sourcePath"]).is_relative_to(SOURCE_ROOT)
-    ]
+    indexed_records = _index_records_for_source_root({row["path"] for row in files})
     map_targets = _relative_jump_table(
         disasm / SOURCE_ROOT / "map/mapscriptengine_2.asm", "rjt_cutsceneScriptCommands"
     )
@@ -239,8 +334,8 @@ def build_scripting_inventory(upstream_path: Path) -> dict[str, Any]:
         "uniqueDirectTargetCount": len(calls),
         "internalDirectTargetCount": sum(target in labels for target in calls),
         "externalDirectTargetCount": sum(target not in labels for target in calls),
-        "indexedRecordCount": len(records),
-        "indexedFileCount": len({record["sourcePath"] for record in records}),
+        "indexedRecordCount": len(indexed_records["indexedRecordIds"]),
+        "indexedFileCount": len(indexed_records["indexedSourcePaths"]),
         "unlabeledFileCount": sum(not row["globalLabels"] for row in files),
     }
     return {
@@ -249,8 +344,7 @@ def build_scripting_inventory(upstream_path: Path) -> dict[str, Any]:
         "upstream": {"repository": toolchain["sf2disasm"]["repository"], "commit": commit},
         "scope": SOURCE_ROOT.as_posix(),
         "summary": summary,
-        "indexedRecordIds": sorted(record["id"] for record in records),
-        "indexedSourcePaths": sorted({record["sourcePath"] for record in records}),
+        **indexed_records,
         "representativeSymbols": representative_symbols,
         "representativeAddresses": representative_addresses,
         "internalDirectCallTargets": sorted(target for target in calls if target in labels),
@@ -270,11 +364,15 @@ def verify_scripting_inventory(
     manifest = load_json(MANIFEST)
     output = build_scripting_inventory(upstream_path)
     validate_json(output, SCHEMA, owner="common scripting static inventory")
-    if (
-        fixture["upstreamCommit"] != output["upstream"]["commit"]
-        or fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]
+    _verify_indexed_record_join(output)
+    _verify_fixture_provenance(fixture, output)
+    for field in (
+        "indexedRecordIds",
+        "indexedSourcePaths",
+        "indexedRecordsBySourcePath",
     ):
-        raise ValueError("common scripting provenance drift")
+        if output[field] != fixture["expected"][field]:
+            raise ValueError(f"common scripting {field} drift")
     if output["summary"] != manifest["summary"]:
         raise ValueError("common scripting summary drift")
     if output["representativeAddresses"] != fixture["function"]:

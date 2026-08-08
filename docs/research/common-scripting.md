@@ -29,9 +29,11 @@
 
 The recursive `code/common/scripting` boundary contains 29 files, 11,153 source lines, 888 global
 labels, and 576 direct call sites across entity, map, text, and end-credit helpers. Twenty-eight files
-have a representative global symbol bound to the H1 listing. They now own 35 indexed findings: one
-representative record per labeled file plus seven deeper map-setup records in shared scripting
-sources. Record count and indexed-file count are intentionally separate denominators. The remaining
+have a representative global symbol bound to the H1 listing. They now own 126 indexed findings across
+those 28 indexed source paths. The H2 fixture keeps the exact ordered record IDs and per-source-path
+relation; membership is the general recursive `sourcePath` boundary, without an ID, subsystem,
+document, or evidence-level exception. Record count and indexed-file count are intentionally separate
+denominators. The remaining
 `text/unused_textfunctionsdata.asm` is exactly 288 `dc.b` directives over annotated ROM range
 `$6D74..$6E94`; because it has no global label, it is verified by the H2 inventory but deliberately
 excluded from strict symbol-based file reach.
