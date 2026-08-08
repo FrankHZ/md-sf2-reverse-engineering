@@ -191,9 +191,9 @@ any match takes the source `d2=-1` path. Otherwise it subtracts each axis, condi
 the source carry-clear/no-borrow branches, then adds the two word intermediates.
 
 The static inventory finds two direct callers and no calls through the jump-interface alias. No H3
-fixture currently observes this function. Invalid-coordinate return behavior, word-wrap boundaries,
-coordinate interpretation, and caller-visible use remain **Unknown**; the source-shaped operation
-must not be promoted into a universal geometry rule.
+fixture currently observes this function. Natural/runtime reachability of the statically confirmed
+`d2=-1` path, word-wrap boundaries, coordinate interpretation, and caller-visible use remain
+**Unknown**; the source-shaped operation must not be promoted into a universal geometry rule.
 
 ## Unused Combatant-Type Encoding
 
