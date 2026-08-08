@@ -232,6 +232,24 @@ def test_verify_rejects_document_set_mismatch(
         verify_zh_translation(manifest_path=manifest)
 
 
+def test_verify_rejects_new_source_missing_from_index(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    design, _, _ = _install_repo(monkeypatch, tmp_path)
+    manifest = tmp_path / "zh-index.json"
+    generate_zh_translation(
+        output_path=manifest,
+        translated_date="2026-08-04",
+    )
+    design.joinpath("c.md").write_text("# C\n", encoding="utf-8")
+
+    with pytest.raises(
+        ValueError,
+        match=r"missing from index: docs/design/c\.md",
+    ):
+        verify_zh_translation(manifest_path=manifest)
+
+
 def test_verify_rejects_missing_evidence_labels(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -362,8 +380,18 @@ def test_schema_rejects_translated_without_anchor(
 
 
 def test_verify_passes_on_current_repository() -> None:
+    manifest = json.loads(zh_translation.MANIFEST_PATH.read_text(encoding="utf-8"))
+    canonical_sources = zh_translation._translatable_sources()
+    indexed_sources = [document["source"] for document in manifest["documents"]]
+    translated = sum(
+        document["status"] == "translated" for document in manifest["documents"]
+    )
+    pending = sum(document["status"] == "pending" for document in manifest["documents"])
+
+    assert indexed_sources == canonical_sources
     result = verify_zh_translation()
     assert result["Status"] == "PASS"
-    assert result["DesignDocuments"] == 17
-    assert result["Translated"] >= 1
-    assert result["Pending"] + result["Translated"] == 17
+    assert result["DesignDocuments"] == len(canonical_sources)
+    assert result["Translated"] == translated
+    assert result["Pending"] == pending
+    assert result["Pending"] + result["Translated"] == len(canonical_sources)
