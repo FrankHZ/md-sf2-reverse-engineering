@@ -367,6 +367,11 @@ document whose anchors may be updated.
   the seven source-named entity gesture/relationship/motion forms, the twelve source-named
   screen/map-presentation forms, and the original-fact/Unknown/modernizable boundary with a modern
   renderer.
+- [`battle-ai-decision.md`](./design/contracts/battle-ai-decision.md): the implementation-neutral
+  contract for AI spell/item filters, priority/healing/support scores, final action/target choice,
+  Move and Move Order, temporary terrain, commandsets, activation/swarm/special/standby control, and
+  the bounded 14-case runtime matrix, while retaining caller-visible queued cases, natural path
+  choice, complete multi-turn behavior, fairness, intent, balance, and presentation as Unknown.
 - [`battle-action-construction.md`](./design/contracts/battle-action-construction.md): the implementation-neutral
   contract for action-family routing, target and per-target order, physical early exits, item
   use/break routing, Taros and Burst Rock gates, message-command records, and the complete static

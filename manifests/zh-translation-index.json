@@ -11,6 +11,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/battle-ai-decision.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/battle-control-lifecycle.md",
       "status": "pending"
     },

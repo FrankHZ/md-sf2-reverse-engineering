@@ -2078,7 +2078,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-static-v1.json", "fixtureId": "sf2-battle-ai-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.attackSpellEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.filter.healing-spell",
@@ -2091,7 +2091,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-static-v1.json", "fixtureId": "sf2-battle-ai-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.healingSpellEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.filter.support-spell",
@@ -2104,7 +2104,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-static-v1.json", "fixtureId": "sf2-battle-ai-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.supportSpellEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.filter.attack-item",
@@ -2117,7 +2117,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-static-v1.json", "fixtureId": "sf2-battle-ai-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.attackItemEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.filter.healing-item",
@@ -2130,7 +2130,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-static-v1.json", "fixtureId": "sf2-battle-ai-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.healingItemEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.priority.populate-targets",
@@ -2143,7 +2143,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.prioritizeTargetsEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.priority.select-attack-script",
@@ -2156,7 +2156,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.adjustAttackPriorityEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.priority.script-table",
@@ -2169,7 +2169,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.priorityScriptTableAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.priority.select-spell-script",
@@ -2182,7 +2182,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.adjustSpellPriorityEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.priority.potential-physical-damage",
@@ -2195,7 +2195,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.potentialDamageEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.priority.spell-resistance",
@@ -2208,7 +2208,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.spellResistanceEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.priority.remaining-hp",
@@ -2221,7 +2221,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.remainingHpEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.priority.class-adjustment",
@@ -2234,7 +2234,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.classAdjustmentEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.priority.threshold-current-third",
@@ -2247,7 +2247,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.oneThirdThresholdEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.priority.threshold-max-fifth",
@@ -2260,7 +2260,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.oneFifthThresholdEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.priority.movetype-adjustment-table",
@@ -2273,7 +2273,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-priority-static-v1.json", "fixtureId": "sf2-battle-ai-priority-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.movetypeAdjustmentTableAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.heal.command",
@@ -2286,7 +2286,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.healCommandEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.heal.eligibility",
@@ -2299,7 +2299,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.requiresHealingEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.heal.spell-level",
@@ -2312,7 +2312,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.determineSpellLevelEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.heal.target-priority",
@@ -2325,7 +2325,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.healTargetPriorityEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.heal.half-hp",
@@ -2338,7 +2338,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.halfHpEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.heal.movetype-priority-table",
@@ -2351,7 +2351,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-healing-static-v1.json", "fixtureId": "sf2-battle-ai-healing-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.movetypePriorityTableAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.support.command",
@@ -2364,7 +2364,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.supportCommandEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.support.prioritize-attack",
@@ -2377,7 +2377,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.prioritizeAttackEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.support.prioritize-boost2",
@@ -2390,7 +2390,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.prioritizeBoost2EntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.support.prioritize-dispel",
@@ -2403,7 +2403,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.prioritizeDispelEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.support.prioritize-muddle2",
@@ -2416,7 +2416,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.prioritizeMuddle2EntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.support.calculate-dispel",
@@ -2429,7 +2429,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateDispelEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.support.calculate-boost",
@@ -2442,7 +2442,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateBoostEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.support.calculate-attack",
@@ -2455,7 +2455,7 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-support-static-v1.json", "fixtureId": "sf2-battle-ai-support-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.calculateAttackEntryAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.action-choice.determine",
@@ -2512,7 +2512,7 @@
           ]
         }
       ],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.action-choice.class-order-table",
@@ -2525,179 +2525,179 @@
         "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-action-choice-static-v1.json", "fixtureId": "sf2-battle-ai-action-choice-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py",
         "bindings": [{ "addressId": "entry", "fixtureField": "function.classOrderPointerTableAddress" }]
       }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement.move-command", "subsystem": "battle.ai.movement", "status": "confirmed",
       "symbol": "aiCommand_Move", "sourcePath": "code/gameflow/battle/ai/command/move.asm",
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 61908 }],
       "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-movement-static-v1.json", "fixtureId": "sf2-battle-ai-movement-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.moveCommandEntryAddress" }] }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement.move-order-command", "subsystem": "battle.ai.movement", "status": "confirmed",
       "symbol": "aiCommand_MoveOrder", "sourcePath": "code/gameflow/battle/ai/command/moveorder.asm",
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 59788 }],
       "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-movement-static-v1.json", "fixtureId": "sf2-battle-ai-movement-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.moveOrderCommandEntryAddress" }] }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement.move-order-builder", "subsystem": "battle.ai.movement", "status": "confirmed",
       "symbol": "BuildMoveStringForMoveOrder", "sourcePath": "code/gameflow/battle/ai/command/moveorder/buildmovestringformoveorder.asm",
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63392 }],
       "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-movement-static-v1.json", "fixtureId": "sf2-battle-ai-movement-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.moveOrderBuilderEntryAddress" }] }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement.kraken-costs", "subsystem": "battle.ai.movement", "status": "confirmed",
       "symbol": "table_KrakenMoveCosts", "sourcePath": "data/battles/global/krakenmovecosts.asm",
       "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63924 }],
       "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-movement-static-v1.json", "fixtureId": "sf2-battle-ai-movement-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.krakenMoveCostsAddress" }] }],
-      "documents": ["docs/research/battle-ai.md"]
+      "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.remaining.unused-healing-mp", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "sub_D3CA", "sourcePath": "code/gameflow/battle/ai/command/heal/unusedfunctions_D3CA.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54218 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedHealingMpAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54218 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedHealingMpAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.remaining.unused-healing-input-max", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "sub_D3E0", "sourcePath": "code/gameflow/battle/ai/command/heal/unusedfunctions_D3CA.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54240 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedHealingInputMaxAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54240 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedHealingInputMaxAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.remaining.unused-healing-input-current", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "sub_D3F0", "sourcePath": "code/gameflow/battle/ai/command/heal/unusedfunctions_D3CA.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54256 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedHealingInputCurrentAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54256 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedHealingInputCurrentAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.remaining.standby", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "DetermineAiStandbyMovement", "sourcePath": "code/gameflow/battle/ai/determineaistandbymovement_1.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 62754 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovementAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 62754 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovementAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.remaining.standby-eligibility", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "ValidateAiStandbyEligibility", "sourcePath": "code/gameflow/battle/ai/determineaistandbymovement_2.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63722 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyEligibilityAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63722 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyEligibilityAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.standby.movement-pointers", "subsystem": "battle.ai.standby", "status": "confirmed", "symbol": "pt_StandbyAiMovements", "sourcePath": "data/battles/global/aistandbymovements.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63370 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovementPointersAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63370 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovementPointersAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.standby.movement-3", "subsystem": "battle.ai.standby", "status": "confirmed", "symbol": "table_StandbyAiMovements1", "sourcePath": "data/battles/global/aistandbymovements.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63378 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovement3Address" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63378 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovement3Address" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.standby.movement-4", "subsystem": "battle.ai.standby", "status": "confirmed", "symbol": "table_StandbyAiMovements2", "sourcePath": "data/battles/global/aistandbymovements.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63384 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovement4Address" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 63384 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.standbyMovement4Address" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.remaining.dispatcher", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "ExecuteAiCommand", "sourcePath": "code/gameflow/battle/ai/executeaicommand.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 58004 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.dispatcherAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 58004 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.dispatcherAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.remaining.highest-spell-level", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "GetHighestUsableSpellLevel", "sourcePath": "code/gameflow/battle/ai/gethighestusablespelllevel.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52946 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.highestSpellLevelAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 52946 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.highestSpellLevelAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.remaining.movement-helpers", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "DetermineMoveOrderQuadrant", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1753998 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.movementHelpersAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1753998 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.movementHelpersAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.block-non-movable", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "BlockNonMovableSpacesAroundDestination", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754172 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.blockNonMovableAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754172 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.blockNonMovableAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.block-and-carve", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "BlockAndCarveAroundDestination", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754352 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.blockAndCarveAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754352 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.blockAndCarveAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.tethered-carve", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "BlockAndCarveForTetheredTarget", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754538 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.tetheredCarveAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754538 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.tetheredCarveAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.clear-temporary", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "ClearAllTemporaryObstructionFlags", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754708 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.clearTemporaryObstructionAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754708 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.clearTemporaryObstructionAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.apply-quadrant", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "ApplyQuadrantTerrainMarking", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754778 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.applyQuadrantMarkingAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754778 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.applyQuadrantMarkingAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.mark-rectangle", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "MarkTerrainRectangleObstructed", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754920 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.markTerrainRectangleAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1754920 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.markTerrainRectangleAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.clear-around-destination", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "ClearObstructionFlagsAroundDestination", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755134 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.clearAroundDestinationAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755134 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.clearAroundDestinationAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.radius-0", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "list_Radius0", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755208 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius0Address" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755208 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius0Address" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.radius-1", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "list_Radius1", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755211 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius1Address" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755211 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius1Address" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.radius-2", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "list_Radius2", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755220 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius2Address" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755220 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius2Address" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.radius-3", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "list_Radius3", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755237 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius3Address" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755237 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius3Address" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.movement-helper.radius-4", "subsystem": "battle.ai.movement-helper", "status": "confirmed", "symbol": "list_Radius4", "sourcePath": "code/gameflow/battle/ai/movementhelperfunctions.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755262 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius4Address" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755262 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.radius4Address" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.remaining.control-loop", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "StartAiControl", "sourcePath": "code/gameflow/battle/ai/startaicontrol.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57084 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.controlLoopAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57084 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.controlLoopAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.control.count-defeated", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "CountDefeatedEnemies", "sourcePath": "code/gameflow/battle/ai/startaicontrol.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57526 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.countDefeatedEnemiesAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57526 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.countDefeatedEnemiesAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.control.line-attacker", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "ProcessLineAttackerAi", "sourcePath": "code/gameflow/battle/ai/startaicontrol.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57582 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.lineAttackerAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57582 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.lineAttackerAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.control.exploder", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "ProcessExploderAi", "sourcePath": "code/gameflow/battle/ai/startaicontrol.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57668 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.exploderAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57668 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.exploderAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.control.commandset-pointers", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "pt_AiCommandsets", "sourcePath": "data/battles/global/aicommandsets.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57772 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.commandsetPointersAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57772 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.commandsetPointersAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.control.pathfinding-modes", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "table_PathfindingModesForAiCommandset", "sourcePath": "data/battles/global/aicommandsets.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57929 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.pathfindingModesAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57929 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.pathfindingModesAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.control.swarm-battles", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "list_SwarmBattles", "sourcePath": "data/battles/global/swarmbattles.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57947 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmBattlesAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57947 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmBattlesAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.control.swarm-count-pointers", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "pt_SwarmAiEnemyCounts", "sourcePath": "data/battles/global/swarmbattles.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57952 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCountPointersAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57952 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCountPointersAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.control.swarm-counts-0", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "table_SwarmAiEnemyCounts0", "sourcePath": "data/battles/global/swarmbattles.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57964 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCounts0Address" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57964 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCounts0Address" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.control.swarm-counts-1", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "table_SwarmAiEnemyCounts1", "sourcePath": "data/battles/global/swarmbattles.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57975 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCounts1Address" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57975 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCounts1Address" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.control.swarm-counts-2", "subsystem": "battle.ai.control", "status": "confirmed", "symbol": "table_SwarmAiEnemyCounts2", "sourcePath": "data/battles/global/swarmbattles.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57987 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCounts2Address" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 57987 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.swarmCounts2Address" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.remaining.unused-slot-lookup", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "GetSlotContainingSpell", "sourcePath": "code/gameflow/battle/ai/unusedfunctions_CF0E.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53006 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedSlotLookupAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53006 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedSlotLookupAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battle.ai.remaining.unused-item-slot-lookup", "subsystem": "battle.ai.remaining", "status": "confirmed", "symbol": "GetSlotContainingItem", "sourcePath": "code/gameflow/battle/ai/unusedfunctions_CF0E.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53056 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedItemSlotLookupAddress" }] }], "documents": ["docs/research/battle-ai.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 53056 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-ai-remaining-static-v1.json", "fixtureId": "sf2-battle-ai-remaining-static-v1", "verifier": "src/sf2tool/h2/battle_ai.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.unusedItemSlotLookupAddress" }] }], "documents": ["docs/research/battle-ai.md"], "designContracts": ["docs/design/contracts/battle-ai-decision.md"]
     },
     {
       "id": "battlefield.inventory.move-string-destination", "subsystem": "battlefield.inventory", "status": "confirmed", "symbol": "GetMoveStringDestination", "sourcePath": "code/gameflow/battle/battlefield/getmovestringdestination.asm",
