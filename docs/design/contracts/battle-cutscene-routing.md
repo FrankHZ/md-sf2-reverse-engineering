@@ -60,11 +60,13 @@ limits:
 - outer lifecycle call order remains owned by the
   [battle-control contract](battle-control-lifecycle.md).
 
-The audit also found that the accepted `leaderDeathPositions.setsAllEnemyHpToZero` aggregate
-overstates the pinned source. The loop calls `SetCurrentHp(0)` for enemy slots 128 through 157; the
-tail moves slots 158 and 159 offscreen without equivalent HP calls. That owner correction has been
-routed to the research lane. This contract does not consume the disputed universal HP claim and
-defines no fidelity requirement from it.
+The audit also found that the accepted `leaderDeathPositions.movesAllSlotsOffscreen` and
+`leaderDeathPositions.setsAllEnemyHpToZero` aggregates overstate the pinned source. The paired loop
+sets X to `-1` for allies 0 through 29 and enemies 128 through 157, and calls `SetCurrentHp(0)` only
+for those 30 enemy slots. It leaves `D1` at zero; the tail therefore sets X to `0` for enemy slots
+158 and 159 and performs no HP write for either. That owner correction has been routed to the
+research lane. This contract records the exact source-reviewed ranges but defines no fixture-bound
+fidelity requirement from either disputed universal until the owner correction lands.
 
 ## Identity Domains
 
@@ -173,9 +175,8 @@ MUST NOT invent 52 distinct join outcomes.
 
 ## Enemy-Defeated Admission and Cleanup Tail
 
-The defeated wrapper first requires Bowie to have positive current HP and enemy slot 128 to have
-zero current HP. Failure of either gate returns before script dispatch and before the shared cleanup
-tail.
+The defeated wrapper first requires Bowie's current HP to be nonzero and enemy slot 128's current HP
+to be zero. Failure of either gate returns before script dispatch and before the shared cleanup tail.
 
 When both life/death gates pass, the completed-battle flag controls only script dispatch:
 
@@ -183,23 +184,26 @@ When both life/death gates pass, the completed-battle flag controls only script 
   cleanup tail;
 - a set flag skips the script and reaches the same cleanup tail directly.
 
-At the tail, a per-battle enemy-leader flag decides whether to scan all 32 enemy slots. Each still-
-living enemy is appended to the existing dead-combatant list; the next byte is written as `0xFF`, and
-the list length is incremented. The wrapper does not establish when that list is processed or when
-HP is subsequently cleared. Those are owned by [battle control](battle-control-lifecycle.md).
+At the tail, a per-battle enemy-leader flag decides whether to scan all 32 enemy slots. Each enemy
+whose current HP is nonzero is appended to the existing dead-combatant list; the next byte is written
+as `0xFF`, and the list length is incremented. The wrapper does not establish when that list is
+processed or when HP is subsequently cleared. Those are owned by
+[battle control](battle-control-lifecycle.md).
 
 ## Leader-Death Position Preparation
 
-The position listener shares the Bowie-alive/enemy-128-dead gate. It scans six-byte battle records
-until a word terminator `-1`, then selects a table of four-byte combatant position records.
+The position listener shares the Bowie-HP-nonzero/enemy-128-HP-zero gate. It scans six-byte battle
+records until a word terminator `-1`, then selects a table of four-byte combatant position records.
 
 The accepted, source-reviewed boundary is:
 
-- all 30 ally slots and all 32 enemy slots receive offscreen X coordinates before selected
-  positions are applied;
+- allies 0 through 29 and enemies 128 through 157 receive X `-1`; the same enemy range receives
+  current HP zero;
+- enemy slots 158 and 159 then receive X `0`, because the tail does not reload `D1`, and receive no
+  HP write in this function;
 - the position table terminates with `-1`;
 - the source retains an unreachable dead-list write after an unconditional loop branch;
-- exact HP mutation coverage is excluded pending the owner correction described in the audit.
+- the exact X and HP ranges remain pending fixture-owner correction for final contract acceptance.
 
 The public fixture does not close natural caller reachability, the fourth position byte, complete
 per-record eligibility, final visible entity state, or presentation timing. Those remain **Unknown**.
@@ -263,8 +267,8 @@ graphics. It SHOULD compare:
 2. before/start decisions and flag-write order for clear and set intro flags;
 3. after-battle dispatch/skip decisions plus the shared join-call argument;
 4. defeated-route early exits, completion-dependent dispatch, and dead-list append order;
-5. leader-position record selection, offscreen coordinate writes, and only the HP coverage accepted
-   after the owner correction;
+5. leader-position record selection plus only the X/HP ranges and tail values accepted after the
+   owner correction;
 6. region scan decisions and flag state immediately before the MAPSCRIPT trap;
 7. built/excluded program identities, type counts, and aggregate command-shape metadata.
 
@@ -277,7 +281,7 @@ adapter until separately evidenced or deliberately designed.
 | Contract area | Evidence label | Executable owner | Remaining boundary |
 | --- | --- | --- | --- |
 | built/excluded program corpus, type and command-shape counts | **Confirmed static** | `sf2-battle-cutscene-data-static-v1` ([`battle-cutscene-data-static-v1.json`](../../../tests/fixtures/h2/battle-cutscene-data-static-v1.json)) | Program content, reachability, command semantics, timing, story effects |
-| intro/after/defeated/region wrapper order and bounded mutation seams | **Confirmed static** | `sf2-battle-cutscenes-static-v1` ([`battle-cutscenes-static-v1.json`](../../../tests/fixtures/h2/battle-cutscenes-static-v1.json)) | Natural callers, persistence, MAPSCRIPT effects; disputed all-enemy HP quantifier excluded |
+| intro/after/defeated/region wrapper order and bounded mutation seams | **Confirmed static** | `sf2-battle-cutscenes-static-v1` ([`battle-cutscenes-static-v1.json`](../../../tests/fixtures/h2/battle-cutscenes-static-v1.json)) | Natural callers, persistence, MAPSCRIPT effects; disputed all-slot X and HP quantifiers excluded |
 | four route-table shapes, region count, and zero-filled join table | **Confirmed static** | `sf2-battle-routing-data-static-v1` ([`battle-routing-data-static-v1.json`](../../../tests/fixtures/h2/battle-routing-data-static-v1.json)) | Exact route targets and empty-target behavior; terrain record excluded |
 | outer battle lifecycle | **Separate owner** | [Battle-control lifecycle](battle-control-lifecycle.md) | Do not infer wrapper call timing from route tables |
 | dialogue, entity/force/map effects, presentation, and story meaning | **Separate owner / Unknown** | Dedicated contracts and future evidence | No aggregate cutscene fixture closes end-to-end behavior |
