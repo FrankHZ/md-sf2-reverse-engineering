@@ -367,6 +367,11 @@ document whose anchors may be updated.
   the seven source-named entity gesture/relationship/motion forms, the twelve source-named
   screen/map-presentation forms, and the original-fact/Unknown/modernizable boundary with a modern
   renderer.
+- [`battlefield-navigation.md`](./design/contracts/battlefield-navigation.md): the implementation-neutral
+  contract for the 48x48 battlefield grids, terrain/occupancy state, weighted movement propagation,
+  Manhattan range and target admission, attack-position selection, move strings, and the bounded
+  five-case original-runtime movement matrix, while retaining natural-map reachability, unsafe-read
+  effects, arithmetic edges, tactics, and presentation as Unknown.
 - [`level-up.md`](./design/contracts/level-up.md): growth-curve randomized gains, minimum-growth pity, the battle
   EXP threshold entry, the complete level-up order, post-projection fixed growth, class level caps,
   cross-ally class-block scanning, current/derived stat and equipment refresh, stat

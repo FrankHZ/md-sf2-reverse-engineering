@@ -66,6 +66,15 @@ CONTRACTS = {
             "sf2-map-script-screen-presentation-runtime-v1"
         ),
     },
+    "docs/design/contracts/battlefield-navigation.md": {
+        "tests/fixtures/h2/battlefield-static-v1.json": "sf2-battlefield-static-v1",
+        "tests/fixtures/h2/battle-terrain-decode-v1.json": (
+            "sf2-battle-terrain-decode-v1"
+        ),
+        "tests/fixtures/h3/battlefield-movement-matrix-v1.json": (
+            "sf2-battlefield-movement-runtime-v1"
+        ),
+    },
     "docs/design/contracts/combat-resolution.md": {
         "tests/fixtures/h3/muddle-action-guard-v1.json": (
             "sf2-muddle-action-guard-both-sides-v1"

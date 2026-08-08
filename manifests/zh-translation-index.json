@@ -7,6 +7,10 @@
   "mirrorRoot": "docs/design/zh-CN",
   "documents": [
     {
+      "source": "docs/design/contracts/battlefield-navigation.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/combat-resolution.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/combat-resolution.md",
