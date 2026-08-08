@@ -35,6 +35,17 @@ CONTRACTS = {
             "sf2-battle-actions-static-v1"
         ),
     },
+    "docs/design/contracts/battle-cutscene-routing.md": {
+        "tests/fixtures/h2/battle-cutscene-data-static-v1.json": (
+            "sf2-battle-cutscene-data-static-v1"
+        ),
+        "tests/fixtures/h2/battle-cutscenes-static-v1.json": (
+            "sf2-battle-cutscenes-static-v1"
+        ),
+        "tests/fixtures/h2/battle-routing-data-static-v1.json": (
+            "sf2-battle-routing-data-static-v1"
+        ),
+    },
     "docs/design/contracts/battle-encounter-definition.md": {
         "tests/fixtures/h2/battle-spriteset-data-static-v1.json": (
             "sf2-battle-spriteset-data-static-v1"

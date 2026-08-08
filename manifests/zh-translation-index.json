@@ -19,6 +19,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/battle-cutscene-routing.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/battle-encounter-definition.md",
       "status": "pending"
     },

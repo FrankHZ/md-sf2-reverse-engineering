@@ -378,6 +378,11 @@ document whose anchors may be updated.
   use/break routing, Taros and Burst Rock gates, message-command records, and the complete static
   54-site message corpus, while retaining caller reachability, timing, presentation, unmodeled
   sub-routes, action choice, and downstream resolution as Unknown or separate-owner boundaries.
+- [`battle-cutscene-routing.md`](./design/contracts/battle-cutscene-routing.md): the
+  implementation-neutral contract for four independent 48-slot route tables, 59 built cutscene
+  programs, intro/completion/leader/region gates, join and dead-list tails, and the corrected
+  leader-position X/HP ranges, while retaining route targets, MAPSCRIPT effects, presentation,
+  persistence, natural reachability, and story meaning as separate-owner or Unknown boundaries.
 - [`battle-encounter-definition.md`](./design/contracts/battle-encounter-definition.md): the
   implementation-neutral contract for the 45-slot spriteset, map/global, and terrain-selection
   backbone, placement and local AI-geometry shape, supporting battle metadata, terrain aliases, and

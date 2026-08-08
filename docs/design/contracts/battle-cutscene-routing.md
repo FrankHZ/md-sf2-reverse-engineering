@@ -60,13 +60,11 @@ limits:
 - outer lifecycle call order remains owned by the
   [battle-control contract](battle-control-lifecycle.md).
 
-The audit also found that the accepted `leaderDeathPositions.movesAllSlotsOffscreen` and
-`leaderDeathPositions.setsAllEnemyHpToZero` aggregates overstate the pinned source. The paired loop
-sets X to `-1` for allies 0 through 29 and enemies 128 through 157, and calls `SetCurrentHp(0)` only
-for those 30 enemy slots. It leaves `D1` at zero; the tail therefore sets X to `0` for enemy slots
-158 and 159 and performs no HP write for either. That owner correction has been routed to the
-research lane. This contract records the exact source-reviewed ranges but defines no fixture-bound
-fidelity requirement from either disputed universal until the owner correction lands.
+The audit initially found two aggregate overclaims in the leader-position owner. Issue #59 corrected
+the executable contract, and this document now consumes its exact vocabulary: `offscreenLoop` sets
+X to `-1` for allies 0 through 29 and enemies 128 through 157; `hpZeroLoop` calls
+`SetCurrentHp(0)` for those 30 enemy slots; and `positionOnlyTail` sets X to `0` for enemy slots 158
+and 159, with no HP write for either. These ranges and tail values are now fixture-bound facts.
 
 ## Identity Domains
 
@@ -195,15 +193,13 @@ processed or when HP is subsequently cleared. Those are owned by
 The position listener shares the Bowie-HP-nonzero/enemy-128-HP-zero gate. It scans six-byte battle
 records until a word terminator `-1`, then selects a table of four-byte combatant position records.
 
-The accepted, source-reviewed boundary is:
+The accepted executable boundary is:
 
-- allies 0 through 29 and enemies 128 through 157 receive X `-1`; the same enemy range receives
-  current HP zero;
-- enemy slots 158 and 159 then receive X `0`, because the tail does not reload `D1`, and receive no
-  HP write in this function;
+- `offscreenLoop`: allies 0 through 29 and enemies 128 through 157 receive X `-1`;
+- `hpZeroLoop`: enemies 128 through 157 receive current HP zero;
+- `positionOnlyTail`: enemy slots 158 and 159 receive X `0` and no HP write;
 - the position table terminates with `-1`;
-- the source retains an unreachable dead-list write after an unconditional loop branch;
-- the exact X and HP ranges remain pending fixture-owner correction for final contract acceptance.
+- the source retains an unreachable dead-list write after an unconditional loop branch.
 
 The public fixture does not close natural caller reachability, the fourth position byte, complete
 per-record eligibility, final visible entity state, or presentation timing. Those remain **Unknown**.
@@ -267,8 +263,8 @@ graphics. It SHOULD compare:
 2. before/start decisions and flag-write order for clear and set intro flags;
 3. after-battle dispatch/skip decisions plus the shared join-call argument;
 4. defeated-route early exits, completion-dependent dispatch, and dead-list append order;
-5. leader-position record selection plus only the X/HP ranges and tail values accepted after the
-   owner correction;
+5. leader-position record selection plus the exact `offscreenLoop`, `hpZeroLoop`, and
+   `positionOnlyTail` ranges and values;
 6. region scan decisions and flag state immediately before the MAPSCRIPT trap;
 7. built/excluded program identities, type counts, and aggregate command-shape metadata.
 
@@ -281,7 +277,7 @@ adapter until separately evidenced or deliberately designed.
 | Contract area | Evidence label | Executable owner | Remaining boundary |
 | --- | --- | --- | --- |
 | built/excluded program corpus, type and command-shape counts | **Confirmed static** | `sf2-battle-cutscene-data-static-v1` ([`battle-cutscene-data-static-v1.json`](../../../tests/fixtures/h2/battle-cutscene-data-static-v1.json)) | Program content, reachability, command semantics, timing, story effects |
-| intro/after/defeated/region wrapper order and bounded mutation seams | **Confirmed static** | `sf2-battle-cutscenes-static-v1` ([`battle-cutscenes-static-v1.json`](../../../tests/fixtures/h2/battle-cutscenes-static-v1.json)) | Natural callers, persistence, MAPSCRIPT effects; disputed all-slot X and HP quantifiers excluded |
+| intro/after/defeated/region wrapper order and bounded mutation seams | **Confirmed static** | `sf2-battle-cutscenes-static-v1` ([`battle-cutscenes-static-v1.json`](../../../tests/fixtures/h2/battle-cutscenes-static-v1.json)) | Natural callers, persistence, later position eligibility, and MAPSCRIPT effects |
 | four route-table shapes, region count, and zero-filled join table | **Confirmed static** | `sf2-battle-routing-data-static-v1` ([`battle-routing-data-static-v1.json`](../../../tests/fixtures/h2/battle-routing-data-static-v1.json)) | Exact route targets and empty-target behavior; terrain record excluded |
 | outer battle lifecycle | **Separate owner** | [Battle-control lifecycle](battle-control-lifecycle.md) | Do not infer wrapper call timing from route tables |
 | dialogue, entity/force/map effects, presentation, and story meaning | **Separate owner / Unknown** | Dedicated contracts and future evidence | No aggregate cutscene fixture closes end-to-end behavior |
