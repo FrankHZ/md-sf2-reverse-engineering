@@ -1,8 +1,8 @@
 # Auxiliary Graphics, Scripting, and Technical Data Inventory
 
 - Status: **Confirmed** for the complete 65-file boundary, 63 layout-owned files and H1 addresses,
-  two alternates, file-category counts, private incbin reference counts, the complete sprite-dialogue
-  property catalog and lookup contract,
+  two alternates, 80 indexed records across 63 source paths, file-category counts, private incbin
+  reference counts, the complete sprite-dialogue property catalog and lookup contract,
   and the complete battle-background, battle-sprite, battle-sprite-animation, weapon/ground, and
   portrait container/decode corpora plus the complete regular/special map-sprite, special-screen, and base/menu UI
   pointer/decode corpora, plus the complete spell/invocation/status/transition graphics corpus
@@ -11,7 +11,7 @@
   and the complete shared/distributed entity-action command/control-flow/reference corpus
 - Status: **Inferred** for presentation timing and scripting consumers
 - Status: **Unknown** for four grouped runtime questions
-- Evidence date: 2026-07-19
+- Evidence date: 2026-08-08
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -29,8 +29,15 @@ Two graphics files are explicit exceptions:
 - `data/graphics/tech/windowlayouts/fighterministatuswindowlayout.asm` is an unassembled alternate
   whose `layout_MiniStatusWindow` symbol is owned in H1 by the built mini-status layout file.
 
-Both are H2-hashed but receive no borrowed address. This yields 65/65 inventory, 63/65 strict
-indexed-file reach, and 77 indexed symbols after the data-owned UI-layout leaf records are expanded.
+Both are H2-hashed but receive no borrowed address. This yields 65/65 inventory and 63/65 strict
+indexed-file reach. The auxiliary owner derives its research-index join from the complete discovered
+65-file source surface: every current index record whose `sourcePath` exactly equals one inventory path
+is included, with source paths and record IDs sorted deterministically. It does not filter by record ID,
+subsystem, evidence level, or fixture, so it preserves each selected record's existing H1/ROM provenance
+and evidence semantics. The current join has 80 records over 63 source paths (79 distinct symbols): the
+77 previously accepted records plus `entity.actions.eas-493a2` from
+`data/scripting/map/debugscripts.asm` and `map.entity-action-bridge.eas-idle` plus
+`map.entity-lifecycle-presentation.eas-idle` from `data/scripting/entity/eas_main.asm`.
 
 ## Static Shape and Copyright Boundary
 

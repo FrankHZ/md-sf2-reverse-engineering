@@ -42,6 +42,68 @@ def _statement_count(source: str, token: str) -> int:
     )
 
 
+def _index_records_for_auxiliary_scope(source_paths: set[str]) -> dict[str, Any]:
+    """Join every research-index record to the discovered auxiliary source surface.
+
+    The auxiliary owner is the complete source inventory, not a subsystem prefix or
+    a fixed record-ID list.  A source path is therefore selected only when it is an
+    exact member of the 65-file inventory discovered from the pinned upstream tree.
+    """
+    records_by_source_path: dict[str, list[str]] = {}
+    for record in load_json(RESEARCH_INDEX)["records"]:
+        source_path = record["sourcePath"]
+        if source_path not in source_paths:
+            continue
+        records_by_source_path.setdefault(source_path, []).append(record["id"])
+
+    indexed_records_by_source_path = [
+        {"sourcePath": source_path, "recordIds": sorted(record_ids)}
+        for source_path, record_ids in sorted(records_by_source_path.items())
+    ]
+    indexed_record_ids = [
+        record_id
+        for row in indexed_records_by_source_path
+        for record_id in row["recordIds"]
+    ]
+    if len(indexed_record_ids) != len(set(indexed_record_ids)):
+        raise ValueError("auxiliary data research-index duplicate record ID")
+    return {
+        "indexedRecordIds": sorted(indexed_record_ids),
+        "indexedSourcePaths": [
+            row["sourcePath"] for row in indexed_records_by_source_path
+        ],
+        "indexedRecordsBySourcePath": indexed_records_by_source_path,
+    }
+
+
+def _verify_indexed_record_join(output: dict[str, Any]) -> None:
+    """Reject schema-valid drift between the auxiliary join's related fields."""
+    relation = output["indexedRecordsBySourcePath"]
+    relation_source_paths = [row["sourcePath"] for row in relation]
+    relation_record_ids = [record_id for row in relation for record_id in row["recordIds"]]
+    if len(relation_source_paths) != len(set(relation_source_paths)):
+        raise ValueError("auxiliary data indexed relation duplicate source path")
+    if len(relation_record_ids) != len(set(relation_record_ids)):
+        raise ValueError("auxiliary data indexed relation duplicate record ID")
+
+    indexed_record_ids = output["indexedRecordIds"]
+    indexed_source_paths = output["indexedSourcePaths"]
+    if indexed_record_ids != sorted(relation_record_ids):
+        raise ValueError("auxiliary data indexedRecordIds relation drift")
+    if indexed_source_paths != relation_source_paths:
+        raise ValueError("auxiliary data indexedSourcePaths relation order drift")
+
+    summary = output["summary"]
+    if summary["indexedRecordCount"] != len(indexed_record_ids) or summary[
+        "indexedRecordCount"
+    ] != len(relation_record_ids):
+        raise ValueError("auxiliary data summary indexedRecordCount relation drift")
+    if summary["indexedFileCount"] != len(indexed_source_paths) or summary[
+        "indexedFileCount"
+    ] != len(relation_source_paths):
+        raise ValueError("auxiliary data summary indexedFileCount relation drift")
+
+
 def build_auxiliary_data_inventory(upstream_path: Path) -> dict[str, Any]:
     upstream_path = upstream_path.resolve(strict=True)
     disasm, commit, toolchain = _resolve_upstream(upstream_path)
@@ -91,11 +153,7 @@ def build_auxiliary_data_inventory(upstream_path: Path) -> dict[str, Any]:
     }
     if len(representative_addresses) != 63:
         raise ValueError("auxiliary data representative symbol collision")
-    records = [
-        record
-        for record in load_json(RESEARCH_INDEX)["records"]
-        if record["sourcePath"] in sources
-    ]
+    indexed_records = _index_records_for_auxiliary_scope(set(sources))
 
     incbin_targets = [
         match.replace("\\", "/")
@@ -127,8 +185,8 @@ def build_auxiliary_data_inventory(upstream_path: Path) -> dict[str, Any]:
         "layoutOwnedFileCount": len(layout_owned_paths),
         "alternateFileCount": len(excluded_paths),
         "representativeAddressCount": len(representative_addresses),
-        "indexedRecordCount": len(records),
-        "indexedFileCount": len({record["sourcePath"] for record in records}),
+        "indexedRecordCount": len(indexed_records["indexedRecordIds"]),
+        "indexedFileCount": len(indexed_records["indexedSourcePaths"]),
     }
     return {
         "schemaVersion": 1,
@@ -147,8 +205,7 @@ def build_auxiliary_data_inventory(upstream_path: Path) -> dict[str, Any]:
                 "unassembled alternate whose first symbol is owned by the built mini-status layout"
             ),
         },
-        "indexedRecordIds": sorted(record["id"] for record in records),
-        "indexedSourcePaths": sorted({record["sourcePath"] for record in records}),
+        **indexed_records,
         "representativeSymbols": representative_symbols,
         "representativeAddresses": representative_addresses,
         "facts": {
@@ -178,6 +235,7 @@ def verify_auxiliary_data_inventory(
     manifest = load_json(MANIFEST)
     output = build_auxiliary_data_inventory(upstream_path)
     validate_json(output, SCHEMA, owner="auxiliary data static inventory")
+    _verify_indexed_record_join(output)
     if (
         fixture["upstreamCommit"] != output["upstream"]["commit"]
         or fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]
@@ -187,7 +245,7 @@ def verify_auxiliary_data_inventory(
         raise ValueError("auxiliary data summary drift")
     if output["representativeAddresses"] != fixture["table"]:
         raise ValueError("auxiliary data H1 address drift")
-    for field in ("facts", "runtimeQuestions"):
+    for field in ("indexedRecordsBySourcePath", "facts", "runtimeQuestions"):
         if output[field] != fixture["expected"][field]:
             raise ValueError(f"auxiliary data {field} drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()

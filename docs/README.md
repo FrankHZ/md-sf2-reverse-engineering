@@ -205,11 +205,12 @@ Data-side directory inventory and ROM parity:
   routes, 126 setups, 178 standalone, and 201 init-source programs), record/consumer rules, and the
   upstream `MAPDATA_OFFSET_LAYOUT` constant defect.
 - [`auxiliary-data-inventory.md`](./research/auxiliary-data-inventory.md): the 65-file
-  graphics/scripting/technical/sprite-dialogue boundary, 77 indexed symbols/63 source files, two
-  alternates, the 56-slot/52-payload portrait header, animation metadata, palette, and Stack-graphics
-  decode contracts, the 30-slot/27-payload battle-background dual-tileset decode contract, 86
-  battle-sprite containers/408 graphic frames, 208 animation sequences/421 frame entries, weapon/ground
-  graphics and palettes, 670 regular map-sprite payloads, six special-sprite streams, nine
+  graphics/scripting/technical/sprite-dialogue boundary, 80 indexed records/79 distinct symbols
+  across 63 source files, two alternates, the 56-slot/52-payload portrait header, animation metadata,
+  palette, and Stack-graphics decode contracts, the 30-slot/27-payload battle-background dual-tileset
+  decode contract, 86 battle-sprite containers/408 graphic frames, 208 animation sequences/421 frame
+  entries, weapon/ground graphics and palettes, 670 regular map-sprite payloads,
+  six special-sprite streams, nine
   special-screen tile streams, eight base/menu UI streams, 56 spell/invocation/status/transition
   streams, 115 map-tileset streams, 163 assembled icons with four source-only icon exceptions, 27 UI
   layouts/16-slot spell pointers/four borders/four direct tile payloads, and complete parity of 16 map
