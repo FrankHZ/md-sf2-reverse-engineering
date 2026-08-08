@@ -354,6 +354,11 @@ document whose anchors may be updated.
   layouts into evidence-bounded structural principles after an adversarial owner/fixture audit,
   while retaining route quality, pacing, collision/pathfinding, reachability, visible presentation,
   and authorial intent as Unknown boundaries.
+- [`audio-system.md`](./design/contracts/audio-system.md): the implementation-neutral contract for
+  music/SFX command identities, two-bank slot and target aliases, headers and channel roles, the
+  static macro/note/sample/instrument/SFX domains, and the bounded four-command playback-state
+  matrix, while retaining audible output, timing, transition policy, and asset licensing as Unknown
+  or deliberate-design boundaries.
 - [`combat-resolution.md`](./design/contracts/combat-resolution.md): the implementation-neutral contract from
   physical attacks through dodge, terrain/countering, critical, spread, and double/counter to
   temporary HP, reaction replay, EXP booking, and level-up connection, plus the shared fixture

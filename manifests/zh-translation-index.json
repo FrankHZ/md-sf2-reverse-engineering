@@ -7,6 +7,10 @@
   "mirrorRoot": "docs/design/zh-CN",
   "documents": [
     {
+      "source": "docs/design/contracts/audio-system.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/battle-action-construction.md",
       "status": "pending"
     },
