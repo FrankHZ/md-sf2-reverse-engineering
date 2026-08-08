@@ -359,6 +359,11 @@ document whose anchors may be updated.
   definitions, promotion tables, five growth curves, 59 ally/class growth records, spell-list
   inheritance, and presentation references, while retaining runtime roster state, level-up mutation,
   story availability, balance, and presentation fallback as separate-owner or Unknown boundaries.
+- [`enemy-definition-data.md`](./design/contracts/enemy-definition-data.md): the implementation-neutral
+  contract for 103 enemy identities and fixed spawn baselines, their ordered battle/map presentation
+  references, the distinct 63-row NPC map-sprite tail, and the unchecked map-sprite lookup boundary,
+  while retaining nonstandard tail reachability, runtime transforms, encounter design, AI, combat,
+  rewards, presentation, and balance as separate-owner or Unknown boundaries.
 - [`audio-system.md`](./design/contracts/audio-system.md): the implementation-neutral contract for
   music/SFX command identities, two-bank slot and target aliases, headers and channel roles, the
   static macro/note/sample/instrument/SFX domains, and the bounded four-command playback-state
