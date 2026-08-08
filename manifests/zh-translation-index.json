@@ -52,6 +52,10 @@
       "translatedDate": "2026-08-08"
     },
     {
+      "source": "docs/design/contracts/combatant-state-access.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/dialogue-system.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/dialogue-system.md",
