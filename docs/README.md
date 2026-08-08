@@ -1,6 +1,7 @@
 # Documentation Index
 
-> 中文阅读版见 [`README.zh-CN.md`](./README.zh-CN.md). The English version is the canonical index.
+> See [`README.zh-CN.md`](./README.zh-CN.md) for the Chinese reading copy. The English version is the
+> canonical index.
 
 Documentation is layered as "evidence → contract → implementation choice" to keep original-game
 facts, inferences, and remake preferences separate.
@@ -322,7 +323,7 @@ preserving accepted anchors). After reviewing a changed mirror against its Engli
 current glossary, repeat `--reanchor-source docs/design/<file>.md` for each reviewed document whose
 anchors may be updated.
 
-- [`glossary.md`](./design/glossary.md): the accepted EN→中文 glossary and rules for zh-CN
+- [`glossary.md`](./design/glossary.md): the accepted English-to-Chinese glossary and rules for zh-CN
   localization; fixed evidence-label translations, preserved source identifiers, one-term-one-
   translation, proper nouns kept in English, and `design/zh-CN/` mirror conventions.
 - [`documentation-roadmap.md`](./design/documentation-roadmap.md): three-layer evidence/explanation/

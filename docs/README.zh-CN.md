@@ -1,7 +1,7 @@
 # 文档索引
 
 > 本文件是 [`README.md`](./README.md) 的中文对照阅读版。英文版是规范索引与审阅基线；本文件为
-> 派生文档，遵循 [`design/glossary.md`](./design/glossary.md) 的术语规则（R1–R6）。
+> 派生文档，遵循 [`design/glossary.md`](./design/glossary.md) 的术语规则（R1–R7）。
 
 文档按“证据 → 合同 → 实现选择”分层，避免把原版事实、推断和重制偏好混在一起。
 
