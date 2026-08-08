@@ -6,6 +6,14 @@ from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 
 CONTRACTS = {
+    "docs/design/contracts/ally-definition-data.md": {
+        "tests/fixtures/h2/ally-data-static-v1.json": (
+            "sf2-ally-data-static-v1"
+        ),
+        "tests/fixtures/h2/map-sprite-assignments-static-v1.json": (
+            "sf2-map-sprite-assignments-static-v1"
+        ),
+    },
     "docs/design/contracts/audio-system.md": {
         "tests/fixtures/h2/gameflow-core-static-v1.json": (
             "sf2-gameflow-core-static-v1"

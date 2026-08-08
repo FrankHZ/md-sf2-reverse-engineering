@@ -354,6 +354,11 @@ document whose anchors may be updated.
   layouts into evidence-bounded structural principles after an adversarial owner/fixture audit,
   while retaining route quality, pacing, collision/pathfinding, reachability, visible presentation,
   and authorial intent as Unknown boundaries.
+- [`ally-definition-data.md`](./design/contracts/ally-definition-data.md): the implementation-neutral
+  contract for the 30 named ally identities, two independent 32-slot start/pointer domains, 32 class
+  definitions, promotion tables, five growth curves, 59 ally/class growth records, spell-list
+  inheritance, and presentation references, while retaining runtime roster state, level-up mutation,
+  story availability, balance, and presentation fallback as separate-owner or Unknown boundaries.
 - [`audio-system.md`](./design/contracts/audio-system.md): the implementation-neutral contract for
   music/SFX command identities, two-bank slot and target aliases, headers and channel roles, the
   static macro/note/sample/instrument/SFX domains, and the bounded four-command playback-state
