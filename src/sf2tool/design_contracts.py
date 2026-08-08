@@ -6,6 +6,30 @@ from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 
 CONTRACTS = {
+    "docs/design/contracts/battle-ai-decision.md": {
+        "tests/fixtures/h2/battle-ai-static-v1.json": "sf2-battle-ai-static-v1",
+        "tests/fixtures/h2/battle-ai-priority-static-v1.json": (
+            "sf2-battle-ai-priority-static-v1"
+        ),
+        "tests/fixtures/h2/battle-ai-healing-static-v1.json": (
+            "sf2-battle-ai-healing-static-v1"
+        ),
+        "tests/fixtures/h2/battle-ai-support-static-v1.json": (
+            "sf2-battle-ai-support-static-v1"
+        ),
+        "tests/fixtures/h2/battle-ai-action-choice-static-v1.json": (
+            "sf2-battle-ai-action-choice-static-v1"
+        ),
+        "tests/fixtures/h2/battle-ai-movement-static-v1.json": (
+            "sf2-battle-ai-movement-static-v1"
+        ),
+        "tests/fixtures/h2/battle-ai-remaining-static-v1.json": (
+            "sf2-battle-ai-remaining-static-v1"
+        ),
+        "tests/fixtures/h3/battle-ai-action-choice-v1.json": (
+            "sf2-battle-ai-action-choice-runtime-v1"
+        ),
+    },
     "docs/design/contracts/battle-action-construction.md": {
         "tests/fixtures/h2/battle-actions-static-v1.json": (
             "sf2-battle-actions-static-v1"
