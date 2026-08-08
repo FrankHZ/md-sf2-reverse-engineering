@@ -1,21 +1,257 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Shining Force II common scripting static inventory",
-  "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "internalDirectCallTargets", "externalDirectCallTargets", "dispatchTables", "coreFacts", "unlabeledData", "files"],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds",
+    "indexedSourcePaths", "indexedRecordsBySourcePath", "representativeSymbols",
+    "representativeAddresses", "internalDirectCallTargets", "externalDirectCallTargets",
+    "dispatchTables", "coreFacts", "unlabeledData", "files"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-common-scripting-static-v1" },
-    "upstream": { "type": "object" }, "scope": { "const": "code/common/scripting" },
-    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount", "unlabeledFileCount"], "properties": { "fileCount": { "const": 29 }, "indexedRecordCount": { "const": 35 }, "indexedFileCount": { "const": 28 }, "unlabeledFileCount": { "const": 1 } } },
-    "indexedRecordIds": { "type": "array", "minItems": 35, "maxItems": 35, "uniqueItems": true },
-    "indexedSourcePaths": { "type": "array", "minItems": 28, "maxItems": 28, "uniqueItems": true },
-    "representativeSymbols": { "type": "object", "minProperties": 28, "maxProperties": 28 },
-    "representativeAddresses": { "type": "object", "minProperties": 28, "maxProperties": 28, "additionalProperties": { "type": "integer", "minimum": 0 } },
-    "internalDirectCallTargets": { "type": "array", "uniqueItems": true },
-    "externalDirectCallTargets": { "type": "array", "uniqueItems": true },
-    "dispatchTables": { "type": "object", "required": ["mapScript", "entityScript"], "properties": { "mapScript": { "type": "array", "minItems": 90, "maxItems": 90 }, "entityScript": { "type": "array", "minItems": 80, "maxItems": 80 } } },
-    "coreFacts": { "type": "object", "minProperties": 4, "maxProperties": 4 },
-    "unlabeledData": { "type": "object" },
-    "files": { "type": "array", "minItems": 29, "maxItems": 29 }
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-common-scripting-static-v1" },
+    "upstream": { "$ref": "#/definitions/upstream" },
+    "scope": { "const": "code/common/scripting" },
+    "summary": { "$ref": "#/definitions/summary" },
+    "indexedRecordIds": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "$ref": "#/definitions/recordId" }
+    },
+    "indexedSourcePaths": {
+      "type": "array", "minItems": 28, "maxItems": 28, "uniqueItems": true,
+      "items": { "$ref": "#/definitions/sourcePath" }
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "array", "minItems": 1,
+      "items": { "$ref": "#/definitions/indexedRecordsBySourcePath" }
+    },
+    "representativeSymbols": {
+      "type": "object", "minProperties": 28, "maxProperties": 28,
+      "patternProperties": {
+        "^(?:[A-Za-z0-9_][A-Za-z0-9_.-]*/)*[A-Za-z0-9_][A-Za-z0-9_.-]*\\.asm$": {
+          "$ref": "#/definitions/symbol"
+        }
+      },
+      "additionalProperties": false
+    },
+    "representativeAddresses": {
+      "type": "object", "minProperties": 28, "maxProperties": 28,
+      "patternProperties": {
+        "^[A-Za-z_][A-Za-z0-9_]*$": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "internalDirectCallTargets": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "#/definitions/symbol" }
+    },
+    "externalDirectCallTargets": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "#/definitions/symbol" }
+    },
+    "dispatchTables": { "$ref": "#/definitions/dispatchTables" },
+    "coreFacts": { "$ref": "#/definitions/coreFacts" },
+    "unlabeledData": { "$ref": "#/definitions/unlabeledData" },
+    "files": {
+      "type": "array", "minItems": 29, "maxItems": 29,
+      "items": { "$ref": "#/definitions/sourceFile" }
+    }
+  },
+  "definitions": {
+    "recordId": {
+      "type": "string", "pattern": "^[a-z0-9.-]+$"
+    },
+    "sourcePath": {
+      "type": "string",
+      "pattern": "^code/common/scripting/(?:[A-Za-z0-9_][A-Za-z0-9_.-]*/)*[A-Za-z0-9_][A-Za-z0-9_.-]*\\.asm$"
+    },
+    "symbol": {
+      "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "upstream": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "summary": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "fileCount", "sourceLineCount", "statementCount", "globalLabelCount",
+        "localLabelCount", "directCallSiteCount", "indirectCallSiteCount",
+        "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount",
+        "indexedRecordCount", "indexedFileCount", "unlabeledFileCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 29 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 1 },
+        "globalLabelCount": { "type": "integer", "minimum": 1 },
+        "localLabelCount": { "type": "integer", "minimum": 0 },
+        "directCallSiteCount": { "type": "integer", "minimum": 0 },
+        "indirectCallSiteCount": { "type": "integer", "minimum": 0 },
+        "uniqueDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "internalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "externalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "indexedRecordCount": { "type": "integer", "minimum": 0 },
+        "indexedFileCount": { "const": 28 },
+        "unlabeledFileCount": { "const": 1 }
+      }
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourcePath", "recordIds"],
+      "properties": {
+        "sourcePath": { "$ref": "#/definitions/sourcePath" },
+        "recordIds": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/recordId" }
+        }
+      }
+    },
+    "dispatchTables": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mapScript", "entityScript"],
+      "properties": {
+        "mapScript": {
+          "type": "array", "minItems": 90, "maxItems": 90,
+          "items": { "$ref": "#/definitions/symbol" }
+        },
+        "entityScript": {
+          "type": "array", "minItems": 80, "maxItems": 80,
+          "items": { "$ref": "#/definitions/symbol" }
+        }
+      }
+    },
+    "coreFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mapScript", "entityScript", "text", "inventoryBoundary"],
+      "properties": {
+        "mapScript": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "commandCount", "uniqueTargetCount", "terminator", "negativeWordSleepsLowByte",
+            "debugPlayer2StartSkipsDialogueAndSleep", "nonnegativeCommandsUseWordIndex",
+            "waitsForViewScrollWhenDialogueWindowOpen", "clearsViewScrollingSpeedOnReturn",
+            "doNothingIndices"
+          ],
+          "properties": {
+            "commandCount": { "type": "integer", "minimum": 0 },
+            "uniqueTargetCount": { "type": "integer", "minimum": 0 },
+            "terminator": { "type": "integer", "minimum": 0 },
+            "negativeWordSleepsLowByte": { "type": "boolean" },
+            "debugPlayer2StartSkipsDialogueAndSleep": { "type": "boolean" },
+            "nonnegativeCommandsUseWordIndex": { "type": "boolean" },
+            "waitsForViewScrollWhenDialogueWindowOpen": { "type": "boolean" },
+            "clearsViewScrollingSpeedOnReturn": { "type": "boolean" },
+            "doNothingIndices": {
+              "type": "array", "uniqueItems": true,
+              "items": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "entityScript": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "commandCount", "uniqueTargetCount", "emptySlotCoordinateThreshold",
+            "requiresNonzeroActscriptPointer", "dispatchesOneWordCommandPerEntityVint",
+            "fillerTarget", "fillerIndices"
+          ],
+          "properties": {
+            "commandCount": { "type": "integer", "minimum": 0 },
+            "uniqueTargetCount": { "type": "integer", "minimum": 0 },
+            "emptySlotCoordinateThreshold": { "type": "integer", "minimum": 0 },
+            "requiresNonzeroActscriptPointer": { "type": "boolean" },
+            "dispatchesOneWordCommandPerEntityVint": { "type": "boolean" },
+            "fillerTarget": { "$ref": "#/definitions/symbol" },
+            "fillerIndices": {
+              "type": "array", "uniqueItems": true,
+              "items": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "text": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "textBankPointerIndexUsesStringIndexDiv256Times4", "withinBankIndexMask",
+            "compressedStringLengthPrefixBytes", "huffmanInitialPreviousSymbol",
+            "symbolsAtOrAbove238AreControlCodes", "terminatorSymbol",
+            "decoderTreeSelectedByPreviousSymbol", "decoderPersistsBitBarrelAndPreviousSymbol"
+          ],
+          "properties": {
+            "textBankPointerIndexUsesStringIndexDiv256Times4": { "type": "boolean" },
+            "withinBankIndexMask": { "type": "integer", "minimum": 0 },
+            "compressedStringLengthPrefixBytes": { "type": "integer", "minimum": 0 },
+            "huffmanInitialPreviousSymbol": { "type": "integer", "minimum": 0 },
+            "symbolsAtOrAbove238AreControlCodes": { "type": "boolean" },
+            "terminatorSymbol": { "type": "integer", "minimum": 0 },
+            "decoderTreeSelectedByPreviousSymbol": { "type": "boolean" },
+            "decoderPersistsBitBarrelAndPreviousSymbol": { "type": "boolean" }
+          }
+        },
+        "inventoryBoundary": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "endCreditsInventoried", "entityMapAndTextHelpersInventoried",
+            "renderingTimingAndCallerDependentMeaningRemainQueued"
+          ],
+          "properties": {
+            "endCreditsInventoried": { "type": "boolean" },
+            "entityMapAndTextHelpersInventoried": { "type": "boolean" },
+            "renderingTimingAndCallerDependentMeaningRemainQueued": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "unlabeledData": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "path", "startAddress", "endAddressExclusive", "sizeBytes", "byteDirectiveCount",
+        "hasGlobalLabel", "excludedFromStrictSymbolReach"
+      ],
+      "properties": {
+        "path": { "$ref": "#/definitions/sourcePath" },
+        "startAddress": { "type": "integer", "minimum": 0 },
+        "endAddressExclusive": { "type": "integer", "minimum": 0 },
+        "sizeBytes": { "type": "integer", "minimum": 0 },
+        "byteDirectiveCount": { "type": "integer", "minimum": 0 },
+        "hasGlobalLabel": { "type": "boolean" },
+        "excludedFromStrictSymbolReach": { "type": "boolean" }
+      }
+    },
+    "sourceFile": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "path", "sha256", "sourceLineCount", "statementCount", "globalLabels",
+        "localLabelCount", "directCalls", "indirectCallSiteCount"
+      ],
+      "properties": {
+        "path": { "$ref": "#/definitions/sourcePath" },
+        "sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 0 },
+        "globalLabels": {
+          "type": "array", "uniqueItems": true,
+          "items": { "$ref": "#/definitions/symbol" }
+        },
+        "localLabelCount": { "type": "integer", "minimum": 0 },
+        "directCalls": {
+          "type": "array", "items": { "$ref": "#/definitions/directCall" }
+        },
+        "indirectCallSiteCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "directCall": {
+      "type": "object", "additionalProperties": false,
+      "required": ["target", "siteCount"],
+      "properties": {
+        "target": { "$ref": "#/definitions/symbol" },
+        "siteCount": { "type": "integer", "minimum": 1 }
+      }
+    }
   }
 }

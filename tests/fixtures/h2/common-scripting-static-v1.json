@@ -126,6 +126,432 @@
       "byteDirectiveCount": 288,
       "hasGlobalLabel": false,
       "excludedFromStrictSymbolReach": true
-    }
+    },
+    "indexedRecordIds": [
+      "entity.actions.eas-452a4",
+      "entity.actions.eas-452b2",
+      "entity.actions.eas-452ba",
+      "entity.actions.eas-45308",
+      "entity.actions.eas-45360",
+      "entity.actions.eas-4536c",
+      "entity.actions.eas-4540c",
+      "entity.actions.eas-45426",
+      "entity.actions.eas-4548c",
+      "entity.actions.eas-growout",
+      "entity.actions.eas-shrinkin",
+      "entity.actions.update-core",
+      "map.block-mutation.set-blocks-handler",
+      "map.block-mutation.set-blocks-var-handler",
+      "map.camera-control.speed-handler",
+      "map.camera-control.target-handler",
+      "map.entity-action-bridge.custom-actscript",
+      "map.entity-action-bridge.entity-actions",
+      "map.entity-action-bridge.set-actscript",
+      "map.entity-gesture-relationship-motion.alive-status-cursor",
+      "map.entity-gesture-relationship-motion.face",
+      "map.entity-gesture-relationship-motion.fly",
+      "map.entity-gesture-relationship-motion.follow",
+      "map.entity-gesture-relationship-motion.move-above",
+      "map.entity-gesture-relationship-motion.move-next",
+      "map.entity-gesture-relationship-motion.nod",
+      "map.entity-gesture-relationship-motion.run-map-setup",
+      "map.entity-gesture-relationship-motion.shiver",
+      "map.entity-lifecycle-presentation.alive-status-cursor",
+      "map.entity-lifecycle-presentation.hide",
+      "map.entity-lifecycle-presentation.remove-shadow",
+      "map.entity-lifecycle-presentation.run-map-setup",
+      "map.entity-lifecycle-presentation.set-priority",
+      "map.entity-lifecycle-presentation.set-size",
+      "map.entity-lifecycle-presentation.set-sprite",
+      "map.entity-lifecycle-presentation.start",
+      "map.entity-lifecycle-presentation.stop",
+      "map.entity-lifecycle-presentation.wait-idle",
+      "map.entity-placement.alive-status-cursor-adjustment",
+      "map.entity-placement.set-destination",
+      "map.entity-placement.set-facing",
+      "map.entity-placement.set-position",
+      "map.entity-placement.set-position-flash",
+      "map.entity-population.get-entity-address",
+      "map.entity-population.initialize-new-entity",
+      "map.entity-population.load-entity-mapsprites",
+      "map.entity-population.load-from-map-setup",
+      "map.entity-population.load-map-entities",
+      "map.entity-population.new-entity",
+      "map.entity-population.reload-entities",
+      "map.entity-presentation-fx.flash",
+      "map.entity-presentation-fx.headshake",
+      "map.entity-presentation-fx.run-map-setup-injection",
+      "map.entity-presentation-fx.transition",
+      "map.force-state-active-party.run-map-setup",
+      "map.interaction-trigger.roof-handler",
+      "map.interaction-trigger.step-handler",
+      "map.lifecycle.handlers",
+      "map.script-control-audio.runtime",
+      "map.script-dialogue.hide-text",
+      "map.script-dialogue.next-single-text",
+      "map.script-dialogue.next-single-text-var",
+      "map.script-dialogue.next-text",
+      "map.script-dialogue.next-text-var",
+      "map.script-dialogue.run-map-setup",
+      "map.script-dialogue.text-cursor",
+      "map.script-screen-presentation.fade-in",
+      "map.script-screen-presentation.fade-in-half",
+      "map.script-screen-presentation.fade-in-white",
+      "map.script-screen-presentation.fade-out",
+      "map.script-screen-presentation.fade-out-half",
+      "map.script-screen-presentation.fade-out-white",
+      "map.script-screen-presentation.flash-white",
+      "map.script-screen-presentation.flicker",
+      "map.script-screen-presentation.run-map-setup",
+      "map.script-screen-presentation.set-quake",
+      "map.script-screen-presentation.slow-fade-in",
+      "map.script-screen-presentation.slow-fade-out",
+      "map.script-screen-presentation.tint",
+      "map.script-ui-primary.context-menu",
+      "map.script-ui-primary.hide-portrait",
+      "map.script-ui-primary.run-map-setup",
+      "map.script-ui-primary.show-portrait",
+      "map.script.entity-clone.runtime-boundary",
+      "map.setup.area-description",
+      "map.setup.display-area-description",
+      "map.setup.entity-event",
+      "map.setup.entity-list",
+      "map.setup.item-event",
+      "map.setup.selector",
+      "map.setup.zone-event",
+      "map.story-state.run-map-setup",
+      "scripting.endcredits",
+      "scripting.entity.declarenewentity",
+      "scripting.entity.dispatch-table",
+      "scripting.entity.entityfunctions-1",
+      "scripting.entity.entityfunctions-2",
+      "scripting.entity.entityfunctions-3",
+      "scripting.entity.entityfunctions-4",
+      "scripting.entity.entityscriptengine-1",
+      "scripting.entity.entityscriptengine-2",
+      "scripting.entity.esc17-setspritenumber",
+      "scripting.entity.getallymapsprite",
+      "scripting.entity.getcombatantmapsprite",
+      "scripting.entity.getentityportaitandspeechsfx",
+      "scripting.entity.unused-entityscriptfunction",
+      "scripting.entity.updateentityproperties",
+      "scripting.map.bbcs-11-function",
+      "scripting.map.csc1a-setentitysprite",
+      "scripting.map.debugmapscripts",
+      "scripting.map.followersfunctions-1",
+      "scripting.map.followersfunctions-2",
+      "scripting.map.headquartersfunctions",
+      "scripting.map.mapfunctions",
+      "scripting.map.mapscriptengine-1",
+      "scripting.map.mapscriptengine-2",
+      "scripting.map.mapsetupsfunctions-1",
+      "scripting.map.ms-empty",
+      "scripting.map.nullsub-4712a",
+      "scripting.map.resetalliesstats",
+      "scripting.map.transition-runtime-boundary",
+      "scripting.map.vehiclefunctions",
+      "scripting.text.asciinumber",
+      "scripting.text.decoding",
+      "scripting.text.textfunctions-1",
+      "scripting.text.textfunctions-2"
+    ],
+    "indexedSourcePaths": [
+      "code/common/scripting/endcredits.asm",
+      "code/common/scripting/entity/entityfunctions_1.asm",
+      "code/common/scripting/entity/entityfunctions_2.asm",
+      "code/common/scripting/entity/entityfunctions_3.asm",
+      "code/common/scripting/entity/entityfunctions_4.asm",
+      "code/common/scripting/entity/entityscriptengine_1.asm",
+      "code/common/scripting/entity/entityscriptengine_2.asm",
+      "code/common/scripting/entity/getallymapsprite.asm",
+      "code/common/scripting/entity/getcombatantmapsprite.asm",
+      "code/common/scripting/entity/getentityportaitandspeechsfx.asm",
+      "code/common/scripting/entity/unused_entityscriptfunction.asm",
+      "code/common/scripting/map/bbcs_11_function.asm",
+      "code/common/scripting/map/debugmapscripts.asm",
+      "code/common/scripting/map/followersfunctions_1.asm",
+      "code/common/scripting/map/followersfunctions_2.asm",
+      "code/common/scripting/map/headquartersfunctions.asm",
+      "code/common/scripting/map/mapfunctions.asm",
+      "code/common/scripting/map/mapscriptengine_1.asm",
+      "code/common/scripting/map/mapscriptengine_2.asm",
+      "code/common/scripting/map/mapsetupsfunctions_1.asm",
+      "code/common/scripting/map/ms_empty.asm",
+      "code/common/scripting/map/nullsub_4712A.asm",
+      "code/common/scripting/map/resetalliesstats.asm",
+      "code/common/scripting/map/vehiclefunctions.asm",
+      "code/common/scripting/text/asciinumber.asm",
+      "code/common/scripting/text/decoding.asm",
+      "code/common/scripting/text/textfunctions_1.asm",
+      "code/common/scripting/text/textfunctions_2.asm"
+    ],
+    "indexedRecordsBySourcePath": [
+      {
+        "sourcePath": "code/common/scripting/endcredits.asm",
+        "recordIds": [
+          "scripting.endcredits"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/entity/entityfunctions_1.asm",
+        "recordIds": [
+          "map.entity-population.initialize-new-entity",
+          "scripting.entity.declarenewentity",
+          "scripting.entity.entityfunctions-1"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/entity/entityfunctions_2.asm",
+        "recordIds": [
+          "scripting.entity.entityfunctions-2"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/entity/entityfunctions_3.asm",
+        "recordIds": [
+          "scripting.entity.entityfunctions-3"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/entity/entityfunctions_4.asm",
+        "recordIds": [
+          "scripting.entity.entityfunctions-4"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/entity/entityscriptengine_1.asm",
+        "recordIds": [
+          "scripting.entity.entityscriptengine-1"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/entity/entityscriptengine_2.asm",
+        "recordIds": [
+          "entity.actions.update-core",
+          "map.entity-population.load-entity-mapsprites",
+          "scripting.entity.dispatch-table",
+          "scripting.entity.entityscriptengine-2",
+          "scripting.entity.esc17-setspritenumber",
+          "scripting.entity.updateentityproperties"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/entity/getallymapsprite.asm",
+        "recordIds": [
+          "scripting.entity.getallymapsprite"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/entity/getcombatantmapsprite.asm",
+        "recordIds": [
+          "scripting.entity.getcombatantmapsprite"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/entity/getentityportaitandspeechsfx.asm",
+        "recordIds": [
+          "scripting.entity.getentityportaitandspeechsfx"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/entity/unused_entityscriptfunction.asm",
+        "recordIds": [
+          "scripting.entity.unused-entityscriptfunction"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/bbcs_11_function.asm",
+        "recordIds": [
+          "scripting.map.bbcs-11-function"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/debugmapscripts.asm",
+        "recordIds": [
+          "scripting.map.debugmapscripts"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/followersfunctions_1.asm",
+        "recordIds": [
+          "scripting.map.followersfunctions-1"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/followersfunctions_2.asm",
+        "recordIds": [
+          "scripting.map.followersfunctions-2"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/headquartersfunctions.asm",
+        "recordIds": [
+          "scripting.map.headquartersfunctions"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/mapfunctions.asm",
+        "recordIds": [
+          "scripting.map.mapfunctions"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "recordIds": [
+          "map.block-mutation.set-blocks-handler",
+          "map.block-mutation.set-blocks-var-handler",
+          "map.camera-control.speed-handler",
+          "map.camera-control.target-handler",
+          "map.entity-action-bridge.custom-actscript",
+          "map.entity-action-bridge.entity-actions",
+          "map.entity-action-bridge.set-actscript",
+          "map.entity-gesture-relationship-motion.alive-status-cursor",
+          "map.entity-gesture-relationship-motion.face",
+          "map.entity-gesture-relationship-motion.fly",
+          "map.entity-gesture-relationship-motion.follow",
+          "map.entity-gesture-relationship-motion.move-above",
+          "map.entity-gesture-relationship-motion.move-next",
+          "map.entity-gesture-relationship-motion.nod",
+          "map.entity-gesture-relationship-motion.shiver",
+          "map.entity-lifecycle-presentation.alive-status-cursor",
+          "map.entity-lifecycle-presentation.hide",
+          "map.entity-lifecycle-presentation.remove-shadow",
+          "map.entity-lifecycle-presentation.set-priority",
+          "map.entity-lifecycle-presentation.set-size",
+          "map.entity-lifecycle-presentation.set-sprite",
+          "map.entity-lifecycle-presentation.start",
+          "map.entity-lifecycle-presentation.stop",
+          "map.entity-lifecycle-presentation.wait-idle",
+          "map.entity-placement.alive-status-cursor-adjustment",
+          "map.entity-placement.set-destination",
+          "map.entity-placement.set-facing",
+          "map.entity-placement.set-position",
+          "map.entity-placement.set-position-flash",
+          "map.entity-population.get-entity-address",
+          "map.entity-population.load-from-map-setup",
+          "map.entity-population.load-map-entities",
+          "map.entity-population.new-entity",
+          "map.entity-population.reload-entities",
+          "map.entity-presentation-fx.flash",
+          "map.entity-presentation-fx.headshake",
+          "map.entity-presentation-fx.transition",
+          "map.interaction-trigger.roof-handler",
+          "map.interaction-trigger.step-handler",
+          "map.lifecycle.handlers",
+          "map.script-screen-presentation.fade-in",
+          "map.script-screen-presentation.fade-in-half",
+          "map.script-screen-presentation.fade-in-white",
+          "map.script-screen-presentation.fade-out",
+          "map.script-screen-presentation.fade-out-half",
+          "map.script-screen-presentation.fade-out-white",
+          "map.script-screen-presentation.flash-white",
+          "map.script-screen-presentation.flicker",
+          "map.script-screen-presentation.set-quake",
+          "map.script-screen-presentation.slow-fade-in",
+          "map.script-screen-presentation.slow-fade-out",
+          "map.script-screen-presentation.tint",
+          "map.script-ui-primary.hide-portrait",
+          "map.script-ui-primary.show-portrait",
+          "map.script.entity-clone.runtime-boundary",
+          "scripting.map.csc1a-setentitysprite",
+          "scripting.map.mapscriptengine-1",
+          "scripting.map.transition-runtime-boundary"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "recordIds": [
+          "map.script-control-audio.runtime",
+          "map.script-dialogue.hide-text",
+          "map.script-dialogue.next-single-text",
+          "map.script-dialogue.next-single-text-var",
+          "map.script-dialogue.next-text",
+          "map.script-dialogue.next-text-var",
+          "map.script-dialogue.text-cursor",
+          "map.script-ui-primary.context-menu",
+          "scripting.map.mapscriptengine-2"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/mapsetupsfunctions_1.asm",
+        "recordIds": [
+          "map.entity-gesture-relationship-motion.run-map-setup",
+          "map.entity-lifecycle-presentation.run-map-setup",
+          "map.entity-presentation-fx.run-map-setup-injection",
+          "map.force-state-active-party.run-map-setup",
+          "map.script-dialogue.run-map-setup",
+          "map.script-screen-presentation.run-map-setup",
+          "map.script-ui-primary.run-map-setup",
+          "map.setup.area-description",
+          "map.setup.display-area-description",
+          "map.setup.entity-event",
+          "map.setup.entity-list",
+          "map.setup.item-event",
+          "map.setup.selector",
+          "map.setup.zone-event",
+          "map.story-state.run-map-setup",
+          "scripting.map.mapsetupsfunctions-1"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/ms_empty.asm",
+        "recordIds": [
+          "scripting.map.ms-empty"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/nullsub_4712A.asm",
+        "recordIds": [
+          "scripting.map.nullsub-4712a"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/resetalliesstats.asm",
+        "recordIds": [
+          "scripting.map.resetalliesstats"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/map/vehiclefunctions.asm",
+        "recordIds": [
+          "entity.actions.eas-452a4",
+          "entity.actions.eas-452b2",
+          "entity.actions.eas-452ba",
+          "entity.actions.eas-45308",
+          "entity.actions.eas-45360",
+          "entity.actions.eas-4536c",
+          "entity.actions.eas-4540c",
+          "entity.actions.eas-45426",
+          "entity.actions.eas-4548c",
+          "entity.actions.eas-growout",
+          "entity.actions.eas-shrinkin",
+          "scripting.map.vehiclefunctions"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/text/asciinumber.asm",
+        "recordIds": [
+          "scripting.text.asciinumber"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/text/decoding.asm",
+        "recordIds": [
+          "scripting.text.decoding"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/text/textfunctions_1.asm",
+        "recordIds": [
+          "scripting.text.textfunctions-1"
+        ]
+      },
+      {
+        "sourcePath": "code/common/scripting/text/textfunctions_2.asm",
+        "recordIds": [
+          "scripting.text.textfunctions-2"
+        ]
+      }
+    ]
   }
 }

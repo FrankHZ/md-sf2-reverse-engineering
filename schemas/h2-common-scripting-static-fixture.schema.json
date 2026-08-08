@@ -1,13 +1,162 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SF2 common scripting static fixture",
-  "type": "object", "additionalProperties": false,
+  "type": "object",
+  "additionalProperties": false,
   "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
   "properties": {
-    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-common-scripting-static-v1" },
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-common-scripting-static-v1" },
     "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
     "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
-    "function": { "type": "object", "minProperties": 28, "maxProperties": 28, "additionalProperties": { "type": "integer", "minimum": 0 } },
-    "expected": { "type": "object", "additionalProperties": false, "required": ["coreFacts", "unlabeledData"], "properties": { "coreFacts": { "type": "object", "minProperties": 4, "maxProperties": 4 }, "unlabeledData": { "type": "object" } } }
+    "function": {
+      "type": "object", "minProperties": 28, "maxProperties": 28,
+      "patternProperties": {
+        "^[A-Za-z_][A-Za-z0-9_]*$": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "expected": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "indexedRecordIds", "indexedSourcePaths", "indexedRecordsBySourcePath",
+        "coreFacts", "unlabeledData"
+      ],
+      "properties": {
+        "indexedRecordIds": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/recordId" }
+        },
+        "indexedSourcePaths": {
+          "type": "array", "minItems": 28, "maxItems": 28, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/sourcePath" }
+        },
+        "indexedRecordsBySourcePath": {
+          "type": "array", "minItems": 1,
+          "items": { "$ref": "#/definitions/indexedRecordsBySourcePath" }
+        },
+        "coreFacts": { "$ref": "#/definitions/coreFacts" },
+        "unlabeledData": { "$ref": "#/definitions/unlabeledData" }
+      }
+    }
+  },
+  "definitions": {
+    "recordId": {
+      "type": "string", "pattern": "^[a-z0-9.-]+$"
+    },
+    "sourcePath": {
+      "type": "string",
+      "pattern": "^code/common/scripting/(?:[A-Za-z0-9_][A-Za-z0-9_.-]*/)*[A-Za-z0-9_][A-Za-z0-9_.-]*\\.asm$"
+    },
+    "symbol": {
+      "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourcePath", "recordIds"],
+      "properties": {
+        "sourcePath": { "$ref": "#/definitions/sourcePath" },
+        "recordIds": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/recordId" }
+        }
+      }
+    },
+    "coreFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mapScript", "entityScript", "text", "inventoryBoundary"],
+      "properties": {
+        "mapScript": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "commandCount", "uniqueTargetCount", "terminator", "negativeWordSleepsLowByte",
+            "debugPlayer2StartSkipsDialogueAndSleep", "nonnegativeCommandsUseWordIndex",
+            "waitsForViewScrollWhenDialogueWindowOpen", "clearsViewScrollingSpeedOnReturn",
+            "doNothingIndices"
+          ],
+          "properties": {
+            "commandCount": { "type": "integer", "minimum": 0 },
+            "uniqueTargetCount": { "type": "integer", "minimum": 0 },
+            "terminator": { "type": "integer", "minimum": 0 },
+            "negativeWordSleepsLowByte": { "type": "boolean" },
+            "debugPlayer2StartSkipsDialogueAndSleep": { "type": "boolean" },
+            "nonnegativeCommandsUseWordIndex": { "type": "boolean" },
+            "waitsForViewScrollWhenDialogueWindowOpen": { "type": "boolean" },
+            "clearsViewScrollingSpeedOnReturn": { "type": "boolean" },
+            "doNothingIndices": {
+              "type": "array", "uniqueItems": true,
+              "items": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "entityScript": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "commandCount", "uniqueTargetCount", "emptySlotCoordinateThreshold",
+            "requiresNonzeroActscriptPointer", "dispatchesOneWordCommandPerEntityVint",
+            "fillerTarget", "fillerIndices"
+          ],
+          "properties": {
+            "commandCount": { "type": "integer", "minimum": 0 },
+            "uniqueTargetCount": { "type": "integer", "minimum": 0 },
+            "emptySlotCoordinateThreshold": { "type": "integer", "minimum": 0 },
+            "requiresNonzeroActscriptPointer": { "type": "boolean" },
+            "dispatchesOneWordCommandPerEntityVint": { "type": "boolean" },
+            "fillerTarget": { "$ref": "#/definitions/symbol" },
+            "fillerIndices": {
+              "type": "array", "uniqueItems": true,
+              "items": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        "text": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "textBankPointerIndexUsesStringIndexDiv256Times4", "withinBankIndexMask",
+            "compressedStringLengthPrefixBytes", "huffmanInitialPreviousSymbol",
+            "symbolsAtOrAbove238AreControlCodes", "terminatorSymbol",
+            "decoderTreeSelectedByPreviousSymbol", "decoderPersistsBitBarrelAndPreviousSymbol"
+          ],
+          "properties": {
+            "textBankPointerIndexUsesStringIndexDiv256Times4": { "type": "boolean" },
+            "withinBankIndexMask": { "type": "integer", "minimum": 0 },
+            "compressedStringLengthPrefixBytes": { "type": "integer", "minimum": 0 },
+            "huffmanInitialPreviousSymbol": { "type": "integer", "minimum": 0 },
+            "symbolsAtOrAbove238AreControlCodes": { "type": "boolean" },
+            "terminatorSymbol": { "type": "integer", "minimum": 0 },
+            "decoderTreeSelectedByPreviousSymbol": { "type": "boolean" },
+            "decoderPersistsBitBarrelAndPreviousSymbol": { "type": "boolean" }
+          }
+        },
+        "inventoryBoundary": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "endCreditsInventoried", "entityMapAndTextHelpersInventoried",
+            "renderingTimingAndCallerDependentMeaningRemainQueued"
+          ],
+          "properties": {
+            "endCreditsInventoried": { "type": "boolean" },
+            "entityMapAndTextHelpersInventoried": { "type": "boolean" },
+            "renderingTimingAndCallerDependentMeaningRemainQueued": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "unlabeledData": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "path", "startAddress", "endAddressExclusive", "sizeBytes", "byteDirectiveCount",
+        "hasGlobalLabel", "excludedFromStrictSymbolReach"
+      ],
+      "properties": {
+        "path": { "$ref": "#/definitions/sourcePath" },
+        "startAddress": { "type": "integer", "minimum": 0 },
+        "endAddressExclusive": { "type": "integer", "minimum": 0 },
+        "sizeBytes": { "type": "integer", "minimum": 0 },
+        "byteDirectiveCount": { "type": "integer", "minimum": 0 },
+        "hasGlobalLabel": { "type": "boolean" },
+        "excludedFromStrictSymbolReach": { "type": "boolean" }
+      }
+    }
   }
 }
