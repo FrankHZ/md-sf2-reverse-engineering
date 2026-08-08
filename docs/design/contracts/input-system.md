@@ -1,10 +1,9 @@
 # Input-System Contract
 
-- **Confirmed original behavior:** the five raw two-port sampling cases and three direct VInt
-  input-repeat cases in the bounded one-launch matrix below.
-- **Unknown original behavior:** input wait-helper runtime behavior, `sub_15A4`, controller electrical
-  latency, three- versus six-button negotiation, controller-model compatibility, and user-visible UI
-  timing.
+- **Confirmed original behavior:** the five raw two-port sampling cases, three direct VInt input-repeat
+  cases, and eight bounded direct wait-helper cases in the one-launch matrix below.
+- **Unknown original behavior:** `sub_15A4`, controller electrical latency, three- versus six-button
+  negotiation, controller-model compatibility, normal game/UI caller meaning, and user-visible UI timing.
 - Remake status: implementation-neutral input pipeline contract; hardware adapters and platform event
   timing remain implementation choices until the grouped runtime matrix observes the original.
 - Evidence date: 2026-08-08
@@ -30,8 +29,8 @@ The VInt-owned repeat stage is a distinct contract. It calls the raw sampler, de
 the counter operations; it does not establish externally observed input-to-frame latency.
 
 The static source inventory separately describes `WaitForPlayerInput`, `WaitForPlayer1NewInput`, the
-one/three-second waits, and `sub_15A4`. Their runtime behavior is deliberately not part of this H3
-contract and remains queued rather than inferred from their static control flow.
+one/three-second waits, and `sub_15A4`. The first four have the bounded direct runtime observations
+below; `sub_15A4` remains queued rather than inferred from static control flow.
 
 ## Runtime Matrix Boundary
 
@@ -39,15 +38,27 @@ contract and remains queued rather than inferred from their static control flow.
 `UpdatePlayerInputs` observe neutral, Player 1 Up+B, Player 2 C+Start, simultaneous combined basic
 buttons, and release. All record the two raw bytes for each port. Three direct calls to original
 `ApplyZ80BusUpdates` observe new press, release/repress, and a held C input at the source-derived
-24-frame threshold and six-frame cadence. Repeat execution is direct VInt input-stage observation;
-it is not normal `WaitForVInt` caller progression.
+24-frame threshold and six-frame cadence. Repeat execution is direct VInt input-stage observation.
+
+Eight direct helper cases execute original `WaitForPlayerInput`, `WaitForPlayer1NewInput`,
+`WaitForInputFor1Second`, and `WaitForInputFor3Seconds`. They cover immediate and delayed current-input
+return; neutral-to-press and held-to-release-to-repress new-input return; and early-input versus full
+60/180-cycle DBF boundaries. For each actual wait cycle the observer confirms the source call/target/RTS/
+return chain for `WaitForVInt`, the enabled original `VInt` entry, and its original input stage, then
+records the raw/repeat state; the timed helpers also prove that `d5` is restored. This is direct helper
+and enabled-VInt progression, not normal game/UI caller provenance, skipped-VInt ordering, or hardware
+latency evidence.
+
+The direct seam performs one harness-only normalization at the first source `WaitForVInt` call after
+its SR-unmask preamble: it writes/reads current and last input from the fixture's initial Player 1 byte
+and clears the repeat delay, excluding any unowned preamble VInt state change. It never resets later
+source wait cycles, and does not establish natural normal-caller state.
 
 The observer also checks direct call/target/return triples and the original nested source
 call/target/return `ApplyZ80BusUpdates` → `UpdatePlayerInputs` path. Its `CheckSram` return redirect
 only enters the temporary work-RAM probe, whose gate arms one direct call before each host frame and
-pauses after return. Runtime `WaitForPlayerInput`, `WaitForPlayer1NewInput`, one/three-second waits,
-`sub_15A4`, three-/six-button negotiation, hardware latency, and UI/menu behavior remain grouped
-Unknown questions.
+pauses after return. `sub_15A4`, three-/six-button negotiation, hardware latency, normal game/UI caller
+meaning, and UI/menu behavior remain grouped Unknown questions.
 
 ## Remake Boundary
 

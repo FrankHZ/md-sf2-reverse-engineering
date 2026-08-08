@@ -35,10 +35,12 @@ runtime question.
 `WaitForVInt` sets the update-enable bit and spins until VInt clears its waiting flag. `Sleep(0)`
 returns without waiting; positive values invoke that handshake for the requested frame count.
 
-The accepted controller H3 launch does not reproduce that normal VInt caller progression. It invokes
-the original `ApplyZ80BusUpdates` entry directly and observes only its input stage. Therefore normal
-VInt caller progression, skipped/enabled VInt ordering, contextual-slot scheduling, and fade completion
-remain **Unknown**.
+The accepted controller H3 launch retains the direct `ApplyZ80BusUpdates` repeat seam, and additionally
+calls the original input wait helpers directly. The latter exercises their original `WaitForVInt` call,
+the enabled original `VInt` entry, its `ApplyZ80BusUpdates` input stage, and the return that releases
+the wait flag. It does not establish a normal game/UI caller progression, the skipped-VInt path or its
+ordering against the enabled path, contextual-slot behavior, or fade completion; those remain
+**Unknown**.
 
 ## DMA, Fading, and Input
 
@@ -57,10 +59,14 @@ six-frame repeat cadence. The bounded one-launch H3 fixture
 `sf2-controller-input-runtime-v1` in `tests/fixtures/h3/controller-input-v1.json`, verified by
 `src/sf2tool/h3/controller_input.py`, directly calls the original `ApplyZ80BusUpdates` input stage and
 observes new press, release/repress, held-input suppression through the 24-frame threshold, and the
-six-frame cadence. Run `uv run sf2 h3 controller-input --timeout-seconds 180` to reproduce it. This
-confirms the input-stage delay/cadence boundary only: normal VInt caller progression, latency,
-UI behavior, controller hardware behavior, and the wait-helper boundary remain **Unknown**. The raw
-sampling and wait-helper boundary is in [`input-system.md`](../design/contracts/input-system.md).
+six-frame cadence. In the same one-launch fixture, eight direct cases across the four wait helpers observe the original
+`WaitForVInt` entry/return counts and enabled-VInt input-stage progression: immediate/delayed player
+input, release/repress new-input, and early/60/180-cycle timed boundaries. Run
+`uv run sf2 h3 controller-input --timeout-seconds 180` to reproduce it. This confirms the bounded
+input-stage delay/cadence and direct wait/VInt boundary only: normal VInt caller progression, skipped/
+enabled ordering, contextual slots, fade completion, latency, UI behavior, and controller hardware
+behavior remain **Unknown**. The raw sampling and wait-helper boundary is in
+[`input-system.md`](../design/contracts/input-system.md).
 
 ## Trap Boundary
 
@@ -71,7 +77,8 @@ executing a map script.
 
 ## Concentrated Runtime Queue
 
-The accepted direct input-stage launch closes only the 24/6 repeat boundary. Under ADR 0005's
+The accepted direct input-stage launch closes the 24/6 repeat boundary and the bounded direct
+wait-helper/VInt progression. Under ADR 0005's
 2026-07-23 priority decision, exact VDP/DMA/Z80 cycle timing, DMA queue-capacity behavior, and raw
 controller latency are frozen once the visible contract is adequate. A future shared matrix is active
 only for a concrete user-visible acceptance gap: skipped/enabled VInt ordering, contextual slot

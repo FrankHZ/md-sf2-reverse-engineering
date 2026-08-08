@@ -286,7 +286,7 @@
         "frameIndex": {"type": "integer", "minimum": 0},
         "expectedFunctionPc": {"$ref": "#/definitions/nullablePc"},
         "pendingReturnPc": {"$ref": "#/definitions/nullablePc"},
-        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"enum": ["bootstrap-entry", "bootstrap-return", "direct-call", "apply-target", "source-call", "update-target", "source-return", "direct-return"]}}
+        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"enum": ["bootstrap-entry", "bootstrap-return", "direct-call", "apply-target", "source-call", "update-target", "source-return", "direct-return", "wait-helper-target", "wait-helper-return", "wait-for-vint-call", "wait-for-vint-target", "wait-for-vint-rts", "wait-for-vint-return", "vint-target", "vint-input-call", "vint-input-stage", "vint-input-return"]}}
       }
     },
     "controllerInputFailure": {
@@ -303,7 +303,7 @@
         "owner": {"const": "controller-input"},
         "pendingCallback": {"$ref": "#/definitions/controllerInputPendingCallback"},
         "phase": {"$ref": "#/definitions/nonEmptyString"},
-        "role": {"enum": ["registration", "bootstrap-return-redirect", "direct-input-probe", "direct-call", "apply-target", "source-call", "update-target", "source-return", "direct-return"]}
+        "role": {"enum": ["registration", "bootstrap-return-redirect", "direct-input-probe", "direct-call", "apply-target", "source-call", "update-target", "source-return", "direct-return", "wait-helper-target", "wait-helper-return", "wait-for-vint-call", "wait-for-vint-target", "wait-for-vint-rts", "wait-for-vint-return", "vint-target", "vint-input-call", "vint-input-stage", "vint-input-return"]}
       }
     }
   }
