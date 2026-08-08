@@ -81,17 +81,33 @@ higher and forward otherwise, preserving overlapping moves in the normal memmove
 state bytes per port, and stores contiguous Player 1 then Player 2 raw state. Each composition writes
 TH low then high, shifts/masks `$C0`, combines a `$3F` read, and inverts before storing. The VInt repeat
 stage is owned by the technical-interrupt rail: it transforms raw input into current/last input with a
-24-frame initial delay and six-frame cadence. `WaitForPlayerInput` uses current input; the Player 1
-new-input helper requires release then press; one/three-second raw Player 1 waits have 60/180 VInt
-upper bounds and early exit. `sub_15A4` has a scratch-mask overlap counter with threshold 10. The
-comment-stripping parser finds four source-local `WaitForVInt` call sites and eleven external sites
-across nine callers: one `UpdatePlayerInputs` site and ten `WaitForPlayerInput` sites; the remaining
-four entry points have zero static direct-call sites, which does not establish runtime reachability.
-**Unknown:** hardware latency, controller-model
-and three-/six-button behavior, and player-visible repeat timing. The implementation-neutral contract
-is [`input-system.md`](../design/contracts/input-system.md). ADR 0005's 2026-07-23 priority decision freezes
-raw controller electrical/model/latency exactness after that visible input contract is adequate; it
-does not freeze a concrete UI/menu acceptance gap in repeat or wait behavior.
+24-frame initial delay and six-frame cadence. The H2 source inventory additionally records the static
+shapes of `WaitForPlayerInput`, `WaitForPlayer1NewInput`, the one/three-second waits, and `sub_15A4`,
+but does not promote their caller-dependent runtime behavior here. The comment-stripping parser finds
+four source-local `WaitForVInt` call sites and eleven external sites across nine callers: one
+`UpdatePlayerInputs` site and ten `WaitForPlayerInput` sites; the remaining four entry points have
+zero static direct-call sites, which does not establish runtime reachability.
+
+**Confirmed H3, bounded:** `sf2-controller-input-runtime-v1` uses one BizHawk 2.11.1 / Genesis Plus
+GX launch and direct original-function seams. Its five `UpdatePlayerInputs` cases prove neutral,
+Player 1 Up+B, Player 2 C+Start, simultaneous combined basic buttons, and release across both raw
+state bytes for both controller ports. Its three direct `ApplyZ80BusUpdates` input-stage cases prove
+new press, release/repress, and continuous held-input suppression through the exact 24-frame threshold
+with the six-frame cadence. The observer confirms the direct call/target/return triples and, for the
+repeat cases, the original nested `ApplyZ80BusUpdates` call to `UpdatePlayerInputs` at H1
+`0x09F6`/`0x09FA`. `CheckSram` return redirection is bootstrap-only. This is direct VInt input-stage
+observation, not normal `WaitForVInt` caller progression, UI behavior, or a hardware-latency result.
+The temporary work-RAM gate arms one direct call after each host frame boundary and pauses after its
+return, so the fixture's real joypad input is visible before every observed original call.
+Reproduce with `uv run sf2 h3 controller-input --timeout-seconds 180`.
+
+**Unknown:** runtime `WaitForPlayerInput`, `WaitForPlayer1NewInput`, one/three-second waits, and
+`sub_15A4`; controller-model and three-/six-button negotiation; hardware latency; and user-visible
+UI/menu timing. The implementation-neutral contract is
+[`input-system.md`](../design/contracts/input-system.md).
+ADR 0005's 2026-07-23 priority decision freezes raw controller electrical/model/latency exactness
+after the visible input contract is adequate; it does not freeze a concrete UI/menu acceptance gap in
+repeat or wait behavior.
 
 ## SRAM Save-System Contract
 

@@ -1,18 +1,20 @@
 # Input-System Contract
 
-- **Confirmed original behavior:** the raw two-port sampling sequence, Player 1/2 state-byte
-  storage, VInt-derived current/repeat-input stage, and the input wait helper control flow below.
-- **Unknown original behavior:** controller electrical latency, three- versus six-button protocol
-  behavior, controller-model compatibility, and frame-exact player-visible repeat timing.
+- **Confirmed original behavior:** the five raw two-port sampling cases and three direct VInt
+  input-repeat cases in the bounded one-launch matrix below.
+- **Unknown original behavior:** input wait-helper runtime behavior, `sub_15A4`, controller electrical
+  latency, three- versus six-button negotiation, controller-model compatibility, and user-visible UI
+  timing.
 - Remake status: implementation-neutral input pipeline contract; hardware adapters and platform event
   timing remain implementation choices until the grouped runtime matrix observes the original.
-- Evidence date: 2026-07-20
+- Evidence date: 2026-08-08
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - Traceability: `sf2-tech-services-static-v1` in
   `tests/fixtures/h2/tech-services-static-v1.json`; `sf2-tech-interrupts-static-v1` in
-  `tests/fixtures/h2/tech-interrupts-static-v1.json`; `src/sf2tool/h2/services.py`; and
-  `src/sf2tool/h2/interrupts.py`.
+  `tests/fixtures/h2/tech-interrupts-static-v1.json`; `sf2-controller-input-runtime-v1` in
+  `tests/fixtures/h3/controller-input-v1.json`; `src/sf2tool/h2/services.py`;
+  `src/sf2tool/h2/interrupts.py`; and `src/sf2tool/h3/controller_input.py`.
 
 ## Confirmed Static Contract
 
@@ -27,20 +29,25 @@ The VInt-owned repeat stage is a distinct contract. It calls the raw sampler, de
 24-frame delay, and then subtracts six to create the static repeat cadence. The source establishes
 the counter operations; it does not establish externally observed input-to-frame latency.
 
-`WaitForPlayerInput` masks the VInt-derived current input and returns only when a recognized button is
-nonzero, otherwise it waits for another VInt. `WaitForPlayer1NewInput` first waits for recognized
-Player 1 input to be released, then waits for a new recognized press. The bounded Player 1 waits poll
-the raw state before each VInt: one second permits at most 60 waits and three seconds at most 180, with
-an early return on a recognized press. `sub_15A4` is separately modeled as scratch-mask overlap and
-counter control flow: overlap below 10 clears Player 1 input, while zero overlap or a counter at least
-10 clears its scratch state. Its caller role remains unproven.
+The static source inventory separately describes `WaitForPlayerInput`, `WaitForPlayer1NewInput`, the
+one/three-second waits, and `sub_15A4`. Their runtime behavior is deliberately not part of this H3
+contract and remains queued rather than inferred from their static control flow.
 
 ## Runtime Matrix Boundary
 
-One future controller/input matrix should cover raw state A/B to `LAST`/`CURRENT`, new press and
-release/repress, held 24-frame initial delay and six-frame cadence, one/three-second early exit and
-timeout, and three- versus six-button/controller-latency edge cases. These share the same VInt and
-controller setup; no one-case emulator fixtures are warranted.
+`sf2-controller-input-runtime-v1` is exactly one direct-function-seam launch. Five calls to original
+`UpdatePlayerInputs` observe neutral, Player 1 Up+B, Player 2 C+Start, simultaneous combined basic
+buttons, and release. All record the two raw bytes for each port. Three direct calls to original
+`ApplyZ80BusUpdates` observe new press, release/repress, and a held C input at the source-derived
+24-frame threshold and six-frame cadence. Repeat execution is direct VInt input-stage observation;
+it is not normal `WaitForVInt` caller progression.
+
+The observer also checks direct call/target/return triples and the original nested source
+call/target/return `ApplyZ80BusUpdates` → `UpdatePlayerInputs` path. Its `CheckSram` return redirect
+only enters the temporary work-RAM probe, whose gate arms one direct call before each host frame and
+pauses after return. Runtime `WaitForPlayerInput`, `WaitForPlayer1NewInput`, one/three-second waits,
+`sub_15A4`, three-/six-button negotiation, hardware latency, and UI/menu behavior remain grouped
+Unknown questions.
 
 ## Remake Boundary
 

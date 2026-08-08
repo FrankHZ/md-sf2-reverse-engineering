@@ -1,13 +1,12 @@
 # 输入系统合同
 
-- **已确认的原版行为：** 原始双端口采样序列、Player 1/2 状态字节存储、VInt 派生的当前/输入重复阶段，以及下面的输入等待辅助控制流。
-- **未知的原版行为：** 控制器电气延迟、三键与六键协议行为、控制器型号兼容性，以及帧精确的玩家可见重复时序。
+- **已确认的原版行为：** 下文受限的一次启动矩阵中的五个原始双端口采样用例，以及三个直接 VInt 输入重复用例。
+- **未知的原版行为：** 输入等待辅助函数的运行时行为、`sub_15A4`、控制器电气延迟、三键与六键协商、控制器型号兼容性，以及面向用户的 UI 时序。
 - 重制状态：实现无关的输入管线合同；硬件适配器与平台事件时序在分组运行时矩阵观察原版之前仍是实现选择。
-- 证据日期：2026-07-20
+- 证据日期：2026-08-08
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
-- 可追溯性：`tests/fixtures/h2/tech-services-static-v1.json` 中的 `sf2-tech-services-static-v1`；`tests/fixtures/h2/tech-interrupts-static-v1.json` 中的 `sf2-tech-interrupts-static-v1`；`src/sf2tool/h2/services.py`；以及
-  `src/sf2tool/h2/interrupts.py`。
+- 可追溯性：`tests/fixtures/h2/tech-services-static-v1.json` 中的 `sf2-tech-services-static-v1`；`tests/fixtures/h2/tech-interrupts-static-v1.json` 中的 `sf2-tech-interrupts-static-v1`；`tests/fixtures/h3/controller-input-v1.json` 中的 `sf2-controller-input-runtime-v1`；`src/sf2tool/h2/services.py`；`src/sf2tool/h2/interrupts.py`；以及 `src/sf2tool/h3/controller_input.py`。
 
 > 本文件是 [`input-system.md`](../../contracts/input-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
 
@@ -17,11 +16,13 @@
 
 VInt 拥有的重复阶段是一个独立合同。它调用原始采样器，派生 `CURRENT_PLAYER_INPUT` 与 `LAST_PLAYER_INPUT`，通过初始 24 帧延迟抑制未变化的输入，然后减去六来创建静态重复节奏。源码确立计数器运算；它不确立外部观察到的输入到帧延迟。
 
-`WaitForPlayerInput` 掩码 VInt 派生的当前输入，并且只在已识别的按钮非零时返回，否则等待另一个 VInt。`WaitForPlayer1NewInput` 首先等待已识别的 Player 1 输入被释放，然后等待一个新的已识别按下。有界的 Player 1 等待在每个 VInt 前轮询原始状态：一秒最多允许 60 次等待，三秒最多 180 次，识别到的按下会提前返回。`sub_15A4` 被单独建模为 scratch（暂存）掩码重叠与计数器控制流：重叠低于 10 清除 Player 1 输入，而零重叠或计数器至少为 10 清除其 scratch 状态。其调用方角色仍未证实。
+静态源码清单还分别描述 `WaitForPlayerInput`、`WaitForPlayer1NewInput`、一秒与三秒等待，以及 `sub_15A4`。它们的运行时行为有意不属于此 H3 合同；它们仍在队列中，不从其静态控制流推断。
 
 ## 运行时矩阵边界
 
-一个未来的控制器/输入矩阵应覆盖从原始状态 A/B 到 `LAST`/`CURRENT`、新按下与释放/再按下、保持的 24 帧初始延迟与六帧节奏、一/三秒提前退出与超时，以及三键与六键/控制器延迟边界用例。这些共享相同的 VInt 与控制器配置；不需要单用例模拟器 fixtures。
+`sf2-controller-input-runtime-v1` 恰为一次直接函数接缝启动。对原始 `UpdatePlayerInputs` 的五次调用观察中性、Player 1 Up+B、Player 2 C+Start、同时组合基本按键，以及释放。所有调用记录每个端口的两个原始字节。对原始 `ApplyZ80BusUpdates` 的三次直接调用观察新按下、释放/再按下，以及在源码派生的 24 帧阈值和六帧节奏下保持 C 输入。重复执行是直接 VInt 输入阶段观察；它不是正常的 `WaitForVInt` 调用方推进。
+
+观察器还检查直接 call/target/return 三元组，以及原始嵌套源码 call/target/return 路径 `ApplyZ80BusUpdates` → `UpdatePlayerInputs`。它的 `CheckSram` 返回重定向只进入临时 work-RAM probe；其 gate 在每个主机帧前 arm 一个直接调用，并在返回后 pause。运行时 `WaitForPlayerInput`、`WaitForPlayer1NewInput`、一秒与三秒等待、`sub_15A4`、三键/六键协商、硬件延迟，以及 UI/菜单行为仍为成组的未知问题。
 
 ## 重制边界
 

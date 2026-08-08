@@ -110,9 +110,10 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         schema_root / "map-script-entity-presentation-fx-callback-failure.schema.json",
         schema_root / "random-services-callback-failure.schema.json",
         schema_root / "sram-lifecycle-callback-failure.schema.json",
+        schema_root / "controller-input-callback-failure.schema.json",
     ]
     audit = schema_composition_audit(paths)
-    assert audit["schemaCount"] == 8
+    assert audit["schemaCount"] == 9
     assert audit["unresolvedReferences"] == []
     assert audit["duplicateBodyGroups"] == []
     assert audit["largeConstCount"] == 0
@@ -133,11 +134,13 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         "entityPresentationPendingCallback",
         "randomServicesPendingCallback",
         "sramLifecyclePendingCallback",
+        "controllerInputPendingCallback",
         "controlAudioFailure",
         "transitionFailure",
         "entityPresentationFailure",
         "randomServicesFailure",
         "sramLifecycleFailure",
+        "controllerInputFailure",
     }
     serialized = json.dumps(component, sort_keys=True)
     for golden_field in ("cases", "caseOrder", "records", "recordOrder"):
