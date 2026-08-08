@@ -19,6 +19,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/battle-encounter-definition.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/battle-scene-presentation.md",
       "status": "pending"
     },
