@@ -35,6 +35,17 @@ CONTRACTS = {
             "sf2-battle-actions-static-v1"
         ),
     },
+    "docs/design/contracts/battle-encounter-definition.md": {
+        "tests/fixtures/h2/battle-spriteset-data-static-v1.json": (
+            "sf2-battle-spriteset-data-static-v1"
+        ),
+        "tests/fixtures/h2/battle-global-data-static-v1.json": (
+            "sf2-battle-global-data-static-v1"
+        ),
+        "tests/fixtures/h2/battle-routing-data-static-v1.json": (
+            "sf2-battle-routing-data-static-v1"
+        ),
+    },
     "docs/design/contracts/battle-scene-presentation.md": {
         "tests/fixtures/h2/battle-scene-engine-static-v1.json": (
             "sf2-battle-scene-engine-static-v1"
