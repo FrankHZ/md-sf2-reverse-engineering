@@ -152,9 +152,9 @@ import/layout rule, not permission to read beyond the actual 171 rows in the par
 
 Complete deterministic replay yields 152,679 decoded symbols, of which 4,267 are the single
 terminator 254 for each record and 148,412 are non-terminators. All 86 defined contexts occur. The
-stored compressed payload length ranges from 3 through 116 bytes, excluding its one-byte prefix;
-decoded record length ranges from 2 through 243 symbols, and the terminator leaves 8 through 15
-stored bits in every record.
+stored compressed payload length ranges from 3 through 116 bytes, while complete stored record size
+including its one-byte prefix ranges from 4 through 117 bytes. Decoded record length ranges from 2
+through 243 symbols, and the terminator leaves 8 through 15 stored bits in every record.
 
 The adjacent source script has exactly the contiguous IDs 0 through 4,266. Its plaintext and the
 per-record decoded symbol sequences remain private/generated; tracked evidence retains only aggregate
@@ -242,8 +242,9 @@ A remake-side importer or compatibility adapter can claim this contract only whe
 prove:
 
 1. exactly 4,267 original line IDs map to the accepted 17-bank, 16-full/one-partial record shape;
-2. pointer order, record lengths, bank-payload hashes, aggregate decoded hashes, terminator
-   count, and source/ROM parity metadata match the accepted private input;
+2. pointer order, compressed-payload lengths, derived stored-record lengths, bank-payload hashes,
+   aggregate decoded hashes, terminator count, and source/ROM parity metadata match the accepted
+   private input;
 3. all 255 offset entries, 86 trees, 1,536 leaves, packing spans, code lengths, and context-graph
    reachability match the canonical owner;
 4. decode begins at context 254, preserves cross-call bit/context state, handles the zero-bit leaf,
