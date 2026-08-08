@@ -54,7 +54,7 @@ validity of arbitrary injected map-sprite IDs.
 
 ## Stable Identity and Slot Topology
 
-The original tables expose two related but non-identical domains:
+The original tables expose three related but non-identical domains:
 
 | Domain | Confirmed shape | Contract consequence |
 | --- | --- | --- |
@@ -147,10 +147,21 @@ addressable records and provenance. At minimum, an imported definition model nee
 AllyDefinition
   allyId
   nameResourceRef
-  startRecordRef
-  statProfileRef
+  startSlotRef
+  statPointerSlotRef
   mapSpriteRef
   battleSpriteEntries[]
+
+AllyStartSlot
+  slotId
+  allyId?
+  classId
+  level
+  itemBytes[4]
+
+AllyStatPointerSlot
+  slotId
+  targetRef
 
 ClassDefinition
   classId
@@ -160,6 +171,13 @@ ClassDefinition
   movementType
   prowessBits
 
+PromotionTables
+  regularBaseClassIds[12]
+  regularPromotedClassIds[12]
+  specialBaseClassIds[5]
+  specialPromotedClassIds[5]
+  specialPromotionItemIds[5]
+
 AllyClassGrowth
   allyId
   classId
@@ -167,9 +185,13 @@ AllyClassGrowth
   spellList = Explicit(entries[]) | InheritFirst
 ```
 
-This notation is a logical contract, not a required engine class layout. Original numeric IDs and
-raw values must remain available for parity diagnostics; localized names, display labels, and
-modernized balance metadata belong in separate layers.
+This notation is a logical contract, not a required engine class layout. The 30 named
+`AllyDefinition` records may reference slots `0..29`, but both 32-slot collections remain first-class:
+the unnamed start slots retain no invented ally ID, and pointer slots 30 and 31 retain their separate
+slot identities even though they share one target. `PromotionTables` preserves the five stored arrays
+without asserting caller admission or mutation behavior. Original numeric IDs and raw values must
+remain available for parity diagnostics; localized names, display labels, and modernized balance
+metadata belong in separate layers.
 
 ## Original Fidelity and Modernization
 
