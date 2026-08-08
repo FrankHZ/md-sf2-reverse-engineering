@@ -69,6 +69,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/global-flag-state.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/input-system.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/input-system.md",

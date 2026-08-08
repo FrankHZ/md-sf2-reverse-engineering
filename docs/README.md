@@ -384,6 +384,11 @@ document whose anchors may be updated.
   typed getter overlays, mutation wrappers, clamp helpers, the bounded nine-operation runtime matrix,
   distance helper, and unused type encoder, while retaining higher-level lifecycle, persistence,
   presentation, caller-visible edge behavior, and balance as separate-owner or Unknown boundaries.
+- [`global-flag-state.md`](./design/contracts/global-flag-state.md): the implementation-neutral
+  contract for masked flag-index resolution, eight-flags-per-byte storage, bit-7-first selection,
+  shared Check/Set/Clear addressing, and the bounded four-wrapper flag-trap inventory, while retaining
+  exact capacity, trap ABI, runtime reachability, persistence, campaign meaning, and presentation as
+  Unknown or separate-owner boundaries.
 - [`combat-resolution.md`](./design/contracts/combat-resolution.md): the implementation-neutral contract from
   physical attacks through dodge, terrain/countering, critical, spread, and double/counter to
   temporary HP, reaction replay, EXP booking, and level-up connection, plus the shared fixture
