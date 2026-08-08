@@ -48,7 +48,7 @@
           ]
         }
       ],
-      "documents": ["docs/research/battle01-placement.md", "docs/research/battle-loop.md"]
+      "documents": ["docs/research/battle01-placement.md", "docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.activation.trigger-regions-and-activate-enemies",
@@ -61,99 +61,99 @@
         { "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.triggerRegionsAddress" }] },
         { "level": "H3", "fixture": "tests/fixtures/h3/battle01-secondary-activation-v1.json", "fixtureId": "sf2-battle01-secondary-activation-v1", "verifier": "scripts/Test-H3Battle01SecondaryActivationFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.triggerRegionsAddress" }] }
       ],
-      "documents": ["docs/research/battle01-placement.md", "docs/research/battle-loop.md"]
+      "documents": ["docs/research/battle01-placement.md", "docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.clear-ai-memory", "subsystem": "battle.loop", "status": "confirmed", "symbol": "ClearAiMemory", "sourcePath": "code/gameflow/battle/battleloop/clearaimemory.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 49264 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.clearAiMemoryAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 49264 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.clearAiMemoryAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.clear-dead-list", "subsystem": "battle.loop", "status": "confirmed", "symbol": "ClearDeadCombatantsListLength", "sourcePath": "code/gameflow/battle/battleloop/cleardeadcombatantslist.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 148754 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.clearDeadListAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 148754 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.clearDeadListAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.count-remaining", "subsystem": "battle.loop", "status": "confirmed", "symbol": "CountRemainingCombatants", "sourcePath": "code/gameflow/battle/battleloop/countremainingcombatants.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 146520 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.countRemainingAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 146520 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.countRemainingAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.egress-position", "subsystem": "battle.loop", "status": "confirmed", "symbol": "GetEgressPositionForBattle", "sourcePath": "code/gameflow/battle/battleloop/getegresspositionforbattle.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 147024 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.getEgressPositionAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 147024 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.getEgressPositionAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.jaro-joined", "subsystem": "battle.loop", "status": "confirmed", "symbol": "HasJaroJoinedTheForce", "sourcePath": "code/gameflow/battle/battleloop/hasjarojoined.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1776168 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.hasJaroJoinedAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1776168 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.hasJaroJoinedAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.heal-living-allies", "subsystem": "battle.loop", "status": "confirmed", "symbol": "HealLivingAndImmortalAllies", "sourcePath": "code/gameflow/battle/battleloop/heallivingandimmortalallies.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 146428 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.healLivingAlliesAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 146428 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.healLivingAlliesAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.initialize-combatants", "subsystem": "battle.loop", "status": "confirmed", "symbol": "InitializeAllAlliesBattlePositions", "sourcePath": "code/gameflow/battle/battleloop/initializecombatants.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1774194 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.initializeAlliesAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1774194 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.initializeAlliesAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.kill-enemies", "subsystem": "battle.loop", "status": "confirmed", "symbol": "KillRemainingEnemies", "sourcePath": "code/gameflow/battle/battleloop/killallenemies.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 146356 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.killRemainingEnemiesAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 146356 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.killRemainingEnemiesAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.load-terrain", "subsystem": "battle.loop", "status": "confirmed", "symbol": "LoadBattleTerrainData", "sourcePath": "code/gameflow/battle/battleloop/loadbattleterraindata.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1757404 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.loadTerrainAddress" }] }, { "level": "H2", "fixture": "tests/fixtures/h2/battle-terrain-decode-v1.json", "fixtureId": "sf2-battle-terrain-decode-v1", "verifier": "src/sf2tool/h2/battle_terrain.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.loadTerrainAddress" }] }], "documents": ["docs/research/battle-loop.md", "docs/research/battlefield-pathfinding.md"], "designContracts": ["docs/design/contracts/battlefield-navigation.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1757404 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.loadTerrainAddress" }] }, { "level": "H2", "fixture": "tests/fixtures/h2/battle-terrain-decode-v1.json", "fixtureId": "sf2-battle-terrain-decode-v1", "verifier": "src/sf2tool/h2/battle_terrain.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.loadTerrainAddress" }] }], "documents": ["docs/research/battle-loop.md", "docs/research/battlefield-pathfinding.md"], "designContracts": ["docs/design/contracts/battlefield-navigation.md", "docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.populate-spawns", "subsystem": "battle.loop", "status": "confirmed", "symbol": "PopulateTargetsListWithSpawningEnemies", "sourcePath": "code/gameflow/battle/battleloop/populateenemyspawns.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1756976 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.populateEnemySpawnsAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1756976 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.populateEnemySpawnsAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.print-defcons", "subsystem": "battle.loop", "status": "confirmed", "symbol": "PrintAllActivatedDefCons", "sourcePath": "code/gameflow/battle/battleloop/printdefcons.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 153386 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.printDefConsAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 153386 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.printDefConsAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.process-killed", "subsystem": "battle.loop", "status": "confirmed", "symbol": "ProcessKilledCombatants", "sourcePath": "code/gameflow/battle/battleloop/processkilledcombatants.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 148760 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.processKilledAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 148760 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.processKilledAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.spawn-enemy", "subsystem": "battle.loop", "status": "confirmed", "symbol": "SpawnEnemySkipCamera", "sourcePath": "code/gameflow/battle/battleloop/spawnenemy.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 148618 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.spawnEnemyAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 148618 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.spawnEnemyAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.loop.upgrade-enemies", "subsystem": "battle.loop", "status": "confirmed", "symbol": "IsBattleUpgradable", "sourcePath": "code/gameflow/battle/battleloop/upgradeenemies.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1775488 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.isBattleUpgradableAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1775488 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-loop-static-v1.json", "fixtureId": "sf2-battle-loop-static-v1", "verifier": "src/sf2tool/h2/battle_loop.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.isBattleUpgradableAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.control.debug-function", "subsystem": "battle.control", "status": "confirmed", "symbol": "BattleDebugFunction1B120A", "sourcePath": "code/gameflow/battle/battledebugfunction1B120A.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1774090 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.debugFunctionAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1774090 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.debugFunctionAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.control.main-loop", "subsystem": "battle.control", "status": "confirmed", "symbol": "BattleLoop", "sourcePath": "code/gameflow/battle/battleloop_1.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 146052 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.battleLoopAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 146052 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.battleLoopAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.control.outcomes", "subsystem": "battle.control", "status": "confirmed", "symbol": "BattleLoop_Victory", "sourcePath": "code/gameflow/battle/battleloop_2.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 146618 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.victoryAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 146618 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.victoryAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.control.music", "subsystem": "battle.control", "status": "confirmed", "symbol": "PlayMapMusic", "sourcePath": "code/gameflow/battle/battlemusic.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 17732 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.playMapMusicAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 17732 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.playMapMusicAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.control.vint", "subsystem": "battle.control", "status": "confirmed", "symbol": "SetBaseVIntFunctions", "sourcePath": "code/gameflow/battle/battlevints.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 154260 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.setBaseVintAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 154260 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.setBaseVintAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.control.spriteset-subsection", "subsystem": "battle.control", "status": "confirmed", "symbol": "GetBattleSpritesetSubsection", "sourcePath": "code/gameflow/battle/getbattlespritesetsubsection.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1775152 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.spritesetSubsectionAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1775152 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.spritesetSubsectionAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.control.starting-position", "subsystem": "battle.control", "status": "confirmed", "symbol": "GetCombatantStartingPosition", "sourcePath": "code/gameflow/battle/getcombatantstartingposition.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1775262 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.startingPositionAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1775262 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.startingPositionAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.control.difficulty", "subsystem": "battle.control", "status": "confirmed", "symbol": "GetDifficulty", "sourcePath": "code/gameflow/battle/getdifficulty.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54280 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.difficultyAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 54280 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.difficultyAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.control.laser-facing", "subsystem": "battle.control", "status": "confirmed", "symbol": "GetLaserFacing", "sourcePath": "code/gameflow/battle/getlaserfacing.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755296 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.laserFacingAddress" }] }], "documents": ["docs/research/battle-loop.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 1755296 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-control-static-v1.json", "fixtureId": "sf2-battle-control-static-v1", "verifier": "src/sf2tool/h2/battle_control.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.laserFacingAddress" }] }], "documents": ["docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.actions.animate", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_AnimateAction", "sourcePath": "code/gameflow/battle/battleactions/animateaction.asm",
@@ -1729,7 +1729,7 @@
         ]
       }],
       "documents": ["docs/research/runtime-rng-and-battle-math.md", "docs/research/battle-loop.md"],
-      "designContracts": ["docs/design/contracts/spell-resolution.md"]
+      "designContracts": ["docs/design/contracts/spell-resolution.md", "docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "battle.turn-order.generate",
@@ -1748,7 +1748,7 @@
         { "level": "H3", "fixture": "tests/fixtures/h3/battle01-turn-order-v1.json", "fixtureId": "sf2-battle01-turn-order-v1", "verifier": "scripts/Test-H3Battle01TurnOrderFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.entryAddress" }, { "addressId": "observe", "fixtureField": "function.observeAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }, { "addressId": "turn-order", "fixtureField": "function.turnOrderAddress" }] },
         { "level": "H3", "fixture": "tests/fixtures/h3/turn-order-boundaries-v1.json", "fixtureId": "sf2-turn-order-boundaries-v1", "verifier": "scripts/Test-H3TurnOrderBoundariesFixture.ps1", "bindings": [{ "addressId": "entry", "fixtureField": "function.entryAddress" }, { "addressId": "observe", "fixtureField": "function.observeAddress" }, { "addressId": "random-seed", "fixtureField": "function.seedAddress" }, { "addressId": "turn-order", "fixtureField": "function.turnOrderAddress" }] }
       ],
-      "documents": ["docs/research/battle01-placement.md", "docs/research/runtime-rng-and-battle-math.md", "docs/research/battle-loop.md"]
+      "documents": ["docs/research/battle01-placement.md", "docs/research/runtime-rng-and-battle-math.md", "docs/research/battle-loop.md"], "designContracts": ["docs/design/contracts/battle-control-lifecycle.md"]
     },
     {
       "id": "growth.calculate-stat-gain",

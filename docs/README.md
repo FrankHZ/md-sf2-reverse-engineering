@@ -367,6 +367,11 @@ document whose anchors may be updated.
   the seven source-named entity gesture/relationship/motion forms, the twelve source-named
   screen/map-presentation forms, and the original-fact/Unknown/modernizable boundary with a modern
   renderer.
+- [`battle-control-lifecycle.md`](./design/contracts/battle-control-lifecycle.md): the implementation-neutral
+  contract for new/resumed battle entry, round activation/spawn/turn scheduling, combatant death
+  worklists and cleanup, bounded Battle 01 region and turn-order runtime behavior, double faction
+  checks around one-step after-turn processing, and static victory/defeat result mutations, while
+  retaining persistence, special-case, multi-round, presentation, and campaign boundaries as Unknown.
 - [`battlefield-navigation.md`](./design/contracts/battlefield-navigation.md): the implementation-neutral
   contract for the 48x48 battlefield grids, terrain/occupancy state, weighted movement propagation,
   Manhattan range and target admission, attack-position selection, move strings, and the bounded

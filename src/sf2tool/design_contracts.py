@@ -6,6 +6,27 @@ from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 
 CONTRACTS = {
+    "docs/design/contracts/battle-control-lifecycle.md": {
+        "tests/fixtures/h2/battle-loop-static-v1.json": "sf2-battle-loop-static-v1",
+        "tests/fixtures/h2/battle-control-static-v1.json": (
+            "sf2-battle-control-static-v1"
+        ),
+        "tests/fixtures/h3/battle01-turn-order-v1.json": (
+            "sf2-battle01-turn-order-v1"
+        ),
+        "tests/fixtures/h3/turn-order-boundaries-v1.json": (
+            "sf2-turn-order-boundaries-v1"
+        ),
+        "tests/fixtures/h3/battle01-region-activation-v1.json": (
+            "sf2-battle01-region-activation-v1"
+        ),
+        "tests/fixtures/h3/battle01-secondary-activation-v1.json": (
+            "sf2-battle01-secondary-activation-v1"
+        ),
+        "tests/fixtures/h3/after-turn-status-lifecycle-v1.json": (
+            "sf2-after-turn-status-lifecycle-v1"
+        ),
+    },
     "docs/design/contracts/dialogue-system.md": {
         "tests/fixtures/h2/map-script-engine-static-v1.json": (
             "sf2-map-script-engine-static-v1"
