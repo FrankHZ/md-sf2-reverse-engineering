@@ -430,6 +430,11 @@ document whose anchors may be updated.
   matrix, and the cross-process persistence and power-loss boundaries still left to H3.
 - [`input-system.md`](./design/contracts/input-system.md): two-port raw sampling, VInt current/repeat filtering,
   input-wait helpers, and the controller/timing Unknown boundary.
+- [`text-and-font-system.md`](./design/contracts/text-and-font-system.md): the implementation-neutral
+  contract for the 255-entry context-Huffman table, 86 reachable trees, 17 banks and 4,267 records,
+  complete aggregate symbol replay, 80 variable-width glyph records, and 256-entry ASCII map, while
+  retaining control effects, presentation, localization, and copyrighted content as Unknown or
+  deliberate-design boundaries.
 - [`window-system.md`](./design/contracts/window-system.md): the eight-slot window entry, layout
   allocation/reclamation, packed-coordinate addressing, VInt composition/DMA call order, and the
   presentation-timing Unknown boundary.
