@@ -389,6 +389,11 @@ document whose anchors may be updated.
   shared Check/Set/Clear addressing, and the bounded four-wrapper flag-trap inventory, while retaining
   exact capacity, trap ABI, runtime reachability, persistence, campaign meaning, and presentation as
   Unknown or separate-owner boundaries.
+- [`caravan-and-deals-state.md`](./design/contracts/caravan-and-deals-state.md): the
+  implementation-neutral contract for Caravan status-bit normalization, full-add ignore, ordered
+  removal compaction/tail clearing, and packed Deals count saturation/zero-removal boundaries, while
+  retaining capacities, numeric masks/mappings, runtime/service outcomes, persistence, UI, and balance
+  as separate-owner or Unknown boundaries.
 - [`combat-resolution.md`](./design/contracts/combat-resolution.md): the implementation-neutral contract from
   physical attacks through dodge, terrain/countering, critical, spread, and double/counter to
   temporary HP, reaction replay, EXP booking, and level-up connection, plus the shared fixture

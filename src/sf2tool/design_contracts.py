@@ -144,6 +144,11 @@ CONTRACTS = {
             "sf2-tech-interrupts-static-v1"
         ),
     },
+    "docs/design/contracts/caravan-and-deals-state.md": {
+        "tests/fixtures/h2/common-stats-static-v1.json": (
+            "sf2-common-stats-static-v1"
+        ),
+    },
     "docs/design/contracts/item-definition-data.md": {
         "tests/fixtures/h2/core-stats-data-static-v1.json": (
             "sf2-core-stats-data-static-v1"
