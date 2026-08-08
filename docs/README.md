@@ -369,6 +369,11 @@ document whose anchors may be updated.
   field-use catalogs, weapon-graphics references, and bounded lookup rules, while retaining runtime
   transactions, effects, RNG, persistence, presentation, economy balance, and replacement content
   as separate-owner, Unknown, or deliberate-design boundaries.
+- [`spell-definition-data.md`](./design/contracts/spell-definition-data.md): the implementation-neutral
+  contract for 44 spell identities and element rows, 89 fixed eight-byte definitions, packed
+  identity/level and animation fields, and the radius-3 data exception, while retaining resolution,
+  targeting/geometry, effects, MP transactions, presentation, balance, localization, and content as
+  separate-owner, Unknown, or deliberate-design boundaries.
 - [`audio-system.md`](./design/contracts/audio-system.md): the implementation-neutral contract for
   music/SFX command identities, two-bank slot and target aliases, headers and channel roles, the
   static macro/note/sample/instrument/SFX domains, and the bounded four-command playback-state
