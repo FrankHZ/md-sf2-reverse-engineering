@@ -379,6 +379,11 @@ document whose anchors may be updated.
   static macro/note/sample/instrument/SFX domains, and the bounded four-command playback-state
   matrix, while retaining audible output, timing, transition policy, and asset licensing as Unknown
   or deliberate-design boundaries.
+- [`combatant-state-access.md`](./design/contracts/combatant-state-access.md): the
+  implementation-neutral contract for the source-shaped combatant selector and 56-byte entry ABI,
+  typed getter overlays, mutation wrappers, clamp helpers, the bounded nine-operation runtime matrix,
+  distance helper, and unused type encoder, while retaining higher-level lifecycle, persistence,
+  presentation, caller-visible edge behavior, and balance as separate-owner or Unknown boundaries.
 - [`combat-resolution.md`](./design/contracts/combat-resolution.md): the implementation-neutral contract from
   physical attacks through dodge, terrain/countering, critical, spread, and double/counter to
   temporary HP, reaction replay, EXP booking, and level-up connection, plus the shared fixture

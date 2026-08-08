@@ -210,6 +210,14 @@ CONTRACTS = {
             "sf2-battlefield-movement-runtime-v1"
         ),
     },
+    "docs/design/contracts/combatant-state-access.md": {
+        "tests/fixtures/h2/common-stats-static-v1.json": (
+            "sf2-common-stats-static-v1"
+        ),
+        "tests/fixtures/h3/stat-clamp-boundaries-v1.json": (
+            "sf2-stat-clamp-boundaries-v1"
+        ),
+    },
     "docs/design/contracts/combat-resolution.md": {
         "tests/fixtures/h3/muddle-action-guard-v1.json": (
             "sf2-muddle-action-guard-both-sides-v1"
