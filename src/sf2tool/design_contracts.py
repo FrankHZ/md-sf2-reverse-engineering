@@ -35,6 +35,29 @@ CONTRACTS = {
             "sf2-battle-actions-static-v1"
         ),
     },
+    "docs/design/contracts/battle-scene-presentation.md": {
+        "tests/fixtures/h2/battle-scene-engine-static-v1.json": (
+            "sf2-battle-scene-engine-static-v1"
+        ),
+        "tests/fixtures/h2/battle-scene-animations-static-v1.json": (
+            "sf2-battle-scene-animations-static-v1"
+        ),
+        "tests/fixtures/h2/battle-background-decode-v1.json": (
+            "sf2-battle-background-decode-v1"
+        ),
+        "tests/fixtures/h2/battle-sprite-decode-v1.json": (
+            "sf2-battle-sprite-decode-v1"
+        ),
+        "tests/fixtures/h2/battle-sprite-animation-static-v1.json": (
+            "sf2-battle-sprite-animation-static-v1"
+        ),
+        "tests/fixtures/h2/battle-weapon-ground-decode-v1.json": (
+            "sf2-battle-weapon-ground-decode-v1"
+        ),
+        "tests/fixtures/h2/battle-effect-graphics-decode-v1.json": (
+            "sf2-battle-effect-graphics-decode-v1"
+        ),
+    },
     "docs/design/contracts/battle-control-lifecycle.md": {
         "tests/fixtures/h2/battle-loop-static-v1.json": "sf2-battle-loop-static-v1",
         "tests/fixtures/h2/battle-control-static-v1.json": (
