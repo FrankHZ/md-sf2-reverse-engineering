@@ -132,6 +132,10 @@
       "translatedDate": "2026-08-08"
     },
     {
+      "source": "docs/design/contracts/spell-definition-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/spell-resolution.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/spell-resolution.md",
