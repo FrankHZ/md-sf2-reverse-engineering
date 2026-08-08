@@ -131,6 +131,7 @@ A complete logical import keeps item identities distinct from catalogs and consu
 ItemDefinition
   itemId
   enumCode
+  rawNameExpression
   displayResourceRef
   equipFlags
   minRange, maxRange
@@ -144,6 +145,9 @@ ShopCatalog
   category
   orderedItemIds[]
   sourceRowProvenance
+
+DebugShopCatalog
+  orderedItemIds[128]
 
 MithrilCatalog
   classGroups[9]
