@@ -15,10 +15,11 @@ It does not turn source-table order into encounter design or balance intent.
   definition join, the 63-row map-sprite tail, and the unchecked enemy map-sprite lookup boundary.
 - **Inferred**: none. Source labels remain storage vocabulary; their complete gameplay or visual
   meaning is not inferred here.
-- **Unknown**: natural reachability of enemy map-sprite indexes `103..165`; renderer-visible effects
-  of the embedded null in one accepted name; complete spawn transformation effects; encounter and
-  upgrade selection; AI behavior; turn scheduling; combat outcomes; reward assignment; presentation
-  timing; difficulty curves; and authorial or balance intent.
+- **Unknown**: intentional original debug or other nonstandard reachability of enemy map-sprite
+  indexes `103..165`; renderer-visible effects of the embedded null in one accepted name; complete
+  spawn transformation effects; encounter and upgrade selection; AI behavior; turn scheduling;
+  combat outcomes; reward assignment; presentation timing; difficulty curves; and authorial or
+  balance intent.
 
 The [battle encounter definition contract](battle-encounter-definition.md) owns battle-local enemy
 selection, placement, and region/terrain data. The [battle AI contract](battle-ai-decision.md) owns
