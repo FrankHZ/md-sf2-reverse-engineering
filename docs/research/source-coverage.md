@@ -134,11 +134,18 @@ The current evidence is deep but narrow:
   Common menus now inventories 42 files and binds all 41 layout-owned sources. Prompt input/results,
   text controls, field items, and the built eight-source shop/church/caravan/blacksmith state-machine
   surface are static contracts. The accepted five-case direct helper matrix confirms mithril class/
-  weighted-row selection, BRN/RDBN fallback, first-empty order writes, and seed effects. Its v2
+  weighted-row selection, BRN/RDBN fallback, first-empty order writes, and seed effects. Its accepted v2
   eight-case/one-launch H3 matrix retains those five helper cases and confirms three static-guarded
   committed-order cases for the exact DecreaseGold → pending increment → DropItemBySlot → picker →
   ClearFlag chronology, first-empty order slots 0/2/1, and the narrow readback restoration boundary;
-  menu admission, persistence, UI, caller-return, and presentation timing remain outside this evidence.
+  its accepted v3 single-fixture extension confirms three direct `BlacksmithAction_FulfillOrder:@AddItem`
+  cases for source-selected physical order slots/counters 3/1, 2/2, and 0/4, first-`ITEM_NOTHING`
+  inventory positions 3/2/0, `AddItem` result 0, exact source-selected order-word clear, fulfilled counts
+  1/2/3, and both original equippability-carry polarities. All three share the exact 11-event AddItem,
+  order-mutation, and equippability callback chronology in one launch. The direct-entry commit block is
+  therefore Confirmed rather than a residual question; the remaining grouped Unknown boundary is vanilla
+  recipient selection/cancel/full-inventory UI, optional equip/equip/curse branches, and presentation,
+  alongside menu admission, persistence, and caller-return timing outside this evidence.
   One overlapping member-list alternate remains excluded.
   Technical services now additionally models the complete seven-entry SRAM save surface: two-slot
   layout, interleaved copying, checksum/flag transitions, and its caller inventory. One fourteen-case,

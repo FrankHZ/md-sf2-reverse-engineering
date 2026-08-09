@@ -1,10 +1,12 @@
-"""One-launch direct observation of blacksmith picker and committed-order seams.
+"""One-launch direct observation of blacksmith picker, commitment, and fulfillment seams.
 
 The work-RAM probe enters only original ROM routines after the ordinary startup
 ``CheckSram`` return.  It retains the accepted direct ``PickMithrilWeapon``
-matrix and adds a separate, post-confirmation ``@PlaceOrder`` matrix.  The
-latter executes the original gold, item-drop, picker, and flag helpers, then
-redirects only the original ``ClearFlag`` return away from the first text trap.
+matrix and adds separate, post-confirmation ``@PlaceOrder`` and fulfillment
+matrices.  The commitment cohort redirects only the original ``ClearFlag``
+return away from the first text trap.  The fulfillment cohort enters the
+original ``@AddItem`` block and redirects only the original
+``IsWeaponOrRingEquippable`` return away from its following branch.
 """
 
 from __future__ import annotations
@@ -26,13 +28,15 @@ from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 from sf2tool.research_index import listing_symbol_addresses
 
-FIXTURE = repo_path("tests/fixtures/h3/blacksmith-mithril-v2.json")
+FIXTURE = repo_path("tests/fixtures/h3/blacksmith-mithril-v3.json")
 FIXTURE_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-fixture.schema.json")
 OBSERVATION_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-observation.schema.json")
 FAILURE_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-callback-failure.schema.json")
 OBSERVER = repo_path("tools/bizhawk/blacksmith_mithril_observer.lua")
 TOOLCHAIN_MANIFEST = repo_path("manifests/toolchain.json")
 COMMON_MENUS_OWNER = repo_path("tests/fixtures/h2/common-menus-static-v1.json")
+COMMON_STATS_OWNER = repo_path("tests/fixtures/h2/common-stats-static-v1.json")
+CORE_STATS_DATA_OWNER = repo_path("tests/fixtures/h2/core-stats-data-static-v1.json")
 ITEM_OWNER = repo_path("tests/fixtures/h2/item-auxiliary-static-v1.json")
 RNG_OWNER = repo_path("tests/fixtures/h3/rng-v1.json")
 
@@ -41,6 +45,7 @@ DISASM = UPSTREAM / "disasm"
 PICK_SOURCE_RELATIVE = Path("code/common/menus/blacksmith/pickmithrilweapon.asm")
 BLACKSMITH_ACTIONS_RELATIVE = Path("code/common/menus/blacksmith/blacksmithactions.asm")
 TABLE_SOURCE_RELATIVE = Path("data/stats/items/mithrilweapons.asm")
+ITEMDEFS_SOURCE_RELATIVE = Path("data/stats/items/itemdefs.asm")
 ENUMS_RELATIVE = Path("sf2enums.asm")
 CONST_RELATIVE = Path("sf2const.asm")
 LISTING_RELATIVE = Path("build/sf2build-h1.lst")
@@ -64,6 +69,11 @@ TRANSACTION_CASE_IDS = (
     "wizard-row3-first-order-slot0",
     "paladin-row1-final-roll-order-slot2",
     "brn-fallback-row2-order-slot1",
+)
+FULFILLMENT_CASE_IDS = (
+    "hero-levanter-slot3-order3-equippable",
+    "vicr-goddess-staff-slot2-order2-equippable",
+    "snip-mystery-staff-slot0-order0-not-equippable",
 )
 
 
@@ -165,7 +175,9 @@ def _required_equates(values: dict[str, int]) -> dict[str, int]:
         "BLACKSMITH_ORDERS_COUNTER",
         "BLACKSMITH_MAX_ORDERS_NUMBER",
         "COMBATANT_DATA_ENTRY_REAL_SIZE",
+        "COMBATANT_ITEMSLOTS_COUNTER",
         "COMBATANT_ITEMSLOTS",
+        "COMBATANT_OFFSET_CLASS",
         "COMBATANT_OFFSET_ITEMS",
         "GAME_FLAGS",
         "FLAG_MASK",
@@ -173,6 +185,18 @@ def _required_equates(values: dict[str, int]) -> dict[str, int]:
         "COMBATANT_DATA",
         "ITEM_NOTHING",
         "ITEMENTRY_MASK_INDEX",
+        "ITEMENTRY_MASK_INDEX_AND_BROKEN_BIT",
+        "ITEMDEF_SIZE",
+        "ITEMDEF_OFFSET_EQUIPFLAGS",
+        "ITEMDEF_OFFSET_TYPE",
+        "ITEMTYPE_WEAPON",
+        "ITEMTYPE_RING",
+        "CLASS_HERO",
+        "CLASS_VICR",
+        "CLASS_SNIP",
+        "ITEM_LEVANTER",
+        "ITEM_GODDESS_STAFF",
+        "ITEM_MYSTERY_STAFF",
         "CLASS_BRN",
         "CLASS_RDBN",
         "ITEM_MITHRIL",
@@ -522,21 +546,144 @@ def _require_supporting_mutation_source_shape(
     )
 
 
+def _require_fulfillment_source_shape(actions_source: str, item_source: str) -> None:
+    """Bind only the direct fulfillment block and the helpers it actually reaches."""
+    _require_source_sequence(
+        _source_section(actions_source, "BlacksmithAction_FulfillOrder"),
+        (
+            "@additem:",
+            "move.w clientmember(a6),d0",
+            "move.w itemindex(a6),d1",
+            "jsr j_additem",
+            "move.w #blacksmith_max_orders_number,d6",
+            "sub.w orderscounter(a6),d6",
+            "lea ((mithril_weapons_on_order-$1000000)).w,a1",
+            "lsl.w #1,d6",
+            "adda.w d6,a1",
+            "move.w (a1),d2",
+            "move.w #0,(a1)",
+            "addi.w #1,fulfilledordersnumber(a6)",
+            "move.w itemindex(a6),d1",
+            "move.w clientmember(a6),d0",
+            "jsr j_isweaponorringequippable",
+            "bcc.w byte_21cd0",
+        ),
+        name="BlacksmithAction_FulfillOrder @AddItem block",
+    )
+    _require_source_sequence(
+        _source_section(item_source, "AddItem"),
+        (
+            "additem:",
+            "bsr.w getcombatantentryaddress",
+            "lea combatant_offset_items(a0),a0",
+            "moveq #combatant_itemslots_counter,d0",
+            "@loop:",
+            "move.w (a0)+,d2",
+            "andi.w #itementry_mask_index,d2",
+            "cmpi.w #item_nothing,d2",
+            "beq.s @break",
+            "dbf d0,@loop",
+            "move.w #1,d2",
+            "bra.s @done",
+            "@break:",
+            "andi.w #itementry_mask_index_and_broken_bit,d1",
+            "move.w d1,-(a0)",
+            "clr.w d2",
+            "@done:",
+            "movem.l (sp)+,d0/a0",
+            "rts",
+        ),
+        name="AddItem first-ITEM_NOTHING write",
+    )
+    _require_source_sequence(
+        _source_section(item_source, "IsWeaponOrRingEquippable"),
+        (
+            "isweaponorringequippable:",
+            "movem.l d0/d2-d6/a0,-(sp)",
+            "move.w #itemtype_weapon|itemtype_ring,d2",
+            "bsr.w getcombatantentryaddress",
+            "move.b combatant_offset_class(a0),d0",
+            "moveq #1,d3",
+            "lsl.l d0,d3",
+            "bsr.s isitemequippable",
+            "movem.l (sp)+,d0/d2-d6/a0",
+            "rts",
+        ),
+        name="IsWeaponOrRingEquippable carry ABI",
+    )
+
+
+def _item_definition_rows(
+    source: str, equates: dict[str, int], item_indexes: set[int]
+) -> dict[int, dict[str, int]]:
+    """Parse the three source rows needed for this cohort, including class masks."""
+    rows: dict[int, dict[str, int]] = {}
+    pattern = re.compile(
+        r"^\s*;\s*(\d+):[^\n]*\n"
+        r"\s*equipFlags\s+([A-Z0-9_|]+)\s*\n"
+        r"(?:.*\n){2}\s*itemType\s+([A-Z0-9_|]+)\s*$",
+        re.MULTILINE,
+    )
+    for match in pattern.finditer(source):
+        item_index = int(match.group(1))
+        if item_index not in item_indexes:
+            continue
+        class_mask = 0
+        for name in match.group(2).split("|"):
+            if name == "NONE":
+                continue
+            key = f"CLASS_{name}"
+            if key not in equates:
+                raise ValueError(f"blacksmith item equip flag enum missing: {key}")
+            class_mask |= 1 << equates[key]
+        item_type = 0
+        for name in match.group(3).split("|"):
+            key = f"ITEMTYPE_{name}"
+            if key not in equates:
+                raise ValueError(f"blacksmith item type enum missing: {key}")
+            item_type |= equates[key]
+        rows[item_index] = {"equipFlags": class_mask, "itemType": item_type}
+    if set(rows) != item_indexes:
+        raise ValueError("blacksmith fulfillment item-definition source row drift")
+    return rows
+
+
+def _item_definition_source_domain(source: str) -> tuple[int, int, int]:
+    """Derive the complete source cardinality and annotated table span before selecting rows."""
+    range_match = re.search(
+        r"^;\s*0x([0-9A-F]+)\.\.0x([0-9A-F]+)\s*:\s*Item definitions\s*$",
+        source,
+        re.MULTILINE,
+    )
+    if range_match is None:
+        raise ValueError("blacksmith item-definition source range drift")
+    count = len(re.findall(r"^\s*equipFlags\s+", source, re.MULTILINE))
+    if count == 0:
+        raise ValueError("blacksmith item-definition source cardinality drift")
+    return int(range_match.group(1), 16), int(range_match.group(2), 16), count
+
+
 def _validate_owners(
     fixture: dict[str, Any],
     *,
     common_menus_path: Path = COMMON_MENUS_OWNER,
+    common_stats_path: Path = COMMON_STATS_OWNER,
+    core_stats_data_path: Path = CORE_STATS_DATA_OWNER,
     item_owner_path: Path = ITEM_OWNER,
     rng_owner_path: Path = RNG_OWNER,
-) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
     toolchain = load_json(TOOLCHAIN_MANIFEST)["sf2disasm"]
     common_menus = load_json(common_menus_path)
+    common_stats = load_json(common_stats_path)
+    core_stats_data = load_json(core_stats_data_path)
     item_owner = load_json(item_owner_path)
     rng_owner = load_json(rng_owner_path)
     owners = fixture["provenance"]["owners"]
     expected_repository = toolchain["repository"].removesuffix(".git")
     for name, owner, expected_path in (
         ("commonMenus", common_menus, COMMON_MENUS_OWNER),
+        ("commonStats", common_stats, COMMON_STATS_OWNER),
+        ("coreStatsData", core_stats_data, CORE_STATS_DATA_OWNER),
         ("itemAuxiliary", item_owner, ITEM_OWNER),
         ("rng", rng_owner, RNG_OWNER),
     ):
@@ -547,16 +694,20 @@ def _validate_owners(
             raise ValueError(f"blacksmith {name} owner identity drift")
     if (
         fixture["romSha256"] != common_menus["romSha256"]
+        or fixture["romSha256"] != common_stats["romSha256"]
+        or fixture["romSha256"] != core_stats_data["romSha256"]
         or fixture["romSha256"] != item_owner["romSha256"]
         or fixture["romSha256"] != rng_owner["romSha256"]
         or fixture["provenance"]["upstreamRepository"] != expected_repository
         or fixture["provenance"]["upstreamBranch"] != toolchain["branch"]
         or fixture["provenance"]["upstreamCommit"] != toolchain["commit"]
         or fixture["provenance"]["upstreamCommit"] != common_menus["upstreamCommit"]
+        or fixture["provenance"]["upstreamCommit"] != common_stats["upstreamCommit"]
+        or fixture["provenance"]["upstreamCommit"] != core_stats_data["upstreamCommit"]
         or fixture["provenance"]["upstreamCommit"] != item_owner["upstreamCommit"]
     ):
         raise ValueError("blacksmith provenance disagrees with pinned/H2/H3 owners")
-    return common_menus, item_owner, rng_owner
+    return common_menus, common_stats, core_stats_data, item_owner, rng_owner
 
 
 def _require_pick_source_shape(source: str) -> None:
@@ -686,6 +837,8 @@ def build_static_contract(
     upstream_path: Path = UPSTREAM,
     *,
     common_menus_path: Path = COMMON_MENUS_OWNER,
+    common_stats_path: Path = COMMON_STATS_OWNER,
+    core_stats_data_path: Path = CORE_STATS_DATA_OWNER,
     item_owner_path: Path = ITEM_OWNER,
     rng_owner_path: Path = RNG_OWNER,
     pick_source_text: str | None = None,
@@ -699,11 +852,14 @@ def build_static_contract(
     item_source_text: str | None = None,
     flag_source_text: str | None = None,
     combatant_source_text: str | None = None,
+    itemdefs_source_text: str | None = None,
 ) -> dict[str, Any]:
     """Derive H3 configuration from source, H1, ROM-owner facts, and accepted RNG semantics."""
-    common_menus, item_owner, rng_owner = _validate_owners(
+    common_menus, common_stats, core_stats_data, item_owner, rng_owner = _validate_owners(
         fixture,
         common_menus_path=common_menus_path,
+        common_stats_path=common_stats_path,
+        core_stats_data_path=core_stats_data_path,
         item_owner_path=item_owner_path,
         rng_owner_path=rng_owner_path,
     )
@@ -730,17 +886,26 @@ def build_static_contract(
     combatant_source = combatant_source_text or (
         disasm / COMBATANT_SOURCE_RELATIVE
     ).read_text(encoding="utf-8")
+    itemdefs_source = itemdefs_source_text or (
+        disasm / ITEMDEFS_SOURCE_RELATIVE
+    ).read_text(encoding="utf-8")
     _require_pick_source_shape(pick_source)
     _require_rng_source_shape(rng_source)
     readiness_flag_id = _require_place_order_source_shape(actions_source)
     _require_supporting_mutation_source_shape(
         gold_source, item_source, flag_source, combatant_source
     )
+    _require_fulfillment_source_shape(actions_source, item_source)
     client_class_offset = _source_local_offset(pick_source, "PickMithrilWeapon", "clientClass")
     action_frame_offsets = _source_frame_offsets(
         actions_source,
         "BlacksmithAction_PlaceOrder",
         ("clientClass", "clientMember", "itemSlot", "pendingOrdersNumber"),
+    )
+    fulfillment_frame_offsets = _source_frame_offsets(
+        actions_source,
+        "BlacksmithAction_FulfillOrder",
+        ("clientClass", "clientMember", "itemIndex", "ordersCounter", "fulfilledOrdersNumber"),
     )
     if action_frame_offsets["clientClass"] != client_class_offset:
         raise ValueError("blacksmith action/picker client-class frame offset drift")
@@ -785,6 +950,47 @@ def build_static_contract(
         or item_owner["table"]["table_MithrilWeapons"] != h1_entries["table_MithrilWeapons"]
     ):
         raise ValueError("blacksmith item-owner H1 table address drift")
+    try:
+        common_stats_itemstats_symbol = common_stats["expected"][
+            "representativeSymbols"
+        ]["itemstats.asm"]
+        common_stats_itemstats_address = common_stats["function"]["itemStatsAddress"]
+        core_item_definition_address = core_stats_data["table"]["table_ItemDefinitions"]
+        core_item_definition_count = core_stats_data["expected"]["facts"]["items"][
+            "definitionCount"
+        ]
+    except KeyError as error:
+        raise ValueError("blacksmith common/core-stats owner shape drift") from error
+    item_definition_start, item_definition_end, item_definition_count = (
+        _item_definition_source_domain(itemdefs_source)
+    )
+    if (
+        common_stats_itemstats_symbol != "GetItemName"
+        or common_stats_itemstats_address != h1_entries["GetItemName"]
+    ):
+        raise ValueError("blacksmith common-stats itemstats H1 owner drift")
+    if (
+        item_definition_start != h1_entries["table_ItemDefinitions"]
+        or core_item_definition_address != h1_entries["table_ItemDefinitions"]
+        or item_definition_end - item_definition_start
+        != item_definition_count * required["ITEMDEF_SIZE"]
+        or core_item_definition_count != item_definition_count
+        or required["ITEM_NOTHING"] != item_definition_count - 1
+    ):
+        raise ValueError("blacksmith core-stats item-definition source/H1 domain drift")
+    fulfillment_item_indexes = {
+        int(case["itemIndex"]) for case in fixture["fulfillmentCases"]
+    }
+    if any(
+        item_index < 0 or item_index >= item_definition_count
+        for item_index in fulfillment_item_indexes
+    ):
+        raise ValueError("blacksmith fulfillment item-definition source domain drift")
+    item_definitions = _item_definition_rows(
+        itemdefs_source,
+        equates,
+        fulfillment_item_indexes,
+    )
     summary = item_owner["summary"]
     if (
         summary["mithrilClassGroupCount"] != len(groups)
@@ -838,7 +1044,10 @@ def build_static_contract(
     if (
         source_context["pickSourcePath"] != PICK_SOURCE_RELATIVE.as_posix()
         or source_context["placeSourcePath"] != BLACKSMITH_ACTIONS_RELATIVE.as_posix()
+        or source_context["itemStatsSourcePath"] != ITEM_SOURCE_RELATIVE.as_posix()
         or source_context["tableSourcePath"] != TABLE_SOURCE_RELATIVE.as_posix()
+        or source_context["itemDefinitionsSourcePath"]
+        != ITEMDEFS_SOURCE_RELATIVE.as_posix()
         or source_context["h1ListingPath"] != LISTING_RELATIVE.as_posix()
         or source_context["functionEntryAddress"] != entry
     ):
@@ -849,6 +1058,15 @@ def build_static_contract(
     )
     if source_context["placeEntryAddress"] != place_labels["@PlaceOrder"]:
         raise ValueError("blacksmith fixture place-order source-context drift")
+    fulfill_labels, fulfill_instructions = _listing_section(
+        listing, "BlacksmithAction_FulfillOrder"
+    )
+    if source_context["fulfillAddItemEntryAddress"] != fulfill_labels["@AddItem"]:
+        raise ValueError("blacksmith fixture fulfill-order source-context drift")
+    add_labels, add_instructions = _listing_section(listing, "AddItem")
+    equippable_labels, equippable_instructions = _listing_section(
+        listing, "IsWeaponOrRingEquippable"
+    )
     decrease_labels, decrease_instructions = _listing_section(listing, "DecreaseGold")
     drop_labels, drop_instructions = _listing_section(listing, "DropItemBySlot")
     clear_labels, clear_instructions = _listing_section(listing, "ClearFlag")
@@ -967,6 +1185,149 @@ def build_static_contract(
     ):
         raise ValueError("blacksmith transaction work-RAM constant relation drift")
 
+    fulfillment_start = next(
+        index
+        for index, instruction in enumerate(fulfill_instructions)
+        if instruction["address"] == fulfill_labels["@AddItem"]
+    )
+    fulfillment_instructions = fulfill_instructions[fulfillment_start:]
+
+    def fulfillment_instruction(text: str, *, occurrence: int = 1) -> dict[str, Any]:
+        matches = [
+            item for item in fulfillment_instructions if _h1_text(item) == text
+        ]
+        if len(matches) < occurrence:
+            raise ValueError(f"blacksmith fulfillment H1 instruction missing: {text}")
+        return matches[occurrence - 1]
+
+    fulfillment_client_member = fulfillment_instruction("move.w clientMember(a6),d0")
+    fulfillment_item_index = fulfillment_instruction("move.w itemIndex(a6),d1")
+    add_call_record = fulfillment_instruction("jsr j_AddItem")
+    orders_counter_record = fulfillment_instruction("sub.w ordersCounter(a6),d6")
+    order_base_record = fulfillment_instruction(
+        "lea ((MITHRIL_WEAPONS_ON_ORDER-$1000000)).w,a1"
+    )
+    order_read_record = fulfillment_instruction("move.w (a1),d2")
+    order_clear_record = fulfillment_instruction("move.w #0,(a1)")
+    fulfilled_increment_record = fulfillment_instruction(
+        "addi.w #1,fulfilledOrdersNumber(a6)"
+    )
+    fulfilled_increment_after = successor_record(
+        fulfill_instructions, fulfilled_increment_record
+    )
+    equippable_call_record = fulfillment_instruction(
+        "jsr j_IsWeaponOrRingEquippable", occurrence=1
+    )
+    post_equippable_record = successor_record(
+        fulfill_instructions, equippable_call_record
+    )
+    fulfillment_block_instructions = [
+        instruction
+        for instruction in fulfill_instructions
+        if fulfill_labels["@AddItem"]
+        <= instruction["address"]
+        <= post_equippable_record["address"]
+    ]
+    add_return_rts, _ = _h1_instruction(add_instructions, "rts")
+    equippable_return_rts, _ = _h1_instruction(equippable_instructions, "rts")
+    equippable_class_read = instruction_record(
+        equippable_instructions, "move.b COMBATANT_OFFSET_CLASS(a0),d0"
+    )
+    add_empty_compare = instruction_record(add_instructions, "cmpi.w #ITEM_NOTHING,d2")
+    add_empty_break = instruction_record(add_instructions, "beq.s @Break")
+    add_full = instruction_record(add_instructions, "move.w #1,d2")
+    add_full_done = instruction_record(add_instructions, "bra.s @Done")
+    add_mask_write = instruction_record(
+        add_instructions, "andi.w #ITEMENTRY_MASK_INDEX_AND_BROKEN_BIT,d1"
+    )
+    add_write = instruction_record(add_instructions, "move.w d1,-(a0)")
+    add_success = instruction_record(add_instructions, "clr.w d2")
+    add_done_restore = instruction_record(add_instructions, "movem.l (sp)+,d0/a0")
+    fulfillment_h1_offsets = {
+        "clientMember": h1_frame_displacement(
+            fulfillment_client_member, "fulfillment clientMember"
+        ),
+        "itemIndex": h1_frame_displacement(
+            fulfillment_item_index, "fulfillment itemIndex"
+        ),
+        "ordersCounter": h1_frame_displacement(
+            orders_counter_record, "fulfillment ordersCounter"
+        ),
+        "fulfilledOrdersNumber": h1_frame_displacement(
+            fulfilled_increment_record, "fulfillment fulfilledOrdersNumber"
+        ),
+    }
+    equippable_class_bytes = equippable_class_read["bytes"]
+    if len(equippable_class_bytes) != 4 or equippable_class_bytes[:2] != b"\x10\x28":
+        raise ValueError("blacksmith fulfillment class displacement opcode/width drift")
+    h1_combatant_class_offset_signed = int.from_bytes(
+        equippable_class_bytes[2:], "big", signed=True
+    )
+    h1_combatant_class_offset_unsigned = int.from_bytes(
+        equippable_class_bytes[2:], "big", signed=False
+    )
+    if (
+        fulfill_labels["@AddItem"] != add_call_record["address"] - 8
+        or fulfillment_h1_offsets
+        != {
+            name: fulfillment_frame_offsets[name]
+            for name in fulfillment_h1_offsets
+        }
+        or order_base_record["address"]
+        != orders_counter_record["address"] + len(orders_counter_record["bytes"])
+        or order_read_record["address"]
+        != order_clear_record["address"] - len(order_read_record["bytes"])
+        or fulfilled_increment_after["address"]
+        != fulfilled_increment_record["address"] + len(fulfilled_increment_record["bytes"])
+        or post_equippable_record["text"] not in {
+            "bcc.w byte_21CD0 ; @DoNotEquipNewItem",
+            "bcc.w byte_21CD0",
+        }
+        or int.from_bytes(add_call_record["bytes"][-4:], "big")
+        != h1_entries["j_AddItem"]
+        or int.from_bytes(equippable_call_record["bytes"][-4:], "big")
+        != h1_entries["j_IsWeaponOrRingEquippable"]
+        or h1_combatant_class_offset_signed != h1_combatant_class_offset_unsigned
+        or h1_combatant_class_offset_signed != required["COMBATANT_OFFSET_CLASS"]
+        or add_empty_compare["address"] >= add_empty_break["address"]
+        or add_empty_break["address"] >= add_full["address"]
+        or add_full["address"] >= add_full_done["address"]
+        or add_full_done["address"] >= add_mask_write["address"]
+        or add_labels["@Break"] != add_mask_write["address"]
+        or add_mask_write["address"] >= add_write["address"]
+        or add_write["address"] >= add_success["address"]
+        or add_success["address"] >= add_done_restore["address"]
+        or add_labels["@Done"] != add_done_restore["address"]
+        or add_done_restore["address"] >= add_return_rts
+        or len(add_empty_break["bytes"]) != 2
+        or add_empty_break["bytes"][0] != 0x67
+        or len(add_full_done["bytes"]) != 2
+        or add_full_done["bytes"][0] != 0x60
+        or required["COMBATANT_ITEMSLOTS_COUNTER"] + 1
+        != required["COMBATANT_ITEMSLOTS"]
+        or (required["ITEMTYPE_WEAPON"] | required["ITEMTYPE_RING"]) == 0
+    ):
+        raise ValueError("blacksmith fulfillment source/H1 ABI chronology drift")
+    item_definition_address = h1_entries["table_ItemDefinitions"]
+    fulfillment_item_definitions: dict[int, dict[str, int]] = {}
+    for item_index, definition in item_definitions.items():
+        address = item_definition_address + item_index * required["ITEMDEF_SIZE"]
+        fulfillment_item_definitions[item_index] = {
+            **definition,
+            "address": address,
+        }
+    for case in fixture["fulfillmentCases"]:
+        item_index = int(case["itemIndex"])
+        definition = fulfillment_item_definitions[item_index]
+        class_mask = 1 << int(case["recipientClass"])
+        expected_carry = bool(
+            definition["itemType"]
+            & (required["ITEMTYPE_WEAPON"] | required["ITEMTYPE_RING"])
+            and definition["equipFlags"] & class_mask
+        )
+        if expected_carry != bool(case["equippableCarrySet"]):
+            raise ValueError("blacksmith fulfillment item/class carry relation drift")
+
     def guarded_instructions(
         instructions: list[dict[str, Any]], labels: dict[str, int]
     ) -> list[dict[str, Any]]:
@@ -1025,8 +1386,12 @@ def build_static_contract(
             "mithrilItemIndex": required["ITEM_MITHRIL"],
             "itemNothingIndex": required["ITEM_NOTHING"],
             "itemIndexMask": required["ITEMENTRY_MASK_INDEX"],
+            "itemIndexAndBrokenMask": required["ITEMENTRY_MASK_INDEX_AND_BROKEN_BIT"],
+            "weaponTypeMask": required["ITEMTYPE_WEAPON"],
+            "ringTypeMask": required["ITEMTYPE_RING"],
             "combatantEntrySizeBytes": required["COMBATANT_DATA_ENTRY_REAL_SIZE"],
             "combatantItemSlotCount": required["COMBATANT_ITEMSLOTS"],
+            "combatantClassOffsetBytes": required["COMBATANT_OFFSET_CLASS"],
             "combatantItemsOffsetBytes": required["COMBATANT_OFFSET_ITEMS"],
             "flag80Id": flag_id,
             "flag80ByteOffset": flag_byte_offset,
@@ -1071,6 +1436,56 @@ def build_static_contract(
                 *guarded_instructions(update_instructions, update_labels),
             ],
         },
+        "fulfillment": {
+            "addItemEntryAddress": fulfill_labels["@AddItem"],
+            "addItemCallAddress": add_call_record["address"],
+            "addItemReturnAddress": add_call_record["address"]
+            + len(add_call_record["bytes"]),
+            "addItemInstructionTargetAddress": h1_entries["j_AddItem"],
+            "addItemEffectiveTargetAddress": add_labels["AddItem"],
+            "addItemEffectiveReturnAddress": add_return_rts,
+            "orderReadInstructionAddress": order_read_record["address"],
+            "orderReadObserveAddress": order_clear_record["address"],
+            "orderClearAddress": order_clear_record["address"],
+            "orderClearedObserveAddress": fulfilled_increment_record["address"],
+            "fulfilledOrdersIncrementAddress": fulfilled_increment_record["address"],
+            "fulfilledOrdersIncrementedObserveAddress": fulfilled_increment_after[
+                "address"
+            ],
+            "equippabilityCallAddress": equippable_call_record["address"],
+            "equippabilityInstructionTargetAddress": h1_entries[
+                "j_IsWeaponOrRingEquippable"
+            ],
+            "equippabilityEffectiveTargetAddress": equippable_labels[
+                "IsWeaponOrRingEquippable"
+            ],
+            "equippabilityEffectiveReturnAddress": equippable_return_rts,
+            "postEquippabilityReturnAddress": post_equippable_record["address"],
+            "updateCombatantStatsAddress": update_labels["UpdateCombatantStats"],
+            "updateCombatantStatsReached": False,
+            "frameOffsetsBytes": fulfillment_frame_offsets,
+            "ordersCounterMinimum": 1,
+            "ordersCounterMaximum": required["BLACKSMITH_MAX_ORDERS_NUMBER"],
+            "h1InstructionBytes": [
+                *guarded_instructions(fulfillment_block_instructions, fulfill_labels),
+                *guarded_instructions(add_instructions, add_labels),
+                *guarded_instructions(equippable_instructions, equippable_labels),
+                *guarded_instructions(combatant_instructions, combatant_labels),
+                *guarded_instructions(update_instructions, update_labels),
+            ],
+            "itemDefinitionFields": [
+                {
+                    "itemIndex": item_index,
+                    "equipFlagsAddress": definition["address"]
+                    + required["ITEMDEF_OFFSET_EQUIPFLAGS"],
+                    "equipFlagsBytes": definition["equipFlags"].to_bytes(4, "big"),
+                    "itemTypeAddress": definition["address"]
+                    + required["ITEMDEF_OFFSET_TYPE"],
+                    "itemTypeBytes": bytes([definition["itemType"]]),
+                }
+                for item_index, definition in sorted(fulfillment_item_definitions.items())
+            ],
+        },
         "model": {"classGroups": groups, "weaponRows": rows},
         "h1": {
             "instructionBytes": [
@@ -1106,6 +1521,7 @@ def validate_static_contract(
     for instruction in (
         static["h1"]["instructionBytes"]
         + static["transaction"]["h1InstructionBytes"]
+        + static["fulfillment"]["h1InstructionBytes"]
     ):
         address = instruction["address"]
         expected = instruction["romBytes"]
@@ -1117,6 +1533,18 @@ def validate_static_contract(
     ):
         if rom[address : address + len(expected)] != expected:
             raise ValueError(f"blacksmith H1/ROM {name} table guard drift")
+    for field in static["fulfillment"]["itemDefinitionFields"]:
+        for address_key, bytes_key in (
+            ("equipFlagsAddress", "equipFlagsBytes"),
+            ("itemTypeAddress", "itemTypeBytes"),
+        ):
+            address = field[address_key]
+            expected = field[bytes_key]
+            if rom[address : address + len(expected)] != expected:
+                raise ValueError(
+                    "blacksmith fulfillment H1/ROM item-definition guard drift "
+                    f"at {address:#x}"
+                )
     return static
 
 
@@ -1322,10 +1750,132 @@ def model_transaction_case(case: dict[str, Any], static: dict[str, Any]) -> dict
     }
 
 
+def _fulfillment_chronology(static: dict[str, Any]) -> list[dict[str, int | str]]:
+    fulfillment = static["fulfillment"]
+    return [
+        {"role": "fulfillment-add-item-call", "pc": fulfillment["addItemCallAddress"]},
+        {
+            "role": "fulfillment-add-item-instruction-target",
+            "pc": fulfillment["addItemInstructionTargetAddress"],
+        },
+        {
+            "role": "fulfillment-add-item-effective-target",
+            "pc": fulfillment["addItemEffectiveTargetAddress"],
+        },
+        {
+            "role": "fulfillment-add-item-effective-return",
+            "pc": fulfillment["addItemEffectiveReturnAddress"],
+        },
+        {
+            "role": "fulfillment-order-read",
+            "pc": fulfillment["orderReadObserveAddress"],
+        },
+        {
+            "role": "fulfillment-order-cleared",
+            "pc": fulfillment["orderClearedObserveAddress"],
+        },
+        {
+            "role": "fulfillment-orders-incremented",
+            "pc": fulfillment["fulfilledOrdersIncrementedObserveAddress"],
+        },
+        {
+            "role": "fulfillment-equippability-call",
+            "pc": fulfillment["equippabilityCallAddress"],
+        },
+        {
+            "role": "fulfillment-equippability-instruction-target",
+            "pc": fulfillment["equippabilityInstructionTargetAddress"],
+        },
+        {
+            "role": "fulfillment-equippability-effective-target",
+            "pc": fulfillment["equippabilityEffectiveTargetAddress"],
+        },
+        {
+            "role": "fulfillment-equippability-effective-return",
+            "pc": fulfillment["equippabilityEffectiveReturnAddress"],
+        },
+    ]
+
+
+def model_fulfillment_case(case: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
+    """Model the original direct @AddItem block from source/H1-derived facts."""
+    constants = static["constants"]
+    fulfillment = static["fulfillment"]
+    items_before = list(case["clientItemWordsBefore"])
+    orders_before = list(case["ordersBefore"])
+    orders_counter = int(case["ordersCounter"])
+    if not fulfillment["ordersCounterMinimum"] <= orders_counter <= fulfillment[
+        "ordersCounterMaximum"
+    ]:
+        raise ValueError("blacksmith fulfillment ordersCounter is outside source domain")
+    if len(items_before) != constants["combatantItemSlotCount"]:
+        raise ValueError("blacksmith fulfillment inventory word domain drift")
+    item_write_index = next(
+        (
+            index
+            for index, item_word in enumerate(items_before)
+            if (item_word & constants["itemIndexMask"]) == constants["itemNothingIndex"]
+        ),
+        None,
+    )
+    if item_write_index is None:
+        raise ValueError("blacksmith fulfillment requires first ITEM_NOTHING inventory slot")
+    selected_order_index = constants["orderSlotCount"] - orders_counter
+    if not 0 <= selected_order_index < constants["orderSlotCount"]:
+        raise ValueError("blacksmith fulfillment source-selected order slot drift")
+    source_order_word_read = orders_before[selected_order_index]
+    if source_order_word_read == 0:
+        raise ValueError("blacksmith fulfillment target order is already empty")
+    if source_order_word_read != case["itemIndex"]:
+        raise ValueError("blacksmith fulfillment target order/item mismatch")
+    items_after = items_before.copy()
+    items_after[item_write_index] = case["itemIndex"] & constants["itemIndexAndBrokenMask"]
+    orders_after = orders_before.copy()
+    orders_after[selected_order_index] = 0
+    class_mask = 1 << case["recipientClass"]
+    definition = next(
+        field
+        for field in fulfillment["itemDefinitionFields"]
+        if field["itemIndex"] == case["itemIndex"]
+    )
+    equip_flags = int.from_bytes(definition["equipFlagsBytes"], "big")
+    item_type = definition["itemTypeBytes"][0]
+    equippable_carry_set = bool(
+        item_type & (constants["weaponTypeMask"] | constants["ringTypeMask"])
+        and equip_flags & class_mask
+    )
+    if equippable_carry_set != bool(case["equippableCarrySet"]):
+        raise ValueError("blacksmith fulfillment source-backed carry expectation drift")
+    return {
+        "id": case["id"],
+        "clientMember": case["clientMember"],
+        "recipientClass": case["recipientClass"],
+        "itemIndex": case["itemIndex"],
+        "clientItemWordsBefore": items_before,
+        "clientItemWordsAfter": items_after,
+        "itemWriteIndex": item_write_index,
+        "addItemResultCode": 0,
+        "ordersBefore": orders_before,
+        "ordersAfter": orders_after,
+        "ordersCounter": orders_counter,
+        "selectedOrderIndex": selected_order_index,
+        "sourceOrderWordRead": source_order_word_read,
+        "fulfilledOrdersBefore": case["fulfilledOrdersBefore"],
+        "fulfilledOrdersAfter": case["fulfilledOrdersBefore"] + 1,
+        "equippableCarrySet": equippable_carry_set,
+        "callbackChronology": _fulfillment_chronology(static),
+        "safeExitOriginalReturnPc": fulfillment["postEquippabilityReturnAddress"],
+        "safeExitSeen": True,
+    }
+
+
 def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     helper_records = [model_case(case, static) for case in fixture["cases"]]
     transaction_records = [
         model_transaction_case(case, static) for case in fixture["transactionCases"]
+    ]
+    fulfillment_records = [
+        model_fulfillment_case(case, static) for case in fixture["fulfillmentCases"]
     ]
     return {
         "system": "GEN",
@@ -1335,6 +1885,8 @@ def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dic
         "records": helper_records,
         "transactionCaseOrder": [case["id"] for case in fixture["transactionCases"]],
         "transactionRecords": transaction_records,
+        "fulfillmentCaseOrder": [case["id"] for case in fixture["fulfillmentCases"]],
+        "fulfillmentRecords": fulfillment_records,
         "callbacksCleared": 0,
         "restoration": {
             "currentGoldLongRestored": True,
@@ -1405,9 +1957,32 @@ def _validate_transaction_case_matrix(fixture: dict[str, Any], static: dict[str,
         raise ValueError("blacksmith transaction pre-presentation exit boundary drift")
 
 
+def _validate_fulfillment_case_matrix(fixture: dict[str, Any], static: dict[str, Any]) -> None:
+    if tuple(fixture["fulfillmentCaseOrder"]) != FULFILLMENT_CASE_IDS or tuple(
+        case["id"] for case in fixture["fulfillmentCases"]
+    ) != FULFILLMENT_CASE_IDS:
+        raise ValueError("blacksmith fulfillment case order drift")
+    records = [model_fulfillment_case(case, static) for case in fixture["fulfillmentCases"]]
+    if [record["selectedOrderIndex"] for record in records] != [3, 2, 0]:
+        raise ValueError("blacksmith fulfillment physical order-slot coverage drift")
+    if [record["itemWriteIndex"] for record in records] != [3, 2, 0]:
+        raise ValueError("blacksmith fulfillment first-ITEM_NOTHING coverage drift")
+    if [record["equippableCarrySet"] for record in records] != [True, True, False]:
+        raise ValueError("blacksmith fulfillment carry-polarity coverage drift")
+    if [record["fulfilledOrdersAfter"] for record in records] != [1, 2, 3]:
+        raise ValueError("blacksmith fulfillment counter-increment coverage drift")
+    if any(
+        record["safeExitOriginalReturnPc"]
+        != static["fulfillment"]["postEquippabilityReturnAddress"]
+        for record in records
+    ):
+        raise ValueError("blacksmith fulfillment stack-return exit boundary drift")
+
+
 def _assert_golden(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     _validate_case_matrix(fixture, static)
     _validate_transaction_case_matrix(fixture, static)
+    _validate_fulfillment_case_matrix(fixture, static)
     expected = expected_observation(fixture, static)
     accepted = fixture["acceptedObservation"]
     if accepted != expected:
@@ -1447,6 +2022,7 @@ def _assert_status(status_path: Path) -> None:
             "milestone:direct-function-probe",
             "milestone:first-case-entered",
             "milestone:transaction-cases-entered",
+            "milestone:fulfillment-cases-entered",
             "milestone:transaction-state-restored",
         ),
     )
@@ -1461,11 +2037,18 @@ def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[st
         "caseOrder": fixture["caseOrder"],
         "transactionCases": fixture["transactionCases"],
         "transactionCaseOrder": fixture["transactionCaseOrder"],
+        "fulfillmentCases": fixture["fulfillmentCases"],
+        "fulfillmentCaseOrder": fixture["fulfillmentCaseOrder"],
         "function": static["function"],
         "transaction": {
             key: value
             for key, value in static["transaction"].items()
             if key != "h1InstructionBytes"
+        },
+        "fulfillment": {
+            key: value
+            for key, value in static["fulfillment"].items()
+            if key not in {"h1InstructionBytes", "itemDefinitionFields"}
         },
         "ram": static["ram"],
         "constants": static["constants"],
@@ -1500,9 +2083,12 @@ def verify_blacksmith_mithril(
     _assert_observation(fixture, static, observed)
     return {
         "Fixture": fixture["id"],
-        "Cases": len(fixture["cases"]) + len(fixture["transactionCases"]),
+        "Cases": len(fixture["cases"])
+        + len(fixture["transactionCases"])
+        + len(fixture["fulfillmentCases"]),
         "HelperCases": len(fixture["cases"]),
         "TransactionCases": len(fixture["transactionCases"]),
+        "FulfillmentCases": len(fixture["fulfillmentCases"]),
         "BizHawkLaunches": 1,
         "CallbacksCleared": observed["callbacksCleared"],
         "Restoration": observed["restoration"],
