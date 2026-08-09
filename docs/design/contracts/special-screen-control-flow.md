@@ -333,7 +333,7 @@ Keep these systems outside this contract:
 - future presentation work: fades, audio, timing, pixels, accessibility, localization, and
   replacement content.
 
-The active blacksmith runtime research is unrelated to this contract and supplies no evidence here.
+Blacksmith runtime research is unrelated to this contract and supplies no evidence here.
 
 ## Fidelity, Modernization, and Copyright Boundary
 
