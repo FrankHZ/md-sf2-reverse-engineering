@@ -165,6 +165,10 @@
       "translatedDate": "2026-08-08"
     },
     {
+      "source": "docs/design/contracts/spellbook-state.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/text-and-font-system.md",
       "status": "pending"
     },
