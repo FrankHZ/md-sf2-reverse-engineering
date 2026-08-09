@@ -103,6 +103,10 @@
       "translatedDate": "2026-08-08"
     },
     {
+      "source": "docs/design/contracts/map-entry-routing-state.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/map-exploration.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-exploration.md",

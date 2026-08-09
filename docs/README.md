@@ -438,6 +438,11 @@ document whose anchors may be updated.
   physical attacks through dodge, terrain/countering, critical, spread, and double/counter to
   temporary HP, reaction replay, EXP booking, and level-up connection, plus the shared fixture
   boundary for a future H4.
+- [`map-entry-routing-state.md`](./design/contracts/map-entry-routing-state.md): the
+  implementation-neutral contract for ordered flag-switched map selection, battle-candidate
+  admission and bounded state writes, and savepoint/raft-reset selection, while retaining private
+  table corpora, story and persistence meaning, downstream battle/map lifecycle, presentation, and
+  malformed inputs as excluded, separate-owner, or Unknown boundaries.
 - [`map-exploration.md`](./design/contracts/map-exploration.md): the 79-map import boundary, shared
   block/layout ownership, 64x64 geometry, the executable canonical import, area/event/item/animation
   ordering, working-layout mutation, the two source-faithful map-script block-copy forms, the four
