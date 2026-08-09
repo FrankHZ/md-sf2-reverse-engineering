@@ -192,8 +192,10 @@ The vanilla assembly contains exactly 163 payloads, totaling 31,296 contiguous b
 
 Every assembled payload contains six tiles and matches the accepted ROM range. The physical address
 formula is `p_Icons + storageIndex * 192`; there is no per-icon pointer table. A canonical importer
-MUST retain source payload identity, assembly membership, physical storage index, and payload hash as
-separate fields.
+MUST retain all 167 exact source paths, the 192-byte file size, and vanilla assembly membership. For
+the 163 assembled rows it additionally MUST retain the accepted source symbol, physical storage
+index, ROM address, payload hash, and private bytes. The four source-only exceptions carry no
+contract claim for a source symbol, storage index, ROM address, ROM parity, or payload hash.
 
 The four source-only exceptions are:
 
@@ -250,19 +252,33 @@ The following is a logical data contract, not an engine-class prescription:
 
 ```text
 UIGraphicsAssetCorpus {
-  sharedResources[9] {
+  sharedResourceIdentities[9] {
     resourceId
     sourceSymbol
     storageKind: stack-compressed | uncompressed-records
     sourceAddress
     pointerIdentity
     pointerAddress
+    payloadRef
+    sourceRomParity
+  }
+
+  stackCompressedPayloads[8] {
+    resourceRef
     compressedByteCount
     decodedByteCount
-    privateStoredBytes[]
+    privateCompressedBytes[]
     privateDecodedBytes[]
     payloadHash
-    sourceRomParity
+  }
+
+  uncompressedMainMenuPayload {
+    resourceRef
+    storedByteCount: 4032
+    recordCount: 7
+    recordByteCount: 576
+    privateStoredBytes[4032]
+    payloadHash
   }
 
   menuRoutes[9] {
@@ -284,20 +300,20 @@ UIGraphicsAssetCorpus {
 
   iconSources[167] {
     sourcePath
-    sourceSymbol
+    byteCount: 192
     assembledInVanilla
-    optionalStorageIndex
-    payloadHash
-    privatePayloadBytes[192]
+    optionalAssembledSlotRef
   }
 
   assembledIconSlots[163] {
     storageIndex
+    sourcePath
     sourceSymbol
     optionalEnumName
     optionalSpellIndexCollision
     romAddress
     payloadHash
+    privatePayloadBytes[192]
   }
 
   iconTransform {
@@ -315,10 +331,11 @@ UIGraphicsAssetCorpus {
 For storage slot 129, `sourceSymbol` is `OtherIcon002` and `optionalEnumName` is absent. The
 model never uses absence of an enum name as absence of a source identity.
 
-The public form omits every `private*` field and original payload. It retains symbols, paths,
-addresses, storage membership, dimensions, counts, route kinds/order, packed index rows, physical
-roles, collision metadata, copy/highlight operation metadata, and hashes so a user-provided private
-corpus can be validated without making copyrighted graphics a repository dependency.
+The public form omits every `private*` field and original payload. It retains each evidence-bounded
+symbol, path, address, storage membership, dimension, count, route kind/order, packed index row,
+physical role, collision, operation, and hash so a user-provided private corpus can be validated
+without making copyrighted graphics a repository dependency. It does not invent a symbol, storage
+index, address, ROM parity result, or hash for any of the four source-only exceptions.
 
 ## Cross-System Separation
 
@@ -358,16 +375,20 @@ Public builds require newly authored or properly licensed replacement assets.
 A remake-side private importer or compatibility adapter can claim this contract only when automated
 tests prove:
 
-1. all nine shared resource and pointer identities, addresses, storage forms, compressed and decoded
-   counts, source/H1/ROM parity, and accepted aggregate stream counters match the dedicated owner;
+1. all nine shared resource and pointer identities, addresses, storage forms, and source/H1/ROM
+   parity match the dedicated owner; exactly eight Stack resources preserve their compressed and
+   decoded counts plus accepted aggregate stream counters, while the uncompressed main-menu resource
+   preserves its 4,032-byte / seven-record shape;
 2. the nine menu-table routes preserve exact order, three packed versus six pointer row kinds, all
    packed index positions, and all six pointer identities;
 3. all seven main-menu records preserve index, address, 576-byte/18-tile shape, private byte order,
    and hash, including table-unreferenced index 6;
-4. all 167 source payload identities preserve source path/symbol and vanilla assembly membership,
-   with exactly 163 assembled and exactly four named source-only exceptions;
-5. all 163 physical slots preserve their 192-byte/six-tile shape, address, payload hash, and exact
-   127-item/30-spell/6-other partition;
+4. all 167 source payload identities preserve exact source path, 192-byte size, and vanilla assembly
+   membership, with exactly 163 assembled and exactly four explicitly listed source-only exception
+   paths; no symbol, storage index, address, ROM parity, or hash is required for those four
+   exceptions;
+5. all 163 physical slots preserve their source paths and symbols, 192-byte/six-tile shape, storage
+   index, address, payload hash, private byte order, and exact 127-item/30-spell/6-other partition;
 6. slots 127, 128, 129, and 146 through 148 preserve their source symbols, optional enum names, and
    optional spell-index collisions, including `OtherIcon002` at slot 129 with no accepted enum name;
 7. direct copy, four corner-clean operations, two-frame/384-byte highlight output, highlight-mask
