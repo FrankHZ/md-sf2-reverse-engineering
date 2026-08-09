@@ -1,9 +1,10 @@
-"""One-launch direct observation of the original ``PickMithrilWeapon`` helper.
+"""One-launch direct observation of blacksmith picker and committed-order seams.
 
-The work-RAM probe enters the unmodified helper after the ordinary startup
-``CheckSram`` return.  It is deliberately not a Blacksmith menu scenario: the
-matrix owns only class/table selection, RNG consumption, first-empty order-slot
-mutation, and the helper's preserved-register return boundary.
+The work-RAM probe enters only original ROM routines after the ordinary startup
+``CheckSram`` return.  It retains the accepted direct ``PickMithrilWeapon``
+matrix and adds a separate, post-confirmation ``@PlaceOrder`` matrix.  The
+latter executes the original gold, item-drop, picker, and flag helpers, then
+redirects only the original ``ClearFlag`` return away from the first text trap.
 """
 
 from __future__ import annotations
@@ -25,7 +26,7 @@ from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 from sf2tool.research_index import listing_symbol_addresses
 
-FIXTURE = repo_path("tests/fixtures/h3/blacksmith-mithril-v1.json")
+FIXTURE = repo_path("tests/fixtures/h3/blacksmith-mithril-v2.json")
 FIXTURE_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-fixture.schema.json")
 OBSERVATION_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-observation.schema.json")
 FAILURE_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-callback-failure.schema.json")
@@ -44,6 +45,10 @@ ENUMS_RELATIVE = Path("sf2enums.asm")
 CONST_RELATIVE = Path("sf2const.asm")
 LISTING_RELATIVE = Path("build/sf2build-h1.lst")
 RNG_SOURCE_RELATIVE = Path("code/common/tech/randomnumbergenerator.asm")
+GOLD_SOURCE_RELATIVE = Path("code/common/stats/gold.asm")
+ITEM_SOURCE_RELATIVE = Path("code/common/stats/itemstats.asm")
+FLAG_SOURCE_RELATIVE = Path("code/common/stats/gameflags.asm")
+COMBATANT_SOURCE_RELATIVE = Path("code/common/stats/combatantstats_3.asm")
 
 OWNER = "blacksmith-mithril"
 STATUS_PREFIX = CALLBACK_FAILURE_PREFIX
@@ -54,6 +59,11 @@ CASE_IDS = (
     "brn-fallback-zero-row2-slot2",
     "rdbn-fallback-nonzero-row0-slot3",
     "all-occupied-no-order-write",
+)
+TRANSACTION_CASE_IDS = (
+    "wizard-row3-first-order-slot0",
+    "paladin-row1-final-roll-order-slot2",
+    "brn-fallback-row2-order-slot1",
 )
 
 
@@ -79,6 +89,30 @@ def _source_local_offset(source: str, symbol: str, name: str) -> int:
     if len(matches) != 1:
         raise ValueError(f"blacksmith source local declaration drift: {name}")
     return int(matches[0])
+
+
+def _source_frame_offsets(
+    source: str, symbol: str, names: tuple[str, ...]
+) -> dict[str, int]:
+    """Read one exact local-frame declaration block immediately before ``symbol``."""
+    symbol_match = re.search(rf"^{re.escape(symbol)}:\s*$", source, re.MULTILINE)
+    if not symbol_match:
+        raise ValueError(f"blacksmith source missing frame symbol: {symbol}")
+    block_start = source.rfind("; ===============", 0, symbol_match.start())
+    if block_start < 0:
+        raise ValueError(f"blacksmith source missing frame declaration block: {symbol}")
+    declarations = source[block_start : symbol_match.start()]
+    offsets: dict[str, int] = {}
+    for name in names:
+        matches = re.findall(
+            rf"^\s*{re.escape(name)}\s*=\s*(-\d+)\s*$",
+            declarations,
+            re.MULTILINE,
+        )
+        if len(matches) != 1:
+            raise ValueError(f"blacksmith source frame declaration drift: {name}")
+        offsets[name] = int(matches[0])
+    return offsets
 
 
 def _source_tokens(source: str) -> list[str]:
@@ -124,13 +158,24 @@ def _parse_equates(source: str) -> dict[str, int]:
 
 def _required_equates(values: dict[str, int]) -> dict[str, int]:
     names = (
+        "BLACKSMITH_ORDER_COST",
         "MITHRIL_WEAPON_CLASSES_COUNTER",
         "MITHRIL_WEAPONS_PER_CLASS_COUNTER",
         "MITHRIL_WEAPON_ORDER_SLOT_SIZE",
         "BLACKSMITH_ORDERS_COUNTER",
         "BLACKSMITH_MAX_ORDERS_NUMBER",
+        "COMBATANT_DATA_ENTRY_REAL_SIZE",
+        "COMBATANT_ITEMSLOTS",
+        "COMBATANT_OFFSET_ITEMS",
+        "GAME_FLAGS",
+        "FLAG_MASK",
+        "CURRENT_GOLD",
+        "COMBATANT_DATA",
+        "ITEM_NOTHING",
+        "ITEMENTRY_MASK_INDEX",
         "CLASS_BRN",
         "CLASS_RDBN",
+        "ITEM_MITHRIL",
         "MITHRIL_WEAPONS_ON_ORDER",
         "RANDOM_SEED",
     )
@@ -351,12 +396,16 @@ def _rom_guard_instruction_bytes(
     """Resolve H1's zero-filled local branch/PC-relative placeholders for the rebuilt ROM."""
     encoded = instruction["bytes"]
     text = instruction["text"].split(" ;", 1)[0]
-    branch = re.fullmatch(r"(?:beq|bne|bra)\.w\s+(@[A-Za-z0-9_]+)", text)
-    if branch:
-        target = labels[branch.group(1)]
+    branch = re.fullmatch(
+        r"(?:b[a-z]+)\.(s|w)\s+([@A-Za-z_][@A-Za-z0-9_]*)", text
+    )
+    targets = labels | table_addresses
+    if branch and branch.group(2) in targets:
         # The 68000 branches from the address immediately after the opcode word,
-        # before consuming the word displacement that the H1 listing prints as zero.
-        displacement = target - (instruction["address"] + 2)
+        # before consuming the optional word displacement.
+        displacement = targets[branch.group(2)] - (instruction["address"] + 2)
+        if branch.group(1) == "s":
+            return encoded[:1] + displacement.to_bytes(1, "big", signed=True)
         return encoded[:2] + displacement.to_bytes(2, "big", signed=True)
     lea = re.fullmatch(r"lea\s+([A-Za-z0-9_]+)\(pc\), a0", text)
     if lea and lea.group(1) in table_addresses:
@@ -364,6 +413,113 @@ def _rom_guard_instruction_bytes(
         displacement = target - (instruction["address"] + 2)
         return encoded[:2] + displacement.to_bytes(2, "big", signed=True)
     return encoded
+
+
+def _source_function_tokens(source: str, symbol: str) -> list[str]:
+    return _source_tokens(_source_section(source, symbol))
+
+
+def _require_place_order_source_shape(source: str) -> int:
+    """Guard just the original post-confirmation mutation block and exit seam."""
+    _require_source_sequence(
+        _source_section(source, "BlacksmithAction_PlaceOrder"),
+        (
+            "@placeorder:",
+            "move.l #blacksmith_order_cost,d1",
+            "jsr j_decreasegold",
+            "addi.w #1,pendingordersnumber(a6)",
+            "move.w clientmember(a6),d0",
+            "move.w itemslot(a6),d1",
+            "jsr j_dropitembyslot",
+            "bsr.w pickmithrilweapon",
+            "jsr j_clearflag",
+            "txt 204",
+        ),
+        name="BlacksmithAction_PlaceOrder post-confirmation block",
+    )
+    tokens = _source_tokens(_source_section(source, "BlacksmithAction_PlaceOrder"))
+    clear_index = tokens.index("jsr j_clearflag")
+    immediate = re.fullmatch(r"move\.w #(\d+),d1", tokens[clear_index - 1])
+    if immediate is None:
+        raise ValueError("blacksmith source guard drift in PlaceOrder readiness-flag immediate")
+    return int(immediate.group(1))
+
+
+def _require_supporting_mutation_source_shape(
+    gold_source: str,
+    item_source: str,
+    flag_source: str,
+    combatant_source: str,
+) -> None:
+    """Bind only helper behavior that the post-confirmation transaction executes."""
+    _require_source_sequence(
+        _source_section(gold_source, "DecreaseGold"),
+        (
+            "decreasegold:",
+            "move.l ((current_gold-$1000000)).w,d0",
+            "sub.l d1,d0",
+            "bcc.s @continue",
+            "moveq #0,d0",
+            "move.l d0,((current_gold-$1000000)).w",
+            "move.l d0,d1",
+            "rts",
+        ),
+        name="DecreaseGold",
+    )
+    _require_source_sequence(
+        _source_section(item_source, "DropItemBySlot"),
+        (
+            "dropitembyslot:",
+            "bsr.w getcombatantentryaddress",
+            "add.w d1,d1",
+            "lea combatant_offset_items(a0,d1.w),a0",
+            "andi.w #itementry_mask_index,d1",
+            "cmpi.w #item_nothing,d1",
+            "bsr.s removeandarrangeitems",
+            "bra.w updatecombatantstats",
+        ),
+        name="DropItemBySlot",
+    )
+    _require_source_sequence(
+        _source_section(flag_source, "ClearFlag"),
+        (
+            "clearflag:",
+            "bsr.w getflag",
+            "eori.b #$ff,d0",
+            "and.b d0,(a0)",
+            "rts",
+        ),
+        name="ClearFlag",
+    )
+    _require_source_sequence(
+        _source_section(flag_source, "GetFlag"),
+        (
+            "getflag:",
+            "andi.l #flag_mask,d1",
+            "divu.w #8,d1",
+            "lea ((game_flags-$1000000)).w,a0",
+            "adda.w d1,a0",
+            "moveq #$ffffff80,d0",
+            "lsr.b d1,d0",
+            "rts",
+        ),
+        name="GetFlag",
+    )
+    _require_source_sequence(
+        _source_section(combatant_source, "GetCombatantEntryAddress"),
+        (
+            "getcombatantentryaddress:",
+            "andi.w #byte_mask,d0",
+            "lsl.w #3,d0",
+            "move.w d0,d1",
+            "lsl.w #3,d0",
+            "sub.w d1,d0",
+            "lea ((combatant_data-$1000000)).w,a0",
+            "adda.w d0,a0",
+            "rts",
+        ),
+        name="GetCombatantEntryAddress",
+    )
 
 
 def _validate_owners(
@@ -538,6 +694,11 @@ def build_static_contract(
     const_source_text: str | None = None,
     listing_text: str | None = None,
     rng_source_text: str | None = None,
+    actions_source_text: str | None = None,
+    gold_source_text: str | None = None,
+    item_source_text: str | None = None,
+    flag_source_text: str | None = None,
+    combatant_source_text: str | None = None,
 ) -> dict[str, Any]:
     """Derive H3 configuration from source, H1, ROM-owner facts, and accepted RNG semantics."""
     common_menus, item_owner, rng_owner = _validate_owners(
@@ -554,9 +715,43 @@ def build_static_contract(
     const_source = const_source_text or (disasm / CONST_RELATIVE).read_text(encoding="utf-8")
     listing = listing_text or (upstream_path / LISTING_RELATIVE).read_text(encoding="utf-8")
     rng_source = rng_source_text or (disasm / RNG_SOURCE_RELATIVE).read_text(encoding="utf-8")
+    actions_source = actions_source_text or (
+        disasm / BLACKSMITH_ACTIONS_RELATIVE
+    ).read_text(encoding="utf-8")
+    gold_source = gold_source_text or (disasm / GOLD_SOURCE_RELATIVE).read_text(
+        encoding="utf-8"
+    )
+    item_source = item_source_text or (disasm / ITEM_SOURCE_RELATIVE).read_text(
+        encoding="utf-8"
+    )
+    flag_source = flag_source_text or (disasm / FLAG_SOURCE_RELATIVE).read_text(
+        encoding="utf-8"
+    )
+    combatant_source = combatant_source_text or (
+        disasm / COMBATANT_SOURCE_RELATIVE
+    ).read_text(encoding="utf-8")
     _require_pick_source_shape(pick_source)
     _require_rng_source_shape(rng_source)
+    readiness_flag_id = _require_place_order_source_shape(actions_source)
+    _require_supporting_mutation_source_shape(
+        gold_source, item_source, flag_source, combatant_source
+    )
     client_class_offset = _source_local_offset(pick_source, "PickMithrilWeapon", "clientClass")
+    action_frame_offsets = _source_frame_offsets(
+        actions_source,
+        "BlacksmithAction_PlaceOrder",
+        ("clientClass", "clientMember", "itemSlot", "pendingOrdersNumber"),
+    )
+    if action_frame_offsets["clientClass"] != client_class_offset:
+        raise ValueError("blacksmith action/picker client-class frame offset drift")
+    try:
+        h2_readiness_flag_id = common_menus["expected"]["menuFacts"][
+            "serviceStateMachines"
+        ]["blacksmith"]["derived"]["process"]["readiness"]["flagId"]
+    except KeyError as error:
+        raise ValueError("blacksmith common-menus readiness-flag owner drift") from error
+    if readiness_flag_id != h2_readiness_flag_id:
+        raise ValueError("blacksmith source/H2 readiness-flag relation drift")
     rng_abi = _rng_abi_from_source(pick_source, rng_source)
     equates = _parse_equates(enums_source) | _parse_equates(const_source)
     required = _required_equates(equates)
@@ -642,11 +837,151 @@ def build_static_contract(
     source_context = fixture["sourceContext"]
     if (
         source_context["pickSourcePath"] != PICK_SOURCE_RELATIVE.as_posix()
+        or source_context["placeSourcePath"] != BLACKSMITH_ACTIONS_RELATIVE.as_posix()
         or source_context["tableSourcePath"] != TABLE_SOURCE_RELATIVE.as_posix()
         or source_context["h1ListingPath"] != LISTING_RELATIVE.as_posix()
         or source_context["functionEntryAddress"] != entry
     ):
         raise ValueError("blacksmith fixture source-context identity drift")
+
+    place_labels, place_instructions = _listing_section(
+        listing, "BlacksmithAction_PlaceOrder"
+    )
+    if source_context["placeEntryAddress"] != place_labels["@PlaceOrder"]:
+        raise ValueError("blacksmith fixture place-order source-context drift")
+    decrease_labels, decrease_instructions = _listing_section(listing, "DecreaseGold")
+    drop_labels, drop_instructions = _listing_section(listing, "DropItemBySlot")
+    clear_labels, clear_instructions = _listing_section(listing, "ClearFlag")
+    get_flag_labels, get_flag_instructions = _listing_section(listing, "GetFlag")
+    combatant_labels, combatant_instructions = _listing_section(
+        listing, "GetCombatantEntryAddress"
+    )
+    update_labels, update_instructions = _listing_section(
+        listing, "UpdateCombatantStats"
+    )
+
+    def instruction_record(
+        instructions: list[dict[str, Any]], text: str, *, occurrence: int = 1
+    ) -> dict[str, Any]:
+        normalized = re.sub(r"\s+", " ", text.strip())
+        matches = [item for item in instructions if _h1_text(item) == normalized]
+        if len(matches) < occurrence:
+            raise ValueError(f"blacksmith transaction H1 instruction missing: {text}")
+        return matches[occurrence - 1]
+
+    def successor_record(
+        instructions: list[dict[str, Any]], record: dict[str, Any]
+    ) -> dict[str, Any]:
+        index = next(index for index, item in enumerate(instructions) if item is record)
+        try:
+            return instructions[index + 1]
+        except IndexError as error:
+            raise ValueError("blacksmith transaction H1 successor drift") from error
+
+    decrease_call_record = instruction_record(place_instructions, "jsr j_DecreaseGold")
+    pending_increment_record = successor_record(place_instructions, decrease_call_record)
+    pending_increment_after_record = successor_record(
+        place_instructions, pending_increment_record
+    )
+    client_member_record = instruction_record(
+        place_instructions, "move.w clientMember(a6),d0"
+    )
+    item_slot_record = instruction_record(place_instructions, "move.w itemSlot(a6),d1")
+    drop_call_record = instruction_record(place_instructions, "jsr j_DropItemBySlot")
+    pick_call_record = instruction_record(place_instructions, "bsr.w PickMithrilWeapon")
+    clear_call_record = instruction_record(place_instructions, "jsr j_ClearFlag")
+    clear_flag_load_record = place_instructions[place_instructions.index(clear_call_record) - 1]
+    pre_presentation_record = successor_record(place_instructions, clear_call_record)
+    def h1_frame_displacement(record: dict[str, Any], name: str) -> int:
+        encoded = record["bytes"]
+        if len(encoded) < 4:
+            raise ValueError(f"blacksmith transaction H1 frame displacement width drift: {name}")
+        return int.from_bytes(encoded[-2:], "big", signed=True)
+
+    h1_frame_offsets = {
+        "clientMember": h1_frame_displacement(client_member_record, "clientMember"),
+        "itemSlot": h1_frame_displacement(item_slot_record, "itemSlot"),
+        "pendingOrdersNumber": h1_frame_displacement(
+            pending_increment_record, "pendingOrdersNumber"
+        ),
+    }
+    if (
+        pending_increment_record["text"] != "addi.w #1,pendingOrdersNumber(a6)"
+        or pending_increment_after_record["address"]
+        != pending_increment_record["address"] + len(pending_increment_record["bytes"])
+        or clear_flag_load_record["text"] != f"move.w #{readiness_flag_id},d1"
+        or len(clear_flag_load_record["bytes"]) != 4
+        or int.from_bytes(clear_flag_load_record["bytes"][-2:], "big")
+        != readiness_flag_id
+        or h1_frame_offsets
+        != {
+            name: action_frame_offsets[name]
+            for name in ("clientMember", "itemSlot", "pendingOrdersNumber")
+        }
+        or pre_presentation_record["text"] not in {"trap #textbox", "M trap #textbox"}
+        or place_labels.get("@PlaceOrder") != decrease_call_record["address"] - 6
+    ):
+        raise ValueError("blacksmith transaction H1 frame/immediate chronology drift")
+
+    decrease_return_rts, _ = _h1_instruction(decrease_instructions, "rts")
+    instruction_record(drop_instructions, "bra.w UpdateCombatantStats")
+    update_return_rts, _ = _h1_instruction(update_instructions, "rts")
+    clear_return_rts, _ = _h1_instruction(clear_instructions, "rts")
+    flag_mask_record = instruction_record(get_flag_instructions, "andi.l #FLAG_MASK,d1")
+    flag_base_record = instruction_record(
+        get_flag_instructions, "lea ((GAME_FLAGS-$1000000)).w,a0"
+    )
+    combatant_stride_first = instruction_record(combatant_instructions, "lsl.w #3,d0")
+    combatant_stride_second = instruction_record(
+        combatant_instructions, "lsl.w #3,d0", occurrence=2
+    )
+    combatant_stride_subtract = instruction_record(combatant_instructions, "sub.w d1,d0")
+    combatant_base_record = instruction_record(
+        combatant_instructions, "lea ((COMBATANT_DATA-$1000000)).w,a0"
+    )
+    if (
+        decrease_labels["DecreaseGold"] != h1_entries["DecreaseGold"]
+        or drop_labels["DropItemBySlot"] != h1_entries["DropItemBySlot"]
+        or clear_labels["ClearFlag"] != h1_entries["ClearFlag"]
+        or get_flag_labels["GetFlag"] != h1_entries["GetFlag"]
+        or combatant_labels["GetCombatantEntryAddress"]
+        != h1_entries["GetCombatantEntryAddress"]
+        or update_labels["UpdateCombatantStats"] != h1_entries["UpdateCombatantStats"]
+        or flag_mask_record["address"] >= flag_base_record["address"]
+        or combatant_stride_first["address"] >= combatant_stride_second["address"]
+        or combatant_stride_second["address"] >= combatant_stride_subtract["address"]
+        or combatant_stride_subtract["address"] >= combatant_base_record["address"]
+    ):
+        raise ValueError("blacksmith transaction H1 supporting-helper relation drift")
+    flag_id = readiness_flag_id
+    flag_byte_offset = flag_id // 8
+    flag_bit_mask = 0x80 >> (flag_id % 8)
+    if (
+        required["FLAG_MASK"] < flag_id
+        or required["COMBATANT_DATA_ENTRY_REAL_SIZE"] != 56
+        or required["COMBATANT_ITEMSLOTS"] != 4
+        or required["COMBATANT_OFFSET_ITEMS"] != 32
+        or required["ITEMENTRY_MASK_INDEX"] != required["ITEM_NOTHING"]
+        or required["BLACKSMITH_ORDER_COST"] <= 0
+        or required["ITEM_MITHRIL"] == required["ITEM_NOTHING"]
+    ):
+        raise ValueError("blacksmith transaction work-RAM constant relation drift")
+
+    def guarded_instructions(
+        instructions: list[dict[str, Any]], labels: dict[str, int]
+    ) -> list[dict[str, Any]]:
+        return [
+            {
+                **instruction,
+                "romBytes": _rom_guard_instruction_bytes(
+                    instruction,
+                    labels,
+                    h1_entries,
+                ),
+            }
+            for instruction in instructions
+        ]
+
     return {
         "function": {
             "entryAddress": entry,
@@ -671,6 +1006,10 @@ def build_static_contract(
         "ram": {
             "randomSeedAddress": required["RANDOM_SEED"],
             "ordersAddress": required["MITHRIL_WEAPONS_ON_ORDER"],
+            "currentGoldAddress": required["CURRENT_GOLD"],
+            "gameFlagsAddress": required["GAME_FLAGS"],
+            "flag80OwningByteAddress": required["GAME_FLAGS"] + flag_byte_offset,
+            "combatantDataAddress": required["COMBATANT_DATA"],
         },
         "constants": {
             "classGroupsCounter": required["MITHRIL_WEAPON_CLASSES_COUNTER"],
@@ -682,6 +1021,55 @@ def build_static_contract(
             "clientClassOffset": client_class_offset,
             "brnClass": required["CLASS_BRN"],
             "rdbnClass": required["CLASS_RDBN"],
+            "orderCost": required["BLACKSMITH_ORDER_COST"],
+            "mithrilItemIndex": required["ITEM_MITHRIL"],
+            "itemNothingIndex": required["ITEM_NOTHING"],
+            "itemIndexMask": required["ITEMENTRY_MASK_INDEX"],
+            "combatantEntrySizeBytes": required["COMBATANT_DATA_ENTRY_REAL_SIZE"],
+            "combatantItemSlotCount": required["COMBATANT_ITEMSLOTS"],
+            "combatantItemsOffsetBytes": required["COMBATANT_OFFSET_ITEMS"],
+            "flag80Id": flag_id,
+            "flag80ByteOffset": flag_byte_offset,
+            "flag80BitMask": flag_bit_mask,
+        },
+        "transaction": {
+            "placeEntryAddress": place_labels["@PlaceOrder"],
+            "decreaseGoldCallAddress": decrease_call_record["address"],
+            "decreaseGoldInstructionTargetAddress": h1_entries["j_DecreaseGold"],
+            "decreaseGoldEffectiveTargetAddress": h1_entries["DecreaseGold"],
+            "decreaseGoldEffectiveReturnAddress": decrease_return_rts,
+            "pendingOrdersIncrementAddress": pending_increment_record["address"],
+            "pendingOrdersIncrementedObserveAddress": pending_increment_after_record[
+                "address"
+            ],
+            "dropItemCallAddress": drop_call_record["address"],
+            "dropItemInstructionTargetAddress": h1_entries["j_DropItemBySlot"],
+            "dropItemEffectiveTargetAddress": h1_entries["DropItemBySlot"],
+            "dropItemTailUpdateTargetAddress": h1_entries["UpdateCombatantStats"],
+            "dropItemEffectiveReturnAddress": update_return_rts,
+            "pickMithrilCallAddress": pick_call_record["address"],
+            "pickMithrilReturnAddress": pick_call_record["address"]
+            + len(pick_call_record["bytes"]),
+            "clearFlagCallAddress": clear_call_record["address"],
+            "clearFlagInstructionTargetAddress": h1_entries["j_ClearFlag"],
+            "clearFlagEffectiveTargetAddress": h1_entries["ClearFlag"],
+            "clearFlagEffectiveReturnAddress": clear_return_rts,
+            "prePresentationReturnAddress": pre_presentation_record["address"],
+            "frameOffsetsBytes": {
+                "clientClass": action_frame_offsets["clientClass"],
+                "clientMember": action_frame_offsets["clientMember"],
+                "itemSlot": action_frame_offsets["itemSlot"],
+                "pendingOrdersNumber": action_frame_offsets["pendingOrdersNumber"],
+            },
+            "h1InstructionBytes": [
+                *guarded_instructions(place_instructions, place_labels),
+                *guarded_instructions(decrease_instructions, decrease_labels),
+                *guarded_instructions(drop_instructions, drop_labels),
+                *guarded_instructions(clear_instructions, clear_labels),
+                *guarded_instructions(get_flag_instructions, get_flag_labels),
+                *guarded_instructions(combatant_instructions, combatant_labels),
+                *guarded_instructions(update_instructions, update_labels),
+            ],
         },
         "model": {"classGroups": groups, "weaponRows": rows},
         "h1": {
@@ -715,7 +1103,10 @@ def validate_static_contract(
     """Reject H1/source/table/ROM drift before writing a Lua configuration file."""
     static = build_static_contract(fixture, upstream_path)
     rom = rom_path.resolve(strict=True).read_bytes()
-    for instruction in static["h1"]["instructionBytes"]:
+    for instruction in (
+        static["h1"]["instructionBytes"]
+        + static["transaction"]["h1InstructionBytes"]
+    ):
         address = instruction["address"]
         expected = instruction["romBytes"]
         if rom[address : address + len(expected)] != expected:
@@ -810,16 +1201,148 @@ def model_case(case: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _transaction_chronology(static: dict[str, Any]) -> list[dict[str, int | str]]:
+    transaction = static["transaction"]
+    return [
+        {"role": "place-entry", "pc": transaction["placeEntryAddress"]},
+        {"role": "decrease-gold-call", "pc": transaction["decreaseGoldCallAddress"]},
+        {
+            "role": "decrease-gold-instruction-target",
+            "pc": transaction["decreaseGoldInstructionTargetAddress"],
+        },
+        {
+            "role": "decrease-gold-effective-target",
+            "pc": transaction["decreaseGoldEffectiveTargetAddress"],
+        },
+        {
+            "role": "decrease-gold-effective-return",
+            "pc": transaction["decreaseGoldEffectiveReturnAddress"],
+        },
+        {
+            "role": "pending-orders-incremented",
+            "pc": transaction["pendingOrdersIncrementedObserveAddress"],
+        },
+        {"role": "drop-item-call", "pc": transaction["dropItemCallAddress"]},
+        {
+            "role": "drop-item-instruction-target",
+            "pc": transaction["dropItemInstructionTargetAddress"],
+        },
+        {
+            "role": "drop-item-effective-target",
+            "pc": transaction["dropItemEffectiveTargetAddress"],
+        },
+        {
+            "role": "drop-item-tail-update-target",
+            "pc": transaction["dropItemTailUpdateTargetAddress"],
+        },
+        {
+            "role": "drop-item-effective-return",
+            "pc": transaction["dropItemEffectiveReturnAddress"],
+        },
+        {"role": "pick-mithril-call", "pc": transaction["pickMithrilCallAddress"]},
+        {
+            "role": "pick-mithril-effective-target",
+            "pc": static["function"]["entryAddress"],
+        },
+        {
+            "role": "pick-mithril-effective-return",
+            "pc": static["function"]["returnRtsAddress"],
+        },
+        {"role": "clear-flag-call", "pc": transaction["clearFlagCallAddress"]},
+        {
+            "role": "clear-flag-instruction-target",
+            "pc": transaction["clearFlagInstructionTargetAddress"],
+        },
+        {
+            "role": "clear-flag-effective-target",
+            "pc": transaction["clearFlagEffectiveTargetAddress"],
+        },
+        {
+            "role": "clear-flag-pre-presentation-return",
+            "pc": transaction["clearFlagEffectiveReturnAddress"],
+        },
+    ]
+
+
+def model_transaction_case(case: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
+    """Derive the post-confirmation mutation state without importing a golden row."""
+    constants = static["constants"]
+    if case["goldBefore"] < constants["orderCost"]:
+        raise ValueError("blacksmith transaction case violates caller gold gate")
+    items_before = list(case["clientItemWordsBefore"])
+    item_slot = case["itemSlot"]
+    if not 0 <= item_slot < constants["combatantItemSlotCount"]:
+        raise ValueError("blacksmith transaction item slot is outside source-owned domain")
+    if len(items_before) != constants["combatantItemSlotCount"]:
+        raise ValueError("blacksmith transaction item-word domain drift")
+    if (
+        items_before[item_slot] & constants["itemIndexMask"]
+    ) != constants["mithrilItemIndex"]:
+        raise ValueError("blacksmith transaction selected item is not source mithril")
+    picker = model_case(
+        {
+            "id": case["id"],
+            "clientClass": case["clientClass"],
+            "randomSeedBefore": case["randomSeedBefore"],
+            "ordersBefore": case["ordersBefore"],
+            "registerSentinels": {"d0": 0, "d7": 0},
+        },
+        static,
+    )
+    items_after = items_before.copy()
+    del items_after[item_slot]
+    items_after.append(constants["itemNothingIndex"])
+    flag_before = case["flag80OwningByteBefore"]
+    flag_after = flag_before & (~constants["flag80BitMask"] & 0xFF)
+    return {
+        "id": case["id"],
+        "clientMember": case["clientMember"],
+        "itemSlot": item_slot,
+        "goldBefore": case["goldBefore"],
+        "goldAfter": case["goldBefore"] - constants["orderCost"],
+        "pendingOrdersBefore": case["pendingOrdersBefore"],
+        "pendingOrdersAfter": case["pendingOrdersBefore"] + 1,
+        "clientItemWordsBefore": items_before,
+        "clientItemWordsAfter": items_after,
+        "ordersBefore": list(case["ordersBefore"]),
+        "ordersAfter": picker["ordersAfter"],
+        "flag80OwningByteBefore": flag_before,
+        "flag80OwningByteAfter": flag_after,
+        "randomSeedBefore": case["randomSeedBefore"],
+        "randomSeedAfter": picker["randomSeedAfter"],
+        "classGroupIndex": picker["classGroupIndex"],
+        "weaponRowIndex": picker["weaponRowIndex"],
+        "choiceIndex": picker["choiceIndex"],
+        "itemIndex": picker["itemIndex"],
+        "orderWriteIndex": picker["orderWriteIndex"],
+        "rngCalls": picker["rngCalls"],
+        "callbackChronology": _transaction_chronology(static),
+        "safeExitOriginalReturnPc": static["transaction"]["prePresentationReturnAddress"],
+        "safeExitSeen": True,
+    }
+
+
 def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
-    records = [model_case(case, static) for case in fixture["cases"]]
+    helper_records = [model_case(case, static) for case in fixture["cases"]]
+    transaction_records = [
+        model_transaction_case(case, static) for case in fixture["transactionCases"]
+    ]
     return {
         "system": "GEN",
         "core": fixture["emulator"]["core"],
         "id": fixture["id"],
         "caseOrder": [case["id"] for case in fixture["cases"]],
-        "records": records,
+        "records": helper_records,
+        "transactionCaseOrder": [case["id"] for case in fixture["transactionCases"]],
+        "transactionRecords": transaction_records,
         "callbacksCleared": 0,
-        "seedAndOrdersRestored": True,
+        "restoration": {
+            "currentGoldLongRestored": True,
+            "randomSeedWordRestored": True,
+            "orderWordsRestored": True,
+            "flag80OwningByteRestored": True,
+            "clientCombatantRecordsRestored": True,
+        },
     }
 
 
@@ -848,8 +1371,43 @@ def _validate_case_matrix(fixture: dict[str, Any], static: dict[str, Any]) -> No
         raise ValueError("blacksmith all-occupied no-write coverage drift")
 
 
+def _validate_transaction_case_matrix(fixture: dict[str, Any], static: dict[str, Any]) -> None:
+    if tuple(fixture["transactionCaseOrder"]) != TRANSACTION_CASE_IDS or tuple(
+        case["id"] for case in fixture["transactionCases"]
+    ) != TRANSACTION_CASE_IDS:
+        raise ValueError("blacksmith transaction case order drift")
+    helper_inputs = {
+        (case["clientClass"], case["randomSeedBefore"], tuple(case["ordersBefore"]))
+        for case in fixture["cases"]
+    }
+    transaction_inputs = {
+        (case["clientClass"], case["randomSeedBefore"], tuple(case["ordersBefore"]))
+        for case in fixture["transactionCases"]
+    }
+    if helper_inputs & transaction_inputs:
+        raise ValueError("blacksmith transaction duplicates accepted helper-local case")
+    records = [model_transaction_case(case, static) for case in fixture["transactionCases"]]
+    if [record["orderWriteIndex"] for record in records] != [0, 2, 1]:
+        raise ValueError("blacksmith transaction first-empty order-slot coverage drift")
+    if [record["itemSlot"] for record in records] != [0, 1, 3]:
+        raise ValueError("blacksmith transaction DropItemBySlot domain coverage drift")
+    if [record["weaponRowIndex"] for record in records] != [3, 1, 2]:
+        raise ValueError("blacksmith transaction class/row variation drift")
+    if [record["choiceIndex"] for record in records] != [0, 3, 0]:
+        raise ValueError("blacksmith transaction RNG outcome variation drift")
+    if [len(record["rngCalls"]) for record in records] != [1, 4, 2]:
+        raise ValueError("blacksmith transaction RNG call-count variation drift")
+    if any(
+        record["safeExitOriginalReturnPc"]
+        != static["transaction"]["prePresentationReturnAddress"]
+        for record in records
+    ):
+        raise ValueError("blacksmith transaction pre-presentation exit boundary drift")
+
+
 def _assert_golden(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     _validate_case_matrix(fixture, static)
+    _validate_transaction_case_matrix(fixture, static)
     expected = expected_observation(fixture, static)
     accepted = fixture["acceptedObservation"]
     if accepted != expected:
@@ -888,7 +1446,8 @@ def _assert_status(status_path: Path) -> None:
         required_milestones=(
             "milestone:direct-function-probe",
             "milestone:first-case-entered",
-            "milestone:seed-and-orders-restored",
+            "milestone:transaction-cases-entered",
+            "milestone:transaction-state-restored",
         ),
     )
 
@@ -900,7 +1459,14 @@ def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[st
         "core": fixture["emulator"]["core"],
         "cases": fixture["cases"],
         "caseOrder": fixture["caseOrder"],
+        "transactionCases": fixture["transactionCases"],
+        "transactionCaseOrder": fixture["transactionCaseOrder"],
         "function": static["function"],
+        "transaction": {
+            key: value
+            for key, value in static["transaction"].items()
+            if key != "h1InstructionBytes"
+        },
         "ram": static["ram"],
         "constants": static["constants"],
         "observerFailureContract": OBSERVER_FAILURE_CONTRACT,
@@ -934,9 +1500,11 @@ def verify_blacksmith_mithril(
     _assert_observation(fixture, static, observed)
     return {
         "Fixture": fixture["id"],
-        "Cases": len(fixture["cases"]),
+        "Cases": len(fixture["cases"]) + len(fixture["transactionCases"]),
+        "HelperCases": len(fixture["cases"]),
+        "TransactionCases": len(fixture["transactionCases"]),
         "BizHawkLaunches": 1,
         "CallbacksCleared": observed["callbacksCleared"],
-        "SeedAndOrdersRestored": observed["seedAndOrdersRestored"],
+        "Restoration": observed["restoration"],
         "Status": "PASS",
     }

@@ -5,13 +5,14 @@
   header/palette/tile loading boundaries, plus the complete diamond-menu/yes-no compressed graphics
   and uncompressed item/spell/other icon storage/copy/highlight corpora, and the complete assembled
   UI/window layout, spell-level pointer, diamond-border, and direct menu-tile corpus, plus the
-  count-prefixed shop and sequential mithril-selection data contracts, and the complete 17-routine
-  shared shop/caravan selection-screen instruction and caller corpus
+  count-prefixed shop and sequential mithril-selection data contracts, the original committed-order
+  post-confirmation chronology, and the complete 17-routine shared shop/caravan selection-screen
+  instruction and caller corpus
 - Status: **Inferred** for service-level intent named by upstream symbols but not replayed through every
   shop, church, caravan, blacksmith, field, and battle caller
 - Status: **Unknown** for exact window/portrait animation timing, visual composition, and caller-state
   transitions that static control flow cannot reproduce
-- Evidence date: 2026-07-21
+- Evidence date: 2026-08-09
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -315,12 +316,34 @@ alone after the startup `CheckSram` return, with each case supplying only the st
 ordinary row-2 final fallback across source-owned `[16, 8, 4, 1]` parameters, both BRN/RDBN fallback
 polarities, each first-empty slot, and the all-occupied no-write return. The original helper preserves
 the supplied `d0`/`d7` words, consumes the observed generator calls, and writes only the selected item
-to the first zero word when one exists; the probe snapshots and restores only `RANDOM_SEED` and the four
-`MITHRIL_WEAPONS_ON_ORDER` words before exit. It does not claim restoration of probe, stub, frame, stack,
-or other work-RAM state.
-Reproduce with `uv run sf2 h3 blacksmith-mithril --timeout-seconds 180`. This is helper-local evidence,
-not a claim about BlacksmithMenu admission, transaction, flag 80, persistence, presentation, or natural
-story reachability, which remain **Inferred** or **Unknown**.
+to the first zero word when one exists.
+
+**Confirmed — committed-order H3 transaction.** At
+`BlacksmithAction_PlaceOrder:@PlaceOrder` (`0x21DC2`), the pinned source and H1/ROM guard establish the
+post-confirmation chronology: `DecreaseGold(BLACKSMITH_ORDER_COST = 5000)` through `j_DecreaseGold`
+(`0x21DC8 → 0x8160 → 0x89B4`, RTS `0x89CC`), `addi.w #1,pendingOrdersNumber(a6)` (`0x21DCE`),
+`DropItemBySlot` through its jump interface and original `UpdateCombatantStats` tail
+(`0x21DDC → 0x81A0 → 0x8E12 → 0x89CE`, RTS `0x8A24`), `PickMithrilWeapon` (`0x21DE2 → 0x21ED6`, RTS
+`0x21F60`), then `ClearFlag(80)` (`0x21DEA → 0x826C → 0x98D4`, RTS `0x98E6`). `DecreaseGold` writes the
+`CURRENT_GOLD` longword; `DropItemBySlot` uses the 56-byte `COMBATANT_DATA` stride and four words at item
+offset 32; `GetFlag` maps flag 80 to byte `GAME_FLAGS + 10` and mask `0x80`; the picker writes one of four
+two-byte order words. These are source/H1/ROM facts, not a claim about another caller or helper behavior.
+
+One grouped BizHawk transaction cohort exercises first-empty order slots 0, 2, and 1 with WIZ,
+PLDN, and BRN/RNG variation, without repeating the helper-local cases. Each synthetic continuation jumps
+to the original `@PlaceOrder` code with the original helpers intact. At the original `ClearFlag` RTS it
+proves that the stack word is exactly the first presentation address `0x21DF0`, replaces only that word
+with the generated case continuation, and then allows the original RTS. The observed chronology is
+DecreaseGold → pending increment → DropItemBySlot → picker first-empty order write → ClearFlag, with the
+three source-derived gold/item/order/flag/RNG outcomes recorded per case. Its restoration claim is exactly
+the snapshot/readback set: `CURRENT_GOLD` longword, `RANDOM_SEED` word, four order words, flag-80's owning
+byte, and the three selected 56-byte combatant records. Probe code, synthetic frame, stack, and all other
+work RAM are explicitly excluded. Reproduce the grouped run with
+`uv run sf2 h3 blacksmith-mithril --timeout-seconds 180`.
+
+This does not claim BlacksmithMenu admission or natural story reachability, material/customer selection,
+cancellation or insufficient-gold UI branches, fulfillment/delivery/equip, persistence, player input,
+audio/VDP/timing/rendering, RNG distribution, or hardware behavior; those remain **Unknown**.
 
 The interaction-level handoff is recorded in
 [`service-interactions.md`](../design/contracts/service-interactions.md). It deliberately consumes only the

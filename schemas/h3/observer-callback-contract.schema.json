@@ -342,17 +342,33 @@
         "targetPc": {"$ref": "#/definitions/pc"}
       }
     },
+    "blacksmithMithrilTransactionState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "mode", "decreaseGoldReturnSeen", "pendingOrdersIncrementSeen", "dropItemReturnSeen", "pickReturnSeen", "clearFlagReturnSeen", "prePresentationReturnAddress"],
+      "properties": {
+        "active": {"type": "boolean"},
+        "mode": {"enum": ["none", "helper", "transaction"]},
+        "decreaseGoldReturnSeen": {"type": "boolean"},
+        "pendingOrdersIncrementSeen": {"type": "boolean"},
+        "dropItemReturnSeen": {"type": "boolean"},
+        "pickReturnSeen": {"type": "boolean"},
+        "clearFlagReturnSeen": {"type": "boolean"},
+        "prePresentationReturnAddress": {"$ref": "#/definitions/nullablePc"}
+      }
+    },
     "blacksmithMithrilPendingCallback": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["active", "caseIndex", "functionReturnSeen", "orderWriteSeen", "pendingRngCall", "rolesAtPc"],
+      "required": ["active", "caseIndex", "functionReturnSeen", "orderWriteSeen", "pendingRngCall", "rolesAtPc", "transaction"],
       "properties": {
         "active": {"type": "boolean"},
         "caseIndex": {"type": "integer", "minimum": 0},
         "functionReturnSeen": {"type": "boolean"},
         "orderWriteSeen": {"type": "boolean"},
         "pendingRngCall": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/blacksmithMithrilPendingRngCall"}]},
-        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"enum": ["bootstrap-check-sram", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result"]}}
+        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"enum": ["bootstrap-check-sram", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "transaction-case-entry", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result"]}},
+        "transaction": {"$ref": "#/definitions/blacksmithMithrilTransactionState"}
       }
     },
     "blacksmithMithrilFailure": {
@@ -370,7 +386,7 @@
               "expectedEventPc": {"type": "null"},
               "expectedReturnPc": {"type": "null"},
               "expectedTargetPc": {"type": "null"},
-              "pendingCallback": {"properties": {"active": {"const": false}, "caseIndex": {"const": 0}, "functionReturnSeen": {"const": false}, "orderWriteSeen": {"const": false}, "pendingRngCall": {"type": "null"}}}
+              "pendingCallback": {"properties": {"active": {"const": false}, "caseIndex": {"const": 0}, "functionReturnSeen": {"const": false}, "orderWriteSeen": {"const": false}, "pendingRngCall": {"type": "null"}, "transaction": {"properties": {"active": {"const": false}, "mode": {"const": "none"}}}}}
             }
           }
         },
@@ -379,7 +395,7 @@
           "then": {
             "properties": {
               "caseId": {"type": "null"},
-              "pendingCallback": {"properties": {"active": {"const": false}, "caseIndex": {"const": 0}, "functionReturnSeen": {"const": false}, "orderWriteSeen": {"const": false}, "pendingRngCall": {"type": "null"}}}
+              "pendingCallback": {"properties": {"active": {"const": false}, "caseIndex": {"const": 0}, "functionReturnSeen": {"const": false}, "orderWriteSeen": {"const": false}, "pendingRngCall": {"type": "null"}, "transaction": {"properties": {"active": {"const": false}, "mode": {"const": "none"}}}}}
             }
           }
         },
@@ -393,7 +409,16 @@
           }
         },
         {
-          "if": {"properties": {"role": {"enum": ["function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result"]}}},
+          "if": {"properties": {"role": {"const": "transaction-case-entry"}}},
+          "then": {
+            "properties": {
+              "caseId": {"$ref": "#/definitions/nonEmptyString"},
+              "pendingCallback": {"properties": {"active": {"const": false}, "caseIndex": {"type": "integer", "minimum": 1}, "transaction": {"properties": {"active": {"const": false}, "mode": {"const": "none"}}}}}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"enum": ["function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result"]}}},
           "then": {
             "properties": {
               "caseId": {"$ref": "#/definitions/nonEmptyString"},
@@ -413,7 +438,7 @@
         "owner": {"const": "blacksmith-mithril"},
         "pendingCallback": {"$ref": "#/definitions/blacksmithMithrilPendingCallback"},
         "phase": {"$ref": "#/definitions/nonEmptyString"},
-        "role": {"enum": ["registration", "bootstrap-return-redirect", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result"]}
+        "role": {"enum": ["registration", "bootstrap-return-redirect", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "transaction-case-entry", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result"]}
       }
     }
   }
