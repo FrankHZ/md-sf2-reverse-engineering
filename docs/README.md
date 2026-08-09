@@ -505,6 +505,12 @@ document whose anchors may be updated.
   complete aggregate symbol replay, 80 variable-width glyph records, and 256-entry ASCII map, while
   retaining control effects, presentation, localization, and copyrighted content as Unknown or
   deliberate-design boundaries.
+- [`ui-graphics-asset-data.md`](./design/contracts/ui-graphics-asset-data.md): the
+  implementation-neutral private-import contract for nine shared UI resource/pointer identities,
+  the exact eight-Stack/one-uncompressed payload split, heterogeneous menu routes, 167 source icon
+  paths and exact 163-slot vanilla assembly, and bounded copy/highlight transformations, while
+  retaining runtime selection, palette/DMA timing, rendering, localization, accessibility, and
+  copyrighted payloads as Unknown, separate-owner, or private boundaries.
 - [`ui-layout-data.md`](./design/contracts/ui-layout-data.md): the implementation-neutral static-data
   contract for 27 ordered UI layout grids, the first-class 16-entry spell-level pointer table and its
   aliases, four diamond-border variants, four direct assets, and exact non-overlapping source/ROM
