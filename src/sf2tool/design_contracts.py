@@ -128,6 +128,11 @@ CONTRACTS = {
             "sf2-map-script-dialogue-runtime-v1"
         ),
     },
+    "docs/design/contracts/debug-control-flow.md": {
+        "tests/fixtures/h2/remaining-core-static-v1.json": (
+            "sf2-remaining-core-static-v1"
+        ),
+    },
     "docs/design/contracts/sprite-dialogue-property-data.md": {
         "tests/fixtures/h2/sprite-dialogue-static-v1.json": (
             "sf2-sprite-dialogue-static-v1"

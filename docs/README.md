@@ -448,6 +448,11 @@ document whose anchors may be updated.
   system and game handoffs, logo/intro/title return routing, and region admission branch, while
   retaining platform lifecycle, hardware timing, callee internals, input generation, presentation,
   persistence, and compatibility as separate-owner or Unknown boundaries.
+- [`debug-control-flow.md`](./design/contracts/debug-control-flow.md): the implementation-neutral
+  contract for battle-test setup and service handoffs, configuration gates and writes, seven debug
+  battle-action routes, and four helper-local stack writes, while retaining admission, input, UI,
+  downstream effects, persistence, timing, and product exposure as separate-owner or Unknown
+  boundaries.
 - [`map-entry-routing-state.md`](./design/contracts/map-entry-routing-state.md): the
   implementation-neutral contract for ordered flag-switched map selection, battle-candidate
   admission and bounded state writes, and savepoint/raft-reset selection, while retaining private

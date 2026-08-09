@@ -60,6 +60,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/debug-control-flow.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/dialogue-system.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/dialogue-system.md",
