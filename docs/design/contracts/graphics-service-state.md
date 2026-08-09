@@ -206,12 +206,13 @@ address 161,868. This contract preserves that identity and its relationship to t
 service inventory; it does not claim decoded frame order, visible animation timing, or final output
 from the table name or address alone.
 
-An accepted separate owner has statically excluded IDs `237..250` from the complete original built
-map-sprite assignment domains. This contract does not consume that fixture or duplicate its H4
-surface, but it preserves the result as a **Separate-owner Confirmed static boundary**. It therefore
-does not relabel all reserved/special reachability as Unknown. Deliberately malformed scripts,
-debug-only assignment, raw-RAM injection, caller-visible failure behavior, and final presentation for
-forced values remain **Unknown** or deliberate test inputs.
+The accepted [Common Scripting](../../research/common-scripting.md) owner has statically excluded IDs
+`237..250` from the complete original built map-sprite assignment domains. This contract does not
+consume that owner's fixture or duplicate its H4 surface, but it preserves the result as a
+**Separate-owner Confirmed static boundary**. It therefore does not relabel all reserved/special
+reachability as Unknown. Deliberately malformed scripts, debug-only assignment, raw-RAM injection,
+caller-visible failure behavior, and final presentation for forced values remain **Unknown** or
+deliberate test inputs.
 
 ## Fixed Flash Script
 
@@ -359,7 +360,7 @@ those requirements.
 | decompression entry identities and `a0`/`a1`/`d0` ABI | **Confirmed static** | `sf2-tech-graphics-static-v1` ([`tech-graphics-static-v1.json`](../../../tests/fixtures/h2/tech-graphics-static-v1.json)); Stack entry also bound by `sf2-special-sprite-decode-v1` ([`special-sprite-decode-v1.json`](../../../tests/fixtures/h2/special-sprite-decode-v1.json)) | Codec history, grammar, copy loop, malformed-input behavior, and micro-implementation are outside H4 |
 | display initialization, sprite-link shape, palette timer/weights/queue seam, flash words | **Confirmed static** | `sf2-tech-graphics-static-v1` ([`tech-graphics-static-v1.json`](../../../tests/fixtures/h2/tech-graphics-static-v1.json)) | Visible frames, VInt/CRAM-DMA cadence, hardware timing, and presentation remain **Unknown** |
 | ten pointers, six resources, and exact `9 + 1 + 6` special-ID routing split | **Confirmed static** | `sf2-special-sprite-decode-v1` ([`special-sprite-decode-v1.json`](../../../tests/fixtures/h2/special-sprite-decode-v1.json)) | Forced invalid/debug behavior and rendered frames remain **Unknown** |
-| complete original built assignment exclusion for IDs `237..250` | **Separate-owner Confirmed static** | Accepted map-sprite assignment owner outside this contract | This contract does not duplicate its fixture or H4 surface; forced malformed/debug/raw-RAM behavior remains **Unknown** |
+| complete original built assignment exclusion for IDs `237..250` | **Separate-owner Confirmed static** | [Common Scripting](../../research/common-scripting.md), outside this contract | This contract does not duplicate its fixture or H4 surface; forced malformed/debug/raw-RAM behavior remains **Unknown** |
 | camera destination, parallax, autoscroll, and axis writes | **Separate owner** | [map-exploration contract](map-exploration.md) and its H3 camera owner | `graphicsFacts.viewDestination` is explicitly not consumed here |
 | nominally unused display/graphics helper identities | **Confirmed static inventory** | `sf2-tech-graphics-static-v1` ([`tech-graphics-static-v1.json`](../../../tests/fixtures/h2/tech-graphics-static-v1.json)) | Dead-code status, runtime reachability, and caller effects remain **Unknown** |
 | renderer architecture, accessibility policy, replacement assets, localization, and licensed content | **Deliberate design** | Future product/content decisions | Requires separate provenance and acceptance |
