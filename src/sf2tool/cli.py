@@ -80,6 +80,7 @@ from sf2tool.h3.award_exp import verify_award_exp_randomization
 from sf2tool.h3.battle_ai_action import verify_battle_ai_action_choice
 from sf2tool.h3.battle_exp import verify_battle_exp_level_up
 from sf2tool.h3.battlefield_matrix import verify_battlefield_movement_matrix
+from sf2tool.h3.blacksmith_mithril import verify_blacksmith_mithril
 from sf2tool.h3.controller_input import verify_controller_input
 from sf2tool.h3.enemy_curse import verify_enemy_curse_suppression
 from sf2tool.h3.enemy_drops import verify_enemy_item_drop_behavior
@@ -729,6 +730,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_sram_lifecycle)
     h3_sram_lifecycle.add_argument("--timeout-seconds", type=int, default=180)
+    h3_blacksmith_mithril = h3_commands.add_parser(
+        "blacksmith-mithril",
+        help="verify one-launch direct PickMithrilWeapon selection, RNG, and order-slot facts",
+    )
+    _add_local_paths(h3_blacksmith_mithril)
+    h3_blacksmith_mithril.add_argument("--timeout-seconds", type=int, default=180)
     h3_controller_input = h3_commands.add_parser(
         "controller-input",
         help="verify one-launch two-port raw sampling and VInt input repeat behavior",
@@ -1547,6 +1554,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "sram-lifecycle":
         print_record(
             verify_sram_lifecycle(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "blacksmith-mithril":
+        print_record(
+            verify_blacksmith_mithril(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
