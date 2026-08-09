@@ -438,6 +438,11 @@ document whose anchors may be updated.
   physical attacks through dodge, terrain/countering, critical, spread, and double/counter to
   temporary HP, reaction replay, EXP booking, and level-up connection, plus the shared fixture
   boundary for a future H4.
+- [`exploration-control-flow.md`](./design/contracts/exploration-control-flow.md): the
+  implementation-neutral contract for `MainLoop` exploration handoffs, within-iteration map-event
+  precedence, player-action priority, interaction admission, and the bounded area, refill, flag, and
+  update inventories, while keeping runtime timing, downstream effects, and private table content
+  separate or Unknown.
 - [`map-entry-routing-state.md`](./design/contracts/map-entry-routing-state.md): the
   implementation-neutral contract for ordered flag-switched map selection, battle-candidate
   admission and bounded state writes, and savepoint/raft-reset selection, while retaining private

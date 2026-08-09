@@ -73,6 +73,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/exploration-control-flow.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/global-flag-state.md",
       "status": "pending"
     },
