@@ -5,8 +5,9 @@
   described below.
 - **Inferred original behavior:** none promoted here.
 - **Unknown original behavior:** natural fallback reachability, caller admission, portrait suppression
-  and rendering, speech-SFX playback and timing, text/window/input synchronization, map-sprite
-  assignment provenance, and player-facing meaning.
+  and rendering, speech-SFX playback and timing, text/window/input synchronization, runtime and
+  caller-specific provenance of the particular entity map-sprite byte supplied to this lookup, and
+  player-facing meaning.
 - Remake status: implementation-neutral Phase 3 data/lookup contract; no dialogue presentation,
   portrait renderer, voice or bleep policy, localization flow, accessibility behavior, or licensed
   content pack has been selected.
@@ -216,7 +217,12 @@ but this contract does not define:
 - speech-SFX command submission, audio-driver behavior, waveform, duration, or synchronization;
 - window allocation, text drawing, controller waits, skip behavior, or visible timing;
 - localization, accessibility, alternate presentation, voice acting, or replacement assets;
-- behavior for malformed tables, missing terminators, or injected out-of-domain state.
+- importer admission, diagnostics, or recovery for duplicate-key tables, truncated records, or
+  missing terminators, and behavior for injected out-of-domain state.
+
+Duplicate-key tables are outside the accepted valid corpus. If a source-shaped private table with
+duplicate keys is scanned instead of rejected, the confirmed ordered algorithm selects the first
+matching row; that deterministic scan result is not an acceptance guarantee for malformed input.
 
 Those boundaries remain separate-owner, **Unknown**, or deliberate product design.
 
