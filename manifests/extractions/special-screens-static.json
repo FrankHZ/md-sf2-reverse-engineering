@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-special-screens-static-v1",
-  "outputSha256": "E4FC301375ADDEBF95A526880CEB9BA2FF695479992BDB77F4893AB415E06F19",
+  "outputSha256": "56EA039B129BDB3F684513922357DEEA119F19BCEC5309B1753FD137FCD2CBD1",
   "summary": {
     "fileCount": 19,
     "screenGroupCount": 7,
@@ -14,7 +14,7 @@
     "internalDirectTargetCount": 18,
     "externalDirectTargetCount": 50,
     "layoutIncludedFileCount": 19,
-    "indexedRecordCount": 20,
+    "indexedRecordCount": 21,
     "indexedFileCount": 19
   }
 }
