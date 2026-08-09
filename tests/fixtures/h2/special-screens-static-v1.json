@@ -25,6 +25,189 @@
     "WitchEnd": 28820
   },
   "expected": {
+    "indexedRecordIds": [
+      "screens.endkiss.engine",
+      "screens.endkiss.resources",
+      "screens.jewelend.resources",
+      "screens.segalogo.debug-cheat",
+      "screens.segalogo.engine",
+      "screens.suspend.engine",
+      "screens.suspend.resources",
+      "screens.suspend.witch",
+      "screens.title.compressed-tiles",
+      "screens.title.engine",
+      "screens.title.font",
+      "screens.title.resources",
+      "screens.witch.functions",
+      "screens.witch.menu",
+      "screens.witch.new-game-lifecycle",
+      "screens.witch.resources",
+      "screens.witch.sound-test",
+      "screens.witch.start",
+      "screens.witchend.engine",
+      "screens.witchend.init",
+      "screens.witchend.resources"
+    ],
+    "indexedSourcePaths": [
+      "code/specialscreens/endkiss/endkissfunctions_0.asm",
+      "code/specialscreens/endkiss/graphics.asm",
+      "code/specialscreens/jewelend/graphics.asm",
+      "code/specialscreens/segalogo/segalogo_0.asm",
+      "code/specialscreens/segalogo/segalogo_1.asm",
+      "code/specialscreens/suspend/graphics.asm",
+      "code/specialscreens/suspend/suspend.asm",
+      "code/specialscreens/suspend/witchsuspend.asm",
+      "code/specialscreens/title/graphics.asm",
+      "code/specialscreens/title/loadfont.asm",
+      "code/specialscreens/title/title.asm",
+      "code/specialscreens/witch/graphics.asm",
+      "code/specialscreens/witch/soundtest.asm",
+      "code/specialscreens/witch/witchfunctions.asm",
+      "code/specialscreens/witch/witchmainmenu.asm",
+      "code/specialscreens/witch/witchstart.asm",
+      "code/specialscreens/witchend/graphics.asm",
+      "code/specialscreens/witchend/witchend.asm",
+      "code/specialscreens/witchend/witchendinit.asm"
+    ],
+    "indexedRecordsBySourcePath": [
+      {
+        "sourcePath": "code/specialscreens/endkiss/endkissfunctions_0.asm",
+        "recordIds": [
+          "screens.endkiss.engine"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/endkiss/graphics.asm",
+        "recordIds": [
+          "screens.endkiss.resources"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/jewelend/graphics.asm",
+        "recordIds": [
+          "screens.jewelend.resources"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/segalogo/segalogo_0.asm",
+        "recordIds": [
+          "screens.segalogo.engine"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/segalogo/segalogo_1.asm",
+        "recordIds": [
+          "screens.segalogo.debug-cheat"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/suspend/graphics.asm",
+        "recordIds": [
+          "screens.suspend.resources"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/suspend/suspend.asm",
+        "recordIds": [
+          "screens.suspend.engine"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/suspend/witchsuspend.asm",
+        "recordIds": [
+          "screens.suspend.witch"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/title/graphics.asm",
+        "recordIds": [
+          "screens.title.compressed-tiles",
+          "screens.title.resources"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/title/loadfont.asm",
+        "recordIds": [
+          "screens.title.font"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/title/title.asm",
+        "recordIds": [
+          "screens.title.engine"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/witch/graphics.asm",
+        "recordIds": [
+          "screens.witch.resources"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/witch/soundtest.asm",
+        "recordIds": [
+          "screens.witch.sound-test"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/witch/witchfunctions.asm",
+        "recordIds": [
+          "screens.witch.functions"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/witch/witchmainmenu.asm",
+        "recordIds": [
+          "screens.witch.menu"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/witch/witchstart.asm",
+        "recordIds": [
+          "screens.witch.new-game-lifecycle",
+          "screens.witch.start"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/witchend/graphics.asm",
+        "recordIds": [
+          "screens.witchend.resources"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/witchend/witchend.asm",
+        "recordIds": [
+          "screens.witchend.engine"
+        ]
+      },
+      {
+        "sourcePath": "code/specialscreens/witchend/witchendinit.asm",
+        "recordIds": [
+          "screens.witchend.init"
+        ]
+      }
+    ],
+    "representativeSymbols": {
+      "code/specialscreens/endkiss/endkissfunctions_0.asm": "DisplayEndingKissPicture",
+      "code/specialscreens/endkiss/graphics.asm": "palette_EndingKissPicture",
+      "code/specialscreens/jewelend/graphics.asm": "layout_EndingJewels",
+      "code/specialscreens/segalogo/segalogo_0.asm": "DisplaySegaLogo",
+      "code/specialscreens/segalogo/segalogo_1.asm": "VInt_CheckDebugModeCheat",
+      "code/specialscreens/suspend/graphics.asm": "palette_SuspendString",
+      "code/specialscreens/suspend/suspend.asm": "SuspendGame",
+      "code/specialscreens/suspend/witchsuspend.asm": "WitchSuspend",
+      "code/specialscreens/title/graphics.asm": "palette_TitleScreen",
+      "code/specialscreens/title/loadfont.asm": "LoadTitleScreenFont",
+      "code/specialscreens/title/title.asm": "StartTitleScreen",
+      "code/specialscreens/witch/graphics.asm": "palette_Witch",
+      "code/specialscreens/witch/soundtest.asm": "j_SoundTest",
+      "code/specialscreens/witch/witchfunctions.asm": "InitializeWitchSuspendVIntFunctions",
+      "code/specialscreens/witch/witchmainmenu.asm": "ExecuteWitchMainMenu",
+      "code/specialscreens/witch/witchstart.asm": "StartWitchScreen",
+      "code/specialscreens/witchend/graphics.asm": "palette_EndingWitch",
+      "code/specialscreens/witchend/witchend.asm": "EndGame",
+      "code/specialscreens/witchend/witchendinit.asm": "WitchEnd"
+    },
     "screenFacts": {
       "groupFileCounts": {
         "endkiss": 2,
