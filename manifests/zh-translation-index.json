@@ -160,6 +160,10 @@
       "translatedDate": "2026-08-08"
     },
     {
+      "source": "docs/design/contracts/special-screen-asset-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/spell-definition-data.md",
       "status": "pending"
     },

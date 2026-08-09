@@ -157,6 +157,17 @@ CONTRACTS = {
             "sf2-special-sprite-decode-v1"
         ),
     },
+    "docs/design/contracts/special-screen-asset-data.md": {
+        "tests/fixtures/h2/special-screen-graphics-decode-v1.json": (
+            "sf2-special-screen-graphics-decode-v1"
+        ),
+        "tests/fixtures/h2/special-screen-presentation-static-v1.json": (
+            "sf2-special-screen-presentation-static-v1"
+        ),
+        "tests/fixtures/h2/witch-menu-graphics-static-v1.json": (
+            "sf2-witch-menu-graphics-static-v1"
+        ),
+    },
     "docs/design/contracts/portrait-window-state.md": {
         "tests/fixtures/h2/common-menus-static-v1.json": (
             "sf2-common-menus-static-v1"
