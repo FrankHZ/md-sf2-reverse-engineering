@@ -27,7 +27,7 @@ It says that the file has been reached, not that every instruction in the file i
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 84 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,522 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,539 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -142,11 +142,28 @@ The current evidence is deep but narrow:
   cases for source-selected physical order slots/counters 3/1, 2/2, and 0/4, first-`ITEM_NOTHING`
   inventory positions 3/2/0, `AddItem` result 0, exact source-selected order-word clear, fulfilled counts
   1/2/3, and both original equippability-carry polarities. All three share the exact 11-event AddItem,
-  order-mutation, and equippability callback chronology in one launch. The direct-entry commit block is
-  therefore Confirmed rather than a residual question; the remaining grouped Unknown boundary is vanilla
-  recipient selection/cancel/full-inventory UI, optional equip/equip/curse branches, and presentation,
-  alongside menu admission, persistence, and caller-return timing outside this evidence.
-  One overlapping member-list alternate remains excluded.
+  order-mutation, and equippability callback chronology in one launch. Its v4 fixture retains those 11
+  results byte-for-byte and adds five fixture-owned pre-commit cohorts: recipient cancel; full inventory;
+  tool; equippable non-tool; and non-equippable. Static guards cover `0x21B42` through original `@AddItem` entry `0x21BE4`,
+  each original service call/return/comparison/branch, the original six-byte `JSR` encoding plus
+  instruction/effective targets, and eight text traps. Runtime starts only at selection-loop label
+  `0x21B58`; the accepted one-launch H3 matrix uses one disposable manifest-verified session ROM copy with four `JSR` service
+  shims and three `JMP` presentation terminal-boundary shims. Its observer read back the patched session-ROM
+  configuration but never writes cartridge call sites. The seven spans are statically rejected if any overlaps
+  retained v3 helper/transaction/fulfillment observation PCs, including original `@AddItem` `0x21BE4`.
+  It stops at the first excluded `txt197`/`txt208`/`txt167` boundary, or records a pre-commit `@AddItem`
+  boundary before the body. For the latter only, the established retained direct-fulfillment block runs as
+  harness cleanup from a linked source-valid input and returns to the generated result before optional
+  presentation; its independently guarded direct equippability call/target/RTS/return is
+  `0x21C16 → 0x81B4 → 0x8F80 → 0x8F9A → 0x21C1C`, distinct from the admission seam, and the nested
+  generated-`JSR` stack relation requires the `0x21C1C` longword at `0xFFFEF8`. Cleanup is excluded from
+  pre-commit evidence. The five exact observed terminal outcomes are `txt197` boundary for recipient cancel,
+  `txt208` boundary for full inventory, original `@AddItem` boundary for tool and equippable non-tool, and
+  `txt167` boundary for non-equippable; each uses one selection attempt. Original helper/prompt execution,
+  full-inventory retry/abort, non-equippable prompt accept/retry, `@Done`, presentation, and post-`@AddItem`
+  branches remain **Unknown**; its case and transition 180-frame watchdogs are harness protocol, not timing
+  evidence. One overlapping member-list alternate
+  remains excluded.
   Technical services now additionally models the complete seven-entry SRAM save surface: two-slot
   layout, interleaved copying, checksum/flag transitions, and its caller inventory. One fourteen-case,
   single-launch direct-service H3 matrix validates its in-process initialization, valid/invalid slot,

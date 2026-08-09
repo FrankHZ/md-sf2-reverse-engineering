@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -33,12 +34,14 @@ def test_fixture_is_input_only_and_observation_schema_is_recursively_closed() ->
     assert fixture["caseOrder"] == list(blacksmith_mithril.CASE_IDS)
     assert fixture["transactionCaseOrder"] == list(blacksmith_mithril.TRANSACTION_CASE_IDS)
     assert fixture["fulfillmentCaseOrder"] == list(blacksmith_mithril.FULFILLMENT_CASE_IDS)
+    assert fixture["precommitCaseOrder"] == list(blacksmith_mithril.PRECOMMIT_CASE_IDS)
     assert all(
         "expected" not in case and "result" not in case
         for case in [
             *fixture["cases"],
             *fixture["transactionCases"],
             *fixture["fulfillmentCases"],
+            *fixture["precommitCases"],
         ]
     )
     assert all(
@@ -60,6 +63,10 @@ def test_fixture_is_input_only_and_observation_schema_is_recursively_closed() ->
         validate_json(malformed, blacksmith_mithril.FIXTURE_SCHEMA, owner="blacksmith fixture")
     malformed = copy.deepcopy(fixture)
     malformed["fulfillmentCases"][0]["fulfilledOrdersAfter"] = 1
+    with pytest.raises(ValueError, match="Additional properties"):
+        validate_json(malformed, blacksmith_mithril.FIXTURE_SCHEMA, owner="blacksmith fixture")
+    malformed = copy.deepcopy(fixture)
+    malformed["precommitCases"][0]["terminal"] = "done"
     with pytest.raises(ValueError, match="Additional properties"):
         validate_json(malformed, blacksmith_mithril.FIXTURE_SCHEMA, owner="blacksmith fixture")
     malformed = copy.deepcopy(observed)
@@ -96,6 +103,15 @@ def test_fixture_is_input_only_and_observation_schema_is_recursively_closed() ->
     )
     with pytest.raises(ValueError, match="exact observed case matrix mismatch"):
         blacksmith_mithril._assert_observation(fixture, static, malformed)
+    malformed = copy.deepcopy(observed)
+    malformed["precommitRecords"][1]["callbackChronology"][7]["pc"] += 2
+    validate_json(
+        malformed,
+        blacksmith_mithril.OBSERVATION_SCHEMA,
+        owner="schema-valid precommit chronology drift",
+    )
+    with pytest.raises(ValueError, match="exact observed case matrix mismatch"):
+        blacksmith_mithril._assert_observation(fixture, static, malformed)
     coordinated_drift = copy.deepcopy(fixture)
     coordinated_drift["acceptedObservation"]["records"][0]["itemIndex"] ^= 1
     validate_json(
@@ -122,17 +138,25 @@ def test_transaction_schema_owns_shape_while_verifier_owns_case_identity() -> No
         "h1ListingPath": "build/sf2build-h1.lst",
         "functionEntryAddress": 138966,
         "placeEntryAddress": 138690,
+        "fulfillEntryAddress": 138050,
+        "fulfillSelectionLoopAddress": 138072,
         "fulfillAddItemEntryAddress": 138212,
+        "fulfillDoneAddress": 138452,
     }
-    assert static["function"]["entryAddress"] == fixture["sourceContext"][
-        "functionEntryAddress"
-    ]
-    assert static["transaction"]["placeEntryAddress"] == fixture["sourceContext"][
-        "placeEntryAddress"
-    ]
-    assert static["fulfillment"]["addItemEntryAddress"] == fixture["sourceContext"][
-        "fulfillAddItemEntryAddress"
-    ]
+    assert static["function"]["entryAddress"] == fixture["sourceContext"]["functionEntryAddress"]
+    assert (
+        static["transaction"]["placeEntryAddress"] == fixture["sourceContext"]["placeEntryAddress"]
+    )
+    assert (
+        static["fulfillment"]["addItemEntryAddress"]
+        == fixture["sourceContext"]["fulfillAddItemEntryAddress"]
+    )
+    assert static["precommit"]["entryAddress"] == fixture["sourceContext"]["fulfillEntryAddress"]
+    assert (
+        static["precommit"]["runtimeStartAddress"]
+        == fixture["sourceContext"]["fulfillSelectionLoopAddress"]
+    )
+    assert static["precommit"]["doneAddress"] == fixture["sourceContext"]["fulfillDoneAddress"]
 
     for field, value in (
         ("pickSourcePath", "code/common/menus/blacksmith/wrong.asm"),
@@ -143,7 +167,10 @@ def test_transaction_schema_owns_shape_while_verifier_owns_case_identity() -> No
         ("h1ListingPath", "build/wrong.lst"),
         ("functionEntryAddress", 138968),
         ("placeEntryAddress", 138692),
+        ("fulfillEntryAddress", 138052),
+        ("fulfillSelectionLoopAddress", 138074),
         ("fulfillAddItemEntryAddress", 138214),
+        ("fulfillDoneAddress", 138454),
     ):
         wrong_context = copy.deepcopy(fixture)
         wrong_context["sourceContext"][field] = value
@@ -167,13 +194,15 @@ def test_transaction_schema_owns_shape_while_verifier_owns_case_identity() -> No
             "fulfillmentCaseOrder"
         ],
         observation_schema["definitions"]["fulfillmentRecord"]["properties"]["id"],
+        fixture_schema["properties"]["precommitCaseOrder"],
+        fixture_schema["definitions"]["precommitCase"]["properties"]["id"],
+        observation_schema["definitions"]["observationPayload"]["properties"]["precommitCaseOrder"],
+        observation_schema["definitions"]["precommitRecord"]["properties"]["id"],
     )
     assert all("const" not in shape and "enum" not in shape for shape in transaction_shapes)
 
     wrong_order = copy.deepcopy(fixture)
-    wrong_order["transactionCaseOrder"] = list(
-        reversed(wrong_order["transactionCaseOrder"])
-    )
+    wrong_order["transactionCaseOrder"] = list(reversed(wrong_order["transactionCaseOrder"]))
     validate_json(
         wrong_order,
         blacksmith_mithril.FIXTURE_SCHEMA,
@@ -240,6 +269,9 @@ def test_static_contract_derives_source_h1_rng_and_table_boundaries() -> None:
         "gameFlagsAddress": 0xFFF686,
         "flag80OwningByteAddress": 0xFFF690,
         "combatantDataAddress": 0xFFE800,
+        "dialogueNameIndex1Address": 0xFFB6E8,
+        "selectedItemIndexAddress": 0xFFB13A,
+        "currentItemSubmenuActionAddress": 0xFFB13C,
     }
     assert static["constants"] == {
         "classGroupsCounter": 7,
@@ -253,18 +285,21 @@ def test_static_contract_derives_source_h1_rng_and_table_boundaries() -> None:
         "rdbnClass": 31,
         "orderCost": 5000,
         "mithrilItemIndex": 123,
-            "itemNothingIndex": 127,
-            "itemIndexMask": 127,
-            "itemIndexAndBrokenMask": 32895,
-            "weaponTypeMask": 2,
-            "ringTypeMask": 4,
-            "combatantEntrySizeBytes": 56,
-            "combatantItemSlotCount": 4,
-            "combatantClassOffsetBytes": 10,
+        "itemNothingIndex": 127,
+        "itemIndexMask": 127,
+        "itemIndexAndBrokenMask": 32895,
+        "weaponTypeMask": 2,
+        "ringTypeMask": 4,
+        "combatantEntrySizeBytes": 56,
+        "combatantItemSlotCount": 4,
+        "combatantClassOffsetBytes": 10,
         "combatantItemsOffsetBytes": 32,
         "flag80Id": 80,
         "flag80ByteOffset": 10,
         "flag80BitMask": 128,
+        "equipmentTypeTool": 0,
+        "equipmentTypeWeapon": 1,
+        "equipmentTypeRing": 65535,
     }
     assert static["transaction"] | {"h1InstructionBytes": []} == {
         "placeEntryAddress": 138690,
@@ -298,9 +333,7 @@ def test_static_contract_derives_source_h1_rng_and_table_boundaries() -> None:
         instruction["text"]: instruction["romBytes"]
         for instruction in static["transaction"]["h1InstructionBytes"]
     }
-    assert transaction_bytes["addi.w #1,pendingOrdersNumber(a6)"] == bytes.fromhex(
-        "066E0001FFF2"
-    )
+    assert transaction_bytes["addi.w #1,pendingOrdersNumber(a6)"] == bytes.fromhex("066E0001FFF2")
     assert transaction_bytes["move.w clientMember(a6),d0"] == bytes.fromhex("302EFFFA")
     assert transaction_bytes["move.w itemSlot(a6),d1"] == bytes.fromhex("322EFFF4")
     assert transaction_bytes["move.w #80,d1"] == bytes.fromhex("323C0050")
@@ -362,12 +395,388 @@ def test_static_contract_derives_source_h1_rng_and_table_boundaries() -> None:
             "itemTypeBytes": bytes.fromhex("0A"),
         },
     ]
+    assert static["precommit"] | {"h1InstructionBytes": []} == {
+        "entryAddress": 138050,
+        "selectionLoopAddress": 138072,
+        "runtimeStartAddress": 138072,
+        "doneAddress": 138452,
+        "addItemEntryAddress": 138212,
+        "memberList": {
+            "callAddress": 138088,
+            "instructionTargetAddress": 65604,
+            "effectiveTargetAddress": 77828,
+            "returnAddress": 138094,
+        },
+        "heldItems": {
+            "callAddress": 138114,
+            "instructionTargetAddress": 33140,
+            "effectiveTargetAddress": 35834,
+            "returnAddress": 138120,
+        },
+        "equipmentType": {
+            "callAddress": 138160,
+            "instructionTargetAddress": 33144,
+            "effectiveTargetAddress": 35880,
+            "returnAddress": 138166,
+        },
+        "equippability": {
+            "callAddress": 138180,
+            "instructionTargetAddress": 33204,
+            "effectiveTargetAddress": 36736,
+            "returnAddress": 138186,
+        },
+        "fullInventoryYesNo": {
+            "callAddress": 138136,
+            "instructionTargetAddress": 65652,
+            "effectiveTargetAddress": 86668,
+            "returnAddress": 138142,
+        },
+        "nonEquippableYesNo": {
+            "callAddress": 138198,
+            "instructionTargetAddress": 65652,
+            "effectiveTargetAddress": 86668,
+            "returnAddress": 138204,
+        },
+        "memberCancelCompareAddress": 138094,
+        "memberCancelBranchAddress": 138098,
+        "capacityCompareAddress": 138120,
+        "capacityBranchAddress": 138124,
+        "fullInventoryPromptCompareAddress": 138142,
+        "fullInventoryRetryBranchAddress": 138146,
+        "equipmentTypeCompareAddress": 138166,
+        "toolAdmissionBranchAddress": 138170,
+        "equippabilityBranchAddress": 138186,
+        "nonEquippablePromptCompareAddress": 138204,
+        "nonEquippableRetryBranchAddress": 138208,
+        "presentationTrapAddresses": [
+            138060,
+            138064,
+            138068,
+            138072,
+            138100,
+            138132,
+            138148,
+            138194,
+        ],
+        "presentationTrapReturnAddresses": [
+            138062,
+            138066,
+            138070,
+            138074,
+            138102,
+            138134,
+            138150,
+            138196,
+        ],
+        "frameOffsetsBytes": {"clientMember": -6, "itemIndex": -10, "fulfilledOrdersNumber": -16},
+        "cleanupEquippability": {
+            "callAddress": 138262,
+            "instructionTargetAddress": 33204,
+            "effectiveTargetAddress": 36736,
+            "effectiveReturnAddress": 36762,
+            "returnAddress": 138268,
+        },
+        "serviceShims": [
+            {
+                "role": "member-list",
+                "callAddress": 138088,
+                "instructionTargetAddress": 65604,
+                "effectiveTargetAddress": 77828,
+                "returnAddress": 138094,
+                "originalHex": "4EB900010044",
+                "patchedHex": "4EB900FF6D00",
+                "generatedStubTarget": 16739584,
+            },
+            {
+                "role": "held-items",
+                "callAddress": 138114,
+                "instructionTargetAddress": 33140,
+                "effectiveTargetAddress": 35834,
+                "returnAddress": 138120,
+                "originalHex": "4EB900008174",
+                "patchedHex": "4EB900FF6D00",
+                "generatedStubTarget": 16739584,
+            },
+            {
+                "role": "equipment-type",
+                "callAddress": 138160,
+                "instructionTargetAddress": 33144,
+                "effectiveTargetAddress": 35880,
+                "returnAddress": 138166,
+                "originalHex": "4EB900008178",
+                "patchedHex": "4EB900FF6D00",
+                "generatedStubTarget": 16739584,
+            },
+            {
+                "role": "equippability",
+                "callAddress": 138180,
+                "instructionTargetAddress": 33204,
+                "effectiveTargetAddress": 36736,
+                "returnAddress": 138186,
+                "originalHex": "4EB9000081B4",
+                "patchedHex": "4EB900FF6D00",
+                "generatedStubTarget": 16739584,
+            },
+        ],
+        "terminalShims": [
+            {
+                "role": "recipient-cancel-terminal-boundary-shim",
+                "type": "terminal-jmp",
+                "boundaryAddress": 138100,
+                "originalHex": "4E4500C56000",
+                "patchedHex": "4EF900FF6D20",
+                "generatedStubTarget": 16739616,
+            },
+            {
+                "role": "full-inventory-terminal-boundary-shim",
+                "type": "terminal-jmp",
+                "boundaryAddress": 138132,
+                "originalHex": "4E4500D04EB9",
+                "patchedHex": "4EF900FF6D20",
+                "generatedStubTarget": 16739616,
+            },
+            {
+                "role": "non-equippable-terminal-boundary-shim",
+                "type": "terminal-jmp",
+                "boundaryAddress": 138194,
+                "originalHex": "4E4500A74EB9",
+                "patchedHex": "4EF900FF6D20",
+                "generatedStubTarget": 16739616,
+            },
+        ],
+        "h1InstructionBytes": [],
+    }
     assert [choice["denominator"] for choice in static["model"]["weaponRows"][0]] == [
         16,
         8,
         4,
         1,
     ]
+
+
+@pytest.mark.parametrize(
+    ("old", "new"),
+    (
+        ("00021B68 4EB9 0001 0044", "00021B68 4EF9 0001 0044"),
+        ("00021B68 4EB9 0001 0044", "00021B68 4EB9 0001 0046"),
+    ),
+)
+def test_precommit_service_h1_call_opcode_and_target_drift_fail_before_runtime(
+    old: str, new: str
+) -> None:
+    fixture = _fixture()
+    listing = (blacksmith_mithril.UPSTREAM / blacksmith_mithril.LISTING_RELATIVE).read_text(
+        encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="precommit H1 call instruction-target drift"):
+        blacksmith_mithril.build_static_contract(
+            fixture, blacksmith_mithril.UPSTREAM, listing_text=listing.replace(old, new, 1)
+        )
+
+
+def test_precommit_service_shim_config_rejects_opcode_target_return_and_duplicate_drift() -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    config = blacksmith_mithril._observer_config(fixture, static)
+    shims = config["precommit"]["serviceShims"]
+    assert [shim["originalHex"] for shim in shims] == [
+        "4EB900010044",
+        "4EB900008174",
+        "4EB900008178",
+        "4EB9000081B4",
+    ]
+    assert {shim["patchedHex"] for shim in shims} == {"4EB900FF6D00"}
+    assert {shim["generatedStubTarget"] for shim in shims} == {
+        blacksmith_mithril.PRECOMMIT_SERVICE_STUB_ADDRESS
+    }
+    terminal_shims = config["precommit"]["terminalShims"]
+    assert [shim["type"] for shim in terminal_shims] == ["terminal-jmp"] * 3
+    assert {shim["patchedHex"] for shim in terminal_shims} == {"4EF900FF6D20"}
+    assert {shim["generatedStubTarget"] for shim in terminal_shims} == {
+        blacksmith_mithril.PRECOMMIT_TERMINAL_STUB_ADDRESS
+    }
+    assert config["precommitCaseFrameBudget"] == blacksmith_mithril.PRECOMMIT_CASE_FRAME_BUDGET
+    assert config["precommitTransitionFrameBudget"] == (
+        blacksmith_mithril.PRECOMMIT_TRANSITION_FRAME_BUDGET
+    )
+    assert config["precommitCleanupStackDepthBytes"] == 8
+    assert config["precommit"]["cleanupEquippability"] == {
+        "callAddress": 138262,
+        "instructionTargetAddress": 33204,
+        "effectiveTargetAddress": 36736,
+        "effectiveReturnAddress": 36762,
+        "returnAddress": 138268,
+    }
+    for field, value, error in (
+        ("originalHex", "4EB900010046", "ABI drift"),
+        ("patchedHex", "4EF900FF6D00", "ABI drift"),
+        ("generatedStubTarget", blacksmith_mithril.PRECOMMIT_SERVICE_STUB_ADDRESS + 2, "ABI drift"),
+        ("returnAddress", shims[0]["returnAddress"] + 2, "ABI drift"),
+    ):
+        malformed = copy.deepcopy(static)
+        malformed["precommit"]["serviceShims"][0][field] = value
+        with pytest.raises(ValueError, match=error):
+            blacksmith_mithril._observer_config(fixture, malformed)
+    duplicate = copy.deepcopy(static)
+    duplicate["precommit"]["serviceShims"][1]["callAddress"] = duplicate["precommit"][
+        "serviceShims"
+    ][0]["callAddress"]
+    duplicate["precommit"]["heldItems"]["callAddress"] = duplicate["precommit"]["serviceShims"][
+        0
+    ]["callAddress"]
+    with pytest.raises(ValueError, match="overlapping call-site"):
+        blacksmith_mithril._observer_config(fixture, duplicate)
+    overlap = copy.deepcopy(static)
+    overlap["precommit"]["serviceShims"][1]["callAddress"] = overlap["precommit"][
+        "serviceShims"
+    ][0]["callAddress"] + 2
+    overlap["precommit"]["heldItems"]["callAddress"] = overlap["precommit"]["serviceShims"][0][
+        "callAddress"
+    ] + 2
+    with pytest.raises(ValueError, match="overlapping call-site"):
+        blacksmith_mithril._observer_config(fixture, overlap)
+    terminal_overlap = copy.deepcopy(static)
+    terminal_overlap["precommit"]["terminalShims"][0]["boundaryAddress"] = terminal_overlap[
+        "precommit"
+    ]["serviceShims"][0]["callAddress"]
+    with pytest.raises(ValueError, match="overlapping span"):
+        blacksmith_mithril._observer_config(fixture, terminal_overlap)
+
+    for field, value, error in (
+        ("callAddress", static["precommit"]["equippability"]["callAddress"], "reuses admission"),
+        ("callAddress", 138264, "source/H1/ROM relation"),
+        ("returnAddress", 138270, "source/H1/ROM relation"),
+    ):
+        malformed = copy.deepcopy(static)
+        malformed["precommit"]["cleanupEquippability"][field] = value
+        with pytest.raises(ValueError, match=error):
+            blacksmith_mithril._observer_config(fixture, malformed)
+
+
+def test_precommit_session_rom_instrumentation_is_exact_seven_span_copy(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    canonical = blacksmith_mithril.repo_path("local/roms/sf2-us.bin")
+    before = canonical.read_bytes()
+    first = blacksmith_mithril._instrument_precommit_rom(
+        canonical, fixture, static, output_path=tmp_path / "first.instrumented.bin"
+    )
+    second = blacksmith_mithril._instrument_precommit_rom(
+        canonical, fixture, static, output_path=tmp_path / "second.instrumented.bin"
+    )
+    first_bytes = first.read_bytes()
+    spans = blacksmith_mithril._precommit_instrumentation_spans(static)
+    assert len(spans) == 7
+    assert [row["type"] for row in spans] == ["service-jsr"] * 4 + ["terminal-jmp"] * 3
+    assert hashlib.sha256(first_bytes).hexdigest() == hashlib.sha256(
+        second.read_bytes()
+    ).hexdigest()
+    assert canonical.read_bytes() == before
+    changed = {
+        index
+        for index, pair in enumerate(zip(before, first_bytes, strict=True))
+        if pair[0] != pair[1]
+    }
+    expected_changed = {
+        row["address"] + offset
+        for row in spans
+        for offset, pair in enumerate(zip(row["originalBytes"], row["patchedBytes"], strict=True))
+        if pair[0] != pair[1]
+    }
+    assert changed == expected_changed
+    assert {
+        row["address"]
+        for row in spans
+        if before[row["address"] : row["address"] + 6]
+        != first_bytes[row["address"] : row["address"] + 6]
+    } == {row["address"] for row in spans}
+    for row in spans:
+        assert first_bytes[row["address"] : row["address"] + 6] == row["patchedBytes"]
+
+
+def test_precommit_session_rom_instrumentation_preserves_retained_v3_add_item_entry() -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    spans = blacksmith_mithril._precommit_instrumentation_spans(static)
+    retained = blacksmith_mithril._retained_blacksmith_observation_pcs(static)
+    add_item_entry = static["precommit"]["addItemEntryAddress"]
+    assert add_item_entry == 138212
+    assert add_item_entry in retained
+    assert all(
+        not (span["address"] <= add_item_entry < span["address"] + 6) for span in spans
+    )
+    malformed = [*spans, {**spans[-1], "role": "retained-v3-overlap", "address": add_item_entry}]
+    with pytest.raises(ValueError, match="overlaps retained v3 observation PCs"):
+        blacksmith_mithril._validate_precommit_retained_compatibility(static, malformed)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "error"),
+    (
+        ("missing-cleanup", "cleanup fixture identity drift"),
+        ("wrong-item", "cleanup item identity drift"),
+        ("wrong-order", "cleanup order-word identity drift"),
+    ),
+)
+def test_precommit_add_item_cleanup_linkage_is_rejected_before_config_or_launch(
+    mutation: str, error: str
+) -> None:
+    fixture = _fixture()
+    case = fixture["precommitCases"][2]
+    if mutation == "missing-cleanup":
+        case["cleanupFulfillmentCaseId"] = "missing-accepted-fulfillment-case"
+    elif mutation == "wrong-item":
+        case["itemIndex"] = 99
+    elif mutation == "wrong-order":
+        case["ordersBefore"][3] = 99
+    else:
+        raise AssertionError(f"uncovered mutation: {mutation}")
+    static = _static(fixture)
+    with pytest.raises(ValueError, match=error):
+        blacksmith_mithril._observer_config(fixture, static)
+
+
+def test_precommit_session_rom_instrumentation_rejects_base_and_patch_drift(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    canonical = blacksmith_mithril.repo_path("local/roms/sf2-us.bin")
+    wrong_base = tmp_path / "wrong-base.bin"
+    base_bytes = bytearray(canonical.read_bytes())
+    base_bytes[static["precommit"]["serviceShims"][0]["callAddress"]] ^= 1
+    wrong_base.write_bytes(base_bytes)
+    with pytest.raises(ValueError, match="canonical ROM manifest identity"):
+        blacksmith_mithril._instrument_precommit_rom(wrong_base, fixture, static)
+    for field, value, error in (
+        ("originalHex", "4EB900010046", "ABI drift"),
+        ("patchedHex", "4EF900FF6D00", "ABI drift"),
+        (
+            "generatedStubTarget",
+            blacksmith_mithril.PRECOMMIT_SERVICE_STUB_ADDRESS + 2,
+            "ABI drift",
+        ),
+        ("returnAddress", 138096, "ABI drift"),
+    ):
+        malformed = copy.deepcopy(static)
+        malformed["precommit"]["serviceShims"][0][field] = value
+        with pytest.raises(ValueError, match=error):
+            blacksmith_mithril._instrument_precommit_rom(canonical, fixture, malformed)
+    for field, value, error in (
+        ("patchedHex", "4EB900FF6D20", "terminal shim ABI drift"),
+        (
+            "generatedStubTarget",
+            blacksmith_mithril.PRECOMMIT_TERMINAL_STUB_ADDRESS + 2,
+            "terminal shim ABI drift",
+        ),
+        ("originalHex", "4E4500C56001", "source call-site bytes drift"),
+    ):
+        malformed = copy.deepcopy(static)
+        malformed["precommit"]["terminalShims"][0][field] = value
+        with pytest.raises(ValueError, match=error):
+            blacksmith_mithril._instrument_precommit_rom(canonical, fixture, malformed)
 
 
 def test_static_contract_joins_client_frame_and_order_slot_abi_to_h1() -> None:
@@ -457,8 +866,7 @@ def test_independent_model_covers_all_required_runtime_roles() -> None:
     assert [len(record["rngCalls"]) for record in transactions] == [1, 4, 2]
     assert all(len(record["callbackChronology"]) == 18 for record in transactions)
     assert all(
-        record["callbackChronology"][5]
-        == {"role": "pending-orders-incremented", "pc": 138708}
+        record["callbackChronology"][5] == {"role": "pending-orders-incremented", "pc": 138708}
         for record in transactions
     )
     fulfillments = observed["fulfillmentRecords"]
@@ -467,9 +875,53 @@ def test_independent_model_covers_all_required_runtime_roles() -> None:
     assert [record["equippableCarrySet"] for record in fulfillments] == [True, True, False]
     assert [record["fulfilledOrdersAfter"] for record in fulfillments] == [1, 2, 3]
     assert all(len(record["callbackChronology"]) == 11 for record in fulfillments)
+    assert all(record["safeExitOriginalReturnPc"] == 138268 for record in fulfillments)
+    precommits = observed["precommitRecords"]
+    assert [record["terminal"] for record in precommits] == [
+        "recipient-cancel-pre-presentation",
+        "full-inventory-pre-presentation",
+        "add-item",
+        "add-item",
+        "non-equippable-pre-presentation",
+    ]
+    assert [record["attemptCount"] for record in precommits] == [1, 1, 1, 1, 1]
+    assert [record["selectedMember"] for record in precommits] == [None, 0, 3, 4, 5]
+    assert [len(record["callbackChronology"]) for record in precommits] == [
+        8,
+        13,
+        17,
+        21,
+        22,
+    ]
     assert all(
-        record["safeExitOriginalReturnPc"] == 138268 for record in fulfillments
+        not record[mutation]
+        for record in precommits
+        for mutation in (
+            "addItemMutationObserved",
+            "orderMutationObserved",
+            "fulfilledOrdersMutationObserved",
+        )
     )
+    assert observed["precommitRestoration"] == {
+        "dialogueNameIndex1WordRestored": True,
+        "selectedItemIndexWordRestored": True,
+        "currentItemSubmenuActionByteRestored": True,
+    }
+    assert observed["precommitInstrumentation"] == {
+        "serviceCallSitesReadback": [
+            "member-list",
+            "held-items",
+            "equipment-type",
+            "equippability",
+        ],
+        "terminalBoundarySitesReadback": [
+            "recipient-cancel-terminal-boundary-shim",
+            "full-inventory-terminal-boundary-shim",
+            "non-equippable-terminal-boundary-shim",
+        ],
+        "generatedServiceStubWritesReadback": True,
+        "generatedResultStubWritesReadback": True,
+    }
     assert observed["restoration"] == {
         "currentGoldLongRestored": True,
         "randomSeedWordRestored": True,
@@ -477,6 +929,72 @@ def test_independent_model_covers_all_required_runtime_roles() -> None:
         "flag80OwningByteRestored": True,
         "clientCombatantRecordsRestored": True,
     }
+
+
+def test_v3_accepted_results_are_byte_for_byte_preserved_inside_v4() -> None:
+    fixture = _fixture()
+    observed = fixture["acceptedObservation"]
+    v3_keys = (
+        "caseOrder",
+        "records",
+        "transactionCaseOrder",
+        "transactionRecords",
+        "fulfillmentCaseOrder",
+        "fulfillmentRecords",
+        "callbacksCleared",
+        "restoration",
+    )
+    preserved = {key: observed[key] for key in v3_keys}
+    digest = hashlib.sha256(
+        json.dumps(preserved, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    assert digest == "072e34831c982cbaa97ae9aff419ee6fd2e2b28380495d9d6d588bc579c981b4"
+
+
+def test_research_index_binds_only_observed_fulfillment_pcs() -> None:
+    fixture = _fixture()
+    source_context = fixture["sourceContext"]
+    accepted = fixture["acceptedObservation"]
+    index = load_json(blacksmith_mithril.repo_path("manifests/research-index.json"))
+    record = next(row for row in index["records"] if row["id"] == "menus.blacksmith-actions")
+    addresses = {row["id"]: row["value"] for row in record["addresses"]}
+    h3 = next(row for row in record["evidence"] if row["level"] == "H3")
+    bindings = {row["addressId"]: row["fixtureField"] for row in h3["bindings"]}
+    observed_pcs = {
+        event["pc"]
+        for records_key in (
+            "records",
+            "transactionRecords",
+            "fulfillmentRecords",
+            "precommitRecords",
+        )
+        for case in accepted[records_key]
+        for event in case.get("callbackChronology", [])
+    }
+
+    assert bindings == {
+        "place-order": "sourceContext.placeEntryAddress",
+        "fulfill-selection-loop": "sourceContext.fulfillSelectionLoopAddress",
+        "fulfill-add-item": "sourceContext.fulfillAddItemEntryAddress",
+    }
+    assert {
+        addresses["fulfill-selection-loop"],
+        addresses["fulfill-add-item"],
+    } <= observed_pcs
+    assert all(
+        any(
+            event["role"] == "precommit-selection-loop-entry"
+            and event["pc"] == source_context["fulfillSelectionLoopAddress"]
+            for event in case["callbackChronology"]
+        )
+        for case in accepted["precommitRecords"]
+    )
+    assert "fulfill-entry" not in addresses
+    assert "fulfill-done" not in addresses
+    assert "sourceContext.fulfillEntryAddress" not in bindings.values()
+    assert "sourceContext.fulfillDoneAddress" not in bindings.values()
+    assert source_context["fulfillEntryAddress"] not in observed_pcs
+    assert source_context["fulfillDoneAddress"] not in observed_pcs
 
 
 @pytest.mark.parametrize(
@@ -490,9 +1008,7 @@ def test_independent_model_covers_all_required_runtime_roles() -> None:
         ("carry-drift", "item/class carry relation drift"),
     ),
 )
-def test_fulfillment_matrix_rejects_invalid_direct_entry_states(
-    mutation: str, error: str
-) -> None:
+def test_fulfillment_matrix_rejects_invalid_direct_entry_states(mutation: str, error: str) -> None:
     fixture = _fixture()
     case = fixture["fulfillmentCases"][0]
     if mutation == "orders-counter-zero":
@@ -517,15 +1033,9 @@ def test_fulfillment_source_h1_and_item_definition_mutations_fail_before_runtime
     fixture = _fixture()
     root = blacksmith_mithril.repo_path("local/upstream/SF2DISASM")
     disasm = root / "disasm"
-    actions = (disasm / blacksmith_mithril.BLACKSMITH_ACTIONS_RELATIVE).read_text(
-        encoding="utf-8"
-    )
-    item_source = (disasm / blacksmith_mithril.ITEM_SOURCE_RELATIVE).read_text(
-        encoding="utf-8"
-    )
-    itemdefs = (disasm / blacksmith_mithril.ITEMDEFS_SOURCE_RELATIVE).read_text(
-        encoding="utf-8"
-    )
+    actions = (disasm / blacksmith_mithril.BLACKSMITH_ACTIONS_RELATIVE).read_text(encoding="utf-8")
+    item_source = (disasm / blacksmith_mithril.ITEM_SOURCE_RELATIVE).read_text(encoding="utf-8")
+    itemdefs = (disasm / blacksmith_mithril.ITEMDEFS_SOURCE_RELATIVE).read_text(encoding="utf-8")
     listing = (root / blacksmith_mithril.LISTING_RELATIVE).read_text(encoding="utf-8")
     mutations = (
         (
@@ -589,6 +1099,30 @@ def test_fulfillment_source_h1_and_item_definition_mutations_fail_before_runtime
         (
             {
                 "listing_text": listing.replace(
+                    "00021C16 4EB9 0000 81B4", "00021C18 4EB9 0000 81B4", 1
+                )
+            },
+            "fulfillment source/H1 ABI chronology drift",
+        ),
+        (
+            {
+                "listing_text": listing.replace(
+                    "00021C16 4EB9 0000 81B4", "00021C16 4EB8 81B4", 1
+                )
+            },
+            "fulfillment source/H1 ABI chronology drift",
+        ),
+        (
+            {
+                "listing_text": listing.replace(
+                    "00021C1C 6400 0000", "00021C1E 6400 0000", 1
+                )
+            },
+            "fulfillment source/H1 ABI chronology drift",
+        ),
+        (
+            {
+                "listing_text": listing.replace(
                     "00008CBA 6700                                       beq.s   @Break",
                     "00008CBA 6700                                       beq.s   @Done",
                     1,
@@ -607,35 +1141,19 @@ def test_fulfillment_source_h1_and_item_definition_mutations_fail_before_runtime
             "fulfillment source/H1 ABI chronology drift",
         ),
         (
-            {
-                "listing_text": listing.replace(
-                    "00008F8C 1028 000A", "00008F8C 1028 FF0A", 1
-                )
-            },
+            {"listing_text": listing.replace("00008F8C 1028 000A", "00008F8C 1028 FF0A", 1)},
             "fulfillment source/H1 ABI chronology drift",
         ),
         (
-            {
-                "listing_text": listing.replace(
-                    "00008F8C 1028 000A", "00008F8C 1028 000B", 1
-                )
-            },
+            {"listing_text": listing.replace("00008F8C 1028 000A", "00008F8C 1028 000B", 1)},
             "fulfillment source/H1 ABI chronology drift",
         ),
         (
-            {
-                "listing_text": listing.replace(
-                    "00008F8C 1028 000A", "00008F8C 1029 000A", 1
-                )
-            },
+            {"listing_text": listing.replace("00008F8C 1028 000A", "00008F8C 1029 000A", 1)},
             "class displacement opcode/width drift",
         ),
         (
-            {
-                "listing_text": listing.replace(
-                    "00008F8C 1028 000A", "00008F8C 1028", 1
-                )
-            },
+            {"listing_text": listing.replace("00008F8C 1028 000A", "00008F8C 1028", 1)},
             "class displacement opcode/width drift",
         ),
     )
@@ -648,9 +1166,7 @@ def test_fulfillment_schema_shape_is_structural_but_model_owns_ids_and_order() -
     fixture = _fixture()
     static = _static(fixture)
     wrong_order = copy.deepcopy(fixture)
-    wrong_order["fulfillmentCaseOrder"] = list(
-        reversed(wrong_order["fulfillmentCaseOrder"])
-    )
+    wrong_order["fulfillmentCaseOrder"] = list(reversed(wrong_order["fulfillmentCaseOrder"]))
     validate_json(
         wrong_order,
         blacksmith_mithril.FIXTURE_SCHEMA,
@@ -688,9 +1204,7 @@ def test_fulfillment_schema_shape_is_structural_but_model_owns_ids_and_order() -
         ("h1-order-stride", "order-slot source/H1 stride drift"),
     ),
 )
-def test_source_and_h1_mutations_fail_before_runtime(
-    mutation: str, error: str
-) -> None:
+def test_source_and_h1_mutations_fail_before_runtime(mutation: str, error: str) -> None:
     fixture = _fixture()
     root = blacksmith_mithril.repo_path("local/upstream/SF2DISASM")
     disasm = root / "disasm"
@@ -740,9 +1254,7 @@ def test_source_and_h1_mutations_fail_before_runtime(
 def test_source_comment_near_miss_does_not_satisfy_parser_guard() -> None:
     fixture = _fixture()
     root = blacksmith_mithril.repo_path("local/upstream/SF2DISASM")
-    source = (
-        root / "disasm" / blacksmith_mithril.PICK_SOURCE_RELATIVE
-    ).read_text(encoding="utf-8")
+    source = (root / "disasm" / blacksmith_mithril.PICK_SOURCE_RELATIVE).read_text(encoding="utf-8")
     source = source.replace("move.w  d1,(a0)", "move.w  d0,(a0)", 1)
     source += "\n; move.w d1,(a0)\n"
     with pytest.raises(ValueError, match="source guard drift"):
@@ -832,9 +1344,7 @@ def test_transaction_source_mutations_fail_before_runtime(
     else:
         source = source.replace(old, new, 1)
     with pytest.raises(ValueError, match=error):
-        blacksmith_mithril.build_static_contract(
-            fixture, root, **{source_name: source}
-        )
+        blacksmith_mithril.build_static_contract(fixture, root, **{source_name: source})
 
 
 def test_transaction_h1_mutation_fails_before_runtime() -> None:
@@ -875,17 +1385,13 @@ def test_transaction_h1_frame_displacement_and_flag_immediate_mutations_fail(
 def test_action_frame_near_miss_comment_does_not_satisfy_local_parser() -> None:
     fixture = _fixture()
     root = blacksmith_mithril.repo_path("local/upstream/SF2DISASM")
-    source = (
-        root / "disasm" / blacksmith_mithril.BLACKSMITH_ACTIONS_RELATIVE
-    ).read_text(encoding="utf-8")
-    start = source.rfind("; ===============", 0, source.index("BlacksmithAction_PlaceOrder:"))
-    mutated = source[:start] + source[start:].replace(
-        "clientMember = -6", "; clientMember = -6", 1
+    source = (root / "disasm" / blacksmith_mithril.BLACKSMITH_ACTIONS_RELATIVE).read_text(
+        encoding="utf-8"
     )
+    start = source.rfind("; ===============", 0, source.index("BlacksmithAction_PlaceOrder:"))
+    mutated = source[:start] + source[start:].replace("clientMember = -6", "; clientMember = -6", 1)
     with pytest.raises(ValueError, match="frame declaration drift: clientMember"):
-        blacksmith_mithril.build_static_contract(
-            fixture, root, actions_source_text=mutated
-        )
+        blacksmith_mithril.build_static_contract(fixture, root, actions_source_text=mutated)
 
 
 @pytest.mark.parametrize(
@@ -902,9 +1408,7 @@ def test_source_table_topology_rejects_group_and_row_cardinality_drift(
 ) -> None:
     fixture = _fixture()
     root = blacksmith_mithril.repo_path("local/upstream/SF2DISASM")
-    table = (root / "disasm" / blacksmith_mithril.TABLE_SOURCE_RELATIVE).read_text(
-        encoding="utf-8"
-    )
+    table = (root / "disasm" / blacksmith_mithril.TABLE_SOURCE_RELATIVE).read_text(encoding="utf-8")
     if mutation == "few-groups":
         table = table.replace("                classes MMNK\n", "", 1)
     elif mutation == "many-groups":
@@ -1056,9 +1560,12 @@ def test_cross_owner_and_source_context_drift_fail_before_runtime(tmp_path: Path
 def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: Path) -> None:
     fixture = _fixture()
     static = _static(fixture)
-    guarded = static["h1"]["instructionBytes"] + static["transaction"][
-        "h1InstructionBytes"
-    ] + static["fulfillment"]["h1InstructionBytes"]
+    guarded = (
+        static["h1"]["instructionBytes"]
+        + static["transaction"]["h1InstructionBytes"]
+        + static["fulfillment"]["h1InstructionBytes"]
+        + static["precommit"]["h1InstructionBytes"]
+    )
     size = max(instruction["address"] + len(instruction["bytes"]) for instruction in guarded) + 1
     size = max(size, static["h1"]["weaponTableAddress"] + len(static["h1"]["weaponTableBytes"]))
     size = max(
@@ -1081,13 +1588,11 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
         rom[address : address + len(payload)] = payload
     for field in static["fulfillment"]["itemDefinitionFields"]:
         rom[
-            field["equipFlagsAddress"] : field["equipFlagsAddress"]
-            + len(field["equipFlagsBytes"])
+            field["equipFlagsAddress"] : field["equipFlagsAddress"] + len(field["equipFlagsBytes"])
         ] = field["equipFlagsBytes"]
-        rom[
-            field["itemTypeAddress"] : field["itemTypeAddress"]
-            + len(field["itemTypeBytes"])
-        ] = field["itemTypeBytes"]
+        rom[field["itemTypeAddress"] : field["itemTypeAddress"] + len(field["itemTypeBytes"])] = (
+            field["itemTypeBytes"]
+        )
     image = tmp_path / "guard.bin"
     image.write_bytes(rom)
     blacksmith_mithril.validate_static_contract(
@@ -1102,6 +1607,10 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
         instruction["text"]: instruction["address"]
         for instruction in static["fulfillment"]["h1InstructionBytes"]
     }
+    precommit_instruction = {
+        instruction["text"]: instruction["address"]
+        for instruction in static["precommit"]["h1InstructionBytes"]
+    }
     for address in (
         static["function"]["fallbackRngCallAddress"],
         static["function"]["clientClassReadAddress"],
@@ -1113,6 +1622,11 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
         static["fulfillment"]["addItemCallAddress"],
         static["fulfillment"]["addItemEffectiveReturnAddress"],
         static["fulfillment"]["equippabilityEffectiveReturnAddress"],
+        static["precommit"]["memberList"]["callAddress"],
+        static["precommit"]["heldItems"]["returnAddress"],
+        static["precommit"]["equipmentType"]["returnAddress"],
+        static["precommit"]["equippabilityBranchAddress"],
+        precommit_instruction["bne.w byte_21B58"],
         fulfillment_instruction["beq.s @Break"],
         fulfillment_instruction["bra.s @Done"],
         fulfillment_instruction["move.b COMBATANT_OFFSET_CLASS(a0),d0"],
@@ -1143,6 +1657,13 @@ def _failure_payload() -> dict[str, object]:
         "expectedCallPc": 139014,
         "expectedTargetPc": 5632,
         "expectedReturnPc": 139018,
+        "expectedStackTop": None,
+        "actualStackTop": None,
+        "expectedStackReturn": None,
+        "actualStackReturn": None,
+        "callbacksRemaining": 0,
+        "sessionStateRestored": True,
+        "outputRemoved": True,
         "pendingCallback": {
             "active": True,
             "caseIndex": 3,
@@ -1176,6 +1697,21 @@ def _failure_payload() -> dict[str, object]:
                 "equippabilityCarrySet": None,
                 "originalReturnAddress": None,
             },
+            "precommit": {
+                "active": False,
+                "attemptIndex": 0,
+                "equipmentTypeCallCount": 0,
+                "equippabilityCallCount": 0,
+                "expectedTerminal": "none",
+                "frameBudget": 0,
+                "frameCount": 0,
+                "heldItemsCallCount": 0,
+                "memberListCallCount": 0,
+                "mode": "helper",
+                "pendingService": None,
+                "selectedMember": None,
+                "terminal": "none",
+            },
         },
         "error": "RNG entry PC drift",
     }
@@ -1192,6 +1728,13 @@ def _registration_failure_payload() -> dict[str, object]:
         "expectedCallPc": None,
         "expectedTargetPc": None,
         "expectedReturnPc": None,
+        "expectedStackTop": None,
+        "actualStackTop": None,
+        "expectedStackReturn": None,
+        "actualStackReturn": None,
+        "callbacksRemaining": 0,
+        "sessionStateRestored": False,
+        "outputRemoved": True,
         "pendingCallback": {
             "active": False,
             "caseIndex": 0,
@@ -1219,6 +1762,21 @@ def _registration_failure_payload() -> dict[str, object]:
                 "equippabilityCarrySet": None,
                 "originalReturnAddress": None,
             },
+            "precommit": {
+                "active": False,
+                "attemptIndex": 0,
+                "equipmentTypeCallCount": 0,
+                "equippabilityCallCount": 0,
+                "expectedTerminal": "none",
+                "frameBudget": 0,
+                "frameCount": 0,
+                "heldItemsCallCount": 0,
+                "memberListCallCount": 0,
+                "mode": "none",
+                "pendingService": None,
+                "selectedMember": None,
+                "terminal": "none",
+            },
         },
         "error": "probe registration write drift",
     }
@@ -1235,6 +1793,13 @@ def _bootstrap_failure_payload() -> dict[str, object]:
         "expectedCallPc": None,
         "expectedTargetPc": 28326,
         "expectedReturnPc": 0xFF6800,
+        "expectedStackTop": None,
+        "actualStackTop": None,
+        "expectedStackReturn": None,
+        "actualStackReturn": None,
+        "callbacksRemaining": 0,
+        "sessionStateRestored": False,
+        "outputRemoved": True,
         "pendingCallback": {
             "active": False,
             "caseIndex": 0,
@@ -1262,6 +1827,21 @@ def _bootstrap_failure_payload() -> dict[str, object]:
                 "equippabilityCarrySet": None,
                 "originalReturnAddress": None,
             },
+            "precommit": {
+                "active": False,
+                "attemptIndex": 0,
+                "equipmentTypeCallCount": 0,
+                "equippabilityCallCount": 0,
+                "expectedTerminal": "none",
+                "frameBudget": 0,
+                "frameCount": 0,
+                "heldItemsCallCount": 0,
+                "memberListCallCount": 0,
+                "mode": "none",
+                "pendingService": None,
+                "selectedMember": None,
+                "terminal": "none",
+            },
         },
         "error": "CheckSram return redirect write drift",
     }
@@ -1269,7 +1849,10 @@ def _bootstrap_failure_payload() -> dict[str, object]:
 
 def _observer_role_sets(source: str) -> tuple[set[str], set[str]]:
     registered_roles = set(re.findall(r'register_exec\([^,]+,"([^"]+)"', source))
-    failure_roles = {"registration", "bootstrap-return-redirect"} | (
+    watchdog_roles = set(
+        re.findall(r'set_expectation\("precommit(?:-watchdog|-transition)","([^"]+)"', source)
+    )
+    failure_roles = {"registration", "bootstrap-return-redirect"} | watchdog_roles | (
         registered_roles - {"bootstrap-check-sram"}
     )
     return failure_roles, registered_roles
@@ -1285,13 +1868,17 @@ def test_observer_role_literals_exhaust_shared_failure_and_pending_enums() -> No
         shared["definitions"]["blacksmithMithrilFailure"]["properties"]["role"]["enum"]
     )
     pending_enum = set(
-        shared["definitions"]["blacksmithMithrilPendingCallback"]["properties"][
-            "rolesAtPc"
-        ]["items"]["enum"]
+        shared["definitions"]["blacksmithMithrilPendingCallback"]["properties"]["rolesAtPc"][
+            "items"
+        ]["enum"]
     )
     assert failure_roles == failure_enum
     assert registered_roles == pending_enum
     assert "registration" in failure_roles and "registration" not in registered_roles
+    assert "precommit-watchdog-timeout" in failure_roles
+    assert "precommit-watchdog-timeout" not in registered_roles
+    assert "precommit-transition-timeout" in failure_roles
+    assert "precommit-transition-timeout" not in registered_roles
 
     _, renamed_pending = _observer_role_sets(
         source.replace(
@@ -1351,13 +1938,347 @@ def test_registration_and_bootstrap_failures_have_no_case_association(tmp_path: 
             owner="bootstrap case leak",
         )
     source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
-    assert 'mode,helper_index,transaction_index,fulfillment_index="none",0,0,0' in source
+    assert (
+        'mode,helper_index,transaction_index,fulfillment_index,precommit_index="none",0,0,0,0'
+        in source
+    )
     assert 'current_role=="transaction-case-entry"' in source
     assert 'current_role=="registration" and nil or emu.getregister("M68K PC")' in source
     bootstrap = source.index("local function bootstrap_check_sram()")
     probe_write = source.index("write_probe();helper_index=1;bootstrapped=true", bootstrap)
     first_case_entry = source.index('register_exec(entry,"case-entry",index)', bootstrap)
     assert probe_write < first_case_entry
+
+
+def test_precommit_callback_failure_preserves_generated_return_abi_and_pending_state() -> None:
+    payload = _failure_payload()
+    payload.update(
+        {
+            "caseId": "tool-direct-add-item-admission",
+            "phase": "precommit",
+            "role": "precommit-member-list-original-return",
+            "actualPc": 138094,
+            "expectedEventPc": 138094,
+            "expectedCallPc": 138088,
+            "expectedTargetPc": blacksmith_mithril.PRECOMMIT_SERVICE_STUB_ADDRESS,
+            "expectedReturnPc": 138094,
+        }
+    )
+    pending = payload["pendingCallback"]
+    pending["caseIndex"] = 4
+    pending["rolesAtPc"] = [
+        "precommit-member-list-original-return",
+        "precommit-member-cancel-compare",
+    ]
+    pending["transaction"]["mode"] = "precommit"
+    pending["fulfillment"]["mode"] = "precommit"
+    pending["precommit"] = {
+        "active": True,
+        "attemptIndex": 1,
+        "equipmentTypeCallCount": 0,
+        "equippabilityCallCount": 0,
+        "expectedTerminal": "add-item",
+        "frameBudget": blacksmith_mithril.PRECOMMIT_CASE_FRAME_BUDGET,
+        "frameCount": 1,
+        "heldItemsCallCount": 0,
+        "memberListCallCount": 1,
+        "mode": "precommit",
+        "pendingService": {
+            "callPc": 138088,
+            "returnPc": 138094,
+            "role": "member-list",
+                "targetPc": blacksmith_mithril.PRECOMMIT_SERVICE_STUB_ADDRESS,
+        },
+        "selectedMember": None,
+        "terminal": "none",
+    }
+    validate_json(payload, blacksmith_mithril.FAILURE_SCHEMA, owner="precommit failure")
+    payload["pendingCallback"]["precommit"]["pendingService"]["targetPc"] ^= 2
+    validate_json(
+        payload,
+        blacksmith_mithril.FAILURE_SCHEMA,
+        owner="schema-valid precommit target drift",
+    )
+
+
+def test_precommit_cleanup_failure_preserves_stack_and_terminal_cleanup_facts(
+    tmp_path: Path,
+) -> None:
+    payload = _failure_payload()
+    payload.update(
+        {
+            "caseId": "tool-direct-add-item-admission",
+            "phase": "precommit-cleanup",
+            "role": "precommit-cleanup-equippability-effective-return",
+            "actualPc": 36762,
+            "expectedEventPc": 36762,
+            "expectedCallPc": 138262,
+            "expectedTargetPc": 36736,
+            "expectedReturnPc": 138268,
+            "expectedStackTop": 0xFFFEF8,
+            "actualStackTop": 0xFFFEF8,
+            "expectedStackReturn": 138268,
+            "actualStackReturn": 0xFF6B54,
+            "callbacksRemaining": 0,
+            "sessionStateRestored": True,
+            "outputRemoved": True,
+            "error": "precommit cleanup safe-return stack relation drift",
+        }
+    )
+    pending = payload["pendingCallback"]
+    pending["caseIndex"] = 3
+    pending["rolesAtPc"] = [
+        "fulfillment-equippability-effective-return",
+        "precommit-cleanup-equippability-effective-return",
+    ]
+    pending["transaction"]["mode"] = "precommit-cleanup"
+    pending["fulfillment"]["mode"] = "precommit-cleanup"
+    pending["precommit"] = {
+        "active": True,
+        "attemptIndex": 1,
+        "equipmentTypeCallCount": 1,
+        "equippabilityCallCount": 0,
+        "expectedTerminal": "add-item",
+        "frameBudget": blacksmith_mithril.PRECOMMIT_CASE_FRAME_BUDGET,
+        "frameCount": 0,
+        "heldItemsCallCount": 1,
+        "memberListCallCount": 1,
+        "mode": "precommit-cleanup",
+        "pendingService": None,
+        "selectedMember": 3,
+        "terminal": "add-item",
+    }
+    validate_json(payload, blacksmith_mithril.FAILURE_SCHEMA, owner="precommit cleanup failure")
+    status = tmp_path / "blacksmith-mithril.status.txt"
+    status.write_text(
+        "milestone:precommit-cases-entered\n"
+        + blacksmith_mithril.STATUS_PREFIX
+        + json.dumps(payload)
+        + "\n",
+        encoding="utf-8",
+    )
+    diagnostic = blacksmith_mithril._failure_diagnostic(status)
+    assert diagnostic is not None
+    for expected in (
+        '"phase": "precommit-cleanup"',
+        '"role": "precommit-cleanup-equippability-effective-return"',
+        '"expectedCallPc": 138262',
+        '"expectedTargetPc": 36736',
+        '"expectedReturnPc": 138268',
+        '"actualStackReturn": 16739156',
+        '"callbacksRemaining": 0',
+        '"sessionStateRestored": true',
+        '"outputRemoved": true',
+    ):
+        assert expected in diagnostic
+    for field in ("actualStackReturn", "actualStackTop"):
+        malformed = copy.deepcopy(payload)
+        del malformed[field]
+        with pytest.raises(ValueError, match="required property"):
+            validate_json(
+                malformed,
+                blacksmith_mithril.FAILURE_SCHEMA,
+                owner=f"missing cleanup {field}",
+            )
+    malformed_mode = copy.deepcopy(payload)
+    malformed_mode["pendingCallback"]["precommit"]["mode"] = "precommit-cleanup-typo"
+    with pytest.raises(ValueError, match="is not one of"):
+        validate_json(
+            malformed_mode,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="unknown cleanup mode",
+        )
+    malformed_role = copy.deepcopy(payload)
+    malformed_role["role"] = "precommit-cleanup-equippability-return-typo"
+    with pytest.raises(ValueError, match="is not one of"):
+        validate_json(
+            malformed_role,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="unknown cleanup role",
+        )
+    malformed_cleanup = copy.deepcopy(payload)
+    malformed_cleanup["callbacksRemaining"] = 1
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            malformed_cleanup,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="residual cleanup callback",
+        )
+    malformed_pending = copy.deepcopy(payload)
+    malformed_pending["pendingCallback"]["fulfillment"]["mode"] = "fulfillment"
+    with pytest.raises(ValueError, match="precommit-cleanup"):
+        validate_json(
+            malformed_pending,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="malformed cleanup pending state",
+        )
+    malformed_terminal = copy.deepcopy(payload)
+    malformed_terminal["pendingCallback"]["precommit"]["terminal"] = "none"
+    with pytest.raises(ValueError, match="add-item"):
+        validate_json(
+            malformed_terminal,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="cleanup pending terminal drift",
+        )
+    malformed_output = copy.deepcopy(payload)
+    malformed_output["outputRemoved"] = False
+    with pytest.raises(ValueError, match="was expected"):
+        validate_json(
+            malformed_output,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="failure output residue",
+        )
+    malformed_restore = copy.deepcopy(payload)
+    malformed_restore["sessionStateRestored"] = "true"
+    with pytest.raises(ValueError, match="is not of type"):
+        validate_json(
+            malformed_restore,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="failure restoration type drift",
+        )
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    assert "local q=p.cleanupEquippability" in source
+    assert "stack_top-config.precommitCleanupStackDepthBytes" in source
+    assert "pcx.cleanupStackDiagnostic={expectedTop=expected_top" in source
+    assert "actualReturn=actual_return" in source
+    assert "memory.write_u32_be(stack,target,\"M68K BUS\")" in source
+
+
+def test_precommit_watchdog_timeout_is_structured_and_cannot_pass(tmp_path: Path) -> None:
+    payload = _failure_payload()
+    payload.update(
+        {
+            "caseId": "recipient-cancel-pre-presentation",
+            "phase": "precommit-watchdog",
+            "role": "precommit-watchdog-timeout",
+            "actualPc": 3836,
+            "expectedEventPc": 3836,
+            "expectedCallPc": None,
+            "expectedTargetPc": None,
+            "expectedReturnPc": None,
+            "error": "precommit case frame budget exhausted before terminal",
+        }
+    )
+    pending = payload["pendingCallback"]
+    pending["caseIndex"] = 1
+    pending["rolesAtPc"] = []
+    pending["transaction"]["mode"] = "precommit"
+    pending["fulfillment"]["mode"] = "precommit"
+    pending["precommit"] = {
+        "active": True,
+        "attemptIndex": 1,
+        "equipmentTypeCallCount": 0,
+        "equippabilityCallCount": 0,
+        "expectedTerminal": "recipient-cancel-pre-presentation",
+        "frameBudget": blacksmith_mithril.PRECOMMIT_CASE_FRAME_BUDGET,
+        "frameCount": blacksmith_mithril.PRECOMMIT_CASE_FRAME_BUDGET + 1,
+        "heldItemsCallCount": 0,
+        "memberListCallCount": 0,
+        "mode": "precommit",
+        "pendingService": None,
+        "selectedMember": None,
+        "terminal": "none",
+    }
+    validate_json(payload, blacksmith_mithril.FAILURE_SCHEMA, owner="watchdog failure")
+    status = tmp_path / "blacksmith-mithril.status.txt"
+    status.write_text(
+        "milestone:precommit-cases-entered\n"
+        + blacksmith_mithril.STATUS_PREFIX
+        + json.dumps(payload)
+        + "\n",
+        encoding="utf-8",
+    )
+    assert blacksmith_mithril._failure_diagnostic(status) is not None
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    assert "if pcx.frameCount>pcx.frameBudget then" in source
+    assert 'set_expectation("precommit-watchdog","precommit-watchdog-timeout"' in source
+    assert 'fail_callback("precommit case frame budget exhausted before terminal")' in source
+    assert "os.remove(config.outputPath);cleanup_session()" in source
+    assert source.index("os.remove(config.outputPath)") < source.index("status(diagnostic)")
+    failure_start = source.index("local function fail_callback")
+    failure_handler = source[failure_start : source.index("expect=function", failure_start)]
+    assert "local restored,restore_message=pcall(restore_all)" in failure_handler
+    assert failure_handler.index("pcall(restore_all)") < failure_handler.index(
+        "os.remove(config.outputPath)"
+    )
+    assert "actualStackTop" in failure_handler
+    assert "actualStackReturn" in failure_handler
+    assert "callbacksRemaining" in failure_handler
+    assert "sessionStateRestored" in failure_handler
+    assert "outputRemoved" in failure_handler
+    assert "restore_precommit" not in source
+    assert "write_bytes(shim.callAddress" not in source
+    assert "write_bytes(shim.boundaryAddress" not in source
+    assert "memory.write_u16_be(shim.callAddress" not in source
+    assert "memory.write_u16_be(shim.boundaryAddress" not in source
+    assert "memory.write_u16_be(address,0x4EF9" not in source
+    assert "precommitCallSitesAndStubsRestored" not in source
+    assert "precommitExitBytesRestored" not in source
+    assert "validate_precommit_service_call" in source
+    assert "validate_precommit_terminal_boundary" in source
+
+
+def test_precommit_transition_watchdog_is_structured_and_cannot_fall_to_external_timeout(
+    tmp_path: Path,
+) -> None:
+    payload = _failure_payload()
+    payload.update(
+        {
+            "caseId": "recipient-cancel-pre-presentation",
+            "phase": "precommit-transition",
+            "role": "precommit-transition-timeout",
+            "actualPc": 0x548,
+            "expectedEventPc": 0xFF6B00,
+            "expectedCallPc": None,
+            "expectedTargetPc": 0xFF6B00,
+            "expectedReturnPc": None,
+            "error": (
+                "precommit transition frame budget exhausted before first generated case entry"
+            ),
+        }
+    )
+    pending = payload["pendingCallback"]
+    pending["caseIndex"] = 1
+    pending["rolesAtPc"] = []
+    pending["transaction"]["mode"] = "none"
+    pending["fulfillment"]["mode"] = "none"
+    pending["precommit"] = {
+        "active": False,
+        "attemptIndex": 0,
+        "equipmentTypeCallCount": 0,
+        "equippabilityCallCount": 0,
+        "expectedTerminal": "none",
+        "frameBudget": 0,
+        "frameCount": 0,
+        "heldItemsCallCount": 0,
+        "memberListCallCount": 0,
+        "mode": "none",
+        "pendingService": None,
+        "selectedMember": None,
+        "terminal": "none",
+    }
+    validate_json(payload, blacksmith_mithril.FAILURE_SCHEMA, owner="transition watchdog failure")
+    status = tmp_path / "blacksmith-mithril.status.txt"
+    status.write_text(
+        "milestone:fulfillment-cases-entered\n"
+        "milestone:precommit-cases-entered\n"
+        + blacksmith_mithril.STATUS_PREFIX
+        + json.dumps(payload)
+        + "\n",
+        encoding="utf-8",
+    )
+    assert blacksmith_mithril._failure_diagnostic(status) is not None
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    assert "if pcx.transition.active then" in source
+    assert "if pcx.transition.frameCount>pcx.transition.frameBudget then" in source
+    assert 'set_expectation("precommit-transition","precommit-transition-timeout"' in source
+    assert (
+        'fail_callback("precommit transition frame budget exhausted before first '
+        'generated case entry")'
+        in source
+    )
+    assert "os.remove(config.outputPath);cleanup_session()" in source
+    assert source.index("os.remove(config.outputPath)") < source.index("status(diagnostic)")
 
 
 def test_callback_failure_schema_status_promotion_and_dispatcher_shape(tmp_path: Path) -> None:
@@ -1413,6 +2334,7 @@ def test_callback_failure_schema_status_promotion_and_dispatcher_shape(tmp_path:
     assert "fail_callback(message)" in source
     assert "milestone:transaction-state-restored" in source
     assert "milestone:fulfillment-cases-entered" in source
+    assert "milestone:precommit-cases-entered" in source
     assert "milestone:callbacks-cleared:0" in source
     assert "milestone:observer-finished" in source
     assert "f.returnRtsAddress" in source
@@ -1424,10 +2346,30 @@ def test_callback_failure_schema_status_promotion_and_dispatcher_shape(tmp_path:
     assert "stack==stack_top-4" in source
     assert "memory.write_u32_be(stack,transaction_pc(transaction_index)+20" in source
     assert "memory.write_u32_be(stack,fulfillment_pc(fulfillment_index)+20" in source
+    service_shim = source[
+        source.index("local function validate_precommit_service_call") : source.index(
+            "local function validate_precommit_terminal_boundary"
+        )
+    ]
+    assert "0x4E and patched[2]==0xB9" in service_shim
+    assert "0x4EF9" not in service_shim
+    assert "precommit instrumented service call readback drift" in service_shim
+    assert "local function write_precommit_service_stub" in source
+    assert "local precommit_state={serviceStub=0xFF6D00,terminalStub=0xFF6D20" in source
+    assert "precommitInstrumentation" in source
+    assert "precommitCallSitesAndStubsRestored" not in source
+    assert "precommitExitBytesRestored" not in source
+    assert 'expect(terminal==pcx.expectedTerminal,"precommit terminal outcome drift")' in source
+    precommit_block = source[
+        source.index("local function pcx_selection_loop") : source.index(
+            "local function bootstrap_check_sram"
+        )
+    ]
+    assert "setregister" not in precommit_block
     assert "frame_base+24" not in source
     assert "order_write_seen==(#differences==1)" in source
     assert source.index("write_probe();helper_index=1;bootstrapped=true") < source.index(
-        "status(\"milestone:direct-function-probe\")"
+        'status("milestone:direct-function-probe")'
     )
 
 
@@ -1441,6 +2383,12 @@ def test_verifier_uses_one_launch_and_omits_golden_output_from_lua_config(
     monkeypatch.setattr(blacksmith_mithril, "verify_runtime_contract", lambda *_: None)
     monkeypatch.setattr(blacksmith_mithril, "validate_static_contract", lambda *_: static)
     monkeypatch.setattr(blacksmith_mithril, "_assert_status", lambda *_: None)
+    session_rom = tmp_path / "blacksmith-mithril.session.instrumented.bin"
+    session_rom.write_bytes(b"disposable session ROM")
+    monkeypatch.setattr(blacksmith_mithril, "_instrument_precommit_rom", lambda *_: session_rom)
+    monkeypatch.setattr(
+        blacksmith_mithril, "_with_instrumented_rom_database", lambda _, __, action: action()
+    )
     monkeypatch.setattr(
         blacksmith_mithril, "run_observer", lambda **kwargs: launches.append(kwargs) or observed
     )
@@ -1454,15 +2402,25 @@ def test_verifier_uses_one_launch_and_omits_golden_output_from_lua_config(
     assert "transaction" in launches[0]["config"]
     assert "fulfillmentCases" in launches[0]["config"]
     assert "fulfillment" in launches[0]["config"]
+    assert "precommitCases" in launches[0]["config"]
+    assert "precommit" in launches[0]["config"]
     assert "h1InstructionBytes" not in launches[0]["config"]["transaction"]
     assert "h1InstructionBytes" not in launches[0]["config"]["fulfillment"]
     assert "itemDefinitionFields" not in launches[0]["config"]["fulfillment"]
+    assert "h1InstructionBytes" not in launches[0]["config"]["precommit"]
+    assert "fullInventoryYesNo" not in launches[0]["config"]["precommit"]
+    assert "nonEquippableYesNo" not in launches[0]["config"]["precommit"]
+    assert "fullInventoryRetryBranchAddress" not in launches[0]["config"]["precommit"]
+    assert "nonEquippableRetryBranchAddress" not in launches[0]["config"]["precommit"]
+    assert "precommitInstrumentation" not in launches[0]["config"]
+    assert not session_rom.exists()
     assert result == {
-        "Fixture": "sf2-blacksmith-mithril-runtime-v3",
-        "Cases": 11,
+        "Fixture": "sf2-blacksmith-mithril-runtime-v4",
+        "Cases": 16,
         "HelperCases": 5,
         "TransactionCases": 3,
         "FulfillmentCases": 3,
+        "PrecommitCases": 5,
         "BizHawkLaunches": 1,
         "CallbacksCleared": 0,
         "Restoration": {
@@ -1484,6 +2442,43 @@ def test_verifier_promotes_terminal_structured_callback_failure(
     derived = tmp_path / "derived"
     derived.mkdir()
     payload = _failure_payload()
+    payload.update(
+        {
+            "caseId": "tool-direct-add-item-admission",
+            "phase": "precommit-cleanup",
+            "role": "precommit-cleanup-equippability-effective-return",
+            "actualPc": 36762,
+            "expectedEventPc": 36762,
+            "expectedCallPc": 138262,
+            "expectedTargetPc": 36736,
+            "expectedReturnPc": 138268,
+            "expectedStackTop": 0xFFFEF8,
+            "actualStackTop": 0xFFFEF8,
+            "expectedStackReturn": 138268,
+            "actualStackReturn": 0xFF6B54,
+            "error": "precommit cleanup safe-return stack relation drift",
+        }
+    )
+    pending = payload["pendingCallback"]
+    pending["caseIndex"] = 3
+    pending["rolesAtPc"] = ["precommit-cleanup-equippability-effective-return"]
+    pending["transaction"]["mode"] = "precommit-cleanup"
+    pending["fulfillment"]["mode"] = "precommit-cleanup"
+    pending["precommit"] = {
+        "active": True,
+        "attemptIndex": 1,
+        "equipmentTypeCallCount": 1,
+        "equippabilityCallCount": 0,
+        "expectedTerminal": "add-item",
+        "frameBudget": blacksmith_mithril.PRECOMMIT_CASE_FRAME_BUDGET,
+        "frameCount": 0,
+        "heldItemsCallCount": 1,
+        "memberListCallCount": 1,
+        "mode": "precommit-cleanup",
+        "pendingService": None,
+        "selectedMember": 3,
+        "terminal": "add-item",
+    }
     (derived / "blacksmith-mithril.status.txt").write_text(
         "milestone:observer-loaded\n"
         + blacksmith_mithril.STATUS_PREFIX
@@ -1496,6 +2491,14 @@ def test_verifier_promotes_terminal_structured_callback_failure(
     monkeypatch.setattr(blacksmith_mithril, "validate_static_contract", lambda *_: static)
     monkeypatch.setattr(
         blacksmith_mithril,
+        "_instrument_precommit_rom",
+        lambda *_: tmp_path / "blacksmith-mithril.session.instrumented.bin",
+    )
+    monkeypatch.setattr(
+        blacksmith_mithril, "_with_instrumented_rom_database", lambda _, __, action: action()
+    )
+    monkeypatch.setattr(
+        blacksmith_mithril,
         "run_observer",
         lambda **_: (_ for _ in ()).throw(RuntimeError("BizHawk exited with code 1")),
     )
@@ -1503,13 +2506,14 @@ def test_verifier_promotes_terminal_structured_callback_failure(
         blacksmith_mithril.verify_blacksmith_mithril(tmp_path / "input.bin", tmp_path)
     message = str(error.value)
     for expected in (
-        '"caseId": "brn-fallback-zero-row2-slot2"',
-        '"phase": "rng-entry"',
-        '"role": "rng-entry"',
-        '"actualPc": 5632',
-        '"expectedCallPc": 139014',
-        '"expectedTargetPc": 5632',
-        '"expectedReturnPc": 139018',
+        '"caseId": "tool-direct-add-item-admission"',
+        '"phase": "precommit-cleanup"',
+        '"role": "precommit-cleanup-equippability-effective-return"',
+        '"actualPc": 36762',
+        '"expectedCallPc": 138262',
+        '"expectedTargetPc": 36736',
+        '"expectedReturnPc": 138268',
+        '"actualStackReturn": 16739156',
         '"pendingCallback": {"active": true, "caseIndex": 3',
     ):
         assert expected in message
