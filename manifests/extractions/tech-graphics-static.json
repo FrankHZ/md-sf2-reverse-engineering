@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-tech-graphics-static-v1",
-  "outputSha256": "CFBB924BDF5112B39DDE1D4AE4B625AE7B39F1998DFF915C7348C36B1EAF9387",
+  "outputSha256": "E915FC30C3E25983BE47A859D3DF2A169E9F53036727FF4F5C3FC5B889209EDC",
   "summary": {
     "fileCount": 11,
     "sourceLineCount": 2137,
@@ -14,7 +14,7 @@
     "internalDirectTargetCount": 4,
     "externalDirectTargetCount": 12,
     "layoutIncludedFileCount": 11,
-    "indexedRecordCount": 13,
+    "indexedRecordCount": 14,
     "indexedFileCount": 11
   }
 }
