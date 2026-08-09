@@ -176,6 +176,11 @@ CONTRACTS = {
             "sf2-witch-menu-graphics-static-v1"
         ),
     },
+    "docs/design/contracts/special-screen-control-flow.md": {
+        "tests/fixtures/h2/special-screens-static-v1.json": (
+            "sf2-special-screens-static-v1"
+        ),
+    },
     "docs/design/contracts/portrait-window-state.md": {
         "tests/fixtures/h2/common-menus-static-v1.json": (
             "sf2-common-menus-static-v1"

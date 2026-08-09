@@ -406,6 +406,11 @@ document whose anchors may be updated.
   while retaining transfer-tail contents, screen engines, VInt/DMA/CRAM cadence, visible timing,
   rendered presentation, and copyrighted payloads as Unknown, separate-owner, or private
   boundaries.
+- [`special-screen-control-flow.md`](./design/contracts/special-screen-control-flow.md): the
+  implementation-neutral contract for bounded Sega-logo/title control, witch entry/action-page/
+  dispatch/menu seams, source-static suspend counters and reset handoff, and ending operation-owner
+  identities, while retaining save-action internals, assets, runtime input/timing, presentation,
+  persistence, and copyrighted payloads as separate-owner, Unknown, or private boundaries.
 - [`portrait-window-state.md`](./design/contracts/portrait-window-state.md): the
   implementation-neutral contract for combatant/ally portrait selection, 56-slot private portrait
   data, portrait and name-window state, callback lifetime, exact load/DMA call order, and bounded
