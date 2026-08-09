@@ -22,6 +22,58 @@
       "mapload.asm": "LoadMapLayoutData",
       "unused_mapload.asm": "sub_2EC0"
     },
+    "indexedRecordIds": [
+      "map.camera-control.wait-for-view-scroll-end",
+      "maps.animations",
+      "maps.battle-trigger",
+      "maps.camera",
+      "maps.map-layout",
+      "maps.savepoint",
+      "maps.switch-map",
+      "maps.unused-mapload"
+    ],
+    "indexedSourcePaths": [
+      "code/common/maps/animations.asm",
+      "code/common/maps/camerafunctions.asm",
+      "code/common/maps/egressinit.asm",
+      "code/common/maps/getbattle.asm",
+      "code/common/maps/mapinit_0.asm",
+      "code/common/maps/mapload.asm",
+      "code/common/maps/unused_mapload.asm"
+    ],
+    "indexedRecordsBySourcePath": [
+      {
+        "sourcePath": "code/common/maps/animations.asm",
+        "recordIds": ["maps.animations"]
+      },
+      {
+        "sourcePath": "code/common/maps/camerafunctions.asm",
+        "recordIds": [
+          "map.camera-control.wait-for-view-scroll-end",
+          "maps.camera"
+        ]
+      },
+      {
+        "sourcePath": "code/common/maps/egressinit.asm",
+        "recordIds": ["maps.savepoint"]
+      },
+      {
+        "sourcePath": "code/common/maps/getbattle.asm",
+        "recordIds": ["maps.battle-trigger"]
+      },
+      {
+        "sourcePath": "code/common/maps/mapinit_0.asm",
+        "recordIds": ["maps.switch-map"]
+      },
+      {
+        "sourcePath": "code/common/maps/mapload.asm",
+        "recordIds": ["maps.map-layout"]
+      },
+      {
+        "sourcePath": "code/common/maps/unused_mapload.asm",
+        "recordIds": ["maps.unused-mapload"]
+      }
+    ],
     "mapFacts": {
       "mapSwitch": { "entryBytes": 6, "terminatesOnNegativeSourceMap": true, "firstMatchingSetFlagReplacesMap": true },
       "battleTrigger": { "usesCurrentMapForMinusOneInput": true, "requiresUnlockedFlag": true, "triggerCoordinatesAllowMinusOneWildcard": true, "writesBattleAreaBeforeCompletionCheck": true, "clearsUnlockedFlagWhenCompleted": true, "noMatchBattleIndex": -1 },

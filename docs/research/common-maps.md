@@ -5,13 +5,18 @@
 - Status: **Inferred** for presentation intent in the large camera and loader helpers
 - Status: **Unknown** for exact camera/scroll and hardware scanline timing, plus full
   VDP-visible rendered-map parity
-- Evidence date: 2026-07-19
+- Evidence date: 2026-08-08
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
 ## Confirmed Map Routing
 
-All seven files under `code/common/maps` are inventoried and H1-bound. `SwitchMap` scans six-byte
+All seven files under `code/common/maps` are inventoried and H1-bound. The H2 sourcePath-only
+membership relation has eight accepted records over those seven direct paths: the
+`camerafunctions.asm` row is the sole multi-record path, containing both `maps.camera` and
+`map.camera-control.wait-for-view-scroll-end`. The latter names `WaitForViewScrollEnd` and remains
+owned by the existing `sf2-map-camera-control-runtime-v1` H3 evidence; including that source member
+in this static inventory adds no camera runtime claim. `SwitchMap` scans six-byte
 records until a negative source-map value and takes the first source-map entry whose flag is set.
 `CheckBattle` accepts `-1` as current map, requires the battle-unlocked flag, treats `-1` trigger X/Y
 as wildcards, writes the battle rectangle, and returns `-1` when no record matches. A completed match

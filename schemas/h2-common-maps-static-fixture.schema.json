@@ -1,13 +1,266 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SF2 common maps static fixture",
-  "type": "object", "additionalProperties": false,
+  "type": "object",
+  "additionalProperties": false,
   "required": ["schemaVersion", "id", "romSha256", "upstreamCommit", "function", "expected"],
   "properties": {
-    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-common-maps-static-v1" },
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-common-maps-static-v1" },
     "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
     "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
-    "function": { "type": "object", "minProperties": 7, "maxProperties": 7, "additionalProperties": { "type": "integer", "minimum": 0 } },
-    "expected": { "type": "object", "required": ["representativeSymbols", "mapFacts"], "properties": { "representativeSymbols": { "type": "object", "minProperties": 7, "maxProperties": 7 }, "mapFacts": { "type": "object", "minProperties": 6, "maxProperties": 6 } } }
+    "function": { "$ref": "#/definitions/functionAddresses" },
+    "expected": { "$ref": "#/definitions/expected" }
+  },
+  "definitions": {
+    "functionAddresses": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scrollingAddress",
+        "cameraAddress",
+        "savepointAddress",
+        "battleTriggerAddress",
+        "switchMapAddress",
+        "mapLayoutAddress",
+        "unusedMaploadAddress"
+      ],
+      "properties": {
+        "scrollingAddress": { "type": "integer", "minimum": 0 },
+        "cameraAddress": { "type": "integer", "minimum": 0 },
+        "savepointAddress": { "type": "integer", "minimum": 0 },
+        "battleTriggerAddress": { "type": "integer", "minimum": 0 },
+        "switchMapAddress": { "type": "integer", "minimum": 0 },
+        "mapLayoutAddress": { "type": "integer", "minimum": 0 },
+        "unusedMaploadAddress": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "representativeSymbols",
+        "mapFacts",
+        "indexedRecordIds",
+        "indexedSourcePaths",
+        "indexedRecordsBySourcePath"
+      ],
+      "properties": {
+        "representativeSymbols": { "$ref": "#/definitions/representativeSymbols" },
+        "mapFacts": { "$ref": "#/definitions/mapFacts" },
+        "indexedRecordIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/recordId" }
+        },
+        "indexedSourcePaths": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/sourcePath" }
+        },
+        "indexedRecordsBySourcePath": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": { "$ref": "#/definitions/indexedRecordsBySourcePath" }
+        }
+      }
+    },
+    "representativeSymbols": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "animations.asm",
+        "camerafunctions.asm",
+        "egressinit.asm",
+        "getbattle.asm",
+        "mapinit_0.asm",
+        "mapload.asm",
+        "unused_mapload.asm"
+      ],
+      "properties": {
+        "animations.asm": { "$ref": "#/definitions/symbol" },
+        "camerafunctions.asm": { "$ref": "#/definitions/symbol" },
+        "egressinit.asm": { "$ref": "#/definitions/symbol" },
+        "getbattle.asm": { "$ref": "#/definitions/symbol" },
+        "mapinit_0.asm": { "$ref": "#/definitions/symbol" },
+        "mapload.asm": { "$ref": "#/definitions/symbol" },
+        "unused_mapload.asm": { "$ref": "#/definitions/symbol" }
+      }
+    },
+    "sourcePath": {
+      "type": "string",
+      "pattern": "^code/common/maps/[A-Za-z0-9_]+\\.asm$"
+    },
+    "recordId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourcePath", "recordIds"],
+      "properties": {
+        "sourcePath": { "$ref": "#/definitions/sourcePath" },
+        "recordIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/recordId" }
+        }
+      }
+    },
+    "mapFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mapSwitch",
+        "battleTrigger",
+        "egress",
+        "mapLayout",
+        "vint",
+        "inventoryBoundary"
+      ],
+      "properties": {
+        "mapSwitch": { "$ref": "#/definitions/mapSwitchFacts" },
+        "battleTrigger": { "$ref": "#/definitions/battleTriggerFacts" },
+        "egress": { "$ref": "#/definitions/egressFacts" },
+        "mapLayout": { "$ref": "#/definitions/mapLayoutFacts" },
+        "vint": { "$ref": "#/definitions/vintFacts" },
+        "inventoryBoundary": { "$ref": "#/definitions/inventoryBoundaryFacts" }
+      }
+    },
+    "mapSwitchFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryBytes",
+        "terminatesOnNegativeSourceMap",
+        "firstMatchingSetFlagReplacesMap"
+      ],
+      "properties": {
+        "entryBytes": { "type": "integer", "minimum": 0 },
+        "terminatesOnNegativeSourceMap": { "type": "boolean" },
+        "firstMatchingSetFlagReplacesMap": { "type": "boolean" }
+      }
+    },
+    "battleTriggerFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "usesCurrentMapForMinusOneInput",
+        "requiresUnlockedFlag",
+        "triggerCoordinatesAllowMinusOneWildcard",
+        "writesBattleAreaBeforeCompletionCheck",
+        "clearsUnlockedFlagWhenCompleted",
+        "noMatchBattleIndex"
+      ],
+      "properties": {
+        "usesCurrentMapForMinusOneInput": { "type": "boolean" },
+        "requiresUnlockedFlag": { "type": "boolean" },
+        "triggerCoordinatesAllowMinusOneWildcard": { "type": "boolean" },
+        "writesBattleAreaBeforeCompletionCheck": { "type": "boolean" },
+        "clearsUnlockedFlagWhenCompleted": { "type": "boolean" },
+        "noMatchBattleIndex": { "type": "integer" }
+      }
+    },
+    "egressFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preFlag399UsesGameStartConstants",
+        "savepointEntryBytes",
+        "savepointTerminator",
+        "missingMapDefault",
+        "raftResetRequiresFlag64",
+        "raftResetEntryBytes"
+      ],
+      "properties": {
+        "preFlag399UsesGameStartConstants": { "type": "boolean" },
+        "savepointEntryBytes": { "type": "integer", "minimum": 0 },
+        "savepointTerminator": { "type": "integer" },
+        "missingMapDefault": { "$ref": "#/definitions/missingMapDefault" },
+        "raftResetRequiresFlag64": { "type": "boolean" },
+        "raftResetEntryBytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "missingMapDefault": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "facing"],
+      "properties": {
+        "x": { "type": "integer" },
+        "y": { "type": "integer" },
+        "facing": { "type": "string", "minLength": 1 }
+      }
+    },
+    "mapLayoutFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outputSizeBytes",
+        "clearsHistoryMapsFirst",
+        "modes",
+        "mapLoadClearsScrollState",
+        "newMapUpdatesCurrentMap",
+        "blocksLoadBeforeLayout",
+        "battleAreaOverlayAppliedInBattle"
+      ],
+      "properties": {
+        "outputSizeBytes": { "type": "integer", "minimum": 0 },
+        "clearsHistoryMapsFirst": { "type": "boolean" },
+        "modes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "mapLoadClearsScrollState": { "type": "boolean" },
+        "newMapUpdatesCurrentMap": { "type": "boolean" },
+        "blocksLoadBeforeLayout": { "type": "boolean" },
+        "battleAreaOverlayAppliedInBattle": { "type": "boolean" }
+      }
+    },
+    "vintFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "planeAToggleBit",
+        "planeBToggleBit",
+        "planeAAlsoRefreshesWindowsWhenPresent",
+        "tileAnimationRequiresPositiveDataPointer",
+        "tileAnimationUsesCountdown",
+        "tileAnimationUsesVintDma"
+      ],
+      "properties": {
+        "planeAToggleBit": { "type": "integer", "minimum": 0 },
+        "planeBToggleBit": { "type": "integer", "minimum": 0 },
+        "planeAAlsoRefreshesWindowsWhenPresent": { "type": "boolean" },
+        "tileAnimationRequiresPositiveDataPointer": { "type": "boolean" },
+        "tileAnimationUsesCountdown": { "type": "boolean" },
+        "tileAnimationUsesVintDma": { "type": "boolean" }
+      }
+    },
+    "inventoryBoundaryFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cameraStateMachineInventoried",
+        "unusedRandomMaploadInventoried",
+        "cameraAndVdpTimingRemainQueued"
+      ],
+      "properties": {
+        "cameraStateMachineInventoried": { "type": "boolean" },
+        "unusedRandomMaploadInventoried": { "type": "boolean" },
+        "cameraAndVdpTimingRemainQueued": { "type": "boolean" }
+      }
+    }
   }
 }
