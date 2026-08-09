@@ -112,6 +112,10 @@
       "translatedDate": "2026-08-08"
     },
     {
+      "source": "docs/design/contracts/map-layout-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/new-game-state-initialization.md",
       "status": "pending"
     },
