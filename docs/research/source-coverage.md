@@ -240,7 +240,13 @@ The current evidence is deep but narrow:
   complete corpus/infrastructure owners; unowned direct calls are zero. Dynamic indirect or
   self-modifying decoder entry remains outside this explicitly named-call metric.
   Technical interfaces bind all 25 jump/pointer files and hash the complete 331-stub/60-pointer map;
-  this routing structure requires no runtime replay.
+  this routing structure requires no runtime replay. The random-services H3 matrix keeps its ten
+  accepted helper-local rows and adds two bounded caller rows: the real text `$659C..$65B4` and diamond
+  `$10366..$1037E` preamble/range/base-call/store/restore/WaitForVInt seams. Each uses one actual
+  WaitForVInt traversal solely to return to the probe continuation, where the original thinking alias
+  consumes the source-stored seed copy; it records the source store before helper consumption and
+  skips the probe's controlled copy on the caller result. This is a 12-row, one-launch caller-boundary
+  matrix, not coverage of caller loops, input, VInt timing, or UI presentation.
   Remaining technical services inventory all twelve resource/sound/SRAM/input/copy/RNG files. Eleven
   main-layout files are H1-bound; the standalone Z80 source is separately assembled and H2-hashed
   without pretending it owns a 68000 listing symbol. Resource routing, overlap-copy direction,

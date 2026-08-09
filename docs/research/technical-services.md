@@ -243,19 +243,43 @@ The direct-call inventory contains 131 direct `GenerateRandomNumber` sites, 26 d
 particular, `GenerateRandomNumberUnderD6` has **zero direct target sites**; six sites call the
 separate `j_GenerateRandomNumberUnderD6` jump-interface alias in
 `code/common/tech/jumpinterfaces/s13_jumpinterface.asm`. This distinguishes source spelling
-from runtime reachability. The text `symbol_wait1` and diamond-menu direct source sites are represented
-only as source-context copy-shape rows: both set range 256, call the base generator, then use the
-same byte-store encoding. **Unknown:** their full caller loops, VInt/input/menu/text timing, and
-cross-caller seed-copy lifetime/isolation. The grouped H3 queue remains
-`random-services-matrix-range-retry-and-seed-copy-isolation` for that caller-context boundary; existing range-two action evidence is
-`battle-ai-action-choice-v1.json` (`sf2-battle-ai-action-choice-runtime-v1`). The implementation
-boundary is [`randomness.md`](../design/contracts/randomness.md).
+from runtime reachability.
+
+**Confirmed (source, H1, ROM, and the one-launch H3 matrix):** text
+`symbol_wait1` owns the contiguous `$659C` preamble, `$65A0` range load of 256, `$65A4` base-RNG
+call, `$65A8` byte store to `RANDOM_SEED_COPY`, `$65AC` register restore, and `$65B0 → $65B4`
+`WaitForVInt` call/return. Diamond menu owns the corresponding `$10366`, `$1036A`, `$1036E`,
+`$10372`, `$10376`, and `$1037A → $1037E` seam. `WaitForVInt` is `$0EEE` through RTS `$0F02`.
+The two generated caller rows enter exactly those preambles through the already accepted work-RAM
+probe's real JSR, prove the source RNG call at base entry from the pushed `$65A8`/`$10372` return,
+prove the source store and restore, and then prove the source Wait return on the stack. The harness
+changes only that top return to its `$FF6808` continuation, lets exactly one original
+`WaitForVInt` execute, and resumes the thinking alias through the same real probe JSR. It redirects
+the thinking helper's probe return to the result PC before the probe's controlled copy, so that
+copy cannot overwrite a caller observation. This is harness control flow only: it makes no claim
+about VInt timing, latency, input, text/menu loops, rendering, story reachability, or UI behavior.
+
+The caller cases preserve source-store lifetime separately from thinking-helper consumption: text
+starts `$1234/$ABCD`, stores `$ECCD`, then its range-two thinking helper consumes the copied high
+byte through 28 signed-generator attempts and returns `$00CD`; diamond starts `$4321/$5A33`, stores
+`$6833`, then accepts its first thinking attempt and returns `$0133`. In both rows `RANDOM_SEED`
+stops at the source base-generator state, while the original source store survives as the recorded
+pre-helper state. Python independently derives and validates the fixture's exact golden, while `_observer_config` sends only inputs/source context and omits expected outputs from Lua.
+
+**Unknown:** full text/menu loops beyond this one seam, normal caller-controlled repeat/input
+conditions, real UI presentation, and any seed-copy lifetime across unrelated caller families. The
+grouped H3 question `random-services-matrix-range-retry-and-seed-copy-isolation` is closed only at
+the two documented caller seams and thinking-helper isolation; it does not generalize to those
+Unknowns. Existing range-two action evidence is `battle-ai-action-choice-v1.json`
+(`sf2-battle-ai-action-choice-runtime-v1`). The implementation boundary is
+[`randomness.md`](../design/contracts/randomness.md).
 
 ## Concentrated Runtime Queue
 
-This batch's one-launch random-services H3 probe closes only the helper-local range/retry, alias, and
-controlled source-shaped copy boundary. It does not execute text/menu/AI caller contexts or establish
-their timing or shared seed-copy lifetime. ADR 0005 (priority decision 2026-07-23) freezes raw controller
+This batch's one-launch random-services H3 probe closes helper-local range/retry and alias behavior plus
+the two bounded text/diamond caller seams and their seed-copy-to-thinking isolation. Its one original
+`WaitForVInt` call per caller row is an exit mechanism, not timing/input/UI evidence; the surrounding
+text/menu/AI loops and unrelated caller families remain outside the result. ADR 0005 (priority decision 2026-07-23) freezes raw controller
 electrical/latency behavior, SRAM hardware-failure behavior, audio timing/register output, and VDP/DMA
 micro-timing after their import and visible contracts are adequate. The remaining grouped questions are:
 
