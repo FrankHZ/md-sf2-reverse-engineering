@@ -21,7 +21,8 @@ assembled by the original vanilla build. It owns:
 
 1. the 19 assembled source owners and their 5,116-byte source/H1/ROM parity boundary;
 2. 27 ordered two-dimensional layout word grids, their dimensions, addresses, and metadata hashes;
-3. the ordered 16-entry spell-level pointer relation, including its aliases to ten layout targets;
+3. the first-class 64-byte spell-level pointer table, including its source identity, address,
+   provenance, hashes, and ordered 16-entry alias relation to ten layout targets;
 4. four 48-byte diamond-border variants and four direct tile assets;
 5. the exact 5,614-byte union of non-overlapping covered source/ROM address ranges;
 6. a public H4 surface based on identities, dimensions, addresses, counts, and hashes rather than
@@ -59,6 +60,10 @@ bindings and 36 currently unassociated records: 19 `auxiliary.data.static` recor
 `ui.layout.static` records. Registration is intentionally deferred until preliminary semantic
 acceptance; this document does not change the index.
 
+The 36 exact table/address identities decompose into 27 layouts, one pointer table, four borders,
+and four direct assets. The pointer table is not merely an edge list between the other resources; it
+is an independently addressed, provenance-bearing resource.
+
 The audit preserves these limits:
 
 - `trackedUniqueByteCount = 5,614` counts bytes in non-overlapping covered address ranges. It does
@@ -85,7 +90,7 @@ has the following logical components:
 | --- | ---: | ---: |
 | assembled source owners | 19 | 5,116 |
 | layout grids | 27 layouts / 2,394 words | 4,788 |
-| spell-level pointer table | 16 ordered entries / 10 unique targets | 64 |
+| spell-level pointer table | 1 table / 16 ordered entries / 10 unique targets | 64 |
 | diamond-border variants | 4 | 192 |
 | direct tile assets | 4 | 570 |
 | non-overlapping covered union | — | 5,614 |
@@ -119,20 +124,31 @@ reports MUST use dimensions, addresses, hashes, aggregate attribute counters, or
 they MUST NOT publish the original ordered grids. Static palette and transform bits do not establish
 runtime palette selection, clipping, movement, DMA order, or visible pixels.
 
-## Spell-Level Pointer Routing
+## Spell-Level Pointer-Table Resource and Routing
 
 **Confirmed static:** the pointer table occupies 64 bytes and contains 16 ordered longword entries.
-Those entries resolve to ten unique layout targets. Multiple positions intentionally alias the same
-target, so the canonical relation is:
+Its source symbol is `pt_layouts_SpellLevelIndicator`, its ROM address is `0x110A4` (69,796), and
+the owner proves source/H1/ROM parity for the table. A canonical private import retains that identity,
+address, size, source and ROM hashes, and H1 provenance independently from the layouts it references.
+
+The entries resolve to ten unique layout targets. Multiple positions intentionally alias the same
+target, so the canonical resource and relation are:
 
 ```text
-route[0..15] -> layout target identity
+pointerTable(pt_layouts_SpellLevelIndicator) {
+  route[0..15] -> layout target identity
+}
 ```
 
-An importer MUST retain all 16 route positions in order and the target selected by each position. It
-MUST NOT normalize the table to a set of ten targets or deduplicate it into ten anonymous resources.
-A modern runtime may use shared immutable layout objects, provided each original route can still be
-reproduced and its alias identity tested.
+An importer MUST retain the table as a first-class resource and retain all 16 route positions in
+order with the target selected by each position. It MUST NOT normalize the table to a set of ten
+targets or deduplicate it into ten anonymous resources. A modern runtime may use shared immutable
+layout objects, provided the pointer-table identity, each original route, and its alias identity can
+still be reproduced and tested.
+
+The raw 64 pointer bytes remain private original data. Public fixtures and reports retain the table
+identity, source symbol, address, size, provenance, hashes, and ordered target metadata without
+publishing its raw payload.
 
 The table does not by itself define spell-level arithmetic, caller validation, menu admission, or
 the player-visible meaning of any route index. Those consumer semantics remain separate or
@@ -190,9 +206,19 @@ UILayoutCorpus {
     attributeMetadata
   }
 
-  spellLevelRoutes[16] {
-    routeIndex
-    targetLayoutId             // aliases remain explicit
+  spellLevelPointerTable {
+    pointerTableId
+    sourceSymbol: pt_layouts_SpellLevelIndicator
+    romAddress
+    byteCount: 64
+    sourceHash
+    h1Provenance
+    romHash
+    rawPointerBytes[]          // private import only
+    entries[16] {
+      routeIndex
+      targetLayoutId           // aliases remain explicit
+    }
   }
 
   diamondBorders[4] {
@@ -223,9 +249,10 @@ UILayoutCorpus {
 }
 ```
 
-The public form omits `orderedAttributeWords` and original asset payloads. It retains the same
-identities, ordering, dimensions, addresses, sizes, relationships, and hashes so that a user-provided
-private import can be validated without making copyrighted data a repository dependency.
+The public form omits `orderedAttributeWords`, `rawPointerBytes`, and original asset payloads. It
+retains the same identities, ordering, dimensions, addresses, sizes, relationships, provenance, and
+hashes so that a user-provided private import can be validated without making copyrighted data a
+repository dependency.
 
 ## Cross-System Separation
 
@@ -246,8 +273,9 @@ Keep the following outside this contract:
 ## Fidelity, Modernization, and Copyright Boundary
 
 Original-data compatibility requires preserving source symbols, addresses, dimensions, ordered grid
-words, ordered pointer routes and aliases, border and asset identities, exact coverage relationships,
-and accepted hashes when importing a private original corpus.
+words, the first-class pointer-table identity/provenance/hash plus its ordered routes and aliases,
+border and asset identities, exact coverage relationships, and accepted hashes when importing a
+private original corpus.
 
 A remake may deliberately choose a different resolution, coordinate system, widget toolkit, font,
 palette, animation, input method, responsive layout, accessibility behavior, and newly authored art.
@@ -267,7 +295,9 @@ prove:
    hashes for a private original input;
 2. all 27 layout identities preserve width, height, 2,394-word total, exact row-major word order,
    full attribute words, and per-layout hashes;
-3. the 16 spell-level route positions preserve their exact order and alias relation to ten targets;
+3. the spell-level pointer table preserves its independent identity, source symbol, `0x110A4`
+   address, 64-byte size, source/H1/ROM provenance and hashes, plus all 16 route positions in exact
+   order and their alias relation to ten targets;
 4. all four 48-byte border variants and four direct assets preserve identity, size, address, and
    hash;
 5. coverage is computed as non-overlapping address ranges: 5,116 assembled bytes plus exactly 498
@@ -275,7 +305,7 @@ prove:
 6. both excluded sources remain explicitly outside the assembled vanilla parity corpus without an
    invented unused or unreachable status;
 7. public fixtures and reports expose only metadata, hashes, and synthetic examples, never original
-   layout grids or tile payloads;
+   layout grids, raw pointer-table bytes, or tile payloads;
 8. runtime rendering, localization, accessibility, and intentional presentation changes are tested
    and reported separately from static original-data parity.
 
@@ -288,7 +318,7 @@ original-compatible data source is used.
 | Contract area | Evidence label | Executable owner | Remaining boundary |
 | --- | --- | --- | --- |
 | 19 source owners, 5,116 assembled bytes, 27 grids, 2,394 words, shapes, attributes, and parity | **Confirmed static** | `sf2-ui-layout-static-v1` ([`ui-layout-static-v1.json`](../../../tests/fixtures/h2/ui-layout-static-v1.json)) | Runtime selection, mutation, rendering, and caller reachability |
-| ordered 16-entry spell-level relation and ten target identities | **Confirmed static** | `sf2-ui-layout-static-v1` ([`ui-layout-static-v1.json`](../../../tests/fixtures/h2/ui-layout-static-v1.json)) | Route-index consumer semantics and player-facing meaning |
+| first-class 64-byte spell-level pointer table, ordered 16-entry relation, and ten target identities | **Confirmed static** | `sf2-ui-layout-static-v1` ([`ui-layout-static-v1.json`](../../../tests/fixtures/h2/ui-layout-static-v1.json)) | Raw bytes stay private; route-index consumer semantics and player-facing meaning remain unclosed |
 | four borders, four assets, and 5,614-byte non-overlapping coverage union | **Confirmed static** | `sf2-ui-layout-static-v1` ([`ui-layout-static-v1.json`](../../../tests/fixtures/h2/ui-layout-static-v1.json)) | Runtime copies, palette use, animation, and visible pixels |
 | excluded window-border aggregate and fighter mini-status alternate | **Confirmed exclusion from vanilla assembled parity corpus** | `sf2-ui-layout-static-v1` ([`ui-layout-static-v1.json`](../../../tests/fixtures/h2/ui-layout-static-v1.json)) | Alternate-build intent, use, and reachability remain **Unknown** |
 | eight-slot allocation, movement, composition, and transfer-call order | **Separate owner** | [window-system contract](window-system.md) | End-to-end presentation remains unclosed |
