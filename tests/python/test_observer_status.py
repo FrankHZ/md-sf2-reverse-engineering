@@ -17,9 +17,7 @@ from sf2tool.jsonio import load_json, schema_composition_audit, validate_json
 from sf2tool.paths import repo_path
 
 OWNER = "map-script-control-audio"
-FAILURE_SCHEMA = repo_path(
-    "schemas/h3/map-script-control-audio-callback-failure.schema.json"
-)
+FAILURE_SCHEMA = repo_path("schemas/h3/map-script-control-audio-callback-failure.schema.json")
 CALLBACK_AUDIT_SCHEMA = repo_path("schemas/h3/observer-callback-audit.schema.json")
 FAILURE_CONTRACT_SCHEMA = repo_path("schemas/h3/observer-failure-contract.schema.json")
 
@@ -141,6 +139,8 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         "blacksmithMithrilFulfillmentState",
         "blacksmithMithrilPrecommitPendingService",
         "blacksmithMithrilPrecommitState",
+        "blacksmithMithrilEquipDecisionPendingService",
+        "blacksmithMithrilEquipDecisionState",
         "blacksmithMithrilPendingCallback",
         "controlAudioFailure",
         "transitionFailure",
@@ -161,11 +161,14 @@ def test_shared_failure_parser_accepts_append_log_and_rejects_ambiguous_rows(
     status = tmp_path / "observer.status.txt"
     failure = CALLBACK_FAILURE_PREFIX + json.dumps(_payload(), sort_keys=True)
     _write_status(status, "milestone:observer-loaded", failure)
-    assert callback_failure_status(
-        status,
-        owner=OWNER,
-        schema_path=FAILURE_SCHEMA,
-    ) == _payload()
+    assert (
+        callback_failure_status(
+            status,
+            owner=OWNER,
+            schema_path=FAILURE_SCHEMA,
+        )
+        == _payload()
+    )
 
     _write_status(status, failure, failure)
     with pytest.raises(ValueError, match="multiplicity"):

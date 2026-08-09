@@ -142,6 +142,7 @@ def test_transaction_schema_owns_shape_while_verifier_owns_case_identity() -> No
         "fulfillSelectionLoopAddress": 138072,
         "fulfillAddItemEntryAddress": 138212,
         "fulfillDoneAddress": 138452,
+        "fulfillPostEquippabilityAddress": 138268,
     }
     assert static["function"]["entryAddress"] == fixture["sourceContext"]["functionEntryAddress"]
     assert (
@@ -171,6 +172,7 @@ def test_transaction_schema_owns_shape_while_verifier_owns_case_identity() -> No
         ("fulfillSelectionLoopAddress", 138074),
         ("fulfillAddItemEntryAddress", 138214),
         ("fulfillDoneAddress", 138454),
+        ("fulfillPostEquippabilityAddress", 138270),
     ):
         wrong_context = copy.deepcopy(fixture)
         wrong_context["sourceContext"][field] = value
@@ -290,10 +292,14 @@ def test_static_contract_derives_source_h1_rng_and_table_boundaries() -> None:
         "itemIndexAndBrokenMask": 32895,
         "weaponTypeMask": 2,
         "ringTypeMask": 4,
+        "cursedTypeMask": 64,
+        "equippedItemBit": 7,
         "combatantEntrySizeBytes": 56,
         "combatantItemSlotCount": 4,
         "combatantClassOffsetBytes": 10,
         "combatantItemsOffsetBytes": 32,
+        "combatantStatusEffectsOffsetBytes": 44,
+        "curseStatusMask": 4,
         "flag80Id": 80,
         "flag80ByteOffset": 10,
         "flag80BitMask": 128,
@@ -621,18 +627,18 @@ def test_precommit_service_shim_config_rejects_opcode_target_return_and_duplicat
     duplicate["precommit"]["serviceShims"][1]["callAddress"] = duplicate["precommit"][
         "serviceShims"
     ][0]["callAddress"]
-    duplicate["precommit"]["heldItems"]["callAddress"] = duplicate["precommit"]["serviceShims"][
-        0
-    ]["callAddress"]
+    duplicate["precommit"]["heldItems"]["callAddress"] = duplicate["precommit"]["serviceShims"][0][
+        "callAddress"
+    ]
     with pytest.raises(ValueError, match="overlapping call-site"):
         blacksmith_mithril._observer_config(fixture, duplicate)
     overlap = copy.deepcopy(static)
-    overlap["precommit"]["serviceShims"][1]["callAddress"] = overlap["precommit"][
-        "serviceShims"
-    ][0]["callAddress"] + 2
-    overlap["precommit"]["heldItems"]["callAddress"] = overlap["precommit"]["serviceShims"][0][
-        "callAddress"
-    ] + 2
+    overlap["precommit"]["serviceShims"][1]["callAddress"] = (
+        overlap["precommit"]["serviceShims"][0]["callAddress"] + 2
+    )
+    overlap["precommit"]["heldItems"]["callAddress"] = (
+        overlap["precommit"]["serviceShims"][0]["callAddress"] + 2
+    )
     with pytest.raises(ValueError, match="overlapping call-site"):
         blacksmith_mithril._observer_config(fixture, overlap)
     terminal_overlap = copy.deepcopy(static)
@@ -653,7 +659,7 @@ def test_precommit_service_shim_config_rejects_opcode_target_return_and_duplicat
             blacksmith_mithril._observer_config(fixture, malformed)
 
 
-def test_precommit_session_rom_instrumentation_is_exact_seven_span_copy(
+def test_session_rom_instrumentation_is_exact_twelve_span_copy(
     tmp_path: Path,
 ) -> None:
     fixture = _fixture()
@@ -667,12 +673,17 @@ def test_precommit_session_rom_instrumentation_is_exact_seven_span_copy(
         canonical, fixture, static, output_path=tmp_path / "second.instrumented.bin"
     )
     first_bytes = first.read_bytes()
-    spans = blacksmith_mithril._precommit_instrumentation_spans(static)
-    assert len(spans) == 7
-    assert [row["type"] for row in spans] == ["service-jsr"] * 4 + ["terminal-jmp"] * 3
-    assert hashlib.sha256(first_bytes).hexdigest() == hashlib.sha256(
-        second.read_bytes()
-    ).hexdigest()
+    spans = blacksmith_mithril._session_instrumentation_spans(static)
+    assert len(spans) == 12
+    assert [row["type"] for row in spans] == (
+        ["service-jsr"] * 4
+        + ["terminal-jmp"] * 3
+        + ["prompt-jsr", "prompt-text-bra"]
+        + ["terminal-jmp"] * 3
+    )
+    assert (
+        hashlib.sha256(first_bytes).hexdigest() == hashlib.sha256(second.read_bytes()).hexdigest()
+    )
     assert canonical.read_bytes() == before
     changed = {
         index
@@ -689,11 +700,412 @@ def test_precommit_session_rom_instrumentation_is_exact_seven_span_copy(
     assert {
         row["address"]
         for row in spans
-        if before[row["address"] : row["address"] + 6]
-        != first_bytes[row["address"] : row["address"] + 6]
+        if before[row["address"] : row["address"] + len(row["originalBytes"])]
+        != first_bytes[row["address"] : row["address"] + len(row["patchedBytes"])]
     } == {row["address"] for row in spans}
     for row in spans:
-        assert first_bytes[row["address"] : row["address"] + 6] == row["patchedBytes"]
+        assert (
+            first_bytes[row["address"] : row["address"] + len(row["patchedBytes"])]
+            == row["patchedBytes"]
+        )
+
+
+def test_equip_decision_session_spans_bind_prompt_bra_and_terminal_jmps_before_launch() -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    spans = blacksmith_mithril._equip_decision_instrumentation_spans(static)
+    assert [(row["role"], len(row["originalBytes"])) for row in spans] == [
+        ("equip-decision-prompt", 6),
+        ("equip-decision-prompt-presentation-skip", 4),
+        ("current-cursed-terminal-boundary-shim", 6),
+        ("noncursed-terminal-boundary-shim", 6),
+        ("do-not-equip-terminal-boundary-shim", 6),
+    ]
+    assert spans[1] == {
+        "role": "equip-decision-prompt-presentation-skip",
+        "type": "prompt-text-bra",
+        "address": 0x21C20,
+        "originalBytes": bytes.fromhex("4E4500AD"),
+        "patchedBytes": bytes.fromhex("60000002"),
+        "targetAddress": 0x21C24,
+    }
+    for field, value in (
+        ("originalHex", "4E4500AE"),
+        ("patchedHex", "60000000"),
+        ("instructionWidthBytes", 6),
+        ("branchBaseAddress", 0x21C20),
+        ("branchDisplacementBytes", 0),
+        ("targetAddress", 0x21C26),
+    ):
+        malformed = copy.deepcopy(static)
+        malformed["equipDecision"]["promptPresentationSkip"][field] = value
+        with pytest.raises(ValueError, match="prompt presentation skip ABI drift"):
+            blacksmith_mithril._observer_config(fixture, malformed)
+    for field, value in (
+        ("originalHex", "4E4500B06000"),
+        ("patchedHex", "4EF900FF6D40"),
+        ("generatedStubTarget", blacksmith_mithril.EQUIP_DECISION_TERMINAL_STUB_ADDRESS + 2),
+        ("boundaryAddress", 0x21C6A),
+    ):
+        malformed = copy.deepcopy(static)
+        malformed["equipDecision"]["terminalShims"][0][field] = value
+        with pytest.raises(ValueError, match="equip-decision terminal"):
+            blacksmith_mithril._observer_config(fixture, malformed)
+    overlap = copy.deepcopy(blacksmith_mithril._session_instrumentation_spans(static))
+    overlap[8]["address"] = overlap[7]["address"] + 2
+    with pytest.raises(ValueError, match="span overlap/count drift"):
+        blacksmith_mithril._validate_session_instrumentation_spans(static, overlap)
+    plan = blacksmith_mithril._session_instrumentation_config(static)
+    assert plan["spanCount"] == 12
+    assert plan["spans"][8] == {
+        "role": "equip-decision-prompt-presentation-skip",
+        "type": "prompt-text-bra",
+        "address": 0x21C20,
+        "widthBytes": 4,
+        "originalHex": "4E4500AD",
+        "patchedHex": "60000002",
+    }
+    for mutate in (
+        lambda value: value["spans"].pop(8),
+        lambda value: value["spans"].__setitem__(8, {**value["spans"][8], "widthBytes": 6}),
+        lambda value: value["spans"].__setitem__(
+            8, {**value["spans"][8], "patchedHex": "60000000"}
+        ),
+    ):
+        malformed_plan = copy.deepcopy(plan)
+        mutate(malformed_plan)
+        with pytest.raises(ValueError, match="Lua readback plan drift"):
+            blacksmith_mithril._validate_session_instrumentation_config(static, malformed_plan)
+
+
+def test_prompt_decline_session_plan_skips_text_to_controlled_prompt_before_dispatch() -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    config = blacksmith_mithril._observer_config(fixture, static)
+    plan = config["instrumentedRom"]
+    assert plan["spanCount"] == 12
+    skip = plan["spans"][8]
+    assert skip == {
+        "role": "equip-decision-prompt-presentation-skip",
+        "type": "prompt-text-bra",
+        "address": 0x21C20,
+        "widthBytes": 4,
+        "originalHex": "4E4500AD",
+        "patchedHex": "60000002",
+    }
+    assert skip["address"] + 2 + int(skip["patchedHex"][4:], 16) == 0x21C24
+    # A word branch is based at its extension word.  The former +0 patch
+    # re-entered that extension word (the text-173 argument) rather than the
+    # preserved prompt JSR, which is why the failed session entered UI code.
+    old_plus_zero_target = skip["address"] + 2
+    assert old_plus_zero_target == 0x21C22
+    assert old_plus_zero_target != 0x21C24
+    h1_by_address = {row["address"]: row for row in static["equipDecision"]["h1InstructionBytes"]}
+    assert h1_by_address[0x21C20]["romBytes"] == bytes.fromhex("4E45")
+    assert h1_by_address[0x21C20]["text"] == "M trap #textbox"
+    assert h1_by_address[old_plus_zero_target]["romBytes"] == bytes.fromhex("00AD")
+    assert h1_by_address[old_plus_zero_target]["text"] == "M dc.w 173"
+    carry_branch = next(
+        row for row in static["equipDecision"]["h1InstructionBytes"] if row["address"] == 0x21C1C
+    )
+    assert carry_branch["text"] == "bcc.w byte_21CD0 ; @DoNotEquipNewItem"
+    assert carry_branch["romBytes"] == bytes.fromhex("640000B2")
+    assert 0x21C1C + 2 + int.from_bytes(carry_branch["romBytes"][2:], "big") == 0x21CD0
+    expected = blacksmith_mithril.expected_observation(fixture, static)["equipDecisionRecords"][1]
+    assert expected["id"] == "hero-levanter-prompt-decline-do-not-equip"
+    assert [event["role"] for event in expected["callbackChronology"]] == [
+        "equip-decision-post-equippability-branch",
+        "equip-decision-controlled-prompt-call-shim",
+        "equip-decision-generated-prompt-stub",
+        "equip-decision-prompt-original-return",
+        "equip-decision-prompt-compare",
+        "equip-decision-prompt-decline-branch",
+        "equip-decision-do-not-equip-pre-presentation",
+        "equip-decision-generated-terminal-stub",
+    ]
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    assert "write_probe=function()\n  validate_instrumented_rom()" in source
+    assert source.index("validate_instrumented_rom()") < source.index(
+        "memory.write_u16_be(probe_base"
+    )
+    for role in (
+        "equip-decision-prompt-presentation-skip",
+        "equip-decision-controlled-prompt-call-shim",
+        "equip-decision-generated-prompt-stub",
+        "equip-decision-prompt-original-return",
+        "equip-decision-prompt-decline-branch",
+        "equip-decision-do-not-equip-terminal-boundary-shim",
+    ):
+        assert role in source
+    assert '"instrumented ROM runtime span width drift: "..role' in source
+    assert '"instrumented ROM runtime readback drift: "..role' in source
+
+
+def test_shared_update_return_dispatch_uses_only_the_pending_source_helper() -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    decision = static["equipDecision"]
+    shared = decision["sharedUpdateEffectiveReturn"]
+    assert shared == {
+        "address": 0x8A24,
+        "targetAddress": 0x89CE,
+        "services": [
+            {"role": "unequip", "tailAddress": 0x8DB2, "tailHex": "6000FC1A"},
+            {"role": "equip", "tailAddress": 0x8D66, "tailHex": "6000FC66"},
+        ],
+    }
+    assert decision["unequip"]["effectiveReturnAddress"] == shared["address"]
+    assert decision["equip"]["effectiveReturnAddress"] == shared["address"]
+
+    expected = blacksmith_mithril.expected_observation(fixture, static)["equipDecisionRecords"]
+
+    def shared_roles(record: dict[str, object]) -> list[str]:
+        return [
+            event["role"]
+            for event in record["callbackChronology"]
+            if event["pc"] == shared["address"]
+        ]
+
+    assert shared_roles(expected[2]) == ["equip-decision-equip-effective-return"]
+    assert shared_roles(expected[3]) == [
+        "equip-decision-unequip-effective-return",
+        "equip-decision-equip-effective-return",
+    ]
+    assert shared_roles(expected[4]) == ["equip-decision-unequip-effective-return"]
+
+    services = {row["role"]: decision[row["role"]] for row in shared["services"]}
+
+    def pending(role: str) -> dict[str, int | str | bool]:
+        service = services[role]
+        return {
+            "role": role,
+            "callPc": service["callAddress"],
+            "targetPc": service["effectiveTargetAddress"],
+            "returnPc": service["returnAddress"],
+            "effectiveReturnPc": service["effectiveReturnAddress"],
+            "effectiveReturnSeen": False,
+        }
+
+    def old_leaked_dispatch() -> list[str]:
+        # The rejected retry ran both registered semantic roles at this one PC,
+        # regardless of which source helper had actually reached it.
+        return [
+            "equip-decision-unequip-effective-return",
+            "equip-decision-equip-effective-return",
+        ]
+
+    def dispatch(pending_service: dict[str, int | str | bool]) -> str:
+        role = pending_service["role"]
+        if role not in services:
+            raise ValueError(
+                "shared UpdateCombatantStats return without pending unequip/equip service"
+            )
+        service = services[str(role)]
+        if (
+            pending_service["callPc"] != service["callAddress"]
+            or pending_service["targetPc"] != service["effectiveTargetAddress"]
+            or pending_service["returnPc"] != service["returnAddress"]
+            or pending_service["effectiveReturnPc"] != shared["address"]
+            or pending_service["effectiveReturnSeen"]
+        ):
+            raise ValueError("shared UpdateCombatantStats pending call/target/return drift")
+        pending_service["effectiveReturnSeen"] = True
+        return f"equip-decision-{role}-effective-return"
+
+    assert old_leaked_dispatch() == [
+        "equip-decision-unequip-effective-return",
+        "equip-decision-equip-effective-return",
+    ]
+    assert dispatch(pending("equip")) == "equip-decision-equip-effective-return"
+    assert [dispatch(pending("unequip")), dispatch(pending("equip"))] == shared_roles(expected[3])
+    assert dispatch(pending("unequip")) == shared_roles(expected[4])[0]
+    for malformed in (
+        {**pending("equip"), "role": "held-items"},
+        {**pending("equip"), "callPc": decision["unequip"]["callAddress"]},
+        {**pending("unequip"), "effectiveReturnSeen": True},
+    ):
+        with pytest.raises(ValueError, match="shared UpdateCombatantStats"):
+            dispatch(malformed)
+
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    assert "function dispatch_equip_shared_update_effective_return(address)" in source
+    assert "if not dispatch_equip_shared_update_effective_return(address) then" in source
+    assert (
+        '"equip-decision shared UpdateCombatantStats return without pending unequip/equip service"'
+        in source
+    )
+    assert '"equip-decision shared UpdateCombatantStats dispatcher role drift"' in source
+
+
+def test_equip_decision_case_local_helper_fields_reset_between_cases() -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    expected = blacksmith_mithril.expected_observation(fixture, static)["equipDecisionRecords"]
+    fields = (
+        "equipmentType",
+        "existingEquippedSlot",
+        "existingEquippedItemIndex",
+        "unequipResult",
+        "equipSlot",
+        "equipResult",
+    )
+    assert {key: expected[3][key] for key in fields} == {
+        "equipmentType": 1,
+        "existingEquippedSlot": 0,
+        "existingEquippedItemIndex": 66,
+        "unequipResult": 0,
+        "equipSlot": 3,
+        "equipResult": 0,
+    }
+    assert {key: expected[4][key] for key in fields} == {
+        "equipmentType": 1,
+        "existingEquippedSlot": 0,
+        "existingEquippedItemIndex": 70,
+        "unequipResult": 2,
+        "equipSlot": None,
+        "equipResult": None,
+    }
+
+    stale_case_four = {key: expected[3][key] for key in fields}
+    reset_case_five = {key: None for key in fields}
+    assert stale_case_four["equipSlot"] == 3 and stale_case_four["equipResult"] == 0
+    assert reset_case_five["equipSlot"] is None and reset_case_five["equipResult"] is None
+
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    start = source[
+        source.index("function ed_start(index)") : source.index("function ed_post_branch()")
+    ]
+    finish = source[
+        source.index("function ed_finish(index)") : source.index("function ed_transition()")
+    ]
+    for field in fields:
+        assert f"{field}=nil" in start
+        assert f"r.{field}=ed.{field}" in finish
+    assert 'ed.equipmentType=word(emu.getregister("M68K D2"))' in source
+    assert 'ed.existingEquippedSlot=word(emu.getregister("M68K D2"))' in source
+    assert 'ed.unequipResult=word(emu.getregister("M68K D2"))' in source
+    assert 'if role=="equip" then ed.equipSlot=word(emu.getregister("M68K D1")) end' in source
+    assert 'ed.equipResult=word(emu.getregister("M68K D2"))' in source
+
+
+def test_retained_transaction_picker_shared_callback_chronology_survives_v5_dispatch() -> None:
+    """Exercise the mode-selected picker roles through their shared return PC.
+
+    The picker shares its entry, RNG, row, item, order-write, and RTS PCs with
+    the direct helper rail.  The v5 observer must retain the transaction roles
+    at those PCs; otherwise the original picker-return assertion sees no row or
+    selected item even though the call/return PCs themselves still fire.
+    """
+
+    fixture = _fixture()
+    static = _static(fixture)
+    config = blacksmith_mithril._observer_config(fixture, static)
+    assert config["transactionCases"] == fixture["transactionCases"]
+    assert config["transactionCaseOrder"] == fixture["transactionCaseOrder"]
+    function = config["function"]
+    transaction = config["transaction"]
+    assert (
+        transaction["pickMithrilCallAddress"],
+        function["entryAddress"],
+        transaction["pickMithrilReturnAddress"],
+        function["returnRtsAddress"],
+    ) == (0x21DE2, 0x21ED6, 0x21DE6, 0x21F60)
+    session_spans = blacksmith_mithril._session_instrumentation_spans(static)
+    assert (
+        max(row["address"] + len(row["originalBytes"]) for row in session_spans)
+        < transaction["placeEntryAddress"]
+        < transaction["pickMithrilCallAddress"]
+        < function["entryAddress"]
+    )
+
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+
+    def registered_roles(text: str, expression: str) -> list[str]:
+        return re.findall(rf'register_exec\({re.escape(expression)},"([^"]+)",0\)', text)
+
+    shared_pc_roles = {
+        "f.entryAddress": ["function-entry", "pick-mithril-effective-target"],
+        "f.weaponRngCallAddress": ["weapon-row-roll", "transaction-weapon-row-roll"],
+        "f.rngEntryAddress": ["rng-entry", "transaction-rng-entry"],
+        "f.rngReturnRtsAddress": ["rng-return", "transaction-rng-return"],
+        "f.rowResolvedAddress": ["row-resolved", "transaction-row-resolved"],
+        "f.loadIndexAddress": ["item-selected", "transaction-item-selected"],
+        "f.orderWriteAddress": ["order-write", "transaction-order-write"],
+        "f.returnRtsAddress": ["function-rts", "pick-mithril-effective-return"],
+    }
+    assert {
+        expression: registered_roles(source, expression) for expression in shared_pc_roles
+    } == shared_pc_roles
+
+    def simulate_picker(text: str) -> dict[str, object]:
+        state: dict[str, object] = {
+            "pending_rng": None,
+            "row_index": None,
+            "selected_item": None,
+            "order_write_seen": False,
+        }
+        chronology = (
+            "f.entryAddress",
+            "f.weaponRngCallAddress",
+            "f.rngEntryAddress",
+            "f.rngReturnRtsAddress",
+            "f.rowResolvedAddress",
+            "f.loadIndexAddress",
+            "f.orderWriteAddress",
+            "f.returnRtsAddress",
+        )
+        for expression in chronology:
+            for role in registered_roles(text, expression):
+                if role == "transaction-weapon-row-roll":
+                    if state["pending_rng"] is not None:
+                        raise ValueError("transaction picker overlapping RNG")
+                    state["pending_rng"] = "weapon-row-roll"
+                elif role == "transaction-rng-entry":
+                    if state["pending_rng"] != "weapon-row-roll":
+                        raise ValueError("transaction picker RNG entry without call")
+                elif role == "transaction-rng-return":
+                    if state["pending_rng"] != "weapon-row-roll":
+                        raise ValueError("transaction picker RNG return without call")
+                    state["pending_rng"] = None
+                elif role == "transaction-row-resolved":
+                    state["row_index"] = 3
+                elif role == "transaction-item-selected":
+                    if state["row_index"] is None or state["pending_rng"] is not None:
+                        raise ValueError("transaction picker item state drift")
+                    state["selected_item"] = 100
+                elif role == "transaction-order-write":
+                    if state["selected_item"] is None:
+                        raise ValueError("transaction picker order write before item")
+                    state["order_write_seen"] = True
+                elif role == "pick-mithril-effective-return":
+                    if (
+                        state["pending_rng"] is not None
+                        or state["row_index"] is None
+                        or state["selected_item"] is None
+                        or not state["order_write_seen"]
+                    ):
+                        raise ValueError("transaction picker sequence incomplete")
+        return state
+
+    assert simulate_picker(source) == {
+        "pending_rng": None,
+        "row_index": 3,
+        "selected_item": 100,
+        "order_write_seen": True,
+    }
+    old_v5_defect = source
+    for role, expression in {
+        "transaction-row-resolved": "f.rowResolvedAddress",
+        "transaction-item-selected": "f.loadIndexAddress",
+        "transaction-order-write": "f.orderWriteAddress",
+    }.items():
+        old_v5_defect = old_v5_defect.replace(
+            f'register_exec({expression},"{role}",0);',
+            "",
+            1,
+        )
+    with pytest.raises(ValueError, match="transaction picker sequence incomplete"):
+        simulate_picker(old_v5_defect)
 
 
 def test_precommit_session_rom_instrumentation_preserves_retained_v3_add_item_entry() -> None:
@@ -705,7 +1117,8 @@ def test_precommit_session_rom_instrumentation_preserves_retained_v3_add_item_en
     assert add_item_entry == 138212
     assert add_item_entry in retained
     assert all(
-        not (span["address"] <= add_item_entry < span["address"] + 6) for span in spans
+        not (span["address"] <= add_item_entry < span["address"] + len(span["originalBytes"]))
+        for span in spans
     )
     malformed = [*spans, {**spans[-1], "role": "retained-v3-overlap", "address": add_item_entry}]
     with pytest.raises(ValueError, match="overlaps retained v3 observation PCs"):
@@ -922,6 +1335,17 @@ def test_independent_model_covers_all_required_runtime_roles() -> None:
         "generatedServiceStubWritesReadback": True,
         "generatedResultStubWritesReadback": True,
     }
+    assert observed["equipDecisionInstrumentation"] == {
+        "promptCallSiteReadback": True,
+        "promptPresentationSkipReadback": True,
+        "generatedPromptStubWriteReadback": True,
+        "terminalBoundarySitesReadback": [
+            "current-cursed-terminal-boundary-shim",
+            "noncursed-terminal-boundary-shim",
+            "do-not-equip-terminal-boundary-shim",
+        ],
+        "generatedTerminalStubWriteReadback": True,
+    }
     assert observed["restoration"] == {
         "currentGoldLongRestored": True,
         "randomSeedWordRestored": True,
@@ -949,6 +1373,67 @@ def test_v3_accepted_results_are_byte_for_byte_preserved_inside_v4() -> None:
         json.dumps(preserved, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
     assert digest == "072e34831c982cbaa97ae9aff419ee6fd2e2b28380495d9d6d588bc579c981b4"
+
+
+def test_v4_accepted_projection_and_digest_are_exactly_preserved_inside_v5() -> None:
+    fixture = _fixture()
+    projection = blacksmith_mithril._retained_v4_projection(fixture)
+    assert fixture["retainedV4"] == {
+        "caseCount": 16,
+        "sha256": "7F84BB2C8A1E7EF4079C527D672B9A33B60908B0A50A77C8880A632DA5DE5CC2",
+    }
+    assert blacksmith_mithril._retained_v4_sha256(fixture) == fixture["retainedV4"]["sha256"]
+    assert set(projection) == {
+        "caseOrder",
+        "cases",
+        "transactionCaseOrder",
+        "transactionCases",
+        "fulfillmentCaseOrder",
+        "fulfillmentCases",
+        "precommitCaseOrder",
+        "precommitCases",
+        "acceptedObservation",
+    }
+    blacksmith_mithril._assert_retained_v4_digest(fixture)
+    for mutate in (
+        lambda value: value["cases"][0].update({"itemIndex": 31}),
+        lambda value: value["acceptedObservation"]["precommitRecords"][0].update({"itemIndex": 31}),
+    ):
+        malformed = copy.deepcopy(fixture)
+        mutate(malformed)
+        with pytest.raises(ValueError, match="retained-v4 digest guard drift"):
+            blacksmith_mithril._assert_retained_v4_digest(malformed)
+
+
+def test_equip_decision_case_matrix_is_an_independent_semantic_gate() -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    blacksmith_mithril._validate_equip_decision_case_matrix(fixture, static)
+    for mutate, error in (
+        (
+            lambda value: value["equipDecisionCases"][0].update({"promptResult": -1}),
+            "prompt matrix coverage drift",
+        ),
+        (
+            lambda value: value["equipDecisionCases"][3].update(
+                {"existingEquippedItemIndex": None}
+            ),
+            "shared-return matrix coverage drift",
+        ),
+        (
+            lambda value: value["equipDecisionCases"][4].update({"statusEffectsBefore": 1}),
+            "cursed-stop matrix coverage drift",
+        ),
+    ):
+        malformed = copy.deepcopy(fixture)
+        mutate(malformed)
+        validate_json(
+            malformed,
+            blacksmith_mithril.FIXTURE_SCHEMA,
+            owner="schema-valid equip-decision semantic drift",
+        )
+        with pytest.raises(ValueError, match=error):
+            blacksmith_mithril._validate_equip_decision_case_matrix(malformed, static)
 
 
 def test_research_index_binds_only_observed_fulfillment_pcs() -> None:
@@ -1105,20 +1590,12 @@ def test_fulfillment_source_h1_and_item_definition_mutations_fail_before_runtime
             "fulfillment source/H1 ABI chronology drift",
         ),
         (
-            {
-                "listing_text": listing.replace(
-                    "00021C16 4EB9 0000 81B4", "00021C16 4EB8 81B4", 1
-                )
-            },
+            {"listing_text": listing.replace("00021C16 4EB9 0000 81B4", "00021C16 4EB8 81B4", 1)},
             "fulfillment source/H1 ABI chronology drift",
         ),
         (
-            {
-                "listing_text": listing.replace(
-                    "00021C1C 6400 0000", "00021C1E 6400 0000", 1
-                )
-            },
-            "fulfillment source/H1 ABI chronology drift",
+            {"listing_text": listing.replace("00021C1C 6400 0000", "00021C1E 6400 0000", 1)},
+            "fixture fulfill-order source-context drift",
         ),
         (
             {
@@ -1565,6 +2042,7 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
         + static["transaction"]["h1InstructionBytes"]
         + static["fulfillment"]["h1InstructionBytes"]
         + static["precommit"]["h1InstructionBytes"]
+        + static["equipDecision"]["h1InstructionBytes"]
     )
     size = max(instruction["address"] + len(instruction["bytes"]) for instruction in guarded) + 1
     size = max(size, static["h1"]["weaponTableAddress"] + len(static["h1"]["weaponTableBytes"]))
@@ -1586,7 +2064,10 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
         address = static["h1"][address_key]
         payload = static["h1"][bytes_key]
         rom[address : address + len(payload)] = payload
-    for field in static["fulfillment"]["itemDefinitionFields"]:
+    for field in (
+        static["fulfillment"]["itemDefinitionFields"]
+        + static["equipDecision"]["itemDefinitionFields"]
+    ):
         rom[
             field["equipFlagsAddress"] : field["equipFlagsAddress"] + len(field["equipFlagsBytes"])
         ] = field["equipFlagsBytes"]
@@ -1611,6 +2092,10 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
         instruction["text"]: instruction["address"]
         for instruction in static["precommit"]["h1InstructionBytes"]
     }
+    equip_decision_instruction = {
+        instruction["text"]: instruction["address"]
+        for instruction in static["equipDecision"]["h1InstructionBytes"]
+    }
     for address in (
         static["function"]["fallbackRngCallAddress"],
         static["function"]["clientClassReadAddress"],
@@ -1627,6 +2112,9 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
         static["precommit"]["equipmentType"]["returnAddress"],
         static["precommit"]["equippabilityBranchAddress"],
         precommit_instruction["bne.w byte_21B58"],
+        static["equipDecision"]["postEquippabilityBranchAddress"],
+        equip_decision_instruction["jsr j_alt_YesNoPrompt"],
+        equip_decision_instruction["bne.w @EquipNewItem"],
         fulfillment_instruction["beq.s @Break"],
         fulfillment_instruction["bra.s @Done"],
         fulfillment_instruction["move.b COMBATANT_OFFSET_CLASS(a0),d0"],
@@ -1636,6 +2124,7 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
         transaction_instruction["move.w #80,d1"],
         static["fulfillment"]["itemDefinitionFields"][0]["equipFlagsAddress"],
         static["fulfillment"]["itemDefinitionFields"][2]["itemTypeAddress"],
+        static["equipDecision"]["itemDefinitionFields"][0]["itemTypeAddress"],
     ):
         corrupted = bytearray(clean)
         corrupted[address] ^= 1
@@ -1644,6 +2133,21 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
             blacksmith_mithril.validate_static_contract(
                 fixture, image, blacksmith_mithril.repo_path("local/upstream/SF2DISASM")
             )
+
+
+def _inactive_equip_decision_state(mode: str) -> dict[str, object]:
+    return {
+        "active": False,
+        "expectedTerminal": "none",
+        "frameBudget": 180,
+        "frameCount": 0,
+        "mode": mode,
+        "pending": None,
+        "terminal": "none",
+        "transitionActive": False,
+        "transitionFrameBudget": 180,
+        "transitionFrameCount": 0,
+    }
 
 
 def _failure_payload() -> dict[str, object]:
@@ -1712,6 +2216,7 @@ def _failure_payload() -> dict[str, object]:
                 "selectedMember": None,
                 "terminal": "none",
             },
+            "equipDecision": _inactive_equip_decision_state("helper"),
         },
         "error": "RNG entry PC drift",
     }
@@ -1777,6 +2282,7 @@ def _registration_failure_payload() -> dict[str, object]:
                 "selectedMember": None,
                 "terminal": "none",
             },
+            "equipDecision": _inactive_equip_decision_state("none"),
         },
         "error": "probe registration write drift",
     }
@@ -1842,6 +2348,7 @@ def _bootstrap_failure_payload() -> dict[str, object]:
                 "selectedMember": None,
                 "terminal": "none",
             },
+            "equipDecision": _inactive_equip_decision_state("none"),
         },
         "error": "CheckSram return redirect write drift",
     }
@@ -1849,11 +2356,22 @@ def _bootstrap_failure_payload() -> dict[str, object]:
 
 def _observer_role_sets(source: str) -> tuple[set[str], set[str]]:
     registered_roles = set(re.findall(r'register_exec\([^,]+,"([^"]+)"', source))
-    watchdog_roles = set(
-        re.findall(r'set_expectation\("precommit(?:-watchdog|-transition)","([^"]+)"', source)
+    event_roles = set(
+        re.findall(r'(?:tx_event|fx_event|pcx_event|ed_event|ed_simple)\("([^"]+)"', source)
     )
-    failure_roles = {"registration", "bootstrap-return-redirect"} | watchdog_roles | (
-        registered_roles - {"bootstrap-check-sram"}
+    event_roles |= set(re.findall(r'set_expectation\("[^"]+","([^"]+)"', source))
+    event_roles |= set(re.findall(r'event_role="([^"]+)"', source))
+    watchdog_roles = set(
+        re.findall(
+            r'set_expectation\("(?:precommit|equip-decision)(?:-watchdog|-transition)","([^"]+)"',
+            source,
+        )
+    )
+    failure_roles = (
+        {"registration", "bootstrap-return-redirect"}
+        | watchdog_roles
+        | (registered_roles - {"bootstrap-check-sram"})
+        | event_roles
     )
     return failure_roles, registered_roles
 
@@ -1879,6 +2397,11 @@ def test_observer_role_literals_exhaust_shared_failure_and_pending_enums() -> No
     assert "precommit-watchdog-timeout" not in registered_roles
     assert "precommit-transition-timeout" in failure_roles
     assert "precommit-transition-timeout" not in registered_roles
+    assert "equip-decision-watchdog-timeout" in failure_roles
+    assert "equip-decision-watchdog-timeout" not in registered_roles
+    assert "equip-decision-transition-timeout" in failure_roles
+    assert "equip-decision-transition-timeout" not in registered_roles
+    assert source.count('elseif entry.role=="equip-decision-transition"') == 1
 
     _, renamed_pending = _observer_role_sets(
         source.replace(
@@ -1939,7 +2462,7 @@ def test_registration_and_bootstrap_failures_have_no_case_association(tmp_path: 
         )
     source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
     assert (
-        'mode,helper_index,transaction_index,fulfillment_index,precommit_index="none",0,0,0,0'
+        'mode,helper_index,transaction_index,fulfillment_index,precommit_index,equip_index="none",0,0,0,0,0'
         in source
     )
     assert 'current_role=="transaction-case-entry"' in source
@@ -1987,7 +2510,7 @@ def test_precommit_callback_failure_preserves_generated_return_abi_and_pending_s
             "callPc": 138088,
             "returnPc": 138094,
             "role": "member-list",
-                "targetPc": blacksmith_mithril.PRECOMMIT_SERVICE_STUB_ADDRESS,
+            "targetPc": blacksmith_mithril.PRECOMMIT_SERVICE_STUB_ADDRESS,
         },
         "selectedMember": None,
         "terminal": "none",
@@ -2098,7 +2621,7 @@ def test_precommit_cleanup_failure_preserves_stack_and_terminal_cleanup_facts(
         )
     malformed_cleanup = copy.deepcopy(payload)
     malformed_cleanup["callbacksRemaining"] = 1
-    with pytest.raises(ValueError, match="was expected"):
+    with pytest.raises(ValueError, match="0 was expected"):
         validate_json(
             malformed_cleanup,
             blacksmith_mithril.FAILURE_SCHEMA,
@@ -2122,7 +2645,7 @@ def test_precommit_cleanup_failure_preserves_stack_and_terminal_cleanup_facts(
         )
     malformed_output = copy.deepcopy(payload)
     malformed_output["outputRemoved"] = False
-    with pytest.raises(ValueError, match="was expected"):
+    with pytest.raises(ValueError, match="True was expected"):
         validate_json(
             malformed_output,
             blacksmith_mithril.FAILURE_SCHEMA,
@@ -2141,7 +2664,7 @@ def test_precommit_cleanup_failure_preserves_stack_and_terminal_cleanup_facts(
     assert "stack_top-config.precommitCleanupStackDepthBytes" in source
     assert "pcx.cleanupStackDiagnostic={expectedTop=expected_top" in source
     assert "actualReturn=actual_return" in source
-    assert "memory.write_u32_be(stack,target,\"M68K BUS\")" in source
+    assert 'memory.write_u32_be(stack,target,"M68K BUS")' in source
 
 
 def test_precommit_watchdog_timeout_is_structured_and_cannot_pass(tmp_path: Path) -> None:
@@ -2274,11 +2797,394 @@ def test_precommit_transition_watchdog_is_structured_and_cannot_fall_to_external
     assert 'set_expectation("precommit-transition","precommit-transition-timeout"' in source
     assert (
         'fail_callback("precommit transition frame budget exhausted before first '
-        'generated case entry")'
-        in source
+        'generated case entry")' in source
     )
     assert "os.remove(config.outputPath);cleanup_session()" in source
     assert source.index("os.remove(config.outputPath)") < source.index("status(diagnostic)")
+
+
+def test_equip_decision_callback_and_watchdog_failures_are_structured_and_cannot_pass(
+    tmp_path: Path,
+) -> None:
+    payload = _failure_payload()
+    payload.update(
+        {
+            "caseId": "hero-levanter-prompt-decline-do-not-equip",
+            "phase": "equip-decision",
+            "role": "equip-decision-prompt-original-return",
+            "actualPc": 0x21C2A,
+            "expectedEventPc": 0x21C2A,
+            "expectedCallPc": 0x21C24,
+            "expectedTargetPc": blacksmith_mithril.EQUIP_DECISION_PROMPT_STUB_ADDRESS,
+            "expectedReturnPc": 0x21C2A,
+            "error": "equip-decision controlled prompt polarity drift",
+        }
+    )
+    pending = payload["pendingCallback"]
+    pending["caseIndex"] = 2
+    pending["rolesAtPc"] = ["equip-decision-prompt-original-return"]
+    for state in (pending["transaction"], pending["fulfillment"], pending["precommit"]):
+        state["mode"] = "equip-decision"
+    pending["equipDecision"] = {
+        "active": True,
+        "expectedTerminal": "do-not-equip-pre-presentation",
+        "frameBudget": 180,
+        "frameCount": 7,
+        "mode": "equip-decision",
+        "pending": {
+            "role": "prompt",
+            "callPc": 0x21C24,
+            "targetPc": blacksmith_mithril.EQUIP_DECISION_PROMPT_STUB_ADDRESS,
+            "returnPc": 0x21C2A,
+        },
+        "terminal": "none",
+        "transitionActive": False,
+        "transitionFrameBudget": 180,
+        "transitionFrameCount": 0,
+    }
+    validate_json(payload, blacksmith_mithril.FAILURE_SCHEMA, owner="equip-decision failure")
+    shared_return_pending = copy.deepcopy(payload)
+    shared_return_pending.update(
+        {
+            "role": "equip-decision-equip-effective-return",
+            "actualPc": 0x8A24,
+            "expectedEventPc": 0x8A24,
+            "expectedCallPc": 0x21CA6,
+            "expectedTargetPc": 0x8D34,
+            "expectedReturnPc": 0x21CAC,
+            "error": "equip-decision shared UpdateCombatantStats dispatcher role drift",
+        }
+    )
+    shared_return_pending["pendingCallback"]["rolesAtPc"] = [
+        "equip-decision-unequip-effective-return",
+        "equip-decision-equip-effective-return",
+    ]
+    shared_return_pending["pendingCallback"]["equipDecision"]["pending"] = {
+        "role": "equip",
+        "callPc": 0x21CA6,
+        "targetPc": 0x8D34,
+        "returnPc": 0x21CAC,
+    }
+    validate_json(
+        shared_return_pending,
+        blacksmith_mithril.FAILURE_SCHEMA,
+        owner="equip-decision shared-return failure",
+    )
+    malformed_shared_return = copy.deepcopy(shared_return_pending)
+    malformed_shared_return["pendingCallback"]["equipDecision"]["pending"]["role"] = "equip-typo"
+    with pytest.raises(ValueError, match="not valid"):
+        validate_json(
+            malformed_shared_return,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="equip-decision shared pending role drift",
+        )
+    malformed_pending = copy.deepcopy(payload)
+    malformed_pending["pendingCallback"]["equipDecision"]["pending"]["role"] = "prompt-typo"
+    with pytest.raises(ValueError, match="not valid"):
+        validate_json(
+            malformed_pending,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="equip-decision pending role drift",
+        )
+    malformed_mode = copy.deepcopy(payload)
+    malformed_mode["pendingCallback"]["equipDecision"]["mode"] = "equip-decision-typo"
+    with pytest.raises(ValueError, match="is not one of"):
+        validate_json(
+            malformed_mode,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="equip-decision pending mode drift",
+        )
+    status = tmp_path / "blacksmith-mithril.status.txt"
+    status.write_text(
+        "milestone:equip-decision-cases-entered\n"
+        + blacksmith_mithril.STATUS_PREFIX
+        + json.dumps(payload)
+        + "\n",
+        encoding="utf-8",
+    )
+    assert blacksmith_mithril._failure_diagnostic(status) is not None
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    assert "function ed_transition()" in source
+    assert (
+        'expect(mode=="none" and ed.transition.active,"equip-decision transition dispatch drift")'
+        in source
+    )
+    assert 'set_expectation("equip-decision-watchdog","equip-decision-watchdog-timeout"' in source
+    assert (
+        'set_expectation("equip-decision-transition","equip-decision-transition-timeout"' in source
+    )
+    assert 'fail_callback("equip-decision case frame budget exhausted before terminal")' in source
+    assert 'fail_callback("equip-decision transition frame budget exhausted")' in source
+    assert "pendingCallback" in source and "equipDecision" in source
+    assert "os.remove(config.outputPath);cleanup_session()" in source
+
+    transition = copy.deepcopy(payload)
+    transition.update(
+        {
+            "caseId": "snip-levanter-carry-clear-do-not-equip",
+            "phase": "equip-decision-transition",
+            "role": "equip-decision-transition-timeout",
+            "actualPc": 0xFF6C00,
+            "expectedEventPc": 0xFF6C00,
+            "expectedCallPc": None,
+            "expectedTargetPc": 0xFF6C00,
+            "expectedReturnPc": None,
+            "error": "equip-decision transition frame budget exhausted",
+        }
+    )
+    transition_pending = transition["pendingCallback"]
+    transition_pending["caseIndex"] = 1
+    transition_pending["rolesAtPc"] = []
+    for state in (
+        transition_pending["transaction"],
+        transition_pending["fulfillment"],
+        transition_pending["precommit"],
+    ):
+        state["mode"] = "none"
+    transition_pending["equipDecision"] = {
+        "active": False,
+        "expectedTerminal": "none",
+        "frameBudget": 180,
+        "frameCount": 0,
+        "mode": "none",
+        "pending": None,
+        "terminal": "none",
+        "transitionActive": True,
+        "transitionFrameBudget": 180,
+        "transitionFrameCount": 181,
+    }
+    validate_json(
+        transition,
+        blacksmith_mithril.FAILURE_SCHEMA,
+        owner="equip-decision transition watchdog",
+    )
+    transition["pendingCallback"]["equipDecision"]["transitionActive"] = False
+    with pytest.raises(ValueError, match="True was expected"):
+        validate_json(
+            transition,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="equip-decision transition pending drift",
+        )
+
+
+def test_equip_decision_case_progression_consumes_transition_once_and_keeps_next_entry_context(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture()
+    cases = fixture["equipDecisionCases"]
+    terminals = (
+        "do-not-equip-pre-presentation",
+        "do-not-equip-pre-presentation",
+        "noncursed-equip-pre-presentation",
+        "noncursed-equip-pre-presentation",
+        "current-cursed-pre-presentation",
+    )
+    assert [case["id"] for case in cases] == [
+        "non-equippable-no-prompt-do-not-equip",
+        "hero-levanter-prompt-decline-do-not-equip",
+        "hero-levanter-no-equipped-weapon",
+        "hero-levanter-replaces-uncursed-battle-sword",
+        "hero-levanter-blocked-by-cursed-dark-sword",
+    ]
+
+    state = {
+        "index": 1,
+        "mode": "none",
+        "active": False,
+        "transition": True,
+        "completedIndex": 0,
+        "completedTerminal": "none",
+        "completedExpectedTerminal": "none",
+    }
+
+    def start(index: int) -> None:
+        if index != state["index"]:
+            raise ValueError("equip-decision case-entry order drift")
+        if index == 1:
+            if not (
+                state["mode"] == "none"
+                and state["transition"]
+                and not state["active"]
+                and state["completedIndex"] == 0
+                and state["completedTerminal"] == "none"
+                and state["completedExpectedTerminal"] == "none"
+            ):
+                raise ValueError("equip-decision first-case transition drift")
+            state["transition"] = False
+        elif not (
+            state["mode"] == "none"
+            and not state["active"]
+            and not state["transition"]
+            and state["completedIndex"] == index - 1
+            and state["completedTerminal"] == state["completedExpectedTerminal"]
+            and state["completedTerminal"] != "none"
+        ):
+            raise ValueError("equip-decision prior-case completion drift")
+        state["mode"] = "equip-decision"
+        state["active"] = True
+
+    def finish_generated_terminal_stub(terminal: str) -> None:
+        if not state["active"] or state["mode"] != "equip-decision":
+            raise ValueError("equip-decision generated terminal outside active case")
+        expected = terminals[state["index"] - 1]
+        if terminal != expected:
+            raise ValueError("equip-decision terminal mismatch")
+        state["completedIndex"] = state["index"]
+        state["completedTerminal"] = terminal
+        state["completedExpectedTerminal"] = expected
+        state["mode"] = "none"
+        state["active"] = False
+        state["index"] += 1
+
+    start(1)
+    finish_generated_terminal_stub(terminals[0])
+    start(2)
+    assert state == {
+        "index": 2,
+        "mode": "equip-decision",
+        "active": True,
+        "transition": False,
+        "completedIndex": 1,
+        "completedTerminal": terminals[0],
+        "completedExpectedTerminal": terminals[0],
+    }
+    finish_generated_terminal_stub(terminals[1])
+    for index, terminal in enumerate(terminals[2:], start=3):
+        start(index)
+        finish_generated_terminal_stub(terminal)
+    assert state["index"] == 6
+    assert state["completedIndex"] == 5
+    assert state["completedTerminal"] == terminals[-1]
+
+    skipped = copy.deepcopy(state)
+    skipped.update(
+        {
+            "index": 2,
+            "completedIndex": 1,
+            "completedTerminal": terminals[0],
+            "completedExpectedTerminal": terminals[0],
+        }
+    )
+    state = skipped
+    with pytest.raises(ValueError, match="case-entry order"):
+        start(3)
+    out_of_order = {
+        "index": 1,
+        "mode": "none",
+        "active": False,
+        "transition": True,
+        "completedIndex": 0,
+        "completedTerminal": "none",
+        "completedExpectedTerminal": "none",
+    }
+    state = out_of_order
+    with pytest.raises(ValueError, match="case-entry order"):
+        start(2)
+    state = skipped
+    state["transition"] = True
+    with pytest.raises(ValueError, match="prior-case completion"):
+        start(2)
+    state["transition"] = False
+    state["completedTerminal"] = "current-cursed-pre-presentation"
+    with pytest.raises(ValueError, match="prior-case completion"):
+        start(2)
+    state["completedTerminal"] = terminals[0]
+    start(2)
+    with pytest.raises(ValueError, match="prior-case completion"):
+        start(2)
+
+    payload = _failure_payload()
+    payload.update(
+        {
+            "caseId": cases[1]["id"],
+            "phase": "equip-decision-case-entry",
+            "role": "equip-decision-case-entry",
+            "actualPc": 0xFF6C20,
+            "expectedEventPc": 0xFF6C20,
+            "expectedCallPc": 0xFF6C2E,
+            "expectedTargetPc": 138212,
+            "expectedReturnPc": None,
+            "error": "equip-decision prior-case completion drift",
+        }
+    )
+    pending = payload["pendingCallback"]
+    pending["active"] = False
+    pending["caseIndex"] = 2
+    pending["pendingRngCall"] = None
+    pending["rolesAtPc"] = ["equip-decision-case-entry"]
+    for state_payload in (
+        pending["transaction"],
+        pending["fulfillment"],
+        pending["precommit"],
+    ):
+        state_payload["mode"] = "none"
+    pending["equipDecision"] = {
+        "active": False,
+        "expectedTerminal": terminals[0],
+        "frameBudget": 180,
+        "frameCount": 0,
+        "mode": "none",
+        "pending": None,
+        "terminal": terminals[0],
+        "transitionActive": False,
+        "transitionFrameBudget": 180,
+        "transitionFrameCount": 0,
+    }
+    validate_json(payload, blacksmith_mithril.FAILURE_SCHEMA, owner="second equip case entry")
+    status = tmp_path / "second-equip-case-entry.status.txt"
+    status.write_text(
+        "milestone:equip-decision-cases-entered\n"
+        + blacksmith_mithril.STATUS_PREFIX
+        + json.dumps(payload)
+        + "\n",
+        encoding="utf-8",
+    )
+    diagnostic = blacksmith_mithril._failure_diagnostic(status)
+    assert diagnostic is not None
+    assert '"caseId": "hero-levanter-prompt-decline-do-not-equip"' in diagnostic
+    assert '"active": false' in diagnostic
+    assert '"caseIndex": 2' in diagnostic
+    assert '"callbacksRemaining": 0' in diagnostic
+    assert '"outputRemoved": true' in diagnostic
+    assert '"sessionStateRestored": true' in diagnostic
+    with pytest.raises(RuntimeError, match="observer callback failure"):
+        blacksmith_mithril._assert_status(status)
+
+    stale_active = copy.deepcopy(payload)
+    stale_active["pendingCallback"]["active"] = True
+    with pytest.raises(ValueError, match="False was expected"):
+        validate_json(stale_active, blacksmith_mithril.FAILURE_SCHEMA, owner="stale second entry")
+    wrong_index = copy.deepcopy(payload)
+    wrong_index["pendingCallback"]["caseIndex"] = 0
+    with pytest.raises(ValueError, match="less than the minimum"):
+        validate_json(wrong_index, blacksmith_mithril.FAILURE_SCHEMA, owner="zero second entry")
+    illegal_second_transition = copy.deepcopy(payload)
+    illegal_second_transition["pendingCallback"]["active"] = True
+    illegal_second_transition["pendingCallback"]["equipDecision"]["transitionActive"] = True
+    with pytest.raises(ValueError, match="False was expected"):
+        validate_json(
+            illegal_second_transition,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="second entry transition reuse",
+        )
+    missing_first_transition = copy.deepcopy(payload)
+    missing_first_transition["pendingCallback"]["caseIndex"] = 1
+    with pytest.raises(ValueError, match="True was expected"):
+        validate_json(
+            missing_first_transition,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="first entry transition missing",
+        )
+
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    assert source.index('set_expectation("equip-decision-case-entry"') < source.index(
+        'expect(index==equip_index and emu.getregister("M68K PC")==entry'
+    )
+    assert "if index==1 then" in source
+    assert '"equip-decision first-case transition drift"' in source
+    assert '"equip-decision prior-case completion drift"' in source
+    assert "ed.completedIndex=equip_index" in source
+    assert "ed.completedTerminal=ed.terminal" in source
 
 
 def test_callback_failure_schema_status_promotion_and_dispatcher_shape(tmp_path: Path) -> None:
@@ -2373,6 +3279,44 @@ def test_callback_failure_schema_status_promotion_and_dispatcher_shape(tmp_path:
     )
 
 
+def test_equip_decision_status_milestones_are_required_and_ordered(tmp_path: Path) -> None:
+    milestones = [
+        "milestone:observer-loaded",
+        "milestone:direct-function-probe-armed",
+        "milestone:direct-function-probe",
+        "milestone:first-case-entered",
+        "milestone:transaction-cases-entered",
+        "milestone:fulfillment-cases-entered",
+        "milestone:precommit-cases-entered",
+        "milestone:equip-decision-transition-armed",
+        "milestone:equip-decision-cases-entered",
+        "milestone:transaction-state-restored",
+        "milestone:callbacks-cleared:0",
+        "milestone:observer-finished",
+    ]
+    status = tmp_path / "blacksmith-mithril.status.txt"
+    status.write_text("\n".join(milestones) + "\n", encoding="utf-8")
+    blacksmith_mithril._assert_status(status)
+
+    for missing_milestone in (
+        "milestone:equip-decision-transition-armed",
+        "milestone:equip-decision-cases-entered",
+    ):
+        missing = milestones.copy()
+        missing.remove(missing_milestone)
+        status.write_text("\n".join(missing) + "\n", encoding="utf-8")
+        with pytest.raises(RuntimeError, match="required milestone drift"):
+            blacksmith_mithril._assert_status(status)
+
+    swapped = milestones.copy()
+    transition = swapped.index("milestone:equip-decision-transition-armed")
+    cases = swapped.index("milestone:equip-decision-cases-entered")
+    swapped[transition], swapped[cases] = swapped[cases], swapped[transition]
+    status.write_text("\n".join(swapped) + "\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="required milestone order drift"):
+        blacksmith_mithril._assert_status(status)
+
+
 def test_verifier_uses_one_launch_and_omits_golden_output_from_lua_config(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -2397,6 +3341,7 @@ def test_verifier_uses_one_launch_and_omits_golden_output_from_lua_config(
     )
     assert len(launches) == 1
     assert launches[0]["output_name"] == "blacksmith-mithril"
+    assert launches[0]["rom_path"] == session_rom
     assert "acceptedObservation" not in launches[0]["config"]
     assert "transactionCases" in launches[0]["config"]
     assert "transaction" in launches[0]["config"]
@@ -2413,14 +3358,26 @@ def test_verifier_uses_one_launch_and_omits_golden_output_from_lua_config(
     assert "fullInventoryRetryBranchAddress" not in launches[0]["config"]["precommit"]
     assert "nonEquippableRetryBranchAddress" not in launches[0]["config"]["precommit"]
     assert "precommitInstrumentation" not in launches[0]["config"]
+    assert launches[0]["config"][
+        "instrumentedRom"
+    ] == blacksmith_mithril._session_instrumentation_config(static)
+    assert launches[0]["config"]["instrumentedRom"]["spans"][8] == {
+        "role": "equip-decision-prompt-presentation-skip",
+        "type": "prompt-text-bra",
+        "address": 0x21C20,
+        "widthBytes": 4,
+        "originalHex": "4E4500AD",
+        "patchedHex": "60000002",
+    }
     assert not session_rom.exists()
     assert result == {
-        "Fixture": "sf2-blacksmith-mithril-runtime-v4",
-        "Cases": 16,
+        "Fixture": "sf2-blacksmith-mithril-runtime-v5",
+        "Cases": 21,
         "HelperCases": 5,
         "TransactionCases": 3,
         "FulfillmentCases": 3,
         "PrecommitCases": 5,
+        "EquipDecisionCases": 5,
         "BizHawkLaunches": 1,
         "CallbacksCleared": 0,
         "Restoration": {
@@ -2432,6 +3389,46 @@ def test_verifier_uses_one_launch_and_omits_golden_output_from_lua_config(
         },
         "Status": "PASS",
     }
+
+
+def test_verifier_removes_schema_valid_semantic_reject_output(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    derived = tmp_path / "derived"
+    derived.mkdir()
+    wrong = copy.deepcopy(blacksmith_mithril.expected_observation(fixture, static))
+    # Both mutations satisfy the closed observation schema but must never
+    # survive as evidence when the exact model rejects them.
+    wrong["equipDecisionRecords"][2]["callbackChronology"].insert(
+        28,
+        {
+            "role": "equip-decision-unequip-effective-return",
+            "pc": 0x8A24,
+        },
+    )
+    wrong["equipDecisionRecords"][4]["equipSlot"] = 3
+    validate_json(wrong, blacksmith_mithril.OBSERVATION_SCHEMA, owner="wrong blacksmith output")
+    observed_path = derived / "blacksmith-mithril.observed.json"
+    observed_path.write_text(json.dumps(wrong), encoding="utf-8")
+    session_rom = tmp_path / "blacksmith-mithril.session.instrumented.bin"
+    session_rom.write_bytes(b"disposable session ROM")
+
+    monkeypatch.setattr(blacksmith_mithril, "DERIVED_ROOT", derived)
+    monkeypatch.setattr(blacksmith_mithril, "verify_runtime_contract", lambda *_: None)
+    monkeypatch.setattr(blacksmith_mithril, "validate_static_contract", lambda *_: static)
+    monkeypatch.setattr(blacksmith_mithril, "_assert_status", lambda *_: None)
+    monkeypatch.setattr(blacksmith_mithril, "_instrument_precommit_rom", lambda *_: session_rom)
+    monkeypatch.setattr(
+        blacksmith_mithril, "_with_instrumented_rom_database", lambda _, __, action: action()
+    )
+    monkeypatch.setattr(blacksmith_mithril, "run_observer", lambda **_: wrong)
+
+    with pytest.raises(ValueError, match="exact observed case matrix mismatch"):
+        blacksmith_mithril.verify_blacksmith_mithril(tmp_path / "input.bin", tmp_path)
+    assert not observed_path.exists()
+    assert not session_rom.exists()
 
 
 def test_verifier_promotes_terminal_structured_callback_failure(
@@ -2538,3 +3535,57 @@ def test_verifier_stops_before_observer_when_static_preflight_fails(
     with pytest.raises(ValueError, match="instruction guard drift"):
         blacksmith_mithril.verify_blacksmith_mithril(tmp_path / "input.bin", tmp_path)
     assert not invoked
+
+
+def test_verifier_stops_before_observer_when_retained_v4_projection_drifts(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    malformed = _fixture()
+    malformed["cases"][0]["randomSeedBefore"] ^= 1
+    validate_json(
+        malformed,
+        blacksmith_mithril.FIXTURE_SCHEMA,
+        owner="schema-valid retained-v4 projection drift",
+    )
+    launched = False
+
+    def never_observe(**_: object) -> dict[str, object]:
+        nonlocal launched
+        launched = True
+        return {}
+
+    monkeypatch.setattr(blacksmith_mithril, "load_json", lambda _: malformed)
+    monkeypatch.setattr(blacksmith_mithril, "run_observer", never_observe)
+    with pytest.raises(ValueError, match="retained-v4 digest guard drift"):
+        blacksmith_mithril.verify_blacksmith_mithril(tmp_path / "input.bin", tmp_path)
+    assert not launched
+
+
+@pytest.mark.parametrize("drift", ("order", "id"))
+def test_verifier_stops_before_observer_when_equip_decision_case_matrix_drifts(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, drift: str
+) -> None:
+    malformed = _fixture()
+    if drift == "order":
+        malformed["equipDecisionCaseOrder"][0:2] = reversed(
+            malformed["equipDecisionCaseOrder"][0:2]
+        )
+    else:
+        malformed["equipDecisionCases"][0]["id"] = "schema-valid-case-id-drift"
+    validate_json(
+        malformed,
+        blacksmith_mithril.FIXTURE_SCHEMA,
+        owner=f"schema-valid equip-decision {drift} drift",
+    )
+    launched = False
+
+    def never_observe(**_: object) -> dict[str, object]:
+        nonlocal launched
+        launched = True
+        return {}
+
+    monkeypatch.setattr(blacksmith_mithril, "load_json", lambda _: malformed)
+    monkeypatch.setattr(blacksmith_mithril, "run_observer", never_observe)
+    with pytest.raises(ValueError, match="equip-decision case order drift"):
+        blacksmith_mithril.verify_blacksmith_mithril(tmp_path / "input.bin", tmp_path)
+    assert not launched

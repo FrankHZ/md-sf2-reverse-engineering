@@ -3,40 +3,697 @@
   "$id": "urn:sf2:h3:blacksmith-mithril-fixture",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "id", "romSha256", "emulator", "evidenceDate", "provenance", "sourceContext", "observationBoundary", "caseOrder", "cases", "transactionCaseOrder", "transactionCases", "fulfillmentCaseOrder", "fulfillmentCases", "precommitCaseOrder", "precommitCases", "acceptedObservation", "runtimeQuestions"],
+  "required": [
+    "schemaVersion",
+    "id",
+    "romSha256",
+    "emulator",
+    "evidenceDate",
+    "provenance",
+    "sourceContext",
+    "observationBoundary",
+    "caseOrder",
+    "cases",
+    "transactionCaseOrder",
+    "transactionCases",
+    "fulfillmentCaseOrder",
+    "fulfillmentCases",
+    "precommitCaseOrder",
+    "precommitCases",
+    "retainedV4",
+    "equipDecisionDomain",
+    "equipDecisionCaseOrder",
+    "equipDecisionCases",
+    "acceptedObservation",
+    "runtimeQuestions"
+  ],
   "properties": {
-    "schemaVersion": {"const": 4},
-    "id": {"const": "sf2-blacksmith-mithril-runtime-v4"},
-    "romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
-    "emulator": {"$ref": "#/definitions/emulator"},
-    "evidenceDate": {"const": "2026-08-09"},
-    "provenance": {"$ref": "#/definitions/provenance"},
-    "sourceContext": {"$ref": "#/definitions/sourceContext"},
-    "observationBoundary": {"type": "string", "minLength": 1},
-    "caseOrder": {"const": ["ordinary-group0-early-slot0", "ordinary-group2-final-slot1", "brn-fallback-zero-row2-slot2", "rdbn-fallback-nonzero-row0-slot3", "all-occupied-no-order-write"]},
-    "cases": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/definitions/helperCase"}},
-    "transactionCaseOrder": {"type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
-    "transactionCases": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/definitions/transactionCase"}},
-    "fulfillmentCaseOrder": {"type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
-    "fulfillmentCases": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/definitions/fulfillmentCase"}},
-    "precommitCaseOrder": {"type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
-    "precommitCases": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/definitions/precommitCase"}},
-    "acceptedObservation": {"$ref": "urn:sf2:h3:blacksmith-mithril-observation#/definitions/observationPayload"},
-    "runtimeQuestions": {"type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+    "schemaVersion": {
+      "const": 5
+    },
+    "id": {
+      "const": "sf2-blacksmith-mithril-runtime-v5"
+    },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "emulator": {
+      "$ref": "#/definitions/emulator"
+    },
+    "evidenceDate": {
+      "const": "2026-08-09"
+    },
+    "provenance": {
+      "$ref": "#/definitions/provenance"
+    },
+    "sourceContext": {
+      "$ref": "#/definitions/sourceContext"
+    },
+    "observationBoundary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "caseOrder": {
+      "const": [
+        "ordinary-group0-early-slot0",
+        "ordinary-group2-final-slot1",
+        "brn-fallback-zero-row2-slot2",
+        "rdbn-fallback-nonzero-row0-slot3",
+        "all-occupied-no-order-write"
+      ]
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "$ref": "#/definitions/helperCase"
+      }
+    },
+    "transactionCaseOrder": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "transactionCases": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/definitions/transactionCase"
+      }
+    },
+    "fulfillmentCaseOrder": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "fulfillmentCases": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/definitions/fulfillmentCase"
+      }
+    },
+    "precommitCaseOrder": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "precommitCases": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "$ref": "#/definitions/precommitCase"
+      }
+    },
+    "retainedV4": {
+      "$ref": "#/definitions/retainedV4"
+    },
+    "equipDecisionDomain": {
+      "$ref": "#/definitions/equipDecisionDomain"
+    },
+    "equipDecisionCaseOrder": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "equipDecisionCases": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "$ref": "#/definitions/equipDecisionCase"
+      }
+    },
+    "acceptedObservation": {
+      "$ref": "urn:sf2:h3:blacksmith-mithril-observation#/definitions/observationPayload"
+    },
+    "runtimeQuestions": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
   },
   "definitions": {
-    "emulator": {"type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": {"name": {"const": "BizHawk"}, "version": {"const": "2.11.1"}, "core": {"const": "Genesis Plus GX"}}},
-    "owner": {"type": "object", "additionalProperties": false, "required": ["fixture", "fixtureId"], "properties": {"fixture": {"type": "string", "minLength": 1}, "fixtureId": {"type": "string", "minLength": 1}}},
-    "provenance": {"type": "object", "additionalProperties": false, "required": ["upstreamRepository", "upstreamBranch", "upstreamCommit", "owners"], "properties": {"upstreamRepository": {"type": "string", "minLength": 1}, "upstreamBranch": {"type": "string", "minLength": 1}, "upstreamCommit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "owners": {"type": "object", "additionalProperties": false, "required": ["commonMenus", "commonStats", "coreStatsData", "itemAuxiliary", "rng"], "properties": {"commonMenus": {"$ref": "#/definitions/owner"}, "commonStats": {"$ref": "#/definitions/owner"}, "coreStatsData": {"$ref": "#/definitions/owner"}, "itemAuxiliary": {"$ref": "#/definitions/owner"}, "rng": {"$ref": "#/definitions/owner"}}}}},
-    "sourceContext": {"type": "object", "additionalProperties": false, "required": ["pickSourcePath", "placeSourcePath", "itemStatsSourcePath", "tableSourcePath", "itemDefinitionsSourcePath", "h1ListingPath", "functionEntryAddress", "placeEntryAddress", "fulfillEntryAddress", "fulfillSelectionLoopAddress", "fulfillAddItemEntryAddress", "fulfillDoneAddress"], "properties": {"pickSourcePath": {"const": "code/common/menus/blacksmith/pickmithrilweapon.asm"}, "placeSourcePath": {"const": "code/common/menus/blacksmith/blacksmithactions.asm"}, "itemStatsSourcePath": {"const": "code/common/stats/itemstats.asm"}, "tableSourcePath": {"const": "data/stats/items/mithrilweapons.asm"}, "itemDefinitionsSourcePath": {"const": "data/stats/items/itemdefs.asm"}, "h1ListingPath": {"const": "build/sf2build-h1.lst"}, "functionEntryAddress": {"const": 138966}, "placeEntryAddress": {"const": 138690}, "fulfillEntryAddress": {"const": 138050}, "fulfillSelectionLoopAddress": {"const": 138072}, "fulfillAddItemEntryAddress": {"const": 138212}, "fulfillDoneAddress": {"const": 138452}}},
-    "word": {"type": "integer", "minimum": 0, "maximum": 65535},
-    "byte": {"type": "integer", "minimum": 0, "maximum": 255},
-    "words4": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/definitions/word"}},
-    "sentinels": {"type": "object", "additionalProperties": false, "required": ["d0", "d7"], "properties": {"d0": {"$ref": "#/definitions/word"}, "d7": {"$ref": "#/definitions/word"}}},
-    "helperCase": {"type": "object", "additionalProperties": false, "required": ["id", "clientClass", "randomSeedBefore", "ordersBefore", "registerSentinels"], "properties": {"id": {"enum": ["ordinary-group0-early-slot0", "ordinary-group2-final-slot1", "brn-fallback-zero-row2-slot2", "rdbn-fallback-nonzero-row0-slot3", "all-occupied-no-order-write"]}, "clientClass": {"$ref": "#/definitions/byte"}, "randomSeedBefore": {"$ref": "#/definitions/word"}, "ordersBefore": {"$ref": "#/definitions/words4"}, "registerSentinels": {"$ref": "#/definitions/sentinels"}}},
-    "transactionCase": {"type": "object", "additionalProperties": false, "required": ["id", "clientMember", "itemSlot", "clientClass", "randomSeedBefore", "goldBefore", "pendingOrdersBefore", "clientItemWordsBefore", "ordersBefore", "flag80OwningByteBefore"], "properties": {"id": {"type": "string", "minLength": 1}, "clientMember": {"type": "integer", "minimum": 0, "maximum": 31}, "itemSlot": {"type": "integer", "minimum": 0, "maximum": 3}, "clientClass": {"$ref": "#/definitions/byte"}, "randomSeedBefore": {"$ref": "#/definitions/word"}, "goldBefore": {"type": "integer", "minimum": 5000, "maximum": 9999999}, "pendingOrdersBefore": {"type": "integer", "minimum": 0, "maximum": 3}, "clientItemWordsBefore": {"$ref": "#/definitions/words4"}, "ordersBefore": {"$ref": "#/definitions/words4"}, "flag80OwningByteBefore": {"$ref": "#/definitions/byte"}}},
-    "fulfillmentCase": {"type": "object", "additionalProperties": false, "required": ["id", "clientMember", "recipientClass", "itemIndex", "clientItemWordsBefore", "ordersBefore", "ordersCounter", "fulfilledOrdersBefore", "equippableCarrySet"], "properties": {"id": {"type": "string", "minLength": 1}, "clientMember": {"type": "integer", "minimum": 0, "maximum": 31}, "recipientClass": {"$ref": "#/definitions/byte"}, "itemIndex": {"$ref": "#/definitions/byte"}, "clientItemWordsBefore": {"$ref": "#/definitions/words4"}, "ordersBefore": {"$ref": "#/definitions/words4"}, "ordersCounter": {"type": "integer", "minimum": 1, "maximum": 4}, "fulfilledOrdersBefore": {"type": "integer", "minimum": 0, "maximum": 65534}, "equippableCarrySet": {"type": "boolean"}}},
-    "precommitAttempt": {"type": "object", "additionalProperties": false, "required": ["selectedMemberResult", "heldItemsCountResult", "equipmentTypeResult", "equippableCarrySetResult"], "properties": {"selectedMemberResult": {"type": "integer", "minimum": -1, "maximum": 31}, "heldItemsCountResult": {"type": ["integer", "null"], "minimum": 0, "maximum": 4}, "equipmentTypeResult": {"type": ["integer", "null"], "minimum": 0, "maximum": 65535}, "equippableCarrySetResult": {"type": ["boolean", "null"]}}},
-    "precommitCase": {"type": "object", "additionalProperties": false, "required": ["id", "itemIndex", "ordersBefore", "fulfilledOrdersBefore", "attempts", "cleanupFulfillmentCaseId"], "properties": {"id": {"type": "string", "minLength": 1}, "itemIndex": {"$ref": "#/definitions/byte"}, "ordersBefore": {"$ref": "#/definitions/words4"}, "fulfilledOrdersBefore": {"type": "integer", "minimum": 0, "maximum": 65534}, "attempts": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"$ref": "#/definitions/precommitAttempt"}}, "cleanupFulfillmentCaseId": {"type": ["string", "null"]}}}
+    "emulator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "core"
+      ],
+      "properties": {
+        "name": {
+          "const": "BizHawk"
+        },
+        "version": {
+          "const": "2.11.1"
+        },
+        "core": {
+          "const": "Genesis Plus GX"
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fixture",
+        "fixtureId"
+      ],
+      "properties": {
+        "fixture": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fixtureId": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "upstreamRepository",
+        "upstreamBranch",
+        "upstreamCommit",
+        "owners"
+      ],
+      "properties": {
+        "upstreamRepository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "upstreamBranch": {
+          "type": "string",
+          "minLength": 1
+        },
+        "upstreamCommit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "owners": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "commonMenus",
+            "commonStats",
+            "coreStatsData",
+            "itemAuxiliary",
+            "rng"
+          ],
+          "properties": {
+            "commonMenus": {
+              "$ref": "#/definitions/owner"
+            },
+            "commonStats": {
+              "$ref": "#/definitions/owner"
+            },
+            "coreStatsData": {
+              "$ref": "#/definitions/owner"
+            },
+            "itemAuxiliary": {
+              "$ref": "#/definitions/owner"
+            },
+            "rng": {
+              "$ref": "#/definitions/owner"
+            }
+          }
+        }
+      }
+    },
+    "sourceContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pickSourcePath",
+        "placeSourcePath",
+        "itemStatsSourcePath",
+        "tableSourcePath",
+        "itemDefinitionsSourcePath",
+        "h1ListingPath",
+        "functionEntryAddress",
+        "placeEntryAddress",
+        "fulfillEntryAddress",
+        "fulfillSelectionLoopAddress",
+        "fulfillAddItemEntryAddress",
+        "fulfillDoneAddress",
+        "fulfillPostEquippabilityAddress"
+      ],
+      "properties": {
+        "pickSourcePath": {
+          "const": "code/common/menus/blacksmith/pickmithrilweapon.asm"
+        },
+        "placeSourcePath": {
+          "const": "code/common/menus/blacksmith/blacksmithactions.asm"
+        },
+        "itemStatsSourcePath": {
+          "const": "code/common/stats/itemstats.asm"
+        },
+        "tableSourcePath": {
+          "const": "data/stats/items/mithrilweapons.asm"
+        },
+        "itemDefinitionsSourcePath": {
+          "const": "data/stats/items/itemdefs.asm"
+        },
+        "h1ListingPath": {
+          "const": "build/sf2build-h1.lst"
+        },
+        "functionEntryAddress": {
+          "const": 138966
+        },
+        "placeEntryAddress": {
+          "const": 138690
+        },
+        "fulfillEntryAddress": {
+          "const": 138050
+        },
+        "fulfillSelectionLoopAddress": {
+          "const": 138072
+        },
+        "fulfillAddItemEntryAddress": {
+          "const": 138212
+        },
+        "fulfillDoneAddress": {
+          "const": 138452
+        },
+        "fulfillPostEquippabilityAddress": {
+          "const": 138268
+        }
+      }
+    },
+    "word": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535
+    },
+    "byte": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "words4": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "$ref": "#/definitions/word"
+      }
+    },
+    "sentinels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "d0",
+        "d7"
+      ],
+      "properties": {
+        "d0": {
+          "$ref": "#/definitions/word"
+        },
+        "d7": {
+          "$ref": "#/definitions/word"
+        }
+      }
+    },
+    "helperCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "clientClass",
+        "randomSeedBefore",
+        "ordersBefore",
+        "registerSentinels"
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "ordinary-group0-early-slot0",
+            "ordinary-group2-final-slot1",
+            "brn-fallback-zero-row2-slot2",
+            "rdbn-fallback-nonzero-row0-slot3",
+            "all-occupied-no-order-write"
+          ]
+        },
+        "clientClass": {
+          "$ref": "#/definitions/byte"
+        },
+        "randomSeedBefore": {
+          "$ref": "#/definitions/word"
+        },
+        "ordersBefore": {
+          "$ref": "#/definitions/words4"
+        },
+        "registerSentinels": {
+          "$ref": "#/definitions/sentinels"
+        }
+      }
+    },
+    "transactionCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "clientMember",
+        "itemSlot",
+        "clientClass",
+        "randomSeedBefore",
+        "goldBefore",
+        "pendingOrdersBefore",
+        "clientItemWordsBefore",
+        "ordersBefore",
+        "flag80OwningByteBefore"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientMember": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 31
+        },
+        "itemSlot": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "clientClass": {
+          "$ref": "#/definitions/byte"
+        },
+        "randomSeedBefore": {
+          "$ref": "#/definitions/word"
+        },
+        "goldBefore": {
+          "type": "integer",
+          "minimum": 5000,
+          "maximum": 9999999
+        },
+        "pendingOrdersBefore": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "clientItemWordsBefore": {
+          "$ref": "#/definitions/words4"
+        },
+        "ordersBefore": {
+          "$ref": "#/definitions/words4"
+        },
+        "flag80OwningByteBefore": {
+          "$ref": "#/definitions/byte"
+        }
+      }
+    },
+    "fulfillmentCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "clientMember",
+        "recipientClass",
+        "itemIndex",
+        "clientItemWordsBefore",
+        "ordersBefore",
+        "ordersCounter",
+        "fulfilledOrdersBefore",
+        "equippableCarrySet"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientMember": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 31
+        },
+        "recipientClass": {
+          "$ref": "#/definitions/byte"
+        },
+        "itemIndex": {
+          "$ref": "#/definitions/byte"
+        },
+        "clientItemWordsBefore": {
+          "$ref": "#/definitions/words4"
+        },
+        "ordersBefore": {
+          "$ref": "#/definitions/words4"
+        },
+        "ordersCounter": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "fulfilledOrdersBefore": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65534
+        },
+        "equippableCarrySet": {
+          "type": "boolean"
+        }
+      }
+    },
+    "precommitAttempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selectedMemberResult",
+        "heldItemsCountResult",
+        "equipmentTypeResult",
+        "equippableCarrySetResult"
+      ],
+      "properties": {
+        "selectedMemberResult": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 31
+        },
+        "heldItemsCountResult": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 4
+        },
+        "equipmentTypeResult": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "equippableCarrySetResult": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "precommitCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "itemIndex",
+        "ordersBefore",
+        "fulfilledOrdersBefore",
+        "attempts",
+        "cleanupFulfillmentCaseId"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "itemIndex": {
+          "$ref": "#/definitions/byte"
+        },
+        "ordersBefore": {
+          "$ref": "#/definitions/words4"
+        },
+        "fulfilledOrdersBefore": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65534
+        },
+        "attempts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 1,
+          "items": {
+            "$ref": "#/definitions/precommitAttempt"
+          }
+        },
+        "cleanupFulfillmentCaseId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "retainedV4": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caseCount",
+        "sha256"
+      ],
+      "properties": {
+        "caseCount": {
+          "const": 16
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        }
+      }
+    },
+    "equipDecisionDomain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "choiceCount",
+        "uniqueItemIndexes",
+        "uniqueItemCount",
+        "weaponItemCount",
+        "ringItemCount",
+        "cursedItemCount"
+      ],
+      "properties": {
+        "choiceCount": {
+          "const": 32
+        },
+        "uniqueItemIndexes": {
+          "type": "array",
+          "minItems": 26,
+          "maxItems": 26,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/byte"
+          }
+        },
+        "uniqueItemCount": {
+          "const": 26
+        },
+        "weaponItemCount": {
+          "const": 26
+        },
+        "ringItemCount": {
+          "const": 0
+        },
+        "cursedItemCount": {
+          "const": 0
+        }
+      }
+    },
+    "equipDecisionCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "clientMember",
+        "recipientClass",
+        "itemIndex",
+        "clientItemWordsBefore",
+        "ordersBefore",
+        "ordersCounter",
+        "fulfilledOrdersBefore",
+        "promptResult",
+        "existingEquippedItemIndex",
+        "statusEffectsBefore"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientMember": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 31
+        },
+        "recipientClass": {
+          "$ref": "#/definitions/byte"
+        },
+        "itemIndex": {
+          "$ref": "#/definitions/byte"
+        },
+        "clientItemWordsBefore": {
+          "$ref": "#/definitions/words4"
+        },
+        "ordersBefore": {
+          "$ref": "#/definitions/words4"
+        },
+        "ordersCounter": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "fulfilledOrdersBefore": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65534
+        },
+        "promptResult": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": -1,
+          "maximum": 65535
+        },
+        "existingEquippedItemIndex": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 127
+        },
+        "statusEffectsBefore": {
+          "$ref": "#/definitions/word"
+        }
+      }
+    }
   }
 }
