@@ -45,7 +45,7 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Confirmed"] == 1620
     assert result["H2Fixtures"] == 74
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 84
-    assert result["AddressBindings"] == 2522
+    assert result["AddressBindings"] == 2536
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1583

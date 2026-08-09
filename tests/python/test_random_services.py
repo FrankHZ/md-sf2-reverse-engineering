@@ -23,10 +23,22 @@ def _observation(fixture: dict[str, object]) -> dict[str, object]:
         records.append(
             {
                 "id": case["id"],
-                **random_services.model_case(case),
+                **random_services.model_case(case, fixture["sourceContext"]),
                 "instructionTargetObserved": True,
                 "effectiveTargetObserved": True,
                 "sourceCopyWriteSeen": True,
+                "callerExecutionObserved": case["callerExecutionObserved"],
+                "callerPreambleSeen": case["callerExecutionObserved"],
+                "callerRangeSeen": case["callerExecutionObserved"],
+                "callerRngCallSeen": case["callerExecutionObserved"],
+                "callerCallSeen": case["callerExecutionObserved"],
+                "callerStoreSeen": case["callerExecutionObserved"],
+                "callerRestoreSeen": case["callerExecutionObserved"],
+                "callerWaitCallSeen": case["callerExecutionObserved"],
+                "callerWaitTargetSeen": case["callerExecutionObserved"],
+                "callerWaitRtsSeen": case["callerExecutionObserved"],
+                "callerContinuationSeen": case["callerExecutionObserved"],
+                "callerHelperReturnRedirectSeen": case["callerExecutionObserved"],
             }
         )
     return {
@@ -51,6 +63,18 @@ def _status_payload() -> dict[str, object]:
         "expectedReturnPc": 5682,
         "pendingCallback": {
             "active": True,
+            "callerCallSeen": False,
+            "callerContinuationPending": False,
+            "callerContinuationSeen": False,
+            "callerHelperReturnRedirectSeen": False,
+            "callerPreambleSeen": False,
+            "callerRangeSeen": False,
+            "callerRngCallSeen": False,
+            "callerRestoreSeen": False,
+            "callerStoreSeen": False,
+            "callerWaitCallSeen": False,
+            "callerWaitRtsSeen": False,
+            "callerWaitTargetSeen": False,
             "caseIndex": 4,
             "generatorCallCount": 3,
             "entrySeen": True,
@@ -89,7 +113,11 @@ def test_provenance_matches_pinned_toolchain_and_h2_owner(tmp_path: Path) -> Non
 def test_model_separates_helper_return_from_controlled_copy() -> None:
     fixture = _fixture()
     cases = {case["id"]: case for case in fixture["cases"]}
-    assert all(random_services.model_case(case) == case["expected"] for case in cases.values())
+    source_contexts = fixture["sourceContext"]
+    assert all(
+        random_services.model_case(case, source_contexts) == case["expected"]
+        for case in cases.values()
+    )
     assert cases["unsigned-low-byte-zero"]["expected"]["seedCopyAtHelperReturn"] == 0x53C2
     assert cases["unsigned-low-byte-zero"]["expected"]["seedCopyAfterSourceCopy"] == 0x00C2
     assert cases["thinking-low-byte-zero"]["expected"]["seedCopyAtHelperReturn"] == 0x985D
@@ -102,6 +130,18 @@ def test_model_separates_helper_return_from_controlled_copy() -> None:
         state & 0xFF == 0x5D
         for state in cases["thinking-range-two-retry-alias"]["expected"]["generatorStates"]
     )
+    assert cases["text-symbol-wait-caller-seam-thinking-range-two"]["expected"][
+        "seedCopyAfterSourceCopy"
+    ] == 0xECCD
+    assert cases["text-symbol-wait-caller-seam-thinking-range-two"]["expected"][
+        "seedCopyAtHelperReturn"
+    ] == 0x00CD
+    assert cases["diamond-menu-caller-seam-thinking-range-two"]["expected"][
+        "seedCopyAfterSourceCopy"
+    ] == 0x6833
+    assert cases["diamond-menu-caller-seam-thinking-range-two"]["expected"][
+        "seedCopyAtHelperReturn"
+    ] == 0x0133
 
 
 def test_fixture_and_observation_schemas_are_closed_and_exact() -> None:
@@ -112,8 +152,13 @@ def test_fixture_and_observation_schemas_are_closed_and_exact() -> None:
     random_services._assert_observation(fixture, observation)
 
     bad_fixture = copy.deepcopy(fixture)
-    bad_fixture["sourceContexts"]["textWaitWritePc"] = 26024
+    bad_fixture["sourceContext"]["textWaitWritePc"] = 26024
     with pytest.raises(ValueError, match="Additional properties"):
+        validate_json(bad_fixture, random_services.FIXTURE_SCHEMA, owner="fixture")
+
+    bad_fixture = copy.deepcopy(fixture)
+    bad_fixture["cases"][10]["callerExecutionObserved"] = False
+    with pytest.raises(ValueError, match="True was expected"):
         validate_json(bad_fixture, random_services.FIXTURE_SCHEMA, owner="fixture")
 
     bad_fixture = copy.deepcopy(fixture)
@@ -150,6 +195,10 @@ def test_fixture_and_observation_schemas_are_closed_and_exact() -> None:
     with pytest.raises(ValueError, match="Additional properties"):
         validate_json(bad_observation, random_services.OBSERVATION_SCHEMA, owner="observation")
     bad_observation = copy.deepcopy(observation)
+    bad_observation["records"][10]["callerStoreSeen"] = False
+    with pytest.raises(ValueError, match="True was expected"):
+        validate_json(bad_observation, random_services.OBSERVATION_SCHEMA, owner="observation")
+    bad_observation = copy.deepcopy(observation)
     bad_observation["caseOrder"][0], bad_observation["caseOrder"][1] = (
         bad_observation["caseOrder"][1],
         bad_observation["caseOrder"][0],
@@ -170,6 +219,7 @@ def test_callback_expectations_cover_early_normal_alias_and_generator_roles() ->
     early = expectations["cases"][0]
     normal = expectations["cases"][3]
     thinking = expectations["cases"][7]
+    text_caller = expectations["cases"][10]
     assert early["unsigned-early-return"]["allowed"] is True
     assert early["unsigned-normal-return"]["allowed"] is False
     assert early["unsigned-normal-return"]["expectedReturnPc"] == function[
@@ -198,17 +248,126 @@ def test_callback_expectations_cover_early_normal_alias_and_generator_roles() ->
     assert turn_order["expectedCallPc"] is None
     assert turn_order["expectedTargetPc"] is None
     assert turn_order["expectedReturnPc"] == instrumentation["workRamProbePc"]
+    assert "caller-call" not in text_caller
+    assert text_caller["base-entry"]["expectedCallPc"] == fixture["sourceContext"][
+        "textWaitCallPc"
+    ]
+    assert text_caller["base-entry"]["expectedTargetPc"] == function["baseEntryAddress"]
+    assert text_caller["base-entry"]["expectedReturnPc"] == fixture["sourceContext"][
+        "textWaitStorePc"
+    ]
+    assert text_caller["thinking-alias"]["expectedCallPc"] == instrumentation["helperCallPc"]
+    assert text_caller["thinking-alias"]["expectedReturnPc"] == instrumentation["sourceCopyWritePc"]
+    assert text_caller["case-result"]["expectedReturnPc"] == instrumentation["resultPc"]
+    assert text_caller["case-entry"]["expectedCallPc"] is None
+    assert text_caller["case-entry"]["expectedTargetPc"] is None
+    assert text_caller["case-entry"]["expectedReturnPc"] is None
+    assert text_caller["caller-preamble"] == {
+        "phase": "caller-preamble",
+        "role": "caller-preamble",
+        "expectedEventPc": fixture["sourceContext"]["textWaitPreamblePc"],
+        "expectedCallPc": instrumentation["helperCallPc"],
+        "expectedTargetPc": fixture["sourceContext"]["textWaitPreamblePc"],
+        "expectedReturnPc": instrumentation["sourceCopyWritePc"],
+        "allowed": True,
+    }
+    assert text_caller["caller-range-load"]["expectedEventPc"] == fixture["sourceContext"][
+        "textWaitRangePc"
+    ]
+    assert text_caller["caller-rng-call"] == {
+        "phase": "caller-rng-call",
+        "role": "caller-rng-call",
+        "expectedEventPc": fixture["sourceContext"]["textWaitCallPc"],
+        "expectedCallPc": fixture["sourceContext"]["textWaitCallPc"],
+        "expectedTargetPc": function["baseEntryAddress"],
+        "expectedReturnPc": fixture["sourceContext"]["textWaitStorePc"],
+        "allowed": True,
+    }
+    assert text_caller["caller-post-store"]["role"] == "caller-post-store-restore"
+    assert text_caller["caller-wait-call"]["expectedReturnPc"] == fixture["sourceContext"][
+        "textWaitVIntReturnPc"
+    ]
+    assert text_caller["wait-for-vint-target"]["expectedTargetPc"] == fixture[
+        "sourceContext"
+    ]["waitForVIntEntryPc"]
+    assert text_caller["wait-for-vint-rts"]["expectedReturnPc"] == instrumentation[
+        "callerContinuationPc"
+    ]
+    assert text_caller["caller-continuation"]["expectedEventPc"] == instrumentation[
+        "caseEntryPc"
+    ]
+    assert text_caller["caller-continuation"]["expectedReturnPc"] == instrumentation[
+        "callerContinuationPc"
+    ]
+
+    address_drift = copy.deepcopy(fixture)
+    address_drift["sourceContext"]["textWaitCallPc"] += 2
+    with pytest.raises(ValueError, match="H1 caller source-context address drift"):
+        random_services.callback_expectations(address_drift)
+    return_drift = copy.deepcopy(fixture)
+    return_drift["sourceContext"]["textWaitStorePc"] += 2
+    with pytest.raises(ValueError, match="H1 caller source-context address drift"):
+        random_services.callback_expectations(return_drift)
+    for key in (
+        "textWaitPreamblePc",
+        "textWaitRangePc",
+        "textWaitVIntCallPc",
+        "textWaitVIntReturnPc",
+        "diamondPreamblePc",
+        "diamondRangePc",
+        "diamondVIntCallPc",
+        "diamondVIntReturnPc",
+        "waitForVIntEntryPc",
+        "waitForVIntRtsPc",
+    ):
+        drift = copy.deepcopy(fixture)
+        drift["sourceContext"][key] += 2
+        with pytest.raises(ValueError, match="H1 caller source-context address drift"):
+            random_services._observer_config(drift)
 
     for mutate in (
         lambda value: value["cases"][0].pop("unsigned-entry"),
         lambda value: value["cases"][7].__setitem__("extra", {}),
         lambda value: value["cases"][7]["thinking-alias"].__setitem__("role", "wrong-role"),
+        lambda value: value["cases"][10].pop("caller-continuation"),
+        lambda value: value["cases"][10].__setitem__("extra-continuation", {}),
+        lambda value: value["cases"][10]["caller-continuation"].__setitem__(
+            "role", "wrong-continuation-role"
+        ),
     ):
         malformed = copy.deepcopy(expectations)
         mutate(malformed)
         with pytest.raises(ValueError, match="callback expectation drift"):
             random_services._validate_callback_expectations(fixture, malformed)
 
+
+def test_lua_caller_dispatch_uses_real_preamble_jsr_and_shared_pc_continuation() -> None:
+    source = random_services.OBSERVER.read_text(encoding="utf-8")
+    assert 'memory.read_u32_be(stack,"M68K BUS")' in source
+    assert '"caller source stack return"' in source
+    assert 'emu.setregister("M68K PC"' not in source
+    assert 'register_exec(config.sourceContexts.textWaitCallPc,"caller-call"' not in source
+    assert 'register_exec(config.sourceContexts.diamondCallPc,"caller-call"' not in source
+    assert 'register_exec(i.caseEntryPc,"case-entry",begin_case)' in source
+    assert source.count('register_exec(i.caseEntryPc,"case-entry",begin_case)') == 1
+    assert 'phase=="case-entry" and active and caller_continuation_pending' in source
+    assert 'return "caller-continuation"' in source
+    assert 'memory.write_u32_be(stack,i.callerContinuationPc,"M68K BUS")' in source
+    assert '"WaitForVInt rewritten stack return"' in source
+    assert '"caller continuation range input"' in source
+    assert '"caller continuation thinking target"' in source
+    assert '"caller helper original probe return"' in source
+    assert '"caller helper result return redirect"' in source
+    assert (
+        'if c.callerExecutionObserved then error("caller reached controlled probe copy") end'
+        in source
+    )
+    for error in (
+        "duplicate caller WaitForVInt call",
+        "duplicate WaitForVInt target",
+        "duplicate WaitForVInt RTS",
+    ):
+        assert f'error("{error}")' in source
 
 def test_source_parser_rejects_missing_instruction_and_ignores_near_misses() -> None:
     with pytest.raises(ValueError, match="missing"):
@@ -220,6 +379,59 @@ def test_source_parser_rejects_missing_instruction_and_ignores_near_misses() -> 
         "bsr.w GenerateRandomNumberNearMiss\n"
     )
     assert calls == ("bsr.w", "jsr")
+
+
+def test_caller_source_h1_and_rom_guards_reject_all_bounded_seam_drift(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _fixture()
+    rom_path = random_services.repo_path("local/roms/sf2-us.bin")
+
+    h1_drift = tmp_path / "caller-h1-drift.lst"
+    h1_drift.write_text(
+        random_services.H1_LISTING.read_text(encoding="utf-8").replace(
+            "0000659C 48E7 0300", "0000659C 48E7 0301", 1
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(random_services, "H1_LISTING", h1_drift)
+    with pytest.raises(ValueError, match="H1 caller context run drift"):
+        random_services.validate_caller_source_contexts(fixture)
+    h1_listing = random_services.repo_path("local/upstream/SF2DISASM/build/sf2build-h1.lst")
+    monkeypatch.setattr(random_services, "H1_LISTING", h1_listing)
+
+    source_drift = tmp_path / "textfunctions_1.asm"
+    text_source = random_services.TEXT_SOURCE.read_text(encoding="utf-8")
+    symbol_wait1 = text_source.index("symbol_wait1:")
+    source_drift.write_text(
+        text_source[:symbol_wait1]
+        + text_source[symbol_wait1:].replace("movem.l d6-d7,-(sp)", "movem.l d5-d7,-(sp)", 1),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(random_services, "TEXT_SOURCE", source_drift)
+    with pytest.raises(ValueError, match="text symbol_wait1"):
+        random_services.validate_static_contract(fixture, rom_path)
+    monkeypatch.setattr(
+        random_services,
+        "TEXT_SOURCE",
+        random_services.UPSTREAM / "code/common/scripting/text/textfunctions_1.asm",
+    )
+
+    rom_drift = tmp_path / "caller-wait-rom-drift.bin"
+    rom = bytearray(rom_path.read_bytes())
+    rom[fixture["sourceContext"]["textWaitVIntCallPc"]] ^= 0x01
+    rom_drift.write_bytes(rom)
+    with pytest.raises(ValueError, match="H1/ROM guard failed for text wait source preamble"):
+        random_services.validate_static_contract(fixture, rom_drift)
+
+
+def test_golden_caller_results_are_independently_derived_before_runtime() -> None:
+    fixture = _fixture()
+    observed = _observation(fixture)
+    golden_drift = copy.deepcopy(fixture)
+    golden_drift["cases"][10]["expected"]["seedCopyAtHelperReturn"] += 1
+    with pytest.raises(ValueError, match="golden disagrees with model"):
+        random_services._assert_observation(golden_drift, observed)
 
 
 def test_callback_status_requires_exact_keys_and_types(tmp_path: Path) -> None:
@@ -265,6 +477,7 @@ def test_callback_status_requires_exact_keys_and_types(tmp_path: Path) -> None:
         (None, "actualPc", None),
         (None, "expectedTargetPc", True),
         ("pendingCallback", "active", 1),
+        ("pendingCallback", "callerCallSeen", 1),
         ("pendingCallback", "caseIndex", True),
         ("pendingCallback", "generatorCallCount", False),
     ):
@@ -334,6 +547,9 @@ def test_verifier_enforces_one_launch(monkeypatch: pytest.MonkeyPatch, tmp_path:
     result = random_services.verify_random_services(tmp_path / "input.bin", timeout_seconds=1)
     assert len(launches) == 1
     assert launches[0]["rom_path"] == tmp_path / "input.bin"
+    assert all("expected" not in case for case in launches[0]["config"]["cases"])
+    assert launches[0]["config"]["sourceContexts"] == fixture["sourceContext"]
+    assert "sourceContext" not in launches[0]["config"]
     assert launches[0]["config"]["callbackExpectations"] == random_services.callback_expectations(
         fixture
     )

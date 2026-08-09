@@ -10,8 +10,8 @@
     "id": { "const": "sf2-random-services-matrix-runtime-v1" },
     "caseOrder": {
       "type": "array",
-      "minItems": 10,
-      "maxItems": 10,
+      "minItems": 12,
+      "maxItems": 12,
       "items": [
         { "const": "unsigned-low-byte-zero" },
         { "const": "unsigned-range-one" },
@@ -22,14 +22,16 @@
         { "const": "thinking-signed-range-boundary" },
         { "const": "thinking-range-two-retry-alias" },
         { "const": "text-symbol-wait-copy-shape" },
-        { "const": "diamond-menu-copy-shape" }
+        { "const": "diamond-menu-copy-shape" },
+        { "const": "text-symbol-wait-caller-seam-thinking-range-two" },
+        { "const": "diamond-menu-caller-seam-thinking-range-two" }
       ],
       "additionalItems": false
     },
     "records": {
       "type": "array",
-      "minItems": 10,
-      "maxItems": 10,
+      "minItems": 12,
+      "maxItems": 12,
       "items": [
         { "$ref": "#/$defs/unsignedEarlyZero" },
         { "$ref": "#/$defs/unsignedRangeOne" },
@@ -40,13 +42,15 @@
         { "$ref": "#/$defs/thinkingSignedBoundary" },
         { "$ref": "#/$defs/thinkingRetry" },
         { "$ref": "#/$defs/textCopyShape" },
-        { "$ref": "#/$defs/diamondCopyShape" }
+        { "$ref": "#/$defs/diamondCopyShape" },
+        { "$ref": "#/$defs/textCallerThinking" },
+        { "$ref": "#/$defs/diamondCallerThinking" }
       ],
       "additionalItems": false
     }
   },
   "$defs": {
-    "record": { "type": "object", "additionalProperties": false, "required": ["id", "randomSeedAfter", "seedCopyAtHelperReturn", "seedCopyAfterSourceCopy", "resultLowByte", "generatorCallCount", "generatorOutputs", "generatorStates", "returnPath", "instructionTargetObserved", "effectiveTargetObserved", "sourceCopyWriteSeen"], "properties": { "id": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "randomSeedAfter": { "type": "integer", "minimum": 0, "maximum": 65535 }, "seedCopyAtHelperReturn": { "type": "integer", "minimum": 0, "maximum": 65535 }, "seedCopyAfterSourceCopy": { "type": "integer", "minimum": 0, "maximum": 65535 }, "resultLowByte": { "type": "integer", "minimum": 0, "maximum": 255 }, "generatorCallCount": { "type": "integer", "minimum": 0 }, "generatorOutputs": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 255 } }, "generatorStates": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 65535 } }, "returnPath": { "enum": ["base", "normal", "early"] }, "instructionTargetObserved": { "const": true }, "effectiveTargetObserved": { "const": true }, "sourceCopyWriteSeen": { "const": true } } },
+    "record": { "type": "object", "additionalProperties": false, "required": ["id", "randomSeedAfter", "seedCopyAtHelperReturn", "seedCopyAfterSourceCopy", "resultLowByte", "generatorCallCount", "generatorOutputs", "generatorStates", "returnPath", "instructionTargetObserved", "effectiveTargetObserved", "sourceCopyWriteSeen", "callerExecutionObserved", "callerPreambleSeen", "callerRangeSeen", "callerRngCallSeen", "callerCallSeen", "callerStoreSeen", "callerRestoreSeen", "callerWaitCallSeen", "callerWaitTargetSeen", "callerWaitRtsSeen", "callerContinuationSeen", "callerHelperReturnRedirectSeen"], "properties": { "id": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "randomSeedAfter": { "type": "integer", "minimum": 0, "maximum": 65535 }, "seedCopyAtHelperReturn": { "type": "integer", "minimum": 0, "maximum": 65535 }, "seedCopyAfterSourceCopy": { "type": "integer", "minimum": 0, "maximum": 65535 }, "resultLowByte": { "type": "integer", "minimum": 0, "maximum": 255 }, "generatorCallCount": { "type": "integer", "minimum": 0 }, "generatorOutputs": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 255 } }, "generatorStates": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 65535 } }, "returnPath": { "enum": ["base", "normal", "early"] }, "instructionTargetObserved": { "const": true }, "effectiveTargetObserved": { "const": true }, "sourceCopyWriteSeen": { "const": true }, "callerExecutionObserved": { "type": "boolean" }, "callerPreambleSeen": { "type": "boolean" }, "callerRangeSeen": { "type": "boolean" }, "callerRngCallSeen": { "type": "boolean" }, "callerCallSeen": { "type": "boolean" }, "callerStoreSeen": { "type": "boolean" }, "callerRestoreSeen": { "type": "boolean" }, "callerWaitCallSeen": { "type": "boolean" }, "callerWaitTargetSeen": { "type": "boolean" }, "callerWaitRtsSeen": { "type": "boolean" }, "callerContinuationSeen": { "type": "boolean" }, "callerHelperReturnRedirectSeen": { "type": "boolean" } }, "allOf": [{ "if": { "properties": { "id": { "enum": ["text-symbol-wait-caller-seam-thinking-range-two", "diamond-menu-caller-seam-thinking-range-two"] } } }, "then": { "properties": { "callerExecutionObserved": { "const": true }, "callerPreambleSeen": { "const": true }, "callerRangeSeen": { "const": true }, "callerRngCallSeen": { "const": true }, "callerCallSeen": { "const": true }, "callerStoreSeen": { "const": true }, "callerRestoreSeen": { "const": true }, "callerWaitCallSeen": { "const": true }, "callerWaitTargetSeen": { "const": true }, "callerWaitRtsSeen": { "const": true }, "callerContinuationSeen": { "const": true }, "callerHelperReturnRedirectSeen": { "const": true } } }, "else": { "properties": { "callerExecutionObserved": { "const": false }, "callerPreambleSeen": { "const": false }, "callerRangeSeen": { "const": false }, "callerRngCallSeen": { "const": false }, "callerCallSeen": { "const": false }, "callerStoreSeen": { "const": false }, "callerRestoreSeen": { "const": false }, "callerWaitCallSeen": { "const": false }, "callerWaitTargetSeen": { "const": false }, "callerWaitRtsSeen": { "const": false }, "callerContinuationSeen": { "const": false }, "callerHelperReturnRedirectSeen": { "const": false } } } }] },
     "unsignedEarlyZero": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "unsigned-low-byte-zero" } } }] },
     "unsignedRangeOne": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "unsigned-range-one" } } }] },
     "unsignedSignedBoundary": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "unsigned-signed-range-boundary" } } }] },
@@ -56,6 +60,8 @@
     "thinkingSignedBoundary": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "thinking-signed-range-boundary" } } }] },
     "thinkingRetry": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "thinking-range-two-retry-alias" } } }] },
     "textCopyShape": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "text-symbol-wait-copy-shape" } } }] },
-    "diamondCopyShape": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "diamond-menu-copy-shape" } } }] }
+    "diamondCopyShape": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "diamond-menu-copy-shape" } } }] },
+    "textCallerThinking": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "text-symbol-wait-caller-seam-thinking-range-two" } } }] },
+    "diamondCallerThinking": { "allOf": [{ "$ref": "#/$defs/record" }, { "properties": { "id": { "const": "diamond-menu-caller-seam-thinking-range-two" } } }] }
   }
 }

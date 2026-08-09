@@ -4,9 +4,10 @@ The probe is deliberately smaller than a game scenario: it calls unmodified ROM
 services from a verified work-RAM probe and records their entry, generator,
 return, helper-return seed-copy state, and following source-shaped byte-write
 seam. A pre-existing debug Battle Test route is only the post-start host for the
-probe. The text and diamond rows model
-their documented seed-copy write shape only; they never claim to execute either
-caller loop.
+probe. The text and diamond rows enter their source-owned preambles through the
+probe's real JSR, execute one bounded WaitForVInt seam, and then resume the
+thinking alias through that same probe. They do not claim any surrounding caller
+loop, timing, input, or UI behavior.
 """
 
 from __future__ import annotations
@@ -47,6 +48,7 @@ DIAMOND_SOURCE = UPSTREAM / "code/common/menus/diamondmenu.asm"
 BATTLE_TEST_SOURCE = UPSTREAM / "code/gameflow/special/battletest.asm"
 TURN_ORDER_SOURCE = UPSTREAM / "code/gameflow/battle/battleloop/turnorderfunctions.asm"
 CONST_SOURCE = UPSTREAM / "sf2const.asm"
+H1_LISTING = repo_path("local/upstream/SF2DISASM/build/sf2build-h1.lst")
 
 OBSERVER_OUTPUT_NAME = "random-services"
 STATUS_PREFIX = CALLBACK_FAILURE_PREFIX
@@ -82,6 +84,103 @@ def _direct_rng_calls(source: str) -> tuple[str, ...]:
         if target == "generaterandomnumber":
             result.append(match.group(1))
     return tuple(result)
+
+
+def _bounded_noncomment_section(source: str, start: str, end: str, *, name: str) -> str:
+    """Return one source-owned section so nearby caller look-alikes cannot satisfy a guard."""
+    try:
+        start_at = source.index(start)
+        end_at = source.index(end, start_at + len(start))
+    except ValueError as error:
+        raise ValueError(f"{name} section boundary drift") from error
+    return source[start_at:end_at]
+
+
+def _caller_seam_range(
+    source: str, *, start: str, end: str, sequence: tuple[str, ...], name: str
+) -> int:
+    section = _bounded_noncomment_section(source, start, end, name=name)
+    _require_sequence(section, sequence, name=name)
+    range_line = next(
+        line
+        for line in _noncomment_lines(section)
+        if line.startswith("move.w #") and line.endswith(",d6")
+    )
+    literal = range_line.removeprefix("move.w #").removesuffix(",d6")
+    return int(literal.removeprefix("$"), 16 if literal.startswith("$") else 10)
+
+
+def _h1_caller_contexts() -> dict[str, int]:
+    """Derive both caller preamble and bounded WaitForVInt seams from H1."""
+    instructions: list[tuple[int, str]] = []
+    for line in H1_LISTING.read_text(encoding="utf-8", errors="replace").splitlines():
+        match = re.match(r"^([0-9A-F]{8})\s+((?:[0-9A-F]{2,4}\s+)+)", line)
+        if match:
+            instructions.append((int(match.group(1), 16), re.sub(r"\s+", "", match.group(2))))
+    expected_runs = {
+        "textWait": (
+            "48E70300",
+            "3C3C0100",
+            "6100B05A",
+            "11C7DFB0",
+            "4CDF00C0",
+            "6100A93C",
+        ),
+        "diamond": (
+            "48E70300",
+            "3C3C0100",
+            "4EB81600",
+            "11C7DFB0",
+            "4CDF00C0",
+            "4EB80EEE",
+        ),
+    }
+    contexts: dict[str, int] = {}
+    for prefix, words in expected_runs.items():
+        matches = [
+            index
+            for index in range(len(instructions) - len(words) + 1)
+            if tuple(word for _, word in instructions[index : index + len(words)]) == words
+            and all(
+                instructions[index + offset][0] == instructions[index][0] + (4 * offset)
+                for offset in range(1, len(words))
+            )
+        ]
+        if len(matches) != 1:
+            raise ValueError(f"H1 caller context run drift for {prefix}: {len(matches)} matches")
+        preamble = instructions[matches[0]][0]
+        contexts.update(
+            {
+                f"{prefix}PreamblePc": preamble,
+                f"{prefix}RangePc": preamble + 4,
+                f"{prefix}CallPc": preamble + 8,
+                f"{prefix}StorePc": preamble + 12,
+                f"{prefix}PostStorePc": preamble + 16,
+                f"{prefix}VIntCallPc": preamble + 20,
+                f"{prefix}VIntReturnPc": preamble + 24,
+            }
+        )
+    wait = dict(instructions)
+    if wait.get(0x0EEE) != "08F9000700FFDE94" or wait.get(0x0F02) != "4E75":
+        raise ValueError("H1 WaitForVInt entry/RTS drift")
+    contexts.update({"waitForVIntEntryPc": 0x0EEE, "waitForVIntRtsPc": 0x0F02})
+    return contexts
+
+
+def validate_caller_source_contexts(fixture: dict[str, Any]) -> None:
+    """Reject a role-correct but address-drifted caller context before Lua configuration."""
+    expected = _h1_caller_contexts()
+    actual = fixture["sourceContext"]
+    if any(actual[name] != value for name, value in expected.items()):
+        raise ValueError("random-services H1 caller source-context address drift")
+    if actual["textWaitRangeWord"] != actual["diamondRangeWord"] or actual[
+        "textWaitRangeWord"
+    ] != 0x100:
+        raise ValueError("random-services caller source-context range drift")
+    if fixture["instrumentation"]["callerContinuationPc"] != fixture["instrumentation"][
+        "caseEntryPc"
+    ]:
+        raise ValueError("random-services caller continuation PC drift")
 
 
 def validate_provenance(
@@ -149,7 +248,9 @@ def _expectation(
     }
 
 
-def _case_target_and_return(case: dict[str, Any], function: dict[str, Any]) -> tuple[int, int]:
+def _case_target_and_return(
+    case: dict[str, Any], function: dict[str, Any], source_contexts: dict[str, Any]
+) -> tuple[int, int]:
     if case["service"] == "base":
         return function["baseEntryAddress"], function["baseReturnAddress"]
     if case["service"] == "unsigned-bounded":
@@ -157,7 +258,7 @@ def _case_target_and_return(case: dict[str, Any], function: dict[str, Any]) -> t
             function["unsignedBoundedEntryAddress"],
             function[
                 "unsignedEarlyReturnAddress"
-                if case["expected"]["returnPath"] == "early"
+                if model_case(case, source_contexts)["returnPath"] == "early"
                 else "unsignedNormalReturnAddress"
             ],
         )
@@ -166,7 +267,7 @@ def _case_target_and_return(case: dict[str, Any], function: dict[str, Any]) -> t
             function["thinkingAliasEntryAddress"],
             function[
                 "thinkingEarlyReturnAddress"
-                if case["expected"]["returnPath"] == "early"
+                if model_case(case, source_contexts)["returnPath"] == "early"
                 else "thinkingNormalReturnAddress"
             ],
         )
@@ -177,6 +278,8 @@ def _derive_callback_expectations(fixture: dict[str, Any]) -> dict[str, Any]:
     """Derive one exact diagnostic expectation for every registered physical PC."""
     function = fixture["function"]
     instrumentation = fixture["instrumentation"]
+    source_contexts = fixture["sourceContext"]
+    validate_caller_source_contexts(fixture)
     static = {
         "host-battle-test": _expectation(
             "host-battle-test",
@@ -213,7 +316,10 @@ def _derive_callback_expectations(fixture: dict[str, Any]) -> dict[str, Any]:
     }
     cases = []
     for case in fixture["cases"]:
-        instruction_target_pc, helper_return_pc = _case_target_and_return(case, function)
+        modeled = model_case(case, source_contexts)
+        instruction_target_pc, helper_return_pc = _case_target_and_return(
+            case, function, source_contexts
+        )
         effective_target_pc = (
             function["thinkingBoundedEntryAddress"]
             if case["service"] == "thinking-bounded"
@@ -222,33 +328,52 @@ def _derive_callback_expectations(fixture: dict[str, Any]) -> dict[str, Any]:
         instruction_helper = {
             "call_pc": instrumentation["helperCallPc"],
             "target_pc": instruction_target_pc,
-            "return_pc": helper_return_pc,
+            "return_pc": (
+                instrumentation["sourceCopyWritePc"]
+                if case["callerExecutionObserved"]
+                else helper_return_pc
+            ),
         }
         effective_helper = {
+            "call_pc": instruction_helper["call_pc"],
+            "target_pc": effective_target_pc,
+            "return_pc": instruction_helper["return_pc"],
+        }
+        result_helper = {
             "call_pc": instrumentation["helperCallPc"],
             "target_pc": effective_target_pc,
-            "return_pc": helper_return_pc,
+            "return_pc": (
+                instrumentation["resultPc"]
+                if case["callerExecutionObserved"]
+                else helper_return_pc
+            ),
         }
+        setup = (
+            {"call_pc": None, "target_pc": None, "return_pc": None}
+            if case["callerExecutionObserved"]
+            else instruction_helper
+        )
         callbacks = {
             "case-entry": _expectation(
                 "case-entry",
                 "case-entry",
                 event_pc=instrumentation["caseEntryPc"],
-                **instruction_helper,
-            ),
-            "source-shaped-copy-write": _expectation(
-                "source-shaped-copy-write",
-                "source-shaped-copy-write",
-                event_pc=instrumentation["sourceCopyWritePc"],
-                **effective_helper,
+                **setup,
             ),
             "case-result": _expectation(
                 "case-result",
                 "case-result",
                 event_pc=instrumentation["resultPc"],
-                **effective_helper,
+                **result_helper,
             ),
         }
+        if not case["callerExecutionObserved"]:
+            callbacks["source-shaped-copy-write"] = _expectation(
+                "source-shaped-copy-write",
+                "source-shaped-copy-write",
+                event_pc=instrumentation["sourceCopyWritePc"],
+                **effective_helper,
+            )
         if case["service"] == "base":
             callbacks.update(
                 {
@@ -325,8 +450,97 @@ def _derive_callback_expectations(fixture: dict[str, Any]) -> dict[str, Any]:
                     f"{service}-{path}-return",
                     event_pc=function[return_key],
                     **effective_helper,
-                    allowed=case["expected"]["returnPath"] == path,
+                    allowed=modeled["returnPath"] == path,
                 )
+        if case["callerExecutionObserved"]:
+            prefix = "textWait" if case["context"].startswith("text-") else "diamond"
+            caller_preamble_pc = source_contexts[f"{prefix}PreamblePc"]
+            caller_range_pc = source_contexts[f"{prefix}RangePc"]
+            caller_call_pc = source_contexts[f"{prefix}CallPc"]
+            caller_store_pc = source_contexts[f"{prefix}StorePc"]
+            caller_post_store_pc = source_contexts[f"{prefix}PostStorePc"]
+            caller_vint_call_pc = source_contexts[f"{prefix}VIntCallPc"]
+            caller_vint_return_pc = source_contexts[f"{prefix}VIntReturnPc"]
+            caller = {
+                "call_pc": caller_call_pc,
+                "target_pc": function["baseEntryAddress"],
+                "return_pc": caller_store_pc,
+            }
+            probe_to_preamble = {
+                "call_pc": instrumentation["helperCallPc"],
+                "target_pc": caller_preamble_pc,
+                "return_pc": instrumentation["sourceCopyWritePc"],
+            }
+            source_wait = {
+                "call_pc": caller_vint_call_pc,
+                "target_pc": source_contexts["waitForVIntEntryPc"],
+                "return_pc": caller_vint_return_pc,
+            }
+            redirected_wait = {**source_wait, "return_pc": instrumentation["callerContinuationPc"]}
+            callbacks.update(
+                {
+                    "caller-preamble": _expectation(
+                        "caller-preamble",
+                        "caller-preamble",
+                        event_pc=caller_preamble_pc,
+                        **probe_to_preamble,
+                    ),
+                    "caller-range-load": _expectation(
+                        "caller-range-load",
+                        "caller-range-load",
+                        event_pc=caller_range_pc,
+                        **probe_to_preamble,
+                    ),
+                    "caller-rng-call": _expectation(
+                        "caller-rng-call", "caller-rng-call", event_pc=caller_call_pc, **caller
+                    ),
+                    "base-entry": _expectation(
+                        "base-entry",
+                        "caller-base-effective-target",
+                        event_pc=function["baseEntryAddress"],
+                        **caller,
+                    ),
+                    "base-return": _expectation(
+                        "base-return",
+                        "caller-base-return",
+                        event_pc=function["baseReturnAddress"],
+                        **caller,
+                    ),
+                    "caller-store": _expectation(
+                        "caller-store", "caller-seed-copy-store", event_pc=caller_store_pc, **caller
+                    ),
+                    "caller-post-store": _expectation(
+                        "caller-post-store",
+                        "caller-post-store-restore",
+                        event_pc=caller_post_store_pc,
+                        **caller,
+                    ),
+                    "caller-wait-call": _expectation(
+                        "caller-wait-call",
+                        "caller-wait-call",
+                        event_pc=caller_vint_call_pc,
+                        **source_wait,
+                    ),
+                    "wait-for-vint-target": _expectation(
+                        "wait-for-vint-target",
+                        "wait-for-vint-target",
+                        event_pc=source_contexts["waitForVIntEntryPc"],
+                        **source_wait,
+                    ),
+                    "wait-for-vint-rts": _expectation(
+                        "wait-for-vint-rts",
+                        "wait-for-vint-rts",
+                        event_pc=source_contexts["waitForVIntRtsPc"],
+                        **redirected_wait,
+                    ),
+                    "caller-continuation": _expectation(
+                        "caller-continuation",
+                        "caller-continuation",
+                        event_pc=instrumentation["callerContinuationPc"],
+                        **redirected_wait,
+                    ),
+                }
+            )
         cases.append(callbacks)
     return {"static": static, "cases": cases}
 
@@ -349,10 +563,24 @@ def callback_expectations(fixture: dict[str, Any]) -> dict[str, Any]:
     return expectations
 
 
-def model_case(case: dict[str, Any]) -> dict[str, Any]:
+def model_case(
+    case: dict[str, Any], source_contexts: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Independent arithmetic model for the compact behavioral matrix."""
     seed = case["randomSeedBefore"]
     seed_copy = case["seedCopyBefore"]
+    if case["callerExecutionObserved"]:
+        if source_contexts is None:
+            raise ValueError("caller-seam model requires source contexts")
+        prefix = "textWait" if case["context"].startswith("text-") else "diamond"
+        caller_range = source_contexts[f"{prefix}RangeWord"]
+        random_seed_after = (seed * 13 + 7) & 0xFFFF
+        caller_output = (random_seed_after * caller_range) // 0x10000
+        seed_copy = (caller_output << 8) | (seed_copy & 0xFF)
+        caller_store = seed_copy
+    else:
+        random_seed_after = seed
+        caller_store = None
     if case["service"] == "base":
         random_seed_after = (seed * 13 + 7) & 0xFFFF
         output = (random_seed_after * case["rangeWord"]) // 0x10000
@@ -383,9 +611,11 @@ def model_case(case: dict[str, Any]) -> dict[str, Any]:
         if range_byte in (0, 1) or range_byte >= 0x80:
             result = 0
             return {
-                "randomSeedAfter": seed,
+                "randomSeedAfter": random_seed_after,
                 "seedCopyAtHelperReturn": seed_copy,
-                "seedCopyAfterSourceCopy": (result << 8) | (seed_copy & 0xFF),
+                "seedCopyAfterSourceCopy": caller_store
+                if caller_store is not None
+                else (result << 8) | (seed_copy & 0xFF),
                 "resultLowByte": result,
                 "generatorCallCount": len(outputs),
                 "generatorOutputs": outputs,
@@ -395,9 +625,11 @@ def model_case(case: dict[str, Any]) -> dict[str, Any]:
         if output < range_byte:
             result = output
             return {
-                "randomSeedAfter": seed,
+                "randomSeedAfter": random_seed_after,
                 "seedCopyAtHelperReturn": seed_copy,
-                "seedCopyAfterSourceCopy": (result << 8) | (seed_copy & 0xFF),
+                "seedCopyAfterSourceCopy": caller_store
+                if caller_store is not None
+                else (result << 8) | (seed_copy & 0xFF),
                 "resultLowByte": result,
                 "generatorCallCount": len(outputs),
                 "generatorOutputs": outputs,
@@ -414,6 +646,7 @@ def _require_rom_bytes(rom: bytes, address: int, expected_hex: str, *, name: str
 
 def validate_static_contract(fixture: dict[str, Any], rom_path: Path) -> None:
     """Guard every observed entry/return/write seam against assigned source and ROM."""
+    validate_caller_source_contexts(fixture)
     const = CONST_SOURCE.read_text(encoding="utf-8")
     for symbol, value in (("RANDOM_SEED", 0xFFDEA4), ("RANDOM_SEED_COPY", 0xFFDFB0)):
         if not re.search(rf"^\s*{symbol}:\s+equ\s+\${value:06X}(?:\s*;.*)?$", const, re.M):
@@ -475,24 +708,62 @@ def validate_static_contract(fixture: dict[str, Any], rom_path: Path) -> None:
     if _direct_rng_calls(diamond) != ("jsr",):
         raise ValueError("diamond source direct GenerateRandomNumber inventory changed")
     _require_sequence(
-        text,
+        _bounded_noncomment_section(
+            text, "symbol_wait1:", "symbol_delay1:", name="text symbol_wait1"
+        ),
         (
-            "symbol_wait1:",
             "loc_659c:",
+            "movem.l d6-d7,-(sp)",
             "move.w #256,d6",
             "bsr.w generaterandomnumber",
             "move.b d7,((random_seed_copy-$1000000)).w",
+            "movem.l (sp)+,d6-d7",
             "bsr.w waitforvint",
         ),
         name="text symbol_wait1",
     )
-    _require_sequence(
+    text_range = _caller_seam_range(
+        text,
+        start="symbol_wait1:",
+        end="symbol_delay1:",
+        sequence=(
+            "loc_659c:",
+            "movem.l d6-d7,-(sp)",
+            "move.w #256,d6",
+            "bsr.w generaterandomnumber",
+            "move.b d7,((random_seed_copy-$1000000)).w",
+            "movem.l (sp)+,d6-d7",
+            "bsr.w waitforvint",
+        ),
+        name="text symbol_wait1",
+    )
+    diamond_range = _caller_seam_range(
         diamond,
-        (
-            "@loc_16:",
+        start="@loc_16:",
+        end="@loc_17:",
+        sequence=(
+            "movem.l d6-d7,-(sp)",
             "move.w #$100,d6",
             "jsr (generaterandomnumber).w",
             "move.b d7,((random_seed_copy-$1000000)).w",
+            "movem.l (sp)+,d6-d7",
+            "jsr (waitforvint).w",
+        ),
+        name="diamond menu",
+    )
+    if (text_range, diamond_range) != (
+        fixture["sourceContext"]["textWaitRangeWord"],
+        fixture["sourceContext"]["diamondRangeWord"],
+    ):
+        raise ValueError("caller RNG range source/fixture drift")
+    _require_sequence(
+        _bounded_noncomment_section(diamond, "@loc_16:", "@loc_17:", name="diamond menu"),
+        (
+            "movem.l d6-d7,-(sp)",
+            "move.w #$100,d6",
+            "jsr (generaterandomnumber).w",
+            "move.b d7,((random_seed_copy-$1000000)).w",
+            "movem.l (sp)+,d6-d7",
             "jsr (waitforvint).w",
         ),
         name="diamond menu",
@@ -552,13 +823,49 @@ def validate_static_contract(fixture: dict[str, Any], rom_path: Path) -> None:
         ),
         "thinking generator write": (function["thinkingGeneratorWriteAddress"], "1087"),
         "thinking generator return": (function["thinkingGeneratorReturnAddress"], "4E75"),
-        "text wait source call/write": (
-            fixture["sourceContexts"]["textWaitCallPc"],
-            "6100B05A11C7DFB0",
+        "text wait source call": (
+            fixture["sourceContext"]["textWaitCallPc"],
+            "6100B05A",
         ),
-        "diamond source call/write": (
-            fixture["sourceContexts"]["diamondCallPc"],
-            "4EB8160011C7DFB0",
+        "text wait source preamble through WaitForVInt call": (
+            fixture["sourceContext"]["textWaitPreamblePc"],
+            "48E703003C3C01006100B05A11C7DFB04CDF00C06100A93C",
+        ),
+        "text WaitForVInt source return": (
+            fixture["sourceContext"]["textWaitVIntReturnPc"],
+            "1238DE9B",
+        ),
+        "text wait source store": (
+            fixture["sourceContext"]["textWaitStorePc"],
+            "11C7DFB0",
+        ),
+        "text wait post-store": (
+            fixture["sourceContext"]["textWaitPostStorePc"],
+            "4CDF00C0",
+        ),
+        "diamond source call": (
+            fixture["sourceContext"]["diamondCallPc"],
+            "4EB81600",
+        ),
+        "diamond source preamble through WaitForVInt call": (
+            fixture["sourceContext"]["diamondPreamblePc"],
+            "48E703003C3C01004EB8160011C7DFB04CDF00C04EB80EEE",
+        ),
+        "diamond WaitForVInt source return": (
+            fixture["sourceContext"]["diamondVIntReturnPc"],
+            "6000FF24",
+        ),
+        "diamond source store": (
+            fixture["sourceContext"]["diamondStorePc"],
+            "11C7DFB0",
+        ),
+        "diamond post-store": (
+            fixture["sourceContext"]["diamondPostStorePc"],
+            "4CDF00C0",
+        ),
+        "WaitForVInt entry through RTS": (
+            fixture["sourceContext"]["waitForVIntEntryPc"],
+            "08F9000700FFDE9411FC0001DEF74A38DEF766FA4E75",
         ),
         "Battle Test setup host": (
             fixture["instrumentation"]["battleTestEntryPc"],
@@ -608,9 +915,13 @@ def _observer_config(fixture: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": fixture["id"],
         "core": fixture["emulator"]["core"],
-        "cases": fixture["cases"],
+        "cases": [
+            {key: value for key, value in case.items() if key != "expected"}
+            for case in fixture["cases"]
+        ],
         "function": fixture["function"],
         "ram": fixture["ram"],
+        "sourceContexts": fixture["sourceContext"],
         "instrumentation": fixture["instrumentation"],
         "callbackExpectations": callback_expectations(fixture),
         "observerFailureContract": OBSERVER_FAILURE_CONTRACT,
@@ -626,7 +937,7 @@ def _assert_observation(fixture: dict[str, Any], observed: dict[str, Any]) -> No
         raise ValueError("random-services observation identity/order mismatch")
     expected_records = []
     for case in fixture["cases"]:
-        expected = model_case(case)
+        expected = model_case(case, fixture["sourceContext"])
         if expected != case["expected"]:
             raise ValueError(f"random-services golden disagrees with model: {case['id']}")
         expected_records.append(
@@ -636,6 +947,18 @@ def _assert_observation(fixture: dict[str, Any], observed: dict[str, Any]) -> No
                 "instructionTargetObserved": True,
                 "effectiveTargetObserved": True,
                 "sourceCopyWriteSeen": True,
+                "callerExecutionObserved": case["callerExecutionObserved"],
+                "callerPreambleSeen": case["callerExecutionObserved"],
+                "callerRangeSeen": case["callerExecutionObserved"],
+                "callerRngCallSeen": case["callerExecutionObserved"],
+                "callerCallSeen": case["callerExecutionObserved"],
+                "callerStoreSeen": case["callerExecutionObserved"],
+                "callerRestoreSeen": case["callerExecutionObserved"],
+                "callerWaitCallSeen": case["callerExecutionObserved"],
+                "callerWaitTargetSeen": case["callerExecutionObserved"],
+                "callerWaitRtsSeen": case["callerExecutionObserved"],
+                "callerContinuationSeen": case["callerExecutionObserved"],
+                "callerHelperReturnRedirectSeen": case["callerExecutionObserved"],
             }
         )
     if observed.get("records") != expected_records:
