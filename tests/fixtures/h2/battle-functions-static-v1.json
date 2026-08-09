@@ -21,6 +21,76 @@
     "checkGoldChestAddress": 151804
   },
   "expected": {
+    "indexedRecordIds": [
+      "battle.functions.ai-target-visual",
+      "battle.functions.angel-wing",
+      "battle.functions.battlefield-menu",
+      "battle.functions.check-gold-chest",
+      "battle.functions.choose-target",
+      "battle.functions.control-cursor",
+      "battle.functions.equip-in-battle",
+      "battle.functions.execute-turn",
+      "battle.functions.load-battle",
+      "battle.functions.move-sfx",
+      "battle.functions.player-input",
+      "battle.functions.pulsating-grid",
+      "battle.functions.relative-move-table",
+      "battle.functions.set-cursor-target",
+      "battle.functions.update-targets",
+      "map.camera-control.destination-service"
+    ],
+    "indexedSourcePaths": [
+      "code/gameflow/battle/battlefunctions/battlefunctions_0.asm",
+      "code/gameflow/battle/battlefunctions/battlefunctions_1.asm",
+      "code/gameflow/battle/battlefunctions/battlefunctions_2.asm",
+      "code/gameflow/battle/battlefunctions/battlefunctions_3.asm",
+      "code/gameflow/battle/battlefunctions/executeindividualturn.asm",
+      "code/gameflow/battle/battlefunctions/loadBattle.asm",
+      "code/gameflow/battle/battlefunctions/setmovesfx.asm"
+    ],
+    "indexedRecordsBySourcePath": [
+      {
+        "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_0.asm",
+        "recordIds": [
+          "battle.functions.choose-target",
+          "battle.functions.control-cursor",
+          "battle.functions.pulsating-grid",
+          "battle.functions.set-cursor-target",
+          "map.camera-control.destination-service"
+        ]
+      },
+      {
+        "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_1.asm",
+        "recordIds": ["battle.functions.angel-wing"]
+      },
+      {
+        "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_2.asm",
+        "recordIds": [
+          "battle.functions.ai-target-visual",
+          "battle.functions.battlefield-menu",
+          "battle.functions.check-gold-chest",
+          "battle.functions.equip-in-battle",
+          "battle.functions.player-input",
+          "battle.functions.update-targets"
+        ]
+      },
+      {
+        "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_3.asm",
+        "recordIds": ["battle.functions.relative-move-table"]
+      },
+      {
+        "sourcePath": "code/gameflow/battle/battlefunctions/executeindividualturn.asm",
+        "recordIds": ["battle.functions.execute-turn"]
+      },
+      {
+        "sourcePath": "code/gameflow/battle/battlefunctions/loadBattle.asm",
+        "recordIds": ["battle.functions.load-battle"]
+      },
+      {
+        "sourcePath": "code/gameflow/battle/battlefunctions/setmovesfx.asm",
+        "recordIds": ["battle.functions.move-sfx"]
+      }
+    ],
     "representativeSymbols": {
       "battlefunctions_0.asm": "CreatePulsatingBlocksForGrid",
       "battlefunctions_1.asm": "ExecuteBattleaction_AngelWing",

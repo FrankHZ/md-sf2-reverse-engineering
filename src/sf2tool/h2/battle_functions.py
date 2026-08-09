@@ -68,6 +68,122 @@ REPRESENTATIVE_SYMBOLS = {
 }
 
 
+def _index_records_for_source_root(source_paths: set[str]) -> dict[str, Any]:
+    """Join every research record whose source belongs to this inventory.
+
+    The source path is the sole ownership selector.  A record can therefore
+    remain owned by another subsystem's evidence and still belong here when it
+    names one of the seven discovered battle-functions sources.
+    """
+    records_by_source_path: dict[str, list[str]] = {}
+    for record in load_json(RESEARCH_INDEX)["records"]:
+        source_path = record["sourcePath"]
+        path = Path(source_path)
+        if not path.is_relative_to(SOURCE_ROOT):
+            continue
+        if ".." in path.parts or source_path != path.as_posix():
+            raise ValueError(f"invalid battle-functions indexed source path: {source_path}")
+        if source_path not in source_paths:
+            raise ValueError(
+                "battle-functions indexed source is absent from the discovered root "
+                f"inventory: {source_path}"
+            )
+        records_by_source_path.setdefault(source_path, []).append(record["id"])
+
+    missing_paths = sorted(source_paths - set(records_by_source_path))
+    if missing_paths:
+        raise ValueError(
+            "battle-functions discovered source lacks a research-index record: "
+            + ", ".join(missing_paths)
+        )
+    indexed_records_by_source_path = [
+        {"sourcePath": source_path, "recordIds": sorted(record_ids)}
+        for source_path, record_ids in sorted(records_by_source_path.items())
+    ]
+    indexed_record_ids = [
+        record_id
+        for row in indexed_records_by_source_path
+        for record_id in row["recordIds"]
+    ]
+    if len(indexed_record_ids) != len(set(indexed_record_ids)):
+        raise ValueError("battle-functions research-index duplicate record ID")
+    return {
+        "indexedRecordIds": sorted(indexed_record_ids),
+        "indexedSourcePaths": [
+            row["sourcePath"] for row in indexed_records_by_source_path
+        ],
+        "indexedRecordsBySourcePath": indexed_records_by_source_path,
+    }
+
+
+def _verify_indexed_record_join(
+    output: dict[str, Any],
+    expected: dict[str, Any],
+    discovered_source_paths: list[str],
+) -> None:
+    """Reject schema-valid source-membership relation drift before writing."""
+    relation = output["indexedRecordsBySourcePath"]
+    relation_source_paths = [row["sourcePath"] for row in relation]
+    relation_record_ids = [
+        record_id for row in relation for record_id in row["recordIds"]
+    ]
+    if len(relation_source_paths) != len(set(relation_source_paths)):
+        raise ValueError("battle-functions indexed relation duplicate source path")
+    if len(relation_record_ids) != len(set(relation_record_ids)):
+        raise ValueError("battle-functions indexed relation duplicate record ID")
+    if set(relation_source_paths) != set(discovered_source_paths):
+        raise ValueError("battle-functions indexed relation source inventory drift")
+    if relation_source_paths != sorted(relation_source_paths):
+        raise ValueError("battle-functions indexed relation source order drift")
+    if any(row["recordIds"] != sorted(row["recordIds"]) for row in relation):
+        raise ValueError("battle-functions indexed relation record order drift")
+
+    indexed_record_ids = output["indexedRecordIds"]
+    indexed_source_paths = output["indexedSourcePaths"]
+    if indexed_record_ids != sorted(relation_record_ids):
+        raise ValueError("battle-functions indexedRecordIds relation drift")
+    if indexed_source_paths != relation_source_paths:
+        raise ValueError("battle-functions indexedSourcePaths relation order drift")
+    if output["summary"]["indexedRecordCount"] != len(indexed_record_ids) or output[
+        "summary"
+    ]["indexedRecordCount"] != len(relation_record_ids):
+        raise ValueError("battle-functions summary indexedRecordCount relation drift")
+    if output["summary"]["indexedFileCount"] != len(indexed_source_paths) or output[
+        "summary"
+    ]["indexedFileCount"] != len(relation_source_paths):
+        raise ValueError("battle-functions summary indexedFileCount relation drift")
+
+    file_paths = [row["path"] for row in output["files"]]
+    if len(file_paths) != len(set(file_paths)):
+        raise ValueError("battle-functions source inventory duplicate path")
+    if file_paths != discovered_source_paths:
+        raise ValueError("battle-functions source inventory drift")
+    if indexed_source_paths != discovered_source_paths:
+        raise ValueError("battle-functions indexedSourcePaths source inventory drift")
+    for field in (
+        "indexedRecordIds",
+        "indexedSourcePaths",
+        "indexedRecordsBySourcePath",
+    ):
+        if output[field] != expected[field]:
+            raise ValueError(f"battle-functions {field} source-membership drift")
+
+
+def _verify_fixture_provenance(fixture: dict[str, Any], output: dict[str, Any]) -> None:
+    """Derive fixture provenance from the independently pinned manifests."""
+    toolchain = load_json(TOOLCHAIN)["sf2disasm"]
+    output_upstream = output["upstream"]
+    if (
+        fixture["upstreamCommit"] != toolchain["commit"]
+        or fixture["upstreamCommit"] != output_upstream["commit"]
+    ):
+        raise ValueError("battle-functions fixture upstream provenance drift")
+    if output_upstream["repository"] != toolchain["repository"]:
+        raise ValueError("battle-functions output upstream provenance drift")
+    if fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]:
+        raise ValueError("battle-functions fixture ROM provenance drift")
+
+
 def _function_segments(source: str, name: str) -> list[dict[str, Any]]:
     main = re.search(
         rf"^{re.escape(name)}:\s*\n(?P<body>.*?)"
@@ -544,13 +660,15 @@ def build_battle_functions_inventory(upstream_path: Path) -> dict[str, Any]:
     files = [_parse_source_file(path, path.relative_to(disasm).as_posix()) for path in paths]
     if {Path(row["path"]).name for row in files} != set(REPRESENTATIVE_SYMBOLS):
         raise ValueError("battle-functions source file set drift")
+    source_paths = [row["path"] for row in files]
+    if len(source_paths) != len(set(source_paths)) or source_paths != sorted(source_paths):
+        raise ValueError("battle-functions discovered source inventory drift")
     all_labels = {label for row in files for label in row["globalLabels"]}
     direct_calls: Counter[str] = Counter()
     for row in files:
         for call in row["directCalls"]:
             direct_calls[call["target"]] += call["siteCount"]
-    index = load_json(RESEARCH_INDEX)
-    records = [r for r in index["records"] if Path(r["sourcePath"]).parent == SOURCE_ROOT]
+    indexed_records = _index_records_for_source_root(set(source_paths))
     summary = {
         "fileCount": len(files),
         "sourceLineCount": sum(row["sourceLineCount"] for row in files),
@@ -562,8 +680,8 @@ def build_battle_functions_inventory(upstream_path: Path) -> dict[str, Any]:
         "uniqueDirectTargetCount": len(direct_calls),
         "internalDirectTargetCount": sum(target in all_labels for target in direct_calls),
         "externalDirectTargetCount": sum(target not in all_labels for target in direct_calls),
-        "indexedRecordCount": len(records),
-        "indexedFileCount": len({r["sourcePath"] for r in records}),
+        "indexedRecordCount": len(indexed_records["indexedRecordIds"]),
+        "indexedFileCount": len(indexed_records["indexedSourcePaths"]),
         "playerControlFunctionCount": player_control["summary"]["functionCount"],
         "playerControlStatementCount": player_control["summary"]["statementCount"],
         "playerControlBranchSiteCount": player_control["summary"]["branchSiteCount"],
@@ -576,8 +694,7 @@ def build_battle_functions_inventory(upstream_path: Path) -> dict[str, Any]:
         "scope": SOURCE_ROOT.as_posix(),
         "summary": summary,
         "function": function_addresses,
-        "indexedRecordIds": sorted(r["id"] for r in records),
-        "indexedSourcePaths": sorted({r["sourcePath"] for r in records}),
+        **indexed_records,
         "internalDirectCallTargets": sorted(t for t in direct_calls if t in all_labels),
         "externalDirectCallTargets": sorted(t for t in direct_calls if t not in all_labels),
         "functionFacts": _build_function_facts(disasm),
@@ -594,13 +711,27 @@ def verify_battle_functions_inventory(
     manifest = load_json(MANIFEST)
     output = build_battle_functions_inventory(upstream_path)
     validate_json(output, SCHEMA, owner="battle-functions static inventory")
-    if (
-        fixture["upstreamCommit"] != output["upstream"]["commit"]
-        or fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]
-    ):
-        raise ValueError("battle-functions fixture provenance drift")
+    disasm, _, _ = _resolve_upstream(upstream_path)
+    discovered_source_paths = sorted(
+        path.relative_to(disasm).as_posix()
+        for path in (disasm / SOURCE_ROOT).glob("*.asm")
+    )
+    expected_indexed_records = _index_records_for_source_root(
+        set(discovered_source_paths)
+    )
+    _verify_indexed_record_join(
+        output, expected_indexed_records, discovered_source_paths
+    )
+    _verify_fixture_provenance(fixture, output)
     if fixture["function"] != output["function"]:
         raise ValueError("battle-functions function address drift")
+    for field in (
+        "indexedRecordIds",
+        "indexedSourcePaths",
+        "indexedRecordsBySourcePath",
+    ):
+        if output[field] != fixture["expected"][field]:
+            raise ValueError(f"battle-functions {field} drift")
     if output["summary"] != manifest["summary"]:
         raise ValueError("battle-functions static summary drift")
     by_name = {Path(row["path"]).name: row for row in output["files"]}
