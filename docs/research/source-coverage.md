@@ -161,9 +161,30 @@ The current evidence is deep but narrow:
   `txt208` boundary for full inventory, original `@AddItem` boundary for tool and equippable non-tool, and
   `txt167` boundary for non-equippable; each uses one selection attempt. Original helper/prompt execution,
   full-inventory retry/abort, non-equippable prompt accept/retry, `@Done`, presentation, and post-`@AddItem`
-  branches remain **Unknown**; its case and transition 180-frame watchdogs are harness protocol, not timing
+  branches outside the bounded v5 cohort remain **Unknown**; its case and transition 180-frame watchdogs are harness protocol, not timing
   evidence. One overlapping member-list alternate
   remains excluded.
+  The v5 replacement fixture keeps the file denominator at 84 and retains the exact 16-record v4 projection
+  (`7F84BB2C8A1E7EF4079C527D672B9A33B60908B0A50A77C8880A632DA5DE5CC2`) while adding a confirmed,
+  five-case post-`@AddItem` optional-equip cohort. The bounded source/H1/ROM/table-owner join covers
+  `0x21C1C..0x21CD4`, the prompt decision, weapon/ring split, equipped-item/unequip/held-item/equip helpers,
+  and the three neutral presentation boundaries. Its complete 32-choice/26-unique Mithril domain is all
+  `ITEMTYPE_WEAPON`, with zero ring and cursed rows, so ring and newly-equipped-cursed paths remain static
+  branches outside this output domain rather than claimed runtime cases. One BizHawk launch ran 21 total
+  cases (the retained 16 plus five): carry-clear reached do-not-equip without a prompt; controlled decline
+  reached do-not-equip; accepted no-equipped-weapon equipped the new item; accepted uncursed replacement
+  unequipped then equipped it; and accepted cursed-Dark-Sword replacement reached current-cursed with no
+  new equip, null `equipSlot`/`equipResult`, and status effects `0 → 4`. At shared RTS `0x8A24`, the last
+  three cases record, respectively, equip-only, unequip→equip, and unequip-only effective-return roles.
+  The session-copy uses exactly 12 non-overlapping spans: seven retained six-byte v4 spans, one four-byte
+  `0x21C20` `BRA.W +2` skip (word displacement relative to the extension-word PC) to the preserved prompt
+  JSR, one six-byte prompt shim, and three six-byte terminal JMPs at `0x21C68`/`0x21CC8`/`0x21CD0`. Source,
+  H1, ROM, width, target, displacement, overlap, canonical-immutability, generated-stub readback,
+  role/pending-state, and terminal-failure guards passed; all spans read back, the canonical ROM remained
+  immutable, the session copy was deleted, callbacks cleared to zero, and scoped restoration passed.
+  Controlled prompt/helper inputs remain harness inputs, not original UI behavior. UI/prompt rendering/input,
+  text/wait/audio, persistence, caller continuation, natural menu reachability, ring output, and
+  newly-equipped-cursed output remain **Unknown**.
   Technical services now additionally models the complete seven-entry SRAM save surface: two-slot
   layout, interleaved copying, checksum/flag transitions, and its caller inventory. One fourteen-case,
   single-launch direct-service H3 matrix validates its in-process initialization, valid/invalid slot,

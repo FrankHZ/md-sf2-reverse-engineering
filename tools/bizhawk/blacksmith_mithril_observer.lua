@@ -5,18 +5,20 @@
 -- service stubs return through original source branches and stop before any
 -- excluded presentation body.
 local config=assert(dofile(assert(os.getenv("SF2_H3_CONFIG"),"SF2_H3_CONFIG is not set")))
-local f,t,u,p,ram,c=config["function"],config.transaction,config.fulfillment,config.precommit,config.ram,config.constants
-local probe_base,helper_base,helper_stride,transaction_base,transaction_stride,fulfillment_base,fulfillment_stride,precommit_base,precommit_stride=0xFF6800,0xFF6820,24,0xFF6900,32,0xFF6960,32,0xFF6B00,32
+local f,t,u,p,e,ram,c=config["function"],config.transaction,config.fulfillment,config.precommit,config.equipDecision,config.ram,config.constants
+local probe_base,helper_base,helper_stride,transaction_base,transaction_stride,fulfillment_base,fulfillment_stride,precommit_base,precommit_stride,equip_base,equip_stride=0xFF6800,0xFF6820,24,0xFF6900,32,0xFF6960,32,0xFF6B00,32,0xFF6C00,32
 local frame_base,stack_top=0xFF6A00,0xFFFF00
-local callbacks,event_ids,helper_records,transaction_records,fulfillment_records,precommit_records={}, {}, {}, {}, {}, {}
+local callbacks,event_ids,helper_records,transaction_records,fulfillment_records,precommit_records,equip_records={}, {}, {}, {}, {}, {}, {}
 local observer_failed,session_cleaned,bootstrapped=false,false,false
-local mode,helper_index,transaction_index,fulfillment_index,precommit_index="none",0,0,0,0
-local helper_active,first_case_milestone,transaction_milestone,fulfillment_milestone,precommit_milestone=false,false,false,false,false
+local mode,helper_index,transaction_index,fulfillment_index,precommit_index,equip_index="none",0,0,0,0,0
+local helper_active,first_case_milestone,transaction_milestone,fulfillment_milestone,precommit_milestone,equip_milestone=false,false,false,false,false,false
 local original_gold,original_seed,original_orders,original_flag,original_records,original_dialogue_name,original_selected_item,original_submenu_action=nil,nil,nil,nil,nil,nil,nil,nil
 local precommit_state={serviceStub=0xFF6D00,terminalStub=0xFF6D20,serviceReadbacks={},terminalReadbacks={},generatedServiceStubWrites=false,generatedResultStubWrites=false}
 local pending_rng,row_index,selected_item,function_return_seen,order_write_seen=nil,nil,nil,false,false
 local tx={active=false,decreaseGoldReturnSeen=false,pendingOrdersIncrementSeen=false,dropItemReturnSeen=false,pickReturnSeen=false,clearFlagReturnSeen=false,prePresentationReturnAddress=nil,record=nil,rngCalls=nil,rowIndex=nil,selectedItem=nil,orderWriteSeen=false,chronology=nil}
 local fx={active=false,addItemReturnSeen=false,orderReadSeen=false,orderClearedSeen=false,fulfilledOrdersIncrementSeen=false,equippabilityCarrySet=nil,originalReturnAddress=nil,record=nil,chronology=nil}
+local ed={active=false,pending=nil,frameCount=0,frameBudget=180,transition={active=false,frameCount=0,frameBudget=180},record=nil,chronology=nil,expectedTerminal="none",terminal="none",completedIndex=0,completedTerminal="none",completedExpectedTerminal="none"}
+local edi={promptCallSiteReadback=false,promptPresentationSkipReadback=false,generatedPromptStubWriteReadback=false,terminalBoundarySitesReadback={},generatedTerminalStubWriteReadback=false,instrumentedRom=config.instrumentedRom,instrumentedRomReadbacks={}}
 local pcx={active=false,attemptIndex=0,memberListCallCount=0,heldItemsCallCount=0,equipmentTypeCallCount=0,equippabilityCallCount=0,pendingService=nil,selectedMember=nil,terminal="none",expectedTerminal="none",frameCount=0,frameBudget=0,record=nil,chronology=nil,transition={active=false,frameCount=0,frameBudget=config.precommitTransitionFrameBudget},cleanup={active=false,case=nil,addItemReturnSeen=false,orderReadSeen=false,orderClearedSeen=false,fulfilledOrdersIncrementSeen=false,equippabilityCarrySet=nil}}
 local current_phase,current_role,current_pc,current_expectation="registration","registration",nil,nil
 local write_probe,expect
@@ -26,10 +28,11 @@ local function bool(value) return value and "true" or "false" end
 local function nullable(value) return value==nil and "null" or tostring(value) end
 local function json_string(value) return string.format("%q",value) end
 local function word(value) return value&0xFFFF end
-local function current_helper() return config.cases[helper_index] end
-local function current_transaction() return config.transactionCases[transaction_index] end
-local function current_fulfillment() return config.fulfillmentCases[fulfillment_index] end
-local function current_precommit() return config.precommitCases[precommit_index] end
+function current_helper() return config.cases[helper_index] end
+function current_transaction() return config.transactionCases[transaction_index] end
+function current_fulfillment() return config.fulfillmentCases[fulfillment_index] end
+function current_precommit() return config.precommitCases[precommit_index] end
+function current_equip() return config.equipDecisionCases[equip_index] end
 function pcx.cleanup_case()
   local case=assert(current_precommit(),"precommit cleanup case table exhausted")
   for _,candidate in ipairs(config.fulfillmentCases) do
@@ -37,10 +40,11 @@ function pcx.cleanup_case()
   end
   error("precommit cleanup fulfillment identity drift")
 end
-local function helper_pc(index) return helper_base+(index-1)*helper_stride end
-local function transaction_pc(index) return transaction_base+(index-1)*transaction_stride end
-local function fulfillment_pc(index) return fulfillment_base+(index-1)*fulfillment_stride end
-local function precommit_pc(index) return precommit_base+(index-1)*precommit_stride end
+function helper_pc(index) return helper_base+(index-1)*helper_stride end
+function transaction_pc(index) return transaction_base+(index-1)*transaction_stride end
+function fulfillment_pc(index) return fulfillment_base+(index-1)*fulfillment_stride end
+function precommit_pc(index) return precommit_base+(index-1)*precommit_stride end
+function equip_pc(index) return equip_base+(index-1)*equip_stride end
 local function frame_address() return frame_base-t.frameOffsetsBytes.clientClass end
 local function fulfillment_frame_address() return frame_base-u.frameOffsetsBytes.clientClass end
 local function read_u8(address) return memory.read_u8(address,"M68K BUS") end
@@ -86,7 +90,7 @@ local function equal_arrays(left,right)
 end
 local function unregister_events() for index=#event_ids,1,-1 do event.unregisterbyid(event_ids[index]);event_ids[index]=nil end end
 local function cleanup_session() if session_cleaned then return end;session_cleaned=true;unregister_events() end
-local function roles_json(address)
+function roles_json(address)
   if address==nil then return "[]" end
   local roles={};for _,entry in ipairs(callbacks[address] or {}) do roles[#roles+1]=json_string(entry.role) end
   return "["..table.concat(roles,",").."]"
@@ -108,14 +112,30 @@ end
 local function precommit_state_json()
   return "{\"active\":"..bool(pcx.active)..",\"attemptIndex\":"..pcx.attemptIndex..",\"equipmentTypeCallCount\":"..pcx.equipmentTypeCallCount..",\"equippabilityCallCount\":"..pcx.equippabilityCallCount..",\"expectedTerminal\":"..json_string(pcx.expectedTerminal)..",\"frameBudget\":"..pcx.frameBudget..",\"frameCount\":"..pcx.frameCount..",\"heldItemsCallCount\":"..pcx.heldItemsCallCount..",\"memberListCallCount\":"..pcx.memberListCallCount..",\"mode\":"..json_string(mode)..",\"pendingService\":"..precommit_service_json()..",\"selectedMember\":"..nullable(pcx.selectedMember)..",\"terminal\":"..json_string(pcx.terminal).."}"
 end
-local function pending_callback_state()
+function equip_decision_state_json()
+  local pending="null";if ed.pending~=nil then pending="{\"callPc\":"..nullable(ed.pending.callPc)..",\"returnPc\":"..nullable(ed.pending.returnPc)..",\"role\":"..json_string(ed.pending.role)..",\"targetPc\":"..nullable(ed.pending.targetPc).."}" end
+  return "{\"active\":"..bool(ed.active)..",\"expectedTerminal\":"..json_string(ed.expectedTerminal or "none")..",\"frameBudget\":"..ed.frameBudget..",\"frameCount\":"..ed.frameCount..",\"mode\":"..json_string(mode)..",\"pending\":"..pending..",\"terminal\":"..json_string(ed.terminal or "none")..",\"transitionActive\":"..bool(ed.transition.active)..",\"transitionFrameBudget\":"..ed.transition.frameBudget..",\"transitionFrameCount\":"..ed.transition.frameCount.."}"
+end
+function pending_callback_state()
   local case_for_state=0
-  if mode=="helper" or current_role=="case-entry" then case_for_state=helper_index elseif mode=="transaction" or current_role=="transaction-case-entry" then case_for_state=transaction_index elseif mode=="fulfillment" or current_role=="fulfillment-case-entry" then case_for_state=fulfillment_index elseif mode=="precommit" or mode=="precommit-cleanup" or current_role=="precommit-case-entry" or pcx.transition.active then case_for_state=precommit_index end
-  return "{\"active\":"..bool(helper_active or tx.active or fx.active or pcx.active or pcx.cleanup.active or pcx.transition.active)..",\"caseIndex\":"..case_for_state..",\"functionReturnSeen\":"..bool(function_return_seen)..",\"orderWriteSeen\":"..bool(order_write_seen or tx.orderWriteSeen)..",\"pendingRngCall\":"..pending_rng_json()..",\"rolesAtPc\":"..roles_json(current_pc)..",\"transaction\":"..transaction_state_json()..",\"fulfillment\":"..fulfillment_state_json()..",\"precommit\":"..precommit_state_json().."}"
+  if mode=="helper" or current_role=="case-entry" then case_for_state=helper_index elseif mode=="transaction" or current_role=="transaction-case-entry" then case_for_state=transaction_index elseif mode=="fulfillment" or current_role=="fulfillment-case-entry" then case_for_state=fulfillment_index elseif mode=="precommit" or mode=="precommit-cleanup" or current_role=="precommit-case-entry" or pcx.transition.active then case_for_state=precommit_index elseif mode=="equip-decision" or current_role=="equip-decision-case-entry" or current_role=="equip-decision-transition" or current_role=="equip-decision-transition-timeout" or ed.transition.active then case_for_state=equip_index end
+  return "{\"active\":"..bool(helper_active or tx.active or fx.active or pcx.active or pcx.cleanup.active or pcx.transition.active or ed.active or ed.transition.active)..",\"caseIndex\":"..case_for_state..",\"functionReturnSeen\":"..bool(function_return_seen)..",\"orderWriteSeen\":"..bool(order_write_seen or tx.orderWriteSeen)..",\"pendingRngCall\":"..pending_rng_json()..",\"rolesAtPc\":"..roles_json(current_pc)..",\"transaction\":"..transaction_state_json()..",\"fulfillment\":"..fulfillment_state_json()..",\"precommit\":"..precommit_state_json()..",\"equipDecision\":"..equip_decision_state_json().."}"
 end
 local function hex_bytes(value)
-  expect(type(value)=="string" and #value%2==0 and value:match("^[0-9A-F]+$")~=nil,"precommit shim hexadecimal contract drift")
+  expect(type(value)=="string" and #value%2==0 and value:match("^[0-9A-F]+$")~=nil,"instrumented ROM hexadecimal contract drift")
   local bytes={};for index=1,#value,2 do bytes[#bytes+1]=tonumber(value:sub(index,index+1),16) end;return bytes
+end
+edi.sessionSpanRoles={"member-list","held-items","equipment-type","equippability","recipient-cancel-terminal-boundary-shim","full-inventory-terminal-boundary-shim","non-equippable-terminal-boundary-shim","equip-decision-prompt","equip-decision-prompt-presentation-skip","current-cursed-terminal-boundary-shim","noncursed-terminal-boundary-shim","do-not-equip-terminal-boundary-shim"}
+local function validate_instrumented_rom()
+  local ir=edi.instrumentedRom;expect(type(ir)=="table" and ir.spanCount==12 and type(ir.spans)=="table" and #ir.spans==ir.spanCount,"instrumented ROM runtime span count drift")
+  local ranges={}
+  for index,role in ipairs(edi.sessionSpanRoles) do
+    local span=ir.spans[index];expect(type(span)=="table" and span.role==role and type(span.type)=="string" and type(span.address)=="number" and type(span.widthBytes)=="number","instrumented ROM runtime span identity drift: "..role)
+    local original,patched=hex_bytes(span.originalHex),hex_bytes(span.patchedHex);expect(#original==span.widthBytes and #patched==span.widthBytes and (span.widthBytes==6 or (role=="equip-decision-prompt-presentation-skip" and span.widthBytes==4)),"instrumented ROM runtime span width drift: "..role)
+    for _,prior in ipairs(ranges) do expect(span.address+span.widthBytes<=prior.address or prior.address+prior.width<=span.address,"instrumented ROM runtime span overlap drift: "..role) end;ranges[#ranges+1]={address=span.address,width=span.widthBytes}
+    expect(equal_arrays(read_bytes(span.address,span.widthBytes),patched),"instrumented ROM runtime readback drift: "..role);edi.instrumentedRomReadbacks[role]=true
+  end
+  expect(edi.instrumentedRomReadbacks["equip-decision-prompt-presentation-skip"],"instrumented ROM prompt skip readback missing");edi.promptPresentationSkipReadback=true
 end
 local function precommit_shim(role,spec)
   for _,shim in ipairs(p.serviceShims) do
@@ -179,7 +199,7 @@ local function fail_callback(message)
   if observer_failed then return end
   observer_failed=true
   local case=nil
-  if mode=="helper" or current_role=="case-entry" then case=current_helper() elseif mode=="transaction" or current_role=="transaction-case-entry" then case=current_transaction() elseif mode=="fulfillment" or current_role=="fulfillment-case-entry" then case=current_fulfillment() elseif mode=="precommit" or mode=="precommit-cleanup" or current_role=="precommit-case-entry" or pcx.transition.active then case=current_precommit() end
+  if mode=="helper" or current_role=="case-entry" then case=current_helper() elseif mode=="transaction" or current_role=="transaction-case-entry" then case=current_transaction() elseif mode=="fulfillment" or current_role=="fulfillment-case-entry" then case=current_fulfillment() elseif mode=="precommit" or mode=="precommit-cleanup" or current_role=="precommit-case-entry" or pcx.transition.active then case=current_precommit() elseif mode=="equip-decision" or current_role=="equip-decision-case-entry" or ed.transition.active then case=current_equip() end
   local restored,restore_message=pcall(restore_all)
   local expected=current_expectation or {};local actual=current_role=="registration" and nil or emu.getregister("M68K PC")
   local detail=tostring(message);if not restored then detail=detail.."; restoration error: "..tostring(restore_message) elseif restore_message~=true then detail=detail.."; restoration readback drift" end
@@ -197,7 +217,7 @@ local function set_expectation(phase,role,event_pc,call_pc,target_pc,return_pc)
 end
 local function snapshot_exact_boundary()
   original_gold=memory.read_u32_be(ram.currentGoldAddress,"M68K BUS");original_seed=memory.read_u16_be(ram.randomSeedAddress,"M68K BUS");original_orders=read_orders();original_flag=read_u8(ram.flag80OwningByteAddress);original_dialogue_name=memory.read_u16_be(ram.dialogueNameIndex1Address,"M68K BUS");original_selected_item=memory.read_u16_be(ram.selectedItemIndexAddress,"M68K BUS");original_submenu_action=read_u8(ram.currentItemSubmenuActionAddress);original_records={}
-  for _,cohort in ipairs({config.transactionCases,config.fulfillmentCases}) do
+  for _,cohort in ipairs({config.transactionCases,config.fulfillmentCases,config.equipDecisionCases}) do
     for _,case in ipairs(cohort) do
       if original_records[case.clientMember]==nil then original_records[case.clientMember]=read_record(case.clientMember) end
     end
@@ -273,23 +293,30 @@ end
 local function precommit_record_json(record)
   return "{\"id\":"..json_string(record.id)..",\"itemIndex\":"..record.itemIndex..",\"attemptCount\":"..record.attemptCount..",\"selectedMember\":"..nullable(record.selectedMember)..",\"ordersBefore\":"..array_json(record.ordersBefore)..",\"ordersAfter\":"..array_json(record.ordersAfter)..",\"fulfilledOrdersBefore\":"..record.fulfilledOrdersBefore..",\"fulfilledOrdersAfter\":"..record.fulfilledOrdersAfter..",\"terminal\":"..json_string(record.terminal)..",\"terminalPc\":"..record.terminalPc..",\"addItemMutationObserved\":false,\"orderMutationObserved\":false,\"fulfilledOrdersMutationObserved\":false,\"callbackChronology\":"..chronology_json(record.callbackChronology).."}"
 end
+local function equip_record_json(record)
+  return "{\"id\":"..json_string(record.id)..",\"clientMember\":"..record.clientMember..",\"recipientClass\":"..record.recipientClass..",\"itemIndex\":"..record.itemIndex..",\"clientItemWordsBefore\":"..array_json(record.clientItemWordsBefore)..",\"clientItemWordsAfter\":"..array_json(record.clientItemWordsAfter)..",\"itemWriteIndex\":"..record.itemWriteIndex..",\"ordersBefore\":"..array_json(record.ordersBefore)..",\"ordersAfter\":"..array_json(record.ordersAfter)..",\"ordersCounter\":"..record.ordersCounter..",\"selectedOrderIndex\":"..record.selectedOrderIndex..",\"fulfilledOrdersBefore\":"..record.fulfilledOrdersBefore..",\"fulfilledOrdersAfter\":"..record.fulfilledOrdersAfter..",\"equippableCarrySet\":"..bool(record.equippableCarrySet)..",\"promptResult\":"..nullable(record.promptResult)..",\"promptShown\":"..bool(record.promptShown)..",\"equipmentType\":"..nullable(record.equipmentType)..",\"existingEquippedSlot\":"..nullable(record.existingEquippedSlot)..",\"existingEquippedItemIndex\":"..nullable(record.existingEquippedItemIndex)..",\"unequipResult\":"..nullable(record.unequipResult)..",\"equipSlot\":"..nullable(record.equipSlot)..",\"equipResult\":"..nullable(record.equipResult)..",\"statusEffectsBefore\":"..record.statusEffectsBefore..",\"statusEffectsAfter\":"..record.statusEffectsAfter..",\"terminal\":"..json_string(record.terminal)..",\"terminalPc\":"..record.terminalPc..",\"callbackChronology\":"..chronology_json(record.callbackChronology).."}"
+end
 local function precommit_readback_roles_json(rows,readbacks)
   local roles={};for _,row in ipairs(rows) do expect(readbacks[row.role],"precommit instrumentation readback missing: "..row.role);roles[#roles+1]=json_string(row.role) end
   return "["..table.concat(roles,",").."]"
 end
-local function write_output()
-  local helpers,transactions,fulfillments,precommits,helper_order,transaction_order,fulfillment_order,precommit_order={}, {}, {}, {}, {}, {}, {}, {}
+function write_output()
+  local helpers,transactions,fulfillments,precommits,equips,helper_order,transaction_order,fulfillment_order,precommit_order,equip_order={}, {}, {}, {}, {}, {}, {}, {}, {}, {}
   for _,record in ipairs(helper_records) do helpers[#helpers+1]=helper_record_json(record) end
   for _,record in ipairs(transaction_records) do transactions[#transactions+1]=transaction_record_json(record) end
   for _,record in ipairs(fulfillment_records) do fulfillments[#fulfillments+1]=fulfillment_record_json(record) end
   for _,record in ipairs(precommit_records) do precommits[#precommits+1]=precommit_record_json(record) end
+  for _,record in ipairs(equip_records) do equips[#equips+1]=equip_record_json(record) end
   for _,id in ipairs(config.caseOrder) do helper_order[#helper_order+1]=json_string(id) end
   for _,id in ipairs(config.transactionCaseOrder) do transaction_order[#transaction_order+1]=json_string(id) end
   for _,id in ipairs(config.fulfillmentCaseOrder) do fulfillment_order[#fulfillment_order+1]=json_string(id) end
   for _,id in ipairs(config.precommitCaseOrder) do precommit_order[#precommit_order+1]=json_string(id) end
+  for _,id in ipairs(config.equipDecisionCaseOrder) do equip_order[#equip_order+1]=json_string(id) end
   expect(precommit_state.generatedServiceStubWrites and precommit_state.generatedResultStubWrites,"precommit generated stub readback state drift")
   local service_roles=precommit_readback_roles_json(p.serviceShims,precommit_state.serviceReadbacks);local terminal_roles=precommit_readback_roles_json(p.terminalShims,precommit_state.terminalReadbacks)
-  local output=assert(io.open(config.outputPath,"w"));output:write("{\"system\":"..json_string(emu.getsystemid())..",\"core\":"..json_string(config.core)..",\"id\":"..json_string(config.id)..",\"caseOrder\":["..table.concat(helper_order,",").."],\"records\":["..table.concat(helpers,",").."],\"transactionCaseOrder\":["..table.concat(transaction_order,",").."],\"transactionRecords\":["..table.concat(transactions,",").."],\"fulfillmentCaseOrder\":["..table.concat(fulfillment_order,",").."],\"fulfillmentRecords\":["..table.concat(fulfillments,",").."],\"precommitCaseOrder\":["..table.concat(precommit_order,",").."],\"precommitRecords\":["..table.concat(precommits,",").."],\"callbacksCleared\":0,\"precommitInstrumentation\":{\"serviceCallSitesReadback\":"..service_roles..",\"terminalBoundarySitesReadback\":"..terminal_roles..",\"generatedServiceStubWritesReadback\":true,\"generatedResultStubWritesReadback\":true},\"precommitRestoration\":{\"dialogueNameIndex1WordRestored\":true,\"selectedItemIndexWordRestored\":true,\"currentItemSubmenuActionByteRestored\":true},\"restoration\":{\"currentGoldLongRestored\":true,\"randomSeedWordRestored\":true,\"orderWordsRestored\":true,\"flag80OwningByteRestored\":true,\"clientCombatantRecordsRestored\":true}}");output:close()
+  local equip_terminal_roles={};for _,shim in ipairs(e.terminalShims) do expect(edi.terminalBoundarySitesReadback[shim.role],"equip-decision terminal instrumentation readback missing: "..shim.role);equip_terminal_roles[#equip_terminal_roles+1]=json_string(shim.role) end
+  expect(edi.promptCallSiteReadback and edi.promptPresentationSkipReadback and edi.generatedPromptStubWriteReadback and edi.generatedTerminalStubWriteReadback,"equip-decision instrumentation readback state drift")
+  local output=assert(io.open(config.outputPath,"w"));output:write("{\"system\":"..json_string(emu.getsystemid())..",\"core\":"..json_string(config.core)..",\"id\":"..json_string(config.id)..",\"caseOrder\":["..table.concat(helper_order,",").."],\"records\":["..table.concat(helpers,",").."],\"transactionCaseOrder\":["..table.concat(transaction_order,",").."],\"transactionRecords\":["..table.concat(transactions,",").."],\"fulfillmentCaseOrder\":["..table.concat(fulfillment_order,",").."],\"fulfillmentRecords\":["..table.concat(fulfillments,",").."],\"precommitCaseOrder\":["..table.concat(precommit_order,",").."],\"precommitRecords\":["..table.concat(precommits,",").."],\"equipDecisionCaseOrder\":["..table.concat(equip_order,",").."],\"equipDecisionRecords\":["..table.concat(equips,",").."],\"callbacksCleared\":0,\"precommitInstrumentation\":{\"serviceCallSitesReadback\":"..service_roles..",\"terminalBoundarySitesReadback\":"..terminal_roles..",\"generatedServiceStubWritesReadback\":true,\"generatedResultStubWritesReadback\":true},\"precommitRestoration\":{\"dialogueNameIndex1WordRestored\":true,\"selectedItemIndexWordRestored\":true,\"currentItemSubmenuActionByteRestored\":true},\"equipDecisionInstrumentation\":{\"promptCallSiteReadback\":true,\"promptPresentationSkipReadback\":true,\"generatedPromptStubWriteReadback\":true,\"terminalBoundarySitesReadback\":["..table.concat(equip_terminal_roles,",").."],\"generatedTerminalStubWriteReadback\":true},\"restoration\":{\"currentGoldLongRestored\":true,\"randomSeedWordRestored\":true,\"orderWordsRestored\":true,\"flag80OwningByteRestored\":true,\"clientCombatantRecordsRestored\":true}}");output:close()
 end
 local function finish_helper_case(index)
   if mode~="helper" then return end
@@ -414,6 +441,96 @@ local function finish_fulfillment_case(index)
   expect(index==fulfillment_index,"fulfillment result dispatch drift");local case=current_fulfillment();local result_pc=fulfillment_pc(index)+20;set_expectation("fulfillment","fulfillment-case-result",result_pc,u.equippabilityEffectiveReturnAddress,u.postEquippabilityReturnAddress,result_pc);expect(emu.getregister("M68K PC")==result_pc,"fulfillment result PC drift");expect(fx.addItemReturnSeen and fx.orderReadSeen and fx.orderClearedSeen and fx.fulfilledOrdersIncrementSeen and fx.equippabilityCarrySet~=nil and #fx.chronology==11,"fulfillment chronology incomplete");local orders_after=read_orders();expect(fx.record.ordersBefore[fx.record.selectedOrderIndex+1]==case.itemIndex and orders_after[fx.record.selectedOrderIndex+1]==0,"fulfillment selected order read/zero mismatch");fx.record.ordersAfter=orders_after;fx.record.fulfilledOrdersAfter=memory.read_u16_be(fulfillment_frame_address()+u.frameOffsetsBytes.fulfilledOrdersNumber,"M68K BUS");fx.record.equippableCarrySet=fx.equippabilityCarrySet;fx.record.callbackChronology=fx.chronology;fx.record.safeExitOriginalReturnPc=fx.originalReturnAddress;fulfillment_records[#fulfillment_records+1]=fx.record;fx.active=false;mode="none";fulfillment_index=fulfillment_index+1
   if fulfillment_index>#config.fulfillmentCases then precommit_index=1;pcx.transition={active=true,frameCount=0,frameBudget=config.precommitTransitionFrameBudget};precommit_milestone=true;status("milestone:precommit-cases-entered") end
 end
+function ed_event(role,address,call_pc,target_pc,return_pc)
+  set_expectation("equip-decision",role,address,call_pc,target_pc,return_pc);expect(mode=="equip-decision" and ed.active,"equip-decision callback outside active case");expect(emu.getregister("M68K PC")==address,"equip-decision callback PC drift: "..role);ed.chronology[#ed.chronology+1]={role=role,pc=address}
+end
+function ed_terminal(role,address)
+  local case=assert(current_equip(),"equip-decision case exhausted");local shim=nil;for _,candidate in ipairs(e.terminalShims) do if candidate.role==role then shim=candidate;break end end;expect(shim~=nil and shim.boundaryAddress==address,"equip-decision terminal source binding drift");expect(equal_arrays(read_bytes(address,#hex_bytes(shim.patchedHex)),hex_bytes(shim.patchedHex)),"equip-decision terminal session readback drift");expect(shim.terminal==ed.expectedTerminal,"equip-decision terminal mismatch");local event_role=nil;if shim.terminal=="current-cursed-pre-presentation" then event_role="equip-decision-current-cursed-pre-presentation" elseif shim.terminal=="noncursed-equip-pre-presentation" then event_role="equip-decision-noncursed-equip-pre-presentation" elseif shim.terminal=="do-not-equip-pre-presentation" then event_role="equip-decision-do-not-equip-pre-presentation" else error("equip-decision terminal event role drift") end;edi.terminalBoundarySitesReadback[role]=true;ed_event(event_role,address,nil,0xFF6D60,nil);ed.terminal=shim.terminal;ed.terminalPc=address
+end
+function ed_start(index)
+  local entry=equip_pc(index);set_expectation("equip-decision-case-entry","equip-decision-case-entry",entry,entry+14,u.addItemEntryAddress,nil);expect(index==equip_index and emu.getregister("M68K PC")==entry,"equip-decision case-entry drift");local case=assert(current_equip(),"equip-decision case table exhausted")
+  if index==1 then
+    expect(mode=="none" and ed.transition.active and not ed.active and ed.completedIndex==0 and ed.completedTerminal=="none" and ed.completedExpectedTerminal=="none","equip-decision first-case transition drift");ed.transition.active=false
+  else
+    expect(mode=="none" and not ed.active and not ed.transition.active and ed.completedIndex==index-1 and ed.completedTerminal==ed.completedExpectedTerminal and ed.completedTerminal~="none","equip-decision prior-case completion drift")
+  end
+  write_record(case.clientMember,original_records[case.clientMember]);write_class(case.clientMember,case.recipientClass);write_item_words(case.clientMember,case.clientItemWordsBefore);write_orders(case.ordersBefore);memory.write_u16_be(combatant_base(case.clientMember)+c.combatantStatusEffectsOffsetBytes,case.statusEffectsBefore,"M68K BUS")
+  local frame=fulfillment_frame_address();memory.write_u16_be(frame+u.frameOffsetsBytes.clientClass,case.recipientClass,"M68K BUS");memory.write_u16_be(frame+u.frameOffsetsBytes.clientMember,case.clientMember,"M68K BUS");memory.write_u16_be(frame+u.frameOffsetsBytes.itemIndex,case.itemIndex,"M68K BUS");memory.write_u16_be(frame+u.frameOffsetsBytes.ordersCounter,case.ordersCounter,"M68K BUS");memory.write_u16_be(frame+u.frameOffsetsBytes.fulfilledOrdersNumber,case.fulfilledOrdersBefore,"M68K BUS")
+  local skip=e.promptPresentationSkip;expect(equal_arrays(read_bytes(skip.boundaryAddress,#hex_bytes(skip.patchedHex)),hex_bytes(skip.patchedHex)),"equip-decision prompt text skip readback drift");edi.promptPresentationSkipReadback=true;memory.write_u16_be(0xFF6D60,0x4EF9,"M68K BUS");memory.write_u32_be(0xFF6D62,entry+20,"M68K BUS");expect(memory.read_u16_be(0xFF6D60,"M68K BUS")==0x4EF9 and memory.read_u32_be(0xFF6D62,"M68K BUS")==entry+20,"equip-decision terminal stub write drift");edi.generatedTerminalStubWriteReadback=true
+  local completed_index,completed_terminal,completed_expected_terminal=ed.completedIndex,ed.completedTerminal,ed.completedExpectedTerminal;ed={active=true,pending=nil,frameCount=0,frameBudget=180,transition=ed.transition,record=nil,chronology={},expectedTerminal="none",terminal="none",terminalPc=nil,equipmentType=nil,existingEquippedSlot=nil,existingEquippedItemIndex=nil,unequipResult=nil,equipSlot=nil,equipResult=nil,completedIndex=completed_index,completedTerminal=completed_terminal,completedExpectedTerminal=completed_expected_terminal};mode="equip-decision";if index==1 then status("milestone:equip-decision-cases-entered") end
+end
+function ed_post_branch()
+  if mode~="equip-decision" then return end
+  local case=current_equip();ed_event("equip-decision-post-equippability-branch",e.postEquippabilityBranchAddress,u.equippabilityCallAddress,u.equippabilityEffectiveTargetAddress,u.postEquippabilityReturnAddress);local carry=(emu.getregister("M68K SR")&1)~=0;local selected=c.orderSlotCount-case.ordersCounter;local before_empty=nil;for i,v in ipairs(case.clientItemWordsBefore) do if (v&c.itemIndexMask)==c.itemNothingIndex then before_empty=i;break end end;local after=read_item_words(case.clientMember);expect(before_empty~=nil and after[before_empty]==case.itemIndex and read_orders()[selected+1]==0 and memory.read_u16_be(fulfillment_frame_address()+u.frameOffsetsBytes.fulfilledOrdersNumber,"M68K BUS")==case.fulfilledOrdersBefore+1,"equip-decision AddItem/order/counter mutation drift");local expected=case.promptResult==nil and "do-not-equip-pre-presentation" or case.promptResult~=0 and "do-not-equip-pre-presentation" or case.existingEquippedItemIndex==70 and "current-cursed-pre-presentation" or "noncursed-equip-pre-presentation";ed.expectedTerminal=expected;ed.record={id=case.id,clientMember=case.clientMember,recipientClass=case.recipientClass,itemIndex=case.itemIndex,clientItemWordsBefore=case.clientItemWordsBefore,itemWriteIndex=nil,ordersBefore=case.ordersBefore,ordersCounter=case.ordersCounter,selectedOrderIndex=selected,fulfilledOrdersBefore=case.fulfilledOrdersBefore,equippableCarrySet=carry,promptResult=case.promptResult,promptShown=carry,equipmentType=nil,existingEquippedSlot=nil,existingEquippedItemIndex=nil,unequipResult=nil,equipSlot=nil,equipResult=nil,statusEffectsBefore=case.statusEffectsBefore,callbackChronology=ed.chronology};expect(carry==(case.promptResult~=nil),"equip-decision equippability carry drift")
+end
+function ed_prompt_call()
+  if mode~="equip-decision" then return end
+  local case=current_equip();ed_event("equip-decision-controlled-prompt-call-shim",e.prompt.callAddress,e.prompt.callAddress,0xFF6D40,e.prompt.returnAddress);expect(equal_arrays(read_bytes(e.prompt.callAddress,6),{0x4E,0xB9,0x00,0xFF,0x6D,0x40}),"equip-decision prompt call readback drift");local value=word(case.promptResult or 0);write_bytes(0xFF6D40,{0x30,0x3C,value>>8,value&0xFF,0x4E,0x75});expect(equal_arrays(read_bytes(0xFF6D40,6),{0x30,0x3C,value>>8,value&0xFF,0x4E,0x75}),"equip-decision prompt stub write drift");ed.pending={role="prompt",callPc=e.prompt.callAddress,targetPc=0xFF6D40,returnPc=e.prompt.returnAddress};edi.promptCallSiteReadback=true;edi.generatedPromptStubWriteReadback=true
+end
+function ed_prompt_stub() if mode=="equip-decision" then local pending=assert(ed.pending,"equip-decision prompt stub without source call");expect(pending.role=="prompt" and pending.targetPc==0xFF6D40,"equip-decision prompt stub pending drift");ed_event("equip-decision-generated-prompt-stub",0xFF6D40,e.prompt.callAddress,0xFF6D40,e.prompt.returnAddress) end end
+function ed_prompt_return() if mode=="equip-decision" then local case=current_equip();local pending=assert(ed.pending,"equip-decision prompt return without source call");expect(pending.role=="prompt" and pending.returnPc==e.prompt.returnAddress,"equip-decision prompt return pending drift");ed_event("equip-decision-prompt-original-return",e.prompt.returnAddress,e.prompt.callAddress,0xFF6D40,e.prompt.returnAddress);expect(word(emu.getregister("M68K D0"))==word(case.promptResult),"equip-decision controlled prompt polarity drift");ed.pending=nil end end
+function ed_service_pending(role,spec)
+  local pending=assert(ed.pending,"equip-decision "..role.." callback without pending service");expect(pending.role==role and pending.callPc==spec.callAddress and pending.targetPc==spec.effectiveTargetAddress and pending.returnPc==spec.returnAddress and pending.effectiveReturnPc==spec.effectiveReturnAddress,"equip-decision "..role.." pending call/target/return drift");return pending
+end
+function ed_service_call(role,spec)
+  if mode~="equip-decision" then return end
+  local dispatched_role="equip-decision-"..role.."-call";expect(ed.pending==nil,"equip-decision overlapping pending service call");ed_event(dispatched_role,spec.callAddress,spec.callAddress,spec.instructionTargetAddress,spec.returnAddress);ed.pending={role=role,callPc=spec.callAddress,targetPc=spec.effectiveTargetAddress,returnPc=spec.returnAddress,effectiveReturnPc=spec.effectiveReturnAddress,effectiveReturnSeen=false};if role=="equip" then ed.equipSlot=word(emu.getregister("M68K D1")) end
+end
+function ed_service_instruction(role,spec)
+  if mode=="equip-decision" then local dispatched_role="equip-decision-"..role.."-instruction-target";ed_service_pending(role,spec);ed_event(dispatched_role,spec.instructionTargetAddress,spec.callAddress,spec.instructionTargetAddress,spec.effectiveTargetAddress) end
+end
+function ed_service_target(role,spec)
+  if mode=="equip-decision" then local dispatched_role="equip-decision-"..role.."-effective-target";ed_service_pending(role,spec);ed_event(dispatched_role,spec.effectiveTargetAddress,spec.callAddress,spec.effectiveTargetAddress,spec.effectiveReturnAddress) end
+end
+function ed_service_effective_return(role,spec)
+  if mode~="equip-decision" then return end
+  local dispatched_role="equip-decision-"..role.."-effective-return";local pending=ed_service_pending(role,spec);expect(not pending.effectiveReturnSeen,"equip-decision duplicate "..role.." effective return");ed_event(dispatched_role,spec.effectiveReturnAddress,spec.callAddress,spec.effectiveTargetAddress,spec.returnAddress);pending.effectiveReturnSeen=true
+end
+function ed_service_return(role,spec)
+  if mode~="equip-decision" then return end
+  local dispatched_role="equip-decision-"..role.."-original-return";local pending=ed_service_pending(role,spec);expect(pending.effectiveReturnSeen,"equip-decision "..role.." original return without effective return");ed_event(dispatched_role,spec.returnAddress,spec.callAddress,spec.effectiveTargetAddress,spec.returnAddress);ed.pending=nil
+end
+function ed_shared_update_effective_return(address)
+  if mode~="equip-decision" then return end
+  local pending=ed.pending;local role=pending and pending.role or "unequip";local spec=role=="equip" and e.equip or e.unequip;local phase="equip-decision";local dispatched_role="equip-decision-"..role.."-effective-return";set_expectation(phase,dispatched_role,address,spec.callAddress,spec.effectiveTargetAddress,spec.returnAddress);expect(type(e.sharedUpdateEffectiveReturn)=="table" and e.sharedUpdateEffectiveReturn.address==address,"equip-decision shared UpdateCombatantStats return address drift");expect(pending~=nil and (role=="unequip" or role=="equip"),"equip-decision shared UpdateCombatantStats return without pending unequip/equip service");expect(spec.effectiveReturnAddress==address,"equip-decision shared UpdateCombatantStats pending return drift");local matching=0;for _,entry in ipairs(callbacks[address] or {}) do if entry.role==dispatched_role then matching=matching+1 end end;expect(matching==1,"equip-decision shared UpdateCombatantStats dispatcher role drift");ed_service_effective_return(role,spec)
+end
+function dispatch_equip_shared_update_effective_return(address)
+  if mode=="equip-decision" and type(e.sharedUpdateEffectiveReturn)=="table" and address==e.sharedUpdateEffectiveReturn.address then ed_shared_update_effective_return(address);return true end
+  return false
+end
+function ed_simple(role,address,call,target,ret) if mode=="equip-decision" then ed_event(role,address,call,target,ret) end end
+function ed_equipment_type_compare()
+  if mode~="equip-decision" then return end
+  ed_event("equip-decision-equipment-type-compare",e.equipmentTypeCompareAddress,e.equipmentType.callAddress,e.equipmentType.instructionTargetAddress,e.equipmentType.returnAddress);expect(word(emu.getregister("M68K D2"))==c.equipmentTypeWeapon,"equip-decision weapon type result drift");ed.equipmentType=word(emu.getregister("M68K D2"))
+end
+function ed_weapon_equipped_compare()
+  if mode~="equip-decision" then return end
+  local case=current_equip();ed_event("equip-decision-weapon-equipped-compare",e.weaponEquippedCompareAddress,nil,nil,nil);local expected=case.existingEquippedItemIndex==nil and 0xFFFF or case.existingEquippedItemIndex;expect(word(emu.getregister("M68K D1"))==word(expected),"equip-decision equipped weapon result drift");if case.existingEquippedItemIndex~=nil then expect(word(emu.getregister("M68K D2"))==0,"equip-decision equipped weapon slot drift");ed.existingEquippedSlot=word(emu.getregister("M68K D2"));ed.existingEquippedItemIndex=word(emu.getregister("M68K D1")) end
+end
+function ed_unequip_compare()
+  if mode~="equip-decision" then return end
+  local case=current_equip();ed_event("equip-decision-weapon-unequip-compare",e.weaponUnequipCompareAddress,nil,nil,nil);local expected=case.existingEquippedItemIndex==70 and 2 or 0;expect(word(emu.getregister("M68K D2"))==expected,"equip-decision unequip curse result drift");ed.unequipResult=word(emu.getregister("M68K D2"))
+end
+function ed_held_items_return()
+  if mode~="equip-decision" then return end
+  ed_service_return("held-items",e.heldItems);expect(word(emu.getregister("M68K D2"))==c.combatantItemSlotCount,"equip-decision held-items count drift")
+end
+function ed_equip_return()
+  if mode~="equip-decision" then return end
+  ed_service_return("equip",e.equip);expect(word(emu.getregister("M68K D2"))==0,"equip-decision new weapon equip result drift");ed.equipResult=word(emu.getregister("M68K D2"))
+end
+function ed_terminal_stub()
+  if mode~="equip-decision" then return end
+  ed_event("equip-decision-generated-terminal-stub",0xFF6D60,nil,equip_pc(equip_index)+20,nil);expect(memory.read_u16_be(0xFF6D60,"M68K BUS")==0x4EF9 and memory.read_u32_be(0xFF6D62,"M68K BUS")==equip_pc(equip_index)+20,"equip-decision terminal stub opcode/target drift")
+end
+function ed_finish(index)
+  if mode~="equip-decision" then return end
+  local case=current_equip();expect(index==equip_index and ed.terminal~="none" and ed.pending==nil and ed.terminal==ed.expectedTerminal,"equip-decision result without expected terminal");local r=ed.record;local empty=nil;for i,v in ipairs(case.clientItemWordsBefore) do if (v&c.itemIndexMask)==c.itemNothingIndex then empty=i-1;break end end;expect(empty~=nil,"equip-decision first-empty slot drift");r.clientItemWordsAfter=read_item_words(case.clientMember);r.ordersAfter=read_orders();r.fulfilledOrdersAfter=memory.read_u16_be(fulfillment_frame_address()+u.frameOffsetsBytes.fulfilledOrdersNumber,"M68K BUS");r.statusEffectsAfter=memory.read_u16_be(combatant_base(case.clientMember)+c.combatantStatusEffectsOffsetBytes,"M68K BUS");r.terminal=ed.terminal;r.terminalPc=ed.terminalPc;r.callbackChronology=ed.chronology;r.itemWriteIndex=empty;r.equipmentType=ed.equipmentType;r.existingEquippedSlot=ed.existingEquippedSlot;r.existingEquippedItemIndex=ed.existingEquippedItemIndex;r.unequipResult=ed.unequipResult;r.equipSlot=ed.equipSlot;r.equipResult=ed.equipResult;expect(r.fulfilledOrdersAfter==case.fulfilledOrdersBefore+1 and r.ordersAfter[r.selectedOrderIndex+1]==0,"equip-decision terminal mutation drift");equip_records[#equip_records+1]=r;ed.active=false;ed.completedIndex=equip_index;ed.completedTerminal=ed.terminal;ed.completedExpectedTerminal=ed.expectedTerminal;mode="none";equip_index=equip_index+1
+  if equip_index>#config.equipDecisionCases then expect(#equip_records==#config.equipDecisionCases,"equip-decision record count drift");expect(restore_all(),"equip-decision restoration readback drift");status("milestone:transaction-state-restored");cleanup_session();expect(#event_ids==0,"residual registered callback");write_output();status("milestone:callbacks-cleared:0");status("milestone:observer-finished");client.exitCode(0) end
+end
+function ed_transition()
+  expect(mode=="none" and ed.transition.active,"equip-decision transition dispatch drift");set_expectation("equip-decision-transition","equip-decision-transition",precommit_pc(#config.precommitCases)+precommit_stride,nil,equip_base,nil);expect(emu.getregister("M68K PC")==precommit_pc(#config.precommitCases)+precommit_stride,"equip-decision transition PC drift")
+end
 local function pcx_event(role,address,call_pc,target_pc,return_pc)
   set_expectation("precommit",role,address,call_pc,target_pc,return_pc);expect(mode=="precommit" and pcx.active,"precommit callback outside active case");expect(emu.getregister("M68K PC")==address,"precommit callback PC drift: "..role);pcx.chronology[#pcx.chronology+1]={role=role,pc=address}
 end
@@ -537,7 +654,7 @@ end
 local function finish_precommit_case(index)
   if mode~="precommit" then return end
   expect(index==precommit_index,"precommit result dispatch drift");local result_pc=precommit_pc(index)+20;set_expectation("precommit","precommit-case-result",result_pc,nil,pcx.record and pcx.record.terminalPc or nil,result_pc);expect(emu.getregister("M68K PC")==result_pc,"precommit result PC drift");expect(pcx.record~=nil and pcx.terminal~="none","precommit result without terminal");precommit_records[#precommit_records+1]=pcx.record;pcx.active=false;mode="none";precommit_index=precommit_index+1
-  if precommit_index>#config.precommitCases then expect(restore_all(),"exact blacksmith restoration readback drift");status("milestone:transaction-state-restored");cleanup_session();expect(#event_ids==0,"residual registered callback");write_output();status("milestone:callbacks-cleared:0");status("milestone:observer-finished");client.exitCode(0) end
+  if precommit_index>#config.precommitCases then equip_index=1;ed.transition={active=true,frameCount=0,frameBudget=180};status("milestone:equip-decision-transition-armed") end
 end
 local function bootstrap_check_sram()
   if bootstrapped or mode~="none" then return end
@@ -597,6 +714,52 @@ local function dispatch(address,entry)
   elseif entry.role=="fulfillment-equippability-effective-target" then fx_equippability_target()
   elseif entry.role=="fulfillment-equippability-effective-return" then fx_equippability_return()
   elseif entry.role=="fulfillment-case-result" then finish_fulfillment_case(entry.index)
+  elseif entry.role=="equip-decision-transition" then ed_transition()
+  elseif entry.role=="equip-decision-case-entry" then ed_start(entry.index)
+  elseif entry.role=="equip-decision-post-equippability-branch" then ed_post_branch()
+  elseif entry.role=="equip-decision-controlled-prompt-call-shim" then ed_prompt_call()
+  elseif entry.role=="equip-decision-generated-prompt-stub" then ed_prompt_stub()
+  elseif entry.role=="equip-decision-prompt-original-return" then ed_prompt_return()
+  elseif entry.role=="equip-decision-prompt-compare" then ed_simple("equip-decision-prompt-compare",e.promptCompareAddress,e.prompt.callAddress,0xFF6D40,e.prompt.returnAddress)
+  elseif entry.role=="equip-decision-prompt-decline-branch" then ed_simple("equip-decision-prompt-decline-branch",e.promptDeclineBranchAddress,nil,nil,nil)
+  elseif entry.role=="equip-decision-equipment-type-call" then ed_service_call("equipment-type",e.equipmentType)
+  elseif entry.role=="equip-decision-equipment-type-instruction-target" then ed_service_instruction("equipment-type",e.equipmentType)
+  elseif entry.role=="equip-decision-equipment-type-effective-target" then ed_service_target("equipment-type",e.equipmentType)
+  elseif entry.role=="equip-decision-equipment-type-effective-return" then ed_service_effective_return("equipment-type",e.equipmentType)
+  elseif entry.role=="equip-decision-equipment-type-original-return" then ed_service_return("equipment-type",e.equipmentType)
+  elseif entry.role=="equip-decision-equipment-type-compare" then ed_equipment_type_compare()
+  elseif entry.role=="equip-decision-weapon-type-branch" then ed_simple("equip-decision-weapon-type-branch",e.weaponTypeBranchAddress,nil,nil,nil)
+  elseif entry.role=="equip-decision-get-equipped-weapon-call" then ed_service_call("get-equipped-weapon",e.getEquippedWeapon)
+  elseif entry.role=="equip-decision-get-equipped-weapon-instruction-target" then ed_service_instruction("get-equipped-weapon",e.getEquippedWeapon)
+  elseif entry.role=="equip-decision-get-equipped-weapon-effective-target" then ed_service_target("get-equipped-weapon",e.getEquippedWeapon)
+  elseif entry.role=="equip-decision-get-equipped-weapon-effective-return" then ed_service_effective_return("get-equipped-weapon",e.getEquippedWeapon)
+  elseif entry.role=="equip-decision-get-equipped-weapon-original-return" then ed_service_return("get-equipped-weapon",e.getEquippedWeapon)
+  elseif entry.role=="equip-decision-weapon-equipped-compare" then ed_weapon_equipped_compare()
+  elseif entry.role=="equip-decision-weapon-empty-branch" then ed_simple("equip-decision-weapon-empty-branch",e.weaponEmptyBranchAddress,nil,nil,nil)
+  elseif entry.role=="equip-decision-unequip-call" then ed_service_call("unequip",e.unequip)
+  elseif entry.role=="equip-decision-unequip-instruction-target" then ed_service_instruction("unequip",e.unequip)
+  elseif entry.role=="equip-decision-unequip-effective-target" then ed_service_target("unequip",e.unequip)
+  elseif entry.role=="equip-decision-unequip-effective-return" then ed_shared_update_effective_return(address)
+  elseif entry.role=="equip-decision-unequip-original-return" then ed_service_return("unequip",e.unequip)
+  elseif entry.role=="equip-decision-weapon-unequip-compare" then ed_unequip_compare()
+  elseif entry.role=="equip-decision-weapon-unequip-branch" then ed_simple("equip-decision-weapon-unequip-branch",e.weaponUnequipBranchAddress,nil,nil,nil)
+  elseif entry.role=="equip-decision-held-items-call" then ed_service_call("held-items",e.heldItems)
+  elseif entry.role=="equip-decision-held-items-instruction-target" then ed_service_instruction("held-items",e.heldItems)
+  elseif entry.role=="equip-decision-held-items-effective-target" then ed_service_target("held-items",e.heldItems)
+  elseif entry.role=="equip-decision-held-items-effective-return" then ed_service_effective_return("held-items",e.heldItems)
+  elseif entry.role=="equip-decision-held-items-original-return" then ed_held_items_return()
+  elseif entry.role=="equip-decision-equip-call" then ed_service_call("equip",e.equip)
+  elseif entry.role=="equip-decision-equip-instruction-target" then ed_service_instruction("equip",e.equip)
+  elseif entry.role=="equip-decision-equip-effective-target" then ed_service_target("equip",e.equip)
+  elseif entry.role=="equip-decision-equip-effective-return" then ed_shared_update_effective_return(address)
+  elseif entry.role=="equip-decision-equip-original-return" then ed_equip_return()
+  elseif entry.role=="equip-decision-new-equip-cursed-compare" then ed_simple("equip-decision-new-equip-cursed-compare",e.newEquipCursedCompareAddress,nil,nil,nil)
+  elseif entry.role=="equip-decision-new-equip-noncursed-branch" then ed_simple("equip-decision-new-equip-noncursed-branch",e.newEquipNoncursedBranchAddress,nil,nil,nil)
+  elseif entry.role=="equip-decision-current-cursed-terminal-boundary-shim" then ed_terminal("current-cursed-terminal-boundary-shim",address)
+  elseif entry.role=="equip-decision-noncursed-terminal-boundary-shim" then ed_terminal("noncursed-terminal-boundary-shim",address)
+  elseif entry.role=="equip-decision-do-not-equip-terminal-boundary-shim" then ed_terminal("do-not-equip-terminal-boundary-shim",address)
+  elseif entry.role=="equip-decision-generated-terminal-stub" then ed_terminal_stub()
+  elseif entry.role=="equip-decision-case-result" then ed_finish(entry.index)
   elseif entry.role=="precommit-case-entry" then start_precommit_case(entry.index)
   elseif entry.role=="precommit-selection-loop-entry" then pcx_selection_loop()
   elseif entry.role=="precommit-member-list-controlled-service-call-shim" then pcx_member_call()
@@ -638,7 +801,7 @@ local function register_exec(address,role,index)
   if not callbacks[address] then
     callbacks[address]={};event_ids[#event_ids+1]=event.on_bus_exec(function()
       if observer_failed then return end
-      local ok,message=pcall(function() current_pc=address;for _,entry in ipairs(callbacks[address]) do dispatch(address,entry) end end)
+      local ok,message=pcall(function() current_pc=address;if not dispatch_equip_shared_update_effective_return(address) then for _,entry in ipairs(callbacks[address]) do dispatch(address,entry) end end end)
       if not ok then fail_callback(message) end
     end,address,"blacksmith-mithril-"..address,"M68K BUS")
   end
@@ -646,6 +809,7 @@ local function register_exec(address,role,index)
   callbacks[address][#callbacks[address]+1]={role=role,index=index}
 end
 write_probe=function()
+  validate_instrumented_rom()
   memory.write_u16_be(probe_base,0x46FC,"M68K BUS");memory.write_u16_be(probe_base+2,0x2700,"M68K BUS");memory.write_u16_be(probe_base+4,0x2C7C,"M68K BUS");memory.write_u32_be(probe_base+6,frame_base-c.clientClassOffset,"M68K BUS");memory.write_u16_be(probe_base+10,0x2E7C,"M68K BUS");memory.write_u32_be(probe_base+12,stack_top,"M68K BUS");memory.write_u16_be(probe_base+16,0x4EF9,"M68K BUS");memory.write_u32_be(probe_base+18,helper_base,"M68K BUS")
   for index,case in ipairs(config.cases) do
     local entry=helper_pc(index);memory.write_u16_be(entry,0x4E71,"M68K BUS");memory.write_u16_be(entry+2,0x303C,"M68K BUS");memory.write_u16_be(entry+4,case.registerSentinels.d0,"M68K BUS");memory.write_u16_be(entry+6,0x3E3C,"M68K BUS");memory.write_u16_be(entry+8,case.registerSentinels.d7,"M68K BUS");memory.write_u16_be(entry+10,0x4EB9,"M68K BUS");memory.write_u32_be(entry+12,f.entryAddress,"M68K BUS");memory.write_u16_be(entry+16,0x4E71,"M68K BUS");memory.write_u16_be(entry+18,0x4EF9,"M68K BUS");memory.write_u32_be(entry+20,index==#config.cases and transaction_base or helper_pc(index+1),"M68K BUS");register_exec(entry,"case-entry",index);register_exec(entry+16,"case-result",index)
@@ -659,11 +823,14 @@ write_probe=function()
   for index,_ in ipairs(config.precommitCases) do
     local entry=precommit_pc(index);memory.write_u16_be(entry,0x4E71,"M68K BUS");memory.write_u16_be(entry+2,0x2C7C,"M68K BUS");memory.write_u32_be(entry+4,fulfillment_frame_address(),"M68K BUS");memory.write_u16_be(entry+8,0x2E7C,"M68K BUS");memory.write_u32_be(entry+10,stack_top,"M68K BUS");memory.write_u16_be(entry+14,0x4EB9,"M68K BUS");memory.write_u32_be(entry+16,p.runtimeStartAddress,"M68K BUS");memory.write_u16_be(entry+20,0x4E71,"M68K BUS");memory.write_u16_be(entry+22,0x4EF9,"M68K BUS");memory.write_u32_be(entry+24,index==#config.precommitCases and entry+precommit_stride or precommit_pc(index+1),"M68K BUS");register_exec(entry,"precommit-case-entry",index);register_exec(entry+20,"precommit-case-result",index)
   end
+  local transition=precommit_pc(#config.precommitCases)+precommit_stride;memory.write_u16_be(transition,0x4EF9,"M68K BUS");memory.write_u32_be(transition+2,equip_base,"M68K BUS");register_exec(transition,"equip-decision-transition",0)
+  for index,_ in ipairs(config.equipDecisionCases) do local entry=equip_pc(index);memory.write_u16_be(entry,0x4E71,"M68K BUS");memory.write_u16_be(entry+2,0x2C7C,"M68K BUS");memory.write_u32_be(entry+4,fulfillment_frame_address(),"M68K BUS");memory.write_u16_be(entry+8,0x2E7C,"M68K BUS");memory.write_u32_be(entry+10,stack_top,"M68K BUS");memory.write_u16_be(entry+14,0x4EF9,"M68K BUS");memory.write_u32_be(entry+16,u.addItemEntryAddress,"M68K BUS");memory.write_u16_be(entry+20,0x4E71,"M68K BUS");memory.write_u16_be(entry+22,0x4EF9,"M68K BUS");memory.write_u32_be(entry+24,index==#config.equipDecisionCases and entry+equip_stride or equip_pc(index+1),"M68K BUS");register_exec(entry,"equip-decision-case-entry",index);register_exec(entry+20,"equip-decision-case-result",index) end
   register_exec(f.entryAddress,"function-entry",0);register_exec(f.entryAddress,"pick-mithril-effective-target",0);register_exec(f.fallbackRngCallAddress,"fallback-row-roll",0);register_exec(f.fallbackRngCallAddress,"transaction-fallback-row-roll",0);register_exec(f.weaponRngCallAddress,"weapon-row-roll",0);register_exec(f.weaponRngCallAddress,"transaction-weapon-row-roll",0);register_exec(f.rngEntryAddress,"rng-entry",0);register_exec(f.rngEntryAddress,"transaction-rng-entry",0);register_exec(f.rngReturnRtsAddress,"rng-return",0);register_exec(f.rngReturnRtsAddress,"transaction-rng-return",0);register_exec(f.rowResolvedAddress,"row-resolved",0);register_exec(f.rowResolvedAddress,"transaction-row-resolved",0);register_exec(f.loadIndexAddress,"item-selected",0);register_exec(f.loadIndexAddress,"transaction-item-selected",0);register_exec(f.orderWriteAddress,"order-write",0);register_exec(f.orderWriteAddress,"transaction-order-write",0);register_exec(f.returnRtsAddress,"function-rts",0);register_exec(f.returnRtsAddress,"pick-mithril-effective-return",0)
   register_exec(t.placeEntryAddress,"place-entry",0);register_exec(t.decreaseGoldCallAddress,"decrease-gold-call",0);register_exec(t.decreaseGoldInstructionTargetAddress,"decrease-gold-instruction-target",0);register_exec(t.decreaseGoldEffectiveTargetAddress,"decrease-gold-effective-target",0);register_exec(t.decreaseGoldEffectiveReturnAddress,"decrease-gold-effective-return",0);register_exec(t.pendingOrdersIncrementedObserveAddress,"pending-orders-incremented",0);register_exec(t.dropItemCallAddress,"drop-item-call",0);register_exec(t.dropItemInstructionTargetAddress,"drop-item-instruction-target",0);register_exec(t.dropItemEffectiveTargetAddress,"drop-item-effective-target",0);register_exec(t.dropItemTailUpdateTargetAddress,"drop-item-tail-update-target",0);register_exec(t.dropItemEffectiveReturnAddress,"drop-item-effective-return",0);register_exec(t.pickMithrilCallAddress,"pick-mithril-call",0);register_exec(t.clearFlagCallAddress,"clear-flag-call",0);register_exec(t.clearFlagInstructionTargetAddress,"clear-flag-instruction-target",0);register_exec(t.clearFlagEffectiveTargetAddress,"clear-flag-effective-target",0);register_exec(t.clearFlagEffectiveReturnAddress,"clear-flag-pre-presentation-return",0)
   register_exec(u.addItemCallAddress,"fulfillment-add-item-call",0);register_exec(u.addItemInstructionTargetAddress,"fulfillment-add-item-instruction-target",0);register_exec(u.addItemEffectiveTargetAddress,"fulfillment-add-item-effective-target",0);register_exec(u.addItemEffectiveReturnAddress,"fulfillment-add-item-effective-return",0);register_exec(u.orderReadObserveAddress,"fulfillment-order-read",0);register_exec(u.orderClearedObserveAddress,"fulfillment-order-cleared",0);register_exec(u.fulfilledOrdersIncrementedObserveAddress,"fulfillment-orders-incremented",0);register_exec(u.equippabilityCallAddress,"fulfillment-equippability-call",0);register_exec(u.equippabilityInstructionTargetAddress,"fulfillment-equippability-instruction-target",0);register_exec(u.equippabilityEffectiveTargetAddress,"fulfillment-equippability-effective-target",0);register_exec(u.equippabilityEffectiveReturnAddress,"fulfillment-equippability-effective-return",0)
   register_exec(p.runtimeStartAddress,"precommit-selection-loop-entry",0);register_exec(p.memberList.callAddress,"precommit-member-list-controlled-service-call-shim",0);register_exec(precommit_state.serviceStub,"precommit-generated-service-stub",0);register_exec(p.memberList.returnAddress,"precommit-member-list-original-return",0);register_exec(p.memberCancelCompareAddress,"precommit-member-cancel-compare",0);register_exec(p.memberCancelBranchAddress,"precommit-member-cancel-branch",0);register_exec(p.heldItems.callAddress,"precommit-held-items-controlled-service-call-shim",0);register_exec(p.heldItems.returnAddress,"precommit-held-items-original-return",0);register_exec(p.capacityCompareAddress,"precommit-capacity-compare",0);register_exec(p.capacityBranchAddress,"precommit-capacity-branch",0);register_exec(p.equipmentType.callAddress,"precommit-equipment-type-controlled-service-call-shim",0);register_exec(p.equipmentType.returnAddress,"precommit-equipment-type-original-return",0);register_exec(p.equipmentTypeCompareAddress,"precommit-equipment-type-compare",0);register_exec(p.toolAdmissionBranchAddress,"precommit-tool-admission-branch",0);register_exec(p.equippability.callAddress,"precommit-equippability-controlled-service-call-shim",0);register_exec(p.equippability.returnAddress,"precommit-equippability-original-return",0);register_exec(p.equippabilityBranchAddress,"precommit-equippability-branch",0);register_exec(p.addItemEntryAddress,"precommit-add-item-boundary",0);for _,shim in ipairs(p.terminalShims) do if shim.role=="recipient-cancel-terminal-boundary-shim" then register_exec(shim.boundaryAddress,"precommit-recipient-cancel-terminal-boundary-shim",0) elseif shim.role=="full-inventory-terminal-boundary-shim" then register_exec(shim.boundaryAddress,"precommit-full-inventory-terminal-boundary-shim",0) elseif shim.role=="non-equippable-terminal-boundary-shim" then register_exec(shim.boundaryAddress,"precommit-non-equippable-terminal-boundary-shim",0) else error("precommit terminal registration role drift") end end;register_exec(precommit_state.terminalStub,"precommit-generated-result-stub",0)
   register_exec(u.addItemCallAddress,"precommit-cleanup-add-item-call",0);register_exec(u.addItemInstructionTargetAddress,"precommit-cleanup-add-item-instruction-target",0);register_exec(u.addItemEffectiveTargetAddress,"precommit-cleanup-add-item-effective-target",0);register_exec(u.addItemEffectiveReturnAddress,"precommit-cleanup-add-item-effective-return",0);register_exec(u.orderReadObserveAddress,"precommit-cleanup-order-read",0);register_exec(u.orderClearedObserveAddress,"precommit-cleanup-order-cleared",0);register_exec(u.fulfilledOrdersIncrementedObserveAddress,"precommit-cleanup-orders-incremented",0);register_exec(u.equippabilityCallAddress,"precommit-cleanup-equippability-call",0);register_exec(u.equippabilityInstructionTargetAddress,"precommit-cleanup-equippability-instruction-target",0);register_exec(u.equippabilityEffectiveTargetAddress,"precommit-cleanup-equippability-effective-target",0);register_exec(u.equippabilityEffectiveReturnAddress,"precommit-cleanup-equippability-effective-return",0)
+  register_exec(e.postEquippabilityBranchAddress,"equip-decision-post-equippability-branch",0);register_exec(e.prompt.callAddress,"equip-decision-controlled-prompt-call-shim",0);register_exec(0xFF6D40,"equip-decision-generated-prompt-stub",0);register_exec(e.prompt.returnAddress,"equip-decision-prompt-original-return",0);register_exec(e.promptCompareAddress,"equip-decision-prompt-compare",0);register_exec(e.promptDeclineBranchAddress,"equip-decision-prompt-decline-branch",0);register_exec(e.equipmentType.callAddress,"equip-decision-equipment-type-call",0);register_exec(e.equipmentType.instructionTargetAddress,"equip-decision-equipment-type-instruction-target",0);register_exec(e.equipmentType.effectiveTargetAddress,"equip-decision-equipment-type-effective-target",0);register_exec(e.equipmentType.effectiveReturnAddress,"equip-decision-equipment-type-effective-return",0);register_exec(e.equipmentType.returnAddress,"equip-decision-equipment-type-original-return",0);register_exec(e.equipmentTypeCompareAddress,"equip-decision-equipment-type-compare",0);register_exec(e.weaponTypeBranchAddress,"equip-decision-weapon-type-branch",0);register_exec(e.getEquippedWeapon.callAddress,"equip-decision-get-equipped-weapon-call",0);register_exec(e.getEquippedWeapon.instructionTargetAddress,"equip-decision-get-equipped-weapon-instruction-target",0);register_exec(e.getEquippedWeapon.effectiveTargetAddress,"equip-decision-get-equipped-weapon-effective-target",0);register_exec(e.getEquippedWeapon.effectiveReturnAddress,"equip-decision-get-equipped-weapon-effective-return",0);register_exec(e.getEquippedWeapon.returnAddress,"equip-decision-get-equipped-weapon-original-return",0);register_exec(e.weaponEquippedCompareAddress,"equip-decision-weapon-equipped-compare",0);register_exec(e.weaponEmptyBranchAddress,"equip-decision-weapon-empty-branch",0);register_exec(e.unequip.callAddress,"equip-decision-unequip-call",0);register_exec(e.unequip.instructionTargetAddress,"equip-decision-unequip-instruction-target",0);register_exec(e.unequip.effectiveTargetAddress,"equip-decision-unequip-effective-target",0);register_exec(e.unequip.effectiveReturnAddress,"equip-decision-unequip-effective-return",0);register_exec(e.unequip.returnAddress,"equip-decision-unequip-original-return",0);register_exec(e.weaponUnequipCompareAddress,"equip-decision-weapon-unequip-compare",0);register_exec(e.weaponUnequipBranchAddress,"equip-decision-weapon-unequip-branch",0);register_exec(e.heldItems.callAddress,"equip-decision-held-items-call",0);register_exec(e.heldItems.instructionTargetAddress,"equip-decision-held-items-instruction-target",0);register_exec(e.heldItems.effectiveTargetAddress,"equip-decision-held-items-effective-target",0);register_exec(e.heldItems.effectiveReturnAddress,"equip-decision-held-items-effective-return",0);register_exec(e.heldItems.returnAddress,"equip-decision-held-items-original-return",0);register_exec(e.equip.callAddress,"equip-decision-equip-call",0);register_exec(e.equip.instructionTargetAddress,"equip-decision-equip-instruction-target",0);register_exec(e.equip.effectiveTargetAddress,"equip-decision-equip-effective-target",0);register_exec(e.equip.effectiveReturnAddress,"equip-decision-equip-effective-return",0);register_exec(e.equip.returnAddress,"equip-decision-equip-original-return",0);register_exec(e.newEquipCursedCompareAddress,"equip-decision-new-equip-cursed-compare",0);register_exec(e.newEquipNoncursedBranchAddress,"equip-decision-new-equip-noncursed-branch",0);for _,shim in ipairs(e.terminalShims) do if shim.role=="current-cursed-terminal-boundary-shim" then register_exec(shim.boundaryAddress,"equip-decision-current-cursed-terminal-boundary-shim",0) elseif shim.role=="noncursed-terminal-boundary-shim" then register_exec(shim.boundaryAddress,"equip-decision-noncursed-terminal-boundary-shim",0) elseif shim.role=="do-not-equip-terminal-boundary-shim" then register_exec(shim.boundaryAddress,"equip-decision-do-not-equip-terminal-boundary-shim",0) else error("equip-decision terminal registration role drift") end end;register_exec(0xFF6D60,"equip-decision-generated-terminal-stub",0)
 end
 status("milestone:observer-loaded")
 local ok,message=pcall(function() register_exec(f.checkSramAddress,"bootstrap-check-sram",0);status("milestone:direct-function-probe-armed") end)
@@ -684,6 +851,14 @@ while true do
       set_expectation("precommit-transition","precommit-transition-timeout",precommit_pc(1),nil,precommit_pc(1),nil)
       fail_callback("precommit transition frame budget exhausted before first generated case entry")
     end
+  end
+  if ed.active then
+    ed.frameCount=ed.frameCount+1
+    if ed.frameCount>ed.frameBudget then set_expectation("equip-decision-watchdog","equip-decision-watchdog-timeout",emu.getregister("M68K PC"),nil,nil,nil);fail_callback("equip-decision case frame budget exhausted before terminal") end
+  end
+  if ed.transition.active then
+    ed.transition.frameCount=ed.transition.frameCount+1
+    if ed.transition.frameCount>ed.transition.frameBudget then set_expectation("equip-decision-transition","equip-decision-transition-timeout",equip_base,nil,equip_base,nil);fail_callback("equip-decision transition frame budget exhausted") end
   end
   if frames%600==0 then status("frame="..frames..",pc="..string.format("%X",emu.getregister("M68K PC"))) end
 end

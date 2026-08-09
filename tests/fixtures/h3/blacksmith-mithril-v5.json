@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 4,
-  "id": "sf2-blacksmith-mithril-runtime-v4",
+  "schemaVersion": 5,
+  "id": "sf2-blacksmith-mithril-runtime-v5",
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": {
     "name": "BizHawk",
@@ -47,9 +47,10 @@
     "fulfillEntryAddress": 138050,
     "fulfillSelectionLoopAddress": 138072,
     "fulfillAddItemEntryAddress": 138212,
-    "fulfillDoneAddress": 138452
+    "fulfillDoneAddress": 138452,
+    "fulfillPostEquippabilityAddress": 138268
   },
-  "observationBoundary": "One BizHawk 2.11.1 / Genesis Plus GX process retains the accepted five-case direct PickMithrilWeapon probe, then three distinct direct post-confirmation @PlaceOrder cases, three direct accepted-recipient @AddItem cases, and five pre-commit admission cases. Static ownership spans BlacksmithAction_FulfillOrder entry through original @AddItem; runtime starts only at the source selection-loop label 0x21B58. Python validates the canonical ROM manifest identity and builds a disposable private session copy with exactly seven source/H1/ROM-verified six-byte spans: four JSR service-call shims to generated work-RAM 0xFF6D00 and three JMP presentation terminal-boundary shims at txt197, txt208, and txt167 to generated work-RAM 0xFF6D20. Each service stub sets only the declared D0, D2, or CCR result and RTSs to the original return PC. Lua reads back the already-patched session-ROM configuration and writes only generated work-RAM stubs; member-list, held-item, equipment-type, and equippability helper bodies are not executed. Reaching a terminal-boundary shim proves only the prior original branch reached that source boundary. The seven spans cannot overlap retained v3 helper/transaction/fulfillment observation PCs, including original @AddItem 0x21BE4. At that shared PC, active pre-commit tool/equippable cohorts record only the neutral add-item boundary before any body evidence, then run the linked retained direct-fulfillment frame/order/inventory case solely for harness cleanup. Its observed callbacks are excluded from the pre-commit chronology; its established stack-return seam enters the generated result before optional-equip presentation. Full-inventory retry/abort and non-equippable prompt accept/retry remain Unknown because txt208 and txt167 precede their prompt calls; prompt/UI behavior and repeated selection remain Unknown. Existing fulfillment cases observe AddItem first-ITEM_NOTHING insertion, source-selected order word read and clear, fulfilledOrdersNumber increment, and IsWeaponOrRingEquippable carry. The observer snapshots and restores only CURRENT_GOLD's longword, RANDOM_SEED's word, the four MITHRIL_WEAPONS_ON_ORDER words, the one GAME_FLAGS byte owning flag 80, the three selected 56-byte combatant records, DIALOGUE_NAME_INDEX_1's word, SELECTED_ITEM_INDEX's word, and CURRENT_ITEM_SUBMENU_ACTION's byte. Case and fulfillment-to-first-precommit transition watchdog 180-frame budgets are harness protocol, not original timing evidence. The canonical ROM remains immutable; the disposable session copy is deleted rather than restored. Probe code, synthetic action frame, stack, generated stubs, and other work RAM are excluded from the restoration claim.",
+  "observationBoundary": "One BizHawk 2.11.1 / Genesis Plus GX process retains the accepted five helper, three post-confirmation placement, three direct-fulfillment, and five pre-commit admission cases, then runs five source-valid post-AddItem optional-equip decision cases. Static ownership is the BlacksmithAction_FulfillOrder continuation from the IsWeaponOrRingEquippable return branch at 0x21C1C through @Done 0x21CD4; the ring and newly-equipped-cursed branches stay source-visible but are statically outside the current all-weapon/noncursed Mithril-output domain. Python verifies the canonical ROM manifest and creates a private disposable session copy with exactly twelve non-overlapping source/H1/ROM-bound spans: the retained seven six-byte v4 spans (four JSR service stubs at 0xFF6D00 and three pre-presentation JMP boundaries at 0xFF6D20), one four-byte 0x21C20 4E4500AD -> 60000002 BRA.W +2 skip to the preserved 0x21C24 prompt JSR, the six-byte prompt JSR shim to 0xFF6D40, and the three six-byte current-cursed/noncursed/do-not-equip terminal JMPs to 0xFF6D60. Controlled prompt result and helper returns are harness inputs, never UI claims; Lua reads every session-copy patch and generated-stub write back. Original text traps, prompt rendering/input, WaitForVInt, music/audio, caller continuation, ring output, and newly-equipped-cursed output are not executed or claimed. The session spans are rejected if they overlap each other or any retained v4 observation PC; the canonical ROM is rehashed unchanged, and the session copy is deleted in all outcomes. Callback/setup/loop/watchdog exceptions produce one terminal structured failure, remove output, clear callbacks, and set a nonzero emulator result. Case and transition watchdog budgets are harness protocol, not original timing evidence. The existing scoped snapshot/restoration claim remains only CURRENT_GOLD, RANDOM_SEED, order words, flag-80 byte, selected combatant records, dialogue/item selection globals, and submenu action; generated work RAM, stack, action frame, and other memory are excluded.",
   "caseOrder": [
     "ordinary-group0-early-slot0",
     "ordinary-group2-final-slot1",
@@ -316,10 +317,173 @@
       ]
     }
   ],
+  "retainedV4": {
+    "caseCount": 16,
+    "sha256": "7F84BB2C8A1E7EF4079C527D672B9A33B60908B0A50A77C8880A632DA5DE5CC2"
+  },
+  "equipDecisionDomain": {
+    "choiceCount": 32,
+    "uniqueItemIndexes": [
+      30,
+      31,
+      40,
+      41,
+      42,
+      43,
+      52,
+      53,
+      54,
+      65,
+      66,
+      68,
+      69,
+      80,
+      81,
+      82,
+      83,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100,
+      107,
+      108,
+      109
+    ],
+    "uniqueItemCount": 26,
+    "weaponItemCount": 26,
+    "ringItemCount": 0,
+    "cursedItemCount": 0
+  },
+  "equipDecisionCaseOrder": [
+    "non-equippable-no-prompt-do-not-equip",
+    "hero-levanter-prompt-decline-do-not-equip",
+    "hero-levanter-no-equipped-weapon",
+    "hero-levanter-replaces-uncursed-battle-sword",
+    "hero-levanter-blocked-by-cursed-dark-sword"
+  ],
+  "equipDecisionCases": [
+    {
+      "id": "non-equippable-no-prompt-do-not-equip",
+      "clientMember": 2,
+      "recipientClass": 21,
+      "itemIndex": 69,
+      "clientItemWordsBefore": [
+        1,
+        2,
+        3,
+        127
+      ],
+      "ordersBefore": [
+        69,
+        80,
+        99,
+        100
+      ],
+      "ordersCounter": 4,
+      "fulfilledOrdersBefore": 20,
+      "promptResult": null,
+      "existingEquippedItemIndex": null,
+      "statusEffectsBefore": 0
+    },
+    {
+      "id": "hero-levanter-prompt-decline-do-not-equip",
+      "clientMember": 0,
+      "recipientClass": 12,
+      "itemIndex": 69,
+      "clientItemWordsBefore": [
+        1,
+        2,
+        3,
+        127
+      ],
+      "ordersBefore": [
+        69,
+        80,
+        99,
+        100
+      ],
+      "ordersCounter": 4,
+      "fulfilledOrdersBefore": 21,
+      "promptResult": -1,
+      "existingEquippedItemIndex": null,
+      "statusEffectsBefore": 0
+    },
+    {
+      "id": "hero-levanter-no-equipped-weapon",
+      "clientMember": 0,
+      "recipientClass": 12,
+      "itemIndex": 69,
+      "clientItemWordsBefore": [
+        1,
+        2,
+        3,
+        127
+      ],
+      "ordersBefore": [
+        69,
+        80,
+        99,
+        100
+      ],
+      "ordersCounter": 4,
+      "fulfilledOrdersBefore": 22,
+      "promptResult": 0,
+      "existingEquippedItemIndex": null,
+      "statusEffectsBefore": 0
+    },
+    {
+      "id": "hero-levanter-replaces-uncursed-battle-sword",
+      "clientMember": 0,
+      "recipientClass": 12,
+      "itemIndex": 69,
+      "clientItemWordsBefore": [
+        194,
+        1,
+        2,
+        127
+      ],
+      "ordersBefore": [
+        69,
+        80,
+        99,
+        100
+      ],
+      "ordersCounter": 4,
+      "fulfilledOrdersBefore": 23,
+      "promptResult": 0,
+      "existingEquippedItemIndex": 66,
+      "statusEffectsBefore": 0
+    },
+    {
+      "id": "hero-levanter-blocked-by-cursed-dark-sword",
+      "clientMember": 0,
+      "recipientClass": 12,
+      "itemIndex": 69,
+      "clientItemWordsBefore": [
+        198,
+        1,
+        2,
+        127
+      ],
+      "ordersBefore": [
+        69,
+        80,
+        99,
+        100
+      ],
+      "ordersCounter": 4,
+      "fulfilledOrdersBefore": 24,
+      "promptResult": 0,
+      "existingEquippedItemIndex": 70,
+      "statusEffectsBefore": 0
+    }
+  ],
   "acceptedObservation": {
     "system": "GEN",
     "core": "Genesis Plus GX",
-    "id": "sf2-blacksmith-mithril-runtime-v4",
+    "id": "sf2-blacksmith-mithril-runtime-v5",
     "caseOrder": [
       "ordinary-group0-early-slot0",
       "ordinary-group2-final-slot1",
@@ -1709,6 +1873,736 @@
       "dialogueNameIndex1WordRestored": true,
       "selectedItemIndexWordRestored": true,
       "currentItemSubmenuActionByteRestored": true
+    },
+    "equipDecisionCaseOrder": [
+      "non-equippable-no-prompt-do-not-equip",
+      "hero-levanter-prompt-decline-do-not-equip",
+      "hero-levanter-no-equipped-weapon",
+      "hero-levanter-replaces-uncursed-battle-sword",
+      "hero-levanter-blocked-by-cursed-dark-sword"
+    ],
+    "equipDecisionRecords": [
+      {
+        "id": "non-equippable-no-prompt-do-not-equip",
+        "clientMember": 2,
+        "recipientClass": 21,
+        "itemIndex": 69,
+        "clientItemWordsBefore": [
+          1,
+          2,
+          3,
+          127
+        ],
+        "clientItemWordsAfter": [
+          1,
+          2,
+          3,
+          69
+        ],
+        "itemWriteIndex": 3,
+        "ordersBefore": [
+          69,
+          80,
+          99,
+          100
+        ],
+        "ordersAfter": [
+          0,
+          80,
+          99,
+          100
+        ],
+        "ordersCounter": 4,
+        "selectedOrderIndex": 0,
+        "fulfilledOrdersBefore": 20,
+        "fulfilledOrdersAfter": 21,
+        "equippableCarrySet": false,
+        "promptResult": null,
+        "promptShown": false,
+        "equipmentType": null,
+        "existingEquippedSlot": null,
+        "existingEquippedItemIndex": null,
+        "unequipResult": null,
+        "equipSlot": null,
+        "equipResult": null,
+        "statusEffectsBefore": 0,
+        "statusEffectsAfter": 0,
+        "terminal": "do-not-equip-pre-presentation",
+        "terminalPc": 138448,
+        "callbackChronology": [
+          {
+            "role": "equip-decision-post-equippability-branch",
+            "pc": 138268
+          },
+          {
+            "role": "equip-decision-do-not-equip-pre-presentation",
+            "pc": 138448
+          },
+          {
+            "role": "equip-decision-generated-terminal-stub",
+            "pc": 16739680
+          }
+        ]
+      },
+      {
+        "id": "hero-levanter-prompt-decline-do-not-equip",
+        "clientMember": 0,
+        "recipientClass": 12,
+        "itemIndex": 69,
+        "clientItemWordsBefore": [
+          1,
+          2,
+          3,
+          127
+        ],
+        "clientItemWordsAfter": [
+          1,
+          2,
+          3,
+          69
+        ],
+        "itemWriteIndex": 3,
+        "ordersBefore": [
+          69,
+          80,
+          99,
+          100
+        ],
+        "ordersAfter": [
+          0,
+          80,
+          99,
+          100
+        ],
+        "ordersCounter": 4,
+        "selectedOrderIndex": 0,
+        "fulfilledOrdersBefore": 21,
+        "fulfilledOrdersAfter": 22,
+        "equippableCarrySet": true,
+        "promptResult": -1,
+        "promptShown": true,
+        "equipmentType": null,
+        "existingEquippedSlot": null,
+        "existingEquippedItemIndex": null,
+        "unequipResult": null,
+        "equipSlot": null,
+        "equipResult": null,
+        "statusEffectsBefore": 0,
+        "statusEffectsAfter": 0,
+        "terminal": "do-not-equip-pre-presentation",
+        "terminalPc": 138448,
+        "callbackChronology": [
+          {
+            "role": "equip-decision-post-equippability-branch",
+            "pc": 138268
+          },
+          {
+            "role": "equip-decision-controlled-prompt-call-shim",
+            "pc": 138276
+          },
+          {
+            "role": "equip-decision-generated-prompt-stub",
+            "pc": 16739648
+          },
+          {
+            "role": "equip-decision-prompt-original-return",
+            "pc": 138282
+          },
+          {
+            "role": "equip-decision-prompt-compare",
+            "pc": 138282
+          },
+          {
+            "role": "equip-decision-prompt-decline-branch",
+            "pc": 138286
+          },
+          {
+            "role": "equip-decision-do-not-equip-pre-presentation",
+            "pc": 138448
+          },
+          {
+            "role": "equip-decision-generated-terminal-stub",
+            "pc": 16739680
+          }
+        ]
+      },
+      {
+        "id": "hero-levanter-no-equipped-weapon",
+        "clientMember": 0,
+        "recipientClass": 12,
+        "itemIndex": 69,
+        "clientItemWordsBefore": [
+          1,
+          2,
+          3,
+          127
+        ],
+        "clientItemWordsAfter": [
+          1,
+          2,
+          3,
+          197
+        ],
+        "itemWriteIndex": 3,
+        "ordersBefore": [
+          69,
+          80,
+          99,
+          100
+        ],
+        "ordersAfter": [
+          0,
+          80,
+          99,
+          100
+        ],
+        "ordersCounter": 4,
+        "selectedOrderIndex": 0,
+        "fulfilledOrdersBefore": 22,
+        "fulfilledOrdersAfter": 23,
+        "equippableCarrySet": true,
+        "promptResult": 0,
+        "promptShown": true,
+        "equipmentType": 1,
+        "existingEquippedSlot": null,
+        "existingEquippedItemIndex": null,
+        "unequipResult": null,
+        "equipSlot": 3,
+        "equipResult": 0,
+        "statusEffectsBefore": 0,
+        "statusEffectsAfter": 0,
+        "terminal": "noncursed-equip-pre-presentation",
+        "terminalPc": 138440,
+        "callbackChronology": [
+          {
+            "role": "equip-decision-post-equippability-branch",
+            "pc": 138268
+          },
+          {
+            "role": "equip-decision-controlled-prompt-call-shim",
+            "pc": 138276
+          },
+          {
+            "role": "equip-decision-generated-prompt-stub",
+            "pc": 16739648
+          },
+          {
+            "role": "equip-decision-prompt-original-return",
+            "pc": 138282
+          },
+          {
+            "role": "equip-decision-prompt-compare",
+            "pc": 138282
+          },
+          {
+            "role": "equip-decision-prompt-decline-branch",
+            "pc": 138286
+          },
+          {
+            "role": "equip-decision-equipment-type-call",
+            "pc": 138294
+          },
+          {
+            "role": "equip-decision-equipment-type-instruction-target",
+            "pc": 33144
+          },
+          {
+            "role": "equip-decision-equipment-type-effective-target",
+            "pc": 35880
+          },
+          {
+            "role": "equip-decision-equipment-type-effective-return",
+            "pc": 35914
+          },
+          {
+            "role": "equip-decision-equipment-type-original-return",
+            "pc": 138300
+          },
+          {
+            "role": "equip-decision-equipment-type-compare",
+            "pc": 138300
+          },
+          {
+            "role": "equip-decision-weapon-type-branch",
+            "pc": 138304
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-call",
+            "pc": 138310
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-instruction-target",
+            "pc": 33148
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-effective-target",
+            "pc": 35916
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-effective-return",
+            "pc": 36000
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-original-return",
+            "pc": 138316
+          },
+          {
+            "role": "equip-decision-weapon-equipped-compare",
+            "pc": 138316
+          },
+          {
+            "role": "equip-decision-weapon-empty-branch",
+            "pc": 138320
+          },
+          {
+            "role": "equip-decision-held-items-call",
+            "pc": 138396
+          },
+          {
+            "role": "equip-decision-held-items-instruction-target",
+            "pc": 33140
+          },
+          {
+            "role": "equip-decision-held-items-effective-target",
+            "pc": 35834
+          },
+          {
+            "role": "equip-decision-held-items-effective-return",
+            "pc": 35878
+          },
+          {
+            "role": "equip-decision-held-items-original-return",
+            "pc": 138402
+          },
+          {
+            "role": "equip-decision-equip-call",
+            "pc": 138406
+          },
+          {
+            "role": "equip-decision-equip-instruction-target",
+            "pc": 33164
+          },
+          {
+            "role": "equip-decision-equip-effective-target",
+            "pc": 36148
+          },
+          {
+            "role": "equip-decision-equip-effective-return",
+            "pc": 35364
+          },
+          {
+            "role": "equip-decision-equip-original-return",
+            "pc": 138412
+          },
+          {
+            "role": "equip-decision-new-equip-cursed-compare",
+            "pc": 138412
+          },
+          {
+            "role": "equip-decision-new-equip-noncursed-branch",
+            "pc": 138416
+          },
+          {
+            "role": "equip-decision-noncursed-equip-pre-presentation",
+            "pc": 138440
+          },
+          {
+            "role": "equip-decision-generated-terminal-stub",
+            "pc": 16739680
+          }
+        ]
+      },
+      {
+        "id": "hero-levanter-replaces-uncursed-battle-sword",
+        "clientMember": 0,
+        "recipientClass": 12,
+        "itemIndex": 69,
+        "clientItemWordsBefore": [
+          194,
+          1,
+          2,
+          127
+        ],
+        "clientItemWordsAfter": [
+          66,
+          1,
+          2,
+          197
+        ],
+        "itemWriteIndex": 3,
+        "ordersBefore": [
+          69,
+          80,
+          99,
+          100
+        ],
+        "ordersAfter": [
+          0,
+          80,
+          99,
+          100
+        ],
+        "ordersCounter": 4,
+        "selectedOrderIndex": 0,
+        "fulfilledOrdersBefore": 23,
+        "fulfilledOrdersAfter": 24,
+        "equippableCarrySet": true,
+        "promptResult": 0,
+        "promptShown": true,
+        "equipmentType": 1,
+        "existingEquippedSlot": 0,
+        "existingEquippedItemIndex": 66,
+        "unequipResult": 0,
+        "equipSlot": 3,
+        "equipResult": 0,
+        "statusEffectsBefore": 0,
+        "statusEffectsAfter": 0,
+        "terminal": "noncursed-equip-pre-presentation",
+        "terminalPc": 138440,
+        "callbackChronology": [
+          {
+            "role": "equip-decision-post-equippability-branch",
+            "pc": 138268
+          },
+          {
+            "role": "equip-decision-controlled-prompt-call-shim",
+            "pc": 138276
+          },
+          {
+            "role": "equip-decision-generated-prompt-stub",
+            "pc": 16739648
+          },
+          {
+            "role": "equip-decision-prompt-original-return",
+            "pc": 138282
+          },
+          {
+            "role": "equip-decision-prompt-compare",
+            "pc": 138282
+          },
+          {
+            "role": "equip-decision-prompt-decline-branch",
+            "pc": 138286
+          },
+          {
+            "role": "equip-decision-equipment-type-call",
+            "pc": 138294
+          },
+          {
+            "role": "equip-decision-equipment-type-instruction-target",
+            "pc": 33144
+          },
+          {
+            "role": "equip-decision-equipment-type-effective-target",
+            "pc": 35880
+          },
+          {
+            "role": "equip-decision-equipment-type-effective-return",
+            "pc": 35914
+          },
+          {
+            "role": "equip-decision-equipment-type-original-return",
+            "pc": 138300
+          },
+          {
+            "role": "equip-decision-equipment-type-compare",
+            "pc": 138300
+          },
+          {
+            "role": "equip-decision-weapon-type-branch",
+            "pc": 138304
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-call",
+            "pc": 138310
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-instruction-target",
+            "pc": 33148
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-effective-target",
+            "pc": 35916
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-effective-return",
+            "pc": 36000
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-original-return",
+            "pc": 138316
+          },
+          {
+            "role": "equip-decision-weapon-equipped-compare",
+            "pc": 138316
+          },
+          {
+            "role": "equip-decision-weapon-empty-branch",
+            "pc": 138320
+          },
+          {
+            "role": "equip-decision-unequip-call",
+            "pc": 138324
+          },
+          {
+            "role": "equip-decision-unequip-instruction-target",
+            "pc": 33168
+          },
+          {
+            "role": "equip-decision-unequip-effective-target",
+            "pc": 36254
+          },
+          {
+            "role": "equip-decision-unequip-effective-return",
+            "pc": 35364
+          },
+          {
+            "role": "equip-decision-unequip-original-return",
+            "pc": 138330
+          },
+          {
+            "role": "equip-decision-weapon-unequip-compare",
+            "pc": 138330
+          },
+          {
+            "role": "equip-decision-weapon-unequip-branch",
+            "pc": 138334
+          },
+          {
+            "role": "equip-decision-held-items-call",
+            "pc": 138396
+          },
+          {
+            "role": "equip-decision-held-items-instruction-target",
+            "pc": 33140
+          },
+          {
+            "role": "equip-decision-held-items-effective-target",
+            "pc": 35834
+          },
+          {
+            "role": "equip-decision-held-items-effective-return",
+            "pc": 35878
+          },
+          {
+            "role": "equip-decision-held-items-original-return",
+            "pc": 138402
+          },
+          {
+            "role": "equip-decision-equip-call",
+            "pc": 138406
+          },
+          {
+            "role": "equip-decision-equip-instruction-target",
+            "pc": 33164
+          },
+          {
+            "role": "equip-decision-equip-effective-target",
+            "pc": 36148
+          },
+          {
+            "role": "equip-decision-equip-effective-return",
+            "pc": 35364
+          },
+          {
+            "role": "equip-decision-equip-original-return",
+            "pc": 138412
+          },
+          {
+            "role": "equip-decision-new-equip-cursed-compare",
+            "pc": 138412
+          },
+          {
+            "role": "equip-decision-new-equip-noncursed-branch",
+            "pc": 138416
+          },
+          {
+            "role": "equip-decision-noncursed-equip-pre-presentation",
+            "pc": 138440
+          },
+          {
+            "role": "equip-decision-generated-terminal-stub",
+            "pc": 16739680
+          }
+        ]
+      },
+      {
+        "id": "hero-levanter-blocked-by-cursed-dark-sword",
+        "clientMember": 0,
+        "recipientClass": 12,
+        "itemIndex": 69,
+        "clientItemWordsBefore": [
+          198,
+          1,
+          2,
+          127
+        ],
+        "clientItemWordsAfter": [
+          198,
+          1,
+          2,
+          69
+        ],
+        "itemWriteIndex": 3,
+        "ordersBefore": [
+          69,
+          80,
+          99,
+          100
+        ],
+        "ordersAfter": [
+          0,
+          80,
+          99,
+          100
+        ],
+        "ordersCounter": 4,
+        "selectedOrderIndex": 0,
+        "fulfilledOrdersBefore": 24,
+        "fulfilledOrdersAfter": 25,
+        "equippableCarrySet": true,
+        "promptResult": 0,
+        "promptShown": true,
+        "equipmentType": 1,
+        "existingEquippedSlot": 0,
+        "existingEquippedItemIndex": 70,
+        "unequipResult": 2,
+        "equipSlot": null,
+        "equipResult": null,
+        "statusEffectsBefore": 0,
+        "statusEffectsAfter": 4,
+        "terminal": "current-cursed-pre-presentation",
+        "terminalPc": 138344,
+        "callbackChronology": [
+          {
+            "role": "equip-decision-post-equippability-branch",
+            "pc": 138268
+          },
+          {
+            "role": "equip-decision-controlled-prompt-call-shim",
+            "pc": 138276
+          },
+          {
+            "role": "equip-decision-generated-prompt-stub",
+            "pc": 16739648
+          },
+          {
+            "role": "equip-decision-prompt-original-return",
+            "pc": 138282
+          },
+          {
+            "role": "equip-decision-prompt-compare",
+            "pc": 138282
+          },
+          {
+            "role": "equip-decision-prompt-decline-branch",
+            "pc": 138286
+          },
+          {
+            "role": "equip-decision-equipment-type-call",
+            "pc": 138294
+          },
+          {
+            "role": "equip-decision-equipment-type-instruction-target",
+            "pc": 33144
+          },
+          {
+            "role": "equip-decision-equipment-type-effective-target",
+            "pc": 35880
+          },
+          {
+            "role": "equip-decision-equipment-type-effective-return",
+            "pc": 35914
+          },
+          {
+            "role": "equip-decision-equipment-type-original-return",
+            "pc": 138300
+          },
+          {
+            "role": "equip-decision-equipment-type-compare",
+            "pc": 138300
+          },
+          {
+            "role": "equip-decision-weapon-type-branch",
+            "pc": 138304
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-call",
+            "pc": 138310
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-instruction-target",
+            "pc": 33148
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-effective-target",
+            "pc": 35916
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-effective-return",
+            "pc": 36000
+          },
+          {
+            "role": "equip-decision-get-equipped-weapon-original-return",
+            "pc": 138316
+          },
+          {
+            "role": "equip-decision-weapon-equipped-compare",
+            "pc": 138316
+          },
+          {
+            "role": "equip-decision-weapon-empty-branch",
+            "pc": 138320
+          },
+          {
+            "role": "equip-decision-unequip-call",
+            "pc": 138324
+          },
+          {
+            "role": "equip-decision-unequip-instruction-target",
+            "pc": 33168
+          },
+          {
+            "role": "equip-decision-unequip-effective-target",
+            "pc": 36254
+          },
+          {
+            "role": "equip-decision-unequip-effective-return",
+            "pc": 35364
+          },
+          {
+            "role": "equip-decision-unequip-original-return",
+            "pc": 138330
+          },
+          {
+            "role": "equip-decision-weapon-unequip-compare",
+            "pc": 138330
+          },
+          {
+            "role": "equip-decision-weapon-unequip-branch",
+            "pc": 138334
+          },
+          {
+            "role": "equip-decision-current-cursed-pre-presentation",
+            "pc": 138344
+          },
+          {
+            "role": "equip-decision-generated-terminal-stub",
+            "pc": 16739680
+          }
+        ]
+      }
+    ],
+    "equipDecisionInstrumentation": {
+      "promptCallSiteReadback": true,
+      "promptPresentationSkipReadback": true,
+      "generatedPromptStubWriteReadback": true,
+      "terminalBoundarySitesReadback": [
+        "current-cursed-terminal-boundary-shim",
+        "noncursed-terminal-boundary-shim",
+        "do-not-equip-terminal-boundary-shim"
+      ],
+      "generatedTerminalStubWriteReadback": true
     }
   },
   "runtimeQuestions": [

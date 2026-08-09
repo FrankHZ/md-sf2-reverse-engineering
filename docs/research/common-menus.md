@@ -427,12 +427,59 @@ generated probe/frame/stack/stub work-RAM is excluded. The direct v3 11-case hel
 evidence is byte-for-byte retained in v4, for 16 total cases. Reproduce the grouped rail with
 `uv run sf2 h3 blacksmith-mithril --timeout-seconds 180`.
 
+**Confirmed — post-`@AddItem` optional-equip H3 cohort.** The bounded continuation starts at the
+equippability carry branch `0x21C1C` and ends at `@Done` `0x21CD4`. When carry is clear,
+`bcc.w byte_21CD0` reaches the do-not-equip presentation boundary without a prompt. When carry is set,
+the source prompt call is `0x21C24 → 0x10074 → 0x1528C`, with original caller return `0x21C2A`; controlled
+prompt values are harness inputs only. An accepted controlled value continues through `GetEquipmentType`,
+the weapon/ring split, `GetEquippedWeapon` or `GetEquippedRing`, cursed-aware unequip, held-item count,
+and `EquipItemBySlot`. The source retains current-cursed `txt176` at `0x21C68`, newly-equipped-cursed
+presentation after the music/wait path, noncursed `txt174` at `0x21CC8`, and do-not-equip `txt209` at
+`0x21CD0`; the one accepted H3 launch stops at those neutral pre-presentation boundaries and executes
+none of their presentation bodies.
+
+The complete eight-by-four Mithril table has 32 choices and 26 distinct IDs. Its source/H1/ROM/table-owner
+join shows all 26 item-definition rows have `ITEMTYPE_WEAPON`, with zero `ITEMTYPE_RING` and zero
+`ITEMTYPE_CURSED` rows. Therefore the ring and newly-equipped-cursed source branches remain visible static
+branches but are outside this Mithril-output runtime domain; this does not claim they are generally
+impossible. One grouped BizHawk 2.11.1 / Genesis Plus GX launch ran 21 cases: the exact retained v4
+16-record projection plus this compact five-case source-valid cohort. It confirmed, respectively: SNIP
+receiving Levanter with carry clear reaches the do-not-equip boundary without a prompt; HERO receiving
+Levanter with controlled prompt decline reaches that same boundary; HERO accepting with no equipped weapon
+equips the new item and reaches the noncursed boundary; HERO accepting with an equipped uncursed Battle
+Sword unequips it, equips the new item, and reaches that boundary; and HERO accepting while an equipped
+cursed Dark Sword blocks replacement reaches the current-cursed boundary without a new equip. The last
+case records `equipSlot = null`, `equipResult = null`, and status effects `0 → 4` before its boundary.
+
+The accepted launch uses a private session-copy plan with 12 source/H1/ROM-bound non-overlapping spans: the
+retained v4 seven six-byte service/terminal spans; the four-byte `0x21C20` `4E45 00AD → 6000 0002`
+`BRA.W +2` (the word displacement is relative to the extension-word PC) to the preserved prompt JSR; the six-byte prompt JSR to generated
+`0xFF6D40`; and three six-byte JMPs at `0x21C68`, `0x21CC8`, and `0x21CD0` to generated `0xFF6D60`.
+The mixed-width plan rejects opcode, width, displacement, target, terminal, overlap, retained-v4-PC,
+canonical-readback, and cleanup drift before any write; all 12 patched spans and generated stubs read back
+during the accepted launch. It never writes the canonical ROM; the session copy was deleted afterwards.
+One physical callback per PC dispatches deterministic roles, and callback/setup/loop/watchdog faults remove
+output, clear callbacks, and emit one terminal structured nonzero-exit failure with case, phase, role,
+expected/actual PC, and pending-state diagnostics. The successful terminal tail records
+`callbacks-cleared:0`; the scoped gold, seed, order, flag, combatant-record, dialogue-name, selected-item,
+and submenu-action restoration fields all read back true. The five v5 records are additive to the exact
+16-record v4 projection, whose SHA-256 remains
+`7F84BB2C8A1E7EF4079C527D672B9A33B60908B0A50A77C8880A632DA5DE5CC2`.
+`UnequipItemBySlotIfNotCursed` (`0x8DB2`, `6000 FC1A`) and `EquipItemBySlot` (`0x8D66`,
+`6000 FC66`) both tail-branch to `UpdateCombatantStats` (`0x89CE`) and share its RTS at `0x8A24`.
+The observer therefore records exactly one source-helper-effective-return role there from the pending
+call/target/return triple; it does not treat the shared PC as two calls or as evidence for an uncalled helper.
+The no-equipped-weapon case records only `equip-effective-return`; the uncursed replacement case records
+`unequip-effective-return → equip-effective-return`; and the cursed-Dark-Sword case records only
+`unequip-effective-return` at `0x8A24`.
+
 This does not claim BlacksmithMenu admission or natural story reachability, material/customer selection,
-the original member-list/yes-no/helper service behavior, complete UI rendering/input timing, original
-prompt results or retry chronology, optional equip/equip/curse branches after `@AddItem`, persistence,
-caller return timing, player input, audio/VDP/timing/rendering, RNG distribution, or hardware behavior;
-those remain **Unknown**. The grouped fulfillment runtime rail excludes those boundaries while
-retaining only source/H1/ROM-bound static facts and the already accepted direct-`@AddItem` evidence.
+the original member-list/yes-no/helper service behavior, complete UI rendering/input timing, natural prompt
+results or retry chronology, text traps, `WaitForVInt`, music/audio, persistence, caller continuation,
+player input, audio/VDP/timing/rendering, RNG distribution, ring output, newly-equipped-cursed output, or
+hardware behavior; those remain **Unknown**. The ring and newly-equipped-cursed source branches remain
+statically excluded from the current Mithril-output domain rather than generally impossible. The grouped
+rail confirms only the stated source-bounded decisions and mutations before presentation.
 
 The interaction-level handoff is recorded in
 [`service-interactions.md`](../design/contracts/service-interactions.md). It deliberately consumes only the

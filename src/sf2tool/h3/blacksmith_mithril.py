@@ -7,14 +7,18 @@ matrices.  The commitment cohort redirects only the original ``ClearFlag``
 return away from the first text trap.  The fulfillment cohort enters the
 original ``@AddItem`` block and redirects only the original
 ``IsWeaponOrRingEquippable`` return away from its following branch.  The v4
-pre-commit cohort starts at the original fulfillment selection-loop label,
+   pre-commit cohort starts at the original fulfillment selection-loop label,
 controls named service returns through generated work-RAM stubs, and stops at
 ``@AddItem`` or a source branch immediately before an excluded presentation
-path.  It never enters the introductory or prompt text bodies.
+   path.  The v5 equip-decision cohort continues the original ``@AddItem``
+   return only through neutral pre-presentation boundaries.  Its one controlled
+   prompt result is a session-ROM harness input; it never executes text, sound,
+   music, or prompt bodies.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import tempfile
@@ -35,7 +39,7 @@ from sf2tool.paths import repo_path
 from sf2tool.research_index import listing_symbol_addresses
 from sf2tool.rom import inspect_rom
 
-FIXTURE = repo_path("tests/fixtures/h3/blacksmith-mithril-v4.json")
+FIXTURE = repo_path("tests/fixtures/h3/blacksmith-mithril-v5.json")
 FIXTURE_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-fixture.schema.json")
 OBSERVATION_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-observation.schema.json")
 FAILURE_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-callback-failure.schema.json")
@@ -97,6 +101,74 @@ PRECOMMIT_SERVICE_STUB_SIZE = 6
 PRECOMMIT_TERMINAL_STUB_ADDRESS = 0xFF6D20
 PRECOMMIT_TERMINAL_STUB_SIZE = 6
 PRECOMMIT_CLEANUP_STACK_DEPTH_BYTES = 8
+EQUIP_DECISION_CASE_IDS = (
+    "non-equippable-no-prompt-do-not-equip",
+    "hero-levanter-prompt-decline-do-not-equip",
+    "hero-levanter-no-equipped-weapon",
+    "hero-levanter-replaces-uncursed-battle-sword",
+    "hero-levanter-blocked-by-cursed-dark-sword",
+)
+EQUIP_DECISION_PROMPT_STUB_ADDRESS = 0xFF6D40
+EQUIP_DECISION_PROMPT_STUB_SIZE = 6
+EQUIP_DECISION_TERMINAL_STUB_ADDRESS = 0xFF6D60
+EQUIP_DECISION_TERMINAL_STUB_SIZE = 6
+
+
+def _retained_v4_projection(fixture: dict[str, Any]) -> dict[str, Any]:
+    """Return the accepted v4 corpus exactly, excluding only the v5 root ID.
+
+    v5 is intentionally additive: its new cohort may change the encompassing
+    observation identity but may not silently rewrite any accepted v4 input or
+    observation.  Keep this projection small and named instead of embedding a
+    second large corpus in a schema.
+    """
+
+    keys = (
+        "caseOrder",
+        "cases",
+        "transactionCaseOrder",
+        "transactionCases",
+        "fulfillmentCaseOrder",
+        "fulfillmentCases",
+        "precommitCaseOrder",
+        "precommitCases",
+    )
+    observation_keys = (
+        "system",
+        "core",
+        "caseOrder",
+        "records",
+        "transactionCaseOrder",
+        "transactionRecords",
+        "fulfillmentCaseOrder",
+        "fulfillmentRecords",
+        "precommitCaseOrder",
+        "precommitRecords",
+        "callbacksCleared",
+        "precommitInstrumentation",
+        "precommitRestoration",
+        "restoration",
+    )
+    accepted = fixture["acceptedObservation"]
+    return {
+        **{key: fixture[key] for key in keys},
+        "acceptedObservation": {key: accepted[key] for key in observation_keys},
+    }
+
+
+def _retained_v4_sha256(fixture: dict[str, Any]) -> str:
+    encoded = json.dumps(
+        _retained_v4_projection(fixture), sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest().upper()
+
+
+def _assert_retained_v4_digest(fixture: dict[str, Any]) -> None:
+    retained = fixture.get("retainedV4")
+    if not isinstance(retained, dict) or retained.get("caseCount") != 16:
+        raise ValueError("blacksmith retained-v4 case-count guard drift")
+    if retained.get("sha256") != _retained_v4_sha256(fixture):
+        raise ValueError("blacksmith retained-v4 digest guard drift")
 
 
 def _source_section(source: str, symbol: str) -> str:
@@ -197,6 +269,7 @@ def _required_equates(values: dict[str, int]) -> dict[str, int]:
         "COMBATANT_ITEMSLOTS",
         "COMBATANT_OFFSET_CLASS",
         "COMBATANT_OFFSET_ITEMS",
+        "COMBATANT_OFFSET_STATUSEFFECTS",
         "GAME_FLAGS",
         "FLAG_MASK",
         "CURRENT_GOLD",
@@ -209,6 +282,9 @@ def _required_equates(values: dict[str, int]) -> dict[str, int]:
         "ITEMDEF_OFFSET_TYPE",
         "ITEMTYPE_WEAPON",
         "ITEMTYPE_RING",
+        "ITEMTYPE_CURSED",
+        "ITEMENTRY_BIT_EQUIPPED",
+        "STATUSEFFECT_CURSE",
         "EQUIPMENTTYPE_TOOL",
         "EQUIPMENTTYPE_WEAPON",
         "EQUIPMENTTYPE_RING",
@@ -218,6 +294,8 @@ def _required_equates(values: dict[str, int]) -> dict[str, int]:
         "ITEM_LEVANTER",
         "ITEM_GODDESS_STAFF",
         "ITEM_MYSTERY_STAFF",
+        "ITEM_BATTLE_SWORD",
+        "ITEM_DARK_SWORD",
         "CLASS_BRN",
         "CLASS_RDBN",
         "ITEM_MITHRIL",
@@ -226,6 +304,8 @@ def _required_equates(values: dict[str, int]) -> dict[str, int]:
         "DIALOGUE_NAME_INDEX_1",
         "SELECTED_ITEM_INDEX",
         "CURRENT_ITEM_SUBMENU_ACTION",
+        "COMBATANT_OFFSET_STATUSEFFECTS",
+        "STATUSEFFECT_CURSE",
     )
     missing = [name for name in names if name not in values]
     if missing:
@@ -692,6 +772,168 @@ def _require_fulfillment_source_shape(actions_source: str, item_source: str) -> 
     )
 
 
+def _require_fulfillment_equip_decision_source_shape(actions_source: str, item_source: str) -> None:
+    """Guard the complete post-``@AddItem`` decision section before runtime.
+
+    The checks deliberately retain the ring and newly-equipped-cursed paths even
+    though the current Mithril table domain statically excludes them.  Source
+    presence is not runtime reachability.
+    """
+
+    _require_source_sequence(
+        _source_section(actions_source, "BlacksmithAction_FulfillOrder"),
+        (
+            "@additem:",
+            "jsr j_isweaponorringequippable",
+            "bcc.w byte_21cd0",
+            "txt 173",
+            "jsr j_alt_yesnoprompt",
+            "cmpi.w #0,d0",
+            "bne.w byte_21cd0",
+            "move.w itemindex(a6),d1",
+            "jsr j_getequipmenttype",
+            "cmpi.w #equipmenttype_weapon,d2",
+            "bne.s @hasringequipped",
+            "move.w clientmember(a6),d0",
+            "jsr j_getequippedweapon",
+            "cmpi.w #-1,d1",
+            "beq.s @equipnewitem",
+            "move.w d2,d1",
+            "jsr j_unequipitembyslotifnotcursed",
+            "cmpi.w #2,d2",
+            "bne.w @equipnewitem",
+            "txt 176",
+            "bra.s byte_21cd0",
+            "@hasringequipped:",
+            "move.w clientmember(a6),d0",
+            "jsr j_getequippedring",
+            "cmpi.w #-1,d1",
+            "beq.s @equipnewitem",
+            "move.w d2,d1",
+            "jsr j_unequipitembyslotifnotcursed",
+            "cmpi.w #2,d2",
+            "bne.w @equipnewitem",
+            "txt 176",
+            "bra.s byte_21cd0",
+            "@equipnewitem:",
+            "moveq #0,d1",
+            "jsr j_getitembyslotandhelditemsnumber",
+            "move.w d2,d1",
+            "subq.w #1,d1",
+            "jsr j_equipitembyslot",
+            "cmpi.w #2,d2",
+            "bne.s byte_21cc8",
+            "sndcom music_cursed_item",
+            "bsr.w waitformusicresumeandplayerinput_blacksmith",
+            "txt 175",
+            "bra.w @done",
+            "@notcursed:",
+            "txt 174",
+            "bra.w @done",
+            "@donotequipnewitem:",
+            "txt 209",
+            "@done:",
+        ),
+        name="BlacksmithAction_FulfillOrder post-AddItem equip decision",
+    )
+    _require_source_sequence(
+        _source_section(item_source, "GetEquipmentType"),
+        (
+            "getequipmenttype:",
+            "bsr.s getitemdefinitionaddress",
+            "addq.w #itemdef_offset_type,a0",
+            "btst #itemtype_bit_weapon,(a0)",
+            "bne.s @weapon",
+            "btst #itemtype_bit_ring,(a0)",
+            "bne.s @ring",
+            "clr.w d2",
+            "@ring:",
+            "move.w #equipmenttype_ring,d2",
+            "@weapon:",
+            "move.w #equipmenttype_weapon,d2",
+        ),
+        name="GetEquipmentType weapon/ring split",
+    )
+    _require_source_sequence(
+        _source_section(item_source, "GetEquippedWeapon"),
+        (
+            "getequippedweapon:",
+            "movem.l d3-d4/a0-a1,-(sp)",
+            "move.w #itemtype_weapon,d4",
+            "bra.s getequippeditembytype",
+        ),
+        name="GetEquippedWeapon type wrapper",
+    )
+    _require_source_sequence(
+        _source_section(item_source, "GetEquippedRing"),
+        ("getequippedring:", "movem.l d3-d4/a0-a1,-(sp)", "move.w #itemtype_ring,d4"),
+        name="GetEquippedRing type wrapper",
+    )
+    _require_source_sequence(
+        _source_section(item_source, "UnequipItemBySlotIfNotCursed"),
+        (
+            "unequipitembyslotifnotcursed:",
+            "bsr.s isiteminslotequippedorcursed",
+            "tst.w d2",
+            "bne.s @skip",
+            "bclr #itementry_bit_equipped,itementry_offset_index_and_equipped_bit(a0)",
+            "bra.w updatecombatantstats",
+        ),
+        name="UnequipItemBySlotIfNotCursed result/mutation tail",
+    )
+    _require_source_sequence(
+        _source_section(item_source, "IsItemInSlotEquippedOrCursed"),
+        (
+            "isiteminslotequippedorcursed:",
+            "andi.w #itementry_mask_index,d1",
+            "cmpi.w #item_nothing,d1",
+            "beq.s @emptyslot",
+            "btst #itementry_bit_equipped,itementry_offset_index_and_equipped_bit(a0)",
+            "beq.s @notequipped",
+            "btst #itemtype_bit_cursed,itemdef_offset_type(a0)",
+            "bne.s @cursed",
+            "clr.w d2",
+            "@cursed:",
+            "move.w #2,d2",
+        ),
+        name="IsItemInSlotEquippedOrCursed curse result",
+    )
+    _require_source_sequence(
+        _source_section(item_source, "EquipItemBySlot"),
+        (
+            "equipitembyslot:",
+            "andi.w #itementry_mask_index,d1",
+            "cmpi.w #item_nothing,d1",
+            "beq.s @nothing",
+            "bsr.s isitemequippableandcursed",
+            "cmpi.w #1,d2",
+            "beq.s @goto_done",
+            "bset #itementry_bit_equipped,itementry_offset_index_and_equipped_bit(a0)",
+            "bra.w updatecombatantstats",
+        ),
+        name="EquipItemBySlot equipped-bit/result tail",
+    )
+    _require_source_sequence(
+        _source_section(item_source, "IsItemEquippableAndCursed"),
+        (
+            "isitemequippableandcursed:",
+            "move.b combatant_offset_class(a0),d0",
+            "addq.b #1,d0",
+            "move.l (a0),d1",
+            "lsr.l d0,d1",
+            "bcc.s @notequippable",
+            "btst #itemtype_bit_cursed,itemdef_offset_type(a0)",
+            "bne.s @equippableandcursed",
+            "clr.w d2",
+            "@equippableandcursed:",
+            "move.w #2,d2",
+            "@notequippable:",
+            "move.w #1,d2",
+        ),
+        name="IsItemEquippableAndCursed result contract",
+    )
+
+
 def _item_definition_rows(
     source: str, equates: dict[str, int], item_indexes: set[int]
 ) -> dict[int, dict[str, int]]:
@@ -969,6 +1211,7 @@ def build_static_contract(
     )
     _require_fulfillment_precommit_source_shape(actions_source)
     _require_fulfillment_source_shape(actions_source, item_source)
+    _require_fulfillment_equip_decision_source_shape(actions_source, item_source)
     client_class_offset = _source_local_offset(pick_source, "PickMithrilWeapon", "clientClass")
     action_frame_offsets = _source_frame_offsets(
         actions_source,
@@ -1048,16 +1291,29 @@ def build_static_contract(
         or required["ITEM_NOTHING"] != item_definition_count - 1
     ):
         raise ValueError("blacksmith core-stats item-definition source/H1 domain drift")
+    mithril_item_indexes = {int(choice["itemIndex"]) for row in rows for choice in row}
     fulfillment_item_indexes = {int(case["itemIndex"]) for case in fixture["fulfillmentCases"]}
+    equip_decision_item_indexes = {int(case["itemIndex"]) for case in fixture["equipDecisionCases"]}
+    prior_equipment_item_indexes = {
+        int(case["existingEquippedItemIndex"])
+        for case in fixture["equipDecisionCases"]
+        if case["existingEquippedItemIndex"] is not None
+    }
+    required_item_indexes = (
+        mithril_item_indexes
+        | fulfillment_item_indexes
+        | equip_decision_item_indexes
+        | prior_equipment_item_indexes
+    )
     if any(
         item_index < 0 or item_index >= item_definition_count
-        for item_index in fulfillment_item_indexes
+        for item_index in required_item_indexes
     ):
-        raise ValueError("blacksmith fulfillment item-definition source domain drift")
+        raise ValueError("blacksmith fulfillment/equip item-definition source domain drift")
     item_definitions = _item_definition_rows(
         itemdefs_source,
         equates,
-        fulfillment_item_indexes,
+        required_item_indexes,
     )
     summary = item_owner["summary"]
     if (
@@ -1125,17 +1381,41 @@ def build_static_contract(
     fulfill_labels, fulfill_instructions = _listing_section(
         listing, "BlacksmithAction_FulfillOrder"
     )
+    fulfill_post_equippability = next(
+        instruction
+        for instruction in fulfill_instructions
+        if _h1_text(instruction).startswith("bcc.w byte_21CD0")
+    )
     if (
         source_context["fulfillAddItemEntryAddress"] != fulfill_labels["@AddItem"]
         or source_context["fulfillEntryAddress"] != fulfill_labels["BlacksmithAction_FulfillOrder"]
-        or source_context["fulfillSelectionLoopAddress"]
-        != fulfill_labels["byte_21B58"]
+        or source_context["fulfillSelectionLoopAddress"] != fulfill_labels["byte_21B58"]
         or source_context["fulfillDoneAddress"] != fulfill_labels["@Done"]
+        or source_context["fulfillPostEquippabilityAddress"]
+        != fulfill_post_equippability["address"]
     ):
         raise ValueError("blacksmith fixture fulfill-order source-context drift")
     add_labels, add_instructions = _listing_section(listing, "AddItem")
     equippable_labels, equippable_instructions = _listing_section(
         listing, "IsWeaponOrRingEquippable"
+    )
+    equipment_type_labels, equipment_type_instructions = _listing_section(
+        listing, "GetEquipmentType"
+    )
+    equipped_weapon_labels, equipped_weapon_instructions = _listing_section(
+        listing, "GetEquippedWeapon"
+    )
+    equipped_ring_labels, equipped_ring_instructions = _listing_section(listing, "GetEquippedRing")
+    equipped_item_labels, equipped_item_instructions = _listing_symbol_section(
+        listing, "GetEquippedItemByType"
+    )
+    held_items_labels, held_items_instructions = _listing_section(
+        listing, "GetItemBySlotAndHeldItemsNumber"
+    )
+    unequip_labels, unequip_instructions = _listing_section(listing, "UnequipItemBySlotIfNotCursed")
+    equip_labels, equip_instructions = _listing_section(listing, "EquipItemBySlot")
+    item_curse_labels, item_curse_instructions = _listing_section(
+        listing, "IsItemEquippableAndCursed"
     )
     decrease_labels, decrease_instructions = _listing_section(listing, "DecreaseGold")
     drop_labels, drop_instructions = _listing_section(listing, "DropItemBySlot")
@@ -1305,9 +1585,7 @@ def build_static_contract(
         if _h1_text(instruction) == "M trap #textbox"
     ]
 
-    def h1_span(
-        instructions: list[dict[str, Any]], address: int, size: int = 6
-    ) -> bytes:
+    def h1_span(instructions: list[dict[str, Any]], address: int, size: int = 6) -> bytes:
         """Read one exact instrumented-ROM span from consecutive H1 records."""
         start_index = next(
             (
@@ -1339,7 +1617,7 @@ def build_static_contract(
     ) -> tuple[int, bytes]:
         index = precommit_instructions.index(record)
         if (
-            record["bytes"] != b"\x4E\x45"
+            record["bytes"] != b"\x4e\x45"
             or index + 1 >= len(precommit_instructions)
             or precommit_instructions[index + 1]["address"]
             != record["address"] + len(record["bytes"])
@@ -1419,10 +1697,8 @@ def build_static_contract(
     if (
         recipient_cancel_text_address
         != precommit_member_cancel_branch["address"] + len(precommit_member_cancel_branch["bytes"])
-        or full_inventory_text_address
-        <= precommit_capacity_branch["address"]
-        or non_equippable_text_address
-        <= precommit_equippability_branch["address"]
+        or full_inventory_text_address <= precommit_capacity_branch["address"]
+        or non_equippable_text_address <= precommit_equippability_branch["address"]
         or add_item_entry["address"] != fulfill_labels["@AddItem"]
     ):
         raise ValueError("blacksmith precommit terminal boundary source chronology drift")
@@ -1627,7 +1903,7 @@ def build_static_contract(
         or int.from_bytes(equippable_call_record["bytes"][-4:], "big")
         != h1_entries["j_IsWeaponOrRingEquippable"]
         or len(equippable_call_record["bytes"]) != 6
-        or equippable_call_record["bytes"][:2] != b"\x4E\xB9"
+        or equippable_call_record["bytes"][:2] != b"\x4e\xb9"
         or post_equippable_record["address"]
         != equippable_call_record["address"] + len(equippable_call_record["bytes"])
         or h1_combatant_class_offset_signed != h1_combatant_class_offset_unsigned
@@ -1652,7 +1928,8 @@ def build_static_contract(
         raise ValueError("blacksmith fulfillment source/H1 ABI chronology drift")
     item_definition_address = h1_entries["table_ItemDefinitions"]
     fulfillment_item_definitions: dict[int, dict[str, int]] = {}
-    for item_index, definition in item_definitions.items():
+    for item_index in fulfillment_item_indexes:
+        definition = item_definitions[item_index]
         address = item_definition_address + item_index * required["ITEMDEF_SIZE"]
         fulfillment_item_definitions[item_index] = {
             **definition,
@@ -1692,6 +1969,318 @@ def build_static_contract(
         "effectiveReturnAddress": equippable_return_rts,
         "returnAddress": post_equippable_record["address"],
     }
+
+    decision_instructions = [
+        instruction
+        for instruction in fulfill_instructions
+        if post_equippable_record["address"] <= instruction["address"] <= fulfill_labels["@Done"]
+    ]
+
+    def decision_instruction(text: str, *, occurrence: int = 1) -> dict[str, Any]:
+        matches = [item for item in decision_instructions if _h1_text(item) == text]
+        if len(matches) < occurrence:
+            raise ValueError(f"blacksmith equip-decision H1 instruction missing: {text}")
+        return matches[occurrence - 1]
+
+    def decision_call(
+        record: dict[str, Any], instruction_symbol: str, effective_symbol: str, return_address: int
+    ) -> dict[str, int]:
+        if (
+            len(record["bytes"]) != 6
+            or record["bytes"][:2] != b"\x4e\xb9"
+            or int.from_bytes(record["bytes"][-4:], "big") != h1_entries[instruction_symbol]
+        ):
+            raise ValueError("blacksmith equip-decision call target/width drift")
+        return {
+            "callAddress": record["address"],
+            "instructionTargetAddress": h1_entries[instruction_symbol],
+            "effectiveTargetAddress": h1_entries[effective_symbol],
+            "returnAddress": record["address"] + len(record["bytes"]),
+            "effectiveReturnAddress": return_address,
+        }
+
+    prompt_call = decision_instruction("jsr j_alt_YesNoPrompt")
+    equipment_type_call = decision_instruction("jsr j_GetEquipmentType")
+    equipped_weapon_call = decision_instruction("jsr j_GetEquippedWeapon")
+    equipped_ring_call = decision_instruction("jsr j_GetEquippedRing")
+    unequip_call = decision_instruction("jsr j_UnequipItemBySlotIfNotCursed")
+    held_items_call = decision_instruction("jsr j_GetItemBySlotAndHeldItemsNumber")
+    equip_call = decision_instruction("jsr j_EquipItemBySlot")
+    equipment_type_rts, _ = _h1_instruction(equipment_type_instructions, "rts")
+    equipped_item_rts, _ = _h1_instruction(equipped_item_instructions, "rts")
+    held_items_rts, _ = _h1_instruction(held_items_instructions, "rts")
+    equip_decision = {
+        "postEquippabilityBranchAddress": post_equippable_record["address"],
+        "prompt": decision_call(
+            prompt_call,
+            "j_alt_YesNoPrompt",
+            "alt_YesNoPrompt",
+            prompt_call["address"] + len(prompt_call["bytes"]),
+        ),
+        "promptCompareAddress": decision_instruction("cmpi.w #0,d0")["address"],
+        "promptDeclineBranchAddress": decision_instruction("bne.w byte_21CD0")["address"],
+        "equipmentType": decision_call(
+            equipment_type_call, "j_GetEquipmentType", "GetEquipmentType", equipment_type_rts
+        ),
+        "equipmentTypeCompareAddress": decision_instruction("cmpi.w #EQUIPMENTTYPE_WEAPON,d2")[
+            "address"
+        ],
+        "weaponTypeBranchAddress": decision_instruction("bne.s @HasRingEquipped")["address"],
+        "getEquippedWeapon": decision_call(
+            equipped_weapon_call, "j_GetEquippedWeapon", "GetEquippedWeapon", equipped_item_rts
+        ),
+        "weaponEquippedCompareAddress": decision_instruction("cmpi.w #-1,d1", occurrence=1)[
+            "address"
+        ],
+        "weaponEmptyBranchAddress": decision_instruction("beq.s @EquipNewItem", occurrence=1)[
+            "address"
+        ],
+        "getEquippedRing": decision_call(
+            equipped_ring_call, "j_GetEquippedRing", "GetEquippedRing", equipped_item_rts
+        ),
+        "ringEquippedCompareAddress": decision_instruction("cmpi.w #-1,d1", occurrence=2)[
+            "address"
+        ],
+        "ringEmptyBranchAddress": decision_instruction("beq.s @EquipNewItem", occurrence=2)[
+            "address"
+        ],
+        "unequip": decision_call(
+            unequip_call,
+            "j_UnequipItemBySlotIfNotCursed",
+            "UnequipItemBySlotIfNotCursed",
+            update_return_rts,
+        ),
+        "weaponUnequipCompareAddress": decision_instruction("cmpi.w #2,d2", occurrence=1)[
+            "address"
+        ],
+        "weaponUnequipBranchAddress": decision_instruction("bne.w @EquipNewItem", occurrence=1)[
+            "address"
+        ],
+        "ringUnequipCompareAddress": decision_instruction("cmpi.w #2,d2", occurrence=2)["address"],
+        "ringUnequipBranchAddress": decision_instruction("bne.w @EquipNewItem", occurrence=2)[
+            "address"
+        ],
+        "heldItems": decision_call(
+            held_items_call,
+            "j_GetItemBySlotAndHeldItemsNumber",
+            "GetItemBySlotAndHeldItemsNumber",
+            held_items_rts,
+        ),
+        "equip": decision_call(
+            equip_call, "j_EquipItemBySlot", "EquipItemBySlot", update_return_rts
+        ),
+        "newEquipCursedCompareAddress": decision_instruction("cmpi.w #2,d2", occurrence=3)[
+            "address"
+        ],
+        "newEquipNoncursedBranchAddress": decision_instruction("bne.s byte_21CC8")["address"],
+        "currentCursedBoundaryAddress": decision_instruction("M trap #textbox", occurrence=2)[
+            "address"
+        ],
+        "newCursedBoundaryAddress": decision_instruction("M trap #textbox", occurrence=4)[
+            "address"
+        ],
+        "noncursedBoundaryAddress": decision_instruction("M trap #textbox", occurrence=5)[
+            "address"
+        ],
+        "doNotEquipBoundaryAddress": decision_instruction("M trap #textbox", occurrence=6)[
+            "address"
+        ],
+        "doneAddress": fulfill_labels["@Done"],
+        "mithrilDomain": {
+            "choiceCount": sum(len(row) for row in rows),
+            "uniqueItemIndexes": sorted(mithril_item_indexes),
+            "uniqueItemCount": len(mithril_item_indexes),
+            "weaponItemCount": sum(
+                bool(item_definitions[index]["itemType"] & required["ITEMTYPE_WEAPON"])
+                for index in mithril_item_indexes
+            ),
+            "ringItemCount": sum(
+                bool(item_definitions[index]["itemType"] & required["ITEMTYPE_RING"])
+                for index in mithril_item_indexes
+            ),
+            "cursedItemCount": sum(
+                bool(item_definitions[index]["itemType"] & required["ITEMTYPE_CURSED"])
+                for index in mithril_item_indexes
+            ),
+        },
+    }
+
+    def shared_update_tail(role: str, instructions: list[dict[str, Any]]) -> dict[str, Any]:
+        matches = [
+            instruction
+            for instruction in instructions
+            if _h1_text(instruction) == "bra.w UpdateCombatantStats"
+        ]
+        if len(matches) != 1:
+            raise ValueError(f"blacksmith equip-decision {role} UpdateCombatantStats tail drift")
+        tail = matches[0]
+        encoded = tail["bytes"]
+        if (
+            len(encoded) != 4
+            or encoded[:2] != b"\x60\x00"
+            or tail["address"] + 2 + int.from_bytes(encoded[2:], "big", signed=True)
+            != h1_entries["UpdateCombatantStats"]
+        ):
+            raise ValueError(f"blacksmith equip-decision {role} UpdateCombatantStats branch drift")
+        return {
+            "role": role,
+            "tailAddress": tail["address"],
+            "tailHex": encoded.hex().upper(),
+        }
+
+    equip_decision["sharedUpdateEffectiveReturn"] = {
+        "address": update_return_rts,
+        "targetAddress": h1_entries["UpdateCombatantStats"],
+        "services": [
+            shared_update_tail("unequip", unequip_instructions),
+            shared_update_tail("equip", equip_instructions),
+        ],
+    }
+    shared_update = equip_decision["sharedUpdateEffectiveReturn"]
+    if (
+        shared_update["address"] != 0x8A24
+        or shared_update["targetAddress"] != 0x89CE
+        or shared_update["services"]
+        != [
+            {"role": "unequip", "tailAddress": 0x8DB2, "tailHex": "6000FC1A"},
+            {"role": "equip", "tailAddress": 0x8D66, "tailHex": "6000FC66"},
+        ]
+        or any(
+            equip_decision[row["role"]]["effectiveReturnAddress"] != shared_update["address"]
+            for row in shared_update["services"]
+        )
+    ):
+        raise ValueError("blacksmith equip-decision shared UpdateCombatantStats return drift")
+    if (
+        equip_decision["mithrilDomain"] != fixture["equipDecisionDomain"]
+        or equip_decision["mithrilDomain"]["choiceCount"] != 32
+        or equip_decision["mithrilDomain"]["uniqueItemCount"] != 26
+        or equip_decision["mithrilDomain"]["weaponItemCount"] != 26
+        or equip_decision["mithrilDomain"]["ringItemCount"] != 0
+        or equip_decision["mithrilDomain"]["cursedItemCount"] != 0
+    ):
+        raise ValueError("blacksmith complete Mithril table/item-definition domain drift")
+    if any(
+        value["bytes"][0] not in {0x64, 0x66, 0x67}
+        for value in (
+            post_equippable_record,
+            decision_instruction("bne.w byte_21CD0"),
+            decision_instruction("bne.s @HasRingEquipped"),
+            decision_instruction("beq.s @EquipNewItem", occurrence=1),
+            decision_instruction("bne.w @EquipNewItem", occurrence=1),
+            decision_instruction("beq.s @EquipNewItem", occurrence=2),
+            decision_instruction("bne.w @EquipNewItem", occurrence=2),
+            decision_instruction("bne.s byte_21CC8"),
+        )
+    ) or (
+        post_equippable_record["bytes"][0],
+        decision_instruction("bne.w byte_21CD0")["bytes"][0],
+        decision_instruction("bne.s @HasRingEquipped")["bytes"][0],
+    ) != (0x64, 0x66, 0x66):
+        raise ValueError("blacksmith equip-decision branch polarity drift")
+
+    def decision_text_boundary(
+        record: dict[str, Any], *, text_id: int, name: str
+    ) -> tuple[int, bytes]:
+        index = decision_instructions.index(record)
+        if (
+            record["bytes"] != b"\x4e\x45"
+            or index + 1 >= len(decision_instructions)
+            or decision_instructions[index + 1]["address"] != record["address"] + 2
+            or decision_instructions[index + 1]["bytes"] != text_id.to_bytes(2, "big")
+        ):
+            raise ValueError(f"blacksmith equip-decision {name} terminal text span drift")
+        chunks: list[bytes] = []
+        for instruction in decision_instructions[index:]:
+            chunks.append(_rom_guard_instruction_bytes(instruction, fulfill_labels, h1_entries))
+            if sum(len(chunk) for chunk in chunks) >= 6:
+                break
+        span = b"".join(chunks)[:6]
+        if len(span) != 6:
+            raise ValueError(f"blacksmith equip-decision {name} terminal ROM span drift")
+        return record["address"], span
+
+    current_cursed_address, current_cursed_span = decision_text_boundary(
+        decision_instruction("M trap #textbox", occurrence=2), text_id=176, name="current-cursed"
+    )
+    prompt_text_address, prompt_text_span = decision_text_boundary(
+        decision_instruction("M trap #textbox", occurrence=1), text_id=173, name="prompt"
+    )
+    noncursed_address, noncursed_span = decision_text_boundary(
+        decision_instruction("M trap #textbox", occurrence=5), text_id=174, name="noncursed"
+    )
+    do_not_address, do_not_span = decision_text_boundary(
+        decision_instruction("M trap #textbox", occurrence=6), text_id=209, name="do-not-equip"
+    )
+    if (
+        current_cursed_address != equip_decision["currentCursedBoundaryAddress"]
+        or prompt_text_address != post_equippable_record["address"] + 4
+        or noncursed_address != equip_decision["noncursedBoundaryAddress"]
+        or do_not_address != equip_decision["doNotEquipBoundaryAddress"]
+    ):
+        raise ValueError("blacksmith equip-decision terminal source/H1 boundary drift")
+    equip_decision["terminalShims"] = [
+        {
+            "role": "current-cursed-terminal-boundary-shim",
+            "terminal": "current-cursed-pre-presentation",
+            "boundaryAddress": current_cursed_address,
+            "originalHex": current_cursed_span.hex().upper(),
+            "patchedHex": f"4EF9{EQUIP_DECISION_TERMINAL_STUB_ADDRESS:08X}",
+            "generatedStubTarget": EQUIP_DECISION_TERMINAL_STUB_ADDRESS,
+        },
+        {
+            "role": "noncursed-terminal-boundary-shim",
+            "terminal": "noncursed-equip-pre-presentation",
+            "boundaryAddress": noncursed_address,
+            "originalHex": noncursed_span.hex().upper(),
+            "patchedHex": f"4EF9{EQUIP_DECISION_TERMINAL_STUB_ADDRESS:08X}",
+            "generatedStubTarget": EQUIP_DECISION_TERMINAL_STUB_ADDRESS,
+        },
+        {
+            "role": "do-not-equip-terminal-boundary-shim",
+            "terminal": "do-not-equip-pre-presentation",
+            "boundaryAddress": do_not_address,
+            "originalHex": do_not_span.hex().upper(),
+            "patchedHex": f"4EF9{EQUIP_DECISION_TERMINAL_STUB_ADDRESS:08X}",
+            "generatedStubTarget": EQUIP_DECISION_TERMINAL_STUB_ADDRESS,
+        },
+    ]
+    equip_decision["promptPresentationSkip"] = {
+        "boundaryAddress": prompt_text_address,
+        "originalHex": prompt_text_span[:4].hex().upper(),
+        # 68k word-branch displacement is relative to the extension-word PC:
+        # ``bra.w +2`` therefore lands on the preserved prompt JSR at 0x21C24.
+        "patchedHex": "60000002",
+        "targetAddress": prompt_call["address"],
+        "instructionWidthBytes": 4,
+        "branchBaseAddress": prompt_text_address + 2,
+        "branchDisplacementBytes": 2,
+    }
+    equip_decision["h1InstructionBytes"] = [
+        *guarded_instructions(decision_instructions, fulfill_labels),
+        *guarded_instructions(equipment_type_instructions, equipment_type_labels),
+        *guarded_instructions(equipped_weapon_instructions, equipped_weapon_labels),
+        *guarded_instructions(equipped_ring_instructions, equipped_ring_labels),
+        *guarded_instructions(equipped_item_instructions, equipped_item_labels),
+        *guarded_instructions(held_items_instructions, held_items_labels),
+        *guarded_instructions(unequip_instructions, unequip_labels),
+        *guarded_instructions(equip_instructions, equip_labels),
+        *guarded_instructions(item_curse_instructions, item_curse_labels),
+    ]
+    equip_decision["itemDefinitionFields"] = [
+        {
+            "itemIndex": item_index,
+            "equipFlagsAddress": item_definition_start
+            + item_index * required["ITEMDEF_SIZE"]
+            + required["ITEMDEF_OFFSET_EQUIPFLAGS"],
+            "equipFlagsBytes": definition["equipFlags"].to_bytes(4, "big"),
+            "itemTypeAddress": item_definition_start
+            + item_index * required["ITEMDEF_SIZE"]
+            + required["ITEMDEF_OFFSET_TYPE"],
+            "itemTypeBytes": bytes([definition["itemType"]]),
+        }
+        for item_index, definition in sorted(item_definitions.items())
+    ]
 
     return {
         "function": {
@@ -1742,6 +2331,8 @@ def build_static_contract(
             "itemIndexAndBrokenMask": required["ITEMENTRY_MASK_INDEX_AND_BROKEN_BIT"],
             "weaponTypeMask": required["ITEMTYPE_WEAPON"],
             "ringTypeMask": required["ITEMTYPE_RING"],
+            "cursedTypeMask": required["ITEMTYPE_CURSED"],
+            "equippedItemBit": required["ITEMENTRY_BIT_EQUIPPED"],
             "equipmentTypeTool": required["EQUIPMENTTYPE_TOOL"],
             "equipmentTypeWeapon": required["EQUIPMENTTYPE_WEAPON"],
             "equipmentTypeRing": required["EQUIPMENTTYPE_RING"],
@@ -1749,6 +2340,8 @@ def build_static_contract(
             "combatantItemSlotCount": required["COMBATANT_ITEMSLOTS"],
             "combatantClassOffsetBytes": required["COMBATANT_OFFSET_CLASS"],
             "combatantItemsOffsetBytes": required["COMBATANT_OFFSET_ITEMS"],
+            "combatantStatusEffectsOffsetBytes": required["COMBATANT_OFFSET_STATUSEFFECTS"],
+            "curseStatusMask": required["STATUSEFFECT_CURSE"],
             "flag80Id": flag_id,
             "flag80ByteOffset": flag_byte_offset,
             "flag80BitMask": flag_bit_mask,
@@ -1833,6 +2426,7 @@ def build_static_contract(
             ],
         },
         "precommit": precommit,
+        "equipDecision": equip_decision,
         "model": {"classGroups": groups, "weaponRows": rows},
         "h1": {
             "instructionBytes": [
@@ -1868,6 +2462,7 @@ def validate_static_contract(
         + static["transaction"]["h1InstructionBytes"]
         + static["fulfillment"]["h1InstructionBytes"]
         + static["precommit"]["h1InstructionBytes"]
+        + static["equipDecision"]["h1InstructionBytes"]
     ):
         address = instruction["address"]
         expected = instruction["romBytes"]
@@ -1879,7 +2474,10 @@ def validate_static_contract(
     ):
         if rom[address : address + len(expected)] != expected:
             raise ValueError(f"blacksmith H1/ROM {name} table guard drift")
-    for field in static["fulfillment"]["itemDefinitionFields"]:
+    for field in (
+        static["fulfillment"]["itemDefinitionFields"]
+        + static["equipDecision"]["itemDefinitionFields"]
+    ):
         for address_key, bytes_key in (
             ("equipFlagsAddress", "equipFlagsBytes"),
             ("itemTypeAddress", "itemTypeBytes"),
@@ -2214,6 +2812,281 @@ def model_fulfillment_case(case: dict[str, Any], static: dict[str, Any]) -> dict
     }
 
 
+def _equip_decision_event(role: str, pc: int) -> dict[str, int | str]:
+    return {"role": role, "pc": pc}
+
+
+def _equip_decision_call_events(role: str, service: dict[str, int]) -> list[dict[str, int | str]]:
+    return [
+        _equip_decision_event(f"equip-decision-{role}-call", service["callAddress"]),
+        _equip_decision_event(
+            f"equip-decision-{role}-instruction-target", service["instructionTargetAddress"]
+        ),
+        _equip_decision_event(
+            f"equip-decision-{role}-effective-target", service["effectiveTargetAddress"]
+        ),
+        _equip_decision_event(
+            f"equip-decision-{role}-effective-return", service["effectiveReturnAddress"]
+        ),
+        _equip_decision_event(f"equip-decision-{role}-original-return", service["returnAddress"]),
+    ]
+
+
+def model_equip_decision_case(case: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
+    """Model the reachable post-``AddItem`` weapon decision without UI claims."""
+    constants = static["constants"]
+    decision = static["equipDecision"]
+    items_before = list(case["clientItemWordsBefore"])
+    orders_before = list(case["ordersBefore"])
+    selected_order_index = constants["orderSlotCount"] - int(case["ordersCounter"])
+    if not 0 <= selected_order_index < constants["orderSlotCount"]:
+        raise ValueError("blacksmith equip-decision order counter source domain drift")
+    if orders_before[selected_order_index] != case["itemIndex"]:
+        raise ValueError("blacksmith equip-decision source order item drift")
+    item_write_index = next(
+        (
+            index
+            for index, value in enumerate(items_before)
+            if (value & constants["itemIndexMask"]) == constants["itemNothingIndex"]
+        ),
+        None,
+    )
+    if item_write_index is None:
+        raise ValueError("blacksmith equip-decision requires one original AddItem slot")
+    fields = {int(field["itemIndex"]): field for field in decision["itemDefinitionFields"]}
+    item = fields.get(int(case["itemIndex"]))
+    if item is None:
+        raise ValueError("blacksmith equip-decision item definition is unbound")
+    item_type = item["itemTypeBytes"][0]
+    class_mask = int.from_bytes(item["equipFlagsBytes"], "big")
+    carry_set = bool(
+        item_type & (constants["weaponTypeMask"] | constants["ringTypeMask"])
+        and class_mask & (1 << int(case["recipientClass"]))
+    )
+    items_after = items_before.copy()
+    items_after[item_write_index] = int(case["itemIndex"])
+    orders_after = orders_before.copy()
+    orders_after[selected_order_index] = 0
+    # v4 already retains the direct AddItem-through-equippability chronology.
+    # This v5 record begins at the source continuation branch it newly owns.
+    chronology: list[dict[str, int | str]] = [
+        _equip_decision_event(
+            "equip-decision-post-equippability-branch",
+            decision["postEquippabilityBranchAddress"],
+        )
+    ]
+    prompt_shown = False
+    equipment_type: int | None = None
+    existing_slot: int | None = None
+    existing_index: int | None = None
+    unequip_result: int | None = None
+    equip_slot: int | None = None
+    equip_result: int | None = None
+    status_after = int(case["statusEffectsBefore"])
+    if not carry_set:
+        terminal, terminal_pc = (
+            "do-not-equip-pre-presentation",
+            decision["doNotEquipBoundaryAddress"],
+        )
+    else:
+        prompt_shown = True
+        chronology.extend(
+            [
+                _equip_decision_event(
+                    "equip-decision-controlled-prompt-call-shim",
+                    decision["prompt"]["callAddress"],
+                ),
+                _equip_decision_event(
+                    "equip-decision-generated-prompt-stub", EQUIP_DECISION_PROMPT_STUB_ADDRESS
+                ),
+                _equip_decision_event(
+                    "equip-decision-prompt-original-return",
+                    decision["prompt"]["returnAddress"],
+                ),
+                _equip_decision_event(
+                    "equip-decision-prompt-compare", decision["promptCompareAddress"]
+                ),
+                _equip_decision_event(
+                    "equip-decision-prompt-decline-branch",
+                    decision["promptDeclineBranchAddress"],
+                ),
+            ]
+        )
+        if int(case["promptResult"]) != 0:
+            terminal, terminal_pc = (
+                "do-not-equip-pre-presentation",
+                decision["doNotEquipBoundaryAddress"],
+            )
+        else:
+            equipment_type = constants["equipmentTypeWeapon"]
+            chronology.extend(
+                _equip_decision_call_events("equipment-type", decision["equipmentType"])
+            )
+            chronology.extend(
+                [
+                    _equip_decision_event(
+                        "equip-decision-equipment-type-compare",
+                        decision["equipmentTypeCompareAddress"],
+                    ),
+                    _equip_decision_event(
+                        "equip-decision-weapon-type-branch", decision["weaponTypeBranchAddress"]
+                    ),
+                ]
+            )
+            expected = case["existingEquippedItemIndex"]
+            matching = [
+                index
+                for index, value in enumerate(items_before)
+                if value & (1 << constants["equippedItemBit"])
+                and (value & constants["itemIndexMask"]) == expected
+            ]
+            if expected is None:
+                matching = []
+            if len(matching) > 1:
+                raise ValueError("blacksmith equip-decision duplicate equipped weapon input")
+            chronology.extend(
+                _equip_decision_call_events("get-equipped-weapon", decision["getEquippedWeapon"])
+            )
+            chronology.extend(
+                [
+                    _equip_decision_event(
+                        "equip-decision-weapon-equipped-compare",
+                        decision["weaponEquippedCompareAddress"],
+                    ),
+                    _equip_decision_event(
+                        "equip-decision-weapon-empty-branch", decision["weaponEmptyBranchAddress"]
+                    ),
+                ]
+            )
+            if matching:
+                existing_slot = matching[0]
+                existing_index = int(expected)
+                existing = fields.get(existing_index)
+                if existing is None:
+                    raise ValueError(
+                        "blacksmith equip-decision existing item definition is unbound"
+                    )
+                existing_cursed = bool(existing["itemTypeBytes"][0] & constants["cursedTypeMask"])
+                unequip_result = 2 if existing_cursed else 0
+                chronology.extend(_equip_decision_call_events("unequip", decision["unequip"]))
+                chronology.extend(
+                    [
+                        _equip_decision_event(
+                            "equip-decision-weapon-unequip-compare",
+                            decision["weaponUnequipCompareAddress"],
+                        ),
+                        _equip_decision_event(
+                            "equip-decision-weapon-unequip-branch",
+                            decision["weaponUnequipBranchAddress"],
+                        ),
+                    ]
+                )
+                if existing_cursed:
+                    status_after = constants["curseStatusMask"]
+                    terminal, terminal_pc = (
+                        "current-cursed-pre-presentation",
+                        decision["currentCursedBoundaryAddress"],
+                    )
+                    chronology.extend(
+                        [
+                            _equip_decision_event(f"equip-decision-{terminal}", terminal_pc),
+                            _equip_decision_event(
+                                "equip-decision-generated-terminal-stub",
+                                EQUIP_DECISION_TERMINAL_STUB_ADDRESS,
+                            ),
+                        ]
+                    )
+                    return {
+                        "id": case["id"],
+                        "clientMember": case["clientMember"],
+                        "recipientClass": case["recipientClass"],
+                        "itemIndex": case["itemIndex"],
+                        "clientItemWordsBefore": items_before,
+                        "clientItemWordsAfter": items_after,
+                        "itemWriteIndex": item_write_index,
+                        "ordersBefore": orders_before,
+                        "ordersAfter": orders_after,
+                        "ordersCounter": case["ordersCounter"],
+                        "selectedOrderIndex": selected_order_index,
+                        "fulfilledOrdersBefore": case["fulfilledOrdersBefore"],
+                        "fulfilledOrdersAfter": case["fulfilledOrdersBefore"] + 1,
+                        "equippableCarrySet": carry_set,
+                        "promptResult": case["promptResult"],
+                        "promptShown": prompt_shown,
+                        "equipmentType": equipment_type,
+                        "existingEquippedSlot": existing_slot,
+                        "existingEquippedItemIndex": existing_index,
+                        "unequipResult": unequip_result,
+                        "equipSlot": equip_slot,
+                        "equipResult": equip_result,
+                        "statusEffectsBefore": case["statusEffectsBefore"],
+                        "statusEffectsAfter": status_after,
+                        "terminal": terminal,
+                        "terminalPc": terminal_pc,
+                        "callbackChronology": chronology,
+                    }
+                items_after[existing_slot] &= ~(1 << constants["equippedItemBit"])
+            chronology.extend(_equip_decision_call_events("held-items", decision["heldItems"]))
+            equip_slot = item_write_index
+            chronology.extend(_equip_decision_call_events("equip", decision["equip"]))
+            items_after[equip_slot] |= 1 << constants["equippedItemBit"]
+            equip_result = 0
+            chronology.extend(
+                [
+                    _equip_decision_event(
+                        "equip-decision-new-equip-cursed-compare",
+                        decision["newEquipCursedCompareAddress"],
+                    ),
+                    _equip_decision_event(
+                        "equip-decision-new-equip-noncursed-branch",
+                        decision["newEquipNoncursedBranchAddress"],
+                    ),
+                ]
+            )
+            terminal, terminal_pc = (
+                "noncursed-equip-pre-presentation",
+                decision["noncursedBoundaryAddress"],
+            )
+    chronology.extend(
+        [
+            _equip_decision_event(f"equip-decision-{terminal}", terminal_pc),
+            _equip_decision_event(
+                "equip-decision-generated-terminal-stub",
+                EQUIP_DECISION_TERMINAL_STUB_ADDRESS,
+            ),
+        ]
+    )
+    return {
+        "id": case["id"],
+        "clientMember": case["clientMember"],
+        "recipientClass": case["recipientClass"],
+        "itemIndex": case["itemIndex"],
+        "clientItemWordsBefore": items_before,
+        "clientItemWordsAfter": items_after,
+        "itemWriteIndex": item_write_index,
+        "ordersBefore": orders_before,
+        "ordersAfter": orders_after,
+        "ordersCounter": case["ordersCounter"],
+        "selectedOrderIndex": selected_order_index,
+        "fulfilledOrdersBefore": case["fulfilledOrdersBefore"],
+        "fulfilledOrdersAfter": case["fulfilledOrdersBefore"] + 1,
+        "equippableCarrySet": carry_set,
+        "promptResult": case["promptResult"],
+        "promptShown": prompt_shown,
+        "equipmentType": equipment_type,
+        "existingEquippedSlot": existing_slot,
+        "existingEquippedItemIndex": existing_index,
+        "unequipResult": unequip_result,
+        "equipSlot": equip_slot,
+        "equipResult": equip_result,
+        "statusEffectsBefore": case["statusEffectsBefore"],
+        "statusEffectsAfter": status_after,
+        "terminal": terminal,
+        "terminalPc": terminal_pc,
+        "callbackChronology": chronology,
+    }
+
+
 def _precommit_event(role: str, pc: int) -> dict[str, int | str]:
     return {"role": role, "pc": pc}
 
@@ -2251,9 +3124,7 @@ def model_precommit_case(
                 _precommit_event(
                     "precommit-generated-service-stub", PRECOMMIT_SERVICE_STUB_ADDRESS
                 ),
-                _precommit_event(
-                    f"precommit-{role}-original-return", service["returnAddress"]
-                ),
+                _precommit_event(f"precommit-{role}-original-return", service["returnAddress"]),
             )
         )
 
@@ -2263,9 +3134,7 @@ def model_precommit_case(
             raise ValueError(f"blacksmith precommit terminal shim missing: {role}")
         chronology.append(_precommit_event(f"precommit-{role}", shim["boundaryAddress"]))
         chronology.append(
-            _precommit_event(
-                "precommit-generated-result-stub", PRECOMMIT_TERMINAL_STUB_ADDRESS
-            )
+            _precommit_event("precommit-generated-result-stub", PRECOMMIT_TERMINAL_STUB_ADDRESS)
         )
         return terminal, shim["boundaryAddress"]
 
@@ -2390,6 +3259,9 @@ def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dic
         model_precommit_case(case, static, fixture["fulfillmentCases"])
         for case in fixture["precommitCases"]
     ]
+    equip_decision_records = [
+        model_equip_decision_case(case, static) for case in fixture["equipDecisionCases"]
+    ]
     return {
         "system": "GEN",
         "core": fixture["emulator"]["core"],
@@ -2402,6 +3274,8 @@ def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dic
         "fulfillmentRecords": fulfillment_records,
         "precommitCaseOrder": [case["id"] for case in fixture["precommitCases"]],
         "precommitRecords": precommit_records,
+        "equipDecisionCaseOrder": [case["id"] for case in fixture["equipDecisionCases"]],
+        "equipDecisionRecords": equip_decision_records,
         "callbacksCleared": 0,
         "precommitInstrumentation": {
             "serviceCallSitesReadback": [
@@ -2429,6 +3303,17 @@ def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dic
             "dialogueNameIndex1WordRestored": True,
             "selectedItemIndexWordRestored": True,
             "currentItemSubmenuActionByteRestored": True,
+        },
+        "equipDecisionInstrumentation": {
+            "promptCallSiteReadback": True,
+            "promptPresentationSkipReadback": True,
+            "generatedPromptStubWriteReadback": True,
+            "terminalBoundarySitesReadback": [
+                "current-cursed-terminal-boundary-shim",
+                "noncursed-terminal-boundary-shim",
+                "do-not-equip-terminal-boundary-shim",
+            ],
+            "generatedTerminalStubWriteReadback": True,
         },
     }
 
@@ -2579,15 +3464,82 @@ def _validate_precommit_case_matrix(fixture: dict[str, Any], static: dict[str, A
         raise ValueError("blacksmith precommit add-item boundary missing")
 
 
+def _validate_equip_decision_case_matrix(
+    fixture: dict[str, Any], static: dict[str, Any] | None = None
+) -> None:
+    """Lock the five reachable Mithril-output decisions independently of golden JSON.
+
+    The root case order is launch input, not merely output metadata.  The
+    optional ``static`` stage lets the verifier reject an ID/order drift before
+    any ROM setup, then derives terminals, controlled-prompt results, and the
+    shared ``UpdateCombatantStats`` return sequence before launch.
+    """
+    if (
+        tuple(fixture.get("equipDecisionCaseOrder", ())) != EQUIP_DECISION_CASE_IDS
+        or tuple(case.get("id") for case in fixture.get("equipDecisionCases", ()))
+        != EQUIP_DECISION_CASE_IDS
+    ):
+        raise ValueError("blacksmith equip-decision case order drift")
+    if static is None:
+        return
+
+    records = [model_equip_decision_case(case, static) for case in fixture["equipDecisionCases"]]
+    if tuple(record["id"] for record in records) != EQUIP_DECISION_CASE_IDS:
+        raise ValueError("blacksmith equip-decision model case identity drift")
+    if [record["terminal"] for record in records] != [
+        "do-not-equip-pre-presentation",
+        "do-not-equip-pre-presentation",
+        "noncursed-equip-pre-presentation",
+        "noncursed-equip-pre-presentation",
+        "current-cursed-pre-presentation",
+    ]:
+        raise ValueError("blacksmith equip-decision terminal matrix coverage drift")
+    if [(record["promptShown"], record["promptResult"]) for record in records] != [
+        (False, None),
+        (True, -1),
+        (True, 0),
+        (True, 0),
+        (True, 0),
+    ]:
+        raise ValueError("blacksmith equip-decision prompt matrix coverage drift")
+
+    shared_return = static["equipDecision"]["sharedUpdateEffectiveReturn"]["address"]
+    shared_roles = [
+        [event["role"] for event in record["callbackChronology"] if event["pc"] == shared_return]
+        for record in records
+    ]
+    if shared_roles != [
+        [],
+        [],
+        ["equip-decision-equip-effective-return"],
+        [
+            "equip-decision-unequip-effective-return",
+            "equip-decision-equip-effective-return",
+        ],
+        ["equip-decision-unequip-effective-return"],
+    ]:
+        raise ValueError("blacksmith equip-decision shared-return matrix coverage drift")
+    cursed = records[-1]
+    if (
+        cursed["equipSlot"],
+        cursed["equipResult"],
+        cursed["statusEffectsBefore"],
+        cursed["statusEffectsAfter"],
+    ) != (None, None, 0, 4):
+        raise ValueError("blacksmith equip-decision cursed-stop matrix coverage drift")
+
+
 def _assert_golden(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     _validate_case_matrix(fixture, static)
     _validate_transaction_case_matrix(fixture, static)
     _validate_fulfillment_case_matrix(fixture, static)
     _validate_precommit_case_matrix(fixture, static)
+    _validate_equip_decision_case_matrix(fixture, static)
     expected = expected_observation(fixture, static)
     accepted = fixture["acceptedObservation"]
     if accepted != expected:
         raise ValueError("blacksmith accepted observation disagrees with independent model")
+    _assert_retained_v4_digest(fixture)
     return expected
 
 
@@ -2615,19 +3567,32 @@ def _failure_diagnostic(status_path: Path) -> str | None:
 
 
 def _assert_status(status_path: Path) -> None:
+    required_milestones = (
+        "milestone:direct-function-probe",
+        "milestone:first-case-entered",
+        "milestone:transaction-cases-entered",
+        "milestone:fulfillment-cases-entered",
+        "milestone:precommit-cases-entered",
+        "milestone:equip-decision-transition-armed",
+        "milestone:equip-decision-cases-entered",
+        "milestone:transaction-state-restored",
+    )
     assert_observer_status(
         status_path,
         owner=OWNER,
         schema_path=FAILURE_SCHEMA,
-        required_milestones=(
-            "milestone:direct-function-probe",
-            "milestone:first-case-entered",
-            "milestone:transaction-cases-entered",
-            "milestone:fulfillment-cases-entered",
-            "milestone:precommit-cases-entered",
-            "milestone:transaction-state-restored",
-        ),
+        required_milestones=required_milestones,
     )
+    lines = status_path.read_text(encoding="utf-8").splitlines()
+    positions = []
+    for milestone in required_milestones:
+        if lines.count(milestone) != 1:
+            raise RuntimeError(
+                f"{OWNER} observer required milestone multiplicity drift: {milestone}"
+            )
+        positions.append(lines.index(milestone))
+    if positions != sorted(positions):
+        raise RuntimeError(f"{OWNER} observer required milestone order drift")
 
 
 def _validate_precommit_instrumentation(precommit: dict[str, Any]) -> None:
@@ -2651,8 +3616,7 @@ def _validate_precommit_instrumentation(precommit: dict[str, Any]) -> None:
             or shim["returnAddress"] != service["returnAddress"]
             or shim["generatedStubTarget"] != PRECOMMIT_SERVICE_STUB_ADDRESS
             or shim["patchedHex"] != f"4EB9{PRECOMMIT_SERVICE_STUB_ADDRESS:08X}"
-            or shim["originalHex"]
-            != f"4EB9{service['instructionTargetAddress']:08X}"
+            or shim["originalHex"] != f"4EB9{service['instructionTargetAddress']:08X}"
         ):
             raise ValueError(f"blacksmith precommit service shim ABI drift: {role}")
         call_range = range(shim["callAddress"], shim["callAddress"] + 6)
@@ -2727,7 +3691,10 @@ def _validate_precommit_retained_compatibility(
     overlapping = [
         row["role"]
         for row in spans
-        if any(pc in range(row["address"], row["address"] + 6) for pc in retained_pcs)
+        if any(
+            pc in range(row["address"], row["address"] + len(row["originalBytes"]))
+            for pc in retained_pcs
+        )
     ]
     if overlapping:
         raise ValueError(
@@ -2771,7 +3738,7 @@ def _precommit_instrumentation_spans(static: dict[str, Any]) -> list[dict[str, A
         if (
             len(original) != PRECOMMIT_SERVICE_STUB_SIZE
             or len(patched) != PRECOMMIT_SERVICE_STUB_SIZE
-            or patched != b"\x4E\xB9" + shim["generatedStubTarget"].to_bytes(4, "big")
+            or patched != b"\x4e\xb9" + shim["generatedStubTarget"].to_bytes(4, "big")
             or shim["returnAddress"] != shim["callAddress"] + 6
         ):
             raise ValueError(f"blacksmith precommit service JSR patch shape drift: {shim['role']}")
@@ -2792,11 +3759,9 @@ def _precommit_instrumentation_spans(static: dict[str, Any]) -> list[dict[str, A
         if (
             len(original) != PRECOMMIT_TERMINAL_STUB_SIZE
             or len(patched) != PRECOMMIT_TERMINAL_STUB_SIZE
-            or patched != b"\x4E\xF9" + shim["generatedStubTarget"].to_bytes(4, "big")
+            or patched != b"\x4e\xf9" + shim["generatedStubTarget"].to_bytes(4, "big")
         ):
-            raise ValueError(
-                f"blacksmith precommit terminal JMP patch shape drift: {shim['role']}"
-            )
+            raise ValueError(f"blacksmith precommit terminal JMP patch shape drift: {shim['role']}")
         result.append(
             {
                 "role": shim["role"],
@@ -2818,18 +3783,174 @@ def _precommit_instrumentation_spans(static: dict[str, Any]) -> list[dict[str, A
     return result
 
 
+def _equip_decision_instrumentation_spans(static: dict[str, Any]) -> list[dict[str, Any]]:
+    """Bind controlled prompt and neutral terminal stops to a session copy."""
+    prompt = static["equipDecision"]["prompt"]
+    original = b"\x4e\xb9" + prompt["instructionTargetAddress"].to_bytes(4, "big")
+    patched = b"\x4e\xb9" + EQUIP_DECISION_PROMPT_STUB_ADDRESS.to_bytes(4, "big")
+    decision = static["equipDecision"]
+    if (
+        prompt["returnAddress"] != prompt["callAddress"] + EQUIP_DECISION_PROMPT_STUB_SIZE
+        or prompt["instructionTargetAddress"] == EQUIP_DECISION_PROMPT_STUB_ADDRESS
+        or len(original) != EQUIP_DECISION_PROMPT_STUB_SIZE
+        or prompt["callAddress"] != 0x21C24
+        or prompt["instructionTargetAddress"] != 0x10074
+        or prompt["effectiveTargetAddress"] != 0x1528C
+        or prompt["returnAddress"] != 0x21C2A
+    ):
+        raise ValueError("blacksmith equip-decision prompt instrumentation ABI drift")
+    result = [
+        {
+            "role": "equip-decision-prompt",
+            "type": "prompt-jsr",
+            "address": prompt["callAddress"],
+            "originalBytes": original,
+            "patchedBytes": patched,
+            "generatedStubTarget": EQUIP_DECISION_PROMPT_STUB_ADDRESS,
+            "returnAddress": prompt["returnAddress"],
+        }
+    ]
+    skip = decision["promptPresentationSkip"]
+    original_skip = bytes.fromhex(skip["originalHex"])
+    patched_skip = bytes.fromhex(skip["patchedHex"])
+    if (
+        len(original_skip) != 4
+        or original_skip != b"\x4e\x45\x00\xad"
+        or patched_skip != b"\x60\x00\x00\x02"
+        or skip["instructionWidthBytes"] != len(patched_skip)
+        or skip["branchBaseAddress"] != skip["boundaryAddress"] + 2
+        or skip["branchDisplacementBytes"] != int.from_bytes(patched_skip[2:], "big")
+        or skip["targetAddress"] != static["equipDecision"]["prompt"]["callAddress"]
+        or skip["targetAddress"] != skip["branchBaseAddress"] + skip["branchDisplacementBytes"]
+    ):
+        raise ValueError("blacksmith equip-decision prompt presentation skip ABI drift")
+    result.append(
+        {
+            "role": "equip-decision-prompt-presentation-skip",
+            "type": "prompt-text-bra",
+            "address": skip["boundaryAddress"],
+            "originalBytes": original_skip,
+            "patchedBytes": patched_skip,
+            "targetAddress": skip["targetAddress"],
+        }
+    )
+    terminal_roles = (
+        "current-cursed-terminal-boundary-shim",
+        "noncursed-terminal-boundary-shim",
+        "do-not-equip-terminal-boundary-shim",
+    )
+    expected_terminals = (
+        ("current-cursed-pre-presentation", 0x21C68, "4E4500B06062"),
+        ("noncursed-equip-pre-presentation", 0x21CC8, "4E4500AE6000"),
+        ("do-not-equip-pre-presentation", 0x21CD0, "4E4500D14CDF"),
+    )
+    shims = decision.get("terminalShims")
+    if not isinstance(shims, list) or tuple(shim.get("role") for shim in shims) != terminal_roles:
+        raise ValueError("blacksmith equip-decision terminal shim role/order drift")
+    for shim, (terminal, address, original_hex) in zip(shims, expected_terminals, strict=True):
+        original = bytes.fromhex(shim["originalHex"])
+        patched = bytes.fromhex(shim["patchedHex"])
+        if (
+            shim["terminal"] != terminal
+            or shim["boundaryAddress"] != address
+            or shim["originalHex"] != original_hex
+            or shim["generatedStubTarget"] != EQUIP_DECISION_TERMINAL_STUB_ADDRESS
+            or len(original) != EQUIP_DECISION_TERMINAL_STUB_SIZE
+            or len(patched) != EQUIP_DECISION_TERMINAL_STUB_SIZE
+            or patched != b"\x4e\xf9" + EQUIP_DECISION_TERMINAL_STUB_ADDRESS.to_bytes(4, "big")
+        ):
+            raise ValueError("blacksmith equip-decision terminal instrumentation ABI drift")
+        result.append(
+            {
+                "role": shim["role"],
+                "type": "terminal-jmp",
+                "address": shim["boundaryAddress"],
+                "originalBytes": original,
+                "patchedBytes": patched,
+                "generatedStubTarget": shim["generatedStubTarget"],
+                "terminal": shim["terminal"],
+            }
+        )
+    if len(result) != 5:
+        raise ValueError("blacksmith equip-decision instrumentation span count drift")
+    return result
+
+
+def _validate_session_instrumentation_spans(
+    static: dict[str, Any], spans: list[dict[str, Any]]
+) -> None:
+    """Reject any mixed-width session-patch overlap before a disposable ROM is written."""
+    ranges = [range(row["address"], row["address"] + len(row["originalBytes"])) for row in spans]
+    if len(spans) != 12 or any(
+        left.start < right.stop and right.start < left.stop
+        for index, left in enumerate(ranges)
+        for right in ranges[index + 1 :]
+    ):
+        raise ValueError("blacksmith session instrumentation span overlap/count drift")
+    _validate_precommit_retained_compatibility(static, spans)
+
+
+def _session_instrumentation_spans(static: dict[str, Any]) -> list[dict[str, Any]]:
+    """Prove all v5 session patches are distinct and retain v4 observation PCs."""
+    spans = [
+        *_precommit_instrumentation_spans(static),
+        *_equip_decision_instrumentation_spans(static),
+    ]
+    _validate_session_instrumentation_spans(static, spans)
+    return spans
+
+
+def _session_instrumentation_config(static: dict[str, Any]) -> dict[str, Any]:
+    """Serialize every mixed-width disposable-ROM span for Lua readback."""
+    spans = _session_instrumentation_spans(static)
+    plan = {
+        "spanCount": len(spans),
+        "spans": [
+            {
+                "role": row["role"],
+                "type": row["type"],
+                "address": row["address"],
+                "widthBytes": len(row["patchedBytes"]),
+                "originalHex": row["originalBytes"].hex().upper(),
+                "patchedHex": row["patchedBytes"].hex().upper(),
+            }
+            for row in spans
+        ],
+    }
+    _validate_session_instrumentation_config(static, plan)
+    return plan
+
+
+def _validate_session_instrumentation_config(static: dict[str, Any], plan: dict[str, Any]) -> None:
+    """Reject a Lua plan that omits, widens, or changes any session-ROM span."""
+    spans = _session_instrumentation_spans(static)
+    expected_rows = [
+        {
+            "role": row["role"],
+            "type": row["type"],
+            "address": row["address"],
+            "widthBytes": len(row["patchedBytes"]),
+            "originalHex": row["originalBytes"].hex().upper(),
+            "patchedHex": row["patchedBytes"].hex().upper(),
+        }
+        for row in spans
+    ]
+    if plan.get("spanCount") != len(expected_rows) or plan.get("spans") != expected_rows:
+        raise ValueError("blacksmith session-ROM Lua readback plan drift")
+
+
 def _validate_precommit_instrumented_copy(
     original: bytes, instrumented: bytes, spans: list[dict[str, Any]]
 ) -> None:
-    """Prove the disposable copy differs only at each declared six-byte span."""
+    """Prove the disposable copy differs only at the declared mixed-width spans."""
     if len(original) != len(instrumented):
         raise ValueError("blacksmith precommit instrumented ROM size drift")
     expected_addresses = {row["address"] for row in spans}
     observed_addresses = {
         row["address"]
         for row in spans
-        if original[row["address"] : row["address"] + 6]
-        != instrumented[row["address"] : row["address"] + 6]
+        if original[row["address"] : row["address"] + len(row["originalBytes"])]
+        != instrumented[row["address"] : row["address"] + len(row["patchedBytes"])]
     }
     if observed_addresses != expected_addresses:
         raise ValueError("blacksmith precommit instrumented ROM span-set drift")
@@ -2850,7 +3971,7 @@ def _validate_precommit_instrumented_copy(
         raise ValueError("blacksmith precommit instrumented ROM exact byte-diff drift")
     for row in spans:
         address = row["address"]
-        if instrumented[address : address + 6] != row["patchedBytes"]:
+        if instrumented[address : address + len(row["patchedBytes"])] != row["patchedBytes"]:
             raise ValueError(f"blacksmith precommit instrumented ROM patch drift: {row['role']}")
 
 
@@ -2861,7 +3982,7 @@ def _instrument_precommit_rom(
     *,
     output_path: Path | None = None,
 ) -> Path:
-    """Build one private, disposable seven-span ROM image for the H3 session."""
+    """Build one private, disposable twelve-span ROM image for the H3 session."""
     canonical = rom_path.resolve(strict=True)
     manifest = load_json(ROM_MANIFEST)
     canonical_identity = inspect_rom(canonical)
@@ -2872,13 +3993,13 @@ def _instrument_precommit_rom(
     ):
         raise ValueError("blacksmith precommit canonical ROM manifest identity drift")
     original = canonical.read_bytes()
-    spans = _precommit_instrumentation_spans(static)
+    spans = _session_instrumentation_spans(static)
     instrumented = bytearray(original)
     for row in spans:
         address = row["address"]
-        if original[address : address + 6] != row["originalBytes"]:
+        if original[address : address + len(row["originalBytes"])] != row["originalBytes"]:
             raise ValueError(f"blacksmith precommit source call-site bytes drift: {row['role']}")
-        instrumented[address : address + 6] = row["patchedBytes"]
+        instrumented[address : address + len(row["patchedBytes"])] = row["patchedBytes"]
     _validate_precommit_instrumented_copy(original, bytes(instrumented), spans)
     if inspect_rom(canonical)["sha256"] != canonical_identity["sha256"]:
         raise ValueError("blacksmith precommit instrumentation altered canonical ROM")
@@ -2904,7 +4025,8 @@ def _instrument_precommit_rom(
 def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     """Keep accepted output facts out of the executable observer configuration."""
     _validate_precommit_case_matrix(fixture, static)
-    _precommit_instrumentation_spans(static)
+    _validate_equip_decision_case_matrix(fixture, static)
+    _session_instrumentation_spans(static)
     _validate_precommit_cleanup_equippability(static)
     return {
         "id": fixture["id"],
@@ -2917,6 +4039,8 @@ def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[st
         "fulfillmentCaseOrder": fixture["fulfillmentCaseOrder"],
         "precommitCases": fixture["precommitCases"],
         "precommitCaseOrder": fixture["precommitCaseOrder"],
+        "equipDecisionCases": fixture["equipDecisionCases"],
+        "equipDecisionCaseOrder": fixture["equipDecisionCaseOrder"],
         "function": static["function"],
         "transaction": {
             key: value
@@ -2942,9 +4066,15 @@ def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[st
                 "nonEquippableRetryBranchAddress",
             }
         },
+        "equipDecision": {
+            key: value
+            for key, value in static["equipDecision"].items()
+            if key not in {"h1InstructionBytes", "itemDefinitionFields", "mithrilDomain"}
+        },
         "precommitCaseFrameBudget": PRECOMMIT_CASE_FRAME_BUDGET,
         "precommitTransitionFrameBudget": PRECOMMIT_TRANSITION_FRAME_BUDGET,
         "precommitCleanupStackDepthBytes": PRECOMMIT_CLEANUP_STACK_DEPTH_BYTES,
+        "instrumentedRom": _session_instrumentation_config(static),
         "ram": static["ram"],
         "constants": static["constants"],
         "observerFailureContract": OBSERVER_FAILURE_CONTRACT,
@@ -2956,43 +4086,55 @@ def verify_blacksmith_mithril(
 ) -> dict[str, Any]:
     fixture = load_json(FIXTURE)
     validate_json(fixture, FIXTURE_SCHEMA, owner="blacksmith mithril fixture")
+    _assert_retained_v4_digest(fixture)
+    _validate_equip_decision_case_matrix(fixture)
     verify_runtime_contract(fixture, rom_path)
     static = validate_static_contract(fixture, rom_path, upstream_path)
     _assert_golden(fixture, static)
     status_path = DERIVED_ROOT / f"{OWNER}.status.txt"
+    observed_path = DERIVED_ROOT / f"{OWNER}.observed.json"
     instrumented_rom = _instrument_precommit_rom(rom_path, fixture, static)
     try:
-        observed = _with_instrumented_rom_database(
-            instrumented_rom,
-            "SF2 H3 blacksmith mithril precommit instrumentation",
-            lambda: run_observer(
-                rom_path=instrumented_rom,
-                observer_path=OBSERVER,
-                config=_observer_config(fixture, static),
-                output_name=OWNER,
-                timeout_seconds=timeout_seconds,
-            ),
-        )
-    except RuntimeError as error:
-        diagnostic = _failure_diagnostic(status_path)
-        if diagnostic is not None:
-            raise RuntimeError(f"{OWNER} observer callback failure: {diagnostic}") from error
+        try:
+            observed = _with_instrumented_rom_database(
+                instrumented_rom,
+                "SF2 H3 blacksmith mithril precommit and equip-decision instrumentation",
+                lambda: run_observer(
+                    rom_path=instrumented_rom,
+                    observer_path=OBSERVER,
+                    config=_observer_config(fixture, static),
+                    output_name=OWNER,
+                    timeout_seconds=timeout_seconds,
+                ),
+            )
+        except RuntimeError as error:
+            diagnostic = _failure_diagnostic(status_path)
+            if diagnostic is not None:
+                raise RuntimeError(f"{OWNER} observer callback failure: {diagnostic}") from error
+            raise
+        _assert_status(status_path)
+        validate_json(observed, OBSERVATION_SCHEMA, owner="blacksmith mithril observation")
+        _assert_observation(fixture, static, observed)
+    except Exception:
+        # A successful Lua exit is not accepted evidence until the Python
+        # schema/golden comparison passes.  Do not leave that candidate output
+        # for a later run to consume as though it were accepted.
+        observed_path.unlink(missing_ok=True)
         raise
     finally:
         instrumented_rom.unlink(missing_ok=True)
-    _assert_status(status_path)
-    validate_json(observed, OBSERVATION_SCHEMA, owner="blacksmith mithril observation")
-    _assert_observation(fixture, static, observed)
     return {
         "Fixture": fixture["id"],
         "Cases": len(fixture["cases"])
         + len(fixture["transactionCases"])
         + len(fixture["fulfillmentCases"])
-        + len(fixture["precommitCases"]),
+        + len(fixture["precommitCases"])
+        + len(fixture["equipDecisionCases"]),
         "HelperCases": len(fixture["cases"]),
         "TransactionCases": len(fixture["transactionCases"]),
         "FulfillmentCases": len(fixture["fulfillmentCases"]),
         "PrecommitCases": len(fixture["precommitCases"]),
+        "EquipDecisionCases": len(fixture["equipDecisionCases"]),
         "BizHawkLaunches": 1,
         "CallbacksCleared": observed["callbacksCleared"],
         "Restoration": observed["restoration"],
