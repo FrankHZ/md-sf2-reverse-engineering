@@ -201,6 +201,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/startup-control-flow.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/text-and-font-system.md",
       "status": "pending"
     },
