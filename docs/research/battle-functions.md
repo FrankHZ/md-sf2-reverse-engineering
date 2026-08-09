@@ -6,13 +6,19 @@
 - Status: **Inferred** for unmodeled pulsating-grid presentation helper roles based on upstream
   names/comments
 - Status: **Unknown** for runtime input timing and frame/presentation behavior
-- Evidence date: 2026-07-19
+- Evidence date: 2026-08-08
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
 ## Confirmed Control Flow
 
 The seven files under `code/gameflow/battle/battlefunctions` are now fully inventoried and H1-bound.
+Their source-path ownership join contains 16 accepted research-index records across the unchanged seven
+discovered paths. `battlefunctions_0.asm` carries five records: its four historical battle-function
+records and the accepted cross-owner `map.camera-control.destination-service` record for
+`SetCameraDestination`. This is a source-membership relationship only: it does not filter by record ID,
+subsystem, document, or evidence level, and it does not change the existing player-control or camera
+runtime evidence boundaries.
 `ExecuteIndividualTurn` skips dead actors; MUDDLE, the AI-controlled bit, ally auto-battle, and normal
 enemy control route through AI, while the opponent-control toggle can hand an enemy to the player.
 SLEEP, STUN, and STAY consume the action without a battlescene. Ordinary actions write and execute a

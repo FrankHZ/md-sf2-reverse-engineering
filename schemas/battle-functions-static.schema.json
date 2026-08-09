@@ -1,19 +1,449 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Shining Force II shared battle functions static inventory",
-  "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "function", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "functionFacts", "playerControl", "files"],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "scope", "summary", "function",
+    "indexedRecordIds", "indexedSourcePaths", "indexedRecordsBySourcePath",
+    "internalDirectCallTargets", "externalDirectCallTargets", "functionFacts",
+    "playerControl", "files"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-battle-functions-static-v1" },
-    "upstream": { "type": "object" }, "scope": { "const": "code/gameflow/battle/battlefunctions" },
-    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount", "playerControlFunctionCount", "playerControlStatementCount", "playerControlBranchSiteCount", "playerControlGlobalStateCount"], "properties": { "fileCount": { "const": 7 }, "indexedRecordCount": { "const": 15 }, "indexedFileCount": { "const": 7 } } },
-    "function": { "type": "object", "minProperties": 15, "maxProperties": 15 },
-    "indexedRecordIds": { "type": "array", "minItems": 15, "maxItems": 15, "uniqueItems": true },
-    "indexedSourcePaths": { "type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true },
-    "internalDirectCallTargets": { "type": "array", "uniqueItems": true },
-    "externalDirectCallTargets": { "type": "array", "uniqueItems": true },
-    "functionFacts": { "type": "object", "minProperties": 6, "maxProperties": 6 },
-    "playerControl": { "type": "object", "required": ["summary", "selectedCallEdges", "globalStates", "inputBits", "battleActionConstants", "menuConstants", "functions", "behaviorFacts"] },
-    "files": { "type": "array", "minItems": 7, "maxItems": 7 }
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-battle-functions-static-v1" },
+    "upstream": { "$ref": "#/definitions/upstream" },
+    "scope": { "const": "code/gameflow/battle/battlefunctions" },
+    "summary": { "$ref": "#/definitions/summary" },
+    "function": { "$ref": "#/definitions/functionAddresses" },
+    "indexedRecordIds": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "$ref": "#/definitions/recordId" }
+    },
+    "indexedSourcePaths": {
+      "type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true,
+      "items": { "$ref": "#/definitions/sourcePath" }
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "array", "minItems": 7, "maxItems": 7,
+      "items": { "$ref": "#/definitions/indexedRecordsBySourcePath" }
+    },
+    "internalDirectCallTargets": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "#/definitions/symbol" }
+    },
+    "externalDirectCallTargets": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "#/definitions/symbol" }
+    },
+    "functionFacts": { "$ref": "#/definitions/functionFacts" },
+    "playerControl": { "$ref": "#/definitions/playerControl" },
+    "files": {
+      "type": "array", "minItems": 7, "maxItems": 7,
+      "items": { "$ref": "#/definitions/sourceFile" }
+    }
+  },
+  "definitions": {
+    "recordId": {
+      "type": "string", "pattern": "^[a-z0-9.-]+$"
+    },
+    "sourcePath": {
+      "type": "string",
+      "pattern": "^code/gameflow/battle/battlefunctions/[A-Za-z0-9_][A-Za-z0-9_.-]*\\.asm$"
+    },
+    "symbol": {
+      "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "upstream": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "summary": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "fileCount", "sourceLineCount", "statementCount", "globalLabelCount",
+        "localLabelCount", "directCallSiteCount", "indirectCallSiteCount",
+        "uniqueDirectTargetCount", "internalDirectTargetCount",
+        "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount",
+        "playerControlFunctionCount", "playerControlStatementCount",
+        "playerControlBranchSiteCount", "playerControlGlobalStateCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 7 },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 0 },
+        "globalLabelCount": { "type": "integer", "minimum": 0 },
+        "localLabelCount": { "type": "integer", "minimum": 0 },
+        "directCallSiteCount": { "type": "integer", "minimum": 0 },
+        "indirectCallSiteCount": { "type": "integer", "minimum": 0 },
+        "uniqueDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "internalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "externalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "indexedRecordCount": { "type": "integer", "minimum": 1 },
+        "indexedFileCount": { "const": 7 },
+        "playerControlFunctionCount": { "type": "integer", "minimum": 0 },
+        "playerControlStatementCount": { "type": "integer", "minimum": 0 },
+        "playerControlBranchSiteCount": { "type": "integer", "minimum": 0 },
+        "playerControlGlobalStateCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "functionAddresses": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "pulsatingGridAddress", "angelWingAddress", "updateTargetsAddress",
+        "relativeMoveTableAddress", "executeTurnAddress", "loadBattleAddress",
+        "setMoveSfxAddress", "controlCursorAddress", "chooseTargetAddress",
+        "setCursorTargetAddress", "processPlayerInputAddress", "battlefieldMenuAddress",
+        "aiTargetVisualAddress", "equipInBattleAddress", "checkGoldChestAddress"
+      ],
+      "properties": {
+        "pulsatingGridAddress": { "$ref": "#/definitions/address" },
+        "angelWingAddress": { "$ref": "#/definitions/address" },
+        "updateTargetsAddress": { "$ref": "#/definitions/address" },
+        "relativeMoveTableAddress": { "$ref": "#/definitions/address" },
+        "executeTurnAddress": { "$ref": "#/definitions/address" },
+        "loadBattleAddress": { "$ref": "#/definitions/address" },
+        "setMoveSfxAddress": { "$ref": "#/definitions/address" },
+        "controlCursorAddress": { "$ref": "#/definitions/address" },
+        "chooseTargetAddress": { "$ref": "#/definitions/address" },
+        "setCursorTargetAddress": { "$ref": "#/definitions/address" },
+        "processPlayerInputAddress": { "$ref": "#/definitions/address" },
+        "battlefieldMenuAddress": { "$ref": "#/definitions/address" },
+        "aiTargetVisualAddress": { "$ref": "#/definitions/address" },
+        "equipInBattleAddress": { "$ref": "#/definitions/address" },
+        "checkGoldChestAddress": { "$ref": "#/definitions/address" }
+      }
+    },
+    "address": { "type": "integer", "minimum": 0 },
+    "indexedRecordsBySourcePath": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourcePath", "recordIds"],
+      "properties": {
+        "sourcePath": { "$ref": "#/definitions/sourcePath" },
+        "recordIds": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/recordId" }
+        }
+      }
+    },
+    "functionFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "turnControl", "kiwiFlameBreath", "egress", "loadBattle", "moveSfx",
+        "largeHelperBoundary"
+      ],
+      "properties": {
+        "turnControl": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "deadActorSkipsTurn", "aiCauses", "playerControlledEnemyRequiresToggle",
+            "sleepAndStunSkipAction", "staySkipsAction",
+            "egressAndAngelWingExitBeforeBattlescene",
+            "ordinaryActionWritesAndExecutesBattlesceneThenReloadsBattle"
+          ],
+          "properties": {
+            "deadActorSkipsTurn": { "type": "boolean" },
+            "aiCauses": { "$ref": "#/definitions/stringArray" },
+            "playerControlledEnemyRequiresToggle": { "type": "boolean" },
+            "sleepAndStunSkipAction": { "type": "boolean" },
+            "staySkipsAction": { "type": "boolean" },
+            "egressAndAngelWingExitBeforeBattlescene": { "type": "boolean" },
+            "ordinaryActionWritesAndExecutesBattlesceneThenReloadsBattle": { "type": "boolean" }
+          }
+        },
+        "kiwiFlameBreath": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "class", "requiresPhysicalAttack", "rngUpperBound", "rngSuccessValue",
+            "upgradeLevels", "spellLevels"
+          ],
+          "properties": {
+            "class": { "type": "integer", "minimum": 0 },
+            "requiresPhysicalAttack": { "type": "boolean" },
+            "rngUpperBound": { "type": "integer", "minimum": 0 },
+            "rngSuccessValue": { "type": "integer", "minimum": 0 },
+            "upgradeLevels": { "$ref": "#/definitions/integerArray" },
+            "spellLevels": { "$ref": "#/definitions/integerArray" }
+          }
+        },
+        "egress": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "angelWingConsumesItemFirst", "spellConsumesDefinitionMp",
+            "bothCloseBattlefieldWindows", "bothUpdateUnlockedFlag",
+            "bothReturnEgressPosition", "returnCode"
+          ],
+          "properties": {
+            "angelWingConsumesItemFirst": { "type": "boolean" },
+            "spellConsumesDefinitionMp": { "type": "boolean" },
+            "bothCloseBattlefieldWindows": { "type": "boolean" },
+            "bothUpdateUnlockedFlag": { "type": "boolean" },
+            "bothReturnEgressPosition": { "type": "boolean" },
+            "returnCode": { "type": "integer" }
+          }
+        },
+        "loadBattle": {
+          "type": "object", "additionalProperties": false,
+          "required": ["order", "fairyWoodsOpensTimer"],
+          "properties": {
+            "order": { "$ref": "#/definitions/stringArray" },
+            "fairyWoodsOpensTimer": { "type": "boolean" }
+          }
+        },
+        "moveSfx": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "outsideBattle", "battleDefault", "chirrupSandalsOverride",
+            "equipmentOverrideAlsoAppliesOutsideBattle"
+          ],
+          "properties": {
+            "outsideBattle": { "type": "integer", "minimum": 0 },
+            "battleDefault": { "type": "string", "minLength": 1 },
+            "chirrupSandalsOverride": { "type": "string", "minLength": 1 },
+            "equipmentOverrideAlsoAppliesOutsideBattle": { "type": "boolean" }
+          }
+        },
+        "largeHelperBoundary": {
+          "type": "object", "additionalProperties": false,
+          "required": [
+            "cursorEntityAndGridFileInventoried", "targetingAndPlayerInputFileInventoried",
+            "relativeMovementTableFileInventoried", "deeperBranchSemanticsRemainQueued"
+          ],
+          "properties": {
+            "cursorEntityAndGridFileInventoried": { "type": "boolean" },
+            "targetingAndPlayerInputFileInventoried": { "type": "boolean" },
+            "relativeMovementTableFileInventoried": { "type": "boolean" },
+            "deeperBranchSemanticsRemainQueued": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "playerControl": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "summary", "selectedCallEdges", "globalStates", "inputBits",
+        "battleActionConstants", "menuConstants", "functions", "behaviorFacts"
+      ],
+      "properties": {
+        "summary": { "$ref": "#/definitions/playerControlSummary" },
+        "selectedCallEdges": {
+          "type": "array", "minItems": 1,
+          "items": { "$ref": "#/definitions/directCall" }
+        },
+        "globalStates": { "$ref": "#/definitions/symbolArray" },
+        "inputBits": { "$ref": "#/definitions/symbolArray" },
+        "battleActionConstants": { "$ref": "#/definitions/symbolArray" },
+        "menuConstants": { "$ref": "#/definitions/symbolArray" },
+        "functions": {
+          "type": "array", "minItems": 6, "maxItems": 6,
+          "items": { "$ref": "#/definitions/playerControlFunction" }
+        },
+        "behaviorFacts": { "$ref": "#/definitions/playerControlFacts" }
+      }
+    },
+    "playerControlSummary": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "functionCount", "sourceRangeCount", "statementCount", "branchSiteCount",
+        "directCallSiteCount", "uniqueDirectCallTargetCount",
+        "selectedFunctionCallEdgeCount", "globalStateCount", "inputBitCount",
+        "battleActionConstantCount", "menuConstantCount"
+      ],
+      "properties": {
+        "functionCount": { "type": "integer", "minimum": 0 },
+        "sourceRangeCount": { "type": "integer", "minimum": 0 },
+        "statementCount": { "type": "integer", "minimum": 0 },
+        "branchSiteCount": { "type": "integer", "minimum": 0 },
+        "directCallSiteCount": { "type": "integer", "minimum": 0 },
+        "uniqueDirectCallTargetCount": { "type": "integer", "minimum": 0 },
+        "selectedFunctionCallEdgeCount": { "type": "integer", "minimum": 0 },
+        "globalStateCount": { "type": "integer", "minimum": 0 },
+        "inputBitCount": { "type": "integer", "minimum": 0 },
+        "battleActionConstantCount": { "type": "integer", "minimum": 0 },
+        "menuConstantCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "playerControlFunction": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "name", "address", "sourcePath", "sourceRanges", "sourceSha256",
+        "statementCount", "branchSiteCount", "branchTargets", "directCallSiteCount",
+        "directCalls", "globalStateAccesses", "inputBits", "battleActionConstants",
+        "menuConstants", "textIds"
+      ],
+      "properties": {
+        "name": { "$ref": "#/definitions/symbol" },
+        "address": { "$ref": "#/definitions/address" },
+        "sourcePath": { "$ref": "#/definitions/sourcePath" },
+        "sourceRanges": {
+          "type": "array", "minItems": 1,
+          "items": { "$ref": "#/definitions/sourceRange" }
+        },
+        "sourceSha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+        "statementCount": { "type": "integer", "minimum": 0 },
+        "branchSiteCount": { "type": "integer", "minimum": 0 },
+        "branchTargets": { "$ref": "#/definitions/branchTargetArray" },
+        "directCallSiteCount": { "type": "integer", "minimum": 0 },
+        "directCalls": { "$ref": "#/definitions/directCallCounts" },
+        "globalStateAccesses": {
+          "type": "array", "items": { "$ref": "#/definitions/globalStateAccess" }
+        },
+        "inputBits": { "$ref": "#/definitions/symbolArray" },
+        "battleActionConstants": { "$ref": "#/definitions/symbolArray" },
+        "menuConstants": { "$ref": "#/definitions/symbolArray" },
+        "textIds": { "$ref": "#/definitions/integerArray" }
+      }
+    },
+    "sourceRange": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "startLine", "endLine"],
+      "properties": {
+        "kind": { "enum": ["function", "chunk"] },
+        "startLine": { "type": "integer", "minimum": 1 },
+        "endLine": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "directCallCounts": {
+      "type": "object", "additionalProperties": false,
+      "patternProperties": {
+        "^[A-Za-z_][A-Za-z0-9_]*$": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "branchTargetArray": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/branchTarget" }
+    },
+    "branchTarget": {
+      "type": "string", "pattern": "^@?[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "globalStateAccess": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "read", "write", "addressed", "operations"],
+      "properties": {
+        "name": { "$ref": "#/definitions/symbol" },
+        "read": { "type": "boolean" },
+        "write": { "type": "boolean" },
+        "addressed": { "type": "boolean" },
+        "operations": { "$ref": "#/definitions/stringArray" }
+      }
+    },
+    "playerControlFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "cursorControl", "targetSelection", "battleActionMenu", "battlefieldMenu",
+        "equipmentAndItems", "chestSearch"
+      ],
+      "properties": {
+        "cursorControl": {
+          "type": "object", "additionalProperties": false,
+          "required": ["confirmInputBits", "storesDestinationAsChosenTile", "hidesCursorAfterSelection"],
+          "properties": {
+            "confirmInputBits": { "$ref": "#/definitions/stringArray" },
+            "storesDestinationAsChosenTile": { "type": "boolean" },
+            "hidesCursorAfterSelection": { "type": "boolean" }
+          }
+        },
+        "targetSelection": {
+          "type": "object", "additionalProperties": false,
+          "required": ["emptyListReturn", "cancelInput", "confirmInputs", "directionInputsWrap", "returnValueOnConfirm"],
+          "properties": {
+            "emptyListReturn": { "type": "integer" },
+            "cancelInput": { "type": "string", "minLength": 1 },
+            "confirmInputs": { "$ref": "#/definitions/stringArray" },
+            "directionInputsWrap": { "$ref": "#/definitions/stringArray" },
+            "returnValueOnConfirm": { "type": "string", "minLength": 1 }
+          }
+        },
+        "battleActionMenu": {
+          "type": "object", "additionalProperties": false,
+          "required": ["choiceOrder", "cancelRestoresOriginalPosition", "movementCancelAction", "itemChoiceOrder", "committedActions"],
+          "properties": {
+            "choiceOrder": { "$ref": "#/definitions/stringArray" },
+            "cancelRestoresOriginalPosition": { "type": "boolean" },
+            "movementCancelAction": { "type": "integer" },
+            "itemChoiceOrder": { "$ref": "#/definitions/stringArray" },
+            "committedActions": { "$ref": "#/definitions/stringArray" }
+          }
+        },
+        "battlefieldMenu": {
+          "type": "object", "additionalProperties": false,
+          "required": ["choiceOrder", "battleZeroRejectsSuspend", "suspendCopiesSecondsAndSetsFlag88", "debugStartReturnsToMenuAfterSave", "normalSuspendTransfersToWitchSuspend"],
+          "properties": {
+            "choiceOrder": { "$ref": "#/definitions/stringArray" },
+            "battleZeroRejectsSuspend": { "type": "boolean" },
+            "suspendCopiesSecondsAndSetsFlag88": { "type": "boolean" },
+            "debugStartReturnsToMenuAfterSave": { "type": "boolean" },
+            "normalSuspendTransfersToWitchSuspend": { "type": "boolean" }
+          }
+        },
+        "equipmentAndItems": {
+          "type": "object", "additionalProperties": false,
+          "required": ["curseBlocksEquipmentExchange", "newCursedEquipmentShowsCurseDialogue", "equippedCursedItemCannotBeGivenOrDropped", "giveToFullInventoryTradesItems", "transferredItemsClearEquippedBit", "giveCommitsStayAction", "dropRequiresConfirmation", "droppedRareItemMovesToDeals"],
+          "properties": {
+            "curseBlocksEquipmentExchange": { "type": "boolean" },
+            "newCursedEquipmentShowsCurseDialogue": { "type": "boolean" },
+            "equippedCursedItemCannotBeGivenOrDropped": { "type": "boolean" },
+            "giveToFullInventoryTradesItems": { "type": "boolean" },
+            "transferredItemsClearEquippedBit": { "type": "boolean" },
+            "giveCommitsStayAction": { "type": "boolean" },
+            "dropRequiresConfirmation": { "type": "boolean" },
+            "droppedRareItemMovesToDeals": { "type": "boolean" }
+          }
+        },
+        "chestSearch": {
+          "type": "object", "additionalProperties": false,
+          "required": ["noChestContentsCommitsStay", "emptyChestCommitsStay", "trapCommitsTrappedChestActionAndSpawnsEnemy", "goldChestUsesThresholdAndIncreaseGold", "itemChestAddsToActor", "fullInventoryClosesChestAndReturnsToMenu", "resolvedNonTrapChestCommitsStay"],
+          "properties": {
+            "noChestContentsCommitsStay": { "type": "boolean" },
+            "emptyChestCommitsStay": { "type": "boolean" },
+            "trapCommitsTrappedChestActionAndSpawnsEnemy": { "type": "boolean" },
+            "goldChestUsesThresholdAndIncreaseGold": { "type": "boolean" },
+            "itemChestAddsToActor": { "type": "boolean" },
+            "fullInventoryClosesChestAndReturnsToMenu": { "type": "boolean" },
+            "resolvedNonTrapChestCommitsStay": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "sourceFile": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "sha256", "sourceLineCount", "statementCount", "globalLabels", "localLabelCount", "directCalls", "indirectCallSiteCount"],
+      "properties": {
+        "path": { "$ref": "#/definitions/sourcePath" },
+        "sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+        "sourceLineCount": { "type": "integer", "minimum": 1 },
+        "statementCount": { "type": "integer", "minimum": 0 },
+        "globalLabels": { "$ref": "#/definitions/symbolArray" },
+        "localLabelCount": { "type": "integer", "minimum": 0 },
+        "directCalls": {
+          "type": "array", "items": { "$ref": "#/definitions/directCall" }
+        },
+        "indirectCallSiteCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "directCall": {
+      "type": "object", "additionalProperties": false,
+      "required": ["target", "siteCount"],
+      "properties": {
+        "target": { "$ref": "#/definitions/symbol" },
+        "siteCount": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "integerArray": {
+      "type": "array", "uniqueItems": true,
+      "items": { "type": "integer", "minimum": 0 }
+    },
+    "stringArray": {
+      "type": "array", "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "symbolArray": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "#/definitions/symbol" }
+    }
   }
 }
