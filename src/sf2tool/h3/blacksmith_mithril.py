@@ -6,18 +6,24 @@ matrix and adds separate, post-confirmation ``@PlaceOrder`` and fulfillment
 matrices.  The commitment cohort redirects only the original ``ClearFlag``
 return away from the first text trap.  The fulfillment cohort enters the
 original ``@AddItem`` block and redirects only the original
-``IsWeaponOrRingEquippable`` return away from its following branch.
+``IsWeaponOrRingEquippable`` return away from its following branch.  The v4
+pre-commit cohort starts at the original fulfillment selection-loop label,
+controls named service returns through generated work-RAM stubs, and stops at
+``@AddItem`` or a source branch immediately before an excluded presentation
+path.  It never enters the introductory or prompt text bodies.
 """
 
 from __future__ import annotations
 
 import json
 import re
+import tempfile
 from pathlib import Path
 from typing import Any
 
 from sf2tool.h3 import rng
 from sf2tool.h3.bizhawk import DERIVED_ROOT, run_observer, verify_runtime_contract
+from sf2tool.h3.map_lifecycle import _with_instrumented_rom_database
 from sf2tool.h3.observer_status import (
     CALLBACK_FAILURE_PREFIX,
     assert_observer_status,
@@ -27,13 +33,15 @@ from sf2tool.h3.observer_status import (
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 from sf2tool.research_index import listing_symbol_addresses
+from sf2tool.rom import inspect_rom
 
-FIXTURE = repo_path("tests/fixtures/h3/blacksmith-mithril-v3.json")
+FIXTURE = repo_path("tests/fixtures/h3/blacksmith-mithril-v4.json")
 FIXTURE_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-fixture.schema.json")
 OBSERVATION_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-observation.schema.json")
 FAILURE_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-callback-failure.schema.json")
 OBSERVER = repo_path("tools/bizhawk/blacksmith_mithril_observer.lua")
 TOOLCHAIN_MANIFEST = repo_path("manifests/toolchain.json")
+ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
 COMMON_MENUS_OWNER = repo_path("tests/fixtures/h2/common-menus-static-v1.json")
 COMMON_STATS_OWNER = repo_path("tests/fixtures/h2/common-stats-static-v1.json")
 CORE_STATS_DATA_OWNER = repo_path("tests/fixtures/h2/core-stats-data-static-v1.json")
@@ -75,6 +83,20 @@ FULFILLMENT_CASE_IDS = (
     "vicr-goddess-staff-slot2-order2-equippable",
     "snip-mystery-staff-slot0-order0-not-equippable",
 )
+PRECOMMIT_CASE_IDS = (
+    "recipient-cancel-pre-presentation",
+    "full-inventory-pre-presentation",
+    "tool-direct-add-item-admission",
+    "equippable-direct-add-item-admission",
+    "non-equippable-pre-presentation",
+)
+PRECOMMIT_CASE_FRAME_BUDGET = 180
+PRECOMMIT_TRANSITION_FRAME_BUDGET = 180
+PRECOMMIT_SERVICE_STUB_ADDRESS = 0xFF6D00
+PRECOMMIT_SERVICE_STUB_SIZE = 6
+PRECOMMIT_TERMINAL_STUB_ADDRESS = 0xFF6D20
+PRECOMMIT_TERMINAL_STUB_SIZE = 6
+PRECOMMIT_CLEANUP_STACK_DEPTH_BYTES = 8
 
 
 def _source_section(source: str, symbol: str) -> str:
@@ -93,17 +115,13 @@ def _source_local_offset(source: str, symbol: str, name: str) -> int:
     if not symbol_match:
         raise ValueError(f"blacksmith source missing local symbol: {symbol}")
     declarations = source[: symbol_match.start()]
-    matches = re.findall(
-        rf"^\s*{re.escape(name)}\s*=\s*(-\d+)\s*$", declarations, re.MULTILINE
-    )
+    matches = re.findall(rf"^\s*{re.escape(name)}\s*=\s*(-\d+)\s*$", declarations, re.MULTILINE)
     if len(matches) != 1:
         raise ValueError(f"blacksmith source local declaration drift: {name}")
     return int(matches[0])
 
 
-def _source_frame_offsets(
-    source: str, symbol: str, names: tuple[str, ...]
-) -> dict[str, int]:
+def _source_frame_offsets(source: str, symbol: str, names: tuple[str, ...]) -> dict[str, int]:
     """Read one exact local-frame declaration block immediately before ``symbol``."""
     symbol_match = re.search(rf"^{re.escape(symbol)}:\s*$", source, re.MULTILINE)
     if not symbol_match:
@@ -191,6 +209,9 @@ def _required_equates(values: dict[str, int]) -> dict[str, int]:
         "ITEMDEF_OFFSET_TYPE",
         "ITEMTYPE_WEAPON",
         "ITEMTYPE_RING",
+        "EQUIPMENTTYPE_TOOL",
+        "EQUIPMENTTYPE_WEAPON",
+        "EQUIPMENTTYPE_RING",
         "CLASS_HERO",
         "CLASS_VICR",
         "CLASS_SNIP",
@@ -202,6 +223,9 @@ def _required_equates(values: dict[str, int]) -> dict[str, int]:
         "ITEM_MITHRIL",
         "MITHRIL_WEAPONS_ON_ORDER",
         "RANDOM_SEED",
+        "DIALOGUE_NAME_INDEX_1",
+        "SELECTED_ITEM_INDEX",
+        "CURRENT_ITEM_SUBMENU_ACTION",
     )
     missing = [name for name in names if name not in values]
     if missing:
@@ -291,9 +315,7 @@ def _listing_section(listing: str, symbol: str) -> tuple[dict[str, int], list[di
         if label:
             labels[label.group(2)] = int(label.group(1), 16)
             continue
-        instruction = re.fullmatch(
-            r"([0-9A-F]{8})\s+((?:[0-9A-F]{4}\s+)+)(.+?)\s*", raw
-        )
+        instruction = re.fullmatch(r"([0-9A-F]{8})\s+((?:[0-9A-F]{4}\s+)+)(.+?)\s*", raw)
         if instruction:
             encoded = re.sub(r"\s+", "", instruction.group(2))
             instructions.append(
@@ -398,8 +420,7 @@ def _order_slot_contract_from_source_h1(
         or _h1_text(stride_instruction) != "move.w #2,d0"
         or len(stride_instruction["bytes"]) != 4
         or write_instruction is None
-        or re.fullmatch(r"move\.([bwl]) d1,\(a0\)", _h1_text(write_instruction))
-        is None
+        or re.fullmatch(r"move\.([bwl]) d1,\(a0\)", _h1_text(write_instruction)) is None
     ):
         raise ValueError("blacksmith order-slot H1 stride/write drift")
     h1_stride = int.from_bytes(stride_instruction["bytes"][-2:], "big")
@@ -420,9 +441,7 @@ def _rom_guard_instruction_bytes(
     """Resolve H1's zero-filled local branch/PC-relative placeholders for the rebuilt ROM."""
     encoded = instruction["bytes"]
     text = instruction["text"].split(" ;", 1)[0]
-    branch = re.fullmatch(
-        r"(?:b[a-z]+)\.(s|w)\s+([@A-Za-z_][@A-Za-z0-9_]*)", text
-    )
+    branch = re.fullmatch(r"(?:b[a-z]+)\.(s|w)\s+([@A-Za-z_][@A-Za-z0-9_]*)", text)
     targets = labels | table_addresses
     if branch and branch.group(2) in targets:
         # The 68000 branches from the address immediately after the opcode word,
@@ -543,6 +562,66 @@ def _require_supporting_mutation_source_shape(
             "rts",
         ),
         name="GetCombatantEntryAddress",
+    )
+
+
+def _require_fulfillment_precommit_source_shape(actions_source: str) -> None:
+    """Guard the handler-local admission path before the original ``@AddItem`` entry.
+
+    The service calls are intentionally retained as named seams.  The H3
+    observer supplies their returns as harness controls, so this parser does
+    not attribute member-list or yes/no UI behaviour to the original game.
+    """
+    section = _source_section(actions_source, "BlacksmithAction_FulfillOrder")
+    add_item = section.find("@AddItem:")
+    if add_item < 0:
+        raise ValueError("blacksmith fulfillment precommit source missing @AddItem")
+    precommit = section[:add_item]
+    _require_source_sequence(
+        precommit,
+        (
+            "blacksmithaction_fulfillorder:",
+            "movem.l d0-a1,-(sp)",
+            "move.w itemindex(a6),((dialogue_name_index_1-$1000000)).w",
+            "txt 207",
+            "txt 166",
+            "clstxt",
+            "byte_21b58:",
+            "clstxt",
+            "move.w itemindex(a6),((selected_item_index-$1000000)).w",
+            "move.b #item_submenu_action_use,((current_item_submenu_action-$1000000)).w",
+            "jsr j_executememberslistscreenonitemsummarypage",
+            "cmpi.w #-1,d0",
+            "bne.s @ismemberinventoryfull",
+            "bra.w @done",
+            "@ismemberinventoryfull:",
+            "move.w d0,clientmember(a6)",
+            "moveq #0,d1",
+            "jsr j_getitembyslotandhelditemsnumber",
+            "cmpi.w #combatant_itemslots,d2",
+            "bcs.s @checkequipmenttype",
+            "move.w clientmember(a6),((dialogue_name_index_1-$1000000)).w",
+            "txt 208",
+            "jsr j_alt_yesnoprompt",
+            "cmpi.w #0,d0",
+            "beq.s byte_21b58",
+            "bra.w @done",
+            "@checkequipmenttype:",
+            "move.w itemindex(a6),d1",
+            "jsr j_getequipmenttype",
+            "cmpi.w #equipmenttype_tool,d2",
+            "beq.s @additem",
+            "move.w itemindex(a6),d1",
+            "move.w clientmember(a6),d0",
+            "jsr j_isweaponorringequippable",
+            "bcs.s @additem",
+            "move.w clientmember(a6),((dialogue_name_index_1-$1000000)).w",
+            "txt 167",
+            "jsr j_alt_yesnoprompt",
+            "cmpi.w #0,d0",
+            "bne.w byte_21b58",
+        ),
+        name="BlacksmithAction_FulfillOrder precommit admission block",
     )
 
 
@@ -688,9 +767,10 @@ def _validate_owners(
         ("rng", rng_owner, RNG_OWNER),
     ):
         declared = owners[name]
-        if declared["fixture"] != expected_path.relative_to(repo_path(".")).as_posix() or declared[
-            "fixtureId"
-        ] != owner["id"]:
+        if (
+            declared["fixture"] != expected_path.relative_to(repo_path(".")).as_posix()
+            or declared["fixtureId"] != owner["id"]
+        ):
             raise ValueError(f"blacksmith {name} owner identity drift")
     if (
         fixture["romSha256"] != common_menus["romSha256"]
@@ -794,9 +874,7 @@ def _rng_abi_from_source(pick_source: str, rng_source: str) -> dict[str, str]:
     picker_tokens = _source_tokens(_source_section(pick_source, "PickMithrilWeapon"))
     generator_tokens = _source_tokens(_source_section(rng_source, "GenerateRandomNumber"))
     generator_call = "jsr (generaterandomnumber).w"
-    call_indices = [
-        index for index, token in enumerate(picker_tokens) if token == generator_call
-    ]
+    call_indices = [index for index, token in enumerate(picker_tokens) if token == generator_call]
     if len(call_indices) != 2:
         raise ValueError("blacksmith RNG caller inventory drift")
     fallback_range = re.fullmatch(r"move\.w #2,(d[0-7])", picker_tokens[call_indices[0] - 1])
@@ -871,30 +949,25 @@ def build_static_contract(
     const_source = const_source_text or (disasm / CONST_RELATIVE).read_text(encoding="utf-8")
     listing = listing_text or (upstream_path / LISTING_RELATIVE).read_text(encoding="utf-8")
     rng_source = rng_source_text or (disasm / RNG_SOURCE_RELATIVE).read_text(encoding="utf-8")
-    actions_source = actions_source_text or (
-        disasm / BLACKSMITH_ACTIONS_RELATIVE
-    ).read_text(encoding="utf-8")
-    gold_source = gold_source_text or (disasm / GOLD_SOURCE_RELATIVE).read_text(
+    actions_source = actions_source_text or (disasm / BLACKSMITH_ACTIONS_RELATIVE).read_text(
         encoding="utf-8"
     )
-    item_source = item_source_text or (disasm / ITEM_SOURCE_RELATIVE).read_text(
+    gold_source = gold_source_text or (disasm / GOLD_SOURCE_RELATIVE).read_text(encoding="utf-8")
+    item_source = item_source_text or (disasm / ITEM_SOURCE_RELATIVE).read_text(encoding="utf-8")
+    flag_source = flag_source_text or (disasm / FLAG_SOURCE_RELATIVE).read_text(encoding="utf-8")
+    combatant_source = combatant_source_text or (disasm / COMBATANT_SOURCE_RELATIVE).read_text(
         encoding="utf-8"
     )
-    flag_source = flag_source_text or (disasm / FLAG_SOURCE_RELATIVE).read_text(
+    itemdefs_source = itemdefs_source_text or (disasm / ITEMDEFS_SOURCE_RELATIVE).read_text(
         encoding="utf-8"
     )
-    combatant_source = combatant_source_text or (
-        disasm / COMBATANT_SOURCE_RELATIVE
-    ).read_text(encoding="utf-8")
-    itemdefs_source = itemdefs_source_text or (
-        disasm / ITEMDEFS_SOURCE_RELATIVE
-    ).read_text(encoding="utf-8")
     _require_pick_source_shape(pick_source)
     _require_rng_source_shape(rng_source)
     readiness_flag_id = _require_place_order_source_shape(actions_source)
     _require_supporting_mutation_source_shape(
         gold_source, item_source, flag_source, combatant_source
     )
+    _require_fulfillment_precommit_source_shape(actions_source)
     _require_fulfillment_source_shape(actions_source, item_source)
     client_class_offset = _source_local_offset(pick_source, "PickMithrilWeapon", "clientClass")
     action_frame_offsets = _source_frame_offsets(
@@ -910,9 +983,9 @@ def build_static_contract(
     if action_frame_offsets["clientClass"] != client_class_offset:
         raise ValueError("blacksmith action/picker client-class frame offset drift")
     try:
-        h2_readiness_flag_id = common_menus["expected"]["menuFacts"][
-            "serviceStateMachines"
-        ]["blacksmith"]["derived"]["process"]["readiness"]["flagId"]
+        h2_readiness_flag_id = common_menus["expected"]["menuFacts"]["serviceStateMachines"][
+            "blacksmith"
+        ]["derived"]["process"]["readiness"]["flagId"]
     except KeyError as error:
         raise ValueError("blacksmith common-menus readiness-flag owner drift") from error
     if readiness_flag_id != h2_readiness_flag_id:
@@ -923,9 +996,7 @@ def build_static_contract(
     groups, rows, class_bytes, weapon_bytes = _parse_mithril_tables(table_source, equates)
     ordinary_groups = groups[:-1]
     fallback_groups = [
-        group
-        for group in groups
-        if group == [required["CLASS_BRN"], required["CLASS_RDBN"]]
+        group for group in groups if group == [required["CLASS_BRN"], required["CLASS_RDBN"]]
     ]
     if len(ordinary_groups) != required["MITHRIL_WEAPON_CLASSES_COUNTER"] + 1:
         raise ValueError("blacksmith searchable class-group counter relationship drift")
@@ -945,15 +1016,14 @@ def build_static_contract(
     if common_menus["function"]["PickMithrilWeapon"] != entry:
         raise ValueError("blacksmith common-menus H2/H1 entry derivation drift")
     if (
-        item_owner["table"]["list_MithrilWeaponClasses"]
-        != h1_entries["list_MithrilWeaponClasses"]
+        item_owner["table"]["list_MithrilWeaponClasses"] != h1_entries["list_MithrilWeaponClasses"]
         or item_owner["table"]["table_MithrilWeapons"] != h1_entries["table_MithrilWeapons"]
     ):
         raise ValueError("blacksmith item-owner H1 table address drift")
     try:
-        common_stats_itemstats_symbol = common_stats["expected"][
-            "representativeSymbols"
-        ]["itemstats.asm"]
+        common_stats_itemstats_symbol = common_stats["expected"]["representativeSymbols"][
+            "itemstats.asm"
+        ]
         common_stats_itemstats_address = common_stats["function"]["itemStatsAddress"]
         core_item_definition_address = core_stats_data["table"]["table_ItemDefinitions"]
         core_item_definition_count = core_stats_data["expected"]["facts"]["items"][
@@ -978,9 +1048,7 @@ def build_static_contract(
         or required["ITEM_NOTHING"] != item_definition_count - 1
     ):
         raise ValueError("blacksmith core-stats item-definition source/H1 domain drift")
-    fulfillment_item_indexes = {
-        int(case["itemIndex"]) for case in fixture["fulfillmentCases"]
-    }
+    fulfillment_item_indexes = {int(case["itemIndex"]) for case in fixture["fulfillmentCases"]}
     if any(
         item_index < 0 or item_index >= item_definition_count
         for item_index in fulfillment_item_indexes
@@ -1018,8 +1086,7 @@ def build_static_contract(
     if h1_client_class_offset != client_class_offset:
         raise ValueError("blacksmith client-class source/H1 offset drift")
     if (
-        required["BLACKSMITH_MAX_ORDERS_NUMBER"]
-        != required["BLACKSMITH_ORDERS_COUNTER"] + 1
+        required["BLACKSMITH_MAX_ORDERS_NUMBER"] != required["BLACKSMITH_ORDERS_COUNTER"] + 1
         or required["MITHRIL_WEAPON_ORDER_SLOT_SIZE"] != order_slot["strideBytes"]
         or order_slot["strideBytes"] != order_slot["writeWidthBytes"]
     ):
@@ -1046,22 +1113,25 @@ def build_static_contract(
         or source_context["placeSourcePath"] != BLACKSMITH_ACTIONS_RELATIVE.as_posix()
         or source_context["itemStatsSourcePath"] != ITEM_SOURCE_RELATIVE.as_posix()
         or source_context["tableSourcePath"] != TABLE_SOURCE_RELATIVE.as_posix()
-        or source_context["itemDefinitionsSourcePath"]
-        != ITEMDEFS_SOURCE_RELATIVE.as_posix()
+        or source_context["itemDefinitionsSourcePath"] != ITEMDEFS_SOURCE_RELATIVE.as_posix()
         or source_context["h1ListingPath"] != LISTING_RELATIVE.as_posix()
         or source_context["functionEntryAddress"] != entry
     ):
         raise ValueError("blacksmith fixture source-context identity drift")
 
-    place_labels, place_instructions = _listing_section(
-        listing, "BlacksmithAction_PlaceOrder"
-    )
+    place_labels, place_instructions = _listing_section(listing, "BlacksmithAction_PlaceOrder")
     if source_context["placeEntryAddress"] != place_labels["@PlaceOrder"]:
         raise ValueError("blacksmith fixture place-order source-context drift")
     fulfill_labels, fulfill_instructions = _listing_section(
         listing, "BlacksmithAction_FulfillOrder"
     )
-    if source_context["fulfillAddItemEntryAddress"] != fulfill_labels["@AddItem"]:
+    if (
+        source_context["fulfillAddItemEntryAddress"] != fulfill_labels["@AddItem"]
+        or source_context["fulfillEntryAddress"] != fulfill_labels["BlacksmithAction_FulfillOrder"]
+        or source_context["fulfillSelectionLoopAddress"]
+        != fulfill_labels["byte_21B58"]
+        or source_context["fulfillDoneAddress"] != fulfill_labels["@Done"]
+    ):
         raise ValueError("blacksmith fixture fulfill-order source-context drift")
     add_labels, add_instructions = _listing_section(listing, "AddItem")
     equippable_labels, equippable_instructions = _listing_section(
@@ -1071,12 +1141,8 @@ def build_static_contract(
     drop_labels, drop_instructions = _listing_section(listing, "DropItemBySlot")
     clear_labels, clear_instructions = _listing_section(listing, "ClearFlag")
     get_flag_labels, get_flag_instructions = _listing_section(listing, "GetFlag")
-    combatant_labels, combatant_instructions = _listing_section(
-        listing, "GetCombatantEntryAddress"
-    )
-    update_labels, update_instructions = _listing_section(
-        listing, "UpdateCombatantStats"
-    )
+    combatant_labels, combatant_instructions = _listing_section(listing, "GetCombatantEntryAddress")
+    update_labels, update_instructions = _listing_section(listing, "UpdateCombatantStats")
 
     def instruction_record(
         instructions: list[dict[str, Any]], text: str, *, occurrence: int = 1
@@ -1098,18 +1164,15 @@ def build_static_contract(
 
     decrease_call_record = instruction_record(place_instructions, "jsr j_DecreaseGold")
     pending_increment_record = successor_record(place_instructions, decrease_call_record)
-    pending_increment_after_record = successor_record(
-        place_instructions, pending_increment_record
-    )
-    client_member_record = instruction_record(
-        place_instructions, "move.w clientMember(a6),d0"
-    )
+    pending_increment_after_record = successor_record(place_instructions, pending_increment_record)
+    client_member_record = instruction_record(place_instructions, "move.w clientMember(a6),d0")
     item_slot_record = instruction_record(place_instructions, "move.w itemSlot(a6),d1")
     drop_call_record = instruction_record(place_instructions, "jsr j_DropItemBySlot")
     pick_call_record = instruction_record(place_instructions, "bsr.w PickMithrilWeapon")
     clear_call_record = instruction_record(place_instructions, "jsr j_ClearFlag")
     clear_flag_load_record = place_instructions[place_instructions.index(clear_call_record) - 1]
     pre_presentation_record = successor_record(place_instructions, clear_call_record)
+
     def h1_frame_displacement(record: dict[str, Any], name: str) -> int:
         encoded = record["bytes"]
         if len(encoded) < 4:
@@ -1129,8 +1192,7 @@ def build_static_contract(
         != pending_increment_record["address"] + len(pending_increment_record["bytes"])
         or clear_flag_load_record["text"] != f"move.w #{readiness_flag_id},d1"
         or len(clear_flag_load_record["bytes"]) != 4
-        or int.from_bytes(clear_flag_load_record["bytes"][-2:], "big")
-        != readiness_flag_id
+        or int.from_bytes(clear_flag_load_record["bytes"][-2:], "big") != readiness_flag_id
         or h1_frame_offsets
         != {
             name: action_frame_offsets[name]
@@ -1146,9 +1208,7 @@ def build_static_contract(
     update_return_rts, _ = _h1_instruction(update_instructions, "rts")
     clear_return_rts, _ = _h1_instruction(clear_instructions, "rts")
     flag_mask_record = instruction_record(get_flag_instructions, "andi.l #FLAG_MASK,d1")
-    flag_base_record = instruction_record(
-        get_flag_instructions, "lea ((GAME_FLAGS-$1000000)).w,a0"
-    )
+    flag_base_record = instruction_record(get_flag_instructions, "lea ((GAME_FLAGS-$1000000)).w,a0")
     combatant_stride_first = instruction_record(combatant_instructions, "lsl.w #3,d0")
     combatant_stride_second = instruction_record(
         combatant_instructions, "lsl.w #3,d0", occurrence=2
@@ -1162,8 +1222,7 @@ def build_static_contract(
         or drop_labels["DropItemBySlot"] != h1_entries["DropItemBySlot"]
         or clear_labels["ClearFlag"] != h1_entries["ClearFlag"]
         or get_flag_labels["GetFlag"] != h1_entries["GetFlag"]
-        or combatant_labels["GetCombatantEntryAddress"]
-        != h1_entries["GetCombatantEntryAddress"]
+        or combatant_labels["GetCombatantEntryAddress"] != h1_entries["GetCombatantEntryAddress"]
         or update_labels["UpdateCombatantStats"] != h1_entries["UpdateCombatantStats"]
         or flag_mask_record["address"] >= flag_base_record["address"]
         or combatant_stride_first["address"] >= combatant_stride_second["address"]
@@ -1185,6 +1244,307 @@ def build_static_contract(
     ):
         raise ValueError("blacksmith transaction work-RAM constant relation drift")
 
+    precommit_instructions = [
+        instruction
+        for instruction in fulfill_instructions
+        if fulfill_labels["BlacksmithAction_FulfillOrder"]
+        <= instruction["address"]
+        < fulfill_labels["@AddItem"]
+    ]
+
+    def precommit_instruction(text: str, *, occurrence: int = 1) -> dict[str, Any]:
+        matches = [item for item in precommit_instructions if _h1_text(item) == text]
+        if len(matches) < occurrence:
+            raise ValueError(f"blacksmith precommit H1 instruction missing: {text}")
+        return matches[occurrence - 1]
+
+    def precommit_call(
+        record: dict[str, Any], instruction_symbol: str, effective_symbol: str
+    ) -> dict[str, int]:
+        if (
+            len(record["bytes"]) != 6
+            or record["bytes"][:2] != b"\x4e\xb9"
+            or int.from_bytes(record["bytes"][-4:], "big") != h1_entries[instruction_symbol]
+        ):
+            raise ValueError("blacksmith precommit H1 call instruction-target drift")
+        return {
+            "callAddress": record["address"],
+            "instructionTargetAddress": h1_entries[instruction_symbol],
+            "effectiveTargetAddress": h1_entries[effective_symbol],
+            "returnAddress": record["address"] + len(record["bytes"]),
+        }
+
+    precommit_member_list_call = precommit_instruction(
+        "jsr j_ExecuteMembersListScreenOnItemSummaryPage"
+    )
+    precommit_held_items_call = precommit_instruction("jsr j_GetItemBySlotAndHeldItemsNumber")
+    precommit_equipment_type_call = precommit_instruction("jsr j_GetEquipmentType")
+    precommit_equippability_call = precommit_instruction("jsr j_IsWeaponOrRingEquippable")
+    precommit_full_yes_no_call = precommit_instruction("jsr j_alt_YesNoPrompt")
+    precommit_nonequippable_yes_no_call = precommit_instruction(
+        "jsr j_alt_YesNoPrompt", occurrence=2
+    )
+    precommit_member_cancel_compare = precommit_instruction("cmpi.w #-1,d0")
+    precommit_member_cancel_branch = precommit_instruction("bne.s @IsMemberInventoryFull")
+    precommit_member_cancel_done = precommit_instruction("bra.w @Done", occurrence=1)
+    precommit_capacity_compare = precommit_instruction("cmpi.w #COMBATANT_ITEMSLOTS,d2")
+    precommit_capacity_branch = precommit_instruction("bcs.s @CheckEquipmentType")
+    precommit_full_prompt_compare = precommit_instruction("cmpi.w #0,d0")
+    precommit_full_prompt_branch = precommit_instruction("beq.s byte_21B58")
+    precommit_full_prompt_done = precommit_instruction("bra.w @Done", occurrence=2)
+    precommit_equipment_type_compare = precommit_instruction("cmpi.w #EQUIPMENTTYPE_TOOL,d2")
+    precommit_tool_branch = precommit_instruction("beq.s @AddItem")
+    precommit_equippability_branch = precommit_instruction("bcs.s @AddItem")
+    precommit_nonequippable_prompt_compare = precommit_instruction("cmpi.w #0,d0", occurrence=2)
+    precommit_nonequippable_retry_branch = precommit_instruction("bne.w byte_21B58")
+    precommit_client_member_store = precommit_instruction("move.w d0,clientMember(a6)")
+    precommit_type_item_index_load = precommit_instruction("move.w itemIndex(a6),d1")
+    precommit_text_traps = [
+        instruction
+        for instruction in precommit_instructions
+        if _h1_text(instruction) == "M trap #textbox"
+    ]
+
+    def h1_span(
+        instructions: list[dict[str, Any]], address: int, size: int = 6
+    ) -> bytes:
+        """Read one exact instrumented-ROM span from consecutive H1 records."""
+        start_index = next(
+            (
+                index
+                for index, instruction in enumerate(instructions)
+                if instruction["address"] == address
+            ),
+            None,
+        )
+        if start_index is None:
+            raise ValueError("blacksmith precommit terminal boundary H1 start drift")
+        chunks: list[bytes] = []
+        next_address = address
+        for instruction in instructions[start_index:]:
+            if instruction["address"] != next_address:
+                raise ValueError("blacksmith precommit terminal boundary H1 continuity drift")
+            encoded = instruction["bytes"]
+            chunks.append(encoded)
+            next_address += len(encoded)
+            if sum(len(chunk) for chunk in chunks) >= size:
+                break
+        joined = b"".join(chunks)
+        if len(joined) < size:
+            raise ValueError("blacksmith precommit terminal boundary H1 width drift")
+        return joined[:size]
+
+    def precommit_text_boundary(
+        record: dict[str, Any], *, text_id: int, name: str
+    ) -> tuple[int, bytes]:
+        index = precommit_instructions.index(record)
+        if (
+            record["bytes"] != b"\x4E\x45"
+            or index + 1 >= len(precommit_instructions)
+            or precommit_instructions[index + 1]["address"]
+            != record["address"] + len(record["bytes"])
+            or precommit_instructions[index + 1]["bytes"] != text_id.to_bytes(2, "big")
+        ):
+            raise ValueError(f"blacksmith precommit {name} text boundary H1 drift")
+        return record["address"], h1_span(precommit_instructions, record["address"])
+
+    def precommit_displacement(record: dict[str, Any], name: str) -> int:
+        encoded = record["bytes"]
+        if len(encoded) < 4:
+            raise ValueError(f"blacksmith precommit H1 frame displacement width drift: {name}")
+        return int.from_bytes(encoded[-2:], "big", signed=True)
+
+    if (
+        len(precommit_text_traps) != 8
+        or precommit_member_list_call["address"] != fulfill_labels["byte_21B58"] + 16
+        or precommit_member_cancel_compare["address"]
+        != precommit_member_list_call["address"] + len(precommit_member_list_call["bytes"])
+        or precommit_member_cancel_branch["address"]
+        != precommit_member_cancel_compare["address"]
+        + len(precommit_member_cancel_compare["bytes"])
+        or precommit_member_cancel_done["address"] <= precommit_member_cancel_branch["address"]
+        or precommit_capacity_compare["address"]
+        != precommit_held_items_call["address"] + len(precommit_held_items_call["bytes"])
+        or precommit_capacity_branch["address"]
+        != precommit_capacity_compare["address"] + len(precommit_capacity_compare["bytes"])
+        or precommit_full_prompt_compare["address"]
+        != precommit_full_yes_no_call["address"] + len(precommit_full_yes_no_call["bytes"])
+        or precommit_full_prompt_branch["address"]
+        != precommit_full_prompt_compare["address"] + len(precommit_full_prompt_compare["bytes"])
+        or precommit_full_prompt_done["address"] <= precommit_full_prompt_branch["address"]
+        or precommit_equipment_type_compare["address"]
+        != precommit_equipment_type_call["address"] + len(precommit_equipment_type_call["bytes"])
+        or precommit_tool_branch["address"]
+        != precommit_equipment_type_compare["address"]
+        + len(precommit_equipment_type_compare["bytes"])
+        or precommit_equippability_branch["address"]
+        != precommit_equippability_call["address"] + len(precommit_equippability_call["bytes"])
+        or precommit_nonequippable_prompt_compare["address"]
+        != precommit_nonequippable_yes_no_call["address"]
+        + len(precommit_nonequippable_yes_no_call["bytes"])
+        or precommit_nonequippable_retry_branch["address"]
+        != precommit_nonequippable_prompt_compare["address"]
+        + len(precommit_nonequippable_prompt_compare["bytes"])
+        or precommit_displacement(precommit_client_member_store, "clientMember")
+        != fulfillment_frame_offsets["clientMember"]
+        or precommit_displacement(precommit_type_item_index_load, "itemIndex")
+        != fulfillment_frame_offsets["itemIndex"]
+        or fulfill_labels["@Done"] <= fulfill_labels["@AddItem"]
+        or precommit_member_cancel_branch["bytes"][0] != 0x66
+        or precommit_capacity_branch["bytes"][0] != 0x65
+        or precommit_full_prompt_branch["bytes"][0] != 0x67
+        or precommit_tool_branch["bytes"][0] != 0x67
+        or precommit_equippability_branch["bytes"][0] != 0x65
+        or precommit_nonequippable_retry_branch["bytes"][0] != 0x66
+    ):
+        raise ValueError("blacksmith precommit source/H1 branch chronology drift")
+    if len(precommit_text_traps) != 8:
+        raise ValueError("blacksmith precommit text-trap inventory drift")
+    recipient_cancel_text_address, recipient_cancel_text_span = precommit_text_boundary(
+        precommit_text_traps[4], text_id=197, name="recipient-cancel"
+    )
+    full_inventory_text_address, full_inventory_text_span = precommit_text_boundary(
+        precommit_text_traps[5], text_id=208, name="full-inventory"
+    )
+    non_equippable_text_address, non_equippable_text_span = precommit_text_boundary(
+        precommit_text_traps[7], text_id=167, name="non-equippable"
+    )
+    add_item_entry = next(
+        instruction
+        for instruction in fulfill_instructions
+        if instruction["address"] == fulfill_labels["@AddItem"]
+    )
+    if _h1_text(add_item_entry) != "move.w clientMember(a6),d0":
+        raise ValueError("blacksmith precommit AddItem terminal boundary H1 drift")
+    if (
+        recipient_cancel_text_address
+        != precommit_member_cancel_branch["address"] + len(precommit_member_cancel_branch["bytes"])
+        or full_inventory_text_address
+        <= precommit_capacity_branch["address"]
+        or non_equippable_text_address
+        <= precommit_equippability_branch["address"]
+        or add_item_entry["address"] != fulfill_labels["@AddItem"]
+    ):
+        raise ValueError("blacksmith precommit terminal boundary source chronology drift")
+    if (
+        required["EQUIPMENTTYPE_TOOL"] != 0
+        or required["EQUIPMENTTYPE_WEAPON"] == required["EQUIPMENTTYPE_TOOL"]
+        or required["COMBATANT_ITEMSLOTS"] != required["COMBATANT_ITEMSLOTS_COUNTER"] + 1
+    ):
+        raise ValueError("blacksmith precommit source constant relation drift")
+
+    precommit = {
+        "entryAddress": fulfill_labels["BlacksmithAction_FulfillOrder"],
+        "selectionLoopAddress": fulfill_labels["byte_21B58"],
+        "runtimeStartAddress": fulfill_labels["byte_21B58"],
+        "doneAddress": fulfill_labels["@Done"],
+        "addItemEntryAddress": fulfill_labels["@AddItem"],
+        "memberList": precommit_call(
+            precommit_member_list_call,
+            "j_ExecuteMembersListScreenOnItemSummaryPage",
+            "ExecuteMembersListScreenOnItemSummaryPage",
+        ),
+        "heldItems": precommit_call(
+            precommit_held_items_call,
+            "j_GetItemBySlotAndHeldItemsNumber",
+            "GetItemBySlotAndHeldItemsNumber",
+        ),
+        "equipmentType": precommit_call(
+            precommit_equipment_type_call,
+            "j_GetEquipmentType",
+            "GetEquipmentType",
+        ),
+        "equippability": precommit_call(
+            precommit_equippability_call,
+            "j_IsWeaponOrRingEquippable",
+            "IsWeaponOrRingEquippable",
+        ),
+        "fullInventoryYesNo": precommit_call(
+            precommit_full_yes_no_call,
+            "j_alt_YesNoPrompt",
+            "alt_YesNoPrompt",
+        ),
+        "nonEquippableYesNo": precommit_call(
+            precommit_nonequippable_yes_no_call,
+            "j_alt_YesNoPrompt",
+            "alt_YesNoPrompt",
+        ),
+        "memberCancelCompareAddress": precommit_member_cancel_compare["address"],
+        "memberCancelBranchAddress": precommit_member_cancel_branch["address"],
+        "capacityCompareAddress": precommit_capacity_compare["address"],
+        "capacityBranchAddress": precommit_capacity_branch["address"],
+        "fullInventoryPromptCompareAddress": precommit_full_prompt_compare["address"],
+        "fullInventoryRetryBranchAddress": precommit_full_prompt_branch["address"],
+        "equipmentTypeCompareAddress": precommit_equipment_type_compare["address"],
+        "toolAdmissionBranchAddress": precommit_tool_branch["address"],
+        "equippabilityBranchAddress": precommit_equippability_branch["address"],
+        "nonEquippablePromptCompareAddress": precommit_nonequippable_prompt_compare["address"],
+        "nonEquippableRetryBranchAddress": precommit_nonequippable_retry_branch["address"],
+        "presentationTrapAddresses": [
+            instruction["address"] for instruction in precommit_text_traps
+        ],
+        "presentationTrapReturnAddresses": [
+            instruction["address"] + len(instruction["bytes"])
+            for instruction in precommit_text_traps
+        ],
+        "frameOffsetsBytes": {
+            "clientMember": fulfillment_frame_offsets["clientMember"],
+            "itemIndex": fulfillment_frame_offsets["itemIndex"],
+            "fulfilledOrdersNumber": fulfillment_frame_offsets["fulfilledOrdersNumber"],
+        },
+        "h1InstructionBytes": [],
+    }
+    precommit_service_shim_sources = (
+        ("member-list", precommit_member_list_call, precommit["memberList"]),
+        ("held-items", precommit_held_items_call, precommit["heldItems"]),
+        ("equipment-type", precommit_equipment_type_call, precommit["equipmentType"]),
+        ("equippability", precommit_equippability_call, precommit["equippability"]),
+    )
+    precommit["serviceShims"] = []
+    for role, record, service in precommit_service_shim_sources:
+        original_hex = record["bytes"].hex().upper()
+        if original_hex[:4] != "4EB9" or len(original_hex) != 12:
+            raise ValueError("blacksmith precommit service shim original opcode drift")
+        precommit["serviceShims"].append(
+            {
+                "role": role,
+                "callAddress": service["callAddress"],
+                "instructionTargetAddress": service["instructionTargetAddress"],
+                "effectiveTargetAddress": service["effectiveTargetAddress"],
+                "returnAddress": service["returnAddress"],
+                "originalHex": original_hex,
+                "patchedHex": f"4EB9{PRECOMMIT_SERVICE_STUB_ADDRESS:08X}",
+                "generatedStubTarget": PRECOMMIT_SERVICE_STUB_ADDRESS,
+            }
+        )
+    precommit["terminalShims"] = [
+        {
+            "role": "recipient-cancel-terminal-boundary-shim",
+            "type": "terminal-jmp",
+            "boundaryAddress": recipient_cancel_text_address,
+            "originalHex": recipient_cancel_text_span.hex().upper(),
+            "patchedHex": f"4EF9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}",
+            "generatedStubTarget": PRECOMMIT_TERMINAL_STUB_ADDRESS,
+        },
+        {
+            "role": "full-inventory-terminal-boundary-shim",
+            "type": "terminal-jmp",
+            "boundaryAddress": full_inventory_text_address,
+            "originalHex": full_inventory_text_span.hex().upper(),
+            "patchedHex": f"4EF9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}",
+            "generatedStubTarget": PRECOMMIT_TERMINAL_STUB_ADDRESS,
+        },
+        {
+            "role": "non-equippable-terminal-boundary-shim",
+            "type": "terminal-jmp",
+            "boundaryAddress": non_equippable_text_address,
+            "originalHex": non_equippable_text_span.hex().upper(),
+            "patchedHex": f"4EF9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}",
+            "generatedStubTarget": PRECOMMIT_TERMINAL_STUB_ADDRESS,
+        },
+    ]
+    _validate_precommit_instrumentation(precommit)
+
     fulfillment_start = next(
         index
         for index, instruction in enumerate(fulfill_instructions)
@@ -1193,9 +1553,7 @@ def build_static_contract(
     fulfillment_instructions = fulfill_instructions[fulfillment_start:]
 
     def fulfillment_instruction(text: str, *, occurrence: int = 1) -> dict[str, Any]:
-        matches = [
-            item for item in fulfillment_instructions if _h1_text(item) == text
-        ]
+        matches = [item for item in fulfillment_instructions if _h1_text(item) == text]
         if len(matches) < occurrence:
             raise ValueError(f"blacksmith fulfillment H1 instruction missing: {text}")
         return matches[occurrence - 1]
@@ -1204,29 +1562,17 @@ def build_static_contract(
     fulfillment_item_index = fulfillment_instruction("move.w itemIndex(a6),d1")
     add_call_record = fulfillment_instruction("jsr j_AddItem")
     orders_counter_record = fulfillment_instruction("sub.w ordersCounter(a6),d6")
-    order_base_record = fulfillment_instruction(
-        "lea ((MITHRIL_WEAPONS_ON_ORDER-$1000000)).w,a1"
-    )
+    order_base_record = fulfillment_instruction("lea ((MITHRIL_WEAPONS_ON_ORDER-$1000000)).w,a1")
     order_read_record = fulfillment_instruction("move.w (a1),d2")
     order_clear_record = fulfillment_instruction("move.w #0,(a1)")
-    fulfilled_increment_record = fulfillment_instruction(
-        "addi.w #1,fulfilledOrdersNumber(a6)"
-    )
-    fulfilled_increment_after = successor_record(
-        fulfill_instructions, fulfilled_increment_record
-    )
-    equippable_call_record = fulfillment_instruction(
-        "jsr j_IsWeaponOrRingEquippable", occurrence=1
-    )
-    post_equippable_record = successor_record(
-        fulfill_instructions, equippable_call_record
-    )
+    fulfilled_increment_record = fulfillment_instruction("addi.w #1,fulfilledOrdersNumber(a6)")
+    fulfilled_increment_after = successor_record(fulfill_instructions, fulfilled_increment_record)
+    equippable_call_record = fulfillment_instruction("jsr j_IsWeaponOrRingEquippable", occurrence=1)
+    post_equippable_record = successor_record(fulfill_instructions, equippable_call_record)
     fulfillment_block_instructions = [
         instruction
         for instruction in fulfill_instructions
-        if fulfill_labels["@AddItem"]
-        <= instruction["address"]
-        <= post_equippable_record["address"]
+        if fulfill_labels["@AddItem"] <= instruction["address"] <= post_equippable_record["address"]
     ]
     add_return_rts, _ = _h1_instruction(add_instructions, "rts")
     equippable_return_rts, _ = _h1_instruction(equippable_instructions, "rts")
@@ -1247,12 +1593,8 @@ def build_static_contract(
         "clientMember": h1_frame_displacement(
             fulfillment_client_member, "fulfillment clientMember"
         ),
-        "itemIndex": h1_frame_displacement(
-            fulfillment_item_index, "fulfillment itemIndex"
-        ),
-        "ordersCounter": h1_frame_displacement(
-            orders_counter_record, "fulfillment ordersCounter"
-        ),
+        "itemIndex": h1_frame_displacement(fulfillment_item_index, "fulfillment itemIndex"),
+        "ordersCounter": h1_frame_displacement(orders_counter_record, "fulfillment ordersCounter"),
         "fulfilledOrdersNumber": h1_frame_displacement(
             fulfilled_increment_record, "fulfillment fulfilledOrdersNumber"
         ),
@@ -1269,24 +1611,25 @@ def build_static_contract(
     if (
         fulfill_labels["@AddItem"] != add_call_record["address"] - 8
         or fulfillment_h1_offsets
-        != {
-            name: fulfillment_frame_offsets[name]
-            for name in fulfillment_h1_offsets
-        }
+        != {name: fulfillment_frame_offsets[name] for name in fulfillment_h1_offsets}
         or order_base_record["address"]
         != orders_counter_record["address"] + len(orders_counter_record["bytes"])
         or order_read_record["address"]
         != order_clear_record["address"] - len(order_read_record["bytes"])
         or fulfilled_increment_after["address"]
         != fulfilled_increment_record["address"] + len(fulfilled_increment_record["bytes"])
-        or post_equippable_record["text"] not in {
+        or post_equippable_record["text"]
+        not in {
             "bcc.w byte_21CD0 ; @DoNotEquipNewItem",
             "bcc.w byte_21CD0",
         }
-        or int.from_bytes(add_call_record["bytes"][-4:], "big")
-        != h1_entries["j_AddItem"]
+        or int.from_bytes(add_call_record["bytes"][-4:], "big") != h1_entries["j_AddItem"]
         or int.from_bytes(equippable_call_record["bytes"][-4:], "big")
         != h1_entries["j_IsWeaponOrRingEquippable"]
+        or len(equippable_call_record["bytes"]) != 6
+        or equippable_call_record["bytes"][:2] != b"\x4E\xB9"
+        or post_equippable_record["address"]
+        != equippable_call_record["address"] + len(equippable_call_record["bytes"])
         or h1_combatant_class_offset_signed != h1_combatant_class_offset_unsigned
         or h1_combatant_class_offset_signed != required["COMBATANT_OFFSET_CLASS"]
         or add_empty_compare["address"] >= add_empty_break["address"]
@@ -1303,8 +1646,7 @@ def build_static_contract(
         or add_empty_break["bytes"][0] != 0x67
         or len(add_full_done["bytes"]) != 2
         or add_full_done["bytes"][0] != 0x60
-        or required["COMBATANT_ITEMSLOTS_COUNTER"] + 1
-        != required["COMBATANT_ITEMSLOTS"]
+        or required["COMBATANT_ITEMSLOTS_COUNTER"] + 1 != required["COMBATANT_ITEMSLOTS"]
         or (required["ITEMTYPE_WEAPON"] | required["ITEMTYPE_RING"]) == 0
     ):
         raise ValueError("blacksmith fulfillment source/H1 ABI chronology drift")
@@ -1321,8 +1663,7 @@ def build_static_contract(
         definition = fulfillment_item_definitions[item_index]
         class_mask = 1 << int(case["recipientClass"])
         expected_carry = bool(
-            definition["itemType"]
-            & (required["ITEMTYPE_WEAPON"] | required["ITEMTYPE_RING"])
+            definition["itemType"] & (required["ITEMTYPE_WEAPON"] | required["ITEMTYPE_RING"])
             and definition["equipFlags"] & class_mask
         )
         if expected_carry != bool(case["equippableCarrySet"]):
@@ -1342,6 +1683,15 @@ def build_static_contract(
             }
             for instruction in instructions
         ]
+
+    precommit["h1InstructionBytes"] = guarded_instructions(precommit_instructions, fulfill_labels)
+    precommit["cleanupEquippability"] = {
+        "callAddress": equippable_call_record["address"],
+        "instructionTargetAddress": h1_entries["j_IsWeaponOrRingEquippable"],
+        "effectiveTargetAddress": equippable_labels["IsWeaponOrRingEquippable"],
+        "effectiveReturnAddress": equippable_return_rts,
+        "returnAddress": post_equippable_record["address"],
+    }
 
     return {
         "function": {
@@ -1371,6 +1721,9 @@ def build_static_contract(
             "gameFlagsAddress": required["GAME_FLAGS"],
             "flag80OwningByteAddress": required["GAME_FLAGS"] + flag_byte_offset,
             "combatantDataAddress": required["COMBATANT_DATA"],
+            "dialogueNameIndex1Address": required["DIALOGUE_NAME_INDEX_1"],
+            "selectedItemIndexAddress": required["SELECTED_ITEM_INDEX"],
+            "currentItemSubmenuActionAddress": required["CURRENT_ITEM_SUBMENU_ACTION"],
         },
         "constants": {
             "classGroupsCounter": required["MITHRIL_WEAPON_CLASSES_COUNTER"],
@@ -1389,6 +1742,9 @@ def build_static_contract(
             "itemIndexAndBrokenMask": required["ITEMENTRY_MASK_INDEX_AND_BROKEN_BIT"],
             "weaponTypeMask": required["ITEMTYPE_WEAPON"],
             "ringTypeMask": required["ITEMTYPE_RING"],
+            "equipmentTypeTool": required["EQUIPMENTTYPE_TOOL"],
+            "equipmentTypeWeapon": required["EQUIPMENTTYPE_WEAPON"],
+            "equipmentTypeRing": required["EQUIPMENTTYPE_RING"],
             "combatantEntrySizeBytes": required["COMBATANT_DATA_ENTRY_REAL_SIZE"],
             "combatantItemSlotCount": required["COMBATANT_ITEMSLOTS"],
             "combatantClassOffsetBytes": required["COMBATANT_OFFSET_CLASS"],
@@ -1404,9 +1760,7 @@ def build_static_contract(
             "decreaseGoldEffectiveTargetAddress": h1_entries["DecreaseGold"],
             "decreaseGoldEffectiveReturnAddress": decrease_return_rts,
             "pendingOrdersIncrementAddress": pending_increment_record["address"],
-            "pendingOrdersIncrementedObserveAddress": pending_increment_after_record[
-                "address"
-            ],
+            "pendingOrdersIncrementedObserveAddress": pending_increment_after_record["address"],
             "dropItemCallAddress": drop_call_record["address"],
             "dropItemInstructionTargetAddress": h1_entries["j_DropItemBySlot"],
             "dropItemEffectiveTargetAddress": h1_entries["DropItemBySlot"],
@@ -1439,8 +1793,7 @@ def build_static_contract(
         "fulfillment": {
             "addItemEntryAddress": fulfill_labels["@AddItem"],
             "addItemCallAddress": add_call_record["address"],
-            "addItemReturnAddress": add_call_record["address"]
-            + len(add_call_record["bytes"]),
+            "addItemReturnAddress": add_call_record["address"] + len(add_call_record["bytes"]),
             "addItemInstructionTargetAddress": h1_entries["j_AddItem"],
             "addItemEffectiveTargetAddress": add_labels["AddItem"],
             "addItemEffectiveReturnAddress": add_return_rts,
@@ -1449,16 +1802,10 @@ def build_static_contract(
             "orderClearAddress": order_clear_record["address"],
             "orderClearedObserveAddress": fulfilled_increment_record["address"],
             "fulfilledOrdersIncrementAddress": fulfilled_increment_record["address"],
-            "fulfilledOrdersIncrementedObserveAddress": fulfilled_increment_after[
-                "address"
-            ],
+            "fulfilledOrdersIncrementedObserveAddress": fulfilled_increment_after["address"],
             "equippabilityCallAddress": equippable_call_record["address"],
-            "equippabilityInstructionTargetAddress": h1_entries[
-                "j_IsWeaponOrRingEquippable"
-            ],
-            "equippabilityEffectiveTargetAddress": equippable_labels[
-                "IsWeaponOrRingEquippable"
-            ],
+            "equippabilityInstructionTargetAddress": h1_entries["j_IsWeaponOrRingEquippable"],
+            "equippabilityEffectiveTargetAddress": equippable_labels["IsWeaponOrRingEquippable"],
             "equippabilityEffectiveReturnAddress": equippable_return_rts,
             "postEquippabilityReturnAddress": post_equippable_record["address"],
             "updateCombatantStatsAddress": update_labels["UpdateCombatantStats"],
@@ -1479,13 +1826,13 @@ def build_static_contract(
                     "equipFlagsAddress": definition["address"]
                     + required["ITEMDEF_OFFSET_EQUIPFLAGS"],
                     "equipFlagsBytes": definition["equipFlags"].to_bytes(4, "big"),
-                    "itemTypeAddress": definition["address"]
-                    + required["ITEMDEF_OFFSET_TYPE"],
+                    "itemTypeAddress": definition["address"] + required["ITEMDEF_OFFSET_TYPE"],
                     "itemTypeBytes": bytes([definition["itemType"]]),
                 }
                 for item_index, definition in sorted(fulfillment_item_definitions.items())
             ],
         },
+        "precommit": precommit,
         "model": {"classGroups": groups, "weaponRows": rows},
         "h1": {
             "instructionBytes": [
@@ -1495,9 +1842,7 @@ def build_static_contract(
                         instruction,
                         labels,
                         {
-                            "list_MithrilWeaponClasses": h1_entries[
-                                "list_MithrilWeaponClasses"
-                            ],
+                            "list_MithrilWeaponClasses": h1_entries["list_MithrilWeaponClasses"],
                             "table_MithrilWeapons": h1_entries["table_MithrilWeapons"],
                         },
                     ),
@@ -1522,6 +1867,7 @@ def validate_static_contract(
         static["h1"]["instructionBytes"]
         + static["transaction"]["h1InstructionBytes"]
         + static["fulfillment"]["h1InstructionBytes"]
+        + static["precommit"]["h1InstructionBytes"]
     ):
         address = instruction["address"]
         expected = instruction["romBytes"]
@@ -1542,8 +1888,7 @@ def validate_static_contract(
             expected = field[bytes_key]
             if rom[address : address + len(expected)] != expected:
                 raise ValueError(
-                    "blacksmith fulfillment H1/ROM item-definition guard drift "
-                    f"at {address:#x}"
+                    f"blacksmith fulfillment H1/ROM item-definition guard drift at {address:#x}"
                 )
     return static
 
@@ -1703,9 +2048,7 @@ def model_transaction_case(case: dict[str, Any], static: dict[str, Any]) -> dict
         raise ValueError("blacksmith transaction item slot is outside source-owned domain")
     if len(items_before) != constants["combatantItemSlotCount"]:
         raise ValueError("blacksmith transaction item-word domain drift")
-    if (
-        items_before[item_slot] & constants["itemIndexMask"]
-    ) != constants["mithrilItemIndex"]:
+    if (items_before[item_slot] & constants["itemIndexMask"]) != constants["mithrilItemIndex"]:
         raise ValueError("blacksmith transaction selected item is not source mithril")
     picker = model_case(
         {
@@ -1804,9 +2147,11 @@ def model_fulfillment_case(case: dict[str, Any], static: dict[str, Any]) -> dict
     items_before = list(case["clientItemWordsBefore"])
     orders_before = list(case["ordersBefore"])
     orders_counter = int(case["ordersCounter"])
-    if not fulfillment["ordersCounterMinimum"] <= orders_counter <= fulfillment[
-        "ordersCounterMaximum"
-    ]:
+    if (
+        not fulfillment["ordersCounterMinimum"]
+        <= orders_counter
+        <= fulfillment["ordersCounterMaximum"]
+    ):
         raise ValueError("blacksmith fulfillment ordersCounter is outside source domain")
     if len(items_before) != constants["combatantItemSlotCount"]:
         raise ValueError("blacksmith fulfillment inventory word domain drift")
@@ -1869,6 +2214,170 @@ def model_fulfillment_case(case: dict[str, Any], static: dict[str, Any]) -> dict
     }
 
 
+def _precommit_event(role: str, pc: int) -> dict[str, int | str]:
+    return {"role": role, "pc": pc}
+
+
+def model_precommit_case(
+    case: dict[str, Any], static: dict[str, Any], fulfillment_cases: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Derive direct-handler admission chronology from source-bound branch polarity.
+
+    The member-list, item-count, equipment-type, and equippability values are
+    deliberately supplied harness controls. Routes that reach presentation or
+    ``@AddItem`` stop at their source boundary before any precommit observation
+    can include its body. The runtime then reuses a retained direct-fulfillment
+    case solely as harness cleanup. This model therefore proves only the
+    handler-local selection/capacity/equipment admission branches.
+    """
+    constants = static["constants"]
+    precommit = static["precommit"]
+    attempts = list(case["attempts"])
+    if len(attempts) != 1:
+        raise ValueError("blacksmith precommit case must stop before any prompt retry")
+    if len(case["ordersBefore"]) != constants["orderSlotCount"]:
+        raise ValueError("blacksmith precommit order-word domain drift")
+    attempt = attempts[0]
+    terminal_shims = {row["role"]: row for row in precommit["terminalShims"]}
+    fulfillment_by_id = {row["id"]: row for row in fulfillment_cases}
+
+    def service_chronology(role: str, service: dict[str, Any]) -> None:
+        chronology.extend(
+            (
+                _precommit_event(
+                    f"precommit-{role}-controlled-service-call-shim",
+                    service["callAddress"],
+                ),
+                _precommit_event(
+                    "precommit-generated-service-stub", PRECOMMIT_SERVICE_STUB_ADDRESS
+                ),
+                _precommit_event(
+                    f"precommit-{role}-original-return", service["returnAddress"]
+                ),
+            )
+        )
+
+    def terminal_boundary(role: str, terminal: str) -> tuple[str, int]:
+        shim = terminal_shims.get(role)
+        if shim is None:
+            raise ValueError(f"blacksmith precommit terminal shim missing: {role}")
+        chronology.append(_precommit_event(f"precommit-{role}", shim["boundaryAddress"]))
+        chronology.append(
+            _precommit_event(
+                "precommit-generated-result-stub", PRECOMMIT_TERMINAL_STUB_ADDRESS
+            )
+        )
+        return terminal, shim["boundaryAddress"]
+
+    def add_item_boundary() -> tuple[str, int]:
+        cleanup_id = case["cleanupFulfillmentCaseId"]
+        cleanup = fulfillment_by_id.get(cleanup_id)
+        if cleanup is None:
+            raise ValueError("blacksmith precommit add-item cleanup fixture identity drift")
+        if cleanup["itemIndex"] != case["itemIndex"]:
+            raise ValueError("blacksmith precommit add-item cleanup item identity drift")
+        selected_order = constants["orderSlotCount"] - cleanup["ordersCounter"]
+        if case["ordersBefore"][selected_order] != case["itemIndex"]:
+            raise ValueError("blacksmith precommit add-item cleanup order-word identity drift")
+        chronology.append(
+            _precommit_event("precommit-add-item-boundary", precommit["addItemEntryAddress"])
+        )
+        return "add-item", precommit["addItemEntryAddress"]
+
+    chronology = [
+        _precommit_event("precommit-selection-loop-entry", precommit["runtimeStartAddress"])
+    ]
+    service_chronology("member-list", precommit["memberList"])
+    chronology.extend(
+        (
+            _precommit_event(
+                "precommit-member-cancel-compare", precommit["memberCancelCompareAddress"]
+            ),
+            _precommit_event(
+                "precommit-member-cancel-branch", precommit["memberCancelBranchAddress"]
+            ),
+        )
+    )
+    member = attempt["selectedMemberResult"]
+    if member == -1:
+        terminal, terminal_pc = terminal_boundary(
+            "recipient-cancel-terminal-boundary-shim", "recipient-cancel-pre-presentation"
+        )
+        selected_member = None
+    else:
+        if not 0 <= member <= 31:
+            raise ValueError("blacksmith precommit selected member is outside byte domain")
+        selected_member = member
+        held_items = attempt["heldItemsCountResult"]
+        if held_items is None:
+            raise ValueError("blacksmith precommit selected member lacks held-item result")
+        service_chronology("held-items", precommit["heldItems"])
+        chronology.extend(
+            (
+                _precommit_event("precommit-capacity-compare", precommit["capacityCompareAddress"]),
+                _precommit_event("precommit-capacity-branch", precommit["capacityBranchAddress"]),
+            )
+        )
+        if held_items >= constants["combatantItemSlotCount"]:
+            terminal, terminal_pc = terminal_boundary(
+                "full-inventory-terminal-boundary-shim", "full-inventory-pre-presentation"
+            )
+        else:
+            equipment_type = attempt["equipmentTypeResult"]
+            if equipment_type is None:
+                raise ValueError("blacksmith precommit non-full selection lacks equipment type")
+            service_chronology("equipment-type", precommit["equipmentType"])
+            chronology.extend(
+                (
+                    _precommit_event(
+                        "precommit-equipment-type-compare",
+                        precommit["equipmentTypeCompareAddress"],
+                    ),
+                    _precommit_event(
+                        "precommit-tool-admission-branch", precommit["toolAdmissionBranchAddress"]
+                    ),
+                )
+            )
+            if equipment_type == constants["equipmentTypeTool"]:
+                terminal, terminal_pc = add_item_boundary()
+            else:
+                carry = attempt["equippableCarrySetResult"]
+                if carry is None:
+                    raise ValueError(
+                        "blacksmith precommit non-tool selection lacks equippability carry"
+                    )
+                service_chronology("equippability", precommit["equippability"])
+                chronology.append(
+                    _precommit_event(
+                        "precommit-equippability-branch",
+                        precommit["equippabilityBranchAddress"],
+                    )
+                )
+                if carry:
+                    terminal, terminal_pc = add_item_boundary()
+                else:
+                    terminal, terminal_pc = terminal_boundary(
+                        "non-equippable-terminal-boundary-shim",
+                        "non-equippable-pre-presentation",
+                    )
+    return {
+        "id": case["id"],
+        "itemIndex": case["itemIndex"],
+        "attemptCount": 1,
+        "selectedMember": selected_member,
+        "ordersBefore": list(case["ordersBefore"]),
+        "ordersAfter": list(case["ordersBefore"]),
+        "fulfilledOrdersBefore": case["fulfilledOrdersBefore"],
+        "fulfilledOrdersAfter": case["fulfilledOrdersBefore"],
+        "terminal": terminal,
+        "terminalPc": terminal_pc,
+        "addItemMutationObserved": False,
+        "orderMutationObserved": False,
+        "fulfilledOrdersMutationObserved": False,
+        "callbackChronology": chronology,
+    }
+
+
 def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     helper_records = [model_case(case, static) for case in fixture["cases"]]
     transaction_records = [
@@ -1876,6 +2385,10 @@ def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dic
     ]
     fulfillment_records = [
         model_fulfillment_case(case, static) for case in fixture["fulfillmentCases"]
+    ]
+    precommit_records = [
+        model_precommit_case(case, static, fixture["fulfillmentCases"])
+        for case in fixture["precommitCases"]
     ]
     return {
         "system": "GEN",
@@ -1887,7 +2400,24 @@ def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dic
         "transactionRecords": transaction_records,
         "fulfillmentCaseOrder": [case["id"] for case in fixture["fulfillmentCases"]],
         "fulfillmentRecords": fulfillment_records,
+        "precommitCaseOrder": [case["id"] for case in fixture["precommitCases"]],
+        "precommitRecords": precommit_records,
         "callbacksCleared": 0,
+        "precommitInstrumentation": {
+            "serviceCallSitesReadback": [
+                "member-list",
+                "held-items",
+                "equipment-type",
+                "equippability",
+            ],
+            "terminalBoundarySitesReadback": [
+                "recipient-cancel-terminal-boundary-shim",
+                "full-inventory-terminal-boundary-shim",
+                "non-equippable-terminal-boundary-shim",
+            ],
+            "generatedServiceStubWritesReadback": True,
+            "generatedResultStubWritesReadback": True,
+        },
         "restoration": {
             "currentGoldLongRestored": True,
             "randomSeedWordRestored": True,
@@ -1895,19 +2425,23 @@ def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dic
             "flag80OwningByteRestored": True,
             "clientCombatantRecordsRestored": True,
         },
+        "precommitRestoration": {
+            "dialogueNameIndex1WordRestored": True,
+            "selectedItemIndexWordRestored": True,
+            "currentItemSubmenuActionByteRestored": True,
+        },
     }
 
 
 def _validate_case_matrix(fixture: dict[str, Any], static: dict[str, Any]) -> None:
-    if tuple(case["id"] for case in fixture["cases"]) != CASE_IDS or tuple(
-        fixture["caseOrder"]
-    ) != CASE_IDS:
+    if (
+        tuple(case["id"] for case in fixture["cases"]) != CASE_IDS
+        or tuple(fixture["caseOrder"]) != CASE_IDS
+    ):
         raise ValueError("blacksmith fixture case order drift")
     records = [model_case(case, static) for case in fixture["cases"]]
     fallback_records = [
-        record
-        for record in records
-        if record["rngCalls"][0]["role"] == "fallback-row-roll"
+        record for record in records if record["rngCalls"][0]["role"] == "fallback-row-roll"
     ]
     if [record["id"] for record in fallback_records] != list(CASE_IDS[2:4]):
         raise ValueError("blacksmith fallback case-role coverage drift")
@@ -1924,9 +2458,10 @@ def _validate_case_matrix(fixture: dict[str, Any], static: dict[str, Any]) -> No
 
 
 def _validate_transaction_case_matrix(fixture: dict[str, Any], static: dict[str, Any]) -> None:
-    if tuple(fixture["transactionCaseOrder"]) != TRANSACTION_CASE_IDS or tuple(
-        case["id"] for case in fixture["transactionCases"]
-    ) != TRANSACTION_CASE_IDS:
+    if (
+        tuple(fixture["transactionCaseOrder"]) != TRANSACTION_CASE_IDS
+        or tuple(case["id"] for case in fixture["transactionCases"]) != TRANSACTION_CASE_IDS
+    ):
         raise ValueError("blacksmith transaction case order drift")
     helper_inputs = {
         (case["clientClass"], case["randomSeedBefore"], tuple(case["ordersBefore"]))
@@ -1950,17 +2485,17 @@ def _validate_transaction_case_matrix(fixture: dict[str, Any], static: dict[str,
     if [len(record["rngCalls"]) for record in records] != [1, 4, 2]:
         raise ValueError("blacksmith transaction RNG call-count variation drift")
     if any(
-        record["safeExitOriginalReturnPc"]
-        != static["transaction"]["prePresentationReturnAddress"]
+        record["safeExitOriginalReturnPc"] != static["transaction"]["prePresentationReturnAddress"]
         for record in records
     ):
         raise ValueError("blacksmith transaction pre-presentation exit boundary drift")
 
 
 def _validate_fulfillment_case_matrix(fixture: dict[str, Any], static: dict[str, Any]) -> None:
-    if tuple(fixture["fulfillmentCaseOrder"]) != FULFILLMENT_CASE_IDS or tuple(
-        case["id"] for case in fixture["fulfillmentCases"]
-    ) != FULFILLMENT_CASE_IDS:
+    if (
+        tuple(fixture["fulfillmentCaseOrder"]) != FULFILLMENT_CASE_IDS
+        or tuple(case["id"] for case in fixture["fulfillmentCases"]) != FULFILLMENT_CASE_IDS
+    ):
         raise ValueError("blacksmith fulfillment case order drift")
     records = [model_fulfillment_case(case, static) for case in fixture["fulfillmentCases"]]
     if [record["selectedOrderIndex"] for record in records] != [3, 2, 0]:
@@ -1979,10 +2514,76 @@ def _validate_fulfillment_case_matrix(fixture: dict[str, Any], static: dict[str,
         raise ValueError("blacksmith fulfillment stack-return exit boundary drift")
 
 
+def _validate_precommit_case_matrix(fixture: dict[str, Any], static: dict[str, Any]) -> None:
+    if (
+        tuple(fixture["precommitCaseOrder"]) != PRECOMMIT_CASE_IDS
+        or tuple(case["id"] for case in fixture["precommitCases"]) != PRECOMMIT_CASE_IDS
+    ):
+        raise ValueError("blacksmith precommit case order drift")
+    all_existing_ids = {
+        *CASE_IDS,
+        *TRANSACTION_CASE_IDS,
+        *FULFILLMENT_CASE_IDS,
+    }
+    if all_existing_ids & set(PRECOMMIT_CASE_IDS):
+        raise ValueError("blacksmith precommit duplicates accepted v3 case ownership")
+    records = [
+        model_precommit_case(case, static, fixture["fulfillmentCases"])
+        for case in fixture["precommitCases"]
+    ]
+    if [record["terminal"] for record in records] != [
+        "recipient-cancel-pre-presentation",
+        "full-inventory-pre-presentation",
+        "add-item",
+        "add-item",
+        "non-equippable-pre-presentation",
+    ]:
+        raise ValueError("blacksmith precommit terminal matrix coverage drift")
+    if [record["attemptCount"] for record in records] != [1, 1, 1, 1, 1]:
+        raise ValueError("blacksmith precommit pre-presentation boundary coverage drift")
+    if [record["selectedMember"] for record in records] != [
+        None,
+        0,
+        3,
+        4,
+        5,
+    ]:
+        raise ValueError("blacksmith precommit selected-member coverage drift")
+    if any(
+        record["ordersBefore"] != record["ordersAfter"]
+        or record["fulfilledOrdersBefore"] != record["fulfilledOrdersAfter"]
+        or record["addItemMutationObserved"]
+        or record["orderMutationObserved"]
+        or record["fulfilledOrdersMutationObserved"]
+        for record in records
+    ):
+        raise ValueError("blacksmith precommit stop-before-mutation boundary drift")
+    if any(
+        event["role"].endswith("terminal-boundary-shim")
+        for record in records
+        for event in record["callbackChronology"][:-2]
+    ):
+        raise ValueError("blacksmith precommit terminal shim must be terminal-only")
+    if any(
+        not record["callbackChronology"][-2]["role"].endswith("terminal-boundary-shim")
+        or record["callbackChronology"][-1]["role"] != "precommit-generated-result-stub"
+        for record in records
+        if record["terminal"] != "add-item"
+    ):
+        raise ValueError("blacksmith precommit terminal shim missing")
+    if any(
+        record["callbackChronology"][-1]["role"] != "precommit-add-item-boundary"
+        for record in records
+        if record["terminal"] == "add-item"
+    ):
+        raise ValueError("blacksmith precommit add-item boundary missing")
+
+
 def _assert_golden(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     _validate_case_matrix(fixture, static)
     _validate_transaction_case_matrix(fixture, static)
     _validate_fulfillment_case_matrix(fixture, static)
+    _validate_precommit_case_matrix(fixture, static)
     expected = expected_observation(fixture, static)
     accepted = fixture["acceptedObservation"]
     if accepted != expected:
@@ -2023,13 +2624,288 @@ def _assert_status(status_path: Path) -> None:
             "milestone:first-case-entered",
             "milestone:transaction-cases-entered",
             "milestone:fulfillment-cases-entered",
+            "milestone:precommit-cases-entered",
             "milestone:transaction-state-restored",
         ),
     )
 
 
+def _validate_precommit_instrumentation(precommit: dict[str, Any]) -> None:
+    expected_roles = ("member-list", "held-items", "equipment-type", "equippability")
+    shims = precommit.get("serviceShims")
+    if not isinstance(shims, list) or tuple(shim.get("role") for shim in shims) != expected_roles:
+        raise ValueError("blacksmith precommit service shim role/order drift")
+    call_ranges: list[range] = []
+    for role, shim in zip(expected_roles, shims, strict=True):
+        service_name = {
+            "member-list": "memberList",
+            "held-items": "heldItems",
+            "equipment-type": "equipmentType",
+            "equippability": "equippability",
+        }[role]
+        service = precommit[service_name]
+        if (
+            shim["callAddress"] != service["callAddress"]
+            or shim["instructionTargetAddress"] != service["instructionTargetAddress"]
+            or shim["effectiveTargetAddress"] != service["effectiveTargetAddress"]
+            or shim["returnAddress"] != service["returnAddress"]
+            or shim["generatedStubTarget"] != PRECOMMIT_SERVICE_STUB_ADDRESS
+            or shim["patchedHex"] != f"4EB9{PRECOMMIT_SERVICE_STUB_ADDRESS:08X}"
+            or shim["originalHex"]
+            != f"4EB9{service['instructionTargetAddress']:08X}"
+        ):
+            raise ValueError(f"blacksmith precommit service shim ABI drift: {role}")
+        call_range = range(shim["callAddress"], shim["callAddress"] + 6)
+        if any(
+            call_range.start < existing.stop and existing.start < call_range.stop
+            for existing in call_ranges
+        ):
+            raise ValueError("blacksmith precommit service shim overlapping call-site drift")
+        call_ranges.append(call_range)
+    terminal_roles = (
+        "recipient-cancel-terminal-boundary-shim",
+        "full-inventory-terminal-boundary-shim",
+        "non-equippable-terminal-boundary-shim",
+    )
+    terminals = precommit.get("terminalShims")
+    if (
+        not isinstance(terminals, list)
+        or tuple(row.get("role") for row in terminals) != terminal_roles
+    ):
+        raise ValueError("blacksmith precommit terminal shim role/order drift")
+    all_ranges = call_ranges.copy()
+    for role, terminal in zip(terminal_roles, terminals, strict=True):
+        original = terminal.get("originalHex")
+        patched = terminal.get("patchedHex")
+        if (
+            terminal.get("type") != "terminal-jmp"
+            or terminal.get("generatedStubTarget") != PRECOMMIT_TERMINAL_STUB_ADDRESS
+            or patched != f"4EF9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}"
+            or not isinstance(original, str)
+            or len(original) != 12
+        ):
+            raise ValueError(f"blacksmith precommit terminal shim ABI drift: {role}")
+        boundary_address = terminal.get("boundaryAddress")
+        if not isinstance(boundary_address, int):
+            raise ValueError(f"blacksmith precommit terminal shim address drift: {role}")
+        terminal_range = range(boundary_address, boundary_address + 6)
+        if any(
+            terminal_range.start < existing.stop and existing.start < terminal_range.stop
+            for existing in all_ranges
+        ):
+            raise ValueError("blacksmith precommit instrumentation overlapping span drift")
+        all_ranges.append(terminal_range)
+    if len(all_ranges) != 7:
+        raise ValueError("blacksmith precommit instrumentation span count drift")
+
+
+def _retained_blacksmith_observation_pcs(static: dict[str, Any]) -> set[int]:
+    """Return all retained v3 helper/transaction/fulfillment observation PCs."""
+
+    def collect(value: Any) -> set[int]:
+        if isinstance(value, int):
+            return {value}
+        if isinstance(value, dict):
+            return set().union(*(collect(item) for item in value.values()))
+        if isinstance(value, list):
+            return set().union(*(collect(item) for item in value))
+        return set()
+
+    return set().union(
+        collect(static["function"]),
+        collect(static["transaction"]),
+        collect(static["fulfillment"]),
+    )
+
+
+def _validate_precommit_retained_compatibility(
+    static: dict[str, Any], spans: list[dict[str, Any]]
+) -> None:
+    """Reject session-ROM instrumentation overlapping accepted v3 observation PCs."""
+
+    retained_pcs = _retained_blacksmith_observation_pcs(static)
+    overlapping = [
+        row["role"]
+        for row in spans
+        if any(pc in range(row["address"], row["address"] + 6) for pc in retained_pcs)
+    ]
+    if overlapping:
+        raise ValueError(
+            "blacksmith precommit instrumentation overlaps retained v3 observation PCs: "
+            + ", ".join(overlapping)
+        )
+    if static["precommit"]["addItemEntryAddress"] not in retained_pcs:
+        raise ValueError("blacksmith precommit AddItem retained-v3 compatibility inventory drift")
+
+
+def _validate_precommit_cleanup_equippability(static: dict[str, Any]) -> None:
+    """Bind cleanup to the direct ``@AddItem`` call, never the admission seam."""
+    precommit = static["precommit"]
+    cleanup = precommit.get("cleanupEquippability")
+    fulfillment = static["fulfillment"]
+    if not isinstance(cleanup, dict):
+        raise ValueError("blacksmith precommit cleanup equippability use-site is missing")
+    if cleanup.get("callAddress") == precommit["equippability"]["callAddress"]:
+        raise ValueError("blacksmith precommit cleanup reuses admission equippability call")
+    expected = {
+        "callAddress": fulfillment["equippabilityCallAddress"],
+        "instructionTargetAddress": fulfillment["equippabilityInstructionTargetAddress"],
+        "effectiveTargetAddress": fulfillment["equippabilityEffectiveTargetAddress"],
+        "effectiveReturnAddress": fulfillment["equippabilityEffectiveReturnAddress"],
+        "returnAddress": fulfillment["postEquippabilityReturnAddress"],
+    }
+    if cleanup != expected:
+        raise ValueError("blacksmith precommit cleanup equippability source/H1/ROM relation drift")
+    if cleanup["returnAddress"] != cleanup["callAddress"] + 6:
+        raise ValueError("blacksmith precommit cleanup equippability return relation drift")
+
+
+def _precommit_instrumentation_spans(static: dict[str, Any]) -> list[dict[str, Any]]:
+    """Normalize the seven source-bound session-ROM patch spans."""
+    precommit = static["precommit"]
+    _validate_precommit_instrumentation(precommit)
+    result: list[dict[str, Any]] = []
+    for shim in precommit["serviceShims"]:
+        original = bytes.fromhex(shim["originalHex"])
+        patched = bytes.fromhex(shim["patchedHex"])
+        if (
+            len(original) != PRECOMMIT_SERVICE_STUB_SIZE
+            or len(patched) != PRECOMMIT_SERVICE_STUB_SIZE
+            or patched != b"\x4E\xB9" + shim["generatedStubTarget"].to_bytes(4, "big")
+            or shim["returnAddress"] != shim["callAddress"] + 6
+        ):
+            raise ValueError(f"blacksmith precommit service JSR patch shape drift: {shim['role']}")
+        result.append(
+            {
+                "role": shim["role"],
+                "type": "service-jsr",
+                "address": shim["callAddress"],
+                "originalBytes": original,
+                "patchedBytes": patched,
+                "generatedStubTarget": shim["generatedStubTarget"],
+                "returnAddress": shim["returnAddress"],
+            }
+        )
+    for shim in precommit["terminalShims"]:
+        original = bytes.fromhex(shim["originalHex"])
+        patched = bytes.fromhex(shim["patchedHex"])
+        if (
+            len(original) != PRECOMMIT_TERMINAL_STUB_SIZE
+            or len(patched) != PRECOMMIT_TERMINAL_STUB_SIZE
+            or patched != b"\x4E\xF9" + shim["generatedStubTarget"].to_bytes(4, "big")
+        ):
+            raise ValueError(
+                f"blacksmith precommit terminal JMP patch shape drift: {shim['role']}"
+            )
+        result.append(
+            {
+                "role": shim["role"],
+                "type": "terminal-jmp",
+                "address": shim["boundaryAddress"],
+                "originalBytes": original,
+                "patchedBytes": patched,
+                "generatedStubTarget": shim["generatedStubTarget"],
+            }
+        )
+    ranges = [range(row["address"], row["address"] + 6) for row in result]
+    if len(result) != 7 or any(
+        left.start < right.stop and right.start < left.stop
+        for index, left in enumerate(ranges)
+        for right in ranges[index + 1 :]
+    ):
+        raise ValueError("blacksmith precommit session-ROM patch span overlap drift")
+    _validate_precommit_retained_compatibility(static, result)
+    return result
+
+
+def _validate_precommit_instrumented_copy(
+    original: bytes, instrumented: bytes, spans: list[dict[str, Any]]
+) -> None:
+    """Prove the disposable copy differs only at each declared six-byte span."""
+    if len(original) != len(instrumented):
+        raise ValueError("blacksmith precommit instrumented ROM size drift")
+    expected_addresses = {row["address"] for row in spans}
+    observed_addresses = {
+        row["address"]
+        for row in spans
+        if original[row["address"] : row["address"] + 6]
+        != instrumented[row["address"] : row["address"] + 6]
+    }
+    if observed_addresses != expected_addresses:
+        raise ValueError("blacksmith precommit instrumented ROM span-set drift")
+    expected_changed = {
+        row["address"] + offset
+        for row in spans
+        for offset, (before, after) in enumerate(
+            zip(row["originalBytes"], row["patchedBytes"], strict=True)
+        )
+        if before != after
+    }
+    changed = {
+        address
+        for address, (before, after) in enumerate(zip(original, instrumented, strict=True))
+        if before != after
+    }
+    if changed != expected_changed:
+        raise ValueError("blacksmith precommit instrumented ROM exact byte-diff drift")
+    for row in spans:
+        address = row["address"]
+        if instrumented[address : address + 6] != row["patchedBytes"]:
+            raise ValueError(f"blacksmith precommit instrumented ROM patch drift: {row['role']}")
+
+
+def _instrument_precommit_rom(
+    rom_path: Path,
+    fixture: dict[str, Any],
+    static: dict[str, Any],
+    *,
+    output_path: Path | None = None,
+) -> Path:
+    """Build one private, disposable seven-span ROM image for the H3 session."""
+    canonical = rom_path.resolve(strict=True)
+    manifest = load_json(ROM_MANIFEST)
+    canonical_identity = inspect_rom(canonical)
+    if (
+        fixture["romSha256"] != manifest["hashes"]["sha256"]
+        or canonical_identity["sha256"] != manifest["hashes"]["sha256"]
+        or canonical_identity["sizeBytes"] != manifest["sizeBytes"]
+    ):
+        raise ValueError("blacksmith precommit canonical ROM manifest identity drift")
+    original = canonical.read_bytes()
+    spans = _precommit_instrumentation_spans(static)
+    instrumented = bytearray(original)
+    for row in spans:
+        address = row["address"]
+        if original[address : address + 6] != row["originalBytes"]:
+            raise ValueError(f"blacksmith precommit source call-site bytes drift: {row['role']}")
+        instrumented[address : address + 6] = row["patchedBytes"]
+    _validate_precommit_instrumented_copy(original, bytes(instrumented), spans)
+    if inspect_rom(canonical)["sha256"] != canonical_identity["sha256"]:
+        raise ValueError("blacksmith precommit instrumentation altered canonical ROM")
+    if output_path is None:
+        DERIVED_ROOT.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            prefix=f"{OWNER}-session-",
+            suffix=".instrumented.bin",
+            dir=DERIVED_ROOT,
+            delete=False,
+        ) as handle:
+            output = Path(handle.name)
+    else:
+        output = output_path
+        output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_bytes(instrumented)
+    if output.read_bytes() != bytes(instrumented):
+        raise ValueError("blacksmith precommit instrumented ROM readback drift")
+    return output
+
+
 def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     """Keep accepted output facts out of the executable observer configuration."""
+    _validate_precommit_case_matrix(fixture, static)
+    _precommit_instrumentation_spans(static)
+    _validate_precommit_cleanup_equippability(static)
     return {
         "id": fixture["id"],
         "core": fixture["emulator"]["core"],
@@ -2039,6 +2915,8 @@ def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[st
         "transactionCaseOrder": fixture["transactionCaseOrder"],
         "fulfillmentCases": fixture["fulfillmentCases"],
         "fulfillmentCaseOrder": fixture["fulfillmentCaseOrder"],
+        "precommitCases": fixture["precommitCases"],
+        "precommitCaseOrder": fixture["precommitCaseOrder"],
         "function": static["function"],
         "transaction": {
             key: value
@@ -2050,6 +2928,23 @@ def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[st
             for key, value in static["fulfillment"].items()
             if key not in {"h1InstructionBytes", "itemDefinitionFields"}
         },
+        "precommit": {
+            key: value
+            for key, value in static["precommit"].items()
+            if key
+            not in {
+                "h1InstructionBytes",
+                "fullInventoryYesNo",
+                "nonEquippableYesNo",
+                "fullInventoryPromptCompareAddress",
+                "fullInventoryRetryBranchAddress",
+                "nonEquippablePromptCompareAddress",
+                "nonEquippableRetryBranchAddress",
+            }
+        },
+        "precommitCaseFrameBudget": PRECOMMIT_CASE_FRAME_BUDGET,
+        "precommitTransitionFrameBudget": PRECOMMIT_TRANSITION_FRAME_BUDGET,
+        "precommitCleanupStackDepthBytes": PRECOMMIT_CLEANUP_STACK_DEPTH_BYTES,
         "ram": static["ram"],
         "constants": static["constants"],
         "observerFailureContract": OBSERVER_FAILURE_CONTRACT,
@@ -2065,19 +2960,26 @@ def verify_blacksmith_mithril(
     static = validate_static_contract(fixture, rom_path, upstream_path)
     _assert_golden(fixture, static)
     status_path = DERIVED_ROOT / f"{OWNER}.status.txt"
+    instrumented_rom = _instrument_precommit_rom(rom_path, fixture, static)
     try:
-        observed = run_observer(
-            rom_path=rom_path,
-            observer_path=OBSERVER,
-            config=_observer_config(fixture, static),
-            output_name=OWNER,
-            timeout_seconds=timeout_seconds,
+        observed = _with_instrumented_rom_database(
+            instrumented_rom,
+            "SF2 H3 blacksmith mithril precommit instrumentation",
+            lambda: run_observer(
+                rom_path=instrumented_rom,
+                observer_path=OBSERVER,
+                config=_observer_config(fixture, static),
+                output_name=OWNER,
+                timeout_seconds=timeout_seconds,
+            ),
         )
     except RuntimeError as error:
         diagnostic = _failure_diagnostic(status_path)
         if diagnostic is not None:
             raise RuntimeError(f"{OWNER} observer callback failure: {diagnostic}") from error
         raise
+    finally:
+        instrumented_rom.unlink(missing_ok=True)
     _assert_status(status_path)
     validate_json(observed, OBSERVATION_SCHEMA, owner="blacksmith mithril observation")
     _assert_observation(fixture, static, observed)
@@ -2085,10 +2987,12 @@ def verify_blacksmith_mithril(
         "Fixture": fixture["id"],
         "Cases": len(fixture["cases"])
         + len(fixture["transactionCases"])
-        + len(fixture["fulfillmentCases"]),
+        + len(fixture["fulfillmentCases"])
+        + len(fixture["precommitCases"]),
         "HelperCases": len(fixture["cases"]),
         "TransactionCases": len(fixture["transactionCases"]),
         "FulfillmentCases": len(fixture["fulfillmentCases"]),
+        "PrecommitCases": len(fixture["precommitCases"]),
         "BizHawkLaunches": 1,
         "CallbacksCleared": observed["callbacksCleared"],
         "Restoration": observed["restoration"],

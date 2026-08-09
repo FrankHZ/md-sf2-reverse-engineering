@@ -348,7 +348,7 @@
       "required": ["active", "mode", "decreaseGoldReturnSeen", "pendingOrdersIncrementSeen", "dropItemReturnSeen", "pickReturnSeen", "clearFlagReturnSeen", "prePresentationReturnAddress"],
       "properties": {
         "active": {"type": "boolean"},
-        "mode": {"enum": ["none", "helper", "transaction", "fulfillment"]},
+        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup"]},
         "decreaseGoldReturnSeen": {"type": "boolean"},
         "pendingOrdersIncrementSeen": {"type": "boolean"},
         "dropItemReturnSeen": {"type": "boolean"},
@@ -363,7 +363,7 @@
       "required": ["active", "mode", "addItemReturnSeen", "orderReadSeen", "orderClearedSeen", "fulfilledOrdersIncrementSeen", "equippabilityCarrySet", "originalReturnAddress"],
       "properties": {
         "active": {"type": "boolean"},
-        "mode": {"enum": ["none", "helper", "transaction", "fulfillment"]},
+        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup"]},
         "addItemReturnSeen": {"type": "boolean"},
         "orderReadSeen": {"type": "boolean"},
         "orderClearedSeen": {"type": "boolean"},
@@ -372,25 +372,57 @@
         "originalReturnAddress": {"$ref": "#/definitions/nullablePc"}
       }
     },
+    "blacksmithMithrilPrecommitPendingService": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["callPc", "returnPc", "role", "targetPc"],
+      "properties": {
+        "callPc": {"$ref": "#/definitions/pc"},
+        "returnPc": {"$ref": "#/definitions/pc"},
+        "role": {"enum": ["member-list", "held-items", "equipment-type", "equippability"]},
+        "targetPc": {"$ref": "#/definitions/pc"}
+      }
+    },
+    "blacksmithMithrilPrecommitState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "attemptIndex", "equipmentTypeCallCount", "equippabilityCallCount", "expectedTerminal", "frameBudget", "frameCount", "heldItemsCallCount", "memberListCallCount", "mode", "pendingService", "selectedMember", "terminal"],
+      "properties": {
+        "active": {"type": "boolean"},
+        "attemptIndex": {"type": "integer", "minimum": 0},
+        "equipmentTypeCallCount": {"type": "integer", "minimum": 0},
+        "equippabilityCallCount": {"type": "integer", "minimum": 0},
+        "expectedTerminal": {"enum": ["none", "add-item", "recipient-cancel-pre-presentation", "full-inventory-pre-presentation", "non-equippable-pre-presentation"]},
+        "frameBudget": {"type": "integer", "minimum": 0},
+        "frameCount": {"type": "integer", "minimum": 0},
+        "heldItemsCallCount": {"type": "integer", "minimum": 0},
+        "memberListCallCount": {"type": "integer", "minimum": 0},
+        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup"]},
+        "pendingService": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/blacksmithMithrilPrecommitPendingService"}]},
+        "selectedMember": {"type": ["integer", "null"], "minimum": 0, "maximum": 31},
+        "terminal": {"enum": ["none", "add-item", "recipient-cancel-pre-presentation", "full-inventory-pre-presentation", "non-equippable-pre-presentation"]}
+      }
+    },
     "blacksmithMithrilPendingCallback": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["active", "caseIndex", "functionReturnSeen", "orderWriteSeen", "pendingRngCall", "rolesAtPc", "transaction", "fulfillment"],
+      "required": ["active", "caseIndex", "functionReturnSeen", "orderWriteSeen", "pendingRngCall", "rolesAtPc", "transaction", "fulfillment", "precommit"],
       "properties": {
         "active": {"type": "boolean"},
         "caseIndex": {"type": "integer", "minimum": 0},
         "functionReturnSeen": {"type": "boolean"},
         "orderWriteSeen": {"type": "boolean"},
         "pendingRngCall": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/blacksmithMithrilPendingRngCall"}]},
-        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"enum": ["bootstrap-check-sram", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "transaction-case-entry", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-case-entry", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result"]}},
+        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"enum": ["bootstrap-check-sram", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "transaction-case-entry", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-case-entry", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result", "precommit-case-entry", "precommit-selection-loop-entry", "precommit-member-list-controlled-service-call-shim", "precommit-held-items-controlled-service-call-shim", "precommit-equipment-type-controlled-service-call-shim", "precommit-equippability-controlled-service-call-shim", "precommit-generated-service-stub", "precommit-member-list-original-return", "precommit-held-items-original-return", "precommit-equipment-type-original-return", "precommit-equippability-original-return", "precommit-member-cancel-compare", "precommit-member-cancel-branch", "precommit-capacity-compare", "precommit-capacity-branch", "precommit-equipment-type-compare", "precommit-tool-admission-branch", "precommit-equippability-branch", "precommit-recipient-cancel-terminal-boundary-shim", "precommit-full-inventory-terminal-boundary-shim", "precommit-add-item-boundary", "precommit-cleanup-add-item-call", "precommit-cleanup-add-item-instruction-target", "precommit-cleanup-add-item-effective-target", "precommit-cleanup-add-item-effective-return", "precommit-cleanup-order-read", "precommit-cleanup-order-cleared", "precommit-cleanup-orders-incremented", "precommit-cleanup-equippability-call", "precommit-cleanup-equippability-instruction-target", "precommit-cleanup-equippability-effective-target", "precommit-cleanup-equippability-effective-return", "precommit-non-equippable-terminal-boundary-shim", "precommit-generated-result-stub", "precommit-case-result"]}},
         "transaction": {"$ref": "#/definitions/blacksmithMithrilTransactionState"},
-        "fulfillment": {"$ref": "#/definitions/blacksmithMithrilFulfillmentState"}
+        "fulfillment": {"$ref": "#/definitions/blacksmithMithrilFulfillmentState"},
+        "precommit": {"$ref": "#/definitions/blacksmithMithrilPrecommitState"}
       }
     },
     "blacksmithMithrilFailure": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["actualPc", "caseId", "error", "expectedCallPc", "expectedEventPc", "expectedReturnPc", "expectedTargetPc", "owner", "pendingCallback", "phase", "role"],
+      "required": ["actualPc", "actualStackReturn", "actualStackTop", "callbacksRemaining", "caseId", "error", "expectedCallPc", "expectedEventPc", "expectedReturnPc", "expectedStackReturn", "expectedStackTop", "expectedTargetPc", "outputRemoved", "owner", "pendingCallback", "phase", "role", "sessionStateRestored"],
       "allOf": [
         {
           "if": {"properties": {"role": {"const": "registration"}}},
@@ -443,7 +475,43 @@
           }
         },
         {
-          "if": {"properties": {"role": {"enum": ["function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result"]}}},
+          "if": {"properties": {"role": {"const": "precommit-case-entry"}}},
+          "then": {
+            "properties": {
+              "caseId": {"$ref": "#/definitions/nonEmptyString"},
+              "pendingCallback": {"properties": {"active": {"const": false}, "caseIndex": {"type": "integer", "minimum": 1}, "precommit": {"properties": {"active": {"const": false}, "mode": {"const": "none"}, "pendingService": {"type": "null"}, "terminal": {"const": "none"}}}}}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"const": "precommit-cleanup-equippability-effective-return"}}},
+          "then": {
+            "properties": {
+              "actualStackReturn": {"$ref": "#/definitions/pc"},
+              "actualStackTop": {"$ref": "#/definitions/pc"},
+              "expectedStackReturn": {"$ref": "#/definitions/pc"},
+              "expectedStackTop": {"$ref": "#/definitions/pc"},
+              "phase": {"const": "precommit-cleanup"},
+              "pendingCallback": {
+                "properties": {
+                  "active": {"const": true},
+                  "precommit": {
+                    "properties": {
+                      "active": {"const": true},
+                      "mode": {"const": "precommit-cleanup"},
+                      "pendingService": {"type": "null"},
+                      "terminal": {"const": "add-item"}
+                    }
+                  },
+                  "transaction": {"properties": {"mode": {"const": "precommit-cleanup"}}},
+                  "fulfillment": {"properties": {"mode": {"const": "precommit-cleanup"}}}
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"enum": ["function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result", "precommit-selection-loop-entry", "precommit-member-list-controlled-service-call-shim", "precommit-held-items-controlled-service-call-shim", "precommit-equipment-type-controlled-service-call-shim", "precommit-equippability-controlled-service-call-shim", "precommit-generated-service-stub", "precommit-member-list-original-return", "precommit-held-items-original-return", "precommit-equipment-type-original-return", "precommit-equippability-original-return", "precommit-member-cancel-compare", "precommit-member-cancel-branch", "precommit-capacity-compare", "precommit-capacity-branch", "precommit-equipment-type-compare", "precommit-tool-admission-branch", "precommit-equippability-branch", "precommit-recipient-cancel-terminal-boundary-shim", "precommit-full-inventory-terminal-boundary-shim", "precommit-add-item-boundary", "precommit-cleanup-add-item-call", "precommit-cleanup-add-item-instruction-target", "precommit-cleanup-add-item-effective-target", "precommit-cleanup-add-item-effective-return", "precommit-cleanup-order-read", "precommit-cleanup-order-cleared", "precommit-cleanup-orders-incremented", "precommit-cleanup-equippability-call", "precommit-cleanup-equippability-instruction-target", "precommit-cleanup-equippability-effective-target", "precommit-cleanup-equippability-effective-return", "precommit-non-equippable-terminal-boundary-shim", "precommit-generated-result-stub", "precommit-case-result", "precommit-watchdog-timeout", "precommit-transition-timeout"]}}},
           "then": {
             "properties": {
               "caseId": {"$ref": "#/definitions/nonEmptyString"},
@@ -454,16 +522,23 @@
       ],
       "properties": {
         "actualPc": {"$ref": "#/definitions/nullablePc"},
+        "actualStackReturn": {"$ref": "#/definitions/nullablePc"},
+        "actualStackTop": {"$ref": "#/definitions/nullablePc"},
+        "callbacksRemaining": {"const": 0},
         "caseId": {"$ref": "#/definitions/nullableNonEmptyString"},
         "error": {"$ref": "#/definitions/nonEmptyString"},
         "expectedCallPc": {"$ref": "#/definitions/nullablePc"},
         "expectedEventPc": {"$ref": "#/definitions/nullablePc"},
         "expectedReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedStackReturn": {"$ref": "#/definitions/nullablePc"},
+        "expectedStackTop": {"$ref": "#/definitions/nullablePc"},
         "expectedTargetPc": {"$ref": "#/definitions/nullablePc"},
+        "outputRemoved": {"const": true},
         "owner": {"const": "blacksmith-mithril"},
         "pendingCallback": {"$ref": "#/definitions/blacksmithMithrilPendingCallback"},
         "phase": {"$ref": "#/definitions/nonEmptyString"},
-        "role": {"enum": ["registration", "bootstrap-return-redirect", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "transaction-case-entry", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-case-entry", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result"]}
+        "sessionStateRestored": {"type": "boolean"},
+        "role": {"enum": ["registration", "bootstrap-return-redirect", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "transaction-case-entry", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-case-entry", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result", "precommit-case-entry", "precommit-selection-loop-entry", "precommit-member-list-controlled-service-call-shim", "precommit-held-items-controlled-service-call-shim", "precommit-equipment-type-controlled-service-call-shim", "precommit-equippability-controlled-service-call-shim", "precommit-generated-service-stub", "precommit-member-list-original-return", "precommit-held-items-original-return", "precommit-equipment-type-original-return", "precommit-equippability-original-return", "precommit-member-cancel-compare", "precommit-member-cancel-branch", "precommit-capacity-compare", "precommit-capacity-branch", "precommit-equipment-type-compare", "precommit-tool-admission-branch", "precommit-equippability-branch", "precommit-recipient-cancel-terminal-boundary-shim", "precommit-full-inventory-terminal-boundary-shim", "precommit-add-item-boundary", "precommit-cleanup-add-item-call", "precommit-cleanup-add-item-instruction-target", "precommit-cleanup-add-item-effective-target", "precommit-cleanup-add-item-effective-return", "precommit-cleanup-order-read", "precommit-cleanup-order-cleared", "precommit-cleanup-orders-incremented", "precommit-cleanup-equippability-call", "precommit-cleanup-equippability-instruction-target", "precommit-cleanup-equippability-effective-target", "precommit-cleanup-equippability-effective-return", "precommit-non-equippable-terminal-boundary-shim", "precommit-generated-result-stub", "precommit-case-result", "precommit-watchdog-timeout", "precommit-transition-timeout"]}
       }
     }
   }

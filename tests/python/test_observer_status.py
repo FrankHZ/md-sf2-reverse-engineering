@@ -139,6 +139,8 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         "blacksmithMithrilPendingRngCall",
         "blacksmithMithrilTransactionState",
         "blacksmithMithrilFulfillmentState",
+        "blacksmithMithrilPrecommitPendingService",
+        "blacksmithMithrilPrecommitState",
         "blacksmithMithrilPendingCallback",
         "controlAudioFailure",
         "transitionFailure",

@@ -6,8 +6,8 @@
   and uncompressed item/spell/other icon storage/copy/highlight corpora, and the complete assembled
   UI/window layout, spell-level pointer, diamond-border, and direct menu-tile corpus, plus the
   count-prefixed shop and sequential mithril-selection data contracts, the original committed-order
-  post-confirmation chronology, and the complete 17-routine shared shop/caravan selection-screen
-  instruction and caller corpus
+  post-confirmation chronology, the handler-local blacksmith fulfillment pre-commit source contract,
+  and the complete 17-routine shared shop/caravan selection-screen instruction and caller corpus
 - Status: **Inferred** for service-level intent named by upstream symbols but not replayed through every
   shop, church, caravan, blacksmith, field, and battle caller
 - Status: **Unknown** for exact window/portrait animation timing, visual composition, and caller-state
@@ -366,15 +366,73 @@ equippability RTS, the observer observed A7=`0xFFFEFC` and top longword `0x21C1C
 longword to the generated continuation, and let the original RTS execute. It never rewrites PC or executes
 the following branch, optional equip prompt, or UI. The final exact readback passed for the existing three
 56-byte records and four order words (plus the existing gold, seed, and flag ranges); the synthetic frame,
-stack, and probe remain excluded. Reproduce all 11 cases in one launch with
+stack, and probe remain excluded.
+
+**Confirmed — fulfillment pre-commit admission H3.** Static ownership is the
+complete `BlacksmithAction_FulfillOrder` section from entry `0x21B42` through the original `@AddItem`
+entry `0x21BE4`. Source, H1, and ROM independently guard each pre-commit call, its six-byte `JSR`
+encoding, instruction/effective target identity, exact return PC, comparisons, branch polarity, eight
+text traps, and the `@AddItem`/`@Done` labels. The four runtime service seams are the member list
+(`0x21B68 → 0x10044 → 0x13004`, return `0x21B6E`), held-item count
+(`0x21B82 → 0x8174 → 0x8BFA`, return `0x21B88`), equipment type
+(`0x21BB0 → 0x8178 → 0x8C28`, return `0x21BB6`), and equippability
+(`0x21BC4 → 0x81B4 → 0x8F80`, return `0x21BCA`).
+
+The smallest meaningful fixture-owned admission cohort has five cases: recipient cancel, full inventory,
+tool, equippable non-tool, and non-equippable. Runtime begins only at the source selection-loop label
+`byte_21B58` (`0x21B58`), not at the handler entry or introductory text. Before the grouped launch, Python verifies
+the immutable canonical ROM against its manifest and builds one ignored disposable session copy. It patches
+exactly seven source/H1/ROM-bound six-byte spans in that copy: the four service calls above become actual
+`JSR` (`4EB9`) calls to the generated work-RAM service stub at `0xFF6D00`, with their original return PCs;
+the first excluded presentation instruction for recipient cancel `txt197` (`0x21B74`), full inventory
+`txt208` (`0x21B94`), and non-equippable `txt167` (`0x21BD2`) become `JMP` (`4EF9`)
+terminal-boundary shims to the generated result stub at `0xFF6D20`. The service stub supplies
+only the declared `D0`, `D2`, or CCR result and `RTS`s to the original return PC; this is harness control,
+not execution of an original helper. The observer contract only readbacks the already-patched session-ROM
+spans and writes the generated work-RAM stubs. A terminal-boundary reach proves only the preceding original branch
+reached that source boundary: the patched text instruction/body does not execute. The retained direct-v3
+`@AddItem` entry `0x21BE4` is deliberately outside every session-ROM patch span. A deterministic shared-PC
+dispatcher records the pre-commit tool/equippable `add-item-boundary` there, before any
+`@AddItem` body is evidence. It then runs its already accepted direct-fulfillment block only as harness
+cleanup, from the linked source-valid retained frame/order/inventory case, and returns through its established
+stack seam to the generated pre-commit result before the optional-equip presentation branch. That cleanup
+seam is independently guarded as the distinct direct block call `0x21C16 → 0x81B4 → 0x8F80`, whose
+effective RTS is `0x8F9A` and original post-call return is `0x21C1C`; it is not the pre-commit admission
+call at `0x21BC4`. The generated pre-commit `JSR` leaves its own return above that direct call return, so
+the harness expects the cleanup RTS stack top at `0xFFFEF8` (eight bytes below its `0xFFFF00` setup top),
+checks that exact original `0x21C1C` longword, and replaces only that longword with its generated result continuation.
+Those cleanup callbacks are not pre-commit chronology or new commit/equip evidence.
+
+One grouped BizHawk 2.11.1 / Genesis Plus GX launch observed all five source-bounded results with one
+attempt each: recipient cancel reached `txt197`'s `0x21B74` boundary after the controlled member-list
+return and cancel comparison/branch; full inventory reached `txt208`'s `0x21B94` boundary after the
+member-list and held-item-count returns plus capacity comparison/branch; the tool and equippable non-tool
+cases reached the neutral original `@AddItem` entry `0x21BE4` after their respectively applicable
+equipment-type/equippability source branches; and non-equippable reached `txt167`'s `0x21BD2` boundary.
+The observed output read back all four patched service calls, all three patched presentation boundaries,
+and both generated work-RAM stubs. Its terminal status tail was
+`transaction-state-restored` → `callbacks-cleared:0` → `observer-finished`; exact readback restored the
+previously named gold, seed, order, flag, combatant-record, dialogue-name, selected-item, and submenu-action
+state only.
+
+Accordingly, controlled service results are harness inputs, not claims about original member-list, helper,
+prompt, or UI behavior. Full-inventory retry/abort, non-equippable prompt accept/retry, all prompt/UI
+execution, loop repetition, retry result, and `@Done` remain **Unknown** because `txt208` and `txt167`
+precede their prompt calls. The H3 case and fulfillment-to-first-precommit transition watchdogs use a
+180-frame budget solely as harness protocol, not original timing evidence. The canonical ROM remains immutable;
+the disposable session copy is deleted after the
+launch and is not a restored game state. The only newly claimed game-state readback/restoration is
+`DIALOGUE_NAME_INDEX_1`'s word, `SELECTED_ITEM_INDEX`'s word, and `CURRENT_ITEM_SUBMENU_ACTION`'s byte;
+generated probe/frame/stack/stub work-RAM is excluded. The direct v3 11-case helper/placement/`@AddItem`
+evidence is byte-for-byte retained in v4, for 16 total cases. Reproduce the grouped rail with
 `uv run sf2 h3 blacksmith-mithril --timeout-seconds 180`.
 
 This does not claim BlacksmithMenu admission or natural story reachability, material/customer selection,
-cancellation or insufficient-gold UI branches, recipient selection/cancel/full-inventory UI,
-equipment-type/equippability pre-gates, optional equip/equip/curse branches, persistence, player input,
-audio/VDP/timing/rendering, RNG distribution, or hardware behavior; those remain **Unknown**. The grouped
-fulfillment runtime question is exactly that remaining menu/UI branch boundary; it excludes the
-source/H1/ROM-bound direct `@AddItem` commit block confirmed by the v3 observation.
+the original member-list/yes-no/helper service behavior, complete UI rendering/input timing, original
+prompt results or retry chronology, optional equip/equip/curse branches after `@AddItem`, persistence,
+caller return timing, player input, audio/VDP/timing/rendering, RNG distribution, or hardware behavior;
+those remain **Unknown**. The grouped fulfillment runtime rail excludes those boundaries while
+retaining only source/H1/ROM-bound static facts and the already accepted direct-`@AddItem` evidence.
 
 The interaction-level handoff is recorded in
 [`service-interactions.md`](../design/contracts/service-interactions.md). It deliberately consumes only the
