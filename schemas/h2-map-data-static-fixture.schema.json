@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:schema:h2:map-data-static-fixture",
   "title": "SF2 complete map ASM static fixture",
   "type": "object",
   "additionalProperties": false,
@@ -7,22 +8,56 @@
   "properties": {
     "schemaVersion": { "const": 1 },
     "id": { "const": "sf2-map-data-static-v1" },
-    "romSha256": {
-      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
-    },
-    "upstreamCommit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" },
-    "table": {
-      "type": "object", "minProperties": 727, "maxProperties": 727,
-      "additionalProperties": { "type": "integer", "minimum": 0 }
-    },
+    "romSha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+    "upstreamCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "table": { "$ref": "urn:sf2:schema:h2:map-data-static#/definitions/representativeAddresses" },
+    "expected": { "$ref": "#/definitions/expected" }
+  },
+  "definitions": {
     "expected": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["facts", "runtimeQuestions"],
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "sourceInventory", "indexedRecordIds", "indexedSourcePaths",
+        "indexedRecordsBySourcePath", "facts", "runtimeQuestions"
+      ],
       "properties": {
-        "facts": { "type": "object" },
+        "sourceInventory": { "$ref": "#/definitions/sourceInventory" },
+        "indexedRecordIds": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "urn:sf2:schema:h2:map-data-static#/definitions/recordId" }
+        },
+        "indexedSourcePaths": {
+          "type": "array", "minItems": 727, "maxItems": 727, "uniqueItems": true,
+          "items": { "$ref": "urn:sf2:schema:h2:map-data-static#/definitions/sourcePath" }
+        },
+        "indexedRecordsBySourcePath": {
+          "type": "array", "minItems": 727, "maxItems": 727,
+          "items": { "$ref": "urn:sf2:schema:h2:map-data-static#/definitions/indexedRecordsBySourcePath" }
+        },
+        "facts": { "$ref": "urn:sf2:schema:h2:map-data-static#/definitions/facts" },
         "runtimeQuestions": {
-          "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true
+          "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+        }
+      }
+    },
+    "sourceInventory": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "directLayoutPaths", "includeEdges", "strictReach", "representativeSymbols"
+      ],
+      "properties": {
+        "directLayoutPaths": {
+          "type": "array", "minItems": 8, "maxItems": 8, "uniqueItems": true,
+          "items": { "$ref": "urn:sf2:schema:h2:map-data-static#/definitions/sourcePath" }
+        },
+        "includeEdges": {
+          "type": "array", "minItems": 1382, "maxItems": 1382,
+          "items": { "$ref": "urn:sf2:schema:h2:map-data-static#/definitions/includeEdge" }
+        },
+        "strictReach": { "$ref": "urn:sf2:schema:h2:map-data-static#/definitions/strictReach" },
+        "representativeSymbols": {
+          "$ref": "urn:sf2:schema:h2:map-data-static#/definitions/representativeSymbols"
         }
       }
     }
