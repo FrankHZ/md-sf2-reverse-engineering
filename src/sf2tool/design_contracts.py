@@ -230,6 +230,11 @@ CONTRACTS = {
             "sf2-force-state-active-party-runtime-v1"
         ),
     },
+    "docs/design/contracts/map-entry-routing-state.md": {
+        "tests/fixtures/h2/common-maps-static-v1.json": (
+            "sf2-common-maps-static-v1"
+        ),
+    },
     "docs/design/contracts/map-exploration.md": {
         "tests/fixtures/h2/map-content-static-v1.json": "sf2-map-content-static-v1",
         "tests/fixtures/h2/map-layout-decode-v1.json": "sf2-map-layout-decode-v1",
