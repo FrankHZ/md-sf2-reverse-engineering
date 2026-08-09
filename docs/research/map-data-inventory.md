@@ -28,13 +28,34 @@ This batch therefore provides 1,390/1,390 deterministic H2 inventory. It does no
 symbol bindings:
 
 - 727 files define at least one global label in their own source and receive a representative H1
-  address plus research-index record;
+  address; the read-only research-index source-path join contains 731 accepted records across those
+  same 727 unique paths, so a representative address is not treated as one record per path;
 - 662 map-content files contain bodies whose labels are attached at their include sites in
   `entries.asm`; they are hashed and graph-checked but do not receive a falsely relocated symbol;
 - `mapsetupsstorage.asm` is the sole unlabeled include container.
 
 The distinction keeps strict data-file reach conservative while still closing the complete source
 discovery boundary.
+
+### Research-Index Source-Path Membership Correction
+
+**Confirmed (index correction observed 2026-08-09):** the map-data owner's membership predicate is
+only `sourcePath` beginning `data/maps/`, applied to the authoritative
+`manifests/research-index.json`; it does not filter by record ID, subsystem, status, document, or
+evidence. The deterministic H2 join therefore has **731 accepted records over 727 unique discovered
+map ASM paths**. Three paths carry the four additional cross-owner records: map 45
+`s1_entities.asm` has its `map.data.*` record plus `entity.actions.eas-5ffc4` and
+`entity.actions.eas-5ffc8`; map 55 `scripts.asm` has its `map.data.*` record plus
+`entity.actions.eas-5e2c4`; and map 59 `s6_initfunction.asm` has its `map.data.*` record plus
+`entity.actions.eas-5ef46`. Every other indexed map path has one record.
+
+This is an owner-cardinality correction, not a change to the complete source/H1 inventory: the
+directory remains 1,390 files, 727 internally labeled paths and representative symbols/H1
+addresses, 662 include-site-only paths, one unlabeled container, and 79 map slots. The tracked
+fixture owns the exact sorted record-ID list, source-path list, source-path-to-record-ID relation,
+include graph, strict-reach partition, and representative-symbol/address inventory. The verifier
+independently re-derives current index membership and rejects relation, golden, provenance, summary,
+or digest drift before writing output. Reproduce with `uv run sf2 h2 map-data`.
 
 ## Static Shape
 

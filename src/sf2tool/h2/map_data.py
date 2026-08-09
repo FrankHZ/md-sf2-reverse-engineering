@@ -25,6 +25,7 @@ FIXTURE = repo_path("tests/fixtures/h2/map-data-static-v1.json")
 FIXTURE_SCHEMA = repo_path("schemas/h2-map-data-static-fixture.schema.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
+TOOLCHAIN = repo_path("manifests/toolchain.json")
 
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
@@ -54,6 +55,79 @@ def _statement_count(source: str, token: str) -> int:
             re.MULTILINE,
         )
     )
+
+
+def _index_records_for_map_data_scope() -> dict[str, Any]:
+    """Join every research record whose source path belongs to ``data/maps/**``.
+
+    The source-path prefix is the sole membership rule.  The later inventory
+    invariant separately proves that every selected path is one of the complete
+    discovered map ASM sources; record IDs, subsystem labels, status, documents,
+    and evidence do not participate in this join.
+    """
+    prefix = f"{SOURCE_ROOT.as_posix()}/"
+    records_by_source_path: dict[str, list[str]] = {}
+    for record in load_json(RESEARCH_INDEX)["records"]:
+        source_path = record["sourcePath"]
+        if source_path.startswith(prefix):
+            records_by_source_path.setdefault(source_path, []).append(record["id"])
+
+    relation = [
+        {"sourcePath": source_path, "recordIds": sorted(record_ids)}
+        for source_path, record_ids in sorted(records_by_source_path.items())
+    ]
+    flattened_ids = [record_id for row in relation for record_id in row["recordIds"]]
+    if len(flattened_ids) != len(set(flattened_ids)):
+        raise ValueError("map data research-index duplicate record ID")
+    return {
+        "indexedRecordIds": sorted(flattened_ids),
+        "indexedSourcePaths": [row["sourcePath"] for row in relation],
+        "indexedRecordsBySourcePath": relation,
+    }
+
+
+def _verify_indexed_record_join(
+    output: dict[str, Any], *, discovered_source_paths: set[str]
+) -> None:
+    """Prove the three public index views describe one sorted source-path join."""
+    relation = output["indexedRecordsBySourcePath"]
+    relation_source_paths = [row["sourcePath"] for row in relation]
+    relation_record_ids = [
+        record_id for row in relation for record_id in row["recordIds"]
+    ]
+    if relation_source_paths != sorted(relation_source_paths):
+        raise ValueError("map data indexed relation source-path order drift")
+    if any(row["recordIds"] != sorted(row["recordIds"]) for row in relation):
+        raise ValueError("map data indexed relation record-ID order drift")
+    if len(relation_source_paths) != len(set(relation_source_paths)):
+        raise ValueError("map data indexed relation duplicate source path")
+    if len(relation_record_ids) != len(set(relation_record_ids)):
+        raise ValueError("map data indexed relation duplicate record ID")
+    if any(
+        not path.startswith(f"{SOURCE_ROOT.as_posix()}/")
+        for path in relation_source_paths
+    ):
+        raise ValueError("map data indexed relation outside source scope")
+    unknown_paths = sorted(set(relation_source_paths) - discovered_source_paths)
+    if unknown_paths:
+        raise ValueError(
+            "map data indexed relation source path is absent from the discovered inventory: "
+            f"{unknown_paths[:3]}"
+        )
+
+    if output["indexedRecordIds"] != sorted(relation_record_ids):
+        raise ValueError("map data indexedRecordIds relation drift")
+    if output["indexedSourcePaths"] != relation_source_paths:
+        raise ValueError("map data indexedSourcePaths relation order drift")
+    summary = output["summary"]
+    if summary["indexedRecordCount"] != len(output["indexedRecordIds"]) or summary[
+        "indexedRecordCount"
+    ] != len(relation_record_ids):
+        raise ValueError("map data summary indexedRecordCount relation drift")
+    if summary["indexedFileCount"] != len(output["indexedSourcePaths"]) or summary[
+        "indexedFileCount"
+    ] != len(relation_source_paths):
+        raise ValueError("map data summary indexedFileCount relation drift")
 
 
 def build_map_data_inventory(upstream_path: Path) -> dict[str, Any]:
@@ -122,11 +196,7 @@ def build_map_data_inventory(upstream_path: Path) -> dict[str, Any]:
     representative_addresses = {
         symbol: listing_addresses[symbol] for symbol in representative_symbols.values()
     }
-    records = [
-        record
-        for record in load_json(RESEARCH_INDEX)["records"]
-        if record["sourcePath"].startswith(f"{SOURCE_ROOT.as_posix()}/")
-    ]
+    indexed_records = _index_records_for_map_data_scope()
 
     include_site_only_paths = sorted(
         edge["targetPath"]
@@ -192,10 +262,10 @@ def build_map_data_inventory(upstream_path: Path) -> dict[str, Any]:
         "includeSiteOnlyFileCount": len(include_site_only_paths),
         "unlabeledContainerFileCount": len(unlabeled_container_paths),
         "representativeAddressCount": len(representative_addresses),
-        "indexedRecordCount": len(records),
-        "indexedFileCount": len({record["sourcePath"] for record in records}),
+        "indexedRecordCount": len(indexed_records["indexedRecordIds"]),
+        "indexedFileCount": len(indexed_records["indexedSourcePaths"]),
     }
-    return {
+    output = {
         "schemaVersion": 1,
         "id": ID,
         "upstream": {"repository": toolchain["sf2disasm"]["repository"], "commit": commit},
@@ -208,8 +278,7 @@ def build_map_data_inventory(upstream_path: Path) -> dict[str, Any]:
             "includeSiteOnlyPaths": include_site_only_paths,
             "unlabeledContainerPaths": unlabeled_container_paths,
         },
-        "indexedRecordIds": sorted(record["id"] for record in records),
-        "indexedSourcePaths": sorted({record["sourcePath"] for record in records}),
+        **indexed_records,
         "representativeSymbols": representative_symbols,
         "representativeAddresses": representative_addresses,
         "facts": {
@@ -245,6 +314,8 @@ def build_map_data_inventory(upstream_path: Path) -> dict[str, Any]:
         ],
         "files": files,
     }
+    _verify_indexed_record_join(output, discovered_source_paths=set(sources))
+    return output
 
 
 def verify_map_data_inventory(
@@ -255,18 +326,51 @@ def verify_map_data_inventory(
     manifest = load_json(MANIFEST)
     output = build_map_data_inventory(upstream_path)
     validate_json(output, SCHEMA, owner="map data static inventory")
-    if (
-        fixture["upstreamCommit"] != output["upstream"]["commit"]
-        or fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]
+    _verify_indexed_record_join(
+        output,
+        discovered_source_paths={row["path"] for row in output["files"]},
+    )
+    authoritative_indexed_records = _index_records_for_map_data_scope()
+    for field in (
+        "indexedRecordIds",
+        "indexedSourcePaths",
+        "indexedRecordsBySourcePath",
     ):
-        raise ValueError("map data provenance drift")
-    if output["summary"] != manifest["summary"]:
-        raise ValueError("map data summary drift")
+        if output[field] != authoritative_indexed_records[field]:
+            raise ValueError(f"map data current research-index {field} drift")
+
+    toolchain = load_json(TOOLCHAIN)
+    if output["upstream"]["repository"] != toolchain["sf2disasm"]["repository"]:
+        raise ValueError("map data upstream repository provenance drift")
+    if output["upstream"]["commit"] != toolchain["sf2disasm"]["commit"]:
+        raise ValueError("map data upstream commit provenance drift")
+    if fixture["upstreamCommit"] != toolchain["sf2disasm"]["commit"]:
+        raise ValueError("map data fixture upstream provenance drift")
+    if fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]:
+        raise ValueError("map data fixture ROM provenance drift")
     if output["representativeAddresses"] != fixture["table"]:
         raise ValueError("map data H1 address drift")
-    for field in ("facts", "runtimeQuestions"):
-        if output[field] != fixture["expected"][field]:
-            raise ValueError(f"map data {field} drift")
+    expected = fixture["expected"]
+    source_inventory = expected["sourceInventory"]
+    for field in (
+        "directLayoutPaths",
+        "includeEdges",
+        "strictReach",
+        "representativeSymbols",
+    ):
+        if output[field] != source_inventory[field]:
+            raise ValueError(f"map data source inventory {field} drift")
+    for field in (
+        "indexedRecordIds",
+        "indexedSourcePaths",
+        "indexedRecordsBySourcePath",
+        "facts",
+        "runtimeQuestions",
+    ):
+        if output[field] != expected[field]:
+            raise ValueError(f"map data fixture {field} drift")
+    if output["summary"] != manifest["summary"]:
+        raise ValueError("map data summary drift")
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("map data canonical hash drift")
