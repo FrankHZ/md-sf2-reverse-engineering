@@ -487,6 +487,11 @@ document whose anchors may be updated.
   complete aggregate symbol replay, 80 variable-width glyph records, and 256-entry ASCII map, while
   retaining control effects, presentation, localization, and copyrighted content as Unknown or
   deliberate-design boundaries.
+- [`ui-layout-data.md`](./design/contracts/ui-layout-data.md): the implementation-neutral static-data
+  contract for 27 ordered UI layout grids, the first-class 16-entry spell-level pointer table and its
+  aliases, four diamond-border variants, four direct assets, and exact non-overlapping source/ROM
+  coverage, while retaining runtime window behavior, presentation, localization, accessibility, and
+  copyrighted payloads as separate, Unknown, or deliberate-design boundaries.
 - [`window-system.md`](./design/contracts/window-system.md): the eight-slot window entry, layout
   allocation/reclamation, packed-coordinate addressing, VInt composition/DMA call order, and the
   presentation-timing Unknown boundary.
