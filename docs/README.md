@@ -400,6 +400,12 @@ document whose anchors may be updated.
   graphics helper inventory, while retaining camera logic, codec micro-implementation, rendered
   presentation, hardware timing, copyrighted assets, and forced invalid-state behavior as
   separate-owner, private, or Unknown boundaries.
+- [`portrait-window-state.md`](./design/contracts/portrait-window-state.md): the
+  implementation-neutral contract for combatant/ally portrait selection, 56-slot private portrait
+  data, portrait and name-window state, callback lifetime, exact load/DMA call order, and bounded
+  eye/mouth update operations, while retaining layouts, global VInt/DMA semantics, visible timing,
+  localization, accessibility, and copyrighted payloads as separate-owner, Unknown, private, or
+  deliberate-design boundaries.
 - [`caravan-and-deals-state.md`](./design/contracts/caravan-and-deals-state.md): the
   implementation-neutral contract for Caravan status-bit normalization, full-add ignore, ordered
   removal compaction/tail clearing, and packed Deals count saturation/zero-removal boundaries, while

@@ -157,6 +157,14 @@ CONTRACTS = {
             "sf2-special-sprite-decode-v1"
         ),
     },
+    "docs/design/contracts/portrait-window-state.md": {
+        "tests/fixtures/h2/common-menus-static-v1.json": (
+            "sf2-common-menus-static-v1"
+        ),
+        "tests/fixtures/h2/portrait-graphics-decode-v1.json": (
+            "sf2-portrait-graphics-decode-v1"
+        ),
+    },
     "docs/design/contracts/caravan-and-deals-state.md": {
         "tests/fixtures/h2/common-stats-static-v1.json": (
             "sf2-common-stats-static-v1"

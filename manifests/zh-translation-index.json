@@ -129,6 +129,10 @@
       "translatedDate": "2026-08-08"
     },
     {
+      "source": "docs/design/contracts/portrait-window-state.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/randomness.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/randomness.md",
