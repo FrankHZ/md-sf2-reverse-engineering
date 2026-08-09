@@ -108,6 +108,10 @@
       "translatedDate": "2026-08-08"
     },
     {
+      "source": "docs/design/contracts/new-game-state-initialization.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/party-roster-state.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/party-roster-state.md",

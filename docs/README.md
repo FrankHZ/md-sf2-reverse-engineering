@@ -394,6 +394,12 @@ document whose anchors may be updated.
   removal compaction/tail clearing, and packed Deals count saturation/zero-removal boundaries, while
   retaining capacities, numeric masks/mappings, runtime/service outcomes, persistence, UI, and balance
   as separate-owner or Unknown boundaries.
+- [`new-game-state-initialization.md`](./design/contracts/new-game-state-initialization.md): the
+  implementation-neutral contract for the two accepted top-level initialization order edges,
+  complete original ally-entry coverage, empty spell state, class-to-initial-to-derived stat order,
+  flags/Deals/Caravan clears, and message-speed default, while retaining constants, cardinality,
+  runtime reachability, persistence, UI, presentation, and balance as Unknown or separate-owner
+  boundaries.
 - [`combat-resolution.md`](./design/contracts/combat-resolution.md): the implementation-neutral contract from
   physical attacks through dodge, terrain/countering, critical, spread, and double/counter to
   temporary HP, reaction replay, EXP booking, and level-up connection, plus the shared fixture
