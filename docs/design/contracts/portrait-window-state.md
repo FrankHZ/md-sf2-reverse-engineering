@@ -299,7 +299,7 @@ PortraitCatalog {
 
 PortraitSelectorResult {
   rawInputByte
-  route: ALLY_CLASS_REMAP | ENTITY_PROPERTY_LOOKUP
+  route: GET_ALLY_PORTRAIT | ENTITY_PROPERTY_LOOKUP
   portraitIdentity
 }
 
@@ -377,8 +377,9 @@ A remake-side portrait importer/adapter can claim this contract only when automa
 7. source-shaped eye/mouth tests preserve gates, counter comparisons, RNG operands `120` and `5`,
    post-adds `30` and `$000A`, original/alternate selection, and mirror-state handoff without treating
    them as observed distributions or visible timing;
-8. the name window preserves its index guards, create/write/name/HP order, raw HP zero→orange and
-   nonzero→regular writer selection, move/wait/delete order, and index clear;
+8. the name window preserves its index guards, create, initial `WriteWindowTiles`, current-HP read,
+   combatant-name read, selected font-writer order, raw HP zero→orange and nonzero→regular writer
+   selection, move/wait/delete order, and index clear;
 9. invalid indices, malformed data, callers, VInt/RNG/DMA cadence, window motion, visible frames,
    palette results, localization, accessibility, and licensed content remain separate acceptance
    surfaces.
