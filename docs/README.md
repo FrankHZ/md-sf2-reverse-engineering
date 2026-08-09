@@ -374,6 +374,11 @@ document whose anchors may be updated.
   identity/level and animation fields, and the radius-3 data exception, while retaining resolution,
   targeting/geometry, effects, MP transactions, presentation, balance, localization, and content as
   separate-owner, Unknown, or deliberate-design boundaries.
+- [`spellbook-state.md`](./design/contracts/spellbook-state.md): the implementation-neutral contract
+  for raw learned-spell entries, raw definition-miss fallback, caller-selected-slot access with an
+  independent learned count, and known-before-empty `LearnSpell` mutation/results, while retaining
+  numeric packing/cardinality, malformed inputs, runtime acquisition, persistence, UI, resolution,
+  presentation, and balance as Unknown or separate-owner boundaries.
 - [`audio-system.md`](./design/contracts/audio-system.md): the implementation-neutral contract for
   music/SFX command identities, two-bank slot and target aliases, headers and channel roles, the
   static macro/note/sample/instrument/SFX domains, and the bounded four-command playback-state
