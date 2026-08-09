@@ -21,7 +21,8 @@ terminal branch.
   the ordered `InitializeVdp`, `InitializeZ80`, `InitializeVdpData`, `InitializeGame` handoffs and 19
   maintained VDP entries; game initialization preserves the ordered `LoadBaseTiles`, `CheckRegion`,
   `NewGame`, `DisplaySegaLogo` handoffs; a nonzero logo result bypasses the intro; `GameIntro` stores
-  and later clears its continuation pointer before the title handoff; the title result separates a
+  its continuation pointer and clears it on the ordinary helper-return path before the title handoff;
+  the title result separates a
   nonzero Witch handoff from the zero-result `InitialStack`/`p_Start` reset route; `CheckRegion` masks
   `HW_Info` with `0xC0`, accepts `0x80`, and otherwise reaches its source-local infinite loop.
 - **Inferred**: none. Hardware lifecycle, player intent, and visible startup meaning are not inferred
