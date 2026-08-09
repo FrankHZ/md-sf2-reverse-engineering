@@ -112,6 +112,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/party-membership-state.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/party-roster-state.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/party-roster-state.md",

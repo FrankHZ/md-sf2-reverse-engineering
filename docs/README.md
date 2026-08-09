@@ -400,6 +400,12 @@ document whose anchors may be updated.
   flags/Deals/Caravan clears, and message-speed default, while retaining constants, cardinality,
   runtime reachability, persistence, UI, presentation, and balance as Unknown or separate-owner
   boundaries.
+- [`party-membership-state.md`](./design/contracts/party-membership-state.md): the
+  implementation-neutral contract for separate joined/active membership flags, the three
+  `UpdateForce` counted prefixes, set-joined-before-rebuild `JoinForce` chronology, and distinct leave
+  operation identities, while retaining post-helper list synchronization, capacity values, runtime
+  outcomes, persistence, roster-choice UI, presentation, and balance as Unknown or separate-owner
+  boundaries.
 - [`combat-resolution.md`](./design/contracts/combat-resolution.md): the implementation-neutral contract from
   physical attacks through dodge, terrain/countering, critical, spread, and double/counter to
   temporary HP, reaction replay, EXP booking, and level-up connection, plus the shared fixture

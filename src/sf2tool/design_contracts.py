@@ -154,6 +154,11 @@ CONTRACTS = {
             "sf2-common-stats-static-v1"
         ),
     },
+    "docs/design/contracts/party-membership-state.md": {
+        "tests/fixtures/h2/common-stats-static-v1.json": (
+            "sf2-common-stats-static-v1"
+        ),
+    },
     "docs/design/contracts/item-definition-data.md": {
         "tests/fixtures/h2/core-stats-data-static-v1.json": (
             "sf2-core-stats-data-static-v1"
