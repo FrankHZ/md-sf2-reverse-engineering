@@ -1,17 +1,341 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Shining Force II common maps static inventory",
-  "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "internalDirectCallTargets", "externalDirectCallTargets", "mapFacts", "files"],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "upstream",
+    "scope",
+    "summary",
+    "function",
+    "indexedRecordIds",
+    "indexedSourcePaths",
+    "indexedRecordsBySourcePath",
+    "internalDirectCallTargets",
+    "externalDirectCallTargets",
+    "mapFacts",
+    "files"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-common-maps-static-v1" },
-    "upstream": { "type": "object" }, "scope": { "const": "code/common/maps" },
-    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "indexedRecordCount", "indexedFileCount"], "properties": { "fileCount": { "const": 7 }, "indexedRecordCount": { "const": 7 }, "indexedFileCount": { "const": 7 } } },
-    "indexedRecordIds": { "type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true },
-    "indexedSourcePaths": { "type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true },
-    "internalDirectCallTargets": { "type": "array", "uniqueItems": true },
-    "externalDirectCallTargets": { "type": "array", "uniqueItems": true },
-    "mapFacts": { "type": "object", "minProperties": 6, "maxProperties": 6 },
-    "files": { "type": "array", "minItems": 7, "maxItems": 7 }
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-common-maps-static-v1" },
+    "upstream": { "$ref": "#/definitions/upstream" },
+    "scope": { "const": "code/common/maps" },
+    "summary": { "$ref": "#/definitions/summary" },
+    "function": { "$ref": "#/definitions/functionAddresses" },
+    "indexedRecordIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/recordId" }
+    },
+    "indexedSourcePaths": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/sourcePath" }
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": { "$ref": "#/definitions/indexedRecordsBySourcePath" }
+    },
+    "internalDirectCallTargets": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/symbol" }
+    },
+    "externalDirectCallTargets": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/definitions/symbol" }
+    },
+    "mapFacts": { "$ref": "#/definitions/mapFacts" },
+    "files": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": { "$ref": "#/definitions/sourceFile" }
+    }
+  },
+  "definitions": {
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fileCount",
+        "sourceLineCount",
+        "statementCount",
+        "globalLabelCount",
+        "localLabelCount",
+        "directCallSiteCount",
+        "indirectCallSiteCount",
+        "uniqueDirectTargetCount",
+        "internalDirectTargetCount",
+        "externalDirectTargetCount",
+        "indexedRecordCount",
+        "indexedFileCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 7 },
+        "sourceLineCount": { "type": "integer", "minimum": 0 },
+        "statementCount": { "type": "integer", "minimum": 0 },
+        "globalLabelCount": { "type": "integer", "minimum": 0 },
+        "localLabelCount": { "type": "integer", "minimum": 0 },
+        "directCallSiteCount": { "type": "integer", "minimum": 0 },
+        "indirectCallSiteCount": { "type": "integer", "minimum": 0 },
+        "uniqueDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "internalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "externalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "indexedRecordCount": { "type": "integer", "minimum": 1 },
+        "indexedFileCount": { "const": 7 }
+      }
+    },
+    "functionAddresses": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scrollingAddress",
+        "cameraAddress",
+        "savepointAddress",
+        "battleTriggerAddress",
+        "switchMapAddress",
+        "mapLayoutAddress",
+        "unusedMaploadAddress"
+      ],
+      "properties": {
+        "scrollingAddress": { "type": "integer", "minimum": 0 },
+        "cameraAddress": { "type": "integer", "minimum": 0 },
+        "savepointAddress": { "type": "integer", "minimum": 0 },
+        "battleTriggerAddress": { "type": "integer", "minimum": 0 },
+        "switchMapAddress": { "type": "integer", "minimum": 0 },
+        "mapLayoutAddress": { "type": "integer", "minimum": 0 },
+        "unusedMaploadAddress": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "sourcePath": {
+      "type": "string",
+      "pattern": "^code/common/maps/[A-Za-z0-9_]+\\.asm$"
+    },
+    "recordId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourcePath", "recordIds"],
+      "properties": {
+        "sourcePath": { "$ref": "#/definitions/sourcePath" },
+        "recordIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/recordId" }
+        }
+      }
+    },
+    "mapFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mapSwitch",
+        "battleTrigger",
+        "egress",
+        "mapLayout",
+        "vint",
+        "inventoryBoundary"
+      ],
+      "properties": {
+        "mapSwitch": { "$ref": "#/definitions/mapSwitchFacts" },
+        "battleTrigger": { "$ref": "#/definitions/battleTriggerFacts" },
+        "egress": { "$ref": "#/definitions/egressFacts" },
+        "mapLayout": { "$ref": "#/definitions/mapLayoutFacts" },
+        "vint": { "$ref": "#/definitions/vintFacts" },
+        "inventoryBoundary": { "$ref": "#/definitions/inventoryBoundaryFacts" }
+      }
+    },
+    "mapSwitchFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryBytes",
+        "terminatesOnNegativeSourceMap",
+        "firstMatchingSetFlagReplacesMap"
+      ],
+      "properties": {
+        "entryBytes": { "type": "integer", "minimum": 0 },
+        "terminatesOnNegativeSourceMap": { "type": "boolean" },
+        "firstMatchingSetFlagReplacesMap": { "type": "boolean" }
+      }
+    },
+    "battleTriggerFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "usesCurrentMapForMinusOneInput",
+        "requiresUnlockedFlag",
+        "triggerCoordinatesAllowMinusOneWildcard",
+        "writesBattleAreaBeforeCompletionCheck",
+        "clearsUnlockedFlagWhenCompleted",
+        "noMatchBattleIndex"
+      ],
+      "properties": {
+        "usesCurrentMapForMinusOneInput": { "type": "boolean" },
+        "requiresUnlockedFlag": { "type": "boolean" },
+        "triggerCoordinatesAllowMinusOneWildcard": { "type": "boolean" },
+        "writesBattleAreaBeforeCompletionCheck": { "type": "boolean" },
+        "clearsUnlockedFlagWhenCompleted": { "type": "boolean" },
+        "noMatchBattleIndex": { "type": "integer" }
+      }
+    },
+    "egressFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preFlag399UsesGameStartConstants",
+        "savepointEntryBytes",
+        "savepointTerminator",
+        "missingMapDefault",
+        "raftResetRequiresFlag64",
+        "raftResetEntryBytes"
+      ],
+      "properties": {
+        "preFlag399UsesGameStartConstants": { "type": "boolean" },
+        "savepointEntryBytes": { "type": "integer", "minimum": 0 },
+        "savepointTerminator": { "type": "integer" },
+        "missingMapDefault": { "$ref": "#/definitions/missingMapDefault" },
+        "raftResetRequiresFlag64": { "type": "boolean" },
+        "raftResetEntryBytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "missingMapDefault": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "facing"],
+      "properties": {
+        "x": { "type": "integer" },
+        "y": { "type": "integer" },
+        "facing": { "type": "string", "minLength": 1 }
+      }
+    },
+    "mapLayoutFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outputSizeBytes",
+        "clearsHistoryMapsFirst",
+        "modes",
+        "mapLoadClearsScrollState",
+        "newMapUpdatesCurrentMap",
+        "blocksLoadBeforeLayout",
+        "battleAreaOverlayAppliedInBattle"
+      ],
+      "properties": {
+        "outputSizeBytes": { "type": "integer", "minimum": 0 },
+        "clearsHistoryMapsFirst": { "type": "boolean" },
+        "modes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "mapLoadClearsScrollState": { "type": "boolean" },
+        "newMapUpdatesCurrentMap": { "type": "boolean" },
+        "blocksLoadBeforeLayout": { "type": "boolean" },
+        "battleAreaOverlayAppliedInBattle": { "type": "boolean" }
+      }
+    },
+    "vintFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "planeAToggleBit",
+        "planeBToggleBit",
+        "planeAAlsoRefreshesWindowsWhenPresent",
+        "tileAnimationRequiresPositiveDataPointer",
+        "tileAnimationUsesCountdown",
+        "tileAnimationUsesVintDma"
+      ],
+      "properties": {
+        "planeAToggleBit": { "type": "integer", "minimum": 0 },
+        "planeBToggleBit": { "type": "integer", "minimum": 0 },
+        "planeAAlsoRefreshesWindowsWhenPresent": { "type": "boolean" },
+        "tileAnimationRequiresPositiveDataPointer": { "type": "boolean" },
+        "tileAnimationUsesCountdown": { "type": "boolean" },
+        "tileAnimationUsesVintDma": { "type": "boolean" }
+      }
+    },
+    "inventoryBoundaryFacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cameraStateMachineInventoried",
+        "unusedRandomMaploadInventoried",
+        "cameraAndVdpTimingRemainQueued"
+      ],
+      "properties": {
+        "cameraStateMachineInventoried": { "type": "boolean" },
+        "unusedRandomMaploadInventoried": { "type": "boolean" },
+        "cameraAndVdpTimingRemainQueued": { "type": "boolean" }
+      }
+    },
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "sourceLineCount",
+        "statementCount",
+        "globalLabels",
+        "localLabelCount",
+        "directCalls",
+        "indirectCallSiteCount"
+      ],
+      "properties": {
+        "path": { "$ref": "#/definitions/sourcePath" },
+        "sha256": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+        "sourceLineCount": { "type": "integer", "minimum": 0 },
+        "statementCount": { "type": "integer", "minimum": 0 },
+        "globalLabels": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/symbol" }
+        },
+        "localLabelCount": { "type": "integer", "minimum": 0 },
+        "directCalls": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/directCall" }
+        },
+        "indirectCallSiteCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "directCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "siteCount"],
+      "properties": {
+        "target": { "$ref": "#/definitions/symbol" },
+        "siteCount": { "type": "integer", "minimum": 1 }
+      }
+    }
   }
 }
