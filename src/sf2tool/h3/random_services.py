@@ -17,6 +17,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from sf2tool.h2.services import RANDOM_SERVICES_RUNTIME_QUESTION
 from sf2tool.h3.bizhawk import (
     DERIVED_ROOT,
     run_observer,
@@ -189,7 +190,7 @@ def validate_provenance(
     toolchain_path: Path = TOOLCHAIN_MANIFEST,
     h2_fixture_path: Path = H2_OWNER_FIXTURE,
 ) -> None:
-    """Tie the H3 fixture to the pinned upstream and its H2 owner independently of schema consts."""
+    """Tie the H3 fixture to its pinned upstream and accepted H2 owner facts."""
     toolchain = load_json(toolchain_path)
     h2_fixture = load_json(h2_fixture_path)
     pinned = toolchain["sf2disasm"]
@@ -204,6 +205,27 @@ def validate_provenance(
         or fixture["romSha256"] != h2_fixture["romSha256"]
     ):
         raise ValueError("random-services provenance does not match pinned toolchain/H2 owner")
+    try:
+        h2_random_questions = h2_fixture["expected"]["randomServicesFacts"][
+            "runtimeQuestions"
+        ]
+        h2_runtime_questions = h2_fixture["expected"]["runtimeQuestions"]
+    except (KeyError, TypeError) as error:
+        raise ValueError("random-services H2 runtime-question owner shape drift") from error
+    if not (
+        isinstance(fixture["runtimeQuestion"], str)
+        and isinstance(h2_random_questions, list)
+        and isinstance(h2_runtime_questions, list)
+        and all(isinstance(question, str) for question in h2_random_questions)
+        and all(isinstance(question, str) for question in h2_runtime_questions)
+    ):
+        raise ValueError("random-services H2 runtime-question owner shape drift")
+    if (
+        h2_random_questions != [RANDOM_SERVICES_RUNTIME_QUESTION]
+        or fixture["runtimeQuestion"] != RANDOM_SERVICES_RUNTIME_QUESTION
+        or h2_runtime_questions.count(RANDOM_SERVICES_RUNTIME_QUESTION) != 1
+    ):
+        raise ValueError("random-services H2 runtime-question owner drift")
 
 
 def _word_step(seed: int) -> int:

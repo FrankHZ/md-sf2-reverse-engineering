@@ -48,6 +48,9 @@ RANDOM_SERVICE_FUNCTIONS = (
     "GenerateRandomNumberUnderD6",
 )
 THINKING_RNG_JUMP_ALIAS = "j_GenerateRandomNumberUnderD6"
+RANDOM_SERVICES_RUNTIME_QUESTION = (
+    "random-services-unobserved-caller-context-and-seed-copy-lifetime"
+)
 INPUT_FUNCTIONS = (
     "UpdatePlayerInputs",
     "WaitForPlayerInput",
@@ -886,7 +889,7 @@ def _random_services_facts(disasm: Path, listing: str) -> dict[str, Any]:
             }
         },
         "runtimeQuestions": [
-            "random-services-matrix-range-retry-and-seed-copy-isolation",
+            RANDOM_SERVICES_RUNTIME_QUESTION,
         ],
     }
 
@@ -1388,7 +1391,7 @@ def build_service_inventory(upstream_path: Path) -> dict[str, Any]:
             "input-hardware-and-repeat-timing",
             "sram-persistence-and-corruption-matrix",
             "z80-mailbox-channel-and-audio-timing",
-            "random-services-matrix-range-retry-and-seed-copy-isolation",
+            RANDOM_SERVICES_RUNTIME_QUESTION,
             "unused-technical-resource-raw-reach-and-presentation",
         ],
         "files": files,

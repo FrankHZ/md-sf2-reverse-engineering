@@ -110,6 +110,102 @@ def test_provenance_matches_pinned_toolchain_and_h2_owner(tmp_path: Path) -> Non
         random_services.validate_provenance(wrong_fixture)
 
 
+def test_runtime_question_is_joined_to_h2_owner_and_rejects_coordinated_drift(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture()
+    h2_fixture = load_json(random_services.H2_OWNER_FIXTURE)
+    h2_schema = random_services.repo_path("schemas/h2-tech-services-static-fixture.schema.json")
+    expected_question = random_services.RANDOM_SERVICES_RUNTIME_QUESTION
+    stale_question = "random-services-matrix-range-retry-and-seed-copy-isolation"
+    h2_question_index = h2_fixture["expected"]["runtimeQuestions"].index(expected_question)
+
+    stale_h2 = copy.deepcopy(h2_fixture)
+    stale_h2["expected"]["randomServicesFacts"]["runtimeQuestions"] = [stale_question]
+    stale_h2["expected"]["runtimeQuestions"][h2_question_index] = stale_question
+    validate_json(stale_h2, h2_schema, owner="schema-valid stale H2 RNG queue")
+    stale_h2_path = tmp_path / "stale-h2.json"
+    stale_h2_path.write_text(json.dumps(stale_h2, indent=2) + "\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="H2 runtime-question owner drift"):
+        random_services.validate_provenance(fixture, h2_fixture_path=stale_h2_path)
+
+    unknown_h3 = copy.deepcopy(fixture)
+    unknown_h3["runtimeQuestion"] = "random-services-unknown-caller-queue"
+    validate_json(unknown_h3, random_services.FIXTURE_SCHEMA, owner="schema-valid unknown H3 queue")
+    with pytest.raises(ValueError, match="H2 runtime-question owner drift"):
+        random_services.validate_provenance(unknown_h3)
+
+    coordinated_h3 = copy.deepcopy(fixture)
+    coordinated_h3["runtimeQuestion"] = stale_question
+    validate_json(
+        coordinated_h3,
+        random_services.FIXTURE_SCHEMA,
+        owner="schema-valid coordinated H3 RNG queue",
+    )
+    with pytest.raises(ValueError, match="H2 runtime-question owner drift"):
+        random_services.validate_provenance(coordinated_h3, h2_fixture_path=stale_h2_path)
+
+
+def test_runtime_question_closure_preserves_case_matrix_and_observer_config() -> None:
+    fixture = _fixture()
+    assert fixture["runtimeQuestion"] == random_services.RANDOM_SERVICES_RUNTIME_QUESTION
+    assert [case["id"] for case in fixture["cases"]] == [
+        "unsigned-low-byte-zero",
+        "unsigned-range-one",
+        "unsigned-signed-range-boundary",
+        "unsigned-range-two-retry",
+        "thinking-low-byte-zero",
+        "thinking-range-one",
+        "thinking-signed-range-boundary",
+        "thinking-range-two-retry-alias",
+        "text-symbol-wait-copy-shape",
+        "diamond-menu-copy-shape",
+        "text-symbol-wait-caller-seam-thinking-range-two",
+        "diamond-menu-caller-seam-thinking-range-two",
+    ]
+    config = random_services._observer_config(fixture)
+    assert config["cases"] == [
+        {key: value for key, value in case.items() if key != "expected"}
+        for case in fixture["cases"]
+    ]
+    assert "runtimeQuestion" not in config
+
+
+def test_runtime_question_drift_rejects_before_runtime_configuration_or_launch(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fixture = _fixture()
+    h2_fixture = load_json(random_services.H2_OWNER_FIXTURE)
+    h2_question_index = h2_fixture["expected"]["runtimeQuestions"].index(
+        random_services.RANDOM_SERVICES_RUNTIME_QUESTION
+    )
+    stale_question = "random-services-matrix-range-retry-and-seed-copy-isolation"
+    h2_fixture["expected"]["randomServicesFacts"]["runtimeQuestions"] = [stale_question]
+    h2_fixture["expected"]["runtimeQuestions"][h2_question_index] = stale_question
+    h2_path = tmp_path / "coordinated-h2.json"
+    h2_path.write_text(json.dumps(h2_fixture, indent=2) + "\n", encoding="utf-8")
+    fixture["runtimeQuestion"] = stale_question
+    fixture_path = tmp_path / "coordinated-h3.json"
+    fixture_path.write_text(json.dumps(fixture, indent=2) + "\n", encoding="utf-8")
+
+    original_validate_provenance = random_services.validate_provenance
+    monkeypatch.setattr(random_services, "FIXTURE", fixture_path)
+    monkeypatch.setattr(
+        random_services,
+        "validate_provenance",
+        lambda candidate: original_validate_provenance(candidate, h2_fixture_path=h2_path),
+    )
+
+    def must_not_run(*_: object, **__: object) -> None:
+        pytest.fail("runtime-question ownership drift must reject before configuration or launch")
+
+    monkeypatch.setattr(random_services, "verify_runtime_contract", must_not_run)
+    monkeypatch.setattr(random_services, "validate_static_contract", must_not_run)
+    monkeypatch.setattr(random_services, "run_observer", must_not_run)
+    with pytest.raises(ValueError, match="H2 runtime-question owner drift"):
+        random_services.verify_random_services(tmp_path / "input.bin", timeout_seconds=1)
+
+
 def test_model_separates_helper_return_from_controlled_copy() -> None:
     fixture = _fixture()
     cases = {case["id"]: case for case in fixture["cases"]}

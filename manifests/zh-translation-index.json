@@ -144,10 +144,10 @@
       "source": "docs/design/contracts/randomness.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/randomness.md",
-      "sourceSha256": "d9b0bb614fbc803e2e4c5b107fe4603defd3ab7e6d8ad49ce290359030798029",
-      "mirrorSha256": "52ebf34bb93cba88823d50d57e62ecd033a3bce42455ec9e3f97e17ae28c383f",
+      "sourceSha256": "e9ffd68d952a20d450f040f1c19f34a1427d42e946bb10e2db7e9f24a716da74",
+      "mirrorSha256": "fadaa5dfbfe1ff1eaf1e540653698701dc4fe51d9d6fd4d26b61ffe65c4ba991",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-09"
     },
     {
       "source": "docs/design/contracts/save-system.md",

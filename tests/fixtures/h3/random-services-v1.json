@@ -8,7 +8,7 @@
     "h2Fixture": "tests/fixtures/h2/tech-services-static-v1.json",
     "h2FixtureId": "sf2-tech-services-static-v1"
   },
-  "runtimeQuestion": "random-services-matrix-range-retry-and-seed-copy-isolation",
+  "runtimeQuestion": "random-services-unobserved-caller-context-and-seed-copy-lifetime",
   "observationBoundary": "One BizHawk launch uses the accepted debug Battle Test path only as post-start setup. The existing direct-function rows retain the work-RAM helper bootstrap and its controlled source-shaped byte-copy seam. Two caller rows reset both RNG words, use that probe's real JSR to enter the exact ROM text symbol_wait1 or diamond-menu preamble, execute its range load, RNG call, byte store, restore, and exactly one WaitForVInt call. At WaitForVInt entry the harness verifies the source return on stack and changes only that return to the probe continuation; WaitForVInt then executes normally and RTS resumes the original thinking alias through the probe JSR. The harness redirects that thinking return to the result PC before its controlled copy, so the probe copy does not modify a caller result. The one WaitForVInt traversal is harness-only seam exit control, not evidence about VInt timing, latency, input, menu/text loops, rendering, story, UI, or AI behavior.",
   "function": {
     "baseEntryAddress": 5632,
