@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-08-02
+- Evidence date: 2026-08-08
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -26,8 +26,8 @@ It says that the file has been reached, not that every instruction in the file i
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 83 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,521 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 84 | Runtime contracts, often containing multiple cases |
+| Address bindings | 2,522 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -133,8 +133,10 @@ The current evidence is deep but narrow:
   their canonical twins.
   Common menus now inventories 42 files and binds all 41 layout-owned sources. Prompt input/results,
   text controls, field items, and the built eight-source shop/church/caravan/blacksmith state-machine
-  surface are static contracts; one overlapping member-list alternate remains excluded, while UI,
-  persistence, caller-return, and presentation timing remain queued for one concentrated simulation.
+  surface are static contracts. A five-case one-launch direct helper matrix now confirms mithril class/
+  weighted-row selection, BRN/RDBN fallback, first-empty order writes, and seed effects without claiming
+  menu admission or persistence; one overlapping member-list alternate remains excluded, while UI,
+  caller-return, and presentation timing remain queued for one concentrated simulation.
   Technical services now additionally models the complete seven-entry SRAM save surface: two-slot
   layout, interleaved copying, checksum/flag transitions, and its caller inventory. One fourteen-case,
   single-launch direct-service H3 matrix validates its in-process initialization, valid/invalid slot,

@@ -308,8 +308,19 @@ and outer loops, byte parameter/item reads, parameter-to-RNG-range transfer, res
 loop. Its parameter column is cross-checked to the item-auxiliary-owned `[16, 8, 4, 1]` denominator
 sequence. The separate two-byte order-slot search retains empty/occupied polarity, stride load/add,
 loop target, and word write.
-Persistence, RNG distribution, prompt meaning/timing, caller admission, and direct-call reachability
-remain **Inferred** or **Unknown** in the existing grouped H3 queue.
+
+**Confirmed — PickMithrilWeapon helper H3.** One direct-function BizHawk matrix reproduces the helper
+alone after the startup `CheckSram` return, with each case supplying only the stack-local client class,
+`RANDOM_SEED`, and four two-byte order slots. The five ordered cases cover ordinary row-0 early choice,
+ordinary row-2 final fallback across source-owned `[16, 8, 4, 1]` parameters, both BRN/RDBN fallback
+polarities, each first-empty slot, and the all-occupied no-write return. The original helper preserves
+the supplied `d0`/`d7` words, consumes the observed generator calls, and writes only the selected item
+to the first zero word when one exists; the probe snapshots and restores only `RANDOM_SEED` and the four
+`MITHRIL_WEAPONS_ON_ORDER` words before exit. It does not claim restoration of probe, stub, frame, stack,
+or other work-RAM state.
+Reproduce with `uv run sf2 h3 blacksmith-mithril --timeout-seconds 180`. This is helper-local evidence,
+not a claim about BlacksmithMenu admission, transaction, flag 80, persistence, presentation, or natural
+story reachability, which remain **Inferred** or **Unknown**.
 
 The interaction-level handoff is recorded in
 [`service-interactions.md`](../design/contracts/service-interactions.md). It deliberately consumes only the
@@ -323,8 +334,8 @@ One future service-menu H3 launch should use a generated matrix rather than one 
 - enter each vanilla shop, church, caravan, and blacksmith caller; record admission preconditions,
   return state, and cancel behavior;
 - for shop/deals, church raise/cure/promotion/save, caravan depot transfer/drop, and blacksmith
-  order/fulfillment, snapshot gold, party inventory, caravan storage, order storage, flags, and save
-  state before/after both confirm and cancellation paths;
+  menu admission/order fulfillment, snapshot gold, party inventory, caravan storage, order storage,
+  flags, and save state before/after both confirm and cancellation paths;
 - vary map reload, save/reload, story flag 80, and blacksmith-ready conditions to distinguish
   per-visit stack state from persistent state;
 - share VInt/VDP/audio observation points for window/portrait movement, prompt release behavior, and
@@ -343,6 +354,7 @@ uv run sf2 h2 ui-graphics
 uv run sf2 h2 icon-graphics
 uv run sf2 h2 ui-layouts
 uv run sf2 h2 item-auxiliary
+uv run sf2 h3 blacksmith-mithril --timeout-seconds 180
 uv run sf2 research-index test
 ```
 

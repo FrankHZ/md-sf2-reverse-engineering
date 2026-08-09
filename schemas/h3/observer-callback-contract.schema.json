@@ -305,6 +305,92 @@
         "phase": {"$ref": "#/definitions/nonEmptyString"},
         "role": {"enum": ["registration", "bootstrap-return-redirect", "direct-input-probe", "direct-call", "apply-target", "source-call", "update-target", "source-return", "direct-return", "wait-helper-target", "wait-helper-return", "wait-for-vint-call", "wait-for-vint-target", "wait-for-vint-rts", "wait-for-vint-return", "vint-target", "vint-input-call", "vint-input-stage", "vint-input-return"]}
       }
+    },
+    "blacksmithMithrilPendingRngCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["callPc", "rangeWord", "returnPc", "role", "targetPc"],
+      "properties": {
+        "callPc": {"$ref": "#/definitions/pc"},
+        "rangeWord": {"type": "integer", "minimum": 1, "maximum": 65535},
+        "returnPc": {"$ref": "#/definitions/pc"},
+        "role": {"enum": ["fallback-row-roll", "weapon-row-roll"]},
+        "targetPc": {"$ref": "#/definitions/pc"}
+      }
+    },
+    "blacksmithMithrilPendingCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "caseIndex", "functionReturnSeen", "orderWriteSeen", "pendingRngCall", "rolesAtPc"],
+      "properties": {
+        "active": {"type": "boolean"},
+        "caseIndex": {"type": "integer", "minimum": 0},
+        "functionReturnSeen": {"type": "boolean"},
+        "orderWriteSeen": {"type": "boolean"},
+        "pendingRngCall": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/blacksmithMithrilPendingRngCall"}]},
+        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"enum": ["bootstrap-check-sram", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result"]}}
+      }
+    },
+    "blacksmithMithrilFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actualPc", "caseId", "error", "expectedCallPc", "expectedEventPc", "expectedReturnPc", "expectedTargetPc", "owner", "pendingCallback", "phase", "role"],
+      "allOf": [
+        {
+          "if": {"properties": {"role": {"const": "registration"}}},
+          "then": {
+            "properties": {
+              "actualPc": {"type": "null"},
+              "caseId": {"type": "null"},
+              "expectedCallPc": {"type": "null"},
+              "expectedEventPc": {"type": "null"},
+              "expectedReturnPc": {"type": "null"},
+              "expectedTargetPc": {"type": "null"},
+              "pendingCallback": {"properties": {"active": {"const": false}, "caseIndex": {"const": 0}, "functionReturnSeen": {"const": false}, "orderWriteSeen": {"const": false}, "pendingRngCall": {"type": "null"}}}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"const": "bootstrap-return-redirect"}}},
+          "then": {
+            "properties": {
+              "caseId": {"type": "null"},
+              "pendingCallback": {"properties": {"active": {"const": false}, "caseIndex": {"const": 0}, "functionReturnSeen": {"const": false}, "orderWriteSeen": {"const": false}, "pendingRngCall": {"type": "null"}}}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"const": "case-entry"}}},
+          "then": {
+            "properties": {
+              "caseId": {"$ref": "#/definitions/nonEmptyString"},
+              "pendingCallback": {"properties": {"active": {"const": false}, "caseIndex": {"type": "integer", "minimum": 1}}}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"enum": ["function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result"]}}},
+          "then": {
+            "properties": {
+              "caseId": {"$ref": "#/definitions/nonEmptyString"},
+              "pendingCallback": {"properties": {"active": {"const": true}, "caseIndex": {"type": "integer", "minimum": 1}}}
+            }
+          }
+        }
+      ],
+      "properties": {
+        "actualPc": {"$ref": "#/definitions/nullablePc"},
+        "caseId": {"$ref": "#/definitions/nullableNonEmptyString"},
+        "error": {"$ref": "#/definitions/nonEmptyString"},
+        "expectedCallPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedEventPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetPc": {"$ref": "#/definitions/nullablePc"},
+        "owner": {"const": "blacksmith-mithril"},
+        "pendingCallback": {"$ref": "#/definitions/blacksmithMithrilPendingCallback"},
+        "phase": {"$ref": "#/definitions/nonEmptyString"},
+        "role": {"enum": ["registration", "bootstrap-return-redirect", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result"]}
+      }
     }
   }
 }
