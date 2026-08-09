@@ -149,6 +149,14 @@ CONTRACTS = {
             "sf2-tech-interrupts-static-v1"
         ),
     },
+    "docs/design/contracts/graphics-service-state.md": {
+        "tests/fixtures/h2/tech-graphics-static-v1.json": (
+            "sf2-tech-graphics-static-v1"
+        ),
+        "tests/fixtures/h2/special-sprite-decode-v1.json": (
+            "sf2-special-sprite-decode-v1"
+        ),
+    },
     "docs/design/contracts/caravan-and-deals-state.md": {
         "tests/fixtures/h2/common-stats-static-v1.json": (
             "sf2-common-stats-static-v1"

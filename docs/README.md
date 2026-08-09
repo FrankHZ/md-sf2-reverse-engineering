@@ -394,6 +394,12 @@ document whose anchors may be updated.
   shared Check/Set/Clear addressing, and the bounded four-wrapper flag-trap inventory, while retaining
   exact capacity, trap ABI, runtime reachability, persistence, campaign meaning, and presentation as
   Unknown or separate-owner boundaries.
+- [`graphics-service-state.md`](./design/contracts/graphics-service-state.md): the
+  implementation-neutral contract for bounded decompression entry ABI, display initialization,
+  sprite-link and palette-transition state, exact special-sprite routing, fixed flash words, and
+  graphics helper inventory, while retaining camera logic, codec micro-implementation, rendered
+  presentation, hardware timing, copyrighted assets, and forced invalid-state behavior as
+  separate-owner, private, or Unknown boundaries.
 - [`caravan-and-deals-state.md`](./design/contracts/caravan-and-deals-state.md): the
   implementation-neutral contract for Caravan status-bit normalization, full-add ignore, ordered
   removal compaction/tail clearing, and packed Deals count saturation/zero-removal boundaries, while

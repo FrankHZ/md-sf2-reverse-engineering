@@ -77,6 +77,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/graphics-service-state.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/input-system.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/input-system.md",
