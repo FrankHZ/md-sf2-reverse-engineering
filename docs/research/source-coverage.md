@@ -133,10 +133,13 @@ The current evidence is deep but narrow:
   their canonical twins.
   Common menus now inventories 42 files and binds all 41 layout-owned sources. Prompt input/results,
   text controls, field items, and the built eight-source shop/church/caravan/blacksmith state-machine
-  surface are static contracts. A five-case one-launch direct helper matrix now confirms mithril class/
-  weighted-row selection, BRN/RDBN fallback, first-empty order writes, and seed effects without claiming
-  menu admission or persistence; one overlapping member-list alternate remains excluded, while UI,
-  caller-return, and presentation timing remain queued for one concentrated simulation.
+  surface are static contracts. The accepted five-case direct helper matrix confirms mithril class/
+  weighted-row selection, BRN/RDBN fallback, first-empty order writes, and seed effects. Its v2
+  eight-case/one-launch H3 matrix retains those five helper cases and confirms three static-guarded
+  committed-order cases for the exact DecreaseGold → pending increment → DropItemBySlot → picker →
+  ClearFlag chronology, first-empty order slots 0/2/1, and the narrow readback restoration boundary;
+  menu admission, persistence, UI, caller-return, and presentation timing remain outside this evidence.
+  One overlapping member-list alternate remains excluded.
   Technical services now additionally models the complete seven-entry SRAM save surface: two-slot
   layout, interleaved copying, checksum/flag transitions, and its caller inventory. One fourteen-case,
   single-launch direct-service H3 matrix validates its in-process initialization, valid/invalid slot,
