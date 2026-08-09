@@ -443,6 +443,11 @@ document whose anchors may be updated.
   precedence, player-action priority, interaction admission, and the bounded area, refill, flag, and
   update inventories, while keeping runtime timing, downstream effects, and private table content
   separate or Unknown.
+- [`startup-control-flow.md`](./design/contracts/startup-control-flow.md): the implementation-neutral
+  contract for the source-shaped conditional initial setup, bounded write/loop extents, ordered
+  system and game handoffs, logo/intro/title return routing, and region admission branch, while
+  retaining platform lifecycle, hardware timing, callee internals, input generation, presentation,
+  persistence, and compatibility as separate-owner or Unknown boundaries.
 - [`map-entry-routing-state.md`](./design/contracts/map-entry-routing-state.md): the
   implementation-neutral contract for ordered flag-switched map selection, battle-candidate
   admission and bounded state writes, and savepoint/raft-reset selection, while retaining private
