@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-08-08
+- Evidence date: 2026-08-09
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -158,8 +158,11 @@ The current evidence is deep but narrow:
   `sub_15A4`, controller negotiation, hardware latency, normal game/UI caller meaning, and user-visible
   UI timing remain Unknown.
   The paired six-entry RNG surface now records both seed states, base/debug control flow, exact
-  low-byte bounded domains, 163 direct named call sites, and the six-site jump-alias boundary; retry
-  behavior and seed-copy isolation remain one grouped H3 question.
+  low-byte bounded domains, 163 direct named call sites, and the six-site jump-alias boundary. Its
+  accepted twelve-case H3 matrix confirms unsigned range-two's three attempts, thinking alias
+  range-two's 57 attempts, and the bounded text/diamond preamble, source-copy, and one-`WaitForVInt`
+  seams. Other caller families, normal caller flow, and cross-caller seed-copy lifetime remain one
+  grouped H3 question.
   Technical interrupts now binds all 21 layout-owned VInt/DMA/fade/trap files and models the update
   order, eight contextual slots, wait/sleep handshake, input repeat, and queue routing. Hardware timing
   remains Unknown but is priority-frozen rather than queued by default.

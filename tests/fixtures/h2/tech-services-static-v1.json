@@ -229,7 +229,7 @@
       },
       "externalDirectCallSiteCounts": { "GenerateRandomNumber": 131, "GenerateRandomNumberUnderD6": 0, "GenerateRandomOrDebugNumber": 26, "GenerateRandomValueSigned": 0, "GenerateRandomValueUnsigned": 0, "WaitForRandomValueToMatch": 0, "j_GenerateRandomNumberUnderD6": 6 },
       "jumpInterfaceAliases": { "j_GenerateRandomNumberUnderD6": { "sourcePath": "code/common/tech/jumpinterfaces/s13_jumpinterface.asm", "target": "GenerateRandomNumberUnderD6" } },
-      "runtimeQuestions": ["random-services-matrix-range-retry-and-seed-copy-isolation"]
+      "runtimeQuestions": ["random-services-unobserved-caller-context-and-seed-copy-lifetime"]
     },
     "sramFacts": {
       "sourcePath": "code/common/tech/sram/sramfunctions.asm",
@@ -316,7 +316,7 @@
       "input-hardware-and-repeat-timing",
       "sram-persistence-and-corruption-matrix",
       "z80-mailbox-channel-and-audio-timing",
-      "random-services-matrix-range-retry-and-seed-copy-isolation",
+      "random-services-unobserved-caller-context-and-seed-copy-lifetime",
       "unused-technical-resource-raw-reach-and-presentation"
     ]
   }

@@ -11,7 +11,7 @@
 - Status: **Inferred** for caller-visible retry distribution and perceived RNG delay
 - Status: **Unknown** for controller hardware edge cases, SRAM persistence/corruption behavior, and
   rendered/audio timing
-- Evidence date: 2026-08-08
+- Evidence date: 2026-08-09
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -267,9 +267,10 @@ stops at the source base-generator state, while the original source store surviv
 pre-helper state. Python independently derives and validates the fixture's exact golden, while `_observer_config` sends only inputs/source context and omits expected outputs from Lua.
 
 **Unknown:** full text/menu loops beyond this one seam, normal caller-controlled repeat/input
-conditions, real UI presentation, and any seed-copy lifetime across unrelated caller families. The
-grouped H3 question `random-services-matrix-range-retry-and-seed-copy-isolation` is closed only at
-the two documented caller seams and thinking-helper isolation; it does not generalize to those
+conditions, real UI presentation, retry distribution beyond the exact matrix seeds, and any seed-copy
+lifetime or overwrite behavior across unrelated caller families. The residual grouped H3 question
+`random-services-unobserved-caller-context-and-seed-copy-lifetime` excludes the now Confirmed
+helper-local range/retry behavior and the two documented caller seams; it does not generalize to those
 Unknowns. Existing range-two action evidence is `battle-ai-action-choice-v1.json`
 (`sf2-battle-ai-action-choice-runtime-v1`). The implementation boundary is
 [`randomness.md`](../design/contracts/randomness.md).
@@ -288,8 +289,9 @@ micro-timing after their import and visible contracts are adequate. The remainin
    user-visible save-flow ambiguity; the direct in-process service lifecycle is now observed;
 3. music loop/transition/fade/resume or SFX selection/priority/interruption behavior when the existing
    command/channel seam is insufficient for a remake acceptance contract;
-4. RNG text/menu/AI caller-context execution and seed-copy lifetime/isolation (the helper-local
-   range/retry and base-address byte-lane facts are now observed);
+4. RNG behavior in unobserved text/menu/AI caller contexts and seed-copy lifetime/overwrite across
+   caller families (the helper-local range/retry and byte-lane facts, plus the bounded text/diamond
+   preamble, copy, and one-`WaitForVInt` seams, are now observed);
 5. asset routing or a user-visible presentation contract for the nominally unused graphics resources.
 
 Reuse the existing VInt/controller, save-state, sound-driver, or graphics seam for one bounded reopen

@@ -1,6 +1,6 @@
 # 随机性服务
 
-- 证据日期：2026-08-02
+- 证据日期：2026-08-09
 - 源码基线：`ShiningForceCentral/SF2DISASM` `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
 > 本文件是 [`randomness.md`](../../contracts/randomness.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
@@ -11,9 +11,9 @@
 
 **已确认：** 调试模式按 Right、Up、Left、Down 的优先级检查方向并返回 0、1、2 或 3，而不推进基础种子；禁用调试模式或无方向则回落到基础生成器。观察到的覆盖/回退与寄存器边界是 `tests/fixtures/h3/debug-rng-v1.json`（`sf2-rng-debug-override-v1`）。
 
-**已确认：** 思考 AI 字节路径使用 `RANDOM_SEED_COPY`；其 H2 源码形状在该基础地址读取一个字节，在无符号乘以 541 再加 12345 之前符号扩展，把结果掩码为一个字节，并在同一基础地址写回一个字节。有界 `GenerateRandomNumberUnderD6` 服务对低字节范围 0、1 与 128–255 立即返回零；对 2–127 它重试直到无符号字节位于 0..range-1。上游注释说接受的较低界是 2，这与静态比较不符。范围二分支的现有行动选择观察是 `tests/fixtures/h3/battle-ai-action-choice-v1.json`（`sf2-battle-ai-action-choice-runtime-v1`）。`tests/fixtures/h3/random-services-v1.json`（`sf2-random-services-matrix-runtime-v1`）中的独立十用例运行时矩阵确认那些范围低字节提前退出、无符号范围二三步重试，以及思考精确种子 57 步重试。它还解决字节通道：基础地址字节是大端种子副本字的高字节。原始有界辅助函数返回 `d7=0`，同时保留其辅助函数返回的种子副本状态（早前行中的 `$53C2` 与 `$985D`）。只有每个辅助函数之后受控的按源码形状探测副本把该返回字节写入高字节，产生 `$00C2` 与 `$005D`；源码上下文文本与菱形行同样保留其低字节。两个辅助函数都不改变 `RANDOM_SEED`。自然的 Battle Test 路线对该探测仅做配置；它不确立战斗、UI、文本/菜单、时序或剧情行为。
+**已确认：** 思考 AI 字节路径使用 `RANDOM_SEED_COPY`；其 H2 源码形状在该基础地址读取一个字节，在无符号乘以 541 再加 12345 之前符号扩展，把结果掩码为一个字节，并在同一基础地址写回一个字节。有界 `GenerateRandomNumberUnderD6` 服务对低字节范围 0、1 与 128–255 立即返回零；对 2–127 它重试直到无符号字节位于 0..range-1。上游注释说接受的较低界是 2，这与静态比较不符。范围二分支的现有行动选择观察是 `tests/fixtures/h3/battle-ai-action-choice-v1.json`（`sf2-battle-ai-action-choice-runtime-v1`）。`tests/fixtures/h3/random-services-v1.json`（`sf2-random-services-matrix-runtime-v1`）中的独立十二用例运行时矩阵确认那些范围低字节提前退出、无符号范围二三步重试，以及思考精确种子 57 步重试。它还解决字节通道：基础地址字节是大端种子副本字的高字节。原始有界辅助函数返回 `d7=0`，同时保留其辅助函数返回的种子副本状态（早前行中的 `$53C2` 与 `$985D`）。只有每个辅助函数之后受控的按源码形状探测副本把该返回字节写入高字节，产生 `$00C2` 与 `$005D`；源码上下文文本与菱形行同样保留其低字节。两个辅助函数都不改变 `RANDOM_SEED`。同一已接受矩阵进入精确的 `symbol_wait1` 与菱形菜单前导，观察各自的源码 RNG 调用、副本、寄存器恢复和一次 `WaitForVInt` 返回，然后转入受控 continuation；它确认这些有界接缝，而非周围原始调用方循环。自然的 Battle Test 路线对该探测仅做配置；它不确立战斗、UI、文本/菜单、时序或剧情行为。
 
-**未知：** 调用方可见的时序、精确矩阵种子之外的重试分布，以及实际的文本/菜单/AI 调用方执行与共享种子副本生命周期。它们仍是单组 H3 矩阵，而不是新的一次一用例测试夹具。
+**未知：** 调用方可见的时序、精确矩阵种子之外的重试分布、两个已观察接缝之外的正常完整文本/菜单/AI 调用方流程，以及跨调用方族的种子副本生命周期或覆写行为。它们仍是单组 `random-services-unobserved-caller-context-and-seed-copy-lifetime` 队列，而不是新的一次一用例测试夹具。
 
 ## 实现边界
 

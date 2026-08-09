@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import json
 from copy import deepcopy
 
 import pytest
 
+from sf2tool.h2 import services
 from sf2tool.h2.services import (
     _require_thinking_byte_base_shape,
     _rng_direct_call_counts,
@@ -87,6 +89,55 @@ def test_rng_schema_definitions_match_between_output_and_fixture() -> None:
         assert fixture_schema["definitions"][definition] == output_schema["definitions"][
             definition
         ]
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_rng_runtime_question_is_fixture_owned_and_h2_verifier_rejects_drift(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    fixture = load_json(repo_path("tests/fixtures/h2/tech-services-static-v1.json"))
+    schema = repo_path("schemas/h2-tech-services-static-fixture.schema.json")
+    expected_question = services.RANDOM_SERVICES_RUNTIME_QUESTION
+    assert build_service_inventory(UPSTREAM)["randomServicesFacts"]["runtimeQuestions"] == [
+        expected_question
+    ]
+
+    stale = deepcopy(fixture)
+    stale_question = "random-services-matrix-range-retry-and-seed-copy-isolation"
+    stale["expected"]["randomServicesFacts"]["runtimeQuestions"] = [stale_question]
+    stale["expected"]["runtimeQuestions"][3] = stale_question
+    validate_json(stale, schema, owner="schema-valid stale RNG queue fixture")
+
+    for values in ([], [expected_question, "another-question"], [1]):
+        malformed = deepcopy(fixture)
+        malformed["expected"]["randomServicesFacts"]["runtimeQuestions"] = values
+        with pytest.raises(ValueError, match="runtimeQuestions"):
+            validate_json(malformed, schema, owner="malformed RNG queue fixture")
+
+    malformed_global = deepcopy(fixture)
+    malformed_global["expected"]["runtimeQuestions"][3] = 1
+    with pytest.raises(ValueError, match="runtimeQuestions"):
+        validate_json(malformed_global, schema, owner="malformed global RNG queue fixture")
+
+    stale_path = tmp_path / "stale-tech-services.json"
+    stale_path.write_text(json.dumps(stale, indent=2) + "\n", encoding="utf-8")
+    output_path = tmp_path / "stale-output.json"
+    monkeypatch.setattr(services, "FIXTURE", stale_path)
+    with pytest.raises(ValueError, match="randomServicesFacts drift"):
+        services.verify_service_inventory(UPSTREAM, output_path=output_path)
+    assert not output_path.exists()
+
+    wrong_order = deepcopy(fixture)
+    questions = wrong_order["expected"]["runtimeQuestions"]
+    questions[3], questions[4] = questions[4], questions[3]
+    validate_json(wrong_order, schema, owner="schema-valid reordered RNG queue fixture")
+    wrong_order_path = tmp_path / "reordered-tech-services.json"
+    wrong_order_path.write_text(json.dumps(wrong_order, indent=2) + "\n", encoding="utf-8")
+    output_path = tmp_path / "reordered-output.json"
+    monkeypatch.setattr(services, "FIXTURE", wrong_order_path)
+    with pytest.raises(ValueError, match="runtimeQuestions drift"):
+        services.verify_service_inventory(UPSTREAM, output_path=output_path)
+    assert not output_path.exists()
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")

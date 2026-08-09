@@ -9,7 +9,7 @@
     "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
     "emulator": { "$ref": "#/$defs/emulator" },
     "provenance": { "$ref": "#/$defs/provenance" },
-    "runtimeQuestion": { "const": "random-services-matrix-range-retry-and-seed-copy-isolation" },
+    "runtimeQuestion": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
     "observationBoundary": { "type": "string", "minLength": 1 },
     "function": { "$ref": "#/$defs/function" },
     "ram": { "$ref": "#/$defs/ram" },

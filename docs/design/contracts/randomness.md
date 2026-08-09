@@ -1,6 +1,6 @@
 # Randomness Services
 
-- Evidence date: 2026-08-02
+- Evidence date: 2026-08-09
 - Source baseline: `ShiningForceCentral/SF2DISASM` `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
 ## Contract
@@ -36,12 +36,17 @@ the base-address byte is the big-endian seed-copy word's high byte. The original
 `d7=0` while retaining their helper-return seed-copy states (`$53C2` and `$985D` in the early rows).
 Only the controlled source-shaped probe copy that follows each helper writes that returned byte into the
 high byte, yielding `$00C2` and `$005D`; source-context text and diamond rows likewise preserve their
-low byte. Neither helper changes `RANDOM_SEED`. The natural Battle Test route is setup-only for that
-probe; it does not establish battle, UI, text/menu, timing, or story behavior.
+low byte. Neither helper changes `RANDOM_SEED`. The same accepted matrix enters the exact
+`symbol_wait1` and Diamond-menu preambles, observes each source RNG call, copy, register restore, and
+one `WaitForVInt` return, then diverts to its controlled continuation. It confirms those bounded seams,
+not the surrounding original caller loops. The natural Battle Test route is setup-only for that probe;
+it does not establish battle, UI, text/menu, timing, or story behavior.
 
-**Unknown:** caller-visible timing, retry distribution outside the exact matrix seeds, and actual
-text/menu/AI caller execution and shared seed-copy lifetime. They remain one grouped H3 matrix rather
-than new one-case fixtures.
+**Unknown:** caller-visible timing, retry distribution outside the exact matrix seeds, normal full
+text/menu/AI caller flow outside the two observed seams, and seed-copy lifetime or overwrite behavior
+across caller families. They remain the one grouped
+`random-services-unobserved-caller-context-and-seed-copy-lifetime` queue rather than new one-case
+fixtures.
 
 ## Implementation Boundary
 
