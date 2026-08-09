@@ -24,9 +24,10 @@ special-screen asset rails:
    boundaries;
 2. twelve uncompressed palettes and layouts, including the two ASM-expanded title layouts;
 3. the witch choice palette, ordered four-option/three-frame bubble table, pointer identities, word
-   transformation, and source-static timer phase table;
-4. a public H4 surface based on symbols, addresses, counts, relationships, and hashes rather than
-   copyrighted graphics payloads.
+   transformation, and source-static timer phase table.
+
+It additionally defines a public H4 surface based on symbols, addresses, dimensions, counts,
+selected relationships, and hashes rather than copyrighted graphics payloads.
 
 It does not own the logo, title, witch, suspend, or ending screen engines; save-service or new-game
 lifecycle; title/logo input and cheat handling; window allocation; palette-upload or transfer-service
@@ -242,7 +243,7 @@ SpecialScreenAssetCorpus {
       framesPerOption: 3
       frameShape: 5x8
       privateOrderedWords[4][3][5][8]
-      positionalEqualityRelation
+      privatePositionalEqualityRelation
       payloadHash
     }
     pointers[2] {
@@ -257,10 +258,11 @@ SpecialScreenAssetCorpus {
 }
 ```
 
-The public form omits every `private*` field and original payload. It preserves the same identities,
-addresses, sizes, ordering metadata, equality/repetition metadata, provenance, hashes, transfer
-extents, and phase-table facts so that a user-provided private corpus can be validated without
-making copyrighted graphics a repository dependency.
+The public form omits every `private*` field and original payload, including the full positional
+equality/repetition map. It preserves identities, addresses, dimensions and order counts, the
+240-distinct-value count, provenance, hashes, pointer and offset metadata, word-transformation
+aggregates, transfer extents, and phase-table facts so that a user-provided private corpus can be
+validated without making copyrighted graphics a repository dependency.
 
 ## Cross-System Separation
 
@@ -316,10 +318,11 @@ tests prove:
 5. both title layouts preserve ASM-expanded provenance, exact `1,792 + 768 = 2,560` byte shape, and
    binary-mirror parity without being relabeled as direct incbins;
 6. the witch palette, two pointers, four option groups, twelve ordered 5-by-8 frames, 480 ordered
-   words, 240 distinct source-word values, positional equality/repetition relation, word adjustment,
-   adjusted metadata, offsets, and timer phase table match the accepted owner;
+   words, 240 distinct source-word values, privately derived positional equality/repetition relation,
+   word adjustment, adjusted metadata, offsets, and timer phase table match the accepted owner;
 7. public fixtures and reports expose only metadata, hashes, and synthetic examples, never original
-   compressed bytes, decoded tiles, palette/layout words, bubble-table words, or rendered captures;
+   compressed bytes, decoded tiles, palette/layout words, bubble-table words, the full positional
+   equality/repetition map, or rendered captures;
 8. rendering, transfer cadence, menu/control flow, localization, accessibility, and intentional
    presentation changes are tested and reported separately from static original-data parity.
 
