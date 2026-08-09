@@ -17,6 +17,103 @@
     "UpdateBasePalettesAndBackupCurrent": 6600
   },
   "expected": {
+    "representativeSymbols": {
+      "decompression.asm": "LoadBasicCompressedData",
+      "display.asm": "sub_30EE",
+      "displayinit.asm": "InitializeDisplay",
+      "flashwhite.asm": "ExecuteFlashScreenScript",
+      "graphics_1.asm": "InitializeSprites",
+      "graphics_2.asm": "sub_1942",
+      "specialsprites.asm": "LoadSpecialSprite",
+      "specialspritesanims.asm": "table_2784C",
+      "unused_display.asm": "sub_30BE",
+      "unused_graphics.asm": "sub_18C2",
+      "updatefadingpalette.asm": "UpdateBasePalettesAndBackupCurrent"
+    },
+    "indexedRecordIds": [
+      "map.camera-control.set-view-destination",
+      "tech.graphics.animate-special-sprite",
+      "tech.graphics.battle-sprite-links",
+      "tech.graphics.decompression",
+      "tech.graphics.display",
+      "tech.graphics.display-init",
+      "tech.graphics.flash-white",
+      "tech.graphics.palette-transition",
+      "tech.graphics.special-sprite-anims",
+      "tech.graphics.special-sprites",
+      "tech.graphics.sprite-core",
+      "tech.graphics.stack-decompression",
+      "tech.graphics.unused-display",
+      "tech.graphics.unused-helpers"
+    ],
+    "indexedSourcePaths": [
+      "code/common/tech/graphics/decompression.asm",
+      "code/common/tech/graphics/display.asm",
+      "code/common/tech/graphics/displayinit.asm",
+      "code/common/tech/graphics/flashwhite.asm",
+      "code/common/tech/graphics/graphics_1.asm",
+      "code/common/tech/graphics/graphics_2.asm",
+      "code/common/tech/graphics/specialsprites.asm",
+      "code/common/tech/graphics/specialspritesanims.asm",
+      "code/common/tech/graphics/unused_display.asm",
+      "code/common/tech/graphics/unused_graphics.asm",
+      "code/common/tech/graphics/updatefadingpalette.asm"
+    ],
+    "indexedRecordsBySourcePath": [
+      {
+        "sourcePath": "code/common/tech/graphics/decompression.asm",
+        "recordIds": [
+          "tech.graphics.decompression",
+          "tech.graphics.stack-decompression"
+        ]
+      },
+      {
+        "sourcePath": "code/common/tech/graphics/display.asm",
+        "recordIds": [
+          "map.camera-control.set-view-destination",
+          "tech.graphics.display"
+        ]
+      },
+      {
+        "sourcePath": "code/common/tech/graphics/displayinit.asm",
+        "recordIds": ["tech.graphics.display-init"]
+      },
+      {
+        "sourcePath": "code/common/tech/graphics/flashwhite.asm",
+        "recordIds": ["tech.graphics.flash-white"]
+      },
+      {
+        "sourcePath": "code/common/tech/graphics/graphics_1.asm",
+        "recordIds": ["tech.graphics.sprite-core"]
+      },
+      {
+        "sourcePath": "code/common/tech/graphics/graphics_2.asm",
+        "recordIds": ["tech.graphics.battle-sprite-links"]
+      },
+      {
+        "sourcePath": "code/common/tech/graphics/specialsprites.asm",
+        "recordIds": [
+          "tech.graphics.animate-special-sprite",
+          "tech.graphics.special-sprites"
+        ]
+      },
+      {
+        "sourcePath": "code/common/tech/graphics/specialspritesanims.asm",
+        "recordIds": ["tech.graphics.special-sprite-anims"]
+      },
+      {
+        "sourcePath": "code/common/tech/graphics/unused_display.asm",
+        "recordIds": ["tech.graphics.unused-display"]
+      },
+      {
+        "sourcePath": "code/common/tech/graphics/unused_graphics.asm",
+        "recordIds": ["tech.graphics.unused-helpers"]
+      },
+      {
+        "sourcePath": "code/common/tech/graphics/updatefadingpalette.asm",
+        "recordIds": ["tech.graphics.palette-transition"]
+      }
+    ],
     "graphicsFacts": {
       "decompression": {
         "entryPoints": ["LoadBasicCompressedData", "LoadStackCompressedData"],

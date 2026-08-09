@@ -21,6 +21,7 @@ FIXTURE = repo_path("tests/fixtures/h2/tech-graphics-static-v1.json")
 FIXTURE_SCHEMA = repo_path("schemas/h2-tech-graphics-static-fixture.schema.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
+TOOLCHAIN_MANIFEST = repo_path("manifests/toolchain.json")
 
 
 def _canonical_bytes(value: dict[str, Any]) -> bytes:
@@ -195,6 +196,134 @@ def _graphics_facts(disasm: Path) -> dict[str, Any]:
     }
 
 
+def _index_records_for_source_root(source_paths: set[str]) -> dict[str, Any]:
+    """Join every research record whose source belongs to this inventory.
+
+    ``sourcePath`` is deliberately the sole membership rule.  A graphics file
+    can carry evidence for another subsystem, so record ID, subsystem, status,
+    document, and fixture metadata must not filter this owner join.
+    """
+    records_by_source_path: dict[str, list[str]] = {}
+    for record in load_json(RESEARCH_INDEX)["records"]:
+        source_path = record["sourcePath"]
+        path = Path(source_path)
+        if not path.is_relative_to(SOURCE_ROOT):
+            continue
+        if ".." in path.parts or source_path != path.as_posix():
+            raise ValueError(f"invalid tech graphics indexed source path: {source_path}")
+        if source_path not in source_paths:
+            raise ValueError(
+                "tech graphics indexed source is absent from the discovered root "
+                f"inventory: {source_path}"
+            )
+        records_by_source_path.setdefault(source_path, []).append(record["id"])
+
+    missing_paths = sorted(source_paths - set(records_by_source_path))
+    if missing_paths:
+        raise ValueError(
+            "tech graphics discovered source lacks a research-index record: "
+            + ", ".join(missing_paths)
+        )
+    indexed_records_by_source_path = [
+        {"sourcePath": source_path, "recordIds": sorted(record_ids)}
+        for source_path, record_ids in sorted(records_by_source_path.items())
+    ]
+    indexed_record_ids = [
+        record_id
+        for row in indexed_records_by_source_path
+        for record_id in row["recordIds"]
+    ]
+    if len(indexed_record_ids) != len(set(indexed_record_ids)):
+        raise ValueError("tech graphics research-index duplicate record ID")
+    return {
+        "indexedRecordIds": sorted(indexed_record_ids),
+        "indexedSourcePaths": [
+            row["sourcePath"] for row in indexed_records_by_source_path
+        ],
+        "indexedRecordsBySourcePath": indexed_records_by_source_path,
+    }
+
+
+def _verify_indexed_record_join(
+    output: dict[str, Any],
+    expected_index_membership: dict[str, Any],
+    discovered_source_paths: list[str],
+) -> None:
+    """Reconcile output membership against the authoritative research-index join."""
+    relation = output["indexedRecordsBySourcePath"]
+    relation_source_paths = [row["sourcePath"] for row in relation]
+    relation_record_ids = [
+        record_id for row in relation for record_id in row["recordIds"]
+    ]
+    if len(relation_source_paths) != len(set(relation_source_paths)):
+        raise ValueError("tech graphics indexed relation duplicate source path")
+    if len(relation_record_ids) != len(set(relation_record_ids)):
+        raise ValueError("tech graphics indexed relation duplicate record ID")
+    if set(relation_source_paths) != set(discovered_source_paths):
+        raise ValueError("tech graphics indexed relation source inventory drift")
+    if relation_source_paths != sorted(relation_source_paths):
+        raise ValueError("tech graphics indexed relation source order drift")
+    if any(row["recordIds"] != sorted(row["recordIds"]) for row in relation):
+        raise ValueError("tech graphics indexed relation record order drift")
+
+    indexed_record_ids = output["indexedRecordIds"]
+    indexed_source_paths = output["indexedSourcePaths"]
+    if indexed_record_ids != sorted(relation_record_ids):
+        raise ValueError("tech graphics indexedRecordIds relation drift")
+    if indexed_source_paths != relation_source_paths:
+        raise ValueError("tech graphics indexedSourcePaths relation order drift")
+    summary = output["summary"]
+    if summary["indexedRecordCount"] != len(indexed_record_ids) or summary[
+        "indexedRecordCount"
+    ] != len(relation_record_ids):
+        raise ValueError("tech graphics summary indexedRecordCount relation drift")
+    if summary["indexedFileCount"] != len(indexed_source_paths) or summary[
+        "indexedFileCount"
+    ] != len(relation_source_paths):
+        raise ValueError("tech graphics summary indexedFileCount relation drift")
+
+    file_paths = [row["path"] for row in output["files"]]
+    if len(file_paths) != len(set(file_paths)):
+        raise ValueError("tech graphics source inventory duplicate path")
+    if file_paths != discovered_source_paths:
+        raise ValueError("tech graphics source inventory drift")
+    if indexed_source_paths != discovered_source_paths:
+        raise ValueError("tech graphics indexedSourcePaths source inventory drift")
+    for field in (
+        "indexedRecordIds",
+        "indexedSourcePaths",
+        "indexedRecordsBySourcePath",
+    ):
+        if output[field] != expected_index_membership[field]:
+            raise ValueError(f"tech graphics {field} source-membership drift")
+
+
+def _verify_fixture_indexed_membership(output: dict[str, Any], expected: dict[str, Any]) -> None:
+    """Keep exact golden-corpus checks distinct from source membership."""
+    for field in (
+        "indexedRecordIds",
+        "indexedSourcePaths",
+        "indexedRecordsBySourcePath",
+    ):
+        if output[field] != expected[field]:
+            raise ValueError(f"tech graphics fixture {field} drift")
+
+
+def _verify_fixture_provenance(fixture: dict[str, Any], output: dict[str, Any]) -> None:
+    """Derive fixture provenance from independently pinned manifests."""
+    toolchain = load_json(TOOLCHAIN_MANIFEST)["sf2disasm"]
+    output_upstream = output["upstream"]
+    if (
+        fixture["upstreamCommit"] != toolchain["commit"]
+        or fixture["upstreamCommit"] != output_upstream["commit"]
+    ):
+        raise ValueError("tech graphics fixture upstream provenance drift")
+    if output_upstream["repository"] != toolchain["repository"]:
+        raise ValueError("tech graphics output upstream provenance drift")
+    if fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]:
+        raise ValueError("tech graphics fixture ROM provenance drift")
+
+
 def build_graphics_inventory(upstream_path: Path) -> dict[str, Any]:
     upstream_path = upstream_path.resolve(strict=True)
     disasm, commit, toolchain = _resolve_upstream(upstream_path)
@@ -206,6 +335,9 @@ def build_graphics_inventory(upstream_path: Path) -> dict[str, Any]:
     files = [_parse_source_file(path, path.relative_to(disasm).as_posix()) for path in paths]
     if len(files) != 11:
         raise ValueError(f"tech graphics file-count drift: {len(files)}")
+    source_paths = [row["path"] for row in files]
+    if len(source_paths) != len(set(source_paths)) or source_paths != sorted(source_paths):
+        raise ValueError("tech graphics discovered source inventory drift")
     layout = "\n".join(
         path.read_text(encoding="utf-8")
         for path in sorted((disasm / "layout").glob("*.asm"))
@@ -227,11 +359,7 @@ def build_graphics_inventory(upstream_path: Path) -> dict[str, Any]:
         labels.update(row["globalLabels"])
         for call in row["directCalls"]:
             calls[call["target"]] += call["siteCount"]
-    records = [
-        record
-        for record in load_json(RESEARCH_INDEX)["records"]
-        if Path(record["sourcePath"]).parent == SOURCE_ROOT
-    ]
+    index_membership = _index_records_for_source_root(set(source_paths))
     summary = {
         "fileCount": len(files),
         "sourceLineCount": sum(row["sourceLineCount"] for row in files),
@@ -244,8 +372,8 @@ def build_graphics_inventory(upstream_path: Path) -> dict[str, Any]:
         "internalDirectTargetCount": sum(target in labels for target in calls),
         "externalDirectTargetCount": sum(target not in labels for target in calls),
         "layoutIncludedFileCount": len(files),
-        "indexedRecordCount": len(records),
-        "indexedFileCount": len({record["sourcePath"] for record in records}),
+        "indexedRecordCount": len(index_membership["indexedRecordIds"]),
+        "indexedFileCount": len(index_membership["indexedSourcePaths"]),
     }
     return {
         "schemaVersion": 1,
@@ -253,8 +381,7 @@ def build_graphics_inventory(upstream_path: Path) -> dict[str, Any]:
         "upstream": {"repository": toolchain["sf2disasm"]["repository"], "commit": commit},
         "scope": SOURCE_ROOT.as_posix(),
         "summary": summary,
-        "indexedRecordIds": sorted(record["id"] for record in records),
-        "indexedSourcePaths": sorted({record["sourcePath"] for record in records}),
+        **index_membership,
         "representativeSymbols": representative_symbols,
         "representativeAddresses": representative_addresses,
         "internalDirectCallTargets": sorted(target for target in calls if target in labels),
@@ -272,13 +399,23 @@ def verify_graphics_inventory(
     manifest = load_json(MANIFEST)
     output = build_graphics_inventory(upstream_path)
     validate_json(output, SCHEMA, owner="tech graphics static inventory")
-    if (
-        fixture["upstreamCommit"] != output["upstream"]["commit"]
-        or fixture["romSha256"] != load_json(ROM_MANIFEST)["hashes"]["sha256"]
-    ):
-        raise ValueError("tech graphics provenance drift")
+    disasm, _, _ = _resolve_upstream(upstream_path)
+    discovered_source_paths = [
+        path.relative_to(disasm).as_posix()
+        for path in sorted((disasm / SOURCE_ROOT).glob("*.asm"), key=lambda path: path.as_posix())
+    ]
+    expected_index_membership = _index_records_for_source_root(
+        set(discovered_source_paths)
+    )
+    _verify_indexed_record_join(
+        output, expected_index_membership, discovered_source_paths
+    )
+    _verify_fixture_indexed_membership(output, fixture["expected"])
+    _verify_fixture_provenance(fixture, output)
     if output["summary"] != manifest["summary"]:
         raise ValueError("tech graphics summary drift")
+    if output["representativeSymbols"] != fixture["expected"]["representativeSymbols"]:
+        raise ValueError("tech graphics representative symbol fixture drift")
     if output["representativeAddresses"] != fixture["function"]:
         raise ValueError("tech graphics H1 address drift")
     if output["graphicsFacts"] != fixture["expected"]["graphicsFacts"]:

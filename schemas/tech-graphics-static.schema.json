@@ -1,19 +1,283 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Shining Force II technical graphics static inventory",
-  "type": "object", "additionalProperties": false,
-  "required": ["schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds", "indexedSourcePaths", "representativeSymbols", "representativeAddresses", "internalDirectCallTargets", "externalDirectCallTargets", "graphicsFacts", "files"],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "id", "upstream", "scope", "summary", "indexedRecordIds",
+    "indexedSourcePaths", "indexedRecordsBySourcePath", "representativeSymbols",
+    "representativeAddresses", "internalDirectCallTargets", "externalDirectCallTargets",
+    "graphicsFacts", "files"
+  ],
   "properties": {
-    "schemaVersion": { "const": 1 }, "id": { "const": "sf2-tech-graphics-static-v1" },
-    "upstream": { "type": "object" }, "scope": { "const": "code/common/tech/graphics" },
-    "summary": { "type": "object", "required": ["fileCount", "sourceLineCount", "statementCount", "globalLabelCount", "localLabelCount", "directCallSiteCount", "indirectCallSiteCount", "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount", "layoutIncludedFileCount", "indexedRecordCount", "indexedFileCount"], "properties": { "fileCount": { "const": 11 }, "layoutIncludedFileCount": { "const": 11 }, "indexedRecordCount": { "const": 13 }, "indexedFileCount": { "const": 11 } } },
-    "indexedRecordIds": { "type": "array", "minItems": 13, "maxItems": 13, "uniqueItems": true },
-    "indexedSourcePaths": { "type": "array", "minItems": 11, "maxItems": 11, "uniqueItems": true },
-    "representativeSymbols": { "type": "object", "minProperties": 11, "maxProperties": 11 },
-    "representativeAddresses": { "type": "object", "minProperties": 11, "maxProperties": 11 },
-    "internalDirectCallTargets": { "type": "array", "uniqueItems": true },
-    "externalDirectCallTargets": { "type": "array", "uniqueItems": true },
-    "graphicsFacts": { "type": "object", "minProperties": 8, "maxProperties": 8 },
-    "files": { "type": "array", "minItems": 11, "maxItems": 11 }
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-tech-graphics-static-v1" },
+    "upstream": { "$ref": "#/definitions/upstream" },
+    "scope": { "const": "code/common/tech/graphics" },
+    "summary": { "$ref": "#/definitions/summary" },
+    "indexedRecordIds": {
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "$ref": "#/definitions/recordId" }
+    },
+    "indexedSourcePaths": {
+      "type": "array", "minItems": 11, "maxItems": 11, "uniqueItems": true,
+      "items": { "$ref": "#/definitions/sourcePath" }
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "array", "minItems": 11, "maxItems": 11,
+      "items": { "$ref": "#/definitions/indexedRecordsBySourcePath" }
+    },
+    "representativeSymbols": {
+      "type": "object", "minProperties": 11, "maxProperties": 11,
+      "patternProperties": {
+        "^[A-Za-z0-9_]+\\.asm$": { "$ref": "#/definitions/symbol" }
+      },
+      "additionalProperties": false
+    },
+    "representativeAddresses": {
+      "type": "object", "minProperties": 11, "maxProperties": 11,
+      "patternProperties": {
+        "^[A-Za-z_][A-Za-z0-9_]*$": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "internalDirectCallTargets": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "#/definitions/symbol" }
+    },
+    "externalDirectCallTargets": {
+      "type": "array", "uniqueItems": true,
+      "items": { "$ref": "#/definitions/symbol" }
+    },
+    "graphicsFacts": { "$ref": "#/definitions/graphicsFacts" },
+    "files": {
+      "type": "array", "minItems": 11, "maxItems": 11,
+      "items": { "$ref": "#/definitions/sourceFile" }
+    }
+  },
+  "definitions": {
+    "recordId": {
+      "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "sourcePath": {
+      "type": "string", "pattern": "^code/common/tech/graphics/[A-Za-z0-9_]+\\.asm$"
+    },
+    "symbol": {
+      "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+    },
+    "upstream": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "summary": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "fileCount", "sourceLineCount", "statementCount", "globalLabelCount",
+        "localLabelCount", "directCallSiteCount", "indirectCallSiteCount",
+        "uniqueDirectTargetCount", "internalDirectTargetCount", "externalDirectTargetCount",
+        "layoutIncludedFileCount", "indexedRecordCount", "indexedFileCount"
+      ],
+      "properties": {
+        "fileCount": { "const": 11 },
+        "sourceLineCount": { "type": "integer", "minimum": 0 },
+        "statementCount": { "type": "integer", "minimum": 0 },
+        "globalLabelCount": { "type": "integer", "minimum": 0 },
+        "localLabelCount": { "type": "integer", "minimum": 0 },
+        "directCallSiteCount": { "type": "integer", "minimum": 0 },
+        "indirectCallSiteCount": { "type": "integer", "minimum": 0 },
+        "uniqueDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "internalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "externalDirectTargetCount": { "type": "integer", "minimum": 0 },
+        "layoutIncludedFileCount": { "const": 11 },
+        "indexedRecordCount": { "type": "integer", "minimum": 1 },
+        "indexedFileCount": { "const": 11 }
+      }
+    },
+    "indexedRecordsBySourcePath": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourcePath", "recordIds"],
+      "properties": {
+        "sourcePath": { "$ref": "#/definitions/sourcePath" },
+        "recordIds": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/recordId" }
+        }
+      }
+    },
+    "graphicsFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "decompression", "displayInitialization", "sprites", "paletteTransition",
+        "specialSprites", "viewDestination", "flashScreen", "inventoryBoundary"
+      ],
+      "properties": {
+        "decompression": { "$ref": "#/definitions/decompressionFacts" },
+        "displayInitialization": { "$ref": "#/definitions/displayInitializationFacts" },
+        "sprites": { "$ref": "#/definitions/spriteFacts" },
+        "paletteTransition": { "$ref": "#/definitions/paletteTransitionFacts" },
+        "specialSprites": { "$ref": "#/definitions/specialSpriteFacts" },
+        "viewDestination": { "$ref": "#/definitions/viewDestinationFacts" },
+        "flashScreen": { "$ref": "#/definitions/flashScreenFacts" },
+        "inventoryBoundary": { "$ref": "#/definitions/inventoryBoundaryFacts" }
+      }
+    },
+    "decompressionFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "entryPoints", "sourceRegister", "destinationRegister", "returnsOutputByteCountInD0",
+        "stackHistoryBytes", "stackInitialHistoryWords"
+      ],
+      "properties": {
+        "entryPoints": {
+          "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/symbol" }
+        },
+        "sourceRegister": { "type": "string", "pattern": "^a[0-7]$" },
+        "destinationRegister": { "type": "string", "pattern": "^a[0-7]$" },
+        "returnsOutputByteCountInD0": { "type": "boolean" },
+        "stackHistoryBytes": { "type": "integer", "minimum": 1 },
+        "stackInitialHistoryWords": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "displayInitializationFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "deactivatesContextualVintFunctionsFirst", "waitsForVintBeforeDisablingDisplay",
+        "clearsSpriteTable", "configuresH32V32NonInterlacedPlanes",
+        "loadsBlackScreenImmediately", "loadsSpriteMasksAndBaseUiPalette"
+      ],
+      "properties": {
+        "deactivatesContextualVintFunctionsFirst": { "type": "boolean" },
+        "waitsForVintBeforeDisablingDisplay": { "type": "boolean" },
+        "clearsSpriteTable": { "type": "boolean" },
+        "configuresH32V32NonInterlacedPlanes": { "type": "boolean" },
+        "loadsBlackScreenImmediately": { "type": "boolean" },
+        "loadsSpriteMasksAndBaseUiPalette": { "type": "boolean" }
+      }
+    },
+    "spriteFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "initializerUsesDbfCounter", "initializerWritesSequentialLinks",
+        "initializerTerminatesLastLink", "battleSpriteLinkHelpersInventoried"
+      ],
+      "properties": {
+        "initializerUsesDbfCounter": { "type": "boolean" },
+        "initializerWritesSequentialLinks": { "type": "boolean" },
+        "initializerTerminatesLastLink": { "type": "boolean" },
+        "battleSpriteLinkHelpersInventoried": { "type": "boolean" }
+      }
+    },
+    "paletteTransitionFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "timerFrames", "blendStepDivisor", "blendWeightTotal", "queuesCramDmaEachUpdate",
+        "canPromoteCopyToNewBaseAtCompletion"
+      ],
+      "properties": {
+        "timerFrames": { "type": "integer", "minimum": 1 },
+        "blendStepDivisor": { "type": "integer", "minimum": 1 },
+        "blendWeightTotal": { "type": "integer", "minimum": 1 },
+        "queuesCramDmaEachUpdate": { "type": "boolean" },
+        "canPromoteCopyToNewBaseAtCompletion": { "type": "boolean" }
+      }
+    },
+    "specialSpriteFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "dispatchSlotCount", "explorationSlotIndex", "loadsPalette4",
+        "initialBattleOrExplorationLoadUsesImmediateDma", "animationRefreshUsesQueuedDma"
+      ],
+      "properties": {
+        "dispatchSlotCount": { "type": "integer", "minimum": 1 },
+        "explorationSlotIndex": { "type": "integer", "minimum": 0 },
+        "loadsPalette4": { "type": "boolean" },
+        "initialBattleOrExplorationLoadUsesImmediateDma": { "type": "boolean" },
+        "animationRefreshUsesQueuedDma": { "type": "boolean" }
+      }
+    },
+    "viewDestinationFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "appliesSeparatePlaneParallaxFactors", "autoscrollPreservesCurrentAxisPosition",
+        "nonAutoscrollWritesDestinationAxis"
+      ],
+      "properties": {
+        "appliesSeparatePlaneParallaxFactors": { "type": "boolean" },
+        "autoscrollPreservesCurrentAxisPosition": { "type": "boolean" },
+        "nonAutoscrollWritesDestinationAxis": { "type": "boolean" }
+      }
+    },
+    "flashScreenFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scriptWords"],
+      "properties": {
+        "scriptWords": {
+          "type": "array", "minItems": 3, "maxItems": 3,
+          "items": { "type": "integer", "minimum": 0, "maximum": 65535 }
+        }
+      }
+    },
+    "inventoryBoundaryFacts": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "unusedDisplayAndGraphicsHelpersInventoried", "battleTerrainStackCorpusConfirmed",
+        "battleBackgroundStackCorpusConfirmed", "battleSpriteStackCorpusConfirmed",
+        "battleWeaponAndGroundStackCorporaConfirmed", "mapSpriteBasicCorpusConfirmed",
+        "portraitStackCorpusConfirmed", "specialSpriteStackCorpusConfirmed",
+        "remainingDecompressionCorporaRemainQueued", "visualAndVdpTimingRemainQueued",
+        "specialSpriteFramePresentationRemainsQueued"
+      ],
+      "properties": {
+        "unusedDisplayAndGraphicsHelpersInventoried": { "type": "boolean" },
+        "battleTerrainStackCorpusConfirmed": { "type": "boolean" },
+        "battleBackgroundStackCorpusConfirmed": { "type": "boolean" },
+        "battleSpriteStackCorpusConfirmed": { "type": "boolean" },
+        "battleWeaponAndGroundStackCorporaConfirmed": { "type": "boolean" },
+        "mapSpriteBasicCorpusConfirmed": { "type": "boolean" },
+        "portraitStackCorpusConfirmed": { "type": "boolean" },
+        "specialSpriteStackCorpusConfirmed": { "type": "boolean" },
+        "remainingDecompressionCorporaRemainQueued": { "type": "boolean" },
+        "visualAndVdpTimingRemainQueued": { "type": "boolean" },
+        "specialSpriteFramePresentationRemainsQueued": { "type": "boolean" }
+      }
+    },
+    "sourceFile": {
+      "type": "object", "additionalProperties": false,
+      "required": [
+        "path", "sha256", "sourceLineCount", "statementCount", "globalLabels",
+        "localLabelCount", "directCalls", "indirectCallSiteCount"
+      ],
+      "properties": {
+        "path": { "$ref": "#/definitions/sourcePath" },
+        "sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+        "sourceLineCount": { "type": "integer", "minimum": 0 },
+        "statementCount": { "type": "integer", "minimum": 0 },
+        "globalLabels": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": { "$ref": "#/definitions/symbol" }
+        },
+        "localLabelCount": { "type": "integer", "minimum": 0 },
+        "directCalls": {
+          "type": "array", "items": { "$ref": "#/definitions/directCall" }
+        },
+        "indirectCallSiteCount": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "directCall": {
+      "type": "object", "additionalProperties": false,
+      "required": ["target", "siteCount"],
+      "properties": {
+        "target": { "$ref": "#/definitions/symbol" },
+        "siteCount": { "type": "integer", "minimum": 1 }
+      }
+    }
   }
 }
