@@ -189,6 +189,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/ui-graphics-asset-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/ui-layout-data.md",
       "status": "pending"
     },
