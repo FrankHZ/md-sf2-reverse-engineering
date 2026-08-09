@@ -498,6 +498,11 @@ document whose anchors may be updated.
 - [`dialogue-system.md`](./design/contracts/dialogue-system.md): the physical layout of the six map-script
   dialogue commands, the static cursor/name-index/portrait consumer order, the 21-case single-launch
   handler-local H3 contract, and three explicit presentation/runtime Unknown boundaries.
+- [`sprite-dialogue-property-data.md`](./design/contracts/sprite-dialogue-property-data.md): the
+  implementation-neutral contract for 119 ordered map-sprite dialogue-property records, their
+  independent terminator, distinct key/portrait/speech-SFX metadata, and signed/zero-extended
+  first-match lookup results, while retaining caller reachability, rendering, playback, timing,
+  localization, and raw copyrighted rows as Unknown, separate-owner, or private boundaries.
 - [`party-roster-state.md`](./design/contracts/party-roster-state.md): the physical layout of the ten map-script
   roster/death and active-party/AI/follower source forms, named-handler branch/mutation/call order,
   alias-aware caller identity, and two grouped H3 runtime boundaries.
