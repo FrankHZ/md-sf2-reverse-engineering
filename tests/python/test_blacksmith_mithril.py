@@ -32,9 +32,14 @@ def test_fixture_is_input_only_and_observation_schema_is_recursively_closed() ->
     validate_json(fixture, blacksmith_mithril.FIXTURE_SCHEMA, owner="blacksmith fixture")
     assert fixture["caseOrder"] == list(blacksmith_mithril.CASE_IDS)
     assert fixture["transactionCaseOrder"] == list(blacksmith_mithril.TRANSACTION_CASE_IDS)
+    assert fixture["fulfillmentCaseOrder"] == list(blacksmith_mithril.FULFILLMENT_CASE_IDS)
     assert all(
         "expected" not in case and "result" not in case
-        for case in [*fixture["cases"], *fixture["transactionCases"]]
+        for case in [
+            *fixture["cases"],
+            *fixture["transactionCases"],
+            *fixture["fulfillmentCases"],
+        ]
     )
     assert all(
         "expected" not in str(value) and "result" not in str(value)
@@ -51,6 +56,10 @@ def test_fixture_is_input_only_and_observation_schema_is_recursively_closed() ->
         validate_json(malformed, blacksmith_mithril.FIXTURE_SCHEMA, owner="blacksmith fixture")
     malformed = copy.deepcopy(fixture)
     malformed["transactionCases"][0]["goldAfter"] = 500
+    with pytest.raises(ValueError, match="Additional properties"):
+        validate_json(malformed, blacksmith_mithril.FIXTURE_SCHEMA, owner="blacksmith fixture")
+    malformed = copy.deepcopy(fixture)
+    malformed["fulfillmentCases"][0]["fulfilledOrdersAfter"] = 1
     with pytest.raises(ValueError, match="Additional properties"):
         validate_json(malformed, blacksmith_mithril.FIXTURE_SCHEMA, owner="blacksmith fixture")
     malformed = copy.deepcopy(observed)
@@ -78,6 +87,15 @@ def test_fixture_is_input_only_and_observation_schema_is_recursively_closed() ->
     )
     with pytest.raises(ValueError, match="exact observed case matrix mismatch"):
         blacksmith_mithril._assert_observation(fixture, static, malformed)
+    malformed = copy.deepcopy(observed)
+    malformed["fulfillmentRecords"][0]["equippableCarrySet"] = False
+    validate_json(
+        malformed,
+        blacksmith_mithril.OBSERVATION_SCHEMA,
+        owner="schema-valid fulfillment carry drift",
+    )
+    with pytest.raises(ValueError, match="exact observed case matrix mismatch"):
+        blacksmith_mithril._assert_observation(fixture, static, malformed)
     coordinated_drift = copy.deepcopy(fixture)
     coordinated_drift["acceptedObservation"]["records"][0]["itemIndex"] ^= 1
     validate_json(
@@ -98,10 +116,13 @@ def test_transaction_schema_owns_shape_while_verifier_owns_case_identity() -> No
     assert {field: source_context[field]["const"] for field in source_context} == {
         "pickSourcePath": "code/common/menus/blacksmith/pickmithrilweapon.asm",
         "placeSourcePath": "code/common/menus/blacksmith/blacksmithactions.asm",
+        "itemStatsSourcePath": "code/common/stats/itemstats.asm",
         "tableSourcePath": "data/stats/items/mithrilweapons.asm",
+        "itemDefinitionsSourcePath": "data/stats/items/itemdefs.asm",
         "h1ListingPath": "build/sf2build-h1.lst",
         "functionEntryAddress": 138966,
         "placeEntryAddress": 138690,
+        "fulfillAddItemEntryAddress": 138212,
     }
     assert static["function"]["entryAddress"] == fixture["sourceContext"][
         "functionEntryAddress"
@@ -109,14 +130,20 @@ def test_transaction_schema_owns_shape_while_verifier_owns_case_identity() -> No
     assert static["transaction"]["placeEntryAddress"] == fixture["sourceContext"][
         "placeEntryAddress"
     ]
+    assert static["fulfillment"]["addItemEntryAddress"] == fixture["sourceContext"][
+        "fulfillAddItemEntryAddress"
+    ]
 
     for field, value in (
         ("pickSourcePath", "code/common/menus/blacksmith/wrong.asm"),
         ("placeSourcePath", "code/common/menus/blacksmith/wrong.asm"),
+        ("itemStatsSourcePath", "code/common/stats/wrong.asm"),
         ("tableSourcePath", "data/stats/items/wrong.asm"),
+        ("itemDefinitionsSourcePath", "data/stats/items/wrong.asm"),
         ("h1ListingPath", "build/wrong.lst"),
         ("functionEntryAddress", 138968),
         ("placeEntryAddress", 138692),
+        ("fulfillAddItemEntryAddress", 138214),
     ):
         wrong_context = copy.deepcopy(fixture)
         wrong_context["sourceContext"][field] = value
@@ -134,6 +161,12 @@ def test_transaction_schema_owns_shape_while_verifier_owns_case_identity() -> No
             "transactionCaseOrder"
         ],
         observation_schema["definitions"]["transactionRecord"]["properties"]["id"],
+        fixture_schema["properties"]["fulfillmentCaseOrder"],
+        fixture_schema["definitions"]["fulfillmentCase"]["properties"]["id"],
+        observation_schema["definitions"]["observationPayload"]["properties"][
+            "fulfillmentCaseOrder"
+        ],
+        observation_schema["definitions"]["fulfillmentRecord"]["properties"]["id"],
     )
     assert all("const" not in shape and "enum" not in shape for shape in transaction_shapes)
 
@@ -220,10 +253,14 @@ def test_static_contract_derives_source_h1_rng_and_table_boundaries() -> None:
         "rdbnClass": 31,
         "orderCost": 5000,
         "mithrilItemIndex": 123,
-        "itemNothingIndex": 127,
-        "itemIndexMask": 127,
-        "combatantEntrySizeBytes": 56,
-        "combatantItemSlotCount": 4,
+            "itemNothingIndex": 127,
+            "itemIndexMask": 127,
+            "itemIndexAndBrokenMask": 32895,
+            "weaponTypeMask": 2,
+            "ringTypeMask": 4,
+            "combatantEntrySizeBytes": 56,
+            "combatantItemSlotCount": 4,
+            "combatantClassOffsetBytes": 10,
         "combatantItemsOffsetBytes": 32,
         "flag80Id": 80,
         "flag80ByteOffset": 10,
@@ -267,6 +304,64 @@ def test_static_contract_derives_source_h1_rng_and_table_boundaries() -> None:
     assert transaction_bytes["move.w clientMember(a6),d0"] == bytes.fromhex("302EFFFA")
     assert transaction_bytes["move.w itemSlot(a6),d1"] == bytes.fromhex("322EFFF4")
     assert transaction_bytes["move.w #80,d1"] == bytes.fromhex("323C0050")
+    assert static["fulfillment"] | {
+        "h1InstructionBytes": [],
+        "itemDefinitionFields": [],
+    } == {
+        "addItemEntryAddress": 138212,
+        "addItemCallAddress": 138220,
+        "addItemReturnAddress": 138226,
+        "addItemInstructionTargetAddress": 33176,
+        "addItemEffectiveTargetAddress": 36002,
+        "addItemEffectiveReturnAddress": 36050,
+        "orderReadInstructionAddress": 138242,
+        "orderReadObserveAddress": 138244,
+        "orderClearAddress": 138244,
+        "orderClearedObserveAddress": 138248,
+        "fulfilledOrdersIncrementAddress": 138248,
+        "fulfilledOrdersIncrementedObserveAddress": 138254,
+        "equippabilityCallAddress": 138262,
+        "equippabilityInstructionTargetAddress": 33204,
+        "equippabilityEffectiveTargetAddress": 36736,
+        "equippabilityEffectiveReturnAddress": 36762,
+        "postEquippabilityReturnAddress": 138268,
+        "updateCombatantStatsAddress": 35278,
+        "updateCombatantStatsReached": False,
+        "frameOffsetsBytes": {
+            "clientClass": -24,
+            "clientMember": -6,
+            "itemIndex": -10,
+            "ordersCounter": -22,
+            "fulfilledOrdersNumber": -16,
+        },
+        "ordersCounterMinimum": 1,
+        "ordersCounterMaximum": 4,
+        "h1InstructionBytes": [],
+        "itemDefinitionFields": [],
+    }
+    assert static["fulfillment"]["itemDefinitionFields"] == [
+        {
+            "itemIndex": 69,
+            "equipFlagsAddress": 94966,
+            "equipFlagsBytes": bytes.fromhex("00001000"),
+            "itemTypeAddress": 94974,
+            "itemTypeBytes": bytes.fromhex("8A"),
+        },
+        {
+            "itemIndex": 99,
+            "equipFlagsAddress": 95446,
+            "equipFlagsBytes": bytes.fromhex("00080000"),
+            "itemTypeAddress": 95454,
+            "itemTypeBytes": bytes.fromhex("8A"),
+        },
+        {
+            "itemIndex": 100,
+            "equipFlagsAddress": 95462,
+            "equipFlagsBytes": bytes.fromhex("000E0000"),
+            "itemTypeAddress": 95470,
+            "itemTypeBytes": bytes.fromhex("0A"),
+        },
+    ]
     assert [choice["denominator"] for choice in static["model"]["weaponRows"][0]] == [
         16,
         8,
@@ -366,6 +461,15 @@ def test_independent_model_covers_all_required_runtime_roles() -> None:
         == {"role": "pending-orders-incremented", "pc": 138708}
         for record in transactions
     )
+    fulfillments = observed["fulfillmentRecords"]
+    assert [record["selectedOrderIndex"] for record in fulfillments] == [3, 2, 0]
+    assert [record["itemWriteIndex"] for record in fulfillments] == [3, 2, 0]
+    assert [record["equippableCarrySet"] for record in fulfillments] == [True, True, False]
+    assert [record["fulfilledOrdersAfter"] for record in fulfillments] == [1, 2, 3]
+    assert all(len(record["callbackChronology"]) == 11 for record in fulfillments)
+    assert all(
+        record["safeExitOriginalReturnPc"] == 138268 for record in fulfillments
+    )
     assert observed["restoration"] == {
         "currentGoldLongRestored": True,
         "randomSeedWordRestored": True,
@@ -373,6 +477,200 @@ def test_independent_model_covers_all_required_runtime_roles() -> None:
         "flag80OwningByteRestored": True,
         "clientCombatantRecordsRestored": True,
     }
+
+
+@pytest.mark.parametrize(
+    ("mutation", "error"),
+    (
+        ("orders-counter-zero", "ordersCounter is outside source domain"),
+        ("orders-counter-five", "ordersCounter is outside source domain"),
+        ("order-item-mismatch", "target order/item mismatch"),
+        ("order-already-empty", "target order is already empty"),
+        ("full-inventory", "first ITEM_NOTHING inventory slot"),
+        ("carry-drift", "item/class carry relation drift"),
+    ),
+)
+def test_fulfillment_matrix_rejects_invalid_direct_entry_states(
+    mutation: str, error: str
+) -> None:
+    fixture = _fixture()
+    case = fixture["fulfillmentCases"][0]
+    if mutation == "orders-counter-zero":
+        case["ordersCounter"] = 0
+    elif mutation == "orders-counter-five":
+        case["ordersCounter"] = 5
+    elif mutation == "order-item-mismatch":
+        case["ordersBefore"][3] = 99
+    elif mutation == "order-already-empty":
+        case["ordersBefore"][3] = 0
+    elif mutation == "full-inventory":
+        case["clientItemWordsBefore"] = [1, 2, 3, 4]
+    elif mutation == "carry-drift":
+        case["equippableCarrySet"] = False
+    else:
+        raise AssertionError(f"uncovered mutation: {mutation}")
+    with pytest.raises(ValueError, match=error):
+        blacksmith_mithril.model_fulfillment_case(case, _static(fixture))
+
+
+def test_fulfillment_source_h1_and_item_definition_mutations_fail_before_runtime() -> None:
+    fixture = _fixture()
+    root = blacksmith_mithril.repo_path("local/upstream/SF2DISASM")
+    disasm = root / "disasm"
+    actions = (disasm / blacksmith_mithril.BLACKSMITH_ACTIONS_RELATIVE).read_text(
+        encoding="utf-8"
+    )
+    item_source = (disasm / blacksmith_mithril.ITEM_SOURCE_RELATIVE).read_text(
+        encoding="utf-8"
+    )
+    itemdefs = (disasm / blacksmith_mithril.ITEMDEFS_SOURCE_RELATIVE).read_text(
+        encoding="utf-8"
+    )
+    listing = (root / blacksmith_mithril.LISTING_RELATIVE).read_text(encoding="utf-8")
+    mutations = (
+        (
+            {"actions_source_text": actions.replace("ordersCounter = -22", "ordersCounter = -20")},
+            "fulfillment source/H1 ABI chronology drift",
+        ),
+        (
+            {
+                "actions_source_text": actions.replace(
+                    "addi.w  #1,fulfilledOrdersNumber(a6)",
+                    "addi.w  #2,fulfilledOrdersNumber(a6)",
+                    1,
+                )
+            },
+            "source guard drift",
+        ),
+        (
+            {"item_source_text": item_source.replace("move.w  d1,-(a0)", "move.w  d0,-(a0)", 1)},
+            "source guard drift",
+        ),
+        (
+            {
+                "item_source_text": item_source.replace(
+                    "beq.s   @Break\n                dbf     d0,@Loop",
+                    "bne.s   @Break\n                dbf     d0,@Loop",
+                    1,
+                )
+            },
+            "source guard drift",
+        ),
+        (
+            {
+                "item_source_text": item_source.replace(
+                    "move.w  #1,d2           ; no empty slot available\n"
+                    "                bra.s   @Done",
+                    "move.w  #1,d2           ; no empty slot available\n"
+                    "                bra.s   @Break",
+                    1,
+                )
+            },
+            "source guard drift",
+        ),
+        (
+            {
+                "itemdefs_source_text": itemdefs.replace(
+                    "; 69: Levanter\n                equipFlags   HERO",
+                    "; 69: Levanter\n                equipFlags   VICR",
+                    1,
+                )
+            },
+            "item/class carry relation drift",
+        ),
+        (
+            {
+                "listing_text": listing.replace(
+                    "00021BEC 4EB9 0000 8198", "00021BEC 4EB9 0000 819A", 1
+                )
+            },
+            "fulfillment source/H1 ABI chronology drift",
+        ),
+        (
+            {
+                "listing_text": listing.replace(
+                    "00008CBA 6700                                       beq.s   @Break",
+                    "00008CBA 6700                                       beq.s   @Done",
+                    1,
+                )
+            },
+            "H1 instruction missing: beq.s @Break",
+        ),
+        (
+            {
+                "listing_text": listing.replace(
+                    "00008CC4 6000                                       bra.s   @Done",
+                    "00008CC4 6100                                       bra.s   @Done",
+                    1,
+                )
+            },
+            "fulfillment source/H1 ABI chronology drift",
+        ),
+        (
+            {
+                "listing_text": listing.replace(
+                    "00008F8C 1028 000A", "00008F8C 1028 FF0A", 1
+                )
+            },
+            "fulfillment source/H1 ABI chronology drift",
+        ),
+        (
+            {
+                "listing_text": listing.replace(
+                    "00008F8C 1028 000A", "00008F8C 1028 000B", 1
+                )
+            },
+            "fulfillment source/H1 ABI chronology drift",
+        ),
+        (
+            {
+                "listing_text": listing.replace(
+                    "00008F8C 1028 000A", "00008F8C 1029 000A", 1
+                )
+            },
+            "class displacement opcode/width drift",
+        ),
+        (
+            {
+                "listing_text": listing.replace(
+                    "00008F8C 1028 000A", "00008F8C 1028", 1
+                )
+            },
+            "class displacement opcode/width drift",
+        ),
+    )
+    for kwargs, error in mutations:
+        with pytest.raises(ValueError, match=error):
+            blacksmith_mithril.build_static_contract(fixture, root, **kwargs)
+
+
+def test_fulfillment_schema_shape_is_structural_but_model_owns_ids_and_order() -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    wrong_order = copy.deepcopy(fixture)
+    wrong_order["fulfillmentCaseOrder"] = list(
+        reversed(wrong_order["fulfillmentCaseOrder"])
+    )
+    validate_json(
+        wrong_order,
+        blacksmith_mithril.FIXTURE_SCHEMA,
+        owner="schema-valid fulfillment order drift",
+    )
+    with pytest.raises(ValueError, match="fulfillment case order drift"):
+        blacksmith_mithril._assert_golden(wrong_order, static)
+    renamed = copy.deepcopy(fixture)
+    renamed_id = "renamed-fulfillment-case"
+    renamed["fulfillmentCases"][0]["id"] = renamed_id
+    renamed["fulfillmentCaseOrder"][0] = renamed_id
+    renamed["acceptedObservation"]["fulfillmentCaseOrder"][0] = renamed_id
+    renamed["acceptedObservation"]["fulfillmentRecords"][0]["id"] = renamed_id
+    validate_json(
+        renamed,
+        blacksmith_mithril.FIXTURE_SCHEMA,
+        owner="schema-valid coordinated fulfillment ID rename",
+    )
+    with pytest.raises(ValueError, match="fulfillment case order drift"):
+        blacksmith_mithril._assert_golden(renamed, static)
 
 
 @pytest.mark.parametrize(
@@ -649,6 +947,73 @@ def test_cross_owner_and_source_context_drift_fail_before_runtime(tmp_path: Path
             root,
             common_menus_path=_write(tmp_path, "common-menus-owner.json", common_owner),
         )
+    for owner_name, field, value in (
+        ("commonStats", "fixture", "tests/fixtures/h2/not-common-stats.json"),
+        ("coreStatsData", "fixtureId", "sf2-core-stats-static-v9"),
+    ):
+        wrong_owner = copy.deepcopy(fixture)
+        wrong_owner["provenance"]["owners"][owner_name][field] = value
+        validate_json(
+            wrong_owner,
+            blacksmith_mithril.FIXTURE_SCHEMA,
+            owner=f"schema-valid {owner_name} {field} owner drift",
+        )
+        with pytest.raises(ValueError, match=f"{owner_name} owner identity drift"):
+            blacksmith_mithril.build_static_contract(wrong_owner, root)
+    common_stats = load_json(blacksmith_mithril.COMMON_STATS_OWNER)
+    common_stats["romSha256"] = "0" * 64
+    with pytest.raises(ValueError, match="provenance disagrees"):
+        blacksmith_mithril.build_static_contract(
+            fixture,
+            root,
+            common_stats_path=_write(tmp_path, "common-stats-rom-owner.json", common_stats),
+        )
+    core_stats_data = load_json(blacksmith_mithril.CORE_STATS_DATA_OWNER)
+    core_stats_data["upstreamCommit"] = "0" * 40
+    with pytest.raises(ValueError, match="provenance disagrees"):
+        blacksmith_mithril.build_static_contract(
+            fixture,
+            root,
+            core_stats_data_path=_write(
+                tmp_path, "core-stats-data-commit-owner.json", core_stats_data
+            ),
+        )
+    common_stats = load_json(blacksmith_mithril.COMMON_STATS_OWNER)
+    common_stats["function"]["itemStatsAddress"] += 2
+    with pytest.raises(ValueError, match="common-stats itemstats H1 owner drift"):
+        blacksmith_mithril.build_static_contract(
+            fixture,
+            root,
+            common_stats_path=_write(tmp_path, "common-stats-address-owner.json", common_stats),
+        )
+    common_stats = load_json(blacksmith_mithril.COMMON_STATS_OWNER)
+    common_stats["expected"]["representativeSymbols"]["itemstats.asm"] = "GetItemType"
+    with pytest.raises(ValueError, match="common-stats itemstats H1 owner drift"):
+        blacksmith_mithril.build_static_contract(
+            fixture,
+            root,
+            common_stats_path=_write(tmp_path, "common-stats-symbol-owner.json", common_stats),
+        )
+    core_stats_data = load_json(blacksmith_mithril.CORE_STATS_DATA_OWNER)
+    core_stats_data["table"]["table_ItemDefinitions"] += 2
+    with pytest.raises(ValueError, match="core-stats item-definition source/H1 domain drift"):
+        blacksmith_mithril.build_static_contract(
+            fixture,
+            root,
+            core_stats_data_path=_write(
+                tmp_path, "core-stats-data-table-owner.json", core_stats_data
+            ),
+        )
+    core_stats_data = load_json(blacksmith_mithril.CORE_STATS_DATA_OWNER)
+    core_stats_data["expected"]["facts"]["items"]["definitionCount"] -= 1
+    with pytest.raises(ValueError, match="core-stats item-definition source/H1 domain drift"):
+        blacksmith_mithril.build_static_contract(
+            fixture,
+            root,
+            core_stats_data_path=_write(
+                tmp_path, "core-stats-data-count-owner.json", core_stats_data
+            ),
+        )
     for field, value in (
         ("entryAddress", 0x1602),
         ("observeAddress", 0x1624),
@@ -693,9 +1058,16 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
     static = _static(fixture)
     guarded = static["h1"]["instructionBytes"] + static["transaction"][
         "h1InstructionBytes"
-    ]
+    ] + static["fulfillment"]["h1InstructionBytes"]
     size = max(instruction["address"] + len(instruction["bytes"]) for instruction in guarded) + 1
     size = max(size, static["h1"]["weaponTableAddress"] + len(static["h1"]["weaponTableBytes"]))
+    size = max(
+        size,
+        max(
+            field["itemTypeAddress"] + len(field["itemTypeBytes"])
+            for field in static["fulfillment"]["itemDefinitionFields"]
+        ),
+    )
     rom = bytearray(size)
     for instruction in guarded:
         address = instruction["address"]
@@ -707,6 +1079,15 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
         address = static["h1"][address_key]
         payload = static["h1"][bytes_key]
         rom[address : address + len(payload)] = payload
+    for field in static["fulfillment"]["itemDefinitionFields"]:
+        rom[
+            field["equipFlagsAddress"] : field["equipFlagsAddress"]
+            + len(field["equipFlagsBytes"])
+        ] = field["equipFlagsBytes"]
+        rom[
+            field["itemTypeAddress"] : field["itemTypeAddress"]
+            + len(field["itemTypeBytes"])
+        ] = field["itemTypeBytes"]
     image = tmp_path / "guard.bin"
     image.write_bytes(rom)
     blacksmith_mithril.validate_static_contract(
@@ -717,6 +1098,10 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
         instruction["text"]: instruction["address"]
         for instruction in static["transaction"]["h1InstructionBytes"]
     }
+    fulfillment_instruction = {
+        instruction["text"]: instruction["address"]
+        for instruction in static["fulfillment"]["h1InstructionBytes"]
+    }
     for address in (
         static["function"]["fallbackRngCallAddress"],
         static["function"]["clientClassReadAddress"],
@@ -725,15 +1110,23 @@ def test_rom_guard_rejects_opcode_and_table_mutation_before_observer(tmp_path: P
         static["transaction"]["decreaseGoldCallAddress"],
         static["transaction"]["dropItemEffectiveReturnAddress"],
         static["transaction"]["clearFlagEffectiveReturnAddress"],
+        static["fulfillment"]["addItemCallAddress"],
+        static["fulfillment"]["addItemEffectiveReturnAddress"],
+        static["fulfillment"]["equippabilityEffectiveReturnAddress"],
+        fulfillment_instruction["beq.s @Break"],
+        fulfillment_instruction["bra.s @Done"],
+        fulfillment_instruction["move.b COMBATANT_OFFSET_CLASS(a0),d0"],
         transaction_instruction["addi.w #1,pendingOrdersNumber(a6)"],
         transaction_instruction["move.w clientMember(a6),d0"],
         transaction_instruction["move.w itemSlot(a6),d1"],
         transaction_instruction["move.w #80,d1"],
+        static["fulfillment"]["itemDefinitionFields"][0]["equipFlagsAddress"],
+        static["fulfillment"]["itemDefinitionFields"][2]["itemTypeAddress"],
     ):
         corrupted = bytearray(clean)
         corrupted[address] ^= 1
         image.write_bytes(corrupted)
-        with pytest.raises(ValueError, match="instruction guard drift"):
+        with pytest.raises(ValueError, match="guard drift"):
             blacksmith_mithril.validate_static_contract(
                 fixture, image, blacksmith_mithril.repo_path("local/upstream/SF2DISASM")
             )
@@ -773,6 +1166,16 @@ def _failure_payload() -> dict[str, object]:
                 "clearFlagReturnSeen": False,
                 "prePresentationReturnAddress": None,
             },
+            "fulfillment": {
+                "active": False,
+                "mode": "helper",
+                "addItemReturnSeen": False,
+                "orderReadSeen": False,
+                "orderClearedSeen": False,
+                "fulfilledOrdersIncrementSeen": False,
+                "equippabilityCarrySet": None,
+                "originalReturnAddress": None,
+            },
         },
         "error": "RNG entry PC drift",
     }
@@ -806,6 +1209,16 @@ def _registration_failure_payload() -> dict[str, object]:
                 "clearFlagReturnSeen": False,
                 "prePresentationReturnAddress": None,
             },
+            "fulfillment": {
+                "active": False,
+                "mode": "none",
+                "addItemReturnSeen": False,
+                "orderReadSeen": False,
+                "orderClearedSeen": False,
+                "fulfilledOrdersIncrementSeen": False,
+                "equippabilityCarrySet": None,
+                "originalReturnAddress": None,
+            },
         },
         "error": "probe registration write drift",
     }
@@ -838,6 +1251,16 @@ def _bootstrap_failure_payload() -> dict[str, object]:
                 "pickReturnSeen": False,
                 "clearFlagReturnSeen": False,
                 "prePresentationReturnAddress": None,
+            },
+            "fulfillment": {
+                "active": False,
+                "mode": "none",
+                "addItemReturnSeen": False,
+                "orderReadSeen": False,
+                "orderClearedSeen": False,
+                "fulfilledOrdersIncrementSeen": False,
+                "equippabilityCarrySet": None,
+                "originalReturnAddress": None,
             },
         },
         "error": "CheckSram return redirect write drift",
@@ -928,7 +1351,7 @@ def test_registration_and_bootstrap_failures_have_no_case_association(tmp_path: 
             owner="bootstrap case leak",
         )
     source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
-    assert 'mode,helper_index,transaction_index="none",0,0' in source
+    assert 'mode,helper_index,transaction_index,fulfillment_index="none",0,0,0' in source
     assert 'current_role=="transaction-case-entry"' in source
     assert 'current_role=="registration" and nil or emu.getregister("M68K PC")' in source
     bootstrap = source.index("local function bootstrap_check_sram()")
@@ -989,6 +1412,7 @@ def test_callback_failure_schema_status_promotion_and_dispatcher_shape(tmp_path:
     assert "local ok,message=pcall" in source
     assert "fail_callback(message)" in source
     assert "milestone:transaction-state-restored" in source
+    assert "milestone:fulfillment-cases-entered" in source
     assert "milestone:callbacks-cleared:0" in source
     assert "milestone:observer-finished" in source
     assert "f.returnRtsAddress" in source
@@ -999,6 +1423,7 @@ def test_callback_failure_schema_status_promotion_and_dispatcher_shape(tmp_path:
     assert "original_return==t.prePresentationReturnAddress" in source
     assert "stack==stack_top-4" in source
     assert "memory.write_u32_be(stack,transaction_pc(transaction_index)+20" in source
+    assert "memory.write_u32_be(stack,fulfillment_pc(fulfillment_index)+20" in source
     assert "frame_base+24" not in source
     assert "order_write_seen==(#differences==1)" in source
     assert source.index("write_probe();helper_index=1;bootstrapped=true") < source.index(
@@ -1027,12 +1452,17 @@ def test_verifier_uses_one_launch_and_omits_golden_output_from_lua_config(
     assert "acceptedObservation" not in launches[0]["config"]
     assert "transactionCases" in launches[0]["config"]
     assert "transaction" in launches[0]["config"]
+    assert "fulfillmentCases" in launches[0]["config"]
+    assert "fulfillment" in launches[0]["config"]
     assert "h1InstructionBytes" not in launches[0]["config"]["transaction"]
+    assert "h1InstructionBytes" not in launches[0]["config"]["fulfillment"]
+    assert "itemDefinitionFields" not in launches[0]["config"]["fulfillment"]
     assert result == {
-        "Fixture": "sf2-blacksmith-mithril-runtime-v2",
-        "Cases": 8,
+        "Fixture": "sf2-blacksmith-mithril-runtime-v3",
+        "Cases": 11,
         "HelperCases": 5,
         "TransactionCases": 3,
+        "FulfillmentCases": 3,
         "BizHawkLaunches": 1,
         "CallbacksCleared": 0,
         "Restoration": {

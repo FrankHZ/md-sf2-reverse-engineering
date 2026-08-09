@@ -1,17 +1,19 @@
 -- One grouped direct-ROM probe.  The helper cohort calls PickMithrilWeapon;
 -- the transaction cohort jumps to the original post-confirmation PlaceOrder
--- block and rewrites only ClearFlag's verified return-to-text stack word.
+-- block; the fulfillment cohort jumps to the original @AddItem block and
+-- rewrites only IsWeaponOrRingEquippable's verified return stack word.
 local config=assert(dofile(assert(os.getenv("SF2_H3_CONFIG"),"SF2_H3_CONFIG is not set")))
-local f,t,ram,c=config["function"],config.transaction,config.ram,config.constants
-local probe_base,helper_base,helper_stride,transaction_base,transaction_stride=0xFF6800,0xFF6820,24,0xFF6900,32
+local f,t,u,ram,c=config["function"],config.transaction,config.fulfillment,config.ram,config.constants
+local probe_base,helper_base,helper_stride,transaction_base,transaction_stride,fulfillment_base,fulfillment_stride=0xFF6800,0xFF6820,24,0xFF6900,32,0xFF6960,32
 local frame_base,stack_top=0xFF6A00,0xFFFF00
-local callbacks,event_ids,helper_records,transaction_records={}, {}, {}, {}
+local callbacks,event_ids,helper_records,transaction_records,fulfillment_records={}, {}, {}, {}, {}
 local observer_failed,session_cleaned,bootstrapped=false,false,false
-local mode,helper_index,transaction_index="none",0,0
-local helper_active,first_case_milestone,transaction_milestone=false,false,false
+local mode,helper_index,transaction_index,fulfillment_index="none",0,0,0
+local helper_active,first_case_milestone,transaction_milestone,fulfillment_milestone=false,false,false,false
 local original_gold,original_seed,original_orders,original_flag,original_records=nil,nil,nil,nil,nil
 local pending_rng,row_index,selected_item,function_return_seen,order_write_seen=nil,nil,nil,false,false
 local tx={active=false,decreaseGoldReturnSeen=false,pendingOrdersIncrementSeen=false,dropItemReturnSeen=false,pickReturnSeen=false,clearFlagReturnSeen=false,prePresentationReturnAddress=nil,record=nil,rngCalls=nil,rowIndex=nil,selectedItem=nil,orderWriteSeen=false,chronology=nil}
+local fx={active=false,addItemReturnSeen=false,orderReadSeen=false,orderClearedSeen=false,fulfilledOrdersIncrementSeen=false,equippabilityCarrySet=nil,originalReturnAddress=nil,record=nil,chronology=nil}
 local current_phase,current_role,current_pc,current_expectation="registration","registration",nil,nil
 local write_probe
 
@@ -22,9 +24,12 @@ local function json_string(value) return string.format("%q",value) end
 local function word(value) return value&0xFFFF end
 local function current_helper() return config.cases[helper_index] end
 local function current_transaction() return config.transactionCases[transaction_index] end
+local function current_fulfillment() return config.fulfillmentCases[fulfillment_index] end
 local function helper_pc(index) return helper_base+(index-1)*helper_stride end
 local function transaction_pc(index) return transaction_base+(index-1)*transaction_stride end
+local function fulfillment_pc(index) return fulfillment_base+(index-1)*fulfillment_stride end
 local function frame_address() return frame_base-t.frameOffsetsBytes.clientClass end
+local function fulfillment_frame_address() return frame_base-u.frameOffsetsBytes.clientClass end
 local function read_u8(address) return memory.read_u8(address,"M68K BUS") end
 local function write_u8(address,value) memory.write_u8(address,value,"M68K BUS") end
 local function read_orders()
@@ -43,6 +48,9 @@ local function write_item_words(member,values)
   local base=ram.combatantDataAddress+member*c.combatantEntrySizeBytes+c.combatantItemsOffsetBytes
   for index,value in ipairs(values) do memory.write_u16_be(base+(index-1)*2,value,"M68K BUS") end
 end
+local function combatant_base(member) return ram.combatantDataAddress+member*c.combatantEntrySizeBytes end
+local function read_class(member) return read_u8(combatant_base(member)+c.combatantClassOffsetBytes) end
+local function write_class(member,value) write_u8(combatant_base(member)+c.combatantClassOffsetBytes,value) end
 local function read_record(member)
   local bytes,base={},ram.combatantDataAddress+member*c.combatantEntrySizeBytes
   for index=0,c.combatantEntrySizeBytes-1 do bytes[#bytes+1]=read_u8(base+index) end
@@ -71,10 +79,13 @@ end
 local function transaction_state_json()
   return "{\"active\":"..bool(tx.active)..",\"mode\":"..json_string(mode)..",\"decreaseGoldReturnSeen\":"..bool(tx.decreaseGoldReturnSeen)..",\"pendingOrdersIncrementSeen\":"..bool(tx.pendingOrdersIncrementSeen)..",\"dropItemReturnSeen\":"..bool(tx.dropItemReturnSeen)..",\"pickReturnSeen\":"..bool(tx.pickReturnSeen)..",\"clearFlagReturnSeen\":"..bool(tx.clearFlagReturnSeen)..",\"prePresentationReturnAddress\":"..nullable(tx.prePresentationReturnAddress).."}"
 end
+local function fulfillment_state_json()
+  return "{\"active\":"..bool(fx.active)..",\"mode\":"..json_string(mode)..",\"addItemReturnSeen\":"..bool(fx.addItemReturnSeen)..",\"orderReadSeen\":"..bool(fx.orderReadSeen)..",\"orderClearedSeen\":"..bool(fx.orderClearedSeen)..",\"fulfilledOrdersIncrementSeen\":"..bool(fx.fulfilledOrdersIncrementSeen)..",\"equippabilityCarrySet\":"..(fx.equippabilityCarrySet==nil and "null" or bool(fx.equippabilityCarrySet))..",\"originalReturnAddress\":"..nullable(fx.originalReturnAddress).."}"
+end
 local function pending_callback_state()
   local case_for_state=0
-  if mode=="helper" or current_role=="case-entry" then case_for_state=helper_index elseif mode=="transaction" or current_role=="transaction-case-entry" then case_for_state=transaction_index end
-  return "{\"active\":"..bool(helper_active or tx.active)..",\"caseIndex\":"..case_for_state..",\"functionReturnSeen\":"..bool(function_return_seen)..",\"orderWriteSeen\":"..bool(order_write_seen or tx.orderWriteSeen)..",\"pendingRngCall\":"..pending_rng_json()..",\"rolesAtPc\":"..roles_json(current_pc)..",\"transaction\":"..transaction_state_json().."}"
+  if mode=="helper" or current_role=="case-entry" then case_for_state=helper_index elseif mode=="transaction" or current_role=="transaction-case-entry" then case_for_state=transaction_index elseif mode=="fulfillment" or current_role=="fulfillment-case-entry" then case_for_state=fulfillment_index end
+  return "{\"active\":"..bool(helper_active or tx.active or fx.active)..",\"caseIndex\":"..case_for_state..",\"functionReturnSeen\":"..bool(function_return_seen)..",\"orderWriteSeen\":"..bool(order_write_seen or tx.orderWriteSeen)..",\"pendingRngCall\":"..pending_rng_json()..",\"rolesAtPc\":"..roles_json(current_pc)..",\"transaction\":"..transaction_state_json()..",\"fulfillment\":"..fulfillment_state_json().."}"
 end
 local function restore_all()
   if original_gold==nil then return true end
@@ -93,7 +104,7 @@ local function fail_callback(message)
   if observer_failed then return end
   observer_failed=true
   local case=nil
-  if mode=="helper" or current_role=="case-entry" then case=current_helper() elseif mode=="transaction" or current_role=="transaction-case-entry" then case=current_transaction() end
+  if mode=="helper" or current_role=="case-entry" then case=current_helper() elseif mode=="transaction" or current_role=="transaction-case-entry" then case=current_transaction() elseif mode=="fulfillment" or current_role=="fulfillment-case-entry" then case=current_fulfillment() end
   local restored,restore_message=pcall(restore_all)
   local expected=current_expectation or {};local actual=current_role=="registration" and nil or emu.getregister("M68K PC")
   local detail=tostring(message);if not restored then detail=detail.."; restoration error: "..tostring(restore_message) elseif restore_message~=true then detail=detail.."; restoration readback drift" end
@@ -106,10 +117,13 @@ local function set_expectation(phase,role,event_pc,call_pc,target_pc,return_pc)
 end
 local function snapshot_exact_boundary()
   original_gold=memory.read_u32_be(ram.currentGoldAddress,"M68K BUS");original_seed=memory.read_u16_be(ram.randomSeedAddress,"M68K BUS");original_orders=read_orders();original_flag=read_u8(ram.flag80OwningByteAddress);original_records={}
-  for _,case in ipairs(config.transactionCases) do
-    expect(original_records[case.clientMember]==nil,"transaction cases must select distinct combatant records")
-    original_records[case.clientMember]=read_record(case.clientMember)
+  for _,cohort in ipairs({config.transactionCases,config.fulfillmentCases}) do
+    for _,case in ipairs(cohort) do
+      if original_records[case.clientMember]==nil then original_records[case.clientMember]=read_record(case.clientMember) end
+    end
   end
+  local record_count=0;for _ in pairs(original_records) do record_count=record_count+1 end
+  expect(record_count==3,"blacksmith cohorts must snapshot exactly three combatant records")
 end
 local function record_rng_call(destination)
   local call=pending_rng;destination[#destination+1]={role=call.role,callPc=call.callPc,targetPc=call.targetPc,returnPc=call.returnPc,rangeWord=call.rangeWord,result=word(emu.getregister("M68K D7")),randomSeedAfter=memory.read_u16_be(ram.randomSeedAddress,"M68K BUS")}
@@ -173,13 +187,18 @@ end
 local function transaction_record_json(record)
   return "{\"id\":"..json_string(record.id)..",\"clientMember\":"..record.clientMember..",\"itemSlot\":"..record.itemSlot..",\"goldBefore\":"..record.goldBefore..",\"goldAfter\":"..record.goldAfter..",\"pendingOrdersBefore\":"..record.pendingOrdersBefore..",\"pendingOrdersAfter\":"..record.pendingOrdersAfter..",\"clientItemWordsBefore\":"..array_json(record.clientItemWordsBefore)..",\"clientItemWordsAfter\":"..array_json(record.clientItemWordsAfter)..",\"ordersBefore\":"..array_json(record.ordersBefore)..",\"ordersAfter\":"..array_json(record.ordersAfter)..",\"flag80OwningByteBefore\":"..record.flag80OwningByteBefore..",\"flag80OwningByteAfter\":"..record.flag80OwningByteAfter..",\"randomSeedBefore\":"..record.randomSeedBefore..",\"randomSeedAfter\":"..record.randomSeedAfter..",\"classGroupIndex\":"..record.classGroupIndex..",\"weaponRowIndex\":"..record.weaponRowIndex..",\"choiceIndex\":"..record.choiceIndex..",\"itemIndex\":"..record.itemIndex..",\"orderWriteIndex\":"..record.orderWriteIndex..",\"rngCalls\":"..rng_calls_json(record.rngCalls)..",\"callbackChronology\":"..chronology_json(record.callbackChronology)..",\"safeExitOriginalReturnPc\":"..record.safeExitOriginalReturnPc..",\"safeExitSeen\":true}"
 end
+local function fulfillment_record_json(record)
+  return "{\"id\":"..json_string(record.id)..",\"clientMember\":"..record.clientMember..",\"recipientClass\":"..record.recipientClass..",\"itemIndex\":"..record.itemIndex..",\"clientItemWordsBefore\":"..array_json(record.clientItemWordsBefore)..",\"clientItemWordsAfter\":"..array_json(record.clientItemWordsAfter)..",\"itemWriteIndex\":"..record.itemWriteIndex..",\"addItemResultCode\":"..record.addItemResultCode..",\"ordersBefore\":"..array_json(record.ordersBefore)..",\"ordersAfter\":"..array_json(record.ordersAfter)..",\"ordersCounter\":"..record.ordersCounter..",\"selectedOrderIndex\":"..record.selectedOrderIndex..",\"sourceOrderWordRead\":"..record.sourceOrderWordRead..",\"fulfilledOrdersBefore\":"..record.fulfilledOrdersBefore..",\"fulfilledOrdersAfter\":"..record.fulfilledOrdersAfter..",\"equippableCarrySet\":"..bool(record.equippableCarrySet)..",\"callbackChronology\":"..chronology_json(record.callbackChronology)..",\"safeExitOriginalReturnPc\":"..record.safeExitOriginalReturnPc..",\"safeExitSeen\":true}"
+end
 local function write_output()
-  local helpers,transactions,helper_order,transaction_order={}, {}, {}, {}
+  local helpers,transactions,fulfillments,helper_order,transaction_order,fulfillment_order={}, {}, {}, {}, {}, {}
   for _,record in ipairs(helper_records) do helpers[#helpers+1]=helper_record_json(record) end
   for _,record in ipairs(transaction_records) do transactions[#transactions+1]=transaction_record_json(record) end
+  for _,record in ipairs(fulfillment_records) do fulfillments[#fulfillments+1]=fulfillment_record_json(record) end
   for _,id in ipairs(config.caseOrder) do helper_order[#helper_order+1]=json_string(id) end
   for _,id in ipairs(config.transactionCaseOrder) do transaction_order[#transaction_order+1]=json_string(id) end
-  local output=assert(io.open(config.outputPath,"w"));output:write("{\"system\":"..json_string(emu.getsystemid())..",\"core\":"..json_string(config.core)..",\"id\":"..json_string(config.id)..",\"caseOrder\":["..table.concat(helper_order,",").."],\"records\":["..table.concat(helpers,",").."],\"transactionCaseOrder\":["..table.concat(transaction_order,",").."],\"transactionRecords\":["..table.concat(transactions,",").."],\"callbacksCleared\":0,\"restoration\":{\"currentGoldLongRestored\":true,\"randomSeedWordRestored\":true,\"orderWordsRestored\":true,\"flag80OwningByteRestored\":true,\"clientCombatantRecordsRestored\":true}}");output:close()
+  for _,id in ipairs(config.fulfillmentCaseOrder) do fulfillment_order[#fulfillment_order+1]=json_string(id) end
+  local output=assert(io.open(config.outputPath,"w"));output:write("{\"system\":"..json_string(emu.getsystemid())..",\"core\":"..json_string(config.core)..",\"id\":"..json_string(config.id)..",\"caseOrder\":["..table.concat(helper_order,",").."],\"records\":["..table.concat(helpers,",").."],\"transactionCaseOrder\":["..table.concat(transaction_order,",").."],\"transactionRecords\":["..table.concat(transactions,",").."],\"fulfillmentCaseOrder\":["..table.concat(fulfillment_order,",").."],\"fulfillmentRecords\":["..table.concat(fulfillments,",").."],\"callbacksCleared\":0,\"restoration\":{\"currentGoldLongRestored\":true,\"randomSeedWordRestored\":true,\"orderWordsRestored\":true,\"flag80OwningByteRestored\":true,\"clientCombatantRecordsRestored\":true}}");output:close()
 end
 local function finish_helper_case(index)
   if mode~="helper" then return end
@@ -259,8 +278,50 @@ local function finish_transaction_case_complete(index)
   transaction_records[#transaction_records+1]={id=case.id,clientMember=case.clientMember,itemSlot=case.itemSlot,goldBefore=tx.record.goldBefore,goldAfter=memory.read_u32_be(ram.currentGoldAddress,"M68K BUS"),pendingOrdersBefore=tx.record.pendingOrdersBefore,pendingOrdersAfter=memory.read_u16_be(frame_address()+t.frameOffsetsBytes.pendingOrdersNumber,"M68K BUS"),clientItemWordsBefore=tx.record.clientItemWordsBefore,clientItemWordsAfter=after_items,ordersBefore=tx.record.ordersBefore,ordersAfter=after_orders,flag80OwningByteBefore=tx.record.flag80OwningByteBefore,flag80OwningByteAfter=read_u8(ram.flag80OwningByteAddress),randomSeedBefore=tx.record.randomSeedBefore,randomSeedAfter=memory.read_u16_be(ram.randomSeedAddress,"M68K BUS"),classGroupIndex=group_index,weaponRowIndex=tx.rowIndex,choiceIndex=weapon_calls-1,itemIndex=tx.selectedItem,orderWriteIndex=changes[1],rngCalls=tx.rngCalls,callbackChronology=tx.chronology,safeExitOriginalReturnPc=tx.prePresentationReturnAddress}
   tx.active=false;mode="none";transaction_index=transaction_index+1
   if transaction_index>#config.transactionCases then
-    expect(restore_all(),"exact transaction restoration readback drift");status("milestone:transaction-state-restored");cleanup_session();expect(#event_ids==0,"residual registered callback");write_output();status("milestone:callbacks-cleared:0");status("milestone:observer-finished");client.exitCode(0)
+    fulfillment_index=1;status("milestone:fulfillment-cases-entered");fulfillment_milestone=true
   end
+end
+local function fx_event(role,pc,call_pc,target_pc,return_pc)
+  set_expectation("fulfillment",role,pc,call_pc,target_pc,return_pc);expect(mode=="fulfillment" and fx.active,"fulfillment callback outside active case");expect(emu.getregister("M68K PC")==pc,"fulfillment callback PC drift: "..role);fx.chronology[#fx.chronology+1]={role=role,pc=pc}
+end
+local function start_fulfillment_case(index)
+  expect(mode=="none" and index==fulfillment_index,"fulfillment case-entry dispatch drift");local case=assert(current_fulfillment(),"fulfillment case table exhausted");local entry=fulfillment_pc(index)
+  set_expectation("fulfillment-case-entry","fulfillment-case-entry",entry,entry+14,u.addItemEntryAddress,nil);expect(emu.getregister("M68K PC")==entry,"fulfillment case-entry PC drift")
+  write_record(case.clientMember,original_records[case.clientMember]);write_class(case.clientMember,case.recipientClass);write_item_words(case.clientMember,case.clientItemWordsBefore);write_orders(case.ordersBefore)
+  local frame=fulfillment_frame_address();memory.write_u16_be(frame+u.frameOffsetsBytes.clientClass,case.recipientClass,"M68K BUS");memory.write_u16_be(frame+u.frameOffsetsBytes.clientMember,case.clientMember,"M68K BUS");memory.write_u16_be(frame+u.frameOffsetsBytes.itemIndex,case.itemIndex,"M68K BUS");memory.write_u16_be(frame+u.frameOffsetsBytes.ordersCounter,case.ordersCounter,"M68K BUS");memory.write_u16_be(frame+u.frameOffsetsBytes.fulfilledOrdersNumber,case.fulfilledOrdersBefore,"M68K BUS")
+  expect(read_class(case.clientMember)==case.recipientClass,"fulfillment class setup drift");expect(equal_arrays(read_item_words(case.clientMember),case.clientItemWordsBefore),"fulfillment items setup drift");expect(equal_arrays(read_orders(),case.ordersBefore),"fulfillment orders setup drift");expect(case.ordersCounter>=u.ordersCounterMinimum and case.ordersCounter<=u.ordersCounterMaximum,"fulfillment ordersCounter setup domain drift")
+  fx={active=true,addItemReturnSeen=false,orderReadSeen=false,orderClearedSeen=false,fulfilledOrdersIncrementSeen=false,equippabilityCarrySet=nil,originalReturnAddress=nil,record=nil,chronology={}};mode="fulfillment"
+end
+local function fx_add_call() if mode=="fulfillment" then fx_event("fulfillment-add-item-call",u.addItemCallAddress,u.addItemCallAddress,u.addItemInstructionTargetAddress,u.addItemReturnAddress) end end
+local function fx_add_instruction() if mode=="fulfillment" then fx_event("fulfillment-add-item-instruction-target",u.addItemInstructionTargetAddress,u.addItemCallAddress,u.addItemInstructionTargetAddress,u.addItemEffectiveTargetAddress) end end
+local function fx_add_target() if mode=="fulfillment" then fx_event("fulfillment-add-item-effective-target",u.addItemEffectiveTargetAddress,u.addItemCallAddress,u.addItemEffectiveTargetAddress,u.addItemEffectiveReturnAddress) end end
+local function fx_add_return()
+  if mode~="fulfillment" then return end
+  fx_event("fulfillment-add-item-effective-return",u.addItemEffectiveReturnAddress,u.addItemCallAddress,u.addItemEffectiveTargetAddress,u.addItemReturnAddress);local case=current_fulfillment();local after=read_item_words(case.clientMember);local empty=nil;for index,value in ipairs(case.clientItemWordsBefore) do if (value&c.itemIndexMask)==c.itemNothingIndex then empty=index-1;break end end;expect(empty~=nil,"fulfillment AddItem full-inventory precondition");expect(word(emu.getregister("M68K D2"))==0,"fulfillment AddItem result code drift");expect(after[empty+1]==(case.itemIndex&c.itemIndexAndBrokenMask),"fulfillment AddItem first-empty write drift");fx.record={id=case.id,clientMember=case.clientMember,recipientClass=case.recipientClass,itemIndex=case.itemIndex,clientItemWordsBefore=case.clientItemWordsBefore,clientItemWordsAfter=after,itemWriteIndex=empty,addItemResultCode=0,ordersBefore=read_orders(),ordersCounter=case.ordersCounter,fulfilledOrdersBefore=case.fulfilledOrdersBefore};fx.addItemReturnSeen=true
+end
+local function fx_order_read()
+  if mode~="fulfillment" then return end
+  fx_event("fulfillment-order-read",u.orderReadObserveAddress,nil,nil,nil);local case=current_fulfillment();local selected=c.orderSlotCount-case.ordersCounter;local address=ram.ordersAddress+selected*c.orderSlotSize;local value=memory.read_u16_be(address,"M68K BUS");expect(value==case.itemIndex and word(emu.getregister("M68K D2"))==case.itemIndex,"fulfillment source order read drift");fx.record.selectedOrderIndex=selected;fx.record.sourceOrderWordRead=value;fx.orderReadSeen=true
+end
+local function fx_order_cleared()
+  if mode~="fulfillment" then return end
+  fx_event("fulfillment-order-cleared",u.orderClearedObserveAddress,nil,nil,nil);local case=current_fulfillment();local selected=c.orderSlotCount-case.ordersCounter;expect(memory.read_u16_be(ram.ordersAddress+selected*c.orderSlotSize,"M68K BUS")==0,"fulfillment source order clear drift");fx.orderClearedSeen=true
+end
+local function fx_orders_incremented()
+  if mode~="fulfillment" then return end
+  fx_event("fulfillment-orders-incremented",u.fulfilledOrdersIncrementedObserveAddress,nil,nil,nil);expect(fx.orderClearedSeen,"fulfillment counter increment before order clear");expect(memory.read_u16_be(fulfillment_frame_address()+u.frameOffsetsBytes.fulfilledOrdersNumber,"M68K BUS")==fx.record.fulfilledOrdersBefore+1,"fulfillment counter increment state drift");fx.fulfilledOrdersIncrementSeen=true
+end
+local function fx_equippability_call() if mode=="fulfillment" then fx_event("fulfillment-equippability-call",u.equippabilityCallAddress,u.equippabilityCallAddress,u.equippabilityInstructionTargetAddress,u.postEquippabilityReturnAddress);expect(fx.fulfilledOrdersIncrementSeen,"fulfillment equippability before counter increment") end end
+local function fx_equippability_instruction() if mode=="fulfillment" then fx_event("fulfillment-equippability-instruction-target",u.equippabilityInstructionTargetAddress,u.equippabilityCallAddress,u.equippabilityInstructionTargetAddress,u.equippabilityEffectiveTargetAddress) end end
+local function fx_equippability_target() if mode=="fulfillment" then fx_event("fulfillment-equippability-effective-target",u.equippabilityEffectiveTargetAddress,u.equippabilityCallAddress,u.equippabilityEffectiveTargetAddress,u.equippabilityEffectiveReturnAddress) end end
+local function fx_equippability_return()
+  if mode~="fulfillment" then return end
+  fx_event("fulfillment-equippability-effective-return",u.equippabilityEffectiveReturnAddress,u.equippabilityCallAddress,u.equippabilityEffectiveTargetAddress,u.postEquippabilityReturnAddress);local case=current_fulfillment();local stack=emu.getregister("M68K A7")&0xFFFFFF;expect(stack==stack_top-4,"fulfillment equippability RTS stack pointer drift");local original_return=memory.read_u32_be(stack,"M68K BUS");expect(original_return==u.postEquippabilityReturnAddress,"fulfillment safe-return target drift");local carry=(emu.getregister("M68K SR")&1)~=0;expect(carry==case.equippableCarrySet,"fulfillment equippability carry drift");fx.equippabilityCarrySet=carry;fx.originalReturnAddress=original_return;memory.write_u32_be(stack,fulfillment_pc(fulfillment_index)+20,"M68K BUS");expect(memory.read_u32_be(stack,"M68K BUS")==fulfillment_pc(fulfillment_index)+20,"fulfillment safe-return rewrite drift")
+end
+local function finish_fulfillment_case(index)
+  if mode~="fulfillment" then return end
+  expect(index==fulfillment_index,"fulfillment result dispatch drift");local case=current_fulfillment();local result_pc=fulfillment_pc(index)+20;set_expectation("fulfillment","fulfillment-case-result",result_pc,u.equippabilityEffectiveReturnAddress,u.postEquippabilityReturnAddress,result_pc);expect(emu.getregister("M68K PC")==result_pc,"fulfillment result PC drift");expect(fx.addItemReturnSeen and fx.orderReadSeen and fx.orderClearedSeen and fx.fulfilledOrdersIncrementSeen and fx.equippabilityCarrySet~=nil and #fx.chronology==11,"fulfillment chronology incomplete");local orders_after=read_orders();expect(fx.record.ordersBefore[fx.record.selectedOrderIndex+1]==case.itemIndex and orders_after[fx.record.selectedOrderIndex+1]==0,"fulfillment selected order read/zero mismatch");fx.record.ordersAfter=orders_after;fx.record.fulfilledOrdersAfter=memory.read_u16_be(fulfillment_frame_address()+u.frameOffsetsBytes.fulfilledOrdersNumber,"M68K BUS");fx.record.equippableCarrySet=fx.equippabilityCarrySet;fx.record.callbackChronology=fx.chronology;fx.record.safeExitOriginalReturnPc=fx.originalReturnAddress;fulfillment_records[#fulfillment_records+1]=fx.record;fx.active=false;mode="none";fulfillment_index=fulfillment_index+1
+  if fulfillment_index>#config.fulfillmentCases then expect(restore_all(),"exact fulfillment restoration readback drift");status("milestone:transaction-state-restored");cleanup_session();expect(#event_ids==0,"residual registered callback");write_output();status("milestone:callbacks-cleared:0");status("milestone:observer-finished");client.exitCode(0) end
 end
 local function bootstrap_check_sram()
   if bootstrapped or mode~="none" then return end
@@ -307,6 +368,19 @@ local function dispatch(address,entry)
   elseif entry.role=="clear-flag-effective-target" then tx_clear_target()
   elseif entry.role=="clear-flag-pre-presentation-return" then tx_clear_return()
   elseif entry.role=="transaction-case-result" then finish_transaction_case_complete(entry.index)
+  elseif entry.role=="fulfillment-case-entry" then start_fulfillment_case(entry.index)
+  elseif entry.role=="fulfillment-add-item-call" then fx_add_call()
+  elseif entry.role=="fulfillment-add-item-instruction-target" then fx_add_instruction()
+  elseif entry.role=="fulfillment-add-item-effective-target" then fx_add_target()
+  elseif entry.role=="fulfillment-add-item-effective-return" then fx_add_return()
+  elseif entry.role=="fulfillment-order-read" then fx_order_read()
+  elseif entry.role=="fulfillment-order-cleared" then fx_order_cleared()
+  elseif entry.role=="fulfillment-orders-incremented" then fx_orders_incremented()
+  elseif entry.role=="fulfillment-equippability-call" then fx_equippability_call()
+  elseif entry.role=="fulfillment-equippability-instruction-target" then fx_equippability_instruction()
+  elseif entry.role=="fulfillment-equippability-effective-target" then fx_equippability_target()
+  elseif entry.role=="fulfillment-equippability-effective-return" then fx_equippability_return()
+  elseif entry.role=="fulfillment-case-result" then finish_fulfillment_case(entry.index)
   else error("unknown deterministic dispatch role: "..entry.role) end
 end
 local function register_exec(address,role,index)
@@ -326,10 +400,14 @@ write_probe=function()
     local entry=helper_pc(index);memory.write_u16_be(entry,0x4E71,"M68K BUS");memory.write_u16_be(entry+2,0x303C,"M68K BUS");memory.write_u16_be(entry+4,case.registerSentinels.d0,"M68K BUS");memory.write_u16_be(entry+6,0x3E3C,"M68K BUS");memory.write_u16_be(entry+8,case.registerSentinels.d7,"M68K BUS");memory.write_u16_be(entry+10,0x4EB9,"M68K BUS");memory.write_u32_be(entry+12,f.entryAddress,"M68K BUS");memory.write_u16_be(entry+16,0x4E71,"M68K BUS");memory.write_u16_be(entry+18,0x4EF9,"M68K BUS");memory.write_u32_be(entry+20,index==#config.cases and transaction_base or helper_pc(index+1),"M68K BUS");register_exec(entry,"case-entry",index);register_exec(entry+16,"case-result",index)
   end
   for index,_ in ipairs(config.transactionCases) do
-    local entry=transaction_pc(index);memory.write_u16_be(entry,0x4E71,"M68K BUS");memory.write_u16_be(entry+2,0x2C7C,"M68K BUS");memory.write_u32_be(entry+4,frame_address(),"M68K BUS");memory.write_u16_be(entry+8,0x2E7C,"M68K BUS");memory.write_u32_be(entry+10,stack_top,"M68K BUS");memory.write_u16_be(entry+14,0x4EF9,"M68K BUS");memory.write_u32_be(entry+16,t.placeEntryAddress,"M68K BUS");memory.write_u16_be(entry+20,0x4E71,"M68K BUS");memory.write_u16_be(entry+22,0x4EF9,"M68K BUS");memory.write_u32_be(entry+24,index==#config.transactionCases and entry+transaction_stride or transaction_pc(index+1),"M68K BUS");register_exec(entry,"transaction-case-entry",index);register_exec(entry+20,"transaction-case-result",index)
+    local entry=transaction_pc(index);memory.write_u16_be(entry,0x4E71,"M68K BUS");memory.write_u16_be(entry+2,0x2C7C,"M68K BUS");memory.write_u32_be(entry+4,frame_address(),"M68K BUS");memory.write_u16_be(entry+8,0x2E7C,"M68K BUS");memory.write_u32_be(entry+10,stack_top,"M68K BUS");memory.write_u16_be(entry+14,0x4EF9,"M68K BUS");memory.write_u32_be(entry+16,t.placeEntryAddress,"M68K BUS");memory.write_u16_be(entry+20,0x4E71,"M68K BUS");memory.write_u16_be(entry+22,0x4EF9,"M68K BUS");memory.write_u32_be(entry+24,index==#config.transactionCases and fulfillment_base or transaction_pc(index+1),"M68K BUS");register_exec(entry,"transaction-case-entry",index);register_exec(entry+20,"transaction-case-result",index)
+  end
+  for index,_ in ipairs(config.fulfillmentCases) do
+    local entry=fulfillment_pc(index);memory.write_u16_be(entry,0x4E71,"M68K BUS");memory.write_u16_be(entry+2,0x2C7C,"M68K BUS");memory.write_u32_be(entry+4,fulfillment_frame_address(),"M68K BUS");memory.write_u16_be(entry+8,0x2E7C,"M68K BUS");memory.write_u32_be(entry+10,stack_top,"M68K BUS");memory.write_u16_be(entry+14,0x4EF9,"M68K BUS");memory.write_u32_be(entry+16,u.addItemEntryAddress,"M68K BUS");memory.write_u16_be(entry+20,0x4E71,"M68K BUS");memory.write_u16_be(entry+22,0x4EF9,"M68K BUS");memory.write_u32_be(entry+24,index==#config.fulfillmentCases and entry+fulfillment_stride or fulfillment_pc(index+1),"M68K BUS");register_exec(entry,"fulfillment-case-entry",index);register_exec(entry+20,"fulfillment-case-result",index)
   end
   register_exec(f.entryAddress,"function-entry",0);register_exec(f.entryAddress,"pick-mithril-effective-target",0);register_exec(f.fallbackRngCallAddress,"fallback-row-roll",0);register_exec(f.fallbackRngCallAddress,"transaction-fallback-row-roll",0);register_exec(f.weaponRngCallAddress,"weapon-row-roll",0);register_exec(f.weaponRngCallAddress,"transaction-weapon-row-roll",0);register_exec(f.rngEntryAddress,"rng-entry",0);register_exec(f.rngEntryAddress,"transaction-rng-entry",0);register_exec(f.rngReturnRtsAddress,"rng-return",0);register_exec(f.rngReturnRtsAddress,"transaction-rng-return",0);register_exec(f.rowResolvedAddress,"row-resolved",0);register_exec(f.rowResolvedAddress,"transaction-row-resolved",0);register_exec(f.loadIndexAddress,"item-selected",0);register_exec(f.loadIndexAddress,"transaction-item-selected",0);register_exec(f.orderWriteAddress,"order-write",0);register_exec(f.orderWriteAddress,"transaction-order-write",0);register_exec(f.returnRtsAddress,"function-rts",0);register_exec(f.returnRtsAddress,"pick-mithril-effective-return",0)
   register_exec(t.placeEntryAddress,"place-entry",0);register_exec(t.decreaseGoldCallAddress,"decrease-gold-call",0);register_exec(t.decreaseGoldInstructionTargetAddress,"decrease-gold-instruction-target",0);register_exec(t.decreaseGoldEffectiveTargetAddress,"decrease-gold-effective-target",0);register_exec(t.decreaseGoldEffectiveReturnAddress,"decrease-gold-effective-return",0);register_exec(t.pendingOrdersIncrementedObserveAddress,"pending-orders-incremented",0);register_exec(t.dropItemCallAddress,"drop-item-call",0);register_exec(t.dropItemInstructionTargetAddress,"drop-item-instruction-target",0);register_exec(t.dropItemEffectiveTargetAddress,"drop-item-effective-target",0);register_exec(t.dropItemTailUpdateTargetAddress,"drop-item-tail-update-target",0);register_exec(t.dropItemEffectiveReturnAddress,"drop-item-effective-return",0);register_exec(t.pickMithrilCallAddress,"pick-mithril-call",0);register_exec(t.clearFlagCallAddress,"clear-flag-call",0);register_exec(t.clearFlagInstructionTargetAddress,"clear-flag-instruction-target",0);register_exec(t.clearFlagEffectiveTargetAddress,"clear-flag-effective-target",0);register_exec(t.clearFlagEffectiveReturnAddress,"clear-flag-pre-presentation-return",0)
+  register_exec(u.addItemCallAddress,"fulfillment-add-item-call",0);register_exec(u.addItemInstructionTargetAddress,"fulfillment-add-item-instruction-target",0);register_exec(u.addItemEffectiveTargetAddress,"fulfillment-add-item-effective-target",0);register_exec(u.addItemEffectiveReturnAddress,"fulfillment-add-item-effective-return",0);register_exec(u.orderReadObserveAddress,"fulfillment-order-read",0);register_exec(u.orderClearedObserveAddress,"fulfillment-order-cleared",0);register_exec(u.fulfilledOrdersIncrementedObserveAddress,"fulfillment-orders-incremented",0);register_exec(u.equippabilityCallAddress,"fulfillment-equippability-call",0);register_exec(u.equippabilityInstructionTargetAddress,"fulfillment-equippability-instruction-target",0);register_exec(u.equippabilityEffectiveTargetAddress,"fulfillment-equippability-effective-target",0);register_exec(u.equippabilityEffectiveReturnAddress,"fulfillment-equippability-effective-return",0)
 end
 status("milestone:observer-loaded")
 local ok,message=pcall(function() register_exec(f.checkSramAddress,"bootstrap-check-sram",0);status("milestone:direct-function-probe-armed") end)

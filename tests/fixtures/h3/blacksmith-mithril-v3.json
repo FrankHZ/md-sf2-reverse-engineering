@@ -1,0 +1,1191 @@
+{
+  "schemaVersion": 3,
+  "id": "sf2-blacksmith-mithril-runtime-v3",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "evidenceDate": "2026-08-09",
+  "provenance": {
+    "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM",
+    "upstreamBranch": "master",
+    "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "owners": {
+      "commonMenus": {
+        "fixture": "tests/fixtures/h2/common-menus-static-v1.json",
+        "fixtureId": "sf2-common-menus-static-v1"
+      },
+      "commonStats": {
+        "fixture": "tests/fixtures/h2/common-stats-static-v1.json",
+        "fixtureId": "sf2-common-stats-static-v1"
+      },
+      "coreStatsData": {
+        "fixture": "tests/fixtures/h2/core-stats-data-static-v1.json",
+        "fixtureId": "sf2-core-stats-data-static-v1"
+      },
+      "itemAuxiliary": {
+        "fixture": "tests/fixtures/h2/item-auxiliary-static-v1.json",
+        "fixtureId": "sf2-item-auxiliary-static-v1"
+      },
+      "rng": {
+        "fixture": "tests/fixtures/h3/rng-v1.json",
+        "fixtureId": "sf2-rng-generate-random-number-v1"
+      }
+    }
+  },
+  "sourceContext": {
+    "pickSourcePath": "code/common/menus/blacksmith/pickmithrilweapon.asm",
+    "placeSourcePath": "code/common/menus/blacksmith/blacksmithactions.asm",
+    "itemStatsSourcePath": "code/common/stats/itemstats.asm",
+    "tableSourcePath": "data/stats/items/mithrilweapons.asm",
+    "h1ListingPath": "build/sf2build-h1.lst",
+    "functionEntryAddress": 138966,
+    "placeEntryAddress": 138690,
+    "itemDefinitionsSourcePath": "data/stats/items/itemdefs.asm",
+    "fulfillAddItemEntryAddress": 138212
+  },
+  "observationBoundary": "One BizHawk 2.11.1 / Genesis Plus GX process retains the accepted five-case direct PickMithrilWeapon probe, then three distinct direct post-confirmation @PlaceOrder cases, then three direct accepted-recipient fulfillment cases. Each fulfillment case writes only the source-derived BlacksmithAction_FulfillOrder frame locals and jumps to the original @AddItem block. It observes AddItem first-ITEM_NOTHING insertion, source-selected order word read and clear, fulfilledOrdersNumber increment, and IsWeaponOrRingEquippable carry. At the original equippability RTS, the observer verifies the normal @AddItem continuation at the top of the original stack, rewrites only that word to its generated continuation, and lets the original RTS execute; it does not execute the following branch, equip prompt, or BlacksmithMenu presentation. The observer snapshots and restores only CURRENT_GOLD's longword, RANDOM_SEED's word, the four MITHRIL_WEAPONS_ON_ORDER words, the one GAME_FLAGS byte owning flag 80, and the three selected 56-byte combatant records. Probe code, synthetic action frame, stack, and other work RAM are excluded from the restoration claim.",
+  "caseOrder": [
+    "ordinary-group0-early-slot0",
+    "ordinary-group2-final-slot1",
+    "brn-fallback-zero-row2-slot2",
+    "rdbn-fallback-nonzero-row0-slot3",
+    "all-occupied-no-order-write"
+  ],
+  "cases": [
+    {
+      "id": "ordinary-group0-early-slot0",
+      "clientClass": 12,
+      "randomSeedBefore": 0,
+      "ordersBefore": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "registerSentinels": {
+        "d0": 4660,
+        "d7": 22136
+      }
+    },
+    {
+      "id": "ordinary-group2-final-slot1",
+      "clientClass": 15,
+      "randomSeedBefore": 315,
+      "ordersBefore": [
+        8738,
+        0,
+        0,
+        0
+      ],
+      "registerSentinels": {
+        "d0": 4661,
+        "d7": 22137
+      }
+    },
+    {
+      "id": "brn-fallback-zero-row2-slot2",
+      "clientClass": 16,
+      "randomSeedBefore": 0,
+      "ordersBefore": [
+        8738,
+        13107,
+        0,
+        0
+      ],
+      "registerSentinels": {
+        "d0": 4662,
+        "d7": 22138
+      }
+    },
+    {
+      "id": "rdbn-fallback-nonzero-row0-slot3",
+      "clientClass": 31,
+      "randomSeedBefore": 2714,
+      "ordersBefore": [
+        8738,
+        13107,
+        17476,
+        0
+      ],
+      "registerSentinels": {
+        "d0": 4663,
+        "d7": 22139
+      }
+    },
+    {
+      "id": "all-occupied-no-order-write",
+      "clientClass": 12,
+      "randomSeedBefore": 0,
+      "ordersBefore": [
+        8738,
+        13107,
+        17476,
+        21845
+      ],
+      "registerSentinels": {
+        "d0": 4664,
+        "d7": 22140
+      }
+    }
+  ],
+  "transactionCaseOrder": [
+    "wizard-row3-first-order-slot0",
+    "paladin-row1-final-roll-order-slot2",
+    "brn-fallback-row2-order-slot1"
+  ],
+  "transactionCases": [
+    {
+      "id": "wizard-row3-first-order-slot0",
+      "clientMember": 0,
+      "itemSlot": 0,
+      "clientClass": 17,
+      "randomSeedBefore": 0,
+      "goldBefore": 5500,
+      "pendingOrdersBefore": 0,
+      "clientItemWordsBefore": [
+        123,
+        0,
+        1,
+        127
+      ],
+      "ordersBefore": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "flag80OwningByteBefore": 165
+    },
+    {
+      "id": "paladin-row1-final-roll-order-slot2",
+      "clientMember": 1,
+      "itemSlot": 1,
+      "clientClass": 13,
+      "randomSeedBefore": 316,
+      "goldBefore": 6000,
+      "pendingOrdersBefore": 1,
+      "clientItemWordsBefore": [
+        0,
+        123,
+        1,
+        127
+      ],
+      "ordersBefore": [
+        4369,
+        8738,
+        0,
+        0
+      ],
+      "flag80OwningByteBefore": 192
+    },
+    {
+      "id": "brn-fallback-row2-order-slot1",
+      "clientMember": 2,
+      "itemSlot": 3,
+      "clientClass": 16,
+      "randomSeedBefore": 1,
+      "goldBefore": 7777,
+      "pendingOrdersBefore": 2,
+      "clientItemWordsBefore": [
+        0,
+        1,
+        2,
+        123
+      ],
+      "ordersBefore": [
+        4369,
+        0,
+        0,
+        0
+      ],
+      "flag80OwningByteBefore": 129
+    }
+  ],
+  "acceptedObservation": {
+    "system": "GEN",
+    "core": "Genesis Plus GX",
+    "id": "sf2-blacksmith-mithril-runtime-v3",
+    "caseOrder": [
+      "ordinary-group0-early-slot0",
+      "ordinary-group2-final-slot1",
+      "brn-fallback-zero-row2-slot2",
+      "rdbn-fallback-nonzero-row0-slot3",
+      "all-occupied-no-order-write"
+    ],
+    "records": [
+      {
+        "id": "ordinary-group0-early-slot0",
+        "classGroupIndex": 0,
+        "weaponRowIndex": 0,
+        "choiceIndex": 0,
+        "itemIndex": 69,
+        "orderWriteIndex": 0,
+        "ordersAfter": [
+          69,
+          0,
+          0,
+          0
+        ],
+        "randomSeedAfter": 7,
+        "rngCalls": [
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 16,
+            "result": 0,
+            "randomSeedAfter": 7
+          }
+        ],
+        "functionReturnSeen": true,
+        "preservedD0": 4660,
+        "preservedD7": 22136
+      },
+      {
+        "id": "ordinary-group2-final-slot1",
+        "classGroupIndex": 2,
+        "weaponRowIndex": 2,
+        "choiceIndex": 3,
+        "itemIndex": 40,
+        "orderWriteIndex": 1,
+        "ordersAfter": [
+          8738,
+          40,
+          0,
+          0
+        ],
+        "randomSeedAfter": 34943,
+        "rngCalls": [
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 16,
+            "result": 1,
+            "randomSeedAfter": 4102
+          },
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 8,
+            "result": 6,
+            "randomSeedAfter": 53333
+          },
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 4,
+            "result": 2,
+            "randomSeedAfter": 37976
+          },
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 1,
+            "result": 0,
+            "randomSeedAfter": 34943
+          }
+        ],
+        "functionReturnSeen": true,
+        "preservedD0": 4661,
+        "preservedD7": 22137
+      },
+      {
+        "id": "brn-fallback-zero-row2-slot2",
+        "classGroupIndex": 8,
+        "weaponRowIndex": 2,
+        "choiceIndex": 0,
+        "itemIndex": 43,
+        "orderWriteIndex": 2,
+        "ordersAfter": [
+          8738,
+          13107,
+          43,
+          0
+        ],
+        "randomSeedAfter": 98,
+        "rngCalls": [
+          {
+            "role": "fallback-row-roll",
+            "callPc": 139014,
+            "targetPc": 5632,
+            "returnPc": 139018,
+            "rangeWord": 2,
+            "result": 0,
+            "randomSeedAfter": 7
+          },
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 16,
+            "result": 0,
+            "randomSeedAfter": 98
+          }
+        ],
+        "functionReturnSeen": true,
+        "preservedD0": 4662,
+        "preservedD7": 22138
+      },
+      {
+        "id": "rdbn-fallback-nonzero-row0-slot3",
+        "classGroupIndex": 8,
+        "weaponRowIndex": 0,
+        "choiceIndex": 0,
+        "itemIndex": 69,
+        "orderWriteIndex": 3,
+        "ordersAfter": [
+          8738,
+          13107,
+          17476,
+          69
+        ],
+        "randomSeedAfter": 12,
+        "rngCalls": [
+          {
+            "role": "fallback-row-roll",
+            "callPc": 139014,
+            "targetPc": 5632,
+            "returnPc": 139018,
+            "rangeWord": 2,
+            "result": 1,
+            "randomSeedAfter": 35289
+          },
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 16,
+            "result": 0,
+            "randomSeedAfter": 12
+          }
+        ],
+        "functionReturnSeen": true,
+        "preservedD0": 4663,
+        "preservedD7": 22139
+      },
+      {
+        "id": "all-occupied-no-order-write",
+        "classGroupIndex": 0,
+        "weaponRowIndex": 0,
+        "choiceIndex": 0,
+        "itemIndex": 69,
+        "orderWriteIndex": null,
+        "ordersAfter": [
+          8738,
+          13107,
+          17476,
+          21845
+        ],
+        "randomSeedAfter": 7,
+        "rngCalls": [
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 16,
+            "result": 0,
+            "randomSeedAfter": 7
+          }
+        ],
+        "functionReturnSeen": true,
+        "preservedD0": 4664,
+        "preservedD7": 22140
+      }
+    ],
+    "transactionCaseOrder": [
+      "wizard-row3-first-order-slot0",
+      "paladin-row1-final-roll-order-slot2",
+      "brn-fallback-row2-order-slot1"
+    ],
+    "transactionRecords": [
+      {
+        "id": "wizard-row3-first-order-slot0",
+        "clientMember": 0,
+        "itemSlot": 0,
+        "goldBefore": 5500,
+        "goldAfter": 500,
+        "pendingOrdersBefore": 0,
+        "pendingOrdersAfter": 1,
+        "clientItemWordsBefore": [
+          123,
+          0,
+          1,
+          127
+        ],
+        "clientItemWordsAfter": [
+          0,
+          1,
+          127,
+          127
+        ],
+        "ordersBefore": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ordersAfter": [
+          100,
+          0,
+          0,
+          0
+        ],
+        "flag80OwningByteBefore": 165,
+        "flag80OwningByteAfter": 37,
+        "randomSeedBefore": 0,
+        "randomSeedAfter": 7,
+        "classGroupIndex": 3,
+        "weaponRowIndex": 3,
+        "choiceIndex": 0,
+        "itemIndex": 100,
+        "orderWriteIndex": 0,
+        "rngCalls": [
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 16,
+            "result": 0,
+            "randomSeedAfter": 7
+          }
+        ],
+        "callbackChronology": [
+          {
+            "role": "place-entry",
+            "pc": 138690
+          },
+          {
+            "role": "decrease-gold-call",
+            "pc": 138696
+          },
+          {
+            "role": "decrease-gold-instruction-target",
+            "pc": 33120
+          },
+          {
+            "role": "decrease-gold-effective-target",
+            "pc": 35252
+          },
+          {
+            "role": "decrease-gold-effective-return",
+            "pc": 35276
+          },
+          {
+            "role": "pending-orders-incremented",
+            "pc": 138708
+          },
+          {
+            "role": "drop-item-call",
+            "pc": 138716
+          },
+          {
+            "role": "drop-item-instruction-target",
+            "pc": 33184
+          },
+          {
+            "role": "drop-item-effective-target",
+            "pc": 36370
+          },
+          {
+            "role": "drop-item-tail-update-target",
+            "pc": 35278
+          },
+          {
+            "role": "drop-item-effective-return",
+            "pc": 35364
+          },
+          {
+            "role": "pick-mithril-call",
+            "pc": 138722
+          },
+          {
+            "role": "pick-mithril-effective-target",
+            "pc": 138966
+          },
+          {
+            "role": "pick-mithril-effective-return",
+            "pc": 139104
+          },
+          {
+            "role": "clear-flag-call",
+            "pc": 138730
+          },
+          {
+            "role": "clear-flag-instruction-target",
+            "pc": 33388
+          },
+          {
+            "role": "clear-flag-effective-target",
+            "pc": 39124
+          },
+          {
+            "role": "clear-flag-pre-presentation-return",
+            "pc": 39142
+          }
+        ],
+        "safeExitOriginalReturnPc": 138736,
+        "safeExitSeen": true
+      },
+      {
+        "id": "paladin-row1-final-roll-order-slot2",
+        "clientMember": 1,
+        "itemSlot": 1,
+        "goldBefore": 6000,
+        "goldAfter": 1000,
+        "pendingOrdersBefore": 1,
+        "pendingOrdersAfter": 2,
+        "clientItemWordsBefore": [
+          0,
+          123,
+          1,
+          127
+        ],
+        "clientItemWordsAfter": [
+          0,
+          1,
+          127,
+          127
+        ],
+        "ordersBefore": [
+          4369,
+          8738,
+          0,
+          0
+        ],
+        "ordersAfter": [
+          4369,
+          8738,
+          80,
+          0
+        ],
+        "flag80OwningByteBefore": 192,
+        "flag80OwningByteAfter": 64,
+        "randomSeedBefore": 316,
+        "randomSeedAfter": 63504,
+        "classGroupIndex": 1,
+        "weaponRowIndex": 1,
+        "choiceIndex": 3,
+        "itemIndex": 80,
+        "orderWriteIndex": 2,
+        "rngCalls": [
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 16,
+            "result": 1,
+            "randomSeedAfter": 4115
+          },
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 8,
+            "result": 6,
+            "randomSeedAfter": 53502
+          },
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 4,
+            "result": 2,
+            "randomSeedAfter": 40173
+          },
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 1,
+            "result": 0,
+            "randomSeedAfter": 63504
+          }
+        ],
+        "callbackChronology": [
+          {
+            "role": "place-entry",
+            "pc": 138690
+          },
+          {
+            "role": "decrease-gold-call",
+            "pc": 138696
+          },
+          {
+            "role": "decrease-gold-instruction-target",
+            "pc": 33120
+          },
+          {
+            "role": "decrease-gold-effective-target",
+            "pc": 35252
+          },
+          {
+            "role": "decrease-gold-effective-return",
+            "pc": 35276
+          },
+          {
+            "role": "pending-orders-incremented",
+            "pc": 138708
+          },
+          {
+            "role": "drop-item-call",
+            "pc": 138716
+          },
+          {
+            "role": "drop-item-instruction-target",
+            "pc": 33184
+          },
+          {
+            "role": "drop-item-effective-target",
+            "pc": 36370
+          },
+          {
+            "role": "drop-item-tail-update-target",
+            "pc": 35278
+          },
+          {
+            "role": "drop-item-effective-return",
+            "pc": 35364
+          },
+          {
+            "role": "pick-mithril-call",
+            "pc": 138722
+          },
+          {
+            "role": "pick-mithril-effective-target",
+            "pc": 138966
+          },
+          {
+            "role": "pick-mithril-effective-return",
+            "pc": 139104
+          },
+          {
+            "role": "clear-flag-call",
+            "pc": 138730
+          },
+          {
+            "role": "clear-flag-instruction-target",
+            "pc": 33388
+          },
+          {
+            "role": "clear-flag-effective-target",
+            "pc": 39124
+          },
+          {
+            "role": "clear-flag-pre-presentation-return",
+            "pc": 39142
+          }
+        ],
+        "safeExitOriginalReturnPc": 138736,
+        "safeExitSeen": true
+      },
+      {
+        "id": "brn-fallback-row2-order-slot1",
+        "clientMember": 2,
+        "itemSlot": 3,
+        "goldBefore": 7777,
+        "goldAfter": 2777,
+        "pendingOrdersBefore": 2,
+        "pendingOrdersAfter": 3,
+        "clientItemWordsBefore": [
+          0,
+          1,
+          2,
+          123
+        ],
+        "clientItemWordsAfter": [
+          0,
+          1,
+          2,
+          127
+        ],
+        "ordersBefore": [
+          4369,
+          0,
+          0,
+          0
+        ],
+        "ordersAfter": [
+          4369,
+          43,
+          0,
+          0
+        ],
+        "flag80OwningByteBefore": 129,
+        "flag80OwningByteAfter": 1,
+        "randomSeedBefore": 1,
+        "randomSeedAfter": 267,
+        "classGroupIndex": 8,
+        "weaponRowIndex": 2,
+        "choiceIndex": 0,
+        "itemIndex": 43,
+        "orderWriteIndex": 1,
+        "rngCalls": [
+          {
+            "role": "fallback-row-roll",
+            "callPc": 139014,
+            "targetPc": 5632,
+            "returnPc": 139018,
+            "rangeWord": 2,
+            "result": 0,
+            "randomSeedAfter": 20
+          },
+          {
+            "role": "weapon-row-roll",
+            "callPc": 139052,
+            "targetPc": 5632,
+            "returnPc": 139056,
+            "rangeWord": 16,
+            "result": 0,
+            "randomSeedAfter": 267
+          }
+        ],
+        "callbackChronology": [
+          {
+            "role": "place-entry",
+            "pc": 138690
+          },
+          {
+            "role": "decrease-gold-call",
+            "pc": 138696
+          },
+          {
+            "role": "decrease-gold-instruction-target",
+            "pc": 33120
+          },
+          {
+            "role": "decrease-gold-effective-target",
+            "pc": 35252
+          },
+          {
+            "role": "decrease-gold-effective-return",
+            "pc": 35276
+          },
+          {
+            "role": "pending-orders-incremented",
+            "pc": 138708
+          },
+          {
+            "role": "drop-item-call",
+            "pc": 138716
+          },
+          {
+            "role": "drop-item-instruction-target",
+            "pc": 33184
+          },
+          {
+            "role": "drop-item-effective-target",
+            "pc": 36370
+          },
+          {
+            "role": "drop-item-tail-update-target",
+            "pc": 35278
+          },
+          {
+            "role": "drop-item-effective-return",
+            "pc": 35364
+          },
+          {
+            "role": "pick-mithril-call",
+            "pc": 138722
+          },
+          {
+            "role": "pick-mithril-effective-target",
+            "pc": 138966
+          },
+          {
+            "role": "pick-mithril-effective-return",
+            "pc": 139104
+          },
+          {
+            "role": "clear-flag-call",
+            "pc": 138730
+          },
+          {
+            "role": "clear-flag-instruction-target",
+            "pc": 33388
+          },
+          {
+            "role": "clear-flag-effective-target",
+            "pc": 39124
+          },
+          {
+            "role": "clear-flag-pre-presentation-return",
+            "pc": 39142
+          }
+        ],
+        "safeExitOriginalReturnPc": 138736,
+        "safeExitSeen": true
+      }
+    ],
+    "fulfillmentCaseOrder": [
+      "hero-levanter-slot3-order3-equippable",
+      "vicr-goddess-staff-slot2-order2-equippable",
+      "snip-mystery-staff-slot0-order0-not-equippable"
+    ],
+    "fulfillmentRecords": [
+      {
+        "id": "hero-levanter-slot3-order3-equippable",
+        "clientMember": 0,
+        "recipientClass": 12,
+        "itemIndex": 69,
+        "clientItemWordsBefore": [
+          1,
+          2,
+          3,
+          127
+        ],
+        "clientItemWordsAfter": [
+          1,
+          2,
+          3,
+          69
+        ],
+        "itemWriteIndex": 3,
+        "addItemResultCode": 0,
+        "ordersBefore": [
+          80,
+          99,
+          53,
+          69
+        ],
+        "ordersAfter": [
+          80,
+          99,
+          53,
+          0
+        ],
+        "ordersCounter": 1,
+        "selectedOrderIndex": 3,
+        "sourceOrderWordRead": 69,
+        "fulfilledOrdersBefore": 0,
+        "fulfilledOrdersAfter": 1,
+        "equippableCarrySet": true,
+        "callbackChronology": [
+          {
+            "role": "fulfillment-add-item-call",
+            "pc": 138220
+          },
+          {
+            "role": "fulfillment-add-item-instruction-target",
+            "pc": 33176
+          },
+          {
+            "role": "fulfillment-add-item-effective-target",
+            "pc": 36002
+          },
+          {
+            "role": "fulfillment-add-item-effective-return",
+            "pc": 36050
+          },
+          {
+            "role": "fulfillment-order-read",
+            "pc": 138244
+          },
+          {
+            "role": "fulfillment-order-cleared",
+            "pc": 138248
+          },
+          {
+            "role": "fulfillment-orders-incremented",
+            "pc": 138254
+          },
+          {
+            "role": "fulfillment-equippability-call",
+            "pc": 138262
+          },
+          {
+            "role": "fulfillment-equippability-instruction-target",
+            "pc": 33204
+          },
+          {
+            "role": "fulfillment-equippability-effective-target",
+            "pc": 36736
+          },
+          {
+            "role": "fulfillment-equippability-effective-return",
+            "pc": 36762
+          }
+        ],
+        "safeExitOriginalReturnPc": 138268,
+        "safeExitSeen": true
+      },
+      {
+        "id": "vicr-goddess-staff-slot2-order2-equippable",
+        "clientMember": 1,
+        "recipientClass": 19,
+        "itemIndex": 99,
+        "clientItemWordsBefore": [
+          1,
+          2,
+          127,
+          3
+        ],
+        "clientItemWordsAfter": [
+          1,
+          2,
+          99,
+          3
+        ],
+        "itemWriteIndex": 2,
+        "addItemResultCode": 0,
+        "ordersBefore": [
+          69,
+          80,
+          99,
+          53
+        ],
+        "ordersAfter": [
+          69,
+          80,
+          0,
+          53
+        ],
+        "ordersCounter": 2,
+        "selectedOrderIndex": 2,
+        "sourceOrderWordRead": 99,
+        "fulfilledOrdersBefore": 1,
+        "fulfilledOrdersAfter": 2,
+        "equippableCarrySet": true,
+        "callbackChronology": [
+          {
+            "role": "fulfillment-add-item-call",
+            "pc": 138220
+          },
+          {
+            "role": "fulfillment-add-item-instruction-target",
+            "pc": 33176
+          },
+          {
+            "role": "fulfillment-add-item-effective-target",
+            "pc": 36002
+          },
+          {
+            "role": "fulfillment-add-item-effective-return",
+            "pc": 36050
+          },
+          {
+            "role": "fulfillment-order-read",
+            "pc": 138244
+          },
+          {
+            "role": "fulfillment-order-cleared",
+            "pc": 138248
+          },
+          {
+            "role": "fulfillment-orders-incremented",
+            "pc": 138254
+          },
+          {
+            "role": "fulfillment-equippability-call",
+            "pc": 138262
+          },
+          {
+            "role": "fulfillment-equippability-instruction-target",
+            "pc": 33204
+          },
+          {
+            "role": "fulfillment-equippability-effective-target",
+            "pc": 36736
+          },
+          {
+            "role": "fulfillment-equippability-effective-return",
+            "pc": 36762
+          }
+        ],
+        "safeExitOriginalReturnPc": 138268,
+        "safeExitSeen": true
+      },
+      {
+        "id": "snip-mystery-staff-slot0-order0-not-equippable",
+        "clientMember": 2,
+        "recipientClass": 21,
+        "itemIndex": 100,
+        "clientItemWordsBefore": [
+          127,
+          1,
+          2,
+          3
+        ],
+        "clientItemWordsAfter": [
+          100,
+          1,
+          2,
+          3
+        ],
+        "itemWriteIndex": 0,
+        "addItemResultCode": 0,
+        "ordersBefore": [
+          100,
+          69,
+          80,
+          99
+        ],
+        "ordersAfter": [
+          0,
+          69,
+          80,
+          99
+        ],
+        "ordersCounter": 4,
+        "selectedOrderIndex": 0,
+        "sourceOrderWordRead": 100,
+        "fulfilledOrdersBefore": 2,
+        "fulfilledOrdersAfter": 3,
+        "equippableCarrySet": false,
+        "callbackChronology": [
+          {
+            "role": "fulfillment-add-item-call",
+            "pc": 138220
+          },
+          {
+            "role": "fulfillment-add-item-instruction-target",
+            "pc": 33176
+          },
+          {
+            "role": "fulfillment-add-item-effective-target",
+            "pc": 36002
+          },
+          {
+            "role": "fulfillment-add-item-effective-return",
+            "pc": 36050
+          },
+          {
+            "role": "fulfillment-order-read",
+            "pc": 138244
+          },
+          {
+            "role": "fulfillment-order-cleared",
+            "pc": 138248
+          },
+          {
+            "role": "fulfillment-orders-incremented",
+            "pc": 138254
+          },
+          {
+            "role": "fulfillment-equippability-call",
+            "pc": 138262
+          },
+          {
+            "role": "fulfillment-equippability-instruction-target",
+            "pc": 33204
+          },
+          {
+            "role": "fulfillment-equippability-effective-target",
+            "pc": 36736
+          },
+          {
+            "role": "fulfillment-equippability-effective-return",
+            "pc": 36762
+          }
+        ],
+        "safeExitOriginalReturnPc": 138268,
+        "safeExitSeen": true
+      }
+    ],
+    "callbacksCleared": 0,
+    "restoration": {
+      "currentGoldLongRestored": true,
+      "randomSeedWordRestored": true,
+      "orderWordsRestored": true,
+      "flag80OwningByteRestored": true,
+      "clientCombatantRecordsRestored": true
+    }
+  },
+  "runtimeQuestions": [
+    "blacksmith-mithril/full-menu-admission-and-natural-story-reachability",
+    "blacksmith-mithril/material-customer-selection-and-confirmation-ui-branches",
+    "blacksmith-mithril/recipient-selection-cancel-capacity-optional-equip-curse-presentation-boundaries",
+    "blacksmith-mithril/map-reload-save-reload-persistence-boundaries",
+    "blacksmith-mithril/ui-input-audio-vdp-timing-rendering-rng-distribution-and-hardware-boundaries"
+  ],
+  "fulfillmentCaseOrder": [
+    "hero-levanter-slot3-order3-equippable",
+    "vicr-goddess-staff-slot2-order2-equippable",
+    "snip-mystery-staff-slot0-order0-not-equippable"
+  ],
+  "fulfillmentCases": [
+    {
+      "id": "hero-levanter-slot3-order3-equippable",
+      "clientMember": 0,
+      "recipientClass": 12,
+      "itemIndex": 69,
+      "clientItemWordsBefore": [
+        1,
+        2,
+        3,
+        127
+      ],
+      "ordersBefore": [
+        80,
+        99,
+        53,
+        69
+      ],
+      "ordersCounter": 1,
+      "fulfilledOrdersBefore": 0,
+      "equippableCarrySet": true
+    },
+    {
+      "id": "vicr-goddess-staff-slot2-order2-equippable",
+      "clientMember": 1,
+      "recipientClass": 19,
+      "itemIndex": 99,
+      "clientItemWordsBefore": [
+        1,
+        2,
+        127,
+        3
+      ],
+      "ordersBefore": [
+        69,
+        80,
+        99,
+        53
+      ],
+      "ordersCounter": 2,
+      "fulfilledOrdersBefore": 1,
+      "equippableCarrySet": true
+    },
+    {
+      "id": "snip-mystery-staff-slot0-order0-not-equippable",
+      "clientMember": 2,
+      "recipientClass": 21,
+      "itemIndex": 100,
+      "clientItemWordsBefore": [
+        127,
+        1,
+        2,
+        3
+      ],
+      "ordersBefore": [
+        100,
+        69,
+        80,
+        99
+      ],
+      "ordersCounter": 4,
+      "fulfilledOrdersBefore": 2,
+      "equippableCarrySet": false
+    }
+  ]
+}

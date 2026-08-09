@@ -341,9 +341,40 @@ byte, and the three selected 56-byte combatant records. Probe code, synthetic fr
 work RAM are explicitly excluded. Reproduce the grouped run with
 `uv run sf2 h3 blacksmith-mithril --timeout-seconds 180`.
 
+**Confirmed — direct fulfillment `@AddItem` H3 cohort.** One BizHawk 2.11.1 / Genesis Plus GX launch retains all five helper and
+three committed-order results, then uses three accepted-recipient synthetic action frames to enter only
+`BlacksmithAction_FulfillOrder:@AddItem` (`0x21BE4`). The source/H1/ROM guards bind
+`clientMember=-6`, `itemIndex=-10`, `ordersCounter=-22`, and `fulfilledOrdersNumber=-16`; the original
+block calls `j_AddItem` (`0x21BEC → 0x8198 → 0x8CA2`, RTS `0x8CD2`), computes physical order index
+`BLACKSMITH_MAX_ORDERS_NUMBER - ordersCounter`, reads and zeroes that exact two-byte word, increments the
+synthetic fulfilled counter, then calls `j_IsWeaponOrRingEquippable`
+(`0x21C16 → 0x81B4 → 0x8F80`, RTS `0x8F9A`). `AddItem` scans four item words for the first
+`ITEM_NOTHING` and returns `d2=0` after its masked write; it does not reach `UpdateCombatantStats` in
+this bounded path. The helper reads combatant class byte 10, builds its class bit, and preserves the
+resulting carry through its final register restore.
+
+The observed cases vary source-selected physical order slots/counters `3/1`, `2/2`, and `0/4` and first-empty
+inventory positions `3`, `2`, and `0`: HERO/Levanter writes slot 3, clears order 3, reaches fulfilled count
+1, and has carry set; VICR/Goddess Staff writes slot 2, clears order 2, reaches count 2, and has carry set;
+SNIP/Mystery Staff writes slot 0, clears order 0, reaches count 3, and has carry clear. `AddItem` returns
+`d2=0` in all three cases. Each record has the same exact 11-event chronology: AddItem call,
+instruction-target, effective target, and effective return; order read, clear, and fulfilled-count increment;
+then equippability call, instruction-target, effective target, and effective return. Their source
+item-definition rows, class masks, weapon-type bit, H1 records, and ROM bytes are independently guarded.
+Each target order starts non-empty with its supplied item; none starts with a full inventory. At the original
+equippability RTS, the observer observed A7=`0xFFFEFC` and top longword `0x21C1C`, rewrote only that stack
+longword to the generated continuation, and let the original RTS execute. It never rewrites PC or executes
+the following branch, optional equip prompt, or UI. The final exact readback passed for the existing three
+56-byte records and four order words (plus the existing gold, seed, and flag ranges); the synthetic frame,
+stack, and probe remain excluded. Reproduce all 11 cases in one launch with
+`uv run sf2 h3 blacksmith-mithril --timeout-seconds 180`.
+
 This does not claim BlacksmithMenu admission or natural story reachability, material/customer selection,
-cancellation or insufficient-gold UI branches, fulfillment/delivery/equip, persistence, player input,
-audio/VDP/timing/rendering, RNG distribution, or hardware behavior; those remain **Unknown**.
+cancellation or insufficient-gold UI branches, recipient selection/cancel/full-inventory UI,
+equipment-type/equippability pre-gates, optional equip/equip/curse branches, persistence, player input,
+audio/VDP/timing/rendering, RNG distribution, or hardware behavior; those remain **Unknown**. The grouped
+fulfillment runtime question is exactly that remaining menu/UI branch boundary; it excludes the
+source/H1/ROM-bound direct `@AddItem` commit block confirmed by the v3 observation.
 
 The interaction-level handoff is recorded in
 [`service-interactions.md`](../design/contracts/service-interactions.md). It deliberately consumes only the
