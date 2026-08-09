@@ -55,11 +55,12 @@ A read-only audit of the pinned source confirms the same bounded control shapes 
 audit does not promote source comments into story meaning, import the contents of adjacent tables, or
 expand the fixture-owned claim set.
 
-The current `sf2-map-data-static-v1` aggregate is deliberately excluded. Its owner regression is
-tracked separately by [Issue #99](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/99),
-and it supplies no evidence or merge dependency here. All `map.data.*` research records are excluded,
-including the flag-switched-map, savepoint-coordinate, and raft-reset-coordinate table identities.
-This contract therefore owns helper behavior without claiming the private table corpus that feeds it.
+The `sf2-map-data-static-v1` aggregate and all `map.data.*` research records are outside this
+contract's consumed evidence, including the flag-switched-map, savepoint-coordinate, and
+raft-reset-coordinate table identities. [Issue #99](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/99)
+retains the correction trace for that aggregate; its status supplies no evidence here, and resolving
+it does not automatically expand this contract. This contract therefore owns helper behavior without
+claiming the private table corpus that feeds it.
 
 The same common-maps fixture also contains camera, animation, layout, and unused-loader facts. They are
 not consumed here. In particular, `maps.camera`, `map.camera-control.wait-for-view-scroll-end`,
@@ -155,9 +156,11 @@ save-system questions.
 These helpers are narrow routing services, not a complete map-entry pipeline:
 
 - global flags retain their own addressing and lifecycle boundary;
-- the private map-data tables retain their own corpus owner and are excluded while Issue #99 is queued;
-- map layout import, working-layout mutation, collision, entity placement, camera state, and VInt/DMA
-  behavior remain with map-data, map-exploration, camera, and presentation owners;
+- the private `map.data.*` tables remain outside this contract's consumed evidence;
+- the static layout corpus remains with [map-layout data](map-layout-data.md), while construction and
+  working-layout mutation remain with [map exploration](map-exploration.md);
+- collision, entity placement, camera state, and VInt/DMA presentation remain with their separate map,
+  camera, runtime, and presentation owners;
 - battle encounter composition and battle-loop control remain with battle contracts;
 - save-slot selection, SRAM format, and persistence remain with the save-system contract;
 - story progression may consume accepted results but cannot infer natural reachability from them;
@@ -277,7 +280,7 @@ A future remake routing adapter passes this contract only when:
 | ordered six-byte map-switch scan, negative terminator, first admitted replacement | **Confirmed static** | `sf2-common-maps-static-v1` ([`common-maps-static-v1.json`](../../../tests/fixtures/h2/common-maps-static-v1.json)) | Private rows/counts, flag meaning, downstream map load |
 | current-map sentinel, unlocked/wildcard admission, area-write/completion order, no-match `-1` | **Confirmed static** | `sf2-common-maps-static-v1` ([`common-maps-static-v1.json`](../../../tests/fixtures/h2/common-maps-static-v1.json)) | Coordinate corpus, caller branch, battle lifecycle/outcome |
 | pre-399 game-start route, four-byte savepoint scan, fallback, flag-64 raft gate | **Confirmed static** | `sf2-common-maps-static-v1` ([`common-maps-static-v1.json`](../../../tests/fixtures/h2/common-maps-static-v1.json)) | Numeric game-start constants, private rows, persistence and visible state |
-| complete map-data table corpus | **Excluded owner regression** | [Issue #99](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/99); no fixture consumed | Do not cite `sf2-map-data-static-v1` or associate `map.data.*` records here |
+| complete map-data table corpus | **Excluded aggregate owner** | `sf2-map-data-static-v1` and all `map.data.*` records are not consumed; [Issue #99](https://github.com/FrankHZ/md-sf2-reverse-engineering/issues/99) is correction trace only | Resolution does not automatically expand this contract or its associations |
 | story, save, battle, loading, collision, UI, audio, timing, malformed inputs | **Separate owner / Unknown** | Adjacent contracts and future runtime/synthesis work | Do not infer a full map-entry experience from helper-local static control |
 
 ## Reproduction
