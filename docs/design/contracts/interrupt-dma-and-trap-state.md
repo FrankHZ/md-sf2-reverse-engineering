@@ -177,7 +177,8 @@ range before a CRAM DMA is queued after the color update.
 These facts define control state and order only. They do not define visible duration, palette
 contents, color-space equivalence, DMA cadence or completion, accessibility, scene ownership, or what
 the player sees between entry and return. A modern renderer may implement a host-native transition
-while retaining a compatibility trace for the accepted mode and completion handshake.
+while retaining a compatibility trace for the accepted mode and setting-clear plus one-extra-VInt
+control handshake.
 
 ## Trap Inventory and Handoffs
 
@@ -346,11 +347,12 @@ A future interrupt-service adapter passes this contract only when:
 | 21-file inventory and 20 selected entry identities/addresses | **Confirmed static** | `sf2-tech-interrupts-static-v1` ([`tech-interrupts-static-v1.json`](../../../tests/fixtures/h2/tech-interrupts-static-v1.json)) | Indirect reachability, alternate builds, runtime effects |
 | VInt gate/order, contextual slots, and wait/sleep handshake | **Confirmed static** | same `expected.interruptFacts` owner | Cadence, nesting, callback activation, failure behavior |
 | immediate/queued DMA control and processing order | **Confirmed static** | same owner | Capacity, overflow, command layout, hardware timing/completion |
-| fade state and completion handshake | **Confirmed static** | same owner | Palette content, visible duration, CRAM-DMA cadence |
+| fade state and setting-clear plus one-extra-VInt control handshake | **Confirmed static** | same owner | Transfer completion, palette content, visible fade completion/duration, CRAM-DMA cadence |
 | sound/text/map-script trap transport and handoffs | **Confirmed static** | same owner | Downstream audio/dialogue/map behavior and caller admission |
 | four flag traps | **Confirmed static inventory only** | same owner for count; [global-flag state](global-flag-state.md) for its accepted address/grouping/storage seam | Operands, return movement, results/CCR, exact mapping, runtime reachability |
 | input repeat and direct wait-helper runtime progression | **Separate-owner Confirmed** | [input-system](input-system.md) | Not an H4 surface here |
-| hardware and visible behavior | **Inferred / Unknown** | source intent plus future bounded runtime evidence | Do not infer cycle or presentation parity from static order |
+| hardware-facing intent | **Inferred** | source register and bus operations | Exact device timing remains **Unknown** |
+| visible and audible outcomes | **Unknown** | future bounded runtime evidence | Do not infer presentation parity from static order |
 
 ## Reproduction
 
