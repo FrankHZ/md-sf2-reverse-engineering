@@ -462,6 +462,9 @@ CONTRACTS = {
         "tests/fixtures/h2/ui-layout-static-v1.json": "sf2-ui-layout-static-v1",
         "tests/fixtures/h2/tech-interrupts-static-v1.json": "sf2-tech-interrupts-static-v1",
     },
+    "docs/design/contracts/interrupt-dma-and-trap-state.md": {
+        "tests/fixtures/h2/tech-interrupts-static-v1.json": "sf2-tech-interrupts-static-v1",
+    },
 }
 
 

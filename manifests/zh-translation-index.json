@@ -98,6 +98,10 @@
       "translatedDate": "2026-08-08"
     },
     {
+      "source": "docs/design/contracts/interrupt-dma-and-trap-state.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/item-definition-data.md",
       "status": "pending"
     },

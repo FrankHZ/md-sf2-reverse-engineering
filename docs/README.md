@@ -563,6 +563,11 @@ document whose anchors may be updated.
 - [`randomness.md`](./design/contracts/randomness.md): the static/runtime contracts for the main RNG, debug
   directional override, AI byte RNG, bounded sampling, helper-return state, and controlled
   source-shaped copy, plus the retry and seed-copy isolation boundary.
+- [`interrupt-dma-and-trap-state.md`](./design/contracts/interrupt-dma-and-trap-state.md): the
+  implementation-neutral contract for VInt scheduling gates and ordered stages, contextual slots,
+  wait/sleep and DMA control state, fade predicates, and bounded trap transport, while retaining
+  device timing, queue failure behavior, downstream effects, presentation, and reachability as
+  separate-owner or Unknown boundaries.
 
 ## Decisions
 
