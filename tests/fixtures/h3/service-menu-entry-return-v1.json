@@ -1,0 +1,3151 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-service-menu-entry-return-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "evidenceDate": "2026-08-12",
+  "provenance": {
+    "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM",
+    "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "h2Fixture": "tests/fixtures/h2/common-menus-static-v1.json",
+    "h2FixtureId": "sf2-common-menus-static-v1"
+  },
+  "observationBoundary": "Controlled outer-entry cancel/return seams only; original UI and service bodies are excluded.",
+  "caseOrder": [
+    "context-menu-church",
+    "context-menu-shop",
+    "context-menu-blacksmith",
+    "exploration-vint-church",
+    "exploration-vint-caravan",
+    "battle-test-church-main",
+    "battle-test-shop",
+    "battle-test-caravan",
+    "battle-test-church-preserved-registers",
+    "map-entity-church",
+    "map-entity-shop",
+    "map-entity-caravan",
+    "map-entity-tail-church",
+    "map-entity-tail-shop",
+    "map-entity-tail-blacksmith"
+  ],
+  "sourceContext": {
+    "shopEntryAddress": 131172,
+    "churchEntryAddress": 133634,
+    "caravanEntryAddress": 139218,
+    "blacksmithEntryAddress": 137786
+  },
+  "static": {
+    "aliases": {
+      "shop": {
+        "instructionTarget": "j_ShopMenu",
+        "instructionTargetAddress": 131072,
+        "effectiveTarget": "ShopMenu",
+        "effectiveTargetAddress": 131172
+      },
+      "church": {
+        "instructionTarget": "j_ChurchMenu",
+        "instructionTargetAddress": 131076,
+        "effectiveTarget": "ChurchMenu",
+        "effectiveTargetAddress": 133634
+      },
+      "caravan": {
+        "instructionTarget": "j_CaravanMenu",
+        "instructionTargetAddress": 131088,
+        "effectiveTarget": "CaravanMenu",
+        "effectiveTargetAddress": 139218
+      },
+      "blacksmith": {
+        "instructionTarget": "j_BlacksmithMenu",
+        "instructionTargetAddress": 131084,
+        "effectiveTarget": "BlacksmithMenu",
+        "effectiveTargetAddress": 137786
+      }
+    },
+    "callerInventory": [
+      {
+        "siteId": "code/gameflow/special/battletest.asm:146:church",
+        "family": "battle-test",
+        "sourcePath": "code/gameflow/special/battletest.asm",
+        "sourceLineNumber": 146,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 30810,
+        "returnAddress": 30816,
+        "returnInstruction": "txt 460",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "code/gameflow/special/battletest.asm:154:shop",
+        "family": "battle-test",
+        "sourcePath": "code/gameflow/special/battletest.asm",
+        "sourceLineNumber": 154,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 30846,
+        "returnAddress": 30852,
+        "returnInstruction": "jsr j_fieldmenu",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "code/gameflow/special/battletest.asm:156:caravan",
+        "family": "battle-test",
+        "sourcePath": "code/gameflow/special/battletest.asm",
+        "sourceLineNumber": 156,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_CaravanMenu",
+        "effectiveTarget": "CaravanMenu",
+        "callSiteAddress": 30858,
+        "returnAddress": 30864,
+        "returnInstruction": "bra.w byte_77de",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020010"
+      },
+      {
+        "siteId": "code/gameflow/special/battletest.asm:166:church",
+        "family": "battle-test",
+        "sourcePath": "code/gameflow/special/battletest.asm",
+        "sourceLineNumber": 166,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 30890,
+        "returnAddress": 30896,
+        "returnInstruction": "movem.l (sp)+,d0-a6",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "code/gameflow/exploration/explorationvints.asm:31:church",
+        "family": "exploration-vint",
+        "sourcePath": "code/gameflow/exploration/explorationvints.asm",
+        "sourceLineNumber": 31,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 154394,
+        "returnAddress": 154400,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "code/gameflow/exploration/explorationvints.asm:70:caravan",
+        "family": "exploration-vint",
+        "sourcePath": "code/gameflow/exploration/explorationvints.asm",
+        "sourceLineNumber": 70,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_CaravanMenu",
+        "effectiveTarget": "CaravanMenu",
+        "callSiteAddress": 154500,
+        "returnAddress": 154506,
+        "returnInstruction": "trap #vint_functions",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020010"
+      },
+      {
+        "siteId": "code/common/scripting/map/mapscriptengine_2.asm:593:church",
+        "family": "context-menu",
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLineNumber": 593,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 292030,
+        "returnAddress": 292036,
+        "returnInstruction": "cmpi.w #1,d0",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "code/common/scripting/map/mapscriptengine_2.asm:598:shop",
+        "family": "context-menu",
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLineNumber": 598,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 292042,
+        "returnAddress": 292048,
+        "returnInstruction": "cmpi.w #2,d0",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "code/common/scripting/map/mapscriptengine_2.asm:603:blacksmith",
+        "family": "context-menu",
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLineNumber": 603,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_BlacksmithMenu",
+        "effectiveTarget": "BlacksmithMenu",
+        "callSiteAddress": 292054,
+        "returnAddress": 292060,
+        "returnInstruction": "movea.l (sp)+,a6",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB90002000C"
+      },
+      {
+        "siteId": "data/maps/entries/map03/mapsetups/s2_entityevents.asm:262:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 262,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 331836,
+        "returnAddress": 331842,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map03/mapsetups/s2_entityevents_609.asm:88:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_609.asm",
+        "sourceLineNumber": 88,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 332032,
+        "returnAddress": 332038,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map03/mapsetups/s2_entityevents_609.asm:293:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_609.asm",
+        "sourceLineNumber": 293,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 332144,
+        "returnAddress": 332150,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map03/mapsetups/s2_entityevents_609.asm:374:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_609.asm",
+        "sourceLineNumber": 374,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 332226,
+        "returnAddress": 332232,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map05/mapsetups/s2_entityevents_650.asm:245:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map05/mapsetups/s2_entityevents_650.asm",
+        "sourceLineNumber": 245,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 334766,
+        "returnAddress": 334772,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map16/mapsetups/s2_entityevents.asm:29:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map16/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 29,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 335440,
+        "returnAddress": 335446,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map16/mapsetups/s2_entityevents.asm:102:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map16/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 102,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 335492,
+        "returnAddress": 335498,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map16/mapsetups/s2_entityevents.asm:216:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map16/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 216,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 335578,
+        "returnAddress": 335584,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm:39:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "sourceLineNumber": 39,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 346596,
+        "returnAddress": 346602,
+        "returnInstruction": "bra.s loc_549f0",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm:52:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "sourceLineNumber": 52,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 346624,
+        "returnAddress": 346630,
+        "returnInstruction": "bra.s return_54a0c",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm:195:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "sourceLineNumber": 195,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 346818,
+        "returnAddress": 346824,
+        "returnInstruction": "bra.s loc_54ace",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm:205:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "sourceLineNumber": 205,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 346832,
+        "returnAddress": 346838,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm:239:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "sourceLineNumber": 239,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 346888,
+        "returnAddress": 346894,
+        "returnInstruction": "bra.s loc_54b18",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm:253:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "sourceLineNumber": 253,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 346920,
+        "returnAddress": 346926,
+        "returnInstruction": "bra.s return_54b34",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map08/mapsetups/s2_entityevents.asm:58:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map08/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 58,
+        "opcode": "jmp",
+        "transferKind": "tail-transfer",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 352440,
+        "returnAddress": null,
+        "returnInstruction": null,
+        "returnKind": "outer-rts-harness",
+        "instructionHex": "4EF900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map08/mapsetups/s2_entityevents.asm:104:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map08/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 104,
+        "opcode": "jmp",
+        "transferKind": "tail-transfer",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 352488,
+        "returnAddress": null,
+        "returnInstruction": null,
+        "returnKind": "outer-rts-harness",
+        "instructionHex": "4EF900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map08/mapsetups/s2_entityevents.asm:182:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map08/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 182,
+        "opcode": "jmp",
+        "transferKind": "tail-transfer",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 352562,
+        "returnAddress": null,
+        "returnInstruction": null,
+        "returnKind": "outer-rts-harness",
+        "instructionHex": "4EF900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map09/mapsetups/s2_entityevents.asm:61:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map09/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 61,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 354158,
+        "returnAddress": 354164,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map09/mapsetups/s2_entityevents.asm:73:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map09/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 73,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 354172,
+        "returnAddress": 354178,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map09/mapsetups/s2_entityevents.asm:84:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map09/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 84,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 354180,
+        "returnAddress": 354186,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map09/mapsetups/s2_entityevents.asm:152:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map09/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 152,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 354270,
+        "returnAddress": 354276,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map10/mapsetups/s2_entityevents.asm:61:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map10/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 61,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 355830,
+        "returnAddress": 355836,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map10/mapsetups/s2_entityevents.asm:150:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map10/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 150,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 355900,
+        "returnAddress": 355906,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map10/mapsetups/s2_entityevents.asm:161:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map10/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 161,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 355908,
+        "returnAddress": 355914,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map13/mapsetups/s2_entityevents.asm:79:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map13/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 79,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 360598,
+        "returnAddress": 360604,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map13/mapsetups/s2_entityevents.asm:91:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map13/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 91,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 360612,
+        "returnAddress": 360618,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map13/mapsetups/s2_entityevents.asm:124:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map13/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 124,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 360646,
+        "returnAddress": 360652,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map14/mapsetups/s2_entityevents_458.asm:13:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map14/mapsetups/s2_entityevents_458.asm",
+        "sourceLineNumber": 13,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 364356,
+        "returnAddress": 364362,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map22/mapsetups/s2_entityevents.asm:39:caravan",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map22/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 39,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_CaravanMenu",
+        "effectiveTarget": "CaravanMenu",
+        "callSiteAddress": 365796,
+        "returnAddress": 365802,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020010"
+      },
+      {
+        "siteId": "data/maps/entries/map22/mapsetups/s2_entityevents.asm:116:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map22/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 116,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 365858,
+        "returnAddress": 365864,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map23/mapsetups/s2_entityevents.asm:91:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map23/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 91,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 367518,
+        "returnAddress": 367524,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map26/mapsetups/s2_entityevents.asm:57:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map26/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 57,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 368036,
+        "returnAddress": 368042,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map26/mapsetups/s2_entityevents.asm:68:caravan",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map26/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 68,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_CaravanMenu",
+        "effectiveTarget": "CaravanMenu",
+        "callSiteAddress": 368044,
+        "returnAddress": 368050,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020010"
+      },
+      {
+        "siteId": "data/maps/entries/map29/mapsetups/s2_entityevents.asm:19:blacksmith",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map29/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 19,
+        "opcode": "jmp",
+        "transferKind": "tail-transfer",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_BlacksmithMenu",
+        "effectiveTarget": "BlacksmithMenu",
+        "callSiteAddress": 368912,
+        "returnAddress": null,
+        "returnInstruction": null,
+        "returnKind": "outer-rts-harness",
+        "instructionHex": "4EF90002000C"
+      },
+      {
+        "siteId": "data/maps/entries/map29/mapsetups/s2_entityevents.asm:29:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map29/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 29,
+        "opcode": "jmp",
+        "transferKind": "tail-transfer",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 368918,
+        "returnAddress": null,
+        "returnInstruction": null,
+        "returnKind": "outer-rts-harness",
+        "instructionHex": "4EF900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map29/mapsetups/s2_entityevents.asm:40:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map29/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 40,
+        "opcode": "jmp",
+        "transferKind": "tail-transfer",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 368930,
+        "returnAddress": null,
+        "returnInstruction": null,
+        "returnKind": "outer-rts-harness",
+        "instructionHex": "4EF900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map15/mapsetups/s2_entityevents.asm:142:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map15/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 142,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 380798,
+        "returnAddress": 380804,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map15/mapsetups/s2_entityevents.asm:153:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map15/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 153,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 380806,
+        "returnAddress": 380812,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map15/mapsetups/s2_entityevents.asm:165:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map15/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 165,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 380820,
+        "returnAddress": 380826,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map25/mapsetups/s2_entityevents.asm:106:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map25/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 106,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 381642,
+        "returnAddress": 381648,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map25/mapsetups/s2_entityevents.asm:126:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map25/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 126,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 381664,
+        "returnAddress": 381670,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map25/mapsetups/s2_entityevents.asm:178:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map25/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 178,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 381744,
+        "returnAddress": 381750,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map31/mapsetups/s2_entityevents_830.asm:36:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map31/mapsetups/s2_entityevents_830.asm",
+        "sourceLineNumber": 36,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 382170,
+        "returnAddress": 382176,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map31/mapsetups/s2_entityevents_830.asm:119:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map31/mapsetups/s2_entityevents_830.asm",
+        "sourceLineNumber": 119,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 382238,
+        "returnAddress": 382244,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map31/mapsetups/s2_entityevents_830.asm:162:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map31/mapsetups/s2_entityevents_830.asm",
+        "sourceLineNumber": 162,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 382280,
+        "returnAddress": 382286,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map36/mapsetups/s2_entityevents.asm:201:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map36/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 201,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 383260,
+        "returnAddress": 383266,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map38/mapsetups/s2_entityevents.asm:230:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map38/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 230,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 384164,
+        "returnAddress": 384170,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map38/mapsetups/s2_entityevents.asm:242:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map38/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 242,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 384178,
+        "returnAddress": 384184,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map38/mapsetups/s2_entityevents.asm:254:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map38/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 254,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 384192,
+        "returnAddress": 384198,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map02/mapsetups/s2_entityevents.asm:122:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map02/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 122,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 387498,
+        "returnAddress": 387504,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map02/mapsetups/s2_entityevents.asm:134:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map02/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 134,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 387512,
+        "returnAddress": 387518,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map02/mapsetups/s2_entityevents.asm:145:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map02/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 145,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 387520,
+        "returnAddress": 387526,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map45/mapsetups/s2_entityevents.asm:56:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map45/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 56,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 393302,
+        "returnAddress": 393308,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map05/mapsetups/s2_entityevents_530.asm:41:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map05/mapsetups/s2_entityevents_530.asm",
+        "sourceLineNumber": 41,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 394336,
+        "returnAddress": 394342,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map05/mapsetups/s2_entityevents_530.asm:53:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map05/mapsetups/s2_entityevents_530.asm",
+        "sourceLineNumber": 53,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 394350,
+        "returnAddress": 394356,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map16/mapsetups/s2_entityevents_530.asm:143:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map16/mapsetups/s2_entityevents_530.asm",
+        "sourceLineNumber": 143,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 397552,
+        "returnAddress": 397558,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map16/mapsetups/s2_entityevents_530.asm:154:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map16/mapsetups/s2_entityevents_530.asm",
+        "sourceLineNumber": 154,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 397560,
+        "returnAddress": 397566,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004"
+      },
+      {
+        "siteId": "data/maps/entries/map16/mapsetups/s2_entityevents_530.asm:218:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map16/mapsetups/s2_entityevents_530.asm",
+        "sourceLineNumber": 218,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 397620,
+        "returnAddress": 397626,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000"
+      },
+      {
+        "siteId": "data/maps/entries/map16/mapsetups/s2_entityevents_530.asm:242:caravan",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map16/mapsetups/s2_entityevents_530.asm",
+        "sourceLineNumber": 242,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_CaravanMenu",
+        "effectiveTarget": "CaravanMenu",
+        "callSiteAddress": 397638,
+        "returnAddress": 397644,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020010"
+      },
+      {
+        "siteId": "data/maps/entries/map56/mapsetups/s2_entityevents.asm:23:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map56/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 23,
+        "opcode": "jmp",
+        "transferKind": "tail-transfer",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 398542,
+        "returnAddress": null,
+        "returnInstruction": null,
+        "returnKind": "outer-rts-harness",
+        "instructionHex": "4EF900020004"
+      }
+    ],
+    "callerDenominator": 69,
+    "callerServiceCounts": {
+      "shop": 33,
+      "church": 29,
+      "caravan": 5,
+      "blacksmith": 2
+    },
+    "callerFamilyCounts": {
+      "battle-test": 4,
+      "context-menu": 3,
+      "exploration-vint": 2,
+      "map-entity": 60
+    },
+    "callerTransferCounts": {
+      "returning-call": 62,
+      "tail-transfer": 7
+    },
+    "callerFamilyServiceCounts": {
+      "context-menu": {
+        "shop": 1,
+        "church": 1,
+        "caravan": 0,
+        "blacksmith": 1
+      },
+      "exploration-vint": {
+        "shop": 0,
+        "church": 1,
+        "caravan": 1,
+        "blacksmith": 0
+      },
+      "battle-test": {
+        "shop": 1,
+        "church": 2,
+        "caravan": 1,
+        "blacksmith": 0
+      },
+      "map-entity": {
+        "shop": 31,
+        "church": 25,
+        "caravan": 3,
+        "blacksmith": 1
+      }
+    },
+    "callerFamilyServiceTransferCounts": {
+      "context-menu": {
+        "shop": {
+          "returning-call": 1,
+          "tail-transfer": 0
+        },
+        "church": {
+          "returning-call": 1,
+          "tail-transfer": 0
+        },
+        "caravan": {
+          "returning-call": 0,
+          "tail-transfer": 0
+        },
+        "blacksmith": {
+          "returning-call": 1,
+          "tail-transfer": 0
+        }
+      },
+      "exploration-vint": {
+        "shop": {
+          "returning-call": 0,
+          "tail-transfer": 0
+        },
+        "church": {
+          "returning-call": 1,
+          "tail-transfer": 0
+        },
+        "caravan": {
+          "returning-call": 1,
+          "tail-transfer": 0
+        },
+        "blacksmith": {
+          "returning-call": 0,
+          "tail-transfer": 0
+        }
+      },
+      "battle-test": {
+        "shop": {
+          "returning-call": 1,
+          "tail-transfer": 0
+        },
+        "church": {
+          "returning-call": 2,
+          "tail-transfer": 0
+        },
+        "caravan": {
+          "returning-call": 1,
+          "tail-transfer": 0
+        },
+        "blacksmith": {
+          "returning-call": 0,
+          "tail-transfer": 0
+        }
+      },
+      "map-entity": {
+        "shop": {
+          "returning-call": 28,
+          "tail-transfer": 3
+        },
+        "church": {
+          "returning-call": 22,
+          "tail-transfer": 3
+        },
+        "caravan": {
+          "returning-call": 3,
+          "tail-transfer": 0
+        },
+        "blacksmith": {
+          "returning-call": 0,
+          "tail-transfer": 1
+        }
+      }
+    },
+    "representativeSelectionRule": {
+      "positiveCell": "lowest-call-site-address",
+      "additionalStackCase": "battle-test-church-movem-save-restore"
+    },
+    "h2ServiceEntries": [
+      "BlacksmithMenu",
+      "CaravanMenu",
+      "ChurchMenu",
+      "FieldMenu",
+      "ShopMenu"
+    ],
+    "entrySeams": {
+      "shop": {
+        "entryAddress": 131172,
+        "preludeRedirectAddress": 131180,
+        "controlledCallAddress": 131218,
+        "controlledReturnAddress": 131224,
+        "epilogueAddress": 131262,
+        "controlledTargetAddress": 16739584,
+        "preludeTargetAddress": 131208,
+        "controlledResultD0Word": 65535
+      },
+      "church": {
+        "entryAddress": 133634,
+        "preludeRedirectAddress": 133642,
+        "controlledCallAddress": 133680,
+        "controlledReturnAddress": 133686,
+        "epilogueAddress": 133724,
+        "controlledTargetAddress": 16739584,
+        "preludeTargetAddress": 133670,
+        "controlledResultD0Word": 65535
+      },
+      "caravan": {
+        "entryAddress": 139218,
+        "preludeRedirectAddress": 139226,
+        "controlledCallAddress": 139250,
+        "controlledReturnAddress": 139256,
+        "epilogueAddress": 139296,
+        "controlledTargetAddress": 16739584,
+        "preludeTargetAddress": 139240,
+        "controlledResultD0Word": 65535
+      },
+      "blacksmith": {
+        "entryAddress": 137786,
+        "preludeRedirectAddress": 137794,
+        "controlledCallAddress": 137834,
+        "controlledReturnAddress": 137838,
+        "epilogueAddress": 137866,
+        "controlledTargetAddress": 137874,
+        "preludeTargetAddress": 137834,
+        "controlledResultD0Word": null
+      }
+    },
+    "generatedStubs": [
+      {
+        "role": "generated-service-cancel-stub",
+        "purpose": "controlled-diamond-cancel-return",
+        "address": 16739584,
+        "widthBytes": 4,
+        "instructionHex": "70FF4E75",
+        "resultD0Word": 65535
+      },
+      {
+        "role": "generated-blacksmith-return-stub",
+        "purpose": "controlled-process-blacksmith-orders-return",
+        "address": 16739600,
+        "widthBytes": 2,
+        "instructionHex": "4E75",
+        "resultD0Word": null
+      }
+    ],
+    "cases": [
+      {
+        "caseId": "context-menu-church",
+        "siteId": "code/common/scripting/map/mapscriptengine_2.asm:593:church",
+        "family": "context-menu",
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLineNumber": 593,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 292030,
+        "returnAddress": 292036,
+        "returnInstruction": "cmpi.w #1,d0",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020004",
+        "service": "church",
+        "callerEntryAddress": 292022,
+        "continuationRedirectAddress": 292036,
+        "serviceEntryStackAddress": 16776952,
+        "postServiceRtsStackAddress": 16776956,
+        "outerReturnTargetAddress": 292036,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "context-menu-shop",
+        "siteId": "code/common/scripting/map/mapscriptengine_2.asm:598:shop",
+        "family": "context-menu",
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLineNumber": 598,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 292042,
+        "returnAddress": 292048,
+        "returnInstruction": "cmpi.w #2,d0",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020000",
+        "service": "shop",
+        "callerEntryAddress": 292022,
+        "continuationRedirectAddress": 292048,
+        "serviceEntryStackAddress": 16776952,
+        "postServiceRtsStackAddress": 16776956,
+        "outerReturnTargetAddress": 292048,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "context-menu-blacksmith",
+        "siteId": "code/common/scripting/map/mapscriptengine_2.asm:603:blacksmith",
+        "family": "context-menu",
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLineNumber": 603,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_BlacksmithMenu",
+        "effectiveTarget": "BlacksmithMenu",
+        "callSiteAddress": 292054,
+        "returnAddress": 292060,
+        "returnInstruction": "movea.l (sp)+,a6",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB90002000C",
+        "service": "blacksmith",
+        "callerEntryAddress": 292022,
+        "continuationRedirectAddress": 292060,
+        "serviceEntryStackAddress": 16776952,
+        "postServiceRtsStackAddress": 16776956,
+        "outerReturnTargetAddress": 292060,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "exploration-vint-church",
+        "siteId": "code/gameflow/exploration/explorationvints.asm:31:church",
+        "family": "exploration-vint",
+        "sourcePath": "code/gameflow/exploration/explorationvints.asm",
+        "sourceLineNumber": 31,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 154394,
+        "returnAddress": 154400,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004",
+        "service": "church",
+        "callerEntryAddress": 154394,
+        "continuationRedirectAddress": 154400,
+        "serviceEntryStackAddress": 16776956,
+        "postServiceRtsStackAddress": 16776960,
+        "outerReturnTargetAddress": 154400,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "exploration-vint-caravan",
+        "siteId": "code/gameflow/exploration/explorationvints.asm:70:caravan",
+        "family": "exploration-vint",
+        "sourcePath": "code/gameflow/exploration/explorationvints.asm",
+        "sourceLineNumber": 70,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_CaravanMenu",
+        "effectiveTarget": "CaravanMenu",
+        "callSiteAddress": 154500,
+        "returnAddress": 154506,
+        "returnInstruction": "trap #vint_functions",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020010",
+        "service": "caravan",
+        "callerEntryAddress": 154500,
+        "continuationRedirectAddress": 154506,
+        "serviceEntryStackAddress": 16776956,
+        "postServiceRtsStackAddress": 16776960,
+        "outerReturnTargetAddress": 154506,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "battle-test-church-main",
+        "siteId": "code/gameflow/special/battletest.asm:146:church",
+        "family": "battle-test",
+        "sourcePath": "code/gameflow/special/battletest.asm",
+        "sourceLineNumber": 146,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 30810,
+        "returnAddress": 30816,
+        "returnInstruction": "txt 460",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020004",
+        "service": "church",
+        "callerEntryAddress": 30810,
+        "continuationRedirectAddress": 30816,
+        "serviceEntryStackAddress": 16776956,
+        "postServiceRtsStackAddress": 16776960,
+        "outerReturnTargetAddress": 30816,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "battle-test-shop",
+        "siteId": "code/gameflow/special/battletest.asm:154:shop",
+        "family": "battle-test",
+        "sourcePath": "code/gameflow/special/battletest.asm",
+        "sourceLineNumber": 154,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 30846,
+        "returnAddress": 30852,
+        "returnInstruction": "jsr j_fieldmenu",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020000",
+        "service": "shop",
+        "callerEntryAddress": 30846,
+        "continuationRedirectAddress": 30852,
+        "serviceEntryStackAddress": 16776956,
+        "postServiceRtsStackAddress": 16776960,
+        "outerReturnTargetAddress": 30852,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "battle-test-caravan",
+        "siteId": "code/gameflow/special/battletest.asm:156:caravan",
+        "family": "battle-test",
+        "sourcePath": "code/gameflow/special/battletest.asm",
+        "sourceLineNumber": 156,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_CaravanMenu",
+        "effectiveTarget": "CaravanMenu",
+        "callSiteAddress": 30858,
+        "returnAddress": 30864,
+        "returnInstruction": "bra.w byte_77de",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020010",
+        "service": "caravan",
+        "callerEntryAddress": 30858,
+        "continuationRedirectAddress": 30864,
+        "serviceEntryStackAddress": 16776956,
+        "postServiceRtsStackAddress": 16776960,
+        "outerReturnTargetAddress": 30864,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "battle-test-church-preserved-registers",
+        "siteId": "code/gameflow/special/battletest.asm:166:church",
+        "family": "battle-test",
+        "sourcePath": "code/gameflow/special/battletest.asm",
+        "sourceLineNumber": 166,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 30890,
+        "returnAddress": 30896,
+        "returnInstruction": "movem.l (sp)+,d0-a6",
+        "returnKind": "continued-instruction",
+        "instructionHex": "4EB900020004",
+        "service": "church",
+        "callerEntryAddress": 30886,
+        "continuationRedirectAddress": 30900,
+        "serviceEntryStackAddress": 16776896,
+        "postServiceRtsStackAddress": 16776900,
+        "outerReturnTargetAddress": 30896,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "map-entity-church",
+        "siteId": "data/maps/entries/map03/mapsetups/s2_entityevents.asm:262:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 262,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 331836,
+        "returnAddress": 331842,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020004",
+        "service": "church",
+        "callerEntryAddress": 331836,
+        "continuationRedirectAddress": 331842,
+        "serviceEntryStackAddress": 16776956,
+        "postServiceRtsStackAddress": 16776960,
+        "outerReturnTargetAddress": 331842,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "map-entity-shop",
+        "siteId": "data/maps/entries/map03/mapsetups/s2_entityevents_609.asm:88:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_609.asm",
+        "sourceLineNumber": 88,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 332032,
+        "returnAddress": 332038,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020000",
+        "service": "shop",
+        "callerEntryAddress": 332032,
+        "continuationRedirectAddress": 332038,
+        "serviceEntryStackAddress": 16776956,
+        "postServiceRtsStackAddress": 16776960,
+        "outerReturnTargetAddress": 332038,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "map-entity-caravan",
+        "siteId": "data/maps/entries/map22/mapsetups/s2_entityevents.asm:39:caravan",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map22/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 39,
+        "opcode": "jsr",
+        "transferKind": "returning-call",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_CaravanMenu",
+        "effectiveTarget": "CaravanMenu",
+        "callSiteAddress": 365796,
+        "returnAddress": 365802,
+        "returnInstruction": "rts",
+        "returnKind": "rts",
+        "instructionHex": "4EB900020010",
+        "service": "caravan",
+        "callerEntryAddress": 365796,
+        "continuationRedirectAddress": 365802,
+        "serviceEntryStackAddress": 16776956,
+        "postServiceRtsStackAddress": 16776960,
+        "outerReturnTargetAddress": 365802,
+        "outerReturnRole": "outer-caller-return"
+      },
+      {
+        "caseId": "map-entity-tail-church",
+        "siteId": "data/maps/entries/map08/mapsetups/s2_entityevents.asm:58:church",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map08/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 58,
+        "opcode": "jmp",
+        "transferKind": "tail-transfer",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ChurchMenu",
+        "effectiveTarget": "ChurchMenu",
+        "callSiteAddress": 352440,
+        "returnAddress": null,
+        "returnInstruction": null,
+        "returnKind": "outer-rts-harness",
+        "instructionHex": "4EF900020004",
+        "service": "church",
+        "callerEntryAddress": 352440,
+        "continuationRedirectAddress": null,
+        "serviceEntryStackAddress": 16776960,
+        "postServiceRtsStackAddress": 16776964,
+        "outerReturnTargetAddress": 16739616,
+        "outerReturnRole": "outer-rts-harness-return"
+      },
+      {
+        "caseId": "map-entity-tail-shop",
+        "siteId": "data/maps/entries/map08/mapsetups/s2_entityevents.asm:104:shop",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map08/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 104,
+        "opcode": "jmp",
+        "transferKind": "tail-transfer",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_ShopMenu",
+        "effectiveTarget": "ShopMenu",
+        "callSiteAddress": 352488,
+        "returnAddress": null,
+        "returnInstruction": null,
+        "returnKind": "outer-rts-harness",
+        "instructionHex": "4EF900020000",
+        "service": "shop",
+        "callerEntryAddress": 352488,
+        "continuationRedirectAddress": null,
+        "serviceEntryStackAddress": 16776960,
+        "postServiceRtsStackAddress": 16776964,
+        "outerReturnTargetAddress": 16739616,
+        "outerReturnRole": "outer-rts-harness-return"
+      },
+      {
+        "caseId": "map-entity-tail-blacksmith",
+        "siteId": "data/maps/entries/map29/mapsetups/s2_entityevents.asm:19:blacksmith",
+        "family": "map-entity",
+        "sourcePath": "data/maps/entries/map29/mapsetups/s2_entityevents.asm",
+        "sourceLineNumber": 19,
+        "opcode": "jmp",
+        "transferKind": "tail-transfer",
+        "instructionWidthBytes": 6,
+        "instructionTarget": "j_BlacksmithMenu",
+        "effectiveTarget": "BlacksmithMenu",
+        "callSiteAddress": 368912,
+        "returnAddress": null,
+        "returnInstruction": null,
+        "returnKind": "outer-rts-harness",
+        "instructionHex": "4EF90002000C",
+        "service": "blacksmith",
+        "callerEntryAddress": 368912,
+        "continuationRedirectAddress": null,
+        "serviceEntryStackAddress": 16776960,
+        "postServiceRtsStackAddress": 16776964,
+        "outerReturnTargetAddress": 16739616,
+        "outerReturnRole": "outer-rts-harness-return"
+      }
+    ],
+    "registerSentinels": {
+      "d0": 17,
+      "d1": 34,
+      "d2": 51
+    },
+    "currentPortraitAddress": 16758518,
+    "stackTop": 16776960,
+    "harness": {
+      "baseAddress": 16738304,
+      "strideBytes": 32,
+      "resultOffsetBytes": 24,
+      "resultStubAddress": 16739616,
+      "callerFrameAddress": 16738816,
+      "checkSramAddress": 28326,
+      "contextMenuHandlerAddress": 292022,
+      "caseFrameBudget": 180
+    },
+    "sessionPatches": [
+      {
+        "role": "caller-continuation-battle-test-church-main",
+        "address": 30816,
+        "widthBytes": 6,
+        "patchedHex": "4EF900FF6D20",
+        "originalHex": "4E4501CC303C"
+      },
+      {
+        "role": "caller-continuation-battle-test-shop",
+        "address": 30852,
+        "widthBytes": 6,
+        "patchedHex": "4EF900FF6D20",
+        "originalHex": "4EB900020008"
+      },
+      {
+        "role": "caller-continuation-battle-test-caravan",
+        "address": 30864,
+        "widthBytes": 6,
+        "patchedHex": "4EF900FF6D20",
+        "originalHex": "6000FF4C6100"
+      },
+      {
+        "role": "caller-continuation-battle-test-church-preserved-registers",
+        "address": 30900,
+        "widthBytes": 6,
+        "patchedHex": "4EF900FF6D20",
+        "originalHex": "600461000068"
+      },
+      {
+        "role": "shop-entry-prelude-redirect",
+        "address": 131180,
+        "widthBytes": 8,
+        "patchedHex": "4EF9000200884E71",
+        "originalHex": "72003038B0A06D06"
+      },
+      {
+        "role": "shop-diamond-cancel-service-shim",
+        "address": 131218,
+        "widthBytes": 6,
+        "patchedHex": "4EB900FF6D00",
+        "originalHex": "4EB900010000"
+      },
+      {
+        "role": "shop-cancel-epilogue-redirect",
+        "address": 131228,
+        "widthBytes": 6,
+        "patchedHex": "4EF9000200BE",
+        "originalHex": "670460000026"
+      },
+      {
+        "role": "church-entry-prelude-redirect",
+        "address": 133642,
+        "widthBytes": 8,
+        "patchedHex": "4EF900020A264E71",
+        "originalHex": "72003038B0A06D06"
+      },
+      {
+        "role": "church-diamond-cancel-service-shim",
+        "address": 133680,
+        "widthBytes": 6,
+        "patchedHex": "4EB900FF6D00",
+        "originalHex": "4EB900010000"
+      },
+      {
+        "role": "church-cancel-epilogue-redirect",
+        "address": 133690,
+        "widthBytes": 6,
+        "patchedHex": "4EF900020A5C",
+        "originalHex": "670460000026"
+      },
+      {
+        "role": "blacksmith-entry-prelude-redirect",
+        "address": 137794,
+        "widthBytes": 8,
+        "patchedHex": "4EF900021A6A4E71",
+        "originalHex": "72003038B0A06D06"
+      },
+      {
+        "role": "blacksmith-caller-continuation-redirect",
+        "address": 137838,
+        "widthBytes": 8,
+        "patchedHex": "4EF900021A8A4E71",
+        "originalHex": "72003038B0A06D06"
+      },
+      {
+        "role": "blacksmith-process-controlled-return-redirect",
+        "address": 137874,
+        "widthBytes": 6,
+        "patchedHex": "4EF900FF6D10",
+        "originalHex": "4EB900008270"
+      },
+      {
+        "role": "caravan-entry-prelude-redirect",
+        "address": 139226,
+        "widthBytes": 8,
+        "patchedHex": "4EF900021FE84E71",
+        "originalHex": "323C0002610008C8"
+      },
+      {
+        "role": "caravan-diamond-cancel-service-shim",
+        "address": 139250,
+        "widthBytes": 6,
+        "patchedHex": "4EB900FF6D00",
+        "originalHex": "4EB900010000"
+      },
+      {
+        "role": "caravan-cancel-epilogue-redirect",
+        "address": 139260,
+        "widthBytes": 6,
+        "patchedHex": "4EF900022020",
+        "originalHex": "67000016D040"
+      },
+      {
+        "role": "caller-continuation-exploration-vint-caravan",
+        "address": 154506,
+        "widthBytes": 6,
+        "patchedHex": "4EF900FF6D20",
+        "originalHex": "4E4900040000"
+      }
+    ],
+    "outerReturnTrampoline": {
+      "address": 16739632,
+      "widthBytes": 6,
+      "instructionPrefixHex": "4EF9",
+      "purpose": "generated-source-return-transfer"
+    }
+  },
+  "cases": [
+    {
+      "caseId": "context-menu-church",
+      "siteId": "code/common/scripting/map/mapscriptengine_2.asm:593:church",
+      "family": "context-menu",
+      "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+      "sourceLineNumber": 593,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_ChurchMenu",
+      "effectiveTarget": "ChurchMenu",
+      "callSiteAddress": 292030,
+      "returnAddress": 292036,
+      "returnInstruction": "cmpi.w #1,d0",
+      "returnKind": "continued-instruction",
+      "instructionHex": "4EB900020004",
+      "service": "church",
+      "callerEntryAddress": 292022,
+      "continuationRedirectAddress": 292036,
+      "serviceEntryStackAddress": 16776952,
+      "postServiceRtsStackAddress": 16776956,
+      "outerReturnTargetAddress": 292036,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "context-menu-shop",
+      "siteId": "code/common/scripting/map/mapscriptengine_2.asm:598:shop",
+      "family": "context-menu",
+      "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+      "sourceLineNumber": 598,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_ShopMenu",
+      "effectiveTarget": "ShopMenu",
+      "callSiteAddress": 292042,
+      "returnAddress": 292048,
+      "returnInstruction": "cmpi.w #2,d0",
+      "returnKind": "continued-instruction",
+      "instructionHex": "4EB900020000",
+      "service": "shop",
+      "callerEntryAddress": 292022,
+      "continuationRedirectAddress": 292048,
+      "serviceEntryStackAddress": 16776952,
+      "postServiceRtsStackAddress": 16776956,
+      "outerReturnTargetAddress": 292048,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "context-menu-blacksmith",
+      "siteId": "code/common/scripting/map/mapscriptengine_2.asm:603:blacksmith",
+      "family": "context-menu",
+      "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+      "sourceLineNumber": 603,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_BlacksmithMenu",
+      "effectiveTarget": "BlacksmithMenu",
+      "callSiteAddress": 292054,
+      "returnAddress": 292060,
+      "returnInstruction": "movea.l (sp)+,a6",
+      "returnKind": "continued-instruction",
+      "instructionHex": "4EB90002000C",
+      "service": "blacksmith",
+      "callerEntryAddress": 292022,
+      "continuationRedirectAddress": 292060,
+      "serviceEntryStackAddress": 16776952,
+      "postServiceRtsStackAddress": 16776956,
+      "outerReturnTargetAddress": 292060,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "exploration-vint-church",
+      "siteId": "code/gameflow/exploration/explorationvints.asm:31:church",
+      "family": "exploration-vint",
+      "sourcePath": "code/gameflow/exploration/explorationvints.asm",
+      "sourceLineNumber": 31,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_ChurchMenu",
+      "effectiveTarget": "ChurchMenu",
+      "callSiteAddress": 154394,
+      "returnAddress": 154400,
+      "returnInstruction": "rts",
+      "returnKind": "rts",
+      "instructionHex": "4EB900020004",
+      "service": "church",
+      "callerEntryAddress": 154394,
+      "continuationRedirectAddress": 154400,
+      "serviceEntryStackAddress": 16776956,
+      "postServiceRtsStackAddress": 16776960,
+      "outerReturnTargetAddress": 154400,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "exploration-vint-caravan",
+      "siteId": "code/gameflow/exploration/explorationvints.asm:70:caravan",
+      "family": "exploration-vint",
+      "sourcePath": "code/gameflow/exploration/explorationvints.asm",
+      "sourceLineNumber": 70,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_CaravanMenu",
+      "effectiveTarget": "CaravanMenu",
+      "callSiteAddress": 154500,
+      "returnAddress": 154506,
+      "returnInstruction": "trap #vint_functions",
+      "returnKind": "continued-instruction",
+      "instructionHex": "4EB900020010",
+      "service": "caravan",
+      "callerEntryAddress": 154500,
+      "continuationRedirectAddress": 154506,
+      "serviceEntryStackAddress": 16776956,
+      "postServiceRtsStackAddress": 16776960,
+      "outerReturnTargetAddress": 154506,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "battle-test-church-main",
+      "siteId": "code/gameflow/special/battletest.asm:146:church",
+      "family": "battle-test",
+      "sourcePath": "code/gameflow/special/battletest.asm",
+      "sourceLineNumber": 146,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_ChurchMenu",
+      "effectiveTarget": "ChurchMenu",
+      "callSiteAddress": 30810,
+      "returnAddress": 30816,
+      "returnInstruction": "txt 460",
+      "returnKind": "continued-instruction",
+      "instructionHex": "4EB900020004",
+      "service": "church",
+      "callerEntryAddress": 30810,
+      "continuationRedirectAddress": 30816,
+      "serviceEntryStackAddress": 16776956,
+      "postServiceRtsStackAddress": 16776960,
+      "outerReturnTargetAddress": 30816,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "battle-test-shop",
+      "siteId": "code/gameflow/special/battletest.asm:154:shop",
+      "family": "battle-test",
+      "sourcePath": "code/gameflow/special/battletest.asm",
+      "sourceLineNumber": 154,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_ShopMenu",
+      "effectiveTarget": "ShopMenu",
+      "callSiteAddress": 30846,
+      "returnAddress": 30852,
+      "returnInstruction": "jsr j_fieldmenu",
+      "returnKind": "continued-instruction",
+      "instructionHex": "4EB900020000",
+      "service": "shop",
+      "callerEntryAddress": 30846,
+      "continuationRedirectAddress": 30852,
+      "serviceEntryStackAddress": 16776956,
+      "postServiceRtsStackAddress": 16776960,
+      "outerReturnTargetAddress": 30852,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "battle-test-caravan",
+      "siteId": "code/gameflow/special/battletest.asm:156:caravan",
+      "family": "battle-test",
+      "sourcePath": "code/gameflow/special/battletest.asm",
+      "sourceLineNumber": 156,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_CaravanMenu",
+      "effectiveTarget": "CaravanMenu",
+      "callSiteAddress": 30858,
+      "returnAddress": 30864,
+      "returnInstruction": "bra.w byte_77de",
+      "returnKind": "continued-instruction",
+      "instructionHex": "4EB900020010",
+      "service": "caravan",
+      "callerEntryAddress": 30858,
+      "continuationRedirectAddress": 30864,
+      "serviceEntryStackAddress": 16776956,
+      "postServiceRtsStackAddress": 16776960,
+      "outerReturnTargetAddress": 30864,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "battle-test-church-preserved-registers",
+      "siteId": "code/gameflow/special/battletest.asm:166:church",
+      "family": "battle-test",
+      "sourcePath": "code/gameflow/special/battletest.asm",
+      "sourceLineNumber": 166,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_ChurchMenu",
+      "effectiveTarget": "ChurchMenu",
+      "callSiteAddress": 30890,
+      "returnAddress": 30896,
+      "returnInstruction": "movem.l (sp)+,d0-a6",
+      "returnKind": "continued-instruction",
+      "instructionHex": "4EB900020004",
+      "service": "church",
+      "callerEntryAddress": 30886,
+      "continuationRedirectAddress": 30900,
+      "serviceEntryStackAddress": 16776896,
+      "postServiceRtsStackAddress": 16776900,
+      "outerReturnTargetAddress": 30896,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "map-entity-church",
+      "siteId": "data/maps/entries/map03/mapsetups/s2_entityevents.asm:262:church",
+      "family": "map-entity",
+      "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents.asm",
+      "sourceLineNumber": 262,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_ChurchMenu",
+      "effectiveTarget": "ChurchMenu",
+      "callSiteAddress": 331836,
+      "returnAddress": 331842,
+      "returnInstruction": "rts",
+      "returnKind": "rts",
+      "instructionHex": "4EB900020004",
+      "service": "church",
+      "callerEntryAddress": 331836,
+      "continuationRedirectAddress": 331842,
+      "serviceEntryStackAddress": 16776956,
+      "postServiceRtsStackAddress": 16776960,
+      "outerReturnTargetAddress": 331842,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "map-entity-shop",
+      "siteId": "data/maps/entries/map03/mapsetups/s2_entityevents_609.asm:88:shop",
+      "family": "map-entity",
+      "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_609.asm",
+      "sourceLineNumber": 88,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_ShopMenu",
+      "effectiveTarget": "ShopMenu",
+      "callSiteAddress": 332032,
+      "returnAddress": 332038,
+      "returnInstruction": "rts",
+      "returnKind": "rts",
+      "instructionHex": "4EB900020000",
+      "service": "shop",
+      "callerEntryAddress": 332032,
+      "continuationRedirectAddress": 332038,
+      "serviceEntryStackAddress": 16776956,
+      "postServiceRtsStackAddress": 16776960,
+      "outerReturnTargetAddress": 332038,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "map-entity-caravan",
+      "siteId": "data/maps/entries/map22/mapsetups/s2_entityevents.asm:39:caravan",
+      "family": "map-entity",
+      "sourcePath": "data/maps/entries/map22/mapsetups/s2_entityevents.asm",
+      "sourceLineNumber": 39,
+      "opcode": "jsr",
+      "transferKind": "returning-call",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_CaravanMenu",
+      "effectiveTarget": "CaravanMenu",
+      "callSiteAddress": 365796,
+      "returnAddress": 365802,
+      "returnInstruction": "rts",
+      "returnKind": "rts",
+      "instructionHex": "4EB900020010",
+      "service": "caravan",
+      "callerEntryAddress": 365796,
+      "continuationRedirectAddress": 365802,
+      "serviceEntryStackAddress": 16776956,
+      "postServiceRtsStackAddress": 16776960,
+      "outerReturnTargetAddress": 365802,
+      "outerReturnRole": "outer-caller-return"
+    },
+    {
+      "caseId": "map-entity-tail-church",
+      "siteId": "data/maps/entries/map08/mapsetups/s2_entityevents.asm:58:church",
+      "family": "map-entity",
+      "sourcePath": "data/maps/entries/map08/mapsetups/s2_entityevents.asm",
+      "sourceLineNumber": 58,
+      "opcode": "jmp",
+      "transferKind": "tail-transfer",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_ChurchMenu",
+      "effectiveTarget": "ChurchMenu",
+      "callSiteAddress": 352440,
+      "returnAddress": null,
+      "returnInstruction": null,
+      "returnKind": "outer-rts-harness",
+      "instructionHex": "4EF900020004",
+      "service": "church",
+      "callerEntryAddress": 352440,
+      "continuationRedirectAddress": null,
+      "serviceEntryStackAddress": 16776960,
+      "postServiceRtsStackAddress": 16776964,
+      "outerReturnTargetAddress": 16739616,
+      "outerReturnRole": "outer-rts-harness-return"
+    },
+    {
+      "caseId": "map-entity-tail-shop",
+      "siteId": "data/maps/entries/map08/mapsetups/s2_entityevents.asm:104:shop",
+      "family": "map-entity",
+      "sourcePath": "data/maps/entries/map08/mapsetups/s2_entityevents.asm",
+      "sourceLineNumber": 104,
+      "opcode": "jmp",
+      "transferKind": "tail-transfer",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_ShopMenu",
+      "effectiveTarget": "ShopMenu",
+      "callSiteAddress": 352488,
+      "returnAddress": null,
+      "returnInstruction": null,
+      "returnKind": "outer-rts-harness",
+      "instructionHex": "4EF900020000",
+      "service": "shop",
+      "callerEntryAddress": 352488,
+      "continuationRedirectAddress": null,
+      "serviceEntryStackAddress": 16776960,
+      "postServiceRtsStackAddress": 16776964,
+      "outerReturnTargetAddress": 16739616,
+      "outerReturnRole": "outer-rts-harness-return"
+    },
+    {
+      "caseId": "map-entity-tail-blacksmith",
+      "siteId": "data/maps/entries/map29/mapsetups/s2_entityevents.asm:19:blacksmith",
+      "family": "map-entity",
+      "sourcePath": "data/maps/entries/map29/mapsetups/s2_entityevents.asm",
+      "sourceLineNumber": 19,
+      "opcode": "jmp",
+      "transferKind": "tail-transfer",
+      "instructionWidthBytes": 6,
+      "instructionTarget": "j_BlacksmithMenu",
+      "effectiveTarget": "BlacksmithMenu",
+      "callSiteAddress": 368912,
+      "returnAddress": null,
+      "returnInstruction": null,
+      "returnKind": "outer-rts-harness",
+      "instructionHex": "4EF90002000C",
+      "service": "blacksmith",
+      "callerEntryAddress": 368912,
+      "continuationRedirectAddress": null,
+      "serviceEntryStackAddress": 16776960,
+      "postServiceRtsStackAddress": 16776964,
+      "outerReturnTargetAddress": 16739616,
+      "outerReturnRole": "outer-rts-harness-return"
+    }
+  ],
+  "runtimeQuestions": [
+    "Whether each representative caller admits its alias-resolved service entry.",
+    "Whether the generated controlled-return stub reaches the source continuation or outer RTS/harness seam.",
+    "Whether source caller restoration returns the expected sentinels and stack state.",
+    "Whether the controlled harness bypasses the selected transaction/action body without interpreting it.",
+    "Whether callbacks and the disposable session ROM are completely cleaned up."
+  ],
+  "acceptedObservation": {
+    "system": "GEN",
+    "core": "Genesis Plus GX",
+    "id": "sf2-service-menu-entry-return-v1",
+    "caseOrder": [
+      "context-menu-church",
+      "context-menu-shop",
+      "context-menu-blacksmith",
+      "exploration-vint-church",
+      "exploration-vint-caravan",
+      "battle-test-church-main",
+      "battle-test-shop",
+      "battle-test-caravan",
+      "battle-test-church-preserved-registers",
+      "map-entity-church",
+      "map-entity-shop",
+      "map-entity-caravan",
+      "map-entity-tail-church",
+      "map-entity-tail-shop",
+      "map-entity-tail-blacksmith"
+    ],
+    "records": [
+      {
+        "id": "context-menu-church",
+        "family": "context-menu",
+        "service": "church",
+        "transferKind": "returning-call",
+        "callSiteAddress": 292030,
+        "entryAddress": 133634,
+        "returnAddress": 292036,
+        "resultAddress": 16738328,
+        "returnKind": "continued-instruction",
+        "registersAfter": {
+          "d0": 0,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738818,
+          "a7": 16776964
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 292030
+          },
+          {
+            "role": "service-entry",
+            "pc": 133634
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738328
+          }
+        ]
+      },
+      {
+        "id": "context-menu-shop",
+        "family": "context-menu",
+        "service": "shop",
+        "transferKind": "returning-call",
+        "callSiteAddress": 292042,
+        "entryAddress": 131172,
+        "returnAddress": 292048,
+        "resultAddress": 16738360,
+        "returnKind": "continued-instruction",
+        "registersAfter": {
+          "d0": 1,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738818,
+          "a7": 16776964
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 292042
+          },
+          {
+            "role": "service-entry",
+            "pc": 131172
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738360
+          }
+        ]
+      },
+      {
+        "id": "context-menu-blacksmith",
+        "family": "context-menu",
+        "service": "blacksmith",
+        "transferKind": "returning-call",
+        "callSiteAddress": 292054,
+        "entryAddress": 137786,
+        "returnAddress": 292060,
+        "resultAddress": 16738392,
+        "returnKind": "continued-instruction",
+        "registersAfter": {
+          "d0": 2,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738818,
+          "a7": 16776964
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 292054
+          },
+          {
+            "role": "service-entry",
+            "pc": 137786
+          },
+          {
+            "role": "generated-blacksmith-return-stub",
+            "pc": 16739600
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738392
+          }
+        ]
+      },
+      {
+        "id": "exploration-vint-church",
+        "family": "exploration-vint",
+        "service": "church",
+        "transferKind": "returning-call",
+        "callSiteAddress": 154394,
+        "entryAddress": 133634,
+        "returnAddress": 154400,
+        "resultAddress": 16738424,
+        "returnKind": "rts",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776964
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 154394
+          },
+          {
+            "role": "service-entry",
+            "pc": 133634
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738424
+          }
+        ]
+      },
+      {
+        "id": "exploration-vint-caravan",
+        "family": "exploration-vint",
+        "service": "caravan",
+        "transferKind": "returning-call",
+        "callSiteAddress": 154500,
+        "entryAddress": 139218,
+        "returnAddress": 154506,
+        "resultAddress": 16738456,
+        "returnKind": "continued-instruction",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776960
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 154500
+          },
+          {
+            "role": "service-entry",
+            "pc": 139218
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738456
+          }
+        ]
+      },
+      {
+        "id": "battle-test-church-main",
+        "family": "battle-test",
+        "service": "church",
+        "transferKind": "returning-call",
+        "callSiteAddress": 30810,
+        "entryAddress": 133634,
+        "returnAddress": 30816,
+        "resultAddress": 16738488,
+        "returnKind": "continued-instruction",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776960
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 30810
+          },
+          {
+            "role": "service-entry",
+            "pc": 133634
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738488
+          }
+        ]
+      },
+      {
+        "id": "battle-test-shop",
+        "family": "battle-test",
+        "service": "shop",
+        "transferKind": "returning-call",
+        "callSiteAddress": 30846,
+        "entryAddress": 131172,
+        "returnAddress": 30852,
+        "resultAddress": 16738520,
+        "returnKind": "continued-instruction",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776960
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 30846
+          },
+          {
+            "role": "service-entry",
+            "pc": 131172
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738520
+          }
+        ]
+      },
+      {
+        "id": "battle-test-caravan",
+        "family": "battle-test",
+        "service": "caravan",
+        "transferKind": "returning-call",
+        "callSiteAddress": 30858,
+        "entryAddress": 139218,
+        "returnAddress": 30864,
+        "resultAddress": 16738552,
+        "returnKind": "continued-instruction",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776960
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 30858
+          },
+          {
+            "role": "service-entry",
+            "pc": 139218
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738552
+          }
+        ]
+      },
+      {
+        "id": "battle-test-church-preserved-registers",
+        "family": "battle-test",
+        "service": "church",
+        "transferKind": "returning-call",
+        "callSiteAddress": 30890,
+        "entryAddress": 133634,
+        "returnAddress": 30896,
+        "resultAddress": 16738584,
+        "returnKind": "continued-instruction",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776960
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 30890
+          },
+          {
+            "role": "service-entry",
+            "pc": 133634
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738584
+          }
+        ]
+      },
+      {
+        "id": "map-entity-church",
+        "family": "map-entity",
+        "service": "church",
+        "transferKind": "returning-call",
+        "callSiteAddress": 331836,
+        "entryAddress": 133634,
+        "returnAddress": 331842,
+        "resultAddress": 16738616,
+        "returnKind": "rts",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776964
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 331836
+          },
+          {
+            "role": "service-entry",
+            "pc": 133634
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738616
+          }
+        ]
+      },
+      {
+        "id": "map-entity-shop",
+        "family": "map-entity",
+        "service": "shop",
+        "transferKind": "returning-call",
+        "callSiteAddress": 332032,
+        "entryAddress": 131172,
+        "returnAddress": 332038,
+        "resultAddress": 16738648,
+        "returnKind": "rts",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776964
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 332032
+          },
+          {
+            "role": "service-entry",
+            "pc": 131172
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738648
+          }
+        ]
+      },
+      {
+        "id": "map-entity-caravan",
+        "family": "map-entity",
+        "service": "caravan",
+        "transferKind": "returning-call",
+        "callSiteAddress": 365796,
+        "entryAddress": 139218,
+        "returnAddress": 365802,
+        "resultAddress": 16738680,
+        "returnKind": "rts",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776964
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "caller-call-site",
+            "pc": 365796
+          },
+          {
+            "role": "service-entry",
+            "pc": 139218
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-caller-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738680
+          }
+        ]
+      },
+      {
+        "id": "map-entity-tail-church",
+        "family": "map-entity",
+        "service": "church",
+        "transferKind": "tail-transfer",
+        "callSiteAddress": 352440,
+        "entryAddress": 133634,
+        "returnAddress": null,
+        "resultAddress": 16738712,
+        "returnKind": "outer-rts-harness",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776964
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "tail-transfer-site",
+            "pc": 352440
+          },
+          {
+            "role": "service-entry",
+            "pc": 133634
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-rts-harness-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738712
+          }
+        ]
+      },
+      {
+        "id": "map-entity-tail-shop",
+        "family": "map-entity",
+        "service": "shop",
+        "transferKind": "tail-transfer",
+        "callSiteAddress": 352488,
+        "entryAddress": 131172,
+        "returnAddress": null,
+        "resultAddress": 16738744,
+        "returnKind": "outer-rts-harness",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776964
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "tail-transfer-site",
+            "pc": 352488
+          },
+          {
+            "role": "service-entry",
+            "pc": 131172
+          },
+          {
+            "role": "generated-service-cancel-stub",
+            "pc": 16739584
+          },
+          {
+            "role": "outer-rts-harness-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738744
+          }
+        ]
+      },
+      {
+        "id": "map-entity-tail-blacksmith",
+        "family": "map-entity",
+        "service": "blacksmith",
+        "transferKind": "tail-transfer",
+        "callSiteAddress": 368912,
+        "entryAddress": 137786,
+        "returnAddress": null,
+        "resultAddress": 16738776,
+        "returnKind": "outer-rts-harness",
+        "registersAfter": {
+          "d0": 17,
+          "d1": 34,
+          "d2": 51,
+          "a6": 16738816,
+          "a7": 16776964
+        },
+        "serviceBodyBypassed": true,
+        "callbackChronology": [
+          {
+            "role": "tail-transfer-site",
+            "pc": 368912
+          },
+          {
+            "role": "service-entry",
+            "pc": 137786
+          },
+          {
+            "role": "generated-blacksmith-return-stub",
+            "pc": 16739600
+          },
+          {
+            "role": "outer-rts-harness-return",
+            "pc": 16739632
+          },
+          {
+            "role": "caller-result",
+            "pc": 16738776
+          }
+        ]
+      }
+    ],
+    "sessionPatchReadback": [
+      {
+        "role": "caller-continuation-battle-test-church-main",
+        "address": 30816,
+        "hex": "4EF900FF6D20"
+      },
+      {
+        "role": "caller-continuation-battle-test-shop",
+        "address": 30852,
+        "hex": "4EF900FF6D20"
+      },
+      {
+        "role": "caller-continuation-battle-test-caravan",
+        "address": 30864,
+        "hex": "4EF900FF6D20"
+      },
+      {
+        "role": "caller-continuation-battle-test-church-preserved-registers",
+        "address": 30900,
+        "hex": "4EF900FF6D20"
+      },
+      {
+        "role": "shop-entry-prelude-redirect",
+        "address": 131180,
+        "hex": "4EF9000200884E71"
+      },
+      {
+        "role": "shop-diamond-cancel-service-shim",
+        "address": 131218,
+        "hex": "4EB900FF6D00"
+      },
+      {
+        "role": "shop-cancel-epilogue-redirect",
+        "address": 131228,
+        "hex": "4EF9000200BE"
+      },
+      {
+        "role": "church-entry-prelude-redirect",
+        "address": 133642,
+        "hex": "4EF900020A264E71"
+      },
+      {
+        "role": "church-diamond-cancel-service-shim",
+        "address": 133680,
+        "hex": "4EB900FF6D00"
+      },
+      {
+        "role": "church-cancel-epilogue-redirect",
+        "address": 133690,
+        "hex": "4EF900020A5C"
+      },
+      {
+        "role": "blacksmith-entry-prelude-redirect",
+        "address": 137794,
+        "hex": "4EF900021A6A4E71"
+      },
+      {
+        "role": "blacksmith-caller-continuation-redirect",
+        "address": 137838,
+        "hex": "4EF900021A8A4E71"
+      },
+      {
+        "role": "blacksmith-process-controlled-return-redirect",
+        "address": 137874,
+        "hex": "4EF900FF6D10"
+      },
+      {
+        "role": "caravan-entry-prelude-redirect",
+        "address": 139226,
+        "hex": "4EF900021FE84E71"
+      },
+      {
+        "role": "caravan-diamond-cancel-service-shim",
+        "address": 139250,
+        "hex": "4EB900FF6D00"
+      },
+      {
+        "role": "caravan-cancel-epilogue-redirect",
+        "address": 139260,
+        "hex": "4EF900022020"
+      },
+      {
+        "role": "caller-continuation-exploration-vint-caravan",
+        "address": 154506,
+        "hex": "4EF900FF6D20"
+      }
+    ],
+    "generatedStubReadback": [
+      {
+        "role": "generated-service-cancel-stub",
+        "address": 16739584,
+        "widthBytes": 4,
+        "hex": "70FF4E75"
+      },
+      {
+        "role": "generated-blacksmith-return-stub",
+        "address": 16739600,
+        "widthBytes": 2,
+        "hex": "4E75"
+      }
+    ],
+    "restoration": {
+      "currentPortraitRestored": true,
+      "callerFrameRestored": true,
+      "callbacksCleared": true
+    },
+    "callbacksCleared": 0,
+    "outerReturnTrampolineReadback": [
+      {
+        "id": "context-menu-church",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 292036,
+        "widthBytes": 6,
+        "hex": "4EF9000474C4",
+        "serviceEntryStackAddress": 16776952,
+        "sourceReturnAddress": 292036,
+        "postServiceRtsStackAddress": 16776956
+      },
+      {
+        "id": "context-menu-shop",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 292048,
+        "widthBytes": 6,
+        "hex": "4EF9000474D0",
+        "serviceEntryStackAddress": 16776952,
+        "sourceReturnAddress": 292048,
+        "postServiceRtsStackAddress": 16776956
+      },
+      {
+        "id": "context-menu-blacksmith",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 292060,
+        "widthBytes": 6,
+        "hex": "4EF9000474DC",
+        "serviceEntryStackAddress": 16776952,
+        "sourceReturnAddress": 292060,
+        "postServiceRtsStackAddress": 16776956
+      },
+      {
+        "id": "exploration-vint-church",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 154400,
+        "widthBytes": 6,
+        "hex": "4EF900025B20",
+        "serviceEntryStackAddress": 16776956,
+        "sourceReturnAddress": 154400,
+        "postServiceRtsStackAddress": 16776960
+      },
+      {
+        "id": "exploration-vint-caravan",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 154506,
+        "widthBytes": 6,
+        "hex": "4EF900025B8A",
+        "serviceEntryStackAddress": 16776956,
+        "sourceReturnAddress": 154506,
+        "postServiceRtsStackAddress": 16776960
+      },
+      {
+        "id": "battle-test-church-main",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 30816,
+        "widthBytes": 6,
+        "hex": "4EF900007860",
+        "serviceEntryStackAddress": 16776956,
+        "sourceReturnAddress": 30816,
+        "postServiceRtsStackAddress": 16776960
+      },
+      {
+        "id": "battle-test-shop",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 30852,
+        "widthBytes": 6,
+        "hex": "4EF900007884",
+        "serviceEntryStackAddress": 16776956,
+        "sourceReturnAddress": 30852,
+        "postServiceRtsStackAddress": 16776960
+      },
+      {
+        "id": "battle-test-caravan",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 30864,
+        "widthBytes": 6,
+        "hex": "4EF900007890",
+        "serviceEntryStackAddress": 16776956,
+        "sourceReturnAddress": 30864,
+        "postServiceRtsStackAddress": 16776960
+      },
+      {
+        "id": "battle-test-church-preserved-registers",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 30896,
+        "widthBytes": 6,
+        "hex": "4EF9000078B0",
+        "serviceEntryStackAddress": 16776896,
+        "sourceReturnAddress": 30896,
+        "postServiceRtsStackAddress": 16776900
+      },
+      {
+        "id": "map-entity-church",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 331842,
+        "widthBytes": 6,
+        "hex": "4EF900051042",
+        "serviceEntryStackAddress": 16776956,
+        "sourceReturnAddress": 331842,
+        "postServiceRtsStackAddress": 16776960
+      },
+      {
+        "id": "map-entity-shop",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 332038,
+        "widthBytes": 6,
+        "hex": "4EF900051106",
+        "serviceEntryStackAddress": 16776956,
+        "sourceReturnAddress": 332038,
+        "postServiceRtsStackAddress": 16776960
+      },
+      {
+        "id": "map-entity-caravan",
+        "role": "outer-caller-return",
+        "address": 16739632,
+        "targetAddress": 365802,
+        "widthBytes": 6,
+        "hex": "4EF9000594EA",
+        "serviceEntryStackAddress": 16776956,
+        "sourceReturnAddress": 365802,
+        "postServiceRtsStackAddress": 16776960
+      },
+      {
+        "id": "map-entity-tail-church",
+        "role": "outer-rts-harness-return",
+        "address": 16739632,
+        "targetAddress": 16739616,
+        "widthBytes": 6,
+        "hex": "4EF900FF6D20",
+        "serviceEntryStackAddress": 16776960,
+        "sourceReturnAddress": 16739616,
+        "postServiceRtsStackAddress": 16776964
+      },
+      {
+        "id": "map-entity-tail-shop",
+        "role": "outer-rts-harness-return",
+        "address": 16739632,
+        "targetAddress": 16739616,
+        "widthBytes": 6,
+        "hex": "4EF900FF6D20",
+        "serviceEntryStackAddress": 16776960,
+        "sourceReturnAddress": 16739616,
+        "postServiceRtsStackAddress": 16776964
+      },
+      {
+        "id": "map-entity-tail-blacksmith",
+        "role": "outer-rts-harness-return",
+        "address": 16739632,
+        "targetAddress": 16739616,
+        "widthBytes": 6,
+        "hex": "4EF900FF6D20",
+        "serviceEntryStackAddress": 16776960,
+        "sourceReturnAddress": 16739616,
+        "postServiceRtsStackAddress": 16776964
+      }
+    ]
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:service-menu-entry-return-callback-failure",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["owner", "caseId", "phase", "role", "actualPc", "expectedCallPc", "expectedTargetPc", "expectedReturnPc", "stackReadback", "pendingCallback", "restoration", "error"],
+  "properties": {
+    "owner": {"const": "service-menu-entry-return"},
+    "caseId": {"anyOf": [{"$ref": "urn:sf2:h3:service-menu-entry-return-observation#/definitions/caseId"}, {"type": "null"}]},
+    "phase": {"enum": ["registration", "bootstrap-check-sram", "bootstrap-return-redirect", "case-entry", "caller-call", "tail-transfer", "service-entry", "generated-service-stub", "outer-return-trampoline", "caller-result", "watchdog"]},
+    "role": {"enum": ["registration", "bootstrap-check-sram", "bootstrap-return-redirect", "case-entry", "caller-call-site", "tail-transfer-site", "service-entry", "generated-service-cancel-stub", "generated-blacksmith-return-stub", "outer-caller-return", "outer-rts-harness-return", "caller-result", "case-watchdog-timeout"]},
+    "actualPc": {"type": ["integer", "null"], "minimum": 0, "maximum": 16777215},
+    "expectedCallPc": {"type": ["integer", "null"], "minimum": 0, "maximum": 16777215},
+    "expectedTargetPc": {"type": ["integer", "null"], "minimum": 0, "maximum": 16777215},
+    "expectedReturnPc": {"type": ["integer", "null"], "minimum": 0, "maximum": 16777215},
+    "stackReadback": {"type": "object", "additionalProperties": false, "required": ["expectedA7", "actualA7", "expectedTopLongword", "actualTopLongword"], "properties": {"expectedA7": {"type": ["integer", "null"], "minimum": 0, "maximum": 16777215}, "actualA7": {"type": ["integer", "null"], "minimum": 0, "maximum": 16777215}, "expectedTopLongword": {"type": ["integer", "null"], "minimum": 0, "maximum": 16777215}, "actualTopLongword": {"type": ["integer", "null"], "minimum": 0, "maximum": 16777215}}},
+    "pendingCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "caseIndex", "expectedCaseId", "rolesAtPc", "observedChronology", "expectedChronology", "observedChronologyCount", "expectedChronologyCount"],
+      "properties": {
+        "active": {"type": "boolean"},
+        "caseIndex": {"type": "integer", "minimum": 0, "maximum": 15},
+        "expectedCaseId": {"anyOf": [{"$ref": "urn:sf2:h3:service-menu-entry-return-observation#/definitions/caseId"}, {"type": "null"}]},
+        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"enum": ["bootstrap-check-sram", "case-entry", "caller-call-site", "tail-transfer-site", "service-entry", "generated-service-cancel-stub", "generated-blacksmith-return-stub", "outer-caller-return", "outer-rts-harness-return", "caller-result"]}},
+        "observedChronology": {"type": "array", "minItems": 0, "maxItems": 6, "items": {"$ref": "urn:sf2:h3:service-menu-entry-return-observation#/definitions/chronology"}},
+        "expectedChronology": {"type": "array", "minItems": 0, "maxItems": 6, "items": {"$ref": "urn:sf2:h3:service-menu-entry-return-observation#/definitions/chronology"}},
+        "observedChronologyCount": {"type": "integer", "minimum": 0, "maximum": 6},
+        "expectedChronologyCount": {"type": "integer", "minimum": 0, "maximum": 6}
+      }
+    },
+    "restoration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["currentPortraitRestored", "callerFrameRestored", "callbacksCleared", "outputRemoved"],
+      "properties": {
+        "currentPortraitRestored": {"type": "boolean"},
+        "callerFrameRestored": {"type": "boolean"},
+        "callbacksCleared": {"const": true},
+        "outputRemoved": {"const": true}
+      }
+    },
+    "error": {"type": "string", "minLength": 1}
+  },
+  "allOf": [
+    {"if": {"properties": {"role": {"const": "bootstrap-check-sram"}}}, "then": {"properties": {"phase": {"const": "bootstrap-check-sram"}}}},
+    {"if": {"properties": {"role": {"const": "bootstrap-return-redirect"}}}, "then": {"properties": {"phase": {"const": "bootstrap-return-redirect"}}}},
+    {"if": {"properties": {"role": {"const": "case-entry"}}}, "then": {"properties": {"phase": {"const": "case-entry"}}}},
+    {"if": {"properties": {"role": {"const": "caller-call-site"}}}, "then": {"properties": {"phase": {"const": "caller-call"}}}},
+    {"if": {"properties": {"role": {"const": "tail-transfer-site"}}}, "then": {"properties": {"phase": {"const": "tail-transfer"}}}},
+    {"if": {"properties": {"role": {"const": "service-entry"}}}, "then": {"properties": {"phase": {"const": "service-entry"}}}},
+    {"if": {"properties": {"role": {"enum": ["generated-service-cancel-stub", "generated-blacksmith-return-stub"]}}}, "then": {"properties": {"phase": {"const": "generated-service-stub"}}}},
+    {"if": {"properties": {"role": {"enum": ["outer-caller-return", "outer-rts-harness-return"]}}}, "then": {"properties": {"phase": {"const": "outer-return-trampoline"}}}},
+    {"if": {"properties": {"role": {"const": "caller-result"}}}, "then": {"properties": {"phase": {"const": "caller-result"}}}},
+    {"if": {"properties": {"role": {"const": "case-watchdog-timeout"}}}, "then": {"properties": {"phase": {"const": "watchdog"}}}}
+  ]
+}

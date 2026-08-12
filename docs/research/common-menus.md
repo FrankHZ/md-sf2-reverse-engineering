@@ -12,7 +12,7 @@
   shop, church, caravan, blacksmith, field, and battle caller
 - Status: **Unknown** for exact window/portrait animation timing, visual composition, and caller-state
   transitions that static control flow cannot reproduce
-- Evidence date: 2026-08-11
+- Evidence date: 2026-08-12
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -532,6 +532,72 @@ results and the stated instrumented equivalent seams only. Original prompt/text/
 natural Yes/No meaning, timing, persistence, natural reachability, ring/newly-equipped-cursed output,
 and every excluded post-`@AddItem` behavior remain **Unknown**.
 
+**Confirmed — service-menu entry/return caller inventory and controlled return cohort.** The accepted
+`sf2-common-menus-static-v1` owner establishes the built service-entry set. A separate, complete
+source/H1/ROM inventory scans every comment-stripped direct `jsr`/`bsr` returning call and `jmp` tail
+transfer to the four pinned jump aliases, retaining each opcode, six-byte instruction, alias and effective
+target, and return semantics. It finds 69 direct transfers: 62 returning calls plus seven tail transfers;
+Shop 33, Church 29, Caravan 5, and Blacksmith 2. The zero-inclusive caller-family × service × transfer
+kind relation uses returning/tail counts: context-menu `1/0,1/0,0/0,1/0`, exploration-VInt
+`0/0,1/0,1/0,0/0`, BattleTest `1/0,2/0,1/0,0/0`, and map/entity
+`28/3,22/3,3/0,0/1` (Shop/Church/Caravan/Blacksmith order). Thus zeroes and tail transfers are part of
+the static boundary rather than omitted or mislabeled call/return sites. The source aliases resolve as `j_ShopMenu → ShopMenu`
+(`0x20000 → 0x20064`), `j_ChurchMenu → ChurchMenu` (`0x20004 → 0x20A02`),
+`j_CaravanMenu → CaravanMenu` (`0x20010 → 0x21FD2`), and
+`j_BlacksmithMenu → BlacksmithMenu` (`0x2000C → 0x21A3A`).
+
+The compact runtime matrix contains the lowest-address direct caller in each positive family ×
+service × transfer-kind cell—fourteen cases—and exactly one additional source-shaped case: BattleTest’s
+second Church returning caller, whose surrounding `48E7FFFE` save and `4CDF7FFF` restore make its caller
+stack frame distinct. The 15 ordered IDs are the prior twelve returning cases (context Church/Shop/
+Blacksmith; exploration-VInt Church/Caravan; BattleTest Church main/Shop/Caravan/Church preserved-
+registers; map/entity Church/Shop/Caravan) plus map/entity tail-transfer Church/Shop/Blacksmith. Tail
+cases do not assert a post-JSR continuation: they observe the source `jmp` admission, outer service RTS,
+and harness return instead. It does not claim that all same-family sites are dynamically equivalent or
+naturally reachable; the remaining 54 sites remain statically covered only.
+
+One grouped `sf2-service-menu-entry-return-v1` BizHawk 2.11.1 / Genesis Plus GX launch observed all 15
+selected cases through their source returning call or tail transfer, alias-resolved outer entry, generated
+controlled-return stub, generated outer-return trampoline, and generated result seam. Shop, Church, and
+Caravan execute their source saved-frame, controlled `ExecuteDiamondMenu` cancel comparison, and epilogue
+while all UI/prompt bodies are skipped.
+Blacksmith executes its outer saved frame and a controlled `ProcessBlacksmithOrders` return, not the
+action-selection or fulfillment body. The two generated RAM stubs are modelled before launch with exact
+addresses, instruction widths, bytes, purposes, and cancel-result ABI: the Diamond path is `MOVEQ #-1,D0;
+RTS` and the Blacksmith path is `RTS`. Lua writes and reads back both before the first case, and its
+entry callbacks place their exact role and PC between service admission and the generated outer-return
+trampoline. At service entry the observer first verifies the source-owned A7/top-longword seam, then
+replaces only that RAM return word with the shared `0xFF6D30` six-byte `JMP` trampoline, whose exact
+bytes and dynamic original target are written and read back per case. Its two mode-specific callback roles
+(`outer-caller-return` and `outer-rts-harness-return`) validate the post-service-RTS A7 and readback before
+the generated `JMP` transfers to the original source continuation or tail harness result; no callback at a
+source return PC is claimed. The ordinary returning shape is entry `stackTop-4` then trampoline
+`stackTop`; context adds the source `move.l a6,-(sp)` frame and is `stackTop-8` then `stackTop-4`; the
+BattleTest saved-register case derives `d0-a6` as 15 registers/60 bytes from source, H1, and masks
+`48E7FFFE`/`4CDF7FFF`, so it is `stackTop-64` then `stackTop-60`; and a tail transfer is `stackTop` then
+`stackTop+4`. This establishes only that the controlled harness bypasses the selected
+service bodies; it does not claim a natural transaction or mutation result. The 12 returning records
+observed `caller-call-site → service-entry → generated-service-{cancel|blacksmith-return}-stub →
+outer-caller-return → caller-result`; the three tail records observed `tail-transfer-site → service-entry
+→ generated-service-{cancel|blacksmith-return}-stub → outer-rts-harness-return → caller-result`.
+Every outer trampoline read back at `0xFF6D30` with its exact dynamic `JMP` target, including the
+BattleTest `0xFFFEC0 → 0xFFFEC4` saved-register seam and the tail `0xFFFF00 → 0xFFFF04` harness seam.
+All 17 session-ROM spans and both generated service stubs (`0xFF6D00` `70FF4E75`, `0xFF6D10` `4E75`)
+read back exactly. Context-menu cases execute
+the source `csc12_executeContextMenu` save/restore and compare sequence; the distinct BattleTest case
+executes its original MOVEM save/restore. All 17 disposable session-ROM patches carry source/H1/ROM
+original and replacement bytes, are non-overlapping, and are read back before the generated RAM harness
+starts. The deterministic one-PC dispatcher reports terminal callback failure with the case plus
+expected/actual call, target, return, generated-stub, stack, restoration, and ordered observed/expected
+chronology/count state; accepted observation data is not passed to Lua. The Python verifier, after its
+temporary-directory context closes, independently asserts that the exact session-ROM path no longer exists
+on both success and failure. The successful
+status tail was `service-menu-cases-entered → callbacks-cleared:0 → observer-finished`; callback count
+was zero and current-portrait/caller-frame restoration read back true. This confirms only the named
+controlled admission, bypass, return, restoration, and cleanup seams. Natural UI/input meaning,
+transactions/economics, save persistence, Blacksmith order/fulfillment detail, text/window/portrait/
+audio/VInt/DMA/timing, rendered output, and story reachability remain **Unknown**.
+
 The interaction-level handoff is recorded in
 [`service-interactions.md`](../design/contracts/service-interactions.md). It deliberately consumes only the
 confirmed action ordering, cancellation boundary, and direct mutation calls; it is not a claim about
@@ -539,10 +605,9 @@ the original presentation or persistence lifecycle.
 
 ## Concentrated Runtime Queue
 
-One future service-menu H3 launch should use a generated matrix rather than one case per branch:
+The pending service-entry/return rail above is deliberately narrower than the remaining service-state
+questions. After its one grouped launch, the following separate queue must not be conflated with it:
 
-- enter each vanilla shop, church, caravan, and blacksmith caller; record admission preconditions,
-  return state, and cancel behavior;
 - for shop/deals, church raise/cure/promotion/save, caravan depot transfer/drop, and blacksmith
   menu admission/order fulfillment, snapshot gold, party inventory, caravan storage, order storage,
   flags, and save state before/after both confirm and cancellation paths;
@@ -565,6 +630,7 @@ uv run sf2 h2 icon-graphics
 uv run sf2 h2 ui-layouts
 uv run sf2 h2 item-auxiliary
 uv run sf2 h3 blacksmith-mithril --timeout-seconds 180
+uv run sf2 h3 service-menu-lifecycle --timeout-seconds 180
 uv run sf2 research-index test
 ```
 

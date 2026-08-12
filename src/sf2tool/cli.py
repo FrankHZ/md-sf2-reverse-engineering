@@ -126,6 +126,7 @@ from sf2tool.h3.muddle_action_guard import verify_muddle_action_guard
 from sf2tool.h3.muddle_confusion import verify_muddle_confusion
 from sf2tool.h3.random_services import verify_random_services
 from sf2tool.h3.rng import verify_rng
+from sf2tool.h3.service_menu_lifecycle import verify_service_menu_lifecycle
 from sf2tool.h3.sound_timing import verify_sound_timing
 from sf2tool.h3.spell_attack import verify_spell_attack
 from sf2tool.h3.spell_boost import verify_spell_boost
@@ -736,6 +737,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_blacksmith_mithril)
     h3_blacksmith_mithril.add_argument("--timeout-seconds", type=int, default=180)
+    h3_service_menu_lifecycle = h3_commands.add_parser(
+        "service-menu-lifecycle",
+        help="verify one grouped service-entry caller admission and controlled-return cohort",
+    )
+    _add_local_paths(h3_service_menu_lifecycle)
+    h3_service_menu_lifecycle.add_argument("--timeout-seconds", type=int, default=180)
     h3_controller_input = h3_commands.add_parser(
         "controller-input",
         help="verify one-launch two-port raw sampling and VInt input repeat behavior",
@@ -1562,6 +1569,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "blacksmith-mithril":
         print_record(
             verify_blacksmith_mithril(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "service-menu-lifecycle":
+        print_record(
+            verify_service_menu_lifecycle(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
