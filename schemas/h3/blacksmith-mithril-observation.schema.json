@@ -602,6 +602,76 @@
         }
       }
     },
+    "promptRoutingChronologyEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "pc"],
+      "properties": {
+        "role": {"type": "string", "pattern": "^prompt-routing-"},
+        "pc": {"$ref": "#/definitions/pc"}
+      }
+    },
+    "promptRoutingRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "promptFamily", "promptResult", "itemIndex", "attemptCount",
+        "selectedMembers", "ordersBefore", "ordersAfter", "fulfilledOrdersBefore",
+        "fulfilledOrdersAfter", "routeTerminal", "routeTerminalPc", "completionTerminal",
+        "completionTerminalPc", "addItemMutationObserved", "orderMutationObserved",
+        "fulfilledOrdersMutationObserved", "callbackChronology"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "promptFamily": {"enum": ["full-inventory", "non-equippable"]},
+        "promptResult": {"enum": [-1, 0]},
+        "itemIndex": {"$ref": "#/definitions/byte"},
+        "attemptCount": {"type": "integer", "minimum": 1, "maximum": 2},
+        "selectedMembers": {
+          "type": "array", "minItems": 1, "maxItems": 2,
+          "items": {"type": ["integer", "null"], "minimum": 0, "maximum": 31}
+        },
+        "ordersBefore": {"$ref": "#/definitions/words4"},
+        "ordersAfter": {"$ref": "#/definitions/words4"},
+        "fulfilledOrdersBefore": {"$ref": "#/definitions/word"},
+        "fulfilledOrdersAfter": {"$ref": "#/definitions/word"},
+        "routeTerminal": {"enum": ["selection-loop", "done", "add-item"]},
+        "routeTerminalPc": {"$ref": "#/definitions/pc"},
+        "completionTerminal": {"enum": ["recipient-cancel-pre-presentation", "done", "add-item"]},
+        "completionTerminalPc": {"$ref": "#/definitions/pc"},
+        "addItemMutationObserved": {"const": false},
+        "orderMutationObserved": {"const": false},
+        "fulfilledOrdersMutationObserved": {"const": false},
+        "callbackChronology": {
+          "type": "array", "minItems": 1, "maxItems": 40,
+          "items": {"$ref": "#/definitions/promptRoutingChronologyEvent"}
+        }
+      }
+    },
+    "promptRoutingInstrumentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "promptBoundarySitesReadback", "fullInventoryAbortPresentationSkipReadback",
+        "generatedPromptStubWriteReadback", "doneRedirectReadback", "jointDispatcherWriteReadback",
+        "generatedDoneMovemStubWriteReadback", "generatedDoneRtsStubWriteReadback",
+        "doneMovemStackReadback", "doneRtsStackReadback"
+      ],
+      "properties": {
+        "promptBoundarySitesReadback": {
+          "type": "array", "minItems": 2, "maxItems": 2, "uniqueItems": true,
+          "items": {"enum": ["full-inventory-terminal-boundary-shim", "non-equippable-terminal-boundary-shim"]}
+        },
+        "fullInventoryAbortPresentationSkipReadback": {"const": true},
+        "generatedPromptStubWriteReadback": {"const": true},
+        "doneRedirectReadback": {"const": true},
+        "jointDispatcherWriteReadback": {"const": true},
+        "generatedDoneMovemStubWriteReadback": {"const": true},
+        "generatedDoneRtsStubWriteReadback": {"const": true},
+        "doneMovemStackReadback": {"const": true},
+        "doneRtsStackReadback": {"const": true}
+      }
+    },
     "equipDecisionChronologyEvent": {
       "type": "object",
       "additionalProperties": false,
@@ -895,11 +965,14 @@
         "fulfillmentRecords",
         "precommitCaseOrder",
         "precommitRecords",
+        "promptRoutingCaseOrder",
+        "promptRoutingRecords",
         "equipDecisionCaseOrder",
         "equipDecisionRecords",
         "callbacksCleared",
         "precommitInstrumentation",
         "precommitRestoration",
+        "promptRoutingInstrumentation",
         "equipDecisionInstrumentation",
         "restoration"
       ],
@@ -911,7 +984,7 @@
           "const": "Genesis Plus GX"
         },
         "id": {
-          "const": "sf2-blacksmith-mithril-runtime-v5"
+          "const": "sf2-blacksmith-mithril-runtime-v6"
         },
         "caseOrder": {
           "const": [
@@ -984,6 +1057,14 @@
             "$ref": "#/definitions/precommitRecord"
           }
         },
+        "promptRoutingCaseOrder": {
+          "type": "array", "minItems": 4, "maxItems": 4, "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "promptRoutingRecords": {
+          "type": "array", "minItems": 4, "maxItems": 4,
+          "items": {"$ref": "#/definitions/promptRoutingRecord"}
+        },
         "equipDecisionCaseOrder": {
           "type": "array",
           "minItems": 5,
@@ -1010,6 +1091,9 @@
         },
         "precommitRestoration": {
           "$ref": "#/definitions/precommitRestoration"
+        },
+        "promptRoutingInstrumentation": {
+          "$ref": "#/definitions/promptRoutingInstrumentation"
         },
         "equipDecisionInstrumentation": {
           "$ref": "#/definitions/equipDecisionInstrumentation"

@@ -39,7 +39,7 @@ from sf2tool.paths import repo_path
 from sf2tool.research_index import listing_symbol_addresses
 from sf2tool.rom import inspect_rom
 
-FIXTURE = repo_path("tests/fixtures/h3/blacksmith-mithril-v5.json")
+FIXTURE = repo_path("tests/fixtures/h3/blacksmith-mithril-v6.json")
 FIXTURE_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-fixture.schema.json")
 OBSERVATION_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-observation.schema.json")
 FAILURE_SCHEMA = repo_path("schemas/h3/blacksmith-mithril-callback-failure.schema.json")
@@ -101,6 +101,34 @@ PRECOMMIT_SERVICE_STUB_SIZE = 6
 PRECOMMIT_TERMINAL_STUB_ADDRESS = 0xFF6D20
 PRECOMMIT_TERMINAL_STUB_SIZE = 6
 PRECOMMIT_CLEANUP_STACK_DEPTH_BYTES = 8
+M68K_JSR_RETURN_BYTES = 4
+DONE_NEUTRAL_MOVEM_WIDTH = 4
+M68K_RTS_WIDTH = 2
+DONE_MOVEM_STUB_ADDRESS = 0xFF6DA0
+DONE_MOVEM_STUB_JMP_ADDRESS = DONE_MOVEM_STUB_ADDRESS + DONE_NEUTRAL_MOVEM_WIDTH
+DONE_MOVEM_STUB_JMP_WIDTH = 6
+DONE_MOVEM_STUB_SIZE = DONE_NEUTRAL_MOVEM_WIDTH + DONE_MOVEM_STUB_JMP_WIDTH
+DONE_RTS_STUB_ADDRESS = 0xFF6DB0
+DONE_RTS_STUB_SIZE = M68K_RTS_WIDTH
+JOINT_TERMINAL_DONE_DISPATCHER_ADDRESS = 0xFF6D90
+JOINT_TERMINAL_DONE_DISPATCHER_SIZE = 6
+JOINT_TERMINAL_DONE_UNREACHABLE_FILL_HEX = "4AFC4AFC"
+PROMPT_ROUTING_CASE_IDS = (
+    "full-inventory-retry-selection-loop",
+    "full-inventory-abort-done",
+    "non-equippable-accept-add-item",
+    "non-equippable-reselect-selection-loop",
+)
+PROMPT_ROUTING_CASE_FRAME_BUDGET = 180
+PROMPT_ROUTING_CLEANUP_STACK_DEPTH_BYTES = 12
+PROMPT_ROUTING_STUB_ADDRESS = 0xFF6D80
+PROMPT_ROUTING_STUB_MOVE_WIDTH = 4
+PROMPT_ROUTING_STUB_JMP_ADDRESS = PROMPT_ROUTING_STUB_ADDRESS + PROMPT_ROUTING_STUB_MOVE_WIDTH
+PROMPT_ROUTING_STUB_JMP_WIDTH = 6
+PROMPT_ROUTING_STUB_SIZE = 10
+PROMPT_ROUTING_HARNESS_BASE_ADDRESS = 0xFF6BA0
+PROMPT_ROUTING_HARNESS_STRIDE = 32
+PROMPT_ROUTING_HARNESS_RESULT_OFFSET = 20
 EQUIP_DECISION_CASE_IDS = (
     "non-equippable-no-prompt-do-not-equip",
     "hero-levanter-prompt-decline-do-not-equip",
@@ -169,6 +197,74 @@ def _assert_retained_v4_digest(fixture: dict[str, Any]) -> None:
         raise ValueError("blacksmith retained-v4 case-count guard drift")
     if retained.get("sha256") != _retained_v4_sha256(fixture):
         raise ValueError("blacksmith retained-v4 digest guard drift")
+
+
+def _retained_v5_projection(fixture: dict[str, Any]) -> dict[str, Any]:
+    """Return the complete accepted v5 corpus, excluding v6-only additions.
+
+    v6 is additive.  This production guard deliberately projects both the
+    fixture inputs and the accepted observation so a schema-valid coordinated
+    rewrite of the prior 21 cases cannot reach BizHawk.
+    """
+
+    keys = (
+        "romSha256",
+        "emulator",
+        "provenance",
+        "sourceContext",
+        "caseOrder",
+        "cases",
+        "transactionCaseOrder",
+        "transactionCases",
+        "fulfillmentCaseOrder",
+        "fulfillmentCases",
+        "precommitCaseOrder",
+        "precommitCases",
+        "retainedV4",
+        "equipDecisionDomain",
+        "equipDecisionCaseOrder",
+        "equipDecisionCases",
+        "runtimeQuestions",
+    )
+    observation_keys = (
+        "system",
+        "core",
+        "caseOrder",
+        "records",
+        "transactionCaseOrder",
+        "transactionRecords",
+        "fulfillmentCaseOrder",
+        "fulfillmentRecords",
+        "precommitCaseOrder",
+        "precommitRecords",
+        "equipDecisionCaseOrder",
+        "equipDecisionRecords",
+        "callbacksCleared",
+        "precommitInstrumentation",
+        "precommitRestoration",
+        "restoration",
+        "equipDecisionInstrumentation",
+    )
+    accepted = fixture["acceptedObservation"]
+    return {
+        **{key: fixture[key] for key in keys},
+        "acceptedObservation": {key: accepted[key] for key in observation_keys},
+    }
+
+
+def _retained_v5_sha256(fixture: dict[str, Any]) -> str:
+    encoded = json.dumps(
+        _retained_v5_projection(fixture), sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest().upper()
+
+
+def _assert_retained_v5_digest(fixture: dict[str, Any]) -> None:
+    retained = fixture.get("retainedV5")
+    if not isinstance(retained, dict) or retained.get("caseCount") != 21:
+        raise ValueError("blacksmith retained-v5 case-count guard drift")
+    if retained.get("sha256") != _retained_v5_sha256(fixture):
+        raise ValueError("blacksmith retained-v5 digest guard drift")
 
 
 def _source_section(source: str, symbol: str) -> str:
@@ -726,6 +822,9 @@ def _require_fulfillment_source_shape(actions_source: str, item_source: str) -> 
             "move.w clientmember(a6),d0",
             "jsr j_isweaponorringequippable",
             "bcc.w byte_21cd0",
+            "@done:",
+            "movem.l (sp)+,d0-a1",
+            "rts",
         ),
         name="BlacksmithAction_FulfillOrder @AddItem block",
     )
@@ -1687,6 +1786,27 @@ def build_static_contract(
     non_equippable_text_address, non_equippable_text_span = precommit_text_boundary(
         precommit_text_traps[7], text_id=167, name="non-equippable"
     )
+    full_inventory_abort_text_address = precommit_full_prompt_branch["address"] + len(
+        precommit_full_prompt_branch["bytes"]
+    )
+    full_inventory_abort_text_span = h1_span(
+        precommit_instructions, full_inventory_abort_text_address, size=4
+    )
+    done_neutral_span = h1_span(fulfill_instructions, fulfill_labels["@Done"], size=6)
+    joint_terminal_done_address = fulfill_labels["@Done"] - 4
+    joint_terminal_done_span = h1_span(fulfill_instructions, joint_terminal_done_address, size=10)
+    if full_inventory_abort_text_address != full_inventory_text_address + 16:
+        raise ValueError("blacksmith full-inventory abort text source distance drift")
+    if full_inventory_abort_text_span != b"\x4e\x45\x00\xc5":
+        raise ValueError("blacksmith full-inventory abort text H1 bytes drift")
+    if done_neutral_span != b"\x4c\xdf\x03\xff\x4e\x75":
+        raise ValueError("blacksmith Done neutral boundary H1 bytes drift")
+    if joint_terminal_done_span != b"\x4e\x45\x00\xd1\x4c\xdf\x03\xff\x4e\x75":
+        raise ValueError("blacksmith joint terminal/Done H1 bytes drift")
+    done_restore_mask = int.from_bytes(done_neutral_span[2:4], "big")
+    done_restore_byte_count = done_restore_mask.bit_count() * 4
+    if done_restore_mask != 0x03FF or done_restore_byte_count != 40:
+        raise ValueError("blacksmith Done neutral restore-mask/byte-count drift")
     add_item_entry = next(
         instruction
         for instruction in fulfill_instructions
@@ -1756,6 +1876,78 @@ def build_static_contract(
         "equippabilityBranchAddress": precommit_equippability_branch["address"],
         "nonEquippablePromptCompareAddress": precommit_nonequippable_prompt_compare["address"],
         "nonEquippableRetryBranchAddress": precommit_nonequippable_retry_branch["address"],
+        "promptRouting": {
+            "dispatchStack": {
+                "entryJsrReturnBytes": M68K_JSR_RETURN_BYTES,
+                "promptBoundaryJsrReturnBytes": M68K_JSR_RETURN_BYTES,
+                "totalBytes": M68K_JSR_RETURN_BYTES * 2,
+            },
+            "controlledResultStub": {
+                "address": PROMPT_ROUTING_STUB_ADDRESS,
+                "moveWidthBytes": PROMPT_ROUTING_STUB_MOVE_WIDTH,
+                "jmpAddress": PROMPT_ROUTING_STUB_JMP_ADDRESS,
+                "jmpWidthBytes": PROMPT_ROUTING_STUB_JMP_WIDTH,
+                "sizeBytes": PROMPT_ROUTING_STUB_SIZE,
+            },
+            "fullInventory": {
+                "promptCallAddress": precommit_full_yes_no_call["address"],
+                "promptReturnAddress": precommit_full_yes_no_call["address"]
+                + len(precommit_full_yes_no_call["bytes"]),
+                "compareAddress": precommit_full_prompt_compare["address"],
+                "retryBranchAddress": precommit_full_prompt_branch["address"],
+                "retryTargetAddress": fulfill_labels["byte_21B58"],
+                "abortPresentationAddress": full_inventory_abort_text_address,
+                "abortDoneAddress": fulfill_labels["@Done"],
+            },
+            "nonEquippable": {
+                "promptCallAddress": precommit_nonequippable_yes_no_call["address"],
+                "promptReturnAddress": precommit_nonequippable_yes_no_call["address"]
+                + len(precommit_nonequippable_yes_no_call["bytes"]),
+                "compareAddress": precommit_nonequippable_prompt_compare["address"],
+                "retryBranchAddress": precommit_nonequippable_retry_branch["address"],
+                "retryTargetAddress": fulfill_labels["byte_21B58"],
+                "acceptAddItemAddress": fulfill_labels["@AddItem"],
+            },
+            "doneNeutralBoundary": {
+                "address": fulfill_labels["@Done"],
+                "originalHex": done_neutral_span.hex().upper(),
+                "restoreMask": done_restore_mask,
+                "restoreByteCount": done_restore_byte_count,
+                "movemWidthBytes": DONE_NEUTRAL_MOVEM_WIDTH,
+                "sourceRtsAddress": fulfill_labels["@Done"] + DONE_NEUTRAL_MOVEM_WIDTH,
+                "rtsWidthBytes": M68K_RTS_WIDTH,
+                "jointRedirect": {
+                    "role": "terminal-done-joint-redirect",
+                    "type": "joint-terminal-done-jmp",
+                    "address": joint_terminal_done_address,
+                    "doneOffsetBytes": 4,
+                    "originalHex": joint_terminal_done_span.hex().upper(),
+                    "patchedHex": (
+                        f"4EF9{JOINT_TERMINAL_DONE_DISPATCHER_ADDRESS:08X}"
+                        f"{JOINT_TERMINAL_DONE_UNREACHABLE_FILL_HEX}"
+                    ),
+                    "unreachableFillHex": JOINT_TERMINAL_DONE_UNREACHABLE_FILL_HEX,
+                    "dispatcher": {
+                        "address": JOINT_TERMINAL_DONE_DISPATCHER_ADDRESS,
+                        "jmpWidthBytes": JOINT_TERMINAL_DONE_DISPATCHER_SIZE,
+                    },
+                },
+                "movemStub": {
+                    "address": DONE_MOVEM_STUB_ADDRESS,
+                    "movemHex": done_neutral_span[:DONE_NEUTRAL_MOVEM_WIDTH].hex().upper(),
+                    "movemWidthBytes": DONE_NEUTRAL_MOVEM_WIDTH,
+                    "jmpAddress": DONE_MOVEM_STUB_JMP_ADDRESS,
+                    "jmpWidthBytes": DONE_MOVEM_STUB_JMP_WIDTH,
+                    "rtsStubAddress": DONE_RTS_STUB_ADDRESS,
+                    "sizeBytes": DONE_MOVEM_STUB_SIZE,
+                },
+                "rtsStub": {
+                    "address": DONE_RTS_STUB_ADDRESS,
+                    "rtsHex": done_neutral_span[DONE_NEUTRAL_MOVEM_WIDTH:].hex().upper(),
+                    "sizeBytes": DONE_RTS_STUB_SIZE,
+                },
+            },
+        },
         "presentationTrapAddresses": [
             instruction["address"] for instruction in precommit_text_traps
         ],
@@ -1804,21 +1996,34 @@ def build_static_contract(
         },
         {
             "role": "full-inventory-terminal-boundary-shim",
-            "type": "terminal-jmp",
+            "type": "prompt-jsr",
             "boundaryAddress": full_inventory_text_address,
+            "returnAddress": full_inventory_text_address + PRECOMMIT_TERMINAL_STUB_SIZE,
             "originalHex": full_inventory_text_span.hex().upper(),
-            "patchedHex": f"4EF9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}",
+            "patchedHex": f"4EB9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}",
             "generatedStubTarget": PRECOMMIT_TERMINAL_STUB_ADDRESS,
         },
         {
             "role": "non-equippable-terminal-boundary-shim",
-            "type": "terminal-jmp",
+            "type": "prompt-jsr",
             "boundaryAddress": non_equippable_text_address,
+            "returnAddress": non_equippable_text_address + PRECOMMIT_TERMINAL_STUB_SIZE,
             "originalHex": non_equippable_text_span.hex().upper(),
-            "patchedHex": f"4EF9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}",
+            "patchedHex": f"4EB9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}",
             "generatedStubTarget": PRECOMMIT_TERMINAL_STUB_ADDRESS,
         },
     ]
+    precommit["fullInventoryAbortPresentationSkip"] = {
+        "role": "full-inventory-abort-presentation-skip",
+        "type": "abort-text-bra",
+        "boundaryAddress": full_inventory_abort_text_address,
+        "originalHex": full_inventory_abort_text_span.hex().upper(),
+        "patchedHex": (
+            f"6000{joint_terminal_done_address - full_inventory_abort_text_address - 2:04X}"
+        ),
+        "branchBaseAddress": full_inventory_abort_text_address + 2,
+        "targetAddress": joint_terminal_done_address,
+    }
     _validate_precommit_instrumentation(precommit)
 
     fulfillment_start = next(
@@ -1961,7 +2166,15 @@ def build_static_contract(
             for instruction in instructions
         ]
 
-    precommit["h1InstructionBytes"] = guarded_instructions(precommit_instructions, fulfill_labels)
+    done_instruction_records = [
+        instruction
+        for instruction in fulfill_instructions
+        if fulfill_labels["@Done"] <= instruction["address"] < fulfill_labels["@Done"] + 6
+    ]
+    precommit["h1InstructionBytes"] = [
+        *guarded_instructions(precommit_instructions, fulfill_labels),
+        *guarded_instructions(done_instruction_records, fulfill_labels),
+    ]
     precommit["cleanupEquippability"] = {
         "callAddress": equippable_call_record["address"],
         "instructionTargetAddress": h1_entries["j_IsWeaponOrRingEquippable"],
@@ -2217,6 +2430,8 @@ def build_static_contract(
         or prompt_text_address != post_equippable_record["address"] + 4
         or noncursed_address != equip_decision["noncursedBoundaryAddress"]
         or do_not_address != equip_decision["doNotEquipBoundaryAddress"]
+        or do_not_address != joint_terminal_done_address
+        or do_not_span != joint_terminal_done_span[:PRECOMMIT_TERMINAL_STUB_SIZE]
     ):
         raise ValueError("blacksmith equip-decision terminal source/H1 boundary drift")
     equip_decision["terminalShims"] = [
@@ -2233,14 +2448,6 @@ def build_static_contract(
             "terminal": "noncursed-equip-pre-presentation",
             "boundaryAddress": noncursed_address,
             "originalHex": noncursed_span.hex().upper(),
-            "patchedHex": f"4EF9{EQUIP_DECISION_TERMINAL_STUB_ADDRESS:08X}",
-            "generatedStubTarget": EQUIP_DECISION_TERMINAL_STUB_ADDRESS,
-        },
-        {
-            "role": "do-not-equip-terminal-boundary-shim",
-            "terminal": "do-not-equip-pre-presentation",
-            "boundaryAddress": do_not_address,
-            "originalHex": do_not_span.hex().upper(),
             "patchedHex": f"4EF9{EQUIP_DECISION_TERMINAL_STUB_ADDRESS:08X}",
             "generatedStubTarget": EQUIP_DECISION_TERMINAL_STUB_ADDRESS,
         },
@@ -3247,6 +3454,243 @@ def model_precommit_case(
     }
 
 
+def model_prompt_routing_case(case: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
+    """Derive the four controlled Yes/No compare/branch routes without UI meaning."""
+
+    precommit = static["precommit"]
+    constants = static["constants"]
+    routing = precommit["promptRouting"]
+    attempts = list(case["attempts"])
+    family = case["promptFamily"]
+    if family not in {"full-inventory", "non-equippable"}:
+        raise ValueError("blacksmith prompt-routing family drift")
+    if case["promptResult"] not in {-1, 0}:
+        raise ValueError("blacksmith prompt-routing controlled result drift")
+    if not attempts:
+        raise ValueError("blacksmith prompt-routing attempts are missing")
+
+    chronology: list[dict[str, int | str]] = []
+
+    def service(role: str, item: dict[str, Any]) -> None:
+        source = precommit[
+            {
+                "member-list": "memberList",
+                "held-items": "heldItems",
+                "equipment-type": "equipmentType",
+                "equippability": "equippability",
+            }[role]
+        ]
+        chronology.extend(
+            (
+                _precommit_event(
+                    f"prompt-routing-{role}-controlled-service-call-shim", source["callAddress"]
+                ),
+                _precommit_event(
+                    "prompt-routing-generated-service-stub", PRECOMMIT_SERVICE_STUB_ADDRESS
+                ),
+                _precommit_event(f"prompt-routing-{role}-original-return", source["returnAddress"]),
+            )
+        )
+
+    first = attempts[0]
+    chronology.append(
+        _precommit_event("prompt-routing-selection-loop-entry", precommit["runtimeStartAddress"])
+    )
+    service("member-list", first)
+    chronology.extend(
+        (
+            _precommit_event(
+                "prompt-routing-member-cancel-compare", precommit["memberCancelCompareAddress"]
+            ),
+            _precommit_event(
+                "prompt-routing-member-cancel-branch", precommit["memberCancelBranchAddress"]
+            ),
+        )
+    )
+    if first["selectedMemberResult"] < 0:
+        raise ValueError("blacksmith prompt-routing first selection must reach a prompt")
+    service("held-items", first)
+    chronology.extend(
+        (
+            _precommit_event(
+                "prompt-routing-capacity-compare", precommit["capacityCompareAddress"]
+            ),
+            _precommit_event("prompt-routing-capacity-branch", precommit["capacityBranchAddress"]),
+        )
+    )
+    if family == "full-inventory":
+        if first["heldItemsCountResult"] != constants["combatantItemSlotCount"]:
+            raise ValueError("blacksmith full-inventory prompt-routing capacity control drift")
+        branch = routing["fullInventory"]
+    else:
+        if (
+            first["heldItemsCountResult"] is None
+            or first["heldItemsCountResult"] >= constants["combatantItemSlotCount"]
+        ):
+            raise ValueError("blacksmith non-equippable prompt-routing capacity control drift")
+        service("equipment-type", first)
+        chronology.extend(
+            (
+                _precommit_event(
+                    "prompt-routing-equipment-type-compare",
+                    precommit["equipmentTypeCompareAddress"],
+                ),
+                _precommit_event(
+                    "prompt-routing-tool-admission-branch", precommit["toolAdmissionBranchAddress"]
+                ),
+            )
+        )
+        if first["equipmentTypeResult"] == constants["equipmentTypeTool"]:
+            raise ValueError("blacksmith non-equippable prompt-routing must not use tool admission")
+        service("equippability", first)
+        chronology.append(
+            _precommit_event(
+                "prompt-routing-equippability-branch", precommit["equippabilityBranchAddress"]
+            )
+        )
+        if first["equippableCarrySetResult"] is not False:
+            raise ValueError("blacksmith non-equippable prompt-routing carry control drift")
+        branch = routing["nonEquippable"]
+    chronology.extend(
+        (
+            _precommit_event(
+                f"prompt-routing-{family}-boundary-jsr", branch["promptCallAddress"] - 4
+            ),
+            _precommit_event("prompt-routing-dispatch-stub", PRECOMMIT_TERMINAL_STUB_ADDRESS),
+            _precommit_event(
+                "prompt-routing-controlled-result-stub-entry", PROMPT_ROUTING_STUB_ADDRESS
+            ),
+            _precommit_event(
+                "prompt-routing-controlled-result-stub-jmp-boundary",
+                PROMPT_ROUTING_STUB_JMP_ADDRESS,
+            ),
+            _precommit_event(f"prompt-routing-{family}-compare", branch["compareAddress"]),
+            _precommit_event(f"prompt-routing-{family}-branch", branch["retryBranchAddress"]),
+        )
+    )
+    retry = case["promptResult"] == (0 if family == "full-inventory" else -1)
+    selected_members: list[int | None] = [first["selectedMemberResult"]]
+    if retry:
+        if len(attempts) != 2 or attempts[1]["selectedMemberResult"] != -1:
+            raise ValueError("blacksmith prompt-routing retry selection-loop control drift")
+        second = attempts[1]
+        chronology.append(
+            _precommit_event(
+                "prompt-routing-selection-loop-entry", precommit["selectionLoopAddress"]
+            )
+        )
+        service("member-list", second)
+        chronology.extend(
+            (
+                _precommit_event(
+                    "prompt-routing-member-cancel-compare", precommit["memberCancelCompareAddress"]
+                ),
+                _precommit_event(
+                    "prompt-routing-member-cancel-branch", precommit["memberCancelBranchAddress"]
+                ),
+                _precommit_event(
+                    "prompt-routing-recipient-cancel-terminal",
+                    precommit["terminalShims"][0]["boundaryAddress"],
+                ),
+                _precommit_event("prompt-routing-dispatch-stub", PRECOMMIT_TERMINAL_STUB_ADDRESS),
+            )
+        )
+        selected_members.append(None)
+        route_terminal, route_pc = "selection-loop", precommit["selectionLoopAddress"]
+        completion_terminal, completion_pc = (
+            "recipient-cancel-pre-presentation",
+            precommit["terminalShims"][0]["boundaryAddress"],
+        )
+    elif family == "full-inventory":
+        if len(attempts) != 1:
+            raise ValueError("blacksmith full-inventory abort must not rerun selection")
+        chronology.extend(
+            (
+                _precommit_event(
+                    "prompt-routing-full-inventory-abort-presentation-skip",
+                    precommit["fullInventoryAbortPresentationSkip"]["boundaryAddress"],
+                ),
+                _precommit_event(
+                    "prompt-routing-done-redirect",
+                    precommit["promptRouting"]["doneNeutralBoundary"]["jointRedirect"]["address"],
+                ),
+                _precommit_event(
+                    "prompt-routing-joint-terminal-done-dispatcher",
+                    precommit["promptRouting"]["doneNeutralBoundary"]["jointRedirect"][
+                        "dispatcher"
+                    ]["address"],
+                ),
+                _precommit_event(
+                    "prompt-routing-done-movem-stub-entry",
+                    precommit["promptRouting"]["doneNeutralBoundary"]["movemStub"]["address"],
+                ),
+                _precommit_event(
+                    "prompt-routing-done-rts-stub-entry",
+                    precommit["promptRouting"]["doneNeutralBoundary"]["rtsStub"]["address"],
+                ),
+            )
+        )
+        route_terminal = completion_terminal = "done"
+        route_pc = completion_pc = precommit["doneAddress"]
+    else:
+        if len(attempts) != 1:
+            raise ValueError("blacksmith non-equippable accept must not rerun selection")
+        chronology.append(
+            _precommit_event("prompt-routing-add-item-boundary", precommit["addItemEntryAddress"])
+        )
+        route_terminal = completion_terminal = "add-item"
+        route_pc = completion_pc = precommit["addItemEntryAddress"]
+    routing_case_index = PROMPT_ROUTING_CASE_IDS.index(case["id"])
+    chronology.append(
+        _precommit_event(
+            "prompt-routing-case-result",
+            PROMPT_ROUTING_HARNESS_BASE_ADDRESS
+            + routing_case_index * PROMPT_ROUTING_HARNESS_STRIDE
+            + PROMPT_ROUTING_HARNESS_RESULT_OFFSET,
+        )
+    )
+    source_roles = {
+        "prompt-routing-selection-loop-entry",
+        "prompt-routing-capacity-branch",
+        "prompt-routing-equippability-branch",
+        f"prompt-routing-{family}-boundary-jsr",
+        "prompt-routing-dispatch-stub",
+        "prompt-routing-controlled-result-stub-entry",
+        "prompt-routing-controlled-result-stub-jmp-boundary",
+        f"prompt-routing-{family}-compare",
+        f"prompt-routing-{family}-branch",
+        "prompt-routing-recipient-cancel-terminal",
+        "prompt-routing-full-inventory-abort-presentation-skip",
+        "prompt-routing-done-redirect",
+        "prompt-routing-joint-terminal-done-dispatcher",
+        "prompt-routing-done-movem-stub-entry",
+        "prompt-routing-done-rts-stub-entry",
+        "prompt-routing-add-item-boundary",
+        "prompt-routing-case-result",
+    }
+    observed_chronology = [event for event in chronology if event["role"] in source_roles]
+    return {
+        "id": case["id"],
+        "promptFamily": family,
+        "promptResult": case["promptResult"],
+        "itemIndex": case["itemIndex"],
+        "attemptCount": len(attempts),
+        "selectedMembers": selected_members,
+        "ordersBefore": list(case["ordersBefore"]),
+        "ordersAfter": list(case["ordersBefore"]),
+        "fulfilledOrdersBefore": case["fulfilledOrdersBefore"],
+        "fulfilledOrdersAfter": case["fulfilledOrdersBefore"],
+        "routeTerminal": route_terminal,
+        "routeTerminalPc": route_pc,
+        "completionTerminal": completion_terminal,
+        "completionTerminalPc": completion_pc,
+        "addItemMutationObserved": False,
+        "orderMutationObserved": False,
+        "fulfilledOrdersMutationObserved": False,
+        "callbackChronology": observed_chronology,
+    }
+
+
 def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     helper_records = [model_case(case, static) for case in fixture["cases"]]
     transaction_records = [
@@ -3258,6 +3702,9 @@ def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dic
     precommit_records = [
         model_precommit_case(case, static, fixture["fulfillmentCases"])
         for case in fixture["precommitCases"]
+    ]
+    prompt_routing_records = [
+        model_prompt_routing_case(case, static) for case in fixture["promptRoutingCases"]
     ]
     equip_decision_records = [
         model_equip_decision_case(case, static) for case in fixture["equipDecisionCases"]
@@ -3274,6 +3721,8 @@ def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dic
         "fulfillmentRecords": fulfillment_records,
         "precommitCaseOrder": [case["id"] for case in fixture["precommitCases"]],
         "precommitRecords": precommit_records,
+        "promptRoutingCaseOrder": [case["id"] for case in fixture["promptRoutingCases"]],
+        "promptRoutingRecords": prompt_routing_records,
         "equipDecisionCaseOrder": [case["id"] for case in fixture["equipDecisionCases"]],
         "equipDecisionRecords": equip_decision_records,
         "callbacksCleared": 0,
@@ -3303,6 +3752,20 @@ def expected_observation(fixture: dict[str, Any], static: dict[str, Any]) -> dic
             "dialogueNameIndex1WordRestored": True,
             "selectedItemIndexWordRestored": True,
             "currentItemSubmenuActionByteRestored": True,
+        },
+        "promptRoutingInstrumentation": {
+            "promptBoundarySitesReadback": [
+                "full-inventory-terminal-boundary-shim",
+                "non-equippable-terminal-boundary-shim",
+            ],
+            "fullInventoryAbortPresentationSkipReadback": True,
+            "generatedPromptStubWriteReadback": True,
+            "doneRedirectReadback": True,
+            "jointDispatcherWriteReadback": True,
+            "generatedDoneMovemStubWriteReadback": True,
+            "generatedDoneRtsStubWriteReadback": True,
+            "doneMovemStackReadback": True,
+            "doneRtsStackReadback": True,
         },
         "equipDecisionInstrumentation": {
             "promptCallSiteReadback": True,
@@ -3464,6 +3927,108 @@ def _validate_precommit_case_matrix(fixture: dict[str, Any], static: dict[str, A
         raise ValueError("blacksmith precommit add-item boundary missing")
 
 
+def _validate_prompt_routing_case_matrix(fixture: dict[str, Any], static: dict[str, Any]) -> None:
+    """Reject any schema-valid drift of the four v6 controlled branch routes."""
+
+    if (
+        tuple(fixture.get("promptRoutingCaseOrder", ())) != PROMPT_ROUTING_CASE_IDS
+        or tuple(case.get("id") for case in fixture.get("promptRoutingCases", ()))
+        != PROMPT_ROUTING_CASE_IDS
+    ):
+        raise ValueError("blacksmith prompt-routing case order drift")
+    if [
+        (case.get("promptFamily"), case.get("promptResult"))
+        for case in fixture["promptRoutingCases"]
+    ] != [
+        ("full-inventory", 0),
+        ("full-inventory", -1),
+        ("non-equippable", 0),
+        ("non-equippable", -1),
+    ]:
+        raise ValueError("blacksmith prompt-routing controlled-result matrix drift")
+    attempt_vectors = [
+        tuple(
+            (
+                attempt.get("selectedMemberResult"),
+                attempt.get("heldItemsCountResult"),
+                attempt.get("equipmentTypeResult"),
+                attempt.get("equippableCarrySetResult"),
+            )
+            for attempt in case.get("attempts", ())
+        )
+        for case in fixture["promptRoutingCases"]
+    ]
+    if attempt_vectors != [
+        ((0, 4, None, None), (-1, None, None, None)),
+        ((0, 4, None, None),),
+        ((0, 0, 1, False),),
+        ((5, 0, 1, False), (-1, None, None, None)),
+    ]:
+        raise ValueError("blacksmith prompt-routing controlled attempt matrix drift")
+    cleanup_ids = [case.get("cleanupFulfillmentCaseId") for case in fixture["promptRoutingCases"]]
+    if cleanup_ids != [None, None, "hero-levanter-slot3-order3-equippable", None]:
+        raise ValueError("blacksmith prompt-routing cleanup case ID vector drift")
+    cleanup_case = fixture["promptRoutingCases"][2]
+    cleanup_matches = [
+        row
+        for row in fixture["fulfillmentCases"]
+        if row["id"] == cleanup_case["cleanupFulfillmentCaseId"]
+    ]
+    if len(cleanup_matches) != 1:
+        raise ValueError("blacksmith prompt-routing cleanup fulfillment identity drift")
+    cleanup = cleanup_matches[0]
+    if cleanup["itemIndex"] != cleanup_case["itemIndex"]:
+        raise ValueError("blacksmith prompt-routing cleanup item identity drift")
+    selected_order = static["constants"]["orderSlotCount"] - cleanup["ordersCounter"]
+    if not 0 <= selected_order < static["constants"]["orderSlotCount"]:
+        raise ValueError("blacksmith prompt-routing cleanup selected order-slot drift")
+    if (
+        cleanup_case["ordersBefore"][selected_order] != cleanup["itemIndex"]
+        or cleanup["ordersBefore"][selected_order] != cleanup["itemIndex"]
+    ):
+        raise ValueError("blacksmith prompt-routing cleanup order-word identity drift")
+    records = [model_prompt_routing_case(case, static) for case in fixture["promptRoutingCases"]]
+    if [(record["promptFamily"], record["promptResult"]) for record in records] != [
+        ("full-inventory", 0),
+        ("full-inventory", -1),
+        ("non-equippable", 0),
+        ("non-equippable", -1),
+    ]:
+        raise ValueError("blacksmith prompt-routing controlled-result matrix drift")
+    if [record["routeTerminal"] for record in records] != [
+        "selection-loop",
+        "done",
+        "add-item",
+        "selection-loop",
+    ]:
+        raise ValueError("blacksmith prompt-routing route-terminal matrix drift")
+    if [record["attemptCount"] for record in records] != [2, 1, 1, 2]:
+        raise ValueError("blacksmith prompt-routing retry count matrix drift")
+    if [record["selectedMembers"] for record in records] != [
+        [0, None],
+        [0],
+        [0],
+        [5, None],
+    ]:
+        raise ValueError("blacksmith prompt-routing selected-member matrix drift")
+    if any(
+        record["ordersBefore"] != record["ordersAfter"]
+        or record["fulfilledOrdersBefore"] != record["fulfilledOrdersAfter"]
+        or record["addItemMutationObserved"]
+        or record["orderMutationObserved"]
+        or record["fulfilledOrdersMutationObserved"]
+        for record in records
+    ):
+        raise ValueError("blacksmith prompt-routing stop-before-mutation drift")
+    if [record["completionTerminal"] for record in records] != [
+        "recipient-cancel-pre-presentation",
+        "done",
+        "add-item",
+        "recipient-cancel-pre-presentation",
+    ]:
+        raise ValueError("blacksmith prompt-routing completion terminal matrix drift")
+
+
 def _validate_equip_decision_case_matrix(
     fixture: dict[str, Any], static: dict[str, Any] | None = None
 ) -> None:
@@ -3534,12 +4099,14 @@ def _assert_golden(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str,
     _validate_transaction_case_matrix(fixture, static)
     _validate_fulfillment_case_matrix(fixture, static)
     _validate_precommit_case_matrix(fixture, static)
+    _validate_prompt_routing_case_matrix(fixture, static)
     _validate_equip_decision_case_matrix(fixture, static)
     expected = expected_observation(fixture, static)
     accepted = fixture["acceptedObservation"]
     if accepted != expected:
         raise ValueError("blacksmith accepted observation disagrees with independent model")
     _assert_retained_v4_digest(fixture)
+    _assert_retained_v5_digest(fixture)
     return expected
 
 
@@ -3573,6 +4140,8 @@ def _assert_status(status_path: Path) -> None:
         "milestone:transaction-cases-entered",
         "milestone:fulfillment-cases-entered",
         "milestone:precommit-cases-entered",
+        "milestone:prompt-routing-transition-armed",
+        "milestone:prompt-routing-cases-entered",
         "milestone:equip-decision-transition-armed",
         "milestone:equip-decision-cases-entered",
         "milestone:transaction-state-restored",
@@ -3637,14 +4206,22 @@ def _validate_precommit_instrumentation(precommit: dict[str, Any]) -> None:
         or tuple(row.get("role") for row in terminals) != terminal_roles
     ):
         raise ValueError("blacksmith precommit terminal shim role/order drift")
+    expected_types = ("terminal-jmp", "prompt-jsr", "prompt-jsr")
+    expected_patched = (
+        f"4EF9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}",
+        f"4EB9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}",
+        f"4EB9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}",
+    )
     all_ranges = call_ranges.copy()
-    for role, terminal in zip(terminal_roles, terminals, strict=True):
+    for role, terminal, expected_type, expected_hex in zip(
+        terminal_roles, terminals, expected_types, expected_patched, strict=True
+    ):
         original = terminal.get("originalHex")
         patched = terminal.get("patchedHex")
         if (
-            terminal.get("type") != "terminal-jmp"
+            terminal.get("type") != expected_type
             or terminal.get("generatedStubTarget") != PRECOMMIT_TERMINAL_STUB_ADDRESS
-            or patched != f"4EF9{PRECOMMIT_TERMINAL_STUB_ADDRESS:08X}"
+            or patched != expected_hex
             or not isinstance(original, str)
             or len(original) != 12
         ):
@@ -3652,6 +4229,13 @@ def _validate_precommit_instrumentation(precommit: dict[str, Any]) -> None:
         boundary_address = terminal.get("boundaryAddress")
         if not isinstance(boundary_address, int):
             raise ValueError(f"blacksmith precommit terminal shim address drift: {role}")
+        expected_return = (
+            boundary_address + PRECOMMIT_TERMINAL_STUB_SIZE
+            if expected_type == "prompt-jsr"
+            else None
+        )
+        if terminal.get("returnAddress") != expected_return:
+            raise ValueError(f"blacksmith precommit terminal shim return ABI drift: {role}")
         terminal_range = range(boundary_address, boundary_address + 6)
         if any(
             terminal_range.start < existing.stop and existing.start < terminal_range.stop
@@ -3659,7 +4243,103 @@ def _validate_precommit_instrumentation(precommit: dict[str, Any]) -> None:
         ):
             raise ValueError("blacksmith precommit instrumentation overlapping span drift")
         all_ranges.append(terminal_range)
-    if len(all_ranges) != 7:
+    skip = precommit.get("fullInventoryAbortPresentationSkip")
+    if (
+        not isinstance(skip, dict)
+        or skip.get("role") != "full-inventory-abort-presentation-skip"
+        or skip.get("type") != "abort-text-bra"
+        or skip.get("originalHex") != "4E4500C5"
+        or skip.get("patchedHex") != "6000012A"
+        or skip.get("branchBaseAddress") != skip.get("boundaryAddress", 0) + 2
+        or skip.get("targetAddress") != precommit.get("doneAddress", 0) - 4
+        or skip.get("targetAddress")
+        != skip.get("branchBaseAddress", 0) + int(skip.get("patchedHex", "00000000")[4:], 16)
+    ):
+        raise ValueError("blacksmith full-inventory abort presentation skip ABI drift")
+    skip_range = range(skip["boundaryAddress"], skip["boundaryAddress"] + 4)
+    if any(
+        skip_range.start < existing.stop and existing.start < skip_range.stop
+        for existing in all_ranges
+    ):
+        raise ValueError("blacksmith full-inventory abort skip overlaps instrumentation")
+    all_ranges.append(skip_range)
+    prompt_routing = precommit.get("promptRouting", {})
+    dispatch_stack = prompt_routing.get("dispatchStack")
+    if dispatch_stack != {
+        "entryJsrReturnBytes": M68K_JSR_RETURN_BYTES,
+        "promptBoundaryJsrReturnBytes": M68K_JSR_RETURN_BYTES,
+        "totalBytes": M68K_JSR_RETURN_BYTES * 2,
+    }:
+        raise ValueError("blacksmith prompt-routing dispatch-stack contract drift")
+    controlled_result_stub = prompt_routing.get("controlledResultStub")
+    if controlled_result_stub != {
+        "address": PROMPT_ROUTING_STUB_ADDRESS,
+        "moveWidthBytes": PROMPT_ROUTING_STUB_MOVE_WIDTH,
+        "jmpAddress": PROMPT_ROUTING_STUB_JMP_ADDRESS,
+        "jmpWidthBytes": PROMPT_ROUTING_STUB_JMP_WIDTH,
+        "sizeBytes": PROMPT_ROUTING_STUB_SIZE,
+    }:
+        raise ValueError("blacksmith prompt-routing controlled-result stub boundary drift")
+    done = prompt_routing.get("doneNeutralBoundary")
+    if (
+        not isinstance(done, dict)
+        or done.get("address") != precommit.get("doneAddress")
+        or done.get("originalHex") != "4CDF03FF4E75"
+        or done.get("restoreMask") != 0x03FF
+        or done.get("restoreByteCount") != 40
+        or done.get("movemWidthBytes") != DONE_NEUTRAL_MOVEM_WIDTH
+        or done.get("sourceRtsAddress") != done.get("address", 0) + DONE_NEUTRAL_MOVEM_WIDTH
+        or done.get("rtsWidthBytes") != M68K_RTS_WIDTH
+        or done["movemWidthBytes"] + done["rtsWidthBytes"]
+        != len(bytes.fromhex(done["originalHex"]))
+        or done["restoreMask"].bit_count() * 4 != done["restoreByteCount"]
+        or done.get("jointRedirect")
+        != {
+            "role": "terminal-done-joint-redirect",
+            "type": "joint-terminal-done-jmp",
+            "address": done.get("address", 0) - 4,
+            "doneOffsetBytes": 4,
+            "originalHex": "4E4500D14CDF03FF4E75",
+            "patchedHex": (
+                f"4EF9{JOINT_TERMINAL_DONE_DISPATCHER_ADDRESS:08X}"
+                f"{JOINT_TERMINAL_DONE_UNREACHABLE_FILL_HEX}"
+            ),
+            "unreachableFillHex": JOINT_TERMINAL_DONE_UNREACHABLE_FILL_HEX,
+            "dispatcher": {
+                "address": JOINT_TERMINAL_DONE_DISPATCHER_ADDRESS,
+                "jmpWidthBytes": JOINT_TERMINAL_DONE_DISPATCHER_SIZE,
+            },
+        }
+        or done.get("movemStub")
+        != {
+            "address": DONE_MOVEM_STUB_ADDRESS,
+            "movemHex": "4CDF03FF",
+            "movemWidthBytes": DONE_NEUTRAL_MOVEM_WIDTH,
+            "jmpAddress": DONE_MOVEM_STUB_JMP_ADDRESS,
+            "jmpWidthBytes": DONE_MOVEM_STUB_JMP_WIDTH,
+            "rtsStubAddress": DONE_RTS_STUB_ADDRESS,
+            "sizeBytes": DONE_MOVEM_STUB_SIZE,
+        }
+        or done.get("rtsStub")
+        != {
+            "address": DONE_RTS_STUB_ADDRESS,
+            "rtsHex": "4E75",
+            "sizeBytes": DONE_RTS_STUB_SIZE,
+        }
+    ):
+        raise ValueError("blacksmith Done neutral restore-stack contract drift")
+    joint = done["jointRedirect"]
+    done_range = range(
+        joint["address"],
+        joint["address"] + len(bytes.fromhex(joint["originalHex"])),
+    )
+    if any(
+        done_range.start < existing.stop and existing.start < done_range.stop
+        for existing in all_ranges
+    ):
+        raise ValueError("blacksmith Done redirect overlaps instrumentation")
+    all_ranges.append(done_range)
+    if len(all_ranges) != 9:
         raise ValueError("blacksmith precommit instrumentation span count drift")
 
 
@@ -3728,7 +4408,7 @@ def _validate_precommit_cleanup_equippability(static: dict[str, Any]) -> None:
 
 
 def _precommit_instrumentation_spans(static: dict[str, Any]) -> list[dict[str, Any]]:
-    """Normalize the seven source-bound session-ROM patch spans."""
+    """Normalize the nine source-bound v6 session-ROM patch spans."""
     precommit = static["precommit"]
     _validate_precommit_instrumentation(precommit)
     result: list[dict[str, Any]] = []
@@ -3756,24 +4436,89 @@ def _precommit_instrumentation_spans(static: dict[str, Any]) -> list[dict[str, A
     for shim in precommit["terminalShims"]:
         original = bytes.fromhex(shim["originalHex"])
         patched = bytes.fromhex(shim["patchedHex"])
+        opcode = b"\x4e\xf9" if shim["type"] == "terminal-jmp" else b"\x4e\xb9"
         if (
-            len(original) != PRECOMMIT_TERMINAL_STUB_SIZE
+            shim["type"] not in {"terminal-jmp", "prompt-jsr"}
+            or len(original) != PRECOMMIT_TERMINAL_STUB_SIZE
             or len(patched) != PRECOMMIT_TERMINAL_STUB_SIZE
-            or patched != b"\x4e\xf9" + shim["generatedStubTarget"].to_bytes(4, "big")
+            or patched != opcode + shim["generatedStubTarget"].to_bytes(4, "big")
+            or shim.get("returnAddress")
+            != (
+                shim["boundaryAddress"] + PRECOMMIT_TERMINAL_STUB_SIZE
+                if shim["type"] == "prompt-jsr"
+                else None
+            )
         ):
-            raise ValueError(f"blacksmith precommit terminal JMP patch shape drift: {shim['role']}")
-        result.append(
-            {
-                "role": shim["role"],
-                "type": "terminal-jmp",
-                "address": shim["boundaryAddress"],
-                "originalBytes": original,
-                "patchedBytes": patched,
-                "generatedStubTarget": shim["generatedStubTarget"],
-            }
-        )
-    ranges = [range(row["address"], row["address"] + 6) for row in result]
-    if len(result) != 7 or any(
+            raise ValueError(
+                f"blacksmith precommit terminal/prompt patch shape drift: {shim['role']}"
+            )
+        row = {
+            "role": shim["role"],
+            "type": shim["type"],
+            "address": shim["boundaryAddress"],
+            "originalBytes": original,
+            "patchedBytes": patched,
+            "generatedStubTarget": shim["generatedStubTarget"],
+        }
+        if shim["type"] == "prompt-jsr":
+            row["returnAddress"] = shim["returnAddress"]
+        result.append(row)
+    skip = precommit["fullInventoryAbortPresentationSkip"]
+    original_skip = bytes.fromhex(skip["originalHex"])
+    patched_skip = bytes.fromhex(skip["patchedHex"])
+    if (
+        len(original_skip) != 4
+        or len(patched_skip) != 4
+        or patched_skip[:2] != b"\x60\x00"
+        or skip["targetAddress"]
+        != skip["branchBaseAddress"] + int.from_bytes(patched_skip[2:], "big")
+    ):
+        raise ValueError("blacksmith full-inventory abort presentation patch shape drift")
+    result.append(
+        {
+            "role": skip["role"],
+            "type": skip["type"],
+            "address": skip["boundaryAddress"],
+            "originalBytes": original_skip,
+            "patchedBytes": patched_skip,
+            "targetAddress": skip["targetAddress"],
+        }
+    )
+    done = precommit["promptRouting"]["doneNeutralBoundary"]
+    joint = done["jointRedirect"]
+    original_done = bytes.fromhex(joint["originalHex"])
+    patched_done = bytes.fromhex(joint["patchedHex"])
+    if (
+        joint["role"] != "terminal-done-joint-redirect"
+        or joint["type"] != "joint-terminal-done-jmp"
+        or joint["address"] != done["address"] - 4
+        or joint["doneOffsetBytes"] != 4
+        or len(original_done) != 10
+        or len(patched_done) != 10
+        or patched_done
+        != b"\x4e\xf9"
+        + JOINT_TERMINAL_DONE_DISPATCHER_ADDRESS.to_bytes(4, "big")
+        + bytes.fromhex(JOINT_TERMINAL_DONE_UNREACHABLE_FILL_HEX)
+        or joint["unreachableFillHex"] != JOINT_TERMINAL_DONE_UNREACHABLE_FILL_HEX
+        or joint["dispatcher"]
+        != {
+            "address": JOINT_TERMINAL_DONE_DISPATCHER_ADDRESS,
+            "jmpWidthBytes": JOINT_TERMINAL_DONE_DISPATCHER_SIZE,
+        }
+    ):
+        raise ValueError("blacksmith joint terminal/Done session patch shape drift")
+    result.append(
+        {
+            "role": joint["role"],
+            "type": joint["type"],
+            "address": joint["address"],
+            "originalBytes": original_done,
+            "patchedBytes": patched_done,
+            "generatedStubTarget": joint["dispatcher"]["address"],
+        }
+    )
+    ranges = [range(row["address"], row["address"] + len(row["originalBytes"])) for row in result]
+    if len(result) != 9 or any(
         left.start < right.stop and right.start < left.stop
         for index, left in enumerate(ranges)
         for right in ranges[index + 1 :]
@@ -3837,12 +4582,10 @@ def _equip_decision_instrumentation_spans(static: dict[str, Any]) -> list[dict[s
     terminal_roles = (
         "current-cursed-terminal-boundary-shim",
         "noncursed-terminal-boundary-shim",
-        "do-not-equip-terminal-boundary-shim",
     )
     expected_terminals = (
         ("current-cursed-pre-presentation", 0x21C68, "4E4500B06062"),
         ("noncursed-equip-pre-presentation", 0x21CC8, "4E4500AE6000"),
-        ("do-not-equip-pre-presentation", 0x21CD0, "4E4500D14CDF"),
     )
     shims = decision.get("terminalShims")
     if not isinstance(shims, list) or tuple(shim.get("role") for shim in shims) != terminal_roles:
@@ -3871,7 +4614,7 @@ def _equip_decision_instrumentation_spans(static: dict[str, Any]) -> list[dict[s
                 "terminal": shim["terminal"],
             }
         )
-    if len(result) != 5:
+    if len(result) != 4:
         raise ValueError("blacksmith equip-decision instrumentation span count drift")
     return result
 
@@ -3881,7 +4624,7 @@ def _validate_session_instrumentation_spans(
 ) -> None:
     """Reject any mixed-width session-patch overlap before a disposable ROM is written."""
     ranges = [range(row["address"], row["address"] + len(row["originalBytes"])) for row in spans]
-    if len(spans) != 12 or any(
+    if len(spans) != 13 or any(
         left.start < right.stop and right.start < left.stop
         for index, left in enumerate(ranges)
         for right in ranges[index + 1 :]
@@ -3891,7 +4634,7 @@ def _validate_session_instrumentation_spans(
 
 
 def _session_instrumentation_spans(static: dict[str, Any]) -> list[dict[str, Any]]:
-    """Prove all v5 session patches are distinct and retain v4 observation PCs."""
+    """Prove all thirteen v6 session patches are distinct and retain v4 observation PCs."""
     spans = [
         *_precommit_instrumentation_spans(static),
         *_equip_decision_instrumentation_spans(static),
@@ -3982,7 +4725,7 @@ def _instrument_precommit_rom(
     *,
     output_path: Path | None = None,
 ) -> Path:
-    """Build one private, disposable twelve-span ROM image for the H3 session."""
+    """Build one private, disposable thirteen-span ROM image for the H3 session."""
     canonical = rom_path.resolve(strict=True)
     manifest = load_json(ROM_MANIFEST)
     canonical_identity = inspect_rom(canonical)
@@ -4025,7 +4768,9 @@ def _instrument_precommit_rom(
 def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[str, Any]:
     """Keep accepted output facts out of the executable observer configuration."""
     _validate_precommit_case_matrix(fixture, static)
+    _validate_prompt_routing_case_matrix(fixture, static)
     _validate_equip_decision_case_matrix(fixture, static)
+    _assert_retained_v5_digest(fixture)
     _session_instrumentation_spans(static)
     _validate_precommit_cleanup_equippability(static)
     return {
@@ -4039,6 +4784,8 @@ def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[st
         "fulfillmentCaseOrder": fixture["fulfillmentCaseOrder"],
         "precommitCases": fixture["precommitCases"],
         "precommitCaseOrder": fixture["precommitCaseOrder"],
+        "promptRoutingCases": fixture["promptRoutingCases"],
+        "promptRoutingCaseOrder": fixture["promptRoutingCaseOrder"],
         "equipDecisionCases": fixture["equipDecisionCases"],
         "equipDecisionCaseOrder": fixture["equipDecisionCaseOrder"],
         "function": static["function"],
@@ -4058,12 +4805,6 @@ def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[st
             if key
             not in {
                 "h1InstructionBytes",
-                "fullInventoryYesNo",
-                "nonEquippableYesNo",
-                "fullInventoryPromptCompareAddress",
-                "fullInventoryRetryBranchAddress",
-                "nonEquippablePromptCompareAddress",
-                "nonEquippableRetryBranchAddress",
             }
         },
         "equipDecision": {
@@ -4074,6 +4815,8 @@ def _observer_config(fixture: dict[str, Any], static: dict[str, Any]) -> dict[st
         "precommitCaseFrameBudget": PRECOMMIT_CASE_FRAME_BUDGET,
         "precommitTransitionFrameBudget": PRECOMMIT_TRANSITION_FRAME_BUDGET,
         "precommitCleanupStackDepthBytes": PRECOMMIT_CLEANUP_STACK_DEPTH_BYTES,
+        "promptRoutingCaseFrameBudget": PROMPT_ROUTING_CASE_FRAME_BUDGET,
+        "promptRoutingCleanupStackDepthBytes": PROMPT_ROUTING_CLEANUP_STACK_DEPTH_BYTES,
         "instrumentedRom": _session_instrumentation_config(static),
         "ram": static["ram"],
         "constants": static["constants"],
@@ -4088,6 +4831,7 @@ def verify_blacksmith_mithril(
     validate_json(fixture, FIXTURE_SCHEMA, owner="blacksmith mithril fixture")
     _assert_retained_v4_digest(fixture)
     _validate_equip_decision_case_matrix(fixture)
+    _assert_retained_v5_digest(fixture)
     verify_runtime_contract(fixture, rom_path)
     static = validate_static_contract(fixture, rom_path, upstream_path)
     _assert_golden(fixture, static)
@@ -4129,11 +4873,13 @@ def verify_blacksmith_mithril(
         + len(fixture["transactionCases"])
         + len(fixture["fulfillmentCases"])
         + len(fixture["precommitCases"])
+        + len(fixture["promptRoutingCases"])
         + len(fixture["equipDecisionCases"]),
         "HelperCases": len(fixture["cases"]),
         "TransactionCases": len(fixture["transactionCases"]),
         "FulfillmentCases": len(fixture["fulfillmentCases"]),
         "PrecommitCases": len(fixture["precommitCases"]),
+        "PromptRoutingCases": len(fixture["promptRoutingCases"]),
         "EquipDecisionCases": len(fixture["equipDecisionCases"]),
         "BizHawkLaunches": 1,
         "CallbacksCleared": observed["callbacksCleared"],

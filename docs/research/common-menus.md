@@ -12,7 +12,7 @@
   shop, church, caravan, blacksmith, field, and battle caller
 - Status: **Unknown** for exact window/portrait animation timing, visual composition, and caller-state
   transitions that static control flow cannot reproduce
-- Evidence date: 2026-08-09
+- Evidence date: 2026-08-11
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -480,6 +480,57 @@ player input, audio/VDP/timing/rendering, RNG distribution, ring output, newly-e
 hardware behavior; those remain **Unknown**. The ring and newly-equipped-cursed source branches remain
 statically excluded from the current Mithril-output domain rather than generally impossible. The grouped
 rail confirms only the stated source-bounded decisions and mutations before presentation.
+
+**Confirmed — fulfillment prompt-routing contract and one grouped H3 run.** The same pinned
+`BlacksmithAction_FulfillOrder` source gives two adjacent, source-bounded `j_alt_YesNoPrompt` compare/
+branch families without assigning a UI or input meaning to their results. At full inventory, the original
+call at `0x21B98` returns to `cmpi.w #0,d0` at `0x21B9E`; `beq.s byte_21B58` at `0x21BA2` loops to the
+selection label for controlled zero, while the nonzero fallthrough reaches `txt197` and then `@Done`
+(`0x21CD4`). At non-equippable, the original call at `0x21BD6` returns to the `0x21BDC` compare; its
+`bne.w byte_21B58` at `0x21BE0` loops for controlled nonzero, while controlled zero falls through to
+the original `@AddItem` entry `0x21BE4`. Source, H1, ROM, original compare/branch bytes,
+and the neutral `@Done` `movem.l (sp)+,d0-a1; rts` bytes (`4CDF03FF4E75`) are independently guarded.
+
+Fixture v6 retains the accepted v5 21-case projection with SHA-256
+`A2453765581CA1C8F6DC1D48D9DC1E8CFEB03CF0F6EC882485F3ADB157DA1D1E` and adds exactly four ordered
+controlled-result cases: full-inventory zero retry to selection, full-inventory nonzero abort to
+`@Done`, non-equippable zero accept to `@AddItem`, and non-equippable nonzero reselect to selection.
+One BizHawk 2.11.1 / Genesis Plus GX launch completed the complete 25-case cohort (the retained 21
+plus these four) with the exact accepted observation. Its session plan has 13 non-overlapping
+source/H1/ROM-bound spans: four retained service JSR shims, the
+recipient-cancel JMP, two prompt-boundary JSR shims, a four-byte full-inventory `BRA.W` from the abort
+text boundary to the shared terminal/Done redirect, and four separately patched post-`@AddItem`
+spans. The joint ten-byte `0x21CD0..0x21CD9` span replaces the overlapping retained do-not-equip
+presentation boundary and the `@Done` bytes together: its six-byte JMP reaches a shared RAM dispatcher
+and its remaining four bytes are readback-guarded unreachable `ILLEGAL` fill (`4AFC4AFC`). The dispatcher
+uses the active deterministic observer mode to write its own next JMP only: accepted v5 do-not-equip
+cases target the existing terminal stub, while the v6 abort targets the MOVEM stub. The generated result
+stub is instruction-scoped: its `0xFF6D80` entry callback verifies the generated
+`move.w #result,d0; jmp compare` bytes and its `0xFF6D84` JMP boundary observes the controlled `d0`
+word after the MOVE and before the original compare. The abort route keeps the source `0x03FF`
+`MOVEM.L` restore mask (ten registers, 40 bytes). The canonical ROM's six source bytes remain static-only
+confirmation inside the jointly guarded ten-byte source span. The private session copy reaches a
+dispatcher at `0xFF6D90`, which for the abort writes `jmp 0xFF6DA0`. That RAM stub executes the
+source-equivalent `4CDF03FF` `MOVEM.L`, explicitly JMPs to the separate `0xFF6DB0` RAM `4E75` RTS stub,
+and has distinct callbacks before the MOVEM and before the RTS. Those callbacks validate respectively
+the pre-`MOVEM` synthetic stack seam and post-`MOVEM` `a7 = stack_top - dispatchStack.totalBytes + 40`
+with the synthetic harness return. Runtime evidence therefore concerns the generated equivalent
+instruction seams, not a claimed original-ROM `@Done+4` callback granularity. The accept route uses the already guarded
+direct-`@AddItem` cleanup seam. The shared `0x21CD0` callback has both prompt-routing and retained-v5
+equip-decision roles, but deterministic mode guards make the non-owner a no-op: prompt mode records only
+the Done route and rewrites the dispatcher to the MOVEM stub; equip mode records only the retained
+do-not-equip terminal and rewrites it to the existing terminal stub.
+
+The successful run read back all 13 patched spans, both controlled prompt-boundary sites and the abort
+skip, the controlled result stub, the Done redirect, the joint dispatcher write, and both generated
+MOVEM/RTS stubs. It also read the synthetic stack before MOVEM and after MOVEM at the separate RTS
+boundary, cleared all callbacks (`0`), and restored exactly `CURRENT_GOLD`, `RANDOM_SEED`, order words,
+the flag-80 owning byte, and selected combatant records. The observer status ended with the ordered
+prompt-routing and equip-decision transition milestones, restoration, `callbacks-cleared:0`, and
+`observer-finished`; there was no Lua callback failure. This confirms the four controlled branch
+results and the stated instrumented equivalent seams only. Original prompt/text/window/input behavior,
+natural Yes/No meaning, timing, persistence, natural reachability, ring/newly-equipped-cursed output,
+and every excluded post-`@AddItem` behavior remain **Unknown**.
 
 The interaction-level handoff is recorded in
 [`service-interactions.md`](../design/contracts/service-interactions.md). It deliberately consumes only the

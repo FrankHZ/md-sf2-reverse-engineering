@@ -35,6 +35,7 @@ def test_fixture_is_input_only_and_observation_schema_is_recursively_closed() ->
     assert fixture["transactionCaseOrder"] == list(blacksmith_mithril.TRANSACTION_CASE_IDS)
     assert fixture["fulfillmentCaseOrder"] == list(blacksmith_mithril.FULFILLMENT_CASE_IDS)
     assert fixture["precommitCaseOrder"] == list(blacksmith_mithril.PRECOMMIT_CASE_IDS)
+    assert fixture["promptRoutingCaseOrder"] == list(blacksmith_mithril.PROMPT_ROUTING_CASE_IDS)
     assert all(
         "expected" not in case and "result" not in case
         for case in [
@@ -42,6 +43,7 @@ def test_fixture_is_input_only_and_observation_schema_is_recursively_closed() ->
             *fixture["transactionCases"],
             *fixture["fulfillmentCases"],
             *fixture["precommitCases"],
+            *fixture["promptRoutingCases"],
         ]
     )
     assert all(
@@ -67,6 +69,10 @@ def test_fixture_is_input_only_and_observation_schema_is_recursively_closed() ->
         validate_json(malformed, blacksmith_mithril.FIXTURE_SCHEMA, owner="blacksmith fixture")
     malformed = copy.deepcopy(fixture)
     malformed["precommitCases"][0]["terminal"] = "done"
+    with pytest.raises(ValueError, match="Additional properties"):
+        validate_json(malformed, blacksmith_mithril.FIXTURE_SCHEMA, owner="blacksmith fixture")
+    malformed = copy.deepcopy(fixture)
+    malformed["promptRoutingCases"][0]["routeTerminal"] = "done"
     with pytest.raises(ValueError, match="Additional properties"):
         validate_json(malformed, blacksmith_mithril.FIXTURE_SCHEMA, owner="blacksmith fixture")
     malformed = copy.deepcopy(observed)
@@ -95,6 +101,15 @@ def test_fixture_is_input_only_and_observation_schema_is_recursively_closed() ->
     with pytest.raises(ValueError, match="exact observed case matrix mismatch"):
         blacksmith_mithril._assert_observation(fixture, static, malformed)
     malformed = copy.deepcopy(observed)
+    malformed["promptRoutingRecords"][0]["routeTerminal"] = "done"
+    validate_json(
+        malformed,
+        blacksmith_mithril.OBSERVATION_SCHEMA,
+        owner="schema-valid prompt-routing terminal drift",
+    )
+    with pytest.raises(ValueError, match="exact observed case matrix mismatch"):
+        blacksmith_mithril._assert_observation(fixture, static, malformed)
+    malformed = copy.deepcopy(observed)
     malformed["fulfillmentRecords"][0]["equippableCarrySet"] = False
     validate_json(
         malformed,
@@ -112,6 +127,18 @@ def test_fixture_is_input_only_and_observation_schema_is_recursively_closed() ->
     )
     with pytest.raises(ValueError, match="exact observed case matrix mismatch"):
         blacksmith_mithril._assert_observation(fixture, static, malformed)
+    for mutate in (
+        lambda value: value["promptRoutingInstrumentation"].pop("doneRtsStackReadback"),
+        lambda value: value["promptRoutingInstrumentation"].update({"doneRtsStackReadback": False}),
+    ):
+        malformed = copy.deepcopy(observed)
+        mutate(malformed)
+        with pytest.raises(ValueError):
+            validate_json(
+                malformed,
+                blacksmith_mithril.OBSERVATION_SCHEMA,
+                owner="prompt-routing Done RTS readback drift",
+            )
     coordinated_drift = copy.deepcopy(fixture)
     coordinated_drift["acceptedObservation"]["records"][0]["itemIndex"] ^= 1
     validate_json(
@@ -401,7 +428,11 @@ def test_static_contract_derives_source_h1_rng_and_table_boundaries() -> None:
             "itemTypeBytes": bytes.fromhex("0A"),
         },
     ]
-    assert static["precommit"] | {"h1InstructionBytes": []} == {
+    precommit_static = copy.deepcopy(static["precommit"])
+    prompt_routing = precommit_static.pop("promptRouting")
+    abort_skip = precommit_static.pop("fullInventoryAbortPresentationSkip")
+    precommit_static["h1InstructionBytes"] = []
+    assert precommit_static == {
         "entryAddress": 138050,
         "selectionLoopAddress": 138072,
         "runtimeStartAddress": 138072,
@@ -535,22 +566,100 @@ def test_static_contract_derives_source_h1_rng_and_table_boundaries() -> None:
             },
             {
                 "role": "full-inventory-terminal-boundary-shim",
-                "type": "terminal-jmp",
+                "type": "prompt-jsr",
                 "boundaryAddress": 138132,
+                "returnAddress": 138138,
                 "originalHex": "4E4500D04EB9",
-                "patchedHex": "4EF900FF6D20",
+                "patchedHex": "4EB900FF6D20",
                 "generatedStubTarget": 16739616,
             },
             {
                 "role": "non-equippable-terminal-boundary-shim",
-                "type": "terminal-jmp",
+                "type": "prompt-jsr",
                 "boundaryAddress": 138194,
+                "returnAddress": 138200,
                 "originalHex": "4E4500A74EB9",
-                "patchedHex": "4EF900FF6D20",
+                "patchedHex": "4EB900FF6D20",
                 "generatedStubTarget": 16739616,
             },
         ],
         "h1InstructionBytes": [],
+    }
+    assert prompt_routing == {
+        "dispatchStack": {
+            "entryJsrReturnBytes": 4,
+            "promptBoundaryJsrReturnBytes": 4,
+            "totalBytes": 8,
+        },
+        "controlledResultStub": {
+            "address": 0xFF6D80,
+            "moveWidthBytes": 4,
+            "jmpAddress": 0xFF6D84,
+            "jmpWidthBytes": 6,
+            "sizeBytes": 10,
+        },
+        "fullInventory": {
+            "promptCallAddress": 138136,
+            "promptReturnAddress": 138142,
+            "compareAddress": 138142,
+            "retryBranchAddress": 138146,
+            "retryTargetAddress": 138072,
+            "abortPresentationAddress": 138148,
+            "abortDoneAddress": 138452,
+        },
+        "nonEquippable": {
+            "promptCallAddress": 138198,
+            "promptReturnAddress": 138204,
+            "compareAddress": 138204,
+            "retryBranchAddress": 138208,
+            "retryTargetAddress": 138072,
+            "acceptAddItemAddress": 138212,
+        },
+        "doneNeutralBoundary": {
+            "address": 138452,
+            "originalHex": "4CDF03FF4E75",
+            "restoreMask": 0x03FF,
+            "restoreByteCount": 40,
+            "movemWidthBytes": 4,
+            "sourceRtsAddress": 138456,
+            "rtsWidthBytes": 2,
+            "jointRedirect": {
+                "role": "terminal-done-joint-redirect",
+                "type": "joint-terminal-done-jmp",
+                "address": 138448,
+                "doneOffsetBytes": 4,
+                "originalHex": "4E4500D14CDF03FF4E75",
+                "patchedHex": "4EF900FF6D904AFC4AFC",
+                "unreachableFillHex": "4AFC4AFC",
+                "dispatcher": {
+                    "address": blacksmith_mithril.JOINT_TERMINAL_DONE_DISPATCHER_ADDRESS,
+                    "jmpWidthBytes": 6,
+                },
+            },
+            "movemStub": {
+                "address": blacksmith_mithril.DONE_MOVEM_STUB_ADDRESS,
+                "movemHex": "4CDF03FF",
+                "movemWidthBytes": 4,
+                "jmpAddress": blacksmith_mithril.DONE_MOVEM_STUB_JMP_ADDRESS,
+                "jmpWidthBytes": 6,
+                "rtsStubAddress": blacksmith_mithril.DONE_RTS_STUB_ADDRESS,
+                "sizeBytes": 10,
+            },
+            "rtsStub": {
+                "address": blacksmith_mithril.DONE_RTS_STUB_ADDRESS,
+                "rtsHex": "4E75",
+                "sizeBytes": 2,
+            },
+        },
+    }
+    assert abort_skip == {
+        "role": "full-inventory-abort-presentation-skip",
+        "type": "abort-text-bra",
+        "boundaryAddress": 138148,
+        "originalHex": "4E4500C5",
+        "patchedHex": "6000012A",
+        "branchBaseAddress": 138150,
+        "targetAddress": 138448,
     }
     assert [choice["denominator"] for choice in static["model"]["weaponRows"][0]] == [
         16,
@@ -580,6 +689,19 @@ def test_precommit_service_h1_call_opcode_and_target_drift_fail_before_runtime(
         )
 
 
+def test_done_neutral_movem_restore_mask_h1_drift_fails_before_runtime() -> None:
+    fixture = _fixture()
+    listing = (blacksmith_mithril.UPSTREAM / blacksmith_mithril.LISTING_RELATIVE).read_text(
+        encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="Done neutral boundary H1 bytes drift"):
+        blacksmith_mithril.build_static_contract(
+            fixture,
+            blacksmith_mithril.UPSTREAM,
+            listing_text=listing.replace("00021CD4 4CDF 03FF", "00021CD4 4CDF 03FE", 1),
+        )
+
+
 def test_precommit_service_shim_config_rejects_opcode_target_return_and_duplicate_drift() -> None:
     fixture = _fixture()
     static = _static(fixture)
@@ -596,16 +718,76 @@ def test_precommit_service_shim_config_rejects_opcode_target_return_and_duplicat
         blacksmith_mithril.PRECOMMIT_SERVICE_STUB_ADDRESS
     }
     terminal_shims = config["precommit"]["terminalShims"]
-    assert [shim["type"] for shim in terminal_shims] == ["terminal-jmp"] * 3
-    assert {shim["patchedHex"] for shim in terminal_shims} == {"4EF900FF6D20"}
+    assert [shim["type"] for shim in terminal_shims] == [
+        "terminal-jmp",
+        "prompt-jsr",
+        "prompt-jsr",
+    ]
+    assert [shim["patchedHex"] for shim in terminal_shims] == [
+        "4EF900FF6D20",
+        "4EB900FF6D20",
+        "4EB900FF6D20",
+    ]
     assert {shim["generatedStubTarget"] for shim in terminal_shims} == {
         blacksmith_mithril.PRECOMMIT_TERMINAL_STUB_ADDRESS
     }
+    assert [shim.get("returnAddress") for shim in terminal_shims] == [None, 138138, 138200]
     assert config["precommitCaseFrameBudget"] == blacksmith_mithril.PRECOMMIT_CASE_FRAME_BUDGET
     assert config["precommitTransitionFrameBudget"] == (
         blacksmith_mithril.PRECOMMIT_TRANSITION_FRAME_BUDGET
     )
     assert config["precommitCleanupStackDepthBytes"] == 8
+    assert config["promptRoutingCaseFrameBudget"] == 180
+    assert config["promptRoutingCleanupStackDepthBytes"] == 12
+    assert config["promptRoutingCaseOrder"] == list(blacksmith_mithril.PROMPT_ROUTING_CASE_IDS)
+    assert config["precommit"]["promptRouting"]["doneNeutralBoundary"] == {
+        "address": 138452,
+        "originalHex": "4CDF03FF4E75",
+        "restoreMask": 0x03FF,
+        "restoreByteCount": 40,
+        "movemWidthBytes": 4,
+        "sourceRtsAddress": 138456,
+        "rtsWidthBytes": 2,
+        "jointRedirect": {
+            "role": "terminal-done-joint-redirect",
+            "type": "joint-terminal-done-jmp",
+            "address": 138448,
+            "doneOffsetBytes": 4,
+            "originalHex": "4E4500D14CDF03FF4E75",
+            "patchedHex": "4EF900FF6D904AFC4AFC",
+            "unreachableFillHex": "4AFC4AFC",
+            "dispatcher": {
+                "address": blacksmith_mithril.JOINT_TERMINAL_DONE_DISPATCHER_ADDRESS,
+                "jmpWidthBytes": 6,
+            },
+        },
+        "movemStub": {
+            "address": blacksmith_mithril.DONE_MOVEM_STUB_ADDRESS,
+            "movemHex": "4CDF03FF",
+            "movemWidthBytes": 4,
+            "jmpAddress": blacksmith_mithril.DONE_MOVEM_STUB_JMP_ADDRESS,
+            "jmpWidthBytes": 6,
+            "rtsStubAddress": blacksmith_mithril.DONE_RTS_STUB_ADDRESS,
+            "sizeBytes": 10,
+        },
+        "rtsStub": {
+            "address": blacksmith_mithril.DONE_RTS_STUB_ADDRESS,
+            "rtsHex": "4E75",
+            "sizeBytes": 2,
+        },
+    }
+    assert config["precommit"]["promptRouting"]["dispatchStack"] == {
+        "entryJsrReturnBytes": 4,
+        "promptBoundaryJsrReturnBytes": 4,
+        "totalBytes": 8,
+    }
+    assert config["precommit"]["promptRouting"]["controlledResultStub"] == {
+        "address": blacksmith_mithril.PROMPT_ROUTING_STUB_ADDRESS,
+        "moveWidthBytes": 4,
+        "jmpAddress": blacksmith_mithril.PROMPT_ROUTING_STUB_JMP_ADDRESS,
+        "jmpWidthBytes": 6,
+        "sizeBytes": 10,
+    }
     assert config["precommit"]["cleanupEquippability"] == {
         "callAddress": 138262,
         "instructionTargetAddress": 33204,
@@ -623,6 +805,31 @@ def test_precommit_service_shim_config_rejects_opcode_target_return_and_duplicat
         malformed["precommit"]["serviceShims"][0][field] = value
         with pytest.raises(ValueError, match=error):
             blacksmith_mithril._observer_config(fixture, malformed)
+    for field, value in (
+        ("restoreMask", 0x01FF),
+        ("restoreByteCount", 36),
+        ("movemWidthBytes", 2),
+        ("sourceRtsAddress", 138458),
+        ("rtsWidthBytes", 4),
+    ):
+        malformed = copy.deepcopy(static)
+        malformed["precommit"]["promptRouting"]["doneNeutralBoundary"][field] = value
+        with pytest.raises(ValueError, match="Done neutral restore-stack contract drift"):
+            blacksmith_mithril._observer_config(fixture, malformed)
+    for field, value in (("entryJsrReturnBytes", 2), ("totalBytes", 4)):
+        malformed = copy.deepcopy(static)
+        malformed["precommit"]["promptRouting"]["dispatchStack"][field] = value
+        with pytest.raises(ValueError, match="dispatch-stack contract drift"):
+            blacksmith_mithril._observer_config(fixture, malformed)
+    for field, value in (("jmpAddress", 0xFF6D86), ("moveWidthBytes", 2), ("sizeBytes", 8)):
+        malformed = copy.deepcopy(static)
+        malformed["precommit"]["promptRouting"]["controlledResultStub"][field] = value
+        with pytest.raises(ValueError, match="controlled-result stub boundary drift"):
+            blacksmith_mithril._observer_config(fixture, malformed)
+    malformed = copy.deepcopy(static)
+    malformed["precommit"]["terminalShims"][1]["returnAddress"] += 2
+    with pytest.raises(ValueError, match="terminal shim return ABI drift"):
+        blacksmith_mithril._observer_config(fixture, malformed)
     duplicate = copy.deepcopy(static)
     duplicate["precommit"]["serviceShims"][1]["callAddress"] = duplicate["precommit"][
         "serviceShims"
@@ -659,7 +866,7 @@ def test_precommit_service_shim_config_rejects_opcode_target_return_and_duplicat
             blacksmith_mithril._observer_config(fixture, malformed)
 
 
-def test_session_rom_instrumentation_is_exact_twelve_span_copy(
+def test_session_rom_instrumentation_is_exact_thirteen_span_copy(
     tmp_path: Path,
 ) -> None:
     fixture = _fixture()
@@ -674,12 +881,18 @@ def test_session_rom_instrumentation_is_exact_twelve_span_copy(
     )
     first_bytes = first.read_bytes()
     spans = blacksmith_mithril._session_instrumentation_spans(static)
-    assert len(spans) == 12
+    assert len(spans) == 13
     assert [row["type"] for row in spans] == (
         ["service-jsr"] * 4
-        + ["terminal-jmp"] * 3
+        + [
+            "terminal-jmp",
+            "prompt-jsr",
+            "prompt-jsr",
+            "abort-text-bra",
+            "joint-terminal-done-jmp",
+        ]
         + ["prompt-jsr", "prompt-text-bra"]
-        + ["terminal-jmp"] * 3
+        + ["terminal-jmp"] * 2
     )
     assert (
         hashlib.sha256(first_bytes).hexdigest() == hashlib.sha256(second.read_bytes()).hexdigest()
@@ -719,7 +932,6 @@ def test_equip_decision_session_spans_bind_prompt_bra_and_terminal_jmps_before_l
         ("equip-decision-prompt-presentation-skip", 4),
         ("current-cursed-terminal-boundary-shim", 6),
         ("noncursed-terminal-boundary-shim", 6),
-        ("do-not-equip-terminal-boundary-shim", 6),
     ]
     assert spans[1] == {
         "role": "equip-decision-prompt-presentation-skip",
@@ -752,12 +964,12 @@ def test_equip_decision_session_spans_bind_prompt_bra_and_terminal_jmps_before_l
         with pytest.raises(ValueError, match="equip-decision terminal"):
             blacksmith_mithril._observer_config(fixture, malformed)
     overlap = copy.deepcopy(blacksmith_mithril._session_instrumentation_spans(static))
-    overlap[8]["address"] = overlap[7]["address"] + 2
+    overlap[9]["address"] = overlap[8]["address"] + 2
     with pytest.raises(ValueError, match="span overlap/count drift"):
         blacksmith_mithril._validate_session_instrumentation_spans(static, overlap)
     plan = blacksmith_mithril._session_instrumentation_config(static)
-    assert plan["spanCount"] == 12
-    assert plan["spans"][8] == {
+    assert plan["spanCount"] == 13
+    assert plan["spans"][10] == {
         "role": "equip-decision-prompt-presentation-skip",
         "type": "prompt-text-bra",
         "address": 0x21C20,
@@ -766,10 +978,10 @@ def test_equip_decision_session_spans_bind_prompt_bra_and_terminal_jmps_before_l
         "patchedHex": "60000002",
     }
     for mutate in (
-        lambda value: value["spans"].pop(8),
-        lambda value: value["spans"].__setitem__(8, {**value["spans"][8], "widthBytes": 6}),
+        lambda value: value["spans"].pop(10),
+        lambda value: value["spans"].__setitem__(10, {**value["spans"][10], "widthBytes": 6}),
         lambda value: value["spans"].__setitem__(
-            8, {**value["spans"][8], "patchedHex": "60000000"}
+            10, {**value["spans"][10], "patchedHex": "60000000"}
         ),
     ):
         malformed_plan = copy.deepcopy(plan)
@@ -783,8 +995,17 @@ def test_prompt_decline_session_plan_skips_text_to_controlled_prompt_before_disp
     static = _static(fixture)
     config = blacksmith_mithril._observer_config(fixture, static)
     plan = config["instrumentedRom"]
-    assert plan["spanCount"] == 12
-    skip = plan["spans"][8]
+    assert plan["spanCount"] == 13
+    joint_redirect = plan["spans"][8]
+    assert joint_redirect == {
+        "role": "terminal-done-joint-redirect",
+        "type": "joint-terminal-done-jmp",
+        "address": 0x21CD0,
+        "widthBytes": 10,
+        "originalHex": "4E4500D14CDF03FF4E75",
+        "patchedHex": "4EF900FF6D904AFC4AFC",
+    }
+    skip = plan["spans"][10]
     assert skip == {
         "role": "equip-decision-prompt-presentation-skip",
         "type": "prompt-text-bra",
@@ -929,12 +1150,53 @@ def test_shared_update_return_dispatch_uses_only_the_pending_source_helper() -> 
 
     source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
     assert "function dispatch_equip_shared_update_effective_return(address)" in source
-    assert "if not dispatch_equip_shared_update_effective_return(address) then" in source
+    assert (
+        "if not dispatch_equip_shared_update_effective_return(address) and not "
+        "dispatch_joint_terminal_done_dispatcher(address) then"
+    ) in source
     assert (
         '"equip-decision shared UpdateCombatantStats return without pending unequip/equip service"'
         in source
     )
     assert '"equip-decision shared UpdateCombatantStats dispatcher role drift"' in source
+
+
+def test_joint_terminal_shared_pc_uses_strict_mode_guards() -> None:
+    """The shared source redirect has two registrations but exactly one active owner."""
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    joint_address = "p.promptRouting.doneNeutralBoundary.jointRedirect.address"
+    prompt_role = '"prompt-routing-done-redirect"'
+    equip_role = '"equip-decision-do-not-equip-terminal-boundary-shim"'
+
+    # Both semantic roles remain registered at the joint 0x21CD0 source PC, in
+    # deterministic prompt-then-equip registration order.  The generic loop is
+    # intentionally retained; non-owners are explicit no-ops rather than a
+    # second callback registration with hidden state.
+    prompt_registration = f"register_exec({joint_address},{prompt_role},0)"
+    equip_registration = f"register_exec({joint_address},{equip_role},0)"
+    assert source.count(prompt_registration) == 1
+    assert source.count(equip_registration) == 1
+    assert source.index(prompt_registration) < source.index(equip_registration)
+    assert "for _,entry in ipairs(callbacks[address]) do dispatch(address,entry) end" in source
+
+    equip_handler = source[
+        source.index("function ed_joint_terminal_redirect(joint)") : source.index(
+            "function ed_start(index)"
+        )
+    ]
+    prompt_handler = source[
+        source.index("function rtx_done_redirect()") : source.index(
+            "function rtx_joint_terminal_done_dispatcher(joint)"
+        )
+    ]
+    assert equip_handler.index('if mode~="equip-decision" then return end') < equip_handler.index(
+        "current_equip()"
+    )
+    assert prompt_handler.index('if mode~="prompt-routing" then return end') < prompt_handler.index(
+        'rtx_event("prompt-routing-done-redirect"'
+    )
+    assert 'ed_event("equip-decision-do-not-equip-pre-presentation"' in equip_handler
+    assert 'rtx_route_record("done"' in prompt_handler
 
 
 def test_equip_decision_case_local_helper_fields_reset_between_cases() -> None:
@@ -1306,6 +1568,66 @@ def test_independent_model_covers_all_required_runtime_roles() -> None:
         21,
         22,
     ]
+    prompt_routing = observed["promptRoutingRecords"]
+    assert [record["id"] for record in prompt_routing] == fixture["promptRoutingCaseOrder"]
+    assert prompt_routing[0]["attemptCount"] == 2
+    assert prompt_routing[0]["selectedMembers"] == [0, None]
+    assert prompt_routing[0]["routeTerminal"] == "selection-loop"
+    assert prompt_routing[0]["completionTerminal"] == "recipient-cancel-pre-presentation"
+    assert [
+        [event["role"] for event in record["callbackChronology"]].count(
+            "prompt-routing-dispatch-stub"
+        )
+        for record in prompt_routing
+    ] == [2, 1, 1, 2]
+    assert [
+        [event["role"] for event in record["callbackChronology"]].count(
+            "prompt-routing-controlled-result-stub-entry"
+        )
+        for record in prompt_routing
+    ] == [1, 1, 1, 1]
+    assert [
+        [event["role"] for event in record["callbackChronology"]].count(
+            "prompt-routing-controlled-result-stub-jmp-boundary"
+        )
+        for record in prompt_routing
+    ] == [1, 1, 1, 1]
+    for record in prompt_routing:
+        chronology = record["callbackChronology"]
+        entry = next(
+            index
+            for index, event in enumerate(chronology)
+            if event["role"] == "prompt-routing-controlled-result-stub-entry"
+        )
+        assert chronology[entry : entry + 2] == [
+            {
+                "role": "prompt-routing-controlled-result-stub-entry",
+                "pc": blacksmith_mithril.PROMPT_ROUTING_STUB_ADDRESS,
+            },
+            {
+                "role": "prompt-routing-controlled-result-stub-jmp-boundary",
+                "pc": blacksmith_mithril.PROMPT_ROUTING_STUB_JMP_ADDRESS,
+            },
+        ]
+        assert chronology[-1] == {
+            "role": "prompt-routing-case-result",
+            "pc": blacksmith_mithril.PROMPT_ROUTING_HARNESS_BASE_ADDRESS
+            + fixture["promptRoutingCaseOrder"].index(record["id"])
+            * blacksmith_mithril.PROMPT_ROUTING_HARNESS_STRIDE
+            + blacksmith_mithril.PROMPT_ROUTING_HARNESS_RESULT_OFFSET,
+        }
+    assert [event["role"] for event in prompt_routing[1]["callbackChronology"][-5:]] == [
+        "prompt-routing-done-redirect",
+        "prompt-routing-joint-terminal-done-dispatcher",
+        "prompt-routing-done-movem-stub-entry",
+        "prompt-routing-done-rts-stub-entry",
+        "prompt-routing-case-result",
+    ]
+    for record in (prompt_routing[0], prompt_routing[3]):
+        assert [event["role"] for event in record["callbackChronology"][-3:-1]] == [
+            "prompt-routing-recipient-cancel-terminal",
+            "prompt-routing-dispatch-stub",
+        ]
     assert all(
         not record[mutation]
         for record in precommits
@@ -1334,6 +1656,20 @@ def test_independent_model_covers_all_required_runtime_roles() -> None:
         ],
         "generatedServiceStubWritesReadback": True,
         "generatedResultStubWritesReadback": True,
+    }
+    assert observed["promptRoutingInstrumentation"] == {
+        "promptBoundarySitesReadback": [
+            "full-inventory-terminal-boundary-shim",
+            "non-equippable-terminal-boundary-shim",
+        ],
+        "fullInventoryAbortPresentationSkipReadback": True,
+        "generatedPromptStubWriteReadback": True,
+        "doneRedirectReadback": True,
+        "jointDispatcherWriteReadback": True,
+        "generatedDoneMovemStubWriteReadback": True,
+        "generatedDoneRtsStubWriteReadback": True,
+        "doneMovemStackReadback": True,
+        "doneRtsStackReadback": True,
     }
     assert observed["equipDecisionInstrumentation"] == {
         "promptCallSiteReadback": True,
@@ -1405,6 +1741,107 @@ def test_v4_accepted_projection_and_digest_are_exactly_preserved_inside_v5() -> 
             blacksmith_mithril._assert_retained_v4_digest(malformed)
 
 
+def test_v5_accepted_projection_and_digest_are_exactly_preserved_inside_v6() -> None:
+    fixture = _fixture()
+    projection = blacksmith_mithril._retained_v5_projection(fixture)
+    assert fixture["retainedV5"] == {
+        "caseCount": 21,
+        "sha256": "A2453765581CA1C8F6DC1D48D9DC1E8CFEB03CF0F6EC882485F3ADB157DA1D1E",
+    }
+    assert blacksmith_mithril._retained_v5_sha256(fixture) == fixture["retainedV5"]["sha256"]
+    assert (
+        projection["acceptedObservation"]["equipDecisionRecords"]
+        == fixture["acceptedObservation"]["equipDecisionRecords"]
+    )
+    blacksmith_mithril._assert_retained_v5_digest(fixture)
+    for mutate in (
+        lambda value: value["precommitCases"][0].update({"itemIndex": 31}),
+        lambda value: value["acceptedObservation"]["equipDecisionRecords"][0].update(
+            {"itemIndex": 31}
+        ),
+    ):
+        malformed = copy.deepcopy(fixture)
+        mutate(malformed)
+        with pytest.raises(ValueError, match="retained-v5 digest guard drift"):
+            blacksmith_mithril._assert_retained_v5_digest(malformed)
+
+
+def test_prompt_routing_case_matrix_is_a_prelaunch_semantic_gate() -> None:
+    fixture = _fixture()
+    static = _static(fixture)
+    blacksmith_mithril._validate_prompt_routing_case_matrix(fixture, static)
+
+    def cleanup_fulfillment(value: dict[str, object]) -> dict[str, object]:
+        return next(
+            row
+            for row in value["fulfillmentCases"]  # type: ignore[index]
+            if row["id"] == "hero-levanter-slot3-order3-equippable"
+        )
+
+    for mutate, error in (
+        (
+            lambda value: value["promptRoutingCaseOrder"].reverse(),
+            "prompt-routing case order drift",
+        ),
+        (
+            lambda value: value["promptRoutingCases"][1].update({"promptResult": 0}),
+            "controlled-result matrix drift",
+        ),
+        (
+            lambda value: value["promptRoutingCases"][2]["attempts"].append(
+                copy.deepcopy(value["promptRoutingCases"][2]["attempts"][0])
+            ),
+            "controlled attempt matrix drift",
+        ),
+        (
+            lambda value: value["promptRoutingCases"][2]["attempts"][0].update(
+                {"heldItemsCountResult": 1}
+            ),
+            "controlled attempt matrix drift",
+        ),
+        (
+            lambda value: value["promptRoutingCases"][3]["attempts"][0].update(
+                {"equipmentTypeResult": 0}
+            ),
+            "controlled attempt matrix drift",
+        ),
+        (
+            lambda value: value["promptRoutingCases"][0]["attempts"][1].update(
+                {"heldItemsCountResult": 0}
+            ),
+            "controlled attempt matrix drift",
+        ),
+        (
+            lambda value: value["promptRoutingCases"][2].update({"cleanupFulfillmentCaseId": None}),
+            "cleanup case ID vector drift",
+        ),
+        (
+            lambda value: cleanup_fulfillment(value).update({"itemIndex": 80}),
+            "cleanup item identity drift",
+        ),
+        (
+            lambda value: cleanup_fulfillment(value)["ordersBefore"].__setitem__(3, 80),
+            "cleanup order-word identity drift",
+        ),
+    ):
+        malformed = copy.deepcopy(fixture)
+        mutate(malformed)
+        validate_json(
+            malformed,
+            blacksmith_mithril.FIXTURE_SCHEMA,
+            owner="schema-valid prompt-routing semantic drift",
+        )
+        with pytest.raises(ValueError, match=error):
+            blacksmith_mithril._validate_prompt_routing_case_matrix(malformed, static)
+        with pytest.raises(ValueError, match=error):
+            blacksmith_mithril._observer_config(malformed, static)
+
+    retained_drift = copy.deepcopy(fixture)
+    retained_drift["cases"][0]["randomSeedBefore"] ^= 1
+    with pytest.raises(ValueError, match="retained-v5 digest guard drift"):
+        blacksmith_mithril._observer_config(retained_drift, static)
+
+
 def test_equip_decision_case_matrix_is_an_independent_semantic_gate() -> None:
     fixture = _fixture()
     static = _static(fixture)
@@ -1452,6 +1889,7 @@ def test_research_index_binds_only_observed_fulfillment_pcs() -> None:
             "transactionRecords",
             "fulfillmentRecords",
             "precommitRecords",
+            "promptRoutingRecords",
         )
         for case in accepted[records_key]
         for event in case.get("callbackChronology", [])
@@ -2150,6 +2588,23 @@ def _inactive_equip_decision_state(mode: str) -> dict[str, object]:
     }
 
 
+def _inactive_prompt_routing_state(mode: str) -> dict[str, object]:
+    return {
+        "active": False,
+        "attemptIndex": 0,
+        "equipmentTypeCallCount": 0,
+        "equippabilityCallCount": 0,
+        "frameBudget": 0,
+        "frameCount": 0,
+        "heldItemsCallCount": 0,
+        "memberListCallCount": 0,
+        "mode": mode,
+        "pendingService": None,
+        "routeTerminal": "none",
+        "completionTerminal": "none",
+    }
+
+
 def _failure_payload() -> dict[str, object]:
     return {
         "owner": "blacksmith-mithril",
@@ -2216,6 +2671,7 @@ def _failure_payload() -> dict[str, object]:
                 "selectedMember": None,
                 "terminal": "none",
             },
+            "promptRouting": _inactive_prompt_routing_state("helper"),
             "equipDecision": _inactive_equip_decision_state("helper"),
         },
         "error": "RNG entry PC drift",
@@ -2282,6 +2738,7 @@ def _registration_failure_payload() -> dict[str, object]:
                 "selectedMember": None,
                 "terminal": "none",
             },
+            "promptRouting": _inactive_prompt_routing_state("none"),
             "equipDecision": _inactive_equip_decision_state("none"),
         },
         "error": "probe registration write drift",
@@ -2348,6 +2805,7 @@ def _bootstrap_failure_payload() -> dict[str, object]:
                 "selectedMember": None,
                 "terminal": "none",
             },
+            "promptRouting": _inactive_prompt_routing_state("none"),
             "equipDecision": _inactive_equip_decision_state("none"),
         },
         "error": "CheckSram return redirect write drift",
@@ -2357,13 +2815,15 @@ def _bootstrap_failure_payload() -> dict[str, object]:
 def _observer_role_sets(source: str) -> tuple[set[str], set[str]]:
     registered_roles = set(re.findall(r'register_exec\([^,]+,"([^"]+)"', source))
     event_roles = set(
-        re.findall(r'(?:tx_event|fx_event|pcx_event|ed_event|ed_simple)\("([^"]+)"', source)
+        re.findall(
+            r'(?:tx_event|fx_event|pcx_event|rtx_event|ed_event|ed_simple)\("([^"]+)"', source
+        )
     )
     event_roles |= set(re.findall(r'set_expectation\("[^"]+","([^"]+)"', source))
     event_roles |= set(re.findall(r'event_role="([^"]+)"', source))
     watchdog_roles = set(
         re.findall(
-            r'set_expectation\("(?:precommit|equip-decision)(?:-watchdog|-transition)","([^"]+)"',
+            r'set_expectation\("(?:precommit|prompt-routing|equip-decision)(?:-watchdog|-transition)","([^"]+)"',
             source,
         )
     )
@@ -2397,6 +2857,8 @@ def test_observer_role_literals_exhaust_shared_failure_and_pending_enums() -> No
     assert "precommit-watchdog-timeout" not in registered_roles
     assert "precommit-transition-timeout" in failure_roles
     assert "precommit-transition-timeout" not in registered_roles
+    assert "prompt-routing-watchdog-timeout" in failure_roles
+    assert "prompt-routing-watchdog-timeout" not in registered_roles
     assert "equip-decision-watchdog-timeout" in failure_roles
     assert "equip-decision-watchdog-timeout" not in registered_roles
     assert "equip-decision-transition-timeout" in failure_roles
@@ -2465,6 +2927,7 @@ def test_registration_and_bootstrap_failures_have_no_case_association(tmp_path: 
         'mode,helper_index,transaction_index,fulfillment_index,precommit_index,equip_index="none",0,0,0,0,0'
         in source
     )
+    assert "routing_index=0" in source
     assert 'current_role=="transaction-case-entry"' in source
     assert 'current_role=="registration" and nil or emu.getregister("M68K PC")' in source
     bootstrap = source.index("local function bootstrap_check_sram()")
@@ -2522,6 +2985,382 @@ def test_precommit_callback_failure_preserves_generated_return_abi_and_pending_s
         blacksmith_mithril.FAILURE_SCHEMA,
         owner="schema-valid precommit target drift",
     )
+
+
+def test_prompt_routing_callback_failure_requires_case_and_exact_pending_state() -> None:
+    payload = _failure_payload()
+    payload.update(
+        {
+            "caseId": "full-inventory-abort-done",
+            "phase": "prompt-routing",
+            "role": "prompt-routing-full-inventory-branch",
+            "actualPc": 138146,
+            "expectedEventPc": 138146,
+            "expectedCallPc": None,
+            "expectedTargetPc": 138072,
+            "expectedReturnPc": None,
+            "error": "prompt-routing branch target drift",
+        }
+    )
+    pending = payload["pendingCallback"]
+    pending["active"] = True
+    pending["caseIndex"] = 2
+    pending["pendingRngCall"] = None
+    pending["rolesAtPc"] = ["prompt-routing-full-inventory-branch"]
+    for state in (pending["transaction"], pending["fulfillment"], pending["precommit"]):
+        state["mode"] = "prompt-routing"
+    pending["promptRouting"] = {
+        "active": True,
+        "attemptIndex": 1,
+        "equipmentTypeCallCount": 0,
+        "equippabilityCallCount": 0,
+        "frameBudget": blacksmith_mithril.PROMPT_ROUTING_CASE_FRAME_BUDGET,
+        "frameCount": 1,
+        "heldItemsCallCount": 1,
+        "memberListCallCount": 1,
+        "mode": "prompt-routing",
+        "pendingService": None,
+        "routeTerminal": "none",
+        "completionTerminal": "none",
+    }
+    pending["equipDecision"] = _inactive_equip_decision_state("prompt-routing")
+    validate_json(payload, blacksmith_mithril.FAILURE_SCHEMA, owner="prompt-routing failure")
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    assert (
+        'rtx_event(routing_role_prefix..family.."-branch",source.retryBranchAddress,nil,source.retryTargetAddress,nil)'
+        in source
+    )
+    assert (
+        'rtx_event(routing_role_prefix..family.."-boundary-jsr",address,address,precommit_state.terminalStub,shim.returnAddress)'
+        in source
+    )
+    assert 'rtx.terminalStubPurpose="prompt"' in source
+    assert 'rtx.terminalStubPurpose="recipient-terminal"' in source
+    assert "rtx.dispatchStackDiagnostic={expectedTop=expected_top" in source
+    assert (
+        'if current_role=="prompt-routing-dispatch-stub" or '
+        'current_role=="prompt-routing-done-movem-stub-entry" or '
+        'current_role=="prompt-routing-done-rts-stub-entry" then'
+    ) in source
+    assert 'elseif current_role=="precommit-cleanup-equippability-effective-return" then' in source
+    assert "prompt-routing dispatch stub opcode/target drift" in source
+    assert "prompt-routing dispatch A7 depth drift" in source
+    assert "prompt-routing recipient result stub opcode/target drift" in source
+    assert "local expected_return=rtx.promptBoundaryReturnAddress" in source
+    assert "expect(actual_return==expected_return" in source
+    assert "for offset=0,done.restoreByteCount-4,4 do" in source
+    assert 'memory.read_u32_be(done_stack+done.restoreByteCount,"M68K BUS")==entry+20' in source
+    for field in ("caseId", "actualPc", "expectedEventPc", "expectedTargetPc"):
+        malformed = copy.deepcopy(payload)
+        malformed[field] = None
+        with pytest.raises(ValueError):
+            validate_json(
+                malformed,
+                blacksmith_mithril.FAILURE_SCHEMA,
+                owner=f"prompt-routing missing {field}",
+            )
+    malformed = copy.deepcopy(payload)
+    malformed["pendingCallback"]["promptRouting"]["active"] = False
+    with pytest.raises(ValueError, match="True was expected"):
+        validate_json(
+            malformed,
+            blacksmith_mithril.FAILURE_SCHEMA,
+            owner="inactive prompt-routing callback",
+        )
+
+
+def test_prompt_routing_dispatch_failure_requires_derived_stack_diagnostic() -> None:
+    payload = _failure_payload()
+    payload.update(
+        {
+            "caseId": "full-inventory-retry-selection-loop",
+            "phase": "prompt-routing",
+            "role": "prompt-routing-dispatch-stub",
+            "actualPc": blacksmith_mithril.PRECOMMIT_TERMINAL_STUB_ADDRESS,
+            "expectedEventPc": blacksmith_mithril.PRECOMMIT_TERMINAL_STUB_ADDRESS,
+            "expectedCallPc": None,
+            "expectedTargetPc": blacksmith_mithril.PROMPT_ROUTING_STUB_ADDRESS,
+            "expectedReturnPc": 138138,
+            "expectedStackTop": 0xFFFEF8,
+            "actualStackTop": 0xFFFEF8,
+            "expectedStackReturn": 138138,
+            "actualStackReturn": 138138,
+            "error": "prompt-routing dispatch stack return drift",
+        }
+    )
+    pending = payload["pendingCallback"]
+    pending["active"] = True
+    pending["caseIndex"] = 1
+    pending["pendingRngCall"] = None
+    pending["rolesAtPc"] = [
+        "precommit-generated-result-stub",
+        "prompt-routing-dispatch-stub",
+    ]
+    for state in (pending["transaction"], pending["fulfillment"], pending["precommit"]):
+        state["mode"] = "prompt-routing"
+    pending["promptRouting"] = {
+        "active": True,
+        "attemptIndex": 1,
+        "equipmentTypeCallCount": 0,
+        "equippabilityCallCount": 0,
+        "frameBudget": blacksmith_mithril.PROMPT_ROUTING_CASE_FRAME_BUDGET,
+        "frameCount": 1,
+        "heldItemsCallCount": 1,
+        "memberListCallCount": 1,
+        "mode": "prompt-routing",
+        "pendingService": None,
+        "routeTerminal": "none",
+        "completionTerminal": "none",
+    }
+    pending["equipDecision"] = _inactive_equip_decision_state("prompt-routing")
+    validate_json(payload, blacksmith_mithril.FAILURE_SCHEMA, owner="prompt dispatch failure")
+    for field in (
+        "expectedReturnPc",
+        "expectedStackTop",
+        "actualStackTop",
+        "expectedStackReturn",
+        "actualStackReturn",
+    ):
+        malformed = copy.deepcopy(payload)
+        malformed[field] = None
+        with pytest.raises(ValueError):
+            validate_json(
+                malformed,
+                blacksmith_mithril.FAILURE_SCHEMA,
+                owner=f"prompt dispatch missing {field}",
+            )
+
+
+def test_controlled_prompt_stub_boundaries_have_exact_structured_failures() -> None:
+    for role, pc, target, error in (
+        (
+            "prompt-routing-controlled-result-stub-entry",
+            blacksmith_mithril.PROMPT_ROUTING_STUB_ADDRESS,
+            blacksmith_mithril.PROMPT_ROUTING_STUB_JMP_ADDRESS,
+            "prompt-routing controlled-result stub entry bytes drift",
+        ),
+        (
+            "prompt-routing-controlled-result-stub-jmp-boundary",
+            blacksmith_mithril.PROMPT_ROUTING_STUB_JMP_ADDRESS,
+            138142,
+            "prompt-routing controlled prompt result drift",
+        ),
+    ):
+        payload = _failure_payload()
+        payload.update(
+            {
+                "caseId": "full-inventory-abort-done",
+                "phase": "prompt-routing",
+                "role": role,
+                "actualPc": pc,
+                "expectedEventPc": pc,
+                "expectedCallPc": None,
+                "expectedTargetPc": target,
+                "expectedReturnPc": None,
+                "expectedStackTop": None,
+                "actualStackTop": None,
+                "expectedStackReturn": None,
+                "actualStackReturn": None,
+                "error": error,
+            }
+        )
+        pending = payload["pendingCallback"]
+        pending["active"] = True
+        pending["caseIndex"] = 2
+        pending["pendingRngCall"] = None
+        pending["rolesAtPc"] = [role]
+        for state in (pending["transaction"], pending["fulfillment"], pending["precommit"]):
+            state["mode"] = "prompt-routing"
+        pending["promptRouting"] = {
+            "active": True,
+            "attemptIndex": 1,
+            "equipmentTypeCallCount": 0,
+            "equippabilityCallCount": 0,
+            "frameBudget": blacksmith_mithril.PROMPT_ROUTING_CASE_FRAME_BUDGET,
+            "frameCount": 1,
+            "heldItemsCallCount": 1,
+            "memberListCallCount": 1,
+            "mode": "prompt-routing",
+            "pendingService": None,
+            "routeTerminal": "none",
+            "completionTerminal": "none",
+        }
+        pending["equipDecision"] = _inactive_equip_decision_state("prompt-routing")
+        validate_json(payload, blacksmith_mithril.FAILURE_SCHEMA, owner=role)
+        for field, value in (("actualPc", pc + 2), ("expectedTargetPc", target + 2)):
+            malformed = copy.deepcopy(payload)
+            malformed[field] = value
+            with pytest.raises(ValueError):
+                validate_json(
+                    malformed,
+                    blacksmith_mithril.FAILURE_SCHEMA,
+                    owner=f"{role} {field} drift",
+                )
+
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    assert (
+        'rtx_event("prompt-routing-controlled-result-stub-entry",stub.address,nil,stub.jmpAddress,nil)'
+        in source
+    )
+    assert (
+        'rtx_event("prompt-routing-controlled-result-stub-jmp-boundary",stub.jmpAddress,nil,pending.compareAddress,nil)'
+        in source
+    )
+    assert "prompt-routing controlled-result stub entry bytes drift" in source
+    assert "prompt-routing controlled-result JMP bytes drift" in source
+    assert 'expect(word(emu.getregister("M68K D0"))==pending.resultWord' in source
+    assert '["prompt-routing-controlled-result-stub-entry"]=true' in source
+    assert '["prompt-routing-controlled-result-stub-jmp-boundary"]=true' in source
+
+
+def test_done_stub_boundaries_have_exact_stack_failure_contracts() -> None:
+    for role, pc, target, stack_top, error in (
+        (
+            "prompt-routing-done-movem-stub-entry",
+            blacksmith_mithril.DONE_MOVEM_STUB_ADDRESS,
+            blacksmith_mithril.DONE_RTS_STUB_ADDRESS,
+            0xFFFEF8,
+            "prompt-routing Done MOVEM synthetic return drift",
+        ),
+        (
+            "prompt-routing-done-rts-stub-entry",
+            blacksmith_mithril.DONE_RTS_STUB_ADDRESS,
+            0xFF6BD4,
+            0xFFFF20,
+            "prompt-routing Done RTS return drift",
+        ),
+    ):
+        payload = _failure_payload()
+        payload.update(
+            {
+                "caseId": "full-inventory-abort-done",
+                "phase": "prompt-routing",
+                "role": role,
+                "actualPc": pc,
+                "expectedEventPc": pc,
+                "expectedCallPc": None,
+                "expectedTargetPc": target,
+                "expectedReturnPc": None,
+                "expectedStackTop": stack_top,
+                "actualStackTop": stack_top,
+                "expectedStackReturn": 0xFF6BD4,
+                "actualStackReturn": 0xFF6BD4,
+                "error": error,
+            }
+        )
+        pending = payload["pendingCallback"]
+        pending["active"] = True
+        pending["caseIndex"] = 2
+        pending["pendingRngCall"] = None
+        pending["rolesAtPc"] = [role]
+        for state in (pending["transaction"], pending["fulfillment"], pending["precommit"]):
+            state["mode"] = "prompt-routing"
+        pending["promptRouting"] = {
+            "active": True,
+            "attemptIndex": 1,
+            "equipmentTypeCallCount": 0,
+            "equippabilityCallCount": 0,
+            "frameBudget": blacksmith_mithril.PROMPT_ROUTING_CASE_FRAME_BUDGET,
+            "frameCount": 1,
+            "heldItemsCallCount": 1,
+            "memberListCallCount": 1,
+            "mode": "prompt-routing",
+            "pendingService": None,
+            "routeTerminal": "done",
+            "completionTerminal": "done",
+        }
+        pending["equipDecision"] = _inactive_equip_decision_state("prompt-routing")
+        validate_json(payload, blacksmith_mithril.FAILURE_SCHEMA, owner=role)
+        for field, value in (
+            ("actualPc", pc + 2),
+            ("expectedTargetPc", target + 2),
+            ("expectedStackTop", stack_top - 4),
+            ("expectedStackReturn", 0xFF6BB4),
+            ("actualStackTop", None),
+            ("actualStackReturn", None),
+        ):
+            malformed = copy.deepcopy(payload)
+            malformed[field] = value
+            with pytest.raises(ValueError):
+                validate_json(
+                    malformed,
+                    blacksmith_mithril.FAILURE_SCHEMA,
+                    owner=f"{role} {field} drift",
+                )
+
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    assert (
+        'rtx_event("prompt-routing-done-movem-stub-entry",stub.address,nil,stub.rtsStubAddress,nil)'
+        in source
+    )
+    assert (
+        'rtx_event("prompt-routing-done-rts-stub-entry",stub.address,nil,expected_return,nil)'
+        in source
+    )
+    assert "write_done_stubs(done)" in source
+    assert "prompt-routing Done MOVEM pre-stack A7 drift" in source
+    assert "prompt-routing Done RTS post-MOVEM A7 drift" in source
+    assert "prompt-routing Done RTS return drift" in source
+
+
+def test_recipient_terminal_shared_dispatch_has_no_stale_prompt_stack_diagnostic() -> None:
+    """The retry's terminal JMP reuses the PC but not the prompt JSR stack seam."""
+    payload = _failure_payload()
+    payload.update(
+        {
+            "caseId": "full-inventory-retry-selection-loop",
+            "phase": "prompt-routing",
+            "role": "prompt-routing-dispatch-stub",
+            "actualPc": blacksmith_mithril.PRECOMMIT_TERMINAL_STUB_ADDRESS,
+            "expectedEventPc": blacksmith_mithril.PRECOMMIT_TERMINAL_STUB_ADDRESS,
+            "expectedCallPc": None,
+            "expectedTargetPc": 0xFF6BB4,
+            "expectedReturnPc": None,
+            "expectedStackTop": None,
+            "actualStackTop": None,
+            "expectedStackReturn": None,
+            "actualStackReturn": None,
+            "error": "prompt-routing recipient result stub opcode/target drift",
+        }
+    )
+    pending = payload["pendingCallback"]
+    pending["active"] = True
+    pending["caseIndex"] = 1
+    pending["pendingRngCall"] = None
+    pending["rolesAtPc"] = [
+        "precommit-generated-result-stub",
+        "prompt-routing-dispatch-stub",
+    ]
+    for state in (pending["transaction"], pending["fulfillment"], pending["precommit"]):
+        state["mode"] = "prompt-routing"
+    pending["promptRouting"] = {
+        "active": True,
+        "attemptIndex": 2,
+        "equipmentTypeCallCount": 0,
+        "equippabilityCallCount": 0,
+        "frameBudget": blacksmith_mithril.PROMPT_ROUTING_CASE_FRAME_BUDGET,
+        "frameCount": 1,
+        "heldItemsCallCount": 1,
+        "memberListCallCount": 2,
+        "mode": "prompt-routing",
+        "pendingService": None,
+        "routeTerminal": "selection-loop",
+        "completionTerminal": "recipient-cancel-pre-presentation",
+    }
+    pending["equipDecision"] = _inactive_equip_decision_state("prompt-routing")
+    validate_json(payload, blacksmith_mithril.FAILURE_SCHEMA, owner="recipient result failure")
+
+    source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
+    assert (
+        'rtx.terminalStubPurpose="recipient-terminal";rtx.dispatchStackDiagnostic=nil;'
+        "write_precommit_result_stub"
+    ) in source
+    assert (
+        'if current_role=="prompt-routing-dispatch-stub" or '
+        'current_role=="prompt-routing-done-movem-stub-entry" or '
+        'current_role=="prompt-routing-done-rts-stub-entry" then'
+    ) in source
+    assert "stack=rtx.dispatchStackDiagnostic or {}" in source
 
 
 def test_precommit_cleanup_failure_preserves_stack_and_terminal_cleanup_facts(
@@ -2661,7 +3500,7 @@ def test_precommit_cleanup_failure_preserves_stack_and_terminal_cleanup_facts(
         )
     source = blacksmith_mithril.OBSERVER.read_text(encoding="utf-8")
     assert "local q=p.cleanupEquippability" in source
-    assert "stack_top-config.precommitCleanupStackDepthBytes" in source
+    assert "routing_cleanup and config.promptRoutingCleanupStackDepthBytes" in source
     assert "pcx.cleanupStackDiagnostic={expectedTop=expected_top" in source
     assert "actualReturn=actual_return" in source
     assert 'memory.write_u32_be(stack,target,"M68K BUS")' in source
@@ -3288,6 +4127,8 @@ def test_equip_decision_status_milestones_are_required_and_ordered(tmp_path: Pat
         "milestone:transaction-cases-entered",
         "milestone:fulfillment-cases-entered",
         "milestone:precommit-cases-entered",
+        "milestone:prompt-routing-transition-armed",
+        "milestone:prompt-routing-cases-entered",
         "milestone:equip-decision-transition-armed",
         "milestone:equip-decision-cases-entered",
         "milestone:transaction-state-restored",
@@ -3299,6 +4140,8 @@ def test_equip_decision_status_milestones_are_required_and_ordered(tmp_path: Pat
     blacksmith_mithril._assert_status(status)
 
     for missing_milestone in (
+        "milestone:prompt-routing-transition-armed",
+        "milestone:prompt-routing-cases-entered",
         "milestone:equip-decision-transition-armed",
         "milestone:equip-decision-cases-entered",
     ):
@@ -3311,6 +4154,14 @@ def test_equip_decision_status_milestones_are_required_and_ordered(tmp_path: Pat
     swapped = milestones.copy()
     transition = swapped.index("milestone:equip-decision-transition-armed")
     cases = swapped.index("milestone:equip-decision-cases-entered")
+    swapped[transition], swapped[cases] = swapped[cases], swapped[transition]
+    status.write_text("\n".join(swapped) + "\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="required milestone order drift"):
+        blacksmith_mithril._assert_status(status)
+
+    swapped = milestones.copy()
+    transition = swapped.index("milestone:prompt-routing-transition-armed")
+    cases = swapped.index("milestone:prompt-routing-cases-entered")
     swapped[transition], swapped[cases] = swapped[cases], swapped[transition]
     status.write_text("\n".join(swapped) + "\n", encoding="utf-8")
     with pytest.raises(RuntimeError, match="required milestone order drift"):
@@ -3353,15 +4204,17 @@ def test_verifier_uses_one_launch_and_omits_golden_output_from_lua_config(
     assert "h1InstructionBytes" not in launches[0]["config"]["fulfillment"]
     assert "itemDefinitionFields" not in launches[0]["config"]["fulfillment"]
     assert "h1InstructionBytes" not in launches[0]["config"]["precommit"]
-    assert "fullInventoryYesNo" not in launches[0]["config"]["precommit"]
-    assert "nonEquippableYesNo" not in launches[0]["config"]["precommit"]
-    assert "fullInventoryRetryBranchAddress" not in launches[0]["config"]["precommit"]
-    assert "nonEquippableRetryBranchAddress" not in launches[0]["config"]["precommit"]
+    assert (
+        launches[0]["config"]["precommit"]["promptRouting"] == static["precommit"]["promptRouting"]
+    )
+    assert "fullInventoryYesNo" in launches[0]["config"]["precommit"]
+    assert "nonEquippableYesNo" in launches[0]["config"]["precommit"]
+    assert "promptRoutingCases" in launches[0]["config"]
     assert "precommitInstrumentation" not in launches[0]["config"]
     assert launches[0]["config"][
         "instrumentedRom"
     ] == blacksmith_mithril._session_instrumentation_config(static)
-    assert launches[0]["config"]["instrumentedRom"]["spans"][8] == {
+    assert launches[0]["config"]["instrumentedRom"]["spans"][10] == {
         "role": "equip-decision-prompt-presentation-skip",
         "type": "prompt-text-bra",
         "address": 0x21C20,
@@ -3371,12 +4224,13 @@ def test_verifier_uses_one_launch_and_omits_golden_output_from_lua_config(
     }
     assert not session_rom.exists()
     assert result == {
-        "Fixture": "sf2-blacksmith-mithril-runtime-v5",
-        "Cases": 21,
+        "Fixture": "sf2-blacksmith-mithril-runtime-v6",
+        "Cases": 25,
         "HelperCases": 5,
         "TransactionCases": 3,
         "FulfillmentCases": 3,
         "PrecommitCases": 5,
+        "PromptRoutingCases": 4,
         "EquipDecisionCases": 5,
         "BizHawkLaunches": 1,
         "CallbacksCleared": 0,
