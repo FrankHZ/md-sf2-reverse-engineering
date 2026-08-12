@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-08-09
+- Evidence date: 2026-08-12
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -26,8 +26,8 @@ It says that the file has been reached, not that every instruction in the file i
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 84 | Runtime contracts, often containing multiple cases |
-| Address bindings | 2,539 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 85 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail is runtime-confirmed at its controlled seam |
+| Address bindings | 2,543 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -215,6 +215,30 @@ The current evidence is deep but narrow:
   current gold, RNG seed, order words, flag-80 ownership, and selected combatant records passed. Original
   prompt/text/window/input behavior, natural result meaning, timing, persistence, natural reachability,
   and excluded ring/newly-cursed paths remain **Unknown**.
+  The accepted service-entry/return rail closes the complete direct-alias caller denominator
+  without reopening those Blacksmith cohorts: 69 direct `jsr`/`bsr` returning calls and `jmp` tail
+  transfers resolve through the four service jump aliases, with Shop/Church/Caravan/Blacksmith totals
+  `33/29/5/2` (62 returning, seven tail). The zero-inclusive context-menu, exploration-VInt, BattleTest,
+  and map/entity family relation also retains transfer kind, including the map/entity tail rows
+  Shop `28/3`, Church `22/3`, Caravan `3/0`, and Blacksmith `0/1` (returning/tail). Its compact 15-case
+  H3 cohort selects the lowest-address site in every positive family × service × transfer-kind cell plus
+  the uniquely source-backed BattleTest Church MOVEM save/restore frame; tail cases observe outer-service
+  RTS/harness return rather than falsely claim a post-JSR continuation. The remaining sites are source/
+  H1/ROM static coverage only. One grouped BizHawk 2.11.1 / Genesis Plus GX launch observed all 15
+  representatives: each returning record crossed its source call, service entry, generated controlled
+  service stub, `outer-caller-return` trampoline, and result; each tail record crossed its source `jmp`,
+  service entry, generated stub, `outer-rts-harness-return` trampoline, and result. The shared
+  `0xFF6D30` trampoline and its dynamic source-continuation/harness-result targets read back for every
+  case; all 17 session spans and both generated service stubs read back; current portrait and caller
+  frame restored; callbacks cleared to zero; and the disposable session ROM was absent after the run.
+  The controlled harness bypasses service transaction/action bodies; it does not establish a natural
+  no-mutation claim. At each service entry, it guards the exact source return word and
+  replaces only that RAM longword with a shared generated `0xFF6D30` outer-return `JMP` trampoline. The
+  trampoline is written/read back with the case's original continuation or tail harness-result target and
+  carries distinct returning/tail callback roles after the controlled service-stub RTS; direct source-return
+  callbacks are not assumed observable. Source/H1/ROM-derived stack seams include ordinary
+  `stackTop-4 → stackTop`, context `stackTop-8 → stackTop-4`, BattleTest's 15-register/60-byte
+  `48E7FFFE`/`4CDF7FFF` frame `stackTop-64 → stackTop-60`, and tail `stackTop → stackTop+4`.
   Technical services now additionally models the complete seven-entry SRAM save surface: two-slot
   layout, interleaved copying, checksum/flag transitions, and its caller inventory. One fourteen-case,
   single-launch direct-service H3 matrix validates its in-process initialization, valid/invalid slot,

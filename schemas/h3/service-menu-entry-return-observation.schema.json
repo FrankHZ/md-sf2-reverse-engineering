@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:service-menu-entry-return-observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "core", "id", "caseOrder", "records", "sessionPatchReadback", "generatedStubReadback", "outerReturnTrampolineReadback", "restoration", "callbacksCleared"],
+  "properties": {"system": {"const": "GEN"}, "core": {"const": "Genesis Plus GX"}, "id": {"const": "sf2-service-menu-entry-return-v1"}, "caseOrder": {"$ref": "#/definitions/caseOrder"}, "records": {"type": "array", "minItems": 15, "maxItems": 15, "items": {"$ref": "#/definitions/record"}}, "sessionPatchReadback": {"type": "array", "minItems": 17, "maxItems": 17, "items": {"$ref": "#/definitions/patchReadback"}}, "generatedStubReadback": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/definitions/generatedStubReadback"}}, "outerReturnTrampolineReadback": {"type": "array", "minItems": 15, "maxItems": 15, "items": {"$ref": "#/definitions/outerReturnTrampolineReadback"}}, "restoration": {"$ref": "#/definitions/restoration"}, "callbacksCleared": {"const": 0}},
+  "allOf": [
+    {
+      "properties": {
+        "records": {"items": {"allOf": [
+          {"if": {"properties": {"transferKind": {"const": "tail-transfer"}}}, "then": {"properties": {"returnAddress": {"type": "null"}, "returnKind": {"const": "outer-rts-harness"}, "callbackChronology": {"minItems": 5, "maxItems": 5}}}},
+          {"if": {"properties": {"transferKind": {"const": "returning-call"}}}, "then": {"properties": {"returnAddress": {"$ref": "#/definitions/pc"}, "returnKind": {"enum": ["rts", "continued-instruction"]}, "callbackChronology": {"minItems": 5, "maxItems": 5}}}}
+        ]}},
+        "generatedStubReadback": {"items": [
+          {"properties": {"role": {"const": "generated-service-cancel-stub"}, "address": {"const": 16739584}, "widthBytes": {"const": 4}, "hex": {"const": "70FF4E75"}}},
+          {"properties": {"role": {"const": "generated-blacksmith-return-stub"}, "address": {"const": 16739600}, "widthBytes": {"const": 2}, "hex": {"const": "4E75"}}}
+        ], "additionalItems": false},
+        "outerReturnTrampolineReadback": {"items": {"properties": {"address": {"const": 16739632}, "widthBytes": {"const": 6}, "hex": {"pattern": "^4EF9[0-9A-F]{8}$"}}}}
+      }
+    }
+  ],
+  "definitions": {
+    "pc": {"type": "integer", "minimum": 0, "maximum": 16777215},
+    "caseId": {"enum": ["context-menu-church", "context-menu-shop", "context-menu-blacksmith", "exploration-vint-church", "exploration-vint-caravan", "battle-test-church-main", "battle-test-shop", "battle-test-caravan", "battle-test-church-preserved-registers", "map-entity-church", "map-entity-shop", "map-entity-caravan", "map-entity-tail-church", "map-entity-tail-shop", "map-entity-tail-blacksmith"]},
+    "caseOrder": {"type": "array", "minItems": 15, "maxItems": 15, "uniqueItems": true, "items": {"$ref": "#/definitions/caseId"}},
+    "chronology": {"type": "object", "additionalProperties": false, "required": ["role", "pc"], "properties": {"role": {"enum": ["case-entry", "caller-call-site", "tail-transfer-site", "service-entry", "generated-service-cancel-stub", "generated-blacksmith-return-stub", "outer-caller-return", "outer-rts-harness-return", "caller-result"]}, "pc": {"$ref": "#/definitions/pc"}}},
+    "registers": {"type": "object", "additionalProperties": false, "required": ["d0", "d1", "d2", "a6", "a7"], "properties": {"d0": {"type": "integer", "minimum": 0, "maximum": 65535}, "d1": {"type": "integer", "minimum": 0, "maximum": 65535}, "d2": {"type": "integer", "minimum": 0, "maximum": 65535}, "a6": {"$ref": "#/definitions/pc"}, "a7": {"$ref": "#/definitions/pc"}}},
+    "record": {"type": "object", "additionalProperties": false, "required": ["id", "family", "service", "transferKind", "callSiteAddress", "entryAddress", "returnAddress", "resultAddress", "returnKind", "registersAfter", "serviceBodyBypassed", "callbackChronology"], "properties": {"id": {"$ref": "#/definitions/caseId"}, "family": {"enum": ["context-menu", "exploration-vint", "battle-test", "map-entity"]}, "service": {"enum": ["shop", "church", "caravan", "blacksmith"]}, "transferKind": {"enum": ["returning-call", "tail-transfer"]}, "callSiteAddress": {"$ref": "#/definitions/pc"}, "entryAddress": {"$ref": "#/definitions/pc"}, "returnAddress": {"anyOf": [{"$ref": "#/definitions/pc"}, {"type": "null"}]}, "resultAddress": {"$ref": "#/definitions/pc"}, "returnKind": {"enum": ["rts", "continued-instruction", "outer-rts-harness"]}, "registersAfter": {"$ref": "#/definitions/registers"}, "serviceBodyBypassed": {"const": true}, "callbackChronology": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/definitions/chronology"}}}},
+    "patchReadback": {"type": "object", "additionalProperties": false, "required": ["role", "address", "hex"], "properties": {"role": {"type": "string", "minLength": 1}, "address": {"$ref": "#/definitions/pc"}, "hex": {"type": "string", "pattern": "^[0-9A-F]+$"}}},
+    "generatedStubReadback": {"type": "object", "additionalProperties": false, "required": ["role", "address", "widthBytes", "hex"], "properties": {"role": {"enum": ["generated-service-cancel-stub", "generated-blacksmith-return-stub"]}, "address": {"$ref": "#/definitions/pc"}, "widthBytes": {"enum": [2, 4]}, "hex": {"enum": ["70FF4E75", "4E75"]}}},
+    "outerReturnTrampolineReadback": {"type": "object", "additionalProperties": false, "required": ["id", "role", "address", "targetAddress", "widthBytes", "hex", "serviceEntryStackAddress", "sourceReturnAddress", "postServiceRtsStackAddress"], "properties": {"id": {"$ref": "#/definitions/caseId"}, "role": {"enum": ["outer-caller-return", "outer-rts-harness-return"]}, "address": {"const": 16739632}, "targetAddress": {"$ref": "#/definitions/pc"}, "widthBytes": {"const": 6}, "hex": {"type": "string", "pattern": "^4EF9[0-9A-F]{8}$"}, "serviceEntryStackAddress": {"$ref": "#/definitions/pc"}, "sourceReturnAddress": {"$ref": "#/definitions/pc"}, "postServiceRtsStackAddress": {"$ref": "#/definitions/pc"}}},
+    "restoration": {"type": "object", "additionalProperties": false, "required": ["currentPortraitRestored", "callerFrameRestored", "callbacksCleared"], "properties": {"currentPortraitRestored": {"const": true}, "callerFrameRestored": {"const": true}, "callbacksCleared": {"const": true}}},
+    "observationPayload": {"$ref": "#"}
+  }
+}
