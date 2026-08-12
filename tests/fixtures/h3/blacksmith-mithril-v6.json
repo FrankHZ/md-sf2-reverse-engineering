@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 5,
-  "id": "sf2-blacksmith-mithril-runtime-v5",
+  "schemaVersion": 6,
+  "id": "sf2-blacksmith-mithril-runtime-v6",
   "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
   "emulator": {
     "name": "BizHawk",
     "version": "2.11.1",
     "core": "Genesis Plus GX"
   },
-  "evidenceDate": "2026-08-09",
+  "evidenceDate": "2026-08-11",
   "provenance": {
     "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM",
     "upstreamBranch": "master",
@@ -50,7 +50,7 @@
     "fulfillDoneAddress": 138452,
     "fulfillPostEquippabilityAddress": 138268
   },
-  "observationBoundary": "One BizHawk 2.11.1 / Genesis Plus GX process retains the accepted five helper, three post-confirmation placement, three direct-fulfillment, and five pre-commit admission cases, then runs five source-valid post-AddItem optional-equip decision cases. Static ownership is the BlacksmithAction_FulfillOrder continuation from the IsWeaponOrRingEquippable return branch at 0x21C1C through @Done 0x21CD4; the ring and newly-equipped-cursed branches stay source-visible but are statically outside the current all-weapon/noncursed Mithril-output domain. Python verifies the canonical ROM manifest and creates a private disposable session copy with exactly twelve non-overlapping source/H1/ROM-bound spans: the retained seven six-byte v4 spans (four JSR service stubs at 0xFF6D00 and three pre-presentation JMP boundaries at 0xFF6D20), one four-byte 0x21C20 4E4500AD -> 60000002 BRA.W +2 skip to the preserved 0x21C24 prompt JSR, the six-byte prompt JSR shim to 0xFF6D40, and the three six-byte current-cursed/noncursed/do-not-equip terminal JMPs to 0xFF6D60. Controlled prompt result and helper returns are harness inputs, never UI claims; Lua reads every session-copy patch and generated-stub write back. Original text traps, prompt rendering/input, WaitForVInt, music/audio, caller continuation, ring output, and newly-equipped-cursed output are not executed or claimed. The session spans are rejected if they overlap each other or any retained v4 observation PC; the canonical ROM is rehashed unchanged, and the session copy is deleted in all outcomes. Callback/setup/loop/watchdog exceptions produce one terminal structured failure, remove output, clear callbacks, and set a nonzero emulator result. Case and transition watchdog budgets are harness protocol, not original timing evidence. The existing scoped snapshot/restoration claim remains only CURRENT_GOLD, RANDOM_SEED, order words, flag-80 byte, selected combatant records, dialogue/item selection globals, and submenu action; generated work RAM, stack, action frame, and other memory are excluded.",
+  "observationBoundary": "One BizHawk 2.11.1 / Genesis Plus GX process retains the accepted 21-case v5 projection and adds exactly four controlled-result BlacksmithAction_FulfillOrder Yes/No routing cases: full-inventory result 0 returns to the selection loop, full-inventory result -1 reaches @Done through a text-free session-copy BRA.W, non-equippable result 0 reaches @AddItem, and non-equippable result -1 returns to the selection loop. The original compare and conditional branch instructions execute; text traps, YesNoPrompt bodies, input, windows, Wait/VInt, audio/VDP/timing, caller continuation, persistence, natural reachability, ring output, and newly-equipped-cursed output do not. Python verifies the canonical ROM and constructs one private disposable 13-span session copy: four six-byte service JSR shims, recipient-cancel JMP, two six-byte prompt-boundary JSR shims to a generated controlled-result stub, the four-byte full-inventory abort text skip, one fully covered ten-byte shared terminal/Done redirect (six-byte JMP plus unreachable ILLEGAL fill), and four separate post-AddItem equip-decision spans. Its RAM dispatcher deterministically writes its next JMP from observer mode: accepted v5 do-not-equip terminals use the existing terminal stub and v6 abort uses split source-equivalent RAM MOVEM/RTS stubs. Every static original/patched byte and generated write is read back; generated prompt stacks are validated at the split Done seam or direct @AddItem cleanup. The canonical ROM is rehashed unchanged, the session copy and unaccepted observed output are deleted in all outcomes, and callback/setup/loop/watchdog exceptions produce one structured terminal status, no residual callback, and nonzero emulator exit. Watchdog budgets are harness protocol, not timing evidence. Scoped restoration remains only CURRENT_GOLD, RANDOM_SEED, order words, flag-80 byte, selected combatant records, dialogue/item selection globals, and submenu action; generated work RAM, stack, action frame, and other memory are excluded.",
   "caseOrder": [
     "ordinary-group0-early-slot0",
     "ordinary-group2-final-slot1",
@@ -321,6 +321,68 @@
     "caseCount": 16,
     "sha256": "7F84BB2C8A1E7EF4079C527D672B9A33B60908B0A50A77C8880A632DA5DE5CC2"
   },
+  "retainedV5": {
+    "caseCount": 21,
+    "sha256": "A2453765581CA1C8F6DC1D48D9DC1E8CFEB03CF0F6EC882485F3ADB157DA1D1E"
+  },
+  "promptRoutingCaseOrder": [
+    "full-inventory-retry-selection-loop",
+    "full-inventory-abort-done",
+    "non-equippable-accept-add-item",
+    "non-equippable-reselect-selection-loop"
+  ],
+  "promptRoutingCases": [
+    {
+      "id": "full-inventory-retry-selection-loop",
+      "promptFamily": "full-inventory",
+      "itemIndex": 80,
+      "ordersBefore": [69, 80, 99, 100],
+      "fulfilledOrdersBefore": 16,
+      "promptResult": 0,
+      "cleanupFulfillmentCaseId": null,
+      "attempts": [
+        {"selectedMemberResult": 0, "heldItemsCountResult": 4, "equipmentTypeResult": null, "equippableCarrySetResult": null},
+        {"selectedMemberResult": -1, "heldItemsCountResult": null, "equipmentTypeResult": null, "equippableCarrySetResult": null}
+      ]
+    },
+    {
+      "id": "full-inventory-abort-done",
+      "promptFamily": "full-inventory",
+      "itemIndex": 80,
+      "ordersBefore": [69, 80, 99, 100],
+      "fulfilledOrdersBefore": 17,
+      "promptResult": -1,
+      "cleanupFulfillmentCaseId": null,
+      "attempts": [
+        {"selectedMemberResult": 0, "heldItemsCountResult": 4, "equipmentTypeResult": null, "equippableCarrySetResult": null}
+      ]
+    },
+    {
+      "id": "non-equippable-accept-add-item",
+      "promptFamily": "non-equippable",
+      "itemIndex": 69,
+      "ordersBefore": [80, 99, 53, 69],
+      "fulfilledOrdersBefore": 18,
+      "promptResult": 0,
+      "cleanupFulfillmentCaseId": "hero-levanter-slot3-order3-equippable",
+      "attempts": [
+        {"selectedMemberResult": 0, "heldItemsCountResult": 0, "equipmentTypeResult": 1, "equippableCarrySetResult": false}
+      ]
+    },
+    {
+      "id": "non-equippable-reselect-selection-loop",
+      "promptFamily": "non-equippable",
+      "itemIndex": 99,
+      "ordersBefore": [69, 80, 99, 100],
+      "fulfilledOrdersBefore": 19,
+      "promptResult": -1,
+      "cleanupFulfillmentCaseId": null,
+      "attempts": [
+        {"selectedMemberResult": 5, "heldItemsCountResult": 0, "equipmentTypeResult": 1, "equippableCarrySetResult": false},
+        {"selectedMemberResult": -1, "heldItemsCountResult": null, "equipmentTypeResult": null, "equippableCarrySetResult": null}
+      ]
+    }
+  ],
   "equipDecisionDomain": {
     "choiceCount": 32,
     "uniqueItemIndexes": [
@@ -483,7 +545,7 @@
   "acceptedObservation": {
     "system": "GEN",
     "core": "Genesis Plus GX",
-    "id": "sf2-blacksmith-mithril-runtime-v5",
+    "id": "sf2-blacksmith-mithril-runtime-v6",
     "caseOrder": [
       "ordinary-group0-early-slot0",
       "ordinary-group2-final-slot1",
@@ -1873,6 +1935,29 @@
       "dialogueNameIndex1WordRestored": true,
       "selectedItemIndexWordRestored": true,
       "currentItemSubmenuActionByteRestored": true
+    },
+    "promptRoutingCaseOrder": [
+      "full-inventory-retry-selection-loop",
+      "full-inventory-abort-done",
+      "non-equippable-accept-add-item",
+      "non-equippable-reselect-selection-loop"
+    ],
+    "promptRoutingRecords": [
+      {"id":"full-inventory-retry-selection-loop","promptFamily":"full-inventory","promptResult":0,"itemIndex":80,"attemptCount":2,"selectedMembers":[0,null],"ordersBefore":[69,80,99,100],"ordersAfter":[69,80,99,100],"fulfilledOrdersBefore":16,"fulfilledOrdersAfter":16,"routeTerminal":"selection-loop","routeTerminalPc":138072,"completionTerminal":"recipient-cancel-pre-presentation","completionTerminalPc":138100,"addItemMutationObserved":false,"orderMutationObserved":false,"fulfilledOrdersMutationObserved":false,"callbackChronology":[{"role":"prompt-routing-selection-loop-entry","pc":138072},{"role":"prompt-routing-capacity-branch","pc":138124},{"role":"prompt-routing-full-inventory-boundary-jsr","pc":138132},{"role":"prompt-routing-dispatch-stub","pc":16739616},{"role":"prompt-routing-controlled-result-stub-entry","pc":16739712},{"role":"prompt-routing-controlled-result-stub-jmp-boundary","pc":16739716},{"role":"prompt-routing-full-inventory-compare","pc":138142},{"role":"prompt-routing-full-inventory-branch","pc":138146},{"role":"prompt-routing-selection-loop-entry","pc":138072},{"role":"prompt-routing-recipient-cancel-terminal","pc":138100},{"role":"prompt-routing-dispatch-stub","pc":16739616},{"role":"prompt-routing-case-result","pc":16739252}]},
+      {"id":"full-inventory-abort-done","promptFamily":"full-inventory","promptResult":-1,"itemIndex":80,"attemptCount":1,"selectedMembers":[0],"ordersBefore":[69,80,99,100],"ordersAfter":[69,80,99,100],"fulfilledOrdersBefore":17,"fulfilledOrdersAfter":17,"routeTerminal":"done","routeTerminalPc":138452,"completionTerminal":"done","completionTerminalPc":138452,"addItemMutationObserved":false,"orderMutationObserved":false,"fulfilledOrdersMutationObserved":false,"callbackChronology":[{"role":"prompt-routing-selection-loop-entry","pc":138072},{"role":"prompt-routing-capacity-branch","pc":138124},{"role":"prompt-routing-full-inventory-boundary-jsr","pc":138132},{"role":"prompt-routing-dispatch-stub","pc":16739616},{"role":"prompt-routing-controlled-result-stub-entry","pc":16739712},{"role":"prompt-routing-controlled-result-stub-jmp-boundary","pc":16739716},{"role":"prompt-routing-full-inventory-compare","pc":138142},{"role":"prompt-routing-full-inventory-branch","pc":138146},{"role":"prompt-routing-full-inventory-abort-presentation-skip","pc":138148},{"role":"prompt-routing-done-redirect","pc":138448},{"role":"prompt-routing-joint-terminal-done-dispatcher","pc":16739728},{"role":"prompt-routing-done-movem-stub-entry","pc":16739744},{"role":"prompt-routing-done-rts-stub-entry","pc":16739760},{"role":"prompt-routing-case-result","pc":16739284}]},
+      {"id":"non-equippable-accept-add-item","promptFamily":"non-equippable","promptResult":0,"itemIndex":69,"attemptCount":1,"selectedMembers":[0],"ordersBefore":[80,99,53,69],"ordersAfter":[80,99,53,69],"fulfilledOrdersBefore":18,"fulfilledOrdersAfter":18,"routeTerminal":"add-item","routeTerminalPc":138212,"completionTerminal":"add-item","completionTerminalPc":138212,"addItemMutationObserved":false,"orderMutationObserved":false,"fulfilledOrdersMutationObserved":false,"callbackChronology":[{"role":"prompt-routing-selection-loop-entry","pc":138072},{"role":"prompt-routing-capacity-branch","pc":138124},{"role":"prompt-routing-equippability-branch","pc":138186},{"role":"prompt-routing-non-equippable-boundary-jsr","pc":138194},{"role":"prompt-routing-dispatch-stub","pc":16739616},{"role":"prompt-routing-controlled-result-stub-entry","pc":16739712},{"role":"prompt-routing-controlled-result-stub-jmp-boundary","pc":16739716},{"role":"prompt-routing-non-equippable-compare","pc":138204},{"role":"prompt-routing-non-equippable-branch","pc":138208},{"role":"prompt-routing-add-item-boundary","pc":138212},{"role":"prompt-routing-case-result","pc":16739316}]},
+      {"id":"non-equippable-reselect-selection-loop","promptFamily":"non-equippable","promptResult":-1,"itemIndex":99,"attemptCount":2,"selectedMembers":[5,null],"ordersBefore":[69,80,99,100],"ordersAfter":[69,80,99,100],"fulfilledOrdersBefore":19,"fulfilledOrdersAfter":19,"routeTerminal":"selection-loop","routeTerminalPc":138072,"completionTerminal":"recipient-cancel-pre-presentation","completionTerminalPc":138100,"addItemMutationObserved":false,"orderMutationObserved":false,"fulfilledOrdersMutationObserved":false,"callbackChronology":[{"role":"prompt-routing-selection-loop-entry","pc":138072},{"role":"prompt-routing-capacity-branch","pc":138124},{"role":"prompt-routing-equippability-branch","pc":138186},{"role":"prompt-routing-non-equippable-boundary-jsr","pc":138194},{"role":"prompt-routing-dispatch-stub","pc":16739616},{"role":"prompt-routing-controlled-result-stub-entry","pc":16739712},{"role":"prompt-routing-controlled-result-stub-jmp-boundary","pc":16739716},{"role":"prompt-routing-non-equippable-compare","pc":138204},{"role":"prompt-routing-non-equippable-branch","pc":138208},{"role":"prompt-routing-selection-loop-entry","pc":138072},{"role":"prompt-routing-recipient-cancel-terminal","pc":138100},{"role":"prompt-routing-dispatch-stub","pc":16739616},{"role":"prompt-routing-case-result","pc":16739348}]}
+    ],
+    "promptRoutingInstrumentation": {
+      "promptBoundarySitesReadback": ["full-inventory-terminal-boundary-shim", "non-equippable-terminal-boundary-shim"],
+      "fullInventoryAbortPresentationSkipReadback": true,
+      "generatedPromptStubWriteReadback": true,
+      "doneRedirectReadback": true,
+      "jointDispatcherWriteReadback": true,
+      "generatedDoneMovemStubWriteReadback": true,
+      "generatedDoneRtsStubWriteReadback": true,
+      "doneMovemStackReadback": true,
+      "doneRtsStackReadback": true
     },
     "equipDecisionCaseOrder": [
       "non-equippable-no-prompt-do-not-equip",

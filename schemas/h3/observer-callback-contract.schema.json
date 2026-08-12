@@ -348,7 +348,7 @@
       "required": ["active", "mode", "decreaseGoldReturnSeen", "pendingOrdersIncrementSeen", "dropItemReturnSeen", "pickReturnSeen", "clearFlagReturnSeen", "prePresentationReturnAddress"],
       "properties": {
         "active": {"type": "boolean"},
-        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup", "equip-decision"]},
+        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup", "prompt-routing", "prompt-routing-cleanup", "equip-decision"]},
         "decreaseGoldReturnSeen": {"type": "boolean"},
         "pendingOrdersIncrementSeen": {"type": "boolean"},
         "dropItemReturnSeen": {"type": "boolean"},
@@ -363,7 +363,7 @@
       "required": ["active", "mode", "addItemReturnSeen", "orderReadSeen", "orderClearedSeen", "fulfilledOrdersIncrementSeen", "equippabilityCarrySet", "originalReturnAddress"],
       "properties": {
         "active": {"type": "boolean"},
-        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup", "equip-decision"]},
+        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup", "prompt-routing", "prompt-routing-cleanup", "equip-decision"]},
         "addItemReturnSeen": {"type": "boolean"},
         "orderReadSeen": {"type": "boolean"},
         "orderClearedSeen": {"type": "boolean"},
@@ -397,7 +397,7 @@
         "frameCount": {"type": "integer", "minimum": 0},
         "heldItemsCallCount": {"type": "integer", "minimum": 0},
         "memberListCallCount": {"type": "integer", "minimum": 0},
-        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup", "equip-decision"]},
+        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup", "prompt-routing", "prompt-routing-cleanup", "equip-decision"]},
         "pendingService": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/blacksmithMithrilPrecommitPendingService"}]},
         "selectedMember": {"type": ["integer", "null"], "minimum": 0, "maximum": 31},
         "terminal": {"enum": ["none", "add-item", "recipient-cancel-pre-presentation", "full-inventory-pre-presentation", "non-equippable-pre-presentation"]}
@@ -414,6 +414,25 @@
         "targetPc": {"$ref": "#/definitions/pc"}
       }
     },
+    "blacksmithMithrilPromptRoutingState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "attemptIndex", "equipmentTypeCallCount", "equippabilityCallCount", "frameBudget", "frameCount", "heldItemsCallCount", "memberListCallCount", "mode", "pendingService", "routeTerminal", "completionTerminal"],
+      "properties": {
+        "active": {"type": "boolean"},
+        "attemptIndex": {"type": "integer", "minimum": 0},
+        "equipmentTypeCallCount": {"type": "integer", "minimum": 0},
+        "equippabilityCallCount": {"type": "integer", "minimum": 0},
+        "frameBudget": {"type": "integer", "minimum": 0},
+        "frameCount": {"type": "integer", "minimum": 0},
+        "heldItemsCallCount": {"type": "integer", "minimum": 0},
+        "memberListCallCount": {"type": "integer", "minimum": 0},
+        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup", "prompt-routing", "prompt-routing-cleanup", "equip-decision"]},
+        "pendingService": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/blacksmithMithrilPrecommitPendingService"}]},
+        "routeTerminal": {"enum": ["none", "selection-loop", "done", "add-item"]},
+        "completionTerminal": {"enum": ["none", "recipient-cancel-pre-presentation", "done", "add-item"]}
+      }
+    },
     "blacksmithMithrilEquipDecisionState": {
       "type": "object",
       "additionalProperties": false,
@@ -423,7 +442,7 @@
         "expectedTerminal": {"enum": ["none", "current-cursed-pre-presentation", "noncursed-equip-pre-presentation", "do-not-equip-pre-presentation"]},
         "frameBudget": {"type": "integer", "minimum": 0},
         "frameCount": {"type": "integer", "minimum": 0},
-        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup", "equip-decision"]},
+        "mode": {"enum": ["none", "helper", "transaction", "fulfillment", "precommit", "precommit-cleanup", "prompt-routing", "prompt-routing-cleanup", "equip-decision"]},
         "pending": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/blacksmithMithrilEquipDecisionPendingService"}]},
         "terminal": {"enum": ["none", "current-cursed-pre-presentation", "noncursed-equip-pre-presentation", "do-not-equip-pre-presentation"]},
         "transitionActive": {"type": "boolean"},
@@ -434,17 +453,18 @@
     "blacksmithMithrilPendingCallback": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["active", "caseIndex", "functionReturnSeen", "orderWriteSeen", "pendingRngCall", "rolesAtPc", "transaction", "fulfillment", "precommit", "equipDecision"],
+      "required": ["active", "caseIndex", "functionReturnSeen", "orderWriteSeen", "pendingRngCall", "rolesAtPc", "transaction", "fulfillment", "precommit", "promptRouting", "equipDecision"],
       "properties": {
         "active": {"type": "boolean"},
         "caseIndex": {"type": "integer", "minimum": 0},
         "functionReturnSeen": {"type": "boolean"},
         "orderWriteSeen": {"type": "boolean"},
         "pendingRngCall": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/blacksmithMithrilPendingRngCall"}]},
-        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"enum": ["bootstrap-check-sram", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "transaction-case-entry", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-case-entry", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result", "precommit-case-entry", "precommit-selection-loop-entry", "precommit-member-list-controlled-service-call-shim", "precommit-held-items-controlled-service-call-shim", "precommit-equipment-type-controlled-service-call-shim", "precommit-equippability-controlled-service-call-shim", "precommit-generated-service-stub", "precommit-member-list-original-return", "precommit-held-items-original-return", "precommit-equipment-type-original-return", "precommit-equippability-original-return", "precommit-member-cancel-compare", "precommit-member-cancel-branch", "precommit-capacity-compare", "precommit-capacity-branch", "precommit-equipment-type-compare", "precommit-tool-admission-branch", "precommit-equippability-branch", "precommit-recipient-cancel-terminal-boundary-shim", "precommit-full-inventory-terminal-boundary-shim", "precommit-add-item-boundary", "precommit-cleanup-add-item-call", "precommit-cleanup-add-item-instruction-target", "precommit-cleanup-add-item-effective-target", "precommit-cleanup-add-item-effective-return", "precommit-cleanup-order-read", "precommit-cleanup-order-cleared", "precommit-cleanup-orders-incremented", "precommit-cleanup-equippability-call", "precommit-cleanup-equippability-instruction-target", "precommit-cleanup-equippability-effective-target", "precommit-cleanup-equippability-effective-return", "precommit-non-equippable-terminal-boundary-shim", "precommit-generated-result-stub", "precommit-case-result", "equip-decision-transition", "equip-decision-case-entry", "equip-decision-case-result", "equip-decision-post-equippability-branch", "equip-decision-controlled-prompt-call-shim", "equip-decision-generated-prompt-stub", "equip-decision-prompt-original-return", "equip-decision-prompt-compare", "equip-decision-prompt-decline-branch", "equip-decision-equipment-type-call", "equip-decision-equipment-type-instruction-target", "equip-decision-equipment-type-effective-target", "equip-decision-equipment-type-effective-return", "equip-decision-equipment-type-original-return", "equip-decision-equipment-type-compare", "equip-decision-weapon-type-branch", "equip-decision-get-equipped-weapon-call", "equip-decision-get-equipped-weapon-instruction-target", "equip-decision-get-equipped-weapon-effective-target", "equip-decision-get-equipped-weapon-effective-return", "equip-decision-get-equipped-weapon-original-return", "equip-decision-weapon-equipped-compare", "equip-decision-weapon-empty-branch", "equip-decision-unequip-call", "equip-decision-unequip-instruction-target", "equip-decision-unequip-effective-target", "equip-decision-unequip-effective-return", "equip-decision-unequip-original-return", "equip-decision-weapon-unequip-compare", "equip-decision-weapon-unequip-branch", "equip-decision-held-items-call", "equip-decision-held-items-instruction-target", "equip-decision-held-items-effective-target", "equip-decision-held-items-effective-return", "equip-decision-held-items-original-return", "equip-decision-equip-call", "equip-decision-equip-instruction-target", "equip-decision-equip-effective-target", "equip-decision-equip-effective-return", "equip-decision-equip-original-return", "equip-decision-new-equip-cursed-compare", "equip-decision-new-equip-noncursed-branch", "equip-decision-current-cursed-terminal-boundary-shim", "equip-decision-noncursed-terminal-boundary-shim", "equip-decision-do-not-equip-terminal-boundary-shim", "equip-decision-generated-terminal-stub"]}},
+        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"enum": ["bootstrap-check-sram", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "transaction-case-entry", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-case-entry", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result", "precommit-case-entry", "precommit-selection-loop-entry", "precommit-member-list-controlled-service-call-shim", "precommit-held-items-controlled-service-call-shim", "precommit-equipment-type-controlled-service-call-shim", "precommit-equippability-controlled-service-call-shim", "precommit-generated-service-stub", "precommit-member-list-original-return", "precommit-held-items-original-return", "precommit-equipment-type-original-return", "precommit-equippability-original-return", "precommit-member-cancel-compare", "precommit-member-cancel-branch", "precommit-capacity-compare", "precommit-capacity-branch", "precommit-equipment-type-compare", "precommit-tool-admission-branch", "precommit-equippability-branch", "precommit-recipient-cancel-terminal-boundary-shim", "precommit-full-inventory-terminal-boundary-shim", "precommit-add-item-boundary", "precommit-cleanup-add-item-call", "precommit-cleanup-add-item-instruction-target", "precommit-cleanup-add-item-effective-target", "precommit-cleanup-add-item-effective-return", "precommit-cleanup-order-read", "precommit-cleanup-order-cleared", "precommit-cleanup-orders-incremented", "precommit-cleanup-equippability-call", "precommit-cleanup-equippability-instruction-target", "precommit-cleanup-equippability-effective-target", "precommit-cleanup-equippability-effective-return", "precommit-non-equippable-terminal-boundary-shim", "precommit-generated-result-stub", "precommit-case-result", "equip-decision-case-entry", "equip-decision-case-result", "equip-decision-post-equippability-branch", "equip-decision-controlled-prompt-call-shim", "equip-decision-generated-prompt-stub", "equip-decision-prompt-original-return", "equip-decision-prompt-compare", "equip-decision-prompt-decline-branch", "equip-decision-equipment-type-call", "equip-decision-equipment-type-instruction-target", "equip-decision-equipment-type-effective-target", "equip-decision-equipment-type-effective-return", "equip-decision-equipment-type-original-return", "equip-decision-equipment-type-compare", "equip-decision-weapon-type-branch", "equip-decision-get-equipped-weapon-call", "equip-decision-get-equipped-weapon-instruction-target", "equip-decision-get-equipped-weapon-effective-target", "equip-decision-get-equipped-weapon-effective-return", "equip-decision-get-equipped-weapon-original-return", "equip-decision-weapon-equipped-compare", "equip-decision-weapon-empty-branch", "equip-decision-unequip-call", "equip-decision-unequip-instruction-target", "equip-decision-unequip-effective-target", "equip-decision-unequip-effective-return", "equip-decision-unequip-original-return", "equip-decision-weapon-unequip-compare", "equip-decision-weapon-unequip-branch", "equip-decision-held-items-call", "equip-decision-held-items-instruction-target", "equip-decision-held-items-effective-target", "equip-decision-held-items-effective-return", "equip-decision-held-items-original-return", "equip-decision-equip-call", "equip-decision-equip-instruction-target", "equip-decision-equip-effective-target", "equip-decision-equip-effective-return", "equip-decision-equip-original-return", "equip-decision-new-equip-cursed-compare", "equip-decision-new-equip-noncursed-branch", "equip-decision-current-cursed-terminal-boundary-shim", "equip-decision-noncursed-terminal-boundary-shim", "equip-decision-do-not-equip-terminal-boundary-shim", "equip-decision-generated-terminal-stub", "equip-decision-joint-terminal-done-dispatcher", "prompt-routing-case-entry", "prompt-routing-case-result", "prompt-routing-selection-loop-entry", "prompt-routing-member-list-controlled-service-call-shim", "prompt-routing-generated-service-stub", "prompt-routing-member-list-original-return", "prompt-routing-member-cancel-compare", "prompt-routing-member-cancel-branch", "prompt-routing-held-items-controlled-service-call-shim", "prompt-routing-held-items-original-return", "prompt-routing-capacity-compare", "prompt-routing-capacity-branch", "prompt-routing-equipment-type-controlled-service-call-shim", "prompt-routing-equipment-type-original-return", "prompt-routing-equipment-type-compare", "prompt-routing-tool-admission-branch", "prompt-routing-equippability-controlled-service-call-shim", "prompt-routing-equippability-original-return", "prompt-routing-equippability-branch", "prompt-routing-full-inventory-boundary-jsr", "prompt-routing-non-equippable-boundary-jsr", "prompt-routing-dispatch-stub", "prompt-routing-controlled-result-stub-entry", "prompt-routing-controlled-result-stub-jmp-boundary", "prompt-routing-full-inventory-compare", "prompt-routing-full-inventory-branch", "prompt-routing-non-equippable-compare", "prompt-routing-non-equippable-branch", "prompt-routing-recipient-cancel-terminal", "prompt-routing-full-inventory-abort-presentation-skip", "prompt-routing-done-redirect", "prompt-routing-joint-terminal-done-dispatcher", "prompt-routing-done-movem-stub-entry", "prompt-routing-done-rts-stub-entry", "prompt-routing-add-item-boundary"]}},
         "transaction": {"$ref": "#/definitions/blacksmithMithrilTransactionState"},
         "fulfillment": {"$ref": "#/definitions/blacksmithMithrilFulfillmentState"},
         "precommit": {"$ref": "#/definitions/blacksmithMithrilPrecommitState"},
+        "promptRouting": {"$ref": "#/definitions/blacksmithMithrilPromptRoutingState"},
         "equipDecision": {"$ref": "#/definitions/blacksmithMithrilEquipDecisionState"}
       }
     },
@@ -513,7 +533,7 @@
           }
         },
         {
-          "if": {"properties": {"role": {"const": "precommit-cleanup-equippability-effective-return"}}},
+          "if": {"properties": {"role": {"const": "precommit-cleanup-equippability-effective-return"}, "phase": {"const": "precommit-cleanup"}}, "required": ["role", "phase"]},
           "then": {
             "properties": {
               "actualStackReturn": {"$ref": "#/definitions/pc"},
@@ -534,6 +554,261 @@
                   },
                   "transaction": {"properties": {"mode": {"const": "precommit-cleanup"}}},
                   "fulfillment": {"properties": {"mode": {"const": "precommit-cleanup"}}}
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"const": "precommit-cleanup-equippability-effective-return"}, "phase": {"const": "prompt-routing-cleanup"}}, "required": ["role", "phase"]},
+          "then": {
+            "properties": {
+              "actualStackReturn": {"$ref": "#/definitions/pc"},
+              "actualStackTop": {"$ref": "#/definitions/pc"},
+              "expectedStackReturn": {"$ref": "#/definitions/pc"},
+              "expectedStackTop": {"$ref": "#/definitions/pc"},
+              "pendingCallback": {
+                "properties": {
+                  "active": {"const": true},
+                  "promptRouting": {"properties": {"active": {"const": true}, "mode": {"const": "prompt-routing-cleanup"}, "pendingService": {"type": "null"}}},
+                  "transaction": {"properties": {"mode": {"const": "prompt-routing-cleanup"}}},
+                  "fulfillment": {"properties": {"mode": {"const": "prompt-routing-cleanup"}}}
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"enum": ["prompt-routing-full-inventory-branch", "prompt-routing-non-equippable-branch"]}}},
+          "then": {
+            "properties": {
+              "actualPc": {"$ref": "#/definitions/pc"},
+              "expectedEventPc": {"$ref": "#/definitions/pc"},
+              "expectedTargetPc": {"$ref": "#/definitions/pc"},
+              "phase": {"const": "prompt-routing"},
+              "pendingCallback": {
+                "properties": {
+                  "active": {"const": true},
+                  "caseIndex": {"type": "integer", "minimum": 1},
+                  "promptRouting": {"properties": {"active": {"const": true}, "mode": {"const": "prompt-routing"}}}
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "role": {"const": "prompt-routing-dispatch-stub"},
+              "expectedTargetPc": {"const": 16739712}
+            },
+            "required": ["role", "expectedTargetPc"]
+          },
+          "then": {
+            "properties": {
+              "actualStackReturn": {"$ref": "#/definitions/pc"},
+              "actualStackTop": {"$ref": "#/definitions/pc"},
+              "expectedReturnPc": {"$ref": "#/definitions/pc"},
+              "expectedStackReturn": {"$ref": "#/definitions/pc"},
+              "expectedStackTop": {"$ref": "#/definitions/pc"},
+              "phase": {"const": "prompt-routing"},
+              "pendingCallback": {
+                "properties": {
+                  "active": {"const": true},
+                  "caseIndex": {"type": "integer", "minimum": 1},
+                  "promptRouting": {
+                    "properties": {
+                      "active": {"const": true},
+                      "mode": {"const": "prompt-routing"},
+                      "pendingService": {"type": "null"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"const": "prompt-routing-controlled-result-stub-entry"}}},
+          "then": {
+            "properties": {
+              "actualPc": {"const": 16739712},
+              "actualStackReturn": {"type": "null"},
+              "actualStackTop": {"type": "null"},
+              "expectedCallPc": {"type": "null"},
+              "expectedEventPc": {"const": 16739712},
+              "expectedReturnPc": {"type": "null"},
+              "expectedStackReturn": {"type": "null"},
+              "expectedStackTop": {"type": "null"},
+              "expectedTargetPc": {"const": 16739716},
+              "phase": {"const": "prompt-routing"},
+              "pendingCallback": {
+                "properties": {
+                  "active": {"const": true},
+                  "caseIndex": {"type": "integer", "minimum": 1},
+                  "promptRouting": {
+                    "properties": {
+                      "active": {"const": true},
+                      "mode": {"const": "prompt-routing"},
+                      "pendingService": {"type": "null"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"const": "prompt-routing-controlled-result-stub-jmp-boundary"}}},
+          "then": {
+            "properties": {
+              "actualPc": {"const": 16739716},
+              "actualStackReturn": {"type": "null"},
+              "actualStackTop": {"type": "null"},
+              "expectedCallPc": {"type": "null"},
+              "expectedEventPc": {"const": 16739716},
+              "expectedReturnPc": {"type": "null"},
+              "expectedStackReturn": {"type": "null"},
+              "expectedStackTop": {"type": "null"},
+              "expectedTargetPc": {"enum": [138142, 138204]},
+              "phase": {"const": "prompt-routing"},
+              "pendingCallback": {
+                "properties": {
+                  "active": {"const": true},
+                  "caseIndex": {"type": "integer", "minimum": 1},
+                  "promptRouting": {
+                    "properties": {
+                      "active": {"const": true},
+                      "mode": {"const": "prompt-routing"},
+                      "pendingService": {"type": "null"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"const": "prompt-routing-done-movem-stub-entry"}}},
+          "then": {
+            "properties": {
+              "actualPc": {"const": 16739744},
+              "actualStackReturn": {"$ref": "#/definitions/pc"},
+              "actualStackTop": {"$ref": "#/definitions/pc"},
+              "expectedCallPc": {"type": "null"},
+              "expectedEventPc": {"const": 16739744},
+              "expectedReturnPc": {"type": "null"},
+              "expectedStackReturn": {"const": 16739284},
+              "expectedStackTop": {"const": 16776952},
+              "expectedTargetPc": {"const": 16739760},
+              "phase": {"const": "prompt-routing"},
+              "pendingCallback": {
+                "properties": {
+                  "active": {"const": true},
+                  "caseIndex": {"const": 2},
+                  "promptRouting": {
+                    "properties": {
+                      "active": {"const": true},
+                      "mode": {"const": "prompt-routing"},
+                      "pendingService": {"type": "null"},
+                      "routeTerminal": {"const": "done"},
+                      "completionTerminal": {"const": "done"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"const": "prompt-routing-done-rts-stub-entry"}}},
+          "then": {
+            "properties": {
+              "actualPc": {"const": 16739760},
+              "actualStackReturn": {"$ref": "#/definitions/pc"},
+              "actualStackTop": {"$ref": "#/definitions/pc"},
+              "expectedCallPc": {"type": "null"},
+              "expectedEventPc": {"const": 16739760},
+              "expectedReturnPc": {"type": "null"},
+              "expectedStackReturn": {"const": 16739284},
+              "expectedStackTop": {"const": 16776992},
+              "expectedTargetPc": {"const": 16739284},
+              "phase": {"const": "prompt-routing"},
+              "pendingCallback": {
+                "properties": {
+                  "active": {"const": true},
+                  "caseIndex": {"const": 2},
+                  "promptRouting": {
+                    "properties": {
+                      "active": {"const": true},
+                      "mode": {"const": "prompt-routing"},
+                      "pendingService": {"type": "null"},
+                      "routeTerminal": {"const": "done"},
+                      "completionTerminal": {"const": "done"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"const": "prompt-routing-joint-terminal-done-dispatcher"}}},
+          "then": {
+            "properties": {
+              "actualPc": {"const": 16739728},
+              "actualStackReturn": {"type": "null"},
+              "actualStackTop": {"type": "null"},
+              "expectedCallPc": {"type": "null"},
+              "expectedEventPc": {"const": 16739728},
+              "expectedReturnPc": {"type": "null"},
+              "expectedStackReturn": {"type": "null"},
+              "expectedStackTop": {"type": "null"},
+              "expectedTargetPc": {"const": 16739744},
+              "phase": {"const": "prompt-routing"},
+              "pendingCallback": {
+                "properties": {
+                  "active": {"const": true},
+                  "caseIndex": {"const": 2},
+                  "promptRouting": {
+                    "properties": {
+                      "active": {"const": true},
+                      "mode": {"const": "prompt-routing"},
+                      "pendingService": {"type": "null"},
+                      "routeTerminal": {"const": "done"},
+                      "completionTerminal": {"const": "done"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {"properties": {"role": {"const": "equip-decision-joint-terminal-done-dispatcher"}}},
+          "then": {
+            "properties": {
+              "actualPc": {"const": 16739728},
+              "actualStackReturn": {"type": "null"},
+              "actualStackTop": {"type": "null"},
+              "expectedCallPc": {"type": "null"},
+              "expectedEventPc": {"const": 16739728},
+              "expectedReturnPc": {"type": "null"},
+              "expectedStackReturn": {"type": "null"},
+              "expectedStackTop": {"type": "null"},
+              "expectedTargetPc": {"const": 16739680},
+              "phase": {"const": "equip-decision"},
+              "pendingCallback": {
+                "properties": {
+                  "active": {"const": true},
+                  "caseIndex": {"enum": [1, 2]},
+                  "equipDecision": {
+                    "properties": {
+                      "active": {"const": true},
+                      "mode": {"const": "equip-decision"},
+                      "terminal": {"const": "do-not-equip-pre-presentation"}
+                    }
+                  }
                 }
               }
             }
@@ -589,7 +864,7 @@
           }
         },
         {
-          "if": {"properties": {"role": {"enum": ["function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result", "precommit-selection-loop-entry", "precommit-member-list-controlled-service-call-shim", "precommit-held-items-controlled-service-call-shim", "precommit-equipment-type-controlled-service-call-shim", "precommit-equippability-controlled-service-call-shim", "precommit-generated-service-stub", "precommit-member-list-original-return", "precommit-held-items-original-return", "precommit-equipment-type-original-return", "precommit-equippability-original-return", "precommit-member-cancel-compare", "precommit-member-cancel-branch", "precommit-capacity-compare", "precommit-capacity-branch", "precommit-equipment-type-compare", "precommit-tool-admission-branch", "precommit-equippability-branch", "precommit-recipient-cancel-terminal-boundary-shim", "precommit-full-inventory-terminal-boundary-shim", "precommit-add-item-boundary", "precommit-cleanup-add-item-call", "precommit-cleanup-add-item-instruction-target", "precommit-cleanup-add-item-effective-target", "precommit-cleanup-add-item-effective-return", "precommit-cleanup-order-read", "precommit-cleanup-order-cleared", "precommit-cleanup-orders-incremented", "precommit-cleanup-equippability-call", "precommit-cleanup-equippability-instruction-target", "precommit-cleanup-equippability-effective-target", "precommit-cleanup-equippability-effective-return", "precommit-non-equippable-terminal-boundary-shim", "precommit-generated-result-stub", "precommit-case-result", "precommit-watchdog-timeout", "precommit-transition-timeout", "equip-decision-case-result", "equip-decision-post-equippability-branch", "equip-decision-controlled-prompt-call-shim", "equip-decision-generated-prompt-stub", "equip-decision-prompt-original-return", "equip-decision-prompt-compare", "equip-decision-prompt-decline-branch", "equip-decision-equipment-type-call", "equip-decision-equipment-type-instruction-target", "equip-decision-equipment-type-effective-target", "equip-decision-equipment-type-effective-return", "equip-decision-equipment-type-original-return", "equip-decision-equipment-type-compare", "equip-decision-weapon-type-branch", "equip-decision-get-equipped-weapon-call", "equip-decision-get-equipped-weapon-instruction-target", "equip-decision-get-equipped-weapon-effective-target", "equip-decision-get-equipped-weapon-effective-return", "equip-decision-get-equipped-weapon-original-return", "equip-decision-weapon-equipped-compare", "equip-decision-weapon-empty-branch", "equip-decision-unequip-call", "equip-decision-unequip-instruction-target", "equip-decision-unequip-effective-target", "equip-decision-unequip-effective-return", "equip-decision-unequip-original-return", "equip-decision-weapon-unequip-compare", "equip-decision-weapon-unequip-branch", "equip-decision-held-items-call", "equip-decision-held-items-instruction-target", "equip-decision-held-items-effective-target", "equip-decision-held-items-effective-return", "equip-decision-held-items-original-return", "equip-decision-equip-call", "equip-decision-equip-instruction-target", "equip-decision-equip-effective-target", "equip-decision-equip-effective-return", "equip-decision-equip-original-return", "equip-decision-new-equip-cursed-compare", "equip-decision-new-equip-noncursed-branch", "equip-decision-current-cursed-terminal-boundary-shim", "equip-decision-noncursed-terminal-boundary-shim", "equip-decision-do-not-equip-terminal-boundary-shim", "equip-decision-generated-terminal-stub", "equip-decision-current-cursed-pre-presentation", "equip-decision-noncursed-equip-pre-presentation", "equip-decision-do-not-equip-pre-presentation", "equip-decision-watchdog-timeout"]}}},
+          "if": {"properties": {"role": {"enum": ["function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result", "precommit-selection-loop-entry", "precommit-member-list-controlled-service-call-shim", "precommit-held-items-controlled-service-call-shim", "precommit-equipment-type-controlled-service-call-shim", "precommit-equippability-controlled-service-call-shim", "precommit-generated-service-stub", "precommit-member-list-original-return", "precommit-held-items-original-return", "precommit-equipment-type-original-return", "precommit-equippability-original-return", "precommit-member-cancel-compare", "precommit-member-cancel-branch", "precommit-capacity-compare", "precommit-capacity-branch", "precommit-equipment-type-compare", "precommit-tool-admission-branch", "precommit-equippability-branch", "precommit-recipient-cancel-terminal-boundary-shim", "precommit-full-inventory-terminal-boundary-shim", "precommit-add-item-boundary", "precommit-cleanup-add-item-call", "precommit-cleanup-add-item-instruction-target", "precommit-cleanup-add-item-effective-target", "precommit-cleanup-add-item-effective-return", "precommit-cleanup-order-read", "precommit-cleanup-order-cleared", "precommit-cleanup-orders-incremented", "precommit-cleanup-equippability-call", "precommit-cleanup-equippability-instruction-target", "precommit-cleanup-equippability-effective-target", "precommit-cleanup-equippability-effective-return", "precommit-non-equippable-terminal-boundary-shim", "precommit-generated-result-stub", "precommit-case-result", "precommit-watchdog-timeout", "precommit-transition-timeout", "equip-decision-case-result", "equip-decision-post-equippability-branch", "equip-decision-controlled-prompt-call-shim", "equip-decision-generated-prompt-stub", "equip-decision-prompt-original-return", "equip-decision-prompt-compare", "equip-decision-prompt-decline-branch", "equip-decision-equipment-type-call", "equip-decision-equipment-type-instruction-target", "equip-decision-equipment-type-effective-target", "equip-decision-equipment-type-effective-return", "equip-decision-equipment-type-original-return", "equip-decision-equipment-type-compare", "equip-decision-weapon-type-branch", "equip-decision-get-equipped-weapon-call", "equip-decision-get-equipped-weapon-instruction-target", "equip-decision-get-equipped-weapon-effective-target", "equip-decision-get-equipped-weapon-effective-return", "equip-decision-get-equipped-weapon-original-return", "equip-decision-weapon-equipped-compare", "equip-decision-weapon-empty-branch", "equip-decision-unequip-call", "equip-decision-unequip-instruction-target", "equip-decision-unequip-effective-target", "equip-decision-unequip-effective-return", "equip-decision-unequip-original-return", "equip-decision-weapon-unequip-compare", "equip-decision-weapon-unequip-branch", "equip-decision-held-items-call", "equip-decision-held-items-instruction-target", "equip-decision-held-items-effective-target", "equip-decision-held-items-effective-return", "equip-decision-held-items-original-return", "equip-decision-equip-call", "equip-decision-equip-instruction-target", "equip-decision-equip-effective-target", "equip-decision-equip-effective-return", "equip-decision-equip-original-return", "equip-decision-new-equip-cursed-compare", "equip-decision-new-equip-noncursed-branch", "equip-decision-current-cursed-terminal-boundary-shim", "equip-decision-noncursed-terminal-boundary-shim", "equip-decision-do-not-equip-terminal-boundary-shim", "equip-decision-generated-terminal-stub", "equip-decision-current-cursed-pre-presentation", "equip-decision-noncursed-equip-pre-presentation", "equip-decision-do-not-equip-pre-presentation", "equip-decision-watchdog-timeout", "prompt-routing-case-entry", "prompt-routing-case-result", "prompt-routing-selection-loop-entry", "prompt-routing-member-list-controlled-service-call-shim", "prompt-routing-generated-service-stub", "prompt-routing-member-list-original-return", "prompt-routing-member-cancel-compare", "prompt-routing-member-cancel-branch", "prompt-routing-held-items-controlled-service-call-shim", "prompt-routing-held-items-original-return", "prompt-routing-capacity-compare", "prompt-routing-capacity-branch", "prompt-routing-equipment-type-controlled-service-call-shim", "prompt-routing-equipment-type-original-return", "prompt-routing-equipment-type-compare", "prompt-routing-tool-admission-branch", "prompt-routing-equippability-controlled-service-call-shim", "prompt-routing-equippability-original-return", "prompt-routing-equippability-branch", "prompt-routing-full-inventory-boundary-jsr", "prompt-routing-non-equippable-boundary-jsr", "prompt-routing-dispatch-stub", "prompt-routing-controlled-result-stub-entry", "prompt-routing-controlled-result-stub-jmp-boundary", "prompt-routing-full-inventory-compare", "prompt-routing-full-inventory-branch", "prompt-routing-non-equippable-compare", "prompt-routing-non-equippable-branch", "prompt-routing-recipient-cancel-terminal", "prompt-routing-full-inventory-abort-presentation-skip", "prompt-routing-done-redirect", "prompt-routing-joint-terminal-done-dispatcher", "prompt-routing-done-movem-stub-entry", "prompt-routing-done-rts-stub-entry", "prompt-routing-add-item-boundary", "prompt-routing-watchdog-timeout"]}}},
           "then": {
             "properties": {
               "caseId": {"$ref": "#/definitions/nonEmptyString"},
@@ -616,7 +891,7 @@
         "pendingCallback": {"$ref": "#/definitions/blacksmithMithrilPendingCallback"},
         "phase": {"$ref": "#/definitions/nonEmptyString"},
         "sessionStateRestored": {"type": "boolean"},
-        "role": {"enum": ["registration", "bootstrap-return-redirect", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "transaction-case-entry", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-case-entry", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result", "precommit-case-entry", "precommit-selection-loop-entry", "precommit-member-list-controlled-service-call-shim", "precommit-held-items-controlled-service-call-shim", "precommit-equipment-type-controlled-service-call-shim", "precommit-equippability-controlled-service-call-shim", "precommit-generated-service-stub", "precommit-member-list-original-return", "precommit-held-items-original-return", "precommit-equipment-type-original-return", "precommit-equippability-original-return", "precommit-member-cancel-compare", "precommit-member-cancel-branch", "precommit-capacity-compare", "precommit-capacity-branch", "precommit-equipment-type-compare", "precommit-tool-admission-branch", "precommit-equippability-branch", "precommit-recipient-cancel-terminal-boundary-shim", "precommit-full-inventory-terminal-boundary-shim", "precommit-add-item-boundary", "precommit-cleanup-add-item-call", "precommit-cleanup-add-item-instruction-target", "precommit-cleanup-add-item-effective-target", "precommit-cleanup-add-item-effective-return", "precommit-cleanup-order-read", "precommit-cleanup-order-cleared", "precommit-cleanup-orders-incremented", "precommit-cleanup-equippability-call", "precommit-cleanup-equippability-instruction-target", "precommit-cleanup-equippability-effective-target", "precommit-cleanup-equippability-effective-return", "precommit-non-equippable-terminal-boundary-shim", "precommit-generated-result-stub", "precommit-case-result", "precommit-watchdog-timeout", "precommit-transition-timeout", "equip-decision-transition", "equip-decision-case-entry", "equip-decision-case-result", "equip-decision-post-equippability-branch", "equip-decision-controlled-prompt-call-shim", "equip-decision-generated-prompt-stub", "equip-decision-prompt-original-return", "equip-decision-prompt-compare", "equip-decision-prompt-decline-branch", "equip-decision-equipment-type-call", "equip-decision-equipment-type-instruction-target", "equip-decision-equipment-type-effective-target", "equip-decision-equipment-type-effective-return", "equip-decision-equipment-type-original-return", "equip-decision-equipment-type-compare", "equip-decision-weapon-type-branch", "equip-decision-get-equipped-weapon-call", "equip-decision-get-equipped-weapon-instruction-target", "equip-decision-get-equipped-weapon-effective-target", "equip-decision-get-equipped-weapon-effective-return", "equip-decision-get-equipped-weapon-original-return", "equip-decision-weapon-equipped-compare", "equip-decision-weapon-empty-branch", "equip-decision-unequip-call", "equip-decision-unequip-instruction-target", "equip-decision-unequip-effective-target", "equip-decision-unequip-effective-return", "equip-decision-unequip-original-return", "equip-decision-weapon-unequip-compare", "equip-decision-weapon-unequip-branch", "equip-decision-held-items-call", "equip-decision-held-items-instruction-target", "equip-decision-held-items-effective-target", "equip-decision-held-items-effective-return", "equip-decision-held-items-original-return", "equip-decision-equip-call", "equip-decision-equip-instruction-target", "equip-decision-equip-effective-target", "equip-decision-equip-effective-return", "equip-decision-equip-original-return", "equip-decision-new-equip-cursed-compare", "equip-decision-new-equip-noncursed-branch", "equip-decision-current-cursed-terminal-boundary-shim", "equip-decision-noncursed-terminal-boundary-shim", "equip-decision-do-not-equip-terminal-boundary-shim", "equip-decision-generated-terminal-stub", "equip-decision-current-cursed-pre-presentation", "equip-decision-noncursed-equip-pre-presentation", "equip-decision-do-not-equip-pre-presentation", "equip-decision-watchdog-timeout", "equip-decision-transition-timeout"]}
+        "role": {"enum": ["registration", "bootstrap-return-redirect", "case-entry", "function-entry", "fallback-row-roll", "weapon-row-roll", "rng-entry", "rng-return", "row-resolved", "item-selected", "order-write", "function-rts", "case-result", "transaction-case-entry", "place-entry", "decrease-gold-call", "decrease-gold-instruction-target", "decrease-gold-effective-target", "decrease-gold-effective-return", "pending-orders-incremented", "drop-item-call", "drop-item-instruction-target", "drop-item-effective-target", "drop-item-tail-update-target", "drop-item-effective-return", "pick-mithril-call", "pick-mithril-effective-target", "transaction-fallback-row-roll", "transaction-weapon-row-roll", "transaction-rng-entry", "transaction-rng-return", "transaction-row-resolved", "transaction-item-selected", "transaction-order-write", "pick-mithril-effective-return", "clear-flag-call", "clear-flag-instruction-target", "clear-flag-effective-target", "clear-flag-pre-presentation-return", "transaction-case-result", "fulfillment-case-entry", "fulfillment-add-item-call", "fulfillment-add-item-instruction-target", "fulfillment-add-item-effective-target", "fulfillment-add-item-effective-return", "fulfillment-order-read", "fulfillment-order-cleared", "fulfillment-orders-incremented", "fulfillment-equippability-call", "fulfillment-equippability-instruction-target", "fulfillment-equippability-effective-target", "fulfillment-equippability-effective-return", "fulfillment-case-result", "precommit-case-entry", "precommit-selection-loop-entry", "precommit-member-list-controlled-service-call-shim", "precommit-held-items-controlled-service-call-shim", "precommit-equipment-type-controlled-service-call-shim", "precommit-equippability-controlled-service-call-shim", "precommit-generated-service-stub", "precommit-member-list-original-return", "precommit-held-items-original-return", "precommit-equipment-type-original-return", "precommit-equippability-original-return", "precommit-member-cancel-compare", "precommit-member-cancel-branch", "precommit-capacity-compare", "precommit-capacity-branch", "precommit-equipment-type-compare", "precommit-tool-admission-branch", "precommit-equippability-branch", "precommit-recipient-cancel-terminal-boundary-shim", "precommit-full-inventory-terminal-boundary-shim", "precommit-add-item-boundary", "precommit-cleanup-add-item-call", "precommit-cleanup-add-item-instruction-target", "precommit-cleanup-add-item-effective-target", "precommit-cleanup-add-item-effective-return", "precommit-cleanup-order-read", "precommit-cleanup-order-cleared", "precommit-cleanup-orders-incremented", "precommit-cleanup-equippability-call", "precommit-cleanup-equippability-instruction-target", "precommit-cleanup-equippability-effective-target", "precommit-cleanup-equippability-effective-return", "precommit-non-equippable-terminal-boundary-shim", "precommit-generated-result-stub", "precommit-case-result", "precommit-watchdog-timeout", "precommit-transition-timeout", "equip-decision-transition", "equip-decision-case-entry", "equip-decision-case-result", "equip-decision-post-equippability-branch", "equip-decision-controlled-prompt-call-shim", "equip-decision-generated-prompt-stub", "equip-decision-prompt-original-return", "equip-decision-prompt-compare", "equip-decision-prompt-decline-branch", "equip-decision-equipment-type-call", "equip-decision-equipment-type-instruction-target", "equip-decision-equipment-type-effective-target", "equip-decision-equipment-type-effective-return", "equip-decision-equipment-type-original-return", "equip-decision-equipment-type-compare", "equip-decision-weapon-type-branch", "equip-decision-get-equipped-weapon-call", "equip-decision-get-equipped-weapon-instruction-target", "equip-decision-get-equipped-weapon-effective-target", "equip-decision-get-equipped-weapon-effective-return", "equip-decision-get-equipped-weapon-original-return", "equip-decision-weapon-equipped-compare", "equip-decision-weapon-empty-branch", "equip-decision-unequip-call", "equip-decision-unequip-instruction-target", "equip-decision-unequip-effective-target", "equip-decision-unequip-effective-return", "equip-decision-unequip-original-return", "equip-decision-weapon-unequip-compare", "equip-decision-weapon-unequip-branch", "equip-decision-held-items-call", "equip-decision-held-items-instruction-target", "equip-decision-held-items-effective-target", "equip-decision-held-items-effective-return", "equip-decision-held-items-original-return", "equip-decision-equip-call", "equip-decision-equip-instruction-target", "equip-decision-equip-effective-target", "equip-decision-equip-effective-return", "equip-decision-equip-original-return", "equip-decision-new-equip-cursed-compare", "equip-decision-new-equip-noncursed-branch", "equip-decision-current-cursed-terminal-boundary-shim", "equip-decision-noncursed-terminal-boundary-shim", "equip-decision-do-not-equip-terminal-boundary-shim", "equip-decision-generated-terminal-stub", "equip-decision-current-cursed-pre-presentation", "equip-decision-noncursed-equip-pre-presentation", "equip-decision-do-not-equip-pre-presentation", "equip-decision-joint-terminal-done-dispatcher", "equip-decision-watchdog-timeout", "equip-decision-transition-timeout", "prompt-routing-case-entry", "prompt-routing-case-result", "prompt-routing-selection-loop-entry", "prompt-routing-member-list-controlled-service-call-shim", "prompt-routing-generated-service-stub", "prompt-routing-member-list-original-return", "prompt-routing-member-cancel-compare", "prompt-routing-member-cancel-branch", "prompt-routing-held-items-controlled-service-call-shim", "prompt-routing-held-items-original-return", "prompt-routing-capacity-compare", "prompt-routing-capacity-branch", "prompt-routing-equipment-type-controlled-service-call-shim", "prompt-routing-equipment-type-original-return", "prompt-routing-equipment-type-compare", "prompt-routing-tool-admission-branch", "prompt-routing-equippability-controlled-service-call-shim", "prompt-routing-equippability-original-return", "prompt-routing-equippability-branch", "prompt-routing-full-inventory-boundary-jsr", "prompt-routing-non-equippable-boundary-jsr", "prompt-routing-dispatch-stub", "prompt-routing-controlled-result-stub-entry", "prompt-routing-controlled-result-stub-jmp-boundary", "prompt-routing-full-inventory-compare", "prompt-routing-full-inventory-branch", "prompt-routing-non-equippable-compare", "prompt-routing-non-equippable-branch", "prompt-routing-recipient-cancel-terminal", "prompt-routing-full-inventory-abort-presentation-skip", "prompt-routing-done-redirect", "prompt-routing-joint-terminal-done-dispatcher", "prompt-routing-done-movem-stub-entry", "prompt-routing-done-rts-stub-entry", "prompt-routing-add-item-boundary", "prompt-routing-watchdog-timeout"]}
       }
     }
   }

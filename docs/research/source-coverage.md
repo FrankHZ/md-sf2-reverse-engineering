@@ -185,6 +185,36 @@ The current evidence is deep but narrow:
   Controlled prompt/helper inputs remain harness inputs, not original UI behavior. UI/prompt rendering/input,
   text/wait/audio, persistence, caller continuation, natural menu reachability, ring output, and
   newly-equipped-cursed output remain **Unknown**.
+  The v6 successor keeps the fixture denominator at 84 and independently guards the exact accepted v5
+  21-case projection (`A2453765581CA1C8F6DC1D48D9DC1E8CFEB03CF0F6EC882485F3ADB157DA1D1E`). It adds only four
+  ordered controlled-result routes at the two previously queued `BlacksmithAction_FulfillOrder`
+  `j_alt_YesNoPrompt` compare/branch pairs: full-inventory zero retry to `0x21B58`, full-inventory nonzero
+  abort through a text-free `BRA.W` to `@Done` `0x21CD4`, non-equippable zero fallthrough to original
+  `@AddItem` `0x21BE4`, and non-equippable nonzero reselect to `0x21B58`. Source/H1/ROM guards include
+  both original JSR/compare/branch paths, the `@Done` neutral `4CDF03FF4E75` boundary, and the generated
+  cleanup stack seams. The abort's source `0x03FF` `MOVEM.L` mask is ten registers/40 bytes: the
+  source bytes `4CDF03FF4E75` are canonical static confirmation. In the private session ROM, one ten-byte
+  `0x21CD0..0x21CD9` span jointly replaces the retained do-not-equip terminal boundary and the six Done
+  bytes with a six-byte dispatcher JMP plus four readback-guarded unreachable `ILLEGAL` fill bytes. In
+  prompt-routing mode the RAM dispatcher rewrites its own next JMP to a RAM-equivalent
+  `MOVEM.L` stub, which explicitly JMPs to a distinct RAM `RTS` stub;
+  their two callbacks validate the pre- and post-MOVEM synthetic stack relation without claiming an
+  original-ROM `@Done+4` callback. The generated controlled-result stub has separate entry and post-MOVE JMP callback
+  roles so the result-word assertion is instruction-timed rather than observing the pre-MOVE register. Its
+  one-launch session plan contains exactly 13 non-overlapping spans: four retained
+  service JSRs, recipient terminal JMP, two prompt-boundary JSRs, the full-inventory abort `BRA.W`, one
+  joint terminal/Done redirect, and the four remaining separately patched v5 equip-decision spans. One
+  BizHawk 2.11.1 / Genesis Plus GX launch completed all 25 cases (the retained 21 plus four):
+  full-inventory controlled zero retried to selection, full-inventory controlled nonzero reached the
+  text-free Done seam, non-equippable controlled zero reached original `@AddItem`, and non-equippable
+  controlled nonzero reselected. The exact observed cohort matched the independent golden, retained the
+  v5 projection digest, read back every session span and generated controlled-result/joint-dispatcher/
+  MOVEM/RTS write, and observed the synthetic pre-MOVEM and post-MOVEM/RTS stack seams. The deterministic
+  shared `0x21CD0` dispatcher selected only its active prompt-routing or retained-v5 equip-decision role;
+  non-owner callbacks were explicit no-ops. All callbacks cleared to zero and scoped restoration of
+  current gold, RNG seed, order words, flag-80 ownership, and selected combatant records passed. Original
+  prompt/text/window/input behavior, natural result meaning, timing, persistence, natural reachability,
+  and excluded ring/newly-cursed paths remain **Unknown**.
   Technical services now additionally models the complete seven-entry SRAM save surface: two-slot
   layout, interleaved copying, checksum/flag transitions, and its caller inventory. One fourteen-case,
   single-launch direct-service H3 matrix validates its in-process initialization, valid/invalid slot,

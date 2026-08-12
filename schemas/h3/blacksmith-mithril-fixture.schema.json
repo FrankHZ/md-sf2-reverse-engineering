@@ -21,6 +21,9 @@
     "precommitCaseOrder",
     "precommitCases",
     "retainedV4",
+    "retainedV5",
+    "promptRoutingCaseOrder",
+    "promptRoutingCases",
     "equipDecisionDomain",
     "equipDecisionCaseOrder",
     "equipDecisionCases",
@@ -29,10 +32,10 @@
   ],
   "properties": {
     "schemaVersion": {
-      "const": 5
+      "const": 6
     },
     "id": {
-      "const": "sf2-blacksmith-mithril-runtime-v5"
+      "const": "sf2-blacksmith-mithril-runtime-v6"
     },
     "romSha256": {
       "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
@@ -41,7 +44,7 @@
       "$ref": "#/definitions/emulator"
     },
     "evidenceDate": {
-      "const": "2026-08-09"
+      "const": "2026-08-11"
     },
     "provenance": {
       "$ref": "#/definitions/provenance"
@@ -126,6 +129,22 @@
     },
     "retainedV4": {
       "$ref": "#/definitions/retainedV4"
+    },
+    "retainedV5": {
+      "$ref": "#/definitions/retainedV5"
+    },
+    "promptRoutingCaseOrder": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "promptRoutingCases": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"$ref": "#/definitions/promptRoutingCase"}
     },
     "equipDecisionDomain": {
       "$ref": "#/definitions/equipDecisionDomain"
@@ -585,6 +604,44 @@
         "sha256": {
           "type": "string",
           "pattern": "^[0-9A-F]{64}$"
+        }
+      }
+    },
+    "retainedV5": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["caseCount", "sha256"],
+      "properties": {
+        "caseCount": {"const": 21},
+        "sha256": {"type": "string", "pattern": "^[0-9A-F]{64}$"}
+      }
+    },
+    "promptRoutingCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "promptFamily",
+        "itemIndex",
+        "ordersBefore",
+        "fulfilledOrdersBefore",
+        "promptResult",
+        "cleanupFulfillmentCaseId",
+        "attempts"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "promptFamily": {"enum": ["full-inventory", "non-equippable"]},
+        "itemIndex": {"$ref": "#/definitions/byte"},
+        "ordersBefore": {"$ref": "#/definitions/words4"},
+        "fulfilledOrdersBefore": {"type": "integer", "minimum": 0, "maximum": 65534},
+        "promptResult": {"enum": [-1, 0]},
+        "cleanupFulfillmentCaseId": {"type": ["string", "null"]},
+        "attempts": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "items": {"$ref": "#/definitions/precommitAttempt"}
         }
       }
     },
