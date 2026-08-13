@@ -443,6 +443,11 @@ CONTRACTS = {
             "sf2-battle-ai-action-choice-runtime-v1"
         ),
     },
+    "docs/design/contracts/rom-header-data.md": {
+        "tests/fixtures/h2/remaining-core-static-v1.json": (
+            "sf2-remaining-core-static-v1"
+        ),
+    },
     "docs/design/contracts/text-and-font-system.md": {
         "tests/fixtures/h2/text-huffman-static-v1.json": (
             "sf2-text-huffman-static-v1"

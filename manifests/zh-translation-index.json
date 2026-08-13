@@ -162,6 +162,10 @@
       "translatedDate": "2026-08-09"
     },
     {
+      "source": "docs/design/contracts/rom-header-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/save-system.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/save-system.md",
