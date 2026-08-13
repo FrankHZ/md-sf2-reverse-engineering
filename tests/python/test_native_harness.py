@@ -32,7 +32,7 @@ from sf2tool.rom import mega_drive_checksum
 def test_design_contracts_are_traceable() -> None:
     assert verify_design_contracts() == {
         "Documents": 47,
-        "FixtureReferences": 164,
+        "FixtureReferences": 165,
         "EvidenceLabels": "Confirmed,Unknown",
         "Status": "PASS",
     }
@@ -44,8 +44,8 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Records"] == 1621
     assert result["Confirmed"] == 1621
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 88
-    assert result["AddressBindings"] == 2548
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 89
+    assert result["AddressBindings"] == 2549
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1584
@@ -794,9 +794,7 @@ def test_map_entity_event_indices_split_allies_from_stream_order_enemies() -> No
 
 
 def test_map_event_matcher_handles_wildcards_defaults_and_item_mask() -> None:
-    assert _event_matches(
-        "zoneEvents", {"kind": "specific", "x": 0xFF, "y": 12}, {"x": 7, "y": 12}
-    )
+    assert _event_matches("zoneEvents", {"kind": "specific", "x": 0xFF, "y": 12}, {"x": 7, "y": 12})
     assert _event_matches(
         "itemEvents",
         {"kind": "specific", "x": 1, "y": 2, "facing": 0xFF, "item": 112},
@@ -998,16 +996,9 @@ def test_terra_reverse_engineer_configuration_preserves_worker_boundary() -> Non
 
 def test_parallel_worktree_contract_scopes_full_gate_invalidation() -> None:
     root = Path(__file__).resolve().parents[2]
-    agents_guide = " ".join(
-        (root / "AGENTS.md").read_text(encoding="utf-8").split()
-    )
+    agents_guide = " ".join((root / "AGENTS.md").read_text(encoding="utf-8").split())
     adr = " ".join(
-        (
-            root
-            / "docs"
-            / "decisions"
-            / "0006-parallel-worktrees-and-topic-branch-integration.md"
-        )
+        (root / "docs" / "decisions" / "0006-parallel-worktrees-and-topic-branch-integration.md")
         .read_text(encoding="utf-8")
         .split()
     )
@@ -1044,9 +1035,7 @@ def test_schema_tree_freezes_legacy_root_and_namespaces_new_contracts() -> None:
         assert len(relative_parts) == 2, path
         assert relative_parts[0] in allowed_namespaces, path
 
-    layout = " ".join(
-        (schema_root / "README.md").read_text(encoding="utf-8").split()
-    )
+    layout = " ".join((schema_root / "README.md").read_text(encoding="utf-8").split())
     for required_text in (
         "organized by evidence rail",
         "frozen legacy layout",
@@ -1107,6 +1096,39 @@ def test_sram_lifecycle_observer_has_callback_failure_and_cleanup_contract() -> 
         "residual registered callback",
         "residual SRAM bytes",
         "callbacks[address]",
+    ):
+        assert required_text in observer
+
+
+def test_church_raise_observer_has_single_pc_dispatch_and_failure_contract() -> None:
+    root = Path(__file__).resolve().parents[2]
+    observer = (root / "tools" / "bizhawk" / "church_raise_lifecycle_observer.lua").read_text(
+        encoding="utf-8"
+    )
+    assert observer.count("event.on_bus_exec(function()") == 1
+    for required_text in (
+        "for _,event in ipairs(callbacks[address])do dispatch(address,event)end",
+        "local ok,msg=pcall(function()",
+        "if not ok then failure(msg)end",
+        "os.remove(config.outputPath)",
+        "remove_callbacks()",
+        "client.exitCode(config.observerFailureContract.exitCode)",
+        "j-decrease-gold-entry",
+        "j-increase-current-hp-entry",
+        "case watchdog exhausted for",
+        "ChurchMenu A6 frame balance drift",
+        "ChurchMenu A7 stack balance drift",
+        "local function register_callbacks()",
+        "generated_snapshots={};for _,span in ipairs",
+        "targetsLength=u16(s.ram.targetsListLength)",
+        "portrait=u16(s.ram.currentPortrait)",
+        "local saved=bootstrap_frame",
+        "w16(h.terminalStub,0x2C7C)",
+        'register(h.terminalStub+12,"terminal-finalize",0)',
+        "roles_json(pc(),role)",
+        'expect(restore_generated(),"generated RAM restoration drift")',
+        "callbacks-cleared:0",
+        "observer-finished",
     ):
         assert required_text in observer
 

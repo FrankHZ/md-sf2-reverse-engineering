@@ -151,6 +151,7 @@ MAP_DEBUG_HOST_OBSERVERS = (
 DIRECT_FUNCTION_SEAM_OBSERVERS = (
     "tools/bizhawk/ally_initialization_prowess_observer.lua",
     "tools/bizhawk/blacksmith_mithril_observer.lua",
+    "tools/bizhawk/church_raise_lifecycle_observer.lua",
     "tools/bizhawk/service_menu_entry_return_observer.lua",
     "tools/bizhawk/controller_input_observer.lua",
     "tools/bizhawk/level_up_boundaries_observer.lua",
@@ -213,6 +214,12 @@ COMMAND_LAUNCHES = {
     "blacksmith-mithril": _command(
         "sf2tool.h3.blacksmith_mithril", "verify_blacksmith_mithril", "direct-function-seam",
         _launch("tools/bizhawk/blacksmith_mithril_observer.lua"),
+    ),
+    "church-raise-lifecycle": _command(
+        "sf2tool.h3.church_raise_lifecycle",
+        "verify_church_raise_lifecycle",
+        "direct-function-seam",
+        _launch("tools/bizhawk/church_raise_lifecycle_observer.lua"),
     ),
     "service-menu-lifecycle": _command(
         "sf2tool.h3.service_menu_lifecycle",

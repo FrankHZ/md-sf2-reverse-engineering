@@ -620,6 +620,40 @@ This queue leaves caller-dependent service admission/return intent **Inferred** 
 window/portrait/audio/input timing, and final rendered composition **Unknown**. It starts no
 emulator in this static slice.
 
+## Church Raise Transaction Lifecycle
+
+**Confirmed** — pinned SF2DISASM `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`churchactions_1.asm:ChurchMenu` / `@CheckRaiseAction` / `@CountDeadMembers_Loop` /
+`@ConfirmRaise` / `@CheckRaiseCost` / `@DoRaise` / `@RaiseNextMember`, with H1 and ROM joins at
+`ChurchMenu` `0x20A02` and the original Raise route `0x20A64`, define the bounded Raise lifecycle.
+The normal menu path is `ChurchMenu → ExecuteDiamondMenu → bra @CheckRaiseAction`; the grouped
+runtime fixture controls only the action-selection and Yes/No service seams and callback-observes
+both original PCs for every case. It does not enter a local Church label directly.
+
+`Church_GetCurrentForceMemberInfo` builds the source list and seeds `d7 = TARGETS_LIST_LENGTH - 1`.
+The original `dbf d7,@CountDeadMembers_Loop` therefore visits members in list order. `j_GetCurrentHp`
+returns current HP in `d1`; `tst.w d1; bhi @RaiseNextMember` skips living members, while zero HP
+increments `deadMembersCount`. For each dead member, the cost is `GetLevel × 10`; the original
+promotion lookup leaves `cannotPromoteFlag` clear for a regular-base class and adds `200` when it is
+set. The original `cmp.l d0,d1; bcc @DoRaise` admits equal gold as well as greater gold. The prompt
+accept value is zero; nonzero continues the member loop without mutation.
+
+The seven-case `sf2-church-raise-lifecycle-runtime-v1` observation confirms all-alive no prompt,
+decline, insufficient-gold, equality success for regular and promoted members, promoted one-below,
+and a mixed alive/decline/success order. On each success it callback-observes the original helper
+chronology `j_DecreaseGold/DecreaseGold → j_IncreaseCurrentHp/IncreaseCurrentHp` with
+`d1 = CHAR_STATCAP_HP (200) → UpdateAllyMapsprite`; a helper entry in a non-success state is a
+terminal structured observer failure, not an absence-only assertion. The harness restores only
+current gold, touched full combatant records and mapsprite bytes, dialogue name/number scratch,
+`TARGETS_LIST_LENGTH`, the three-byte maximum touched `TARGETS_LIST` span, and the read-only
+service-entry owner’s current-portrait word, plus generated harness/action/prompt spans and the
+18-byte terminal trampoline. That terminal executes real `MOVEA.L` restoration of the captured
+CheckSram A6/A7 frame before its callback readback; failures report the bootstrap-frame mismatch
+instead of claiming a register write. The static contract source/H1/ROM-derives each observed jump-interface target and
+helper RTS return, and guards every session patch against its original bytes before producing a
+disposable ROM; Python verifies deletion of that session artifact rather than having Lua claim it.
+Presentation, persistence, economic balance meaning, and all-RAM restoration remain **Unknown**.
+
 ## Reproduction
 
 ```powershell
@@ -631,6 +665,7 @@ uv run sf2 h2 ui-layouts
 uv run sf2 h2 item-auxiliary
 uv run sf2 h3 blacksmith-mithril --timeout-seconds 180
 uv run sf2 h3 service-menu-lifecycle --timeout-seconds 180
+uv run sf2 h3 church-raise-lifecycle --timeout-seconds 180
 uv run sf2 research-index test
 ```
 
