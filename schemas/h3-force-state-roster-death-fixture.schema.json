@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sf2:schema:h3-force-state-roster-death-fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "schemaVersion", "mapTestIndex", "romSha256", "emulator", "function", "staticContractSha256", "sharedHarnessFixture", "maxFrames", "instrumentation", "runtimeContract", "cases", "caseInputs", "scopeClassification", "observation"],
+  "properties": {
+    "id": {"const": "sf2-force-state-roster-death-runtime-v1"},
+    "schemaVersion": {"const": 1},
+    "mapTestIndex": {"const": 0},
+    "romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
+    "emulator": {"$ref": "#/$defs/emulator"},
+    "function": {"$ref": "#/$defs/function"},
+    "staticContractSha256": {"type": "string", "pattern": "^[0-9A-F]{64}$"},
+    "sharedHarnessFixture": {"const": "tests/fixtures/h3/spell-damage-resistance-v1.json"},
+    "maxFrames": {"const": 7200},
+    "instrumentation": {"$ref": "#/$defs/instrumentation"},
+    "runtimeContract": {"$ref": "#/$defs/runtime"},
+    "cases": {"type": "array", "minItems": 14, "maxItems": 14, "items": {"$ref": "#/$defs/case"}},
+    "caseInputs": {"type": "array", "minItems": 14, "maxItems": 14, "items": {"$ref": "#/$defs/caseInput"}},
+    "scopeClassification": {"$ref": "#/$defs/scopeClassification"},
+    "observation": {"$ref": "urn:sf2:schema:h3-force-state-roster-death-observation"}
+  },
+  "$defs": {
+    "address": {"type": "integer", "minimum": 0},
+    "byte": {"type": "integer", "minimum": 0, "maximum": 255},
+    "emulator": {
+      "type": "object", "additionalProperties": false, "required": ["name", "version", "core"],
+      "properties": {"name": {"const": "BizHawk"}, "version": {"const": "2.11.1"}, "core": {"const": "Genesis Plus GX"}}
+    },
+    "function": {
+      "type": "object", "additionalProperties": false, "required": ["runMapSetupInitFunctionAddress"],
+      "properties": {"runMapSetupInitFunctionAddress": {"const": 292092}}
+    },
+    "trampoline": {
+      "type": "object", "additionalProperties": false,
+      "required": ["callSiteAddress", "callSiteOriginalHex", "callSitePatchedHex", "stubAddress", "stubOriginalHex", "stubHex", "ramInputAddress"],
+      "properties": {"callSiteAddress": {"const": 292114}, "callSiteOriginalHex": {"const": "4E904CDF03FF"}, "callSitePatchedHex": {"const": "4EB90000FF88"}, "stubAddress": {"const": 65416}, "stubOriginalHex": {"const": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"}, "stubHex": {"const": "70004DF900FF4004207900FF40004E904E75"}, "ramInputAddress": {"const": 16728064}}
+    },
+    "generatedProgram": {
+      "type": "object", "additionalProperties": false, "required": ["address", "streamAddress", "byteCount", "scratchEndExclusive"],
+      "properties": {"address": {"const": 16730112}, "streamAddress": {"const": 16730272}, "byteCount": {"const": 64}, "scratchEndExclusive": {"const": 16730624}}
+    },
+    "instrumentation": {
+      "type": "object", "additionalProperties": false, "required": ["trampoline", "generatedProgram"],
+      "properties": {"trampoline": {"$ref": "#/$defs/trampoline"}, "generatedProgram": {"$ref": "#/$defs/generatedProgram"}}
+    },
+    "call": {
+      "type": "object", "additionalProperties": false, "required": ["h1Address", "returnAddress", "instructionTarget", "effectiveTarget"],
+      "properties": {"h1Address": {"$ref": "#/$defs/address"}, "returnAddress": {"$ref": "#/$defs/address"}, "instructionTarget": {"type": "string", "minLength": 1}, "effectiveTarget": {"type": "string", "minLength": 1}}
+    },
+    "handler": {
+      "type": "object", "additionalProperties": false, "required": ["handler", "handlerAddress", "returnAddress", "calls"],
+      "properties": {"handler": {"type": "string", "minLength": 1}, "handlerAddress": {"$ref": "#/$defs/address"}, "returnAddress": {"$ref": "#/$defs/address"}, "calls": {"type": "array", "items": {"$ref": "#/$defs/call"}}}
+    },
+    "membership": {
+      "type": "object", "additionalProperties": false, "required": ["gameFlagsAddress", "joinedFlagStart", "logicalSavedDomain"],
+      "properties": {"gameFlagsAddress": {"$ref": "#/$defs/address"}, "joinedFlagStart": {"const": 0}, "logicalSavedDomain": {"const": true}}
+    },
+    "hp": {
+      "type": "object", "additionalProperties": false, "required": ["combatantDataAddress", "entryBytes", "offsetBytes", "logicalSavedDomain"],
+      "properties": {"combatantDataAddress": {"$ref": "#/$defs/address"}, "entryBytes": {"const": 56}, "offsetBytes": {"const": 14}, "logicalSavedDomain": {"const": true}}
+    },
+    "currentX": {
+      "type": "object", "additionalProperties": false, "required": ["offsetBytes", "entryBytes", "enemyFirstIndex", "enemyIndexAdjustment", "firstEnemyDataEntry", "logicalSavedDomain"],
+      "properties": {"offsetBytes": {"const": 46}, "entryBytes": {"const": 56}, "enemyFirstIndex": {"const": 128}, "enemyIndexAdjustment": {"const": 96}, "firstEnemyDataEntry": {"const": 32}, "logicalSavedDomain": {"const": true}}
+    },
+    "defeatedList": {
+      "type": "object", "additionalProperties": false, "required": ["baseAddress", "lengthAddress", "entryBytes", "logicalSavedDomain", "updateDefeatedAlliesAppendIterations"],
+      "properties": {"baseAddress": {"$ref": "#/$defs/address"}, "lengthAddress": {"$ref": "#/$defs/address"}, "entryBytes": {"const": 1}, "logicalSavedDomain": {"const": false}, "updateDefeatedAlliesAppendIterations": {"const": 32}}
+    },
+    "logicalRam": {
+      "type": "object", "additionalProperties": false, "required": ["baseAddress", "logicalByteCount", "endExclusiveAddress"],
+      "properties": {"baseAddress": {"$ref": "#/$defs/address"}, "logicalByteCount": {"const": 4016}, "endExclusiveAddress": {"$ref": "#/$defs/address"}}
+    },
+    "slot": {
+      "type": "object", "additionalProperties": false, "required": ["selector", "dataAddress", "checksumAddress", "occupiedFlagBit"],
+      "properties": {"selector": {"type": "integer", "minimum": 0, "maximum": 1}, "dataAddress": {"$ref": "#/$defs/address"}, "checksumAddress": {"$ref": "#/$defs/address"}, "occupiedFlagBit": {"type": "integer", "minimum": 0, "maximum": 7}}
+    },
+    "saveLoad": {
+      "type": "object", "additionalProperties": false, "required": ["logicalRam", "slots", "saveFlagsAddress", "physicalByteStride", "saveGameAddress", "loadGameAddress"],
+      "properties": {"logicalRam": {"$ref": "#/$defs/logicalRam"}, "slots": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/$defs/slot"}}, "saveFlagsAddress": {"$ref": "#/$defs/address"}, "physicalByteStride": {"const": 2}, "saveGameAddress": {"$ref": "#/$defs/address"}, "loadGameAddress": {"$ref": "#/$defs/address"}}
+    },
+    "storage": {
+      "type": "object", "additionalProperties": false, "required": ["rosterMembership", "currentHp", "currentX", "defeatedList", "saveLoad"],
+      "properties": {"rosterMembership": {"$ref": "#/$defs/membership"}, "currentHp": {"$ref": "#/$defs/hp"}, "currentX": {"$ref": "#/$defs/currentX"}, "defeatedList": {"$ref": "#/$defs/defeatedList"}, "saveLoad": {"$ref": "#/$defs/saveLoad"}}
+    },
+    "runtime": {
+      "type": "object", "additionalProperties": false, "required": ["entryAddress", "handlers", "services", "storage"],
+      "properties": {"entryAddress": {"const": 292092}, "handlers": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/handler"}}, "services": {"type": "object", "additionalProperties": false, "required": ["SaveGame", "LoadGame", "CheckFlag", "GetCurrentHp", "GetCombatantX", "JoinForce"], "properties": {"SaveGame": {"$ref": "#/$defs/address"}, "LoadGame": {"$ref": "#/$defs/address"}, "CheckFlag": {"$ref": "#/$defs/address"}, "GetCurrentHp": {"$ref": "#/$defs/address"}, "GetCombatantX": {"$ref": "#/$defs/address"}, "JoinForce": {"$ref": "#/$defs/address"}}}, "storage": {"$ref": "#/$defs/storage"}}
+    },
+    "case": {
+      "type": "object", "additionalProperties": false, "required": ["id", "handler", "handlerAddress", "axis", "scope"],
+      "properties": {"id": {"type": "string", "minLength": 1}, "handler": {"type": "string", "minLength": 1}, "handlerAddress": {"$ref": "#/$defs/address"}, "axis": {"type": "string", "minLength": 1}, "scope": {"enum": ["persistence", "local-only"]}}
+    },
+    "joinedFlag": {
+      "type": "object", "additionalProperties": false, "required": ["member", "bitIndex", "address", "mask", "initialSet"],
+      "properties": {"member": {"type": "integer", "minimum": 0, "maximum": 31}, "bitIndex": {"type": "integer", "minimum": 0}, "address": {"$ref": "#/$defs/address"}, "mask": {"type": "integer", "minimum": 1, "maximum": 128}, "initialSet": {"type": "boolean"}}
+    },
+    "state": {
+      "type": "object", "additionalProperties": false,
+      "properties": {"joinedFlag": {"$ref": "#/$defs/joinedFlag"}, "persistence": {"type": "object", "additionalProperties": false, "required": ["selector", "logicalOffset", "selectedPhysicalAddress", "checksumAddress", "saveFlagsAddress", "occupiedFlagMask"], "properties": {"selector": {"const": 0}, "logicalOffset": {"type": "integer", "minimum": 0, "maximum": 4015}, "selectedPhysicalAddress": {"$ref": "#/$defs/address"}, "checksumAddress": {"$ref": "#/$defs/address"}, "saveFlagsAddress": {"$ref": "#/$defs/address"}, "occupiedFlagMask": {"const": 1}}}, "defeatedList": {"type": "array", "maxItems": 32, "items": {"$ref": "#/$defs/byte"}}, "listTouchedByteCount": {"type": "integer", "minimum": 0, "maximum": 33}, "probeMember": {"type": "integer", "minimum": 0, "maximum": 31}, "targetAddress": {"$ref": "#/$defs/address"}, "hp": {"type": "object", "additionalProperties": false, "required": ["member", "address", "value"], "properties": {"member": {"type": "integer", "minimum": 0, "maximum": 31}, "address": {"$ref": "#/$defs/address"}, "value": {"type": "integer", "minimum": 0, "maximum": 65535}}}, "combatantXAddresses": {"type": "array", "minItems": 32, "maxItems": 32, "items": {"$ref": "#/$defs/address"}}, "combatantX": {"type": "array", "minItems": 32, "maxItems": 32, "items": {"type": "integer", "minimum": -1, "maximum": 127}}}
+    },
+    "caseInput": {
+      "type": "object", "additionalProperties": false, "required": ["id", "handlerAddress", "streamBytes", "state"],
+      "properties": {"id": {"type": "string", "minLength": 1}, "handlerAddress": {"$ref": "#/$defs/address"}, "streamBytes": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/byte"}}, "state": {"$ref": "#/$defs/state"}}
+    },
+    "scopeClassification": {
+      "type": "object", "additionalProperties": false, "required": ["localOnly", "persistence"],
+      "properties": {"localOnly": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}, "persistence": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}}
+    }
+  }
+}

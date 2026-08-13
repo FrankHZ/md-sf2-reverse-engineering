@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:sf2:schema:h3-force-state-roster-death-observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "core", "id", "mapTest", "recordOrder", "records"],
+  "properties": {
+    "system": {"const": "GEN"},
+    "core": {"const": "Genesis Plus GX"},
+    "id": {"const": "sf2-force-state-roster-death-runtime-v1"},
+    "mapTest": {"const": 0},
+    "recordOrder": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "records": {
+      "type": "array",
+      "minItems": 14,
+      "maxItems": 14,
+      "items": {"$ref": "#/$defs/record"}
+    }
+  },
+  "$defs": {
+    "address": {"type": "integer", "minimum": 0},
+    "byte": {"type": "integer", "minimum": 0, "maximum": 255},
+    "numberMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "joined": {"type": "integer", "minimum": 0, "maximum": 255},
+        "hp": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "length": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "a6": {"type": "integer", "minimum": 0},
+        "checksum": {"type": "integer", "minimum": 0, "maximum": 255},
+        "saveFlags": {"type": "integer", "minimum": 0, "maximum": 255}
+      }
+    },
+    "persistence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "saved", "poisoned", "restored", "checkFlagZero", "selectedPhysicalAddress", "selectedSramByte", "checksumAddress", "checksumByte", "saveFlagsAddress", "saveFlags"],
+      "properties": {
+        "mode": {"const": "roster-membership"},
+        "saved": {"type": "integer", "minimum": 0, "maximum": 255},
+        "poisoned": {"type": "integer", "minimum": 0, "maximum": 255},
+        "restored": {"type": "integer", "minimum": 0, "maximum": 255},
+        "checkFlagZero": {"type": "boolean"},
+        "selectedPhysicalAddress": {"$ref": "#/$defs/address"},
+        "selectedSramByte": {"$ref": "#/$defs/byte"},
+        "checksumAddress": {"$ref": "#/$defs/address"},
+        "checksumByte": {"$ref": "#/$defs/byte"},
+        "saveFlagsAddress": {"$ref": "#/$defs/address"},
+        "saveFlags": {"$ref": "#/$defs/byte"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "handlerAddress", "scope", "before", "after", "milestones"],
+      "properties": {
+        "id": {"type": "string"},
+        "handlerAddress": {"type": "integer", "minimum": 0},
+        "scope": {"enum": ["persistence", "local-only"]},
+        "before": {"$ref": "#/$defs/numberMap"},
+        "after": {"$ref": "#/$defs/numberMap"},
+        "listBefore": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 0, "maximum": 255},
+          "maxItems": 33
+        },
+        "listAfter": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 0, "maximum": 255},
+          "maxItems": 33
+        },
+        "persistence": {"$ref": "#/$defs/persistence"},
+        "milestones": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

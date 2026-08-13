@@ -234,6 +234,9 @@ CONTRACTS = {
         "tests/fixtures/h3/force-state-active-party-v1.json": (
             "sf2-force-state-active-party-runtime-v1"
         ),
+        "tests/fixtures/h3/force-state-roster-death-v1.json": (
+            "sf2-force-state-roster-death-runtime-v1"
+        ),
     },
     "docs/design/contracts/exploration-control-flow.md": {
         "tests/fixtures/h2/gameflow-core-static-v1.json": (

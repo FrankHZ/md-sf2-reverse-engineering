@@ -1,8 +1,8 @@
 # 出战队伍与名册状态合同
 
-- **已确认的原版结构：** 十种源码命名的地图脚本命令形式、它们的物理流布局、命名处理器的分支/变更/调用顺序、源码位置语料、直接/有效调用方身份，以及到 common-stats 与随从所有者的溯源连接。
+- **已确认的原版结构与有界行为：** 十种源码命名的地图脚本命令形式、它们的物理流布局、命名处理器的分支/变更/调用顺序、源码位置语料、直接/有效调用方身份，以及到 common-stats 与随从所有者的溯源连接。
 - **推断的原版行为：** 本合同中没有推断。
-- **未知的原版行为：** 正常剧情可达性、名册/列表容量、存档持久化，以及玩家可见的名册/败北结果。
+- **未知的原版行为：** 正常剧情可达性、名册/列表容量、玩家可见的名册/败北结果，以及物理/跨进程 SRAM 持久性。
 - 重制状态：实现无关的 Phase 3 合同；尚未选择任何引擎。
 
 > 本文件是 [`party-roster-state.md`](../../contracts/party-roster-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
@@ -31,14 +31,16 @@
 
 ## 证据与运行时边界
 
-证据日期：2026-07-30。
+证据日期：2026-08-12。
 
 可执行证据是 `tests/fixtures/h2/map-script-engine-static-v1.json` 处、字段 `forceStateCommandFacts` 的测试夹具 ID `sf2-map-script-engine-static-v1`；其验证器是 `src/sf2tool/h2/map_script_engine.py`。它固定上游提交、US ROM 哈希、处理器地址、完整 304 程序源码位置/总数语料、段守卫、调用方映射与 common-stats 溯源身份。嵌套的 `forceStateCommandFacts.activePartyCommandFacts` 字段固定另外四种形式、它们的 29 个位置、源码所有者身份与它们自己的 304 行总数语料。
 
-`force-state/roster-death-persistence-visible-outcomes` 仍是一个分组 H3 问题。激活出战队伍矩阵是 `tests/fixtures/h3/force-state-active-party-v1.json` 处、测试夹具 ID `sf2-force-state-active-party-runtime-v1`；其验证器是 `src/sf2tool/h3/force_state_active_party.py`。它确认有界的处理器局部标志/列表时序、激活/加入状态、重置服务顺序与随从分配/列表效果；重制版仍必须通过
+名册/败北矩阵是 `tests/fixtures/h3/force-state-roster-death-v1.json` 处、测试夹具 ID `sf2-force-state-roster-death-runtime-v1`；其验证器是 `src/sf2tool/h3/force_state_roster_death.py`。它确认固定的 14 个处理器案例矩阵：已加入成员的 absent/already-present、败北列表 empty/hit/miss、HP dead/live、败北追加、败北更新的 offscreen/onscreen，以及 revive 的 empty/hit-first/hit-middle/miss。它还确认已加入成员资格和 HP 位于原版 4,016 字节 `COMBATANT_DATA` 的 SaveGame/LoadGame 域内，而 `DEAD_COMBATANTS_LIST` 及其长度位于该域外。只有会变更的 absent-join 案例执行原版 SaveGame、对已加入标志字节的窄范围逆向毒化、原版 LoadGame 和原版 `CheckFlag`，并记录独立推导出的选定物理 SRAM 字节、校验和字节及 `SAVE_FLAGS` 已占用位。HP 案例是已保存域中的分支观察，而非合成的 Save/poison/Load 证据；列表案例是处理器局部的范围恢复事实，并非持久化主张。激活出战队伍矩阵是 `tests/fixtures/h3/force-state-active-party-v1.json` 处、测试夹具 ID `sf2-force-state-active-party-runtime-v1`；其验证器是 `src/sf2tool/h3/force_state_active_party.py`。它确认有界的处理器局部标志/列表时序、激活/加入状态、重置服务顺序与随从分配/列表效果；重制版仍必须通过
 `force-state/active-party-ai-follower/normal-story-reachability`、
 `force-state/active-party-ai-follower/save-load-capacity-lifecycle` 与
 `force-state/active-party-ai-follower/player-visible-presentation`
-显式定义正常剧情可达性、存档/读档与容量生命周期，以及玩家可见的呈现。
+显式定义正常剧情可达性、容量生命周期，以及玩家可见的呈现。
+
+对于有界的 `updateDefeatedAllies` 探针，源码/H1 循环进行 32 次 `GetCombatantX` 检查。fixture 仅为恢复而快照一个已设定的列表字节以及其 32 个可能写入位置（33 字节）。这不是推导出的列表容量规则。
 
 为了在此有界命令表面内的保真，保留可观察顺序而不是立即修复列表：`UpdateForce` 可能在成员标志已经改变时留下处理器局部的替换前出战队伍快照。保留零选择器不加入与非零 `JoinForce` 行为，在随后的属性更新之前应用重置状态掩码，并保留重复随从分配与动态行走参数写入，即使随从列表本身没有改变。这些不是关于存档/读档容量或玩家可见呈现的规则。

@@ -656,9 +656,14 @@ The adjacent roster/death family is likewise exact for six primary source forms:
 `updateDefeatedAllies`, and three `reviveAlly` sites across the same 304 zero-inclusive program rows.
 Its contract preserves the source macro/handler label differences, physical byte layouts, six bounded
 named-section branch/mutation/call guards, seven direct/effective caller identities (including alias
-resolution), and a provenance-only join to the common-stats roster source. The sole grouped H3
-follow-up is `force-state/roster-death-persistence-visible-outcomes`; story reachability, list/roster
-capacity, persistence, and visible effects are not credited as static coverage.
+resolution), and provenance-only joins to the common-stats and SRAM service owners. The one-launch,
+14-case `sf2-force-state-roster-death-runtime-v1` matrix now confirms handler-local csc0E/csc1F/csc20/
+csc21 list outcomes, csc0F dead/live HP branch outcomes, and the bounded csc08 membership
+SaveGame/inverse-poison/LoadGame/CheckFlag restoration path, including its derived selected SRAM byte,
+checksum byte, and `SAVE_FLAGS` occupied bit. It distinguishes the 4,016-byte `COMBATANT_DATA` saved
+logical span from the outside-list RAM and restores only each probe's scoped state. Story reachability,
+list/roster capacity, visible effects, UI callers, and physical or
+cross-process SRAM durability remain uncredited.
 The adjacent active-party/AI/follower/battle-stat slice is exact for four primary source forms: one
 `joinBatParty`, four `joinForceAI`, five `resetForceBattleStats`, and 19 `addNewFollower` sites (29
 total) across a second complete 304-row zero-inclusive program corpus. It retains four named-section
