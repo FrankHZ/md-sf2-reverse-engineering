@@ -671,6 +671,13 @@ def test_map_script_dialogue_has_one_batched_runtime_command() -> None:
     assert args.timeout_seconds == 180
 
 
+def test_story_state_has_one_batched_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "story-state"])
+    assert args.h3_command == "story-state"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.timeout_seconds == 180
+
+
 def test_map_script_entity_clone_has_one_batched_runtime_command() -> None:
     args = build_parser().parse_args(["h3", "map-script-entity-clone"])
     assert args.h3_command == "map-script-entity-clone"

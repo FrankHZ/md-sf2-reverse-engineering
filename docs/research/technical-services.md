@@ -188,8 +188,14 @@ save UI/lifecycle operations; their full caller-state outcomes are not promoted 
 direct-call inventory. **Unknown:** cross-process or durable-media persistence, power loss between
 data/checksum/flag writes, torn-write recovery, corruption beyond this checksum, SRAM bus/bank/cycle
 behavior, emulator storage behavior, normal story/church/battle caller persistence, and the resulting
-player-visible timing. The matrix deliberately does not reopen ADR 0005 hardware exactness. The
-remake-facing extraction is
+player-visible timing. The matrix deliberately does not reopen ADR 0005 hardware exactness.
+
+**Confirmed (bounded caller join):** the story-state v2 harness consumes this service contract only for
+the source/H1 identities of `SaveGame`/`LoadGame`, the two selector rows, logical span, selected
+data/checksum addresses, physical byte step, and SAVE_FLAGS occupied bits. Its synthetic in-process
+probe calls the original functions after an original story-state handler and before an original
+story-state branch check. This join adds no new runtime evidence to `tech.services.sram`, including service-menu, church, witch, caller/UI,
+durable-media, or SRAM-corruption behavior. The remake-facing extraction is
 [`save-system.md`](../design/contracts/save-system.md). Physical-media/failure exactness is priority-frozen by
 ADR 0005 once save/load/copy/delete behavior is adequate; a user-visible save-flow acceptance failure
 remains a reason to reopen one bounded question.

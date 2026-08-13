@@ -273,10 +273,10 @@
       "source": "docs/design/synthesis/story-progression.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
-      "sourceSha256": "ae0366c965854ebf65b6dc8fed2edc08145b4837d0409a3af4e0f989492fc4b5",
-      "mirrorSha256": "d6107de1458011ad7a0d8fe38bd3244384c08102e0143264ab9f8c225d1bac78",
+      "sourceSha256": "071993afd3401e53fbdc4f6cd62e4fd9ac29e1b8f78eb31e9b91aef23c003b03",
+      "mirrorSha256": "73453bf7bc5c90e19d91bf8e7d497b5f11617bb802c0bbbc9bcabae4e795c608",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-12"
     },
     {
       "source": "docs/design/synthesis/tactical-battle-loop.md",
