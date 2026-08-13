@@ -315,6 +315,11 @@ CONTRACTS = {
             "sf2-map-palette-static-v1"
         ),
     },
+    "docs/design/contracts/map-tileset-data.md": {
+        "tests/fixtures/h2/map-tileset-decode-v1.json": (
+            "sf2-map-tileset-decode-v1"
+        ),
+    },
     "docs/design/contracts/battlefield-navigation.md": {
         "tests/fixtures/h2/battlefield-static-v1.json": "sf2-battlefield-static-v1",
         "tests/fixtures/h2/battle-terrain-decode-v1.json": (
