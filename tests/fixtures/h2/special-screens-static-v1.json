@@ -42,6 +42,7 @@
       "screens.witch.menu",
       "screens.witch.new-game-lifecycle",
       "screens.witch.resources",
+      "screens.witch.save-menu-actions",
       "screens.witch.sound-test",
       "screens.witch.start",
       "screens.witchend.engine",
@@ -165,6 +166,7 @@
         "sourcePath": "code/specialscreens/witch/witchstart.asm",
         "recordIds": [
           "screens.witch.new-game-lifecycle",
+          "screens.witch.save-menu-actions",
           "screens.witch.start"
         ]
       },

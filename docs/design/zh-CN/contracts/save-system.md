@@ -3,7 +3,7 @@
 - **已确认的原版行为：** 静态的两槽位 SRAM 表示、字节交错复制方向、加法校验和/校验顺序、占用标志操作、save/load/copy/delete 辅助序列、女巫菜单选择器/行动路由，以及下文描述的有界进程内 H3 矩阵。
 - **未知的原版行为：** 跨进程物理持久化、断电/部分写入结果、已检查字节校验和之外的损坏行为、玩家驱动的 New-game 命名/菜单呈现或输入节奏，以及调用方可见的像素/音频/挂起时序。
 - 重制状态：实现无关的合同；进程内服务效果已被观察，而耐久介质行为仍未观察。
-- 证据日期：2026-08-03
+- 证据日期：2026-08-13
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - 可追溯性：`tests/fixtures/h2/tech-services-static-v1.json` 中的 `sf2-tech-services-static-v1`；`src/sf2tool/h2/services.py`；以及
@@ -11,7 +11,9 @@
   `tests/fixtures/h2/special-screens-static-v1.json` 中的 `sf2-special-screens-static-v1`；`src/sf2tool/h2/screens.py`；以及
   `docs/research/special-screens.md`。进程内运行时合同是
   `tests/fixtures/h3/witch-save-actions-v1.json` 中的 `sf2-witch-save-actions-runtime-v1`；`src/sf2tool/h3/witch_save_actions.py`；以及
-  `docs/research/special-screens.md`。有界 New-game 运行时合同是
+  `docs/research/special-screens.md`。独立的 Witch 行动准入运行时合同是
+  `tests/fixtures/h3/witch-save-menu-actions-v1.json` 中的 `sf2-witch-save-menu-actions-runtime-v1`；
+  `src/sf2tool/h3/witch_save_menu_actions.py`；以及 `docs/research/special-screens.md`。有界 New-game 运行时合同是
   `tests/fixtures/h3/witch-new-game-lifecycle-v1.json` 中的 `sf2-witch-new-game-lifecycle-runtime-v1`；
   `src/sf2tool/h3/witch_new_game_lifecycle.py`；以及 `docs/research/special-screens.md`。直接服务生命周期合同是
   `tests/fixtures/h3/sram-lifecycle-v1.json` 中的 `sf2-sram-lifecycle-runtime-v1`；
@@ -34,6 +36,23 @@
 **已确认：** 来源标志 88 清除时 Load 到达 `GetSavepointForMap`，作为 30188 处的指令目标与有效目标。标志 88 设置时，它到达 131124 处的指令目标 `j_BattleLoop` 与 146052 处的跳转接口有效目标 `BattleLoop`。来源标签 `flag 88` 被保留；其面向玩家的生命周期含义不被推断。
 
 **未知：** 单进程服务 fixture 不确立跨进程 SRAM 存续、物理断电行为、部分/中断写入恢复、玩家驱动的 New-game 命名/菜单结果、像素、音频、输入节奏或挂起呈现。那些仍是 `docs/research/special-screens.md` 中命名的分组 H3 问题。
+
+## 已确认的 Witch 存档菜单行动准入矩阵
+
+**已确认：** 一个独立的十案例、单次启动矩阵在原版 `CheckSram` 引导后执行原版
+`witchMenuAction_Load`、`witchMenuAction_Copy` 与 `witchMenuAction_Del` 入口。受控菜单/提示 seam
+只提供源码兼容的返回值。它观察 Load 与 Delete 的 page 2、`SAVE_FLAGS & 3` 后的一位选择器缩放、写入
+`CURRENT_SAVE_SLOT` 前的选择器减一，以及 Copy 的掩码/减一来源选择器。菜单取消和非零提示返回会回到既有
+Witch 循环而不调用原版服务。确认的 Load、Copy 与 Delete 用例分别到达并从原版 `LoadGame`、`CopySave` 与
+`ClearSaveSlotFlag` 入口返回。Load 在源码推导的 `GetSavepointForMap` 或
+`j_BattleLoop`/`BattleLoop` 交接处停止；它不提升下游循环行为。
+
+**已确认的测试台边界：** 回调异常带有状态并非零退出，包括 case、phase、role、expected/actual callback
+state 与 pending role。每个物理 callback PC 由一个分发器拥有；成功运行不留下 Lua Console 错误或已注册
+回调。有限的 bootstrap-to-first-case 与每个活动 case watchdog 通过同一 restore/unlink/clear 状态路径失败，
+而不依赖外部 timeout；成功运行只还原受限的菜单状态、两个逻辑槽载荷/校验和、生成 RAM、stack/frame
+与会话 cart patches。
+本矩阵刻意不在既有直接服务 owner 之外添加载荷、校验和、服务结果、耐久介质或玩家驱动 UI 声明。
 
 ## 已确认的直接服务生命周期矩阵
 

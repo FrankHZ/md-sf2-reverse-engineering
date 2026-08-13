@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-witch-save-menu-actions-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {"name": "BizHawk", "version": "2.11.1", "core": "Genesis Plus GX"},
+  "evidenceDate": "2026-08-13",
+  "provenance": {
+    "upstreamRepository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+    "upstreamBranch": "master",
+    "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "sourcePaths": [
+      "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+      "code/common/tech/jumpinterfaces/s03_jumpinterface_2.asm",
+      "code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm",
+      "code/common/tech/sram/sramfunctions.asm",
+      "code/specialscreens/witch/witchmainmenu.asm",
+      "code/specialscreens/witch/witchstart.asm",
+      "sf2const.asm",
+      "sf2enums.asm"
+    ],
+    "listingPath": "build/sf2build-h1.lst",
+    "runtimeCommand": "uv run sf2 h3 witch-save-menu-actions --timeout-seconds 180"
+  },
+  "instrumentation": {"observedActionEntries": {"load": 29922, "copy": 30028, "delete": 30068}},
+  "observationBoundary": "One controlled-seam launch observes only original witchMenuAction_Load, witchMenuAction_Copy, and witchMenuAction_Del admission through original direct service entry/return and the two source-derived Load handoffs. It excludes service payload/checksum outcomes and all downstream loops.",
+  "caseOrder": ["load-menu-cancel", "load-slot1-savepoint-route", "load-slot2-battle-route", "copy-prompt-cancel", "copy-slot1-to-slot2", "copy-slot2-to-slot1", "delete-menu-cancel", "delete-slot1-prompt-cancel", "delete-slot1-confirm", "delete-slot2-confirm"],
+  "cases": [
+    {"id": "load-menu-cancel", "action": "load", "saveFlags": 1, "menuResult": -1, "promptResult": null, "flag88Set": false},
+    {"id": "load-slot1-savepoint-route", "action": "load", "saveFlags": 1, "menuResult": 1, "promptResult": null, "flag88Set": false},
+    {"id": "load-slot2-battle-route", "action": "load", "saveFlags": 2, "menuResult": 2, "promptResult": null, "flag88Set": true},
+    {"id": "copy-prompt-cancel", "action": "copy", "saveFlags": 1, "menuResult": null, "promptResult": 1, "flag88Set": false},
+    {"id": "copy-slot1-to-slot2", "action": "copy", "saveFlags": 1, "menuResult": null, "promptResult": 0, "flag88Set": false},
+    {"id": "copy-slot2-to-slot1", "action": "copy", "saveFlags": 2, "menuResult": null, "promptResult": 0, "flag88Set": false},
+    {"id": "delete-menu-cancel", "action": "delete", "saveFlags": 1, "menuResult": -1, "promptResult": null, "flag88Set": false},
+    {"id": "delete-slot1-prompt-cancel", "action": "delete", "saveFlags": 1, "menuResult": 1, "promptResult": 1, "flag88Set": false},
+    {"id": "delete-slot1-confirm", "action": "delete", "saveFlags": 1, "menuResult": 1, "promptResult": 0, "flag88Set": false},
+    {"id": "delete-slot2-confirm", "action": "delete", "saveFlags": 2, "menuResult": 2, "promptResult": 0, "flag88Set": false}
+  ],
+  "expectedObservation": {
+    "system": "GEN", "core": "Genesis Plus GX", "id": "sf2-witch-save-menu-actions-runtime-v1",
+    "caseOrder": ["load-menu-cancel", "load-slot1-savepoint-route", "load-slot2-battle-route", "copy-prompt-cancel", "copy-slot1-to-slot2", "copy-slot2-to-slot1", "delete-menu-cancel", "delete-slot1-prompt-cancel", "delete-slot1-confirm", "delete-slot2-confirm"],
+    "observedActionEntries": {"load": 29922, "copy": 30028, "delete": 30068},
+    "records": [
+      {"id":"load-menu-cancel","action":"load","actionEntryAddress":29922,"menu":{"callSiteAddress":29952,"returnAddress":29958,"page":2,"initialSelector":1,"availability":2,"controlledReturn":-1},"prompt":null,"currentSaveSlot":null,"service":null,"handoff":null,"callbackChronology":[{"role":"case-entry","pc":16738560},{"role":"action-entry","pc":29922},{"role":"menu-call","pc":29952},{"role":"controlled-seam","pc":16738944},{"role":"menu-return","pc":29958},{"role":"menu-loop-terminal","pc":29634},{"role":"terminal","pc":16738960}]},
+      {"id":"load-slot1-savepoint-route","action":"load","actionEntryAddress":29922,"menu":{"callSiteAddress":29952,"returnAddress":29958,"page":2,"initialSelector":1,"availability":2,"controlledReturn":1},"prompt":null,"currentSaveSlot":0,"service":{"name":"LoadGame","callSiteAddress":29970,"returnAddress":29974,"entryAddress":28588,"selector":0},"handoff":{"kind":"savepoint","callSiteAddress":30016,"returnAddress":30020,"instructionTargetAddress":30188,"effectiveTargetAddress":30188},"callbackChronology":[{"role":"case-entry","pc":16738592},{"role":"action-entry","pc":29922},{"role":"menu-call","pc":29952},{"role":"controlled-seam","pc":16738944},{"role":"menu-return","pc":29958},{"role":"service-call","pc":29970},{"role":"service-entry","pc":28588},{"role":"service-return","pc":29974},{"role":"load-flag-control","pc":29994},{"role":"load-handoff","pc":30016},{"role":"terminal","pc":16738960}]},
+      {"id":"load-slot2-battle-route","action":"load","actionEntryAddress":29922,"menu":{"callSiteAddress":29952,"returnAddress":29958,"page":2,"initialSelector":2,"availability":4,"controlledReturn":2},"prompt":null,"currentSaveSlot":1,"service":{"name":"LoadGame","callSiteAddress":29970,"returnAddress":29974,"entryAddress":28588,"selector":1},"handoff":{"kind":"battle","callSiteAddress":30000,"returnAddress":30006,"instructionTargetAddress":131124,"effectiveTargetAddress":146052},"callbackChronology":[{"role":"case-entry","pc":16738624},{"role":"action-entry","pc":29922},{"role":"menu-call","pc":29952},{"role":"controlled-seam","pc":16738944},{"role":"menu-return","pc":29958},{"role":"service-call","pc":29970},{"role":"service-entry","pc":28588},{"role":"service-return","pc":29974},{"role":"load-flag-control","pc":29994},{"role":"load-handoff","pc":30000},{"role":"terminal","pc":16738960}]},
+      {"id":"copy-prompt-cancel","action":"copy","actionEntryAddress":30028,"menu":null,"prompt":{"callSiteAddress":30032,"returnAddress":30038,"controlledReturn":1},"currentSaveSlot":null,"service":null,"handoff":null,"callbackChronology":[{"role":"case-entry","pc":16738656},{"role":"action-entry","pc":30028},{"role":"prompt-call","pc":30032},{"role":"controlled-seam","pc":16738944},{"role":"prompt-return","pc":30038},{"role":"menu-loop-terminal","pc":29634},{"role":"terminal","pc":16738960}]},
+      {"id":"copy-slot1-to-slot2","action":"copy","actionEntryAddress":30028,"menu":null,"prompt":{"callSiteAddress":30032,"returnAddress":30038,"controlledReturn":0},"currentSaveSlot":null,"service":{"name":"CopySave","callSiteAddress":30056,"returnAddress":30060,"entryAddress":28634,"selector":0},"handoff":null,"callbackChronology":[{"role":"case-entry","pc":16738688},{"role":"action-entry","pc":30028},{"role":"prompt-call","pc":30032},{"role":"controlled-seam","pc":16738944},{"role":"prompt-return","pc":30038},{"role":"service-call","pc":30056},{"role":"service-entry","pc":28634},{"role":"service-return","pc":30060},{"role":"menu-loop-terminal","pc":29634},{"role":"terminal","pc":16738960}]},
+      {"id":"copy-slot2-to-slot1","action":"copy","actionEntryAddress":30028,"menu":null,"prompt":{"callSiteAddress":30032,"returnAddress":30038,"controlledReturn":0},"currentSaveSlot":null,"service":{"name":"CopySave","callSiteAddress":30056,"returnAddress":30060,"entryAddress":28634,"selector":1},"handoff":null,"callbackChronology":[{"role":"case-entry","pc":16738720},{"role":"action-entry","pc":30028},{"role":"prompt-call","pc":30032},{"role":"controlled-seam","pc":16738944},{"role":"prompt-return","pc":30038},{"role":"service-call","pc":30056},{"role":"service-entry","pc":28634},{"role":"service-return","pc":30060},{"role":"menu-loop-terminal","pc":29634},{"role":"terminal","pc":16738960}]},
+      {"id":"delete-menu-cancel","action":"delete","actionEntryAddress":30068,"menu":{"callSiteAddress":30098,"returnAddress":30104,"page":2,"initialSelector":1,"availability":2,"controlledReturn":-1},"prompt":null,"currentSaveSlot":null,"service":null,"handoff":null,"callbackChronology":[{"role":"case-entry","pc":16738752},{"role":"action-entry","pc":30068},{"role":"menu-call","pc":30098},{"role":"controlled-seam","pc":16738944},{"role":"menu-return","pc":30104},{"role":"menu-loop-terminal","pc":29634},{"role":"terminal","pc":16738960}]},
+      {"id":"delete-slot1-prompt-cancel","action":"delete","actionEntryAddress":30068,"menu":{"callSiteAddress":30098,"returnAddress":30104,"page":2,"initialSelector":1,"availability":2,"controlledReturn":1},"prompt":{"callSiteAddress":30120,"returnAddress":30126,"controlledReturn":1},"currentSaveSlot":0,"service":null,"handoff":null,"callbackChronology":[{"role":"case-entry","pc":16738784},{"role":"action-entry","pc":30068},{"role":"menu-call","pc":30098},{"role":"controlled-seam","pc":16738944},{"role":"menu-return","pc":30104},{"role":"prompt-call","pc":30120},{"role":"controlled-seam","pc":16738944},{"role":"prompt-return","pc":30126},{"role":"menu-loop-terminal","pc":29634},{"role":"terminal","pc":16738960}]},
+      {"id":"delete-slot1-confirm","action":"delete","actionEntryAddress":30068,"menu":{"callSiteAddress":30098,"returnAddress":30104,"page":2,"initialSelector":1,"availability":2,"controlledReturn":1},"prompt":{"callSiteAddress":30120,"returnAddress":30126,"controlledReturn":0},"currentSaveSlot":0,"service":{"name":"ClearSaveSlotFlag","callSiteAddress":30136,"returnAddress":30140,"entryAddress":28652,"selector":0},"handoff":null,"callbackChronology":[{"role":"case-entry","pc":16738816},{"role":"action-entry","pc":30068},{"role":"menu-call","pc":30098},{"role":"controlled-seam","pc":16738944},{"role":"menu-return","pc":30104},{"role":"prompt-call","pc":30120},{"role":"controlled-seam","pc":16738944},{"role":"prompt-return","pc":30126},{"role":"service-call","pc":30136},{"role":"service-entry","pc":28652},{"role":"service-return","pc":30140},{"role":"menu-loop-terminal","pc":29634},{"role":"terminal","pc":16738960}]},
+      {"id":"delete-slot2-confirm","action":"delete","actionEntryAddress":30068,"menu":{"callSiteAddress":30098,"returnAddress":30104,"page":2,"initialSelector":2,"availability":4,"controlledReturn":2},"prompt":{"callSiteAddress":30120,"returnAddress":30126,"controlledReturn":0},"currentSaveSlot":1,"service":{"name":"ClearSaveSlotFlag","callSiteAddress":30136,"returnAddress":30140,"entryAddress":28652,"selector":1},"handoff":null,"callbackChronology":[{"role":"case-entry","pc":16738848},{"role":"action-entry","pc":30068},{"role":"menu-call","pc":30098},{"role":"controlled-seam","pc":16738944},{"role":"menu-return","pc":30104},{"role":"prompt-call","pc":30120},{"role":"controlled-seam","pc":16738944},{"role":"prompt-return","pc":30126},{"role":"service-call","pc":30136},{"role":"service-entry","pc":28652},{"role":"service-return","pc":30140},{"role":"menu-loop-terminal","pc":29634},{"role":"terminal","pc":16738960}]}
+    ],
+    "restoration":{"currentSaveSlotRestored":true,"gameFlag88Restored":true,"saveFlagsRestored":true,"slotDataRestored":true,"generatedBytesRestored":true,"stackRestored":true,"frameRestored":true,"cartPatchesRestored":true},
+    "callbacksCleared":0
+  },
+  "runtimeQuestions": [
+    "Unknown: player-driven navigation, naming, rendered prompts, debounce, cadence, VInt, VDP, audio, and timing are outside this controlled-seam rail.",
+    "Unknown: downstream MainLoop, BattleLoop, and savepoint behavior after the bounded Load handoff is not observed here.",
+    "Unknown: cross-process SRAM durability, corrupted/torn writes, and service payload/checksum outcomes remain owned by existing rails."
+  ]
+}

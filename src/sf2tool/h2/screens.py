@@ -1405,6 +1405,13 @@ def verify_special_screen_inventory(
     digest = hashlib.sha256(_canonical_bytes(output)).hexdigest().upper()
     if digest != manifest["outputSha256"]:
         raise ValueError("special-screens canonical hash drift")
+    # Re-derive the authority immediately before the write as a guard against a
+    # schema-valid, coordinated output/fixture mutation after the earlier checks.
+    _verify_indexed_record_join(
+        output,
+        _index_records_for_source_root(set(discovered_source_paths)),
+        discovered_source_paths,
+    )
     destination = output_path or repo_path("local/derived/special-screens-static.json")
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_bytes(_canonical_bytes(output))

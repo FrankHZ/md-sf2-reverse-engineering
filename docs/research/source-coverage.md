@@ -372,7 +372,12 @@ The current evidence is deep but narrow:
   source-line/operand provenance records are all referenced by exact ordered semantic summaries.
   One nine-direct-case/two-Load-branch BizHawk launch confirms in-process service writes, distinct
   source checksums 71/247, both Copy directions, delete's occupied-bit-only effect, sampled Load
-  restoration, and flag-88 direct/effective target identities. A second one-launch/four-core-replay
+  restoration, and flag-88 direct/effective target identities. A separate ten-case, one-launch
+  Load/Copy/Delete action rail now observes original action entry, page-2/selector/current-slot and
+  prompt admission chronology, exact direct service entry/return, the two safe Load handoffs,
+  callback/watchdog failure status, and scoped restoration without re-promoting service
+  payload/checksum outcomes. A
+  second one-launch/four-core-replay
   New matrix now confirms free-slot selector boundaries for save flags 0/1/2, all four difficulty
   flag outcomes, selected-slot checksums/samples, and the 3/56/3/3/1 MainLoop handoff while retaining
   the MD CART session-patch readback boundary. Cross-process persistence/recovery plus player-driven

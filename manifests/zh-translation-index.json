@@ -177,10 +177,10 @@
       "source": "docs/design/contracts/save-system.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/save-system.md",
-      "sourceSha256": "0c422041fd58f21140c0bdb582604fa929bdae555dba208bc27d25318031e885",
-      "mirrorSha256": "3636ec587c45678ad8228069f20cac30e888e5c150c5d739a6230cf93377c71c",
+      "sourceSha256": "4aac852f6afa9008c2894f8d2417f5935dc0a427410e123144c5f673a76fb937",
+      "mirrorSha256": "b3bcbc019ed924f9084791a30a996b70fe0af5547035dd8677487a7dde6233d0",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-13"
     },
     {
       "source": "docs/design/contracts/service-interactions.md",

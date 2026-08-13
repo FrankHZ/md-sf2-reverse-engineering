@@ -32,7 +32,7 @@ from sf2tool.rom import mega_drive_checksum
 def test_design_contracts_are_traceable() -> None:
     assert verify_design_contracts() == {
         "Documents": 46,
-        "FixtureReferences": 162,
+        "FixtureReferences": 163,
         "EvidenceLabels": "Confirmed,Unknown",
         "Status": "PASS",
     }
@@ -41,14 +41,14 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1620
-    assert result["Confirmed"] == 1620
+    assert result["Records"] == 1621
+    assert result["Confirmed"] == 1621
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 87
-    assert result["AddressBindings"] == 2545
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 88
+    assert result["AddressBindings"] == 2548
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
-    assert result["H1ListingRecords"] == 1583
+    assert result["H1ListingRecords"] == 1584
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
 
@@ -690,6 +690,13 @@ def test_witch_save_actions_has_one_batched_runtime_command() -> None:
     assert args.h3_command == "witch-save-actions"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.timeout_seconds == 120
+
+
+def test_witch_save_menu_actions_has_one_batched_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "witch-save-menu-actions"])
+    assert args.h3_command == "witch-save-menu-actions"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.timeout_seconds == 180
 
 
 def test_witch_new_game_lifecycle_has_one_batched_runtime_command() -> None:

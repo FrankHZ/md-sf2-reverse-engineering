@@ -164,6 +164,7 @@ DIRECT_FUNCTION_SEAM_OBSERVERS = (
 WITCH_MENU_OBSERVERS = (
     "tools/bizhawk/witch_new_game_lifecycle_observer.lua",
     "tools/bizhawk/witch_save_actions_observer.lua",
+    "tools/bizhawk/witch_save_menu_actions_observer.lua",
 )
 
 SOUND_DRIVER_OBSERVERS = ("tools/bizhawk/sound_timing_observer.lua",)
@@ -308,6 +309,12 @@ COMMAND_LAUNCHES = {
     "witch-save-actions": _command(
         "sf2tool.h3.witch_save_actions", "verify_witch_save_actions", "witch-menu",
         _launch("tools/bizhawk/witch_save_actions_observer.lua"),
+    ),
+    "witch-save-menu-actions": _command(
+        "sf2tool.h3.witch_save_menu_actions",
+        "verify_witch_save_menu_actions",
+        "witch-menu",
+        _launch("tools/bizhawk/witch_save_menu_actions_observer.lua"),
     ),
     "witch-new-game-lifecycle": _command(
         "sf2tool.h3.witch_new_game_lifecycle", "verify_witch_new_game_lifecycle", "witch-menu",

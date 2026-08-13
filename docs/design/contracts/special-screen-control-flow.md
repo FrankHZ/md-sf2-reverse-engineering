@@ -11,7 +11,7 @@
 - Remake status: implementation-neutral Phase 3 compatibility contract; no screen framework,
   renderer, input model, save backend, replacement presentation, or distribution license has been
   selected.
-- Evidence date: 2026-08-09
+- Evidence date: 2026-08-13
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -42,24 +42,28 @@ The dedicated H2 owner was reproduced from current `main` on the evidence date:
 
 ```text
 sf2-special-screens-static-v1
-SHA256 56EA039B129BDB3F684513922357DEEA119F19BCEC5309B1753FD137FCD2CBD1
+SHA256 DC8AB072E69417A0D2C33C71FF34BF80519B68469FB5DBD468359A28B7403E04
 Files 19 / ScreenGroups 7 / Resources 18 / RuntimeQuestions 3 / PASS
 ```
 
 Three denominators must remain distinct.
 
-### Source-root membership: 21 records
+### Source-root membership: 22 records
 
-The fixture's accepted `expected.indexedRecordIds` membership corpus contains 21 records. Nineteen
-have a direct `sf2-special-screens-static-v1` research-index evidence binding. Two membership records
+The fixture's accepted `expected.indexedRecordIds` membership corpus contains 22 records. Nineteen
+have a direct `sf2-special-screens-static-v1` research-index evidence binding. Three membership records
 intentionally use a more specific executable owner instead:
 
 - `screens.title.compressed-tiles` is owned by `sf2-special-screen-graphics-decode-v1` and
   [special-screen-asset-data](special-screen-asset-data.md);
 - `screens.witch.new-game-lifecycle` is owned by
   `sf2-witch-new-game-lifecycle-runtime-v1` and [save-system](save-system.md).
+- `screens.witch.save-menu-actions` is owned by
+  `sf2-witch-save-menu-actions-runtime-v1` and [save-system](save-system.md).
 
-They remain unchanged and are not evidence dependencies or association targets of this contract.
+The `code/specialscreens/witch/witchstart.asm` source relation is exactly
+`screens.witch.new-game-lifecycle`, `screens.witch.save-menu-actions`, and `screens.witch.start`.
+These more-specific owners are not evidence dependencies or association targets of this contract.
 
 ### Direct fixture bindings: 19 records
 
@@ -96,8 +100,8 @@ semantically unchanged:
 - `screens.witchend.resources`.
 
 Therefore eventual registration changes exactly 13 records: twelve new associations plus the one
-intentional menu overlap. The other eight members of the 21-record source-root corpus remain
-unchanged: the six resource records above plus the two more-specific-owner records.
+intentional menu overlap. The other nine members of the 22-record source-root corpus remain
+unchanged: the six resource records above plus the three more-specific-owner records.
 
 ### Audit limits
 

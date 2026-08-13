@@ -8,7 +8,7 @@
   presentation or input cadence, and caller-visible pixels/audio/suspend timing.
 - Remake status: implementation-neutral contract; in-process service effects are observed, while
   durable-medium behavior remains unobserved.
-- Evidence date: 2026-08-03
+- Evidence date: 2026-08-13
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - Traceability: `sf2-tech-services-static-v1` in
@@ -19,7 +19,11 @@
   `docs/research/special-screens.md`. The in-process runtime contract is
   `sf2-witch-save-actions-runtime-v1` in
   `tests/fixtures/h3/witch-save-actions-v1.json`; `src/sf2tool/h3/witch_save_actions.py`; and
-  `docs/research/special-screens.md`. The bounded New-game runtime contract is
+  `docs/research/special-screens.md`. The separate Witch action-admission runtime contract is
+  `sf2-witch-save-menu-actions-runtime-v1` in
+  `tests/fixtures/h3/witch-save-menu-actions-v1.json`;
+  `src/sf2tool/h3/witch_save_menu_actions.py`; and `docs/research/special-screens.md`. The bounded
+  New-game runtime contract is
   `sf2-witch-new-game-lifecycle-runtime-v1` in
   `tests/fixtures/h3/witch-new-game-lifecycle-v1.json`;
   `src/sf2tool/h3/witch_new_game_lifecycle.py`; and `docs/research/special-screens.md`. The
@@ -68,6 +72,27 @@ its player-facing lifecycle meaning is not inferred.
 power-cycle behavior, partial/interrupted-write recovery, player-driven New-game naming/menu results,
 pixels, audio, input cadence, or suspend presentation. Those remain the grouped H3 questions named in
 `docs/research/special-screens.md`.
+
+## Confirmed Witch Save-Menu Action Admission Matrix
+
+**Confirmed:** a separate ten-case, one-launch matrix executes the original
+`witchMenuAction_Load`, `witchMenuAction_Copy`, and `witchMenuAction_Del` entries after the original
+`CheckSram` bootstrap. Its controlled menu/prompt seam supplies only source-compatible return values.
+It observes Load and Delete page 2, the `SAVE_FLAGS & 3` then one-bit selector scale, the selector
+minus-one write to `CURRENT_SAVE_SLOT`, and Copy's masked/minus-one source selector. Menu cancel and
+nonzero prompt returns reach the existing Witch loop without an original service call. Confirmed Load,
+Copy, and Delete cases reach and return from the original `LoadGame`, `CopySave`, and
+`ClearSaveSlotFlag` entries respectively. Load stops at the source-derived `GetSavepointForMap` or
+`j_BattleLoop`/`BattleLoop` handoff; it does not promote downstream loop behavior.
+
+**Confirmed harness boundary:** callback exceptions are status-bearing and nonzero, including case,
+phase, role, expected/actual callback state, and pending role. The one dispatcher owns each physical
+callback PC. Finite bootstrap-to-first-case and per-active-case watchdogs fail through the same
+restore/unlink/clear status path rather than relying on the external timeout; the successful run
+leaves no Lua Console error or registered callback and restores only
+the scoped menu state, two logical slot payloads/checksums, generated RAM, stack/frame, and session
+cart patches. This matrix deliberately adds no payload, checksum, service-result, durable-media, or
+player-driven UI claim beyond the existing direct-service owner.
 
 ## Confirmed Direct-Service Lifecycle Matrix
 
