@@ -248,6 +248,11 @@ CONTRACTS = {
             "sf2-gameflow-core-static-v1"
         ),
     },
+    "docs/design/contracts/map-entity-data.md": {
+        "tests/fixtures/h2/map-entities-static-v1.json": (
+            "sf2-map-entities-static-v1"
+        ),
+    },
     "docs/design/contracts/map-entry-routing-state.md": {
         "tests/fixtures/h2/common-maps-static-v1.json": (
             "sf2-common-maps-static-v1"
