@@ -339,6 +339,10 @@ def test_force_state_roster_death_failure_closes_dispatch_and_restoration() -> N
         "churchRaiseRestorationMismatch",
         "churchRaiseLifecycleFailure",
         "churchRaiseLifecycleEvent",
+        "churchCureLifecycleRole",
+        "churchCurePendingCallback",
+        "churchCureRestorationMismatch",
+        "churchCureLifecycleFailure",
     }
     serialized = json.dumps(component, sort_keys=True)
     for golden_field in ("cases", "caseOrder", "records", "recordOrder"):

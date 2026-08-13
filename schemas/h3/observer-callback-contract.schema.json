@@ -1044,6 +1044,27 @@
       "type": "object", "additionalProperties": false, "required": ["role", "pc"],
       "properties": {"role": {"$ref": "#/definitions/nonEmptyString"}, "pc": {"$ref": "#/definitions/pc"}}
     },
+    "churchCureLifecycleRole": {
+      "enum": ["registration", "bootstrap-check-sram", "case-entry", "case-result", "terminal-finalize", "church-entry", "cure-route", "action-stub", "prompt-poison", "prompt-stun", "prompt-curse", "do-poison", "do-stun", "do-curse", "j-decrease-gold-entry", "decrease-gold-entry", "decrease-gold-return", "j-set-status-effects-entry", "set-status-effects-entry", "set-status-effects-return", "j-unequip-all-items-if-not-cursed-entry", "unequip-all-items-if-not-cursed-entry", "update-combatant-stats-tail-entry", "update-combatant-stats-tail-return", "bootstrap-watchdog", "transition-watchdog", "case-watchdog"]
+    },
+    "churchCurePendingCallback": {
+      "type": "object", "additionalProperties": false,
+      "required": ["active", "kind", "caseIndex", "expectedCaseId", "memberId", "expectedEventPc", "expectedCallPc", "expectedTargetPc", "expectedReturnPc", "rolesAtPc", "family", "observedRoles"],
+      "properties": {
+        "active": {"type": "boolean"}, "kind": {"enum": ["registration", "event", "route", "helper"]}, "caseIndex": {"type": "integer", "minimum": 1}, "expectedCaseId": {"$ref": "#/definitions/nonEmptyString"}, "memberId": {"type": "integer", "minimum": 0, "maximum": 29}, "expectedEventPc": {"$ref": "#/definitions/nullablePc"}, "expectedCallPc": {"$ref": "#/definitions/nullablePc"}, "expectedTargetPc": {"$ref": "#/definitions/nullablePc"}, "expectedReturnPc": {"$ref": "#/definitions/nullablePc"}, "rolesAtPc": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/definitions/churchCureLifecycleRole"}}, "family": {"anyOf": [{"type": "null"}, {"enum": ["poison", "stun", "curse"]}]}, "observedRoles": {"type": "array", "items": {"$ref": "#/definitions/nonEmptyString"}}
+      }
+    },
+    "churchCureRestorationMismatch": {
+      "type": "object", "additionalProperties": false, "required": ["domain", "address", "expected", "actual"],
+      "properties": {"domain": {"enum": ["scope", "gold", "combatantRecordByte", "targetsListLength", "targetsListByte", "dialogueName", "dialogueNumber", "currentPortrait", "generatedRamByte", "terminalFinalize", "a6", "a7"]}, "address": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/pc"}]}, "expected": {"type": "integer", "minimum": 0, "maximum": 4294967295}, "actual": {"type": "integer", "minimum": 0, "maximum": 4294967295}}
+    },
+    "churchCureLifecycleFailure": {
+      "type": "object", "additionalProperties": false,
+      "required": ["owner", "caseId", "phase", "role", "actualPc", "expectedEventPc", "expectedCallPc", "expectedTargetPc", "expectedReturnPc", "pendingCallback", "restoration", "restorationMismatch", "error"],
+      "properties": {
+        "owner": {"const": "church-cure-lifecycle"}, "caseId": {"$ref": "#/definitions/nonEmptyString"}, "phase": {"$ref": "#/definitions/churchCureLifecycleRole"}, "role": {"$ref": "#/definitions/churchCureLifecycleRole"}, "actualPc": {"$ref": "#/definitions/pc"}, "expectedEventPc": {"$ref": "#/definitions/nullablePc"}, "expectedCallPc": {"$ref": "#/definitions/nullablePc"}, "expectedTargetPc": {"$ref": "#/definitions/nullablePc"}, "expectedReturnPc": {"$ref": "#/definitions/nullablePc"}, "pendingCallback": {"$ref": "#/definitions/churchCurePendingCallback"}, "restorationMismatch": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/churchCureRestorationMismatch"}]}, "restoration": {"type": "object", "additionalProperties": false, "required": ["scopeArmed", "gold", "combatantRecords", "targetsListLength", "targetsListBytes", "dialogueScratch", "currentPortrait", "generatedRam", "a6a7Balance", "sessionCartPatches", "callbacksCleared", "outputRemoved"], "properties": {"scopeArmed": {"type": "boolean"}, "gold": {"type": "boolean"}, "combatantRecords": {"type": "boolean"}, "targetsListLength": {"type": "boolean"}, "targetsListBytes": {"type": "boolean"}, "dialogueScratch": {"type": "boolean"}, "currentPortrait": {"type": "boolean"}, "generatedRam": {"type": "boolean"}, "a6a7Balance": {"type": "boolean"}, "sessionCartPatches": {"const": false}, "callbacksCleared": {"const": true}, "outputRemoved": {"const": true}}}, "error": {"$ref": "#/definitions/nonEmptyString"}
+      }
+    },
     "witchSaveMenuActionsPendingCallback": {
       "type": "object",
       "additionalProperties": false,

@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:church-cure-lifecycle-fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "romSha256", "system", "caseOrder", "cases", "sourceContext"],
+  "properties": {
+    "id": {"const": "sf2-church-cure-lifecycle-runtime-v1"},
+    "romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
+    "system": {"const": "sf2-church-cure-lifecycle-runtime-v1"},
+    "caseOrder": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/definitions/nonEmptyString"}},
+    "cases": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/case"}},
+    "sourceContext": {"$ref": "#/definitions/sourceContext"}
+  },
+  "definitions": {
+    "nonEmptyString": {"type": "string", "minLength": 1},
+    "case": {
+      "type": "object", "additionalProperties": false,
+      "required": ["caseId", "gold", "promptResults", "member"],
+      "properties": {
+        "caseId": {"$ref": "#/definitions/nonEmptyString"},
+        "gold": {"type": "integer", "minimum": 0, "maximum": 9999999},
+        "promptResults": {"type": "array", "items": {"type": "integer", "minimum": -1, "maximum": 65535}},
+        "member": {"$ref": "#/definitions/member"}
+      }
+    },
+    "member": {
+      "type": "object", "additionalProperties": false,
+      "required": ["memberId", "statusEffects", "items"],
+      "properties": {
+        "memberId": {"type": "integer", "minimum": 0, "maximum": 29},
+        "statusEffects": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "items": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "integer", "minimum": 0, "maximum": 65535}}
+      }
+    },
+    "sourceContext": {
+      "type": "object", "additionalProperties": false,
+      "required": ["churchMenuEntryAddress", "cureRouteAddress"],
+      "properties": {
+        "churchMenuEntryAddress": {"type": "integer", "minimum": 0},
+        "cureRouteAddress": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

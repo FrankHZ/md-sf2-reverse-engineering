@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:church-cure-lifecycle-observation",
+  "type": "object", "additionalProperties": false,
+  "required": ["system", "caseOrder", "records", "callbacksCleared", "restoration"],
+  "properties": {
+    "system": {"const": "sf2-church-cure-lifecycle-runtime-v1"},
+    "caseOrder": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/definitions/nonEmptyString"}},
+    "records": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/record"}},
+    "callbacksCleared": {"const": true},
+    "restoration": {"$ref": "#/definitions/restoration"}
+  },
+  "definitions": {
+    "nonEmptyString": {"type": "string", "minLength": 1},
+    "record": {"type": "object", "additionalProperties": false, "required": ["caseId", "churchEntryPc", "cureRoutePc", "goldBefore", "goldAfter", "memberId", "statusBefore", "statusAfter", "itemSlotsBefore", "itemSlotsAfter", "successChronology", "mutations"], "properties": {"caseId": {"$ref": "#/definitions/nonEmptyString"}, "churchEntryPc": {"type": "integer", "minimum": 0}, "cureRoutePc": {"type": "integer", "minimum": 0}, "goldBefore": {"type": "integer", "minimum": 0}, "goldAfter": {"type": "integer", "minimum": 0}, "memberId": {"type": "integer", "minimum": 0}, "statusBefore": {"type": "integer", "minimum": 0, "maximum": 65535}, "statusAfter": {"type": "integer", "minimum": 0, "maximum": 65535}, "itemSlotsBefore": {"$ref": "#/definitions/itemSlots"}, "itemSlotsAfter": {"$ref": "#/definitions/itemSlots"}, "successChronology": {"type": "array", "items": {"$ref": "#/definitions/chronology"}}, "mutations": {"type": "array", "items": {"$ref": "#/definitions/mutation"}}}},
+    "itemSlots": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "integer", "minimum": 0, "maximum": 65535}},
+    "chronology": {"type": "object", "additionalProperties": false, "required": ["family", "roles"], "properties": {"family": {"enum": ["poison", "stun", "curse"]}, "roles": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/definitions/nonEmptyString"}}}},
+    "mutation": {"type": "object", "additionalProperties": false, "required": ["family", "cost", "statusAfter", "itemSlotsAfter"], "properties": {"family": {"enum": ["poison", "stun", "curse"]}, "cost": {"type": "integer", "minimum": 0}, "statusAfter": {"type": "integer", "minimum": 0, "maximum": 65535}, "itemSlotsAfter": {"$ref": "#/definitions/itemSlots"}}},
+    "restoration": {"type": "object", "additionalProperties": false, "required": ["gold", "combatantRecords", "targetsListLength", "targetsListBytes", "dialogueScratch", "currentPortrait", "generatedRam", "a6a7Balance", "sessionCartPatches"], "properties": {"gold": {"const": true}, "combatantRecords": {"const": true}, "targetsListLength": {"const": true}, "targetsListBytes": {"const": true}, "dialogueScratch": {"const": true}, "currentPortrait": {"const": true}, "generatedRam": {"const": true}, "a6a7Balance": {"const": true}, "sessionCartPatches": {"type": "boolean"}}}
+  }
+}

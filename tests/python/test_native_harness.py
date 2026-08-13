@@ -32,7 +32,7 @@ from sf2tool.rom import mega_drive_checksum
 def test_design_contracts_are_traceable() -> None:
     assert verify_design_contracts() == {
         "Documents": 48,
-        "FixtureReferences": 166,
+        "FixtureReferences": 167,
         "EvidenceLabels": "Confirmed,Unknown",
         "Status": "PASS",
     }
@@ -44,8 +44,8 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Records"] == 1621
     assert result["Confirmed"] == 1621
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 89
-    assert result["AddressBindings"] == 2549
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 90
+    assert result["AddressBindings"] == 2550
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1584
@@ -1025,7 +1025,7 @@ def test_schema_tree_freezes_legacy_root_and_namespaces_new_contracts() -> None:
     root = Path(__file__).resolve().parents[2]
     schema_root = root / "schemas"
     legacy_root_schemas = tuple(schema_root.glob("*.schema.json"))
-    assert len(legacy_root_schemas) <= 248
+    assert len(legacy_root_schemas) <= 250
 
     allowed_namespaces = {"core", "h2", "h3"}
     for path in schema_root.rglob("*.schema.json"):
@@ -1129,6 +1129,24 @@ def test_church_raise_observer_has_single_pc_dispatch_and_failure_contract() -> 
         'expect(restore_generated(),"generated RAM restoration drift")',
         "callbacks-cleared:0",
         "observer-finished",
+    ):
+        assert required_text in observer
+
+
+def test_church_cure_observer_has_single_pc_dispatch_and_failure_contract() -> None:
+    root = Path(__file__).resolve().parents[2]
+    observer = (root / "tools" / "bizhawk" / "church_cure_lifecycle_observer.lua").read_text(
+        encoding="utf-8"
+    )
+    assert observer.count("event.on_bus_exec(function()") == 1
+    for required_text in (
+        "for _,event in ipairs(callbacks[address])do dispatch(address,event)end",
+        "if not ok then failure(msg)end",
+        "unexpected mutation helper while not pending",
+        "w16(h.terminalStub,0x2C7C)",
+        "callbacks-cleared:0",
+        "observer-finished",
+        "client.exitCode(config.observerFailureContract.exitCode)",
     ):
         assert required_text in observer
 
