@@ -458,6 +458,12 @@ document whose anchors may be updated.
   header metadata, while retaining per-vector mappings and ABIs, boot/reset behavior, checksum
   algorithms, SRAM behavior, region compatibility, hardware outcomes, and raw header payload as
   separate-owner, Unknown, or private boundaries.
+- [`map-entity-data.md`](./design/contracts/map-entity-data.md): the implementation-neutral private-
+  import contract for 126 setup-pointer references to 125 entity-list roots, 980 physical records
+  producing 987 ordered list references, exact suffix-sharing and terminator topology, bounded record
+  encodings, and the initial map-sprite domain, while retaining runtime population, movement,
+  persistence, presentation, and complete original rows as separate-owner, Unknown, or private
+  boundaries.
 - [`map-entry-routing-state.md`](./design/contracts/map-entry-routing-state.md): the
   implementation-neutral contract for ordered flag-switched map selection, battle-candidate
   admission and bounded state writes, and savepoint/raft-reset selection, while retaining private
