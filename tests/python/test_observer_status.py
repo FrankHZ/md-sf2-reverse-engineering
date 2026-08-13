@@ -111,14 +111,68 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         schema_root / "blacksmith-mithril-callback-failure.schema.json",
         schema_root / "controller-input-callback-failure.schema.json",
         schema_root / "story-state-callback-failure.schema.json",
+        schema_root / "force-state-roster-death-callback-failure.schema.json",
     ]
     audit = schema_composition_audit(paths)
-    assert audit["schemaCount"] == 11
+    assert audit["schemaCount"] == 12
     assert audit["unresolvedReferences"] == []
     assert audit["duplicateBodyGroups"] == []
     assert audit["largeConstCount"] == 0
 
-    component = load_json(paths[0])
+
+def test_force_state_roster_death_failure_closes_dispatch_and_restoration() -> None:
+    schema = repo_path("schemas/h3/force-state-roster-death-callback-failure.schema.json")
+    payload = {
+        "owner": "force-state-roster-death",
+        "caseId": "csc20-update-defeated-onscreen-append",
+        "phase": "handler-return",
+        "role": "handler-return",
+        "actualPc": 289600,
+        "expectedEventPc": 289600,
+        "expectedCallPc": 16730118,
+        "expectedTargetPc": 289600,
+        "expectedReturnPc": 16730124,
+        "pendingCallback": {
+            "active": True,
+            "caseIndex": 10,
+            "expectedEventPc": 289600,
+            "expectedCallPc": 16730118,
+            "expectedTargetPc": 289600,
+            "expectedReturnPc": 16730124,
+            "rolesAtPc": ["handler-return"],
+        },
+        "callbacksRemaining": 0,
+        "mutationState": {
+            "rosterMutated": False,
+            "currentHpMutated": False,
+            "combatantXMutated": True,
+            "defeatedListMutated": True,
+            "sramMutated": False,
+            "generatedProgramMutated": True,
+        },
+        "outputRemoved": True,
+        "sessionStateRestored": True,
+        "restorationMismatch": None,
+        "error": "forced callback failure",
+    }
+    validate_json(payload, schema, owner="roster/death callback failure")
+
+    pending = deepcopy(payload)
+    pending["callbacksRemaining"] = 1
+    with pytest.raises(ValueError, match="callbacksRemaining"):
+        validate_json(pending, schema, owner="roster/death callback cleanup")
+
+    mismatch = deepcopy(payload)
+    mismatch["restorationMismatch"] = {
+        "domain": "combatantX",
+        "address": 16772910,
+        "expected": 255,
+        "actual": 0,
+    }
+    mismatch["sessionStateRestored"] = False
+    validate_json(mismatch, schema, owner="roster/death callback restoration mismatch")
+
+    component = load_json(repo_path("schemas/h3/observer-callback-contract.schema.json"))
     assert set(component["definitions"]) == {
         "pc",
         "nullablePc",
@@ -154,6 +208,7 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         "storyStateFailure",
         "controllerInputFailure",
         "blacksmithMithrilFailure",
+        "forceStateRosterDeathFailure",
     }
     serialized = json.dumps(component, sort_keys=True)
     for golden_field in ("cases", "caseOrder", "records", "recordOrder"):

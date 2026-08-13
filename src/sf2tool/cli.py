@@ -88,6 +88,7 @@ from sf2tool.h3.entity_movement import verify_entity_movement_matrix
 from sf2tool.h3.entity_population_reload import verify_entity_population_reload
 from sf2tool.h3.exp_command import verify_exp_command_boundaries
 from sf2tool.h3.force_state_active_party import verify_force_state_active_party
+from sf2tool.h3.force_state_roster_death import verify_force_state_roster_death
 from sf2tool.h3.gold import verify_gold_boundaries
 from sf2tool.h3.growth import (
     verify_growth,
@@ -897,6 +898,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_force_state_active_party)
     h3_force_state_active_party.add_argument("--timeout-seconds", type=int, default=180)
+    h3_force_state_roster_death = h3_commands.add_parser(
+        "force-state-roster-death",
+        help="verify roster-membership, HP branch, and handler-local defeated-list behavior",
+    )
+    _add_local_paths(h3_force_state_roster_death)
+    h3_force_state_roster_death.add_argument("--timeout-seconds", type=int, default=180)
     h3_spell_damage = h3_commands.add_parser(
         "spell-damage", help="verify BLAZE 2 damage across all four fire-resistance settings"
     )
@@ -1913,6 +1920,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "force-state-active-party":
         print_record(
             verify_force_state_active_party(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "force-state-roster-death":
+        print_record(
+            verify_force_state_roster_death(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

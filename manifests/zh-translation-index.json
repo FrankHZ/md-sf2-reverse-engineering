@@ -143,10 +143,10 @@
       "source": "docs/design/contracts/party-roster-state.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/party-roster-state.md",
-      "sourceSha256": "8035038c31e9fc2239f2bf331089fcbd5bacd7342e46dd7461d8d9b744350660",
-      "mirrorSha256": "238e3da348e46843b95da7ef9d7013be87ebdcff470dcb26563b217ce862c5b0",
+      "sourceSha256": "8f03630a5c0587d55175d1df908015050e9c0b7b9f3f6f76ab6f372f7cb4436b",
+      "mirrorSha256": "ded8bea54602465ba59396b69ff731c478f8713f180d425288b96e814605d58e",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-12"
     },
     {
       "source": "docs/design/contracts/portrait-window-state.md",

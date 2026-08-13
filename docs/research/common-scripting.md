@@ -1167,10 +1167,46 @@ fixture: `code/common/stats/battleparty.asm`, SHA-256
 `JoinForce` is an effective caller target in this six-handler slice; `UpdateForce` remains a retained
 source identity for the shared roster boundary, not a fabricated caller count.
 
-**Unknown:** `force-state/roster-death-persistence-visible-outcomes` is the sole grouped H3 queue.
-One shared future launch should distinguish roster/list contents, death/revive persistence, and
-visible/presentation outcomes across representative caller states. This static slice does not claim
-normal-story reachability, save persistence, roster capacity, list capacity, or visible effects.
+**Confirmed runtime boundary:** the one-launch, 14-case Map Test 0 matrix
+`sf2-force-state-roster-death-runtime-v1` at
+`tests/fixtures/h3/force-state-roster-death-v1.json` enters all six original handlers through the
+original `RunMapSetupInitFunction` seam. It records `csc08` absent/already-present membership,
+`csc0E` empty/hit/miss cursor choices, `csc0F` dead/live HP choices, `csc1F` append, `csc20`
+offscreen-skip/one-onscreen-append, and `csc21` empty/hit-first/hit-middle/miss removal. The fixture
+owns the accepted ordered before/after values and A6 results; its verifier is
+`src/sf2tool/h3/force_state_roster_death.py`.
+
+**Confirmed scoped persistence boundary:** `GAME_FLAGS` joined membership and current HP are inside
+the original `COMBATANT_DATA` logical SaveGame/LoadGame span `$FFE800..$FFF7AF` (4,016 bytes). The
+absent `csc08` case executes original `JoinForce`, original `SaveGame` selector 0, narrowly clears
+only the independently derived joined-flag byte, executes original `LoadGame`, and uses original
+`CheckFlag` to observe the restored nonzero bit. The runtime records its independently derived selected
+physical SRAM byte, checksum byte, and `SAVE_FLAGS` occupied bit with the source-derived two-byte
+physical stride. The HP cases
+are read-only branch observations in that saved logical domain: they do not invent a Save/poison/Load
+operation.
+
+**Confirmed handler-local boundary:** `DEAD_COMBATANTS_LIST_LENGTH` `$FFB402` and
+`DEAD_COMBATANTS_LIST` `$FFB58A` are outside that logical save span. The list cases are therefore
+scoped RAM/list observations with scoped restoration only, not save-persistence evidence. For the
+bounded `csc20` seeds, the exact source loop has 32 `GetCombatantX` checks; the observer restores the
+one seeded byte plus those 32 potential append positions. This 33-byte touched span is a probe
+restoration range, not a list-capacity claim. The source/H1 and runtime results confirm `-1` skips the
+write and a single X value of 0 appends `$80`; they do not establish normal caller sequencing.
+
+**Unknown:** normal-story reachability, roster/list capacity, UI-visible roster/death effects,
+service-menu/church/witch callers, copy/delete UI, cross-process SRAM durability, and corruption or
+power-loss behavior remain outside this bounded rail.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm`;
+`code/common/scripting/map/mapscriptengine_1.asm` (`csc1F`, `csc20`, `csc21`),
+`mapscriptengine_2.asm` (`csc08`, `csc0E`, `csc0F`), `mapsetupsfunctions_1.asm`,
+`code/common/stats/battleparty.asm`, `code/common/tech/sram/sramfunctions.asm`,
+`sf2const.asm`, `sf2enums.asm`, jump-interface aliases, H1 listing, and the verified US ROM hash.
+Reproduce static joins with `uv run sf2 h2 map-script-engine`, `uv run sf2 h2 common-stats`, and
+`uv run sf2 h2 tech-services`; reproduce the grouped runtime matrix with
+`uv run sf2 h3 force-state-roster-death --timeout-seconds 180` (BizHawk 2.11.1, Genesis Plus GX).
 
 ## Confirmed Map-Script Active-Party/AI/Follower Command Family
 

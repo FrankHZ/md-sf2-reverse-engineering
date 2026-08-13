@@ -124,6 +124,7 @@ MAP_DEBUG_HOST_OBSERVERS = (
     "tools/bizhawk/entity_movement_matrix_observer.lua",
     "tools/bizhawk/entity_population_reload_observer.lua",
     "tools/bizhawk/force_state_active_party_observer.lua",
+    "tools/bizhawk/force_state_roster_death_observer.lua",
     "tools/bizhawk/map_animation_vdp_observer.lua",
     "tools/bizhawk/map_block_mutation_observer.lua",
     "tools/bizhawk/map_camera_control_observer.lua",
@@ -410,6 +411,16 @@ COMMAND_LAUNCHES = {
     "force-state-active-party": _command(
         "sf2tool.h3.force_state_active_party", "verify_force_state_active_party", "map-debug-host",
         _launch("tools/bizhawk/force_state_active_party_observer.lua"),
+    ),
+    "force-state-roster-death": _command(
+        "sf2tool.h3.force_state_roster_death",
+        "verify_force_state_roster_death",
+        "map-debug-host",
+        _launch(
+            "tools/bizhawk/force_state_roster_death_observer.lua",
+            14,
+            cases_fixture="tests/fixtures/h3/force-state-roster-death-v1.json",
+        ),
     ),
     "spell-damage": _command(
         "sf2tool.h3.spell_damage", "verify_spell_damage", "battle01-intro-skip",

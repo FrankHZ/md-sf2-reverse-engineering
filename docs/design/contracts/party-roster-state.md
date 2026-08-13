@@ -1,11 +1,11 @@
 # Party and Roster State Contract
 
-- **Confirmed original structure:** ten source-named map-script command forms, their physical stream
+- **Confirmed original structure and bounded behavior:** ten source-named map-script command forms, their physical stream
   layouts, named handler branch/mutation/call order, source-site corpus, direct/effective caller
   identity, and provenance joins to the common-stats and follower-owner sources.
 - **Inferred original behavior:** none in this contract.
-- **Unknown original behavior:** normal-story reachability, roster/list capacity, save persistence,
-  and player-visible roster/death outcomes.
+- **Unknown original behavior:** normal-story reachability, roster/list capacity, player-visible
+  roster/death outcomes, and physical/cross-process SRAM durability.
 - Remake status: implementation-neutral Phase 3 contract; no engine has been selected.
 
 ## Import Boundary
@@ -65,7 +65,7 @@ copy sibling fixture data into this contract. The active-party group additionall
 
 ## Evidence and Runtime Boundary
 
-Evidence date: 2026-07-30.
+Evidence date: 2026-08-12.
 
 Executable evidence is fixture ID `sf2-map-script-engine-static-v1` at
 `tests/fixtures/h2/map-script-engine-static-v1.json`, field `forceStateCommandFacts`; its verifier is
@@ -74,16 +74,30 @@ full 304-program source-site/total corpus, section guards, caller maps, and comm
 identity. The nested `forceStateCommandFacts.activePartyCommandFacts` field pins the four additional
 forms, their 29 sites, source-owner identities, and their own 304-row total corpus.
 
-`force-state/roster-death-persistence-visible-outcomes` remains a grouped H3 question. The active-party
-matrix is fixture ID `sf2-force-state-active-party-runtime-v1` at
+The roster/death matrix is fixture ID `sf2-force-state-roster-death-runtime-v1` at
+`tests/fixtures/h3/force-state-roster-death-v1.json`; its verifier is
+`src/sf2tool/h3/force_state_roster_death.py`. It confirms the fixed 14-case handler matrix: joined
+membership absent/already-present; defeated-list empty/hit/miss; HP dead/live; defeated append;
+offscreen/onscreen defeated updates; and revive empty/hit-first/hit-middle/miss. It further confirms
+that joined membership and HP lie inside the original 4,016-byte `COMBATANT_DATA` SaveGame/LoadGame
+domain, while `DEAD_COMBATANTS_LIST` and its length are outside it. Only the mutating absent-join case
+performs original SaveGame, narrow joined-byte inverse poison, original LoadGame, and original
+`CheckFlag`, and records the independently derived selected physical SRAM byte, checksum byte, and
+`SAVE_FLAGS` occupied bit. The HP cases are saved-domain branch observations, not synthetic
+Save/poison/Load evidence; list cases are handler-local scoped-restoration facts, not persistence claims. The
+active-party matrix is fixture ID `sf2-force-state-active-party-runtime-v1` at
 `tests/fixtures/h3/force-state-active-party-v1.json`; its verifier is
 `src/sf2tool/h3/force_state_active_party.py`. It confirms bounded handler-local flag/list timing,
 activation/join state, reset service order, and follower allocation/list effects; a remake MUST still
-define normal-story reachability, save/load and capacity lifecycle, and player-visible presentation
+define normal-story reachability, capacity lifecycle, and player-visible presentation
 explicitly through
 `force-state/active-party-ai-follower/normal-story-reachability`,
 `force-state/active-party-ai-follower/save-load-capacity-lifecycle`, and
 `force-state/active-party-ai-follower/player-visible-presentation`.
+
+For the bounded `updateDefeatedAllies` probe, the source/H1 loop performs 32 `GetCombatantX` checks.
+The fixture snapshots the one seeded list byte plus its 32 possible write positions (33 bytes) solely
+for restoration. This is not a derived list-capacity rule.
 
 For fidelity within this bounded command surface, preserve the observable ordering rather than repairing
 the list immediately: `UpdateForce` may leave a handler-local pre-replacement party snapshot while

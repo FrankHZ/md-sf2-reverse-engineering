@@ -1,0 +1,1039 @@
+{
+  "id": "sf2-force-state-roster-death-runtime-v1",
+  "schemaVersion": 1,
+  "mapTestIndex": 0,
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "function": {
+    "runMapSetupInitFunctionAddress": 292092
+  },
+  "staticContractSha256": "F45A4C564524BC88E302F016ABAC259A788D1C1DA926B198E2004F971DB7D78B",
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "maxFrames": 7200,
+  "instrumentation": {
+    "trampoline": {
+      "callSiteAddress": 292114,
+      "callSiteOriginalHex": "4E904CDF03FF",
+      "callSitePatchedHex": "4EB90000FF88",
+      "stubAddress": 65416,
+      "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+      "stubHex": "70004DF900FF4004207900FF40004E904E75",
+      "ramInputAddress": 16728064
+    },
+    "generatedProgram": {
+      "address": 16730112,
+      "streamAddress": 16730272,
+      "byteCount": 64,
+      "scratchEndExclusive": 16730624
+    }
+  },
+  "runtimeContract": {
+    "entryAddress": 292092,
+    "handlers": [
+      {
+        "handler": "csc08_joinForce",
+        "handlerAddress": 291736,
+        "returnAddress": 291836,
+        "calls": [
+          {
+            "h1Address": 291742,
+            "returnAddress": 291746,
+            "instructionTarget": "WaitForViewScrollEnd",
+            "effectiveTarget": "WaitForViewScrollEnd"
+          },
+          {
+            "h1Address": 291774,
+            "returnAddress": 291780,
+            "instructionTarget": "j_JoinForce",
+            "effectiveTarget": "JoinForce"
+          },
+          {
+            "h1Address": 291784,
+            "returnAddress": 291790,
+            "instructionTarget": "j_JoinForce",
+            "effectiveTarget": "JoinForce"
+          },
+          {
+            "h1Address": 291796,
+            "returnAddress": 291802,
+            "instructionTarget": "j_JoinForce",
+            "effectiveTarget": "JoinForce"
+          },
+          {
+            "h1Address": 291802,
+            "returnAddress": 291808,
+            "instructionTarget": "j_GetClass",
+            "effectiveTarget": "GetClass"
+          },
+          {
+            "h1Address": 291820,
+            "returnAddress": 291826,
+            "instructionTarget": "j_FadeOut_WaitForP1Input",
+            "effectiveTarget": "FadeOut_WaitForP1Input"
+          },
+          {
+            "h1Address": 291832,
+            "returnAddress": 291836,
+            "instructionTarget": "Sleep",
+            "effectiveTarget": "Sleep"
+          }
+        ]
+      },
+      {
+        "handler": "csc0E_jumpIfForceMemberInList",
+        "handlerAddress": 291904,
+        "returnAddress": 291938,
+        "calls": []
+      },
+      {
+        "handler": "csc0F_jumpIfCharacterDead",
+        "handlerAddress": 291940,
+        "returnAddress": 291960,
+        "calls": [
+          {
+            "h1Address": 291942,
+            "returnAddress": 291948,
+            "instructionTarget": "j_GetCurrentHp",
+            "effectiveTarget": "GetCurrentHp"
+          }
+        ]
+      },
+      {
+        "handler": "csc1F_addDefeatedAlly",
+        "handlerAddress": 289502,
+        "returnAddress": 289518,
+        "calls": []
+      },
+      {
+        "handler": "csc20_updateDefeatedAllies",
+        "handlerAddress": 289520,
+        "returnAddress": 289560,
+        "calls": [
+          {
+            "h1Address": 289534,
+            "returnAddress": 289540,
+            "instructionTarget": "j_GetCombatantX",
+            "effectiveTarget": "GetCombatantX"
+          }
+        ]
+      },
+      {
+        "handler": "csc21_reviveAlly",
+        "handlerAddress": 289562,
+        "returnAddress": 289600,
+        "calls": []
+      }
+    ],
+    "services": {
+      "SaveGame": 28522,
+      "LoadGame": 28588,
+      "CheckFlag": 39092,
+      "GetCurrentHp": 33590,
+      "GetCombatantX": 33846,
+      "JoinForce": 39254
+    },
+    "storage": {
+      "rosterMembership": {
+        "gameFlagsAddress": 16774790,
+        "joinedFlagStart": 0,
+        "logicalSavedDomain": true
+      },
+      "currentHp": {
+        "combatantDataAddress": 16771072,
+        "entryBytes": 56,
+        "offsetBytes": 14,
+        "logicalSavedDomain": true
+      },
+      "currentX": {
+        "offsetBytes": 46,
+        "entryBytes": 56,
+        "enemyFirstIndex": 128,
+        "enemyIndexAdjustment": 96,
+        "firstEnemyDataEntry": 32,
+        "logicalSavedDomain": true
+      },
+      "defeatedList": {
+        "baseAddress": 16758154,
+        "lengthAddress": 16757762,
+        "entryBytes": 1,
+        "logicalSavedDomain": false,
+        "updateDefeatedAlliesAppendIterations": 32
+      },
+      "saveLoad": {
+        "logicalRam": {
+          "baseAddress": 16771072,
+          "logicalByteCount": 4016,
+          "endExclusiveAddress": 16775088
+        },
+        "slots": [
+          {
+            "selector": 0,
+            "dataAddress": 2097329,
+            "checksumAddress": 2105399,
+            "occupiedFlagBit": 0
+          },
+          {
+            "selector": 1,
+            "dataAddress": 2105403,
+            "checksumAddress": 2105401,
+            "occupiedFlagBit": 1
+          }
+        ],
+        "saveFlagsAddress": 2105397,
+        "physicalByteStride": 2,
+        "saveGameAddress": 28522,
+        "loadGameAddress": 28588
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "csc08-join-absent",
+      "handler": "csc08_joinForce",
+      "handlerAddress": 291736,
+      "axis": "absent",
+      "scope": "persistence"
+    },
+    {
+      "id": "csc08-join-already-present",
+      "handler": "csc08_joinForce",
+      "handlerAddress": 291736,
+      "axis": "already-present",
+      "scope": "persistence"
+    },
+    {
+      "id": "csc0E-defeated-list-empty",
+      "handler": "csc0E_jumpIfForceMemberInList",
+      "handlerAddress": 291904,
+      "axis": "empty",
+      "scope": "local-only"
+    },
+    {
+      "id": "csc0E-defeated-list-hit",
+      "handler": "csc0E_jumpIfForceMemberInList",
+      "handlerAddress": 291904,
+      "axis": "hit",
+      "scope": "local-only"
+    },
+    {
+      "id": "csc0E-defeated-list-miss",
+      "handler": "csc0E_jumpIfForceMemberInList",
+      "handlerAddress": 291904,
+      "axis": "miss",
+      "scope": "local-only"
+    },
+    {
+      "id": "csc0F-hp-dead",
+      "handler": "csc0F_jumpIfCharacterDead",
+      "handlerAddress": 291940,
+      "axis": "dead",
+      "scope": "persistence"
+    },
+    {
+      "id": "csc0F-hp-live",
+      "handler": "csc0F_jumpIfCharacterDead",
+      "handlerAddress": 291940,
+      "axis": "live",
+      "scope": "persistence"
+    },
+    {
+      "id": "csc1F-ally-defeated-append",
+      "handler": "csc1F_addDefeatedAlly",
+      "handlerAddress": 289502,
+      "axis": "append",
+      "scope": "local-only"
+    },
+    {
+      "id": "csc20-update-defeated-offscreen-skip",
+      "handler": "csc20_updateDefeatedAllies",
+      "handlerAddress": 289520,
+      "axis": "offscreen-skip",
+      "scope": "local-only"
+    },
+    {
+      "id": "csc20-update-defeated-onscreen-append",
+      "handler": "csc20_updateDefeatedAllies",
+      "handlerAddress": 289520,
+      "axis": "onscreen-append",
+      "scope": "local-only"
+    },
+    {
+      "id": "csc21-revive-empty",
+      "handler": "csc21_reviveAlly",
+      "handlerAddress": 289562,
+      "axis": "empty",
+      "scope": "local-only"
+    },
+    {
+      "id": "csc21-revive-hit-first",
+      "handler": "csc21_reviveAlly",
+      "handlerAddress": 289562,
+      "axis": "hit-first",
+      "scope": "local-only"
+    },
+    {
+      "id": "csc21-revive-hit-middle",
+      "handler": "csc21_reviveAlly",
+      "handlerAddress": 289562,
+      "axis": "hit-middle",
+      "scope": "local-only"
+    },
+    {
+      "id": "csc21-revive-miss",
+      "handler": "csc21_reviveAlly",
+      "handlerAddress": 289562,
+      "axis": "miss",
+      "scope": "local-only"
+    }
+  ],
+  "caseInputs": [
+    {
+      "id": "csc08-join-absent",
+      "handlerAddress": 291736,
+      "streamBytes": [
+        0,
+        5
+      ],
+      "state": {
+        "joinedFlag": {
+          "member": 5,
+          "bitIndex": 5,
+          "address": 16774790,
+          "mask": 4,
+          "initialSet": false
+        },
+        "persistence": {
+          "selector": 0,
+          "logicalOffset": 3718,
+          "selectedPhysicalAddress": 2104765,
+          "checksumAddress": 2105399,
+          "saveFlagsAddress": 2105397,
+          "occupiedFlagMask": 1
+        }
+      }
+    },
+    {
+      "id": "csc08-join-already-present",
+      "handlerAddress": 291736,
+      "streamBytes": [
+        0,
+        5
+      ],
+      "state": {
+        "joinedFlag": {
+          "member": 5,
+          "bitIndex": 5,
+          "address": 16774790,
+          "mask": 4,
+          "initialSet": true
+        }
+      }
+    },
+    {
+      "id": "csc0E-defeated-list-empty",
+      "handlerAddress": 291904,
+      "streamBytes": [
+        0,
+        7,
+        0,
+        255,
+        72,
+        160
+      ],
+      "state": {
+        "defeatedList": [],
+        "listTouchedByteCount": 0,
+        "probeMember": 7,
+        "targetAddress": 16730272
+      }
+    },
+    {
+      "id": "csc0E-defeated-list-hit",
+      "handlerAddress": 291904,
+      "streamBytes": [
+        0,
+        7,
+        0,
+        255,
+        72,
+        160
+      ],
+      "state": {
+        "defeatedList": [
+          7,
+          9
+        ],
+        "listTouchedByteCount": 2,
+        "probeMember": 7,
+        "targetAddress": 16730272
+      }
+    },
+    {
+      "id": "csc0E-defeated-list-miss",
+      "handlerAddress": 291904,
+      "streamBytes": [
+        0,
+        7,
+        0,
+        255,
+        72,
+        160
+      ],
+      "state": {
+        "defeatedList": [
+          5,
+          9
+        ],
+        "listTouchedByteCount": 2,
+        "probeMember": 7,
+        "targetAddress": 16730272
+      }
+    },
+    {
+      "id": "csc0F-hp-dead",
+      "handlerAddress": 291940,
+      "streamBytes": [
+        0,
+        0,
+        0,
+        255,
+        72,
+        160
+      ],
+      "state": {
+        "hp": {
+          "member": 0,
+          "address": 16771086,
+          "value": 0
+        },
+        "targetAddress": 16730272
+      }
+    },
+    {
+      "id": "csc0F-hp-live",
+      "handlerAddress": 291940,
+      "streamBytes": [
+        0,
+        0,
+        0,
+        255,
+        72,
+        160
+      ],
+      "state": {
+        "hp": {
+          "member": 0,
+          "address": 16771086,
+          "value": 10
+        },
+        "targetAddress": 16730272
+      }
+    },
+    {
+      "id": "csc1F-ally-defeated-append",
+      "handlerAddress": 289502,
+      "streamBytes": [
+        0,
+        7
+      ],
+      "state": {
+        "defeatedList": [
+          1,
+          2
+        ],
+        "listTouchedByteCount": 3,
+        "probeMember": 7
+      }
+    },
+    {
+      "id": "csc20-update-defeated-offscreen-skip",
+      "handlerAddress": 289520,
+      "streamBytes": [],
+      "state": {
+        "defeatedList": [
+          3
+        ],
+        "listTouchedByteCount": 33,
+        "combatantX": [
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "combatantXAddresses": [
+          16772910,
+          16772966,
+          16773022,
+          16773078,
+          16773134,
+          16773190,
+          16773246,
+          16773302,
+          16773358,
+          16773414,
+          16773470,
+          16773526,
+          16773582,
+          16773638,
+          16773694,
+          16773750,
+          16773806,
+          16773862,
+          16773918,
+          16773974,
+          16774030,
+          16774086,
+          16774142,
+          16774198,
+          16774254,
+          16774310,
+          16774366,
+          16774422,
+          16774478,
+          16774534,
+          16774590,
+          16774646
+        ]
+      }
+    },
+    {
+      "id": "csc20-update-defeated-onscreen-append",
+      "handlerAddress": 289520,
+      "streamBytes": [],
+      "state": {
+        "defeatedList": [
+          3
+        ],
+        "listTouchedByteCount": 33,
+        "combatantX": [
+          0,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "combatantXAddresses": [
+          16772910,
+          16772966,
+          16773022,
+          16773078,
+          16773134,
+          16773190,
+          16773246,
+          16773302,
+          16773358,
+          16773414,
+          16773470,
+          16773526,
+          16773582,
+          16773638,
+          16773694,
+          16773750,
+          16773806,
+          16773862,
+          16773918,
+          16773974,
+          16774030,
+          16774086,
+          16774142,
+          16774198,
+          16774254,
+          16774310,
+          16774366,
+          16774422,
+          16774478,
+          16774534,
+          16774590,
+          16774646
+        ]
+      }
+    },
+    {
+      "id": "csc21-revive-empty",
+      "handlerAddress": 289562,
+      "streamBytes": [
+        0,
+        7
+      ],
+      "state": {
+        "defeatedList": [],
+        "listTouchedByteCount": 0,
+        "probeMember": 7
+      }
+    },
+    {
+      "id": "csc21-revive-hit-first",
+      "handlerAddress": 289562,
+      "streamBytes": [
+        0,
+        7
+      ],
+      "state": {
+        "defeatedList": [
+          7,
+          9,
+          11
+        ],
+        "listTouchedByteCount": 3,
+        "probeMember": 7
+      }
+    },
+    {
+      "id": "csc21-revive-hit-middle",
+      "handlerAddress": 289562,
+      "streamBytes": [
+        0,
+        7
+      ],
+      "state": {
+        "defeatedList": [
+          5,
+          7,
+          9
+        ],
+        "listTouchedByteCount": 3,
+        "probeMember": 7
+      }
+    },
+    {
+      "id": "csc21-revive-miss",
+      "handlerAddress": 289562,
+      "streamBytes": [
+        0,
+        7
+      ],
+      "state": {
+        "defeatedList": [
+          5,
+          9
+        ],
+        "listTouchedByteCount": 2,
+        "probeMember": 7
+      }
+    }
+  ],
+  "scopeClassification": {
+    "localOnly": [
+      "csc0E-defeated-list-empty",
+      "csc0E-defeated-list-hit",
+      "csc0E-defeated-list-miss",
+      "csc1F-ally-defeated-append",
+      "csc20-update-defeated-offscreen-skip",
+      "csc20-update-defeated-onscreen-append",
+      "csc21-revive-empty",
+      "csc21-revive-hit-first",
+      "csc21-revive-hit-middle",
+      "csc21-revive-miss"
+    ],
+    "persistence": [
+      "csc08-join-absent",
+      "csc08-join-already-present",
+      "csc0F-hp-dead",
+      "csc0F-hp-live"
+    ]
+  },
+  "observation": {
+    "core": "Genesis Plus GX",
+    "id": "sf2-force-state-roster-death-runtime-v1",
+    "mapTest": 0,
+    "recordOrder": [
+      "csc08-join-absent",
+      "csc08-join-already-present",
+      "csc0E-defeated-list-empty",
+      "csc0E-defeated-list-hit",
+      "csc0E-defeated-list-miss",
+      "csc0F-hp-dead",
+      "csc0F-hp-live",
+      "csc1F-ally-defeated-append",
+      "csc20-update-defeated-offscreen-skip",
+      "csc20-update-defeated-onscreen-append",
+      "csc21-revive-empty",
+      "csc21-revive-hit-first",
+      "csc21-revive-hit-middle",
+      "csc21-revive-miss"
+    ],
+    "records": [
+      {
+        "after": {
+          "a6": 16730274,
+          "joined": 4
+        },
+        "before": {
+          "joined": 0
+        },
+        "handlerAddress": 291736,
+        "id": "csc08-join-absent",
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "save-return-poison",
+          "load-return",
+          "program-return"
+        ],
+        "persistence": {
+          "checkFlagZero": false,
+          "checksumAddress": 2105399,
+          "checksumByte": 44,
+          "mode": "roster-membership",
+          "poisoned": 0,
+          "restored": 4,
+          "saved": 4,
+          "saveFlags": 255,
+          "saveFlagsAddress": 2105397,
+          "selectedPhysicalAddress": 2104765,
+          "selectedSramByte": 4
+        },
+        "scope": "persistence"
+      },
+      {
+        "after": {
+          "a6": 16730274,
+          "joined": 4
+        },
+        "before": {
+          "joined": 4
+        },
+        "handlerAddress": 291736,
+        "id": "csc08-join-already-present",
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "persistence"
+      },
+      {
+        "after": {
+          "a6": 16730274,
+          "length": 0
+        },
+        "before": {
+          "length": 0
+        },
+        "handlerAddress": 291904,
+        "id": "csc0E-defeated-list-empty",
+        "listAfter": [],
+        "listBefore": [],
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "local-only"
+      },
+      {
+        "after": {
+          "a6": 16730272,
+          "length": 2
+        },
+        "before": {
+          "length": 2
+        },
+        "handlerAddress": 291904,
+        "id": "csc0E-defeated-list-hit",
+        "listAfter": [
+          7,
+          9
+        ],
+        "listBefore": [
+          7,
+          9
+        ],
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "local-only"
+      },
+      {
+        "after": {
+          "a6": 16730278,
+          "length": 2
+        },
+        "before": {
+          "length": 2
+        },
+        "handlerAddress": 291904,
+        "id": "csc0E-defeated-list-miss",
+        "listAfter": [
+          5,
+          9
+        ],
+        "listBefore": [
+          5,
+          9
+        ],
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "local-only"
+      },
+      {
+        "after": {
+          "a6": 16730272,
+          "hp": 0
+        },
+        "before": {
+          "hp": 0
+        },
+        "handlerAddress": 291940,
+        "id": "csc0F-hp-dead",
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "persistence"
+      },
+      {
+        "after": {
+          "a6": 16730278,
+          "hp": 10
+        },
+        "before": {
+          "hp": 10
+        },
+        "handlerAddress": 291940,
+        "id": "csc0F-hp-live",
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "persistence"
+      },
+      {
+        "after": {
+          "a6": 16730274,
+          "length": 3
+        },
+        "before": {
+          "length": 2
+        },
+        "handlerAddress": 289502,
+        "id": "csc1F-ally-defeated-append",
+        "listAfter": [
+          1,
+          2,
+          7
+        ],
+        "listBefore": [
+          1,
+          2
+        ],
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "local-only"
+      },
+      {
+        "after": {
+          "a6": 16730272,
+          "length": 1
+        },
+        "before": {
+          "length": 1
+        },
+        "handlerAddress": 289520,
+        "id": "csc20-update-defeated-offscreen-skip",
+        "listAfter": [
+          3
+        ],
+        "listBefore": [
+          3
+        ],
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "local-only"
+      },
+      {
+        "after": {
+          "a6": 16730272,
+          "length": 2
+        },
+        "before": {
+          "length": 1
+        },
+        "handlerAddress": 289520,
+        "id": "csc20-update-defeated-onscreen-append",
+        "listAfter": [
+          3,
+          128
+        ],
+        "listBefore": [
+          3
+        ],
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "local-only"
+      },
+      {
+        "after": {
+          "a6": 16730274,
+          "length": 0
+        },
+        "before": {
+          "length": 0
+        },
+        "handlerAddress": 289562,
+        "id": "csc21-revive-empty",
+        "listAfter": [],
+        "listBefore": [],
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "local-only"
+      },
+      {
+        "after": {
+          "a6": 16730274,
+          "length": 2
+        },
+        "before": {
+          "length": 3
+        },
+        "handlerAddress": 289562,
+        "id": "csc21-revive-hit-first",
+        "listAfter": [
+          9,
+          11
+        ],
+        "listBefore": [
+          7,
+          9,
+          11
+        ],
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "local-only"
+      },
+      {
+        "after": {
+          "a6": 16730274,
+          "length": 2
+        },
+        "before": {
+          "length": 3
+        },
+        "handlerAddress": 289562,
+        "id": "csc21-revive-hit-middle",
+        "listAfter": [
+          5,
+          9
+        ],
+        "listBefore": [
+          5,
+          7,
+          9
+        ],
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "local-only"
+      },
+      {
+        "after": {
+          "a6": 16730274,
+          "length": 2
+        },
+        "before": {
+          "length": 2
+        },
+        "handlerAddress": 289562,
+        "id": "csc21-revive-miss",
+        "listAfter": [
+          5,
+          9
+        ],
+        "listBefore": [
+          5,
+          9
+        ],
+        "milestones": [
+          "handler-entry",
+          "handler-return",
+          "program-return"
+        ],
+        "scope": "local-only"
+      }
+    ],
+    "system": "GEN"
+  }
+}
