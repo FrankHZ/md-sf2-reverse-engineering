@@ -126,6 +126,7 @@ MAP_DEBUG_HOST_OBSERVERS = (
     "tools/bizhawk/force_state_active_party_observer.lua",
     "tools/bizhawk/force_state_roster_death_observer.lua",
     "tools/bizhawk/map_animation_vdp_observer.lua",
+    "tools/bizhawk/map_block_copy_lifecycle_observer.lua",
     "tools/bizhawk/map_block_mutation_observer.lua",
     "tools/bizhawk/map_camera_control_observer.lua",
     "tools/bizhawk/map_entity_action_bridge_observer.lua",
@@ -339,6 +340,12 @@ COMMAND_LAUNCHES = {
     "map-block-mutation": _command(
         "sf2tool.h3.map_block_mutation", "verify_map_block_mutation", "map-debug-host",
         _launch("tools/bizhawk/map_block_mutation_observer.lua"),
+    ),
+    "map-block-copy-lifecycle": _command(
+        "sf2tool.h3.map_block_copy_lifecycle",
+        "verify_map_block_copy_lifecycle",
+        "map-debug-host",
+        _launch("tools/bizhawk/map_block_copy_lifecycle_observer.lua"),
     ),
     "entity-population-reload": _command(
         "sf2tool.h3.entity_population_reload", "verify_entity_population_reload", "map-debug-host",

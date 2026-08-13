@@ -1380,6 +1380,51 @@ cases, two handlers, one launch); observed result is
 `tools/bizhawk/map_block_mutation_observer.lua`; its parsed observation contract is
 `schemas/h3-map-block-mutation-observation.schema.json`.
 
+## Confirmed Map-block Copy Show/Hide Lifecycle
+
+Evidence date: 2026-08-13.
+
+**Confirmed (H3):** `sf2-map-block-copy-lifecycle-runtime-v1` is a ten-case, one-launch, session-only
+matrix for entity-action opcode `$40` (`ac_checkMapBlockCopy`). It callback-observes the original
+`UpdateEntityData` entry `$5D6C` in each of the four dispatcher cases before `$40` dispatch, and
+records the actual coordinate conversion call/return plus the selected original helper call/target/return.
+Fading skips the probe; a non-`$0800`/`$0C00` masked block flag calls neither helper; `$0800` calls
+`PerformMapBlockCopyScript`; and `$0C00` calls `csub_40F2`. The direct helper rows separately confirm
+the busy and terminator/miss no-change gates, the positive-source snapshot-then-copy path, the
+negative-source snapshot-then-clear path, and inactive/active saved-rectangle restore behavior.
+The selected map 03 source rows preserve the source labels and data: trigger `(24,26)`, source `(51,20)`,
+size `(9,7)`, destination `(22,51)` for copy; trigger `(4,8)`, source `(255,255)`, size `(7,8)`,
+destination `(2,32)` for clear. The busy word receives the one-based matched roof-row scan ordinal
+(not a Boolean): the selected sixth positive row leaves `6`, while the selected first negative row
+leaves `1`. The four saved metadata words hold destination x/y and decremented width/height; the
+sentinel follows the saved rectangle rather than occupying the buffer base. The direct restore rows
+read all 63 saved words for the selected `9×7` rectangle. These bounded facts, including the
+update-toggle byte, do not claim a full RAM layout or rendered result.
+
+The complete source-use inventory is five `ac_checkMapBlockCopy` uses: three in
+`data/scripting/entity/eas_main.asm` (lines 42, 54, 66) and two in
+`data/scripting/map/debugscripts.asm` (lines 41, 44). Provenance: pinned
+`ShiningForceCentral/SF2DISASM` `master` commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; `sf2cutscenemacros.asm` lines 852-854;
+`entityscriptengine_2.asm` dispatcher table slot `$40` and `esc40_checkMapBlockCopy`;
+`exploration.asm` `PerformMapBlockCopyScript`/`csub_40F2`; H1 `$4F02`, `$5D12`, `$5D6C`,
+`$3FEA`, `$40F2`, and `$61FC`; US ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
+Reproduce with `uv run sf2 h3 map-block-copy-lifecycle --timeout-seconds 180`.
+
+The verifier independently joins those source sections to H1 instruction bytes, widths, and next PCs,
+then to the canonical ROM before it creates the session-only VInt probe. The source-named entry and
+the canonical ROM's effective BSR entry may differ within the first H1 instruction; that alias is
+guarded rather than normalized away. The observer snapshots, restores, and reads back only its selected
+FF0000 layout words; saved-rectangle metadata/buffer/sentinel; busy/toggle; entity-0 fields; and generated
+probe/action inputs. Each case emits a restoration milestone before the observer clears callbacks and
+writes its result; a callback failure restores that same scope, removes output, clears registrations, and
+reports its cleanup facts in the structured nonzero status. No all-RAM restoration claim is made.
+
+**Unknown:** `map-block-copy-lifecycle/collision-pathfinding-navigation-effects`,
+`map-block-copy-lifecycle/rendered-vdp-fade-audio-timing`, and
+`map-block-copy-lifecycle/persistence-reload-normal-story-reachability` remain one grouped H3 queue.
+
 ## Confirmed Map-Script Entity Population/Reload Command Family
 
 Evidence date: 2026-07-30.

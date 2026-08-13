@@ -97,6 +97,50 @@ def test_shared_callback_audit_schema_closes_physical_pc_role_map() -> None:
         validate_json(wrong_pc_key, CALLBACK_AUDIT_SCHEMA, owner="non-decimal callback PC")
 
 
+def test_map_block_copy_failure_schema_preserves_case_role_and_pending_state() -> None:
+    schema = repo_path("schemas/h3/map-block-copy-lifecycle-callback-failure.schema.json")
+    payload = {
+        "owner": "map-block-copy-lifecycle",
+        "caseId": "dispatcher-show",
+        "phase": "helper-return",
+        "role": "helper-return",
+        "actualPc": 23862,
+        "actualEventAddress": 23862,
+        "actualCallSiteAddress": None,
+        "actualTargetAddress": None,
+        "actualReturnAddress": 23862,
+        "expectedEventAddress": 23862,
+        "expectedCallSiteAddress": 23858,
+        "expectedTargetAddress": 16362,
+        "expectedReturnAddress": 23862,
+        "callbacksRemaining": 0,
+        "error": "forced callback failure",
+        "restoration": {
+            "attempted": True,
+            "verified": True,
+            "cellCount": 3,
+            "mismatch": None,
+        },
+        "cleanup": {"outputRemoved": True, "callbacksCleared": True},
+        "pendingCallback": {
+            "active": True,
+            "caseId": "dispatcher-show",
+            "role": "helper-return",
+            "phase": "helper-return",
+            "helperCallObserved": True,
+            "helperEntryObserved": True,
+            "helperReturnObserved": False,
+            "dispatcherTailObserved": False,
+        },
+    }
+    validate_json(payload, schema, owner="map-block-copy callback failure")
+
+    residual = deepcopy(payload)
+    residual["callbacksRemaining"] = 1
+    with pytest.raises(ValueError, match="callbacksRemaining"):
+        validate_json(residual, schema, owner="map-block-copy callback cleanup")
+
+
 def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> None:
     schema_root = repo_path("schemas/h3")
     paths = [
@@ -112,9 +156,10 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         schema_root / "controller-input-callback-failure.schema.json",
         schema_root / "story-state-callback-failure.schema.json",
         schema_root / "force-state-roster-death-callback-failure.schema.json",
+        schema_root / "map-block-copy-lifecycle-callback-failure.schema.json",
     ]
     audit = schema_composition_audit(paths)
-    assert audit["schemaCount"] == 12
+    assert audit["schemaCount"] == 13
     assert audit["unresolvedReferences"] == []
     assert audit["duplicateBodyGroups"] == []
     assert audit["largeConstCount"] == 0
@@ -209,6 +254,7 @@ def test_force_state_roster_death_failure_closes_dispatch_and_restoration() -> N
         "controllerInputFailure",
         "blacksmithMithrilFailure",
         "forceStateRosterDeathFailure",
+        "mapBlockCopyLifecycleFailure",
     }
     serialized = json.dumps(component, sort_keys=True)
     for golden_field in ("cases", "caseOrder", "records", "recordOrder"):
