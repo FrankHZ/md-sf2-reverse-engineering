@@ -484,6 +484,11 @@ document whose anchors may be updated.
   shared-owner aliases, complete decoded block and 64x64 layout shapes, aggregate decoder-family
   counters, and source/ROM parity, while retaining original words and hashes as private data and
   leaving working-layout mutation, collision, transitions, and presentation to their existing owners.
+- [`map-palette-data.md`](./design/contracts/map-palette-data.md): the implementation-neutral private-
+  import contract for sixteen ordered source/effective map-palette identities, 79 ordered private map
+  references, exact public usage/parity metadata, and the source-shaped first-word-clear rule, while
+  retaining original words, payloads, hashes, full assignments, rendering, timing, and replacement
+  policy as private, separate-owner, or Unknown boundaries.
 - [`battle-ai-decision.md`](./design/contracts/battle-ai-decision.md): the implementation-neutral
   contract for AI spell/item filters, priority/healing/support scores, final action/target choice,
   Move and Move Order, temporary terrain, commandsets, activation/swarm/special/standby control, and
