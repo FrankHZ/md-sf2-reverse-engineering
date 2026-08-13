@@ -5,8 +5,9 @@
   dispatcher, page selectors, action call/branch order, suspend/reset flow, ending-effect ownership,
   the complete nine-resource Stack-compressed tile corpus, and the complete witch choice-palette/
   bubble-animation data path, plus all twelve uncompressed palette/layout presentation resources;
-  one BizHawk launch additionally confirms the bounded in-process witch Save/Load/Copy/Delete and
-  flag-88 Load target matrix, plus a four-case New action slot/difficulty/save/MainLoop matrix below
+  one BizHawk launch confirms the bounded direct save services and flag-88 Load targets, a separate
+  one-launch matrix confirms Witch Load/Copy/Delete action admission, and a four-case New action
+  slot/difficulty/save/MainLoop matrix appears below
 - Status: **Inferred** for perceived animation pacing and simultaneous skip/cheat input behavior
 - Status: **Unknown** for rendered frame parity, exact audio/VDP timing, and five oversized fixed
   transfer tails
@@ -160,6 +161,45 @@ Provenance: pinned `ShiningForceCentral/SF2DISASM` `master`
 sections and rejects a changed opcode, operand, branch polarity, call order, or jump-interface alias
 before comparison with the golden fixture.
 
+### Load/Copy/Delete save-menu action lifecycle (Confirmed, one in-process H3 launch)
+
+**Confirmed:** `sf2-witch-save-menu-actions-runtime-v1` runs the ordered ten-case matrix
+`load-menu-cancel`, `load-slot1-savepoint-route`, `load-slot2-battle-route`,
+`copy-prompt-cancel`, `copy-slot1-to-slot2`, `copy-slot2-to-slot1`, `delete-menu-cancel`,
+`delete-slot1-prompt-cancel`, `delete-slot1-confirm`, and `delete-slot2-confirm` in one BizHawk
+2.11.1 / Genesis Plus GX session. After original `CheckSram`, a work-RAM program enters original
+`witchMenuAction_Load` (`0x74E2`), `witchMenuAction_Copy` (`0x754C`), and
+`witchMenuAction_Del` (`0x7574`). These are observed callback PCs, not fixture-only addresses.
+
+**Confirmed:** source/H1/ROM parsing derives page 2 for Load/Delete, `SAVE_FLAGS & 3`, the one-bit
+availability scale, menu-result-minus-one `CURRENT_SAVE_SLOT` write, Copy's source selector
+minus-one, and the negative-menu/nonzero-prompt branch polarity. The controlled seam supplies only
+the bounded return values. All four cancel cases callback-prove that no original service entry is
+called. The six confirm cases callback-observe the matching direct call, original service entry, and
+original return: `LoadGame`, `CopySave`, or `ClearSaveSlotFlag`. Load then stops at the source-derived
+`GetSavepointForMap` handoff (flag 88 clear) or `j_BattleLoop`/`BattleLoop` handoff (flag 88 set),
+without claiming any downstream loop result.
+
+**Confirmed harness boundary:** a deterministic dispatcher owns each physical callback PC, including
+the shared controlled seam. Callback exceptions write one terminal status payload and produce a
+nonzero emulator exit with case, phase, role, expected/actual callback state, and pending-role
+diagnostics. A finite bootstrap-to-first-case watchdog and a finite per-active-case watchdog use
+the source/config-validated harness budgets and fail through that same restore/unlink/clear path,
+rather than falling through to the external timeout. The final run leaves no Lua Console error or residual callback, reports
+`callbacksCleared: 0`, and restores only the scoped current-slot/flag byte, save flags, two logical
+slot payloads/checksum bytes, generated RAM, stack/frame, and session cart patches. It does not
+re-promote payload/checksum/service outcomes from `sf2-witch-save-actions-runtime-v1`.
+
+Provenance: pinned `ShiningForceCentral/SF2DISASM` `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`; sources
+`code/specialscreens/witch/witchstart.asm`, `witchmainmenu.asm`,
+`code/common/tech/sram/sramfunctions.asm`, and the jump interfaces named in the fixture; H1 listing
+`build/sf2build-h1.lst`; command
+`uv run sf2 h3 witch-save-menu-actions --timeout-seconds 180`; fixture
+`tests/fixtures/h3/witch-save-menu-actions-v1.json`; schemas
+`schemas/h3-witch-save-menu-actions-fixture.schema.json` and
+`schemas/h3-witch-save-menu-actions-observation.schema.json`.
+
 ### New-game lifecycle (Confirmed, one in-process H3 launch)
 
 **Confirmed:** `sf2-witch-new-game-lifecycle-runtime-v1` runs four cases from one core-state
@@ -211,8 +251,8 @@ fixture `tests/fixtures/h3/witch-new-game-lifecycle-v1.json`; schemas
 - `witch-save-menu/player-driven-name-entry-and-editing`: **Unknown** player-driven name-entry/editing
   behavior; the New lifecycle matrix returns immediately from the NameAlly alias.
 - `witch-save-menu/player-driven-menu-presentation-and-input-cadence`: **Unknown** player-driven menu
-  presentation, pixels, audio, controller cadence, and debounce; the matrix injects menu results and
-  only pulses C to release text waits.
+  presentation, pixels, audio, controller cadence, and debounce; the action and New matrices inject
+  menu/prompt results and the New matrix only pulses C to release text waits.
 - `witch-save-menu-suspend/presentation-and-input-timing`: **Unknown** prompt/file rendering,
   pixels, audio, input cadence, blink/bubble timing, and suspend presentation/reset timing.
 
@@ -263,6 +303,7 @@ uv run sf2 h2 special-screen-graphics
 uv run sf2 h2 special-screen-presentation
 uv run sf2 h2 witch-menu-graphics
 uv run sf2 h3 witch-save-actions
+uv run sf2 h3 witch-save-menu-actions --timeout-seconds 180
 uv run sf2 research-index test
 ```
 

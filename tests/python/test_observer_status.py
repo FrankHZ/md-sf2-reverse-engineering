@@ -152,6 +152,7 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         schema_root / "map-script-entity-presentation-fx-callback-failure.schema.json",
         schema_root / "random-services-callback-failure.schema.json",
         schema_root / "sram-lifecycle-callback-failure.schema.json",
+        schema_root / "witch-save-menu-actions-callback-failure.schema.json",
         schema_root / "blacksmith-mithril-callback-failure.schema.json",
         schema_root / "controller-input-callback-failure.schema.json",
         schema_root / "story-state-callback-failure.schema.json",
@@ -159,7 +160,7 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         schema_root / "map-block-copy-lifecycle-callback-failure.schema.json",
     ]
     audit = schema_composition_audit(paths)
-    assert audit["schemaCount"] == 13
+    assert audit["schemaCount"] == 14
     assert audit["unresolvedReferences"] == []
     assert audit["duplicateBodyGroups"] == []
     assert audit["largeConstCount"] == 0
@@ -233,6 +234,7 @@ def test_force_state_roster_death_failure_closes_dispatch_and_restoration() -> N
         "entityPresentationPendingCallback",
         "randomServicesPendingCallback",
         "sramLifecyclePendingCallback",
+        "witchSaveMenuActionsPendingCallback",
         "storyStateRole",
         "storyStatePendingCallback",
         "controllerInputPendingCallback",
@@ -250,6 +252,7 @@ def test_force_state_roster_death_failure_closes_dispatch_and_restoration() -> N
         "entityPresentationFailure",
         "randomServicesFailure",
         "sramLifecycleFailure",
+        "witchSaveMenuActionsFailure",
         "storyStateFailure",
         "controllerInputFailure",
         "blacksmithMithrilFailure",

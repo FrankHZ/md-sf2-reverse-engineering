@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h3-witch-save-menu-actions-observation.schema.json",
+  "title": "H3 Witch Load Copy Delete action observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "core", "id", "caseOrder", "observedActionEntries", "records", "restoration", "callbacksCleared"],
+  "properties": {
+    "system": {"const": "GEN"},
+    "core": {"const": "Genesis Plus GX"},
+    "id": {"const": "sf2-witch-save-menu-actions-runtime-v1"},
+    "caseOrder": {"$ref": "#/definitions/caseIdArray"},
+    "observedActionEntries": {"$ref": "#/definitions/observedActionEntries"},
+    "records": {"type": "array", "items": {"$ref": "#/definitions/record"}},
+    "restoration": {"$ref": "#/definitions/restoration"},
+    "callbacksCleared": {"const": 0}
+  },
+  "definitions": {
+    "pc": {"type": "integer", "minimum": 0, "maximum": 16777215},
+    "caseId": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+    "caseIdArray": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/definitions/caseId"}},
+    "action": {"enum": ["load", "copy", "delete"]},
+    "observedActionEntries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["load", "copy", "delete"],
+      "properties": {"load": {"$ref": "#/definitions/pc"}, "copy": {"$ref": "#/definitions/pc"}, "delete": {"$ref": "#/definitions/pc"}}
+    },
+    "nullableInteger": {"type": ["integer", "null"]},
+    "callback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "pc"],
+      "properties": {
+        "role": {"enum": ["case-entry", "action-entry", "menu-call", "controlled-seam", "menu-return", "prompt-call", "prompt-return", "service-call", "service-entry", "service-return", "load-flag-control", "load-handoff", "menu-loop-terminal", "terminal"]},
+        "pc": {"$ref": "#/definitions/pc"}
+      }
+    },
+    "menu": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["callSiteAddress", "returnAddress", "page", "initialSelector", "availability", "controlledReturn"],
+      "properties": {
+        "callSiteAddress": {"$ref": "#/definitions/pc"},
+        "returnAddress": {"$ref": "#/definitions/pc"},
+        "page": {"const": 2},
+        "initialSelector": {"enum": [1, 2]},
+        "availability": {"enum": [2, 4]},
+        "controlledReturn": {"enum": [-1, 1, 2]}
+      }
+    },
+    "prompt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["callSiteAddress", "returnAddress", "controlledReturn"],
+      "properties": {
+        "callSiteAddress": {"$ref": "#/definitions/pc"},
+        "returnAddress": {"$ref": "#/definitions/pc"},
+        "controlledReturn": {"enum": [0, 1]}
+      }
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "callSiteAddress", "returnAddress", "entryAddress", "selector"],
+      "properties": {
+        "name": {"enum": ["LoadGame", "CopySave", "ClearSaveSlotFlag"]},
+        "callSiteAddress": {"$ref": "#/definitions/pc"},
+        "returnAddress": {"$ref": "#/definitions/pc"},
+        "entryAddress": {"$ref": "#/definitions/pc"},
+        "selector": {"enum": [0, 1]}
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "callSiteAddress", "returnAddress", "instructionTargetAddress", "effectiveTargetAddress"],
+      "properties": {
+        "kind": {"enum": ["savepoint", "battle"]},
+        "callSiteAddress": {"$ref": "#/definitions/pc"},
+        "returnAddress": {"$ref": "#/definitions/pc"},
+        "instructionTargetAddress": {"$ref": "#/definitions/pc"},
+        "effectiveTargetAddress": {"$ref": "#/definitions/pc"}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "action", "actionEntryAddress", "menu", "prompt", "currentSaveSlot", "service", "handoff", "callbackChronology"],
+      "properties": {
+        "id": {"$ref": "#/definitions/caseId"},
+        "action": {"$ref": "#/definitions/action"},
+        "actionEntryAddress": {"$ref": "#/definitions/pc"},
+        "menu": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/menu"}]},
+        "prompt": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/prompt"}]},
+        "currentSaveSlot": {"$ref": "#/definitions/nullableInteger"},
+        "service": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/service"}]},
+        "handoff": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/handoff"}]},
+        "callbackChronology": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/callback"}}
+      }
+    },
+    "restoration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["currentSaveSlotRestored", "gameFlag88Restored", "saveFlagsRestored", "slotDataRestored", "generatedBytesRestored", "stackRestored", "frameRestored", "cartPatchesRestored"],
+      "properties": {
+        "currentSaveSlotRestored": {"const": true},
+        "gameFlag88Restored": {"const": true},
+        "saveFlagsRestored": {"const": true},
+        "slotDataRestored": {"const": true},
+        "generatedBytesRestored": {"const": true},
+        "stackRestored": {"const": true},
+        "frameRestored": {"const": true},
+        "cartPatchesRestored": {"const": true}
+      }
+    }
+  }
+}

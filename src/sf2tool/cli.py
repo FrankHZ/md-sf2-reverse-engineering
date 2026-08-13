@@ -152,6 +152,7 @@ from sf2tool.h3.stat_clamps import verify_stat_clamp_boundaries
 from sf2tool.h3.story_state import verify_story_state
 from sf2tool.h3.witch_new_game_lifecycle import verify_witch_new_game_lifecycle
 from sf2tool.h3.witch_save_actions import verify_witch_save_actions
+from sf2tool.h3.witch_save_menu_actions import verify_witch_save_menu_actions
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_json, print_record
@@ -727,6 +728,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_witch_save_actions)
     h3_witch_save_actions.add_argument("--timeout-seconds", type=int, default=120)
+    h3_witch_save_menu_actions = h3_commands.add_parser(
+        "witch-save-menu-actions",
+        help="verify one controlled-seam Witch Load/Copy/Delete action-admission lifecycle",
+    )
+    _add_local_paths(h3_witch_save_menu_actions)
+    h3_witch_save_menu_actions.add_argument("--timeout-seconds", type=int, default=180)
     h3_sram_lifecycle = h3_commands.add_parser(
         "sram-lifecycle",
         help="verify one-launch direct SRAM signature, slot, checksum, and service lifecycle facts",
@@ -1799,6 +1806,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-block-mutation":
         print_record(
             verify_map_block_mutation(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "witch-save-menu-actions":
+        print_record(
+            verify_witch_save_menu_actions(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

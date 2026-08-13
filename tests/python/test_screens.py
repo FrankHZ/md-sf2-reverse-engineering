@@ -357,7 +357,7 @@ def test_witch_provenance_requires_exact_pinned_source_line_and_instruction() ->
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
-def test_screens_source_path_membership_keeps_twenty_one_records_over_nineteen_paths() -> None:
+def test_screens_source_path_membership_keeps_twenty_two_records_over_nineteen_paths() -> None:
     fixture = load_json(FIXTURE_PATH)
     output = screens.build_special_screen_inventory(UPSTREAM)
     expected = fixture["expected"]
@@ -369,7 +369,7 @@ def test_screens_source_path_membership_keeps_twenty_one_records_over_nineteen_p
         "representativeSymbols",
     ):
         assert output[field] == expected[field]
-    assert output["summary"]["indexedRecordCount"] == len(output["indexedRecordIds"]) == 21
+    assert output["summary"]["indexedRecordCount"] == len(output["indexedRecordIds"]) == 22
     assert output["summary"]["indexedFileCount"] == len(output["indexedSourcePaths"]) == 19
     assert output["summary"]["fileCount"] == len(output["files"]) == 19
     relation = {row["sourcePath"]: row["recordIds"] for row in output["indexedRecordsBySourcePath"]}
@@ -379,6 +379,7 @@ def test_screens_source_path_membership_keeps_twenty_one_records_over_nineteen_p
     ]
     assert relation["code/specialscreens/witch/witchstart.asm"] == [
         "screens.witch.new-game-lifecycle",
+        "screens.witch.save-menu-actions",
         "screens.witch.start",
     ]
 
@@ -950,7 +951,7 @@ def test_screens_source_path_membership_accepts_another_owned_record_before_fixt
 
     output = screens.build_special_screen_inventory(UPSTREAM)
     assert record_id in output["indexedRecordIds"]
-    assert output["summary"]["indexedRecordCount"] == 22
+    assert output["summary"]["indexedRecordCount"] == 23
     relation = next(
         row
         for row in output["indexedRecordsBySourcePath"]
@@ -986,7 +987,7 @@ def test_screens_source_membership_ignores_metadata_but_excludes_outside_root(
     output = screens.build_special_screen_inventory(UPSTREAM)
     assert metadata_neutral_id in output["indexedRecordIds"]
     assert "independent.owner.outside-special-screens" not in output["indexedRecordIds"]
-    assert output["summary"]["indexedRecordCount"] == 22
+    assert output["summary"]["indexedRecordCount"] == 23
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
@@ -1011,9 +1012,10 @@ def test_screens_rejects_under_root_record_missing_from_discovered_inventory(
 def test_screens_build_does_not_read_golden_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(screens, "FIXTURE", Path("does-not-exist.json"))
     output = screens.build_special_screen_inventory(UPSTREAM)
-    assert output["summary"]["indexedRecordCount"] == 21
+    assert output["summary"]["indexedRecordCount"] == 22
     assert output["indexedRecordsBySourcePath"][15]["recordIds"] == [
         "screens.witch.new-game-lifecycle",
+        "screens.witch.save-menu-actions",
         "screens.witch.start",
     ]
 

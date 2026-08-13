@@ -988,6 +988,64 @@
           }
         }
       }
+    },
+    "witchSaveMenuActionsPendingCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "caseIndex", "caseId", "expectedEventPc", "expectedCallPc", "expectedTargetPc", "expectedReturnPc", "pendingKind", "serviceEntrySeen", "serviceReturnSeen", "rolesAtPc"],
+      "properties": {
+        "active": {"type": "boolean"},
+        "caseIndex": {"type": "integer", "minimum": 0},
+        "caseId": {"$ref": "#/definitions/nullableNonEmptyString"},
+        "expectedEventPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedCallPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "pendingKind": {"enum": ["none", "menu", "prompt", "service", "handoff", "terminal"]},
+        "serviceEntrySeen": {"type": "boolean"},
+        "serviceReturnSeen": {"type": "boolean"},
+        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/definitions/nonEmptyString"}}
+      }
+    },
+    "witchSaveMenuActionsFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "caseId", "phase", "role", "actualPc", "expectedEventPc", "expectedCallPc", "expectedTargetPc", "expectedReturnPc", "pendingCallback", "callbacksRemaining", "restoration", "cleanup", "error"],
+      "properties": {
+        "owner": {"const": "witch-save-menu-actions"},
+        "caseId": {"$ref": "#/definitions/nullableNonEmptyString"},
+        "phase": {"$ref": "#/definitions/nonEmptyString"},
+        "role": {"$ref": "#/definitions/nonEmptyString"},
+        "actualPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedEventPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedCallPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "pendingCallback": {"$ref": "#/definitions/witchSaveMenuActionsPendingCallback"},
+        "callbacksRemaining": {"const": 0},
+        "restoration": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["currentSaveSlotRestored", "gameFlag88Restored", "saveFlagsRestored", "slotDataRestored", "generatedBytesRestored", "stackRestored", "frameRestored", "cartPatchesRestored"],
+          "properties": {
+            "currentSaveSlotRestored": {"type": "boolean"},
+            "gameFlag88Restored": {"type": "boolean"},
+            "saveFlagsRestored": {"type": "boolean"},
+            "slotDataRestored": {"type": "boolean"},
+            "generatedBytesRestored": {"type": "boolean"},
+            "stackRestored": {"type": "boolean"},
+            "frameRestored": {"type": "boolean"},
+            "cartPatchesRestored": {"type": "boolean"}
+          }
+        },
+        "cleanup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["outputRemoved", "callbacksCleared"],
+          "properties": {"outputRemoved": {"const": true}, "callbacksCleared": {"const": true}}
+        },
+        "error": {"$ref": "#/definitions/nonEmptyString"}
+      }
     }
   }
 }
