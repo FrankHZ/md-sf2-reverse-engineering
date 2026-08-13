@@ -140,6 +140,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/map-sprite-graphics-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/map-tileset-data.md",
       "status": "pending"
     },
