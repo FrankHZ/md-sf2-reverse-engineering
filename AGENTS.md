@@ -110,6 +110,39 @@ full-parity gate, never the default worker or root command. A design-synthesis b
 advance of `main` never triggers it. This workflow is an operational division of responsibility, not a
 security boundary: worker instructions and root review are both required.
 
+### Continuation and Escalation Policy
+
+An ordinary research or design failure is not a user-approval boundary. The active lane continues
+autonomously when a focused test, H2/H3 run, schema or golden comparison, source/H1/ROM guard,
+counter, rebase, generated-artifact scan, or other acceptance gate fails. It investigates the
+evidence, makes the smallest source-backed correction inside the accepted slice, reruns the invalidated
+gates, and records the correction in the owning artifacts. A failed emulator launch may be repeated
+after a bounded instrumentation or contract repair without asking the user, provided the run remains
+non-destructive, uses the already accepted runtime question, preserves exact launch/failure accounting,
+and does not weaken a golden merely to pass.
+
+Likewise, a mechanical owned-path correction is handled within the lane rather than escalated when it
+is required to keep the accepted slice internally consistent. Examples include a fixture registry
+entry, aggregate counter, translation hash re-anchor, research-index binding, callback-role closure, or
+focused test inventory update. The root documents the added path in the slice contract and handoff,
+checks that no other active lane owns it, and serializes the work if another lane does. It asks the user
+only when the correction would materially change project direction, phase, licensing/distribution,
+private-input treatment, or another decision reserved to the user.
+
+Use **stuck** or **blocked on the user** only for an operational inability to continue: required
+filesystem or service permission is unavailable; the scheduler cannot create or resume the required
+agent; a required tool or dependency is unavailable with no safe in-scope fallback; persistent
+infrastructure failure prevents the commands from running; or the responsible agent is genuinely
+unresponsive and cannot be resumed. Report that condition promptly with exact evidence and the
+smallest requested intervention. Evidence conflicts, unexpected runtime behavior, bounded scope
+corrections, and ordinary failed gates are not stuck conditions.
+
+Progress checkpoints are commentary, not completion. While safe in-scope work remains, neither a
+worker checkpoint nor a root review checkpoint ends the lane's turn or waits for user authorization.
+Continue through worker handoff, root review, required gates, exact-path staging, commit, push, and
+Draft PR handoff. Send corrections and review findings back to the same worker; do not start a second
+writer or have the root silently take over implementation.
+
 Within the accepted Phase 2 direction, continue autonomously through the root/worker workflow: the
 root scopes, accepts, scans, and commits on the research topic branch; the worker performs the assigned reverse engineering or
 implementation, documentation, and slice-local narrow checks. Do not pause for approval or produce a
