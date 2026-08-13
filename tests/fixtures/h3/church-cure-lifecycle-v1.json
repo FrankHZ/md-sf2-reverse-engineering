@@ -1,0 +1,20 @@
+{
+  "id": "sf2-church-cure-lifecycle-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "system": "sf2-church-cure-lifecycle-runtime-v1",
+  "caseOrder": ["no-curable-status-no-prompt", "poison-decline", "poison-one-below-cost", "poison-exact-cost-success", "stun-decline", "stun-one-below-cost", "stun-exact-cost-success", "curse-dark-sword-decline", "curse-dark-sword-one-below-cost", "curse-dark-sword-exact-cost-success", "poison-stun-curse-ordered-success"],
+  "cases": [
+    {"caseId": "no-curable-status-no-prompt", "gold": 0, "promptResults": [], "member": {"memberId": 0, "statusEffects": 0, "items": [127, 127, 127, 127]}},
+    {"caseId": "poison-decline", "gold": 10, "promptResults": [-1], "member": {"memberId": 1, "statusEffects": 2, "items": [127, 127, 127, 127]}},
+    {"caseId": "poison-one-below-cost", "gold": 9, "promptResults": [0], "member": {"memberId": 2, "statusEffects": 2, "items": [127, 127, 127, 127]}},
+    {"caseId": "poison-exact-cost-success", "gold": 10, "promptResults": [0], "member": {"memberId": 3, "statusEffects": 2, "items": [127, 127, 127, 127]}},
+    {"caseId": "stun-decline", "gold": 20, "promptResults": [-1], "member": {"memberId": 4, "statusEffects": 1, "items": [127, 127, 127, 127]}},
+    {"caseId": "stun-one-below-cost", "gold": 19, "promptResults": [0], "member": {"memberId": 5, "statusEffects": 1, "items": [127, 127, 127, 127]}},
+    {"caseId": "stun-exact-cost-success", "gold": 20, "promptResults": [0], "member": {"memberId": 6, "statusEffects": 1, "items": [127, 127, 127, 127]}},
+    {"caseId": "curse-dark-sword-decline", "gold": 4250, "promptResults": [-1], "member": {"memberId": 7, "statusEffects": 4, "items": [198, 127, 127, 127]}},
+    {"caseId": "curse-dark-sword-one-below-cost", "gold": 4249, "promptResults": [0], "member": {"memberId": 8, "statusEffects": 4, "items": [198, 127, 127, 127]}},
+    {"caseId": "curse-dark-sword-exact-cost-success", "gold": 4250, "promptResults": [0], "member": {"memberId": 9, "statusEffects": 4, "items": [198, 127, 127, 127]}},
+    {"caseId": "poison-stun-curse-ordered-success", "gold": 4280, "promptResults": [0, 0, 0], "member": {"memberId": 10, "statusEffects": 7, "items": [198, 127, 127, 127]}}
+  ],
+  "sourceContext": {"churchMenuEntryAddress": 133634, "cureRouteAddress": 133976}
+}

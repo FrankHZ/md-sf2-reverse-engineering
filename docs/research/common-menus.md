@@ -654,6 +654,46 @@ helper RTS return, and guards every session patch against its original bytes bef
 disposable ROM; Python verifies deletion of that session artifact rather than having Lua claim it.
 Presentation, persistence, economic balance meaning, and all-RAM restoration remain **Unknown**.
 
+## Church Cure Transaction Lifecycle
+
+**Confirmed** — the separate `sf2-church-cure-lifecycle-runtime-v1` H3 rail enters original
+`ChurchMenu` at `0x20A02` and observes original `@CheckCureAction` at `0x20B58` for every one of
+its eleven ordered records. Its pinned evidence is SF2DISASM `master`
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, H1, and the canonical USA ROM SHA-256
+`9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
+
+The source execution order is poison, then `Church_CureStun`, then curse. Poison uses
+`STATUSEFFECT_POISON` (`0x0002`) and `CHURCHMENU_CURE_POISON_COST` (`10`); stun uses
+`STATUSEFFECT_STUN` (`0x0001`) and `CHURCHMENU_CURE_STUN_COST` (`20`); curse uses
+`STATUSEFFECT_CURSE` (`0x0004`). Each member loop is source-ordered by `dbf`, and the curse
+item loop is an independent `dbf d6` scan. The source comparisons are `cmp.l d0,d1; bcc`, so
+equal gold is admitted. Controlled zero prompt result reaches the cost test; the nonzero fixture
+result takes the no-mutation branch. These are source-bounded outcomes, not a claim about UI input
+meaning.
+
+The curse cases use the source/H1/ROM-joined Dark Sword definition: item `70` (`ITEM_DARK_SWORD`),
+price `17000`, cursed type bit, and `lsr.w #2` cost derivation of `4250`. The final case starts with
+gold `4280` and observes the three successful commits in source order—poison `10`, stun `20`, then
+curse `4250`—ending at zero.
+
+Success callbacks observe original helper seams. Poison and stun each record
+`j_DecreaseGold → DecreaseGold → j_SetStatusEffects → SetStatusEffects`; curse records
+`j_DecreaseGold → DecreaseGold → j_UnequipAllItemsIfNotCursed → UnequipAllItemsIfNotCursed →`
+the `UpdateCombatantStats` tail/RTS seam. A helper callback while no transaction is pending is a
+terminal failure, including negative, decline, and insufficient-gold records. The private session
+copy guards source/H1/canonical original bytes, readbacks its applied spans, and is deleted by
+Python. The observer snapshots/restores current gold, the touched complete combatant record,
+`TARGETS_LIST_LENGTH` and touched byte, dialogue scratch, current portrait, generated harness spans,
+and bootstrap A6/A7 stack state. Its terminal 68K trampoline restores A6/A7 before callback readback;
+it does not use same-callback register-setting assumptions. One dispatcher owns every shared PC;
+callback/setup/watchdog faults remove output, clear callbacks, record case/family/call/target/return
+diagnostics, and produce a nonzero status result.
+
+Normal story reachability and user-input interpretation, text/window/portrait/music/audio/VInt/VDP/DMA
+and frame timing, economic meaning, save/load/SRAM/map reload/cross-process persistence, Church
+Raise/Promotion/Save, other statuses, inventory-capacity/equipment-selection UI, rendered outcomes,
+and remake choices remain **Unknown**.
+
 ## Reproduction
 
 ```powershell
@@ -666,6 +706,7 @@ uv run sf2 h2 item-auxiliary
 uv run sf2 h3 blacksmith-mithril --timeout-seconds 180
 uv run sf2 h3 service-menu-lifecycle --timeout-seconds 180
 uv run sf2 h3 church-raise-lifecycle --timeout-seconds 180
+uv run sf2 h3 church-cure-lifecycle --timeout-seconds 180
 uv run sf2 research-index test
 ```
 

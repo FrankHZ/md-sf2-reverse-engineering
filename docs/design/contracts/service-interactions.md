@@ -2,18 +2,19 @@
 
 - **Confirmed original behavior:** static action ordering, cancellation and direct resource-helper
   boundaries for the four service surfaces described below, plus the bounded Church Raise H3
-  admission/commit seam.
+  admission/commit seam and the bounded Church Cure transaction seam.
 - **Unknown original behavior:** caller admission/return effects, persistence across map/save reload,
   input/audio/window/portrait timing, and final presentation composition.
-- Remake status: implementation-neutral evidence-bound contract; Church Raise has one bounded
-  runtime seam while broader service lifecycles remain incomplete.
+- Remake status: implementation-neutral evidence-bound contract; Church Raise and Cure have bounded
+  runtime seams while broader service lifecycles remain incomplete.
 - Evidence date: 2026-08-13
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - Traceability: `sf2-common-menus-static-v1` in
   `tests/fixtures/h2/common-menus-static-v1.json`; `sf2-church-raise-lifecycle-runtime-v1` in
-  `tests/fixtures/h3/church-raise-lifecycle-v1.json`; `src/sf2tool/h2/menus.py`,
-  `src/sf2tool/h3/church_raise_lifecycle.py`; and
+  `tests/fixtures/h3/church-raise-lifecycle-v1.json`; `sf2-church-cure-lifecycle-runtime-v1` in
+  `tests/fixtures/h3/church-cure-lifecycle-v1.json`; `src/sf2tool/h2/menus.py`,
+  `src/sf2tool/h3/church_raise_lifecycle.py`, `src/sf2tool/h3/church_cure_lifecycle.py`; and
   `docs/research/common-menus.md`.
 
 ## Confirmed Interaction Contract
@@ -57,7 +58,9 @@ mutation-helper order does not assert that no other calls intervene; H2 alone di
 current-HP value. The bounded **Confirmed** `sf2-church-raise-lifecycle-runtime-v1` H3 seam instead
 observes each accepted affordable Raise to clamp current HP to `min(hpMax, 200)` and complete the original
 `UpdateAllyMapsprite` helper. Caller-visible continuation, presentation, and persistence remain **Unknown**.
-Cure's status-write paths preserve separate poison/stun/curse masks and costs; Promote
+Cure's source/H1/ROM-bounded runtime seam confirms poison → stun → curse status/equipment commits,
+including equality-inclusive affordability and the Dark Sword `17000 >> 2 = 4250` cost; broader Cure
+admission, UI, persistence, and presentation remain **Unknown**. Promote
 preserves its level/data gates and class-then-promotion call order; Save reaches its named save call and
 records its separate suspend branch. The contract does not treat selector values, helper names, status
 masks, or jump-interface callers as a runtime promise about service admission, persistence, prompt
@@ -117,3 +120,18 @@ That trampoline executes real `MOVEA.L` restoration of the captured CheckSram fr
 readback; failure diagnostics report an un-restored bootstrap frame rather than claim a register write.
 Python verifies disposal of the patched session ROM. It is not a presentation, persistence,
 economy-balance, or all-memory-restoration rule.
+
+## Church Cure runtime seam
+
+The confirmed `sf2-church-cure-lifecycle-runtime-v1` fixture
+`tests/fixtures/h3/church-cure-lifecycle-v1.json` narrows only the original Church Cure transaction
+seam. It retains source order poison → stun → curse, each source `dbf` member/item iteration, zero
+controlled prompt result to the equality-inclusive `cmp.l d0,d1; bcc` affordability path, and
+poison/stun/curse costs of `10`/`20`/Dark-Sword-`17000 >> 2 = 4250`. The complete eleven-record
+cohort includes no-status, decline, one-below, exact-cost, and the ordered `4280 → 4270 → 4250 → 0`
+success sequence. Poison/stun commits observe original `DecreaseGold` followed by `SetStatusEffects`;
+curse observes `DecreaseGold`, `UnequipAllItemsIfNotCursed`, and its `UpdateCombatantStats` tail/RTS
+completion. This is an implementation-neutral resource/status/equipment ordering boundary. It is not
+a rule for text, prompt UI semantics, persistence, economy balance, service admission, or rendered
+presentation. Observer restoration is scoped to the touched gold, complete combatant record,
+target-list length/byte, dialogue scratch, portrait scratch, generated RAM, and bootstrap frame.
