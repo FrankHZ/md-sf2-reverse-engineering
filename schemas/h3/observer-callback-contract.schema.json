@@ -989,6 +989,61 @@
         }
       }
     },
+    "churchRaiseLifecycleRole": {
+      "enum": ["registration", "bootstrap-check-sram", "case-entry", "case-result", "terminal-finalize", "church-entry", "raise-route", "action-stub", "prompt-call", "prompt-stub", "promotion-check", "prompt-compare", "affordability-check", "do-raise", "j-decrease-gold-entry", "decrease-gold-entry", "decrease-gold-return", "j-increase-current-hp-entry", "increase-current-hp-entry", "increase-current-hp-return", "mapsprite-entry", "mapsprite-return", "bootstrap-watchdog", "case-watchdog"]
+    },
+    "churchRaiseRestorationMismatch": {
+      "type": "object", "additionalProperties": false,
+      "required": ["domain", "address", "expected", "actual"],
+      "properties": {
+        "domain": {"enum": ["gold", "dialogueName", "dialogueNumber", "targetsListLength", "targetsListByte", "currentPortrait", "combatantRecordByte", "mapspriteByte", "generatedRamByte", "a6", "a7"]},
+        "address": {"$ref": "#/definitions/nullablePc"},
+        "expected": {"type": "integer", "minimum": 0, "maximum": 4294967295},
+        "actual": {"type": "integer", "minimum": 0, "maximum": 4294967295}
+      }
+    },
+    "churchRaiseLifecycleFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "caseId", "phase", "role", "actualPc", "expectedCallPc", "expectedTargetPc", "expectedReturnPc", "pendingCallback", "restoration", "restorationMismatch", "error"],
+      "allOf": [{
+        "if": {"properties": {"pendingCallback": {"properties": {"kind": {"const": "helper"}}}}},
+        "then": {"properties": {"expectedCallPc": {"$ref": "#/definitions/pc"}, "expectedTargetPc": {"$ref": "#/definitions/pc"}, "expectedReturnPc": {"$ref": "#/definitions/pc"}}}
+      }],
+      "properties": {
+        "owner": {"const": "church-raise-lifecycle"},
+        "caseId": {"$ref": "#/definitions/nonEmptyString"},
+        "phase": {"$ref": "#/definitions/churchRaiseLifecycleRole"},
+        "role": {"$ref": "#/definitions/churchRaiseLifecycleRole"},
+        "actualPc": {"$ref": "#/definitions/pc"},
+        "expectedCallPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "pendingCallback": {
+          "type": "object", "additionalProperties": false,
+          "required": ["active", "kind", "caseIndex", "expectedCaseId", "rolesAtPc", "observedChronology", "expectedChronology", "observedChronologyCount", "expectedChronologyCount"],
+          "properties": {
+            "active": {"type": "boolean"}, "kind": {"enum": ["registration", "event", "route", "helper"]}, "caseIndex": {"type": "integer", "minimum": 1},
+            "expectedCaseId": {"$ref": "#/definitions/nonEmptyString"},
+            "rolesAtPc": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/definitions/nonEmptyString"}},
+            "observedChronology": {"type": "array", "items": {"$ref": "#/definitions/churchRaiseLifecycleEvent"}},
+            "expectedChronology": {"type": "array", "items": {"$ref": "#/definitions/churchRaiseLifecycleEvent"}},
+            "observedChronologyCount": {"type": "integer", "minimum": 0}, "expectedChronologyCount": {"type": "integer", "minimum": 0}
+          }
+        },
+        "restorationMismatch": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/churchRaiseRestorationMismatch"}]},
+        "restoration": {
+          "type": "object", "additionalProperties": false,
+          "required": ["scopeArmed", "gold", "combatantRecords", "mapspriteBytes", "dialogueScratch", "targetsListLength", "targetsListBytes", "currentPortrait", "generatedRam", "a6a7Balance", "sessionCartPatches", "callbacksCleared", "outputRemoved"],
+          "properties": {"scopeArmed": {"type": "boolean"}, "gold": {"type": "boolean"}, "combatantRecords": {"type": "boolean"}, "mapspriteBytes": {"type": "boolean"}, "dialogueScratch": {"type": "boolean"}, "targetsListLength": {"type": "boolean"}, "targetsListBytes": {"type": "boolean"}, "currentPortrait": {"type": "boolean"}, "generatedRam": {"type": "boolean"}, "a6a7Balance": {"type": "boolean"}, "sessionCartPatches": {"type": "boolean"}, "callbacksCleared": {"type": "boolean"}, "outputRemoved": {"type": "boolean"}}
+        },
+        "error": {"$ref": "#/definitions/nonEmptyString"}
+      }
+    },
+    "churchRaiseLifecycleEvent": {
+      "type": "object", "additionalProperties": false, "required": ["role", "pc"],
+      "properties": {"role": {"$ref": "#/definitions/nonEmptyString"}, "pc": {"$ref": "#/definitions/pc"}}
+    },
     "witchSaveMenuActionsPendingCallback": {
       "type": "object",
       "additionalProperties": false,

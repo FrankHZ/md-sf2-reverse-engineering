@@ -141,6 +141,82 @@ def test_map_block_copy_failure_schema_preserves_case_role_and_pending_state() -
         validate_json(residual, schema, owner="map-block-copy callback cleanup")
 
 
+def test_church_raise_failure_schema_closes_callback_and_restoration_state() -> None:
+    schema = repo_path("schemas/h3/church-raise-lifecycle-callback-failure.schema.json")
+    payload = {
+        "owner": "church-raise-lifecycle",
+        "caseId": "unpromoted-exact-cost-success",
+        "phase": "decrease-gold-entry",
+        "role": "decrease-gold-entry",
+        "actualPc": 35252,
+        "expectedCallPc": 133906,
+        "expectedTargetPc": 35252,
+        "expectedReturnPc": 35276,
+        "pendingCallback": {
+            "active": True,
+            "kind": "helper",
+            "caseIndex": 4,
+            "expectedCaseId": "unpromoted-exact-cost-success",
+            "rolesAtPc": ["decrease-gold-entry"],
+            "observedChronology": [{"role": "j-decrease-gold-entry", "pc": 33120}],
+            "expectedChronology": [
+                {"role": "j-decrease-gold-entry", "pc": 33120},
+                {"role": "decrease-gold-entry", "pc": 35252},
+            ],
+            "observedChronologyCount": 1,
+            "expectedChronologyCount": 2,
+        },
+        "restorationMismatch": None,
+        "restoration": {
+            "scopeArmed": True,
+            "gold": True,
+            "combatantRecords": True,
+            "mapspriteBytes": True,
+            "dialogueScratch": True,
+            "targetsListLength": True,
+            "targetsListBytes": True,
+            "currentPortrait": True,
+            "generatedRam": True,
+            "a6a7Balance": True,
+            "sessionCartPatches": False,
+            "callbacksCleared": True,
+            "outputRemoved": True,
+        },
+        "error": "forced Church Raise callback failure",
+    }
+    validate_json(payload, schema, owner="church raise callback failure")
+
+    extra = deepcopy(payload)
+    extra["pendingCallback"]["unexpected"] = True
+    with pytest.raises(ValueError, match="pendingCallback"):
+        validate_json(extra, schema, owner="church raise pending closure")
+
+    null_call = deepcopy(payload)
+    null_call["expectedCallPc"] = None
+    with pytest.raises(ValueError, match="expectedCallPc"):
+        validate_json(null_call, schema, owner="church raise helper triple closure")
+
+    arbitrary_role = deepcopy(payload)
+    arbitrary_role["role"] = "not-a-church-callback"
+    arbitrary_role["phase"] = "not-a-church-callback"
+    with pytest.raises(ValueError, match="not one of"):
+        validate_json(arbitrary_role, schema, owner="church raise callback role closure")
+
+    missing_mismatch = deepcopy(payload)
+    del missing_mismatch["restorationMismatch"]
+    with pytest.raises(ValueError, match="restorationMismatch"):
+        validate_json(missing_mismatch, schema, owner="church raise mismatch required")
+
+    malformed_mismatch = deepcopy(payload)
+    malformed_mismatch["restorationMismatch"] = {
+        "domain": "gold",
+        "address": 16774656,
+        "expected": 100,
+    }
+    with pytest.raises(ValueError, match="restorationMismatch"):
+        validate_json(malformed_mismatch, schema, owner="church raise mismatch closure")
+
+
 def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> None:
     schema_root = repo_path("schemas/h3")
     paths = [
@@ -158,9 +234,10 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         schema_root / "story-state-callback-failure.schema.json",
         schema_root / "force-state-roster-death-callback-failure.schema.json",
         schema_root / "map-block-copy-lifecycle-callback-failure.schema.json",
+        schema_root / "church-raise-lifecycle-callback-failure.schema.json",
     ]
     audit = schema_composition_audit(paths)
-    assert audit["schemaCount"] == 14
+    assert audit["schemaCount"] == 15
     assert audit["unresolvedReferences"] == []
     assert audit["duplicateBodyGroups"] == []
     assert audit["largeConstCount"] == 0
@@ -258,6 +335,10 @@ def test_force_state_roster_death_failure_closes_dispatch_and_restoration() -> N
         "blacksmithMithrilFailure",
         "forceStateRosterDeathFailure",
         "mapBlockCopyLifecycleFailure",
+        "churchRaiseLifecycleRole",
+        "churchRaiseRestorationMismatch",
+        "churchRaiseLifecycleFailure",
+        "churchRaiseLifecycleEvent",
     }
     serialized = json.dumps(component, sort_keys=True)
     for golden_field in ("cases", "caseOrder", "records", "recordOrder"):

@@ -1,0 +1,63 @@
+{
+  "id": "sf2-church-raise-lifecycle-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "system": "sf2-church-raise-lifecycle-runtime-v1",
+  "caseOrder": [
+    "all-alive-no-prompt",
+    "unpromoted-decline",
+    "unpromoted-insufficient-gold",
+    "unpromoted-exact-cost-success",
+    "promoted-exact-cost-success",
+    "promoted-one-below-cost",
+    "mixed-decline-then-success"
+  ],
+  "cases": [
+    {"caseId":"all-alive-no-prompt","gold":999,"promptResults":[],"members":[{"memberId":0,"classId":0,"level":1,"promoted":false,"hpMax":20,"hpCurrent":20,"mapsprite":1}]},
+    {"caseId":"unpromoted-decline","gold":50,"promptResults":[-1],"members":[{"memberId":1,"classId":0,"level":5,"promoted":false,"hpMax":30,"hpCurrent":0,"mapsprite":2}]},
+    {"caseId":"unpromoted-insufficient-gold","gold":69,"promptResults":[0],"members":[{"memberId":2,"classId":0,"level":7,"promoted":false,"hpMax":40,"hpCurrent":0,"mapsprite":3}]},
+    {"caseId":"unpromoted-exact-cost-success","gold":70,"promptResults":[0],"members":[{"memberId":3,"classId":0,"level":7,"promoted":false,"hpMax":40,"hpCurrent":0,"mapsprite":4}]},
+    {"caseId":"promoted-exact-cost-success","gold":280,"promptResults":[0],"members":[{"memberId":4,"classId":12,"level":8,"promoted":true,"hpMax":55,"hpCurrent":0,"mapsprite":5}]},
+    {"caseId":"promoted-one-below-cost","gold":279,"promptResults":[0],"members":[{"memberId":5,"classId":12,"level":8,"promoted":true,"hpMax":55,"hpCurrent":0,"mapsprite":6}]},
+    {"caseId":"mixed-decline-then-success","gold":60,"promptResults":[-1,0],"members":[{"memberId":6,"classId":0,"level":1,"promoted":false,"hpMax":20,"hpCurrent":20,"mapsprite":7},{"memberId":7,"classId":0,"level":5,"promoted":false,"hpMax":30,"hpCurrent":0,"mapsprite":8},{"memberId":8,"classId":0,"level":6,"promoted":false,"hpMax":45,"hpCurrent":0,"mapsprite":9}]}
+  ],
+  "sourceContext": {"churchMenuEntryAddress": 133634, "raiseRouteAddress": 133732},
+  "static": {
+    "entryAddresses":{"churchMenu":133634,"raiseRoute":133732,"memberLoop":133752,"confirmRaise":133832,"checkRaiseCost":133876,"doRaise":133900,"raiseNextMember":133954,"forceMemberInfo":135510,"promotionData":135376,"updateAllyMapsprite":135754,"decreaseGold":35252,"increaseCurrentHp":34658,"getGold":35220,"getCurrentHp":33590,"getLevel":33558,"getClass":33542,"jDecreaseGold":33120,"jIncreaseCurrentHp":33040,"jGetGold":33112,"jGetCurrentHp":32840,"jGetLevel":32836,"jGetClass":32772},
+    "branchTargets":{"raiseRoute":133732,"promotionData":135376,"updateAllyMapsprite":135754},
+    "cost":{"perLevel":10,"promotedExtra":200,"affordability":"cmp.l-d0-d1-bcc-equal-admitted"},
+    "loop":{"currentHpZeroPredicate":"tst.w-d1-bhi-alive-skip","counter":"deadMembersCount","iteration":"dbf-d7-member-list-order","promptAccept":"d0-equals-zero"},
+    "ram":{"combatantData":16771072,"combatantRecordSize":56,"classOffset":10,"levelOffset":11,"hpMaxOffset":12,"hpCurrentOffset":14,"currentGold":16774656,"targetsList":16758354,"targetsListLength":16758334,"dialogueName":16758504,"dialogueNumber":16758646,"entityData":16754946,"mapspriteOffset":19,"hpCap":200,"currentPortrait":16758518},
+    "sessionPatches":[
+      {"address":133656,"width":8,"originalHex":"4E45006E4E45FFFF","hex":"4E714E714E714E71","purpose":"entry-presentation-bypass"},
+      {"address":133664,"width":6,"originalHex":"4EB90001003C","hex":"4E714E714E71","purpose":"entry-portrait-close-bypass"},
+      {"address":133680,"width":6,"originalHex":"4EB900010000","hex":"4EB900FF6D00","purpose":"controlled-raise-selection"},
+      {"address":133740,"width":4,"originalHex":"4E450076","hex":"4E714E71","purpose":"raise-text-bypass"},
+      {"address":133782,"width":4,"originalHex":"4E450081","hex":"4E714E71","purpose":"raise-member-text-bypass"},
+      {"address":133838,"width":4,"originalHex":"4E450082","hex":"4E714E71","purpose":"raise-cost-text-bypass"},
+      {"address":133842,"width":6,"originalHex":"4EB900010050","hex":"4E714E714E71","purpose":"gold-window-bypass"},
+      {"address":133848,"width":6,"originalHex":"4EB900010074","hex":"4EB900FF6D10","purpose":"controlled-yes-no"},
+      {"address":133854,"width":6,"originalHex":"4EB900010058","hex":"4E714E714E71","purpose":"gold-window-close-bypass"},
+      {"address":133868,"width":4,"originalHex":"4E45007C","hex":"4E714E71","purpose":"decline-text-bypass"},
+      {"address":133894,"width":4,"originalHex":"4E45007D","hex":"4E714E71","purpose":"insufficient-text-bypass"},
+      {"address":133926,"width":10,"originalHex":"4E4000184EBA070C4E71","hex":"4E714E714E714E714E71","purpose":"revival-presentation-bypass"},
+      {"address":133950,"width":4,"originalHex":"4E450083","hex":"4E714E71","purpose":"revival-text-bypass"},
+      {"address":133958,"width":6,"originalHex":"0C6E0000FFF2","hex":"4EF900020A5C","purpose":"raise-terminal-return"},
+      {"address":135510,"width":6,"originalHex":"4EB900008270","hex":"4E714E714E71","purpose":"controlled-force-list"}
+    ]
+  },
+  "acceptedObservation": {
+    "system":"sf2-church-raise-lifecycle-runtime-v1",
+    "caseOrder":["all-alive-no-prompt","unpromoted-decline","unpromoted-insufficient-gold","unpromoted-exact-cost-success","promoted-exact-cost-success","promoted-one-below-cost","mixed-decline-then-success"],
+    "records":[
+      {"caseId":"all-alive-no-prompt","churchEntryPc":133634,"raiseRoutePc":133732,"deadMemberCount":0,"goldBefore":999,"goldAfter":999,"members":[{"memberId":0,"classId":0,"level":1,"promoted":false,"hpMax":20,"hpCurrent":20,"mapsprite":1,"raised":false}],"successChronology":[],"mutations":[]},
+      {"caseId":"unpromoted-decline","churchEntryPc":133634,"raiseRoutePc":133732,"deadMemberCount":1,"goldBefore":50,"goldAfter":50,"members":[{"memberId":1,"classId":0,"level":5,"promoted":false,"hpMax":30,"hpCurrent":0,"mapsprite":2,"raised":false}],"successChronology":[],"mutations":[]},
+      {"caseId":"unpromoted-insufficient-gold","churchEntryPc":133634,"raiseRoutePc":133732,"deadMemberCount":1,"goldBefore":69,"goldAfter":69,"members":[{"memberId":2,"classId":0,"level":7,"promoted":false,"hpMax":40,"hpCurrent":0,"mapsprite":3,"raised":false}],"successChronology":[],"mutations":[]},
+      {"caseId":"unpromoted-exact-cost-success","churchEntryPc":133634,"raiseRoutePc":133732,"deadMemberCount":1,"goldBefore":70,"goldAfter":0,"members":[{"memberId":3,"classId":0,"level":7,"promoted":false,"hpMax":40,"hpCurrent":40,"mapsprite":4,"raised":true}],"successChronology":[{"memberId":3,"roles":["j-decrease-gold-entry","decrease-gold-entry","decrease-gold-return","j-increase-current-hp-entry","increase-current-hp-entry","increase-current-hp-return","mapsprite-entry","mapsprite-return"]}],"mutations":[{"memberId":3,"cost":70,"hpAfter":40}]},
+      {"caseId":"promoted-exact-cost-success","churchEntryPc":133634,"raiseRoutePc":133732,"deadMemberCount":1,"goldBefore":280,"goldAfter":0,"members":[{"memberId":4,"classId":12,"level":8,"promoted":true,"hpMax":55,"hpCurrent":55,"mapsprite":5,"raised":true}],"successChronology":[{"memberId":4,"roles":["j-decrease-gold-entry","decrease-gold-entry","decrease-gold-return","j-increase-current-hp-entry","increase-current-hp-entry","increase-current-hp-return","mapsprite-entry","mapsprite-return"]}],"mutations":[{"memberId":4,"cost":280,"hpAfter":55}]},
+      {"caseId":"promoted-one-below-cost","churchEntryPc":133634,"raiseRoutePc":133732,"deadMemberCount":1,"goldBefore":279,"goldAfter":279,"members":[{"memberId":5,"classId":12,"level":8,"promoted":true,"hpMax":55,"hpCurrent":0,"mapsprite":6,"raised":false}],"successChronology":[],"mutations":[]},
+      {"caseId":"mixed-decline-then-success","churchEntryPc":133634,"raiseRoutePc":133732,"deadMemberCount":2,"goldBefore":60,"goldAfter":0,"members":[{"memberId":6,"classId":0,"level":1,"promoted":false,"hpMax":20,"hpCurrent":20,"mapsprite":7,"raised":false},{"memberId":7,"classId":0,"level":5,"promoted":false,"hpMax":30,"hpCurrent":0,"mapsprite":8,"raised":false},{"memberId":8,"classId":0,"level":6,"promoted":false,"hpMax":45,"hpCurrent":45,"mapsprite":9,"raised":true}],"successChronology":[{"memberId":8,"roles":["j-decrease-gold-entry","decrease-gold-entry","decrease-gold-return","j-increase-current-hp-entry","increase-current-hp-entry","increase-current-hp-return","mapsprite-entry","mapsprite-return"]}],"mutations":[{"memberId":8,"cost":60,"hpAfter":45}]}
+    ],
+    "callbacksCleared":true,
+    "restoration":{"gold":true,"combatantRecords":true,"mapspriteBytes":true,"dialogueScratch":true,"targetsListLength":true,"targetsListBytes":true,"currentPortrait":true,"generatedRam":true,"a6a7Balance":true,"sessionCartPatches":true}
+  }
+}

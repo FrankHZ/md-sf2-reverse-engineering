@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:church-raise-lifecycle-fixture",
+  "type": "object", "additionalProperties": false,
+  "required": ["id","romSha256","system","caseOrder","cases","sourceContext","static","acceptedObservation"],
+  "properties": {
+    "id":{"const":"sf2-church-raise-lifecycle-runtime-v1"},
+    "romSha256":{"const":"9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
+    "system":{"const":"sf2-church-raise-lifecycle-runtime-v1"},
+    "caseOrder":{"type":"array","uniqueItems":true,"items":{"type":"string"}},
+    "cases":{"type":"array","items":{"$ref":"#/definitions/case"}},
+    "sourceContext":{"type":"object","additionalProperties":false,"required":["churchMenuEntryAddress","raiseRouteAddress"],"properties":{"churchMenuEntryAddress":{"type":"integer","minimum":0},"raiseRouteAddress":{"type":"integer","minimum":0}}},
+    "static":{"$ref":"#/definitions/static"},
+    "acceptedObservation":{"$ref":"urn:sf2:h3:church-raise-lifecycle-observation"}
+  },
+  "definitions": {
+    "static":{"type":"object","additionalProperties":false,"required":["entryAddresses","branchTargets","cost","loop","ram","sessionPatches"],"properties":{
+      "entryAddresses":{"type":"object","additionalProperties":false,"required":["churchMenu","raiseRoute","memberLoop","confirmRaise","checkRaiseCost","doRaise","raiseNextMember","forceMemberInfo","promotionData","updateAllyMapsprite","decreaseGold","increaseCurrentHp","getGold","getCurrentHp","getLevel","getClass","jDecreaseGold","jIncreaseCurrentHp","jGetGold","jGetCurrentHp","jGetLevel","jGetClass"],"properties":{"churchMenu":{"type":"integer"},"raiseRoute":{"type":"integer"},"memberLoop":{"type":"integer"},"confirmRaise":{"type":"integer"},"checkRaiseCost":{"type":"integer"},"doRaise":{"type":"integer"},"raiseNextMember":{"type":"integer"},"forceMemberInfo":{"type":"integer"},"promotionData":{"type":"integer"},"updateAllyMapsprite":{"type":"integer"},"decreaseGold":{"type":"integer"},"increaseCurrentHp":{"type":"integer"},"getGold":{"type":"integer"},"getCurrentHp":{"type":"integer"},"getLevel":{"type":"integer"},"getClass":{"type":"integer"},"jDecreaseGold":{"type":"integer"},"jIncreaseCurrentHp":{"type":"integer"},"jGetGold":{"type":"integer"},"jGetCurrentHp":{"type":"integer"},"jGetLevel":{"type":"integer"},"jGetClass":{"type":"integer"}}},
+      "branchTargets":{"type":"object","additionalProperties":false,"required":["raiseRoute","promotionData","updateAllyMapsprite"],"properties":{"raiseRoute":{"type":"integer"},"promotionData":{"type":"integer"},"updateAllyMapsprite":{"type":"integer"}}},
+      "cost":{"type":"object","additionalProperties":false,"required":["perLevel","promotedExtra","affordability"],"properties":{"perLevel":{"type":"integer","minimum":0},"promotedExtra":{"type":"integer","minimum":0},"affordability":{"type":"string"}}},
+      "loop":{"type":"object","additionalProperties":false,"required":["currentHpZeroPredicate","counter","iteration","promptAccept"],"properties":{"currentHpZeroPredicate":{"type":"string"},"counter":{"type":"string"},"iteration":{"type":"string"},"promptAccept":{"type":"string"}}},
+      "ram":{"type":"object","additionalProperties":false,"required":["combatantData","combatantRecordSize","classOffset","levelOffset","hpMaxOffset","hpCurrentOffset","currentGold","targetsList","targetsListLength","dialogueName","dialogueNumber","entityData","mapspriteOffset","hpCap","currentPortrait"],"properties":{"combatantData":{"type":"integer","minimum":0},"combatantRecordSize":{"type":"integer","minimum":1},"classOffset":{"type":"integer","minimum":0},"levelOffset":{"type":"integer","minimum":0},"hpMaxOffset":{"type":"integer","minimum":0},"hpCurrentOffset":{"type":"integer","minimum":0},"currentGold":{"type":"integer","minimum":0},"targetsList":{"type":"integer","minimum":0},"targetsListLength":{"type":"integer","minimum":0},"dialogueName":{"type":"integer","minimum":0},"dialogueNumber":{"type":"integer","minimum":0},"entityData":{"type":"integer","minimum":0},"mapspriteOffset":{"type":"integer","minimum":0},"hpCap":{"type":"integer","minimum":1},"currentPortrait":{"type":"integer","minimum":0}}},
+      "sessionPatches":{"type":"array","items":{"type":"object","additionalProperties":false,"required":["address","width","originalHex","hex","purpose"],"properties":{"address":{"type":"integer","minimum":0},"width":{"type":"integer","minimum":1},"originalHex":{"type":"string","pattern":"^[0-9A-F]+$"},"hex":{"type":"string","pattern":"^[0-9A-F]+$"},"purpose":{"type":"string","minLength":1}}}}
+    }},
+    "case":{"type":"object","additionalProperties":false,"required":["caseId","gold","promptResults","members"],"properties":{"caseId":{"type":"string","minLength":1},"gold":{"type":"integer","minimum":0},"promptResults":{"type":"array","items":{"type":"integer"}},"members":{"type":"array","minItems":1,"items":{"$ref":"#/definitions/member"}}}},
+    "member":{"type":"object","additionalProperties":false,"required":["memberId","classId","level","promoted","hpMax","hpCurrent","mapsprite"],"properties":{"memberId":{"type":"integer","minimum":0,"maximum":30},"classId":{"type":"integer","minimum":0,"maximum":255},"level":{"type":"integer","minimum":1,"maximum":99},"promoted":{"type":"boolean"},"hpMax":{"type":"integer","minimum":1,"maximum":200},"hpCurrent":{"type":"integer","minimum":0,"maximum":200},"mapsprite":{"type":"integer","minimum":0,"maximum":255}}}
+  }
+}

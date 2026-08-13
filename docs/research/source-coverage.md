@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,620 | 1,583 H1-backed plus 37 Z80 music-bank records |
+| Indexed findings | 1,621 | 1,584 H1-backed plus 37 Z80 music-bank records |
 | Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 87 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail is runtime-confirmed at its controlled seam |
-| Address bindings | 2,545 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 89 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail and the seven-case Church Raise rail are runtime-confirmed at their controlled seams |
+| Address bindings | 2,549 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build

@@ -1,15 +1,19 @@
 # Service Interactions
 
 - **Confirmed original behavior:** static action ordering, cancellation and direct resource-helper
-  boundaries for the four service surfaces described below.
+  boundaries for the four service surfaces described below, plus the bounded Church Raise H3
+  admission/commit seam.
 - **Unknown original behavior:** caller admission/return effects, persistence across map/save reload,
   input/audio/window/portrait timing, and final presentation composition.
-- Remake status: implementation-neutral static contract; runtime lifecycle remains incomplete.
-- Evidence date: 2026-07-21
+- Remake status: implementation-neutral evidence-bound contract; Church Raise has one bounded
+  runtime seam while broader service lifecycles remain incomplete.
+- Evidence date: 2026-08-13
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - Traceability: `sf2-common-menus-static-v1` in
-  `tests/fixtures/h2/common-menus-static-v1.json`; `src/sf2tool/h2/menus.py`; and
+  `tests/fixtures/h2/common-menus-static-v1.json`; `sf2-church-raise-lifecycle-runtime-v1` in
+  `tests/fixtures/h3/church-raise-lifecycle-v1.json`; `src/sf2tool/h2/menus.py`,
+  `src/sf2tool/h3/church_raise_lifecycle.py`; and
   `docs/research/common-menus.md`.
 
 ## Confirmed Interaction Contract
@@ -21,7 +25,7 @@ timing.
 | Surface | Ordered actions | Confirmed static boundary |
 | --- | --- | --- |
 | Shop | buy, sell, repair, deals | Buy/deals remove gold before granting an item; a deals purchase also removes its deals entry. Selling grants gold, removes the member-held item, and routes rare items to deals. Repair removes gold and repairs the selected item slot. |
-| Church | raise, cure, promote, save | Raise preserves the source-derived mutation-call order `j_DecreaseGold` → `j_IncreaseCurrentHp` (after `move.w #CHAR_STATCAP_HP,d1`) → `UpdateAllyMapsprite`; this filtered mutation-helper order does not assert that no other calls intervene, and final current-HP value and caller-visible runtime outcome are **Unknown**. Cure replaces status bits after payment; promotion is data/member-gated before class change/promotion; save reaches the save operation. |
+| Church | raise, cure, promote, save | The H2 source boundary preserves Raise's mutation-call order `j_DecreaseGold` → `j_IncreaseCurrentHp` (after `move.w #CHAR_STATCAP_HP,d1`) → `UpdateAllyMapsprite`; source alone did not establish the final current-HP value. The bounded H3 Raise seam now observes accepted cases clamped to `min(hpMax, 200)` and the mapsprite helper completion. Caller-visible behavior beyond that seam remains **Unknown**. Cure replaces status bits after payment; promotion is data/member-gated before class change/promotion; save reaches the save operation. |
 | Caravan | join, depot, item, purge | The top, depot, and item selectors are source-ordered word-relative tables. Deposit calls storage-add before member-slot drop; derive and give retain distinct normal/exchange call sequences; rare-drop branches can call the deals helper. |
 | Blacksmith | fulfill ready orders, then place pending order | No diamond menu. Static source preserves ready/pending counting, fulfillment storage-clear/add/equip order, placement gates and payment/drop/pick/flag order, plus the bounded weapon-row picker. |
 
@@ -46,12 +50,14 @@ presentation.
 
 ### Church source boundary
 
-The Church design contract consumes only the **Confirmed** static route boundary:
+The H2 Church design contract consumes the **Confirmed** static route boundary:
 `routeDerived.raise.mutationCalls` preserves the source-derived mutation-call order `j_DecreaseGold` →
 `j_IncreaseCurrentHp` (after `move.w #CHAR_STATCAP_HP,d1`) → `UpdateAllyMapsprite`. This filtered
-mutation-helper order does not assert that no other calls intervene; the final current-HP value and
-caller-visible runtime outcome are **Unknown**. The named helper and cap operand do not establish either
-runtime result. Cure's status-write paths preserve separate poison/stun/curse masks and costs; Promote
+mutation-helper order does not assert that no other calls intervene; H2 alone did not establish the final
+current-HP value. The bounded **Confirmed** `sf2-church-raise-lifecycle-runtime-v1` H3 seam instead
+observes each accepted affordable Raise to clamp current HP to `min(hpMax, 200)` and complete the original
+`UpdateAllyMapsprite` helper. Caller-visible continuation, presentation, and persistence remain **Unknown**.
+Cure's status-write paths preserve separate poison/stun/curse masks and costs; Promote
 preserves its level/data gates and class-then-promotion call order; Save reaches its named save call and
 records its separate suspend branch. The contract does not treat selector values, helper names, status
 masks, or jump-interface callers as a runtime promise about service admission, persistence, prompt
@@ -95,3 +101,19 @@ not remake defaults.
 Future H4 tests should consume the `serviceStateMachines` fixture object for static action ordering
 and direct effect expectations, then add separate behavioral fixtures only after the grouped H3
 service matrix resolves those unknowns.
+
+## Church Raise runtime seam
+
+The confirmed `sf2-church-raise-lifecycle-runtime-v1` fixture
+`tests/fixtures/h3/church-raise-lifecycle-v1.json` narrows only Raise admission and
+commit: a normal `ChurchMenu` entry reaches Raise, living members are skipped, each dead member is
+processed in list order, and the original equality-inclusive affordability comparison admits
+`level × 10` plus the promoted `200` operand. An accepted, affordable member observes original
+`DecreaseGold`, `IncreaseCurrentHp` with HP-cap `200`, then `UpdateAllyMapsprite`; decline and
+insufficient-gold paths have no such helper entry. This is an implementation-neutral ordering and
+mutation boundary. Observer-scoped restoration covers the selected force-list length and bytes,
+current-portrait word, generated harness/action/prompt spans, and an 18-byte terminal trampoline.
+That trampoline executes real `MOVEA.L` restoration of the captured CheckSram frame before callback
+readback; failure diagnostics report an un-restored bootstrap frame rather than claim a register write.
+Python verifies disposal of the patched session ROM. It is not a presentation, persistence,
+economy-balance, or all-memory-restoration rule.

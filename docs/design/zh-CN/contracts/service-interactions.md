@@ -1,12 +1,14 @@
 # 服务交互
 
-- **已确认的原版行为：** 下文描述的四个服务界面的静态行动排序、取消边界与直接资源辅助边界。
+- **已确认的原版行为：** 下文描述的四个服务界面的静态行动排序、取消边界与直接资源辅助边界，以及有界 Church Raise H3 准入/提交边界。
 - **未知的原版行为：** 调用方准入/返回效果、跨地图/存档重载的持久化、输入/音频/窗口/立绘时序，以及最终呈现合成。
-- 重制状态：实现无关的静态合同；运行时生命周期仍不完整。
-- 证据日期：2026-07-21
+- 重制状态：实现无关且证据约束的合同；Church Raise 有一个有界运行时边界，更广泛的服务生命周期仍不完整。
+- 证据日期：2026-08-13
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
-- 可追溯性：`tests/fixtures/h2/common-menus-static-v1.json` 中的 `sf2-common-menus-static-v1`；`src/sf2tool/h2/menus.py`；以及
+- 可追溯性：`tests/fixtures/h2/common-menus-static-v1.json` 中的 `sf2-common-menus-static-v1`；
+  `tests/fixtures/h3/church-raise-lifecycle-v1.json` 中的 `sf2-church-raise-lifecycle-runtime-v1`；
+  `src/sf2tool/h2/menus.py`、`src/sf2tool/h3/church_raise_lifecycle.py`；以及
   `docs/research/common-menus.md`。
 
 > 本文件是 [`service-interactions.md`](../../contracts/service-interactions.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
@@ -18,7 +20,7 @@
 | 界面 | 有序行动 | 已确认的静态边界 |
 | --- | --- | --- |
 | Shop | buy、sell、repair、deals | Buy/deals 在授予物品前移除金币；特卖购买还移除其特卖条目。Sell 授予金币、移除成员持有的物品，并把珍稀物品路由到特卖。Repair 移除金币并修理所选物品槽位。 |
-| Church | raise、cure、promote、save | Raise 保留来源派生的变更调用顺序 `j_DecreaseGold` → `j_IncreaseCurrentHp`（在 `move.w #CHAR_STATCAP_HP,d1` 之后）→ `UpdateAllyMapsprite`；这个过滤后的变更辅助顺序不断言没有其他调用介入，且最终当前 HP 值与调用方可见的运行时结果是 **未知**。Cure 在付款后替换状态位；promote 在职业变更/转职前由数据/成员门控；save 到达存档操作。 |
+| Church | raise、cure、promote、save | H2 源码边界保留 Raise 的变更调用顺序 `j_DecreaseGold` → `j_IncreaseCurrentHp`（在 `move.w #CHAR_STATCAP_HP,d1` 之后）→ `UpdateAllyMapsprite`；仅靠源码并未确立最终当前 HP 值。有界 H3 Raise 边界现已观察到接受的案例钳制到 `min(hpMax, 200)` 并完成 mapsprite 辅助。超出该边界的调用方可见行为仍是 **未知**。Cure 在付款后替换状态位；promote 在职业变更/转职前由数据/成员门控；save 到达存档操作。 |
 | Caravan | join、depot、item、purge | 顶部、depot 与 item 选择器是按源码排序的 word 相对表。Deposit 先调用存储添加再丢弃成员槽位；derive 与 give 保留不同的正常/交换调用序列；珍稀掉落分支可以调用特卖辅助。 |
 | Blacksmith | 履行就绪订单，然后放置待定订单 | 无菱形菜单。静态源码保留就绪/待定计数、履行存储清除/添加/装备顺序、放置门禁与付款/掉落/拾取/标志顺序，以及有界的武器行选择器。 |
 
@@ -30,7 +32,7 @@ Shop 设计合同只消费 `sf2-common-menus-static-v1` 中 **已确认** 的静
 
 ### Church 源码边界
 
-Church 设计合同只消费 **已确认** 的静态路由边界：`routeDerived.raise.mutationCalls` 保留来源派生的变更调用顺序 `j_DecreaseGold` → `j_IncreaseCurrentHp`（在 `move.w #CHAR_STATCAP_HP,d1` 之后）→ `UpdateAllyMapsprite`。这个过滤后的变更辅助顺序不断言没有其他调用介入；最终当前 HP 值与调用方可见的运行时结果是 **未知**。具名辅助与上限操作数都不确立任一运行时结果。Cure 的状态写入路径保留独立的 poison（毒）/stun（眩晕）/curse（诅咒）掩码与费用；Promote 保留其等级/数据门与职业再转职的调用顺序；Save 到达其具名存档调用并记录其独立的挂起分支。该合同不把选择器值、辅助名、状态掩码或跳转接口调用方当作对服务准入、持久化、提示时序或呈现渲染的运行时承诺。
+H2 Church 设计合同消费 **已确认** 的静态路由边界：`routeDerived.raise.mutationCalls` 保留来源派生的变更调用顺序 `j_DecreaseGold` → `j_IncreaseCurrentHp`（在 `move.w #CHAR_STATCAP_HP,d1` 之后）→ `UpdateAllyMapsprite`。这个过滤后的变更辅助顺序不断言没有其他调用介入；仅 H2 并未确立最终当前 HP 值。有界且 **已确认** 的 `sf2-church-raise-lifecycle-runtime-v1` H3 边界则观察到每个被接受且负担得起的 Raise 将当前 HP 钳制到 `min(hpMax, 200)`，并完成原始 `UpdateAllyMapsprite` 辅助。调用方可见的延续、呈现和持久化仍是 **未知**。Cure 的状态写入路径保留独立的 poison（毒）/stun（眩晕）/curse（诅咒）掩码与费用；Promote 保留其等级/数据门与职业再转职的调用顺序；Save 到达其具名存档调用并记录其独立的挂起分支。该合同不把选择器值、辅助名、状态掩码或跳转接口调用方当作对服务准入、持久化、提示时序或呈现渲染的运行时承诺。
 
 ### Caravan 源码边界
 
@@ -45,3 +47,7 @@ Blacksmith 设计合同只消费 **已确认** 的静态源码边界：一个 24
 本合同不确立哪些地图/NPC 准入每个服务、取消是否有调用方可见的副作用，或服务何时返回探索。它也不规定订单、特卖、车队存储或剧情标志的存档/重载持久化；输入重复行为；窗口/立绘/音频时序；或最终视觉合成。那些仍是原版运行时问题，而非重制默认值。
 
 未来的 H4 测试应消费 `serviceStateMachines` fixture 对象来获取静态行动排序与直接效果预期，然后仅在分组 H3 服务矩阵解决那些未知项之后添加独立的行为 fixtures。
+
+## Church Raise 运行时边界
+
+已确认的 `sf2-church-raise-lifecycle-runtime-v1` fixture `tests/fixtures/h3/church-raise-lifecycle-v1.json` 只收窄 Raise 的准入和提交：正常 `ChurchMenu` 入口到达 Raise；存活成员被跳过；死亡成员按列表顺序处理；原始、允许相等的可负担比较接受 `等级 × 10` 加上转职后的 `200`。接受且可负担时观察原始 `DecreaseGold`、带 HP 上限 `200` 的 `IncreaseCurrentHp`，再到 `UpdateAllyMapsprite`；拒绝和金币不足路径没有这些辅助入口。这是实现无关的顺序和变更边界。observer 范围内的恢复还覆盖已选择 force-list 的长度和字节、当前 portrait word、生成的 harness/action/prompt span 和一个 18 字节 terminal trampoline。该 trampoline 在回调读回之前执行真实的 `MOVEA.L` 以恢复捕获的 CheckSram frame；失败诊断报告未恢复的 bootstrap frame，而不声称寄存器写入成功。Python 验证已修补 session ROM 被删除。这不是呈现、持久化、经济平衡或全内存恢复规则。
