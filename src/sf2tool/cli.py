@@ -97,6 +97,7 @@ from sf2tool.h3.growth import (
 )
 from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
 from sf2tool.h3.map_animation_vdp import verify_map_animation_vdp
+from sf2tool.h3.map_block_copy_lifecycle import verify_map_block_copy_lifecycle
 from sf2tool.h3.map_block_mutation import verify_map_block_mutation
 from sf2tool.h3.map_camera_control import verify_map_camera_control
 from sf2tool.h3.map_entity_action_bridge import verify_map_entity_action_bridge
@@ -798,6 +799,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map_block_mutation)
     h3_map_block_mutation.add_argument("--timeout-seconds", type=int, default=180)
+    h3_map_block_copy_lifecycle = h3_commands.add_parser(
+        "map-block-copy-lifecycle",
+        help="verify one-launch map-block copy show/hide lifecycle boundaries",
+    )
+    _add_local_paths(h3_map_block_copy_lifecycle)
+    h3_map_block_copy_lifecycle.add_argument("--timeout-seconds", type=int, default=180)
     h3_entity_population_reload = h3_commands.add_parser(
         "entity-population-reload",
         help="verify one-launch entity population, table load, reload, and map-setup handlers",
@@ -1792,6 +1799,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map-block-mutation":
         print_record(
             verify_map_block_mutation(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map-block-copy-lifecycle":
+        print_record(
+            verify_map_block_copy_lifecycle(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

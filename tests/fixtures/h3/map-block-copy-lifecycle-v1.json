@@ -1,0 +1,1139 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-block-copy-lifecycle-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "mapTestIndex": 0,
+  "observationBoundary": "One session-only VInt probe runs four $40 dispatcher rows and six direct original-helper rows. Only selected FF0000 layout words, saved-rectangle metadata/buffer/sentinel, busy/toggle bytes, entity-0 fields, generated probe/action input, and its return stack are restored or observed.",
+  "runtimeQuestions": [
+    "map-block-copy-lifecycle/collision-pathfinding-navigation-effects",
+    "map-block-copy-lifecycle/rendered-vdp-fade-audio-timing",
+    "map-block-copy-lifecycle/persistence-reload-normal-story-reachability"
+  ],
+  "sharedHarnessFixture": "tests/fixtures/h3/spell-damage-resistance-v1.json",
+  "maxFrames": 3600,
+  "toggleGolden": {
+    "dispatcher-fading-skip": 0,
+    "dispatcher-neutral-flag": 0,
+    "dispatcher-show": 1,
+    "dispatcher-hide": 1,
+    "perform-busy-skip": 0,
+    "perform-terminator-miss": 0,
+    "perform-matched-positive": 1,
+    "perform-matched-negative": 1,
+    "csub-inactive-skip": 0,
+    "csub-active-restore": 1
+  },
+  "function": {
+    "vintUpdateEntitiesPc": 20202,
+    "updateEntityDataAddress": 23916,
+    "updateEntityDataCallPc": 20226,
+    "actionDispatchPc": 20248,
+    "dispatcherPc": 23826,
+    "convertPc": 25084,
+    "convertCallPc": 23838,
+    "convertReturnPc": 23842,
+    "performPc": 16362,
+    "performCallPc": 23858,
+    "performReturnPc": 23862,
+    "hidePc": 16626,
+    "hideCallPc": 23870,
+    "hideReturnPc": 23874,
+    "dispatcherTailPc": 23874
+  },
+  "ram": {
+    "entityData": 16754946,
+    "layoutBase": 16711680,
+    "busyWord": 16756546,
+    "savedRectangleMetadata": 16735232,
+    "savedRectangleBuffer": 16735240,
+    "fadingSetting": 16768752,
+    "currentMap": 16774929,
+    "currentBattle": 16774930,
+    "updateToggle": 16754733
+  },
+  "constants": {
+    "mapTileSize": 384,
+    "rowWords": 64,
+    "wordBytes": 2,
+    "rowBytes": 128,
+    "entityBytes": 32,
+    "entityActscriptOffset": 20,
+    "entityXOffset": 0,
+    "entityYOffset": 2,
+    "entityXDestinationOffset": 12,
+    "entityYDestinationOffset": 14,
+    "blockFlagMask": 15360,
+    "showFlag": 2048,
+    "hideFlag": 3072,
+    "savedBufferSentinel": 65535,
+    "mapDataRoofOffset": 26,
+    "mapIndexShiftBits": 2,
+    "notCurrentlyInBattle": 255
+  },
+  "sourceFacts": {
+    "macroOpcode": 64,
+    "dispatcherInstructions": [
+      "tst.b ((FADING_SETTING-$1000000)).w",
+      "bne.s loc_5D42",
+      "move.w (a0),d0",
+      "move.w ENTITYDEF_OFFSET_Y(a0),d1",
+      "bsr.w ConvertMapPixelCoordinatesToOffset",
+      "move.w (a4,d2.w),d3",
+      "move.w d3,d2",
+      "andi.w #$3C00,d2",
+      "cmpi.w #$800,d2",
+      "bne.s loc_5D38",
+      "bsr.w PerformMapBlockCopyScript",
+      "bra.s loc_5D42",
+      "loc_5D38:",
+      "cmpi.w #$C00,d2",
+      "bne.s loc_5D42",
+      "loc_5D3E:",
+      "bsr.w csub_40F2",
+      "loc_5D42:",
+      "addq.l #2,a1",
+      "bra.w esc_clearTimerGoToNextCommand"
+    ],
+    "performRequiredInstructions": [
+      "tst.w ((word_FFAF42-$1000000)).w",
+      "bne.w loc_40E6",
+      "lsr.w #7,d0",
+      "lsr.w #7,d1",
+      "moveq #1,d2",
+      "movea.l MAPDATA_OFFSET_EVENT_ROOF(a2),a2",
+      "tst.b (a2)",
+      "bmi.w loc_40E6",
+      "cmp.b (a2),d0",
+      "cmp.b 1(a2),d1",
+      "move.w d2,((word_FFAF42-$1000000)).w",
+      "move.b (a2)+,d0",
+      "ext.w d0",
+      "move.b (a2)+,d1",
+      "ext.w d1",
+      "move.b (a2)+,d6",
+      "subq.b #1,d6",
+      "move.b (a2)+,d7",
+      "subq.b #1,d7",
+      "move.b (a2)+,d2",
+      "move.b (a2)+,d3",
+      "move.w d2,(word_FF5C00).l",
+      "move.w d3,(word_FF5C02).l",
+      "move.w d6,(word_FF5C04).l",
+      "move.w d7,(word_FF5C06).l",
+      "tst.w d1",
+      "blt.s loc_40BA",
+      "move.w (a2,d2.w),(a3)+",
+      "move.w (a2,d0.w),(a2,d2.w)",
+      "clr.w (a2,d2.w)",
+      "move.w #-1,(a3)",
+      "bset #0,((VIEW_PLANE_UPDATE_TOGGLE_BITFIELD-$1000000)).w"
+    ],
+    "hideRequiredInstructions": [
+      "tst.w ((word_FFAF42-$1000000)).w",
+      "beq.w loc_4150",
+      "clr.w ((word_FFAF42-$1000000)).w",
+      "move.w (word_FF5C00).l,d2",
+      "move.w (word_FF5C02).l,d3",
+      "move.w (word_FF5C04).l,d6",
+      "move.w (word_FF5C06).l,d7",
+      "move.w (a3)+,(a2,d2.w)",
+      "bset #0,((VIEW_PLANE_UPDATE_TOGGLE_BITFIELD-$1000000)).w"
+    ],
+    "coordinateRequiredInstructions": [
+      "lsr.w #7,d2",
+      "lsr.w #7,d3",
+      "andi.w #$3F,d2",
+      "andi.w #$3F,d3",
+      "lsl.w #6,d3",
+      "add.w d3,d2",
+      "add.w d2,d2"
+    ],
+    "fiveUseInventory": [
+      {
+        "sourcePath": "data/scripting/entity/eas_main.asm",
+        "instructionSiteCount": 3,
+        "lineNumbers": [
+          42,
+          54,
+          66
+        ]
+      },
+      {
+        "sourcePath": "data/scripting/map/debugscripts.asm",
+        "instructionSiteCount": 2,
+        "lineNumbers": [
+          41,
+          44
+        ]
+      }
+    ],
+    "map03RoofRecordCount": 10,
+    "selectedRoofRecords": {
+      "negative": {
+        "trigger": {
+          "x": 4,
+          "y": 8
+        },
+        "source": {
+          "x": 255,
+          "y": 255
+        },
+        "dimensions": {
+          "width": 7,
+          "height": 8
+        },
+        "destination": {
+          "x": 2,
+          "y": 32
+        },
+        "ordinal": 1
+      },
+      "positive": {
+        "trigger": {
+          "x": 24,
+          "y": 26
+        },
+        "source": {
+          "x": 51,
+          "y": 20
+        },
+        "dimensions": {
+          "width": 9,
+          "height": 7
+        },
+        "destination": {
+          "x": 22,
+          "y": 51
+        },
+        "ordinal": 6
+      }
+    },
+    "runtimeQuestions": [
+      "map-block-copy-lifecycle/collision-pathfinding-navigation-effects",
+      "map-block-copy-lifecycle/rendered-vdp-fade-audio-timing",
+      "map-block-copy-lifecycle/persistence-reload-normal-story-reachability"
+    ]
+  },
+  "instrumentation": {
+    "updateCallSiteAddress": 20226,
+    "updateCallOriginalHex": "61000E6820280014",
+    "updateCallPatchedHex": "4EB90000FFA04E71",
+    "stubAddress": 65440,
+    "stubOriginalHex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+    "stubHex": "4EB900005D6C4EB900FF4050202800144E75",
+    "returnAddress": 20234,
+    "probeCallAddress": 65446,
+    "probeReturnAddress": 65452,
+    "generatedProbeAddress": 16728144,
+    "actionScriptAddress": 16728048,
+    "originalEffectiveTargetAddress": 23918
+  },
+  "cases": [
+    {
+      "id": "dispatcher-fading-skip",
+      "kind": "dispatcher-fading-skip",
+      "mapIndex": 3,
+      "fadingSeed": 1,
+      "busySeed": 0,
+      "sentinelSeed": 0,
+      "entityCoordinate": {
+        "x": 24,
+        "y": 26
+      },
+      "blockWord": 2048,
+      "layoutSeeds": [
+        {
+          "address": 16718252,
+          "value": 57005
+        }
+      ],
+      "expected": {
+        "id": "dispatcher-fading-skip",
+        "kind": "dispatcher-fading-skip",
+        "updateEntityDataEntryObserved": true,
+        "helperEvent": null,
+        "dispatcherTailAddressObserved": 23874,
+        "busyWordAfter": 0,
+        "layoutReadbacks": [
+          {
+            "address": 16718252,
+            "value": 57005
+          }
+        ],
+        "savedBufferSentinelAfter": {
+          "address": 16735240,
+          "value": 0
+        }
+      }
+    },
+    {
+      "id": "dispatcher-neutral-flag",
+      "kind": "dispatcher-neutral-flag",
+      "mapIndex": 3,
+      "fadingSeed": 0,
+      "busySeed": 0,
+      "sentinelSeed": 0,
+      "entityCoordinate": {
+        "x": 24,
+        "y": 26
+      },
+      "blockWord": 4096,
+      "layoutSeeds": [
+        {
+          "address": 16718252,
+          "value": 57005
+        }
+      ],
+      "expected": {
+        "id": "dispatcher-neutral-flag",
+        "kind": "dispatcher-neutral-flag",
+        "updateEntityDataEntryObserved": true,
+        "helperEvent": null,
+        "dispatcherTailAddressObserved": 23874,
+        "busyWordAfter": 0,
+        "layoutReadbacks": [
+          {
+            "address": 16718252,
+            "value": 57005
+          }
+        ],
+        "savedBufferSentinelAfter": {
+          "address": 16735240,
+          "value": 0
+        }
+      }
+    },
+    {
+      "id": "dispatcher-show",
+      "kind": "dispatcher-show",
+      "roofKind": "positive",
+      "mapIndex": 3,
+      "fadingSeed": 0,
+      "busySeed": 0,
+      "sentinelSeed": 0,
+      "entityCoordinate": {
+        "x": 24,
+        "y": 26
+      },
+      "blockWord": 2048,
+      "layoutSeeds": [
+        {
+          "address": 16714342,
+          "value": 12545
+        },
+        {
+          "address": 16718252,
+          "value": 57005
+        }
+      ],
+      "expected": {
+        "id": "dispatcher-show",
+        "kind": "dispatcher-show",
+        "updateEntityDataEntryObserved": true,
+        "helperEvent": {
+          "callSiteAddress": 23858,
+          "targetAddress": 16362,
+          "returnAddress": 23862
+        },
+        "dispatcherTailAddressObserved": 23874,
+        "busyWordAfter": 6,
+        "layoutReadbacks": [
+          {
+            "address": 16718252,
+            "value": 12545
+          }
+        ],
+        "savedBufferSentinelAfter": {
+          "address": 16735366,
+          "value": 65535
+        }
+      }
+    },
+    {
+      "id": "dispatcher-hide",
+      "kind": "dispatcher-hide",
+      "roofKind": "positive",
+      "mapIndex": 3,
+      "fadingSeed": 0,
+      "busySeed": 1,
+      "sentinelSeed": 65535,
+      "entityCoordinate": {
+        "x": 24,
+        "y": 26
+      },
+      "blockWord": 3072,
+      "layoutSeeds": [
+        {
+          "address": 16718252,
+          "value": 65535
+        },
+        {
+          "address": 16718254,
+          "value": 65535
+        }
+      ],
+      "expected": {
+        "id": "dispatcher-hide",
+        "kind": "dispatcher-hide",
+        "updateEntityDataEntryObserved": true,
+        "helperEvent": {
+          "callSiteAddress": 23870,
+          "targetAddress": 16626,
+          "returnAddress": 23874
+        },
+        "dispatcherTailAddressObserved": 23874,
+        "busyWordAfter": 0,
+        "layoutReadbacks": [
+          {
+            "address": 16718252,
+            "value": 20736
+          },
+          {
+            "address": 16718254,
+            "value": 20737
+          },
+          {
+            "address": 16718256,
+            "value": 20738
+          },
+          {
+            "address": 16718258,
+            "value": 20739
+          },
+          {
+            "address": 16718260,
+            "value": 20740
+          },
+          {
+            "address": 16718262,
+            "value": 20741
+          },
+          {
+            "address": 16718264,
+            "value": 20742
+          },
+          {
+            "address": 16718266,
+            "value": 20743
+          },
+          {
+            "address": 16718268,
+            "value": 20744
+          },
+          {
+            "address": 16718380,
+            "value": 20752
+          },
+          {
+            "address": 16718382,
+            "value": 20753
+          },
+          {
+            "address": 16718384,
+            "value": 20754
+          },
+          {
+            "address": 16718386,
+            "value": 20755
+          },
+          {
+            "address": 16718388,
+            "value": 20756
+          },
+          {
+            "address": 16718390,
+            "value": 20757
+          },
+          {
+            "address": 16718392,
+            "value": 20758
+          },
+          {
+            "address": 16718394,
+            "value": 20759
+          },
+          {
+            "address": 16718396,
+            "value": 20760
+          },
+          {
+            "address": 16718508,
+            "value": 20768
+          },
+          {
+            "address": 16718510,
+            "value": 20769
+          },
+          {
+            "address": 16718512,
+            "value": 20770
+          },
+          {
+            "address": 16718514,
+            "value": 20771
+          },
+          {
+            "address": 16718516,
+            "value": 20772
+          },
+          {
+            "address": 16718518,
+            "value": 20773
+          },
+          {
+            "address": 16718520,
+            "value": 20774
+          },
+          {
+            "address": 16718522,
+            "value": 20775
+          },
+          {
+            "address": 16718524,
+            "value": 20776
+          },
+          {
+            "address": 16718636,
+            "value": 20784
+          },
+          {
+            "address": 16718638,
+            "value": 20785
+          },
+          {
+            "address": 16718640,
+            "value": 20786
+          },
+          {
+            "address": 16718642,
+            "value": 20787
+          },
+          {
+            "address": 16718644,
+            "value": 20788
+          },
+          {
+            "address": 16718646,
+            "value": 20789
+          },
+          {
+            "address": 16718648,
+            "value": 20790
+          },
+          {
+            "address": 16718650,
+            "value": 20791
+          },
+          {
+            "address": 16718652,
+            "value": 20792
+          },
+          {
+            "address": 16718764,
+            "value": 20800
+          },
+          {
+            "address": 16718766,
+            "value": 20801
+          },
+          {
+            "address": 16718768,
+            "value": 20802
+          },
+          {
+            "address": 16718770,
+            "value": 20803
+          },
+          {
+            "address": 16718772,
+            "value": 20804
+          },
+          {
+            "address": 16718774,
+            "value": 20805
+          },
+          {
+            "address": 16718776,
+            "value": 20806
+          },
+          {
+            "address": 16718778,
+            "value": 20807
+          },
+          {
+            "address": 16718780,
+            "value": 20808
+          },
+          {
+            "address": 16718892,
+            "value": 20816
+          },
+          {
+            "address": 16718894,
+            "value": 20817
+          },
+          {
+            "address": 16718896,
+            "value": 20818
+          },
+          {
+            "address": 16718898,
+            "value": 20819
+          },
+          {
+            "address": 16718900,
+            "value": 20820
+          },
+          {
+            "address": 16718902,
+            "value": 20821
+          },
+          {
+            "address": 16718904,
+            "value": 20822
+          },
+          {
+            "address": 16718906,
+            "value": 20823
+          },
+          {
+            "address": 16718908,
+            "value": 20824
+          },
+          {
+            "address": 16719020,
+            "value": 20832
+          },
+          {
+            "address": 16719022,
+            "value": 20833
+          },
+          {
+            "address": 16719024,
+            "value": 20834
+          },
+          {
+            "address": 16719026,
+            "value": 20835
+          },
+          {
+            "address": 16719028,
+            "value": 20836
+          },
+          {
+            "address": 16719030,
+            "value": 20837
+          },
+          {
+            "address": 16719032,
+            "value": 20838
+          },
+          {
+            "address": 16719034,
+            "value": 20839
+          },
+          {
+            "address": 16719036,
+            "value": 20840
+          }
+        ],
+        "savedBufferSentinelAfter": {
+          "address": 16735366,
+          "value": 65535
+        }
+      }
+    },
+    {
+      "id": "perform-busy-skip",
+      "kind": "perform-busy-skip",
+      "mapIndex": 3,
+      "fadingSeed": 0,
+      "busySeed": 1,
+      "sentinelSeed": 0,
+      "generatedCallSiteAddress": 16728152,
+      "generatedReturnAddress": 16728156,
+      "layoutSeeds": [
+        {
+          "address": 16718252,
+          "value": 4660
+        }
+      ],
+      "expected": {
+        "id": "perform-busy-skip",
+        "kind": "perform-busy-skip",
+        "updateEntityDataEntryObserved": false,
+        "helperEvent": {
+          "callSiteAddress": 16728152,
+          "targetAddress": 16362,
+          "returnAddress": 16728156
+        },
+        "dispatcherTailAddressObserved": null,
+        "busyWordAfter": 1,
+        "layoutReadbacks": [
+          {
+            "address": 16718252,
+            "value": 4660
+          }
+        ],
+        "savedBufferSentinelAfter": {
+          "address": 16735240,
+          "value": 0
+        }
+      }
+    },
+    {
+      "id": "perform-terminator-miss",
+      "kind": "perform-terminator-miss",
+      "mapIndex": 3,
+      "fadingSeed": 0,
+      "busySeed": 0,
+      "sentinelSeed": 0,
+      "generatedCallSiteAddress": 16728152,
+      "generatedReturnAddress": 16728156,
+      "layoutSeeds": [
+        {
+          "address": 16718252,
+          "value": 4660
+        }
+      ],
+      "expected": {
+        "id": "perform-terminator-miss",
+        "kind": "perform-terminator-miss",
+        "updateEntityDataEntryObserved": false,
+        "helperEvent": {
+          "callSiteAddress": 16728152,
+          "targetAddress": 16362,
+          "returnAddress": 16728156
+        },
+        "dispatcherTailAddressObserved": null,
+        "busyWordAfter": 0,
+        "layoutReadbacks": [
+          {
+            "address": 16718252,
+            "value": 4660
+          }
+        ],
+        "savedBufferSentinelAfter": {
+          "address": 16735240,
+          "value": 0
+        }
+      }
+    },
+    {
+      "id": "perform-matched-positive",
+      "kind": "perform-matched-positive",
+      "roofKind": "positive",
+      "mapIndex": 3,
+      "fadingSeed": 0,
+      "busySeed": 0,
+      "sentinelSeed": 0,
+      "generatedCallSiteAddress": 16728152,
+      "generatedReturnAddress": 16728156,
+      "layoutSeeds": [
+        {
+          "address": 16714342,
+          "value": 12545
+        },
+        {
+          "address": 16718252,
+          "value": 57005
+        }
+      ],
+      "expected": {
+        "id": "perform-matched-positive",
+        "kind": "perform-matched-positive",
+        "updateEntityDataEntryObserved": false,
+        "helperEvent": {
+          "callSiteAddress": 16728152,
+          "targetAddress": 16362,
+          "returnAddress": 16728156
+        },
+        "dispatcherTailAddressObserved": null,
+        "busyWordAfter": 6,
+        "layoutReadbacks": [
+          {
+            "address": 16718252,
+            "value": 12545
+          }
+        ],
+        "savedBufferSentinelAfter": {
+          "address": 16735366,
+          "value": 65535
+        }
+      }
+    },
+    {
+      "id": "perform-matched-negative",
+      "kind": "perform-matched-negative",
+      "roofKind": "negative",
+      "mapIndex": 3,
+      "fadingSeed": 0,
+      "busySeed": 0,
+      "sentinelSeed": 0,
+      "generatedCallSiteAddress": 16728152,
+      "generatedReturnAddress": 16728156,
+      "layoutSeeds": [
+        {
+          "address": 16715780,
+          "value": 41217
+        }
+      ],
+      "expected": {
+        "id": "perform-matched-negative",
+        "kind": "perform-matched-negative",
+        "updateEntityDataEntryObserved": false,
+        "helperEvent": {
+          "callSiteAddress": 16728152,
+          "targetAddress": 16362,
+          "returnAddress": 16728156
+        },
+        "dispatcherTailAddressObserved": null,
+        "busyWordAfter": 1,
+        "layoutReadbacks": [
+          {
+            "address": 16715780,
+            "value": 0
+          }
+        ],
+        "savedBufferSentinelAfter": {
+          "address": 16735352,
+          "value": 65535
+        }
+      }
+    },
+    {
+      "id": "csub-inactive-skip",
+      "kind": "csub-inactive-skip",
+      "mapIndex": 3,
+      "fadingSeed": 0,
+      "busySeed": 0,
+      "sentinelSeed": 0,
+      "generatedCallSiteAddress": 16728144,
+      "generatedReturnAddress": 16728148,
+      "layoutSeeds": [
+        {
+          "address": 16718252,
+          "value": 4660
+        }
+      ],
+      "expected": {
+        "id": "csub-inactive-skip",
+        "kind": "csub-inactive-skip",
+        "updateEntityDataEntryObserved": false,
+        "helperEvent": {
+          "callSiteAddress": 16728144,
+          "targetAddress": 16626,
+          "returnAddress": 16728148
+        },
+        "dispatcherTailAddressObserved": null,
+        "busyWordAfter": 0,
+        "layoutReadbacks": [
+          {
+            "address": 16718252,
+            "value": 4660
+          }
+        ],
+        "savedBufferSentinelAfter": {
+          "address": 16735240,
+          "value": 0
+        }
+      }
+    },
+    {
+      "id": "csub-active-restore",
+      "kind": "csub-active",
+      "roofKind": "positive",
+      "mapIndex": 3,
+      "fadingSeed": 0,
+      "busySeed": 1,
+      "sentinelSeed": 65535,
+      "generatedCallSiteAddress": 16728144,
+      "generatedReturnAddress": 16728148,
+      "layoutSeeds": [
+        {
+          "address": 16718252,
+          "value": 65535
+        },
+        {
+          "address": 16718254,
+          "value": 65535
+        }
+      ],
+      "expected": {
+        "id": "csub-active-restore",
+        "kind": "csub-active",
+        "updateEntityDataEntryObserved": false,
+        "helperEvent": {
+          "callSiteAddress": 16728144,
+          "targetAddress": 16626,
+          "returnAddress": 16728148
+        },
+        "dispatcherTailAddressObserved": null,
+        "busyWordAfter": 0,
+        "layoutReadbacks": [
+          {
+            "address": 16718252,
+            "value": 20736
+          },
+          {
+            "address": 16718254,
+            "value": 20737
+          },
+          {
+            "address": 16718256,
+            "value": 20738
+          },
+          {
+            "address": 16718258,
+            "value": 20739
+          },
+          {
+            "address": 16718260,
+            "value": 20740
+          },
+          {
+            "address": 16718262,
+            "value": 20741
+          },
+          {
+            "address": 16718264,
+            "value": 20742
+          },
+          {
+            "address": 16718266,
+            "value": 20743
+          },
+          {
+            "address": 16718268,
+            "value": 20744
+          },
+          {
+            "address": 16718380,
+            "value": 20752
+          },
+          {
+            "address": 16718382,
+            "value": 20753
+          },
+          {
+            "address": 16718384,
+            "value": 20754
+          },
+          {
+            "address": 16718386,
+            "value": 20755
+          },
+          {
+            "address": 16718388,
+            "value": 20756
+          },
+          {
+            "address": 16718390,
+            "value": 20757
+          },
+          {
+            "address": 16718392,
+            "value": 20758
+          },
+          {
+            "address": 16718394,
+            "value": 20759
+          },
+          {
+            "address": 16718396,
+            "value": 20760
+          },
+          {
+            "address": 16718508,
+            "value": 20768
+          },
+          {
+            "address": 16718510,
+            "value": 20769
+          },
+          {
+            "address": 16718512,
+            "value": 20770
+          },
+          {
+            "address": 16718514,
+            "value": 20771
+          },
+          {
+            "address": 16718516,
+            "value": 20772
+          },
+          {
+            "address": 16718518,
+            "value": 20773
+          },
+          {
+            "address": 16718520,
+            "value": 20774
+          },
+          {
+            "address": 16718522,
+            "value": 20775
+          },
+          {
+            "address": 16718524,
+            "value": 20776
+          },
+          {
+            "address": 16718636,
+            "value": 20784
+          },
+          {
+            "address": 16718638,
+            "value": 20785
+          },
+          {
+            "address": 16718640,
+            "value": 20786
+          },
+          {
+            "address": 16718642,
+            "value": 20787
+          },
+          {
+            "address": 16718644,
+            "value": 20788
+          },
+          {
+            "address": 16718646,
+            "value": 20789
+          },
+          {
+            "address": 16718648,
+            "value": 20790
+          },
+          {
+            "address": 16718650,
+            "value": 20791
+          },
+          {
+            "address": 16718652,
+            "value": 20792
+          },
+          {
+            "address": 16718764,
+            "value": 20800
+          },
+          {
+            "address": 16718766,
+            "value": 20801
+          },
+          {
+            "address": 16718768,
+            "value": 20802
+          },
+          {
+            "address": 16718770,
+            "value": 20803
+          },
+          {
+            "address": 16718772,
+            "value": 20804
+          },
+          {
+            "address": 16718774,
+            "value": 20805
+          },
+          {
+            "address": 16718776,
+            "value": 20806
+          },
+          {
+            "address": 16718778,
+            "value": 20807
+          },
+          {
+            "address": 16718780,
+            "value": 20808
+          },
+          {
+            "address": 16718892,
+            "value": 20816
+          },
+          {
+            "address": 16718894,
+            "value": 20817
+          },
+          {
+            "address": 16718896,
+            "value": 20818
+          },
+          {
+            "address": 16718898,
+            "value": 20819
+          },
+          {
+            "address": 16718900,
+            "value": 20820
+          },
+          {
+            "address": 16718902,
+            "value": 20821
+          },
+          {
+            "address": 16718904,
+            "value": 20822
+          },
+          {
+            "address": 16718906,
+            "value": 20823
+          },
+          {
+            "address": 16718908,
+            "value": 20824
+          },
+          {
+            "address": 16719020,
+            "value": 20832
+          },
+          {
+            "address": 16719022,
+            "value": 20833
+          },
+          {
+            "address": 16719024,
+            "value": 20834
+          },
+          {
+            "address": 16719026,
+            "value": 20835
+          },
+          {
+            "address": 16719028,
+            "value": 20836
+          },
+          {
+            "address": 16719030,
+            "value": 20837
+          },
+          {
+            "address": 16719032,
+            "value": 20838
+          },
+          {
+            "address": 16719034,
+            "value": 20839
+          },
+          {
+            "address": 16719036,
+            "value": 20840
+          }
+        ],
+        "savedBufferSentinelAfter": {
+          "address": 16735366,
+          "value": 65535
+        }
+      }
+    }
+  ]
+}

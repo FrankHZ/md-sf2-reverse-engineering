@@ -969,6 +969,25 @@
         "pendingCallback": {"type": "object", "additionalProperties": false, "required": ["active", "caseIndex", "expectedEventPc", "expectedCallPc", "expectedTargetPc", "expectedReturnPc", "rolesAtPc"], "properties": {"active": {"type": "boolean"}, "caseIndex": {"type": "integer", "minimum": 0}, "expectedEventPc": {"$ref": "#/definitions/nullablePc"}, "expectedCallPc": {"$ref": "#/definitions/nullablePc"}, "expectedTargetPc": {"$ref": "#/definitions/nullablePc"}, "expectedReturnPc": {"$ref": "#/definitions/nullablePc"}, "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}},
         "restorationMismatch": {"anyOf": [{"type": "null"}, {"type": "object", "additionalProperties": false, "required": ["domain", "address", "expected", "actual"], "properties": {"domain": {"enum": ["roster", "hp", "combatantX", "list", "listLength", "program", "stream", "pointer", "sram", "checksum", "saveFlags"]}, "address": {"$ref": "#/definitions/nullablePc"}, "expected": {"$ref": "#/definitions/nullablePc"}, "actual": {"$ref": "#/definitions/nullablePc"}}}]}
       }
+    },
+    "mapBlockCopyLifecycleFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "caseId", "phase", "role", "actualPc", "actualEventAddress", "actualCallSiteAddress", "actualTargetAddress", "actualReturnAddress", "expectedEventAddress", "expectedCallSiteAddress", "expectedTargetAddress", "expectedReturnAddress", "pendingCallback", "callbacksRemaining", "error", "restoration", "cleanup"],
+      "properties": {
+        "owner": {"const": "map-block-copy-lifecycle"}, "caseId": {"$ref": "#/definitions/nullableNonEmptyString"}, "phase": {"$ref": "#/definitions/nonEmptyString"}, "role": {"$ref": "#/definitions/nonEmptyString"}, "actualPc": {"$ref": "#/definitions/pc"}, "actualEventAddress": {"$ref": "#/definitions/pc"}, "actualCallSiteAddress": {"$ref": "#/definitions/nullablePc"}, "actualTargetAddress": {"$ref": "#/definitions/nullablePc"}, "actualReturnAddress": {"$ref": "#/definitions/nullablePc"},
+        "expectedEventAddress": {"$ref": "#/definitions/nullablePc"}, "expectedCallSiteAddress": {"$ref": "#/definitions/nullablePc"}, "expectedTargetAddress": {"$ref": "#/definitions/nullablePc"}, "expectedReturnAddress": {"$ref": "#/definitions/nullablePc"}, "callbacksRemaining": {"const": 0}, "error": {"$ref": "#/definitions/nonEmptyString"},
+        "restoration": {"type": "object", "additionalProperties": false, "required": ["attempted", "verified", "cellCount", "mismatch"], "properties": {"attempted": {"const": true}, "verified": {"type": "boolean"}, "cellCount": {"type": "integer", "minimum": 0}, "mismatch": {"anyOf": [{"type": "null"}, {"type": "object", "additionalProperties": false, "required": ["address", "width", "expected", "actual"], "properties": {"address": {"$ref": "#/definitions/pc"}, "width": {"enum": [1, 2, 4]}, "expected": {"type": "integer", "minimum": 0}, "actual": {"type": "integer", "minimum": 0}}}]}}},
+        "cleanup": {"type": "object", "additionalProperties": false, "required": ["outputRemoved", "callbacksCleared"], "properties": {"outputRemoved": {"const": true}, "callbacksCleared": {"const": true}}},
+        "pendingCallback": {
+          "type": "object", "additionalProperties": false,
+          "required": ["active", "caseId", "role", "phase", "helperCallObserved", "helperEntryObserved", "helperReturnObserved", "dispatcherTailObserved"],
+          "properties": {
+            "active": {"type": "boolean"}, "caseId": {"$ref": "#/definitions/nullableNonEmptyString"}, "role": {"$ref": "#/definitions/nonEmptyString"}, "phase": {"$ref": "#/definitions/nonEmptyString"},
+            "helperCallObserved": {"type": "boolean"}, "helperEntryObserved": {"type": "boolean"}, "helperReturnObserved": {"type": "boolean"}, "dispatcherTailObserved": {"type": "boolean"}
+          }
+        }
+      }
     }
   }
 }

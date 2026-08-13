@@ -361,6 +361,19 @@ overlap directions; it also requires `$34`'s observed post-copy toggle-bit order
 toggle callback. A remake MUST keep collision/pathfinding consumer effects, normal-story reachability
 and map-reload/save persistence, and visible VDP presentation/cycle-pixel timing outside this contract
 until the three explicit `map-block-mutation/*` Unknown questions are separately observed.
+
+The source-named entity action `ac_checkMapBlockCopy` remains a separate lifecycle boundary from
+`setBlocks`/`setBlocksVar`. **Confirmed (H3):**
+`sf2-map-block-copy-lifecycle-runtime-v1` at
+`tests/fixtures/h3/map-block-copy-lifecycle-v1.json` requires the `$40` dispatcher to preserve its fade skip,
+masked `$0800` show and `$0C00` hide selection, action cursor advance, and original helper seams.
+The bounded contract records busy/saved-rectangle state and selected FF0000 words for a source-positive
+copy, source-negative clear, and active restore only; the busy word is the one-based matched roof-row
+scan ordinal rather than a Boolean, and the saved-buffer sentinel follows its rectangle. A remake MUST not infer collision, navigation,
+normal-story reachability, persistence/reload, or VDP/fade/audio/timing behavior from this matrix;
+those remain the grouped `map-block-copy-lifecycle/*` Unknown queue.
+The research harness's source/H1/ROM guards and scoped restoration of selected test writes are evidence
+controls, not remake state requirements.
 Map-script imports MUST retain the four source-named forms `newEntity`, `loadMapEntities`,
 `reloadEntities`, and `loadEntitiesFromMapSetup` as distinct ordered command records in
 `sf2-map-script-engine-static-v1` at `tests/fixtures/h2/map-script-engine-static-v1.json`, field

@@ -280,6 +280,9 @@ CONTRACTS = {
         "tests/fixtures/h3/map-block-mutation-v1.json": (
             "sf2-map-block-mutation-runtime-v1"
         ),
+        "tests/fixtures/h3/map-block-copy-lifecycle-v1.json": (
+            "sf2-map-block-copy-lifecycle-runtime-v1"
+        ),
         "tests/fixtures/h3/entity-population-reload-v1.json": (
             "sf2-entity-population-reload-runtime-v1"
         ),
