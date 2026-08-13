@@ -453,6 +453,11 @@ document whose anchors may be updated.
   battle-action routes, and four helper-local stack writes, while retaining admission, input, UI,
   downstream effects, persistence, timing, and product exposure as separate-owner or Unknown
   boundaries.
+- [`rom-header-data.md`](./design/contracts/rom-header-data.md): the implementation-neutral
+  provenance/import contract for the distinct 64-entry vector-table summary and selected console-
+  header metadata, while retaining per-vector mappings and ABIs, boot/reset behavior, checksum
+  algorithms, SRAM behavior, region compatibility, hardware outcomes, and raw header payload as
+  separate-owner, Unknown, or private boundaries.
 - [`map-entry-routing-state.md`](./design/contracts/map-entry-routing-state.md): the
   implementation-neutral contract for ordered flag-switched map selection, battle-candidate
   admission and bounded state writes, and savepoint/raft-reset selection, while retaining private
