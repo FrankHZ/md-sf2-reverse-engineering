@@ -110,9 +110,10 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         schema_root / "sram-lifecycle-callback-failure.schema.json",
         schema_root / "blacksmith-mithril-callback-failure.schema.json",
         schema_root / "controller-input-callback-failure.schema.json",
+        schema_root / "story-state-callback-failure.schema.json",
     ]
     audit = schema_composition_audit(paths)
-    assert audit["schemaCount"] == 10
+    assert audit["schemaCount"] == 11
     assert audit["unresolvedReferences"] == []
     assert audit["duplicateBodyGroups"] == []
     assert audit["largeConstCount"] == 0
@@ -133,6 +134,8 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         "entityPresentationPendingCallback",
         "randomServicesPendingCallback",
         "sramLifecyclePendingCallback",
+        "storyStateRole",
+        "storyStatePendingCallback",
         "controllerInputPendingCallback",
         "blacksmithMithrilPendingRngCall",
         "blacksmithMithrilTransactionState",
@@ -148,12 +151,224 @@ def test_h3_observer_schema_component_registry_is_closed_and_golden_free() -> No
         "entityPresentationFailure",
         "randomServicesFailure",
         "sramLifecycleFailure",
+        "storyStateFailure",
         "controllerInputFailure",
         "blacksmithMithrilFailure",
     }
     serialized = json.dumps(component, sort_keys=True)
     for golden_field in ("cases", "caseOrder", "records", "recordOrder"):
         assert f'"{golden_field}"' not in serialized
+
+
+def test_story_state_failure_contract_closes_pending_state_and_cleanup() -> None:
+    schema = repo_path("schemas/h3/story-state-callback-failure.schema.json")
+    payload = {
+        "owner": "story-state",
+        "caseId": "csc10-set-slot1-save-load-branch",
+        "phase": "save-entry",
+        "role": "save-entry",
+        "actualPc": 28522,
+        "expectedCallPc": 16736270,
+        "expectedEventPc": 28522,
+        "expectedTargetPc": 28522,
+        "expectedReturnPc": 16736276,
+        "pendingCallback": {
+            "active": True,
+            "caseIndex": 10,
+            "caseKind": "persistence",
+            "expectedCallPc": 16736270,
+            "expectedEventPc": 28522,
+            "expectedTargetPc": 28522,
+            "expectedReturnPc": 16736276,
+            "rolesAtPc": ["save-entry"],
+        },
+        "callbacksRemaining": 0,
+        "mutationState": {
+            "logicalRamMutated": True,
+            "sramMutated": True,
+            "scratchMutated": True,
+        },
+        "outputRemoved": True,
+        "sessionStateRestored": True,
+        "restorationMismatch": None,
+        "error": "forced story-state callback failure",
+    }
+    validate_json(payload, schema, owner="story-state callback payload")
+    wrong_role = deepcopy(payload)
+    wrong_role["pendingCallback"]["rolesAtPc"] = ["unknown"]
+    with pytest.raises(ValueError, match="unknown"):
+        validate_json(wrong_role, schema, owner="story-state closed role")
+    missing_cleanup = deepcopy(payload)
+    missing_cleanup["outputRemoved"] = False
+    with pytest.raises(ValueError, match="True was expected"):
+        validate_json(missing_cleanup, schema, owner="story-state output cleanup")
+    extra_pending = deepcopy(payload)
+    extra_pending["pendingCallback"]["extra"] = True
+    with pytest.raises(ValueError, match="pendingCallback"):
+        validate_json(extra_pending, schema, owner="story-state pending closure")
+
+    pre_probe = deepcopy(payload)
+    pre_probe.update(
+        {
+            "phase": "wrapper-transition",
+            "role": "wrapper-bypass",
+            "actualPc": 292116,
+            "expectedCallPc": 292114,
+            "expectedEventPc": 292114,
+            "expectedTargetPc": 65416,
+            "expectedReturnPc": 292120,
+        }
+    )
+    pre_probe["pendingCallback"].update(
+        {
+            "expectedCallPc": 292114,
+            "expectedEventPc": 292114,
+            "expectedTargetPc": 65416,
+            "expectedReturnPc": 292120,
+            "rolesAtPc": ["wrapper-bypass"],
+        }
+    )
+    pre_probe["mutationState"] = {
+        "logicalRamMutated": False,
+        "sramMutated": False,
+        "scratchMutated": True,
+    }
+    validate_json(pre_probe, schema, owner="story-state pre-probe cleanup failure")
+    assert pre_probe["callbacksRemaining"] == 0
+    assert pre_probe["outputRemoved"] is True
+    assert pre_probe["sessionStateRestored"] is True
+
+    later_pre_probe = deepcopy(pre_probe)
+    later_pre_probe["caseId"] = "csc11-flag89-set-slot1-save-load-branch"
+    later_pre_probe["pendingCallback"]["caseIndex"] = 12
+    later_pre_probe["pendingCallback"]["caseKind"] = "persistence"
+    validate_json(
+        later_pre_probe,
+        schema,
+        owner="story-state later pre-probe session-cleanup failure",
+    )
+    assert later_pre_probe["mutationState"] == {
+        "logicalRamMutated": False,
+        "sramMutated": False,
+        "scratchMutated": True,
+    }
+    assert later_pre_probe["callbacksRemaining"] == 0
+    assert later_pre_probe["outputRemoved"] is True
+    assert later_pre_probe["sessionStateRestored"] is True
+
+    wrong_outer_return = deepcopy(later_pre_probe)
+    wrong_outer_return["expectedReturnPc"] = 292116
+    wrong_outer_return["pendingCallback"]["expectedReturnPc"] = 292116
+    validate_json(
+        wrong_outer_return,
+        schema,
+        owner="story-state structurally valid wrong outer return",
+    )
+
+    hybrid_outer_return = deepcopy(later_pre_probe)
+    hybrid_outer_return["expectedReturnPc"] = 65432
+    hybrid_outer_return["pendingCallback"]["expectedReturnPc"] = 65432
+    validate_json(
+        hybrid_outer_return,
+        schema,
+        owner="story-state structurally valid hybrid outer/inner return",
+    )
+
+    later_post_probe = deepcopy(later_pre_probe)
+    later_post_probe["phase"] = "save-entry"
+    later_post_probe["role"] = "save-entry"
+    later_post_probe["actualPc"] = 28522
+    later_post_probe["expectedCallPc"] = 16730126
+    later_post_probe["expectedEventPc"] = 28522
+    later_post_probe["expectedTargetPc"] = 28522
+    later_post_probe["expectedReturnPc"] = 16730132
+    later_post_probe["pendingCallback"].update(
+        {
+            "expectedCallPc": 16730126,
+            "expectedEventPc": 28522,
+            "expectedTargetPc": 28522,
+            "expectedReturnPc": 16730132,
+            "rolesAtPc": ["save-entry"],
+        }
+    )
+    later_post_probe["mutationState"] = {
+        "logicalRamMutated": True,
+        "sramMutated": True,
+        "scratchMutated": True,
+    }
+    validate_json(
+        later_post_probe,
+        schema,
+        owner="story-state later post-probe session-cleanup failure",
+    )
+
+    inner_transition = deepcopy(later_pre_probe)
+    inner_transition.update(
+        {
+            "role": "trampoline-jsr",
+            "actualPc": 65430,
+            "expectedCallPc": 65430,
+            "expectedEventPc": 16730112,
+            "expectedTargetPc": 16730112,
+            "expectedReturnPc": 65432,
+        }
+    )
+    inner_transition["pendingCallback"].update(
+        {
+            "expectedCallPc": 65430,
+            "expectedEventPc": 16730112,
+            "expectedTargetPc": 16730112,
+            "expectedReturnPc": 65432,
+            "rolesAtPc": ["trampoline-jsr"],
+        }
+    )
+    validate_json(inner_transition, schema, owner="story-state inner transition failure")
+    for field, wrong in (
+        ("expectedCallPc", 292114),
+        ("expectedTargetPc", 65416),
+        ("expectedReturnPc", 292120),
+    ):
+        wrong_inner = deepcopy(inner_transition)
+        wrong_inner[field] = wrong
+        wrong_inner["pendingCallback"][field] = wrong
+        validate_json(
+            wrong_inner,
+            schema,
+            owner=f"story-state structurally valid wrong inner {field}",
+        )
+
+    restoration_failure = deepcopy(payload)
+    restoration_failure["sessionStateRestored"] = False
+    restoration_failure["restorationMismatch"] = {
+        "domain": "sram",
+        "address": 2105399,
+        "expected": 17,
+        "actual": 18,
+    }
+    validate_json(restoration_failure, schema, owner="story-state restoration diagnostic")
+
+    retained_stream_failure = deepcopy(payload)
+    retained_stream_failure["sessionStateRestored"] = False
+    retained_stream_failure["restorationMismatch"] = {
+        "domain": "retainedV1Stream",
+        "address": 16728068,
+        "expected": 17,
+        "actual": 18,
+    }
+    validate_json(
+        retained_stream_failure,
+        schema,
+        owner="story-state retained-v1 stream restoration diagnostic",
+    )
+
+    stack_failure = deepcopy(payload)
+    stack_failure["restorationMismatch"] = {
+        "domain": "callStack",
+        "address": 16776960,
+        "expected": 16776960,
+        "actual": 16776956,
+    }
+    validate_json(stack_failure, schema, owner="story-state stack-balance diagnostic")
 
 
 def test_shared_failure_parser_accepts_append_log_and_rejects_ambiguous_rows(

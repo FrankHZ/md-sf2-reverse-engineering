@@ -211,6 +211,24 @@
         "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/definitions/nonEmptyString"}}
       }
     },
+    "storyStateRole": {
+      "enum": ["registration", "story-number", "story-flag", "story-entry", "story-return", "wrapper-callsite", "trampoline-entry", "trampoline-jsr", "probe-entry", "trampoline-return", "wrapper-bypass", "wrapper-transition-watchdog", "mutation-handler-entry", "mutation-call", "mutation-return", "save-entry", "save-return-poison", "load-entry", "load-return", "final-handler-entry", "final-check-call", "final-branch-result"]
+    },
+    "storyStatePendingCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["active", "caseIndex", "caseKind", "expectedCallPc", "expectedEventPc", "expectedReturnPc", "expectedTargetPc", "rolesAtPc"],
+      "properties": {
+        "active": {"type": "boolean"},
+        "caseIndex": {"type": "integer", "minimum": 0},
+        "caseKind": {"anyOf": [{"type": "null"}, {"enum": ["v1", "persistence"]}]},
+        "expectedCallPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedEventPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetPc": {"$ref": "#/definitions/nullablePc"},
+        "rolesAtPc": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/definitions/storyStateRole"}}
+      }
+    },
     "controlAudioFailure": {
       "type": "object",
       "additionalProperties": false,
@@ -298,6 +316,53 @@
         "pendingCallback": {"$ref": "#/definitions/sramLifecyclePendingCallback"},
         "phase": {"$ref": "#/definitions/nonEmptyString"},
         "role": {"$ref": "#/definitions/nonEmptyString"}
+      }
+    },
+    "storyStateFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actualPc", "callbacksRemaining", "caseId", "error", "expectedCallPc", "expectedEventPc", "expectedReturnPc", "expectedTargetPc", "mutationState", "outputRemoved", "owner", "pendingCallback", "phase", "restorationMismatch", "role", "sessionStateRestored"],
+      "properties": {
+        "actualPc": {"$ref": "#/definitions/nullablePc"},
+        "callbacksRemaining": {"const": 0},
+        "caseId": {"$ref": "#/definitions/nullableNonEmptyString"},
+        "error": {"$ref": "#/definitions/nonEmptyString"},
+        "expectedCallPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedEventPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedReturnPc": {"$ref": "#/definitions/nullablePc"},
+        "expectedTargetPc": {"$ref": "#/definitions/nullablePc"},
+        "mutationState": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["logicalRamMutated", "sramMutated", "scratchMutated"],
+          "properties": {
+            "logicalRamMutated": {"type": "boolean"},
+            "sramMutated": {"type": "boolean"},
+            "scratchMutated": {"type": "boolean"}
+          }
+        },
+        "outputRemoved": {"const": true},
+        "owner": {"const": "story-state"},
+        "pendingCallback": {"$ref": "#/definitions/storyStatePendingCallback"},
+        "phase": {"$ref": "#/definitions/nonEmptyString"},
+        "restorationMismatch": {
+          "anyOf": [
+            {"type": "null"},
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["domain", "address", "expected", "actual"],
+              "properties": {
+                "domain": {"enum": ["logicalRam", "sram", "generatedScratch", "pointerScratch", "retainedV1Stream", "promptResultWord", "callStack"]},
+                "address": {"$ref": "#/definitions/nullablePc"},
+                "expected": {"$ref": "#/definitions/nullablePc"},
+                "actual": {"$ref": "#/definitions/nullablePc"}
+              }
+            }
+          ]
+        },
+        "role": {"$ref": "#/definitions/storyStateRole"},
+        "sessionStateRestored": {"type": "boolean"}
       }
     },
     "controllerInputPendingCallback": {
