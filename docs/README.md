@@ -458,6 +458,12 @@ document whose anchors may be updated.
   header metadata, while retaining per-vector mappings and ABIs, boot/reset behavior, checksum
   algorithms, SRAM behavior, region compatibility, hardware outcomes, and raw header payload as
   separate-owner, Unknown, or private boundaries.
+- [`map-area-description-routing.md`](./design/contracts/map-area-description-routing.md): the
+  implementation-neutral private-import and routing contract for 126 ordered setup references, 75
+  callable targets, 37 wrappers, 38 direct-return stubs, 227 physical entries, first-match selection,
+  and the bounded normal-path `d6=1` condition rule, while retaining complete tables, text/function
+  graphs, nonstandard reachability, effects, persistence, and presentation as private, separate-owner,
+  or Unknown boundaries.
 - [`map-entity-data.md`](./design/contracts/map-entity-data.md): the implementation-neutral private-
   import contract for 126 setup-pointer references to 125 entity-list roots, 980 physical records
   producing 987 ordered list references, exact suffix-sharing and terminator topology, bounded record

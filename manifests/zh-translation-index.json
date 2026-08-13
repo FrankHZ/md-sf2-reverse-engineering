@@ -115,6 +115,10 @@
       "translatedDate": "2026-08-08"
     },
     {
+      "source": "docs/design/contracts/map-area-description-routing.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/map-entity-data.md",
       "status": "pending"
     },
