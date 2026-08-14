@@ -2,7 +2,7 @@
 
 - **Confirmed original behavior:** the 21-command scene interpreter, scene initialization and
   selector order, complete 32-slot spell setup/update dispatch, 208 actor-animation sequences, the
-  background and actor-sprite selection/loader/presentation seams, and the complete weapon, ground,
+  background, actor-sprite, weapon, and ground selection/loader/presentation seams, and the complete
   spell, invocation, status, and transition graphics container boundaries described below.
 - **Unknown original behavior:** exact command and frame timing, VInt/VDP effects, palette-transition
   appearance, visible layer composition and placement, the 512-byte invocation-transfer tails,
@@ -21,8 +21,7 @@ selectors, loaders, and dispatch tables used to present that stream. It defines:
 1. the command-buffer interpreter and command identities;
 2. scene initialization, actor/weapon/background selection, and layer-load order;
 3. ally/enemy animation selection and sequence data;
-4. the background and actor-sprite selection/loader/presentation contracts plus weapon and ground
-   container/load contracts;
+4. the background, actor-sprite, weapon, and ground selection/loader/presentation contracts;
 5. spell-animation setup/update dispatch and battle-effect graphics corpora;
 6. the state that a future compatibility adapter must expose without prescribing a renderer.
 
@@ -50,7 +49,10 @@ The executable owners are:
 - `sf2-battle-sprite-animation-static-v1` in
   `tests/fixtures/h2/battle-sprite-animation-static-v1.json`;
 - `sf2-battle-weapon-ground-decode-v1` in
-  `tests/fixtures/h2/battle-weapon-ground-decode-v1.json`;
+  `tests/fixtures/h2/battle-weapon-ground-decode-v1.json`, retained here as bounded weapon/ground
+  loader and presentation witnesses while
+  [Battle Weapon and Ground Graphics Data](battle-weapon-ground-graphics-data.md) owns the static
+  import corpora;
 - `sf2-battle-effect-graphics-decode-v1` in
   `tests/fixtures/h2/battle-effect-graphics-decode-v1.json`.
 
@@ -81,6 +83,11 @@ Two scope corrections govern this contract:
   compressed and decoded identities, aggregate sizes, and private round-trip evidence. This
   contract consumes those canonical records only at the actor selection, property/frame loader,
   palette-operation, Stack-handoff, DMA-request, and presentation seams.
+- [Battle Weapon and Ground Graphics Data](battle-weapon-ground-graphics-data.md) owns the 23-slot
+  weapon table, 42 weapon-palette entries, 30-slot/27-header ground table and aliases, 33 stream
+  identities, aggregate sizes, and private round-trip evidence. This contract consumes those
+  canonical records only at the selector, palette, loader, relative-lookup, service-handoff,
+  transfer-request, and presentation seams.
 
 No accepted runtime presentation matrix exists. This contract therefore makes no fresh H3 claim and
 does not convert the research runtime queue into implied behavior.
@@ -94,16 +101,16 @@ An original-fidelity adapter MUST preserve these distinguishable domains:
 | scene command stream | ordered command words and parameters constructed by battle actions |
 | scene interpreter state | command cursor, dead-combatant list, actor/target switches, waits, and return state |
 | selection state | actor sides, sprite/palette IDs, weapon, ground, background, animation index, mirror and variant bits |
-| decoded resource state | canonical background and actor-sprite records consumed from their data contracts plus weapon, ground, spell, invocation, status, and transition payloads owned here |
+| decoded resource state | canonical background, actor-sprite, weapon, and ground records consumed from their data contracts plus spell, invocation, status, and transition payloads owned here |
 | sequence state | actor frame entries, offsets, weapon fields, spell triggers, and hold/default flags |
 | presentation-driver state | palettes, layouts, optional layers, VInt registrations, DMA requests, fade and phase/toggle state |
 | persistent battle state | HP, MP, status, EXP, gold, items, death, and battle outcome owned by other contracts |
 
 The command stream is not a rendered frame, and decoded bytes are not proof of visible pixels. A
 remake MAY use different internal structures, but an H4 adapter must still expose the confirmed
-identities, order, selectors, sizes, and aliases at their owning boundaries. For backgrounds and
-actor sprites, this contract tests use of canonical data-contract records rather than independently
-re-verifying them.
+identities, order, selectors, sizes, and aliases at their owning boundaries. For backgrounds, actor
+sprites, weapons, and grounds, this contract tests use of canonical data-contract records rather
+than independently re-verifying them.
 
 ## Scene Command Interpreter
 
@@ -206,17 +213,26 @@ arrangement.
 
 ### Weapons and ground
 
-The combined corpus has 53 pointers: 23 weapon entries and 30 ground entries. All 23 weapon graphics
-decode to 8,192 bytes and each payload contains four 64-tile views. The contiguous weapon-palette
-entry supplies the final two colors of the ally battle-sprite palette.
+The canonical weapon pointer/stream records, contiguous weapon-palette entries, ground
+pointer/header/alias/stream records, compressed and decoded identities, byte counts, and private
+round-trip evidence are owned by
+[Battle Weapon and Ground Graphics Data](battle-weapon-ground-graphics-data.md). This contract does
+not independently own or re-verify those static corpora.
 
-The 30 ground pointers resolve to 27 headers and ten unique graphics payloads. Grounds 21/22 alias
-ground 12 and ground 29 aliases ground 13. A ground header supplies three palette words followed by a
-self-relative tileset word; each unique graphics stream decodes to 1,536 bytes and requests
-`0x300` DMA words.
+`LoadWeaponPalette` consumes one selected canonical four-byte palette entry and writes it to the
+source-named final two ally palette colors. `LoadWeaponsprite` consumes one selected canonical
+weapon stream through the separately owned Stack service; the accepted decoded record is 8,192
+bytes, and the source-format consumer describes four 64-tile views without establishing their
+visible arrangement or angle-selection rule.
 
-These counts and load units do not establish weapon angle selection, ground/background composition,
-tilemap placement, palette priority, or visible layer order.
+`LoadBattlesceneGroundToVram` consumes one selected canonical ground header. It applies the header's
+three palette words to source-named base color indices 3, 4, and 8, resolves the self-relative
+tileset word, and hands the selected compressed stream to the separately owned compressed-DMA
+service with a fixed `0x300`-word request.
+
+These are selector, loader, palette-operation, relative-lookup, service-handoff, and transfer-request
+boundaries. They do not establish weapon angle selection, ground/background composition, transfer
+completion, tilemap placement, palette appearance or priority, or visible layer order.
 
 ## Spell Animation Dispatch
 
@@ -269,10 +285,13 @@ An original-fidelity adapter MUST preserve:
 - canonical background records consumed from [Battle Background Graphics Data](battle-background-graphics-data.md)
   without independently re-verifying its catalog, plus the accepted background selection, staging,
   palette-operation, and presentation seams;
+- canonical weapon and ground records consumed from
+  [Battle Weapon and Ground Graphics Data](battle-weapon-ground-graphics-data.md) without
+  independently re-verifying their catalogs, plus the accepted selection, palette-operation,
+  relative-lookup, service-handoff, transfer-request, and presentation seams;
 - the accepted actor-sprite property/frame lookup, palette-operation, Stack-handoff, and fixed-DMA
-  seams, plus exact pointer/payload counts, aliases, palette rules, decoded sizes, DMA/transfer units,
-  and setup/update reuse for the weapon, ground, spell, invocation, status, and transition corpora
-  still owned here;
+  seams, plus exact pointer/payload counts, aliases, decoded sizes, transfer units, and setup/update
+  reuse for the spell, invocation, status, and transition corpora still owned here;
 - the distinction between decoded payload, requested transfer, command/replay state, and visible
   presentation;
 - every itemized **Unknown** boundary rather than filling it from labels or modern conventions.
@@ -296,8 +315,11 @@ A future H4 adapter should consume the seven fixtures named by this contract and
 4. all 208 sequence identities, frame records, hold/default flags, and selector-index rules;
 5. canonical background records supplied by [Battle Background Graphics Data](battle-background-graphics-data.md)
    through the selected loader seam, two ordered staging destinations separated by `0x1800`, and the
-   palette word-0 clear/copy-15 chronology, plus the independently owned weapon/ground aliases,
-   decoded sizes, and transfer requests;
+   palette word-0 clear/copy-15 chronology; plus canonical weapon/ground records supplied by
+   [Battle Weapon and Ground Graphics Data](battle-weapon-ground-graphics-data.md) through the
+   weapon-palette, weapon-stream, and ground-header loader seams, including the final-two-color
+   write, bounded four-view consumer shape, three ground palette-word writes, self-relative lookup,
+   service handoffs, and fixed ground `0x300`-word request;
 6. all 32 setup/update slot identities, reuse, disabled/minus-one gates, mirror/variant values, and
    update toggle/phase admission;
 7. all 56 battle-effect stream identities, decoded lengths, invocation transfer lengths, and the
@@ -317,7 +339,7 @@ owners.
 | background selection/loader seam, staging relation, palette operations | **Confirmed static** | bounded function witness in `sf2-battle-background-decode-v1` ([`battle-background-decode-v1.json`](../../../tests/fixtures/h2/battle-background-decode-v1.json)); canonical resource records owned by [Battle Background Graphics Data](battle-background-graphics-data.md) | Transfer completion, tile arrangement, layer composition, visible palette |
 | ally/enemy property/frame loader seam, palette operations, Stack handoff, DMA requests | **Confirmed static** | bounded function witnesses in `sf2-battle-sprite-decode-v1` ([`battle-sprite-decode-v1.json`](../../../tests/fixtures/h2/battle-sprite-decode-v1.json)); canonical resource records owned by [Battle Sprite Graphics Data](battle-sprite-graphics-data.md) | Transfer completion, placement, timing, rendered frames |
 | 208 actor-animation sequences and selector rules | **Confirmed static** | `sf2-battle-sprite-animation-static-v1` ([`battle-sprite-animation-static-v1.json`](../../../tests/fixtures/h2/battle-sprite-animation-static-v1.json)) | Reachable base-index combinations, timing, weapon-field interpretation |
-| weapon/ground containers, palettes, aliases, decode/load units | **Confirmed static** | `sf2-battle-weapon-ground-decode-v1` ([`battle-weapon-ground-decode-v1.json`](../../../tests/fixtures/h2/battle-weapon-ground-decode-v1.json)) | Angle selection, placement, composition |
+| weapon/ground selection and loader seams, palette operations, relative lookup, service/transfer handoffs | **Confirmed static** | bounded function witnesses in `sf2-battle-weapon-ground-decode-v1` ([`battle-weapon-ground-decode-v1.json`](../../../tests/fixtures/h2/battle-weapon-ground-decode-v1.json)); canonical resource records owned by [Battle Weapon and Ground Graphics Data](battle-weapon-ground-graphics-data.md) | Transfer completion, angle selection, placement, composition |
 | spell/invocation/status/transition graphics streams | **Confirmed static** | `sf2-battle-effect-graphics-decode-v1` ([`battle-effect-graphics-decode-v1.json`](../../../tests/fixtures/h2/battle-effect-graphics-decode-v1.json)) | Invocation tail bytes, palettes, layer/timing/transition composition |
 | persistent HP/EXP scene-command replay | **Separate confirmed runtime subset** | [combat-resolution contract](combat-resolution.md) | Not evidence for rendered presentation |
 | rendered pixels, frame timing, VInt/VDP effects, presentation intent | **Unknown** | No accepted executable owner | Requires a grouped runtime presentation matrix or future product decision |
