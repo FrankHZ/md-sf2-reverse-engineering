@@ -83,6 +83,7 @@ from sf2tool.h3.battlefield_matrix import verify_battlefield_movement_matrix
 from sf2tool.h3.blacksmith_mithril import verify_blacksmith_mithril
 from sf2tool.h3.church_cure_lifecycle import verify_church_cure_lifecycle
 from sf2tool.h3.church_raise_lifecycle import verify_church_raise_lifecycle
+from sf2tool.h3.church_save_lifecycle import verify_church_save_lifecycle
 from sf2tool.h3.controller_input import verify_controller_input
 from sf2tool.h3.enemy_curse import verify_enemy_curse_suppression
 from sf2tool.h3.enemy_drops import verify_enemy_item_drop_behavior
@@ -760,6 +761,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_church_cure)
     h3_church_cure.add_argument("--timeout-seconds", type=int, default=180)
+    h3_church_save = h3_commands.add_parser(
+        "church-save-lifecycle",
+        help="observe Church Save prompt, original SaveGame, and suspend boundary lifecycle",
+    )
+    _add_local_paths(h3_church_save)
+    h3_church_save.add_argument("--timeout-seconds", type=int, default=180)
     h3_service_menu_lifecycle = h3_commands.add_parser(
         "service-menu-lifecycle",
         help="verify one grouped service-entry caller admission and controlled-return cohort",
@@ -1620,6 +1627,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "church-cure-lifecycle":
         print_record(
             verify_church_cure_lifecycle(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "church-save-lifecycle":
+        print_record(
+            verify_church_save_lifecycle(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

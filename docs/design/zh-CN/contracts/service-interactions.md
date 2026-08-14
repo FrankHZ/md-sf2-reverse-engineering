@@ -1,15 +1,16 @@
 # 服务交互
 
-- **已确认的原版行为：** 下文描述的四个服务界面的静态行动排序、取消边界与直接资源辅助边界，以及有界 Church Raise H3 准入/提交边界和 Church Cure 事务边界。
+- **已确认的原版行为：** 下文描述的四个服务界面的静态行动排序、取消边界与直接资源辅助边界，以及有界 Church Raise H3 准入/提交边界、Church Cure 事务边界和 Church Save 生命周期边界。
 - **未知的原版行为：** 调用方准入/返回效果、跨地图/存档重载的持久化、输入/音频/窗口/立绘时序，以及最终呈现合成。
-- 重制状态：实现无关且证据约束的合同；Church Raise 与 Cure 有有界运行时边界，更广泛的服务生命周期仍不完整。
+- 重制状态：实现无关且证据约束的合同；Church Raise、Cure 与 Save 有有界运行时边界，更广泛的服务生命周期仍不完整。
 - 证据日期：2026-08-13
 - 源码基线：`ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - 可追溯性：`tests/fixtures/h2/common-menus-static-v1.json` 中的 `sf2-common-menus-static-v1`；
   `tests/fixtures/h3/church-raise-lifecycle-v1.json` 中的 `sf2-church-raise-lifecycle-runtime-v1`；
   `tests/fixtures/h3/church-cure-lifecycle-v1.json` 中的 `sf2-church-cure-lifecycle-runtime-v1`；
-  `src/sf2tool/h2/menus.py`、`src/sf2tool/h3/church_raise_lifecycle.py`、`src/sf2tool/h3/church_cure_lifecycle.py`；以及
+  `tests/fixtures/h3/church-save-lifecycle-v1.json` 中的 `sf2-church-save-lifecycle-runtime-v1`；
+  `src/sf2tool/h2/menus.py`、`src/sf2tool/h3/church_raise_lifecycle.py`、`src/sf2tool/h3/church_cure_lifecycle.py`、`src/sf2tool/h3/church_save_lifecycle.py`；以及
   `docs/research/common-menus.md`。
 
 > 本文件是 [`service-interactions.md`](../../contracts/service-interactions.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
@@ -33,7 +34,7 @@ Shop 设计合同只消费 `sf2-common-menus-static-v1` 中 **已确认** 的静
 
 ### Church 源码边界
 
-H2 Church 设计合同消费 **已确认** 的静态路由边界：`routeDerived.raise.mutationCalls` 保留来源派生的变更调用顺序 `j_DecreaseGold` → `j_IncreaseCurrentHp`（在 `move.w #CHAR_STATCAP_HP,d1` 之后）→ `UpdateAllyMapsprite`。这个过滤后的变更辅助顺序不断言没有其他调用介入；仅 H2 并未确立最终当前 HP 值。有界且 **已确认** 的 `sf2-church-raise-lifecycle-runtime-v1` H3 边界则观察到每个被接受且负担得起的 Raise 将当前 HP 钳制到 `min(hpMax, 200)`，并完成原始 `UpdateAllyMapsprite` 辅助。调用方可见的延续、呈现和持久化仍是 **未知**。Cure 的源码/H1/ROM 有界运行时边界确认 poison → stun → curse 的状态/装备提交、允许相等的可负担比较以及 Dark Sword `17000 >> 2 = 4250` 费用；更广泛的 Cure 准入、UI、持久化与呈现仍是 **未知**。Promote 保留其等级/数据门与职业再转职的调用顺序；Save 到达其具名存档调用并记录其独立的挂起分支。该合同不把选择器值、辅助名、状态掩码或跳转接口调用方当作对服务准入、持久化、提示时序或呈现渲染的运行时承诺。
+H2 Church 设计合同消费 **已确认** 的静态路由边界：`routeDerived.raise.mutationCalls` 保留来源派生的变更调用顺序 `j_DecreaseGold` → `j_IncreaseCurrentHp`（在 `move.w #CHAR_STATCAP_HP,d1` 之后）→ `UpdateAllyMapsprite`。这个过滤后的变更辅助顺序不断言没有其他调用介入；仅 H2 并未确立最终当前 HP 值。有界且 **已确认** 的 `sf2-church-raise-lifecycle-runtime-v1` H3 边界则观察到每个被接受且负担得起的 Raise 将当前 HP 钳制到 `min(hpMax, 200)`，并完成原始 `UpdateAllyMapsprite` 辅助。调用方可见的延续、呈现和持久化仍是 **未知**。Cure 的源码/H1/ROM 有界运行时边界确认 poison → stun → curse 的状态/装备提交、允许相等的可负担比较以及 Dark Sword `17000 >> 2 = 4250` 费用；更广泛的 Cure 准入、UI、持久化与呈现仍是 **未知**。Promote 保留其等级/数据门与职业再转职的调用顺序；Save 到达其具名存档调用并记录其独立的挂起分支。有界且 **已确认** 的 Save 边界让每条记录进入 `ChurchMenu` 与 `@StartSave`：非零第一次提示在没有 SaveGame/Fade/Witch 回调时退出；零会复制 `CURRENT_MAP` 到 `EGRESS_MAP`、设置 flag 399 并调用原始 SaveGame。每个正记录观察原始 SaveGame 入口、slot 分支汇合后的有效 `rts` 和调用点返回。其 map 0–78 来自经验证 H2 `sf2-map-content-static-v1` 的 79-map 所有者域，而非 Church 范围规则；SaveGame 循环的 4,016 个实际存储字节和 8,032 字节交错地址区间不是持久化声称。该合同不把选择器值、辅助名、状态掩码或跳转接口调用方当作对服务准入、持久化、提示时序或呈现渲染的运行时承诺。
 
 ### Caravan 源码边界
 
@@ -56,3 +57,7 @@ Blacksmith 设计合同只消费 **已确认** 的静态源码边界：一个 24
 ## Church Cure 运行时边界
 
 已确认的 `sf2-church-cure-lifecycle-runtime-v1` fixture `tests/fixtures/h3/church-cure-lifecycle-v1.json` 只收窄原始 Church Cure 事务边界。它保留 poison → stun → curse 的源码顺序、每个成员/物品的 `dbf` 迭代、受控零提示结果到允许相等的 `cmp.l d0,d1; bcc` 可负担路径，以及 poison/stun/curse 的 `10`/`20`/Dark-Sword-`17000 >> 2 = 4250` 费用。完整的十一记录 cohort 包含无状态、拒绝、差一金币、恰好金币和 `4280 → 4270 → 4250 → 0` 的有序成功序列。Poison/stun 提交观察原始 `DecreaseGold` 后接 `SetStatusEffects`；curse 观察 `DecreaseGold`、`UnequipAllItemsIfNotCursed` 及其 `UpdateCombatantStats` tail/RTS 完成。这是实现无关的资源/状态/装备排序边界，不是文字、提示 UI 语义、持久化、经济平衡、服务准入或渲染呈现的规则。observer 恢复范围仅包括触及的金币、完整 combatant record、target-list 长度/字节、dialogue scratch、portrait scratch、generated RAM 和 bootstrap frame。
+
+## Church Save 运行时边界
+
+**已确认**的 `sf2-church-save-lifecycle-runtime-v1` fixture `tests/fixtures/h3/church-save-lifecycle-v1.json` 只收窄原始存档提示、存档调用与直接终止边界。它记录初始拒绝而没有原始 SaveGame/Fade/WitchSuspend 回调；源码/H1/ROM 有界的 slot 1 与 slot 2 存档（map 0、map 78 和已设置的 flag 399）；以及存档后 continue/suspend 分支。选择器零到达 slot 1，非零到达 slot 2。每个正记录观察原始 SaveGame 调用/入口、slot 分支汇合后的有效 RTS 和调用点返回。Suspend 记录再观察原始 Fade 调用/入口/受控返回，接着仅观察原始 `WitchSuspend` 入口边界，而非返回或完整挂起流。恢复范围仅限触及的 map/Egress/save-slot/flag byte、所选 slot 的 4,016 个实际 SRAM 字节及其 8,032 字节交错区间、checksum、`SAVE_FLAGS`、dialogue/portrait scratch、generated span 和 bootstrap frame。这并不确立面向用户的提示语义、时序、SaveGame payload 语义、跨进程持久化、损坏存档行为或全内存恢复。

@@ -153,6 +153,7 @@ DIRECT_FUNCTION_SEAM_OBSERVERS = (
     "tools/bizhawk/blacksmith_mithril_observer.lua",
     "tools/bizhawk/church_raise_lifecycle_observer.lua",
     "tools/bizhawk/church_cure_lifecycle_observer.lua",
+    "tools/bizhawk/church_save_lifecycle_observer.lua",
     "tools/bizhawk/service_menu_entry_return_observer.lua",
     "tools/bizhawk/controller_input_observer.lua",
     "tools/bizhawk/level_up_boundaries_observer.lua",
@@ -227,6 +228,12 @@ COMMAND_LAUNCHES = {
         "verify_church_cure_lifecycle",
         "direct-function-seam",
         _launch("tools/bizhawk/church_cure_lifecycle_observer.lua"),
+    ),
+    "church-save-lifecycle": _command(
+        "sf2tool.h3.church_save_lifecycle",
+        "verify_church_save_lifecycle",
+        "direct-function-seam",
+        _launch("tools/bizhawk/church_save_lifecycle_observer.lua"),
     ),
     "service-menu-lifecycle": _command(
         "sf2tool.h3.service_menu_lifecycle",

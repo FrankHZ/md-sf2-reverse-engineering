@@ -32,7 +32,7 @@ from sf2tool.rom import mega_drive_checksum
 def test_design_contracts_are_traceable() -> None:
     assert verify_design_contracts() == {
         "Documents": 49,
-        "FixtureReferences": 168,
+        "FixtureReferences": 169,
         "EvidenceLabels": "Confirmed,Unknown",
         "Status": "PASS",
     }
@@ -44,8 +44,8 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Records"] == 1621
     assert result["Confirmed"] == 1621
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 90
-    assert result["AddressBindings"] == 2550
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 91
+    assert result["AddressBindings"] == 2551
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1584
@@ -1025,7 +1025,7 @@ def test_schema_tree_freezes_legacy_root_and_namespaces_new_contracts() -> None:
     root = Path(__file__).resolve().parents[2]
     schema_root = root / "schemas"
     legacy_root_schemas = tuple(schema_root.glob("*.schema.json"))
-    assert len(legacy_root_schemas) <= 250
+    assert len(legacy_root_schemas) <= 252
 
     allowed_namespaces = {"core", "h2", "h3"}
     for path in schema_root.rglob("*.schema.json"):

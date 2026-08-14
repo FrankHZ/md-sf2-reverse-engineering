@@ -457,6 +457,9 @@ CONTRACTS = {
         "tests/fixtures/h3/church-cure-lifecycle-v1.json": (
             "sf2-church-cure-lifecycle-runtime-v1"
         ),
+        "tests/fixtures/h3/church-save-lifecycle-v1.json": (
+            "sf2-church-save-lifecycle-runtime-v1"
+        ),
     },
     "docs/design/contracts/save-system.md": {
         "tests/fixtures/h2/tech-services-static-v1.json": "sf2-tech-services-static-v1",
