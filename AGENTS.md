@@ -131,17 +131,28 @@ private-input treatment, or another decision reserved to the user.
 
 Use **stuck** or **blocked on the user** only for an operational inability to continue: required
 filesystem or service permission is unavailable; the scheduler cannot create or resume the required
-agent; a required tool or dependency is unavailable with no safe in-scope fallback; persistent
-infrastructure failure prevents the commands from running; or the responsible agent is genuinely
-unresponsive and cannot be resumed. Report that condition promptly with exact evidence and the
-smallest requested intervention. Evidence conflicts, unexpected runtime behavior, bounded scope
-corrections, and ordinary failed gates are not stuck conditions.
+lane agent; a required tool or dependency is unavailable with no safe in-scope fallback; persistent
+infrastructure failure prevents the commands from running; or the responsible research/design lane
+agent is genuinely unresponsive and cannot be resumed. Report that condition promptly with exact
+evidence and the smallest requested intervention. Evidence conflicts, unexpected runtime behavior,
+bounded scope corrections, ordinary failed gates, and an unresponsive child worker are not stuck
+conditions.
+
+Child-worker recovery belongs to the active lane. If its sole worker becomes unresponsive, the lane
+agent verifies that no writer process or filesystem mutation is still active, interrupts or closes
+that worker, and starts exactly one replacement worker with the complete unchanged slice contract in
+the same topic worktree. It then continues the normal worker-review-gate flow without user or
+main-gate approval. The replacement is serial, never concurrent: do not start it until the prior
+worker is confirmed stopped. The lane agent must not use worker failure as a reason to take over the
+slice implementation itself. Escalate only when the lane agent cannot perform this recovery because
+of a persistent scheduler, permission, tool, or infrastructure failure.
 
 Progress checkpoints are commentary, not completion. While safe in-scope work remains, neither a
 worker checkpoint nor a root review checkpoint ends the lane's turn or waits for user authorization.
 Continue through worker handoff, root review, required gates, exact-path staging, commit, push, and
 Draft PR handoff. Send corrections and review findings back to the same worker; do not start a second
-writer or have the root silently take over implementation.
+concurrent writer or have the root silently take over implementation. A confirmed-stopped or
+unresponsive worker may be replaced serially under the recovery rule above.
 
 Within the accepted Phase 2 direction, continue autonomously through the root/worker workflow: the
 root scopes, accepts, scans, and commits on the research topic branch; the worker performs the assigned reverse engineering or
