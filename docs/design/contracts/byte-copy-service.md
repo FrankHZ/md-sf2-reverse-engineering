@@ -186,9 +186,11 @@ ByteCopyResult {
 
 PrivateOriginalProvenance {
   sourceSymbol
-  romAddress
-  sourceInstructionIdentity
-  h1AndRomVerification
+  sourcePath
+  pinnedUpstreamCommit
+  sourceChronologyIdentity
+  h1ResolvedEntryAddress
+  acceptedRomSha256Provenance
 }
 ```
 
@@ -197,9 +199,11 @@ registers. A future adapter may use spans, slices, arrays, native memory, or ano
 type. Aliasing between the two logical ranges MUST remain representable because overlap is part of the
 accepted result contract.
 
-After private source/H1/ROM verification, a remake MAY implement the operation with a platform
-`memmove` equivalent. It is not required to reproduce the forward/backward micro-loop, `dbf`, stack
-frame, register names, big-endian storage, Mega Drive address space, or original instruction timing.
+After verifying the pinned-source chronology and H1-resolved entry identity under the fixture's
+accepted ROM provenance, a remake MAY implement the operation with a platform `memmove` equivalent.
+It is not required to reproduce the forward/backward micro-loop, `dbf`, stack frame, register names,
+big-endian storage, Mega Drive address space, or original instruction timing. This evidence does not
+establish byte-for-byte H1/ROM parity for the `CopyBytes` instruction body.
 
 ## Public and Private Projection
 
@@ -212,10 +216,12 @@ The public contract may retain:
 - logical overlap/result requirements;
 - small project-authored synthetic byte vectors for future H4 tests.
 
-Private verification inputs include original source/H1/ROM bytes, exact instruction encodings,
-original address values, and any complete caller corpus. They are not required in a distributable
-remake and MUST NOT be published merely to test this operation. This contract owns no original art,
-text, audio, map, or other content payload.
+Accepted private provenance consists of the pinned source identity and chronology, H1-resolved entry
+address, upstream commit, and fixture-owned ROM identity/SHA. Exact source text, instruction
+encodings, or a byte comparison of the function body may remain private inputs for a future stronger
+verifier, but they are not a Confirmed parity fact or an H4 requirement in this contract. Original
+address values and any complete caller corpus likewise remain private and are not required in a
+distributable remake. This contract owns no original art, text, audio, map, or other content payload.
 
 ## Cross-System Separation
 
