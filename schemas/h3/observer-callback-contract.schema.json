@@ -1065,6 +1065,28 @@
         "owner": {"const": "church-cure-lifecycle"}, "caseId": {"$ref": "#/definitions/nonEmptyString"}, "phase": {"$ref": "#/definitions/churchCureLifecycleRole"}, "role": {"$ref": "#/definitions/churchCureLifecycleRole"}, "actualPc": {"$ref": "#/definitions/pc"}, "expectedEventPc": {"$ref": "#/definitions/nullablePc"}, "expectedCallPc": {"$ref": "#/definitions/nullablePc"}, "expectedTargetPc": {"$ref": "#/definitions/nullablePc"}, "expectedReturnPc": {"$ref": "#/definitions/nullablePc"}, "pendingCallback": {"$ref": "#/definitions/churchCurePendingCallback"}, "restorationMismatch": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/churchCureRestorationMismatch"}]}, "restoration": {"type": "object", "additionalProperties": false, "required": ["scopeArmed", "gold", "combatantRecords", "targetsListLength", "targetsListBytes", "dialogueScratch", "currentPortrait", "generatedRam", "a6a7Balance", "sessionCartPatches", "callbacksCleared", "outputRemoved"], "properties": {"scopeArmed": {"type": "boolean"}, "gold": {"type": "boolean"}, "combatantRecords": {"type": "boolean"}, "targetsListLength": {"type": "boolean"}, "targetsListBytes": {"type": "boolean"}, "dialogueScratch": {"type": "boolean"}, "currentPortrait": {"type": "boolean"}, "generatedRam": {"type": "boolean"}, "a6a7Balance": {"type": "boolean"}, "sessionCartPatches": {"const": false}, "callbacksCleared": {"const": true}, "outputRemoved": {"const": true}}}, "error": {"$ref": "#/definitions/nonEmptyString"}
       }
     },
+    "churchSaveLifecycleRole": {
+      "enum": ["registration", "bootstrap-check-sram", "case-entry", "case-result", "terminal-finalize", "church-entry", "start-save", "action-return", "first-prompt-call", "first-prompt-return", "do-save-game", "save-game-call", "save-game-entry", "save-game-rts", "save-game-return", "post-save-prompt-call", "post-save-prompt-return", "exit-save", "exit-menu", "fade-call", "fade-entry", "fade-return", "witch-tail-jump", "witch-suspend-entry", "bootstrap-watchdog", "case-watchdog"]
+    },
+    "churchSavePendingCallback": {
+      "type": "object", "additionalProperties": false,
+      "required": ["active", "kind", "mode", "caseIndex", "expectedCaseId", "expectedEventPc", "expectedCallPc", "expectedTargetPc", "expectedReturnPc", "rolesAtPc", "observedRoles"],
+      "properties": {
+        "active": {"type": "boolean"}, "kind": {"enum": ["registration", "event", "prompt", "save", "fade", "witch", "watchdog"]}, "mode": {"$ref": "#/definitions/churchSaveLifecycleRole"}, "caseIndex": {"type": "integer", "minimum": 1}, "expectedCaseId": {"$ref": "#/definitions/nonEmptyString"}, "expectedEventPc": {"$ref": "#/definitions/nullablePc"}, "expectedCallPc": {"$ref": "#/definitions/nullablePc"}, "expectedTargetPc": {"$ref": "#/definitions/nullablePc"}, "expectedReturnPc": {"$ref": "#/definitions/nullablePc"}, "rolesAtPc": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/definitions/churchSaveLifecycleRole"}}, "observedRoles": {"type": "array", "items": {"$ref": "#/definitions/churchSaveLifecycleRole"}}
+      }
+    },
+    "churchSaveRestorationMismatch": {
+      "type": "object", "additionalProperties": false, "required": ["domain", "address", "expected", "actual"],
+      "properties": {"domain": {"enum": ["currentMap", "egressMap", "currentSaveSlot", "flag399", "slotSramByte", "checksum", "saveFlags", "currentPortrait", "dialogueName", "dialogueNumber", "generatedRamByte", "a6", "a7"]}, "address": {"$ref": "#/definitions/nullablePc"}, "expected": {"type": "integer", "minimum": 0, "maximum": 4294967295}, "actual": {"type": "integer", "minimum": 0, "maximum": 4294967295}}
+    },
+    "churchSaveLifecycleFailure": {
+      "type": "object", "additionalProperties": false,
+      "required": ["owner", "caseId", "phase", "role", "actualPc", "expectedEventPc", "expectedCallPc", "expectedTargetPc", "expectedReturnPc", "pendingCallback", "restoration", "restorationMismatch", "error"],
+      "properties": {
+        "owner": {"const": "church-save-lifecycle"}, "caseId": {"$ref": "#/definitions/nonEmptyString"}, "phase": {"$ref": "#/definitions/churchSaveLifecycleRole"}, "role": {"$ref": "#/definitions/churchSaveLifecycleRole"}, "actualPc": {"$ref": "#/definitions/pc"}, "expectedEventPc": {"$ref": "#/definitions/nullablePc"}, "expectedCallPc": {"$ref": "#/definitions/nullablePc"}, "expectedTargetPc": {"$ref": "#/definitions/nullablePc"}, "expectedReturnPc": {"$ref": "#/definitions/nullablePc"}, "pendingCallback": {"$ref": "#/definitions/churchSavePendingCallback"}, "restorationMismatch": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/churchSaveRestorationMismatch"}]},
+        "restoration": {"type": "object", "additionalProperties": false, "required": ["scopeArmed", "currentMap", "egressMap", "currentSaveSlot", "flag399", "slotSram", "checksum", "saveFlags", "dialoguePortraitScratch", "generatedRam", "bootstrapFrame", "sessionCartPatches", "callbacksCleared", "outputRemoved"], "properties": {"scopeArmed": {"type": "boolean"}, "currentMap": {"type": "boolean"}, "egressMap": {"type": "boolean"}, "currentSaveSlot": {"type": "boolean"}, "flag399": {"type": "boolean"}, "slotSram": {"type": "boolean"}, "checksum": {"type": "boolean"}, "saveFlags": {"type": "boolean"}, "dialoguePortraitScratch": {"type": "boolean"}, "generatedRam": {"type": "boolean"}, "bootstrapFrame": {"type": "boolean"}, "sessionCartPatches": {"const": false}, "callbacksCleared": {"const": true}, "outputRemoved": {"const": true}}}, "error": {"$ref": "#/definitions/nonEmptyString"}
+      }
+    },
     "witchSaveMenuActionsPendingCallback": {
       "type": "object",
       "additionalProperties": false,

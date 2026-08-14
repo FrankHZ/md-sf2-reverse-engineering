@@ -1,0 +1,33 @@
+{
+  "id": "sf2-church-save-lifecycle-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "system": "sf2-church-save-lifecycle-runtime-v1",
+  "caseOrder": [
+    "initial-save-prompt-decline-no-service",
+    "slot1-map0-save-continue",
+    "slot2-map78-save-continue",
+    "slot1-existing-flag-save-continue",
+    "slot2-save-rest-suspend-boundary"
+  ],
+  "cases": [
+    {"caseId": "initial-save-prompt-decline-no-service", "action": 3, "selector": 0, "currentMap": 0, "flag399InitiallySet": false, "promptResults": [-1], "terminal": "exit-save"},
+    {"caseId": "slot1-map0-save-continue", "action": 3, "selector": 0, "currentMap": 0, "flag399InitiallySet": false, "promptResults": [0, 0], "terminal": "exit-menu"},
+    {"caseId": "slot2-map78-save-continue", "action": 3, "selector": 1, "currentMap": 78, "flag399InitiallySet": false, "promptResults": [0, 0], "terminal": "exit-menu"},
+    {"caseId": "slot1-existing-flag-save-continue", "action": 3, "selector": 0, "currentMap": 5, "flag399InitiallySet": true, "promptResults": [0, 0], "terminal": "exit-menu"},
+    {"caseId": "slot2-save-rest-suspend-boundary", "action": 3, "selector": 1, "currentMap": 1, "flag399InitiallySet": false, "promptResults": [0, -1], "terminal": "witch-suspend-entry"}
+  ],
+  "sourceContext": {"churchMenuEntryAddress": 133634},
+  "acceptedObservation": {
+    "system": "sf2-church-save-lifecycle-runtime-v1",
+    "caseOrder": ["initial-save-prompt-decline-no-service", "slot1-map0-save-continue", "slot2-map78-save-continue", "slot1-existing-flag-save-continue", "slot2-save-rest-suspend-boundary"],
+    "records": [
+      {"caseId":"initial-save-prompt-decline-no-service","churchEntryPc":133634,"startSavePc":135116,"saveGame":false,"terminal":"exit-save","egressMapBefore":255,"egressMapAfter":255,"flag399Before":false,"flag399After":false,"chronology":["church-entry","start-save","first-prompt-call","first-prompt-return","exit-save"]},
+      {"caseId":"slot1-map0-save-continue","churchEntryPc":133634,"startSavePc":135116,"saveGame":true,"terminal":"exit-menu","egressMapBefore":255,"egressMapAfter":0,"flag399Before":false,"flag399After":true,"chronology":["church-entry","start-save","first-prompt-call","first-prompt-return","do-save-game","save-game-call","save-game-entry","save-game-rts","save-game-return","post-save-prompt-call","post-save-prompt-return","exit-menu"]},
+      {"caseId":"slot2-map78-save-continue","churchEntryPc":133634,"startSavePc":135116,"saveGame":true,"terminal":"exit-menu","egressMapBefore":177,"egressMapAfter":78,"flag399Before":false,"flag399After":true,"chronology":["church-entry","start-save","first-prompt-call","first-prompt-return","do-save-game","save-game-call","save-game-entry","save-game-rts","save-game-return","post-save-prompt-call","post-save-prompt-return","exit-menu"]},
+      {"caseId":"slot1-existing-flag-save-continue","churchEntryPc":133634,"startSavePc":135116,"saveGame":true,"terminal":"exit-menu","egressMapBefore":250,"egressMapAfter":5,"flag399Before":true,"flag399After":true,"chronology":["church-entry","start-save","first-prompt-call","first-prompt-return","do-save-game","save-game-call","save-game-entry","save-game-rts","save-game-return","post-save-prompt-call","post-save-prompt-return","exit-menu"]},
+      {"caseId":"slot2-save-rest-suspend-boundary","churchEntryPc":133634,"startSavePc":135116,"saveGame":true,"terminal":"witch-suspend-entry","egressMapBefore":254,"egressMapAfter":1,"flag399Before":false,"flag399After":true,"chronology":["church-entry","start-save","first-prompt-call","first-prompt-return","do-save-game","save-game-call","save-game-entry","save-game-rts","save-game-return","post-save-prompt-call","post-save-prompt-return","fade-call","fade-entry","fade-return","witch-tail-jump","witch-suspend-entry"]}
+    ],
+    "callbacksCleared": true,
+    "restoration": {"currentMap":true,"egressMap":true,"currentSaveSlot":true,"flag399":true,"slotSram":true,"checksum":true,"saveFlags":true,"dialoguePortraitScratch":true,"generatedRam":true,"bootstrapFrame":true,"sessionCartPatches":true}
+  }
+}

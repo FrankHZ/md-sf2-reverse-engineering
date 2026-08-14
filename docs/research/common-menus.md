@@ -694,6 +694,35 @@ and frame timing, economic meaning, save/load/SRAM/map reload/cross-process pers
 Raise/Promotion/Save, other statuses, inventory-capacity/equipment-selection UI, rendered outcomes,
 and remake choices remain **Unknown**.
 
+## Church Save Lifecycle
+
+**Confirmed — bounded Church Save H3 seam.** The five-case
+`sf2-church-save-lifecycle-runtime-v1` fixture enters original `ChurchMenu` at `0x20A02` and
+observes original `@StartSave` at `0x20FCC` in every case. Source/H1/ROM guards retain selector
+comparisons `0`, `1`, and `2` for Raise/Cure/Promotion before action `3` reaches Save; the first
+`j_alt_YesNoPrompt` at `0x20FD0` accepts `d0 = 0` through the `0x20FD6` compare and `0x20FDA`
+branch, while nonzero follows `@ExitSave` at `0x21028`. Accepted cases copy `CURRENT_MAP` to
+`EGRESS_MAP` at `0x20FE6`, load `CURRENT_SAVE_SLOT` at `0x20FEC`, execute the flag-399 trap and
+operand at `0x20FF0`/`0x20FF2`, and call original `SaveGame` at `0x20FF4 → 0x6F6A`. Its slot
+branches converge at source `@Continue`, whose H1/ROM `rts` at `0x6FAA` is observed before the
+original call-site return at `0x20FF8`.
+
+The matrix covers initial decline without SaveGame/Fade/Witch callbacks; slot 1 map 0, slot 2 map
+78, and pre-set flag-399 saves that continue through `@ExitMenu`; plus slot 2 save/rest that reaches
+the original Fade call/entry/controlled return and then the `WitchSuspend` entry-only tail target
+`0x21020 → 0x7034`. Selector zero selects Save slot 1 and nonzero selects slot 2. The 0–78 map
+values are the independently validated H2 `sf2-map-content-static-v1` 79-map owner domain, not
+Church range checking. `SaveGame`'s
+`SAVE_SLOT_REAL_SIZE = 4016` loop stores 4,016 actual SRAM bytes over an 8,032-byte interleaved
+address interval; it does not establish 8,032 stored bytes or cross-process durability.
+
+The observer snapshots and readbacks only the touched map/Egress/slot/flag byte, selected slot's
+4,016 physical SRAM bytes, checksum, `SAVE_FLAGS`, dialogue/portrait scratch, generated spans, and
+bootstrap frame. It uses one deterministic shared-PC dispatcher, reports callback failures through a
+structured nonzero status, and deletes rejected output. **Unknown:** ordinary UI/audio/fade/suspend
+timing and presentation, normal-story reachability, cross-process or torn-save persistence, invalid
+selector behavior, SaveGame payload meaning, and broader WitchSuspend behavior.
+
 ## Reproduction
 
 ```powershell
@@ -707,6 +736,7 @@ uv run sf2 h3 blacksmith-mithril --timeout-seconds 180
 uv run sf2 h3 service-menu-lifecycle --timeout-seconds 180
 uv run sf2 h3 church-raise-lifecycle --timeout-seconds 180
 uv run sf2 h3 church-cure-lifecycle --timeout-seconds 180
+uv run sf2 h3 church-save-lifecycle --timeout-seconds 180
 uv run sf2 research-index test
 ```
 

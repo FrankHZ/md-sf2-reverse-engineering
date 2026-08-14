@@ -2,10 +2,11 @@
 
 - **Confirmed original behavior:** static action ordering, cancellation and direct resource-helper
   boundaries for the four service surfaces described below, plus the bounded Church Raise H3
-  admission/commit seam and the bounded Church Cure transaction seam.
+  admission/commit seam, the bounded Church Cure transaction seam, and the bounded Church Save
+  lifecycle seam.
 - **Unknown original behavior:** caller admission/return effects, persistence across map/save reload,
   input/audio/window/portrait timing, and final presentation composition.
-- Remake status: implementation-neutral evidence-bound contract; Church Raise and Cure have bounded
+- Remake status: implementation-neutral evidence-bound contract; Church Raise, Cure, and Save have bounded
   runtime seams while broader service lifecycles remain incomplete.
 - Evidence date: 2026-08-13
 - Source baseline: `ShiningForceCentral/SF2DISASM`
@@ -13,8 +14,10 @@
 - Traceability: `sf2-common-menus-static-v1` in
   `tests/fixtures/h2/common-menus-static-v1.json`; `sf2-church-raise-lifecycle-runtime-v1` in
   `tests/fixtures/h3/church-raise-lifecycle-v1.json`; `sf2-church-cure-lifecycle-runtime-v1` in
-  `tests/fixtures/h3/church-cure-lifecycle-v1.json`; `src/sf2tool/h2/menus.py`,
-  `src/sf2tool/h3/church_raise_lifecycle.py`, `src/sf2tool/h3/church_cure_lifecycle.py`; and
+  `tests/fixtures/h3/church-cure-lifecycle-v1.json`; `sf2-church-save-lifecycle-runtime-v1` in
+  `tests/fixtures/h3/church-save-lifecycle-v1.json`; `src/sf2tool/h2/menus.py`,
+  `src/sf2tool/h3/church_raise_lifecycle.py`, `src/sf2tool/h3/church_cure_lifecycle.py`,
+  `src/sf2tool/h3/church_save_lifecycle.py`; and
   `docs/research/common-menus.md`.
 
 ## Confirmed Interaction Contract
@@ -62,9 +65,17 @@ Cure's source/H1/ROM-bounded runtime seam confirms poison → stun → curse sta
 including equality-inclusive affordability and the Dark Sword `17000 >> 2 = 4250` cost; broader Cure
 admission, UI, persistence, and presentation remain **Unknown**. Promote
 preserves its level/data gates and class-then-promotion call order; Save reaches its named save call and
-records its separate suspend branch. The contract does not treat selector values, helper names, status
-masks, or jump-interface callers as a runtime promise about service admission, persistence, prompt
-timing, or rendered presentation.
+records its separate suspend branch. The bounded **Confirmed** Save seam enters `ChurchMenu` and
+`@StartSave` for each record: a nonzero first prompt exits without SaveGame/Fade/Witch callbacks,
+whereas zero copies `CURRENT_MAP` to `EGRESS_MAP`, sets flag 399, and calls original `SaveGame`.
+The zero post-save prompt reaches `@ExitMenu`; the nonzero case observes controlled Fade return and
+original `WitchSuspend` entry only. Each positive record observes original SaveGame entry, the
+slot-branch-converged effective `rts`, and the call-site return. Its map values 0–78 come from the
+validated H2 `sf2-map-content-static-v1` 79-map owner domain, not a Church range rule; the SaveGame
+loop's 4,016 actual stored bytes and 8,032-byte interleaved address interval are not a persistence
+claim. The contract does not treat selector values, helper names, status masks, or
+jump-interface callers as a runtime promise about service admission, persistence, prompt timing, or
+rendered presentation.
 
 ### Caravan source boundary
 
@@ -135,3 +146,18 @@ completion. This is an implementation-neutral resource/status/equipment ordering
 a rule for text, prompt UI semantics, persistence, economy balance, service admission, or rendered
 presentation. Observer restoration is scoped to the touched gold, complete combatant record,
 target-list length/byte, dialogue scratch, portrait scratch, generated RAM, and bootstrap frame.
+
+## Church Save runtime seam
+
+The confirmed `sf2-church-save-lifecycle-runtime-v1` fixture
+`tests/fixtures/h3/church-save-lifecycle-v1.json` narrows only the original save prompt, save-call,
+and immediate terminal boundary. It records initial decline with no original SaveGame/Fade/WitchSuspend
+callback; source/H1/ROM-bounded slot-1 and slot-2 saves with map 0, map 78, and already-set flag 399;
+and the post-save continue/suspend split. Selector zero reaches slot 1 and nonzero slot 2. The suspend
+record observes original SaveGame call/entry/effective RTS/return, then original Fade
+call/entry/controlled return, followed by the original `WitchSuspend` entry boundary, not a return or
+full suspend flow. Restoration is limited to the touched
+map/Egress/save-slot/flag byte, selected 4,016 actual SRAM bytes over its 8,032-byte interleaved
+interval, checksum, `SAVE_FLAGS`, dialogue/portrait scratch, generated spans, and bootstrap frame.
+This does not establish user-facing prompt meaning, timing, SaveGame payload semantics, cross-process
+persistence, torn-save behavior, or all-memory restoration.

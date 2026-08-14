@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:church-save-lifecycle-observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "caseOrder", "records", "callbacksCleared", "restoration"],
+  "properties": {
+    "system": {"$ref": "#/definitions/nonEmptyString"},
+    "caseOrder": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/nonEmptyString"}},
+    "records": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/record"}},
+    "callbacksCleared": {"type": "boolean"},
+    "restoration": {"$ref": "#/definitions/restoration"}
+  },
+  "definitions": {
+    "nonEmptyString": {"type": "string", "minLength": 1},
+    "pc": {"type": "integer", "minimum": 0, "maximum": 16777215},
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["caseId", "churchEntryPc", "startSavePc", "saveGame", "terminal", "egressMapBefore", "egressMapAfter", "flag399Before", "flag399After", "chronology"],
+      "properties": {
+        "caseId": {"$ref": "#/definitions/nonEmptyString"},
+        "churchEntryPc": {"$ref": "#/definitions/pc"},
+        "startSavePc": {"$ref": "#/definitions/pc"},
+        "saveGame": {"type": "boolean"},
+        "terminal": {"$ref": "#/definitions/nonEmptyString"},
+        "egressMapBefore": {"type": "integer", "minimum": 0, "maximum": 255},
+        "egressMapAfter": {"type": "integer", "minimum": 0, "maximum": 255},
+        "flag399Before": {"type": "boolean"},
+        "flag399After": {"type": "boolean"},
+        "chronology": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/definitions/nonEmptyString"}}
+      }
+    },
+    "restoration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["currentMap", "egressMap", "currentSaveSlot", "flag399", "slotSram", "checksum", "saveFlags", "dialoguePortraitScratch", "generatedRam", "bootstrapFrame", "sessionCartPatches"],
+      "properties": {
+        "currentMap": {"type": "boolean"},
+        "egressMap": {"type": "boolean"},
+        "currentSaveSlot": {"type": "boolean"},
+        "flag399": {"type": "boolean"},
+        "slotSram": {"type": "boolean"},
+        "checksum": {"type": "boolean"},
+        "saveFlags": {"type": "boolean"},
+        "dialoguePortraitScratch": {"type": "boolean"},
+        "generatedRam": {"type": "boolean"},
+        "bootstrapFrame": {"type": "boolean"},
+        "sessionCartPatches": {"type": "boolean"}
+      }
+    }
+  }
+}

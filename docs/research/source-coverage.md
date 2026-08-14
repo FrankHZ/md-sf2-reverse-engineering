@@ -26,8 +26,8 @@ It says that the file has been reached, not that every instruction in the file i
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 90 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, and eleven-case Church Cure transaction rail are runtime-confirmed at their controlled seams |
-| Address bindings | 2,550 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 91 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, and five-case Church Save lifecycle rail are runtime-confirmed at their controlled seams |
+| Address bindings | 2,551 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -222,6 +222,12 @@ The current evidence is deep but narrow:
   `17000 >> 2 = 4250` cure cost; runtime confirms equality-inclusive admission and the ordered
   `4280 → 4270 → 4250 → 0` transaction. Prompt/UI interpretation, broader service reachability,
   persistence, presentation, and all non-Cure church actions remain **Unknown**.
+  The five-case Church Save lifecycle rail enters original `ChurchMenu` and `@StartSave` for every
+  case, rejects the initial nonzero prompt without service callbacks, and on zero first-prompt result
+  observes map-to-Egress, flag-399, original `SaveGame`, and either post-save continue to `@ExitMenu`
+  or controlled Fade then original `WitchSuspend` entry. Its 0–78 maps are a fixture domain rather
+  than a Church validator; SaveGame's 4,016 actual stored SRAM bytes and 8,032-byte interleaved span
+  stay distinct. UI/audio/fade/suspend timing and persistence remain **Unknown**.
   The accepted service-entry/return rail closes the complete direct-alias caller denominator
   without reopening those Blacksmith cohorts: 69 direct `jsr`/`bsr` returning calls and `jmp` tail
   transfers resolve through the four service jump aliases, with Shop/Church/Caravan/Blacksmith totals
