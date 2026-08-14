@@ -411,12 +411,17 @@ document whose anchors may be updated.
   dispatch/menu seams, source-static suspend counters and reset handoff, and ending operation-owner
   identities, while retaining save-action internals, assets, runtime input/timing, presentation,
   persistence, and copyrighted payloads as separate-owner, Unknown, or private boundaries.
+- [`portrait-graphics-data.md`](./design/contracts/portrait-graphics-data.md): the
+  implementation-neutral private-import contract for 56 ordered portrait slots, 52 source payload
+  owners, four aliases, counted eye/mouth records, palette/stream partition, and aggregate
+  decode/parity metadata, while retaining original payloads, selection, loading, transfer,
+  rendering, timing, and replacement policy as private, separate-owner, or Unknown boundaries.
 - [`portrait-window-state.md`](./design/contracts/portrait-window-state.md): the
-  implementation-neutral contract for combatant/ally portrait selection, 56-slot private portrait
-  data, portrait and name-window state, callback lifetime, exact load/DMA call order, and bounded
-  eye/mouth update operations, while retaining layouts, global VInt/DMA semantics, visible timing,
-  localization, accessibility, and copyrighted payloads as separate-owner, Unknown, private, or
-  deliberate-design boundaries.
+  implementation-neutral contract for combatant/ally portrait selection, canonical portrait-data
+  consumption, portrait and name-window state, callback lifetime, exact load/DMA call order, and
+  bounded eye/mouth update operations, while retaining layouts, global VInt/DMA semantics, visible
+  timing, localization, accessibility, and copyrighted payloads as separate-owner, Unknown,
+  private, or deliberate-design boundaries.
 - [`caravan-and-deals-state.md`](./design/contracts/caravan-and-deals-state.md): the
   implementation-neutral contract for Caravan status-bit normalization, full-add ignore, ordered
   removal compaction/tail clearing, and packed Deals count saturation/zero-removal boundaries, while
