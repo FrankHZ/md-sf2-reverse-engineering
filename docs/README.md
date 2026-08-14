@@ -503,6 +503,11 @@ document whose anchors may be updated.
   admission and bounded state writes, and savepoint/raft-reset selection, while retaining private
   table corpora, story and persistence meaning, downstream battle/map lifecycle, presentation, and
   malformed inputs as excluded, separate-owner, or Unknown boundaries.
+- [`unused-mapload-control-flow.md`](./design/contracts/unused-mapload-control-flow.md): the
+  implementation-neutral archival contract for the source-named unused mapload entry, its four
+  ordered RNG request operands and staging flow, post-helper-tested VDP/VInt request loop, and
+  four-word signed-store helper, while retaining reachability, callee effects, camera/display
+  behavior, liveness, timing, and presentation as Inferred, separate-owner, or Unknown boundaries.
 - [`map-exploration.md`](./design/contracts/map-exploration.md): the 79-map import boundary, shared
   block/layout ownership, 64x64 geometry, the executable canonical import, area/event/item/animation
   ordering, working-layout mutation, the two source-faithful map-script block-copy forms, the four
