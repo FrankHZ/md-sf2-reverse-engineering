@@ -150,6 +150,11 @@ CONTRACTS = {
             "sf2-tech-services-static-v1"
         ),
     },
+    "docs/design/contracts/name-table-lookup-service.md": {
+        "tests/fixtures/h2/common-stats-static-v1.json": (
+            "sf2-common-stats-static-v1"
+        ),
+    },
     "docs/design/contracts/dialogue-system.md": {
         "tests/fixtures/h2/map-script-engine-static-v1.json": (
             "sf2-map-script-engine-static-v1"
