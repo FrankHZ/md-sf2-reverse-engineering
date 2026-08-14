@@ -1,16 +1,15 @@
 # Portrait Window and State Contract
 
-- **Confirmed original structure:** six bounded portrait/menu service identities, the complete
-  56-slot portrait pointer corpus, 52 unique private payloads and four aliases, counted eye/mouth
-  headers, palette and Stack-load boundaries, and the source-static selection/window/update order
-  described below.
+- **Confirmed original structure:** six bounded portrait/menu service identities; the source-static
+  selection, loader-consumption, window, callback, update, and name-window order described below;
+  and a canonical portrait-data handoff owned by the separate graphics-data contract.
 - **Inferred original behavior:** none promoted here. Upstream labels and comments do not establish
   player-facing intent, death semantics, or visible animation behavior.
 - **Unknown original behavior:** caller admission and natural reachability, invalid portrait-index
   effects, malformed-header behavior, VInt/RNG/DMA cadence, input-repeat meaning, visible blinking or
   mouth timing, window-motion duration, palette/VRAM completion, final composition, and exact
   presentation across dialogue, menus, battles, and story scenes.
-- Remake status: implementation-neutral Phase 3 private-import and state-handoff contract; no
+- Remake status: implementation-neutral Phase 3 state-handoff and portrait-data-consumer contract; no
   renderer, window toolkit, portrait animation policy, accessibility behavior, localization flow, or
   licensed portrait pack has been selected.
 - Evidence date: 2026-08-08
@@ -19,19 +18,19 @@
 
 ## Contract Boundary
 
-This contract defines the static seam from an original portrait selector through private portrait
-data loading and bounded portrait/name-window state. It owns:
+This contract defines the static seam from an original portrait selector through canonical portrait
+data consumption and bounded portrait/name-window state. It owns:
 
 1. the six research-record identities and H1-bound entry addresses listed in the evidence audit;
 2. the raw `GetCombatantPortrait` sign branch and bounded `GetAllyPortrait` class-remap order;
-3. the 56 ordered pointer slots, 52 unique portrait payloads, four aliases, counted eye/mouth header
-   shape, palettes, and 2,048-byte decoded payload size;
+3. `LoadPortrait` consumption of a canonical portrait record, including counted eye/mouth copying,
+   palette-copy order, Stack and transfer handoffs, and exact source operands;
 4. source-static open/close portrait-window state and callback registration/removal order;
 5. source-static eye/mouth update gates, counters, RNG-call operands/post-adds, original/alternate tile
    selection, and mirror-state handoff;
 6. source-static open/close name-window order and its raw current-HP zero/nonzero font branch;
-7. a public H4 surface based on identities, structure, counts, aliases, hashes, and synthetic traces
-   rather than original portrait bytes.
+7. a public H4 surface based on bounded function/state identities, call order, and synthetic traces
+   rather than original portrait bytes or a duplicate catalog representation.
 
 It does not own portrait selection by entity map-sprite property, dialogue commands, service-menu
 state machines, raw window layouts, window-engine behavior, global VInt/DMA semantics, rendered
@@ -49,6 +48,12 @@ The selected executable owners are:
 The owning research prose is
 [Common Menu Engines and Services](../../research/common-menus.md) and
 [Technical Graphics and Decompression Services](../../research/technical-graphics.md).
+
+The portrait fixture remains a bounded `LoadPortrait` consumer witness here. Static table identity,
+pointer order, payload-owner aliases, header/palette/stream partition, byte/decode counts, parity,
+and private import fidelity are owned by [Portrait Graphics Data](portrait-graphics-data.md). This
+contract consumes canonical records from that owner and does not independently own or re-verify the
+catalog.
 
 ## Pre-Contract Evidence Audit
 
@@ -126,44 +131,32 @@ If none matches, the input value remains in `d0`. The contract preserves the raw
 branch condition, symbolic identities, and order. It does not infer a broader numeric portrait or
 ally domain from upstream comments or names.
 
-## Private Portrait Corpus
+## Canonical Portrait Data Consumption
 
-**Confirmed static:** the top-level pointer table starts at ROM address 1,867,780 and contains 56
-ordered slots. They resolve to 52 unique payloads and four aliases:
+The complete table, payload-owner graph, counted entry sequences, palettes, compressed streams,
+decoded identities, sizes, parity, and private/public projection are defined by
+[Portrait Graphics Data](portrait-graphics-data.md). This contract receives one canonical logical
+portrait record from that owner for a valid accepted selector. It relies only on the consumer-facing
+shape needed by the source chronology below:
 
-- portrait slot 35 reuses payload owner 33;
-- slots 53, 54, and 55 reuse payload owner 52.
+```text
+CanonicalPortraitRecord {
+  logicalPortraitId
+  eyeEntries[]
+  mouthEntries[]
+  paletteIdentity
+  stackStreamIdentity
+  decodedTileIdentity
+}
+```
 
-The complete private corpus has these accepted metadata facts:
-
-| Field | Confirmed value |
-| --- | ---: |
-| pointer slots | 56 |
-| unique payloads | 52 |
-| aliases | 4 |
-| total payload bytes | 64,834 |
-| header bytes | 3,788 |
-| palette bytes within the headers | 1,664 |
-| compressed bytes | 61,046 |
-| decoded bytes per unique payload | 2,048 |
-| total decoded bytes | 106,496 |
-| eye entries | 261 |
-| mouth entries | 218 |
-| minimum/maximum header bytes | 36 / 100 |
-
-Each unique payload stores a word-counted sequence of four-byte eye entries, then a word-counted
-sequence of four-byte mouth entries, then one 32-byte palette, followed by one Stack-compressed tile
-stream. The palette bytes are part of the accepted header-byte boundary, not an additional amount to
-add to the total payload size.
-
-All 56 pointer values and all 52 payloads match source, H1, and ROM. The pointer order and alias
-identity must remain first-class during private import. A public fixture or report retains only
-counts, addresses, aliases, sizes, codec statistics, and hashes rather than original headers,
-palettes, compressed streams, or decoded tiles.
+This handoff does not make the original pointer graph, source addresses, payload bytes, hashes,
+aliases, or aggregate corpus counts part of this contract. The data owner tests private import and
+round-trip fidelity; this contract tests how the selected canonical record is consumed.
 
 The original loader performs no explicit selector-range check before indexing the pointer table.
-The accepted corpus closes valid slots `0..55`; behavior for invalid, injected, modified, or corrupt
-indices remains **Unknown** rather than being normalized into a new fallback.
+The canonical data contract closes its accepted valid identities; behavior for invalid, injected,
+modified, or corrupt indices remains **Unknown** rather than being normalized into a new fallback.
 
 ## `LoadPortrait` Source Order
 
@@ -276,25 +269,14 @@ predicate and selected writer identity.
 offscreen, waits, deletes it, clears the index, restores registers, and returns. Visible font colors,
 name content, motion duration, status semantics, and caller admission remain separate or **Unknown**.
 
-## Implementation-Neutral Import and State Model
+## Implementation-Neutral Consumer and State Model
 
 The following is a logical compatibility model, not an engine class hierarchy:
 
 ```text
-PortraitCatalog {
-  pointerTableAddress
-  pointerSlots[56] {
-    slotId
-    payloadRef
-  }
-  uniquePayloads[52] {          // private import only
-    payloadId
-    eyeEntries[]
-    mouthEntries[]
-    paletteBytes[32]
-    compressedStream
-    decodedHash
-  }
+PortraitDataHandle {
+  logicalPortraitId
+  canonicalRecordRef: portrait-graphics-data
 }
 
 PortraitSelectorResult {
@@ -320,15 +302,17 @@ NameWindowState {
 }
 ```
 
-The public form omits private payload arrays and original palette/tile bytes. It retains pointer
-order, alias relations, counts, sizes, addresses, hashes, symbolic selector identities, and synthetic
-state-transition traces.
+The public form retains bounded function and selector identities, consumer call/operand order,
+window-state fields, and synthetic state-transition traces. Static catalog metadata and private
+payload material remain exclusively projected by `portrait-graphics-data`.
 
 ## Cross-System Separation
 
 This contract receives a raw portrait/combatant selector and hands state to window, palette, VRAM,
 and presentation services. It does not decide:
 
+- static portrait catalog identity, pointer order, aliases, payload partition, decode fidelity, or
+  public/private data projection;
 - entity map-sprite assignment or map-sprite-to-portrait/SFX property lookup;
 - dialogue command admission, text selection, story order, or portrait-side modifier meaning;
 - service-menu callers, Caravan messages, battle-scene selection, or member-screen composition;
@@ -342,10 +326,10 @@ Those boundaries remain separate-owner, **Unknown**, private, or deliberate prod
 
 ## Fidelity, Modernization, and Copyright Boundary
 
-Original-format compatibility requires preserving pointer-slot identity and order, aliases, counted
-eye/mouth records, palette/header/stream boundaries, decoded size/hash, selector branch/order,
-open/close state order, exact LoadPortrait tail operands/calls, static animation operands/post-adds,
-and the name-window zero/nonzero branch.
+Static portrait-data compatibility is delegated to [Portrait Graphics Data](portrait-graphics-data.md).
+This contract requires preserving selector branch/order, canonical-record consumption, open/close
+state order, exact `LoadPortrait` copy/tail operands and calls, static animation
+operands/post-adds, and the name-window zero/nonzero branch.
 
 A remake may transcode private portrait streams during import, use a modern texture atlas, replace
 random blinking with an accessibility-safe policy, choose different window motion, or use authored
@@ -358,29 +342,27 @@ Public builds require newly authored or properly licensed content.
 
 ## H4 Acceptance Surface
 
-A remake-side portrait importer/adapter can claim this contract only when automated tests prove:
+A remake-side portrait consumer/state adapter can claim this contract only when automated tests
+prove:
 
-1. exactly 56 ordered pointer slots resolve to 52 unique payloads with aliases `35→33` and
-   `53/54/55→52`, while all pointer/payload identities match the accepted provenance;
-2. private payloads preserve counted four-byte eye and mouth entries, one 32-byte palette, one Stack
-   stream, the accepted aggregate counts/sizes, and exactly 2,048 decoded bytes per unique payload;
-3. public fixtures/reports retain only metadata, identities, counts, aliases, sizes, addresses,
-   codec statistics, hashes, and synthetic examples, never original portrait bytes;
-4. the combatant selector preserves the raw byte-sign branch and return handoff, and the ally helper
+1. one accepted logical portrait identity resolves through `portrait-graphics-data` to a canonical
+   record without this contract reconstructing or re-verifying the original catalog;
+2. the combatant selector preserves the raw byte-sign branch and return handoff, and the ally helper
    preserves its exact unsigned compare/`bhi` gate plus five symbolic class-remap checks in order;
-5. LoadPortrait preserves counted eye/mouth copying, eight-longword palette copies, Stack call,
+3. `LoadPortrait` consumes the canonical record while preserving counted eye/mouth copying,
+   eight-longword palette copies, Stack call,
    repeat-delay `+6`, immediate VRAM operand setup `$F800`/`$0400`/`2`, VRAM call, then CRAM call,
    without claiming portrait-specific CRAM bounds, completion, or cadence;
-6. portrait-window open/close preserves index guards, toggle/counter state, normal/mirrored layout
+4. portrait-window open/close preserves index guards, toggle/counter state, normal/mirrored layout
    identity selection, selector/load order, move/wait seams, callback add/remove lifetime, index
    clearing, and window-present balance;
-7. source-shaped eye/mouth tests preserve gates, counter comparisons, RNG operands `120` and `5`,
+5. source-shaped eye/mouth tests preserve gates, counter comparisons, RNG operands `120` and `5`,
    post-adds `30` and `$000A`, original/alternate selection, and mirror-state handoff without treating
    them as observed distributions or visible timing;
-8. the name window preserves its index guards, create, initial `WriteWindowTiles`, current-HP read,
+6. the name window preserves its index guards, create, initial `WriteWindowTiles`, current-HP read,
    combatant-name read, selected font-writer order, raw HP zero→orange and nonzero→regular writer
    selection, move/wait/delete order, and index clear;
-9. invalid indices, malformed data, callers, VInt/RNG/DMA cadence, window motion, visible frames,
+7. invalid indices, malformed data, callers, VInt/RNG/DMA cadence, window motion, visible frames,
    palette results, localization, accessibility, and licensed content remain separate acceptance
    surfaces.
 
@@ -392,7 +374,7 @@ public builds, or frame-cycle parity unless a later explicit hardware-fidelity d
 | Contract area | Evidence label | Owner | Remaining boundary |
 | --- | --- | --- | --- |
 | six function identities and H1-bound addresses | **Confirmed static inventory** | `sf2-common-menus-static-v1` and `sf2-portrait-graphics-decode-v1` (fixtures linked above) | Aggregate service/menu facts outside the selected records are excluded |
-| 56 pointers, 52 payloads, aliases, counted headers, palettes, Stack streams, sizes, and source/H1/ROM parity | **Confirmed static** | `sf2-portrait-graphics-decode-v1` ([`portrait-graphics-decode-v1.json`](../../../tests/fixtures/h2/portrait-graphics-decode-v1.json)) | Raw payloads remain private; invalid-index behavior remains **Unknown** |
+| canonical catalog identity, aliases, payload partition, decode fidelity, and private projection | **Separate-owner Confirmed static** | [Portrait Graphics Data](portrait-graphics-data.md) | This contract consumes records but does not independently own or re-verify the catalog |
 | selector, open/close, LoadPortrait, update, callback, and name-window instruction/call order | **Confirmed static source review** | Pinned source paths at commit `c834c652b6862bc5679fd7f69a38a7093206efc6` | Natural callers, externally inconsistent state, and runtime results remain **Unknown** |
 | portrait property lookup and dialogue command/caller seams | **Separate owners** | [Sprite-Dialogue Property Data](sprite-dialogue-property-data.md) and [Dialogue System](dialogue-system.md) | End-to-end dialogue presentation remains unclosed |
 | normal/mirrored portrait layout payloads | **Separate owner** | [UI Layout Data](ui-layout-data.md) | This contract preserves selection identity/copy size but consumes no layout fixture |
