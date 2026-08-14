@@ -640,6 +640,10 @@ is created only when a real disagreement appears and the choice constrains later
   audits large schemas for golden/shape duplication, prescribes a local `$ref` registry, structural
   contracts, and exact fixture layering, and migrates common-stats, common-menus, map-events, and
   map-script/H3 in order without weakening negative gates.
+- [`0008-godot-csharp-cli-first-remake-tooling.md`](./decisions/0008-godot-csharp-cli-first-remake-tooling.md):
+  audits the earlier Project-Mech-Strike Godot/C# and machine-local MCP workflow, reproduces its build
+  and headless run boundary, and proposes a Godot 4.7.1 .NET CLI-first Phase 4 toolchain with MCP kept
+  optional; it remains **Proposed** and does not start remake implementation.
 
 ## Evidence Vocabulary
 
