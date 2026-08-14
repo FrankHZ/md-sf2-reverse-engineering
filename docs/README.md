@@ -506,6 +506,11 @@ document whose anchors may be updated.
   identities, the complete alias relation, 669 fixed-size Basic-decoded forms, and the shared sentinel
   identity, while retaining original assets, full aliases, runtime reachability, DMA, and presentation
   as private, separate-owner, or Unknown boundaries.
+- [`map-setup-data.md`](./design/contracts/map-setup-data.md): the implementation-neutral private-
+  import contract for 64 ordered map rows, 66 ordered flag rows, 130 setup references, 126 six-slot
+  definition identities, four exact aliases, and the bounded entity-list access seam, while retaining
+  the complete graph as private and selector, dispatcher, runtime, story, and presentation behavior
+  with their existing owners or as Unknown.
 - [`map-tileset-data.md`](./design/contracts/map-tileset-data.md): the implementation-neutral private-
   import contract for 115 ordered compressed/decoded map-tileset identities, the private 79-map and
   32-animation reference relations, and bounded public usage/parity metadata, while retaining original
