@@ -400,6 +400,12 @@ document whose anchors may be updated.
   graphics helper inventory, while retaining camera logic, codec micro-implementation, rendered
   presentation, hardware timing, copyrighted assets, and forced invalid-state behavior as
   separate-owner, private, or Unknown boundaries.
+- [`special-sprite-graphics-data.md`](./design/contracts/special-sprite-graphics-data.md): the
+  implementation-neutral private-import contract for ten ordered special-sprite pointers, five
+  initial payload owners, five aliases, six source resource definitions, exact corpus accounting,
+  and aggregate decode/parity metadata, while retaining original payloads, route/service behavior,
+  runtime admission, animation, transfer, presentation, and replacement policy as private,
+  separate-owner, or Unknown boundaries.
 - [`special-screen-asset-data.md`](./design/contracts/special-screen-asset-data.md): the
   implementation-neutral private-import contract for nine Stack-compressed special-screen
   resources, twelve uncompressed palette/layout resources, and the witch choice/bubble table,

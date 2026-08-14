@@ -192,6 +192,11 @@ CONTRACTS = {
             "sf2-special-sprite-decode-v1"
         ),
     },
+    "docs/design/contracts/special-sprite-graphics-data.md": {
+        "tests/fixtures/h2/special-sprite-decode-v1.json": (
+            "sf2-special-sprite-decode-v1"
+        ),
+    },
     "docs/design/contracts/ui-graphics-asset-data.md": {
         "tests/fixtures/h2/ui-graphics-decode-v1.json": (
             "sf2-ui-graphics-decode-v1"

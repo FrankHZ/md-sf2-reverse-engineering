@@ -248,6 +248,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/special-sprite-graphics-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/spell-definition-data.md",
       "status": "pending"
     },
