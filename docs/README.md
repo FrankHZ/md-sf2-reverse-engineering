@@ -379,6 +379,12 @@ document whose anchors may be updated.
   independent learned count, and known-before-empty `LearnSpell` mutation/results, while retaining
   numeric packing/cardinality, malformed inputs, runtime acquisition, persistence, UI, resolution,
   presentation, and balance as Unknown or separate-owner boundaries.
+- [`name-table-lookup-service.md`](./design/contracts/name-table-lookup-service.md): the
+  implementation-neutral service contract for the `GetClassName` frontend, length-prefixed
+  `FindName` traversal, bounded valid-table/index result relation, word-stack preservation, and
+  three direct caller seams, while retaining table contents, caller-specific selection, malformed
+  inputs, localization, rendering, runtime use, and presentation as private, separate-owner, or
+  Unknown boundaries.
 - [`audio-system.md`](./design/contracts/audio-system.md): the implementation-neutral contract for
   music/SFX command identities, two-bank slot and target aliases, headers and channel roles, the
   static macro/note/sample/instrument/SFX domains, and the bounded four-command playback-state

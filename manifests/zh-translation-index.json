@@ -184,6 +184,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/name-table-lookup-service.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/new-game-state-initialization.md",
       "status": "pending"
     },
