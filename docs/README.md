@@ -658,6 +658,11 @@ document whose anchors may be updated.
   aliases, four diamond-border variants, four direct assets, and exact non-overlapping source/ROM
   coverage, while retaining runtime window behavior, presentation, localization, accessibility, and
   copyrighted payloads as separate, Unknown, or deliberate-design boundaries.
+- [`unused-menu-constant-write-control-flow.md`](./design/contracts/unused-menu-constant-write-control-flow.md):
+  the implementation-neutral contract for the bounded `sub_15268` constant-write chronology, its
+  exact fourteen-longword admitted memory projection, and static zero-symbolic-caller inventory,
+  while retaining machine state, runtime reachability, memory meaning, UI behavior, and timing as
+  Unknown or separate-owner boundaries.
 - [`unused-technical-asset-data.md`](./design/contracts/unused-technical-asset-data.md): the
   implementation-neutral private-import contract for one nominally unused 5,694-byte container with
   four ordered Stack streams, two ordered palettes, the separate palette-pointer identity, and the

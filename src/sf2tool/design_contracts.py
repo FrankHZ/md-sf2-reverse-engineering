@@ -580,6 +580,11 @@ CONTRACTS = {
             "sf2-common-maps-static-v1"
         ),
     },
+    "docs/design/contracts/unused-menu-constant-write-control-flow.md": {
+        "tests/fixtures/h2/common-menus-static-v1.json": (
+            "sf2-common-menus-static-v1"
+        ),
+    },
     "docs/design/contracts/unused-technical-asset-data.md": {
         "tests/fixtures/h2/unused-technical-assets-static-v1.json": (
             "sf2-unused-technical-assets-static-v1"
