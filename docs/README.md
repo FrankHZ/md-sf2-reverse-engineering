@@ -492,6 +492,11 @@ document whose anchors may be updated.
   and the bounded normal-path `d6=1` condition rule, while retaining complete tables, text/function
   graphs, nonstandard reachability, effects, persistence, and presentation as private, separate-owner,
   or Unknown boundaries.
+- [`map-camera-update-control-flow.md`](./design/contracts/map-camera-update-control-flow.md): the
+  implementation-neutral contract for the bounded `VInt_UpdateViewData` target branch, destination-
+  request seam, counter routes, scroll-speed precedence, and four exact word-width parallax update
+  paths, while retaining camera commands, area inputs, callee behavior, callback scheduling, VDP
+  output, timing, and presentation as separate-owner or Unknown boundaries.
 - [`map-entity-data.md`](./design/contracts/map-entity-data.md): the implementation-neutral private-
   import contract for 126 setup-pointer references to 125 entity-list roots, 980 physical records
   producing 987 ordered list references, exact suffix-sharing and terminator topology, bounded record
