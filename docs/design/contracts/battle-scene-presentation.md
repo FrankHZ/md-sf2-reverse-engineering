@@ -2,8 +2,8 @@
 
 - **Confirmed original behavior:** the 21-command scene interpreter, scene initialization and
   selector order, complete 32-slot spell setup/update dispatch, 208 actor-animation sequences, the
-  background, actor-sprite, weapon, and ground selection/loader/presentation seams, and the complete
-  spell, invocation, status, and transition graphics container boundaries described below.
+  background, actor-sprite, weapon, ground, spell, invocation, status, and transition
+  selection/loader/presentation seams described below.
 - **Unknown original behavior:** exact command and frame timing, VInt/VDP effects, palette-transition
   appearance, visible layer composition and placement, the 512-byte invocation-transfer tails,
   natural reachability of every selector/index combination, and rendered frame parity.
@@ -22,7 +22,7 @@ selectors, loaders, and dispatch tables used to present that stream. It defines:
 2. scene initialization, actor/weapon/background selection, and layer-load order;
 3. ally/enemy animation selection and sequence data;
 4. the background, actor-sprite, weapon, and ground selection/loader/presentation contracts;
-5. spell-animation setup/update dispatch and battle-effect graphics corpora;
+5. spell-animation setup/update dispatch and battle-effect consumer/presentation seams;
 6. the state that a future compatibility adapter must expose without prescribing a renderer.
 
 It does not own action choice, target choice, action construction, damage or spell arithmetic,
@@ -54,7 +54,9 @@ The executable owners are:
   [Battle Weapon and Ground Graphics Data](battle-weapon-ground-graphics-data.md) owns the static
   import corpora;
 - `sf2-battle-effect-graphics-decode-v1` in
-  `tests/fixtures/h2/battle-effect-graphics-decode-v1.json`.
+  `tests/fixtures/h2/battle-effect-graphics-decode-v1.json`, retained here as bounded
+  spell/invocation/status/transition consumer and presentation witnesses while
+  [Battle Effect Graphics Data](battle-effect-graphics-data.md) owns the static import corpus.
 
 The research owner is [Battle Scene Engine](../../research/battle-scene-engine.md), with compression
 and loader context in [Technical Graphics and Decompression Services](../../research/technical-graphics.md).
@@ -66,7 +68,7 @@ verifiers, the research-index bindings, and the focused reproduction commands be
 owners agree on table sizes, stream counts, decoded/transfer units, selector order, and the static
 presentation boundary.
 
-Two scope corrections govern this contract:
+These scope corrections govern this contract:
 
 - `sf2-battle-scene-replay-v1` observes persistent HP and EXP mutation after two battle-scene
   commands. It is evidence for [combat resolution](combat-resolution.md), not evidence for rendered
@@ -88,6 +90,11 @@ Two scope corrections govern this contract:
   identities, aggregate sizes, and private round-trip evidence. This contract consumes those
   canonical records only at the selector, palette, loader, relative-lookup, service-handoff,
   transfer-request, and presentation seams.
+- [Battle Effect Graphics Data](battle-effect-graphics-data.md) owns the 23 spell, 30 invocation,
+  one status, and two transition stream identities, their private container/palette/offset graphs,
+  compressed and decoded identities, aggregate sizes, and private round-trip evidence. This
+  contract consumes those canonical records only at the spell/invocation loaders, status
+  initialization, transition selection, Stack-handoff, transfer-request, and presentation seams.
 
 No accepted runtime presentation matrix exists. This contract therefore makes no fresh H3 claim and
 does not convert the research runtime queue into implied behavior.
@@ -101,7 +108,7 @@ An original-fidelity adapter MUST preserve these distinguishable domains:
 | scene command stream | ordered command words and parameters constructed by battle actions |
 | scene interpreter state | command cursor, dead-combatant list, actor/target switches, waits, and return state |
 | selection state | actor sides, sprite/palette IDs, weapon, ground, background, animation index, mirror and variant bits |
-| decoded resource state | canonical background, actor-sprite, weapon, and ground records consumed from their data contracts plus spell, invocation, status, and transition payloads owned here |
+| decoded resource state | canonical background, actor-sprite, weapon, ground, spell, invocation, status, and transition records consumed from their data contracts |
 | sequence state | actor frame entries, offsets, weapon fields, spell triggers, and hold/default flags |
 | presentation-driver state | palettes, layouts, optional layers, VInt registrations, DMA requests, fade and phase/toggle state |
 | persistent battle state | HP, MP, status, EXP, gold, items, death, and battle outcome owned by other contracts |
@@ -109,8 +116,8 @@ An original-fidelity adapter MUST preserve these distinguishable domains:
 The command stream is not a rendered frame, and decoded bytes are not proof of visible pixels. A
 remake MAY use different internal structures, but an H4 adapter must still expose the confirmed
 identities, order, selectors, sizes, and aliases at their owning boundaries. For backgrounds, actor
-sprites, weapons, and grounds, this contract tests use of canonical data-contract records rather
-than independently re-verifying them.
+sprites, weapons, grounds, spells, invocations, status graphics, and transitions, this contract
+tests use of canonical data-contract records rather than independently re-verifying them.
 
 ## Scene Command Interpreter
 
@@ -253,23 +260,28 @@ Slot identity, reuse, and gating are **Confirmed static**. Per-frame state chang
 cadence, simultaneous effects, interrupt behavior, palette transitions, and visible animation
 results remain **Unknown**.
 
-## Battle-Effect Graphics Corpus
+## Battle-Effect Graphics Consumer Seams
 
-The battle-effect owner closes 56 Stack-compressed streams:
+The canonical spell, invocation, status-animation, and transition records are owned by
+[Battle Effect Graphics Data](battle-effect-graphics-data.md). This contract does not independently
+own or re-verify their private container, palette, offset, stream, compressed, decoded, or parity
+identities.
 
-| Family | Confirmed corpus |
-| --- | --- |
-| spell | 23 graphics containers |
-| invocation | 4 containers, 15 frames, 30 streams |
-| status | 1 stream |
-| battle transition | 2 streams |
+The retained source-shaped consumer surface consists of:
 
-Together the streams decode to 200,992 bytes. Each invocation stream decodes to 4,096 bytes, while
-both invocation consumer paths transfer 4,608 bytes. The 512-byte tail per transfer is therefore an
-explicit consumer boundary: its bytes, stability, and visibility are **Unknown** and MUST NOT be
-invented from adjacent data.
+- `LoadInvocationSpriteFrameToVram` and the invocation root;
+- `LoadSpellTileset` and `LoadSpellTilesetForInvocation` with the spell root and separately owned
+  Stack service;
+- `InitializeBattlescene` consumption of the status-animation root with a fixed `0x270`-word
+  request; and
+- `bsc06_switchEnemies` selection from the transition root.
 
-The corpus proves resource, pointer, table, decode-size, and transfer-size relationships. It does not
+Both invocation consumer paths request 4,608 bytes for a canonical 4,096-byte decoded stream. The
+512-byte tail per request, or 15,360 bytes across 30 stream requests, is therefore an explicit
+consumer boundary: its contents, source, initialization, stability, transfer completion, and
+visibility are **Unknown** and MUST NOT be invented from adjacent data or memory.
+
+These are loader, pointer-selection, service-handoff, and transfer-request boundaries. They do not
 prove palettes, layer ordering, frame timing, transition composition, or rendered output.
 
 ## Fidelity and Modernization Boundary
@@ -290,8 +302,10 @@ An original-fidelity adapter MUST preserve:
   independently re-verifying their catalogs, plus the accepted selection, palette-operation,
   relative-lookup, service-handoff, transfer-request, and presentation seams;
 - the accepted actor-sprite property/frame lookup, palette-operation, Stack-handoff, and fixed-DMA
-  seams, plus exact pointer/payload counts, aliases, decoded sizes, transfer units, and setup/update
-  reuse for the spell, invocation, status, and transition corpora still owned here;
+  seams, plus canonical spell, invocation, status, and transition records consumed from
+  [Battle Effect Graphics Data](battle-effect-graphics-data.md) without independently re-verifying
+  that catalog, and the accepted loader, pointer-selection, Stack-handoff, transfer-request, unknown
+  invocation-tail, and presentation seams;
 - the distinction between decoded payload, requested transfer, command/replay state, and visible
   presentation;
 - every itemized **Unknown** boundary rather than filling it from labels or modern conventions.
@@ -322,8 +336,10 @@ A future H4 adapter should consume the seven fixtures named by this contract and
    service handoffs, and fixed ground `0x300`-word request;
 6. all 32 setup/update slot identities, reuse, disabled/minus-one gates, mirror/variant values, and
    update toggle/phase admission;
-7. all 56 battle-effect stream identities, decoded lengths, invocation transfer lengths, and the
-   declared unknown tail boundary.
+7. canonical spell, invocation, status, and transition records supplied by
+   [Battle Effect Graphics Data](battle-effect-graphics-data.md) through the accepted invocation and
+   spell loaders, status initialization, transition selection, Stack handoffs, fixed invocation
+   `0x900`-word and status `0x270`-word requests, and the declared unknown invocation-tail boundary.
 
 H4 MUST compare canonical records rather than original RAM/ROM addresses when the remake has no
 equivalent memory layout. Rendered pixels, frame pacing, VDP/VInt chronology, palette appearance,
@@ -340,7 +356,7 @@ owners.
 | ally/enemy property/frame loader seam, palette operations, Stack handoff, DMA requests | **Confirmed static** | bounded function witnesses in `sf2-battle-sprite-decode-v1` ([`battle-sprite-decode-v1.json`](../../../tests/fixtures/h2/battle-sprite-decode-v1.json)); canonical resource records owned by [Battle Sprite Graphics Data](battle-sprite-graphics-data.md) | Transfer completion, placement, timing, rendered frames |
 | 208 actor-animation sequences and selector rules | **Confirmed static** | `sf2-battle-sprite-animation-static-v1` ([`battle-sprite-animation-static-v1.json`](../../../tests/fixtures/h2/battle-sprite-animation-static-v1.json)) | Reachable base-index combinations, timing, weapon-field interpretation |
 | weapon/ground selection and loader seams, palette operations, relative lookup, service/transfer handoffs | **Confirmed static** | bounded function witnesses in `sf2-battle-weapon-ground-decode-v1` ([`battle-weapon-ground-decode-v1.json`](../../../tests/fixtures/h2/battle-weapon-ground-decode-v1.json)); canonical resource records owned by [Battle Weapon and Ground Graphics Data](battle-weapon-ground-graphics-data.md) | Transfer completion, angle selection, placement, composition |
-| spell/invocation/status/transition graphics streams | **Confirmed static** | `sf2-battle-effect-graphics-decode-v1` ([`battle-effect-graphics-decode-v1.json`](../../../tests/fixtures/h2/battle-effect-graphics-decode-v1.json)) | Invocation tail bytes, palettes, layer/timing/transition composition |
+| spell/invocation/status/transition loader and consumer seams, Stack handoffs, fixed transfer requests | **Confirmed static** | bounded function witnesses in `sf2-battle-effect-graphics-decode-v1` ([`battle-effect-graphics-decode-v1.json`](../../../tests/fixtures/h2/battle-effect-graphics-decode-v1.json)); canonical resource records owned by [Battle Effect Graphics Data](battle-effect-graphics-data.md) | Invocation tail contents/stability/visibility, transfer completion, palettes, layer/timing/transition composition |
 | persistent HP/EXP scene-command replay | **Separate confirmed runtime subset** | [combat-resolution contract](combat-resolution.md) | Not evidence for rendered presentation |
 | rendered pixels, frame timing, VInt/VDP effects, presentation intent | **Unknown** | No accepted executable owner | Requires a grouped runtime presentation matrix or future product decision |
 
