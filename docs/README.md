@@ -578,6 +578,12 @@ document whose anchors may be updated.
   aliases, four diamond-border variants, four direct assets, and exact non-overlapping source/ROM
   coverage, while retaining runtime window behavior, presentation, localization, accessibility, and
   copyrighted payloads as separate, Unknown, or deliberate-design boundaries.
+- [`unused-technical-asset-data.md`](./design/contracts/unused-technical-asset-data.md): the
+  implementation-neutral private-import contract for one nominally unused 5,694-byte container with
+  four ordered Stack streams, two ordered palettes, the separate palette-pointer identity, and the
+  bounded symbolic-reference inventory, while retaining original payloads, runtime reachability,
+  rendering, hardware timing, and source-label meaning as private, separate-owner, or Unknown
+  boundaries.
 - [`window-system.md`](./design/contracts/window-system.md): the eight-slot window entry, layout
   allocation/reclamation, packed-coordinate addressing, VInt composition/DMA call order, and the
   presentation-timing Unknown boundary.

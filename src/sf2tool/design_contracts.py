@@ -505,6 +505,11 @@ CONTRACTS = {
     "docs/design/contracts/ui-layout-data.md": {
         "tests/fixtures/h2/ui-layout-static-v1.json": "sf2-ui-layout-static-v1",
     },
+    "docs/design/contracts/unused-technical-asset-data.md": {
+        "tests/fixtures/h2/unused-technical-assets-static-v1.json": (
+            "sf2-unused-technical-assets-static-v1"
+        ),
+    },
     "docs/design/contracts/window-system.md": {
         "tests/fixtures/h2/remaining-core-static-v1.json": "sf2-remaining-core-static-v1",
         "tests/fixtures/h2/ui-layout-static-v1.json": "sf2-ui-layout-static-v1",
