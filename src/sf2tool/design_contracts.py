@@ -335,6 +335,11 @@ CONTRACTS = {
             "sf2-map-palette-static-v1"
         ),
     },
+    "docs/design/contracts/map-sprite-assignment-surface.md": {
+        "tests/fixtures/h2/map-sprite-assignments-static-v1.json": (
+            "sf2-map-sprite-assignments-static-v1"
+        ),
+    },
     "docs/design/contracts/map-sprite-graphics-data.md": {
         "tests/fixtures/h2/map-sprite-decode-v1.json": (
             "sf2-map-sprite-decode-v1"

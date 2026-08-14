@@ -152,6 +152,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/map-sprite-assignment-surface.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/map-sprite-graphics-data.md",
       "status": "pending"
     },
