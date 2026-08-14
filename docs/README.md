@@ -570,6 +570,11 @@ document whose anchors may be updated.
   signed direction choice and exact `d7`/`a0`/`a1` preservation seam, and permitted platform
   `memmove` modernization, while retaining unsupported ranges, callers, timing, atomicity, and
   hardware effects as Unknown or separate-owner boundaries.
+- [`music-wait-service.md`](./design/contracts/music-wait-service.md): the implementation-neutral
+  contract for the two ordered source command-request identities, the post-`Sleep(3)` predicate
+  shape, and the `k + 1` wait-request compatibility trace, while retaining transport acceptance,
+  sound-side flag lifecycle, audible completion, timing, callers, and presentation as Unknown or
+  separate-owner boundaries.
 - [`service-interactions.md`](./design/contracts/service-interactions.md): the shop, church, caravan/depot, and
   blacksmith action order, cancel boundaries, and static resource mutation contracts, with explicitly
   retained persistence/timing unknowns.
