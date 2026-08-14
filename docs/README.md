@@ -642,8 +642,9 @@ is created only when a real disagreement appears and the choice constrains later
   map-script/H3 in order without weakening negative gates.
 - [`0008-godot-csharp-cli-first-remake-tooling.md`](./decisions/0008-godot-csharp-cli-first-remake-tooling.md):
   audits the earlier Project-Mech-Strike Godot/C# and machine-local MCP workflow, reproduces its build
-  and headless run boundary, and proposes a Godot 4.7.1 .NET CLI-first Phase 4 toolchain with MCP kept
-  optional; it remains **Proposed** and does not start remake implementation.
+  and headless run boundary, and proposes the evaluated Godot 4.7.1 .NET release as a fixed CLI-first
+  Phase 4 baseline with MCP kept optional; it remains **Proposed** and does not start remake
+  implementation.
 
 ## Evidence Vocabulary
 

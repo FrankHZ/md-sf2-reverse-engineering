@@ -7,9 +7,11 @@
 
 ## Proposed Decision
 
-Use the current stable Godot .NET editor with C# for the prospective desktop 2D remake. Pin the
-exact stable engine release when Phase 4 begins; the investigated baseline is **Godot 4.7.1 .NET**.
-Keep the maintained build and acceptance path independent of an editor plugin:
+Use **Godot 4.7.1 .NET** with C# as the evaluated Proposed Phase 4 baseline for the prospective
+desktop 2D remake. This proposal pins 4.7.1 rather than floating to whichever stable release exists
+when Phase 4 is separately authorized. Changing to a newer stable release requires an explicit
+compatibility recheck and follow-up ADR before project creation. Keep the maintained build and
+acceptance path independent of an editor plugin:
 
 1. restore and build C# with an explicit .NET SDK and locked packages;
 2. import and run the project with the official Godot command line in headless mode;
@@ -85,7 +87,8 @@ demonstrate a separately testable domain layer.
 
 ### Machine-local MCP configuration
 
-The prototype root contains an ignored `.codex/config.toml` created on 2026-05-02. It configures:
+The prototype root contains an ignored `.codex/config.toml` created at 2026-05-02 02:48:06 UTC
+(2026-05-01 21:48:06 in America/Chicago). It configures:
 
 ```toml
 [mcp_servers.godot]
@@ -129,7 +132,7 @@ The investigation re-ran the local prototype with the configured Godot executabl
 | `dotnet build 'game\Mech Strike.csproj'` | passed, 0 warnings and 0 errors |
 | Godot `--version` | `4.6.2.stable.mono.official.71f334935` |
 | headless editor/import smoke | exit 0; emitted a non-fatal `Scan thread aborted` shutdown warning |
-| main-scene 120-frame headless smoke | exit 0; emitted the expected damage diagnostic |
+| main-scene 120-iteration headless smoke | exit 0; emitted the expected damage diagnostic |
 | Git status after validation | still clean; generated `.godot/` state remained ignored |
 
 The first attempted `dotnet build --no-restore` failed with `NETSDK1127` after the installed .NET SDK
@@ -177,6 +180,9 @@ and a separately installed .NET SDK. See the official
 [`command-line tutorial`](https://docs.godotengine.org/en/stable/tutorials/editor/command_line_tutorial.html),
 and [`C# prerequisites`](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html).
 
+That date-stamped release observation does not create a floating-version policy. The evaluated
+Proposed baseline remains 4.7.1 until a compatibility recheck and follow-up ADR explicitly change it.
+
 The recent MCP ecosystem has capable candidates, but all remain optional evaluation targets:
 
 | Candidate | Useful boundary | Adoption concern |
@@ -193,7 +199,9 @@ No candidate should be vendored or added to the remake project before the experi
 
 ## Required Plugin Bakeoff
 
-Run each candidate against the same disposable Godot 4.7.1 .NET project in an isolated worktree:
+Run each candidate against the same disposable project on the evaluated Godot 4.7.1 .NET baseline in
+an isolated worktree. Do not substitute a newer stable release without the compatibility recheck and
+follow-up ADR required by the Proposed Decision:
 
 1. discover the exact Godot version and project root;
 2. inspect an existing scene and C# type without changing files;
@@ -214,7 +222,8 @@ diff, leaks development tooling into exports, or makes the official CLI path fai
 If this ADR is accepted, create a separate implementation slice that owns the engine project and its
 gates. That later slice should:
 
-- pin Godot 4.7.1 .NET and the selected .NET SDK in a tracked toolchain manifest;
+- pin the evaluated Godot 4.7.1 .NET baseline and the selected .NET SDK in a tracked toolchain
+  manifest; do not silently float to a newer stable release;
 - use a desktop-oriented 2D renderer rather than copying Mech Strike's Forward Plus/D3D12/Jolt 3D
   choices;
 - keep deterministic exploration and battle rules in a plain C# project referenced by a thin Godot
