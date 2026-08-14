@@ -37,9 +37,10 @@ It owns:
 6. the fixed three-word flash script;
 7. identities and source-use inventory for the nominally unused display/graphics helpers.
 
-It does not own map-camera destination calculation, parallax, autoscroll, compressed asset payloads,
-decoded art, map/UI/battle presentation, VDP emulation, DMA scheduling cadence, frame timing,
-localization, accessibility, or distributable game assets.
+It does not own map-camera destination calculation, the source-static VInt camera-update algorithm,
+parallax/autoscroll inputs, compressed asset payloads, decoded art, map/UI/battle presentation, VDP
+emulation, DMA scheduling cadence, frame timing, localization, accessibility, or distributable game
+assets.
 
 The selected executable owners are:
 
@@ -100,9 +101,11 @@ until preliminary semantic acceptance.
 The audit deliberately consumes only selected fields from the aggregate tech-graphics fixture:
 
 - `graphicsFacts.viewDestination` is excluded in full. The extra indexed record
-  `map.camera-control.set-view-destination`, separate plane parallax factors, autoscroll behavior,
-  and destination-axis writes remain owned by the accepted map-camera H3 rail and
-  [map-exploration contract](map-exploration.md).
+  `map.camera-control.set-view-destination`, area parallax/autoscroll inputs, camera command/H3
+  behavior, and destination-axis writes remain owned by the accepted map-camera H3 rail and
+  [map-exploration contract](map-exploration.md). The separate source-static target-follow and
+  scroll-speed derivation inside `VInt_UpdateViewData` belongs to
+  [map-camera-update-control-flow](map-camera-update-control-flow.md).
 - From `graphicsFacts.inventoryBoundary`, this contract consumes
   `unusedDisplayAndGraphicsHelpersInventoried` plus the explicit queues for visual/VDP timing and
   special-sprite frame presentation. It does not consume the battle, map, UI, portrait,
@@ -296,7 +299,10 @@ GraphicsServiceInventoryEntry {
 }
 ```
 
-The model deliberately has no view-destination/parallax object and no asset-payload collection.
+The model deliberately has no view-destination, camera-update, or parallax object and no
+asset-payload collection. Camera command/data and destination-service behavior remain with
+[`map-exploration`](map-exploration.md); the bounded VInt update algorithm remains with
+[`map-camera-update-control-flow`](map-camera-update-control-flow.md).
 Canonical special-sprite resource records are consumed from
 [special-sprite-graphics-data](special-sprite-graphics-data.md). Original compressed bytes, decoded
 art, palettes, tilemaps, rendered frames, and screenshots remain private/generated or separately
@@ -356,9 +362,10 @@ A remake-side graphics adapter can claim this contract only when automated tests
 7. flash-script words remain exactly `0x0041, 0x001E, 0xFFFF` without inferring visible duration;
 8. the two nominally unused helper records retain identities and provenance without asserting dead
    code or runtime reachability;
-9. the camera/view-destination facts, asset-corpus completion facts, codec history/bitstream details,
-   copyrighted payloads, and separate-owner built-assignment reachability result are not silently
-   absorbed into this contract's fidelity claim;
+9. the camera command/view-destination facts, source-static VInt update algorithm, asset-corpus
+   completion facts, codec history/bitstream details, copyrighted payloads, and separate-owner
+   built-assignment reachability result are not silently absorbed into this contract's fidelity
+   claim;
 10. public fixtures and reports contain metadata, identities, counts, ranges, and hashes rather than
     original compressed bytes, decoded art, palettes, tilemaps, or captured frames.
 
@@ -374,7 +381,8 @@ those requirements.
 | display initialization, sprite-link shape, palette timer/weights/queue seam, flash words | **Confirmed static** | `sf2-tech-graphics-static-v1` ([`tech-graphics-static-v1.json`](../../../tests/fixtures/h2/tech-graphics-static-v1.json)) | Visible frames, VInt/CRAM-DMA cadence, hardware timing, and presentation remain **Unknown** |
 | exact `9 + 1 + 6` special-ID routing split over canonical data records | **Confirmed static** | `sf2-special-sprite-decode-v1` ([`special-sprite-decode-v1.json`](../../../tests/fixtures/h2/special-sprite-decode-v1.json)); catalog owned by [special-sprite-graphics-data](special-sprite-graphics-data.md) | This contract retains route/loader/transfer seams but does not independently own the ten-pointer/six-resource catalog; forced invalid/debug behavior and rendered frames remain **Unknown** |
 | complete original built assignment exclusion for IDs `237..250` | **Separate-owner Confirmed static** | [Common Scripting](../../research/common-scripting.md), outside this contract | This contract does not duplicate its fixture or H4 surface; forced malformed/debug/raw-RAM behavior remains **Unknown** |
-| camera destination, parallax, autoscroll, and axis writes | **Separate owner** | [map-exploration contract](map-exploration.md) and its H3 camera owner | `graphicsFacts.viewDestination` is explicitly not consumed here |
+| camera commands, area inputs, and destination-axis behavior | **Separate owner** | [map-exploration contract](map-exploration.md) and its H3 camera owner | `graphicsFacts.viewDestination` is explicitly not consumed here |
+| source-static VInt target-follow and scroll-speed derivation | **Separate owner** | [map-camera-update-control-flow](map-camera-update-control-flow.md) | This contract consumes no common-map camera fact or update algorithm |
 | nominally unused display/graphics helper identities | **Confirmed static inventory** | `sf2-tech-graphics-static-v1` ([`tech-graphics-static-v1.json`](../../../tests/fixtures/h2/tech-graphics-static-v1.json)) | Dead-code status, runtime reachability, and caller effects remain **Unknown** |
 | renderer architecture, accessibility policy, replacement assets, localization, and licensed content | **Deliberate design** | Future product/content decisions | Requires separate provenance and acceptance |
 
