@@ -501,6 +501,11 @@ document whose anchors may be updated.
   references, exact public usage/parity metadata, and the source-shaped first-word-clear rule, while
   retaining original words, payloads, hashes, full assignments, rendering, timing, and replacement
   policy as private, separate-owner, or Unknown boundaries.
+- [`map-sprite-assignment-surface.md`](./design/contracts/map-sprite-assignment-surface.md): the
+  implementation-neutral contract for five map-sprite writer origins, one indexed derivation helper,
+  the private 81-assignment and 20-caller catalogs, and the joined accepted built-input exclusion of
+  IDs 237..250, while retaining external corpus ownership, arbitrary runtime injection, rendering,
+  timing, persistence, and replacement policy as separate-owner or Unknown boundaries.
 - [`map-sprite-graphics-data.md`](./design/contracts/map-sprite-graphics-data.md): the implementation-
   neutral private-import contract for 720 ordered regular map-sprite source slots, 670 payload
   identities, the complete alias relation, 669 fixed-size Basic-decoded forms, and the shared sentinel
