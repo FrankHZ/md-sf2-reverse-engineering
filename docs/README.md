@@ -448,6 +448,12 @@ document whose anchors may be updated.
   system and game handoffs, logo/intro/title return routing, and region admission branch, while
   retaining platform lifecycle, hardware timing, callee internals, input generation, presentation,
   persistence, and compatibility as separate-owner or Unknown boundaries.
+- [`standalone-map-script-program-data.md`](./design/contracts/standalone-map-script-program-data.md):
+  the implementation-neutral private-import contract for 47 standalone map-script source files,
+  178 non-empty programs, 8,058 ordered operations, their resolved target and lexical-reference
+  topology, and the bounded init-target ownership join, while retaining original program content,
+  runtime admission/effects, story persistence, presentation, and timing as private, separate-owner,
+  or Unknown boundaries.
 - [`debug-control-flow.md`](./design/contracts/debug-control-flow.md): the implementation-neutral
   contract for battle-test setup and service handoffs, configuration gates and writes, seven debug
   battle-action routes, and four helper-local stack writes, while retaining admission, input, UI,

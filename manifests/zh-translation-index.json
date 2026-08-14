@@ -233,6 +233,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/standalone-map-script-program-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/startup-control-flow.md",
       "status": "pending"
     },

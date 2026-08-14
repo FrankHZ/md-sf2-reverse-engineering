@@ -248,6 +248,11 @@ CONTRACTS = {
             "sf2-gameflow-core-static-v1"
         ),
     },
+    "docs/design/contracts/standalone-map-script-program-data.md": {
+        "tests/fixtures/h2/map-scripts-static-v1.json": (
+            "sf2-map-scripts-static-v1"
+        ),
+    },
     "docs/design/contracts/map-area-description-routing.md": {
         "tests/fixtures/h2/map-descriptions-static-v1.json": (
             "sf2-map-descriptions-static-v1"
