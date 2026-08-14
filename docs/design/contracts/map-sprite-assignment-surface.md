@@ -198,10 +198,14 @@ MapSpriteAssignmentSurface {
 }
 ```
 
-The original addresses, source paths, expressions, and catalogs are provenance and private
-round-trip inputs. After verifying them, a conforming remake may use engine-native entity and sprite
-references. It is not required to reproduce Mega Drive RAM offsets, byte-field placement, macro
-encodings, instruction forms, ROM addresses, or the original writer microimplementation.
+The complete private assignment and caller catalogs' source origins and paths, complete expressions,
+raw source/ROM materials, and other non-public verification details are provenance and private
+round-trip inputs. The selected five writer source paths and rows, indexed symbols and entry
+addresses, bounded write summaries, hashes and provenance, counts, and witness summaries named in
+the public projection remain public metadata. After completing the private verification, a
+conforming remake may use engine-native entity and sprite references. It is not required to
+reproduce Mega Drive RAM offsets, byte-field placement, macro encodings, instruction forms, ROM
+addresses, or the original writer microimplementation.
 
 The logical model MUST keep the assignment origin and selected logical sprite identity distinct.
 It must also preserve the difference between a source assignment, a caller that preserves the
