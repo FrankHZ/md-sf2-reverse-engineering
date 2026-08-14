@@ -1,9 +1,9 @@
 # Battle Scene Command and Presentation-Data Contract
 
 - **Confirmed original behavior:** the 21-command scene interpreter, scene initialization and
-  selector order, complete 32-slot spell setup/update dispatch, 208 actor-animation sequences, and
-  the complete background, actor-sprite, weapon, ground, spell, invocation, status, and transition
-  graphics container boundaries described below.
+  selector order, complete 32-slot spell setup/update dispatch, 208 actor-animation sequences, the
+  background selection/loader/presentation seam, and the complete actor-sprite, weapon, ground,
+  spell, invocation, status, and transition graphics container boundaries described below.
 - **Unknown original behavior:** exact command and frame timing, VInt/VDP effects, palette-transition
   appearance, visible layer composition and placement, the 512-byte invocation-transfer tails,
   natural reachability of every selector/index combination, and rendered frame parity.
@@ -21,7 +21,8 @@ selectors, loaders, and dispatch tables used to present that stream. It defines:
 1. the command-buffer interpreter and command identities;
 2. scene initialization, actor/weapon/background selection, and layer-load order;
 3. ally/enemy animation selection and sequence data;
-4. background, actor-sprite, weapon, and ground container/load contracts;
+4. the background selection/loader/presentation contract plus actor-sprite, weapon, and ground
+   container/load contracts;
 5. spell-animation setup/update dispatch and battle-effect graphics corpora;
 6. the state that a future compatibility adapter must expose without prescribing a renderer.
 
@@ -39,7 +40,9 @@ The executable owners are:
 - `sf2-battle-scene-animations-static-v1` in
   `tests/fixtures/h2/battle-scene-animations-static-v1.json`;
 - `sf2-battle-background-decode-v1` in
-  `tests/fixtures/h2/battle-background-decode-v1.json`;
+  `tests/fixtures/h2/battle-background-decode-v1.json`, retained here as a bounded
+  loader/presentation witness while [Battle Background Graphics Data](battle-background-graphics-data.md)
+  owns the static import corpus;
 - `sf2-battle-sprite-decode-v1` in
   `tests/fixtures/h2/battle-sprite-decode-v1.json`;
 - `sf2-battle-sprite-animation-static-v1` in
@@ -67,6 +70,10 @@ Two scope corrections govern this contract:
 - source names such as `TintScreen`, `VInt_UpdateBattlesceneGraphics`, and animation setup/update
   labels identify static dispatch and call structure. They do not confirm visible color, timing,
   composition, or frame output.
+- [Battle Background Graphics Data](battle-background-graphics-data.md) owns the 30-slot/27-container
+  static import corpus, aliases, prefix/palette/stream partition, compressed and decoded identities,
+  sizes, and private round-trip evidence. This contract consumes those canonical records only at the
+  background selection, loader, staging, palette-operation, and presentation seams.
 
 No accepted runtime presentation matrix exists. This contract therefore makes no fresh H3 claim and
 does not convert the research runtime queue into implied behavior.
@@ -80,14 +87,15 @@ An original-fidelity adapter MUST preserve these distinguishable domains:
 | scene command stream | ordered command words and parameters constructed by battle actions |
 | scene interpreter state | command cursor, dead-combatant list, actor/target switches, waits, and return state |
 | selection state | actor sides, sprite/palette IDs, weapon, ground, background, animation index, mirror and variant bits |
-| decoded resource state | background, actor, weapon, ground, spell, invocation, status, and transition payloads |
+| decoded resource state | canonical background records consumed from their data contract plus actor, weapon, ground, spell, invocation, status, and transition payloads owned here |
 | sequence state | actor frame entries, offsets, weapon fields, spell triggers, and hold/default flags |
 | presentation-driver state | palettes, layouts, optional layers, VInt registrations, DMA requests, fade and phase/toggle state |
 | persistent battle state | HP, MP, status, EXP, gold, items, death, and battle outcome owned by other contracts |
 
 The command stream is not a rendered frame, and decoded bytes are not proof of visible pixels. A
 remake MAY use different internal structures, but an H4 adapter must still expose the confirmed
-identities, order, selectors, sizes, and aliases at this boundary.
+identities, order, selectors, sizes, and aliases at their owning boundaries. For backgrounds, this
+contract tests use of canonical data-contract records rather than independently re-verifying them.
 
 ## Scene Command Interpreter
 
@@ -175,18 +183,20 @@ remap uses direct indices 80 through 82 for KNTE, PLDN, and PGNT.
 Reachable base-index combinations, frame duration, frame-15 appearance, weapon
 flip/layer/offset interpretation, and spell-trigger timing remain **Unknown**.
 
-## Background, Weapon, and Ground Containers
+## Background Loader and Weapon/Ground Containers
 
-### Backgrounds
+### Background loader and presentation seam
 
-The background table has 30 pointers resolving to 27 unique payloads. Backgrounds 21 and 22 alias
-payload 12; background 29 aliases payload 13. Each container supplies three relative-offset words,
-two Stack-compressed tilesets, and one 32-byte palette.
+The canonical pointer, container, alias, prefix/palette/stream, compressed, and decoded records are
+owned by [Battle Background Graphics Data](battle-background-graphics-data.md). This contract does
+not independently own or re-verify that static resource catalog.
 
-`LoadBattlesceneBackground` decodes both tilesets with the second destination `0x1800` bytes after the
-first. Every stream decodes to 6,144 bytes; the complete 54-stream corpus decodes to 331,776 bytes.
-The loader clears palette word 0 and copies the remaining 15 words. This contract preserves the two
-stream identities, offset, palette rule, and aliases, but not their visible arrangement.
+`LoadBattlesceneBackground` consumes one selected canonical record and submits its two ordered stream
+inputs to the separately owned Stack service. The source-shaped second staging destination is
+`0x1800` bytes after the first. The loader clears destination palette word 0 and copies the remaining
+15 source palette words. This contract preserves that selection/loader seam, staging relation, and
+palette-operation chronology, but not the catalog itself, transfer completion, or visible
+arrangement.
 
 ### Weapons and ground
 
@@ -249,8 +259,12 @@ An original-fidelity adapter MUST preserve:
 - scene initialization and selector chronology at the accepted static seam;
 - separate actor-sprite containers, sequence tables, spell dispatch tables, and presentation-driver
   state;
+- canonical background records consumed from [Battle Background Graphics Data](battle-background-graphics-data.md)
+  without independently re-verifying its catalog, plus the accepted background selection, staging,
+  palette-operation, and presentation seams;
 - exact pointer/payload counts, aliases, palette rules, decoded sizes, DMA/transfer units, and
-  setup/update reuse;
+  setup/update reuse for the actor-sprite, weapon, ground, spell, invocation, status, and transition
+  corpora still owned here;
 - the distinction between decoded payload, requested transfer, command/replay state, and visible
   presentation;
 - every itemized **Unknown** boundary rather than filling it from labels or modern conventions.
@@ -268,8 +282,10 @@ A future H4 adapter should consume the seven fixtures named by this contract and
 2. selector inputs/results and scene initialization event order;
 3. actor sprite/palette/header fields and decoded frame byte counts;
 4. all 208 sequence identities, frame records, hold/default flags, and selector-index rules;
-5. background, weapon, and ground pointer aliases, palette operations, decoded sizes, and transfer
-   requests;
+5. canonical background records supplied by [Battle Background Graphics Data](battle-background-graphics-data.md)
+   through the selected loader seam, two ordered staging destinations separated by `0x1800`, and the
+   palette word-0 clear/copy-15 chronology, plus the independently owned weapon/ground aliases,
+   decoded sizes, and transfer requests;
 6. all 32 setup/update slot identities, reuse, disabled/minus-one gates, mirror/variant values, and
    update toggle/phase admission;
 7. all 56 battle-effect stream identities, decoded lengths, invocation transfer lengths, and the
@@ -286,7 +302,7 @@ owners.
 | --- | --- | --- | --- |
 | command interpreter, initialization, selectors, spell setup/update tables | **Confirmed static** | `sf2-battle-scene-engine-static-v1` ([`battle-scene-engine-static-v1.json`](../../../tests/fixtures/h2/battle-scene-engine-static-v1.json)) | Runtime command cadence, VInt/VDP/fade effects, rendered result |
 | complete setup/update source pairing | **Confirmed static** | `sf2-battle-scene-animations-static-v1` ([`battle-scene-animations-static-v1.json`](../../../tests/fixtures/h2/battle-scene-animations-static-v1.json)) | Per-frame state and visible animation |
-| background containers, aliases, decode/load units | **Confirmed static** | `sf2-battle-background-decode-v1` ([`battle-background-decode-v1.json`](../../../tests/fixtures/h2/battle-background-decode-v1.json)) | Tile arrangement, layer composition, visible palette |
+| background selection/loader seam, staging relation, palette operations | **Confirmed static** | bounded function witness in `sf2-battle-background-decode-v1` ([`battle-background-decode-v1.json`](../../../tests/fixtures/h2/battle-background-decode-v1.json)); canonical resource records owned by [Battle Background Graphics Data](battle-background-graphics-data.md) | Transfer completion, tile arrangement, layer composition, visible palette |
 | ally/enemy sprite containers, palettes, frames, DMA units | **Confirmed static** | `sf2-battle-sprite-decode-v1` ([`battle-sprite-decode-v1.json`](../../../tests/fixtures/h2/battle-sprite-decode-v1.json)) | Placement, timing, rendered frames |
 | 208 actor-animation sequences and selector rules | **Confirmed static** | `sf2-battle-sprite-animation-static-v1` ([`battle-sprite-animation-static-v1.json`](../../../tests/fixtures/h2/battle-sprite-animation-static-v1.json)) | Reachable base-index combinations, timing, weapon-field interpretation |
 | weapon/ground containers, palettes, aliases, decode/load units | **Confirmed static** | `sf2-battle-weapon-ground-decode-v1` ([`battle-weapon-ground-decode-v1.json`](../../../tests/fixtures/h2/battle-weapon-ground-decode-v1.json)) | Angle selection, placement, composition |
