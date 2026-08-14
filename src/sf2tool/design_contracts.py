@@ -81,6 +81,11 @@ CONTRACTS = {
             "sf2-battle-background-decode-v1"
         ),
     },
+    "docs/design/contracts/battle-effect-graphics-data.md": {
+        "tests/fixtures/h2/battle-effect-graphics-decode-v1.json": (
+            "sf2-battle-effect-graphics-decode-v1"
+        ),
+    },
     "docs/design/contracts/battle-sprite-graphics-data.md": {
         "tests/fixtures/h2/battle-sprite-decode-v1.json": (
             "sf2-battle-sprite-decode-v1"
