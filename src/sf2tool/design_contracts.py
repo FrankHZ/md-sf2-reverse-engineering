@@ -330,6 +330,11 @@ CONTRACTS = {
             "sf2-map-sprite-decode-v1"
         ),
     },
+    "docs/design/contracts/map-setup-data.md": {
+        "tests/fixtures/h2/map-setup-static-v1.json": (
+            "sf2-map-setup-static-v1"
+        ),
+    },
     "docs/design/contracts/map-tileset-data.md": {
         "tests/fixtures/h2/map-tileset-decode-v1.json": (
             "sf2-map-tileset-decode-v1"
