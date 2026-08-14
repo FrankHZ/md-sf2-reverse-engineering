@@ -385,6 +385,11 @@ document whose anchors may be updated.
   three direct caller seams, while retaining table contents, caller-specific selection, malformed
   inputs, localization, rendering, runtime use, and presentation as private, separate-owner, or
   Unknown boundaries.
+- [`stats-null-return-service.md`](./design/contracts/stats-null-return-service.md): the
+  implementation-neutral provenance and compatibility contract for the bounded `nullsub_9482`
+  source identity and its sole immediate-return instruction, while retaining caller admission,
+  runtime reachability and result, stack/register/CCR behavior, timing, and gameplay meaning as
+  Unknown or separate-owner boundaries.
 - [`audio-system.md`](./design/contracts/audio-system.md): the implementation-neutral contract for
   music/SFX command identities, two-bank slot and target aliases, headers and channel roles, the
   static macro/note/sample/instrument/SFX domains, and the bounded four-command playback-state
