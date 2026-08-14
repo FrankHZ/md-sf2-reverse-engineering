@@ -31,7 +31,9 @@ It owns:
 3. the sprite-table link initializer and the existence of separately inventoried battle-sprite link
    helpers;
 4. palette-transition timer/step/weight state and its bounded source-visible queue handoff;
-5. the exact special-sprite pointer/load/update routing split and load-versus-refresh transfer seam;
+5. the exact special-sprite load/update routing split and load-versus-refresh transfer seam, consuming
+   canonical pointer/resource identities from
+   [special-sprite-graphics-data](special-sprite-graphics-data.md);
 6. the fixed three-word flash script;
 7. identities and source-use inventory for the nominally unused display/graphics helpers.
 
@@ -108,8 +110,9 @@ The audit deliberately consumes only selected fields from the aggregate tech-gra
   historical remaining-corpus queue a remake requirement.
 - `stackHistoryBytes`, the initial history words, bitstream grammar, copy-loop details, and codec
   implementation are separate-owner static evidence. They are not H4 fidelity requirements here.
-- Special-sprite corpus and routing claims use the dedicated special-sprite fixture rather than an
-  aggregate inventory-completion flag.
+- Special-sprite service and routing claims use the dedicated special-sprite fixture rather than an
+  aggregate inventory-completion flag. Static pointer/resource catalog and private-import fidelity
+  are delegated to [special-sprite-graphics-data](special-sprite-graphics-data.md).
 
 ## Decompression Service ABI
 
@@ -187,6 +190,11 @@ coalesced updates, rendered colors, or the player's perceived transition.
 `AnimateSpecialSprite` begins at 154,806. The pointer table begins at 154,620. The dedicated fixture
 contains ten pointer slots resolving to five initial payloads, plus one animation-only stream, but
 ten pointers do not mean ten fully routed map-sprite IDs.
+
+The ten-slot pointer and six-resource catalog is canonicalized by
+[special-sprite-graphics-data](special-sprite-graphics-data.md). This service contract consumes those
+records for routing and transfer tests; it does not independently own or re-verify the resource
+catalog, aliases, palettes, compressed/decoded payloads, sizes, or private import graph.
 
 The accepted routing split is exact:
 
@@ -289,8 +297,10 @@ GraphicsServiceInventoryEntry {
 ```
 
 The model deliberately has no view-destination/parallax object and no asset-payload collection.
-Original compressed bytes, decoded art, palettes, tilemaps, rendered frames, and screenshots remain
-private/generated or separately licensed data.
+Canonical special-sprite resource records are consumed from
+[special-sprite-graphics-data](special-sprite-graphics-data.md). Original compressed bytes, decoded
+art, palettes, tilemaps, rendered frames, and screenshots remain private/generated or separately
+licensed data.
 
 ## Cross-System Separation
 
@@ -310,8 +320,9 @@ Those surfaces remain separate-owner, **Unknown**, or deliberate product design.
 ## Fidelity, Modernization, and Copyright Boundary
 
 Compatibility requires stable service identities, accepted register roles, initialization order,
-sprite-link invariant, palette-transition state, exact special-sprite routing classification, transfer
-seam identity, flash words, and provenance for the inventoried helper entries.
+sprite-link invariant, palette-transition state, exact special-sprite routing classification over
+canonical data-contract records, transfer seam identity, flash words, and provenance for the
+inventoried helper entries.
 
 A remake may replace the original decoders with validated import-time transcoders, use a modern GPU,
 batch transfers, change internal palette representation, or implement accessibility-safe presentation.
@@ -336,8 +347,10 @@ A remake-side graphics adapter can claim this contract only when automated tests
    unaccepted battle-sprite helper semantics;
 4. palette-transition state preserves timer 32, divisor 4, weight total 8, update queue-handoff
    identity, and the bounded completion promotion branch without treating them as wall-clock timing;
-5. special-sprite routing preserves exactly nine fully routed IDs `247..255`, pointer-only ID `246`,
-   and unbacked IDs `240..245`, with exploration slot 2 distinct from battle routes;
+5. special-sprite routing consumes canonical records from `special-sprite-graphics-data` and preserves
+   exactly nine fully routed IDs `247..255`, pointer-only ID `246`, and unbacked IDs `240..245`, with
+   exploration slot 2 distinct from battle routes, without independently re-verifying the static
+   resource catalog;
 6. initial special-sprite load and animation refresh retain distinct immediate-versus-queued transfer
    seams, while DMA/VInt cadence and visible presentation remain outside parity;
 7. flash-script words remain exactly `0x0041, 0x001E, 0xFFFF` without inferring visible duration;
@@ -359,7 +372,7 @@ those requirements.
 | --- | --- | --- | --- |
 | decompression entry identities and `a0`/`a1`/`d0` ABI | **Confirmed static** | `sf2-tech-graphics-static-v1` ([`tech-graphics-static-v1.json`](../../../tests/fixtures/h2/tech-graphics-static-v1.json)); Stack entry also bound by `sf2-special-sprite-decode-v1` ([`special-sprite-decode-v1.json`](../../../tests/fixtures/h2/special-sprite-decode-v1.json)) | Codec history, grammar, copy loop, malformed-input behavior, and micro-implementation are outside H4 |
 | display initialization, sprite-link shape, palette timer/weights/queue seam, flash words | **Confirmed static** | `sf2-tech-graphics-static-v1` ([`tech-graphics-static-v1.json`](../../../tests/fixtures/h2/tech-graphics-static-v1.json)) | Visible frames, VInt/CRAM-DMA cadence, hardware timing, and presentation remain **Unknown** |
-| ten pointers, six resources, and exact `9 + 1 + 6` special-ID routing split | **Confirmed static** | `sf2-special-sprite-decode-v1` ([`special-sprite-decode-v1.json`](../../../tests/fixtures/h2/special-sprite-decode-v1.json)) | Forced invalid/debug behavior and rendered frames remain **Unknown** |
+| exact `9 + 1 + 6` special-ID routing split over canonical data records | **Confirmed static** | `sf2-special-sprite-decode-v1` ([`special-sprite-decode-v1.json`](../../../tests/fixtures/h2/special-sprite-decode-v1.json)); catalog owned by [special-sprite-graphics-data](special-sprite-graphics-data.md) | This contract retains route/loader/transfer seams but does not independently own the ten-pointer/six-resource catalog; forced invalid/debug behavior and rendered frames remain **Unknown** |
 | complete original built assignment exclusion for IDs `237..250` | **Separate-owner Confirmed static** | [Common Scripting](../../research/common-scripting.md), outside this contract | This contract does not duplicate its fixture or H4 surface; forced malformed/debug/raw-RAM behavior remains **Unknown** |
 | camera destination, parallax, autoscroll, and axis writes | **Separate owner** | [map-exploration contract](map-exploration.md) and its H3 camera owner | `graphicsFacts.viewDestination` is explicitly not consumed here |
 | nominally unused display/graphics helper identities | **Confirmed static inventory** | `sf2-tech-graphics-static-v1` ([`tech-graphics-static-v1.json`](../../../tests/fixtures/h2/tech-graphics-static-v1.json)) | Dead-code status, runtime reachability, and caller effects remain **Unknown** |
