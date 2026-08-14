@@ -189,6 +189,10 @@
       "translatedDate": "2026-08-12"
     },
     {
+      "source": "docs/design/contracts/portrait-graphics-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/portrait-window-state.md",
       "status": "pending"
     },

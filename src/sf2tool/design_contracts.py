@@ -201,6 +201,11 @@ CONTRACTS = {
             "sf2-special-screens-static-v1"
         ),
     },
+    "docs/design/contracts/portrait-graphics-data.md": {
+        "tests/fixtures/h2/portrait-graphics-decode-v1.json": (
+            "sf2-portrait-graphics-decode-v1"
+        ),
+    },
     "docs/design/contracts/portrait-window-state.md": {
         "tests/fixtures/h2/common-menus-static-v1.json": (
             "sf2-common-menus-static-v1"
