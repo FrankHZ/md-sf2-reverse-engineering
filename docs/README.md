@@ -541,12 +541,17 @@ document whose anchors may be updated.
   backbone, placement and local AI-geometry shape, supporting battle metadata, terrain aliases, and
   the separate 48-slot cutscene-route namespace, while retaining runtime admission, AI, pathfinding,
   resolution, presentation, story selection, and balance as separate-owner or Unknown boundaries.
+- [`battle-background-graphics-data.md`](./design/contracts/battle-background-graphics-data.md): the
+  implementation-neutral private-import contract for the 30 ordered background slots, 27 payload
+  owners, three aliases, exact pre-stream prefix/palette/two-stream structure, and aggregate
+  decode/parity metadata, while retaining original payloads, selection, loading, transfer,
+  rendering, timing, and replacement policy as private, separate-owner, or Unknown boundaries.
 - [`battle-scene-presentation.md`](./design/contracts/battle-scene-presentation.md): the
   implementation-neutral contract for the 21-command scene interpreter, initialization and selector
-  order, 208 actor-animation sequences, spell setup/update dispatch, and complete background,
-  sprite, weapon, ground, and battle-effect container boundaries, while retaining command/frame
-  timing, VInt/VDP effects, palette/layer composition, invocation transfer tails, reachability, and
-  rendered output as Unknown.
+  order, background selection/loader/presentation seam, 208 actor-animation sequences, spell
+  setup/update dispatch, and complete actor-sprite, weapon, ground, and battle-effect container
+  boundaries, while retaining command/frame timing, VInt/VDP effects, palette/layer composition,
+  invocation transfer tails, reachability, and rendered output as Unknown.
 - [`battle-control-lifecycle.md`](./design/contracts/battle-control-lifecycle.md): the implementation-neutral
   contract for new/resumed battle entry, round activation/spawn/turn scheduling, combatant death
   worklists and cleanup, bounded Battle 01 region and turn-order runtime behavior, double faction
