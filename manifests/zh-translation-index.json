@@ -47,6 +47,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/battle-weapon-ground-graphics-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/battlefield-navigation.md",
       "status": "pending"
     },

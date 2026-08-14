@@ -86,6 +86,11 @@ CONTRACTS = {
             "sf2-battle-sprite-decode-v1"
         ),
     },
+    "docs/design/contracts/battle-weapon-ground-graphics-data.md": {
+        "tests/fixtures/h2/battle-weapon-ground-decode-v1.json": (
+            "sf2-battle-weapon-ground-decode-v1"
+        ),
+    },
     "docs/design/contracts/battle-scene-presentation.md": {
         "tests/fixtures/h2/battle-scene-engine-static-v1.json": (
             "sf2-battle-scene-engine-static-v1"

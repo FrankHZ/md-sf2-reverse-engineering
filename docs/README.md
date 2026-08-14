@@ -556,10 +556,16 @@ document whose anchors may be updated.
   tables, 86 source payload owners, header/palette/frame-stream structure, and aggregate decode/parity
   metadata, while retaining original payloads, selection, animation, loading, transfer, rendering,
   timing, and replacement policy as private, separate-owner, or Unknown boundaries.
+- [`battle-weapon-ground-graphics-data.md`](./design/contracts/battle-weapon-ground-graphics-data.md):
+  the implementation-neutral private-import contract for the 23-slot weapon table, 42 weapon-palette
+  entries, 30-slot/27-header ground table and aliases, 33 source stream owners, heterogeneous
+  palette/header accounting, and aggregate decode/parity metadata, while retaining original
+  payloads, selection, loading, transfer, rendering, timing, and replacement policy as private,
+  separate-owner, or Unknown boundaries.
 - [`battle-scene-presentation.md`](./design/contracts/battle-scene-presentation.md): the
   implementation-neutral contract for the 21-command scene interpreter, initialization and selector
-  order, background and actor-sprite selection/loader/presentation seams, 208 actor-animation
-  sequences, spell setup/update dispatch, and complete weapon, ground, and battle-effect container
+  order, background, actor-sprite, weapon, and ground selection/loader/presentation seams, 208
+  actor-animation sequences, spell setup/update dispatch, and complete battle-effect container
   boundaries, while retaining command/frame timing, VInt/VDP effects, palette/layer composition,
   invocation transfer tails, reachability, and rendered output as Unknown.
 - [`battle-control-lifecycle.md`](./design/contracts/battle-control-lifecycle.md): the implementation-neutral
