@@ -43,6 +43,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/battle-sprite-graphics-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/battlefield-navigation.md",
       "status": "pending"
     },
