@@ -249,6 +249,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/unused-technical-asset-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/window-system.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/window-system.md",
