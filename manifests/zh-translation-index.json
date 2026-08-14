@@ -35,6 +35,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/battle-effect-graphics-data.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/battle-encounter-definition.md",
       "status": "pending"
     },

@@ -551,6 +551,12 @@ document whose anchors may be updated.
   owners, three aliases, exact pre-stream prefix/palette/two-stream structure, and aggregate
   decode/parity metadata, while retaining original payloads, selection, loading, transfer,
   rendering, timing, and replacement policy as private, separate-owner, or Unknown boundaries.
+- [`battle-effect-graphics-data.md`](./design/contracts/battle-effect-graphics-data.md): the
+  implementation-neutral private-import contract for 23 spell, 30 invocation, one status-animation,
+  and two battle-transition stream identities, their private container/palette/offset relations,
+  and aggregate decode/parity metadata, while retaining original payloads, selection, loading,
+  transfer tails, rendering, timing, and replacement policy as private, separate-owner, or Unknown
+  boundaries.
 - [`battle-sprite-graphics-data.md`](./design/contracts/battle-sprite-graphics-data.md): the
   implementation-neutral private-import contract for separate 32-slot ally and 54-slot enemy
   tables, 86 source payload owners, header/palette/frame-stream structure, and aggregate decode/parity
@@ -564,9 +570,9 @@ document whose anchors may be updated.
   separate-owner, or Unknown boundaries.
 - [`battle-scene-presentation.md`](./design/contracts/battle-scene-presentation.md): the
   implementation-neutral contract for the 21-command scene interpreter, initialization and selector
-  order, background, actor-sprite, weapon, and ground selection/loader/presentation seams, 208
-  actor-animation sequences, spell setup/update dispatch, and complete battle-effect container
-  boundaries, while retaining command/frame timing, VInt/VDP effects, palette/layer composition,
+  order, background, actor-sprite, weapon, ground, spell, invocation, status, and transition
+  selection/loader/presentation seams, 208 actor-animation sequences, and spell setup/update
+  dispatch, while retaining command/frame timing, VInt/VDP effects, palette/layer composition,
   invocation transfer tails, reachability, and rendered output as Unknown.
 - [`battle-control-lifecycle.md`](./design/contracts/battle-control-lifecycle.md): the implementation-neutral
   contract for new/resumed battle entry, round activation/spawn/turn scheduling, combatant death
