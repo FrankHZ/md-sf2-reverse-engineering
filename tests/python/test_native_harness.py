@@ -31,8 +31,8 @@ from sf2tool.rom import mega_drive_checksum
 
 def test_design_contracts_are_traceable() -> None:
     assert verify_design_contracts() == {
-        "Documents": 52,
-        "FixtureReferences": 172,
+        "Documents": 53,
+        "FixtureReferences": 173,
         "EvidenceLabels": "Confirmed,Unknown",
         "Status": "PASS",
     }

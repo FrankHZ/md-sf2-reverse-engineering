@@ -565,6 +565,11 @@ document whose anchors may be updated.
   multi-target kill EXP/gold, SPOIT MP absorption with boundary truncation, BOOST 1
   attribute/recast timing, the SILENCE cast gate, and the temporary-status post-turn lifecycle and
   persistent-scenario replay boundary.
+- [`byte-copy-service.md`](./design/contracts/byte-copy-service.md): the implementation-neutral contract
+  for the overlap-preserving `CopyBytes` result over its bounded positive-length domain, the original
+  signed direction choice and exact `d7`/`a0`/`a1` preservation seam, and permitted platform
+  `memmove` modernization, while retaining unsupported ranges, callers, timing, atomicity, and
+  hardware effects as Unknown or separate-owner boundaries.
 - [`service-interactions.md`](./design/contracts/service-interactions.md): the shop, church, caravan/depot, and
   blacksmith action order, cancel boundaries, and static resource mutation contracts, with explicitly
   retained persistence/timing unknowns.
