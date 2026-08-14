@@ -184,11 +184,13 @@ MusicWaitServiceEvidence
     elapsedTiming
 ```
 
-This model distinguishes imported evidence from a remake runtime. Source/H1 identities, source text,
-macro operands, ROM addresses, and any future private instruction-byte comparison are private
-import/round-trip verification inputs. After verification, a remake may use engine-native command
-objects, references, events, futures, promises, or callbacks. It is not required to reproduce Mega
-Drive address space, trap encoding, the original polling loop, VInt scheduling, or Z80 memory.
+This model distinguishes imported evidence from a remake runtime. Complete or exact source-body text
+and dumps, full macro-expanded or instruction bytes, private ROM excerpts, and other non-public
+round-trip verification material remain private inputs. The bounded symbol, H1 entry, macro-operand
+names, wait count and order, hashes, and provenance listed in the public projection below remain
+public metadata. After verification, a remake may use engine-native command objects, references,
+events, futures, promises, or callbacks. It is not required to reproduce Mega Drive address space,
+trap encoding, the original polling loop, VInt scheduling, or Z80 memory.
 
 An engine-native implementation that waits on an event can still provide a compatibility adapter
 that emits the abstract ordered command-request and wait/predicate trace. Such a trace proves model
@@ -207,8 +209,9 @@ The public contract may retain:
 
 The public form MUST NOT publish original source-body bytes, instruction encodings, macro-expanded
 body bytes, private ROM excerpts, captured sound state, music data, decoded audio, emulator traces,
-or copyrighted audiovisual content. Exact source text or instruction-byte comparison may be used
-privately by a future stronger verifier, but it is not accepted parity evidence here.
+or copyrighted audiovisual content. Complete or exact source-body comparison and instruction-byte
+comparison may be used privately by a future stronger verifier, but they are not accepted parity
+evidence here.
 
 ## Cross-System Separation
 
