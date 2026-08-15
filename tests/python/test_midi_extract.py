@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import mido
 import pytest
 
 from sf2tool.midi_extract import (
@@ -207,6 +208,101 @@ def test_velocity_clamped_to_127():
     assert _velocity(14) == 120
     assert _velocity(15) == 127
 
+
+def test_smf_mido_message_level_roundtrip(tmp_path):
+    channel = ChannelResult(
+        slot_index=0,
+        slot_name="ym1-1",
+        family="ym1",
+        midi_channel=1,
+        notes=[(0, 60, 100, 10), (10, 62, 80, 20)],
+        program_events=[(0, 80)],
+        volume_events=[(0, 12), (10, 10)],
+    )
+    out = tmp_path / "t.mid"
+    write_smf("Test", [(0, 498620), (100, 500000)], [channel], 32, out)
+    mf = mido.MidiFile(str(out))
+    assert mf.type == 1
+    assert mf.ticks_per_beat == 32
+    assert len(mf.tracks) == 2
+
+    tempo_track = mf.tracks[0]
+    assert tempo_track.name == "Test"
+    tick = 0
+    tempo_events = []
+    for msg in tempo_track:
+        tick += msg.time
+        tempo_events.append((tick, msg))
+    assert [(t, msg.type) for t, msg in tempo_events] == [
+        (0, "track_name"),
+        (0, "set_tempo"),
+        (100, "set_tempo"),
+        (100, "end_of_track"),
+    ]
+    assert tempo_events[1][1].tempo == 498620
+    assert tempo_events[2][1].tempo == 500000
+
+    channel_track = mf.tracks[1]
+    assert channel_track.name == "Test ym1-1"
+    tick = 0
+    messages = []
+    for msg in channel_track:
+        tick += msg.time
+        messages.append((tick, msg))
+    assert [(t, msg.type) for t, msg in messages] == [
+        (0, "track_name"),
+        (0, "program_change"),
+        (0, "control_change"),
+        (0, "note_on"),
+        (10, "control_change"),
+        (10, "note_on"),
+        (10, "note_off"),
+        (20, "note_off"),
+        (20, "end_of_track"),
+    ]
+    assert messages[1][1].program == 80
+    assert messages[2][1].control == 7 and messages[2][1].value == 104
+    assert messages[3][1].note == 60 and messages[3][1].velocity == 100
+    assert messages[4][1].control == 7 and messages[4][1].value == 88
+    assert messages[5][1].note == 62 and messages[5][1].velocity == 80
+    assert messages[6][1].note == 60
+    assert messages[7][1].note == 62
+
+
+def test_mido_parses_synthetic_song(tmp_path):
+    rom_bytes = _synthetic_rom()
+    tracks = extract_music(rom_bytes, _opts(), expect_target_count=None)
+    song = tracks[0]
+    assert song.command_ids == list(range(1, 33))
+    out = tmp_path / "s.mid"
+    write_smf(
+        f"Music_{song.command_ids[0]}",
+        song.tempo_events,
+        song.channels,
+        32,
+        out,
+    )
+    mf = mido.MidiFile(str(out))
+    assert len(mf.tracks) == 2
+    tempo_track = mf.tracks[0]
+    tempo_messages = [msg for msg in tempo_track if msg.type == "set_tempo"]
+    assert len(tempo_messages) == 1
+    assert tempo_messages[0].tempo == 498620
+    channel_track = mf.tracks[1]
+    assert channel_track.name == "Music_1 ym1-1"
+    tick = 0
+    messages = []
+    for msg in channel_track:
+        tick += msg.time
+        messages.append((tick, msg))
+    assert [(t, msg.type) for t, msg in messages] == [
+        (0, "track_name"),
+        (16, "note_on"),
+        (46, "note_off"),
+        (46, "end_of_track"),
+    ]
+    assert messages[1][1].note == 86
+    assert messages[1][1].velocity == 100
 
 def test_vlq():
     assert _vlq(0) == b"\x00"
