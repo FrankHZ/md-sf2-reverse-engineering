@@ -161,7 +161,12 @@
     },
     {
       "source": "docs/design/contracts/combatant-state-access.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/combatant-state-access.md",
+      "sourceSha256": "cca5f1173ea8811d53c1bdad4b4db95c244e26ce926ffa6b5c9612d6f4c98c6c",
+      "mirrorSha256": "fc3c75cdeb2eec7e9aba09cfc73421e91be6e5c9203d4f8bdf5c43349063a212",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/debug-control-flow.md",
