@@ -331,7 +331,12 @@
     },
     {
       "source": "docs/design/contracts/rom-header-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/rom-header-data.md",
+      "sourceSha256": "db41bedb02d8facb7e506283ec19f3aa3a32c340bd74e3fd54b8a541c605f79c",
+      "mirrorSha256": "f7855b877e00f0e445bb1af4da50b99dd9de64bfb37f92aed5377992763d7977",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/save-system.md",
@@ -404,7 +409,12 @@
     },
     {
       "source": "docs/design/contracts/stats-null-return-service.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/stats-null-return-service.md",
+      "sourceSha256": "823e918d3d9b801f8d01d6e6e251644047093b49cf90d0999f16d76e20c9463f",
+      "mirrorSha256": "254c509f2119b14ac934428fa8b10cc3beb34b862cb78f9969ad4b51469e9e55",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/text-and-font-system.md",
