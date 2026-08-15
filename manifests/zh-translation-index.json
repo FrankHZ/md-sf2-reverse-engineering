@@ -215,7 +215,12 @@
     },
     {
       "source": "docs/design/contracts/graphics-service-state.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/graphics-service-state.md",
+      "sourceSha256": "b7de2b6aabbf3b106d2f046b950f7d9c886d6ac20727069f15054ea129bf3699",
+      "mirrorSha256": "c56439c84f44fcfbaea2e8f750ed8b3ec9debc30bafb4f60568d9315b7dd0edc",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/input-system.md",
