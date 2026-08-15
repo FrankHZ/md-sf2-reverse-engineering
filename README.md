@@ -185,8 +185,16 @@ uv run pytest tests/python/test_native_harness.py
 uv run pytest
 uv run sf2 design-contracts test
 uv run sf2 research-index test
+uv run sf2 midi extract
 uv run sf2 verify --full
 ```
+
+`uv run sf2 midi extract` re-interprets the original Z80 music banks and the embedded 56-entry
+SFX corpus with the pinned sound-driver semantics and writes private standard-MIDI files plus a
+metadata manifest under ignored `local/derived/midi/`. It is a derived-listening tool, not a
+contract verifier: pitch, tempo, GM-program, velocity, and loop-budget mappings are documented
+engineering conventions (see `src/sf2tool/midi_extract.py`), original wall-clock tempo is formally
+Unknown, and all MIDI/PCM output stays private under `local/`.
 
 `verify --full` runs the complete Python suite plus all maintained H1/H2/H3 rails. It is reserved for
 milestones, release/merge readiness, shared harness changes, or explicit full-parity requests. It is

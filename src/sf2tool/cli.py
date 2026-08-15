@@ -158,6 +158,7 @@ from sf2tool.h3.witch_save_actions import verify_witch_save_actions
 from sf2tool.h3.witch_save_menu_actions import verify_witch_save_menu_actions
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
+from sf2tool.midi_extract import run_midi_extraction
 from sf2tool.output import print_json, print_record
 from sf2tool.paths import repo_path
 from sf2tool.research_index import index_rows, index_summary, query_index, verify_index
@@ -632,6 +633,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_sound_data)
     h2_sound_data.add_argument("--output-path", type=_path)
+
+    midi_parser = commands.add_parser(
+        "midi", help="extract the original BGM/SFX corpus into standard MIDI files"
+    )
+    midi_commands = midi_parser.add_subparsers(dest="midi_command", required=True)
+    midi_extract = midi_commands.add_parser(
+        "extract", help="write private MIDI files and a metadata manifest under --out-dir"
+    )
+    _add_local_paths(midi_extract)
+    midi_extract.add_argument(
+        "--out-dir", type=_path, default=repo_path("local/derived/midi")
+    )
+    midi_extract.add_argument(
+        "--loop-budget", type=int, default=2, help="channel stops after this many loop-backs"
+    )
+    midi_extract.add_argument(
+        "--quarter-ticks", type=int, default=32, help="ticks per MIDI quarter note"
+    )
+    midi_extract.add_argument("--skip-sfx", action="store_true")
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -1592,6 +1612,17 @@ def dispatch(args: argparse.Namespace) -> None:
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,
+            )
+        )
+    elif args.command == "midi" and args.midi_command == "extract":
+        print_record(
+            run_midi_extraction(
+                args.rom_path,
+                args.upstream_path,
+                out_dir=args.out_dir,
+                loop_budget=args.loop_budget,
+                quarter_ticks=args.quarter_ticks,
+                skip_sfx=args.skip_sfx,
             )
         )
     elif args.command == "h3" and args.h3_command == "rng":
