@@ -475,7 +475,12 @@
     },
     {
       "source": "docs/design/contracts/startup-control-flow.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/startup-control-flow.md",
+      "sourceSha256": "10acba8d2c212dc93a8eac8b794e44e6d424b58e4555a16444bab5fdc48fd58e",
+      "mirrorSha256": "92cd153ab23f91c5fe756934fbd24e2863ac18364a21f331a42053b47973f371",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/stats-null-return-service.md",
