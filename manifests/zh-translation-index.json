@@ -406,7 +406,12 @@
     },
     {
       "source": "docs/design/contracts/special-sprite-graphics-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/special-sprite-graphics-data.md",
+      "sourceSha256": "8edc0bc540b1b929b4f41e51480dfa359c4e4793e16542b348abc66a36d89287",
+      "mirrorSha256": "03110a1ee6ea6c89e8234aa7c33012faa2da2d634182e09beabfebb293218514",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/spell-definition-data.md",
