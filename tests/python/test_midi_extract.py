@@ -196,7 +196,16 @@ def test_smf_writer_roundtrip(tmp_path):
     assert b"\x0a\x91\x3e\x50" in data
     assert b"\x00\x81\x3c\x00" in data
     assert b"\x0a\x81\x3e\x00" in data
-    assert data.endswith(b"\xff\x2f\x00")
+    assert data.endswith(b"\x00\xff\x2f\x00")
+    assert data.count(b"\x00\xff\x2f\x00") == 2
+
+
+def test_velocity_clamped_to_127():
+    from sf2tool.midi_extract import _velocity
+
+    assert _velocity(None) == 100
+    assert _velocity(14) == 120
+    assert _velocity(15) == 127
 
 
 def test_vlq():

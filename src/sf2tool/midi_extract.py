@@ -171,7 +171,9 @@ def _timer_b_us_per_qn(timer_b: int, quarter_ticks: int) -> int:
 
 
 def _velocity(level: int | None) -> int:
-    return 8 + level * 8 if level is not None else 100
+    if level is None:
+        return 100
+    return min(8 + level * 8, 127)
 
 
 def _slot_midi_channel(slot_index: int, family: str) -> int:
@@ -571,7 +573,7 @@ def _meta_event(event_type: int, data: bytes) -> bytes:
 
 
 def _end_of_track() -> bytes:
-    return _meta_event(0x2F, b"")
+    return _vlq(0) + _meta_event(0x2F, b"")
 
 
 def _tempo_meta(us_per_qn: int) -> bytes:
