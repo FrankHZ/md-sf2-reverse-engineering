@@ -331,7 +331,12 @@
     },
     {
       "source": "docs/design/contracts/map-sprite-graphics-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/map-sprite-graphics-data.md",
+      "sourceSha256": "2c1c13bd410a2df50081f642196616b9c6deb5b4a9187cbcd77d91bb3778f5cc",
+      "mirrorSha256": "0e6f58ae49367036c703408b76802e4798eb49234c3119a6d40bdad6fefa5283",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/map-tileset-data.md",
