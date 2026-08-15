@@ -16,8 +16,16 @@ project decisions belong in their owning tracked documents.
   observations only where source and ROM evidence cannot close behavior.
 - **Design synthesis:** active alongside Phase 2. Cross-subsystem documents may explain accepted
   evidence from `main`; they do not promote guesses into original-game facts.
-- **Remake implementation:** not started. No modern engine or distributable asset strategy has been
-  selected.
+- **Phase 4 engine/tooling baseline:** accepted in
+  [ADR 0008](./docs/decisions/0008-godot-csharp-cli-first-remake-tooling.md): Godot 4.7.1 .NET with
+  C#, CLI-first gates, a plain-C# domain layer, a thin Godot adapter, and optional removable MCP
+  tooling.
+- **Remake implementation:** not started. The accepted first playable milestone is one continuous
+  scenario from Map 3 through completion of Battle 01 under
+  [ADR 0009](./docs/decisions/0009-first-phase4-playable-slice.md). Research and Design must first
+  complete targeted gap audits, close the required evidence and contract gaps, and receive a
+  main-gate readiness report; Phase 4 still requires a separate explicit start action. No
+  distributable asset strategy or MCP implementation has been selected.
 
 This README intentionally does **not** maintain fixture totals, address counts, coverage percentages,
 or per-subsystem corpus sizes. Those snapshots became stale as soon as another research slice merged.
@@ -230,8 +238,9 @@ contract. A future remake must use placeholders or properly licensed assets for 
 - **Phase 3 — Game Design Reconstruction:** connected player-facing rules, maps, roster space, numerical curves,
    battle simulation, and explicit modernization choices — partially prepared by current design
    synthesis; upper-layer decisions remain future work.
-- **Phase 4 — Modern Engine Vertical Slice:** engine selection, data import, battle/exploration slice, save, UI,
-   and H4 parity — not started.
+- **Phase 4 — Modern Engine Vertical Slice:** the Godot 4.7.1 .NET/C# baseline and first continuous
+  Map 3-through-Battle 01-completion milestone are accepted; Research/Design gap audits, main-gate
+  readiness, and a separate explicit start action remain pending — implementation not started.
 - **Phase 5 — Content and Productization:** licensed/placeholder assets, localization, accessibility,
    distribution, and release QA — not started.
 

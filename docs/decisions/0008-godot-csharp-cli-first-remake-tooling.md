@@ -1,14 +1,15 @@
 # ADR 0008: Godot C# with a CLI-First Remake Toolchain
 
-- Status: **Proposed**
+- Status: **Accepted**
+- Decision date: 2026-08-14
 - Investigation date: 2026-08-14
 - Scope: prospective Phase 4 engine and development-tool boundary
 - Experiment source: local `G:\Codes-godot\Project-Mech-Strike`
 
-## Proposed Decision
+## Decision
 
-Use **Godot 4.7.1 .NET** with C# as the evaluated Proposed Phase 4 baseline for the prospective
-desktop 2D remake. This proposal pins 4.7.1 rather than floating to whichever stable release exists
+Use **Godot 4.7.1 .NET** with C# as the accepted Phase 4 engine/tooling baseline for the prospective
+desktop 2D remake. This decision pins 4.7.1 rather than floating to whichever stable release exists
 when Phase 4 is separately authorized. Changing to a newer stable release requires an explicit
 compatibility recheck and follow-up ADR before project creation. Keep the maintained build and
 acceptance path independent of an editor plugin:
@@ -20,9 +21,9 @@ acceptance path independent of an editor plugin:
    observation, log capture, input injection, and screenshots;
 5. require the same build, test, and smoke gates to pass after the MCP adapter is removed.
 
-This proposal does **not** start Phase 4, create a `remake/` project, select a distributable asset
-strategy, or accept a particular MCP implementation. Until this ADR is accepted, the root README's
-statement that no modern engine has been selected remains authoritative.
+This decision does **not** start Phase 4, create a `remake/` project, select a distributable asset
+strategy, or accept a particular MCP implementation. Those actions require their own accepted
+scope; Phase 4 implementation remains subject to a separate explicit start transition.
 
 ## Why This Investigation Exists
 
@@ -180,8 +181,8 @@ and a separately installed .NET SDK. See the official
 [`command-line tutorial`](https://docs.godotengine.org/en/stable/tutorials/editor/command_line_tutorial.html),
 and [`C# prerequisites`](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html).
 
-That date-stamped release observation does not create a floating-version policy. The evaluated
-Proposed baseline remains 4.7.1 until a compatibility recheck and follow-up ADR explicitly change it.
+That date-stamped release observation does not create a floating-version policy. The accepted
+baseline remains 4.7.1 until a compatibility recheck and follow-up ADR explicitly change it.
 
 The recent MCP ecosystem has capable candidates, but all remain optional evaluation targets:
 
@@ -197,11 +198,11 @@ The initial experiment should compare IvanMurzak and tugcantopaloglu because the
 the strongest C# fit and broader adoption evidence. Beckett remains a useful low-dependency control.
 No candidate should be vendored or added to the remake project before the experiment passes.
 
-## Required Plugin Bakeoff
+## Required Plugin Bakeoff Before MCP Adoption
 
-Run each candidate against the same disposable project on the evaluated Godot 4.7.1 .NET baseline in
-an isolated worktree. Do not substitute a newer stable release without the compatibility recheck and
-follow-up ADR required by the Proposed Decision:
+Before adopting any MCP candidate, run each candidate against the same disposable project on the
+accepted Godot 4.7.1 .NET baseline in an isolated worktree. Do not substitute a newer stable release
+without the compatibility recheck and follow-up ADR required by this decision:
 
 1. discover the exact Godot version and project root;
 2. inspect an existing scene and C# type without changing files;
@@ -217,10 +218,10 @@ Reject a candidate if it requires a cloud account, cannot bind only to localhost
 executed artifacts, bypasses action approval, edits scenes outside Godot UndoRedo without a stable
 diff, leaks development tooling into exports, or makes the official CLI path fail when removed.
 
-## Proposed Phase 4 Baseline
+## Phase 4 Baseline
 
-If this ADR is accepted, create a separate implementation slice that owns the engine project and its
-gates. That later slice should:
+A separately authorized implementation slice will own the engine project and its gates. That later
+slice should:
 
 - pin the evaluated Godot 4.7.1 .NET baseline and the selected .NET SDK in a tracked toolchain
   manifest; do not silently float to a newer stable release;
@@ -239,11 +240,12 @@ developer loop later, but cannot define completion.
 
 ## Consequences and Remaining Decisions
 
-The proposal accepts one lesson from Project-Mech-Strike: modern Codex models can implement and
+The decision accepts one lesson from Project-Mech-Strike: modern Codex models can implement and
 iterate on Godot C# directly without an editor plugin owning the project. It rejects the prototype's
 non-reproducible local integration as a durable project contract.
 
-Main-gate acceptance of this ADR would select the engine/tooling boundary but would not authorize the
-Phase 4 transition. The user must still authorize that phase change. Asset licensing and replacement,
-the first continuous Map 3 to Battle 01 scenario, save/UI scope, visual parity targets, and the winning
-optional MCP candidate remain separate decisions or acceptance slices.
+Acceptance of this ADR selects the engine/tooling boundary but does not authorize the Phase 4
+transition. [ADR 0009](./0009-first-phase4-playable-slice.md) selects the first playable milestone
+and its pre-entry gap gate; Phase 4 still requires a separate explicit start action after that gate
+closes. Asset licensing and replacement, save/UI scope, visual parity targets, and any optional MCP
+winner remain separate decisions or acceptance slices.
