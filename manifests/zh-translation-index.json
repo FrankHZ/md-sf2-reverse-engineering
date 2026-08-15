@@ -43,6 +43,10 @@
       "status": "pending"
     },
     {
+      "source": "docs/design/contracts/battle-functions-control-flow.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/battle-scene-presentation.md",
       "status": "pending"
     },

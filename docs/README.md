@@ -577,6 +577,11 @@ document whose anchors may be updated.
   backbone, placement and local AI-geometry shape, supporting battle metadata, terrain aliases, and
   the separate 48-slot cutscene-route namespace, while retaining runtime admission, AI, pathfinding,
   resolution, presentation, story selection, and balance as separate-owner or Unknown boundaries.
+- [`battle-functions-control-flow.md`](./design/contracts/battle-functions-control-flow.md): the
+  implementation-neutral contract for fixture-bounded individual-turn routing, battle-load and
+  move-command selection, cursor and target-list control, battle and battlefield menu branches, and
+  ordered equipment/item/chest requests, while retaining callee completion, persistence, input
+  timing, presentation, and natural scenario reachability as separate-owner or Unknown boundaries.
 - [`battle-background-graphics-data.md`](./design/contracts/battle-background-graphics-data.md): the
   implementation-neutral private-import contract for the 30 ordered background slots, 27 payload
   owners, three aliases, exact pre-stream prefix/palette/two-stream structure, and aggregate
