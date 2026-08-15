@@ -192,7 +192,12 @@
     },
     {
       "source": "docs/design/contracts/exploration-control-flow.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/exploration-control-flow.md",
+      "sourceSha256": "16e279641ab81e3873512a2bdfa72ede296263b6033f0375504caa41fc4b56cf",
+      "mirrorSha256": "20372efbfa22395754a629b4ce267438323f3175fa4083e8fe6e90235334eb0a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/global-flag-state.md",
