@@ -407,7 +407,12 @@
     },
     {
       "source": "docs/design/contracts/sprite-dialogue-property-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/sprite-dialogue-property-data.md",
+      "sourceSha256": "d6a6fd6bd568c931e33cf76346eb8236e2ba2f459affe7f45046a35f5b998da5",
+      "mirrorSha256": "cbae2b9f0497ac8ec97bdd41596c9302f8d393c1e434efe5318b0953b0ac2813",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/standalone-map-script-program-data.md",
@@ -428,7 +433,12 @@
     },
     {
       "source": "docs/design/contracts/text-and-font-system.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/text-and-font-system.md",
+      "sourceSha256": "f500a04a5bfa312e97c0d411c018a392b93d9bfe3febb1f874cb8204b8f5a1c5",
+      "mirrorSha256": "49d246f6f9c6d112bdc8033a65fa618cf63d07fe3acb2673d19c3620e69cf723",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/ui-graphics-asset-data.md",
