@@ -260,7 +260,12 @@
     },
     {
       "source": "docs/design/contracts/map-area-description-routing.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/map-area-description-routing.md",
+      "sourceSha256": "118dbde98af6cf5b2ff7e51840bd19effb3d5d84083865fd5300df70f65a192a",
+      "mirrorSha256": "001f2323c8323221a6b615ab6f5405da12ae8d1ad930db06134b4a1370d1b7e9",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/map-camera-update-control-flow.md",
