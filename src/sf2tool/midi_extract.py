@@ -13,8 +13,11 @@ Semantics confirmed from the pinned driver source
 
 - one music tick == one ``UpdateSound`` pass of the original driver; the driver polls the
   YM Timer B overflow flag, so the tick rate is bounded by Z80 bus arbitration rather than the
-  Timer B register value (BizHawk Genesis Plus GX observation on 2026-08-15: Music 1 and Music 33
-  both tick at ~1.0 per 60 Hz frame, independent of their Timer B values);
+  Timer B register value. Reproducible with ``uv run sf2 midi tick-rate``
+  (``tools/bizhawk/tick_rate_observer.lua``): BizHawk Genesis Plus GX observed on 2026-08-15 that
+  Music 1 and Music 33 both tick at ~1.0 per 60 Hz frame during active playback (active-phase
+  rates 1.02 and 1.14; 0.53 and 0.59 averaged over 600 frames including idle phases), independent
+  of their Timer B values;
 - channel stream bytes: ``0x00..0x6F``/``0x80..0xEF`` are note (or DAC sample) bytes,
   ``0x70``/``0xF0`` are the wait forms, ``0xF8``-``0xFE`` are two-byte commands, and
   ``0xFF`` + word is end (``00 00``), queued-operation mute (``xx 00`` on YM1-family
@@ -76,6 +79,7 @@ from sf2tool.h2.sound_data import (
     SFX_TYPE_2_SLOTS,
 )
 from sf2tool.jsonio import load_json
+from sf2tool.paths import repo_path
 
 BANK_ROM_OFFSETS = {"bank0": 0x1F8000, "bank1": 0x1F0000}
 BANK_ORIGIN = 0x8000
@@ -657,6 +661,85 @@ def write_smf(
 
 def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest().upper()
+
+
+def analyze_tick_rate(observed: dict[str, object]) -> dict[str, object]:
+    """Summarize channel-counter decrements per frame from a tick-rate observation.
+
+    For each record (one music command) the channel with the most observed decrements
+    is selected. A decrement is one frame transition where the counter strictly fell;
+    counter resets (0 -> larger value after parsing a new event) do not count.
+    ``activeTicksPerFrame`` rates only frames with at least one decrement, while
+    ``averageTicksPerFrame`` divides by the full observation window (idle phases included).
+    """
+    frames = int(observed["frames"])
+    rows = []
+    for record in observed["records"]:
+        counters = record["counters"]
+        best: tuple[int, int, int, float] | None = None
+        for channel_index in range(len(counters[0])):
+            decrements = 0
+            decrement_frames = 0
+            for frame in range(1, frames):
+                previous = counters[frame - 1][channel_index]
+                current = counters[frame][channel_index]
+                if current < previous:
+                    decrements += previous - current
+                    decrement_frames += 1
+            if best is None or decrements > best[1]:
+                best = (
+                    channel_index,
+                    decrements,
+                    decrement_frames,
+                    decrements / decrement_frames if decrement_frames else 0.0,
+                )
+        channel_index, decrements, decrement_frames, active_rate = best
+        rows.append(
+            {
+                "command": record["command"],
+                "channelIndex": channel_index,
+                "decrementCount": decrements,
+                "decrementFrames": decrement_frames,
+                "averageTicksPerFrame": round(decrements / (frames - 1), 4),
+                "activeTicksPerFrame": round(active_rate, 4),
+            }
+        )
+    return {"frames": frames, "records": rows}
+
+
+def run_tick_rate_observation(
+    rom_path: Path, upstream_path: Path, *, timeout_seconds: int = 240
+) -> dict[str, object]:
+    """Run the BizHawk tick-rate observer for Music 1 and Music 33 and summarize it."""
+    rom_path = rom_path.resolve(strict=True)
+    upstream_path = upstream_path.resolve(strict=True)
+    del upstream_path
+    expected_rom = load_json(ROM_MANIFEST)
+    rom = rom_path.read_bytes()
+    if len(rom) != expected_rom["sizeBytes"] or _sha256(rom) != expected_rom["hashes"]["sha256"]:
+        raise ValueError("tick-rate observation ROM identity drift")
+    from sf2tool.h3.bizhawk import run_observer
+
+    observed = run_observer(
+        rom_path=rom_path,
+        observer_path=repo_path("tools/bizhawk/tick_rate_observer.lua"),
+        config={
+            "bootFrames": 20,
+            "observeFrames": 600,
+            "ram": {
+                "channelBaseAddress": 0x1380,
+                "channelCount": 10,
+                "channelRecordSize": 0x20,
+                "newOperationAddress": 0x1FFF,
+            },
+            "commands": [1, 33],
+        },
+        output_name="tick-rate",
+        timeout_seconds=timeout_seconds,
+    )
+    summary = analyze_tick_rate(observed)
+    summary["status"] = "PASS"
+    return summary
 
 
 def run_midi_extraction(

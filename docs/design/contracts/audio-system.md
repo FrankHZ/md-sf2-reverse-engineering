@@ -5,9 +5,11 @@
   language, frequency/sample/instrument index domains, 56 embedded SFX commands, and the bounded
   four-command runtime state matrix described below.
 - **Inferred original behavior:** audible instrument and envelope meaning.
-- **Unknown original behavior:** wall-clock tempo, PCM sample rate, exact YM2612/PSG output,
-  audible waveform parity, player-facing command meaning, complete loop/fade/resume semantics, and
-  SFX priority/interruption.
+- **Unknown original behavior:** true hardware wall-clock tempo, PCM sample rate, exact
+  YM2612/PSG output, audible waveform parity, player-facing command meaning, complete
+  loop/fade/resume semantics, and SFX priority/interruption. A bounded emulator observation
+  (2026-08-15) measured a frame-locked channel-counter tick rate of ~1 tick per 60 Hz frame,
+  independent of the Timer B value; see the Music Header section for the exact claim.
 - Remake status: implementation-neutral Phase 3 contract; no audio middleware, asset format,
   replacement soundtrack, mixing policy, or hardware-fidelity target has been selected.
 - Evidence date: 2026-08-08
@@ -132,7 +134,13 @@ MUST NOT silently collapse command IDs in imported data or infer a track's use f
 
 Nineteen headers leave DAC enabled and 20 disable it. Every reserved Timer A byte is zero. Timer B
 has 19 distinct values from `0xBD` through `0xD4`. These are stored fields and verified driver reads;
-they are not a wall-clock tempo contract.
+they are not a wall-clock tempo contract. A bounded BizHawk 2.11.1 / Genesis Plus GX observation on
+2026-08-15 (Music 1 with Timer B `0xC2` and Music 33 with Timer B `0xD3`, 600 frames each, via
+`uv run sf2 midi tick-rate` using `tools/bizhawk/tick_rate_observer.lua`) measured a frame-locked
+channel-counter tick rate of ~1 tick per 60 Hz frame during active playback (active-phase rates
+1.02 and 1.14 ticks/frame; 0.53 and 0.59 ticks/frame averaged over the full window including idle
+phases) for both songs, i.e. the observed tick rate is independent of the Timer B value. True
+hardware tempo remains **Unknown**; the observation is a bounded emulator fact, not a hardware claim.
 
 The ten pointer positions retain this order:
 
@@ -290,7 +298,8 @@ decision explicitly reopens that frozen scope.
 | two banks, 37 song ranges, 64 command slots, 39 targets, aliases, headers, role topology | **Confirmed static** | `sf2-sound-data-static-v1` ([`sound-data-static-v1.json`](../../../tests/fixtures/h2/sound-data-static-v1.json)) | Scene use, enum meaning, redistribution rights, audible output |
 | macro/control-flow corpus and note/frequency/sample/instrument index domains | **Confirmed static** | `sf2-sound-data-static-v1` ([`sound-data-static-v1.json`](../../../tests/fixtures/h2/sound-data-static-v1.json)) | Tempo, sample rate, timbre, envelope, loudness |
 | 56 SFX commands, header topology, active-stream tokenization, counted loops | **Confirmed static** | `sf2-sound-data-static-v1` ([`sound-data-static-v1.json`](../../../tests/fixtures/h2/sound-data-static-v1.json)) | Priority, interruption, duration, mixing, audible equivalence |
-| four command cases, 12 checkpoints, 120 channel snapshots | **Confirmed bounded runtime** | `sf2-sound-timing-runtime-v1` ([`sound-timing-v1.json`](../../../tests/fixtures/h3/sound-timing-v1.json)) | Natural reachability, completion, loop/fade/resume semantics, wall-clock time |
+| four command cases, 12 checkpoints, 120 channel snapshots | **Confirmed bounded runtime** | `sf2-sound-timing-runtime-v1` ([`sound-timing-v1.json`](../../../tests/fixtures/h3/sound-timing-v1.json)) | Natural reachability, completion, loop/fade/resume semantics, true hardware wall-clock time |
+| frame-locked tick rate, Timer-B independent (Music 1 + Music 33, 600 frames each) | **Confirmed bounded runtime** | [tick-rate observer](../../../tools/bizhawk/tick_rate_observer.lua) via `uv run sf2 midi tick-rate` | True hardware tempo, frame-vs-tick jitter outside the observed window, other songs |
 | startup sound-driver handoff | **Confirmed static** | `sf2-gameflow-core-static-v1` ([`gameflow-core-static-v1.json`](../../../tests/fixtures/h2/gameflow-core-static-v1.json)) | Byte-count interpretation, bus/reset timing, failures, first audible output |
 | audible instrument/envelope meaning | **Inferred** | [sound research](../../research/sound-data-inventory.md) | Requires a bounded reopened question if remake acceptance needs it |
 | hardware/waveform fidelity and modern asset policy | **Unknown / deliberate design** | [ADR 0005](../../decisions/0005-remake-value-driven-driver-freeze.md) | Frozen unless a named trigger reopens one bounded question |
@@ -300,6 +309,7 @@ decision explicitly reopens that frozen scope.
 ```powershell
 uv run sf2 h2 sound-data
 uv run sf2 h3 sound-timing --timeout-seconds 180
+uv run sf2 midi tick-rate
 uv run sf2 design-contracts test
 uv run sf2 verify
 ```

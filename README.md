@@ -194,7 +194,8 @@ SFX corpus with the pinned sound-driver semantics and writes private standard-MI
 metadata manifest under ignored `local/derived/midi/`. It is a derived-listening tool, not a
 contract verifier: pitch, GM-program, velocity, and loop-budget mappings are documented engineering
 conventions, and tempo uses the frame-locked tick rate observed in BizHawk Genesis Plus GX
-(~1 music tick per 60 Hz frame, Timer-B independent) with 30 ticks per quarter note (120 BPM);
+(~1 music tick per 60 Hz frame during active playback, Timer-B independent; verify with
+`uv run sf2 midi tick-rate`) with 30 ticks per quarter note (120 BPM);
 all MIDI/PCM output stays private under `local/`.
 
 `verify --full` runs the complete Python suite plus all maintained H1/H2/H3 rails. It is reserved for

@@ -304,6 +304,33 @@ def test_mido_parses_synthetic_song(tmp_path):
     assert messages[1][1].note == 86
     assert messages[1][1].velocity == 100
 
+def test_analyze_tick_rate():
+    from sf2tool.midi_extract import analyze_tick_rate
+
+    counters_a = [[0] * 10 for _ in range(31)]
+    counters_b = [[0] * 10 for _ in range(31)]
+    for frame in range(31):
+        counters_a[frame][0] = 30 - frame
+        counters_b[frame][3] = max(20 - frame, 0)
+    observed = {
+        "frames": 31,
+        "records": [
+            {"command": 1, "counters": counters_a},
+            {"command": 33, "counters": counters_b},
+        ],
+    }
+    summary = analyze_tick_rate(observed)
+    assert summary["records"][0]["channelIndex"] == 0
+    assert summary["records"][0]["decrementCount"] == 30
+    assert summary["records"][0]["averageTicksPerFrame"] == 1.0
+    assert summary["records"][0]["activeTicksPerFrame"] == 1.0
+    assert summary["records"][1]["channelIndex"] == 3
+    assert summary["records"][1]["decrementCount"] == 20
+    assert summary["records"][1]["decrementFrames"] == 20
+    assert summary["records"][1]["averageTicksPerFrame"] == round(20 / 30, 4)
+    assert summary["records"][1]["activeTicksPerFrame"] == 1.0
+
+
 def test_vlq():
     assert _vlq(0) == b"\x00"
     assert _vlq(0x7F) == b"\x7f"

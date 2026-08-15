@@ -170,7 +170,10 @@ WITCH_MENU_OBSERVERS = (
     "tools/bizhawk/witch_save_menu_actions_observer.lua",
 )
 
-SOUND_DRIVER_OBSERVERS = ("tools/bizhawk/sound_timing_observer.lua",)
+SOUND_DRIVER_OBSERVERS = (
+    "tools/bizhawk/sound_timing_observer.lua",
+    "tools/bizhawk/tick_rate_observer.lua",
+)
 
 
 def _profiles(profile: str, paths: tuple[str, ...]) -> dict[str, str]:

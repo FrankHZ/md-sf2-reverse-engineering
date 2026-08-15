@@ -158,7 +158,7 @@ from sf2tool.h3.witch_save_actions import verify_witch_save_actions
 from sf2tool.h3.witch_save_menu_actions import verify_witch_save_menu_actions
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
-from sf2tool.midi_extract import run_midi_extraction
+from sf2tool.midi_extract import run_midi_extraction, run_tick_rate_observation
 from sf2tool.output import print_json, print_record
 from sf2tool.paths import repo_path
 from sf2tool.research_index import index_rows, index_summary, query_index, verify_index
@@ -652,6 +652,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--quarter-ticks", type=int, default=32, help="ticks per MIDI quarter note"
     )
     midi_extract.add_argument("--skip-sfx", action="store_true")
+    midi_tick_rate = midi_commands.add_parser(
+        "tick-rate",
+        help="observe the frame-locked Z80 music tick rate in BizHawk for Music 1 and Music 33",
+    )
+    _add_local_paths(midi_tick_rate)
+    midi_tick_rate.add_argument("--timeout-seconds", type=int, default=240)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -1623,6 +1629,14 @@ def dispatch(args: argparse.Namespace) -> None:
                 loop_budget=args.loop_budget,
                 quarter_ticks=args.quarter_ticks,
                 skip_sfx=args.skip_sfx,
+            )
+        )
+    elif args.command == "midi" and args.midi_command == "tick-rate":
+        print_record(
+            run_tick_rate_observation(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
             )
         )
     elif args.command == "h3" and args.h3_command == "rng":
