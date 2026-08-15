@@ -383,7 +383,12 @@
     },
     {
       "source": "docs/design/contracts/portrait-window-state.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/portrait-window-state.md",
+      "sourceSha256": "d8bccb93397f1555b0d52de3e3b9792d83cfa946a9d70d09b0df0845c5f18d4b",
+      "mirrorSha256": "438440d4eda6ee54ab3a4ad9c4bd8bdf0962edc9d129cd499681c5ddff27a37f",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/randomness.md",
