@@ -345,7 +345,12 @@
     },
     {
       "source": "docs/design/contracts/map-tileset-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/map-tileset-data.md",
+      "sourceSha256": "906ffebcfab52eaeddecc7bfdba93529333594278238b33afd9006f933230c3c",
+      "mirrorSha256": "499256919696dbc0fa2913eca5920cb142a4f38e56e8d7ff9f823143a40be12f",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/music-wait-service.md",
