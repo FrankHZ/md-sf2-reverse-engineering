@@ -353,6 +353,10 @@
       "translatedDate": "2026-08-08"
     },
     {
+      "source": "docs/design/synthesis/map3-battle01-readiness.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/synthesis/progression-and-economy.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/progression-and-economy.md",

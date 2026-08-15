@@ -354,6 +354,10 @@ document whose anchors may be updated.
   layouts into evidence-bounded structural principles after an adversarial owner/fixture audit,
   while retaining route quality, pacing, collision/pathfinding, reachability, visible presentation,
   and authorial intent as Unknown boundaries.
+- [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md): records the evidence,
+  design-contract, and product-decision closure ledger for the ADR 0009 Map 3 through Battle 01
+  milestone, preserving its explicit NOT READY state and the separate user action required before
+  Phase 4 implementation may begin.
 - [`ally-definition-data.md`](./design/contracts/ally-definition-data.md): the implementation-neutral
   contract for the 30 named ally identities, two independent 32-slot start/pointer domains, 32 class
   definitions, promotion tables, five growth curves, 59 ally/class growth records, spell-list
