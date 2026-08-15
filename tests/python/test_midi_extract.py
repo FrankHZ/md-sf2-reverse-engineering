@@ -43,12 +43,12 @@ def test_note_enum_maps_to_midi():
 
 
 def test_timer_b_tempo_formula():
-    us = _timer_b_us_per_qn(0xC2, 32)
-    assert us == 498620
-    slower = _timer_b_us_per_qn(0xD4, 32)
-    assert slower < us
+    us = _timer_b_us_per_qn(0xC2, 30)
+    assert us == 500000
+    assert _timer_b_us_per_qn(0xD4, 30) == 500000
+    assert _timer_b_us_per_qn(0xC2, 32) == 533333
     with pytest.raises(ValueError):
-        _timer_b_us_per_qn(0, 32)
+        _timer_b_us_per_qn(0, 30)
 
 
 def test_wait_note_and_end_stream():
@@ -287,7 +287,7 @@ def test_mido_parses_synthetic_song(tmp_path):
     tempo_track = mf.tracks[0]
     tempo_messages = [msg for msg in tempo_track if msg.type == "set_tempo"]
     assert len(tempo_messages) == 1
-    assert tempo_messages[0].tempo == 498620
+    assert tempo_messages[0].tempo == 500000
     channel_track = mf.tracks[1]
     assert channel_track.name == "Music_1 ym1-1"
     tick = 0

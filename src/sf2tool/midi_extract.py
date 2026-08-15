@@ -11,8 +11,10 @@ and adds the driver-level semantics needed to turn bytes into note events.
 Semantics confirmed from the pinned driver source
 -----------------------------------------------
 
-- one music tick == one YM2612 Timer B overflow; ``UpdateSound`` decrements every
-  channel counter once per overflow;
+- one music tick == one ``UpdateSound`` pass of the original driver; the driver polls the
+  YM Timer B overflow flag, so the tick rate is bounded by Z80 bus arbitration rather than the
+  Timer B register value (BizHawk Genesis Plus GX observation on 2026-08-15: Music 1 and Music 33
+  both tick at ~1.0 per 60 Hz frame, independent of their Timer B values);
 - channel stream bytes: ``0x00..0x6F``/``0x80..0xEF`` are note (or DAC sample) bytes,
   ``0x70``/``0xF0`` are the wait forms, ``0xF8``-``0xFE`` are two-byte commands, and
   ``0xFF`` + word is end (``00 00``), queued-operation mute (``xx 00`` on YM1-family
@@ -27,16 +29,18 @@ Semantics confirmed from the pinned driver source
 - note length: explicit length byte when bit 7 is set, otherwise the channel's current
   period; key-off occurs when the counter reaches the release value, unless the
   sustain bit (``FCh`` parameter bit 7) holds the key until the next note;
-- ``0xFA`` on PSG channels (``ymTimer``) writes a new Timer B value mid-song.
+- ``0xFA`` on PSG channels (``ymTimer``) writes a new Timer B value mid-song; it is parsed but
+  does not change the emitted tempo because the observed tick rate is Timer-B independent.
 
 Derived mappings (deliberate engineering choices, not original evidence)
 ------------------------------------------------------------------------
 
 - MIDI pitch: note enum ``n`` maps to MIDI note ``12 + n`` (C0 -> 12, C4 -> 60);
-- tempo: tick seconds = ``(1024 - TimerB) * 144 / 7_670_454`` (generic YM2612 Timer B
-  formula on the Mega Drive master clock); microseconds per quarter note = tick
-  seconds * 1e6 * ``quarter_ticks`` (default 32 ticks per quarter, ~120 BPM for the
-  accepted Timer B range). Wall-clock tempo of the original is formally Unknown;
+- tempo: tick = 1/60 s (observed frame-locked tick rate, see above); microseconds per quarter
+  note = tick * 1e6 * ``quarter_ticks`` (default 30 ticks per quarter, 120 BPM). The stored Timer B
+  header byte is preserved as metadata only and does not drive tempo; ``ymTimer`` (``0xFA`` on PSG
+  channels) is parsed but emits no tempo event because the observed tick rate is independent of the
+  Timer B value;
 - GM programs: YM channels 80, PSG tone 81, PSG noise 82, DAC channel 10 with drum
   keys ``35 + sampleRow`` (arbitrary convenience mapping);
 - velocity = ``8 + level * 8`` for levels 0..14, default 100 before the first volume
@@ -44,10 +48,10 @@ Derived mappings (deliberate engineering choices, not original evidence)
 - loop budget (default 2): a channel stops after ``loop_budget`` loop-back jumps
   (main-loop end or repeat end), which yields three passes of a typical
   repeat-section song body; counted loops are exact;
-- SFX wall-clock tempo is Unknown (SFX runs under the concurrent music's Timer B):
-  SFX files carry the default 500000 us/quarter (120 BPM) and are flagged in the
-  manifest; SFX type-2 channel 6 is parsed as DAC because the driver always takes the
-  DAC path for type-2 SFX.
+- SFX wall-clock tempo follows the same frame-locked tick rate (SFX runs under the concurrent
+  music driver): SFX files carry 500000 us/quarter (120 BPM at the default 30 ticks per quarter)
+  and are flagged in the manifest; SFX type-2 channel 6 is parsed as DAC because the driver always
+  takes the DAC path for type-2 SFX.
 
 Copyright boundary: the generated MIDI and extracted PCM are private/generated music
 payloads. They are written only under the ignored local output directory and are never
@@ -77,15 +81,13 @@ BANK_ROM_OFFSETS = {"bank0": 0x1F8000, "bank1": 0x1F0000}
 BANK_ORIGIN = 0x8000
 BANK_SIZE = 0x8000
 DRIVER_SIZE = 0x2000
-MCLK_HZ = 7_670_454
-DEFAULT_QUARTER_TICKS = 32
+DEFAULT_QUARTER_TICKS = 30
 DEFAULT_LOOP_BUDGET = 2
 DEFAULT_TEMPO_US_PER_QN = 500_000
 MAX_PARSE_STEPS = 2_000_000
 MAX_EVENTS = 400_000
 
 YM_FAMILIES = frozenset({"ym1", "ym2", "ym2-note"})
-PSG_FAMILIES = frozenset({"psg-tone", "psg-noise"})
 PROGRAM_FOR = {"ym": 80, "psg": 81, "noise": 82}
 
 MUSIC_SLOT_NAMES = (
@@ -163,11 +165,14 @@ def _decode_note_shift(value: int) -> int:
     return masked - 0x100 if masked & 0x80 else masked
 
 
+FRAME_TICK_SECONDS = 1 / 60
+
+
 def _timer_b_us_per_qn(timer_b: int, quarter_ticks: int) -> int:
+    """Tempo from the observed frame-locked tick rate (Timer B is metadata only)."""
     if not 0 < timer_b < 0x100:
         raise ValueError(f"Timer B value out of range: {timer_b:02X}")
-    tick_seconds = (1024 - timer_b) * 144 / MCLK_HZ
-    return round(tick_seconds * 1_000_000 * quarter_ticks)
+    return round(FRAME_TICK_SECONDS * 1_000_000 * quarter_ticks)
 
 
 def _velocity(level: int | None) -> int:
@@ -312,10 +317,9 @@ def interpret_channel(
             elif byte == 0xF9:
                 note_shift = _decode_note_shift(param)
             elif byte == 0xFA:
-                if family in PSG_FAMILIES:
-                    result.tempo_events.append(
-                        (tick, _timer_b_us_per_qn(param, options.quarter_ticks))
-                    )
+                # ymTimer: Timer B value changes are parsed but do not drive tempo;
+                # the observed tick rate is frame-locked and independent of Timer B.
+                pass
             elif byte == 0xFB:
                 pass
             elif byte == 0xFC:
@@ -744,8 +748,9 @@ def run_midi_extraction(
                 }
             )
         notes.append(
-            "SFX wall-clock tempo is Unknown (SFX runs under concurrent music Timer B); "
-            "SFX files use the default 500000 us/quarter and SFX type-2 channel 6 is parsed as DAC"
+            "SFX tempo uses the same frame-locked tick rate as music "
+            "(500000 us/quarter at 30 ticks per quarter); "
+            "SFX type-2 channel 6 is parsed as DAC"
         )
 
     manifest = {
@@ -762,7 +767,8 @@ def run_midi_extraction(
         "mappings": {
             "pitch": "note enum n maps to MIDI note 12+n; YM enum = raw+24+shift, "
             "PSG enum = raw+shift; noise = 60+(raw&7)",
-            "tempo": "tick = (1024-TimerB)*144/7670454 s; us/quarter = tick*1e6*quarterTicks",
+            "tempo": "tick = 1/60 s (observed frame-locked tick rate, Timer-B independent); "
+            "us/quarter = tick*1e6*quarterTicks; Timer B preserved as metadata only",
             "programs": {"ym": 80, "psgTone": 81, "psgNoise": 82, "dac": "channel 10, keys 35+row"},
             "velocity": "8+level*8 for levels 0..14, default 100",
             "noteOff": "key off at period-release ticks; sustain (FC bit 7) holds until next note",
