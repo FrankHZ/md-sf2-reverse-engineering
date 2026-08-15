@@ -256,11 +256,3 @@ H4 实现可以急切、惰性或导入构建期间解码。那些选择只在�
 2. 别名引用是否共享任何运行时缓存或可变状态，还是只共享不可变源存储？
 3. 哪些畸形流用例需要显式重制拒绝策略而非未指定解码器行为？
 4. 哪些原始 layout 字位最终可以获得稳定实现无关名称而不丢失往返保真？
-
-## 复现
-
-```powershell
-uv run sf2 h2 map-layouts
-uv run sf2 design-contracts test
-uv run sf2 verify
-```
