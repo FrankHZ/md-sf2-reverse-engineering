@@ -318,7 +318,12 @@
     },
     {
       "source": "docs/design/contracts/map-setup-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/map-setup-data.md",
+      "sourceSha256": "f1f6ff42945f644ea6df9836e60907be52fc053e71e949fca260975d794634ef",
+      "mirrorSha256": "44d2b258ef25e5b262084699a1613edf7a144716a20668a863ab2a038cf1f2d1",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/map-sprite-assignment-surface.md",
