@@ -721,9 +721,13 @@ is created only when a real disagreement appears and the choice constrains later
   map-script/H3 in order without weakening negative gates.
 - [`0008-godot-csharp-cli-first-remake-tooling.md`](./decisions/0008-godot-csharp-cli-first-remake-tooling.md):
   audits the earlier Project-Mech-Strike Godot/C# and machine-local MCP workflow, reproduces its build
-  and headless run boundary, and proposes the evaluated Godot 4.7.1 .NET release as a fixed CLI-first
-  Phase 4 baseline with MCP kept optional; it remains **Proposed** and does not start remake
-  implementation.
+  and headless run boundary, and accepts Godot 4.7.1 .NET/C# as the fixed CLI-first Phase 4 baseline
+  with a plain-C# domain layer, thin Godot adapter, and optional removable MCP; acceptance does not
+  start remake implementation.
+- [`0009-first-phase4-playable-slice.md`](./decisions/0009-first-phase4-playable-slice.md):
+  accepts one continuous Map 3-through-Battle 01-completion scenario as the first playable milestone
+  and requires independent Research and Design gap audits, accepted gap closure, main-gate readiness,
+  and a separate explicit Phase 4 start action before implementation.
 
 ## Evidence Vocabulary
 
