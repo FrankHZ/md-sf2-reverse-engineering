@@ -76,6 +76,11 @@ CONTRACTS = {
             "sf2-battle-routing-data-static-v1"
         ),
     },
+    "docs/design/contracts/battle-functions-control-flow.md": {
+        "tests/fixtures/h2/battle-functions-static-v1.json": (
+            "sf2-battle-functions-static-v1"
+        ),
+    },
     "docs/design/contracts/battle-background-graphics-data.md": {
         "tests/fixtures/h2/battle-background-decode-v1.json": (
             "sf2-battle-background-decode-v1"
