@@ -128,7 +128,12 @@
     },
     {
       "source": "docs/design/contracts/caravan-and-deals-state.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/caravan-and-deals-state.md",
+      "sourceSha256": "9d00f5691988a89b3019280f256cb216ba746ead5e0c64774fb3d7e4c252ef67",
+      "mirrorSha256": "d2a27e6e9147645463a9cf24574de0a4272372374213f8a4876bcbf92b0b9243",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/combat-resolution.md",
@@ -166,7 +171,12 @@
     },
     {
       "source": "docs/design/contracts/global-flag-state.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/global-flag-state.md",
+      "sourceSha256": "3617a9f9354f0a4bec2fecbc09da1fbb09f2784c1963b1a9e40a97362691bca1",
+      "mirrorSha256": "aed4acfed48221c36d2f4488a345b469055819302101b38402303a04de11e24f",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/graphics-service-state.md",
@@ -187,7 +197,12 @@
     },
     {
       "source": "docs/design/contracts/item-definition-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/item-definition-data.md",
+      "sourceSha256": "4a06d94859ad048d3895c7be20bdae99a326514e394e3ccac5e1497203a4db74",
+      "mirrorSha256": "77f0457e7c072796d358543a50962de17349d7c2b3bd08878da1cfbf31b14e5a",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/level-up.md",
@@ -257,11 +272,21 @@
     },
     {
       "source": "docs/design/contracts/new-game-state-initialization.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/new-game-state-initialization.md",
+      "sourceSha256": "d39a45cb1aa1674935296e3dafdf453ece7f0f13673a0e17fb9ce200990d898b",
+      "mirrorSha256": "aa1f6e7cb92e7cfa95544c4fd20203b9fc8a26a115c3498481ad7e44cbc197a8",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/party-membership-state.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/party-membership-state.md",
+      "sourceSha256": "91eb03503f6dee4e03848c8ff2d0ffe40ecaba821be14a53e0e5d7fd85b8f0bc",
+      "mirrorSha256": "19018d3ecfded712f1c82ee52ad9d78f5daac2a665f67d52fd9e0911bba1eb7b",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/party-roster-state.md",
@@ -274,7 +299,12 @@
     },
     {
       "source": "docs/design/contracts/portrait-graphics-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/portrait-graphics-data.md",
+      "sourceSha256": "944dd2ba1bfc5c53f2fb6b3ca076b8ca1d92a1088a8e7872c4c23800b885e51c",
+      "mirrorSha256": "33ef361f0fbd3acc1be03021919e1ba6b3b515e4a99c880ef0e5e7e6756dabc6",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/portrait-window-state.md",
@@ -325,7 +355,12 @@
     },
     {
       "source": "docs/design/contracts/spell-definition-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/spell-definition-data.md",
+      "sourceSha256": "c702147994fa7c0444348038beba44e20bfa7f473967f92fa903c6453f7f3a60",
+      "mirrorSha256": "aebc992c27093e01dfbfe62f54a85eb09628bdd7f1647de1df2320541fe5b184",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/spell-resolution.md",
@@ -338,7 +373,12 @@
     },
     {
       "source": "docs/design/contracts/spellbook-state.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/spellbook-state.md",
+      "sourceSha256": "369cf6643c02674f9d679b1a80261dbe9cbf3f97d64a11ea1ad31cdc3b4e4015",
+      "mirrorSha256": "d25d16f4c59e74d22611e308fc0e81e3a2d4ebb50d650898613e7f86489a2c38",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/sprite-dialogue-property-data.md",
