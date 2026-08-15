@@ -418,7 +418,12 @@
     },
     {
       "source": "docs/design/contracts/special-screen-asset-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/special-screen-asset-data.md",
+      "sourceSha256": "337b9b0e35c040f34f0a14261f35a7e046e43beb90dd790f48ddf58f61c4ed83",
+      "mirrorSha256": "af4e0f7b73f1385d93257685e63b524b3daf88f1fffca1b4e93c74cc7f668826",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/special-screen-control-flow.md",
