@@ -40,7 +40,12 @@ Derived mappings (deliberate engineering choices, not original evidence)
 
 - MIDI pitch: note enum ``n`` maps to MIDI note ``12 + n`` (C0 -> 12, C4 -> 60);
 - tempo: tick = 1/60 s (observed frame-locked tick rate, see above); microseconds per quarter
-  note = tick * 1e6 * ``quarter_ticks`` (default 30 ticks per quarter, 120 BPM). The stored Timer B
+  note = tick * 1e6 * ``quarter_ticks`` (default 30 ticks per quarter) * ``tempo_scale``.
+  The default ``tempo_scale`` (1.1173) comes from the Music 1 WAV calibration on 2026-08-15:
+  a 145 s BizHawk wave dump showed a main-loop period of 80.0 s (audio envelope
+  autocorrelation, cross-checked by pointer jump-backs) against 4296 interpreted loop ticks,
+  i.e. 0.895 ticks per frame instead of 1.0. Calibrate other songs with
+  ``uv run sf2 midi calibrate --wav-path <wav> --commands <n>``. The stored Timer B
   header byte is preserved as metadata only and does not drive tempo; ``ymTimer`` (``0xFA`` on PSG
   channels) is parsed but emits no tempo event because the observed tick rate is independent of the
   Timer B value;
@@ -48,13 +53,14 @@ Derived mappings (deliberate engineering choices, not original evidence)
   keys ``35 + sampleRow`` (arbitrary convenience mapping);
 - velocity = ``8 + level * 8`` for levels 0..14, default 100 before the first volume
   command;
-- loop budget (default 2): a channel stops after ``loop_budget`` loop-back jumps
-  (main-loop end or repeat end), which yields three passes of a typical
-  repeat-section song body; counted loops are exact;
+- loop budget (default 2): a channel stops after ``loop_budget`` main-loop-end jumps
+  (``F8 A1``), which yields three passes of a typical repeat-section song body;
+  repeat-end jumps (``F8 A0``) use a separate ``repeat_budget`` (default 2, three
+  endings); counted loops are exact;
 - SFX wall-clock tempo follows the same frame-locked tick rate (SFX runs under the concurrent
-  music driver): SFX files carry 500000 us/quarter (120 BPM at the default 30 ticks per quarter)
-  and are flagged in the manifest; SFX type-2 channel 6 is parsed as DAC because the driver always
-  takes the DAC path for type-2 SFX.
+  music driver): SFX files carry 500000 us/quarter scaled by ``tempo_scale`` and are flagged in
+  the manifest; SFX type-2 channel 6 is parsed as DAC because the driver always takes the DAC
+  path for type-2 SFX.
 
 Copyright boundary: the generated MIDI and extracted PCM are private/generated music
 payloads. They are written only under the ignored local output directory and are never
@@ -65,6 +71,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import struct
 import subprocess
@@ -90,6 +97,7 @@ BANK_SIZE = 0x8000
 DRIVER_SIZE = 0x2000
 DEFAULT_QUARTER_TICKS = 30
 DEFAULT_LOOP_BUDGET = 2
+DEFAULT_TEMPO_SCALE = 1.1173  # Music 1 WAV calibration 2026-08-15 (tick rate 0.895/frame)
 DEFAULT_TEMPO_US_PER_QN = 500_000
 MAX_PARSE_STEPS = 2_000_000
 MAX_EVENTS = 400_000
@@ -122,7 +130,9 @@ if len(_NOTE_NAMES) != 108:
 @dataclass(frozen=True)
 class ExtractionOptions:
     loop_budget: int = DEFAULT_LOOP_BUDGET
+    repeat_budget: int = 2
     quarter_ticks: int = DEFAULT_QUARTER_TICKS
+    tempo_scale: float = DEFAULT_TEMPO_SCALE
     sfx_tempo_us_per_qn: int = DEFAULT_TEMPO_US_PER_QN
     max_parse_steps: int = MAX_PARSE_STEPS
     max_events: int = MAX_EVENTS
@@ -142,6 +152,9 @@ class ChannelResult:
     parse_steps: int = 0
     stop_reason: str = "unresolved"
     clamped_out_of_range_notes: int = 0
+    loop_start_tick: int = 0
+    loop_period_ticks: int | None = None
+    loop_a_address: int | None = None
 
 
 class MemoryWindow:
@@ -238,6 +251,7 @@ def interpret_channel(
     r1 = False
     r2 = False
     loopbacks = 0
+    repeat_loopbacks = 0
     steps = 0
     ended = False
 
@@ -276,6 +290,8 @@ def interpret_channel(
                 sub = (param >> 5) & 7
                 if sub == 0:
                     loop_a = pos
+                    result.loop_start_tick = tick
+                    result.loop_a_address = pos
                 elif sub == 1:
                     loop_b = pos
                     r1 = False
@@ -308,11 +324,20 @@ def interpret_channel(
                         raise ValueError(
                             f"unmatched loop end (param {param:02X}) in {slot_name}"
                         )
-                    if loopbacks >= options.loop_budget:
-                        ended = True
-                        result.stop_reason = "loop-budget"
-                        break
-                    loopbacks += 1
+                    if param & 1:
+                        if loopbacks >= options.loop_budget:
+                            ended = True
+                            result.stop_reason = "loop-budget"
+                            break
+                        loopbacks += 1
+                        if result.loop_period_ticks is None:
+                            result.loop_period_ticks = tick - result.loop_start_tick
+                    else:
+                        if repeat_loopbacks >= options.repeat_budget:
+                            ended = True
+                            result.stop_reason = "repeat-budget"
+                            break
+                        repeat_loopbacks += 1
                     pos = target
                 elif sub == 6:
                     counted_pos = pos
@@ -489,7 +514,13 @@ def extract_music(
             silent=silent,
         )
         track.tempo_events = [
-            (0, _timer_b_us_per_qn(header["timerB"], options.quarter_ticks))
+            (
+                0,
+                round(
+                    _timer_b_us_per_qn(header["timerB"], options.quarter_ticks)
+                    * options.tempo_scale
+                ),
+            )
         ]
         for channel in channels:
             track.tempo_events.extend(channel.tempo_events)
@@ -733,7 +764,8 @@ def validate_wav(path: Path, expected_frames: int) -> dict[str, object]:
     sample_bytes = channels * bits // 8
     sample_count = data_size // sample_bytes
     expected = round(expected_frames * 44100 / 60)
-    if abs(sample_count - expected) > 3000:
+    tolerance = max(4000, round(expected * 0.002))
+    if abs(sample_count - expected) > tolerance:
         raise ValueError(
             f"WAV duration drift: {path} has {sample_count} frames, expected ~{expected}"
         )
@@ -748,6 +780,227 @@ def validate_wav(path: Path, expected_frames: int) -> dict[str, object]:
     }
 
 
+def trim_wav(path: Path, skip_frames: int) -> dict[str, object]:
+    """Drop the intro frames from a BizHawk wave dump (boot 600 frames = title screen).
+
+    The dump starts at frame 0, so the boot phase contains intro/title audio; the music
+    command is injected after ``skip_frames`` frames and the WAV is trimmed to keep only
+    the playback phase (735 samples per 60 Hz frame at 44.1 kHz).
+    """
+    payload = path.read_bytes()
+    if payload[:4] != b"RIFF" or payload[8:12] != b"WAVE":
+        raise ValueError(f"not a RIFF/WAVE file: {path}")
+    data_offset = 36
+    if payload[data_offset : data_offset + 4] != b"data":
+        raise ValueError(f"missing data chunk: {path}")
+    data_size = int.from_bytes(payload[data_offset + 4 : data_offset + 8], "little")
+    fmt = struct.unpack_from("<HHIIHH", payload, 20)
+    sample_bytes = fmt[1] * fmt[5] // 8
+    skip_bytes = skip_frames * 735 * sample_bytes
+    if skip_bytes > data_size:
+        raise ValueError(f"cannot trim {skip_frames} frames from {path}")
+    kept = payload[data_offset + 8 + skip_bytes : data_offset + 8 + data_size]
+    trimmed = (
+        b"RIFF"
+        + (36 + len(kept)).to_bytes(4, "little")
+        + payload[8 : data_offset + 4]
+        + len(kept).to_bytes(4, "little")
+        + kept
+    )
+    path.write_bytes(trimmed)
+    return {
+        "trimmedFrames": skip_frames,
+        "keptSamples": len(kept) // sample_bytes,
+        "keptSeconds": round(len(kept) // sample_bytes / fmt[2], 3),
+    }
+
+
+def analyze_loop_period(pointers: list[int], loop_a_address: int | None) -> int:
+    """Detect the main-loop period (frames) of a per-frame channel-pointer recording.
+
+    The main-loop start address occurs exactly once per cycle (the interpreter records
+    the position right after ``F8 00``), so the gap between consecutive occurrences is
+    the loop period in frames.
+    """
+    if loop_a_address is None:
+        raise ValueError("no main-loop start address interpreted")
+    occurrences = [
+        index for index, pointer in enumerate(pointers) if pointer == loop_a_address
+    ]
+    if len(occurrences) < 2:
+        raise ValueError(
+            f"main-loop start {loop_a_address:04X} seen {len(occurrences)} time(s); "
+            "recording is shorter than one loop cycle"
+        )
+    return occurrences[1] - occurrences[0]
+
+
+def calibrate_tempo(
+    pointer_path: Path, music_track: MusicTrack, options: ExtractionOptions
+) -> dict[str, object]:
+    """Compare the observed main-loop period (frames) with the interpreted loop period (ticks).
+
+    Returns the observed ticks-per-frame and the calibrated microseconds per quarter
+    note so MIDI tempo can be aligned with the real WAV playback.
+    """
+    pointers = json.loads(pointer_path.read_text(encoding="utf-8"))
+    periods = [
+        channel.loop_period_ticks
+        for channel in music_track.channels
+        if channel.loop_period_ticks is not None
+    ]
+    if not periods:
+        raise ValueError(f"no loop period interpreted for {music_track.command_ids}")
+    ticks = max(periods)
+    anchor = next(
+        channel.loop_a_address
+        for channel in music_track.channels
+        if channel.loop_period_ticks is not None and channel.loop_a_address is not None
+    )
+    frames = analyze_loop_period(pointers, anchor)
+    ticks_per_frame = ticks / frames
+    us_per_qn = round(frames * 1_000_000 * options.quarter_ticks / (60 * ticks))
+    return {
+        "observedLoopFrames": frames,
+        "interpretedLoopTicks": ticks,
+        "observedTicksPerFrame": round(ticks_per_frame, 4),
+        "calibratedUsPerQuarter": us_per_qn,
+        "calibratedBpm": round(60_000_000 / us_per_qn, 1),
+        "defaultUsPerQuarter": _timer_b_us_per_qn(0xC2, options.quarter_ticks),
+    }
+
+
+def analyze_audio_loop_period(
+    wav_path: Path, min_period_s: float = 40.0, max_period_s: float = 120.0
+) -> float:
+    """Detect the main-loop period (seconds) of a music WAV by envelope autocorrelation.
+
+    The music data is static, so the playback waveform repeats every main-loop cycle.
+    A coarse RMS envelope (50 ms windows) is autocorrelated over plausible loop periods;
+    this is robust for tempo calibration without needing Z80 state.
+    """
+    payload = wav_path.read_bytes()
+    if payload[:4] != b"RIFF" or payload[8:12] != b"WAVE":
+        raise ValueError(f"not a RIFF/WAVE file: {wav_path}")
+    data_offset = 36
+    data_size = int.from_bytes(payload[data_offset + 4 : data_offset + 8], "little")
+    fmt = struct.unpack_from("<HHIIHH", payload, 20)
+    channels, sample_rate, bits = fmt[1], fmt[2], fmt[5]
+    if bits != 16:
+        raise ValueError(f"unsupported bit depth: {bits}")
+    raw = payload[data_offset + 8 : data_offset + 8 + data_size]
+    samples = struct.unpack(f"<{len(raw) // 2}h", raw)
+    mono = samples[0::channels]
+    window = 2205  # 50 ms at 44.1 kHz
+    envelope = [
+        math.sqrt(sum(sample * sample for sample in mono[start : start + window]) / window)
+        for start in range(0, len(mono) - window, window)
+    ]
+    if not envelope:
+        raise ValueError(f"empty audio envelope: {wav_path}")
+    min_lag = max(1, round(min_period_s * sample_rate / window))
+    max_lag = min(len(envelope) - 1, round(max_period_s * sample_rate / window))
+    best_lag = 0
+    best_score = -1.0
+    for lag in range(min_lag, max_lag):
+        matches = sum(
+            envelope[index] * envelope[index + lag]
+            for index in range(len(envelope) - lag)
+        )
+        score = matches / (len(envelope) - lag)
+        if score > best_score:
+            best_score = score
+            best_lag = lag
+    if best_score <= 0:
+        raise ValueError(f"no audio loop period found: {wav_path}")
+    return best_lag * window / sample_rate
+
+
+def calibrate_tempo_from_audio(
+    loop_seconds: float, music_track: MusicTrack, options: ExtractionOptions
+) -> dict[str, object]:
+    """Compare the observed audio loop period (seconds) with the interpreted loop ticks.
+
+    Returns the observed ticks-per-second and the calibrated microseconds per quarter
+    note so MIDI tempo can be aligned with the real WAV playback.
+    """
+    periods = [
+        channel.loop_period_ticks
+        for channel in music_track.channels
+        if channel.loop_period_ticks is not None
+    ]
+    if not periods:
+        raise ValueError(f"no loop period interpreted for {music_track.command_ids}")
+    ticks = max(periods)
+    us_per_qn = round(loop_seconds * 1_000_000 * options.quarter_ticks / ticks)
+    default_us = _timer_b_us_per_qn(0xC2, options.quarter_ticks)
+    return {
+        "observedLoopSeconds": round(loop_seconds, 3),
+        "interpretedLoopTicks": ticks,
+        "observedTicksPerSecond": round(ticks / loop_seconds, 3),
+        "observedTicksPerFrame": round(ticks / loop_seconds / 60, 4),
+        "calibratedUsPerQuarter": us_per_qn,
+        "calibratedBpm": round(60_000_000 / us_per_qn, 1),
+        "defaultUsPerQuarter": default_us,
+        "tempoScale": round(us_per_qn / default_us, 4),
+    }
+
+
+def run_tempo_calibration(
+    rom_path: Path,
+    upstream_path: Path,
+    *,
+    wav_path: Path,
+    commands: str,
+    quarter_ticks: int = DEFAULT_QUARTER_TICKS,
+    period_s: float | None = None,
+) -> dict[str, object]:
+    """Calibrate MIDI tempo against an existing WAV of the same song.
+
+    Detects the main-loop period in the WAV by envelope autocorrelation and compares it
+    with the interpreted loop ticks of the matching music track.
+    """
+    rom_path = rom_path.resolve(strict=True)
+    upstream_path = upstream_path.resolve(strict=True)
+    _disasm, commit, _toolchain = _resolve_upstream(upstream_path)
+    expected_rom = load_json(ROM_MANIFEST)
+    rom = rom_path.read_bytes()
+    if len(rom) != expected_rom["sizeBytes"] or _sha256(rom) != expected_rom["hashes"]["sha256"]:
+        raise ValueError("tempo calibration ROM identity drift")
+    wav_path = wav_path.resolve(strict=True)
+    options = ExtractionOptions(quarter_ticks=quarter_ticks)
+    tracks = extract_music(rom, options)
+    by_command: dict[int, MusicTrack] = {}
+    for track in tracks:
+        for command in track.command_ids:
+            by_command[command] = track
+    wanted = []
+    for token in commands.split(","):
+        value = int(token.strip())
+        if value not in by_command:
+            raise ValueError(f"unknown music command: {value}")
+        wanted.append(value)
+    if period_s is None:
+        period_s = analyze_audio_loop_period(wav_path)
+    loop_seconds = period_s
+    track = by_command[wanted[0]]
+    calibration = calibrate_tempo_from_audio(loop_seconds, track, options)
+    return {
+        "Wav": wav_path.name,
+        "Command": wanted[0],
+        "LoopSeconds": calibration["observedLoopSeconds"],
+        "LoopTicks": calibration["interpretedLoopTicks"],
+        "TicksPerFrame": calibration["observedTicksPerFrame"],
+        "UsPerQuarter": calibration["calibratedUsPerQuarter"],
+        "Bpm": calibration["calibratedBpm"],
+        "DefaultUsPerQuarter": calibration["defaultUsPerQuarter"],
+        "TempoScale": calibration["tempoScale"],
+        "QuarterTicks": quarter_ticks,
+        "Upstream": commit[:12],
+        "Status": "PASS",
+    }
+
+
 def run_wav_dump(
     rom_path: Path,
     upstream_path: Path,
@@ -755,13 +1008,18 @@ def run_wav_dump(
     out_dir: Path,
     frames: int,
     commands: str,
+    boot_frames: int = 600,
+    test_wait_frames: int = 600,
     timeout_seconds: int = 300,
 ) -> dict[str, object]:
     """Dump original music playback to WAV with BizHawk's wave writer.
 
-    Each requested music command launches one headless EmuHawk run that boots the game,
-    injects the command, plays for ``frames`` frames while ``--dump-type=wave`` captures
-    the Genesis Plus GX YM2612/PSG/DAC output as 44.1 kHz 16-bit stereo PCM.
+    Each requested music command launches one headless EmuHawk run that boots to the
+    title screen, enters SF2 debug mode with the cheat code, drives the level-select
+    debug menu with the accepted battle01 Right/C confirm sequence, waits for the test
+    scene, injects the command, and plays for ``frames`` frames while ``--dump-type=wave``
+    captures the Genesis Plus GX YM2612/PSG/DAC output as 44.1 kHz 16-bit stereo PCM.
+    The boot/menu phase is trimmed.
     """
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -772,12 +1030,14 @@ def run_wav_dump(
         raise ValueError("WAV dump ROM identity drift")
     options = ExtractionOptions()
     tracks = extract_music(rom, options)
-    by_command: dict[int, tuple[str, bool]] = {}
+    by_command: dict[int, MusicTrack] = {}
     for track in tracks:
         for command in track.command_ids:
-            by_command[command] = (f"Music_{track.command_ids[0]}", track.silent)
+            by_command[command] = track
     if commands.strip().lower() == "all":
-        wanted = sorted(command for command, (_, silent) in by_command.items() if not silent)
+        wanted = sorted(
+            command for command, track in by_command.items() if not track.silent
+        )
     else:
         wanted = []
         for token in commands.split(","):
@@ -793,21 +1053,28 @@ def run_wav_dump(
     _, executable = bizhawk_contract()
     observer = repo_path("tools/bizhawk/audio_dump_observer.lua")
     validate_lua_syntax(observer, executable)
+    out_dir = out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
-    boot_frames = 20
-    dump_length = boot_frames + frames
+    skip_frames = boot_frames + test_wait_frames
+    dump_length = skip_frames + frames + 60
     files: list[dict[str, object]] = []
     for command in wanted:
-        name, _silent = by_command[command]
+        track = by_command[command]
+        name = f"Music_{track.command_ids[0]}"
         wav_path = out_dir / f"{name}.wav"
         status_path = out_dir / f"{name}.status.txt"
         config_path = out_dir / f"{name}.config.lua"
-        for path in (wav_path, status_path, config_path):
+        pointer_path = out_dir / f"{name}.pointers.json"
+        for path in (wav_path, status_path, config_path, pointer_path):
             path.unlink(missing_ok=True)
         runtime_config = {
             "bootFrames": boot_frames,
+            "testWaitFrames": test_wait_frames,
             "recordFrames": frames,
             "command": command,
+            "clearCommandMailbox": True,
+            "recordPointers": True,
+            "pointerPath": pointer_path.as_posix(),
             "statusPath": status_path.as_posix(),
             "ram": {"newOperationAddress": 0x1FFF},
         }
@@ -841,7 +1108,13 @@ def run_wav_dump(
                 f"BizHawk wave dump failed for command {command}:\n{diagnostic}"
             )
         facts = validate_wav(wav_path, dump_length)
-        files.append({"command": command, "file": f"{name}.wav", **facts})
+        trimmed = trim_wav(wav_path, skip_frames)
+        entry = {"command": command, "file": f"{name}.wav", **facts, **trimmed}
+        try:
+            entry["calibration"] = calibrate_tempo(pointer_path, track, options)
+        except ValueError as error:
+            entry["calibrationError"] = str(error)
+        files.append(entry)
     manifest = {
         "schemaVersion": 1,
         "tool": "sf2 midi wav",
@@ -849,10 +1122,12 @@ def run_wav_dump(
         "romSha256": expected_rom["hashes"]["sha256"],
         "upstream": {"repository": "ShiningForceCentral/SF2DISASM", "commit": commit},
         "bootFrames": boot_frames,
+        "testWaitFrames": test_wait_frames,
         "recordFrames": frames,
         "notes": [
             "audio is the Genesis Plus GX YM2612/PSG/DAC emulation captured by BizHawk's "
-            "wave writer (44.1 kHz 16-bit stereo); output stays private under the out dir"
+            "wave writer (44.1 kHz 16-bit stereo); the boot phase is trimmed "
+            "from each WAV; output stays private under the out dir"
         ],
         "files": files,
     }
@@ -862,7 +1137,8 @@ def run_wav_dump(
     return {
         "Commands": len(files),
         "Frames": frames,
-        "DurationSeconds": files[0]["durationSeconds"] if files else 0,
+        "DurationSeconds": files[0]["keptSeconds"] if files else 0,
+        "TrimmedFrames": skip_frames,
         "Output": str(out_dir),
         "Manifest": _sha256(manifest_path.read_bytes()),
         "Status": "PASS",
@@ -911,6 +1187,7 @@ def run_midi_extraction(
     out_dir: Path,
     loop_budget: int,
     quarter_ticks: int,
+    tempo_scale: float,
     skip_sfx: bool,
 ) -> dict[str, object]:
     rom_path = rom_path.resolve(strict=True)
@@ -923,7 +1200,7 @@ def run_midi_extraction(
         raise ValueError("MIDI extraction ROM identity drift")
 
     options = ExtractionOptions(
-        loop_budget=loop_budget, quarter_ticks=quarter_ticks
+        loop_budget=loop_budget, quarter_ticks=quarter_ticks, tempo_scale=tempo_scale
     )
     out_dir.mkdir(parents=True, exist_ok=True)
     music_dir = out_dir / "music"
@@ -975,7 +1252,9 @@ def run_midi_extraction(
                 notes.append(f"{name}: no active channels, no MIDI written")
                 continue
             rel = sfx_dir / f"{name}.mid"
-            tempo_events = [(0, options.sfx_tempo_us_per_qn)]
+            tempo_events = [
+                (0, round(options.sfx_tempo_us_per_qn * options.tempo_scale))
+            ]
             write_smf(name, tempo_events, track.channels, options.quarter_ticks, rel)
             files.append(
                 {
@@ -1007,6 +1286,7 @@ def run_midi_extraction(
         "options": {
             "loopBudget": loop_budget,
             "quarterTicks": quarter_ticks,
+            "tempoScale": tempo_scale,
             "sfxTempoUsPerQuarter": options.sfx_tempo_us_per_qn,
         },
         "mappings": {

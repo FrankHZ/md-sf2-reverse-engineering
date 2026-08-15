@@ -158,7 +158,12 @@ from sf2tool.h3.witch_save_actions import verify_witch_save_actions
 from sf2tool.h3.witch_save_menu_actions import verify_witch_save_menu_actions
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
-from sf2tool.midi_extract import run_midi_extraction, run_tick_rate_observation, run_wav_dump
+from sf2tool.midi_extract import (
+    run_midi_extraction,
+    run_tempo_calibration,
+    run_tick_rate_observation,
+    run_wav_dump,
+)
 from sf2tool.output import print_json, print_record
 from sf2tool.paths import repo_path
 from sf2tool.research_index import index_rows, index_summary, query_index, verify_index
@@ -651,6 +656,13 @@ def build_parser() -> argparse.ArgumentParser:
     midi_extract.add_argument(
         "--quarter-ticks", type=int, default=32, help="ticks per MIDI quarter note"
     )
+    midi_extract.add_argument(
+        "--tempo-scale",
+        type=float,
+        default=1.1173,
+        help="multiplier applied to the tempo (default from Music 1 WAV "
+        "calibration; see `sf2 midi calibrate`)",
+    )
     midi_extract.add_argument("--skip-sfx", action="store_true")
     midi_tick_rate = midi_commands.add_parser(
         "tick-rate",
@@ -663,9 +675,32 @@ def build_parser() -> argparse.ArgumentParser:
         help="dump original music playback to WAV via BizHawk's wave writer "
         "(Genesis Plus GX YM2612/PSG audio)",
     )
+    midi_calibrate = midi_commands.add_parser(
+        "calibrate",
+        help="calibrate MIDI tempo against an existing WAV via audio loop detection",
+    )
+    _add_local_paths(midi_calibrate)
+    midi_calibrate.add_argument("--wav-path", type=_path, required=True)
+    midi_calibrate.add_argument("--commands", type=str, default="1")
+    midi_calibrate.add_argument("--quarter-ticks", type=int, default=32)
+    midi_calibrate.add_argument(
+        "--period-s", type=float, default=None, help="observed loop period in seconds"
+    )
     _add_local_paths(midi_wav)
     midi_wav.add_argument("--out-dir", type=_path, default=repo_path("local/derived/audio"))
     midi_wav.add_argument("--frames", type=int, default=3600, help="frames to record (60 fps)")
+    midi_wav.add_argument(
+        "--boot-frames",
+        type=int,
+        default=600,
+        help="frames for debug cheat entry and level-select menu driving",
+    )
+    midi_wav.add_argument(
+        "--test-wait-frames",
+        type=int,
+        default=600,
+        help="frames to wait in the test scene before injecting the music command",
+    )
     midi_wav.add_argument(
         "--commands", type=str, default="1", help="comma-separated music commands or 'all'"
     )
@@ -1640,6 +1675,7 @@ def dispatch(args: argparse.Namespace) -> None:
                 out_dir=args.out_dir,
                 loop_budget=args.loop_budget,
                 quarter_ticks=args.quarter_ticks,
+                tempo_scale=args.tempo_scale,
                 skip_sfx=args.skip_sfx,
             )
         )
@@ -1659,7 +1695,20 @@ def dispatch(args: argparse.Namespace) -> None:
                 out_dir=args.out_dir,
                 frames=args.frames,
                 commands=args.commands,
+                boot_frames=args.boot_frames,
+                test_wait_frames=args.test_wait_frames,
                 timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "midi" and args.midi_command == "calibrate":
+        print_record(
+            run_tempo_calibration(
+                args.rom_path,
+                args.upstream_path,
+                wav_path=args.wav_path,
+                commands=args.commands,
+                quarter_ticks=args.quarter_ticks,
+                period_s=args.period_s,
             )
         )
     elif args.command == "h3" and args.h3_command == "rng":

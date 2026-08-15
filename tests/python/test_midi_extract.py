@@ -104,7 +104,7 @@ def test_repeat_sections_three_passes():
         0xFF, 0x00, 0x00,
     )
     result = interpret_channel(_mem(stream), BANK_ORIGIN, "ym1", 0, "ym1-1", _opts())
-    assert result.stop_reason == "loop-budget"
+    assert result.stop_reason == "repeat-budget"
     assert len(result.notes) == 6
     assert [note[1] for note in result.notes] == [
         12 + 62,
@@ -287,7 +287,7 @@ def test_mido_parses_synthetic_song(tmp_path):
     tempo_track = mf.tracks[0]
     tempo_messages = [msg for msg in tempo_track if msg.type == "set_tempo"]
     assert len(tempo_messages) == 1
-    assert tempo_messages[0].tempo == 500000
+    assert tempo_messages[0].tempo == 558650
     channel_track = mf.tracks[1]
     assert channel_track.name == "Music_1 ym1-1"
     tick = 0
@@ -363,6 +363,50 @@ def test_validate_wav(tmp_path):
     path.write_bytes(b"not a wav")
     with pytest.raises(ValueError, match="RIFF"):
         validate_wav(path, 620)
+
+
+def test_trim_wav(tmp_path):
+    from sf2tool.midi_extract import trim_wav, validate_wav
+
+    sample_rate, channels, bits = 44100, 2, 16
+    sample_bytes = channels * bits // 8
+    sample_count = 700 * 735
+    pcm = bytes(sample_count * sample_bytes)
+    header = (
+        b"RIFF"
+        + (36 + len(pcm)).to_bytes(4, "little")
+        + b"WAVE"
+        + b"fmt "
+        + (16).to_bytes(4, "little")
+        + (1).to_bytes(2, "little")
+        + channels.to_bytes(2, "little")
+        + sample_rate.to_bytes(4, "little")
+        + (sample_rate * sample_bytes).to_bytes(4, "little")
+        + sample_bytes.to_bytes(2, "little")
+        + bits.to_bytes(2, "little")
+        + b"data"
+        + len(pcm).to_bytes(4, "little")
+    )
+    path = tmp_path / "t.wav"
+    path.write_bytes(header + pcm)
+    trimmed = trim_wav(path, 100)
+    assert trimmed["keptSamples"] == 600 * 735
+    assert trimmed["keptSeconds"] == round(600 * 735 / 44100, 3)
+    facts = validate_wav(path, 600)
+    assert facts["sampleCount"] == 600 * 735
+
+
+def test_tempo_scale_applied():
+    from sf2tool.midi_extract import ExtractionOptions, extract_music
+
+    rom_bytes = _synthetic_rom()
+    base = extract_music(
+        rom_bytes, ExtractionOptions(quarter_ticks=30, tempo_scale=1.0), expect_target_count=None
+    )
+    scaled = extract_music(
+        rom_bytes, ExtractionOptions(quarter_ticks=30, tempo_scale=2.0), expect_target_count=None
+    )
+    assert base[0].tempo_events[0][1] * 2 == scaled[0].tempo_events[0][1]
 
 
 def test_vlq():

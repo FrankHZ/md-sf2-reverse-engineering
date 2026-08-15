@@ -141,6 +141,10 @@ channel-counter tick rate of ~1 tick per 60 Hz frame during active playback (act
 1.02 and 1.14 ticks/frame; 0.53 and 0.59 ticks/frame averaged over the full window including idle
 phases) for both songs, i.e. the observed tick rate is independent of the Timer B value. True
 hardware tempo remains **Unknown**; the observation is a bounded emulator fact, not a hardware claim.
+A follow-up 145 s wave dump of Music 1 (2026-08-15) measured an 80.0 s main-loop period by audio
+envelope autocorrelation (cross-checked by channel-pointer jump-backs) against 4296 interpreted
+loop ticks, i.e. 0.895 ticks per frame over a full loop cycle; this calibration is an engineering
+input to `sf2 midi extract` tempo, not original evidence.
 
 The ten pointer positions retain this order:
 

@@ -186,6 +186,8 @@ uv run pytest
 uv run sf2 design-contracts test
 uv run sf2 research-index test
 uv run sf2 midi extract
+uv run sf2 midi tick-rate
+uv run sf2 midi calibrate --wav-path local/derived/audio/Music_1.wav --commands 1 --period-s 80
 uv run sf2 verify --full
 ```
 
@@ -195,13 +197,19 @@ metadata manifest under ignored `local/derived/midi/`. It is a derived-listening
 contract verifier: pitch, GM-program, velocity, and loop-budget mappings are documented engineering
 conventions, and tempo uses the frame-locked tick rate observed in BizHawk Genesis Plus GX
 (~1 music tick per 60 Hz frame during active playback, Timer-B independent; verify with
-`uv run sf2 midi tick-rate`) with 30 ticks per quarter note (120 BPM);
-all MIDI/PCM output stays private under `local/`.
+`uv run sf2 midi tick-rate`). The default tempo scale (1.1173) is calibrated against a Music 1
+WAV: a 145 s wave dump showed an 80.0 s main-loop period against 4296 interpreted loop ticks
+(0.895 ticks/frame), confirmed by pointer jump-backs; recalibrate any song with
+`uv run sf2 midi calibrate --wav-path <wav> --commands <n>` and pass the printed `--tempo-scale`
+to `midi extract`. All MIDI/PCM output stays private under `local/`.
 
 `uv run sf2 midi wav --commands 1,2,33 --frames 3600` dumps the original playback to WAV instead:
-each command launches one headless EmuHawk run with `--dump-type=wave`, capturing the Genesis
-Plus GX YM2612/PSG/DAC emulation as 44.1 kHz 16-bit stereo PCM under ignored `local/derived/audio/`
-(original-fidelity listening files; not editable, unlike the MIDI output).
+each command launches one headless EmuHawk run that boots to the title screen, enters SF2 debug
+mode with the cheat code, drives the level-select debug menu with the accepted battle01
+Right/C confirm sequence, waits for the test scene, injects the command, and captures the
+Genesis Plus GX YM2612/PSG/DAC output via `--dump-type=wave` as 44.1 kHz 16-bit stereo PCM under
+ignored `local/derived/audio/` (original-fidelity listening files; not editable, unlike the MIDI
+output). A per-frame Z80 channel-pointer recording is also written for loop-period calibration.
 
 `verify --full` runs the complete Python suite plus all maintained H1/H2/H3 rails. It is reserved for
 milestones, release/merge readiness, shared harness changes, or explicit full-parity requests. It is
