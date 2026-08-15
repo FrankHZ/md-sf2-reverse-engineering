@@ -16,51 +16,111 @@
     },
     {
       "source": "docs/design/contracts/battle-action-construction.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battle-action-construction.md",
+      "sourceSha256": "0b3df07c901a2c3c4aff91c54d6b69b1a1df4c87495ec090d18794ce7af5c27d",
+      "mirrorSha256": "f3bb76e20721f9e9313d18b884cfb4e1f78c6f9add86477cc85b697e28a3a9ae",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/battle-ai-decision.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battle-ai-decision.md",
+      "sourceSha256": "6d8fdc5744384fa4156ed7e49744ebc64e9b7fa0aa5158fb548551ce9237a681",
+      "mirrorSha256": "3d91a0c5ecc3ecb267bda6353818625a4fba5b7f70611dbf6695f78b07fa35cd",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/battle-background-graphics-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battle-background-graphics-data.md",
+      "sourceSha256": "5fe2d862d7785a3acbf07f95b6b2361941e93eba86f18938a01bd6ee7a6b5ccb",
+      "mirrorSha256": "ad5c769ad6c1a0641560e5c4fcf885e428e3d58de8d7368893a9aad720899f36",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/battle-control-lifecycle.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battle-control-lifecycle.md",
+      "sourceSha256": "8dba0ec2904e8e41c039518fba36cfeec401fddbfc65008815f6df5e3a4d382a",
+      "mirrorSha256": "f1a3eb25d7cb3d77a058fe1aaeca56b8817d01fde3a798a77cdebafd45ba3be4",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/battle-cutscene-routing.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battle-cutscene-routing.md",
+      "sourceSha256": "9660c2e6cc35d666788b918635453306e7e2fa2eb8cf279da5a51ac8ac18ac75",
+      "mirrorSha256": "da902716a1b73cd77ae08684ed23e22bfc679d22d33bd7718020d1feabe56cf1",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/battle-effect-graphics-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battle-effect-graphics-data.md",
+      "sourceSha256": "e75eaac2344d564ad40af4e3b0b30cd130d97f56b7f637bc06fe643cf768d7b2",
+      "mirrorSha256": "efef923da60f534af15d615e0bc705f109971ba2f28631bfd7a9484b9dda9cf1",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/battle-encounter-definition.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battle-encounter-definition.md",
+      "sourceSha256": "8155a751c0094f7020f03c24e6a97b4d819ce285e7e179b724815b68512b94ce",
+      "mirrorSha256": "a606fcf657e3e3dd9c04d10f793240a49f1dca6c93a42e51548aba5529603ee5",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/battle-functions-control-flow.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battle-functions-control-flow.md",
+      "sourceSha256": "0caeb4eab04ff5deeb1e61becd5092dc432a1943122918186494b1bba9a57ca9",
+      "mirrorSha256": "7db63b3168980d0a182d8aac52d8f91d33459174126869627c0a862617a52206",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/battle-scene-presentation.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battle-scene-presentation.md",
+      "sourceSha256": "c2c9f22165225b6afcdecb1791b4f14cdccb15956cbc370ad06294e74fa401ef",
+      "mirrorSha256": "9c556416587d0e9238208dad061ce63a10c2b62bf7beb6ba28c2dde5bd960eaa",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/battle-sprite-graphics-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battle-sprite-graphics-data.md",
+      "sourceSha256": "7f942639a453c3a70acc8b1cf1d727a1f50aa94f237469dae7df802fc428312a",
+      "mirrorSha256": "a56b09889a7323213bb52c834f722f3fac5b8a0ea49b2489b46cf342107fbe42",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/battle-weapon-ground-graphics-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battle-weapon-ground-graphics-data.md",
+      "sourceSha256": "33c7f06270c57e4797887d485769139a2e93b075554a48c73a78ff3fb89e0fc8",
+      "mirrorSha256": "8bbe8ce9ce557d094726c8c0f6766f2b0bc1b3afce9f0e1132b8d43a423373f7",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/battlefield-navigation.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/battlefield-navigation.md",
+      "sourceSha256": "ee68633417b27755e2cdd1408316b5f2a38b892085273121b153e67ea21c8102",
+      "mirrorSha256": "610f083e8a3c2cd57ec0b782448b0cc4f45884a04aaaf133c3e5a4ebc443604b",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/byte-copy-service.md",
@@ -358,7 +418,12 @@
     },
     {
       "source": "docs/design/synthesis/map3-battle01-readiness.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/synthesis/map3-battle01-readiness.md",
+      "sourceSha256": "4a4e165d1ba56d4a69ae9870f0a837ab939efa4d249df2fd11d157a70408b68d",
+      "mirrorSha256": "26ab8258eafb79b3a14d8d5b5da6ba8be153babe08c7d24e066af7b55866bc4c",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/synthesis/progression-and-economy.md",
