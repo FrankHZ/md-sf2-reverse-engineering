@@ -129,7 +129,12 @@
     },
     {
       "source": "docs/design/contracts/byte-copy-service.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/byte-copy-service.md",
+      "sourceSha256": "cdd1406ae465793af919a850d63647e7ba884fb73560b9e14527c662734dbbfa",
+      "mirrorSha256": "2c9956787fc97ec2498427c18bda9d5c8de3ce6f1d823b05fdb7bcbeaac8fb65",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/caravan-and-deals-state.md",
