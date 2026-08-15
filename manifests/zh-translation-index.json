@@ -552,7 +552,12 @@
     },
     {
       "source": "docs/design/contracts/ui-graphics-asset-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/ui-graphics-asset-data.md",
+      "sourceSha256": "c953d9d7ddc0afae7bd6dc4dd1e0d7764c920c152fc0e61442914469dbe4754f",
+      "mirrorSha256": "9f58531ce13cd98fd9e5355674cc77c0cf69514576fae2f28e6966fb38e136f4",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/ui-layout-data.md",
