@@ -8,7 +8,12 @@
   "documents": [
     {
       "source": "docs/design/contracts/ally-definition-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/ally-definition-data.md",
+      "sourceSha256": "3eeafe2faf7a2be16e3d859182b74dfc29b68843c9ad2caaf33cc0ca582d6602",
+      "mirrorSha256": "87daa3e58abe32d115fa9756f8db7eaa0d44f0df326416a645d77240ff4e4278",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/audio-system.md",
@@ -163,7 +168,12 @@
     },
     {
       "source": "docs/design/contracts/enemy-definition-data.md",
-      "status": "pending"
+      "status": "translated",
+      "mirror": "docs/design/zh-CN/contracts/enemy-definition-data.md",
+      "sourceSha256": "6391f05fa5d7ddbaf84d590316232a2f041793d8db6ee3d32b4168f6410dcf4f",
+      "mirrorSha256": "73fabac6e88ddd9e457282cf37d19ea29ebfa9c98235bc74143eca59e853cdcc",
+      "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
+      "translatedDate": "2026-08-14"
     },
     {
       "source": "docs/design/contracts/exploration-control-flow.md",
