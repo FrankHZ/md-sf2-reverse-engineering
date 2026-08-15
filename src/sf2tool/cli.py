@@ -158,7 +158,7 @@ from sf2tool.h3.witch_save_actions import verify_witch_save_actions
 from sf2tool.h3.witch_save_menu_actions import verify_witch_save_menu_actions
 from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
-from sf2tool.midi_extract import run_midi_extraction, run_tick_rate_observation
+from sf2tool.midi_extract import run_midi_extraction, run_tick_rate_observation, run_wav_dump
 from sf2tool.output import print_json, print_record
 from sf2tool.paths import repo_path
 from sf2tool.research_index import index_rows, index_summary, query_index, verify_index
@@ -658,6 +658,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(midi_tick_rate)
     midi_tick_rate.add_argument("--timeout-seconds", type=int, default=240)
+    midi_wav = midi_commands.add_parser(
+        "wav",
+        help="dump original music playback to WAV via BizHawk's wave writer "
+        "(Genesis Plus GX YM2612/PSG audio)",
+    )
+    _add_local_paths(midi_wav)
+    midi_wav.add_argument("--out-dir", type=_path, default=repo_path("local/derived/audio"))
+    midi_wav.add_argument("--frames", type=int, default=3600, help="frames to record (60 fps)")
+    midi_wav.add_argument(
+        "--commands", type=str, default="1", help="comma-separated music commands or 'all'"
+    )
+    midi_wav.add_argument("--timeout-seconds", type=int, default=300)
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
@@ -1636,6 +1648,17 @@ def dispatch(args: argparse.Namespace) -> None:
             run_tick_rate_observation(
                 args.rom_path,
                 args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "midi" and args.midi_command == "wav":
+        print_record(
+            run_wav_dump(
+                args.rom_path,
+                args.upstream_path,
+                out_dir=args.out_dir,
+                frames=args.frames,
+                commands=args.commands,
                 timeout_seconds=args.timeout_seconds,
             )
         )

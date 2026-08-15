@@ -331,6 +331,40 @@ def test_analyze_tick_rate():
     assert summary["records"][1]["activeTicksPerFrame"] == 1.0
 
 
+def test_validate_wav(tmp_path):
+    from sf2tool.midi_extract import validate_wav
+
+    sample_rate, channels, bits = 44100, 2, 16
+    sample_bytes = channels * bits // 8
+    sample_count = 620 * 735
+    pcm = bytes(sample_count * sample_bytes)
+    header = (
+        b"RIFF"
+        + (36 + len(pcm)).to_bytes(4, "little")
+        + b"WAVE"
+        + b"fmt "
+        + (16).to_bytes(4, "little")
+        + (1).to_bytes(2, "little")
+        + channels.to_bytes(2, "little")
+        + sample_rate.to_bytes(4, "little")
+        + (sample_rate * sample_bytes).to_bytes(4, "little")
+        + sample_bytes.to_bytes(2, "little")
+        + bits.to_bytes(2, "little")
+        + b"data"
+        + len(pcm).to_bytes(4, "little")
+    )
+    path = tmp_path / "t.wav"
+    path.write_bytes(header + pcm)
+    facts = validate_wav(path, 620)
+    assert facts["sampleRate"] == 44100
+    assert facts["channels"] == 2
+    assert facts["sampleCount"] == sample_count
+    assert facts["durationSeconds"] == round(sample_count / 44100, 3)
+    path.write_bytes(b"not a wav")
+    with pytest.raises(ValueError, match="RIFF"):
+        validate_wav(path, 620)
+
+
 def test_vlq():
     assert _vlq(0) == b"\x00"
     assert _vlq(0x7F) == b"\x7f"

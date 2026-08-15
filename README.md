@@ -198,6 +198,11 @@ conventions, and tempo uses the frame-locked tick rate observed in BizHawk Genes
 `uv run sf2 midi tick-rate`) with 30 ticks per quarter note (120 BPM);
 all MIDI/PCM output stays private under `local/`.
 
+`uv run sf2 midi wav --commands 1,2,33 --frames 3600` dumps the original playback to WAV instead:
+each command launches one headless EmuHawk run with `--dump-type=wave`, capturing the Genesis
+Plus GX YM2612/PSG/DAC emulation as 44.1 kHz 16-bit stereo PCM under ignored `local/derived/audio/`
+(original-fidelity listening files; not editable, unlike the MIDI output).
+
 `verify --full` runs the complete Python suite plus all maintained H1/H2/H3 rails. It is reserved for
 milestones, release/merge readiness, shared harness changes, or explicit full-parity requests. It is
 not the default gate for an ordinary research slice, and a design-only documentation change does not

@@ -65,6 +65,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import struct
+import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -705,6 +708,165 @@ def analyze_tick_rate(observed: dict[str, object]) -> dict[str, object]:
             }
         )
     return {"frames": frames, "records": rows}
+
+
+def validate_wav(path: Path, expected_frames: int) -> dict[str, object]:
+    """Validate a BizHawk wave-dump WAV and return its audio facts.
+
+    The dump covers ``expected_frames`` 60 Hz frames; audio is delivered in per-frame
+    chunks, so the sample count may differ from ``expected_frames * 44100 / 60`` by a
+    small frame-level tolerance.
+    """
+    payload = path.read_bytes()
+    if payload[:4] != b"RIFF" or payload[8:12] != b"WAVE":
+        raise ValueError(f"not a RIFF/WAVE file: {path}")
+    if payload[12:16] != b"fmt ":
+        raise ValueError(f"missing fmt chunk: {path}")
+    fmt = struct.unpack_from("<HHIIHH", payload, 20)
+    audio_format, channels, sample_rate, _byte_rate, _block_align, bits = fmt
+    if audio_format != 1:
+        raise ValueError(f"audio format is not PCM: {path}")
+    data_offset = 36
+    if payload[data_offset : data_offset + 4] != b"data":
+        raise ValueError(f"missing data chunk: {path}")
+    data_size = int.from_bytes(payload[data_offset + 4 : data_offset + 8], "little")
+    sample_bytes = channels * bits // 8
+    sample_count = data_size // sample_bytes
+    expected = round(expected_frames * 44100 / 60)
+    if abs(sample_count - expected) > 3000:
+        raise ValueError(
+            f"WAV duration drift: {path} has {sample_count} frames, expected ~{expected}"
+        )
+    return {
+        "sampleRate": sample_rate,
+        "channels": channels,
+        "bits": bits,
+        "sampleCount": sample_count,
+        "durationSeconds": round(sample_count / sample_rate, 3),
+        "sha256": _sha256(payload),
+        "sizeBytes": len(payload),
+    }
+
+
+def run_wav_dump(
+    rom_path: Path,
+    upstream_path: Path,
+    *,
+    out_dir: Path,
+    frames: int,
+    commands: str,
+    timeout_seconds: int = 300,
+) -> dict[str, object]:
+    """Dump original music playback to WAV with BizHawk's wave writer.
+
+    Each requested music command launches one headless EmuHawk run that boots the game,
+    injects the command, plays for ``frames`` frames while ``--dump-type=wave`` captures
+    the Genesis Plus GX YM2612/PSG/DAC output as 44.1 kHz 16-bit stereo PCM.
+    """
+    rom_path = rom_path.resolve(strict=True)
+    upstream_path = upstream_path.resolve(strict=True)
+    _disasm, commit, _toolchain = _resolve_upstream(upstream_path)
+    expected_rom = load_json(ROM_MANIFEST)
+    rom = rom_path.read_bytes()
+    if len(rom) != expected_rom["sizeBytes"] or _sha256(rom) != expected_rom["hashes"]["sha256"]:
+        raise ValueError("WAV dump ROM identity drift")
+    options = ExtractionOptions()
+    tracks = extract_music(rom, options)
+    by_command: dict[int, tuple[str, bool]] = {}
+    for track in tracks:
+        for command in track.command_ids:
+            by_command[command] = (f"Music_{track.command_ids[0]}", track.silent)
+    if commands.strip().lower() == "all":
+        wanted = sorted(command for command, (_, silent) in by_command.items() if not silent)
+    else:
+        wanted = []
+        for token in commands.split(","):
+            value = int(token.strip())
+            if value not in by_command:
+                raise ValueError(f"unknown music command: {value}")
+            wanted.append(value)
+    if not wanted:
+        raise ValueError("no music commands selected")
+
+    from sf2tool.h3.bizhawk import _lua_literal, bizhawk_contract, validate_lua_syntax
+
+    _, executable = bizhawk_contract()
+    observer = repo_path("tools/bizhawk/audio_dump_observer.lua")
+    validate_lua_syntax(observer, executable)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    boot_frames = 20
+    dump_length = boot_frames + frames
+    files: list[dict[str, object]] = []
+    for command in wanted:
+        name, _silent = by_command[command]
+        wav_path = out_dir / f"{name}.wav"
+        status_path = out_dir / f"{name}.status.txt"
+        config_path = out_dir / f"{name}.config.lua"
+        for path in (wav_path, status_path, config_path):
+            path.unlink(missing_ok=True)
+        runtime_config = {
+            "bootFrames": boot_frames,
+            "recordFrames": frames,
+            "command": command,
+            "statusPath": status_path.as_posix(),
+            "ram": {"newOperationAddress": 0x1FFF},
+        }
+        config_path.write_text(
+            "return " + _lua_literal(runtime_config) + "\n", encoding="utf-8"
+        )
+        validate_lua_syntax(config_path, executable)
+        environment = os.environ.copy()
+        environment["SF2_H3_CONFIG"] = str(config_path)
+        process = subprocess.run(
+            [
+                str(executable),
+                f"--lua={observer}",
+                "--dump-type=wave",
+                f"--dump-name={wav_path}",
+                f"--dump-length={dump_length}",
+                "--dump-close",
+                str(rom_path),
+            ],
+            cwd=executable.parent,
+            env=environment,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout_seconds,
+        )
+        if process.returncode != 0 or not wav_path.is_file():
+            diagnostic = (process.stdout + "\n" + process.stderr).strip()[-3000:]
+            raise RuntimeError(
+                f"BizHawk wave dump failed for command {command}:\n{diagnostic}"
+            )
+        facts = validate_wav(wav_path, dump_length)
+        files.append({"command": command, "file": f"{name}.wav", **facts})
+    manifest = {
+        "schemaVersion": 1,
+        "tool": "sf2 midi wav",
+        "romId": expected_rom["id"],
+        "romSha256": expected_rom["hashes"]["sha256"],
+        "upstream": {"repository": "ShiningForceCentral/SF2DISASM", "commit": commit},
+        "bootFrames": boot_frames,
+        "recordFrames": frames,
+        "notes": [
+            "audio is the Genesis Plus GX YM2612/PSG/DAC emulation captured by BizHawk's "
+            "wave writer (44.1 kHz 16-bit stereo); output stays private under the out dir"
+        ],
+        "files": files,
+    }
+    manifest_path = out_dir / "manifest.json"
+    manifest_json = json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
+    manifest_path.write_text(manifest_json, encoding="utf-8")
+    return {
+        "Commands": len(files),
+        "Frames": frames,
+        "DurationSeconds": files[0]["durationSeconds"] if files else 0,
+        "Output": str(out_dir),
+        "Manifest": _sha256(manifest_path.read_bytes()),
+        "Status": "PASS",
+    }
 
 
 def run_tick_rate_observation(
