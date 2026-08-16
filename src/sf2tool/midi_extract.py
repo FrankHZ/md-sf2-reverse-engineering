@@ -934,9 +934,11 @@ def calibrate_tempo_from_audio(
     ticks = max(periods)
     us_per_qn = round(loop_seconds * 1_000_000 * options.quarter_ticks / ticks)
     default_us = _timer_b_us_per_qn(0xC2, options.quarter_ticks)
+    midi_loop_seconds = ticks * us_per_qn / options.quarter_ticks / 1_000_000
     return {
         "observedLoopSeconds": round(loop_seconds, 3),
         "interpretedLoopTicks": ticks,
+        "midiLoopSeconds": round(midi_loop_seconds, 3),
         "observedTicksPerSecond": round(ticks / loop_seconds, 3),
         "observedTicksPerFrame": round(ticks / loop_seconds / 60, 4),
         "calibratedUsPerQuarter": us_per_qn,
@@ -989,6 +991,7 @@ def run_tempo_calibration(
         "Wav": wav_path.name,
         "Command": wanted[0],
         "LoopSeconds": calibration["observedLoopSeconds"],
+        "MidiLoopSeconds": calibration["midiLoopSeconds"],
         "LoopTicks": calibration["interpretedLoopTicks"],
         "TicksPerFrame": calibration["observedTicksPerFrame"],
         "UsPerQuarter": calibration["calibratedUsPerQuarter"],
