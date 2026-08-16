@@ -185,8 +185,20 @@ uv run pytest tests/python/test_native_harness.py
 uv run pytest
 uv run sf2 design-contracts test
 uv run sf2 research-index test
+uv run sf2 texture extract
+uv run sf2 texture map --maps 3
 uv run sf2 verify --full
 ```
+
+`uv run sf2 texture extract` decodes the accepted map-texture corpus (115 Stack-compressed
+`MapTilesetNNN` streams of 128 Mega Drive 4bpp 8x8 tiles each, plus the 16 `MapPaletteNN`
+9-bit color records) into private PNG sheets under ignored `local/derived/graphics/`:
+16x8 tile grids rendered with map palette 0 for direct viewing, plus all 16 palettes as
+color strips. `uv run sf2 texture map --maps 3` renders real map main-layer regions
+(64x64 block layout, 3x3-tile blocks, five tileset slots, flip/mirror flags) with the
+map palette; the palette channel order (low bits red, high bits blue) was validated
+against a simulator screenshot. The generated PNGs are private/generated graphics
+payloads and are never tracked; manifests hold metadata and hashes only.
 
 `verify --full` runs the complete Python suite plus all maintained H1/H2/H3 rails. It is reserved for
 milestones, release/merge readiness, shared harness changes, or explicit full-parity requests. It is

@@ -5,6 +5,7 @@ description = "Reproducible reverse-engineering harness for Shining Force II"
 requires-python = ">=3.12"
 dependencies = [
     "jsonschema[format]>=4.25,<5",
+    "pillow>=11,<12",
 ]
 
 [project.scripts]

@@ -162,6 +162,11 @@ from sf2tool.output import print_json, print_record
 from sf2tool.paths import repo_path
 from sf2tool.research_index import index_rows, index_summary, query_index, verify_index
 from sf2tool.rom import verify_rom
+from sf2tool.texture_extract import (
+    TextureExtractionOptions,
+    extract_map_renders,
+    extract_map_textures,
+)
 from sf2tool.zh_translation import generate_zh_translation, translation_rows, verify_zh_translation
 
 DEFAULT_ROM = repo_path("local/roms/sf2-us.bin")
@@ -263,6 +268,28 @@ def build_parser() -> argparse.ArgumentParser:
     )
     zh_list = zh_commands.add_parser("list", help="list zh-CN translation status per document")
     zh_list.add_argument("--json", action="store_true")
+
+    texture_parser = commands.add_parser(
+        "texture", help="extract original map tilesets and palettes as private PNG sheets"
+    )
+    texture_commands = texture_parser.add_subparsers(dest="texture_command", required=True)
+    texture_extract = texture_commands.add_parser(
+        "extract", help="write tileset sheets and palette strips under --out-dir"
+    )
+    _add_local_paths(texture_extract)
+    texture_extract.add_argument(
+        "--out-dir", type=_path, default=repo_path("local/derived/graphics")
+    )
+    texture_extract.add_argument(
+        "--tileset-palette", type=int, default=0, help="palette used to render the sheets"
+    )
+    texture_map = texture_commands.add_parser(
+        "map",
+        help="render map main-layer regions as PNG (blocks/layout/tilesets/palette)",
+    )
+    _add_local_paths(texture_map)
+    texture_map.add_argument("--out-dir", type=_path, default=repo_path("local/derived/graphics"))
+    texture_map.add_argument("--maps", type=str, default="3", help="comma-separated map indices")
 
     h2_parser = commands.add_parser("h2", help="run a narrow deterministic extraction rail")
     h2_commands = h2_parser.add_subparsers(dest="h2_command", required=True)
@@ -1592,6 +1619,24 @@ def dispatch(args: argparse.Namespace) -> None:
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,
+            )
+        )
+    elif args.command == "texture" and args.texture_command == "extract":
+        print_record(
+            extract_map_textures(
+                args.rom_path,
+                args.upstream_path,
+                out_dir=args.out_dir,
+                options=TextureExtractionOptions(tileset_palette=args.tileset_palette),
+            )
+        )
+    elif args.command == "texture" and args.texture_command == "map":
+        print_record(
+            extract_map_renders(
+                args.rom_path,
+                args.upstream_path,
+                out_dir=args.out_dir,
+                maps=args.maps,
             )
         )
     elif args.command == "h3" and args.h3_command == "rng":
