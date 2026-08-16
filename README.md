@@ -197,8 +197,13 @@ uv run sf2 verify --full
 color strips. `uv run sf2 texture map --maps 3` renders real map main-layer regions
 (64x64 block layout, 3x3-tile blocks, five tileset slots, flip/mirror flags) with the
 map palette; the palette channel order (low bits red, high bits blue) was validated
-against a simulator screenshot. The generated PNGs are private/generated graphics
-payloads and are never tracked; manifests hold metadata and hashes only.
+against a simulator screenshot. `uv run sf2 texture assets` extracts the font sheet,
+portraits (8x8 tile grid + per-portrait palette), icons (2x3 tiles, base palette), and
+map sprites (two 3x3 column-major frames per facing). `uv run sf2 texture misc` extracts
+the UI tile sets and main-menu icons, special sprites (raw tile sheets; frame assembly
+is still open), composed battle backgrounds (layout table, 32 columns), and the unused
+cloud/palette payloads. The generated PNGs are private/generated graphics payloads and
+are never tracked; manifests hold metadata and hashes only.
 
 `verify --full` runs the complete Python suite plus all maintained H1/H2/H3 rails. It is reserved for
 milestones, release/merge readiness, shared harness changes, or explicit full-parity requests. It is

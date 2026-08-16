@@ -150,3 +150,21 @@ def test_render_map_blocks_synthetic():
     assert pixels[4:8] == [255, 0, 0, 255]
     # tile 1 has priority flag only; pixel (0,8) -> transparent (all index 0)
     assert pixels[8 * 4 : 8 * 4 + 4] == [0, 0, 0, 0]
+
+
+def test_md_cram_color_decode():
+    from sf2tool.texture_extract import md_cram_color
+
+    assert md_cram_color(0x000F) == (0, 0, 60)
+    assert md_cram_color(0x03E0) == (0, 248, 0)
+    assert md_cram_color(0xF800) == (248, 0, 0)
+    assert md_cram_color(0x0) == (0, 0, 0)
+
+
+def test_font_bit_order():
+    from sf2tool.texture_extract import FONT_GLYPH_COLUMNS
+
+    # a row with left=0x00, right=0x10 -> (0<<4)|(0x10>>4) = 1 -> bit 11-? = column 11
+    bits = (0x00 << 4) | (0x10 >> 4)
+    columns = [c for c in range(FONT_GLYPH_COLUMNS) if bits & (1 << (11 - c))]
+    assert columns == [11]

@@ -304,6 +304,47 @@ to `LoadStackCompressedData`, four to `LoadBasicCompressedData`, and seven to
 twelve completed corpus or wrapper owners; the unowned count is zero. This is a direct named-call
 denominator, not proof that dynamic indirect calls or self-modifying targets cannot exist.
 
+## Renderer Mapping (tooling-verified pixel layout)
+
+Status: **Confirmed** for each mapping below, from pinned source evidence and, where noted, a
+simulator screenshot color-histogram comparison (2026-08-16, `sf2 texture` rail). These are
+pixel-level rendering facts used by the extraction tooling, not new data-contract claims.
+
+- Map 4bpp tiles are 32-byte 8x8 tiles with two pixels per byte, left pixel in the high nibble.
+  Decoded tileset streams (4,096 bytes) hold 128 tiles each.
+- Map palettes (`mappaletteNN.bin`, and `basepalette.bin` "Palette for UI and mapsprites") use the
+  `0x0EEE` 9-bit form with the low bit group (bits 1-3) as red, the middle group (bits 5-7) as
+  green, and the high group (bits 9-11) as blue. This channel order was confirmed by swapping red
+  and blue in the renderer and matching the screenshot histogram (grass `(64,160,0)`, roofs
+  `(224,0,32)`, water `(0,64,192)`). Color 0 is forced transparent by `mapload.asm`
+  (`clr.w (PALETTE_1_BASE).l`).
+- Battle-sprite/special-sprite/battle-background palettes use the standard VDP CRAM word (6-bit
+  blue in bits 0-5, 5-bit green in bits 6-10, 5-bit red in bits 11-15); battle backgrounds are
+  still inside the `0x0EEE` mask, special sprites are not (e.g. `0x558` in `taros.bin`).
+- Map blocks are 3x3 tiles (24x24 pixels); the tile word stores the VRAM tile number plus `0x100`
+  with flags `0x8000` (priority), `0x1000` (vertical flip), `0x800` (horizontal mirror). The five
+  map tileset slots map via `tileIndex // 128` (VRAM bases `$2000`, `$3000`, `$4000`, `$5000`,
+  `$6000` per `mapload.asm`).
+- Map layout is a 64x64 block grid; area bounds come from `2-areas.asm` (`mainLayerStart/End`,
+  `scndLayerFgndStart`, `scndLayerBgndStart`). Only the main layer is rendered; the
+  second/background layer's exploration-mode palette source remains **Unknown**.
+- Map sprites decode to `0x240` bytes = two 3x3-tile frames (24x24 pixels each) stored as
+  contiguous 32-byte tiles; the 3x3 frame grid is column-major (tile 0 top-left, 1 middle-left,
+  2 bottom-left). The three streams per sprite index are the three facing directions.
+- Portraits decode to 2,048 bytes = 64 tiles on an 8x8 grid (64x64 pixels) with a per-portrait
+  32-byte palette; the leading eye/mouth animation-entry tables are metadata only.
+- Icons are 192 bytes = six tiles in a 2x3 grid (16x24 pixels); map sprites and icons share the
+  `basepalette.bin` palette.
+- The variable-width font stores 80 glyphs of 32 bytes (width header, then 15 rows of 12 usable
+  pixels in `(left << 4) | (right >> 4)`, bit 11 = column 0).
+- Battle backgrounds are two 6,144-byte Stack tilesets plus a 32-byte palette, composed by the
+  384-entry `layout_BattlesceneBackground` table (VRAM tile numbers 928-1311, 32 columns); the
+  composed sheet matches the game.
+- Special sprites decode to 72 tiles (battle class; 162 for `SpecialSprite_NazcaShip`) with
+  per-sprite palettes; the animation-table sprite entries suggest 4x4-tile linked sprites, but the
+  exact frame assembly is still **Unknown** (candidate 3x3/3x6/6x6 layouts all remain visually
+  broken).
+
 ## Concentrated Verification Queue
 
 This batch starts no emulator. All current direct named decoder consumers now have corpus owners.

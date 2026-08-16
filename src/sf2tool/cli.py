@@ -164,8 +164,10 @@ from sf2tool.research_index import index_rows, index_summary, query_index, verif
 from sf2tool.rom import verify_rom
 from sf2tool.texture_extract import (
     TextureExtractionOptions,
+    extract_graphic_assets,
     extract_map_renders,
     extract_map_textures,
+    extract_misc_graphics,
 )
 from sf2tool.zh_translation import generate_zh_translation, translation_rows, verify_zh_translation
 
@@ -286,6 +288,22 @@ def build_parser() -> argparse.ArgumentParser:
     texture_map = texture_commands.add_parser(
         "map",
         help="render map main-layer regions as PNG (blocks/layout/tilesets/palette)",
+    )
+    texture_misc = texture_commands.add_parser(
+        "misc",
+        help="extract UI resources, special sprites, battle backgrounds, and unused assets",
+    )
+    _add_local_paths(texture_misc)
+    texture_misc.add_argument(
+        "--out-dir", type=_path, default=repo_path("local/derived/graphics")
+    )
+    texture_assets = texture_commands.add_parser(
+        "assets",
+        help="extract the font sheet, portraits, icons, and map sprites as PNG",
+    )
+    _add_local_paths(texture_assets)
+    texture_assets.add_argument(
+        "--out-dir", type=_path, default=repo_path("local/derived/graphics")
     )
     _add_local_paths(texture_map)
     texture_map.add_argument("--out-dir", type=_path, default=repo_path("local/derived/graphics"))
@@ -1628,6 +1646,22 @@ def dispatch(args: argparse.Namespace) -> None:
                 args.upstream_path,
                 out_dir=args.out_dir,
                 options=TextureExtractionOptions(tileset_palette=args.tileset_palette),
+            )
+        )
+    elif args.command == "texture" and args.texture_command == "misc":
+        print_record(
+            extract_misc_graphics(
+                args.rom_path,
+                args.upstream_path,
+                out_dir=args.out_dir,
+            )
+        )
+    elif args.command == "texture" and args.texture_command == "assets":
+        print_record(
+            extract_graphic_assets(
+                args.rom_path,
+                args.upstream_path,
+                out_dir=args.out_dir,
             )
         )
     elif args.command == "texture" and args.texture_command == "map":
