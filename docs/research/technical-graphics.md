@@ -306,9 +306,10 @@ denominator, not proof that dynamic indirect calls or self-modifying targets can
 
 ## Renderer Mapping (tooling-verified pixel layout)
 
-Status: **Confirmed** for each mapping below, from pinned source evidence and, where noted, a
-simulator screenshot color-histogram comparison (2026-08-16, `sf2 texture` rail). These are
-pixel-level rendering facts used by the extraction tooling, not new data-contract claims.
+Status: **Confirmed** for each mapping below except the special-sprite items, which are marked
+**Unknown**/**unconfirmed**; evidence is pinned source plus, where noted, a simulator screenshot
+color-histogram comparison (2026-08-16, `sf2 texture` rail). These are pixel-level rendering
+facts used by the extraction tooling, not new data-contract claims.
 
 - Map 4bpp tiles are 32-byte 8x8 tiles with two pixels per byte, left pixel in the high nibble.
   Decoded tileset streams (4,096 bytes) hold 128 tiles each.
@@ -318,9 +319,13 @@ pixel-level rendering facts used by the extraction tooling, not new data-contrac
   and blue in the renderer and matching the screenshot histogram (grass `(64,160,0)`, roofs
   `(224,0,32)`, water `(0,64,192)`). Color 0 is forced transparent by `mapload.asm`
   (`clr.w (PALETTE_1_BASE).l`).
-- Battle-sprite/special-sprite/battle-background palettes use the standard VDP CRAM word (6-bit
-  blue in bits 0-5, 5-bit green in bits 6-10, 5-bit red in bits 11-15); battle backgrounds are
-  still inside the `0x0EEE` mask, special sprites are not (e.g. `0x558` in `taros.bin`).
+- Battle backgrounds are confirmed to stay inside the `0x0EEE` mask and use the same `0x0EEE`
+  decode as map palettes (verified by the composed-sheet histogram comparison).
+- Special-sprite palettes are each a 32-byte header copied verbatim to `PALETTE_4_BASE` by
+  `LoadSpecialSprite` (`specialsprites.asm`); the words do not all fit the `0x0EEE` mask (e.g.
+  `0x558` in `taros.bin`), so the tooling decodes them with a candidate 6/5/5 channel layout
+  (6-bit blue bits 0-5, 5-bit green bits 6-10, 5-bit red bits 11-15). This decode is
+  **Unknown/unconfirmed** and not consumed by this phase.
 - Map blocks are 3x3 tiles (24x24 pixels); the tile word stores the VRAM tile number plus `0x100`
   with flags `0x8000` (priority), `0x1000` (vertical flip), `0x800` (horizontal mirror). The five
   map tileset slots map via `tileIndex // 128` (VRAM bases `$2000`, `$3000`, `$4000`, `$5000`,
@@ -340,10 +345,12 @@ pixel-level rendering facts used by the extraction tooling, not new data-contrac
 - Battle backgrounds are two 6,144-byte Stack tilesets plus a 32-byte palette, composed by the
   384-entry `layout_BattlesceneBackground` table (VRAM tile numbers 928-1311, 32 columns); the
   composed sheet matches the game.
-- Special sprites decode to 72 tiles (battle class; 162 for `SpecialSprite_NazcaShip`) with
-  per-sprite palettes; the animation-table sprite entries suggest 4x4-tile linked sprites, but the
-  exact frame assembly is still **Unknown** (candidate 3x3/3x6/6x6 layouts all remain visually
-  broken).
+- Special sprites decode (Stack) to 72 tiles for the battle class and 162 for
+  `SpecialSprite_NazcaShip`; `SpecialSprite_EvilSpiritAlt` is animation-only. The tooling emits
+  the raw tile-pool sheet plus candidate composed layouts (3x3, 3x6, 4x4, 6x6) for later
+  inspection, but the exact frame assembly (frame size, tile order, linked-sprite arrangement)
+  is **Unknown/unconfirmed**: no candidate matched a screenshot, and this phase does not need
+  special-sprite assembly, so it is deferred.
 
 ## Concentrated Verification Queue
 

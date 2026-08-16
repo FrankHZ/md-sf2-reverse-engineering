@@ -155,9 +155,11 @@ def test_render_map_blocks_synthetic():
 def test_md_cram_color_decode():
     from sf2tool.texture_extract import md_cram_color
 
+    # candidate 6/5/5 layout: blue bits 0-5, green bits 6-10, red bits 11-15
     assert md_cram_color(0x000F) == (0, 0, 60)
-    assert md_cram_color(0x03E0) == (0, 248, 0)
-    assert md_cram_color(0xF800) == (248, 0, 0)
+    assert md_cram_color(0x03E0) == (0, 123, 130)  # bit 5 belongs to blue
+    assert md_cram_color(0x07C0) == (0, 255, 0)
+    assert md_cram_color(0xF800) == (255, 0, 0)
     assert md_cram_color(0x0) == (0, 0, 0)
 
 

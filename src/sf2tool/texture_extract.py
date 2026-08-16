@@ -94,7 +94,12 @@ def md_palette_color(word: int) -> tuple[int, int, int]:
 
 
 def md_cram_color(word: int) -> tuple[int, int, int]:
-    """Decode one standard VDP CRAM color word (6-bit blue, 5-bit green/red) to 8-bit RGB."""
+    """Decode one special-sprite palette word with the candidate 6/5/5 channel layout to 8-bit RGB.
+
+    Six-bit blue in bits 0-5, five-bit green in bits 6-10, five-bit red in bits 11-15.
+    This layout is an unconfirmed candidate: the words do not fit the ``0x0EEE`` form
+    (e.g. ``0x558`` in `taros.bin`) and the layout is not yet verified against the game.
+    """
     blue = (word & 0x3F) << 2 | (word & 0x3F) >> 4
     green5 = (word >> 6) & 0x1F
     red5 = (word >> 11) & 0x1F
@@ -962,9 +967,11 @@ def extract_ui_resources(disasm: Path, out_dir: Path) -> list[dict[str, object]]
 def extract_special_sprites(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
     """Render the six special-sprite streams (each with its own 16-color palette).
 
-    Battle-class sprites hold 72 tiles (4 frames of 18 tiles = 3x6 grid, 24x48 pixels);
-    the exploration-class ship holds 162 tiles (9 frames of 18 tiles). Frames are laid
-    out side by side in the composed sheet.
+    The Stack decode sizes are confirmed (72 battle-class tiles, 162 for
+    `SpecialSprite_NazcaShip`; `SpecialSprite_EvilSpiritAlt` is animation-only), but the
+    palette word layout and the frame assembly are still unconfirmed, so each resource is
+    emitted as a raw tile-pool sheet plus candidate composed layouts (3x3, 3x6, 4x4, 6x6)
+    for later visual inspection. None of the candidates is verified against a screenshot.
     """
     source = read_upstream_text(disasm / SPECIAL_SPRITE_ENTRIES_PATH)
     definitions = re.findall(

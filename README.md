@@ -200,9 +200,9 @@ map palette; the palette channel order (low bits red, high bits blue) was valida
 against a simulator screenshot. `uv run sf2 texture assets` extracts the font sheet,
 portraits (8x8 tile grid + per-portrait palette), icons (2x3 tiles, base palette), and
 map sprites (two 3x3 column-major frames per facing). `uv run sf2 texture misc` extracts
-the UI tile sets and main-menu icons, special sprites (raw tile sheets; frame assembly
-is still open), composed battle backgrounds (layout table, 32 columns), and the unused
-cloud/palette payloads. The generated PNGs are private/generated graphics payloads and
+the UI tile sets and main-menu icons, special sprites (raw tile sheets; palette decode and
+frame assembly still unconfirmed), composed battle backgrounds (layout table, 32 columns),
+and the unused cloud/palette payloads. The generated PNGs are private/generated graphics payloads and
 are never tracked; manifests hold metadata and hashes only.
 
 `verify --full` runs the complete Python suite plus all maintained H1/H2/H3 rails. It is reserved for
