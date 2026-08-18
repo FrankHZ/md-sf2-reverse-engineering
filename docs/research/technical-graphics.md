@@ -333,6 +333,19 @@ facts used by the extraction tooling, not new data-contract claims.
 - Map layout is a 64x64 block grid; area bounds come from `2-areas.asm` (`mainLayerStart/End`,
   `scndLayerFgndStart`, `scndLayerBgndStart`). Only the main layer is rendered; the
   second/background layer's exploration-mode palette source remains **Unknown**.
+- The second layer is not a separate area record or layout stream: its content lives **in the
+  same 64x64 layout** at the plane-view offset given by `scndLayerFgndStart` minus
+  `scndLayerBgndStart`. `SetViewDestination` (`display.asm`) scrolls Plane A at the camera plus
+  the foreground start and Plane B at the camera plus the background start (parallax 256 = 1x);
+  Plane A renders on top, so layout block `(x + fg - bg, y + fg - bg)` appears over main-layer
+  block `(x, y)`. Map 3 area 0 has fg `(0,32)`/bg `(0,0)`, so its overlay content (roofs and the
+  cell's iron bars) occupies layout rows 32..63 and is displayed over main rows 0..31. Layout
+  words carry a block-section flag (`00`/`01`/`100`/`101`/`11` prefixes in
+  `ReadMapLayoutBarrelForBlockFlags`, `mapload.asm`) whose `0xC000` bit selects the plane
+  palette in `UpdateVdpPlane`; static rendering draws both sections with the map palette (the
+  map 3 cell bars match the simulator screenshot's gray palette entries 9-11). Roof/layer-2
+  `slbc` records (`map-content.md`: 79 tables, 114 records) copy/clear blocks into this overlay
+  region at runtime. **Confirmed** (static; overlay palette source still **Unknown**).
 - Map sprites decode to `0x240` bytes = two 3x3-tile frames (24x24 pixels each) stored as
   contiguous 32-byte tiles; the 3x3 frame grid is column-major (tile 0 top-left, 1 middle-left,
   2 bottom-left). The three streams per sprite index are the three facing directions.

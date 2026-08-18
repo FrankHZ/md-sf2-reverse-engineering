@@ -170,3 +170,52 @@ def test_font_bit_order():
     bits = (0x00 << 4) | (0x10 >> 4)
     columns = [c for c in range(FONT_GLYPH_COLUMNS) if bits & (1 << (11 - c))]
     assert columns == [11]
+
+
+def test_area_overlay_delta():
+    from sf2tool.texture_extract import MapArea, area_overlay_delta
+
+    area = MapArea(
+        index=0,
+        main_start=(0, 0),
+        main_end=(50, 31),
+        foreground_start=(0, 32),
+        background_start=(0, 0),
+    )
+    assert area_overlay_delta(area) == (0, 32)
+    in_place = MapArea(
+        index=1,
+        main_start=(51, 0),
+        main_end=(61, 9),
+        foreground_start=(0, 0),
+        background_start=(0, 0),
+    )
+    assert area_overlay_delta(in_place) == (0, 0)
+
+
+def test_clip_block_rect():
+    from sf2tool.texture_extract import clip_block_rect
+
+    assert clip_block_rect(0, 32, 50, 63) == (0, 32, 50, 63)
+    assert clip_block_rect(-32, 0, -1, 31) is None
+    assert clip_block_rect(-5, 0, 10, 31) == (0, 0, 10, 31)
+    assert clip_block_rect(0, 0, 70, 70) == (0, 0, 63, 63)
+
+
+def test_composite_overlay():
+    from sf2tool.texture_extract import composite_overlay
+
+    main = [0, 0, 0, 0, 255, 0, 0, 255, 0, 0, 0, 0]
+    overlay = [255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0]
+    composed = composite_overlay(
+        main, overlay, width=3, height=1, overlay_width=3, offset_x=0, offset_y=0
+    )
+    assert composed == [255, 255, 255, 255, 255, 0, 0, 255, 0, 0, 0, 0]
+    placed = composite_overlay(
+        main, [0, 0, 0, 0, 0, 0, 0, 0], width=3, height=1, overlay_width=1, offset_x=0, offset_y=0
+    )
+    assert placed == main
+    with pytest.raises(ValueError, match="main pixel buffer size drift"):
+        composite_overlay(
+            main, [0] * 4, width=2, height=2, overlay_width=1, offset_x=0, offset_y=0
+        )

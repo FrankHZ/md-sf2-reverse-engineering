@@ -421,13 +421,15 @@ def render_map_blocks(
     origin: tuple[int, int],
     width_blocks: int,
     height_blocks: int,
+    transparent_first: bool = False,
 ) -> list[int]:
     """Render a block region of a map layout into RGBA pixels.
 
     The layout holds block indices on a 64x64 grid; each block is nine tile words
     (3x3 tiles of 8x8 pixels). Tile words store the VRAM tile number plus 0x100 with
     the priority/flip/mirror flags in the high bits; the tile number maps to a
-    tileset slot via ``index // 128``.
+    tileset slot via ``index // 128``. With ``transparent_first``, palette index 0
+    is transparent (the game's second-layer holes).
     """
     width = width_blocks * BLOCK_PIXELS
     height = height_blocks * BLOCK_PIXELS
@@ -453,13 +455,79 @@ def render_map_blocks(
                     pixel_y = block_y * BLOCK_PIXELS + tile_y * TILE_SIZE
                     for row in range(TILE_SIZE):
                         for col in range(TILE_SIZE):
-                            color = palette[tile[row * TILE_SIZE + col]]
+                            index = tile[row * TILE_SIZE + col]
+                            if transparent_first and index == 0:
+                                continue
+                            color = palette[index]
                             offset = ((pixel_y + row) * width + (pixel_x + col)) * 4
                             if color == (0, 0, 0):
                                 pixels[offset : offset + 4] = [0, 0, 0, 0]
                             else:
                                 pixels[offset : offset + 4] = [*color, 255]
     return pixels
+
+
+def area_overlay_delta(area: MapArea) -> tuple[int, int]:
+    """Layout-block offset of the second-layer content over the main layer.
+
+    `SetViewDestination` (`display.asm`) scrolls Plane A at the camera plus the
+    second-layer foreground start and Plane B at the camera plus the background
+    start, so second-layer block ``(x, y) + (fg - bg)`` is displayed over main
+    block ``(x, y)``. A zero delta means the second layer is in place.
+    """
+    return (
+        area.foreground_start[0] - area.background_start[0],
+        area.foreground_start[1] - area.background_start[1],
+    )
+
+
+def clip_block_rect(
+    x0: int, y0: int, x1: int, y1: int, side: int = MAP_LAYOUT_SIDE
+) -> tuple[int, int, int, int] | None:
+    """Intersect a block rectangle with the ``side`` x ``side`` layout grid."""
+    x0, y0 = max(x0, 0), max(y0, 0)
+    x1, y1 = min(x1, side - 1), min(y1, side - 1)
+    if x0 > x1 or y0 > y1:
+        return None
+    return x0, y0, x1, y1
+
+
+def composite_overlay(
+    main_pixels: list[int],
+    overlay_pixels: list[int],
+    *,
+    width: int,
+    height: int,
+    overlay_width: int,
+    offset_x: int,
+    offset_y: int,
+) -> list[int]:
+    """Overlay second-layer pixels over the main-layer buffer (alpha 0 = keep main).
+
+    ``width``/``height`` are the main buffer pixel dimensions; ``overlay_width`` is
+    the overlay buffer's row stride; ``offset_x``/``offset_y`` place the overlay
+    buffer's top-left inside the main buffer.
+    """
+    if len(main_pixels) != width * height * 4:
+        raise ValueError("main pixel buffer size drift")
+    if overlay_width <= 0 or len(overlay_pixels) % (overlay_width * 4):
+        raise ValueError("overlay pixel buffer size drift")
+    overlay_height = len(overlay_pixels) // (overlay_width * 4)
+    composed = list(main_pixels)
+    for overlay_y in range(overlay_height):
+        target_y = offset_y + overlay_y
+        if not 0 <= target_y < height:
+            continue
+        for overlay_x in range(overlay_width):
+            target_x = offset_x + overlay_x
+            if not 0 <= target_x < width:
+                continue
+            source = (overlay_y * overlay_width + overlay_x) * 4
+            if overlay_pixels[source + 3] == 0:
+                continue
+            target = (target_y * width + target_x) * 4
+            composed[target : target + 4] = overlay_pixels[source : source + 4]
+    return composed
 
 
 def extract_map_renders(
@@ -472,9 +540,11 @@ def extract_map_renders(
     """Render map main-layer regions as private PNG images.
 
     For every requested map index, each parsed area's main layer is rendered with the
-    map palette under ``<out-dir>/maps/mapNN/``. Only the main layer is emitted; the
-    second/background layer uses a separate CRAM palette whose exploration-mode source
-    is not yet evidenced.
+    map palette under ``<out-dir>/maps/mapNN/``, plus a composed render that overlays
+    the second-layer content (layout region at the ``scndLayerFgndStart`` minus
+    ``scndLayerBgndStart`` offset) over the main layer. The second/background layer's
+    exploration-mode palette source is not yet evidenced; composition uses the map
+    palette.
     """
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -548,10 +618,60 @@ def extract_map_renders(
                     "map": map_index,
                     "area": area.index,
                     "palette": map_data.palette_index,
+                    "layer": "main",
                     "widthBlocks": width_blocks,
                     "heightBlocks": height_blocks,
                 }
             )
+            delta = area_overlay_delta(area)
+            if delta != (0, 0):
+                rect = clip_block_rect(
+                    area.main_start[0] + delta[0],
+                    area.main_start[1] + delta[1],
+                    area.main_end[0] + delta[0],
+                    area.main_end[1] + delta[1],
+                )
+                if rect is not None:
+                    ox0, oy0, ox1, oy1 = rect
+                    overlay = render_map_blocks(
+                        layout,
+                        blocks,
+                        tile_pool,
+                        palette,
+                        origin=(ox0, oy0),
+                        width_blocks=ox1 - ox0 + 1,
+                        height_blocks=oy1 - oy0 + 1,
+                        transparent_first=True,
+                    )
+                    composed = composite_overlay(
+                        pixels,
+                        overlay,
+                        width=width_blocks * BLOCK_PIXELS,
+                        height=height_blocks * BLOCK_PIXELS,
+                        overlay_width=(ox1 - ox0 + 1) * BLOCK_PIXELS,
+                        offset_x=(ox0 - delta[0] - area.main_start[0]) * BLOCK_PIXELS,
+                        offset_y=(oy0 - delta[1] - area.main_start[1]) * BLOCK_PIXELS,
+                    )
+                    name = f"map{map_index:02}-area{area.index}-composed.png"
+                    rel = map_dir / name
+                    write_png_rgba(
+                        rel, width_blocks * BLOCK_PIXELS, height_blocks * BLOCK_PIXELS, composed
+                    )
+                    files.append(
+                        {
+                            "file": f"map{map_index:02}/{name}",
+                            "sha256": _sha256(rel.read_bytes()),
+                            "sizeBytes": rel.stat().st_size,
+                            "map": map_index,
+                            "area": area.index,
+                            "palette": map_data.palette_index,
+                            "layer": "main+overlay",
+                            "overlayDelta": list(delta),
+                            "widthBlocks": width_blocks,
+                            "heightBlocks": height_blocks,
+                        }
+                    )
+    composed_count = sum(1 for row in files if row["layer"] == "main+overlay")
     manifest = {
         "schemaVersion": 1,
         "tool": "sf2 texture map",
@@ -559,10 +679,15 @@ def extract_map_renders(
         "romSha256": expected_rom["hashes"]["sha256"],
         "upstream": {"repository": "ShiningForceCentral/SF2DISASM", "commit": commit},
         "notes": [
-            "main layer only; tile priority is ignored in static rendering; the "
-            "second/background layer palette source is not yet evidenced",
+            "main layer only, plus composed main+overlay renders; tile priority is ignored "
+            "in static rendering; the second/background layer palette source is not yet "
+            "evidenced, composition uses the map palette",
         ],
-        "summary": {"areaRenderCount": len(files)},
+        "summary": {
+            "areaRenderCount": sum(1 for row in files if row["layer"] == "main"),
+            "composedRenderCount": composed_count,
+            "totalRenderCount": len(files),
+        },
         "files": files,
     }
     manifest_path = maps_dir / "map-manifest.json"
@@ -570,7 +695,8 @@ def extract_map_renders(
     manifest_path.write_text(manifest_json, encoding="utf-8")
     return {
         "Maps": len(wanted),
-        "Areas": len(files),
+        "Areas": len(files) - composed_count,
+        "Composed": composed_count,
         "Output": str(maps_dir),
         "Manifest": _sha256(manifest_path.read_bytes()),
         "Status": "PASS",
