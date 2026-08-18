@@ -540,10 +540,10 @@ def extract_map_renders(
     """Render map main-layer regions as private PNG images.
 
     For every requested map index, each parsed area's main layer is rendered with the
-    map palette under ``<out-dir>/maps/mapNN/``, plus a composed render that overlays
-    the second-layer content (layout region at the ``scndLayerFgndStart`` minus
-    ``scndLayerBgndStart`` offset) over the main layer. The second/background layer's
-    exploration-mode palette source is not yet evidenced; composition uses the map
+    map palette under ``<out-dir>/maps/mapNN/``. Areas with a non-zero overlay offset
+    additionally get the second-layer region rendered alone (``...-overlay.png``) and
+    composed over the main layer (``...-composed.png``). The second/background layer's
+    exploration-mode palette source is not yet evidenced; rendering uses the map
     palette.
     """
     rom_path = rom_path.resolve(strict=True)
@@ -643,6 +643,28 @@ def extract_map_renders(
                         height_blocks=oy1 - oy0 + 1,
                         transparent_first=True,
                     )
+                    name = f"map{map_index:02}-area{area.index}-overlay.png"
+                    rel = map_dir / name
+                    write_png_rgba(
+                        rel,
+                        (ox1 - ox0 + 1) * BLOCK_PIXELS,
+                        (oy1 - oy0 + 1) * BLOCK_PIXELS,
+                        overlay,
+                    )
+                    files.append(
+                        {
+                            "file": f"map{map_index:02}/{name}",
+                            "sha256": _sha256(rel.read_bytes()),
+                            "sizeBytes": rel.stat().st_size,
+                            "map": map_index,
+                            "area": area.index,
+                            "palette": map_data.palette_index,
+                            "layer": "overlay",
+                            "overlayDelta": list(delta),
+                            "widthBlocks": ox1 - ox0 + 1,
+                            "heightBlocks": oy1 - oy0 + 1,
+                        }
+                    )
                     composed = composite_overlay(
                         pixels,
                         overlay,
@@ -672,6 +694,7 @@ def extract_map_renders(
                         }
                     )
     composed_count = sum(1 for row in files if row["layer"] == "main+overlay")
+    overlay_count = sum(1 for row in files if row["layer"] == "overlay")
     manifest = {
         "schemaVersion": 1,
         "tool": "sf2 texture map",
@@ -679,12 +702,13 @@ def extract_map_renders(
         "romSha256": expected_rom["hashes"]["sha256"],
         "upstream": {"repository": "ShiningForceCentral/SF2DISASM", "commit": commit},
         "notes": [
-            "main layer only, plus composed main+overlay renders; tile priority is ignored "
-            "in static rendering; the second/background layer palette source is not yet "
-            "evidenced, composition uses the map palette",
+            "main layer, per-area overlay layer, and composed main+overlay renders; tile "
+            "priority is ignored in static rendering; the second/background layer palette "
+            "source is not yet evidenced, rendering uses the map palette",
         ],
         "summary": {
             "areaRenderCount": sum(1 for row in files if row["layer"] == "main"),
+            "overlayRenderCount": overlay_count,
             "composedRenderCount": composed_count,
             "totalRenderCount": len(files),
         },
@@ -695,7 +719,8 @@ def extract_map_renders(
     manifest_path.write_text(manifest_json, encoding="utf-8")
     return {
         "Maps": len(wanted),
-        "Areas": len(files) - composed_count,
+        "Areas": len(files) - composed_count - overlay_count,
+        "Overlays": overlay_count,
         "Composed": composed_count,
         "Output": str(maps_dir),
         "Manifest": _sha256(manifest_path.read_bytes()),

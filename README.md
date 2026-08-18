@@ -199,9 +199,9 @@ color strips. `uv run sf2 texture map --maps 3` renders real map main-layer regi
 map palette; the palette channel order (low bits red, high bits blue) was validated
 against a simulator screenshot. Every area of every requested map is emitted under
 `local/derived/graphics/maps/mapNN/` (all 135 areas across the 79 maps are enumerable
-from each `2-areas.asm`), plus a composed `...-composed.png` per area that overlays
-the second-layer content (the layout region at the `scndLayerFgndStart`/`scndLayerBgndStart`
-offset, e.g. roofs and the map-3 cell bars) over the main layer. `uv run sf2 texture assets` extracts the font sheet,
+from each `2-areas.asm`), plus per-area `...-overlay.png` (the second-layer region at the
+`scndLayerFgndStart`/`scndLayerBgndStart` offset, e.g. roofs and the map-3 cell bars) and
+`...-composed.png` (overlay over the main layer). `uv run sf2 texture assets` extracts the font sheet,
 portraits (8x8 tile grid + per-portrait palette), icons (2x3 tiles, base palette), and
 map sprites (two 3x3 column-major frames per facing). `uv run sf2 texture misc` extracts
 the UI tile sets and main-menu icons, special sprites (raw tile sheets; palette decode and
