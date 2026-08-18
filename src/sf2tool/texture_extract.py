@@ -472,8 +472,9 @@ def extract_map_renders(
     """Render map main-layer regions as private PNG images.
 
     For every requested map index, each parsed area's main layer is rendered with the
-    map palette. Only the main layer is emitted; the second/background layer uses a
-    separate CRAM palette whose exploration-mode source is not yet evidenced.
+    map palette under ``<out-dir>/maps/mapNN/``. Only the main layer is emitted; the
+    second/background layer uses a separate CRAM palette whose exploration-mode source
+    is not yet evidenced.
     """
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -494,6 +495,8 @@ def extract_map_renders(
 
     out_dir = out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
+    maps_dir = out_dir / "maps"
+    maps_dir.mkdir(parents=True, exist_ok=True)
     files = []
     for map_index in wanted:
         map_data = parse_map_entry(disasm, map_index)
@@ -518,6 +521,8 @@ def extract_map_renders(
         ).read_bytes()
         blocks, _, _ = decode_map_blocks(blocks_data)
         layout, _, _, _ = decode_map_layout(layout_data, len(blocks) // BLOCK_TILES)
+        map_dir = maps_dir / f"map{map_index:02}"
+        map_dir.mkdir(parents=True, exist_ok=True)
         for area in map_data.areas:
             width_blocks = area.main_end[0] - area.main_start[0] + 1
             height_blocks = area.main_end[1] - area.main_start[1] + 1
@@ -533,11 +538,11 @@ def extract_map_renders(
                 height_blocks=height_blocks,
             )
             name = f"map{map_index:02}-area{area.index}-mainlayer.png"
-            rel = out_dir / name
+            rel = map_dir / name
             write_png_rgba(rel, width_blocks * BLOCK_PIXELS, height_blocks * BLOCK_PIXELS, pixels)
             files.append(
                 {
-                    "file": name,
+                    "file": f"map{map_index:02}/{name}",
                     "sha256": _sha256(rel.read_bytes()),
                     "sizeBytes": rel.stat().st_size,
                     "map": map_index,
@@ -560,13 +565,13 @@ def extract_map_renders(
         "summary": {"areaRenderCount": len(files)},
         "files": files,
     }
-    manifest_path = out_dir / "map-manifest.json"
+    manifest_path = maps_dir / "map-manifest.json"
     manifest_json = json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"
     manifest_path.write_text(manifest_json, encoding="utf-8")
     return {
         "Maps": len(wanted),
         "Areas": len(files),
-        "Output": str(out_dir),
+        "Output": str(maps_dir),
         "Manifest": _sha256(manifest_path.read_bytes()),
         "Status": "PASS",
     }
