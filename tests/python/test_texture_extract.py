@@ -202,6 +202,48 @@ def test_clip_block_rect():
     assert clip_block_rect(0, 0, 70, 70) == (0, 0, 63, 63)
 
 
+def test_parse_layer2_copies(tmp_path):
+    from sf2tool.texture_extract import parse_layer2_copies
+
+    entry = tmp_path / "data" / "maps" / "entries" / "map03"
+    entry.mkdir(parents=True)
+    (entry / "5-roof-events.asm").write_text(
+        "                slbc 4, 8  ; door\n"
+        "                  slbcSource 255, 255\n"
+        "                  slbcSize   7, 8\n"
+        "                  slbcDest   2, 32\n"
+        "                slbc 24, 26  ; creature building opening\n"
+        "                  slbcSource 51, 20\n"
+        "                  slbcSize   9, 7\n"
+        "                  slbcDest   22, 51\n"
+        "                endWord\n",
+        encoding="utf-8",
+    )
+    records = parse_layer2_copies(tmp_path, 3)
+    assert records == [
+        ((4, 8), (255, 255), (7, 8), (2, 32)),
+        ((24, 26), (51, 20), (9, 7), (22, 51)),
+    ]
+
+
+def test_apply_layer2_copies():
+    from sf2tool.texture_extract import apply_layer2_copies
+
+    layout = list(range(64 * 64))
+    copies = [
+        ((0, 0), (51, 20), (2, 1), (22, 51)),
+        ((0, 0), (255, 255), (2, 1), (0, 0)),
+    ]
+    working = apply_layer2_copies(layout, copies)
+    # source (51,20) -> dest (22,51): word at dest equals word at source
+    assert working[51 * 64 + 22] == layout[20 * 64 + 51]
+    assert working[51 * 64 + 23] == layout[20 * 64 + 52]
+    # the clear record is skipped
+    assert working[0] == layout[0]
+    # untouched elsewhere
+    assert working[30 * 64 + 30] == layout[30 * 64 + 30]
+
+
 def test_composite_overlay():
     from sf2tool.texture_extract import composite_overlay
 

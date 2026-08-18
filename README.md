@@ -200,8 +200,9 @@ map palette; the palette channel order (low bits red, high bits blue) was valida
 against a simulator screenshot. Every area of every requested map is emitted under
 `local/derived/graphics/maps/mapNN/` (all 135 areas across the 79 maps are enumerable
 from each `2-areas.asm`), plus per-area `...-overlay.png` (the second-layer region at the
-`scndLayerFgndStart`/`scndLayerBgndStart` offset, e.g. roofs and the map-3 cell bars) and
-`...-composed.png` (overlay over the main layer). `uv run sf2 texture assets` extracts the font sheet,
+`scndLayerFgndStart`/`scndLayerBgndStart` offset, with the roof/layer-2 `slbc` copy records
+applied so source-stored facades such as the map-3 cell bars appear at their display
+position) and `...-composed.png` (overlay over the main layer). `uv run sf2 texture assets` extracts the font sheet,
 portraits (8x8 tile grid + per-portrait palette), icons (2x3 tiles, base palette), and
 map sprites (two 3x3 column-major frames per facing). `uv run sf2 texture misc` extracts
 the UI tile sets and main-menu icons, special sprites (raw tile sheets; palette decode and

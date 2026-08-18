@@ -530,6 +530,65 @@ def composite_overlay(
     return composed
 
 
+Layer2Copy = tuple[
+    tuple[int, int], tuple[int, int], tuple[int, int], tuple[int, int]
+]
+
+
+def parse_layer2_copies(disasm: Path, map_index: int) -> list[Layer2Copy]:
+    """Parse the roof/layer-2 block-copy records of one map (`5-roof-events.asm`).
+
+    Returns ``(trigger, source, size, dest)`` block tuples. Records whose source is
+    ``(255, 255)`` are clear records: the content already sits at the destination in
+    the static layout, so they do not change a static render.
+    """
+    source_path = MAP_ENTRY_ROOT / f"map{map_index:02}" / "5-roof-events.asm"
+    source = read_upstream_text(disasm / source_path)
+    triggers = re.findall(r"slbc\s+(\d+),\s*(\d+)", source)
+    sources = re.findall(r"slbcSource\s+(\d+),\s*(\d+)", source)
+    sizes = re.findall(r"slbcSize\s+(\d+),\s*(\d+)", source)
+    dests = re.findall(r"slbcDest\s+(\d+),\s*(\d+)", source)
+    if not (len(triggers) == len(sources) == len(sizes) == len(dests)):
+        raise ValueError(f"map layer-2 copy field-count drift: {source_path}")
+    return [
+        (
+            (int(trigger[0]), int(trigger[1])),
+            (int(source[0]), int(source[1])),
+            (int(size[0]), int(size[1])),
+            (int(dest[0]), int(dest[1])),
+        )
+        for trigger, source, size, dest in zip(
+            triggers, sources, sizes, dests, strict=True
+        )
+    ]
+
+
+def apply_layer2_copies(layout: list[int], copies: list[Layer2Copy]) -> list[int]:
+    """Apply source-to-destination layer-2 block copies to a working layout copy.
+
+    Each record snapshots its source rectangle before writing, matching the game's
+    snapshot-then-copy path; clear records (source `(255, 255)`) are skipped.
+    """
+    working = list(layout)
+    for _trigger, source, size, dest in copies:
+        if source == (255, 255):
+            continue
+        width, height = size
+        snapshot = [
+            layout[(source[1] + row) * MAP_LAYOUT_SIDE + source[0] + col]
+            for row in range(height)
+            for col in range(width)
+        ]
+        for row in range(height):
+            for col in range(width):
+                dx = dest[0] + col
+                dy = dest[1] + row
+                if not (0 <= dx < MAP_LAYOUT_SIDE and 0 <= dy < MAP_LAYOUT_SIDE):
+                    raise ValueError("map layer-2 copy destination out of range")
+                working[dy * MAP_LAYOUT_SIDE + dx] = snapshot[row * width + col]
+    return working
+
+
 def extract_map_renders(
     rom_path: Path,
     upstream_path: Path,
@@ -542,9 +601,11 @@ def extract_map_renders(
     For every requested map index, each parsed area's main layer is rendered with the
     map palette under ``<out-dir>/maps/mapNN/``. Areas with a non-zero overlay offset
     additionally get the second-layer region rendered alone (``...-overlay.png``) and
-    composed over the main layer (``...-composed.png``). The second/background layer's
-    exploration-mode palette source is not yet evidenced; rendering uses the map
-    palette.
+    composed over the main layer (``...-composed.png``); the overlay passes first apply
+    the map's roof/layer-2 copy records (source regions such as the map-3 cell bars are
+    stored outside the areas and copied to their display position at runtime). The
+    second/background layer's exploration-mode palette source is not yet evidenced;
+    rendering uses the map palette.
     """
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -591,6 +652,8 @@ def extract_map_renders(
         ).read_bytes()
         blocks, _, _ = decode_map_blocks(blocks_data)
         layout, _, _, _ = decode_map_layout(layout_data, len(blocks) // BLOCK_TILES)
+        copies = parse_layer2_copies(disasm, map_index)
+        overlay_layout = apply_layer2_copies(layout, copies) if copies else layout
         map_dir = maps_dir / f"map{map_index:02}"
         map_dir.mkdir(parents=True, exist_ok=True)
         for area in map_data.areas:
@@ -634,7 +697,7 @@ def extract_map_renders(
                 if rect is not None:
                     ox0, oy0, ox1, oy1 = rect
                     overlay = render_map_blocks(
-                        layout,
+                        overlay_layout,
                         blocks,
                         tile_pool,
                         palette,
@@ -702,9 +765,11 @@ def extract_map_renders(
         "romSha256": expected_rom["hashes"]["sha256"],
         "upstream": {"repository": "ShiningForceCentral/SF2DISASM", "commit": commit},
         "notes": [
-            "main layer, per-area overlay layer, and composed main+overlay renders; tile "
-            "priority is ignored in static rendering; the second/background layer palette "
-            "source is not yet evidenced, rendering uses the map palette",
+            "main layer, per-area overlay layer, and composed main+overlay renders; the "
+            "overlay passes apply the map's roof/layer-2 copy records (slbc source "
+            "regions are copied to their display positions, e.g. the map-3 cell bars); "
+            "tile priority is ignored in static rendering; the second/background layer "
+            "palette source is not yet evidenced, rendering uses the map palette",
         ],
         "summary": {
             "areaRenderCount": sum(1 for row in files if row["layer"] == "main"),
