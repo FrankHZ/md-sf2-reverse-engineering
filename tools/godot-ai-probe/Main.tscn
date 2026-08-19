@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/Player.cs" id="1_player"]
+[ext_resource type="Script" path="res://src/Hud.cs" id="2_hud"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_player")
+
+[node name="Hud" type="Label" parent="."]
+offset_left = 8.0
+offset_top = 8.0
+text = "waiting"
+script = ExtResource("2_hud")

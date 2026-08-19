@@ -45,3 +45,6 @@ Desktop.ini
 .DS_Store
 *.swp
 *.tmp
+
+# Godot generated import/build state
+.godot/
