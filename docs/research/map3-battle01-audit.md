@@ -2,13 +2,15 @@
 
 - Status: **OPEN** — durable research-owned gap register; not a readiness report and not a gap-closure
   claim
-- Audit date: 2026-08-19
-- Audit base: `main` commit `9a7cbcb44322e309ef10d8afac76d9a98be76f98`, tree
-  `28c5f9c00a2b095d8b990eb8adc5249ede911704`
+- Audit date: 2026-08-20
+- Audit base: `main` commit `5fdfa46f1e261825a6a1eadb64aa0c852b46b5c5`, tree
+  `eedb7a5fe779ef2e38ca5e1474c9d336b10e3989`
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - Milestone owner: [ADR 0009](../decisions/0009-first-phase4-playable-slice.md)
+- Accepted product profile: [ADR 0010](../decisions/0010-map3-battle01-product-acceptance.md),
+  exact selection `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8C + 9A + 10A`
 - Scope: ADR 0009 pre-entry gate item 1 — the Research lane independently inventories the accepted
   evidence needed for the complete Map 3 through Battle 01-completion scenario, records every evidence
   gap in this durable research-owned artifact, and identifies which gaps must be closed for
@@ -22,9 +24,8 @@ written independently from that ledger's closure classification: it inventories 
 surface and records gaps using the research evidence labels **Confirmed**, **Inferred**, and
 **Unknown**, with named owners, fixtures, and reproduction commands. It does not:
 
-- define the detailed route, starting state, completion endpoint, save scope, assets, or acceptance
-  tier (those are audit outputs of the Design lane and explicit product decisions, not recoverable
-  original-game facts);
+- invent the exact route, admitted-state values, reached action trace, completion-state values, or
+  8C comparison tolerances that remain Research/H4 evidence gaps;
 - bulk-associate the 26 aggregate Map 3 index records with any future scenario contract;
 - promote a controlled helper or debug seam into a natural-story route;
 - treat a static source graph as an observed chronological playthrough;
@@ -38,6 +39,14 @@ and an indexed file is not automatically a future design association.
 
 Only accepted `main` evidence contributes. Unmerged branches (including this topic branch before
 integration) are collaboration state, not evidence.
+
+ADR 0010 now fixes the product boundary that the initial audit left open: a controlled admitted
+Map 3 snapshot (1A), the smallest Research-proven natural route (2A), natural battle admission
+(3A), manual player control (4A), the first stable controllable post-after-program endpoint (5B),
+no milestone save/load/checkpoint/suspend (6A), private-local original assets (7C), exact reached
+frame/audio/hardware parity (8C), modern accessible logical controls (9A), and an explicit deviation
+ledger (10A). These selections constrain the required evidence; they do not supply the missing route,
+state, presentation, or H4 facts and do not change this audit's **OPEN** status.
 
 ## Scenario Dependency Surface
 
@@ -57,13 +66,18 @@ Battle 01 completion. The audit inventories each segment in source order:
 11. battle scene presentation behavior actually reached;
 12. victory, after-battle program execution, and return routing;
 13. the observable endpoint state;
-14. save/load scope only if the later product decision includes it.
+14. the explicit no-save milestone boundary and restart-to-admitted-snapshot behavior;
+15. private immutable original inputs and deterministic reference captures for the reached 7C/8C
+    comparison domain.
 
-Segments 6 and 11 are largely **Confirmed** private-import corpora plus bounded control contracts;
-their remaining gaps are rendered/presentation behavior, which is product-gated under
-[ADR 0005](../decisions/0005-remake-value-driven-driver-freeze.md). Segment 14 depends on an
-explicit product decision. Segments 1–5, 7–10, 12, and 13 carry the fidelity-blocking research gaps
-registered below.
+Segments 6 and 11 have largely **Confirmed** private-import corpora plus bounded control contracts,
+but selected 8C makes their reached rendered/audio/hardware behavior a mandatory pre-Phase-4
+Research/H4 target. This is the bounded reopening condition 3 of
+[ADR 0005](../decisions/0005-remake-value-driven-driver-freeze.md): it applies only to observables
+reached by this scenario, must reuse existing parser/fixture/observation seams, and does not authorize
+an open-ended driver or hardware audit. Segment 14 is closed as a milestone exclusion by 6A;
+cross-process persistence remains deferred. Segments 1–5, 7–13, and 15 carry the fidelity-blocking
+research gaps registered below.
 
 ## Exact Accepted-Index Audit
 
@@ -135,9 +149,10 @@ H3 matrix; entity movement core (13-case/20-tick matrix); interaction-trigger ru
 handler cases).
 
 **Gaps:** natural inputs and their chronological results along the route (RA-03); VInt-edge event
-publication versus input sampling timing (explicit grouped queue); exploration/VDP frame sequencing
-(queued); the field-menu branch's natural admission and behavior (RA-08); roof/door/warp/vehicle
-transition frames (queued).
+publication versus input sampling timing; exploration/VDP frame sequencing; the field-menu branch's
+natural admission and behavior when the 2A route requires it (RA-08); and reached
+roof/door/warp/vehicle transition frames. Under 8C these reached observable surfaces join RA-11; they
+are no longer optional presentation work.
 
 ### 4. Dialogue, interaction, and area descriptions
 
@@ -147,8 +162,9 @@ state; text/font systems; area-description dispatch (75 targets, `d6` condition 
 area-description tables.
 
 **Gaps:** which dialogue programs execute on the route, their exact text-line references, speaker
-selections, and cursor/state effects (RA-09); rendered text/wait/portrait timing (product-gated);
-normal-story reachability of the description/init callers.
+selections, and cursor/state effects (RA-09); the exact reached text/window/portrait output and cadence
+required by 8C (RA-11); and normal-story reachability of the description/init callers. Original text
+and captures remain private-local 7C inputs, not tracked fixture payloads.
 
 ### 5. Field menu and UI
 
@@ -157,15 +173,19 @@ extensive H3; window system (16 stable entries); UI layout and icon corpora; exp
 static structure showing the A path into the field menu.
 
 **Gap (RA-08):** no field-menu control contract exists and no natural field-menu admission is
-observed. Whether the route requires it is a product/design decision; if included, the field-menu
-behavior on the route is a research gap. Explicit exclusion by an accepted product decision would
-close this row.
+observed. Accepted 2A excludes unrelated menu coverage: if Research proves the smallest natural route
+reaches the field menu, that exact behavior is a route-dependent research gap; otherwise this row
+closes as not reached without requiring a new product choice. Selected 9A's remappable actions,
+reduced-flash mode, and adjusted text are product/H4 deviation surfaces, never original-fidelity
+evidence.
 
 ### 6. Map resources, camera, layout
 
 **Confirmed:** complete private-import corpora (tilesets 115 streams, palettes 16, layouts 77, map
-sprites 669 payloads, entity data, camera control seven-case H3). Rendered presentation is
-product-gated.
+sprites 669 payloads, entity data, camera control seven-case H3). **Gap (RA-11):** 8C requires the
+reached scenario's exact pixels, palettes, frame cadence, animation/timing, VInt/DMA/CRAM/VDP state,
+and other hardware-observable map behavior. Existing static decoders and bounded runtime seams are
+inputs to that closure, not proof of rendered parity.
 
 ### 7. Map-to-battle admission
 
@@ -222,7 +242,10 @@ not be generalized.
 
 **Confirmed:** the scene-engine static contract (21-command interpreter, 32 setup/update pairs); the
 complete sprite/background/effect/terrain/weapon asset corpora; 421 frame entries; graphics-service
-state. Rendered frame/VDP/audio timing is product-gated and queued.
+state. **Gap (RA-11):** selected 8C requires accepted evidence for every reached pixel/palette/frame,
+animation/timing, audio waveform/chip/timing, VInt/DMA/CRAM/VDP, and other hardware-observable
+surface. The evidence must reuse the existing scene, graphics, sound, timing, and hardware seams and
+must not expand into unrelated driver behavior.
 
 ### 12. Victory, after-battle, return
 
@@ -233,23 +256,41 @@ after-battle cutscene data indexed; after-battle positions data table.
 
 **Gaps (RA-07):** no natural victory has been observed through the normal controller; the Battle 01
 after-battle MAPSCRIPT's effects, the return routing into the following map state, and the exact
-observable endpoint state are **Unknown**. The endpoint's observable meaning is a product decision,
-but the post-battle state facts that any endpoint will need are a research closure.
+observable endpoint state are **Unknown**. ADR 0010 option 5B fixes the endpoint shape as the first
+stable player-controllable state after victory mutation, after-battle program execution, and return
+handoff; Research still must establish its exact values and the presentation/hardware trace through
+that boundary.
 
 ### 13. Observable endpoint state
 
-**Gap (RA-12):** the final scenario-relevant state capture at whatever endpoint the product decision
-selects. The research closure is a state-fact contract (which fields, in what order, after which
-after-battle effects); the endpoint selection is not.
+**Gap (RA-12):** the final scenario-relevant state capture at the accepted 5B endpoint. The research
+closure is a state-fact contract: which fields have which values, in what order, after which
+after-battle effects, at the first stable player-controllable state.
 
 ### 14. Save/load scope
 
 **Confirmed:** two-slot SRAM layout, 4,016-byte logical slots, interleaved spans, checksum/flag
 transitions, in-process Save/Load/Copy/Delete H3; SaveGame/Church lifecycle rail.
 
-**Gap (RA-10):** cross-process/power-loss durability of every scenario-relevant field is **Unknown**
-and only needed if the product decision includes durable save/load; the natural route matrices use
-in-process state only.
+**Deferred boundary (RA-10):** ADR 0010 option 6A excludes user-facing save, load, checkpoint, and
+battle suspend from this milestone. Restart returns to the controlled admitted snapshot. Persistence
+research is therefore not an implementation blocker for this profile; cross-process/power-loss
+durability remains **Unknown** for a separate milestone. Harness reset/setup is test machinery and
+must never be described or accepted as a save feature.
+
+### 15. Private immutable inputs and reference captures
+
+**Confirmed policy:** ADR 0010 option 7C selects original assets, dialogue, graphics, music, and sound
+only for the private-local milestone/profile. It grants no redistribution right.
+
+**Gap (RA-11):** before any 8C reference run can become accepted evidence, Research must own a
+private inventory for every reached immutable input and capture. Each row needs identity, source and
+acquisition provenance, cryptographic hash, applicable license/rights boundary, producing tool/core
+and version, configuration, deterministic seed/input/timing conditions, and the observable layer it
+supports. ROMs, SRAM, states, traces, decoded payloads, audio/video/images, and captures remain
+ignored local inputs: none may be tracked, uploaded, embedded in public CI or a public release, or
+quoted into a redistributable fixture. Public reports may expose only licensing-safe metadata,
+approved hashes, structural/state summaries, tolerances, and comparison results.
 
 ## Research Gap Register
 
@@ -259,18 +300,25 @@ slice under ADR 0003 (one launch per coherent matrix).
 
 | ID | Segment | Gap | Required research closure | Evidence label today | Priority |
 | --- | --- | --- | --- | --- | --- |
-| RA-01 | 1 | Exact admitted Map 3 start state | One grouped matrix from the natural New→MainLoop handoff capturing map, position, facing, flag bitset, party/stats/items/spells, gold, difficulty, RNG, and time fields at first exploration entry; confirm the selected setup row in that flow | **Inferred** (flag-clear ⇒ default) / **Unknown** fields | Blocking |
+| RA-01 | 1 | Exact admitted Map 3 start state | One grouped matrix from the accepted controlled snapshot→MainLoop seam capturing map, position, facing, flag bitset, party/stats/items/spells, gold, difficulty, RNG, and time fields at first exploration entry; confirm the selected setup row without claiming a canonical original New/load state | **Inferred** (flag-clear ⇒ default) / **Unknown** fields | Blocking |
 | RA-02 | 2 | Map 3 setup/init/event chain effects | Observe the ordered setup → init function → init script → event → description chain at natural admission with real program bodies; record state effects and persistence | **Confirmed** dispatch; **Unknown** effects | Blocking |
-| RA-03 | 3 | Natural Map 3 route | Scripted-input exploration matrix from the admitted state recording ordered inputs, zone events, entity interactions, area inspections, and the exit sequence; route policy comes from the Design/product audit | **Unknown** | Blocking |
+| RA-03 | 3 | Natural Map 3 route | Scripted-input exploration matrix from the admitted state recording ordered inputs, zone events, entity interactions, area inspections, and the exit sequence; accept only the smallest Research-proven route required by option 2A | **Unknown** | Blocking |
 | RA-04 | 7 | Map-to-battle admission | Extend the route matrix to the battle trigger: intermediate maps, trigger coordinates reached, battle-unlock flag state, and before/start cutscene execution in the natural flow | **Confirmed** static; **Unknown** natural | Blocking |
 | RA-05 | 8 | Battle 01 natural encounter state | Capture the full scenario-relevant state at first battle-ready state from the natural flow; bind roster/stats/items/spells/positions/flags and later-round region state | **Confirmed** debug-entry; **Unknown** natural | Blocking |
-| RA-06 | 9+10 | Complete playable battle trace | Fixed-seed, scripted-input multi-round matrix through victory recording the chronological player/AI/navigation/action/resolution/reward/status trace and every reached branch | **Confirmed** bounded; **Unknown** complete | Blocking |
+| RA-06 | 9+10 | Complete playable battle trace | Fixed-seed, scripted-input H4 reference matrix through victory recording the chronological player/AI/navigation/action/resolution/reward/status trace and every reached branch; the trace supplies a deterministic acceptance case without replacing 4A manual agency in ordinary play | **Confirmed** bounded; **Unknown** complete | Blocking |
 | RA-07 | 12 | Victory, after-battle, endpoint state | Continue the battle matrix through victory to the after-battle seam: program execution, return routing, and post-battle state capture | **Confirmed** generic order; **Unknown** natural | Blocking |
-| RA-08 | 5 | Field menu on route | If the route includes it: natural field-menu admission and behavior matrix; otherwise requires explicit product exclusion | **Confirmed** static only | Route-dependent |
+| RA-08 | 5 | Field menu on route | If the 2A route reaches it, close that exact natural admission and behavior; otherwise record it as not reached and excluded from the minimum route | **Confirmed** static only | Route-dependent |
 | RA-09 | 4 | Route dialogue chronology | Dialogue programs, text-line references, speakers, and cursor/state effects on the route, recorded by the route matrix | **Confirmed** corpus; **Unknown** chronology | Blocking |
-| RA-10 | 14 | Cross-process persistence | Only if product selects durable save/load: prove every scenario field survives the original lifecycle | **Confirmed** in-process; **Unknown** durable | Product-gated |
-| RA-11 | 6/11 | Presentation fidelity | Rendered VDP/DMA/audio frames only if the product tier requires original fidelity; frozen by default under ADR 0005 | **Confirmed** static assets; **Unknown** frames | Product-gated |
-| RA-12 | 13 | Observable endpoint state | State-fact contract for the final scenario-relevant state at the product-selected endpoint: which fields, in what order, after which after-battle effects | **Unknown** | Blocking (facts) / product (selection) |
+| RA-10 | 14 | Deferred persistence boundary | Record the accepted 6A exclusion, restart-to-admitted-snapshot behavior, and harness-reset ≠ save; retain cross-process durability as a separate-milestone Unknown | **Confirmed** in-process; **Unknown** durable | Deferred / non-blocking |
+| RA-11 | 6/11/15 | Reached 7C/8C presentation, hardware, and private-reference evidence | Inventory and hash every reached private immutable input/capture with provenance and producing tool/core/configuration; deterministically capture and define pixel/palette/frame cadence, animation/timing, audio waveform/chip/timing, VInt/DMA/CRAM/VDP and other reached observables; specify exact or explicitly field-specific tolerances and a licensing-safe public report shape | **Confirmed** static assets and bounded seams; **Unknown** complete reached output | Blocking |
+| RA-12 | 13 | Observable endpoint state | State-fact contract for the final scenario-relevant state at accepted endpoint 5B: which fields, in what order, after which after-battle effects | **Unknown** | Blocking |
+
+RA-11 is the only ADR 0005 condition-3 reopening authorized here. Every question must be selected by
+the accepted route or battle trace and attached to an existing parser, fixture, or observation seam;
+unrelated Z80, VDP, DMA, controller-electrical, SRAM-failure, or other driver exactness stays frozen.
+The 8C reference run uses one declared original-fidelity configuration. Reduced-flash and
+instant/adjustable-text modes plus modern remappable input belong to the separate 9A/10A deviation
+layer and may share the completion event, but they must not alter or satisfy the exact 8C reference.
 
 Static closures that can proceed without an emulator: the Map 3 event/init programs' operation
 inventories (already in the 914-program corpus) can be joined to the 26 Map 3 records by the owning
@@ -283,19 +331,25 @@ inventories (structure already indexed, effects still not).
 The closures follow the static-first, subsystem-batched cadence (ADR 0003) and the
 root/worker slice contract (ADR 0004):
 
-1. **Slice R1 — admitted start and setup chain (RA-01, RA-02):** one grouped H3 matrix from the
-   accepted New→MainLoop handoff seam; static join of the 26 Map 3 records to their selected rows in
-   that flow. No new fixture ID is committed by this audit.
-2. **Slice R2 — natural route matrix (RA-03, RA-04, RA-09):** depends on the route policy named by
-   the Design audit/product decision; observes exploration, dialogue, and admission chronologies in
-   one matrix.
-3. **Slice R3 — complete Battle 01 playthrough (RA-05, RA-06):** fixed seed and scripted inputs from
-   the natural entry through victory; the largest H3 slice, reusing the accepted battle fixtures as
-   authoritative subsystem goldens rather than copying their numbers.
-4. **Slice R4 — after-battle and endpoint state (RA-07, RA-12):** continuation of R3 to the after
-   program seam plus the endpoint state capture contract.
-5. **Conditional slices:** RA-08 (field menu) and RA-10 (durable save) only after the corresponding
-   product decisions.
+1. **Slice R1 — admitted start and setup chain (RA-01, RA-02, RA-11 foundation):** one grouped H3
+   matrix from the accepted controlled snapshot→MainLoop seam; static join of the 26 Map 3 records to
+   their selected rows in that flow; private immutable-input inventory and deterministic capture
+   conditions for every reached start/setup observable. No new fixture ID is committed by this audit.
+2. **Slice R2 — smallest natural route matrix (RA-03, RA-04, RA-08, RA-09, reached RA-11):** option
+   2A fixes the selection rule; observe exploration, mandatory dialogue/menu behavior, transition,
+   natural battle admission, and reached map/text/audio/frame/hardware observables in one chronological
+   matrix. Do not close optional content that the accepted route does not reach.
+3. **Slice R3 — complete Battle 01 playthrough (RA-05, RA-06, reached RA-11):** fixed seed and
+   scripted H4 reference inputs from natural entry through victory; capture every reached logical and
+   8C scene/audio/hardware layer while reusing accepted battle, scene, graphics, sound, and timing
+   fixtures as authoritative subsystem goldens rather than copying or weakening them.
+4. **Slice R4 — after-battle, endpoint, and H4 definition closure (RA-07, RA-11, RA-12):** continue
+   R3 through the after-program seam to the accepted 5B endpoint; freeze the final state contract,
+   private capture manifest, comparison domains, exact or field-specific tolerances, licensing-safe
+   public report, and the separate 9A/10A accessibility/deviation assertions.
+5. **Deferred/non-blocking:** RA-10 persistence remains outside the 6A milestone. No save H3 slice is
+   part of R1–R4; any later persistence work requires a separate accepted milestone. RA-08 produces a
+   dedicated extension only if the Research-proven 2A route actually reaches the field menu.
 
 A later readiness update (design-owned) may consume these closures only after they are accepted on
 `main`. This audit's own Status remains **OPEN** until the blocking rows are closed; it does not
@@ -311,6 +365,10 @@ become a readiness report.
 | Map 3 setup flag meanings 506/543/609 | **Unknown** | `sf2-map-data-static-v1` | Shared operands across many maps; not route evidence by themselves |
 | Battle 01 placement/terrain/activation/turn order under debug entry and fixed seed | **Confirmed** bounded runtime | [battle01-placement](battle01-placement.md), [battle-control lifecycle contract](../design/contracts/battle-control-lifecycle.md) | Natural admission, roster/stats binding, later rounds |
 | Generic victory/defeat order and cutscene routing | **Confirmed** static; natural execution **Unknown** | [battle-loop](battle-loop.md), [battle-cutscenes](battle-cutscenes.md), cutscene routing contract | Natural victory, after-program effects, endpoint |
+| Milestone persistence scope | **Accepted product exclusion** | ADR 0010 option 6A | No user save/load/checkpoint/suspend; harness reset is not save; durable persistence remains separate |
+| Private-local original inputs | **Accepted product boundary; evidence inventory OPEN** | ADR 0010 option 7C | No tracked/uploaded/public-CI/public-release payloads; identity, provenance, hashes, tools, and capture conditions remain RA-11 |
+| Reached frame/audio/hardware parity | **Accepted mandatory target; evidence OPEN** | ADR 0010 option 8C and bounded ADR 0005 condition-3 reopening | Reached observables only; reuse existing seams; unrelated hardware/driver work frozen |
+| Accessibility and modern mappings | **Accepted product/H4 deviation surface** | ADR 0010 options 9A/10A | Separate checks; never substitute for or alter the 8C exact reference run |
 | Natural Map 3 route, Battle 01 admission, complete playthrough, after-battle effects | **Unknown** | none — gap register RA-03/RA-04/RA-06/RA-07 | Blocking research closures; no inference from source labels |
 
 ## Reproduction
