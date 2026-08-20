@@ -168,6 +168,7 @@ from sf2tool.texture_extract import (
     extract_map_renders,
     extract_map_textures,
     extract_misc_graphics,
+    extract_ui_windows,
 )
 from sf2tool.verification_plan import PARTITIONS_BY_ID, build_verification_plan
 from sf2tool.zh_translation import generate_zh_translation, translation_rows, verify_zh_translation
@@ -353,6 +354,14 @@ def build_parser() -> argparse.ArgumentParser:
     _add_local_paths(texture_map)
     texture_map.add_argument("--out-dir", type=_path, default=repo_path("local/derived/graphics"))
     texture_map.add_argument("--maps", type=str, default="3", help="comma-separated map indices")
+    texture_ui = texture_commands.add_parser(
+        "ui",
+        help="render the composed battlefield item menu window (frame layout + icon slots)",
+    )
+    _add_local_paths(texture_ui)
+    texture_ui.add_argument(
+        "--out-dir", type=_path, default=repo_path("local/derived/graphics")
+    )
 
     h2_parser = commands.add_parser("h2", help="run a narrow deterministic extraction rail")
     h2_commands = h2_parser.add_subparsers(dest="h2_command", required=True)
@@ -1726,6 +1735,14 @@ def dispatch(args: argparse.Namespace) -> None:
                 args.upstream_path,
                 out_dir=args.out_dir,
                 maps=args.maps,
+            )
+        )
+    elif args.command == "texture" and args.texture_command == "ui":
+        print_record(
+            extract_ui_windows(
+                args.rom_path,
+                args.upstream_path,
+                out_dir=args.out_dir,
             )
         )
     elif args.command == "h3" and args.h3_command == "rng":

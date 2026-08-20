@@ -398,3 +398,60 @@ def test_extract_unused_assets_renders_all_four_streams(tmp_path, monkeypatch):
     assert all(sum(row["streamIndex"] == index for row in stream_rows) == 2 for index in range(4))
     assert len(palette_rows) == 2
     assert len(list((tmp_path / "out").glob("unusedcloud_stream*_palette*.png"))) == 8
+
+
+def test_parse_vdptile_enums_and_layout():
+    from sf2tool.texture_extract import (
+        UI_LAYOUT_FLAG_VALUES,
+        parse_vdptile_enums,
+        parse_window_layout,
+    )
+
+    enums = parse_vdptile_enums(
+        "VDPTILE_SPACE: equ $20\nVDPTILE_CORNER: equ $60\nVDPTILE_MENUTILE1: equ $5C0\n"
+    )
+    assert enums == {"SPACE": 0x20, "CORNER": 0x60, "MENUTILE1": 0x5C0}
+    layout = parse_window_layout(
+        "                vdpTile \n"
+        "                vdpTile MENUTILE1|PALETTE3|PRIORITY\n"
+        "                vdpTile CORNER|MIRROR\n"
+        "                vdpTile SPACE|FLIP\n",
+        enums,
+        width=2,
+    )
+    assert layout == [
+        [0x0000, 0x5C0 | UI_LAYOUT_FLAG_VALUES["PALETTE3"] | UI_LAYOUT_FLAG_VALUES["PRIORITY"]],
+        [0x60 | UI_LAYOUT_FLAG_VALUES["MIRROR"], 0x20 | UI_LAYOUT_FLAG_VALUES["FLIP"]],
+    ]
+    with pytest.raises(ValueError, match="incomplete window layout row"):
+        parse_window_layout("vdpTile \n", enums, width=2)
+
+
+def test_parse_dc_b_tiles():
+    from sf2tool.texture_extract import parse_dc_b_tiles
+
+    data = parse_dc_b_tiles("dc.b 2\n                dc.b $22, 3\n                dc.b $AB\n")
+    assert data == bytes([2, 0x22, 3, 0xAB])
+
+
+def test_build_bordered_icon():
+    from sf2tool.texture_extract import build_bordered_icon
+
+    icon = bytes(range(192))
+    border = bytes(range(48))
+    buf = build_bordered_icon(icon, border, border)
+    assert len(buf) == 256
+    # top border longwords at offsets 0 and 0x20
+    assert buf[0:4] == border[0:4]
+    assert buf[0x20:0x24] == border[0x20:0x24]
+    # icon row 0 halves at 0 and 0x30
+    assert buf[0:16] == icon[0:16]
+    assert buf[0x30:0x40] == icon[16:32]
+    # icon row 1 halves at 0x20 and 0x50
+    assert buf[0x20:0x30] == icon[32:48]
+    assert buf[0x50:0x60] == icon[48:64]
+    # bottom border longwords at 0xC0 and 0xE0
+    assert buf[0xC0:0xC4] == border[0:4]
+    assert buf[0xE0:0xE4] == border[0x20:0x24]
+    # tail after the bottom border untouched
+    assert buf[0xF0:0x100] == bytes(16)
