@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import ast
+import json
 import subprocess
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
+from urllib.parse import urlparse
 
-from sf2tool.h3.bootstrap import COMMAND_LAUNCHES, OBSERVER_PROFILES
+from sf2tool.h3.bootstrap import COMMAND_LAUNCHES
 from sf2tool.paths import repo_path
 
 
@@ -145,6 +148,7 @@ H2_MODULE_COMMANDS = {
     H2_MODULE_ALIASES.get(command, command.replace("-", "_")): command
     for command in H2_COMMAND_PARTITIONS
 }
+H2_COMMAND_MODULES = {command: module for module, command in H2_MODULE_COMMANDS.items()}
 H3_MODULE_COMMANDS: dict[str, tuple[str, ...]] = {
     module: tuple(sorted(commands))
     for module, commands in _group_pairs(
@@ -152,16 +156,6 @@ H3_MODULE_COMMANDS: dict[str, tuple[str, ...]] = {
         for command, launch in COMMAND_LAUNCHES.items()
     ).items()
 }
-H3_OBSERVER_COMMANDS: dict[str, tuple[str, ...]] = {
-    observer: tuple(sorted(commands))
-    for observer, commands in _group_pairs(
-        (launch.observer, command)
-        for command, command_launch in COMMAND_LAUNCHES.items()
-        for launch in command_launch.launches
-    ).items()
-}
-
-
 def _commands(prefix: str, commands: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(f"uv run sf2 {prefix} {command}" for command in commands)
 
@@ -223,6 +217,54 @@ PARTITIONS_BY_ID = {partition.partition_id: partition for partition in PARTITION
 H2_PARTITION_IDS = tuple(H2_COMMAND_GROUPS)
 H3_PARTITION_IDS = tuple(H3_PROFILE_PARTITIONS.values())
 EVIDENCE_PARTITION_IDS = ("h1-original", *H2_PARTITION_IDS, *H3_PARTITION_IDS)
+ARTIFACT_PREFIXES = (
+    "manifests/extractions/",
+    "schemas/",
+    "tests/fixtures/",
+    "tools/bizhawk/",
+)
+H2_SHARED_ARTIFACT_PARTITIONS = {
+    "manifests/extractions/battle01-data.json": ("h2-battle-logic",),
+    "manifests/extractions/battle01-scene.json": (
+        "h2-battle-logic",
+        "h2-presentation",
+    ),
+    "manifests/extractions/enemy-promotion-rom-layout.json": ("h2-stats-items",),
+    "manifests/extractions/rom-static-layout.json": H2_PARTITION_IDS,
+}
+H3_LEGACY_BATTLE01_ARTIFACT_STEMS = (
+    "attack-chain",
+    "battle-scene-replay",
+    "battle01-region-activation",
+    "battle01-secondary-activation",
+    "battle01-turn-order",
+    "counter-burst-rock",
+    "counter-range",
+    "counter-same-side",
+    "counter-sleep",
+    "counter-special-enemies",
+    "counter-stun",
+    "dodge",
+    "double-validation",
+    "lethal-followup",
+    "physical-damage-application",
+    "physical-damage",
+    "turn-order-boundaries",
+)
+H3_SHARED_ARTIFACT_PARTITIONS = {
+    "tools/bizhawk/bootstrap.lua": H3_PARTITION_IDS,
+    "tools/bizhawk/json.lua": H3_PARTITION_IDS,
+    "schemas/h3/observer-callback-contract.schema.json": H3_PARTITION_IDS,
+    "schemas/h3/observer-failure-contract.schema.json": H3_PARTITION_IDS,
+    **{
+        f"tests/fixtures/h3/{stem}-v1.json": ("h3-battle01",)
+        for stem in H3_LEGACY_BATTLE01_ARTIFACT_STEMS
+    },
+    **{
+        f"schemas/h3-{stem}-fixture.schema.json": ("h3-battle01",)
+        for stem in H3_LEGACY_BATTLE01_ARTIFACT_STEMS
+    },
+}
 
 
 def _git(root: Path, *arguments: str) -> str:
@@ -270,6 +312,164 @@ def _module_for_source_path(path: Path, root: Path) -> str:
     if parts[-1] == "__init__":
         parts = parts[:-1]
     return ".".join(parts)
+
+
+def _source_module_paths(root: Path) -> dict[str, Path]:
+    return {
+        _module_for_source_path(path, root): path
+        for path in (root / "src" / "sf2tool").rglob("*.py")
+    }
+
+
+def _source_artifact_literals(root: Path, source: Path) -> set[str]:
+    try:
+        tree = ast.parse(source.read_text(encoding="utf-8"))
+    except (OSError, SyntaxError, UnicodeError):
+        return set()
+    artifacts = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Constant) or not isinstance(node.value, str):
+            continue
+        normalized = node.value.replace("\\", "/").split("#", 1)[0]
+        if normalized.startswith(ARTIFACT_PREFIXES) and (root / normalized).is_file():
+            artifacts.add(normalized)
+    return artifacts
+
+
+def _json_artifact_references(root: Path, artifact: str) -> set[str]:
+    source = root / artifact
+    if source.suffix != ".json" or not source.is_file():
+        return set()
+    try:
+        value = json.loads(source.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return set()
+
+    references = set()
+
+    def visit(item: object, *, ref_value: bool = False) -> None:
+        if isinstance(item, dict):
+            for key, child in item.items():
+                visit(child, ref_value=key == "$ref")
+            return
+        if isinstance(item, list):
+            for child in item:
+                visit(child)
+            return
+        if not isinstance(item, str):
+            return
+        normalized = item.replace("\\", "/").split("#", 1)[0]
+        if not normalized:
+            return
+        parsed = urlparse(normalized)
+        if parsed.scheme in {"http", "https"} and parsed.path.startswith("/schemas/"):
+            candidate = root / parsed.path.removeprefix("/")
+        elif normalized.startswith(ARTIFACT_PREFIXES):
+            candidate = root / normalized
+        elif ref_value or normalized.endswith(".json"):
+            candidate = source.parent / normalized
+        else:
+            return
+        resolved = candidate.resolve()
+        resolved_root = root.resolve()
+        if not resolved.is_relative_to(resolved_root) or not resolved.is_file():
+            return
+        relative = resolved.relative_to(resolved_root).as_posix()
+        if relative.startswith(ARTIFACT_PREFIXES):
+            references.add(relative)
+
+    visit(value)
+    return references
+
+
+def _artifact_closure(root: Path, seeds: set[str]) -> set[str]:
+    pending = list(seeds)
+    seen = set(seeds)
+    while pending:
+        artifact = pending.pop()
+        for reference in _json_artifact_references(root, artifact):
+            if reference not in seen:
+                seen.add(reference)
+                pending.append(reference)
+    return seen
+
+
+@cache
+def _artifact_command_owners(root: Path, layer: str) -> dict[str, tuple[str, ...]]:
+    root = root.resolve()
+    source_modules = _source_module_paths(root)
+    imports = {
+        module: {
+            imported
+            for imported in _imports_for_path(root, path.relative_to(root).as_posix())
+            if imported in source_modules
+        }
+        for module, path in source_modules.items()
+    }
+    source_artifacts = {
+        module: _source_artifact_literals(root, path) for module, path in source_modules.items()
+    }
+    if layer == "h2":
+        command_modules = {
+            command: f"sf2tool.h2.{module}" for command, module in H2_COMMAND_MODULES.items()
+        }
+        extra_seeds: dict[str, set[str]] = {}
+    elif layer == "h3":
+        command_modules = {
+            command: launch.dispatch_module for command, launch in COMMAND_LAUNCHES.items()
+        }
+        extra_seeds = {
+            command: {
+                *(launch.observers),
+                *(
+                    launch.cases_fixture
+                    for launch in launch.launches
+                    if launch.cases_fixture is not None
+                ),
+            }
+            for command, launch in COMMAND_LAUNCHES.items()
+        }
+    else:
+        raise ValueError(f"unsupported artifact layer: {layer}")
+
+    owners: dict[str, set[str]] = defaultdict(set)
+    command_owner_modules = set(command_modules.values())
+    for command, seed_module in command_modules.items():
+        pending = [seed_module]
+        modules = {seed_module}
+        while pending:
+            module = pending.pop()
+            for dependency in imports.get(module, set()):
+                same_layer = dependency.startswith(f"sf2tool.{layer}.")
+                shared_module = dependency.startswith("sf2tool.") and not dependency.startswith(
+                    ("sf2tool.h2.", "sf2tool.h3.")
+                )
+                if dependency in command_owner_modules and dependency != seed_module:
+                    continue
+                if (same_layer or shared_module) and dependency not in modules:
+                    modules.add(dependency)
+                    pending.append(dependency)
+        seeds = set(extra_seeds.get(command, set()))
+        for module in modules:
+            if module == "sf2tool.h3.bootstrap":
+                continue
+            seeds.update(source_artifacts.get(module, set()))
+        for artifact in _artifact_closure(root, seeds):
+            if (root / artifact).is_file():
+                owners[artifact].add(command)
+    return {artifact: tuple(sorted(commands)) for artifact, commands in sorted(owners.items())}
+
+
+def h2_artifact_commands(root: Path | None = None) -> dict[str, tuple[str, ...]]:
+    """Return closed H2 artifact ownership derived from command module declarations."""
+
+    return _artifact_command_owners((repo_path(".") if root is None else root).resolve(), "h2")
+
+
+def h3_artifact_commands(root: Path | None = None) -> dict[str, tuple[str, ...]]:
+    """Return closed H3 artifact ownership derived from bootstrap and module declarations."""
+
+    return _artifact_command_owners((repo_path(".") if root is None else root).resolve(), "h3")
 
 
 def _selection_entry(
@@ -356,6 +556,9 @@ def _select_dependents(
                 pending.append(dependent)
 
     matched = False
+    if "sf2tool.harness" in seen:
+        _selection_entry(selected, "h1-original", f"{path} reaches sf2tool.harness")
+        matched = True
     for module in sorted(seen):
         if module.startswith("sf2tool.h2."):
             command = H2_MODULE_COMMANDS.get(module.rsplit(".", 1)[1])
@@ -367,32 +570,6 @@ def _select_dependents(
                 _select_h3_command(selected, command, f"{path} reaches {module}")
                 matched = True
     return matched
-
-
-def _artifact_commands(path: str, commands: Iterable[str]) -> tuple[str, ...]:
-    name = Path(path).name.lower().replace("_", "-")
-    matches = tuple(
-        command for command in sorted(commands, key=len, reverse=True) if name.startswith(command)
-    )
-    if matches:
-        return matches[:1]
-    aliases = {
-        "battle-background-": "battle-backgrounds",
-        "battle-sprite-animation-": "battle-sprite-animations",
-        "battle-sprite-": "battle-sprites",
-        "canonical-map-import": "map-import",
-        "enemy-item-drops-": "enemy-drops",
-        "map-layout-": "map-layouts",
-        "map-palette-": "map-palettes",
-        "map-sprite-": "map-sprites",
-        "portrait-graphics-": "portraits",
-        "special-sprite-": "special-sprites",
-        "unused-technical-assets-": "unused-tech-assets",
-    }
-    for prefix, command in aliases.items():
-        if name.startswith(prefix):
-            return (command,)
-    return ()
 
 
 def plan_paths(
@@ -448,44 +625,38 @@ def plan_paths(
                     unclassified.add(normalized)
             continue
 
-        if normalized.startswith("tools/bizhawk/"):
-            profile = OBSERVER_PROFILES.get(normalized)
-            if profile is not None:
-                commands = H3_OBSERVER_COMMANDS.get(normalized, ())
-                for command in commands:
-                    _select_h3_command(selected, command, normalized)
-            else:
-                _select_all(selected, H3_PARTITION_IDS, f"shared BizHawk input: {normalized}")
-                if normalized != "tools/bizhawk/bootstrap.lua":
-                    unclassified.add(normalized)
-            continue
-
-        if normalized.startswith(("tests/fixtures/h2/", "schemas/h2/")):
-            commands = _artifact_commands(normalized, H2_COMMAND_PARTITIONS)
-            if commands:
-                for command in commands:
+        if normalized.startswith(ARTIFACT_PREFIXES):
+            h2_commands = h2_artifact_commands(root).get(normalized, ())
+            h3_commands = h3_artifact_commands(root).get(normalized, ())
+            if h2_commands or h3_commands:
+                for command in h2_commands:
                     _select_h2_command(selected, command, normalized)
-            else:
-                _select_all(
-                    selected,
-                    H2_PARTITION_IDS,
-                    f"partition-wide H2 evidence input: {normalized}",
-                )
-                unclassified.add(normalized)
-            continue
-
-        if normalized.startswith(("tests/fixtures/h3/", "schemas/h3/")):
-            commands = _artifact_commands(normalized, COMMAND_LAUNCHES)
-            if commands:
-                for command in commands:
+                for command in h3_commands:
                     _select_h3_command(selected, command, normalized)
+                continue
+            shared_partitions = H2_SHARED_ARTIFACT_PARTITIONS.get(normalized)
+            if shared_partitions is not None:
+                _select_all(selected, shared_partitions, f"known shared H2 input: {normalized}")
+                continue
+            shared_partitions = H3_SHARED_ARTIFACT_PARTITIONS.get(normalized)
+            if shared_partitions is not None:
+                _select_all(selected, shared_partitions, f"known shared H3 input: {normalized}")
+                continue
+            if normalized.startswith(
+                ("tests/fixtures/h2/", "schemas/h2/", "schemas/h2-")
+            ) or normalized.startswith("manifests/extractions/"):
+                _select_all(selected, H2_PARTITION_IDS, f"unknown H2 input: {normalized}")
+            elif normalized.startswith(
+                ("tests/fixtures/h3/", "schemas/h3/", "schemas/h3-", "tools/bizhawk/")
+            ):
+                _select_all(selected, H3_PARTITION_IDS, f"unknown H3 input: {normalized}")
             else:
                 _select_all(
                     selected,
-                    H3_PARTITION_IDS,
-                    f"partition-wide H3 evidence input: {normalized}",
+                    (*H2_PARTITION_IDS, *H3_PARTITION_IDS),
+                    f"unknown shared evidence input: {normalized}",
                 )
-                unclassified.add(normalized)
+            unclassified.add(normalized)
             continue
 
         if normalized.startswith("tests/python/") and normalized.endswith(".py"):
@@ -517,7 +688,7 @@ def plan_paths(
             _selection_entry(selected, "tooling-python", normalized)
             _select_all(
                 selected,
-                (*H2_PARTITION_IDS, *H3_PARTITION_IDS),
+                EVIDENCE_PARTITION_IDS,
                 f"shared CLI input: {normalized}",
             )
             continue
@@ -531,18 +702,8 @@ def plan_paths(
             _select_all(selected, EVIDENCE_PARTITION_IDS, f"legacy shared rail: {normalized}")
             continue
 
-        if normalized.startswith("manifests/extractions/"):
-            commands = _artifact_commands(normalized, H2_COMMAND_PARTITIONS)
-            if commands:
-                for command in commands:
-                    _select_h2_command(selected, command, normalized)
-            else:
-                _select_all(selected, H2_PARTITION_IDS, f"shared H2 manifest: {normalized}")
-                unclassified.add(normalized)
-            continue
-
         if normalized in {"manifests/roms/sf2-us.json", "manifests/toolchain.json"}:
-            _selection_entry(selected, "h1-original", normalized)
+            _select_all(selected, EVIDENCE_PARTITION_IDS, f"shared identity input: {normalized}")
             continue
 
         if normalized in {

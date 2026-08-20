@@ -56,7 +56,12 @@ The accepted partitions are:
 `public-core` is also represented in every plan as the always-run first layer. H3 boundaries consume
 the existing closed bootstrap registry rather than duplicating runtime ownership. H2 command
 ownership is a closed registry checked against the CLI parser. A new CLI command cannot be added
-without assigning a partition.
+without assigning a partition. Closed artifact indexes are derived from those command modules,
+recursive local or registry-URI schema references, fixture shard references, and H3 bootstrap launch
+declarations. Explicit mappings retain the known command-less legacy H2/H3 milestone artifacts and
+shared BizHawk libraries. Enumeration tests require every tracked H2 and H3 fixture, schema,
+extraction manifest, and observer/library input to have exact command or known shared-partition
+ownership with no unclassified owner artifact.
 
 ## Accepted Planner Contract
 
@@ -65,15 +70,25 @@ without assigning a partition.
 - resolves both revisions to exact commits and diffs their merge base against the head;
 - reports normalized changed paths, selected partitions, exact selection reasons, suggested narrow
   commands, resource locks, and unclassified evidence paths as deterministic JSON;
-- maps owned H2 modules and named H2 fixtures/schemas/manifests to narrow commands;
-- maps H3 dispatch modules and observers through the accepted bootstrap profile registry;
+- maps owned H2 modules and their declared/recursive fixture, schema, and extraction-manifest graph
+  to narrow commands;
+- maps H3 dispatch modules, declared/recursive fixtures and schemas, observers, and case fixtures
+  through the accepted bootstrap profile registry;
 - scans Python test imports and transitive reverse dependencies of shared Python modules to retain
-  their H2/H3 owners while suggesting the changed test file;
-- fans shared harness, toolchain, legacy, or unknown evidence inputs out conservatively;
+  their H1/H2/H3 owners while suggesting the changed test file;
+- fans the CLI, harness, ROM/toolchain identity manifests, Python toolchain/lock inputs, and legacy
+  scripts to every evidence partition; a shared Python module that transitively reaches the harness
+  also selects H1;
+- retains broad fanout only for genuinely unknown evidence-root paths and reports each one;
 - supports repeated `--include-partition` arguments for semantic dependencies that a path diff cannot
   express; and
 - never runs a gate, writes a cache, changes Git state, or changes the behavior of `verify` or
   `verify --full`.
+
+Planner mode rejects execution-only modifiers rather than silently ignoring them. `--full`,
+`--quick`, `--skip-rebuild`, `--skip-extraction`, `--skip-runtime`, and non-default ROM or upstream
+paths cannot be combined with the `plan` subcommand. Ordinary `verify`, `verify --full`, and an
+unmodified `verify plan` retain their separate dispatch behavior.
 
 `unclassifiedPaths` is a visible maintenance queue, not permission to omit verification. An unknown
 path under an evidence-owning root selects all plausible partitions. Documentation-only paths select
@@ -107,8 +122,8 @@ isolated as required by the root worktree contract.
 
 - Ordinary reverse-engineering changes gain a reproducible affected gate list without weakening the
   normal commit gate.
-- Partition ownership is maintained next to executable command registries and checked for complete
-  CLI coverage.
+- Partition ownership is maintained next to executable command registries and derived declarations,
+  and is checked for complete CLI and tracked-artifact coverage.
 - Broad or ambiguous changes fail conservatively, so a planner defect costs time rather than evidence.
 - The first slice improves planning but not wall-clock time by itself; execution, per-partition
   receipts, and selective cache reuse remain separately reviewable follow-ups.

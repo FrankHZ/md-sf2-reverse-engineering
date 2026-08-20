@@ -6,14 +6,22 @@ from pathlib import Path
 
 import pytest
 
+import sf2tool.cli as cli
 from sf2tool.cli import build_parser
 from sf2tool.h3.bootstrap import COMMAND_LAUNCHES
 from sf2tool.verification_plan import (
+    EVIDENCE_PARTITION_IDS,
     H2_COMMAND_PARTITIONS,
     H2_PARTITION_IDS,
+    H2_SHARED_ARTIFACT_PARTITIONS,
     H3_PARTITION_IDS,
+    H3_PROFILE_PARTITIONS,
+    H3_SHARED_ARTIFACT_PARTITIONS,
     PARTITIONS,
+    PARTITIONS_BY_ID,
     build_verification_plan,
+    h2_artifact_commands,
+    h3_artifact_commands,
     plan_paths,
 )
 
@@ -59,6 +67,54 @@ def _git(root: Path, *arguments: str) -> str:
     return completed.stdout.strip()
 
 
+def _tracked_h2_artifacts() -> set[str]:
+    return set(
+        _git(
+            ROOT,
+            "ls-files",
+            "--",
+            "tests/fixtures/h2/**",
+            "schemas/h2*",
+            "schemas/h2/**",
+            "manifests/extractions/**",
+        ).splitlines()
+    )
+
+
+def _tracked_h3_artifacts() -> set[str]:
+    return set(
+        _git(
+            ROOT,
+            "ls-files",
+            "--",
+            "tests/fixtures/h3/**",
+            "schemas/h3*",
+            "schemas/h3/**",
+            "tools/bizhawk/**",
+        ).splitlines()
+    )
+
+
+def _expected_artifact_commands(
+    path: str,
+    h2_owners: dict[str, tuple[str, ...]],
+    h3_owners: dict[str, tuple[str, ...]],
+) -> dict[str, set[str]]:
+    expected = {"public-core": {"uv run sf2 verify"}}
+    for command in h2_owners.get(path, ()):
+        partition_id = H2_COMMAND_PARTITIONS[command]
+        expected.setdefault(partition_id, set()).add(f"uv run sf2 h2 {command}")
+    for command in h3_owners.get(path, ()):
+        partition_id = H3_PROFILE_PARTITIONS[COMMAND_LAUNCHES[command].profile]
+        expected.setdefault(partition_id, set()).add(f"uv run sf2 h3 {command}")
+    for partition_id in (
+        *H2_SHARED_ARTIFACT_PARTITIONS.get(path, ()),
+        *H3_SHARED_ARTIFACT_PARTITIONS.get(path, ()),
+    ):
+        expected.setdefault(partition_id, set()).update(PARTITIONS_BY_ID[partition_id].commands)
+    return expected
+
+
 def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
     assert set(H2_COMMAND_PARTITIONS) == _registered_commands("h2_commands")
     assert set(COMMAND_LAUNCHES) == _registered_commands("h3_commands")
@@ -102,21 +158,108 @@ def test_verify_plan_parser_requires_base_and_accepts_explicit_partition() -> No
     assert args.include_partition == ["h2-sound"]
 
 
-def test_h2_source_fixture_and_manifest_select_one_command() -> None:
-    plan = plan_paths(
-        (
-            "src/sf2tool/h2/map_events.py",
-            "tests/fixtures/h2/map-events-static-v1.json",
-            "manifests/extractions/map-events-static.json",
-        ),
-        root=ROOT,
+@pytest.mark.parametrize(
+    ("arguments", "option"),
+    (
+        (["--full"], "--full"),
+        (["--quick"], "--quick"),
+        (["--skip-rebuild"], "--skip-rebuild"),
+        (["--skip-extraction"], "--skip-extraction"),
+        (["--skip-runtime"], "--skip-runtime"),
+        (["--rom-path", "elsewhere.bin"], "--rom-path"),
+        (["--upstream-path", "elsewhere-upstream"], "--upstream-path"),
+    ),
+)
+def test_verify_plan_dispatch_rejects_execution_modifiers_before_planning(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    arguments: list[str],
+    option: str,
+) -> None:
+    def must_not_plan(*_args: object, **_kwargs: object) -> dict[str, object]:
+        raise AssertionError("planner ran before incompatible option rejection")
+
+    monkeypatch.setattr(cli, "build_verification_plan", must_not_plan)
+
+    assert cli.main(["verify", *arguments, "plan", "--base", "origin/main"]) == 1
+    assert option in capsys.readouterr().err
+
+
+def test_verify_and_full_dispatch_keep_existing_execution_semantics(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+    monkeypatch.setattr(cli, "verify", lambda **kwargs: calls.append(kwargs))
+    parser = build_parser()
+
+    cli.dispatch(parser.parse_args(["verify"]))
+    cli.dispatch(parser.parse_args(["verify", "--full"]))
+
+    assert [call["full"] for call in calls] == [False, True]
+
+
+def test_verify_plan_dispatch_still_builds_and_prints_read_only_plan(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    built: list[tuple[str, str, tuple[str, ...]]] = []
+    printed: list[object] = []
+
+    def fake_plan(
+        base: str, head: str, *, include_partitions: tuple[str, ...]
+    ) -> dict[str, object]:
+        built.append((base, head, include_partitions))
+        return {"mode": "read-only-plan"}
+
+    monkeypatch.setattr(cli, "build_verification_plan", fake_plan)
+    monkeypatch.setattr(cli, "print_json", printed.append)
+
+    cli.dispatch(
+        build_parser().parse_args(
+            [
+                "verify",
+                "plan",
+                "--base",
+                "origin/main",
+                "--head",
+                "HEAD",
+                "--include-partition",
+                "h2-sound",
+            ]
+        )
     )
+
+    assert built == [("origin/main", "HEAD", ("h2-sound",))]
+    assert printed == [{"mode": "read-only-plan"}]
+
+
+def test_h2_manifest_selects_its_declared_owner_command() -> None:
+    plan = plan_paths(("manifests/extractions/map-events-static.json",), root=ROOT)
 
     assert _partition_ids(plan) == {"public-core", "h2-map-scripting"}
     assert _partition(plan, "h2-map-scripting")["commands"] == [
         "uv run sf2 h2 map-events"
     ]
     assert plan["unclassifiedPaths"] == []
+
+
+def test_every_tracked_h2_h3_artifact_has_closed_exact_ownership() -> None:
+    h2_owners = h2_artifact_commands(ROOT)
+    h3_owners = h3_artifact_commands(ROOT)
+    h2_surface = _tracked_h2_artifacts()
+    h3_surface = _tracked_h3_artifacts()
+
+    assert h2_surface <= h2_owners.keys() | H2_SHARED_ARTIFACT_PARTITIONS.keys()
+    assert h3_surface <= h3_owners.keys() | H3_SHARED_ARTIFACT_PARTITIONS.keys()
+
+    for path in sorted(h2_surface | h3_surface):
+        plan = plan_paths((path,), root=ROOT)
+        expected = _expected_artifact_commands(path, h2_owners, h3_owners)
+        actual = {
+            row["id"]: set(row["commands"])  # type: ignore[index, union-attr]
+            for row in plan["partitions"]  # type: ignore[union-attr]
+        }
+        assert actual == expected, path
+        assert plan["unclassifiedPaths"] == [], path
 
 
 def test_h3_module_with_two_dispatches_selects_both_commands() -> None:
@@ -154,16 +297,30 @@ def test_shared_python_module_uses_transitive_reverse_dependencies() -> None:
     assert "uv run sf2 h2 battle-terrain" in commands  # type: ignore[operator]
 
 
-def test_shared_cli_fans_out_without_claiming_h1_rebuild_impact() -> None:
+def test_shared_cli_fans_out_to_every_evidence_partition() -> None:
     plan = plan_paths(("src/sf2tool/cli.py",), root=ROOT)
 
     assert _partition_ids(plan) == {
         "public-core",
         "tooling-python",
-        *H2_PARTITION_IDS,
-        *H3_PARTITION_IDS,
+        *EVIDENCE_PARTITION_IDS,
     }
-    assert "h1-original" not in _partition_ids(plan)
+
+
+def test_legacy_launcher_transitively_selects_h1_rebuild() -> None:
+    plan = plan_paths(("src/sf2tool/legacy.py",), root=ROOT)
+
+    assert "h1-original" in _partition_ids(plan)
+
+
+@pytest.mark.parametrize(
+    "path", ("manifests/roms/sf2-us.json", "manifests/toolchain.json")
+)
+def test_shared_identity_manifest_selects_every_evidence_partition(path: str) -> None:
+    plan = plan_paths((path,), root=ROOT)
+
+    assert _partition_ids(plan) == {"public-core", *EVIDENCE_PARTITION_IDS}
+    assert plan["unclassifiedPaths"] == []
 
 
 def test_unknown_h2_module_fails_conservatively_to_all_h2_partitions() -> None:
