@@ -2,16 +2,18 @@
 
 - Status: **Accepted**
 - Decision date: 2026-08-14
+- Baseline amendment date: 2026-08-20
 - Investigation date: 2026-08-14
 - Scope: prospective Phase 4 engine and development-tool boundary
 - Experiment source: local `G:\Codes-godot\Project-Mech-Strike`
 
 ## Decision
 
-Use **Godot 4.7.1 .NET** with C# as the accepted Phase 4 engine/tooling baseline for the prospective
-desktop 2D remake. This decision pins 4.7.1 rather than floating to whichever stable release exists
-when Phase 4 is separately authorized. Changing to a newer stable release requires an explicit
-compatibility recheck and follow-up ADR before project creation. Keep the maintained build and
+Use **Godot 4.7.2 .NET** with C# as the accepted Phase 4 engine/tooling baseline for the prospective
+desktop 2D remake. The user explicitly amended the original 4.7.1 selection after Godot 4.7.2 became
+stable on 2026-08-18. This decision pins 4.7.2 rather than floating to whichever stable release exists
+when Phase 4 is separately authorized. Any later version change requires an explicit compatibility
+recheck and accepted decision update before project creation. Keep the maintained build and
 acceptance path independent of an editor plugin:
 
 1. restore and build C# with an explicit .NET SDK and locked packages;
@@ -173,16 +175,19 @@ $project = 'G:\Codes-godot\Project-Mech-Strike\game'
 
 ## Current Godot and MCP Boundary
 
-Godot 4.7.1 is the current stable line on the investigation date; 4.7.2 is a release candidate and
-4.8 is a development line. The official editor CLI already owns project selection, import, headless
+The initial 2026-08-14 investigation selected Godot 4.7.1 while 4.7.2 was still a release candidate.
+The official release archive now records Godot 4.7.2-stable on 2026-08-18, while 4.8 remains a
+development line. The official editor CLI already owns project selection, import, headless
 execution, fixed-frame runs, movie/frame output, and export. Godot C# requires the .NET-enabled editor
 and a separately installed .NET SDK. See the official
 [`Godot release archive`](https://godotengine.org/download/archive/),
+[`Godot 4.7.2 maintenance release`](https://godotengine.org/article/maintenance-release-godot-4-7-2/),
 [`command-line tutorial`](https://docs.godotengine.org/en/stable/tutorials/editor/command_line_tutorial.html),
 and [`C# prerequisites`](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html).
 
 That date-stamped release observation does not create a floating-version policy. The accepted
-baseline remains 4.7.1 until a compatibility recheck and follow-up ADR explicitly change it.
+baseline is 4.7.2; any later upgrade still requires a bounded compatibility recheck and explicit
+accepted decision update.
 
 The recent MCP ecosystem has capable candidates, but all remain optional evaluation targets:
 
@@ -201,8 +206,8 @@ No candidate should be vendored or added to the remake project before the experi
 ## Required Plugin Bakeoff Before MCP Adoption
 
 Before adopting any MCP candidate, run each candidate against the same disposable project on the
-accepted Godot 4.7.1 .NET baseline in an isolated worktree. Do not substitute a newer stable release
-without the compatibility recheck and follow-up ADR required by this decision:
+accepted Godot 4.7.2 .NET baseline in an isolated worktree. Do not substitute a newer stable release
+without the compatibility recheck and decision update required by this decision:
 
 1. discover the exact Godot version and project root;
 2. inspect an existing scene and C# type without changing files;
@@ -223,7 +228,7 @@ diff, leaks development tooling into exports, or makes the official CLI path fai
 A separately authorized implementation slice will own the engine project and its gates. That later
 slice should:
 
-- pin the evaluated Godot 4.7.1 .NET baseline and the selected .NET SDK in a tracked toolchain
+- pin the evaluated Godot 4.7.2 .NET baseline and the selected .NET SDK in a tracked toolchain
   manifest; do not silently float to a newer stable release;
 - use a desktop-oriented 2D renderer rather than copying Mech Strike's Forward Plus/D3D12/Jolt 3D
   choices;

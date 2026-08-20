@@ -17,7 +17,7 @@ project decisions belong in their owning tracked documents.
 - **Design synthesis:** active alongside Phase 2. Cross-subsystem documents may explain accepted
   evidence from `main`; they do not promote guesses into original-game facts.
 - **Phase 4 engine/tooling baseline:** accepted in
-  [ADR 0008](./docs/decisions/0008-godot-csharp-cli-first-remake-tooling.md): Godot 4.7.1 .NET with
+  [ADR 0008](./docs/decisions/0008-godot-csharp-cli-first-remake-tooling.md): Godot 4.7.2 .NET with
   C#, CLI-first gates, a plain-C# domain layer, a thin Godot adapter, and optional removable MCP
   tooling.
 - **Remake implementation:** not started. The accepted first playable milestone is one continuous
@@ -260,7 +260,7 @@ contract. A future remake must use placeholders or properly licensed assets for 
 - **Phase 3 — Game Design Reconstruction:** connected player-facing rules, maps, roster space, numerical curves,
    battle simulation, and explicit modernization choices — partially prepared by current design
    synthesis; upper-layer decisions remain future work.
-- **Phase 4 — Modern Engine Vertical Slice:** the Godot 4.7.1 .NET/C# baseline and first continuous
+- **Phase 4 — Modern Engine Vertical Slice:** the Godot 4.7.2 .NET/C# baseline and first continuous
   Map 3-through-Battle 01-completion milestone are accepted; Research/Design gap audits, main-gate
   readiness, and a separate explicit start action remain pending — implementation not started.
 - **Phase 5 — Content and Productization:** licensed/placeholder assets, localization, accessibility,

@@ -735,7 +735,7 @@ is created only when a real disagreement appears and the choice constrains later
   map-script/H3 in order without weakening negative gates.
 - [`0008-godot-csharp-cli-first-remake-tooling.md`](./decisions/0008-godot-csharp-cli-first-remake-tooling.md):
   audits the earlier Project-Mech-Strike Godot/C# and machine-local MCP workflow, reproduces its build
-  and headless run boundary, and accepts Godot 4.7.1 .NET/C# as the fixed CLI-first Phase 4 baseline
+  and headless run boundary, and accepts Godot 4.7.2 .NET/C# as the fixed CLI-first Phase 4 baseline
   with a plain-C# domain layer, thin Godot adapter, and optional removable MCP; acceptance does not
   start remake implementation.
 - [`0009-first-phase4-playable-slice.md`](./decisions/0009-first-phase4-playable-slice.md):
