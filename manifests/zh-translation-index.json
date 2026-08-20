@@ -614,7 +614,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/documentation-roadmap.md",
       "sourceSha256": "a9943721171fc057e37201edc8fd2cc6bd82bbb67602b3826c420c341c868448",
-      "mirrorSha256": "400b13fa4a588edbb2111a0488966b742cb9824556a132286112809f23c86411",
+      "mirrorSha256": "673999a645ec9866627db4e1405912f8e3c0115f6a527b2f89ae56bbaf654e7b",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -659,7 +659,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "071993afd3401e53fbdc4f6cd62e4fd9ac29e1b8f78eb31e9b91aef23c003b03",
-      "mirrorSha256": "ed2e38f420a9001b71aad5d7f798015b5fc8b07649f46b75bf38b970823dfcdf",
+      "mirrorSha256": "b610b17e63d3576813fe7337690e702f97d87f91da80f494cb94b7d126b0a6eb",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -668,7 +668,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/tactical-battle-loop.md",
       "sourceSha256": "c4339f9a82fc658964479649d0ffa36a70c764631d0fa89f08eca01b83cccf05",
-      "mirrorSha256": "042d8b413bcee3d56d2928d82cea6a2ff4f5026d5fa451bd7fe279f8c9103ea1",
+      "mirrorSha256": "3ffb74e0261af113b27793e55c794e3a3d0c000575284b804f0151df06027631",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     }
