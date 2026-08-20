@@ -336,6 +336,12 @@ def test_tileset_palette_cli_rejects_values_outside_0_to_15():
         parser.parse_args(["texture", "extract", "--tileset-palette", "-1"])
 
 
+def test_texture_ui_cli_uses_private_default_output():
+    args = build_parser().parse_args(["texture", "ui"])
+    assert args.texture_command == "ui"
+    assert args.out_dir == Path("local/derived/graphics").resolve()
+
+
 def test_output_collision_fails_closed(tmp_path):
     (tmp_path / "manifest.json").write_text("stale", encoding="utf-8")
     with pytest.raises(ValueError, match="texture output collision"):
@@ -427,6 +433,46 @@ def test_parse_vdptile_enums_and_layout():
         parse_window_layout("vdpTile \n", enums, width=2)
 
 
+def test_menu_layout_owner_rejects_consumer_dimension_drift(tmp_path):
+    from sf2tool.h2.ui_layouts import (
+        MENU_LAYOUT_CONSUMERS,
+        WINDOW_ENGINE_SOURCE,
+        _verify_menu_layout_consumer_shapes,
+    )
+
+    for layout_symbol, relative_path, entry_symbol in MENU_LAYOUT_CONSUMERS:
+        path = tmp_path / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            f"{entry_symbol}:\n"
+            "    move.w  #$1206,d0\n"
+            "    jsr     (CreateWindow).w\n"
+            f"; End of function {entry_symbol}\n"
+            f"Load{layout_symbol}:\n"
+            f"    lea     {layout_symbol}(pc), a0\n",
+            encoding="utf-8",
+        )
+    window_path = tmp_path / WINDOW_ENGINE_SOURCE
+    window_path.parent.mkdir(parents=True, exist_ok=True)
+    window_path.write_text(
+        "CreateWindow:\n"
+        "    move.w  d0,d7\n"
+        "    lsr.w   #BYTE_SHIFT_COUNT,d7 ; get width\n"
+        "    andi.w  #BYTE_MASK,d0\n"
+        "    mulu.w  d7,d0\n"
+        "; End of function CreateWindow\n",
+        encoding="utf-8",
+    )
+    _verify_menu_layout_consumer_shapes(tmp_path)
+    first_path = tmp_path / MENU_LAYOUT_CONSUMERS[0][1]
+    first_path.write_text(
+        first_path.read_text(encoding="utf-8").replace("#$1206", "#$0C09"),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="CreateWindow shape drift"):
+        _verify_menu_layout_consumer_shapes(tmp_path)
+
+
 def test_parse_dc_b_tiles():
     from sf2tool.texture_extract import parse_dc_b_tiles
 
@@ -455,3 +501,128 @@ def test_build_bordered_icon():
     assert buf[0xE0:0xE4] == border[0x20:0x24]
     # tail after the bottom border untouched
     assert buf[0xF0:0x100] == bytes(16)
+
+
+def test_extract_ui_windows_binds_sources_preserves_black_and_requires_fresh_output(
+    tmp_path, monkeypatch
+):
+    from sf2tool import texture_extract
+
+    disasm = tmp_path / "disasm"
+    payloads = {
+        texture_extract.BASE_PALETTE_PATH: bytes(32),
+        texture_extract.UI_BASE_TILES_PATH: b"base-compressed",
+        texture_extract.MAIN_MENU_PATH: bytes(7 * texture_extract.MAIN_MENU_ICON_BYTES),
+    }
+    addresses: dict[str, int] = {}
+    rom = bytearray()
+
+    def add_payload(path: Path, symbol: str, payload: bytes) -> None:
+        target = disasm / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+        addresses[symbol] = len(rom)
+        rom.extend(payload)
+
+    add_payload(
+        texture_extract.BASE_PALETTE_PATH,
+        "palette_Base",
+        payloads[texture_extract.BASE_PALETTE_PATH],
+    )
+    add_payload(
+        texture_extract.UI_BASE_TILES_PATH,
+        "tiles_Base",
+        payloads[texture_extract.UI_BASE_TILES_PATH],
+    )
+    add_payload(
+        texture_extract.MAIN_MENU_PATH,
+        "tiles_MainMenu",
+        payloads[texture_extract.MAIN_MENU_PATH],
+    )
+
+    enums_path = disasm / texture_extract.UI_VDP_ENUM_PATH
+    enums_path.parent.mkdir(parents=True, exist_ok=True)
+    dynamic_words = list(range(0x5C0, 0x5EA))
+    enums_path.write_text(
+        "VDPTILE_CORNER: equ $1\n"
+        + "".join(
+            f"VDPTILE_SLOT{index}: equ ${word:X}\n"
+            for index, word in enumerate(dynamic_words)
+        ),
+        encoding="utf-8",
+    )
+    layout_path = disasm / texture_extract.UI_LAYOUT_SOURCE_ROOT / "diamondmenulayout.asm"
+    layout_path.parent.mkdir(parents=True, exist_ok=True)
+    layout_words = [*dynamic_words, 1, *([0] * (108 - len(dynamic_words) - 1))]
+    layout_path.write_text(
+        "".join(f"vdpTile SLOT{index}\n" for index in range(len(dynamic_words)))
+        + "vdpTile CORNER\n"
+        + "vdpTile\n" * (108 - len(dynamic_words) - 1),
+        encoding="utf-8",
+    )
+    layout_payload = b"".join(word.to_bytes(2, "big") for word in layout_words)
+    addresses["layout_DiamondMenu"] = len(rom)
+    rom.extend(layout_payload)
+
+    border_path = disasm / texture_extract.UI_DIAMOND_BORDER_PATH
+    border_path.parent.mkdir(parents=True, exist_ok=True)
+    border_path.write_text(
+        "\n".join(
+            f"tiles_DiamondMenuBorder{index}:\n    dc.b " + ",".join("0" for _ in range(48))
+            for index in range(1, 5)
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    for index in range(1, 5):
+        addresses[f"tiles_DiamondMenuBorder{index}"] = len(rom)
+        rom.extend(bytes(48))
+
+    strings_path = disasm / texture_extract.UI_MENU_STRINGS_PATH
+    strings_path.parent.mkdir(parents=True, exist_ok=True)
+    strings_path.write_text("aAttack_0:      dc.b 'ATTACK',0\n", encoding="utf-8")
+    addresses["aAttack_0"] = len(rom)
+    rom.extend(b"ATTACK\0")
+
+    source = ProvenanceBoundSource(disasm, bytes(rom), addresses)
+    monkeypatch.setattr(
+        texture_extract,
+        "_verified_source",
+        lambda *_args, **_kwargs: (
+            source,
+            "c834c652b6862bc5679fd7f69a38a7093206efc6",
+            {"id": "synthetic", "hashes": {"sha256": hashlib.sha256(rom).hexdigest().upper()}},
+        ),
+    )
+    base_decoded = bytearray(8192)
+    base_decoded[32] = 0x80  # tile 1 starts with nonzero palette index 8, whose RGB is black
+    def fake_decode(data, *, expected_output_bytes=None):
+        assert data == b"base-compressed"
+        output = bytes(base_decoded)
+        assert len(output) == expected_output_bytes
+        return SimpleNamespace(output=output)
+
+    monkeypatch.setattr(texture_extract, "decode_stack_compressed", fake_decode)
+    out_dir = tmp_path / "output"
+    result = texture_extract.extract_ui_windows(
+        tmp_path / "unused-rom-path", tmp_path / "unused-upstream-path", out_dir=out_dir
+    )
+    assert result["Windows"] == 3
+    width, height, depth, color_type, raw = _read_png(out_dir / "windows/actionmenu-frame.png")
+    assert (width, height, depth, color_type) == (144, 48, 8, 6)
+    black_x = (len(dynamic_words) % 18) * 8
+    black_y = (len(dynamic_words) // 18) * 8
+    black_offset = black_y * (1 + width * 4) + 1 + black_x * 4
+    assert raw[black_offset : black_offset + 4] == b"\x00\x00\x00\xff"
+    with pytest.raises(ValueError, match="texture output collision"):
+        texture_extract.extract_ui_windows(
+            tmp_path / "unused-rom-path", tmp_path / "unused-upstream-path", out_dir=out_dir
+        )
+
+    (disasm / texture_extract.UI_BASE_TILES_PATH).write_bytes(b"mutated")
+    with pytest.raises(ValueError, match="source/ROM provenance drift"):
+        texture_extract.extract_ui_windows(
+            tmp_path / "unused-rom-path",
+            tmp_path / "unused-upstream-path",
+            out_dir=tmp_path / "mutated-output",
+        )

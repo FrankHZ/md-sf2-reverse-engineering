@@ -10,7 +10,7 @@
 - Remake status: implementation-neutral Phase 3 import contract; no UI framework, rendering model,
   localization layout, accessibility policy, replacement artwork, or distribution license has been
   selected.
-- Evidence date: 2026-08-08
+- Evidence date: 2026-08-20
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
@@ -47,7 +47,7 @@ The owner was reproduced from current `main` on the evidence date:
 
 ```text
 Contract sf2-ui-layout-static-v1
-SHA256 F3D2F46FAE27C281B7FFE9C2BD11BA536CBC8E0ADBCBE6FA66F1369A46CB7C34
+SHA256 3AE41F72AA12E5FA02A8DB2FCA34B8EDFE1722F07FA6130B4508D8B47DA37984
 Status PASS
 Layouts 27
 LayoutWords 2394
@@ -111,6 +111,12 @@ bytes. The accepted shapes range from the ten 3-by-2 spell-level indicators thro
 status, alphabet, timer, and 32-by-12 battle-scene-background grids. Across the corpus the fixture
 records 640 unique attribute words and 580 unique tile indexes. Priority, horizontal mirror,
 vertical flip, and palette-selector bits are retained as static word metadata.
+
+The diamond, magic, and item menu grids are each 18-by-6 (108 words). This shape is not an arbitrary
+factorization of their byte counts: each owning menu loads `$1206` before its sole `CreateWindow`
+request, `CreateWindow` consumes the high byte as width and low byte as height, and the same source
+function later copies its corresponding 216-byte layout. The verifier checks all three consumer
+relations in addition to source/H1/ROM parity.
 
 A private original-data importer MUST preserve, for every layout:
 

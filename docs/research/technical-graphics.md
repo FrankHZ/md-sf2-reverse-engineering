@@ -366,26 +366,19 @@ data-contract claims.
 - Battle backgrounds are two 6,144-byte Stack tilesets plus a 32-byte palette. The diagnostic
   composed sheet applies the 384-entry `layout_BattlesceneBackground` table (VRAM tile numbers
   928-1311, 32 columns); original rendered-screen equivalence remains **Unknown**.
-- UI windows are VDP-attribute-word grids: menu code copies an assembled `layout_*` table (e.g.
-  `layout_DiamondMenu`, 18x6, 108 words) into the window's RAM tile layout
-  (`WINDOW_TILE_LAYOUTS`), and VInt DMAs it to Plane A ($C000). Frame words reference
-  `tiles_Base` (VRAM $0000, `LoadBaseTiles`): `SPACE $20`, `CORNER $60`, `H_BORDER $61`,
-  `V_BORDER $70`; diamond-menu words reference `MENUTILE1..64` = $5C0..$5FF (VRAM $B800),
-  whose graphics come from `tiles_ItemMenu` and siblings via `pt_tiles_Menu`. The six
-  diamond-menu tile sets are 24 strips of 24x8 pixels (96 bytes = three 8x8 tiles side by
-  side), placed 3-tiles-at-a-time by `layout_DiamondMenu`; the battlefield item menu
-  (`layout_ItemMenu`) instead uses 2-tile-wide slots filled by runtime icon DMAs. The battle
-  action menu is `ExecuteDiamondMenu` with `MENU_BATTLE_WITH_STAY`: its four diamond slots
-  show the main-menu icons (24x48 px = a plain 24x24 half plus a highlighted half; the
-  packed `pt_tiles_Menu` entries select indices 0-3 = ATTACK/MAGIC/ITEM/STAY), up/down as
-  the plain half, left/right wrapped by the bordered builds of `sub_10484`/`sub_104E6`
-  (`tiles_DiamondMenuBorder1-4`, 48 bytes each = three 16-byte groups spread at 0/0x20/0x40
-  with 288-byte icon halves at 0/0x50 per 0x20-stride row). The selected option's name
-  ("ATTACK") is written at tile (11,4) with `WriteTilesFromAsciiWithRegularFont`: the base
-  tiles hold the glyphs one tile below the ASCII value ('A' 0x41 -> tile 0x40) with index-1
-  strokes on an index-15 (dark blue) field, and the window's blank words show the same dark
-  blue. **Confirmed** (static layout/DMA facts; runtime window animation and selection
-  frames beyond the DMA path are not claimed).
+- UI windows are VDP-attribute-word grids. **Confirmed static:** the diamond, magic, and item
+  layouts are each 18x6 (108 words): each owner requests `CreateWindow` with `$1206`, whose high
+  and low bytes are consumed as width and height, then copies its corresponding 216-byte layout.
+  The menu code copies `layout_DiamondMenu` into the window tile layout; its words reference
+  source-named `tiles_Base` and `MENUTILE1..64` identities. The source-shaped battle-action route
+  selects `MENU_BATTLE_WITH_STAY`, requests up/down icon halves and the left/right bordered builds
+  of `sub_10484`/`sub_104E6`, and writes the selected source string at tile (11,4). The private
+  renderer binds every ignored binary input plus each assembled layout/border/string payload to
+  its H1-resolved canonical-ROM range and emits three deterministic diagnostic candidates.
+  **Unknown:** final CRAM/palette appearance, runtime window mutation, selection and animation
+  timing, VInt/DMA completion, clipping, and original-screen equivalence. No emulator capture or
+  histogram is consumed. The item-menu layout and its source-local icon-copy seams are inventoried,
+  but this tooling does not reconstruct or claim a composed item-menu window.
 - Special sprites decode (Stack) to 72 tiles for the battle class and 162 for
   `SpecialSprite_NazcaShip`; `SpecialSprite_EvilSpiritAlt` is animation-only. The tooling emits
   the raw tile-pool sheet plus candidate composed layouts (3x3, 3x6, 4x4, 6x6) for later
