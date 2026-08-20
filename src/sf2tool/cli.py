@@ -205,6 +205,29 @@ def full_verify_requested(args: argparse.Namespace) -> bool:
     return args.full or args.skip_rebuild or args.skip_extraction or args.skip_runtime
 
 
+def validate_verify_plan_args(args: argparse.Namespace) -> None:
+    """Reject execution-only modifiers that planner mode would otherwise ignore."""
+
+    incompatible = [
+        option
+        for option, selected in (
+            ("--full", args.full),
+            ("--quick", args.quick),
+            ("--skip-rebuild", args.skip_rebuild),
+            ("--skip-extraction", args.skip_extraction),
+            ("--skip-runtime", args.skip_runtime),
+            ("--rom-path", args.rom_path.resolve() != DEFAULT_ROM.resolve()),
+            ("--upstream-path", args.upstream_path.resolve() != DEFAULT_UPSTREAM.resolve()),
+        )
+        if selected
+    ]
+    if incompatible:
+        raise ValueError(
+            "verify plan cannot be combined with execution option(s): "
+            + ", ".join(incompatible)
+        )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="sf2", description="Shining Force II research harness")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -1099,6 +1122,7 @@ def build_parser() -> argparse.ArgumentParser:
 def dispatch(args: argparse.Namespace) -> None:
     if args.command == "verify":
         if args.verify_command == "plan":
+            validate_verify_plan_args(args)
             print_json(
                 build_verification_plan(
                     args.base,
