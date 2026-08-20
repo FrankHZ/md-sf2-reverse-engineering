@@ -1,117 +1,139 @@
-# Godot AI-Probe
+# Godot AI Probe
 
-A disposable Godot C# probe project used to evaluate agent-driven ("AI development
-mode") Godot workflows: how far an LLM agent can get authoring a Godot C# project
-directly (no editor plugin, no MCP) with only CLI gates, and whether an up-to-date
-documentation index such as Context7 adds value.
+This disposable Godot C# project tests whether an agent can author and verify a
+small project with CLI gates, without an editor plugin or MCP. It exercises a
+plain-C# turn-based domain object through a thin Godot adapter.
 
-Everything here is experiment material, not a Phase 4 `remake/` slice. Phase 4 is
-still gated by ADR 0009 and requires a separate explicit start action. This probe
-is a candidate "same disposable project" for the ADR 0008 MCP bakeoff.
+This is dated experiment/tooling material, not a `remake/` implementation or a
+Phase 4 restore contract. It does not close the ADR 0009 pre-entry gap gate,
+change readiness counters, select assets, install an MCP, or start Phase 4.
 
-## Layout
+## Accepted baseline and probe boundary
 
-- `project.godot`, `probe.csproj`, `Main.tscn`, `src/` — the probe project
-  (deterministic turn-based domain in pure C#, thin Godot adapter, bounded
-  60-frame self-quit smoke).
-- `run_probe.py` — the reproducible gate: `dotnet build` + Godot headless editor
-  import + two bounded headless runs with asserted stdout and determinism.
-- `.godot/` — generated import/build state, gitignored.
+[ADR 0008](../../docs/decisions/0008-godot-csharp-cli-first-remake-tooling.md)
+accepts Godot 4.7.2 .NET/C# as the Phase 4 engine/tooling baseline while keeping
+the implementation transition separate. This probe therefore requires the
+exact evaluated editor build:
 
-## Environment (2026-08-18)
+`4.7.2.stable.mono.official.ed1daf0bf`
 
-| Item | Value |
-| --- | --- |
-| Godot | `4.7.2.stable.mono.official.ed1daf0bf` (machine: `G:\Godot_v4.7.2-stable_mono_win64\`) |
-| .NET SDK | 10.0.204 (single SDK on the machine) |
-| .NET runtime | 8.0.30 present; hostfxr used is `10.0.8` |
-| Godot.NET.Sdk | 4.7.2 (via NuGet) |
-| Target framework | net8.0 |
+The runner executes `Godot --version` and rejects any other output before it
+creates a scratch directory, builds, or imports the project. That proves this
+dated capability check against the accepted editor build. A future Phase 4
+restore workflow still needs separately authorized, tracked toolchain inputs
+that pin the editor artifact, .NET SDK, packages, and restore/build commands.
 
-Note: ADR 0008 pins Godot 4.7.1 for the remake; 4.7.2 was a release candidate at
-the investigation date and needs the documented compatibility recheck before any
-adoption. This probe ran on 4.7.2 because that is the machine's current editor.
+## Layout and output policy
+
+- `project.godot`, `probe.csproj`, `Main.tscn`, and `src/` are immutable probe
+  inputs during a run.
+- `run_probe.py` copies only those nine declared inputs into a new ignored
+  directory under `local/`, then builds, imports, and runs there.
+- Generated `.godot/`, `bin/`, and `obj/` state therefore belongs to the scratch
+  copy, not to the tracked probe source.
+- An explicit `--work-dir` must be a nonexistent child of this repository's
+  ignored `local/` root. Existing, outside-local, or colliding paths are rejected
+  and are never deleted by the runner.
+
+Without `--work-dir`, each invocation creates a unique directory below
+`local/derived/godot-ai-probe/`. Scratch results remain local for inspection;
+the caller decides when to remove them.
 
 ## Reproduce
 
 ```powershell
-$env:GODOT_BIN = 'G:\Godot_v4.7.2-stable_mono_win64\Godot_v4.7.2-stable_mono_win64.exe'
-python tools/godot-ai-probe/run_probe.py
+$env:GODOT_BIN = '<path-to-Godot-4.7.2-.NET-editor.exe>'
+uv run python tools/godot-ai-probe/run_probe.py
 ```
 
-Expected pass output includes `PROBE_READY seed=42` and
-`PROBE_DONE frames=60 x=5 y=0 score=364` twice (identical), exit 0.
+An explicit fresh destination can be used when a stable diagnostic path helps:
 
-## Findings (DeepSeek Flash, one-shot authoring without docs lookup)
+```powershell
+uv run python tools/godot-ai-probe/run_probe.py `
+  --work-dir local/derived/godot-ai-probe/manual-20260820-1
+```
 
-The whole project was authored from the model's built-in knowledge with no
-reference lookup, then iterated against the gates below. Two real knowledge gaps
-were found and fixed; both are cheap to avoid with an up-to-date docs index.
+The gate performs, in order:
 
-### Gap 1: project.godot comment syntax
+1. exact Godot version preflight (15-second wall-clock timeout);
+2. `dotnet build` in scratch (120 seconds);
+3. Godot headless editor import in scratch (60 seconds);
+4. two headless game runs (60 seconds each).
 
-**Symptom:** with `#` comment lines at the top of `project.godot`, the run failed
-with `Can't run project: no main scene defined` even though `run/main_scene` was
-present. Switching the comments to `;` fixed it.
+Each game self-quits after 60 `_Process` frames. `--quit-after 120` is retained
+as an independent Godot 120-iteration safety cap. A timed-out child process is
+killed and reaped, with stdout/stderr diagnostics bounded to their final 2,000
+characters.
 
-**Root cause (confirmed in Godot 4.7 source):** ConfigFile parsing delegates to
-`core/variant/variant_parser.cpp`; `if (c == ';') { //comment }` is the only
-comment branch. `#` lines are not comments; a leading `#` corrupts parsing.
+Expected game markers are identical across both runs:
 
-**Lesson:** Godot config files use `;` comments only. The official docs describe
-the file as "INI/win.ini format" but do not state the `;`-only rule directly;
-the tscn format page does state it for `.tscn` files.
+```text
+PROBE_READY seed=42
+PROBE_DONE frames=60 x=5 y=0 score=364
+```
 
-### Gap 2: [dotnet] project/assembly_name is required
+## Reproduced environment (2026-08-20)
 
-**Symptom:** with a hand-authored `project.godot`, Godot reported
-`.NET: Failed to load project assembly` and every C# script failed with
-`Cannot instantiate C# script because the associated class could not be found`,
-even though `dotnet build` produced the assembly at
-`.godot/mono/temp/bin/Debug/probe.dll`.
+| Item | Reproduced value |
+| --- | --- |
+| Godot editor | `4.7.2.stable.mono.official.ed1daf0bf` |
+| Godot executable SHA-256 | `45336315eb6f1a52a8923bc4f2ce8079a03dc4939dcb7d531047890f1f7cdfab` |
+| .NET SDK | 10.0.204 |
+| Installed .NET runtimes present on the host | 8.0.30 and 10.0.8 |
+| `Godot.NET.Sdk` | 4.7.2 through NuGet |
+| Probe target framework | `net8.0` |
 
-**Root cause:** the editor normally writes `[dotnet] project/assembly_name="..."`
-into `project.godot` when a C# project is created. A hand-written project file
-must include it; without it the runtime cannot resolve the project assembly.
-Confirmed by comparing against the working `Project-Mech-Strike` project
-(`game/project.godot` has `[dotnet] project/assembly_name="Mech Strike"`).
+On this one host, .NET host tracing showed hostfxr/CoreCLR 10.0.8 loading the
+probe runtime configuration that requests .NET 8. That is a bounded machine
+observation, not evidence that every .NET 10 host can run every net8 project and
+not a Phase 4 compatibility policy. The related Godot
+[#111246](https://github.com/godotengine/godot/issues/111246) report concerns a
+different `net10.0` target scenario.
 
-**Lesson:** when scaffolding a Godot C# project by hand (the CLI-first path),
-remember the `[dotnet]` section. `dotnet build` succeeding is NOT enough.
+The probe uses `System.Random(seed)`. Its repeated result is asserted for the
+controlled runtime above only. .NET does not promise the same algorithm across
+runtime generations, so this is neither a long-term deterministic format nor a
+normative Phase 4 gameplay RNG choice.
 
-### Environment notes
+## Project-file observations
 
-- The machine's hostfxr is .NET 10 (`10.0.8`). A net8.0 Godot project loads fine
-  through it once `assembly_name` is set. The known Godot issue
-  [godotengine/godot#111246](https://github.com/godotengine/godot/issues/111246)
-  ("Failed to load project assembly" with .NET 10) is about targeting `net10.0`,
-  which this probe does not do.
-- PowerShell quirk: `& <godot.exe>` returns immediately (GUI subsystem app);
-  use `Start-Process -Wait -PassThru` (or `subprocess`) to capture exit codes.
-- Godot 4.6.2 .NET (the ADR 0008 audit version) reproduces the same failures and
-  the same fix — the gaps are project-file content, not the engine version.
+### Semicolon comments
 
-## Context7 evaluation
+The pinned Godot source recognizes `;` in the parser's comment branch
+([`variant_parser.cpp` at commit `ed1daf0bf`](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/core/variant/variant_parser.cpp#L1910)).
+During the original one-shot experiment, replacing the leading semicolon lines
+in `project.godot` with `#` lines coincided with failure to discover the main
+scene; returning to semicolons restored the run. The failing variant is not
+retained as an executable negative fixture, so this README does not generalize
+that observation beyond the pinned parser fact and this probe.
 
-Context7 indexes Godot documentation:
-`/godotengine/godot-docs` (official docs, branch 4.5, refreshed 2026-08-04) and
-`/godotengine/godot` (engine source, versions through 4.6-stable, refreshed
-2026-08-09). Querying the public API
-(`GET https://context7.com/api/v2/context?libraryId=/godotengine/godot-docs&query=...`):
+### `assembly_name` for this probe
 
-- "project.godot [dotnet] project/assembly_name" returned the
-  `class_projectsettings.rst` dotnet/project settings domain and
-  `c_sharp_basics.rst` (C# project file generation) — would have led to Gap 2
-  quickly.
-- "project.godot comments" returned the INI/win.ini format descriptions and the
-  tscn semicolon-comment rule — indirect for Gap 1; the engine-source library
-  (variant_parser.cpp) would state it directly.
-- The docs library tracks 4.5, not the 4.7.x line; API and project-file docs are
-  stable across those versions, so this matters little for this probe, but a
-  future compatibility check should confirm index freshness.
+The probe's application name is `Godot AI Probe`, while `dotnet build` produces
+`probe.dll`. The tracked `project/assembly_name="probe"` reconciles that specific
+name/DLL mismatch. In the pinned 4.7.2 source,
+[`Path::get_csharp_project_name()`](https://github.com/godotengine/godot/blob/ed1daf0bf001b61586d9930840f2f1394092c079/modules/mono/utils/path_utils.cpp#L232-L258)
+reads the setting and otherwise falls back to the application name. This probe
+therefore does not claim that every hand-authored C# project universally needs
+an explicit setting; it verifies the explicit value required by this naming
+choice.
 
-**Verdict:** Context7 would have saved the two fix iterations (roughly half the
-debugging) by pointing at the owning doc pages. It is a developer-experience aid,
-not a project dependency: the durable contract here is the probe project plus
-`run_probe.py`, which reproduce and verify everything without any external
-service. Keep machine paths (GODOT_BIN) out of tracked files.
+## Context7 evaluation boundary
+
+Context7 was consulted only as an optional documentation-navigation experiment.
+On 2026-08-18, these exact public queries were tried against
+`/godotengine/godot-docs`:
+
+- `project.godot [dotnet] project/assembly_name`
+- `project.godot comments`
+
+The first returned broad project-settings and C# project-generation material;
+the second returned general INI/project-format and semicolon-comment material.
+Neither response directly established the complete pinned-source facts recorded
+above, and the indexed documentation was not the accepted 4.7.2 source tree.
+The result is therefore incomplete navigation evidence, not proof that Context7
+would have prevented either iteration or that it is required for this workflow.
+
+Context7 remains optional and removable. The exact editor preflight, source
+links, probe inputs, and local runner own the reproducible capability gate; no
+external documentation service is needed to execute it.
