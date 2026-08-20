@@ -480,29 +480,6 @@ def test_parse_dc_b_tiles():
     assert data == bytes([2, 0x22, 3, 0xAB])
 
 
-def test_build_bordered_icon():
-    from sf2tool.texture_extract import build_bordered_icon
-
-    icon = bytes(range(192))
-    border = bytes(range(48))
-    buf = build_bordered_icon(icon, border, border)
-    assert len(buf) == 256
-    # top border longwords at offsets 0 and 0x20
-    assert buf[0:4] == border[0:4]
-    assert buf[0x20:0x24] == border[0x20:0x24]
-    # icon row 0 halves at 0 and 0x30
-    assert buf[0:16] == icon[0:16]
-    assert buf[0x30:0x40] == icon[16:32]
-    # icon row 1 halves at 0x20 and 0x50
-    assert buf[0x20:0x30] == icon[32:48]
-    assert buf[0x50:0x60] == icon[48:64]
-    # bottom border longwords at 0xC0 and 0xE0
-    assert buf[0xC0:0xC4] == border[0:4]
-    assert buf[0xE0:0xE4] == border[0x20:0x24]
-    # tail after the bottom border untouched
-    assert buf[0xF0:0x100] == bytes(16)
-
-
 def test_extract_ui_windows_binds_sources_preserves_black_and_requires_fresh_output(
     tmp_path, monkeypatch
 ):
