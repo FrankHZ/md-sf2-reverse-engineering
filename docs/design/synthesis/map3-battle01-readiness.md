@@ -2,10 +2,12 @@
 
 - Status: **NOT READY** for Phase 4 implementation
 - Audit date: 2026-08-14
+- Product-decision update: 2026-08-19
 - Accepted-main audit base: commit `21f98cfc9dee5b3589d0612e1058be5a9666fd3a`, tree
   `6eb4208567f403685c303e9c5f1145aeadf67974`
 - Milestone owner: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md)
 - Tooling boundary: [ADR 0008](../../decisions/0008-godot-csharp-cli-first-remake-tooling.md)
+- Product profile: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md)
 - Scope: Layer B readiness accounting for one continuous playable scenario from an admitted Map 3
   start through observable completion of Battle 01
 
@@ -16,7 +18,8 @@ contract, select a product experience, authorize Phase 4, or replace the fixture
 links. Its purpose is to state what accepted `main` can already support, what remains open, who must
 own each closure, and what the later Phase 4 start gate must inspect.
 
-The current judgment is **NOT READY** because accepted evidence does not yet join the controlled Map
+The product-choice slots and battle-functions contract are now closed, but the current judgment is
+still **NOT READY** because accepted evidence does not yet join the controlled Map
 3 handoff, a natural chronological exploration route, Battle 01 admission, a complete playable
 battle, the after-battle program, and one exact observable ending state.
 
@@ -60,8 +63,13 @@ a continuous playable scenario from Map 3 through **completion** of Battle 01. I
 and Design gap closure, a main-gate readiness report, and a separate user start action. Battle entry,
 initialization, or an isolated mechanic cannot satisfy the milestone.
 
-This ledger therefore remains **NOT READY** until all closure rows below are accepted on `main` and
-the product-choice slots are resolved by a later user-accepted decision.
+[ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md) accepts the exact profile
+`1A + 2A + 3A + 4A + 5B + 6A + 7C + 8C + 9A + 10A`. It selects a private-local original-asset
+profile with no public redistribution and frame/audio/hardware-exact parity. Those choices close the
+product slots but expand Research, private-provenance, and H4 work; they do not make the scenario ready.
+
+This ledger therefore remains **NOT READY** until all remaining closure rows below are accepted on
+`main`.
 
 ## Exact Accepted-Index Audit
 
@@ -88,10 +96,10 @@ from an admitted start, their chronological execution, their natural effects, th
 Battle 01, or a future association set. A later design slice MUST NOT automatically associate all 26
 records. It must derive its exact record set from a dedicated accepted evidence owner.
 
-### Battle-functions contract gap
+### Battle-functions contract closure
 
-`sf2-battle-functions-static-v1` directly binds exactly 15 research-index records. All 15 are
-currently unassociated:
+`sf2-battle-functions-static-v1` directly binds exactly 15 research-index records. All 15 are now
+associated with [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md):
 
 | Exact record ID | Accepted static surface |
 | --- | --- |
@@ -115,7 +123,7 @@ The [battle-functions research owner](../../research/battle-functions.md) also r
 source-path membership join because `map.camera-control.destination-service` shares one source file.
 That cross-owner record is not a direct `sf2-battle-functions-static-v1` binding and remains with the
 [map-camera update contract](../contracts/map-camera-update-control-flow.md). It is not a candidate
-for the future battle-functions contract.
+for this battle-functions contract.
 
 ### Battle 01 route and outcome rows
 
@@ -135,21 +143,21 @@ program effects, or the milestone's observable endpoint.
 
 | Scenario segment | Accepted owner surface | Readiness classification | Required closure |
 | --- | --- | --- | --- |
-| admitted Map 3 start | [New-Game State Initialization](../contracts/new-game-state-initialization.md), [Save System](../contracts/save-system.md), [Story Progression](story-progression.md) | **Contract-ready** controlled initialization and Map 3 handoff; **Missing research owner** for exact admitted snapshot; **Explicit product decision** for entry UX | identify start provenance and every scenario-relevant map, position, facing, flag, party, stat, item, spell, gold, difficulty, RNG, and time field; decide whether entry is a canonical snapshot, visible New flow, or load |
+| admitted Map 3 start | [New-Game State Initialization](../contracts/new-game-state-initialization.md), [Save System](../contracts/save-system.md), [Story Progression](story-progression.md) | **Contract-ready** controlled initialization and Map 3 handoff; **Accepted product decision** for a controlled admitted snapshot; **Missing research owner** for its exact values/provenance | identify every scenario-relevant map, position, facing, flag, party, stat, item, spell, gold, difficulty, RNG, and time field without presenting it as a canonical original New/load state |
 | Map 3 setup and content | [Map Setup Data](../contracts/map-setup-data.md), [Map and Exploration](../contracts/map-exploration.md), accepted aggregate map inventory | **Contract-ready** selectors and generic structures; **Missing research owner** for selected Map 3 rows and chronology; **Missing design contract** for scenario content | observe the selected setup/event/program chain from the admitted state and add a dedicated evidence-bound scenario/data contract without bulk-associating aggregate rows |
-| exploration loop and input | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Input System](../contracts/input-system.md), [Map Entry Routing State](../contracts/map-entry-routing-state.md) | **Contract-ready** local priority/handoff rules; **Missing research owner** for natural inputs and results; **Explicit product decision** for controls | record the route's ordered player inputs and natural loop handoffs; choose platform mapping, repeat/cancel/accessibility policy without attributing it to the original |
-| dialogue and interaction | [Dialogue System](../contracts/dialogue-system.md), [Sprite Dialogue Property Data](../contracts/sprite-dialogue-property-data.md), [Text and Font System](../contracts/text-and-font-system.md), [Portrait Window State](../contracts/portrait-window-state.md) | **Contract-ready** command/storage/window seams; **Missing research owner** for route content/effects; **Explicit product decision** for visible text and localization | identify required dialogue/interaction programs, cursor/state effects, and completion boundaries; decide whether original text is private-only and what distributable replacement/localization appears |
+| exploration loop and input | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Input System](../contracts/input-system.md), [Map Entry Routing State](../contracts/map-entry-routing-state.md) | **Contract-ready** local priority/handoff rules; **Accepted product decision** for modern logical controls/accessibility; **Missing research owner** for natural inputs and results | record the route's ordered player inputs and natural loop handoffs; keep product mapping/repeat/accessibility distinct from original behavior |
+| dialogue and interaction | [Dialogue System](../contracts/dialogue-system.md), [Sprite Dialogue Property Data](../contracts/sprite-dialogue-property-data.md), [Text and Font System](../contracts/text-and-font-system.md), [Portrait Window State](../contracts/portrait-window-state.md) | **Contract-ready** command/storage/window seams; **Accepted product decision** for private-local original text; **Missing research owner** for route content/effects | identify required dialogue/interaction programs, cursor/state effects, and completion boundaries; retain ignored private inputs and block public distribution without rights/replacements |
 | field menu and UI | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Window System](../contracts/window-system.md), [UI Layout Data](../contracts/ui-layout-data.md), [UI Graphics Asset Data](../contracts/ui-graphics-asset-data.md) | **Contract-ready** handoff/layout/resource seams; **Missing design contract** if the route requires FieldMenu behavior; **Explicit product decision** for required pages and presentation | explicitly include or exclude field-menu, item, status, option, and cancellation paths; if included, create a bounded field-menu control contract from accepted evidence |
-| map resources and camera | [Map Layout Data](../contracts/map-layout-data.md), [Map Palette Data](../contracts/map-palette-data.md), [Map Tileset Data](../contracts/map-tileset-data.md), [Map Sprite Graphics Data](../contracts/map-sprite-graphics-data.md), [Map Entity Data](../contracts/map-entity-data.md), [Map Camera Update](../contracts/map-camera-update-control-flow.md) | **Contract-ready** private import and local service/control surfaces; **Explicit product decision** for visible fidelity and assets | select placeholder/licensed presentation and acceptance tier; do not make private original payloads distributable |
+| map resources and camera | [Map Layout Data](../contracts/map-layout-data.md), [Map Palette Data](../contracts/map-palette-data.md), [Map Tileset Data](../contracts/map-tileset-data.md), [Map Sprite Graphics Data](../contracts/map-sprite-graphics-data.md), [Map Entity Data](../contracts/map-entity-data.md), [Map Camera Update](../contracts/map-camera-update-control-flow.md) | **Contract-ready** private import and local service/control surfaces; **Accepted product decision** for private original assets and 8C parity; **Missing research owner** for complete reached visual/hardware behavior | establish ignored private asset/capture provenance and exact pixel/palette/frame/hardware acceptance without making original payloads distributable |
 | map-to-battle admission | [Exploration Control Flow](../contracts/exploration-control-flow.md), [Map Entry Routing State](../contracts/map-entry-routing-state.md), [Battle Encounter Definition](../contracts/battle-encounter-definition.md), [Battle Cutscene Routing](../contracts/battle-cutscene-routing.md) | **Contract-ready** static handoffs; **Missing research owner** for natural route and cutscene effects; **Missing design contract** for scenario handoff | observe the exact map/setup/event/flag path into Battle 01, before/start cutscene execution, and first battle-ready state |
 | Battle 01 encounter setup | [Battle Encounter Definition](../contracts/battle-encounter-definition.md), [Battle Control and Combatant Lifecycle](../contracts/battle-control-lifecycle.md), [Battlefield Navigation](../contracts/battlefield-navigation.md) | **Contract-ready** placement, terrain, activation, first turn, and controller seams; **Missing research owner** for natural complete encounter state | bind the natural entry snapshot to the exact roster/stats/items/spells/positions/flags and later-round state actually used by the scenario |
-| player turn and battle menus | accepted [battle-functions research](../../research/battle-functions.md), [Input System](../contracts/input-system.md) | **Missing design contract** for the exact 15-record fixture set; **Explicit product decision** for required agency and UI | create `battle-functions-control-flow` as a separate accepted-evidence contract; decide required player actions, cancel paths, optional menus, and platform controls |
+| player turn and battle menus | [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md), accepted [battle-functions research](../../research/battle-functions.md), [Input System](../contracts/input-system.md) | **Contract-ready** static branch/request/local-output surface; **Accepted product decision** for manual agency and UI; **Missing research owner** for the complete naturally reached trace | identify the exact action families and cancellation paths reached by the accepted winning trace without generalizing fixture-local behavior |
 | AI and navigation | [Battle AI Decision](../contracts/battle-ai-decision.md), [Battlefield Navigation](../contracts/battlefield-navigation.md) | **Contract-ready** bounded algorithms; **Missing research owner** for complete naturally reached multi-turn decisions | capture every reached Battle 01 AI/navigation branch and close only fixture gaps required by the accepted playthrough |
-| action construction and resolution | [Battle Action Construction](../contracts/battle-action-construction.md), [Combat Resolution](../contracts/combat-resolution.md), [Spell Resolution](../contracts/spell-resolution.md), [Randomness](../contracts/randomness.md) | **Contract-ready** bounded subsets; **Missing research owner** for any reached unsupported branch; **Explicit product decision** for deterministic acceptance | choose an acceptance seed/input policy, record reached actions in order, and extend only owners needed for the playthrough; do not generalize subset fixtures |
-| battle presentation | [Battle Scene Presentation](../contracts/battle-scene-presentation.md) and its dedicated graphics-data contracts | **Contract-ready** command/loader/static asset seams; **Missing research owner** if original rendered fidelity is required; **Explicit product decision** for visual/audio tier | decide state-only, structural, screenshot, animation, and audio expectations; gather runtime presentation evidence only for the selected fidelity tier |
+| action construction and resolution | [Battle Action Construction](../contracts/battle-action-construction.md), [Combat Resolution](../contracts/combat-resolution.md), [Spell Resolution](../contracts/spell-resolution.md), [Randomness](../contracts/randomness.md) | **Contract-ready** bounded subsets; **Accepted product decision** for one deterministic H4 reference trace; **Missing research owner** for its viable seed and reached unsupported branches | record reached actions in order and extend only owners needed for the playthrough; do not constrain other interactive play or generalize subset fixtures |
+| battle presentation | [Battle Scene Presentation](../contracts/battle-scene-presentation.md) and its dedicated graphics-data contracts | **Contract-ready** command/loader/static asset seams; **Accepted product decision** for private-local originals and 8C frame/audio/hardware exactness; **Missing research owner** for complete reached parity | close pixel/palette/frame cadence, animation/timing, waveform/chip/timing, VInt/DMA/CRAM/VDP, private capture provenance, exact tolerances, and licensing-safe reporting |
 | victory and after-battle | [Battle Control and Combatant Lifecycle](../contracts/battle-control-lifecycle.md), [Battle Cutscene Routing](../contracts/battle-cutscene-routing.md) | **Contract-ready** generic victory order; **Missing research owner** for natural victory, after-program effects, and final route; **Missing design contract** for observable completion | observe victory through the normal controller, after-battle MAPSCRIPT execution, return routing, and final scenario-relevant state |
-| save/load scope | [Save System](../contracts/save-system.md), [Global Flag State](../contracts/global-flag-state.md), roster/state contracts | **Contract-ready** bounded in-process service/storage seams; **Missing research owner** if durability is required; **Explicit product decision** | explicitly exclude save/load or select checkpoint, in-process, suspend, or durable scope; if included, prove every used scenario field survives the chosen boundary |
-| end-to-end H4 | all named subsystem fixtures and contracts | **Synthesis-ready** for a ledger; **Missing research owner** for continuous original trace; **Missing design contract** for scenario composition; **Explicit product decision** for observable acceptance | add one evidence-bound continuous-scenario contract that consumes, rather than weakens, subsystem fixtures and records declared deviations separately |
+| save/load scope | [Save System](../contracts/save-system.md), [Global Flag State](../contracts/global-flag-state.md), roster/state contracts | **Contract-ready** bounded service/storage seams; **Accepted product decision** to exclude milestone save/load/checkpoint/suspend | enforce restart-to-admitted-snapshot behavior and keep later save support outside this milestone |
+| end-to-end H4 | all named subsystem fixtures and contracts | **Synthesis-ready** for a ledger; **Accepted product decision** for observable layers/deviations; **Missing research owner** for the continuous original/8C trace; **Missing design contract** for scenario composition and executable definitions | add one evidence-bound continuous-scenario contract that consumes, rather than weakens, subsystem fixtures and reports declared deviations separately |
 
 ## Existing Synthesis Boundary
 
@@ -171,27 +179,24 @@ The following Layer B documents can already explain local pieces but do not clos
 These documents are **Synthesis-ready** inputs to this ledger. None is the required continuous
 scenario contract.
 
-## Product-Choice Slots
+## Accepted Product Choices
 
-All entries below are deliberately unresolved. They require a later user-accepted decision, proposed
-as `docs/decisions/0010-map3-battle01-product-acceptance.md`, after the readiness ledger presents the
-accepted evidence and viable choices.
+[ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md) closes the product-choice slots
+without filling any Research-owned exact value.
 
-| Decision slot | Current state | Decision must state |
+| Decision slot | Accepted state | Remaining closure |
 | --- | --- | --- |
-| admitted start | **Undecided** | canonical snapshot, visible New flow, or load; first observable state and required provenance |
-| route | **Undecided** | mandatory maps, interactions, dialogue, menus, transitions, and allowed optional/backtracking behavior |
-| completion endpoint | **Undecided** | exact success observation after Battle 01; controller return alone is not silently sufficient |
-| save/load | **Undecided** | excluded, checkpoint-only, in-process, suspended battle, or durable cross-process behavior |
-| player control and UI | **Undecided** | required field/battle menus, cancellation paths, device mapping, accessibility, and localization |
-| assets | **Undecided** | placeholder or properly licensed replacements, provenance, distribution terms, and private-input separation |
-| visual/audio parity | **Undecided** | state/structure, screenshot, animation/frame, palette, audio, and timing acceptance tier |
-| RNG and action trace | **Undecided** | fixed seed/input trace, bounded invariant set, or another reproducible policy |
-| intentional deviations | **Undecided** | every allowed rules, safety, UI, timing, asset, or presentation difference plus expected-deviation coverage |
-| optional tooling | **Undecided and non-blocking** | whether any removable MCP adapter earns adoption after the ADR 0008 bakeoff; CLI gates remain authoritative |
-
-No default in this table is implied by omission. Excluding a feature also requires an accepted
-decision showing that the remaining scope is still one continuous playable milestone.
+| admitted start | **Accepted: 1A controlled admitted snapshot** | exact values and provenance remain Research-owned; it is not a canonical original New/load claim |
+| route | **Accepted: 2A smallest Research-proven natural route** | exact ordered route, mandatory content, effects, and backtracking remain Research-owned |
+| natural battle/cutscene | **Accepted: 3A chronology, with placeholder subclause superseded by 7C/8C** | exact natural admission, before/start effects, rendered timing, and first battle-ready state remain open |
+| completion endpoint | **Accepted: 5B first stable controllable post-after-program state** | exact return map/location/state remains Research-owned; `D4=1` alone is insufficient |
+| save/load | **Accepted: 6A excluded** | restart returns to the admitted snapshot; later save support is a separate milestone |
+| player control and UI | **Accepted: 4A/9A manual agency and modern accessible logical controls** | exact reached actions/input trace and executable accessibility assertions remain open |
+| assets | **Accepted: 7C private-local originals only** | ignored private provenance/inventory must close; public distribution remains blocked without rights/replacements |
+| visual/audio parity | **Accepted: 8C frame/audio/hardware-exact** | full reached pixel/palette/frame/audio/chip/VInt/DMA/CRAM/VDP evidence and H4 definitions remain open |
+| RNG and action trace | **Accepted: one deterministic H4 reference trace** | viable seed and logical trace remain Research-owned; ordinary interactive play is not scripted |
+| intentional deviations | **Accepted: 10A explicit ledger** | controlled admission, optional scope, modern controls, no save, fixed reference trace, and out-of-domain engine behavior require named checks |
+| optional tooling | **Deferred and non-blocking; no MCP adopted** | CLI gates remain authoritative; no tooling choice starts Phase 4 |
 
 ## Ordered Closure Plan
 
@@ -204,18 +209,16 @@ its only shared registrations should be the `docs/README.md` synthesis index and
 
 ### Slice 1: battle-functions control contract
 
-The next accepted-evidence design candidate is
-`docs/design/contracts/battle-functions-control-flow.md`. It should consume only
-`sf2-battle-functions-static-v1` and associate exactly the 15 `battle.functions.*` records listed in
-this ledger. It must retain runtime input, complete cancellation, presentation, caller effects, and
-natural Battle 01 reachability as separate or **Unknown**. This candidate is not started or owned by
-the current slice.
+**CLOSED.** [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md) consumes
+only `sf2-battle-functions-static-v1` and associates exactly the 15 `battle.functions.*` records
+listed in this ledger. Runtime input, complete cancellation, presentation, caller effects, and
+natural Battle 01 reachability remain separate or **Unknown** as required.
 
 ### Slice 2: explicit product acceptance decision
 
-A later decision must resolve the product-choice slots without rewriting them as original behavior.
-Design may prepare alternatives, but user acceptance is required. Closing a choice does not start
-Phase 4.
+**CLOSED.** [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md) accepts the exact
+profile recorded above without rewriting product choices as original behavior. Closing these choices
+does not start Phase 4.
 
 ### Slice 3: Research closures
 
@@ -227,7 +230,10 @@ Research must merge dedicated evidence for:
 4. one complete playable multi-round path through victory, identifying every reached player, AI,
    navigation, action, resolution, reward, and status branch;
 5. after-battle program effects, return routing, and exact observable end state;
-6. presentation or persistence only to the extent required by the accepted product decision.
+6. full reached 8C presentation and hardware behavior: pixel/palette output, frame cadence,
+   animation/timing, audio waveform/chip/timing, VInt/DMA/CRAM/VDP and other observable behavior;
+7. private reference-capture provenance, deterministic capture conditions, exact or field-specific
+   tolerances, and licensing-safe public reporting.
 
 Research may group these observations into one or more fixtures. Design must not name unaccepted
 fixture IDs or consume unmerged conclusions in advance.
@@ -257,10 +263,11 @@ Only the accepted route and product profile may trigger these:
 This ledger may change from **NOT READY** to **READY FOR PHASE-TRANSITION DECISION** only after:
 
 - every required Research closure is accepted on `main`;
-- the battle-functions and continuous-scenario contracts are accepted;
+- the continuous-scenario contract is accepted (the battle-functions contract is already closed);
 - all route-required conditional owners are accepted;
-- the product decision resolves every slot or explicitly excludes it;
-- distributable assets and the private-input boundary are closed;
+- the accepted ADR 0010 profile remains internally consistent with every scenario/H4 owner;
+- the private-local asset inventory, provenance, ignored-input handling, and no-public-distribution
+  boundary are closed; a distributable build remains separately blocked until rights/replacements exist;
 - the complete H4 acceptance contract and matrix, executable check definitions, observable layers,
   tolerances, and declared expected deviations are fully specified and accepted on `main`;
 - main-gate independently reports readiness.
@@ -280,8 +287,11 @@ blob:
    traces;
 6. controller victory state and after-battle program/handoff trace;
 7. exact final scenario state at the product-selected observable endpoint;
-8. selected save, visual, audio, and asset assertions;
-9. separately named expected deviations.
+8. selected save exclusion and 7C private-local asset identity/provenance assertions;
+9. 8C pixel/palette/frame cadence, animation/timing, audio waveform/chip/timing,
+   VInt/DMA/CRAM/VDP, other reached hardware-observable assertions, deterministic capture conditions,
+   exact or field-specific tolerances, and licensing-safe public report shape;
+10. separately named expected deviations.
 
 Each layer must reference its owning accepted fixture. The continuous adapter must not replace
 subsystem fixtures, copy their expected numbers into engine-specific tests, require original RAM/ROM
@@ -305,25 +315,34 @@ The following remain private unless a separate license and distribution review a
 - raw source-derived asset payloads and private canonical import graphs;
 - any replacement asset whose provenance or redistribution terms are not accepted.
 
-Phase 4 should consume public contracts and project-owned fixtures. Private immutable inputs may
-support local verification but must not become tracked remake dependencies.
+Phase 4 should consume public contracts and project-owned fixtures for its tracked implementation and
+CI. The selected private-local 7C profile may load ignored original assets and captures locally after
+their provenance/inventory is accepted, but those inputs must not become tracked dependencies,
+uploads, public-CI requirements, or distributable build contents.
 
 ## Readiness Checklist
 
 | Gate | Current result | Closure owner |
 | --- | --- | --- |
 | exact milestone and engine baseline accepted | PASS | ADR 0008 / ADR 0009 |
+| product acceptance profile selected | PASS | ADR 0010 |
 | admitted Map 3 start state exact | OPEN | Research, then scenario contract and product decision |
 | natural Map 3 route exact | OPEN | Research, then scenario contract |
-| required exploration/dialogue/menu/UI scope exact | OPEN | Research plus product decision; conditional contracts |
+| required exploration/dialogue/menu/UI scope exact | OPEN | Research plus route-required conditional contracts; ADR 0010 fixes the minimum-scope rule |
 | natural Battle 01 admission exact | OPEN | Research, then scenario contract |
-| player-turn contract present | OPEN | `battle-functions-control-flow` design slice |
+| player-turn contract present | PASS | [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md) |
 | complete playable Battle 01 trace exact | OPEN | Research plus existing/extended battle contracts |
 | after-battle effects exact | OPEN | Research, then scenario contract |
-| observable endpoint selected and evidenced | OPEN | Product decision plus scenario contract |
-| save scope selected and evidenced | OPEN | Product decision; Research only if included |
-| placeholder/licensed assets accepted | OPEN | Product/licensing decision |
-| visual/audio parity tier accepted | OPEN | Product decision; Research only where original fidelity is required |
+| observable endpoint shape selected | PASS | ADR 0010 option 5B |
+| exact endpoint state evidenced | OPEN | Research, then scenario contract |
+| save scope selected | PASS | ADR 0010 option 6A excludes save/load/checkpoint/suspend |
+| accessibility/input product interface selected | PASS | ADR 0010 option 9A |
+| accessibility observable checks composed | OPEN | Continuous H4 contract; deviations separate from the 8C exact reference run |
+| 7C private-local asset mode and no-public-distribution boundary selected | PASS | ADR 0010 |
+| exact private asset/capture inventory and provenance accepted | OPEN | Research/private-input acceptance; no payload enters Git/public CI |
+| public/distributable asset rights or replacements | BLOCKED OUTSIDE PRIVATE MILESTONE | Separate licensing/replacement decision before any public build |
+| 8C visual/audio/hardware parity tier selected | PASS | ADR 0010 |
+| complete reached 8C evidence, capture domain, and tolerances accepted | OPEN | Research, then continuous H4 contract |
 | continuous H4 acceptance surface and executable check definitions accepted | OPEN | Scenario contract |
 | main-gate readiness report accepted | OPEN | Main-gate |
 | separate user Phase 4 start action | OPEN | User |
@@ -338,8 +357,8 @@ The ledger remains **NOT READY** while any required row is open.
 | 26 Map 3 source-path records exist and are aggregate-owned | **Confirmed indexed inventory** | `sf2-map-data-static-v1`, [map-data research](../../research/map-data-inventory.md) | Not route chronology, reachability, effects, or automatic future associations |
 | static exploration, selector, map, input, dialogue, UI, and service seams exist | **Contract-ready local surfaces** | linked contracts in the dependency matrix | Not a complete Map 3 experience |
 | Battle 01 placement, terrain, region activation, first turn, and generic outcome order exist | **Contract-ready static/runtime subsets** | [Battle Encounter Definition](../contracts/battle-encounter-definition.md), [Battle Control](../contracts/battle-control-lifecycle.md) | Debug entry skips cutscenes; complete natural encounter and endpoint remain open |
-| 15 battle-functions records have accepted static evidence but no design contract | **Missing design contract** | `sf2-battle-functions-static-v1`, [battle-functions research](../../research/battle-functions.md) | No camera-owner overlap and no runtime/input/presentation generalization |
+| 15 battle-functions records have accepted static evidence and one bounded design contract | **Contract-ready** | [Battle Functions Control Flow](../contracts/battle-functions-control-flow.md), `sf2-battle-functions-static-v1` | No camera-owner overlap and no runtime/input/presentation generalization |
 | after-battle route/program identities exist | **Contract-ready route structure** | [Battle Cutscene Routing](../contracts/battle-cutscene-routing.md) | Program effects, natural reachability, persistence, and visible sequence remain open |
 | local battle contracts can be composed conceptually | **Synthesis-ready** | [Tactical Battle Loop](tactical-battle-loop.md) and linked contracts | Not a complete predictive Battle 01 simulation or scenario golden |
-| Godot/C# and milestone are selected | **Accepted decisions** | ADR 0008 / ADR 0009 | No Phase 4 start, asset choice, MCP adoption, or product acceptance profile |
-| route, endpoint, save, UI, assets, RNG, parity, and deviations | **Explicit product decisions** | future user-accepted ADR | Must not be inferred from original source labels or silence |
+| Godot/C#, milestone, and product profile are selected | **Accepted decisions** | ADR 0008 / ADR 0009 / ADR 0010 | No Phase 4 start, MCP adoption, public redistribution, or evidence closure |
+| route class, endpoint shape, save exclusion, UI, private assets, RNG policy, 8C parity, and deviations | **Accepted product decisions** | ADR 0010 | Exact scenario values, natural chronology, private capture provenance, and parity facts remain Research/H4 gaps |
