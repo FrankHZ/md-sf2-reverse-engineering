@@ -22,7 +22,7 @@
 
 其详细带来源所有者是[ally 与 class data inventory](../../../research/ally-data-inventory.md)。该清单交叉检查两个更早规范轨道而不替换它们：
 
-- [static core data](../../../research/static-core-data.md)、其[manifest](../../../../manifests/extractions/static-data.json)与[schema](../../../../schemas/static-data.schema.json) 拥有名称、起始记录、职业记录、打包与 source/ROM parity；
+- [static core data](../../../research/static-core-data.md)、其[manifest](../../../../manifests/extractions/static-data.json)与[schema](../../../../schemas/static-data.schema.json) 拥有名称、起始记录、职业记录、打包与 source/ROM 一致性；
 - [ally growth 与 spell learning](../../../research/ally-growth.md)、其[manifest](../../../../manifests/extractions/growth-data.json)与[schema](../../../../schemas/growth-data.schema.json) 拥有局部生成的行级成长与习得法术表示。
 
 `sf2-map-sprite-assignments-static-v1`（[`map-sprite-assignments-static-v1.json`](../../../../tests/fixtures/h2/map-sprite-assignments-static-v1.json)）是次级消费者所有者。它确认 30 行己方地图精灵表并分类已接受写入器/调用方边界。它不证明故事放置、呈现时序或任意注入地图精灵 ID 的有效性。
@@ -137,7 +137,7 @@ AllyClassGrowth
   spellList = Explicit(entries[]) | InheritFirst
 ```
 
-该记法是逻辑合同，不是必需引擎类布局。30 个具名 `AllyDefinition` 记录可以引用槽 `0..29`，但两个 32 槽集合保持一等：未命名起始槽保留无发明己方 ID，指针槽 30 与 31 尽管共享一个目标仍保留其独立槽身份。`PromotionTables` 保留五个存储数组而不断言调用方准入或变更行为。原版数字 ID 与原始值必须保持可用于 parity 诊断；本地化名称、显示标签与现代化平衡元数据属于独立层。
+该记法是逻辑合同，不是必需引擎类布局。30 个具名 `AllyDefinition` 记录可以引用槽 `0..29`，但两个 32 槽集合保持一等：未命名起始槽保留无发明己方 ID，指针槽 30 与 31 尽管共享一个目标仍保留其独立槽身份。`PromotionTables` 保留五个存储数组而不断言调用方准入或变更行为。原版数字 ID 与原始值必须保持可用于一致性诊断；本地化名称、显示标签与现代化平衡元数据属于独立层。
 
 ## 原版保真与现代化
 
@@ -167,7 +167,7 @@ H4 不要求重制复现原版源文件或字节表布局。它要求确定性�
 | 合同区域 | 证据标签 | 可执行所有者 | 剩余边界 |
 | --- | --- | --- | --- |
 | 42 文件边界、H1 地址、表维度、职业/转职/成长/属性/指针摘要 | **已确认静态** | `sf2-ally-data-static-v1`（[`ally-data-static-v1.json`](../../../../tests/fixtures/h2/ally-data-static-v1.json)） | 完整运行时消费与设计意图 |
-| 名称、32 个起始记录、32 个职业记录、固定打包与 source/ROM parity | **已确认静态** | [static-core owner](../../../research/static-core-data.md)、[manifest](../../../../manifests/extractions/static-data.json)与[schema](../../../../schemas/static-data.schema.json) | 槽 30/31 可达性与完整字段语义 |
+| 名称、32 个起始记录、32 个职业记录、固定打包与 source/ROM 一致性 | **已确认静态** | [static-core owner](../../../research/static-core-data.md)、[manifest](../../../../manifests/extractions/static-data.json)与[schema](../../../../schemas/static-data.schema.json) | 槽 30/31 可达性与完整字段语义 |
 | 五条曲线、59 个职业记录与 122 个习得法术条目 | **已确认静态** | [growth owner](../../../research/ally-growth.md)、[manifest](../../../../manifests/extractions/growth-data.json)与[schema](../../../../schemas/growth-data.schema.json) | 运行时增益、扫描、学习、上限、夹断与刷新行为由[level-up](../../contracts/level-up.md)拥有 |
 | 30 个己方地图精灵行与已接受派生调用方边界 | **已确认静态** | `sf2-map-sprite-assignments-static-v1`（[`map-sprite-assignments-static-v1.json`](../../../../tests/fixtures/h2/map-sprite-assignments-static-v1.json)） | 故事选择、注入 ID、加载器失败模式、可见时序 |
 | 成员、活跃队伍选择、加入/移除/重入变更 | **独立所有者** | [party 与 roster state](../../contracts/party-roster-state.md) | 战役时间线与玩家选择空间保持未闭合 |

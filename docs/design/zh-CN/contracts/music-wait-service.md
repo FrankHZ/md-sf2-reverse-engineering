@@ -43,7 +43,7 @@ fixture 字段名包含“FrameCount”，但本合同只把其值解读为提�
 
 受限时间线直接在固定[`music.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/tech/sound/music.asm)中审查，并由所属[`technical-services.md`](../../../research/technical-services.md)总结。可执行静态验证器是[`services.py`](../../../../src/sf2tool/h2/services.py)。
 
-验证器解析 H1 条目身份，并在已接受 ROM SHA 溯源下检查具名源片段。它不建立该函数体、宏展开或指令编码的逐字节 H1/ROM parity。那些更强比较此处不是已确认事实或 H4 要求。
+验证器解析 H1 条目身份，并在已接受 ROM SHA 溯源下检查具名源片段。它不建立该函数体、宏展开或指令编码的逐字节 H1/ROM 一致性。那些更强比较此处不是已确认事实或 H4 要求。
 
 本合同**不**消费 `expected.resourceFacts`、`expected.soundDriverFacts`、`expected.inputFacts`、`expected.randomServicesFacts`、`expected.sramFacts`、任何其他 `expected.serviceFacts` 字段或 `expected.runtimeQuestions`。
 
@@ -83,7 +83,7 @@ fixture 字段名包含“FrameCount”，但本合同只把其值解读为提�
 
 两个源请求后，每个源码形状循环迭代都有该顺序：
 
-1. 用源等待参数 `3` 替换 `d0`；
+1. 把 `d0` 替换为源等待参数 `3`；
 2. 调用 `Sleep`；
 3. 把 `WAIT_FOR_MUSIC_END` 观察为字节；
 4. 该观察非零时重复；
@@ -103,7 +103,7 @@ fixture 字段名包含“FrameCount”，但本合同只把其值解读为提�
 
 [interrupt/DMA/trap 合同](../../contracts/interrupt-dma-and-trap-state.md) 拥有 `Sleep` 与 `WaitForVInt` 的已接受静态行为：正源参数重复其等待握手。本合同只保留调用顺序与参数 `3`。它不消费中断 fixture、不定义 VInt 节奏，也不把三个源等待迭代转换成墙钟时间。
 
-同样，[audio-system 合同](../../contracts/audio-system.md) 拥有声音驱动数据、命令选择、受限播放状态、通道行为与既有可听/时序 Unknown。本合同不把其谓词重新解读为可听完成。
+同样，[audio-system 合同](../../contracts/audio-system.md) 拥有声音驱动数据、命令选择、受限播放状态、通道行为与既有可听/时序 未知。本合同不把其谓词重新解读为可听完成。
 
 ## 实现无关模型
 
@@ -152,7 +152,7 @@ MusicWaitServiceEvidence
 - 睡眠后谓词顺序与 `k + 1` 轨迹关系；
 - fixture 身份、hash、上游修订与受限溯源。
 
-公开形式不得发布原版源体字节、指令编码、宏展开体字节、私有 ROM 摘录、捕获声音状态、音乐数据、解码音频、模拟器轨迹或版权音视频内容。完整或精确源体比较与指令字节比较可以由未来更强验证器私有使用，但此处不是已接受 parity 证据。
+公开形式不得发布原版源体字节、指令编码、宏展开体字节、私有 ROM 摘录、捕获声音状态、音乐数据、解码音频、模拟器轨迹或版权音视频内容。完整或精确源体比较与指令字节比较可以由未来更强验证器私有使用，但此处不是已接受一致性证据。
 
 ## 跨系统分离
 
@@ -171,7 +171,7 @@ MusicWaitServiceEvidence
 3. 兼容轨迹保留 `WAIT_REQUEST_THEN_PREDICATE_TEST` 顺序；
 4. 立即零谓词序列恰好产生一个等待请求，绝不零；
 5. `k` 次非零谓词观察后接零恰好产生 `k + 1` 个等待请求，且只在零观察后返回；
-6. 每个源兼容等待请求携带源参数 `3`，而不把该计数转换成墙钟或可听时长 parity；
+6. 每个源兼容等待请求携带源参数 `3`，而不把该计数转换成墙钟或可听时长一致性；
 7. 合成用例覆盖立即零、一次非零后零与多次非零后零，并报告有序抽象轨迹；
 8. 允许引擎原生事件/future/回调实现，且不需要复现原版 trap、轮询、`Sleep`、VInt、Z80、地址或指令微实现；
 9. 命令处理、标志生命周期、调用方准入、可听完成、时序、失败、寄存器/CCR 行为与呈现保持独立证据或显式 **未知**；
@@ -183,7 +183,7 @@ MusicWaitServiceEvidence
 
 | 主张 | 证据等级 | 所有者 | 剩余边界 |
 | --- | --- | --- | --- |
-| 条目 `0x16BE` / `5822` 与等待参数 `3` | **已确认静态** | `sf2-tech-services-static-v1` | 无函数体字节 parity |
+| 条目 `0x16BE` / `5822` 与等待参数 `3` | **已确认静态** | `sf2-tech-services-static-v1` | 无函数体字节一致性 |
 | 两个有序 `sndCom` 操作数身份 | **已确认静态源** | 固定 `music.asm` 加 technical-services 所有者 | 传输、排队、接受、数字编码 |
 | 睡眠后测试与非零重试 / 零返回 | **已确认静态源** | 同一受限源时间线 | 标志生产者、生命周期、运行时可达性 |
 | 立即零给一个等待；`k` 次非零后零给 `k + 1` | **已确认静态派生控制关系** | 已接受源顺序的直接后果 | 真实经过时长与调度器行为 |

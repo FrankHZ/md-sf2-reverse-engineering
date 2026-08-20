@@ -10,7 +10,7 @@
 
 本合同重构运行时战斗系统消费的不可变敌人定义数据。它不把源表顺序变成遭遇设计或平衡意图。
 
-- **已确认**：103 个有序名称、103 个固定 56 字节定义、103 个有序战斗精灵行、166 个地图精灵行、完整 source/ROM 字段 parity、零值保留字节、前 103 定义连接、63 行地图精灵尾与未检查敌人地图精灵查找边界。
+- **已确认**：103 个有序名称、103 个固定 56 字节定义、103 个有序战斗精灵行、166 个地图精灵行、完整 source/ROM 字段一致性、零值保留字节、前 103 定义连接、63 行地图精灵尾与未检查敌人地图精灵查找边界。
 - **推断**：无。源码标签保持存储词汇；其完整玩法或视觉含义此处不推断。
 - **未知**：敌人地图精灵索引 `103..165` 的刻意原版调试或其他非标准可达性；一个已接受名称中内嵌 null 的渲染器可见效果；完整生成变换效果；遭遇与升级选择；AI 行为；回合调度；战斗结果；奖励分配；呈现时序；难度曲线；以及作者或平衡意图。
 
@@ -99,7 +99,7 @@
 
 103 个战斗精灵行各存储一个战斗精灵身份与调色板选择器。前 103 个地图精灵行存储地图精灵身份。那些有序引用是 **已确认**；解码图形容器、动画序列、调色板组合、加载器行为与可见时序仍归呈现与图形合同。
 
-两张表都不建立一对一的视觉唯一性。多个敌人定义可以共享精灵族或调色板。现代资源系统可以用稳定资源 ID 替换位置表，但必须为 parity 诊断保留原版引用，并把替换或重映射报告为刻意内容决定。
+两张表都不建立一对一的视觉唯一性。多个敌人定义可以共享精灵族或调色板。现代资源系统可以用稳定资源 ID 替换位置表，但必须为一致性诊断保留原版引用，并把替换或重映射报告为刻意内容决定。
 
 ## 实现无关导入模型
 
@@ -162,7 +162,7 @@ H4 不需要运行时原版表布局。它要求保留溯源的导入，其变�
 | 合同区域 | 证据标签 | 可执行所有者 | 剩余边界 |
 | --- | --- | --- | --- |
 | 更广五文件敌人源边界内的四个范围内表，103/103/103/166 计数 | **已确认静态** | `sf2-core-stats-data-static-v1`（[`core-stats-data-static-v1.json`](../../../../tests/fixtures/h2/core-stats-data-static-v1.json)） | 敌人金币、完整消费者行为与设计意图 |
-| 103 个名称与固定 56 字节定义及 source/ROM 字段 parity | **已确认静态** | [enemy definitions owner](../../../research/enemy-promotions.md)、[manifest](../../../../manifests/extractions/enemy-promotion-data.json)与[ROM layout](../../../../manifests/extractions/enemy-promotion-rom-layout.json) | 名称渲染与完整生成变换 |
+| 103 个名称与固定 56 字节定义及 source/ROM 字段一致性 | **已确认静态** | [enemy definitions owner](../../../research/enemy-promotions.md)、[manifest](../../../../manifests/extractions/enemy-promotion-data.json)与[ROM layout](../../../../manifests/extractions/enemy-promotion-rom-layout.json) | 名称渲染与完整生成变换 |
 | 166 个地图精灵行、`103 + 63` 拆分、构建输入域与未检查消费者 | **已确认静态** | `sf2-enemy-map-sprites-static-v1`（[`enemy-map-sprites-static-v1.json`](../../../../tests/fixtures/h2/enemy-map-sprites-static-v1.json)） | 非标准尾可达性与可见加载器结果 |
 | 战斗选择、放置、区域与局部命令数据 | **独立所有者** | [battle encounter definition](../../contracts/battle-encounter-definition.md) | 运行时准入与故事选择 |
 | 动作/移动选择、回合调度、战斗、奖励与呈现 | **独立所有者** | [battle AI](../../contracts/battle-ai-decision.md)、[battle control](../../contracts/battle-control-lifecycle.md)、[交战解决](../../contracts/combat-resolution.md)与[battle-scene presentation](../../contracts/battle-scene-presentation.md) | 端到端多回合行为与玩家可见输出 |

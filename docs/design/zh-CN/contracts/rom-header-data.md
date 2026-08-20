@@ -19,7 +19,7 @@
 
 可执行所有者是 fixture id `sf2-remaining-core-static-v1`，位于 [`tests/fixtures/h2/remaining-core-static-v1.json`](../../../../tests/fixtures/h2/remaining-core-static-v1.json)。本合同只消费 `expected.headerFacts`。研究所有者是[ROM Header、Window Engine 与 Special Debug Flows](../../../research/remaining-core.md)，受限源所有者是固定基线处的 `code/romheader.asm`。
 
-research-index 溯源记录是 `core.rom-header`，绑定到 ROM 地址 `0` 的源符号 `InitialStack`。该符号/地址对只是证据锚点。它不建立初始栈值、栈配置、重置语义或任何调用方可视行为。
+research-index 溯源记录是 `core.rom-header`，绑定到源符号 `InitialStack`，其 ROM 地址为 `0`。该符号/地址对只是证据锚点。它不建立初始栈值、栈配置、重置语义或任何调用方可视行为。
 
 向量表与控制台头共享一个源文件与一个合同，但它们必须保持独立逻辑结构。消费者不能用控制台头元数据替换向量表摘要，也不能从产品、内存范围、校验和或区域字段推断向量目标。
 
@@ -63,7 +63,7 @@ fixture 直接绑定恰好五条 research-index 记录：
 - 中断优先级、节奏、确认或设备行为；
 - 精确逐 trap 服务映射或内联操作数解码。
 
-计数与三个已接受摘要字段对公开可追溯性足够。私有源审计可以检查有序向量字，但那些字不成为公开 fixture 载荷或本合同下的 H4 parity 要求。
+计数与三个已接受摘要字段对公开可追溯性足够。私有源审计可以检查有序向量字，但那些字不成为公开 fixture 载荷或本合同下的 H4 一致性要求。
 
 ## 控制台头元数据
 

@@ -10,7 +10,7 @@
 
 本合同定义不可变物品数据与辅助查找目录。它不定义完整事务、物品栏变更、持久性、呈现、随机结果或经济平衡。
 
-- **已确认**：128 个有序物品名与带 source/ROM parity 的 16 字节定义；总计 768 字节的九个辅助 ROM 范围；其完整表计数；以及已接受静态商店、宝箱、损坏消息、秘银、车队、野外使用与武器图形消费者规则。
+- **已确认**：128 个有序物品名与带 source/ROM 一致性的 16 字节定义；总计 768 字节的九个辅助 ROM 范围；其完整表计数；以及已接受静态商店、宝箱、损坏消息、秘银、车队、野外使用与武器图形消费者规则。
 - **推断**：无。源码标签与枚举名保持存储词汇，而非玩家面向含义或设计意图的证据。
 - **未知**：全部 30 个商店索引的故事/调试准入；特殊车队呈现；观察到的铁匠频率与订单持久性；畸形索引效果；完整物品使用/装备/损坏流；事务原子性；存档持久性；价格进展；以及平衡意图。
 
@@ -20,7 +20,7 @@
 
 `sf2-core-stats-data-static-v1`（[`core-stats-data-static-v1.json`](../../../../tests/fixtures/h2/core-stats-data-static-v1.json)）证明完整十文件物品源边界、H1 地址、128 个名称、128 个定义与辅助表基数。其带来源所有者是[item、spell 与 enemy data inventory](../../../research/core-stats-data-inventory.md)。
 
-更早的[static core owner](../../../research/static-core-data.md)、[manifest](../../../../manifests/extractions/static-data.json)、[schema](../../../../schemas/static-data.schema.json)与[ROM layout](../../../../manifests/extractions/rom-static-layout.json) 拥有规范物品记录与独立 source/ROM parity。已接受轨道在其更广范围内比较全部 281 个固定宽度记录且零不匹配；本合同只消费其 128 个物品行。
+更早的[static core owner](../../../research/static-core-data.md)、[manifest](../../../../manifests/extractions/static-data.json)、[schema](../../../../schemas/static-data.schema.json)与[ROM layout](../../../../manifests/extractions/rom-static-layout.json) 拥有规范物品记录与独立 source/ROM 一致性。已接受轨道在其更广范围内比较全部 281 个固定宽度记录且零不匹配；本合同只消费其 128 个物品行。
 
 `sf2-item-auxiliary-static-v1`（[`item-auxiliary-static-v1.json`](../../../../tests/fixtures/h2/item-auxiliary-static-v1.json)）是专用辅助所有者。它逐字节比较九个地址范围、清单八个源文件与七个消费者文件，并记录下文总结的完整查找边界。生成行级内容在 `local/derived/` 下保持私有。
 
@@ -116,7 +116,7 @@ ItemAuxiliaryCatalog
   weaponGraphicsRows[84]
 ```
 
-该记法是逻辑合同，不是必需引擎类布局。原版 ID、顺序、打包、重复商店行、哨兵、带符号值与源溯源必须保持可用于 parity 诊断。运行时服务通过独立接口消费这些记录。
+该记法是逻辑合同，不是必需引擎类布局。原版 ID、顺序、打包、重复商店行、哨兵、带符号值与源溯源必须保持可用于一致性诊断。运行时服务通过独立接口消费这些记录。
 
 ## 原版保真与现代化
 
@@ -146,8 +146,8 @@ H4 不需要运行时原版字节表。它需要保留溯源的导入，能解�
 | 合同区域 | 证据标签 | 可执行所有者 | 剩余边界 |
 | --- | --- | --- | --- |
 | 十文件物品源边界与完整表基数 | **已确认静态** | `sf2-core-stats-data-static-v1`（[`core-stats-data-static-v1.json`](../../../../tests/fixtures/h2/core-stats-data-static-v1.json)） | 完整运行时消费者与设计意图 |
-| 128 个名称、固定 16 字节定义与 source/ROM parity | **已确认静态** | [static core owner](../../../research/static-core-data.md)、[manifest](../../../../manifests/extractions/static-data.json)与[ROM layout](../../../../manifests/extractions/rom-static-layout.json) | 完整字段语义与物品使用/装备行为 |
-| 九个辅助范围、768 parity 字节、表计数与受限消费者 | **已确认静态** | `sf2-item-auxiliary-static-v1`（[`item-auxiliary-static-v1.json`](../../../../tests/fixtures/h2/item-auxiliary-static-v1.json)） | 调用方准入、呈现、RNG 观察、持久性 |
+| 128 个名称、固定 16 字节定义与 source/ROM 一致性 | **已确认静态** | [static core owner](../../../research/static-core-data.md)、[manifest](../../../../manifests/extractions/static-data.json)与[ROM layout](../../../../manifests/extractions/rom-static-layout.json) | 完整字段语义与物品使用/装备行为 |
+| 九个辅助范围、768 一致性字节、表计数与受限消费者 | **已确认静态** | `sf2-item-auxiliary-static-v1`（[`item-auxiliary-static-v1.json`](../../../../tests/fixtures/h2/item-auxiliary-static-v1.json)） | 调用方准入、呈现、RNG 观察、持久性 |
 | 商店/车队/铁匠事务顺序 | **独立所有者** | [service interactions](../../contracts/service-interactions.md) | 完整运行时边界、持久性与 UX |
 | 战斗效果、法术使用、奖励与图形呈现 | **独立所有者** | [交战解决](../../contracts/combat-resolution.md)、[法术解决](../../contracts/spell-resolution.md)与[battle-scene presentation](../../contracts/battle-scene-presentation.md) | 完整物品效果分发与可见输出 |
 | 定价曲线、物品平衡、制作策略、替换内容 | **未知 / 刻意设计** | 未来综合、模拟与内容所有者 | 不得从存储目录推断意图 |

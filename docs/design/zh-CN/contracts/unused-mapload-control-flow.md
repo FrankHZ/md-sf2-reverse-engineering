@@ -60,7 +60,7 @@
 
 十个传出站点是四个 `GenerateRandomNumber` 请求、两个 `SetVdpReg`、两个 `WaitForVInt`、一个 `sub_36B2` 与一个 `sub_2F24`。这些是传出调用计数。它们不计数传入调用方，也不建立 `sub_2EC0` 不可达。
 
-受限源形状直接在固定[`unused_mapload.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/maps/unused_mapload.asm)中审查。H1 列表提供条目与排他结束边界。本合同不从 H2 fixture 声称逐字节指令体 parity。
+受限源形状直接在固定[`unused_mapload.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/maps/unused_mapload.asm)中审查。H1 列表提供条目与排他结束边界。本合同不从 H2 fixture 声称逐字节指令体一致性。
 
 ### 精确 research-index 分母
 
@@ -119,7 +119,7 @@ fixture 的源成员面包含跨七个源路径的八条记录。六条携带直
 3. `PLANE_B_SCROLL_SPEED_X`；
 4. `PLANE_B_SCROLL_SPEED_Y`。
 
-对每个字，辅助把它加载进 `d0.w`、加一、把字结果与 `128` 比较，并在结果带符号大于 `128` 时用带符号 `bgt` 跳过存储。否则写回结果。最后弹出 `d0.w` 并返回。
+对每个字，辅助把它加载进 `d0.w`、加一、把字结果与 `128` 比较，并使用带符号 `bgt` 在结果带符号大于 `128` 时跳过存储。否则写回结果。最后弹出 `d0.w` 并返回。
 
 该规则刻意不被总结为无条件饱和递增。对普通受限值，`127` 存储 `128`，而当前值 `128` 计算 `129` 并让存储字不变。负输入、字溢出与此类受限合成检查之外的状态保留其精确源分支形状，但无已接受运行时含义。
 
@@ -178,7 +178,7 @@ UnusedMaploadControlFlow {
 
 公开合同可以保留上文命名的受限源路径与符号、所选 H1 地址、常量、调用计数摘要、源 hash、分支/数据流规则、fixture 摘要与溯源。完整 source/H1/ROM 体、指令字节与其他非公开验证材料不是公开投影的一部分。固定上游链接是溯源，不是复制源所有权。
 
-在 fixture 已接受 ROM 溯源下验证固定源时间线与 H1 条目/边界身份后，重制可以用引擎原生回调、类型化状态或仅轨迹档案适配器表示抽象请求。这不声称指令体 parity。重制不需要在生产代码中复现 Mega Drive 地址、68000 寄存器文件、字栈机制、VDP 寄存器、硬件中断循环或原版指令序列。
+在 fixture 已接受 ROM 溯源下验证固定源时间线与 H1 条目/边界身份后，重制可以用引擎原生回调、类型化状态或仅轨迹档案适配器表示抽象请求。这不声称指令体一致性。重制不需要在生产代码中复现 Mega Drive 地址、68000 寄存器文件、字栈机制、VDP 寄存器、硬件中断循环或原版指令序列。
 
 ## 保真与现代化
 
@@ -205,7 +205,7 @@ UnusedMaploadControlFlow {
 ## H4 验收检查清单
 
 1. 保留字段闭合 fixture 身份、条目地址、源溯源与已接受所有者行，而不消费兄弟地图事实子树。
-2. 保留四个 RNG 请求操作数与 `d0..d3` 结果暂存顺序，后接 `d4..d7 = 4`，仅作为源静态调用站点事实。
+2. 保留四个 RNG 请求操作数与 `d0..d3` 结果暂存顺序，后接 d4..d7 = 4，仅作为源静态调用站点事实。
 3. 保留 `sub_36B2` 然后初始 `WaitForVInt`，后接精确两请求/等待/辅助/辅助后测试循环顺序。
 4. 保留内部辅助的四个字身份、加一操作、与 128 的带符号比较、条件存储与精确 `d0.w` 保存/恢复边界，而不声称通用饱和或 CCR/全寄存器中性。
 5. 不把调用身份转换成 RNG、显示、VDP、VInt、摄像机、转移完成或呈现声称。
@@ -217,15 +217,15 @@ UnusedMaploadControlFlow {
 
 | 主张 | 证据 | 标签 |
 | --- | --- | --- |
-| `sub_2EC0` 身份与 `0x2EC0` 条目 | common-map H2 fixture 与 H1 列表 | Confirmed static |
-| `sub_2EC0..sub_2F24..0x2F6A` 边界 | 固定源与 H1 列表 | Confirmed static source |
-| 86/51/7/0 与 10 调用所有者行清单 | 已接受摘要下的 H2 生成所有者行 | Confirmed static |
-| 四个 RNG 请求操作数与寄存器暂存 | 固定 `unused_mapload.asm` | Confirmed static source |
-| 显示/等待/VDP/辅助/位域循环顺序 | 固定 `unused_mapload.asm` | Confirmed static source |
-| 四个有序辅助字、带符号分支、`d0.w` 保存 | 固定源与 H1 列表 | Confirmed static source |
-| “unused/randomized mapload”含义 | 仅上游词汇 | Inferred |
-| 被调方效果、运行时可达性、活性、时序、可见结果 | 未被所选所有者建立 | Unknown |
-| 精确单记录关联边界 | research-index 与 fixture 成员审计 | Confirmed metadata |
+| `sub_2EC0` 身份与 `0x2EC0` 条目 | common-map H2 fixture 与 H1 列表 | 已确认 static |
+| `sub_2EC0..sub_2F24..0x2F6A` 边界 | 固定源与 H1 列表 | 已确认 static source |
+| 86/51/7/0 与 10 调用所有者行清单 | 已接受摘要下的 H2 生成所有者行 | 已确认 static |
+| 四个 RNG 请求操作数与寄存器暂存 | 固定 `unused_mapload.asm` | 已确认 static source |
+| 显示/等待/VDP/辅助/位域循环顺序 | 固定 `unused_mapload.asm` | 已确认 static source |
+| 四个有序辅助字、带符号分支、`d0.w` 保存 | 固定源与 H1 列表 | 已确认 static source |
+| “unused/randomized mapload”含义 | 仅上游词汇 | 推断 |
+| 被调方效果、运行时可达性、活性、时序、可见结果 | 未被所选所有者建立 | 未知 |
+| 精确单记录关联边界 | research-index 与 fixture 成员审计 | 已确认 metadata |
 
 ## 复现
 

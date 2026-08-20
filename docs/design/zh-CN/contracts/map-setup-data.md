@@ -21,7 +21,7 @@
 5. 受限 `GetMapSetupEntityList` 身份与源时间线；
 6. 不再分发完整路线或指针图的公开聚合投影。
 
-此处消费的唯一可执行所有者是 fixture id `sf2-map-setup-static-v1`，位于 [`tests/fixtures/h2/map-setup-static-v1.json`](../../../../tests/fixtures/h2/map-setup-static-v1.json)，由 [`src/sf2tool/h2/map_setup.py`](../../../../src/sf2tool/h2/map_setup.py) 实现。其所属研究文章是[Map Data Inventory 与 Binary Parity](../../../research/map-data-inventory.md)。
+此处消费的唯一可执行所有者是 fixture id `sf2-map-setup-static-v1`，位于 [`tests/fixtures/h2/map-setup-static-v1.json`](../../../../tests/fixtures/h2/map-setup-static-v1.json)，由 [`src/sf2tool/h2/map_setup.py`](../../../../src/sf2tool/h2/map_setup.py) 实现。其所属研究文章是[Map Data Inventory 与 Binary 一致性](../../../research/map-data-inventory.md)。
 
 消费 fixture 面刻意限定到：
 
@@ -30,7 +30,7 @@
 - `expected.sourceFacts.pointerLayout`；
 - 只有 `expected.sourceFacts.selector.mapTableEndWord` 与 `expected.sourceFacts.selector.mapRowEndWord` 作为序列化终止符身份；
 - `expected.aliasFlagRoutes`；
-- 专用验证器生成的路由序列化、源顺序、表所有权、source/H1/ROM parity 与受限溯源事实；
+- 专用验证器生成的路由序列化、源顺序、表所有权、source/H1/ROM 一致性与受限溯源事实；
 - 紧凑 `expected.selectionCases` 只作为公开跨所有者见证元数据。
 
 本合同**不**消费其余选择器行为字段 `defaultPointerLoadedBeforeFlags`、`allFlagRowsAreScanned`、`setFlagOverwritesCandidate`、`winner` 或 `missingMapResult`。那些字段保持已接受 map-exploration 选择器所有者。它也不消费或重述 `expected.sourceFacts.dispatch`：初始化、区域、物品、实体与区域描述分发器规则保持其已接受运行时与专用分发器所有者。选择器 H3 fixture 与实体人口 H3 fixture 同样排除。
@@ -85,7 +85,7 @@ FlagRow             := flagWord setupPointer
 | 标志行 | 66 |
 | 有序路线引用 | 130 |
 | 路由字节 | 910 |
-| 完整路由表 source/ROM parity | 1 |
+| 完整路由表 source/ROM 一致性 | 1 |
 
 `missingMapCount` 值 15 限定到验证器已接受地图 ID 域 `0..78`（含 79 个 ID）。它意味着该精确域中十五个 ID 没有路由行。它不是通用地图命名空间、修改输入声称或任何路径在运行时自然不可达的证明。
 
@@ -115,7 +115,7 @@ FlagRow             := flagWord setupPointer
 126 * 24 = 3,024 pointer bytes
 ```
 
-全部 126 个定义范围匹配其已接受 ROM 字节。parity 计数是逐定义 source/ROM 关系，不是发布指针、源路径或目标图的许可。
+全部 126 个定义范围匹配其已接受 ROM 字节。一致性计数是逐定义 source/ROM 关系，不是发布指针、源路径或目标图的许可。
 
 ## 六槽定义形状
 
@@ -134,7 +134,7 @@ FlagRow             := flagWord setupPointer
 
 私有导入器必须保留全部 126 个有序定义身份与全部 756 个目标引用，包括每个定义的源符号、源路径、ROM 地址与目标符号/地址。目标保持对独立拥有资源的引用；它们不被复制进每个定义。
 
-完整定义/引用图是私有的。公开证据可以保留六个槽名与偏移、计数、字节总计、parity 总计、fixture 溯源与四条已受追踪别名行，但不得发布 126 个符号/地址/源路径或 756 个目标值。
+完整定义/引用图是私有的。公开证据可以保留六个槽名与偏移、计数、字节总计、一致性总计、fixture 溯源与四条已受追踪别名行，但不得发布 126 个符号/地址/源路径或 756 个目标值。
 
 ## 实体列表访问接缝
 
@@ -241,7 +241,7 @@ MapSetupPublicSummary {
 - 只在已接受 `0..78` 地图 ID 域内无路由行的十五个地图 ID；
 - 126 个唯一标识六指针定义、四个精确别名行、756 个槽与 3,024 指针字节；
 - 六个有序槽身份与偏移；
-- 一个路由表与 126 个指针表 source/H1/ROM parity 关系；
+- 一个路由表与 126 个指针表 source/H1/ROM 一致性关系；
 - 受限实体列表访问器时间线与公开/私有证据投影。
 
 ### 推断
@@ -267,7 +267,7 @@ MapSetupPublicSummary {
 4. 保留 126 个不同源定义身份、每定义六个有序目标槽、756 个总槽与 3,024 指针字节，而不声称两两内容唯一；
 5. 把四个精确默认定义别名保留为不同路线行，并拒绝意外别名压平或发明定义；
 6. 复现六个槽身份/偏移，并让每个私有目标引用保持其原定义与槽；
-7. 私有验证一个路由表与 126 个定义 source/H1/ROM parity 关系；
+7. 私有验证一个路由表与 126 个定义 source/H1/ROM 一致性关系；
 8. 保留受限实体列表访问器时间线，而不声称选择器、调用方、人口或重载保真；
 9. 把完整路线、符号、地址、源路径、目标值、原始字/字节与底层资源内容保持公开 fixture 与报告之外；
 10. 通过独立所有者报告选择器行为、事件/初始化执行、运行时生命周期、持久性、故事、呈现、畸形输入与替换策略，或作为 **未知**。

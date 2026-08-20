@@ -9,7 +9,7 @@
 
 ## 目的
 
-本合同保留已接受 common-menu 清单中最小的完整未关联源文件：`unusedsub_15268.asm` 中的 `sub_15268`。例程把同一源常量在隔离负偏移处写一次，然后通过有序后递增循环写十三次，并返回。
+本合同保留已接受 common-menu 清单中最小的完整未关联源文件：`sub_15268`，位于 `unusedsub_15268.asm`。例程把同一源常量在隔离负偏移处写一次，然后通过有序后递增循环写十三次，并返回。
 
 上游路径与注释把函数称为“unused”与“menu engine function”。那些标签是档案词汇，不是用途、死代码状态、自然不可达性或可见菜单行为的证明。本合同只拥有受限静态写入算法及其溯源。
 
@@ -28,13 +28,13 @@ H1 列表把完整函数放在排他区间 `0x15268..0x15284`（28 字节跨度�
 
 **推断：** 只有上游 `unused` 与 `menu engine` 词汇。常量、目标符号与位置不建立预期布局内容、清除行为、初始化、呈现或产品暴露。
 
-**未知或排除：** 自然调用方准入；间接或计算可达性；调用方状态；例程为何存在；`byte_FFCC86` 的语义含义；后期读取器是否观察任何写入；两个已准入范围之外的内存所有权；`a0` 与 `d7` 后状态作为可移植 ABI；CCR 效果；栈与返回地址行为；中断或原子性；硬件总线效果；VInt、DMA、VDP 或渲染行为；可见瓦片、窗口或菜单；时序；持久性；畸形调用；以及 source、H1 与 ROM 之间的指令体 parity。
+**未知或排除：** 自然调用方准入；间接或计算可达性；调用方状态；例程为何存在；`byte_FFCC86` 的语义含义；后期读取器是否观察任何写入；两个已准入范围之外的内存所有权；`a0` 与 `d7` 后状态作为可移植 ABI；CCR 效果；栈与返回地址行为；中断或原子性；硬件总线效果；VInt、DMA、VDP 或渲染行为；可见瓦片、窗口或菜单；时序；持久性；畸形调用；以及 source、H1 与 ROM 之间的指令体一致性。
 
 ## 证据合同
 
 本合同只消费：
 
-- 来自[`sf2-common-menus-static-v1`](../../../../tests/fixtures/h2/common-menus-static-v1.json)的 `function.sub_15268`；
+- `function.sub_15268`，来自[`sf2-common-menus-static-v1`](../../../../tests/fixtures/h2/common-menus-static-v1.json)；
 - 已接受 H2 生成所有者行身份、源 hash、计数与无传出调用清单；
 - `upstreamCommit` 与 `romSha256` 溯源；
 - 固定[`unusedsub_15268.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/menus/unusedsub_15268.asm)中的受限时间线；
@@ -79,7 +79,7 @@ menus.unused-15268
 源建立该精确顺序：
 
 1. 把源符号 `byte_FFCC86`（`0xFFCC86`）加载进 `a0`；
-2. 在 `-0x50(a0)` 写 longword `0xC020C020`，即半开字节范围 `0xFFCC36..0xFFCC3A`；
+2. 写 longword `0xC020C020` 到 `-0x50(a0)`，即半开字节范围 `0xFFCC36..0xFFCC3A`；
 3. 执行 `moveq #0xC,d7`；
 4. 在 `loc_15278`，把 longword `0xC020C020` 写到 `(a0)+`；
 5. 执行 `dbf d7,loc_15278`；
@@ -136,7 +136,7 @@ UnusedMenuConstantWriteEvidence
 
 该记法是溯源与兼容模型，不是必需运行时类、公开内存布局或 68000 模拟器 API。在 fixture 已接受 ROM 溯源下私有源与 H1 身份验证后，重制可以用类型化数组、列表填充或仅轨迹档案适配器表达已准入写入结果。
 
-它不需要在生产代码中复现 Mega Drive 地址空间、`a0`、`d7`、`DBF`、大端 longword 存储或原版指令序列。精确指令体 parity 不是本合同已接受前提。
+它不需要在生产代码中复现 Mega Drive 地址空间、`a0`、`d7`、`DBF`、大端 longword 存储或原版指令序列。精确指令体一致性不是本合同已接受前提。
 
 ## 公开与私有投影
 
@@ -170,7 +170,7 @@ UnusedMenuConstantWriteEvidence
 
 1. fixture、源路径/hash、上游 commit、已接受 ROM 溯源、条目与排他结束保持可追溯；
 2. 源清单保留 22 行、六条语句、两个全局标签、零局部标签、零传出直接调用与零间接调用站点；
-3. 已准入内存关系保留一次 `base-0x50` 写入后接 `i=0..12` 的十三次有序 `base+4*i` 写入，全部使用 `0xC020C020`；
+3. 已准入内存关系保留一次 `base-0x50` 写入后接十三次有序 `base+4*i` 写入，其中 `i=0..12`，全部使用 `0xC020C020`；
 4. 测试保持两个范围不相交并精确计数 14 longword/56 已准入字节；
 5. 如果实现合成兼容检查，它只断言其已准入内存投影中两个范围之外的字节不变，绝不断言寄存器、CCR、栈、时序、中断或完整机器状态不变；
 6. 引擎原生实现可以替换源循环，同时保留已准入写入结果与溯源，而不复现 Mega Drive 地址或指令机制；
@@ -186,20 +186,20 @@ UnusedMenuConstantWriteEvidence
 - [`graphics-service-state`](../../contracts/graphics-service-state.md)与[`interrupt-dma-and-trap-state`](../../contracts/interrupt-dma-and-trap-state.md) 保留图形服务与 VInt/DMA/转移边界。该源不发出此类请求。
 - `menus.yes-no-prompt` 保持未关联。其独立源在 `0x15284` 开始；与 `rts` 终止例程的相邻不建立行为接缝。
 - `menus.unused-12606` 与 `menus.unused-156a8` 保持未关联。相似上游名不建立共享行为。
-- 文本、声音、输入、UI 呈现、持久性与硬件时序保持其既有所有者或 Unknown。
+- 文本、声音、输入、UI 呈现、持久性与硬件时序保持其既有所有者或 未知。
 
 ## 证据矩阵
 
 | 主张 | 证据 | 标签 |
 | --- | --- | --- |
-| `sub_15268` 身份与 `0x15268` 条目 | common-menu H2 fixture | Confirmed static |
-| 所有者行 hash 与 22/6/2/0/0/0 计数 | 已接受 H2 生成清单 | Confirmed static |
-| 排他 `0x15268..0x15284` 区间 | 固定源与 H1 列表 | Confirmed static source |
-| 隔离写入、`0xC` 循环配置、十三次写入与 `rts` 顺序 | 固定源与 H1 列表 | Confirmed static source |
-| 零外部符号调用方出现 | 完整已接受源树 token 搜索 | Confirmed bounded inventory |
-| “unused menu engine”用途 | 仅上游路径/注释词汇 | Inferred |
-| 间接可达性、RAM 含义、机器状态、时序、可见结果 | 未被所选所有者建立 | Unknown |
-| 精确单记录未来关联 | H2 连接与 research-index 审计 | Confirmed metadata |
+| `sub_15268` 身份与 `0x15268` 条目 | common-menu H2 fixture | 已确认 static |
+| 所有者行 hash 与 22/6/2/0/0/0 计数 | 已接受 H2 生成清单 | 已确认 static |
+| 排他 `0x15268..0x15284` 区间 | 固定源与 H1 列表 | 已确认 static source |
+| 隔离写入、`0xC` 循环配置、十三次写入与 `rts` 顺序 | 固定源与 H1 列表 | 已确认 static source |
+| 零外部符号调用方出现 | 完整已接受源树 token 搜索 | 已确认 bounded inventory |
+| “unused menu engine”用途 | 仅上游路径/注释词汇 | 推断 |
+| 间接可达性、RAM 含义、机器状态、时序、可见结果 | 未被所选所有者建立 | 未知 |
+| 精确单记录未来关联 | H2 连接与 research-index 审计 | 已确认 metadata |
 
 ## 复现
 

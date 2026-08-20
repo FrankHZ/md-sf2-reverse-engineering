@@ -1,6 +1,6 @@
 # 法术定义数据合同
 
-- 状态：**已确认静态法术身份、属性行、定义打包与定义 source/ROM parity**
+- 状态：**已确认静态法术身份、属性行、定义打包与定义 source/ROM 一致性**
 - 证据日期：2026-08-08
 - 范围：44 个原版基础法术身份与属性行、89 个固定法术定义、打包身份/等级与动画字段，以及半径 3 存储例外
 
@@ -10,7 +10,7 @@
 
 本合同定义不可变法术记录。它不从字段或枚举名推断运行时效果，也不拥有法术范围表或目标几何。
 
-- **已确认**：44 个有序法术名；44 个有序属性值；89 个固定八字节定义记录；定义 source/ROM parity；字段打包；以及存储半径 3 例外。
+- **已确认**：44 个有序法术名；44 个有序属性值；89 个固定八字节定义记录；定义 source/ROM 一致性；字段打包；以及存储半径 3 例外。
 - **推断**：无。element、properties、animation、radius 与 power 等标签在专用运行时所有者建立其行为之前保持存储词汇。
 - **未知**：完整元素与属性语义；目标准入与范围几何；状态与效果分发；MP 检查/支付；调用方可达性；动画与呈现；半径 3 的运行时含义；平衡意图；本地化；以及可分发内容。
 
@@ -18,9 +18,9 @@
 
 ## 证据所有者
 
-`sf2-core-stats-data-static-v1`（[`core-stats-data-static-v1.json`](../../../../tests/fixtures/h2/core-stats-data-static-v1.json)）是三个关联表的专用 H2 清单所有者。它确认其 H1 地址与 `44 名 / 44 元素 / 89 定义` 基数。其带来源解释是[item、spell 与 enemy data inventory](../../../research/core-stats-data-inventory.md)。
+`sf2-core-stats-data-static-v1`（[`core-stats-data-static-v1.json`](../../../../tests/fixtures/h2/core-stats-data-static-v1.json)）是三个关联表的专用 H2 清单所有者。它确认其 H1 地址与 `44 names / 44 elements / 89 definitions` 基数。其带来源解释是[item、spell 与 enemy data inventory](../../../research/core-stats-data-inventory.md)。
 
-[static core owner](../../../research/static-core-data.md)、[manifest](../../../../manifests/extractions/static-data.json)、[schema](../../../../schemas/static-data.schema.json)、[ROM layout](../../../../manifests/extractions/rom-static-layout.json)与[ROM schema](../../../../schemas/rom-static-data.schema.json) 拥有规范名称提取与独立定义 source/ROM parity。更广轨道比较 281 个固定宽度记录且零字段不匹配；本合同消费其法术名与 89 个法术定义行。
+[static core owner](../../../research/static-core-data.md)、[manifest](../../../../manifests/extractions/static-data.json)、[schema](../../../../schemas/static-data.schema.json)、[ROM layout](../../../../manifests/extractions/rom-static-layout.json)与[ROM schema](../../../../schemas/rom-static-data.schema.json) 拥有规范名称提取与独立定义 source/ROM 一致性。更广轨道比较 281 个固定宽度记录且零字段不匹配；本合同消费其法术名与 89 个法术定义行。
 
 独立的 `spellranges.asm` 指针/环表与战场范围行为刻意不是证据依赖。定义局部 min/max/radius 字节只作为原始字段保留。
 
@@ -52,7 +52,7 @@
 | `6` | 半径 | 原始字节 |
 | `7` | 威力 | 原始字节 |
 
-存储顺序是最大范围在最小范围之前。导入器不得静默重排原始记录，即使其归一化模型在 `maxRange` 之前暴露 `minRange`。
+存储顺序是最大范围在最小范围之前。导入器不得静默重排原始记录，即使其归一化模型先暴露 `minRange` 再暴露 `maxRange`。
 
 打包等级值在高二位编码等级 1 到 4。这是身份/存储规则。它不证明等级可用性、获取顺序、MP 可负担性或效果缩放。
 
@@ -93,7 +93,7 @@ SpellDefinition
   power
 ```
 
-该记法是逻辑的，不是必需引擎布局。原始字节与归一化字段都保持可用于 parity 诊断。范围表、运行时效果处理器、目标与呈现资源的引用属于独立层。
+该记法是逻辑的，不是必需引擎布局。原始字节与归一化字段都保持可用于一致性诊断。范围表、运行时效果处理器、目标与呈现资源的引用属于独立层。
 
 ## 原版保真与现代化
 
@@ -121,7 +121,7 @@ SpellDefinition
 | 合同区域 | 证据标签 | 可执行所有者 | 剩余边界 |
 | --- | --- | --- | --- |
 | 更广四文件法术源边界内的三个范围内表，44/44/89 计数 | **已确认静态** | `sf2-core-stats-data-static-v1`（[`core-stats-data-static-v1.json`](../../../../tests/fixtures/h2/core-stats-data-static-v1.json)） | 法术范围表、完整消费者与设计意图 |
-| 法术名、89 个固定记录、打包与 source/ROM parity | **已确认静态** | [static core owner](../../../research/static-core-data.md)、[manifest](../../../../manifests/extractions/static-data.json)与[ROM layout](../../../../manifests/extractions/rom-static-layout.json) | 运行时字段语义与版权内容 |
+| 法术名、89 个固定记录、打包与 source/ROM 一致性 | **已确认静态** | [static core owner](../../../research/static-core-data.md)、[manifest](../../../../manifests/extractions/static-data.json)与[ROM layout](../../../../manifests/extractions/rom-static-layout.json) | 运行时字段语义与版权内容 |
 | 44 个位置属性行 | **已确认静态** | `sf2-core-stats-data-static-v1`（[`core-stats-data-static-v1.json`](../../../../tests/fixtures/h2/core-stats-data-static-v1.json)） | 抗性/效果解读 |
 | 伤害、治疗、状态、目标准入与 EXP 行为 | **独立所有者** | [法术解决](../../contracts/spell-resolution.md) | 完整动作族与调用方可达性 |
 | 范围环/几何与战斗呈现 | **独立所有者** | 未来/相邻战场与[battle-scene presentation](../../contracts/battle-scene-presentation.md)所有者 | 几何、动画时序、渲染输出 |

@@ -12,7 +12,7 @@
 
 ## 合同边界
 
-本合同定义原版 `data/maps/entries/*/mapsetups/` 源语料下最后 47 个非指针表 `scripts*.asm` 文件的静态数据与溯源边界：
+本合同定义原版 `scripts*.asm` 文件中位于 `data/maps/entries/*/mapsetups/` 源语料下、最后 47 个非指针表文件的静态数据与溯源边界：
 
 1. 全部 47 个源文件的有序身份及其代表标签/地址；
 2. 178 个源有序、非空带标签程序及其 8,058 个有序操作；
@@ -282,7 +282,7 @@ StandaloneMapScriptPublicSummary {
 - 划分为 12 个 standalone 拥有与 63 个非 standalone 拥有身份的 75 个 init 目标；
 - 122 个 `csc_end` 与 16 个 `rts` 源 token；
 - 与完整私有程序/引用内容分开的受限公开元数据；
-- `0x5E772` 的唯一 research-index 追踪锚点 `map.data.cs-5e772`。
+- 唯一 research-index 追踪锚点 `map.data.cs-5e772`，地址为 `0x5E772`。
 
 ### 推断
 

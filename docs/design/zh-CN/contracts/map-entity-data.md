@@ -20,7 +20,7 @@
 4. 固定、行走与序列记录种类清单；
 5. 受限初始地图精灵值与 `InitializeMapEntities` 消费者规则。
 
-可执行所有者是 fixture id `sf2-map-entities-static-v1`，位于 [`tests/fixtures/h2/map-entities-static-v1.json`](../../../../tests/fixtures/h2/map-entities-static-v1.json)。研究所有者是[Map Data Inventory 与 Setup/Event Surfaces](../../../research/map-data-inventory.md)。本合同消费 fixture 的完整 `expected` 对象与 ROM 地址 `278732`（`0x440CC`）的受限 `InitializeMapEntities` 溯源。
+可执行所有者是 fixture id `sf2-map-entities-static-v1`，位于 [`tests/fixtures/h2/map-entities-static-v1.json`](../../../../tests/fixtures/h2/map-entities-static-v1.json)。研究所有者是[Map Data Inventory 与 Setup/Event Surfaces](../../../research/map-data-inventory.md)。本合同消费 fixture 的完整 `expected` 对象与 `InitializeMapEntities` 的受限溯源，其 ROM 地址为 `278732`（`0x440CC`）。
 
 精确未来 research-index 关联只有 `scripting.map.mapfunctions`。函数身份与地址把静态消费者绑定到其源所有者；它们不使本合同成为地图配置选择、运行时实体人口、实体动作、移动或呈现的所有者。
 
@@ -245,7 +245,7 @@ MapEntityPublicSummary {
 
 重制面向 H4 适配器只在能以下情况时通过本合同：
 
-1. 识别 fixture `sf2-map-entities-static-v1`、固定基线与地址 `278732` 的 `InitializeMapEntities`，而不声称运行时生命周期行为；
+1. 识别 fixture `sf2-map-entities-static-v1`、固定基线与 `InitializeMapEntities`，其地址为 `278732`，而不声称运行时生命周期行为；
 2. 保留到 125 个列表根的 126 个有序配置指针引用，包括精确重复 `ms_map21_Entities` 目标；
 3. 把 980 个物理记录与 987 个有序列表引用分开保留，并复现精确固定/行走/序列物理与引用计数；
 4. 保留全部九个 fallthrough 关系、116 个终止符身份与 map 17 七记录共享后缀，而不发明局部终止符或压平物理身份；

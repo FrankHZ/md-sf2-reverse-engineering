@@ -146,6 +146,7 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`battle-routing-data.md`](./research/battle-routing-data.md)：cutscene slots、region routes、terrain
   aliases、43 个 Stack-compressed terrain payload 的完整解码/ROM parity、unused joins 和旧
   aggregate 边界。
+- [`map3-battle01-audit.md`](./research/map3-battle01-audit.md)：ADR 0009 Map 3 至 Battle 01 完成里程碑的研究所有缺口登记册，含已接受证据清单、精确索引分母、ADR 0010 画像约束、RA-01..RA-12 缺口与有序研究闭合计划；6A 持久性推迟而私有本地 7C/8C 证据为强制项；它仍是开放审计，不是就绪报告。
 - [`map-data-inventory.md`](./research/map-data-inventory.md)：完整 1,390-file map ASM build graph、
   727 个内部 H1 binding、662 个 include-site-only body、64+66 setup selection rows、126 张六指针
   setup table 的 ROM parity、125 个 entity-list source/980 个物理记录与 suffix fallthrough、完整
@@ -301,9 +302,39 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`map-design-principles.md`](./design/zh-CN/synthesis/map-design-principles.md)：在对抗性 owner/fixture 审计后，把
   地图定义、几何/资源同一性、有序配置变体、交互选择与可变工作布局综合为证据受限的结构原则，同时把
   路线质量、节奏、碰撞/寻路、可达性、可见呈现与作者意图保留为 未知 边界。
+- [`map3-battle01-readiness.md`](./design/zh-CN/synthesis/map3-battle01-readiness.md)：记录 ADR 0009 Map 3 至 Battle 01 里程碑的证据、设计合同与产品决定闭合台账，保留显式 **未就绪** 状态，以及 Phase 4 实现开始前所需的独立用户动作。
+- [`ally-definition-data.md`](./design/zh-CN/contracts/ally-definition-data.md)：30 个盟友身份、两个独立 32 槽域、32 个职业定义、转职表、五条成长曲线、59 条成长记录、法术列表继承与呈现引用的实现无关合同。
+- [`enemy-definition-data.md`](./design/zh-CN/contracts/enemy-definition-data.md)：103 个敌人身份、固定生成基线、有序战斗/地图呈现引用、独立 63 行 NPC 地图精灵尾段与未检查查找边界的实现无关合同。
+- [`item-definition-data.md`](./design/zh-CN/contracts/item-definition-data.md)：128 个物品身份与固定定义、商店/宝箱/损坏/秘银/Caravan/野外使用目录、武器图形引用与受限查找规则的实现无关合同。
+- [`spell-definition-data.md`](./design/zh-CN/contracts/spell-definition-data.md)：44 个法术身份与元素行、89 个固定八字节定义、打包身份/等级和动画字段，以及半径 3 数据例外的实现无关合同。
+- [`spellbook-state.md`](./design/zh-CN/contracts/spellbook-state.md)：原始已学法术条目、定义未命中回退、调用方槽选择与独立计数，以及 `LearnSpell` 变更/结果的实现无关合同。
+- [`name-table-lookup-service.md`](./design/zh-CN/contracts/name-table-lookup-service.md)：`GetClassName` 前端、长度前缀 `FindName` 遍历、受限有效表/索引结果、字栈保存与三个直接调用接缝的服务合同。
+- [`stats-null-return-service.md`](./design/zh-CN/contracts/stats-null-return-service.md)：受限 `nullsub_9482` 源码身份及其唯一立即返回指令的溯源与兼容合同。
+- [`audio-system.md`](./design/zh-CN/contracts/audio-system.md)：音乐/SFX 命令身份、双 bank 槽与目标别名、header/通道角色、静态宏/音符/采样/乐器/SFX 域及四命令播放状态矩阵的实现无关合同。
+- [`combatant-state-access.md`](./design/zh-CN/contracts/combatant-state-access.md)：源码形态战斗员选择器、56 字节 entry ABI、类型化 getter、变更 wrapper、夹断 helper、九操作运行时矩阵、距离 helper 与未使用类型编码器的合同。
+- [`global-flag-state.md`](./design/zh-CN/contracts/global-flag-state.md)：掩码标志索引、每字节八标志、bit-7 优先选择、共享 Check/Set/Clear 寻址与四 wrapper trap 清单的合同。
+- [`graphics-service-state.md`](./design/zh-CN/contracts/graphics-service-state.md)：受限解压入口 ABI、显示初始化、精灵链接/调色板过渡状态、特殊精灵路由、固定闪烁字与图形 helper 清单的合同。
+- [`special-sprite-graphics-data.md`](./design/zh-CN/contracts/special-sprite-graphics-data.md)：十个有序特殊精灵指针、五个初始载荷所有者、五个别名、六个源码资源定义与聚合解码/一致性元数据的私有导入合同。
+- [`special-screen-asset-data.md`](./design/zh-CN/contracts/special-screen-asset-data.md)：九个 Stack 压缩特殊画面资源、十二个未压缩调色板/布局资源与女巫选择/气泡表的私有导入合同。
+- [`special-screen-control-flow.md`](./design/zh-CN/contracts/special-screen-control-flow.md)：受限 Sega logo/title 控制、女巫入口/动作页/派发/菜单接缝、挂起计数器/重置交接与结局操作所有者身份的合同。
+- [`portrait-graphics-data.md`](./design/zh-CN/contracts/portrait-graphics-data.md)：56 个有序立绘槽、52 个源码载荷所有者、四个别名、计数眼/嘴记录、调色板/stream 分区与聚合解码/一致性元数据的私有导入合同。
+- [`portrait-window-state.md`](./design/zh-CN/contracts/portrait-window-state.md)：战斗员/盟友立绘选择、规范立绘数据消费、立绘/姓名窗口状态、callback 生命周期、精确加载/DMA 顺序与受限眼/嘴更新的合同。
+- [`caravan-and-deals-state.md`](./design/zh-CN/contracts/caravan-and-deals-state.md)：Caravan 状态位正规化、满载忽略、有序移除压缩/尾部清零与 Deals 打包计数饱和/零移除边界的合同。
+- [`new-game-state-initialization.md`](./design/zh-CN/contracts/new-game-state-initialization.md)：两个顶层初始化顺序边、完整原版盟友 entry 覆盖、空法术状态、职业→初始→派生属性顺序、状态清零与消息速度默认值的合同。
+- [`party-membership-state.md`](./design/zh-CN/contracts/party-membership-state.md)：独立 joined/active 成员标志、三个 `UpdateForce` 计数前缀、`JoinForce` 先设 joined 再重建的时间顺序与离队操作身份的合同。
 - [`combat-resolution.md`](./design/zh-CN/contracts/combat-resolution.md)：物理攻击从 dodge、地形/克制、critical、
   spread、double/counter 到临时 HP、reaction 回放、EXP 入账与升级连接的实现无关合同，以及未来 H4 的共享
   fixture 边界。
+- [`exploration-control-flow.md`](./design/zh-CN/contracts/exploration-control-flow.md)：`MainLoop` 探索交接、迭代内地图事件优先级、玩家动作优先级、交互准入及受限 area/refill/flag/update 清单的实现无关合同。
+- [`startup-control-flow.md`](./design/zh-CN/contracts/startup-control-flow.md)：源码形态条件初始配置、受限写入/循环范围、有序系统与游戏交接、logo/intro/title 返回路由及区域准入分支的合同。
+- [`standalone-map-script-program-data.md`](./design/zh-CN/contracts/standalone-map-script-program-data.md)：47 个独立地图脚本源码文件、178 个非空程序、8,058 个有序操作、目标/词法引用拓扑与受限 init 目标所有权连接的私有导入合同。
+- [`debug-control-flow.md`](./design/zh-CN/contracts/debug-control-flow.md)：战斗测试配置与服务交接、配置门/写入、七条调试战斗动作路线与四个 helper 局部栈写入的实现无关合同。
+- [`rom-header-data.md`](./design/zh-CN/contracts/rom-header-data.md)：独立 64-entry vector-table 摘要与所选 console-header 元数据的实现无关溯源/导入合同。
+- [`map-area-description-routing.md`](./design/zh-CN/contracts/map-area-description-routing.md)：126 个有序 setup 引用、75 个可调用目标、37 个 wrapper、38 个直接返回 stub、227 个物理 entry、first-match 选择与受限 `d6=1` 规则的私有导入/路由合同。
+- [`map-camera-update-control-flow.md`](./design/zh-CN/contracts/map-camera-update-control-flow.md)：受限 `VInt_UpdateViewData` 目标分支、目的地请求接缝、计数路线、滚动速度优先级与四条精确字宽视差更新路径的合同。
+- [`map-entity-data.md`](./design/zh-CN/contracts/map-entity-data.md)：126 个 setup 指针引用、125 个 entity-list 根、980 条物理记录形成的 987 个有序列表引用、后缀共享/终止拓扑与初始地图精灵域的私有导入合同。
+- [`map-entry-routing-state.md`](./design/zh-CN/contracts/map-entry-routing-state.md)：有序标志切换地图选择、战斗候选准入及受限状态写入，以及存档点/木筏重置选择的合同。
+- [`unused-mapload-control-flow.md`](./design/zh-CN/contracts/unused-mapload-control-flow.md)：源码命名未使用 mapload 入口、四个有序 RNG 请求操作数/暂存流、后 helper 测试的 VDP/VInt 请求循环与四字 signed-store helper 的归档合同。
 - [`map-exploration.md`](./design/zh-CN/contracts/map-exploration.md)：79-map import boundary、共享 block/layout
   ownership、64x64 geometry、可执行 canonical import、area/event/item/animation 顺序、
   working-layout mutation、两个 source-faithful map-script block-copy form、四个 source-shaped
@@ -312,28 +343,55 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
   entity lifecycle/presentation form、七个 source-named entity gesture/relationship/motion form、十二个 source-named
   screen/map-presentation form 与现代 renderer 的
   原版事实/未知/可现代化边界。
+- [`map-layout-data.md`](./design/zh-CN/contracts/map-layout-data.md)：77 个唯一 block/layout 载荷所有者服务 79 个地图引用、两个共享所有者别名、完整解码 block/64×64 layout 形状、聚合 decoder-family 计数与 source/ROM 一致性的私有导入合同。
+- [`map-palette-data.md`](./design/zh-CN/contracts/map-palette-data.md)：16 个有序源码/有效地图调色板身份、79 个有序私有地图引用、公开 usage/一致性元数据与源码形态首字清零规则的私有导入合同。
+- [`map-sprite-assignment-surface.md`](./design/zh-CN/contracts/map-sprite-assignment-surface.md)：五个地图精灵 writer 来源、一个索引派生 helper、私有 81-assignment/20-caller 目录与已接受 built-input 中 ID 237..250 排除的合同。
+- [`map-sprite-graphics-data.md`](./design/zh-CN/contracts/map-sprite-graphics-data.md)：720 个有序常规地图精灵源码槽、670 个载荷身份、完整别名关系、669 个定长 Basic 解码形式与共享 sentinel 身份的私有导入合同。
+- [`map-setup-data.md`](./design/zh-CN/contracts/map-setup-data.md)：64 个有序地图行、66 个有序标志行、130 个 setup 引用、126 个六槽定义身份、四个别名与受限 entity-list 访问接缝的私有导入合同。
+- [`map-tileset-data.md`](./design/zh-CN/contracts/map-tileset-data.md)：115 个有序压缩/解码地图 tileset 身份、私有 79-map/32-animation 引用关系与受限公开 usage/一致性元数据的私有导入合同。
+- [`battle-ai-decision.md`](./design/zh-CN/contracts/battle-ai-decision.md)：AI 法术/物品过滤、优先级/治疗/支援评分、最终动作/目标、Move/Move Order、临时地形、commandset 与 14-case 运行时矩阵的实现无关合同。
+- [`battle-action-construction.md`](./design/zh-CN/contracts/battle-action-construction.md)：动作族路由、目标顺序、物理提前退出、物品使用/损坏路由、Taros/Burst Rock 门、消息命令记录与 54-site 消息语料的合同。
+- [`battle-cutscene-routing.md`](./design/zh-CN/contracts/battle-cutscene-routing.md)：四个独立 48 槽路线表、59 个 built cutscene 程序、intro/completion/leader/region 门、join/dead-list 尾段与修正的 leader-position X/HP 范围的合同。
+- [`battle-encounter-definition.md`](./design/zh-CN/contracts/battle-encounter-definition.md)：45 槽 spriteset、地图/全局与地形选择骨架、放置/局部 AI 几何、支援战斗元数据、地形别名与独立 48 槽 cutscene 路由命名空间的合同。
+- [`battle-functions-control-flow.md`](./design/zh-CN/contracts/battle-functions-control-flow.md)：fixture 约束的单回合路由、战斗加载/移动命令选择、光标/目标列表控制、战斗/战场菜单分支及有序装备/物品/宝箱请求的合同。
+- [`battle-background-graphics-data.md`](./design/zh-CN/contracts/battle-background-graphics-data.md)：30 个有序背景槽、27 个载荷所有者、三个别名、精确 stream 前缀/调色板/双 stream 结构与聚合解码/一致性元数据的私有导入合同。
+- [`battle-effect-graphics-data.md`](./design/zh-CN/contracts/battle-effect-graphics-data.md)：23 个法术、30 个 invocation、一个 status-animation 与两个 battle-transition stream 身份及其私有 container/palette/offset 关系的私有导入合同。
+- [`battle-sprite-graphics-data.md`](./design/zh-CN/contracts/battle-sprite-graphics-data.md)：独立 32 槽盟友/54 槽敌人表、86 个源码载荷所有者、header/palette/frame-stream 结构与聚合解码/一致性元数据的私有导入合同。
+- [`battle-weapon-ground-graphics-data.md`](./design/zh-CN/contracts/battle-weapon-ground-graphics-data.md)：23 槽武器表、42 条武器调色板、30 槽/27-header 地面表与别名、33 个 stream 所有者及异构调色板/header 核算的私有导入合同。
+- [`battle-scene-presentation.md`](./design/zh-CN/contracts/battle-scene-presentation.md)：21-command scene interpreter、初始化/selector 顺序、各类战斗资源选择/加载/呈现接缝、208 条 actor-animation sequence 与法术 setup/update 派发的合同。
+- [`battle-control-lifecycle.md`](./design/zh-CN/contracts/battle-control-lifecycle.md)：新/恢复战斗入口、回合激活/生成/调度、死亡 worklist/清理、Battle 01 region/turn-order 行为、after-turn 双方检查与静态胜负变更的合同。
+- [`battlefield-navigation.md`](./design/zh-CN/contracts/battlefield-navigation.md)：48×48 战场网格、地形/占用状态、加权移动传播、Manhattan 范围/目标准入、攻击位置选择、移动串与五 case 原版运行时移动矩阵的合同。
 - [`level-up.md`](./design/zh-CN/contracts/level-up.md)：成长曲线随机增益、最低成长补偿、战斗 EXP 阈值入口、完整升级顺序、
   投影后固定成长、职业等级上限、跨角色职业块扫描、当前/派生属性与装备刷新、属性上限/下溢夹断、敌人诅咒抑制、继承法术升级、Karna/HEAL 3 完整 prowess 高半字节矩阵、`LEVELUP_ARGUMENTS` 结果合同，以及 TORT
   effective-level 缺陷的原版事实和重制选择边界。
 - [`spell-resolution.md`](./design/zh-CN/contracts/spell-resolution.md)：攻击法术的元素抗性位域、整数伤害调整、
   promoted power、DAO target-count division、spell critical、共用 downward spread、攻击法术 EXP、
   HEAL 1 治疗与治疗 EXP、SLEEP/SLOW 1 状态抗性与免疫、DESOUL 成败/即死/多目标 kill EXP/gold、SPOIT MP 吸收与边界截断、BOOST 1 属性/重施时序、SILENCE 施法门，以及临时状态回合后生命周期/持久场景回放边界的实现无关合同。
+- [`byte-copy-service.md`](./design/zh-CN/contracts/byte-copy-service.md)：受限正长度域上保留重叠的 `CopyBytes` 结果、原版 signed 方向选择、精确 `d7`/`a0`/`a1` 保存接缝与允许使用平台 `memmove` 的现代化合同。
+- [`music-wait-service.md`](./design/zh-CN/contracts/music-wait-service.md)：两个有序源码命令请求身份、`Sleep(3)` 后谓词形状与 `k + 1` 等待请求兼容轨迹的实现无关合同。
 - [`service-interactions.md`](./design/zh-CN/contracts/service-interactions.md)：shop、church、caravan/depot 与
   blacksmith 的动作顺序、取消边界与静态资源 mutation 合同，以及明确保留的持久化/时序未知项。
 - [`save-system.md`](./design/zh-CN/contracts/save-system.md)：两槽 SRAM、交错字节布局、checksum、occupied flag 与
   save/load/copy/delete 静态合同、单启动 in-process service matrix，以及仍留给 H3 的跨进程持久化和断电边界。
 - [`input-system.md`](./design/zh-CN/contracts/input-system.md)：双端口原始采样、VInt current/repeat 过滤、输入等待
   helper 与控制器/时序未知边界。
+- [`text-and-font-system.md`](./design/zh-CN/contracts/text-and-font-system.md)：255-entry context-Huffman 表、86 棵可达树、17 个 bank/4,267 条记录、聚合符号回放、80 个变宽 glyph 与 256-entry ASCII map 的实现无关合同。
+- [`ui-graphics-asset-data.md`](./design/zh-CN/contracts/ui-graphics-asset-data.md)：九个共享 UI 资源/指针身份、八个 Stack/一个未压缩载荷、异构菜单路线、167 个源码 icon path/163 槽 vanilla 组装及复制/高亮变换的私有导入合同。
+- [`ui-layout-data.md`](./design/zh-CN/contracts/ui-layout-data.md)：27 个有序 UI 布局网格、一等 16-entry 法术等级指针表与别名、四个菱形边框、四个直接资源及精确不重叠 source/ROM 覆盖的静态数据合同。
+- [`unused-menu-constant-write-control-flow.md`](./design/zh-CN/contracts/unused-menu-constant-write-control-flow.md)：受限 `sub_15268` 常量写入时间顺序、精确 14-longword 准入内存投影与静态零符号调用者清单的合同。
+- [`unused-technical-asset-data.md`](./design/zh-CN/contracts/unused-technical-asset-data.md)：一个源码名义未使用的 5,694 字节 container、四个有序 Stack stream、两个有序调色板、独立 palette-pointer 身份与受限符号引用清单的私有导入合同。
 - [`window-system.md`](./design/zh-CN/contracts/window-system.md)：八槽 window entry、layout 分配/回收、packed
   coordinate 寻址、VInt composition/DMA 调用顺序，以及呈现时序未知边界。
 - [`dialogue-system.md`](./design/zh-CN/contracts/dialogue-system.md)：六个 map-script dialogue command 的物理
   layout、cursor/name-index/portrait consumer 静态顺序，以及 21-case 单启动 handler-local H3 合同和
   三个明确的 presentation/runtime Unknown 边界。
+- [`sprite-dialogue-property-data.md`](./design/zh-CN/contracts/sprite-dialogue-property-data.md)：119 条有序地图精灵对话属性记录、独立 terminator、不同 key/portrait/speech-SFX 元数据与 signed/zero-extended first-match 查找结果的合同。
 - [`party-roster-state.md`](./design/zh-CN/contracts/party-roster-state.md)：十个 map-script roster/death 与
   active-party/AI/follower source form 的 physical layout、named handler branch/mutation/call order、
   alias-aware caller identity，以及两个 grouped H3 runtime 边界。
 - [`randomness.md`](./design/zh-CN/contracts/randomness.md)：主 RNG、debug 方向覆盖、AI byte RNG、有界采样、helper-return state 与 controlled source-shaped copy 的
   静态/运行时合同，以及 retry 与 seed-copy 隔离边界。
+- [`interrupt-dma-and-trap-state.md`](./design/zh-CN/contracts/interrupt-dma-and-trap-state.md)：VInt 调度门/有序阶段、contextual slot、wait/sleep/DMA 控制状态、fade 谓词与受限 trap transport 的实现无关合同。
 
 ## Decisions
 
@@ -357,6 +415,11 @@ hash、上游 commit、地址/符号或运行时观察以及复现命令。
 - [`0007-schema-contract-composition-and-migration.md`](./decisions/0007-schema-contract-composition-and-migration.md)：
   审计巨型 schema 的 golden/shape 重复，规定本地 `$ref` registry、结构合同与精确 fixture 分层，
   并按 common-stats、common-menus、map-events、map-script/H3 的顺序迁移且不削弱负向门禁。
+- [`0008-godot-csharp-cli-first-remake-tooling.md`](./decisions/0008-godot-csharp-cli-first-remake-tooling.md)：审计既有 Godot/C# 与机器本地 MCP 工作流，接受 Godot 4.7.2 .NET/C# 为固定 CLI-first Phase 4 基线，并采用纯 C# 领域层、薄 Godot 适配器与可选可移除 MCP；接受并不启动重制实现。
+- [`0009-first-phase4-playable-slice.md`](./decisions/0009-first-phase4-playable-slice.md)：接受从 Map 3 到 Battle 01 完成的一个连续场景作为首个可玩里程碑，并要求独立研究/设计缺口审计、已接受缺口闭合、主门禁就绪报告与单独明确的 Phase 4 启动动作。
+- [`0010-map3-battle01-product-acceptance.md`](./decisions/0010-map3-battle01-product-acceptance.md)：接受仅限私有本地的 Map 3 至 Battle 01 产品画像，包括自然可玩连续性、禁止公开再分发的原版私有资源、帧/音频/硬件精确一致性、现代可访问控制，以及 Phase 4 前剩余研究/H4 门。
+- [`0011-phase4-remake-runtime-architecture.md`](./decisions/0011-phase4-remake-runtime-architecture.md)：接受确定性模块化单体边界、纯 C# 权威状态、验证数据端口、薄 Godot 适配器与分层 H4 门，而不启动 Phase 4 实现。
+- [`0012-dependency-aware-partitioned-verification.md`](./decisions/0012-dependency-aware-partitioned-verification.md)：接受始终运行的 public core 加保守受影响 Python/H1/H2/H3 分区、只读 committed-range planner 与供后续编排使用的显式资源锁边界。
 
 ## 证据词汇
 
