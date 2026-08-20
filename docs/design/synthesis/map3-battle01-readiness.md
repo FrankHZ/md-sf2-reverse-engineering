@@ -1,10 +1,12 @@
 # Map 3 to Battle 01 Readiness Ledger
 
 - Status: **NOT READY** for Phase 4 implementation
-- Audit date: 2026-08-14
-- Product-decision update: 2026-08-19
-- Accepted-main audit base: commit `21f98cfc9dee5b3589d0612e1058be5a9666fd3a`, tree
+- Initial gap-audit date: 2026-08-14
+- Initial gap-audit base: commit `21f98cfc9dee5b3589d0612e1058be5a9666fd3a`, tree
   `6eb4208567f403685c303e9c5f1145aeadf67974`
+- Product-decision date: 2026-08-19
+- Accepted-state refresh: 2026-08-20, commit `9a7cbcb44322e309ef10d8afac76d9a98be76f98`,
+  tree `28c5f9c00a2b095d8b990eb8adc5249ede911704`
 - Milestone owner: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md)
 - Tooling boundary: [ADR 0008](../../decisions/0008-godot-csharp-cli-first-remake-tooling.md)
 - Product profile: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md)
@@ -35,6 +37,10 @@ The following distinctions are normative:
 
 No unmerged Research result contributes to this ledger. A future update may consume new evidence only
 after it is accepted on `main`.
+
+The accepted-state refresh records the integrated battle-functions contract and ADR 0010 against
+the named current-main base. It is not a rerun of the complete original gap audit and does not promote
+any unmerged Research or tooling conclusion.
 
 ## Readiness Classification
 

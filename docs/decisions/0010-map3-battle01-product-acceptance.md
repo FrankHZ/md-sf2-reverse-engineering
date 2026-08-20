@@ -108,8 +108,12 @@ effects, transition chronology, and the first battle-ready state remain
 The natural-admission and chronology portion of 3A remains selected. Its placeholder presentation
 portion is not selected: the later and more specific 7C/8C choices require private original assets
 and frame/audio/hardware-exact parity for this private local profile.
-[ADR 0005](./0005-remake-value-driven-driver-freeze.md) does not preselect or override that product
-choice.
+[ADR 0005](./0005-remake-value-driven-driver-freeze.md) does not preselect that product choice.
+Selected 8C explicitly triggers ADR 0005 reopening condition 3, but only for the Map 3-to-Battle 01
+scenario's reached hardware-observable surfaces required by the accepted 8C H4 domain. Unrelated
+driver and hardware investigation remains frozen. Every reopened question must reuse the existing
+parser, fixture, or observation seam and must not become an open-ended hardware audit. This bounded
+reopening changes no profile option and starts neither Research nor Phase 4.
 
 ### 4. Player agency, action coverage, input trace, and RNG
 
