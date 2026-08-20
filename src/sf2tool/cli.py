@@ -257,7 +257,11 @@ def build_parser() -> argparse.ArgumentParser:
         "plan", help="plan affected verification partitions for a committed Git range"
     )
     verify_plan.add_argument("--base", required=True, help="base Git revision")
-    verify_plan.add_argument("--head", default="HEAD", help="head Git revision (default: HEAD)")
+    verify_plan.add_argument(
+        "--head",
+        default="HEAD",
+        help="revision that must resolve to the checked-out HEAD commit (default: HEAD)",
+    )
     verify_plan.add_argument(
         "--include-partition",
         action="append",

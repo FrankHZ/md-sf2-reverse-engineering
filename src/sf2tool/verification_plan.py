@@ -747,11 +747,33 @@ def build_verification_plan(
     root: Path | None = None,
     include_partitions: tuple[str, ...] = (),
 ) -> dict[str, object]:
-    """Build a deterministic plan for a committed Git range without running gates."""
+    """Build a deterministic plan for a clean, checked-out committed head."""
 
     root = repo_path(".") if root is None else root
     resolved_base = _resolve_commit(root, base)
     resolved_head = _resolve_commit(root, head)
+    checked_out_head = _resolve_commit(root, "HEAD")
+    if resolved_head != checked_out_head:
+        raise ValueError(
+            "verification plan head must resolve to the checked-out HEAD commit "
+            f"({checked_out_head}); got {resolved_head}"
+        )
+    worktree_status = _git(
+        root,
+        "--no-optional-locks",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all",
+    )
+    if worktree_status:
+        status_lines = worktree_status.splitlines()
+        status_summary = "; ".join(status_lines[:10])
+        if len(status_lines) > 10:
+            status_summary += f"; ... ({len(status_lines) - 10} more)"
+        raise ValueError(
+            "verification plan requires a clean analyzed worktree before classification; "
+            f"git status --porcelain: {status_summary}"
+        )
     merge_base = _git(root, "merge-base", resolved_base, resolved_head)
     changed_paths = _changed_paths(root, merge_base, resolved_head)
     classified = plan_paths(

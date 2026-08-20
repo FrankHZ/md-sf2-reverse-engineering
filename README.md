@@ -215,12 +215,15 @@ tracked; manifests hold metadata and hashes only. Every ignored upstream binary 
 against its exact H1-resolved range in the hash-verified ROM before rendering. Commands reject their
 own existing output directories/manifests instead of silently overwriting or retaining stale files.
 
-`verify plan` compares committed revisions without running a gate or changing Git state. It always
-includes the normal public core, then reports the affected Python/H1/H2/H3 partitions, exact reasons,
-suggested narrow commands, resource locks, and any conservatively fanned-out unclassified paths. Use
-`--include-partition <id>` when a semantic dependency is not visible from the path diff. Planner mode
-rejects execution modifiers such as `--full`, `--skip-runtime`, or non-default ROM/upstream paths
-instead of silently ignoring them.
+`verify plan` compares a base revision with a clean checked-out committed head without running a gate
+or changing Git state. An explicit `--head` is accepted only when it resolves to the checked-out
+`HEAD`; tracked changes and non-ignored untracked files are rejected because artifact and import
+ownership are derived from the checked-out filesystem. The plan always includes the normal public
+core, then reports the affected Python/H1/H2/H3 partitions, exact reasons, suggested narrow commands,
+resource locks, and any conservatively fanned-out unclassified paths. Use `--include-partition <id>`
+when a semantic dependency is not visible from the path diff. Planner mode rejects execution
+modifiers such as `--full`, `--skip-runtime`, or non-default ROM/upstream paths instead of silently
+ignoring them.
 
 `verify --full` runs the complete Python suite plus the maintained H1/H2/H3 milestone profile wired
 into the current harness. It is reserved for milestones, release/merge readiness, shared harness
