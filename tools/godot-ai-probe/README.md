@@ -61,9 +61,12 @@ The gate performs, in order:
 4. two headless game runs (60 seconds each).
 
 Each game self-quits after 60 `_Process` frames. `--quit-after 120` is retained
-as an independent Godot 120-iteration safety cap. A timed-out child process is
-killed and reaped, with stdout/stderr diagnostics bounded to their final 2,000
-characters.
+as an independent Godot 120-iteration safety cap. A timed-out process triggers
+a bounded process-tree termination attempt (Windows uses
+`taskkill.exe /PID ... /T /F` without a shell), followed by a direct-process
+fallback and a separately bounded pipe reap. If cleanup still cannot finish,
+the runner closes its capture handles and fails instead of waiting indefinitely.
+stdout/stderr diagnostics remain bounded to their final 2,000 characters.
 
 Expected game markers are identical across both runs:
 
@@ -127,13 +130,13 @@ On 2026-08-18, these exact public queries were tried against
 - `project.godot [dotnet] project/assembly_name`
 - `project.godot comments`
 
-The first returned broad project-settings and C# project-generation material;
-the second returned general INI/project-format and semicolon-comment material.
-Neither response directly established the complete pinned-source facts recorded
-above, and the indexed documentation was not the accepted 4.7.2 source tree.
-The result is therefore incomplete navigation evidence, not proof that Context7
-would have prevented either iteration or that it is required for this workflow.
+The recorded responses were broad and incomplete navigation material. They did
+not directly establish either pinned-source fact recorded above, and the indexed
+documentation was not the accepted 4.7.2 source tree. The result is not proof
+that Context7 would have prevented either iteration or that it is required for
+this workflow.
 
 Context7 remains optional and removable. The exact editor preflight, source
-links, probe inputs, and local runner own the reproducible capability gate; no
-external documentation service is needed to execute it.
+links, probe inputs, and local runner provide a bounded, repeatable, dated local
+capability check. They are not a locked restore or supply-chain guarantee, and no
+external documentation service is needed to execute the check.

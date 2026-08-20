@@ -17,9 +17,11 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
+import signal
 import subprocess
 import sys
 from collections.abc import Callable, Mapping, Sequence
+from contextlib import suppress
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -46,6 +48,9 @@ VERSION_TIMEOUT_SECONDS = 15.0
 BUILD_TIMEOUT_SECONDS = 120.0
 EDITOR_TIMEOUT_SECONDS = 60.0
 RUN_TIMEOUT_SECONDS = 60.0
+TREE_TERMINATION_TIMEOUT_SECONDS = 5.0
+TERMINATOR_REAP_TIMEOUT_SECONDS = 1.0
+PROCESS_REAP_TIMEOUT_SECONDS = 5.0
 DIAGNOSTIC_LIMIT = 2_000
 
 
@@ -56,10 +61,97 @@ class ProbeError(RuntimeError):
 CommandRunner = Callable[
     [list[str], Path, float, str], subprocess.CompletedProcess[str]
 ]
+TreeTerminator = Callable[[subprocess.Popen[str]], list[str]]
 
 
-def _tail(value: str | None) -> str:
+def _tail(value: str | bytes | None) -> str:
+    if isinstance(value, bytes):
+        value = value.decode("utf-8", errors="replace")
     return (value or "")[-DIAGNOSTIC_LIMIT:]
+
+
+def _taskkill_path() -> Path | None:
+    system_root = os.environ.get("SYSTEMROOT")
+    if system_root:
+        candidate = Path(system_root) / "System32" / "taskkill.exe"
+        if candidate.is_file():
+            return candidate
+    discovered = shutil.which("taskkill.exe")
+    return Path(discovered) if discovered else None
+
+
+def _terminate_process_tree(
+    process: subprocess.Popen[str],
+    *,
+    platform: str | None = None,
+    taskkill_path: Path | None = None,
+    popen_factory: Callable[..., subprocess.Popen[str]] | None = None,
+) -> list[str]:
+    """Request bounded tree termination and always retain a direct-kill fallback."""
+
+    platform = os.name if platform is None else platform
+    popen = subprocess.Popen if popen_factory is None else popen_factory
+    notes: list[str] = []
+
+    if platform == "nt":
+        taskkill = _taskkill_path() if taskkill_path is None else taskkill_path
+        if taskkill is None:
+            notes.append("Windows process-tree terminator was not found")
+        else:
+            command = [str(taskkill), "/PID", str(process.pid), "/T", "/F"]
+            try:
+                terminator = popen(
+                    command,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    shell=False,
+                )
+                try:
+                    exit_code = terminator.wait(timeout=TREE_TERMINATION_TIMEOUT_SECONDS)
+                    notes.append(f"Windows process-tree termination exit={exit_code}")
+                except subprocess.TimeoutExpired:
+                    notes.append(
+                        "Windows process-tree terminator timed out after "
+                        f"{TREE_TERMINATION_TIMEOUT_SECONDS:g}s"
+                    )
+                    try:
+                        terminator.kill()
+                    except OSError as exc:
+                        notes.append(f"terminator kill failed: {exc}")
+                    try:
+                        terminator.wait(timeout=TERMINATOR_REAP_TIMEOUT_SECONDS)
+                    except subprocess.TimeoutExpired:
+                        notes.append(
+                            "terminator did not reap within "
+                            f"{TERMINATOR_REAP_TIMEOUT_SECONDS:g}s"
+                        )
+            except OSError as exc:
+                notes.append(f"Windows process-tree terminator failed to start: {exc}")
+    else:
+        kill_group = getattr(os, "killpg", None)
+        if kill_group is not None:
+            try:
+                kill_group(process.pid, getattr(signal, "SIGKILL", signal.SIGTERM))
+                notes.append("POSIX process-group termination requested")
+            except OSError as exc:
+                notes.append(f"POSIX process-group termination failed: {exc}")
+
+    if process.poll() is None:
+        try:
+            process.kill()
+            notes.append("direct process kill requested as fallback")
+        except OSError as exc:
+            notes.append(f"direct process kill failed: {exc}")
+    return notes
+
+
+def _close_capture_pipes(process: subprocess.Popen[str]) -> None:
+    for stream in (process.stdout, process.stderr):
+        if stream is None:
+            continue
+        with suppress(OSError):
+            stream.close()
 
 
 def _run(
@@ -67,12 +159,23 @@ def _run(
     cwd: Path,
     timeout_seconds: float,
     step: str,
+    *,
+    popen_factory: Callable[..., subprocess.Popen[str]] | None = None,
+    tree_terminator: TreeTerminator | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    """Run one process, killing and reaping it if its wall-clock bound expires."""
+    """Run one process with bounded execution, tree cleanup, and pipe reaping."""
 
     print("+", subprocess.list2cmdline(cmd), flush=True)
+    popen = subprocess.Popen if popen_factory is None else popen_factory
+    platform_options: dict[str, int | bool]
+    if os.name == "nt":
+        platform_options = {
+            "creationflags": getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+        }
+    else:
+        platform_options = {"start_new_session": True}
     try:
-        process = subprocess.Popen(  # noqa: S603 - fixed argument lists, never a shell
+        process = popen(
             cmd,
             cwd=cwd,
             stdout=subprocess.PIPE,
@@ -80,6 +183,8 @@ def _run(
             text=True,
             encoding="utf-8",
             errors="replace",
+            shell=False,
+            **platform_options,
         )
     except OSError as exc:
         raise ProbeError(f"FAIL {step}: could not start process: {exc}") from exc
@@ -87,13 +192,30 @@ def _run(
     try:
         stdout, stderr = process.communicate(timeout=timeout_seconds)
     except subprocess.TimeoutExpired as exc:
-        process.kill()
-        stdout, stderr = process.communicate()
+        terminate = _terminate_process_tree if tree_terminator is None else tree_terminator
+        notes = terminate(process)
+        try:
+            stdout, stderr = process.communicate(timeout=PROCESS_REAP_TIMEOUT_SECONDS)
+        except subprocess.TimeoutExpired as reap_exc:
+            _close_capture_pipes(process)
+            detail = (
+                _tail(reap_exc.stderr)
+                or _tail(reap_exc.output)
+                or _tail(exc.stderr)
+                or _tail(exc.output)
+            )
+            suffix = f"\n{detail}" if detail else ""
+            raise ProbeError(
+                f"FAIL {step}: timed out after {timeout_seconds:g}s; "
+                f"termination notes: {'; '.join(notes)}; pipe reap did not finish "
+                f"within {PROCESS_REAP_TIMEOUT_SECONDS:g}s and capture handles were closed"
+                f"{suffix}"
+            ) from reap_exc
         detail = _tail(stderr) or _tail(stdout)
         suffix = f"\n{detail}" if detail else ""
         raise ProbeError(
             f"FAIL {step}: timed out after {timeout_seconds:g}s; "
-            f"process was killed and reaped{suffix}"
+            f"termination notes: {'; '.join(notes)}; process was reaped{suffix}"
         ) from exc
 
     return subprocess.CompletedProcess(cmd, process.returncode, stdout, stderr)
