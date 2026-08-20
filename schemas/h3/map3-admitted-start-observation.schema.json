@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:map3-admitted-start-observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "caseOrder", "records", "callbacksCleared", "restoration"],
+  "properties": {
+    "system": {"const": "sf2-map3-admitted-start-runtime-v1"},
+    "caseOrder": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "records": {"type": "array", "minItems": 1, "items": {"$ref": "urn:sf2:h3:map3-admitted-start-fixture#/definitions/record"}},
+    "callbacksCleared": {"const": true},
+    "restoration": {"$ref": "urn:sf2:h3:map3-admitted-start-fixture#/definitions/restoration"}
+  }
+}

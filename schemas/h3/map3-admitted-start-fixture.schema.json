@@ -1,0 +1,1329 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:map3-admitted-start-fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "system",
+    "romSha256",
+    "emulator",
+    "caseOrder",
+    "cases",
+    "harness",
+    "privateProvenance",
+    "static",
+    "sourceContext",
+    "expectedObservation"
+  ],
+  "properties": {
+    "id": {
+      "const": "sf2-map3-admitted-start-runtime-v1"
+    },
+    "system": {
+      "const": "sf2-map3-admitted-start-runtime-v1"
+    },
+    "romSha256": {
+      "$ref": "#/definitions/hash"
+    },
+    "emulator": {
+      "$ref": "#/definitions/emulator"
+    },
+    "caseOrder": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/definitions/nonEmpty"
+      }
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/case"
+      }
+    },
+    "harness": {
+      "$ref": "#/definitions/harness"
+    },
+    "privateProvenance": {
+      "$ref": "#/definitions/privateProvenance"
+    },
+    "static": {
+      "$ref": "#/definitions/static"
+    },
+    "sourceContext": {
+      "$ref": "#/definitions/sourceContext"
+    },
+    "expectedObservation": {
+      "$ref": "#/definitions/observation"
+    }
+  },
+  "definitions": {
+    "nonEmpty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "address": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 16777215
+    },
+    "emulator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "core"
+      ],
+      "properties": {
+        "name": {
+          "const": "BizHawk"
+        },
+        "version": {
+          "$ref": "#/definitions/nonEmpty"
+        },
+        "core": {
+          "$ref": "#/definitions/nonEmpty"
+        }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caseId",
+        "injectedInitialMenuReturn",
+        "injectedDifficultyMenuReturn",
+        "preconditionSaveFlags"
+      ],
+      "properties": {
+        "caseId": {
+          "$ref": "#/definitions/nonEmpty"
+        },
+        "injectedInitialMenuReturn": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 65535
+        },
+        "injectedDifficultyMenuReturn": {
+          "type": "integer",
+          "minimum": -1,
+          "maximum": 65535
+        },
+        "preconditionSaveFlags": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      }
+    },
+    "harness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maxFrames",
+        "privateCapturePolicy"
+      ],
+      "properties": {
+        "maxFrames": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "privateCapturePolicy": {
+          "const": "none-recorded; private-capture-paths-remain-ignored"
+        }
+      }
+    },
+    "privateProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "romSha256",
+        "upstreamCommit",
+        "tool",
+        "core",
+        "configuration",
+        "inputCondition",
+        "timingCondition",
+        "capturePayload"
+      ],
+      "properties": {
+        "romSha256": {
+          "$ref": "#/definitions/hash"
+        },
+        "upstreamCommit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "tool": {
+          "$ref": "#/definitions/nonEmpty"
+        },
+        "core": {
+          "$ref": "#/definitions/nonEmpty"
+        },
+        "configuration": {
+          "$ref": "#/definitions/nonEmpty"
+        },
+        "inputCondition": {
+          "$ref": "#/definitions/nonEmpty"
+        },
+        "timingCondition": {
+          "$ref": "#/definitions/nonEmpty"
+        },
+        "capturePayload": {
+          "const": "not-tracked; hashes-and-trace-shape-only"
+        }
+      }
+    },
+    "sourceContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "function",
+        "ram",
+        "map3"
+      ],
+      "properties": {
+        "function": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "checkSramAddress",
+            "newActionAddress",
+            "newGameAddress",
+            "saveGameAddress",
+            "mainLoopAddress",
+            "explorationLoopAddress",
+            "runMapSetupInitFunctionAddress",
+            "initCallAddress",
+            "initReturnAddress",
+            "waitForEventAddress",
+            "selectedInitAddress"
+          ],
+          "properties": {
+            "checkSramAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "newActionAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "newGameAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "saveGameAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "mainLoopAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "explorationLoopAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "runMapSetupInitFunctionAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "initCallAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "initReturnAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "waitForEventAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "selectedInitAddress": {
+              "$ref": "#/definitions/address"
+            }
+          }
+        },
+        "ram": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "CURRENT_MAP",
+            "GAME_FLAGS"
+          ],
+          "properties": {
+            "CURRENT_MAP": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GAME_FLAGS": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "map3": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "selectedInitAddress"
+          ],
+          "properties": {
+            "selectedInitAddress": {
+              "$ref": "#/definitions/address"
+            }
+          }
+        }
+      }
+    },
+    "static": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "function",
+        "ram",
+        "timeState",
+        "witchNewAction",
+        "map3",
+        "map3SourceRecords",
+        "defaultGuardFlags",
+        "sessionPatches",
+        "harness",
+        "sourceHashes"
+      ],
+      "properties": {
+        "function": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "checkSramAddress",
+            "newActionAddress",
+            "newGameAddress",
+            "saveGameAddress",
+            "mainLoopAddress",
+            "explorationLoopAddress",
+            "runMapSetupInitFunctionAddress",
+            "setupResolutionReturnAddress",
+            "initCallAddress",
+            "initReturnAddress",
+            "waitForEventAddress",
+            "selectedInitAddress",
+            "unexpectedScriptAddresses",
+            "unexpectedInitEffectAddress",
+            "unexpectedInitEffectCallAddress"
+          ],
+          "properties": {
+            "checkSramAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "newActionAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "newGameAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "saveGameAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "mainLoopAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "explorationLoopAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "runMapSetupInitFunctionAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "setupResolutionReturnAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "initCallAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "initReturnAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "waitForEventAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "selectedInitAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "unexpectedScriptAddresses": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/definitions/address"
+              }
+            },
+            "unexpectedInitEffectAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "unexpectedInitEffectCallAddress": {
+              "$ref": "#/definitions/address"
+            }
+          }
+        },
+        "ram": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "COMBATANT_DATA",
+            "CURRENT_GOLD",
+            "CURRENT_MAP",
+            "CURRENT_BATTLE",
+            "CURRENT_SAVE_SLOT",
+            "EGRESS_MAP",
+            "ENTITY_DATA",
+            "ENTITY_INDEX_LIST",
+            "FRAME_COUNTER",
+            "GAME_FLAGS",
+            "MAP_EVENT_TYPE",
+            "RANDOM_SEED",
+            "SECONDS_COUNTER",
+            "SECONDS_COUNTER_FRAMES",
+            "PLAYER_1_INPUT",
+            "COMBATANT_DATA_ENTRY_SIZE",
+            "COMBATANT_ALLIES_COUNTER",
+            "COMBATANT_OFFSET_AGI_CURRENT",
+            "COMBATANT_OFFSET_ATT_CURRENT",
+            "COMBATANT_OFFSET_CLASS",
+            "COMBATANT_OFFSET_DEF_CURRENT",
+            "COMBATANT_OFFSET_HP_CURRENT",
+            "COMBATANT_OFFSET_HP_MAX",
+            "COMBATANT_OFFSET_ITEM_0",
+            "COMBATANT_OFFSET_LEVEL",
+            "COMBATANT_OFFSET_MOV_CURRENT",
+            "COMBATANT_OFFSET_MP_CURRENT",
+            "COMBATANT_OFFSET_MP_MAX",
+            "COMBATANT_OFFSET_SPELLS",
+            "ENTITYDEF_OFFSET_FACING",
+            "ENTITYDEF_OFFSET_X",
+            "ENTITYDEF_OFFSET_Y",
+            "ENTITYDEF_SIZE",
+            "FLAG_INDEX_DIFFICULTY1",
+            "FLAG_INDEX_DIFFICULTY2",
+            "FORCEMEMBER_ACTIVE_FLAGS_START",
+            "FORCEMEMBER_JOINED_FLAGS_START",
+            "LONGWORD_GAMEFLAGS_COUNTER"
+          ],
+          "properties": {
+            "COMBATANT_DATA": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "CURRENT_GOLD": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "CURRENT_MAP": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "CURRENT_BATTLE": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "CURRENT_SAVE_SLOT": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "EGRESS_MAP": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ENTITY_DATA": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ENTITY_INDEX_LIST": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "FRAME_COUNTER": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "GAME_FLAGS": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "MAP_EVENT_TYPE": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "RANDOM_SEED": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "SECONDS_COUNTER": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "SECONDS_COUNTER_FRAMES": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "PLAYER_1_INPUT": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_DATA_ENTRY_SIZE": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_ALLIES_COUNTER": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_AGI_CURRENT": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_ATT_CURRENT": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_CLASS": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_DEF_CURRENT": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_HP_CURRENT": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_HP_MAX": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_ITEM_0": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_LEVEL": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_MOV_CURRENT": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_MP_CURRENT": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_MP_MAX": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "COMBATANT_OFFSET_SPELLS": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ENTITYDEF_OFFSET_FACING": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ENTITYDEF_OFFSET_X": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ENTITYDEF_OFFSET_Y": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "ENTITYDEF_SIZE": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "FLAG_INDEX_DIFFICULTY1": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "FLAG_INDEX_DIFFICULTY2": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "FORCEMEMBER_ACTIVE_FLAGS_START": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "FORCEMEMBER_JOINED_FLAGS_START": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "LONGWORD_GAMEFLAGS_COUNTER": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "witchNewAction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "initialMenuInstructionTargetAddress",
+            "nameAllyInstructionTargetAddress",
+            "displayTextAddress",
+            "workRamScratchAddress",
+            "initialMenuPage",
+            "difficultyMenuPage",
+            "gameStartMap",
+            "gameStartSavepointX",
+            "gameStartSavepointY",
+            "gameStartFacing",
+            "mainLoopD4"
+          ],
+          "properties": {
+            "initialMenuInstructionTargetAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "nameAllyInstructionTargetAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "displayTextAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "workRamScratchAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "initialMenuPage": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "difficultyMenuPage": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "gameStartMap": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "gameStartSavepointX": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "gameStartSavepointY": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "gameStartFacing": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "mainLoopD4": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "map3": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mapIndex",
+            "defaultSetupSymbol",
+            "defaultSetupAddress",
+            "flagVariants",
+            "selectedInitSymbol",
+            "selectedInitAddress",
+            "selectedInitDirectReturnStub",
+            "setupResolutionReturnAddress",
+            "selectedInitSourcePath",
+            "selectedInitStatementCount",
+            "selectedInitScriptTargets"
+          ],
+          "properties": {
+            "mapIndex": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "defaultSetupSymbol": {
+              "$ref": "#/definitions/nonEmpty"
+            },
+            "defaultSetupAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "flagVariants": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "$ref": "#/definitions/map3Variant"
+              }
+            },
+            "selectedInitSymbol": {
+              "$ref": "#/definitions/nonEmpty"
+            },
+            "selectedInitAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "selectedInitDirectReturnStub": {
+              "type": "boolean"
+            },
+            "setupResolutionReturnAddress": {
+              "$ref": "#/definitions/address"
+            },
+            "selectedInitSourcePath": {
+              "$ref": "#/definitions/nonEmpty"
+            },
+            "selectedInitStatementCount": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "selectedInitScriptTargets": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/definitions/nonEmpty"
+              }
+            }
+          }
+        },
+        "map3SourceRecords": {
+          "type": "array",
+          "minItems": 26,
+          "maxItems": 26,
+          "items": {
+            "$ref": "#/definitions/mapRecord"
+          }
+        },
+        "defaultGuardFlags": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "sessionPatches": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "$ref": "#/definitions/sessionPatch"
+          }
+        },
+        "harness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "checkpointAddress",
+            "menuThunkAddress",
+            "generatedRamBytes",
+            "bootstrapFrameBudget",
+            "caseFrameBudget",
+            "romPatchDomain"
+          ],
+          "properties": {
+            "checkpointAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "menuThunkAddress": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "generatedRamBytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "bootstrapFrameBudget": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "caseFrameBudget": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "romPatchDomain": {
+              "const": "MD CART"
+            }
+          }
+        },
+        "timeState": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "frameCounter",
+            "randomSeed",
+            "secondsCounter",
+            "secondsCounterFrames",
+            "normalization"
+          ],
+          "properties": {
+            "frameCounter": {"$ref": "#/definitions/timeStateField"},
+            "randomSeed": {"$ref": "#/definitions/timeStateField"},
+            "secondsCounter": {"$ref": "#/definitions/timeStateField"},
+            "secondsCounterFrames": {"$ref": "#/definitions/timeStateField"},
+            "normalization": {
+              "const": "post-boundary-controlled-zeroed-vint-counters"
+            }
+          }
+        },
+        "sourceHashes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code/gameflow/mainloop.asm",
+            "code/gameflow/exploration/explorationfunctions_2.asm",
+            "code/common/scripting/map/mapsetupsfunctions_1.asm",
+            "code/common/stats/newgame.asm",
+            "code/common/tech/interrupts/vint.asm",
+            "code/common/menus/timerwindow.asm",
+            "code/common/tech/randomnumbergenerator.asm",
+            "data/maps/entries/map03/mapsetups/s6_initfunction.asm"
+          ],
+          "properties": {
+            "code/gameflow/mainloop.asm": {
+              "$ref": "#/definitions/hash"
+            },
+            "code/gameflow/exploration/explorationfunctions_2.asm": {
+              "$ref": "#/definitions/hash"
+            },
+            "code/common/scripting/map/mapsetupsfunctions_1.asm": {
+              "$ref": "#/definitions/hash"
+            },
+            "code/common/stats/newgame.asm": {
+              "$ref": "#/definitions/hash"
+            },
+            "code/common/tech/interrupts/vint.asm": {
+              "$ref": "#/definitions/hash"
+            },
+            "code/common/menus/timerwindow.asm": {
+              "$ref": "#/definitions/hash"
+            },
+            "code/common/tech/randomnumbergenerator.asm": {
+              "$ref": "#/definitions/hash"
+            },
+            "data/maps/entries/map03/mapsetups/s6_initfunction.asm": {
+              "$ref": "#/definitions/hash"
+            }
+          }
+        }
+      }
+    },
+    "mapRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "sourcePath"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/nonEmpty"
+        },
+        "sourcePath": {
+          "$ref": "#/definitions/nonEmpty"
+        }
+      }
+    },
+    "sessionPatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "width",
+        "originalHex",
+        "hex",
+        "purpose"
+      ],
+      "properties": {
+        "address": {
+          "$ref": "#/definitions/address"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "originalHex": {
+          "type": "string",
+          "pattern": "^[A-F0-9]+$"
+        },
+        "hex": {
+          "type": "string",
+          "pattern": "^[A-F0-9]+$"
+        },
+        "purpose": {
+          "$ref": "#/definitions/nonEmpty"
+        }
+      }
+    },
+    "timeStateField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "observationWidthBytes",
+        "sourceUpdateWidthBytes"
+      ],
+      "properties": {
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observationWidthBytes": {
+          "type": "integer",
+          "enum": [1, 4]
+        },
+        "sourceUpdateWidthBytes": {
+          "type": "integer",
+          "enum": [1, 2, 4]
+        },
+        "sourceInstructionAddress": {
+          "$ref": "#/definitions/address"
+        },
+        "sourceReadAddress": {
+          "$ref": "#/definitions/address"
+        },
+        "sourceWriteAddress": {
+          "$ref": "#/definitions/address"
+        },
+        "sourceIncrementAddress": {
+          "$ref": "#/definitions/address"
+        },
+        "timerReadAddress": {
+          "$ref": "#/definitions/address"
+        }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currentMap",
+        "egressMap",
+        "d0",
+        "d1",
+        "d2",
+        "d3",
+        "d4"
+      ],
+      "properties": {
+        "currentMap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "egressMap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "d0": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "d1": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "d2": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "d3": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "d4": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "selectedSetup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "setupAddress",
+        "initAddress",
+        "setupResolutionReturnPc",
+        "initCallPc",
+        "initReturnPc"
+      ],
+      "properties": {
+        "setupAddress": {
+          "$ref": "#/definitions/address"
+        },
+        "initAddress": {
+          "$ref": "#/definitions/address"
+        },
+        "setupResolutionReturnPc": {
+          "$ref": "#/definitions/address"
+        },
+        "initCallPc": {
+          "$ref": "#/definitions/address"
+        },
+        "initReturnPc": {
+          "$ref": "#/definitions/address"
+        }
+      }
+    },
+    "ally": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "class",
+        "level",
+        "hpMax",
+        "hpCurrent",
+        "mpMax",
+        "mpCurrent",
+        "attack",
+        "defense",
+        "agility",
+        "move",
+        "items",
+        "spells"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 29
+        },
+        "class": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "hpMax": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "hpCurrent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "mpMax": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "mpCurrent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "attack": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "defense": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "agility": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "move": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "items": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          }
+        },
+        "spells": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          }
+        }
+      }
+    },
+    "scenarioState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "playerEntity",
+        "gold",
+        "difficultyFlags",
+        "joinedFlags",
+        "activeFlags",
+        "allies",
+        "rngSeed",
+        "vintTime"
+      ],
+      "properties": {
+        "playerEntity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "x",
+            "y",
+            "facing"
+          ],
+          "properties": {
+            "x": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            },
+            "y": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 65535
+            },
+            "facing": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            }
+          }
+        },
+        "gold": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "difficultyFlags": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "boolean"
+          }
+        },
+        "joinedFlags": {
+          "type": "array",
+          "minItems": 30,
+          "maxItems": 30,
+          "items": {
+            "type": "boolean"
+          }
+        },
+        "activeFlags": {
+          "type": "array",
+          "minItems": 30,
+          "maxItems": 30,
+          "items": {
+            "type": "boolean"
+          }
+        },
+        "allies": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/ally"
+          }
+        },
+        "rngSeed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "vintTime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "normalization",
+            "frameCounter",
+            "secondsCounter",
+            "secondsCounterFrames"
+          ],
+          "properties": {
+            "normalization": {
+              "const": "post-boundary-controlled-zeroed-vint-counters"
+            },
+            "frameCounter": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "secondsCounter": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4294967295
+            },
+            "secondsCounterFrames": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            }
+          }
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caseId",
+        "chronology",
+        "handoff",
+        "selectedSetup",
+        "scenarioState",
+        "programRequest"
+      ],
+      "properties": {
+        "caseId": {
+          "$ref": "#/definitions/nonEmpty"
+        },
+        "chronology": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/nonEmpty"
+          }
+        },
+        "handoff": {
+          "$ref": "#/definitions/handoff"
+        },
+        "selectedSetup": {
+          "$ref": "#/definitions/selectedSetup"
+        },
+        "scenarioState": {
+          "$ref": "#/definitions/scenarioState"
+        },
+        "programRequest": {
+          "$ref": "#/definitions/nonEmpty"
+        }
+      }
+    },
+    "restoration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gameFlags",
+        "combatantAllyRecords",
+        "mapAndBattleState",
+        "playerEntity",
+        "gold",
+        "timeState",
+        "generatedRam",
+        "callbacksCleared",
+        "sessionCartPatches",
+        "sessionRomDeleted"
+      ],
+      "properties": {
+        "gameFlags": {
+          "const": true
+        },
+        "combatantAllyRecords": {
+          "const": true
+        },
+        "mapAndBattleState": {
+          "const": true
+        },
+        "playerEntity": {
+          "const": true
+        },
+        "gold": {
+          "const": true
+        },
+        "timeState": {
+          "const": true
+        },
+        "generatedRam": {
+          "const": true
+        },
+        "callbacksCleared": {
+          "const": true
+        },
+        "sessionCartPatches": {
+          "const": true
+        },
+        "sessionRomDeleted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "system",
+        "caseOrder",
+        "records",
+        "callbacksCleared",
+        "restoration"
+      ],
+      "properties": {
+        "system": {
+          "const": "sf2-map3-admitted-start-runtime-v1"
+        },
+        "caseOrder": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/definitions/nonEmpty"
+          }
+        },
+        "records": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/record"
+          }
+        },
+        "callbacksCleared": {
+          "const": true
+        },
+        "restoration": {
+          "$ref": "#/definitions/restoration"
+        }
+      }
+    },
+    "map3Variant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flag",
+        "setupSymbol",
+        "setupAddress"
+      ],
+      "properties": {
+        "flag": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "setupSymbol": {
+          "$ref": "#/definitions/nonEmpty"
+        },
+        "setupAddress": {
+          "$ref": "#/definitions/address"
+        }
+      }
+    }
+  }
+}

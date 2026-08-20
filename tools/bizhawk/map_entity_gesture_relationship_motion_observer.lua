@@ -50,7 +50,7 @@ local function same_value(left,right)
   return true
 end
 
-assert_closed_keys(config,{"fixtureId","mapTestIndex","function","ram","constants","instrumentation","maxFrames","harness","cases","derived","callbackHooks","outputPath","statusPath"},"config")
+assert_closed_keys(config,{"fixtureId","mapTestIndex","function","ram","constants","instrumentation","maxFrames","harness","cases","derived","callbackHooks","bootstrap","bootstrapLibraryPath","outputPath","statusPath"},"config")
 assert_closed_keys(config["function"],{"csc2A_entityShiverAddress","csc26_entityNodHeadAddress","csc2C_followEntityAddress","csc52_faceEntityAddress","csc28_moveEntityNextToPlayerAddress","csc2F_flyAddress","csc31_moveEntityAboveEntityAddress","runMapSetupInitFunctionAddress","aliveStatusCursorAdjustmentAddress","shiverTemporarySizeWriteAddress","shiverTemporarySizeAfterWriteAddress","shiverRestoredSizeAfterWriteAddress","shiverFlagsSetAddress","shiverFlagsSetAfterWriteAddress","shiverFlagsClearAddress","shiverFlagsClearAfterWriteAddress","shiverTemporaryAnimCounterAfterWriteAddress","shiverRestoredAnimCounterAfterWriteAddress","nodInitialSleepCallSiteAddress","nodFinalAnimCounterAfterWriteAddress","faceUpdateCallSiteAddress","moveNextFirstWaitCallSiteAddress","flyZeroLayerAfterWriteAddress","flyNonzeroLayerAfterWriteAddress"},"function")
 assert_closed_keys(config.ram,{"combatantDataAddress","entityDataAddress","entityIndexListAddress","spriteSizeWordAddress"},"ram")
 assert_closed_keys(config.instrumentation,{"callSiteAddress","callSiteOriginalHex","callSitePatchedHex","stubAddress","stubOriginalHex","stubHex","postHandlerAddress","ramInputAddress","scriptInputRamOffset"},"instrumentation")

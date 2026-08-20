@@ -26,8 +26,8 @@ It says that the file has been reached, not that every instruction in the file i
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 91 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, and five-case Church Save lifecycle rail are runtime-confirmed at their controlled seams |
-| Address bindings | 2,551 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 92 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, and Map 3 admitted-start controlled seam are runtime-confirmed at their bounded seams |
+| Address bindings | 2,568 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -510,7 +510,12 @@ Map 3 through Battle 01-completion chain, consumes ADR 0010's accepted
 `1A+2A+3A+4A+5B+6A+7C+8C+9A+10A` profile, registers the RA-01..RA-12 gaps, and names the grouped
 closure matrices. Persistence is deferred by 6A, while reached private-input provenance and exact
 frame/audio/hardware H4 evidence are mandatory under 7C/8C; the audit remains OPEN until those rows
-close.
+close. Its completed R1 rail is the one-case/one-launch
+`sf2-map3-admitted-start-runtime-v1` controlled admission from original Witch/New through original
+MainLoop, the default Map 3 setup/init chain, and the first `WaitForEvent`. It binds the exact 26
+Map 3 source-path records without adding design associations, captures only licensing-safe state/
+trace facts, and leaves natural route, program/event effects, presentation, and Battle 01 work to
+R2–R4.
 The map-script engine is now structurally closed as 90 slots, 82 non-filler opcodes, eight filler
 slots, 83 unique handlers, and 93 macro forms. A complete code/data scan owns all 13,515 macro calls
 and makes eleven unused definitions explicit. All 133 primary operand fields and their 234 bytes are

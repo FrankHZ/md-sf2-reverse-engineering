@@ -522,6 +522,12 @@ def test_gesture_motion_observer_closes_config_and_emits_json_nulls() -> None:
 
     assert "assert_closed_keys" in observer
     assert "forbidden key" in observer
+    assert '"callbackHooks","bootstrap","bootstrapLibraryPath","outputPath"' in observer
+    assert 'assert_closed_keys(config,{' in observer
+    assert (
+        'if not declared[key] then error("entity gesture "..name.." forbidden key: "'
+        '..tostring(key)) end'
+    ) in observer
     assert "value_or_json_null" in observer
     assert "value==nil or value==json_null" in observer
     assert "effective callback order drift" in observer

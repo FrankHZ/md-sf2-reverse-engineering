@@ -99,6 +99,7 @@ from sf2tool.h3.growth import (
     verify_level_up_refresh,
 )
 from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
+from sf2tool.h3.map3_admitted_start import verify_map3_admitted_start
 from sf2tool.h3.map_animation_vdp import verify_map_animation_vdp
 from sf2tool.h3.map_block_copy_lifecycle import verify_map_block_copy_lifecycle
 from sf2tool.h3.map_block_mutation import verify_map_block_mutation
@@ -884,6 +885,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_witch_new_game_lifecycle)
     h3_witch_new_game_lifecycle.add_argument("--timeout-seconds", type=int, default=120)
+    h3_map3_admitted_start = h3_commands.add_parser(
+        "map3-admitted-start",
+        help="verify controlled Witch/New admission through first Map 3 WaitForEvent",
+    )
+    _add_local_paths(h3_map3_admitted_start)
+    h3_map3_admitted_start.add_argument("--timeout-seconds", type=int, default=180)
     h3_map_setup_selection = h3_commands.add_parser(
         "map-setup-selection",
         help="verify map setup default, flag, alias, and missing-map selection",
@@ -1946,6 +1953,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "witch-new-game-lifecycle":
         print_record(
             verify_witch_new_game_lifecycle(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map3-admitted-start":
+        print_record(
+            verify_map3_admitted_start(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,
