@@ -364,6 +364,19 @@ facts used by the extraction tooling, not new data-contract claims.
 - Battle backgrounds are two 6,144-byte Stack tilesets plus a 32-byte palette, composed by the
   384-entry `layout_BattlesceneBackground` table (VRAM tile numbers 928-1311, 32 columns); the
   composed sheet matches the game.
+- UI windows are VDP-attribute-word grids: menu code copies an assembled `layout_*` table (e.g.
+  `layout_ItemMenu`, 18x6) into the window's RAM tile layout (`WINDOW_TILE_LAYOUTS`), and VInt
+  DMAs it to Plane A ($C000). Frame words reference `tiles_Base` (VRAM $0000, `LoadBaseTiles`):
+  `SPACE $20`, `CORNER $60`, `H_BORDER $61`, `V_BORDER $70`; diamond-menu words reference
+  `MENUTILE1..64` = $5C0..$5FF (VRAM $B800), whose graphics come from `tiles_ItemMenu` and
+  siblings via `pt_tiles_Menu`. Icons (`p_Icons`, 163 x 192 bytes = 2x3 tiles):
+  `LoadHighlightableIcon` writes a plain copy plus a copy ANDed with `tiles_IconHighlight`
+  (red selection border); the battlefield item menu DMAs the icon into the MENUTILE slots
+  (up $B800 / down $B9C0, six tiles each; left $B8C0 / right $BA80, eight tiles each wrapped
+  with `tiles_DiamondMenuBorder1-4`), selecting the masked copy when the slot is active.
+  Text (`WriteTilesFromAsciiWithRegularFont`) writes ASCII-mapped VDPTILE references directly
+  into the grid. **Confirmed** (static layout/DMA facts; runtime window animation and
+  selection frames beyond the DMA path are not claimed).
 - Special sprites decode (Stack) to 72 tiles for the battle class and 162 for
   `SpecialSprite_NazcaShip`; `SpecialSprite_EvilSpiritAlt` is animation-only. The tooling emits
   the raw tile-pool sheet plus candidate composed layouts (3x3, 3x6, 4x4, 6x6) for later
