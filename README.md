@@ -185,6 +185,7 @@ uv run pytest tests/python/test_native_harness.py
 uv run pytest
 uv run sf2 design-contracts test
 uv run sf2 research-index test
+uv run sf2 verify plan --base origin/main --head HEAD
 uv run sf2 texture extract
 uv run sf2 texture map --maps 3
 uv run sf2 verify --full
@@ -214,10 +215,16 @@ tracked; manifests hold metadata and hashes only. Every ignored upstream binary 
 against its exact H1-resolved range in the hash-verified ROM before rendering. Commands reject their
 own existing output directories/manifests instead of silently overwriting or retaining stale files.
 
-`verify --full` runs the complete Python suite plus all maintained H1/H2/H3 rails. It is reserved for
-milestones, release/merge readiness, shared harness changes, or explicit full-parity requests. It is
-not the default gate for an ordinary research slice, and a design-only documentation change does not
-trigger it.
+`verify plan` compares committed revisions without running a gate or changing Git state. It always
+includes the normal public core, then reports the affected Python/H1/H2/H3 partitions, exact reasons,
+suggested narrow commands, resource locks, and any conservatively fanned-out unclassified paths. Use
+`--include-partition <id>` when a semantic dependency is not visible from the path diff.
+
+`verify --full` runs the complete Python suite plus the maintained H1/H2/H3 milestone profile wired
+into the current harness. It is reserved for milestones, release/merge readiness, shared harness
+changes, or explicit full-parity requests; it is not an enumeration of every registered narrow CLI
+command. It is not the default gate for an ordinary research slice, and a design-only documentation
+change does not trigger it.
 
 Generated outputs belong under ignored `local/` paths. Tools must support read-only input or an
 explicit output directory; they must never patch the canonical ROM in place.

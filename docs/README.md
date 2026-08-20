@@ -749,6 +749,9 @@ is created only when a real disagreement appears and the choice constrains later
 - [`0011-phase4-remake-runtime-architecture.md`](./decisions/0011-phase4-remake-runtime-architecture.md):
   accepts the deterministic modular-monolith boundary, plain-C# authoritative state, validated data
   ports, thin Godot adapters, and layered H4 gates without starting Phase 4 implementation.
+- [`0012-dependency-aware-partitioned-verification.md`](./decisions/0012-dependency-aware-partitioned-verification.md):
+  accepts an always-run public core plus conservative affected Python/H1/H2/H3 partitions, with a
+  read-only committed-range planner and explicit resource-lock boundaries for later orchestration.
 
 ## Evidence Vocabulary
 
