@@ -746,6 +746,9 @@ is created only when a real disagreement appears and the choice constrains later
   accepts the private-local Map 3-through-Battle 01 product profile, including natural playable
   continuity, original private assets with no public redistribution, frame/audio/hardware-exact
   parity, modern accessible controls, and the remaining Research/H4 gates before Phase 4 may start.
+- [`0011-phase4-remake-runtime-architecture.md`](./decisions/0011-phase4-remake-runtime-architecture.md):
+  accepts the deterministic modular-monolith boundary, plain-C# authoritative state, validated data
+  ports, thin Godot adapters, and layered H4 gates without starting Phase 4 implementation.
 
 ## Evidence Vocabulary
 

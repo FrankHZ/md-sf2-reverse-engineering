@@ -1,15 +1,16 @@
 # ADR 0011: Phase 4 Remake Runtime Architecture
 
-- Status: **Proposed**
+- Status: **Accepted**
 - Proposal date: 2026-08-20
+- Decision date: 2026-08-20
 - Scope: prospective Phase 4 runtime, module, adapter, and verification architecture
-- Recommended option: **A — deterministic modular monolith with ports and Godot adapters**
-- Required acceptance: explicit user selection; this proposal does not start Phase 4
+- Accepted option: **A — deterministic modular monolith with ports and Godot adapters**
+- User acceptance: **Recorded for Option A; acceptance does not start Phase 4**
 
 ## Context
 
 [ADR 0008](./0008-godot-csharp-cli-first-remake-tooling.md) fixes Godot 4.7.2 .NET/C#, a CLI-first
-toolchain, a plain-C# domain layer, and a thin Godot adapter. This proposal consumes that decision; it
+toolchain, a plain-C# domain layer, and a thin Godot adapter. This ADR consumes that decision; it
 does not reopen the engine, language, version, or MCP boundary.
 
 [ADR 0009](./0009-first-phase4-playable-slice.md) fixes the first implementation milestone as one
@@ -32,7 +33,7 @@ Godot participates without owning rules, and where the private 7C and exact 8C b
 
 ## Decision Boundary
 
-This ADR proposes the shape of a future `remake/` project. It does not create that directory, write
+This ADR fixes the shape of a future `remake/` project. It does not create that directory, write
 engine code, install or change Godot, select or use MCP, define a distributable asset strategy, close
 any Research or H4 gap, report the scenario ready, or authorize Phase 4.
 
@@ -50,13 +51,13 @@ instead of guessing.
 | C. General ECS/data-oriented simulation | Every world and battle object is a component and every rule is a system. | Uniform iteration and potential large-scale simulation performance. | The first slice has small, heterogeneous, strongly ordered state machines; a general ECS obscures action construction/replay and creates a framework before a performance need exists. |
 | D. Original-hardware/emulator core as the game runtime | Reproduce CPU, VDP, audio, and original program execution, with Godot as a shell. | Makes some 8C observations intrinsic to the runtime. | Conflicts with the independently maintained remake goal, couples product behavior to private original program/assets, and turns the project into an emulator rather than a contract-driven remake. |
 
-**Recommendation:** choose Option A. It is a modular monolith, not distributed services and not a
+**Decision:** use Option A. It is a modular monolith, not distributed services and not a
 plugin framework. The module seams exist to preserve evidence ownership, deterministic testing, and
 replaceable presentation; they should not create indirection without one of those purposes.
 
-## Proposed Architecture
+## Accepted Architecture
 
-If accepted, the following rules are normative.
+The following rules are normative.
 
 ### 1. Assembly and Dependency Boundaries
 
@@ -455,7 +456,7 @@ missing values are known.
 
 ## Non-Goals and Revisit Triggers
 
-This proposal does not decide complete campaign architecture, general battle simulation completeness,
+This decision does not decide complete campaign architecture, general battle simulation completeness,
 save migration, modding, networking, rollback, ECS adoption, public asset replacement, export targets,
 MCP selection, or exact renderer/audio backend implementation.
 
@@ -467,10 +468,11 @@ changing these ownership rules.
 
 ## Acceptance Effect
 
-Explicit selection of Option A would mark this ADR **Accepted** and authorize only this architectural
-constraint for a later Phase 4 implementation. It would not make the readiness ledger READY and would
-not start Phase 4. Research closures, the continuous-scenario contract, complete H4 definitions,
-main-gate readiness, and the separate user start action required by ADR 0009 would all remain open.
+The explicit user selection of Option A marks this ADR **Accepted** and authorizes only this
+architectural constraint for a later Phase 4 implementation. It does not make the readiness ledger
+READY and does not start Phase 4. Research closures, the continuous-scenario contract, complete H4
+definitions, main-gate readiness, and the separate user start action required by ADR 0009 all remain
+open.
 
-Selecting another option requires an amended proposal that explains how it still satisfies ADR 0008,
+Changing to another option requires a follow-up ADR that explains how it still satisfies ADR 0008,
 the ADR 0010 product profile, the private/public boundary, and the layered H4 acceptance surface.
