@@ -59,7 +59,7 @@ That is expected: this milestone requires composition, not merely the existence 
 
 ## ADR Gate
 
-[ADR 0008](../../decisions/0008-godot-csharp-cli-first-remake-tooling.md) accepts Godot 4.7.1 .NET,
+[ADR 0008](../../decisions/0008-godot-csharp-cli-first-remake-tooling.md) accepts Godot 4.7.2 .NET,
 C#, a CLI-first toolchain, a plain-C# deterministic domain layer, and a thin Godot adapter. It does
 not install Godot, select an MCP adapter, choose distributable assets, create a remake project, or
 authorize implementation. The first implementation acceptance profile remains CLI-only.

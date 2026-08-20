@@ -6,7 +6,7 @@
 
 ## Context
 
-[ADR 0008](./0008-godot-csharp-cli-first-remake-tooling.md) accepts the Godot 4.7.1 .NET/C# CLI-first
+[ADR 0008](./0008-godot-csharp-cli-first-remake-tooling.md) accepts the Godot 4.7.2 .NET/C# CLI-first
 engine and tooling baseline, but that acceptance does not start Phase 4. The first implementation
 milestone also needs a bounded player-facing target and an evidence gate that prevents engine work
 from silently defining original behavior or unresolved product scope.

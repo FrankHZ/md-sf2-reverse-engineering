@@ -9,7 +9,7 @@
 
 ## Context
 
-[ADR 0008](./0008-godot-csharp-cli-first-remake-tooling.md) accepts Godot 4.7.1 .NET/C# as a
+[ADR 0008](./0008-godot-csharp-cli-first-remake-tooling.md) accepts Godot 4.7.2 .NET/C# as a
 CLI-first prospective implementation baseline. [ADR 0009](./0009-first-phase4-playable-slice.md)
 selects one continuous playable milestone from Map 3 through completion of Battle 01 and requires
 Research and Design gap closure plus a separate user start action. Neither ADR selects the player
