@@ -737,6 +737,10 @@ is created only when a real disagreement appears and the choice constrains later
   accepts one continuous Map 3-through-Battle 01-completion scenario as the first playable milestone
   and requires independent Research and Design gap audits, accepted gap closure, main-gate readiness,
   and a separate explicit Phase 4 start action before implementation.
+- [`0010-map3-battle01-product-acceptance.md`](./decisions/0010-map3-battle01-product-acceptance.md):
+  accepts the private-local Map 3-through-Battle 01 product profile, including natural playable
+  continuity, original private assets with no public redistribution, frame/audio/hardware-exact
+  parity, modern accessible controls, and the remaining Research/H4 gates before Phase 4 may start.
 
 ## Evidence Vocabulary
 
