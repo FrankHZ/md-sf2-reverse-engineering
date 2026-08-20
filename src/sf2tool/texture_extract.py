@@ -1265,7 +1265,11 @@ def parse_window_layout(
         match = re.match(r"\s*vdpTile\s*(.*)$", line)
         if match is None:
             continue
-        tokens = [token.strip() for token in match.group(1).split("|") if token.strip()]
+        tokens = [
+            token.strip()
+            for token in match.group(1).split("|")
+            if token.strip() and not token.strip().startswith(";")
+        ]
         word = 0
         for token in tokens:
             if token in enums:
@@ -1337,16 +1341,17 @@ def extract_ui_windows(
     *,
     out_dir: Path,
 ) -> dict[str, object]:
-    """Render the composed battlefield item menu window (frame + icon slots).
+    """Render the composed battle action menu (diamond menu) window.
 
-    The window frame comes from ``layout_ItemMenu`` (VDP attribute words referencing
-    ``tiles_Base`` frame tiles and ``tiles_ItemMenu`` MENUTILE tiles); the four icon
-    slots are filled with example item icons like the game's DMA path: up/down/left/
-    right take the plain six-tile icon, and a third render shows the up slot with the
-    ``tiles_IconHighlight`` red selection mask applied. The left/right bordered frame
-    assembly of ``itemmenu.asm`` ``sub_10874``/``sub_108CA`` (replicated byte-exactly
-    by ``build_bordered_icon``) does not assemble a coherent icon in any reading
-    tried, so it remains **Unknown** pending a game screenshot.
+    The action menu is `ExecuteDiamondMenu` with `MENU_BATTLE_WITH_STAY`: an 18x6
+    window whose frame comes from `layout_DiamondMenu` (VDP attribute words
+    referencing `tiles_Base` frame tiles and `tiles_ItemMenu` MENUTILE tiles). The
+    four diamond slots are filled like the game's DMA path: up/down take the plain
+    24x24 half of the main-menu icon (indices 0/3 = ATTACK/STAY for the battle menu),
+    left/right take the bordered 24x32 build of `diamondmenu.asm`
+    ``sub_10484``/``sub_104E6`` (main-menu icons 1/2 wrapped with
+    `tiles_DiamondMenuBorder1-4`), and the selected option's name ("ATTACK") is
+    written at (11,4) with the base-tiles font like `WriteTilesFromAsciiWithRegularFont`.
     """
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -1365,33 +1370,29 @@ def extract_ui_windows(
     ).output
     enums = parse_vdptile_enums(read_upstream_text(disasm / UI_VDP_ENUM_PATH))
     layout = parse_window_layout(
-        read_upstream_text(disasm / UI_LAYOUT_SOURCE_ROOT / "itemmenulayout.asm"), enums
+        read_upstream_text(disasm / UI_LAYOUT_SOURCE_ROOT / "diamondmenulayout.asm"), enums
     )
 
-    icon_entries = re.findall(
-        r"^\s*(ItemIcon\d{3}):\s*incbin\s+\"([^\"]+)\"",
-        read_upstream_text(disasm / (ICON_SOURCE_ROOT / "entries.asm")),
-        re.MULTILINE,
-    )
-    if not icon_entries:
-        raise ValueError("item icon entries have no definitions")
-    icon_payloads = {
-        symbol: (disasm / relative).read_bytes() for symbol, relative in icon_entries
+    main_menu = (disasm / MAIN_MENU_PATH).read_bytes()
+    if len(main_menu) % MAIN_MENU_ICON_BYTES:
+        raise ValueError(f"main menu payload size drift: {len(main_menu)}")
+    main_icons = [
+        main_menu[offset : offset + MAIN_MENU_ICON_BYTES]
+        for offset in range(0, len(main_menu), MAIN_MENU_ICON_BYTES)
+    ]
+    if len(main_icons) < 4:
+        raise ValueError(f"main menu icon count drift: {len(main_icons)}")
+
+    border_source = read_upstream_text(disasm / UI_DIAMOND_BORDER_PATH)
+    border_parts = border_source.split("tiles_DiamondMenuBorder")
+    borders = {
+        "1": parse_dc_b_tiles(border_parts[1].split(":")[1]),
+        "2": parse_dc_b_tiles(border_parts[2].split(":")[1]),
+        "3": parse_dc_b_tiles(border_parts[3].split(":")[1]),
+        "4": parse_dc_b_tiles(border_parts[4].split(":")[1]),
     }
-    for symbol, payload in icon_payloads.items():
-        if len(payload) != ICON_BYTES:
-            raise ValueError(f"item icon size drift: {symbol}")
-    highlight = (disasm / UI_ICON_HIGHLIGHT_PATH).read_bytes()
-    if len(highlight) != ICON_BYTES:
-        raise ValueError(f"icon highlight mask size drift: {len(highlight)}")
 
-    # example icons: the four most detailed item icons (deterministic)
-    ranked = sorted(
-        icon_payloads.items(), key=lambda pair: sum(byte != 0 for byte in pair[1]), reverse=True
-    )
-    example_icons = [payload for _symbol, payload in ranked[:4]]
-
-    def render_window(slot_tiles: dict[int, bytes]) -> tuple[list[int], int, int]:
+    def render_window(slot_tiles: dict[int, bytes], text: str = "") -> tuple[list[int], int, int]:
         width = len(layout[0]) * TILE_SIZE
         height = len(layout) * TILE_SIZE
         pixels = [0] * (width * height * 4)
@@ -1399,6 +1400,14 @@ def extract_ui_windows(
             for col_index, word in enumerate(row):
                 tile_number = word & 0x7FF
                 if tile_number == 0:
+                    # blank word: the game's tile 0 shows the dark blue interior
+                    for row in range(TILE_SIZE):
+                        for col in range(TILE_SIZE):
+                            offset = (
+                                (row_index * TILE_SIZE + row) * width
+                                + (col_index * TILE_SIZE + col)
+                            ) * 4
+                            pixels[offset : offset + 4] = [0, 36, 146, 255]
                     continue
                 if tile_number in slot_tiles:
                     tile = decode_md_4bpp_tile(slot_tiles[tile_number])
@@ -1427,25 +1436,75 @@ def extract_ui_windows(
                             pixels[offset : offset + 4] = [0, 0, 0, 0]
                         else:
                             pixels[offset : offset + 4] = [*color, 255]
+        if text:
+            # WriteTilesFromAsciiWithRegularFont: the base-tiles glyphs sit one tile
+            # below the ASCII value ('A' 0x41 -> tile 0x40, 'T' 0x54 -> 0x53, ...)
+            origin_x = 11 * TILE_SIZE
+            origin_y = 4 * TILE_SIZE
+            for char_index, char in enumerate(text):
+                tile_number = ord(char) - 1
+                if tile_number >= 0x60:
+                    tile_number += 32
+                local = tile_number
+                if local * TILE_BYTES_4BPP + TILE_BYTES_4BPP > len(base_tiles):
+                    raise ValueError(f"text glyph tile out of range: {tile_number:02X}")
+                tile = decode_md_4bpp_tile(
+                    base_tiles[local * TILE_BYTES_4BPP : (local + 1) * TILE_BYTES_4BPP]
+                )
+                for row in range(TILE_SIZE):
+                    for col in range(TILE_SIZE):
+                        color = palette[tile[row * TILE_SIZE + col]]
+                        if color == (0, 0, 0):
+                            continue
+                        offset = (
+                            (origin_y + row) * width + (origin_x + char_index * 8 + col)
+                        ) * 4
+                        pixels[offset : offset + 4] = [*color, 255]
         return pixels, width, height
 
-    def slot_overrides(icons: list[bytes], highlighted_up: bool) -> dict[int, bytes]:
+    def build_bordered_main_icon(icon: bytes, border_top: bytes, border_bottom: bytes) -> bytes:
+        """Replicate the diamond menu's left/right bordered slot buffer.
+
+        Mirrors `diamondmenu.asm` ``sub_10484``/``sub_104E6``: the border asset's three
+        16-byte groups land at offsets ``0``/``0x20``/``0x40`` and the icon's 288-byte
+        plain half is spread with 16-byte pieces at ``0`` and ``0x50`` per 0x20-stride
+        row (9 rows); the bottom border follows at the end. DMA'd as twelve tiles.
+        """
+        if len(icon) != 0x120:
+            raise ValueError(f"main menu icon half must be 288 bytes, got {len(icon)}")
+        buf = bytearray(0x180)
+        for index in range(4):
+            start = index * 4
+            buf[start : start + 4] = border_top[start : start + 4]
+            buf[0x20 + start : 0x24 + start] = border_top[0x10 + start : 0x14 + start]
+            buf[0x40 + start : 0x44 + start] = border_top[0x20 + start : 0x24 + start]
+        for row in range(9):
+            base = 0x10 + row * 0x20
+            buf[base : base + 16] = icon[row * 32 : row * 32 + 16]
+            buf[base + 0x50 : base + 0x60] = icon[row * 32 + 16 : row * 32 + 32]
+        for index in range(4):
+            start = index * 4
+            buf[0x130 + start : 0x134 + start] = border_bottom[start : start + 4]
+            buf[0x150 + start : 0x154 + start] = border_bottom[0x10 + start : 0x14 + start]
+            buf[0x170 + start : 0x174 + start] = border_bottom[0x20 + start : 0x24 + start]
+        return bytes(buf)
+
+    def slot_overrides(highlight_up: bool) -> dict[int, bytes]:
         overrides = {}
-        slot_names = list(ITEM_MENU_SLOTS)
-        for slot_name, slot in ITEM_MENU_SLOTS.items():
-            icon = icons[slot_names.index(slot_name)]
-            if slot_name == "up" and highlighted_up:
-                icon = bytes(a & b for a, b in zip(icon, highlight, strict=True))
-            # The left/right slots use the plain six-tile icon: the byte-exact
-            # replication of itemmenu.asm sub_10874/sub_108CA (build_bordered_icon)
-            # produces a non-coherent mosaic in every assembly we tried, so the
-            # bordered frame assembly stays Unknown until a game screenshot settles it.
-            payload = icon
-            for index in range(slot["count"]):
-                tile_number = slot["first"] + index
-                start = index * TILE_BYTES_4BPP
-                if start + TILE_BYTES_4BPP <= len(payload):
-                    overrides[tile_number] = payload[start : start + TILE_BYTES_4BPP]
+        for index in range(9):
+            overrides[0x5C0 + index] = main_icons[0][index * 32 : (index + 1) * 32]
+        for index in range(12):
+            payload = build_bordered_main_icon(main_icons[1][:0x120], borders["1"], borders["2"])
+            overrides[0x5C9 + index] = payload[index * 32 : (index + 1) * 32]
+        for index in range(9):
+            overrides[0x5E1 + index] = main_icons[3][index * 32 : (index + 1) * 32]
+        for index in range(12):
+            payload = build_bordered_main_icon(main_icons[2][:0x120], borders["3"], borders["4"])
+            overrides[0x5D5 + index] = payload[index * 32 : (index + 1) * 32]
+        if highlight_up:
+            for index in range(9):
+                start = 0x120 + index * TILE_BYTES_4BPP
+                overrides[0x5C0 + index] = main_icons[0][start : start + TILE_BYTES_4BPP]
         return overrides
 
     out_dir = out_dir.resolve()
@@ -1453,12 +1512,12 @@ def extract_ui_windows(
     window_dir.mkdir(parents=True, exist_ok=True)
     files = []
     variants = [
-        ("itemmenu-frame.png", {}),
-        ("itemmenu-icons.png", slot_overrides(example_icons, highlighted_up=False)),
-        ("itemmenu-selected.png", slot_overrides(example_icons, highlighted_up=True)),
+        ("actionmenu-frame.png", {}, ""),
+        ("actionmenu.png", slot_overrides(highlight_up=False), "ATTACK"),
+        ("actionmenu-selected.png", slot_overrides(highlight_up=True), "ATTACK"),
     ]
-    for name, overrides in variants:
-        pixels, width, height = render_window(overrides)
+    for name, overrides, text in variants:
+        pixels, width, height = render_window(overrides, text)
         rel = window_dir / name
         write_png_rgba(rel, width, height, pixels)
         files.append(
@@ -1472,11 +1531,11 @@ def extract_ui_windows(
         "romSha256": expected_rom["hashes"]["sha256"],
         "upstream": {"repository": "ShiningForceCentral/SF2DISASM", "commit": commit},
         "notes": [
-            "battlefield item menu window: layout_ItemMenu frame (tiles_Base + "
-            "tiles_ItemMenu) with the four MENUTILE icon slots filled by example item "
-            "icons (plain, and tiles_IconHighlight-masked for the selected render); "
-            "the left/right bordered frame assembly (itemmenu.asm sub_10874/sub_108CA, "
-            "replicated by build_bordered_icon) stays Unknown pending a game screenshot",
+            "battle action menu (ExecuteDiamondMenu, MENU_BATTLE_WITH_STAY): "
+            "layout_DiamondMenu frame with the four diamond slots filled per the DMA "
+            "path (up/down = main-menu icon halves, left/right = bordered builds of "
+            "diamondmenu.asm sub_10484/sub_104E6) and the selected option name written "
+            "at (11,4) with the base-tiles font",
         ],
         "summary": {"windowRenderCount": len(files)},
         "files": files,

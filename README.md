@@ -203,10 +203,10 @@ from each `2-areas.asm`), plus per-area `...-overlay.png` (the second-layer regi
 `scndLayerFgndStart`/`scndLayerBgndStart` offset, with the roof/layer-2 `slbc` copy records
 applied so source-stored facades such as the map-3 cell bars appear at their display
 position) and `...-composed.png` (overlay over the main layer). `uv run sf2 texture ui`
-renders the composed battlefield item menu window under `local/derived/graphics/windows/`:
-the `layout_ItemMenu` frame (base window-border tiles + diamond-menu tiles) with the four
-MENUTILE icon slots filled by example item icons, including the `tiles_IconHighlight`
-red-masked selection variant. `uv run sf2 texture assets` extracts the font sheet,
+renders the composed battle action menu under `local/derived/graphics/windows/`: the
+`layout_DiamondMenu` window (18x6) with the four diamond slots filled by the main-menu
+icons (up/down plain halves, left/right bordered builds) and the selected option name
+("ATTACK") written with the base-tiles font at (11,4). `uv run sf2 texture assets` extracts the font sheet,
 portraits (8x8 tile grid + per-portrait palette), icons (2x3 tiles, base palette), and
 map sprites (two 3x3 column-major frames per facing). `uv run sf2 texture misc` extracts
 the UI tile sets and main-menu icons, special sprites (raw tile sheets; palette decode and

@@ -365,23 +365,25 @@ facts used by the extraction tooling, not new data-contract claims.
   384-entry `layout_BattlesceneBackground` table (VRAM tile numbers 928-1311, 32 columns); the
   composed sheet matches the game.
 - UI windows are VDP-attribute-word grids: menu code copies an assembled `layout_*` table (e.g.
-  `layout_ItemMenu`, 18x6) into the window's RAM tile layout (`WINDOW_TILE_LAYOUTS`), and VInt
-  DMAs it to Plane A ($C000). Frame words reference `tiles_Base` (VRAM $0000, `LoadBaseTiles`):
-  `SPACE $20`, `CORNER $60`, `H_BORDER $61`, `V_BORDER $70`; diamond-menu words reference
-  `MENUTILE1..64` = $5C0..$5FF (VRAM $B800), whose graphics come from `tiles_ItemMenu` and
-  siblings via `pt_tiles_Menu`. The six diamond-menu tile sets are 24 strips of 24x8 pixels
-  (96 bytes = three 8x8 tiles side by side), placed 3-tiles-at-a-time by the town
-  `layout_DiamondMenu`; the battlefield `layout_ItemMenu` instead uses 2-tile-wide slots
-  filled by the runtime icon DMAs. Icons (`p_Icons`, 163 x 192 bytes = 2x3 tiles):
-  `LoadHighlightableIcon` writes a plain copy plus a copy ANDed with `tiles_IconHighlight`
-  (red selection border); the battlefield item menu DMAs the icon into the MENUTILE slots
-  (up $B800 / down $B9C0, six tiles each; left $B8C0 / right $BA80, eight tiles each). The
-  left/right bordered assembly (`sub_10874`/`sub_108CA`, H1-verified byte layout) does not
-  assemble a coherent icon in any piece-ordering tried, so the left/right frame assembly
-  is **Unknown** pending a game screenshot; the extraction renders plain icons there.
-  Text (`WriteTilesFromAsciiWithRegularFont`) writes ASCII-mapped VDPTILE references directly
-  into the grid. **Confirmed** (static layout/DMA facts; runtime window animation and
-  selection frames beyond the DMA path are not claimed).
+  `layout_DiamondMenu`, 18x6, 108 words) into the window's RAM tile layout
+  (`WINDOW_TILE_LAYOUTS`), and VInt DMAs it to Plane A ($C000). Frame words reference
+  `tiles_Base` (VRAM $0000, `LoadBaseTiles`): `SPACE $20`, `CORNER $60`, `H_BORDER $61`,
+  `V_BORDER $70`; diamond-menu words reference `MENUTILE1..64` = $5C0..$5FF (VRAM $B800),
+  whose graphics come from `tiles_ItemMenu` and siblings via `pt_tiles_Menu`. The six
+  diamond-menu tile sets are 24 strips of 24x8 pixels (96 bytes = three 8x8 tiles side by
+  side), placed 3-tiles-at-a-time by `layout_DiamondMenu`; the battlefield item menu
+  (`layout_ItemMenu`) instead uses 2-tile-wide slots filled by runtime icon DMAs. The battle
+  action menu is `ExecuteDiamondMenu` with `MENU_BATTLE_WITH_STAY`: its four diamond slots
+  show the main-menu icons (24x48 px = a plain 24x24 half plus a highlighted half; the
+  packed `pt_tiles_Menu` entries select indices 0-3 = ATTACK/MAGIC/ITEM/STAY), up/down as
+  the plain half, left/right wrapped by the bordered builds of `sub_10484`/`sub_104E6`
+  (`tiles_DiamondMenuBorder1-4`, 48 bytes each = three 16-byte groups spread at 0/0x20/0x40
+  with 288-byte icon halves at 0/0x50 per 0x20-stride row). The selected option's name
+  ("ATTACK") is written at tile (11,4) with `WriteTilesFromAsciiWithRegularFont`: the base
+  tiles hold the glyphs one tile below the ASCII value ('A' 0x41 -> tile 0x40) with index-1
+  strokes on an index-15 (dark blue) field, and the window's blank words show the same dark
+  blue. **Confirmed** (static layout/DMA facts; runtime window animation and selection
+  frames beyond the DMA path are not claimed).
 - Special sprites decode (Stack) to 72 tiles for the battle class and 162 for
   `SpecialSprite_NazcaShip`; `SpecialSprite_EvilSpiritAlt` is animation-only. The tooling emits
   the raw tile-pool sheet plus candidate composed layouts (3x3, 3x6, 4x4, 6x6) for later
