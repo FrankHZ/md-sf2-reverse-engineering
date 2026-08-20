@@ -369,11 +369,16 @@ facts used by the extraction tooling, not new data-contract claims.
   DMAs it to Plane A ($C000). Frame words reference `tiles_Base` (VRAM $0000, `LoadBaseTiles`):
   `SPACE $20`, `CORNER $60`, `H_BORDER $61`, `V_BORDER $70`; diamond-menu words reference
   `MENUTILE1..64` = $5C0..$5FF (VRAM $B800), whose graphics come from `tiles_ItemMenu` and
-  siblings via `pt_tiles_Menu`. Icons (`p_Icons`, 163 x 192 bytes = 2x3 tiles):
+  siblings via `pt_tiles_Menu`. The six diamond-menu tile sets are 24 strips of 24x8 pixels
+  (96 bytes = three 8x8 tiles side by side), placed 3-tiles-at-a-time by the town
+  `layout_DiamondMenu`; the battlefield `layout_ItemMenu` instead uses 2-tile-wide slots
+  filled by the runtime icon DMAs. Icons (`p_Icons`, 163 x 192 bytes = 2x3 tiles):
   `LoadHighlightableIcon` writes a plain copy plus a copy ANDed with `tiles_IconHighlight`
   (red selection border); the battlefield item menu DMAs the icon into the MENUTILE slots
-  (up $B800 / down $B9C0, six tiles each; left $B8C0 / right $BA80, eight tiles each wrapped
-  with `tiles_DiamondMenuBorder1-4`), selecting the masked copy when the slot is active.
+  (up $B800 / down $B9C0, six tiles each; left $B8C0 / right $BA80, eight tiles each). The
+  left/right bordered assembly (`sub_10874`/`sub_108CA`, H1-verified byte layout) does not
+  assemble a coherent icon in any piece-ordering tried, so the left/right frame assembly
+  is **Unknown** pending a game screenshot; the extraction renders plain icons there.
   Text (`WriteTilesFromAsciiWithRegularFont`) writes ASCII-mapped VDPTILE references directly
   into the grid. **Confirmed** (static layout/DMA facts; runtime window animation and
   selection frames beyond the DMA path are not claimed).

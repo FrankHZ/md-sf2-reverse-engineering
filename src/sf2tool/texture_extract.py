@@ -1157,14 +1157,44 @@ def _render_tile_pool_sheet(
 
 
 def extract_ui_resources(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
-    """Render the base/diamond-menu/yes-no tile sets and the main-menu icons."""
+    """Render the base/diamond-menu/yes-no tile sets and the main-menu icons.
+
+    The six diamond-menu tile sets (2,304 bytes each) hold 24 strips of 24x8 pixels
+    (96 bytes = three 8x8 tiles side by side), so they are rendered as 24-wide strips
+    rather than as bare 8x8 tile grids.
+    """
     palette = _load_base_palette(disasm)
     out_dir.mkdir(parents=True, exist_ok=True)
     files = []
-    for symbol, relative_path, expected, _family in UI_RESOURCE_SPECS:
+    for symbol, relative_path, expected, family in UI_RESOURCE_SPECS:
         data = (disasm / relative_path).read_bytes()
         decoded = decode_stack_compressed(data, expected_output_bytes=expected)
-        pixels, width, height = _render_tile_pool_sheet(decoded.output, palette)
+        if family == "diamond-menu":
+            strip_bytes = 3 * TILE_BYTES_4BPP
+            strip_count = len(decoded.output) // strip_bytes
+            columns = 6
+            rows = (strip_count + columns - 1) // columns
+            width = columns * 24
+            height = rows * 8
+            pixels = [0] * (width * height * 4)
+            for strip_index in range(strip_count):
+                origin_x = (strip_index % columns) * 24
+                origin_y = (strip_index // columns) * 8
+                for tile_index in range(3):
+                    start = strip_index * strip_bytes + tile_index * TILE_BYTES_4BPP
+                    tile = decode_md_4bpp_tile(decoded.output[start : start + TILE_BYTES_4BPP])
+                    for row in range(TILE_SIZE):
+                        for col in range(TILE_SIZE):
+                            color = palette[tile[row * TILE_SIZE + col]]
+                            offset = (
+                                (origin_y + row) * width + (origin_x + tile_index * 8 + col)
+                            ) * 4
+                            if color == (0, 0, 0):
+                                pixels[offset : offset + 4] = [0, 0, 0, 0]
+                            else:
+                                pixels[offset : offset + 4] = [*color, 255]
+        else:
+            pixels, width, height = _render_tile_pool_sheet(decoded.output, palette)
         name = f"{symbol}.png"
         rel = out_dir / name
         write_png_rgba(rel, width, height, pixels)
@@ -1206,12 +1236,12 @@ UI_LAYOUT_FLAG_VALUES = {
     "FLIP": 0x1000,
 }
 
-# Battlefield item menu icon slots (itemmenu.asm): MENUTILE ranges and DMA handling.
+# Battlefield item menu icon slots (itemmenu.asm): MENUTILE ranges and DMA lengths.
 ITEM_MENU_SLOTS = {
-    "up": {"first": 0x5C0, "count": 6, "bordered": False, "border": None},
-    "left": {"first": 0x5C6, "count": 8, "bordered": True, "border": "12"},
-    "down": {"first": 0x5CE, "count": 6, "bordered": False, "border": None},
-    "right": {"first": 0x5D4, "count": 8, "bordered": True, "border": "34"},
+    "up": {"first": 0x5C0, "count": 6},
+    "left": {"first": 0x5C6, "count": 8},
+    "down": {"first": 0x5CE, "count": 6},
+    "right": {"first": 0x5D4, "count": 8},
 }
 
 
@@ -1311,10 +1341,12 @@ def extract_ui_windows(
 
     The window frame comes from ``layout_ItemMenu`` (VDP attribute words referencing
     ``tiles_Base`` frame tiles and ``tiles_ItemMenu`` MENUTILE tiles); the four icon
-    slots are then filled with example item icons exactly like the game's DMA path:
-    up/down take the plain six-tile icon, left/right take the eight-tile bordered
-    buffer built by ``sub_10874``/``sub_108CA``, and a third render shows the up slot
-    with the ``tiles_IconHighlight`` red selection mask applied.
+    slots are filled with example item icons like the game's DMA path: up/down/left/
+    right take the plain six-tile icon, and a third render shows the up slot with the
+    ``tiles_IconHighlight`` red selection mask applied. The left/right bordered frame
+    assembly of ``itemmenu.asm`` ``sub_10874``/``sub_108CA`` (replicated byte-exactly
+    by ``build_bordered_icon``) does not assemble a coherent icon in any reading
+    tried, so it remains **Unknown** pending a game screenshot.
     """
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -1352,15 +1384,6 @@ def extract_ui_windows(
     highlight = (disasm / UI_ICON_HIGHLIGHT_PATH).read_bytes()
     if len(highlight) != ICON_BYTES:
         raise ValueError(f"icon highlight mask size drift: {len(highlight)}")
-
-    border_source = read_upstream_text(disasm / UI_DIAMOND_BORDER_PATH)
-    border_parts = border_source.split("tiles_DiamondMenuBorder")
-    borders = {
-        "1": parse_dc_b_tiles(border_parts[1].split(":")[1]),
-        "2": parse_dc_b_tiles(border_parts[2].split(":")[1]),
-        "3": parse_dc_b_tiles(border_parts[3].split(":")[1]),
-        "4": parse_dc_b_tiles(border_parts[4].split(":")[1]),
-    }
 
     # example icons: the four most detailed item icons (deterministic)
     ranked = sorted(
@@ -1413,15 +1436,16 @@ def extract_ui_windows(
             icon = icons[slot_names.index(slot_name)]
             if slot_name == "up" and highlighted_up:
                 icon = bytes(a & b for a, b in zip(icon, highlight, strict=True))
-            if slot["bordered"]:
-                top, bottom = borders[slot["border"][0]], borders[slot["border"][1]]
-                payload = build_bordered_icon(icon, top, bottom)
-            else:
-                payload = icon
+            # The left/right slots use the plain six-tile icon: the byte-exact
+            # replication of itemmenu.asm sub_10874/sub_108CA (build_bordered_icon)
+            # produces a non-coherent mosaic in every assembly we tried, so the
+            # bordered frame assembly stays Unknown until a game screenshot settles it.
+            payload = icon
             for index in range(slot["count"]):
                 tile_number = slot["first"] + index
                 start = index * TILE_BYTES_4BPP
-                overrides[tile_number] = payload[start : start + TILE_BYTES_4BPP]
+                if start + TILE_BYTES_4BPP <= len(payload):
+                    overrides[tile_number] = payload[start : start + TILE_BYTES_4BPP]
         return overrides
 
     out_dir = out_dir.resolve()
@@ -1451,7 +1475,8 @@ def extract_ui_windows(
             "battlefield item menu window: layout_ItemMenu frame (tiles_Base + "
             "tiles_ItemMenu) with the four MENUTILE icon slots filled by example item "
             "icons (plain, and tiles_IconHighlight-masked for the selected render); "
-            "left/right slots use the bordered eight-tile buffer of itemmenu.asm",
+            "the left/right bordered frame assembly (itemmenu.asm sub_10874/sub_108CA, "
+            "replicated by build_bordered_icon) stays Unknown pending a game screenshot",
         ],
         "summary": {"windowRenderCount": len(files)},
         "files": files,
