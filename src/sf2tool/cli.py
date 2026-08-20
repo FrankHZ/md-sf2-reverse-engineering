@@ -169,6 +169,7 @@ from sf2tool.texture_extract import (
     extract_map_textures,
     extract_misc_graphics,
 )
+from sf2tool.verification_plan import PARTITIONS_BY_ID, build_verification_plan
 from sf2tool.zh_translation import generate_zh_translation, translation_rows, verify_zh_translation
 
 DEFAULT_ROM = repo_path("local/roms/sf2-us.bin")
@@ -228,6 +229,19 @@ def build_parser() -> argparse.ArgumentParser:
         help="run the full Python suite plus the H1, H2, and H3 milestone rails",
     )
     verify_profile.add_argument("--quick", action="store_true", help=argparse.SUPPRESS)
+    verify_commands = verify_parser.add_subparsers(dest="verify_command")
+    verify_plan = verify_commands.add_parser(
+        "plan", help="plan affected verification partitions for a committed Git range"
+    )
+    verify_plan.add_argument("--base", required=True, help="base Git revision")
+    verify_plan.add_argument("--head", default="HEAD", help="head Git revision (default: HEAD)")
+    verify_plan.add_argument(
+        "--include-partition",
+        action="append",
+        default=[],
+        choices=sorted(PARTITIONS_BY_ID),
+        help="conservatively include a partition even when paths do not select it",
+    )
 
     init_parser = commands.add_parser("init", help="initialize ignored local research inputs")
     init_parser.add_argument("--rom-path", type=_path, required=True)
@@ -1084,14 +1098,23 @@ def build_parser() -> argparse.ArgumentParser:
 
 def dispatch(args: argparse.Namespace) -> None:
     if args.command == "verify":
-        verify(
-            rom_path=args.rom_path,
-            upstream_path=args.upstream_path,
-            skip_rebuild=args.skip_rebuild,
-            skip_extraction=args.skip_extraction,
-            skip_runtime=args.skip_runtime,
-            full=full_verify_requested(args),
-        )
+        if args.verify_command == "plan":
+            print_json(
+                build_verification_plan(
+                    args.base,
+                    args.head,
+                    include_partitions=tuple(args.include_partition),
+                )
+            )
+        else:
+            verify(
+                rom_path=args.rom_path,
+                upstream_path=args.upstream_path,
+                skip_rebuild=args.skip_rebuild,
+                skip_extraction=args.skip_extraction,
+                skip_runtime=args.skip_runtime,
+                full=full_verify_requested(args),
+            )
     elif args.command == "init":
         run_powershell("Initialize-LocalResearch.ps1", ("-RomPath", args.rom_path))
     elif args.command == "rom":

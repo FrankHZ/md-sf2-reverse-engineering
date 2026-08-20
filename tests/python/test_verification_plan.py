@@ -1,0 +1,241 @@
+from __future__ import annotations
+
+import ast
+import subprocess
+from pathlib import Path
+
+import pytest
+
+from sf2tool.cli import build_parser
+from sf2tool.h3.bootstrap import COMMAND_LAUNCHES
+from sf2tool.verification_plan import (
+    H2_COMMAND_PARTITIONS,
+    H2_PARTITION_IDS,
+    H3_PARTITION_IDS,
+    PARTITIONS,
+    build_verification_plan,
+    plan_paths,
+)
+
+ROOT = Path(__file__).resolve().parents[2]
+CLI_PATH = ROOT / "src" / "sf2tool" / "cli.py"
+
+
+def _registered_commands(group_name: str) -> set[str]:
+    tree = ast.parse(CLI_PATH.read_text(encoding="utf-8"))
+    return {
+        node.args[0].value
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "add_parser"
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id == group_name
+        and node.args
+        and isinstance(node.args[0], ast.Constant)
+        and isinstance(node.args[0].value, str)
+    }
+
+
+def _partition_ids(plan: dict[str, object]) -> set[str]:
+    return {row["id"] for row in plan["partitions"]}  # type: ignore[index, union-attr]
+
+
+def _partition(plan: dict[str, object], partition_id: str) -> dict[str, object]:
+    return next(  # type: ignore[return-value]
+        row for row in plan["partitions"] if row["id"] == partition_id  # type: ignore[index, union-attr]
+    )
+
+
+def _git(root: Path, *arguments: str) -> str:
+    completed = subprocess.run(
+        ["git", *arguments],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    return completed.stdout.strip()
+
+
+def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
+    assert set(H2_COMMAND_PARTITIONS) == _registered_commands("h2_commands")
+    assert set(COMMAND_LAUNCHES) == _registered_commands("h3_commands")
+    assert len(H2_COMMAND_PARTITIONS) == 68
+    assert len(COMMAND_LAUNCHES) == 71
+    assert len({partition.partition_id for partition in PARTITIONS}) == len(PARTITIONS)
+    assert len(H2_PARTITION_IDS) == 6
+    assert len(H3_PARTITION_IDS) == 5
+
+
+def test_existing_verify_parse_semantics_remain_available() -> None:
+    parser = build_parser()
+    normal = parser.parse_args(["verify"])
+    full = parser.parse_args(["verify", "--full", "--skip-runtime"])
+
+    assert normal.verify_command is None
+    assert normal.full is False
+    assert normal.quick is False
+    assert full.verify_command is None
+    assert full.full is True
+    assert full.skip_runtime is True
+
+
+def test_verify_plan_parser_requires_base_and_accepts_explicit_partition() -> None:
+    args = build_parser().parse_args(
+        [
+            "verify",
+            "plan",
+            "--base",
+            "origin/main",
+            "--head",
+            "topic",
+            "--include-partition",
+            "h2-sound",
+        ]
+    )
+
+    assert args.verify_command == "plan"
+    assert args.base == "origin/main"
+    assert args.head == "topic"
+    assert args.include_partition == ["h2-sound"]
+
+
+def test_h2_source_fixture_and_manifest_select_one_command() -> None:
+    plan = plan_paths(
+        (
+            "src/sf2tool/h2/map_events.py",
+            "tests/fixtures/h2/map-events-static-v1.json",
+            "manifests/extractions/map-events-static.json",
+        ),
+        root=ROOT,
+    )
+
+    assert _partition_ids(plan) == {"public-core", "h2-map-scripting"}
+    assert _partition(plan, "h2-map-scripting")["commands"] == [
+        "uv run sf2 h2 map-events"
+    ]
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_h3_module_with_two_dispatches_selects_both_commands() -> None:
+    plan = plan_paths(("src/sf2tool/h3/spell_damage.py",), root=ROOT)
+
+    assert _partition_ids(plan) == {"public-core", "h3-battle01"}
+    assert _partition(plan, "h3-battle01")["commands"] == [
+        "uv run sf2 h3 spell-damage",
+        "uv run sf2 h3 spell-summon",
+    ]
+
+
+def test_h3_observer_selects_its_exact_command() -> None:
+    plan = plan_paths(
+        ("tools/bizhawk/map_script_entity_presentation_fx_observer.lua",),
+        root=ROOT,
+    )
+
+    assert _partition_ids(plan) == {"public-core", "h3-map-debug"}
+    assert _partition(plan, "h3-map-debug")["commands"] == [
+        "uv run sf2 h3 map-script-entity-presentation-fx"
+    ]
+
+
+def test_shared_python_module_uses_transitive_reverse_dependencies() -> None:
+    plan = plan_paths(("src/sf2tool/compression.py",), root=ROOT)
+
+    assert _partition_ids(plan) == {
+        "public-core",
+        "tooling-python",
+        "h2-presentation",
+    }
+    commands = _partition(plan, "h2-presentation")["commands"]
+    assert "uv run sf2 h2 map-tilesets" in commands  # type: ignore[operator]
+    assert "uv run sf2 h2 battle-terrain" in commands  # type: ignore[operator]
+
+
+def test_shared_cli_fans_out_without_claiming_h1_rebuild_impact() -> None:
+    plan = plan_paths(("src/sf2tool/cli.py",), root=ROOT)
+
+    assert _partition_ids(plan) == {
+        "public-core",
+        "tooling-python",
+        *H2_PARTITION_IDS,
+        *H3_PARTITION_IDS,
+    }
+    assert "h1-original" not in _partition_ids(plan)
+
+
+def test_unknown_h2_module_fails_conservatively_to_all_h2_partitions() -> None:
+    path = "src/sf2tool/h2/future_shared_helper.py"
+    plan = plan_paths((path,), root=ROOT)
+
+    assert _partition_ids(plan) == {"public-core", *H2_PARTITION_IDS}
+    assert plan["unclassifiedPaths"] == [path]
+
+
+def test_docs_only_plan_keeps_only_always_run_public_core() -> None:
+    plan = plan_paths(("docs/research/example.md",), root=ROOT)
+
+    assert _partition_ids(plan) == {"public-core"}
+    assert plan["unclassifiedPaths"] == []
+    assert _partition(plan, "public-core")["externalGates"] == [
+        "GitHub Public / tracked-inputs"
+    ]
+
+
+def test_aggregate_indexes_are_owned_by_the_always_run_public_core() -> None:
+    plan = plan_paths(
+        ("manifests/research-index.json", "manifests/zh-translation-index.json"),
+        root=ROOT,
+    )
+
+    assert _partition_ids(plan) == {"public-core"}
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_deleted_python_test_falls_back_to_complete_python_suite() -> None:
+    plan = plan_paths(("tests/python/test_deleted.py",), root=ROOT)
+
+    assert _partition(plan, "tooling-python")["commands"] == ["uv run pytest"]
+
+
+def test_explicit_partition_is_included_and_unknown_id_is_rejected() -> None:
+    plan = plan_paths((), root=ROOT, include_partitions=("h2-sound",))
+
+    assert _partition_ids(plan) == {"public-core", "h2-sound"}
+    assert _partition(plan, "h2-sound")["reasons"] == ["explicit --include-partition"]
+    with pytest.raises(ValueError, match="unknown verification partition"):
+        plan_paths((), root=ROOT, include_partitions=("missing",))
+
+
+def test_git_range_plan_is_read_only_and_resolves_exact_commits(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    root.mkdir()
+    _git(root, "init", "--initial-branch=main")
+    _git(root, "config", "user.name", "Verification Plan Test")
+    _git(root, "config", "user.email", "verification-plan@example.invalid")
+    (root / "README.md").write_text("base\n", encoding="utf-8")
+    _git(root, "add", "README.md")
+    _git(root, "commit", "-m", "base")
+    base = _git(root, "rev-parse", "HEAD")
+    test_path = root / "tests" / "python" / "test_example.py"
+    test_path.parent.mkdir(parents=True)
+    test_path.write_text("def test_example():\n    assert True\n", encoding="utf-8")
+    _git(root, "add", "tests/python/test_example.py")
+    _git(root, "commit", "-m", "head")
+    head = _git(root, "rev-parse", "HEAD")
+    status_before = _git(root, "status", "--short")
+
+    plan = build_verification_plan(base, "HEAD", root=root)
+
+    assert plan["base"] == base
+    assert plan["head"] == head
+    assert plan["mergeBase"] == base
+    assert plan["changedPaths"] == ["tests/python/test_example.py"]
+    assert _partition_ids(plan) == {"public-core", "tooling-python"}
+    assert _partition(plan, "tooling-python")["commands"] == [
+        "uv run pytest tests/python/test_example.py"
+    ]
+    assert plan["executionSemanticsChanged"] is False
+    assert _git(root, "status", "--short") == status_before == ""
