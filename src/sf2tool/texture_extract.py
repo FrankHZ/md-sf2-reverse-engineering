@@ -3,7 +3,8 @@
 Consumes the accepted static facts of the ``sf2-map-tileset`` and ``sf2-map-palette``
 contracts: 115 Stack-compressed ``MapTilesetNNN`` streams that each decode to exactly
 4096 bytes (128 Mega Drive 4bpp 8x8 tiles), and 16 ``MapPaletteNN`` records of 16
-big-endian 9-bit color words (``0x0EEE`` mask, RGB 3 bits each, color 0 transparent).
+big-endian 9-bit color words (``0x0EEE`` mask, RGB 3 bits each, palette index 0
+transparent).
 The compressed streams are decoded with ``sf2tool.compression.decode_stack_compressed``
 (the driver-mirroring decoder already proven by the accepted contracts).
 
@@ -12,7 +13,7 @@ Rendering conventions (documented engineering choices, not original evidence):
 - tiles are laid out in a 16x8 grid (128 tiles) per tileset; every tileset sheet is
   rendered with map palette 0 by default so the sheets are directly viewable, while all
   16 palettes are also emitted as color-strip PNGs;
-- color 0 is transparent (the effective first color is forced to zero by the original
+- palette index 0 is transparent (the effective first color is forced to zero by the original
   palette consumer); the other 15 colors map 3-bit channels to 8-bit with the standard
   ``v<<5 | v<<2 | v>>1`` expansion;
 - the PNG writer is a minimal stdlib implementation (RGBA 8-bit, no interlace).
@@ -38,6 +39,7 @@ from sf2tool.h2.map_layouts import decode_map_blocks, decode_map_layout
 from sf2tool.h2.map_palettes import COLOR_MASK
 from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
+from sf2tool.research_index import listing_symbol_addresses
 from sf2tool.source_text import read_upstream_text
 
 TILESET_COUNT = 115
@@ -73,6 +75,88 @@ class TextureExtractionOptions:
 
 def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest().upper()
+
+
+@dataclass(frozen=True)
+class ProvenanceBoundSource:
+    """Read ignored upstream payloads only after exact canonical-ROM parity.
+
+    The pinned checkout identity covers tracked source text, but SF2DISASM ignores the
+    split ``*.bin`` payloads.  Every renderer therefore names the H1 symbol that owns its
+    payload and this reader compares the bytes at that exact H1-resolved ROM range before
+    returning them.  A clean checkout alone is intentionally insufficient.
+    """
+
+    disasm: Path
+    rom: bytes
+    addresses: dict[str, int]
+
+    def read(
+        self,
+        relative_path: str | Path,
+        *,
+        symbol: str,
+        expected_sha256: str | None = None,
+    ) -> bytes:
+        path = (self.disasm / relative_path).resolve(strict=True)
+        try:
+            path.relative_to(self.disasm)
+        except ValueError as exc:
+            raise ValueError(
+                f"graphic source escapes the pinned disassembly: {relative_path}"
+            ) from exc
+        if symbol not in self.addresses:
+            raise ValueError(f"graphic source H1 symbol is missing: {symbol}")
+        payload = path.read_bytes()
+        if not payload:
+            raise ValueError(f"graphic source payload is empty: {symbol}")
+        address = self.addresses[symbol]
+        end = address + len(payload)
+        if address < 0 or end > len(self.rom) or self.rom[address:end] != payload:
+            raise ValueError(
+                f"graphic source/ROM provenance drift: {symbol} ({Path(relative_path).as_posix()})"
+            )
+        digest = _sha256(payload)
+        if expected_sha256 is not None and digest != expected_sha256:
+            raise ValueError(f"graphic source accepted-owner hash drift: {symbol}")
+        return payload
+
+
+def _verified_source(
+    rom_path: Path, upstream_path: Path, *, owner: str
+) -> tuple[ProvenanceBoundSource, str, dict[str, object]]:
+    rom_path = rom_path.resolve(strict=True)
+    upstream_path = upstream_path.resolve(strict=True)
+    disasm, commit, _toolchain = _resolve_upstream(upstream_path)
+    expected_rom = load_json(repo_path("manifests/roms/sf2-us.json"))
+    rom = rom_path.read_bytes()
+    if len(rom) != expected_rom["sizeBytes"] or _sha256(rom) != expected_rom["hashes"]["sha256"]:
+        raise ValueError(f"{owner} ROM identity drift")
+    listing_path = upstream_path / "build/sf2build-h1.lst"
+    if not listing_path.is_file():
+        raise ValueError(f"{owner} H1 listing is missing: {listing_path}")
+    addresses = listing_symbol_addresses(listing_path.read_text(encoding="utf-8"))
+    return ProvenanceBoundSource(disasm, rom, addresses), commit, expected_rom
+
+
+def palette_index_rgba(
+    palette: list[tuple[int, int, int]], index: int, *, transparent_index: int = 0
+) -> list[int]:
+    """Convert one palette index to RGBA without conflating opaque black with transparency."""
+    if not 0 <= index < len(palette):
+        raise ValueError(f"palette index out of range: {index}")
+    red, green, blue = palette[index]
+    return [red, green, blue, 0 if index == transparent_index else 255]
+
+
+def _require_fresh_outputs(out_dir: Path, owned_paths: tuple[str, ...]) -> None:
+    """Fail closed instead of mixing a new manifest with stale or overwritten products."""
+    collisions = [path for path in owned_paths if (out_dir / path).exists()]
+    if collisions:
+        raise ValueError(
+            "texture output collision; choose a fresh --out-dir or remove the prior owned "
+            f"outputs explicitly: {', '.join(collisions)}"
+        )
 
 
 def md_palette_color(word: int) -> tuple[int, int, int]:
@@ -140,12 +224,9 @@ def _png_chunk(tag: bytes, data: bytes) -> bytes:
 def write_png_rgba(path: Path, width: int, height: int, pixels: list[int]) -> None:
     """Write an RGBA 8-bit PNG with the minimal stdlib writer."""
     if len(pixels) != width * height * 4:
-        raise ValueError(
-            f"pixel buffer size drift: {len(pixels)} for {width}x{height} RGBA"
-        )
+        raise ValueError(f"pixel buffer size drift: {len(pixels)} for {width}x{height} RGBA")
     raw = b"".join(
-        b"\x00" + bytes(pixels[row * width * 4 : (row + 1) * width * 4])
-        for row in range(height)
+        b"\x00" + bytes(pixels[row * width * 4 : (row + 1) * width * 4]) for row in range(height)
     )
     header = struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)
     png = (
@@ -157,9 +238,7 @@ def write_png_rgba(path: Path, width: int, height: int, pixels: list[int]) -> No
     path.write_bytes(png)
 
 
-def render_tileset_sheet(
-    tiles: list[list[int]], palette: list[tuple[int, int, int]]
-) -> list[int]:
+def render_tileset_sheet(tiles: list[list[int]], palette: list[tuple[int, int, int]]) -> list[int]:
     """Render 128 decoded tiles into a 16x8 RGBA sheet with the given palette."""
     if len(tiles) != TILES_PER_TILESET:
         raise ValueError(f"tileset must have {TILES_PER_TILESET} tiles, got {len(tiles)}")
@@ -173,29 +252,21 @@ def render_tileset_sheet(
         origin_y = (tile_index // 16) * TILE_SIZE
         for row in range(TILE_SIZE):
             for column in range(TILE_SIZE):
-                color = palette[tile[row * TILE_SIZE + column]]
-                offset = (
-                    (origin_y + row) * sheet_width + (origin_x + column)
-                ) * 4
-                if color == (0, 0, 0):
-                    pixels[offset : offset + 4] = [0, 0, 0, 0]
-                else:
-                    pixels[offset : offset + 4] = [*color, 255]
+                palette_index = tile[row * TILE_SIZE + column]
+                offset = ((origin_y + row) * sheet_width + (origin_x + column)) * 4
+                pixels[offset : offset + 4] = palette_index_rgba(palette, palette_index)
     return pixels
 
 
 def render_palette_strip(palette: list[tuple[int, int, int]]) -> list[int]:
     """Render 16 colors as a 16x16 RGBA strip (one 16x16 cell per color)."""
-    pixels = [0] * (PALETTE_COLORS * 16 * 16 * 4)
-    for color_index, color in enumerate(palette):
+    width = PALETTE_COLORS * 16
+    pixels = [0] * (width * 16 * 4)
+    for color_index, _color in enumerate(palette):
         for row in range(16):
-            base = (color_index * 16 + row) * 16 * 4
             for column in range(16):
-                offset = base + column * 4
-                if color == (0, 0, 0):
-                    pixels[offset : offset + 4] = [0, 0, 0, 0]
-                else:
-                    pixels[offset : offset + 4] = [*color, 255]
+                offset = (row * width + color_index * 16 + column) * 4
+                pixels[offset : offset + 4] = palette_index_rgba(palette, color_index)
     return pixels
 
 
@@ -209,17 +280,23 @@ def extract_map_textures(
     """Extract the 115 map tilesets and 16 map palettes as private PNG sheets."""
     if options is None:
         options = TextureExtractionOptions()
-    rom_path = rom_path.resolve(strict=True)
-    upstream_path = upstream_path.resolve(strict=True)
-    disasm, commit, _toolchain = _resolve_upstream(upstream_path)
-    expected_rom = load_json(repo_path("manifests/roms/sf2-us.json"))
-    rom = rom_path.read_bytes()
-    if len(rom) != expected_rom["sizeBytes"] or _sha256(rom) != expected_rom["hashes"]["sha256"]:
-        raise ValueError("map texture extraction ROM identity drift")
+    if not 0 <= options.tileset_palette < PALETTE_COUNT:
+        raise ValueError(
+            f"tileset palette must be in 0..{PALETTE_COUNT - 1}: {options.tileset_palette}"
+        )
+    source, commit, expected_rom = _verified_source(
+        rom_path, upstream_path, owner="map texture extraction"
+    )
+    out_dir = out_dir.resolve()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    _require_fresh_outputs(out_dir, ("manifest.json", "palettes", "tilesets"))
 
     palettes: list[list[tuple[int, int, int]]] = []
     for index in range(PALETTE_COUNT):
-        payload = (disasm / PALETTE_SOURCE_ROOT / f"mappalette{index:02}.bin").read_bytes()
+        payload = source.read(
+            PALETTE_SOURCE_ROOT / f"mappalette{index:02}.bin",
+            symbol=f"MapPalette{index:02}",
+        )
         if len(payload) != PALETTE_BYTES:
             raise ValueError(f"map palette size drift: {index}")
         words = [
@@ -248,16 +325,13 @@ def extract_map_textures(
     reference_palette = palettes[options.tileset_palette]
     tileset_files = []
     for index in range(TILESET_COUNT):
-        payload = (
-            disasm / TILESET_SOURCE_ROOT / f"maptileset{index:03}.bin"
-        ).read_bytes()
-        decoded = decode_stack_compressed(payload)
-        if len(decoded.output) != TILESET_DECODED_BYTES:
-            raise ValueError(f"map tileset decode-size drift: {index}")
+        payload = source.read(
+            TILESET_SOURCE_ROOT / f"maptileset{index:03}.bin",
+            symbol=f"MapTileset{index:03}",
+        )
+        decoded = decode_stack_compressed(payload, expected_output_bytes=TILESET_DECODED_BYTES)
         tiles = [
-            decode_md_4bpp_tile(
-                decoded.output[offset : offset + TILE_BYTES_4BPP]
-            )
+            decode_md_4bpp_tile(decoded.output[offset : offset + TILE_BYTES_4BPP])
             for offset in range(0, TILESET_DECODED_BYTES, TILE_BYTES_4BPP)
         ]
         rel = tileset_dir / f"MapTileset{index:03}.png"
@@ -285,7 +359,7 @@ def extract_map_textures(
         },
         "notes": [
             "tilesets are rendered with map palette 0 for direct viewing; all 16 "
-            "palettes are emitted as color strips; color 0 is transparent",
+            "palettes are emitted as color strips; palette index 0 is transparent",
         ],
         "summary": {
             "tilesetCount": len(tileset_files),
@@ -389,7 +463,7 @@ def parse_map_entry(disasm: Path, map_index: int) -> MapData:
 
 
 def load_map_tile_pool(
-    disasm: Path, slots: tuple[int, ...]
+    source: ProvenanceBoundSource, slots: tuple[int, ...]
 ) -> list[list[list[int]] | None]:
     """Decode the tilesets used by one map slot header into a per-slot tile pool."""
     pool: list[list[list[int]] | None] = []
@@ -397,12 +471,11 @@ def load_map_tile_pool(
         if slot == 255:
             pool.append(None)
             continue
-        payload = (
-            disasm / TILESET_SOURCE_ROOT / f"maptileset{slot:03}.bin"
-        ).read_bytes()
-        decoded = decode_stack_compressed(payload)
-        if len(decoded.output) != TILESET_DECODED_BYTES:
-            raise ValueError(f"map tileset decode-size drift: {slot}")
+        payload = source.read(
+            TILESET_SOURCE_ROOT / f"maptileset{slot:03}.bin",
+            symbol=f"MapTileset{slot:03}",
+        )
+        decoded = decode_stack_compressed(payload, expected_output_bytes=TILESET_DECODED_BYTES)
         pool.append(
             [
                 decode_md_4bpp_tile(decoded.output[o : o + TILE_BYTES_4BPP])
@@ -458,12 +531,8 @@ def render_map_blocks(
                             index = tile[row * TILE_SIZE + col]
                             if transparent_first and index == 0:
                                 continue
-                            color = palette[index]
                             offset = ((pixel_y + row) * width + (pixel_x + col)) * 4
-                            if color == (0, 0, 0):
-                                pixels[offset : offset + 4] = [0, 0, 0, 0]
-                            else:
-                                pixels[offset : offset + 4] = [*color, 255]
+                            pixels[offset : offset + 4] = palette_index_rgba(palette, index)
     return pixels
 
 
@@ -530,9 +599,7 @@ def composite_overlay(
     return composed
 
 
-Layer2Copy = tuple[
-    tuple[int, int], tuple[int, int], tuple[int, int], tuple[int, int]
-]
+Layer2Copy = tuple[tuple[int, int], tuple[int, int], tuple[int, int], tuple[int, int]]
 
 
 def parse_layer2_copies(disasm: Path, map_index: int) -> list[Layer2Copy]:
@@ -557,9 +624,7 @@ def parse_layer2_copies(disasm: Path, map_index: int) -> list[Layer2Copy]:
             (int(size[0]), int(size[1])),
             (int(dest[0]), int(dest[1])),
         )
-        for trigger, source, size, dest in zip(
-            triggers, sources, sizes, dests, strict=True
-        )
+        for trigger, source, size, dest in zip(triggers, sources, sizes, dests, strict=True)
     ]
 
 
@@ -589,6 +654,24 @@ def apply_layer2_copies(layout: list[int], copies: list[Layer2Copy]) -> list[int
     return working
 
 
+def parse_map_selection(maps: str) -> list[int]:
+    """Parse a collision-free comma-separated map selection."""
+    wanted = []
+    for token in maps.split(","):
+        stripped = token.strip()
+        if not stripped:
+            raise ValueError("map selection contains an empty map ID")
+        value = int(stripped)
+        if not 0 <= value < 128:
+            raise ValueError(f"map index out of range: {value}")
+        wanted.append(value)
+    if not wanted:
+        raise ValueError("no maps selected")
+    if len(set(wanted)) != len(wanted):
+        raise ValueError("duplicate map IDs would collide with the same output paths")
+    return wanted
+
+
 def extract_map_renders(
     rom_path: Path,
     upstream_path: Path,
@@ -607,49 +690,36 @@ def extract_map_renders(
     second/background layer's exploration-mode palette source is not yet evidenced;
     rendering uses the map palette.
     """
-    rom_path = rom_path.resolve(strict=True)
-    upstream_path = upstream_path.resolve(strict=True)
-    disasm, commit, _toolchain = _resolve_upstream(upstream_path)
-    expected_rom = load_json(repo_path("manifests/roms/sf2-us.json"))
-    rom = rom_path.read_bytes()
-    if len(rom) != expected_rom["sizeBytes"] or _sha256(rom) != expected_rom["hashes"]["sha256"]:
-        raise ValueError("map render ROM identity drift")
+    source, commit, expected_rom = _verified_source(rom_path, upstream_path, owner="map render")
+    disasm = source.disasm
 
-    wanted = []
-    for token in maps.split(","):
-        value = int(token.strip())
-        if not 0 <= value < 128:
-            raise ValueError(f"map index out of range: {value}")
-        wanted.append(value)
-    if not wanted:
-        raise ValueError("no maps selected")
+    wanted = parse_map_selection(maps)
 
     out_dir = out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
+    _require_fresh_outputs(out_dir, ("maps",))
     maps_dir = out_dir / "maps"
     maps_dir.mkdir(parents=True, exist_ok=True)
     files = []
     for map_index in wanted:
         map_data = parse_map_entry(disasm, map_index)
+        palette_data = source.read(
+            PALETTE_SOURCE_ROOT / f"mappalette{map_data.palette_index:02}.bin",
+            symbol=f"MapPalette{map_data.palette_index:02}",
+        )
         palette_words = [
-            int.from_bytes(
-                (
-                    disasm
-                    / PALETTE_SOURCE_ROOT
-                    / f"mappalette{map_data.palette_index:02}.bin"
-                ).read_bytes()[o : o + 2],
-                "big",
-            )
-            for o in range(0, PALETTE_BYTES, 2)
+            int.from_bytes(palette_data[o : o + 2], "big") for o in range(0, PALETTE_BYTES, 2)
         ]
         palette = [md_palette_color(w) for w in palette_words]
-        tile_pool = load_map_tile_pool(disasm, map_data.tileset_slots)
-        blocks_data = (
-            disasm / MAP_ENTRY_ROOT / f"map{map_index:02}" / "0-blocks.bin"
-        ).read_bytes()
-        layout_data = (
-            disasm / MAP_ENTRY_ROOT / f"map{map_index:02}" / "1-layout.bin"
-        ).read_bytes()
+        tile_pool = load_map_tile_pool(source, map_data.tileset_slots)
+        blocks_data = source.read(
+            MAP_ENTRY_ROOT / f"map{map_index:02}" / "0-blocks.bin",
+            symbol=f"Map{map_index:02}s0_Blocks",
+        )
+        layout_data = source.read(
+            MAP_ENTRY_ROOT / f"map{map_index:02}" / "1-layout.bin",
+            symbol=f"Map{map_index:02}s1_Layout",
+        )
         blocks, _, _ = decode_map_blocks(blocks_data)
         layout, _, _, _ = decode_map_layout(layout_data, len(blocks) // BLOCK_TILES)
         copies = parse_layer2_copies(disasm, map_index)
@@ -792,6 +862,7 @@ def extract_map_renders(
         "Status": "PASS",
     }
 
+
 # ---------------------------------------------------------------------------
 # Fonts, portraits, icons, and map sprites
 # ---------------------------------------------------------------------------
@@ -824,15 +895,17 @@ MAPSPRITE_SENTINEL_SYMBOL = "Mapsprite237_0"
 BASE_PALETTE_PATH = Path("data/graphics/tech/basepalette.bin")
 
 
-def _load_base_palette(disasm: Path) -> list[tuple[int, int, int]]:
-    data = (disasm / BASE_PALETTE_PATH).read_bytes()
+def _load_base_palette(source: ProvenanceBoundSource) -> list[tuple[int, int, int]]:
+    data = source.read(BASE_PALETTE_PATH, symbol="palette_Base")
+    if len(data) != PALETTE_BYTES:
+        raise ValueError(f"base palette size drift: {len(data)}")
     words = [int.from_bytes(data[o : o + 2], "big") for o in range(0, len(data), 2)]
     return [md_palette_color(w) for w in words]
 
 
-def extract_font_sheet(disasm: Path, out_dir: Path) -> dict[str, object]:
+def extract_font_sheet(source: ProvenanceBoundSource, out_dir: Path) -> dict[str, object]:
     """Render the 80-glyph variable-width font (1bpp, 12x15) into one PNG sheet."""
-    font = (disasm / FONT_PATH).read_bytes()
+    font = source.read(FONT_PATH, symbol="font_VariableWidth")
     if len(font) != FONT_GLYPH_COUNT * FONT_GLYPH_BYTES:
         raise ValueError(f"font size drift: {len(font)}")
     columns, rows = 10, 8
@@ -859,18 +932,18 @@ def extract_font_sheet(disasm: Path, out_dir: Path) -> dict[str, object]:
     }
 
 
-def extract_portraits(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
+def extract_portraits(source: ProvenanceBoundSource, out_dir: Path) -> list[dict[str, object]]:
     """Render each portrait (Stack-compressed 2048 bytes = 64 tiles) with its palette."""
-    source = read_upstream_text(disasm / PORTRAIT_ENTRIES_PATH)
+    entries_source = read_upstream_text(source.disasm / PORTRAIT_ENTRIES_PATH)
     definitions = re.findall(
-        r"^\s*(Portrait\d{2}):\s*incbin\s+\"([^\"]+)\"", source, re.MULTILINE
+        r"^\s*(Portrait\d{2}):\s*incbin\s+\"([^\"]+)\"", entries_source, re.MULTILINE
     )
     if not definitions:
         raise ValueError("portrait entries have no definitions")
     out_dir.mkdir(parents=True, exist_ok=True)
     files = []
     for symbol, relative_path in definitions:
-        data = (disasm / relative_path).read_bytes()
+        data = source.read(relative_path, symbol=symbol)
         eye_entries, offset = _portrait_entries(data, 0)
         mouth_entries, offset = _portrait_entries(data, offset)
         del eye_entries, mouth_entries
@@ -894,12 +967,9 @@ def extract_portraits(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
             origin_y = (tile_index // PORTRAIT_TILES_PER_SIDE) * TILE_SIZE
             for row in range(TILE_SIZE):
                 for col in range(TILE_SIZE):
-                    color = palette[tile[row * TILE_SIZE + col]]
+                    palette_index = tile[row * TILE_SIZE + col]
                     offset = ((origin_y + row) * width + (origin_x + col)) * 4
-                    if color == (0, 0, 0):
-                        pixels[offset : offset + 4] = [0, 0, 0, 0]
-                    else:
-                        pixels[offset : offset + 4] = [*color, 255]
+                    pixels[offset : offset + 4] = palette_index_rgba(palette, palette_index)
         name = f"{symbol}.png"
         rel = out_dir / name
         write_png_rgba(rel, width, width, pixels)
@@ -921,21 +991,21 @@ def _portrait_entries(data: bytes, offset: int) -> tuple[list[list[int]], int]:
     return entries, end
 
 
-def extract_icons(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
+def extract_icons(source: ProvenanceBoundSource, out_dir: Path) -> list[dict[str, object]]:
     """Render the assembled item/spell/other icons (192 bytes = 2x3 tiles)."""
-    source = read_upstream_text(disasm / (ICON_SOURCE_ROOT / "entries.asm"))
+    entries_source = read_upstream_text(source.disasm / (ICON_SOURCE_ROOT / "entries.asm"))
     definitions = re.findall(
         r"^\s*((?:Item|Other|Spell)Icon\d{3}):\s*incbin\s+\"([^\"]+)\"",
-        source,
+        entries_source,
         re.MULTILINE,
     )
     if not definitions:
         raise ValueError("icon entries have no definitions")
-    palette = _load_base_palette(disasm)
+    palette = _load_base_palette(source)
     out_dir.mkdir(parents=True, exist_ok=True)
     files = []
     for symbol, relative_path in definitions:
-        data = (disasm / relative_path).read_bytes()
+        data = source.read(relative_path, symbol=symbol)
         if len(data) != ICON_BYTES:
             raise ValueError(f"icon size drift: {symbol}")
         tiles = [
@@ -950,12 +1020,9 @@ def extract_icons(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
             origin_y = (tile_index // ICON_COLUMNS) * TILE_SIZE
             for row in range(TILE_SIZE):
                 for col in range(TILE_SIZE):
-                    color = palette[tile[row * TILE_SIZE + col]]
+                    palette_index = tile[row * TILE_SIZE + col]
                     offset = ((origin_y + row) * width + (origin_x + col)) * 4
-                    if color == (0, 0, 0):
-                        pixels[offset : offset + 4] = [0, 0, 0, 0]
-                    else:
-                        pixels[offset : offset + 4] = [*color, 255]
+                    pixels[offset : offset + 4] = palette_index_rgba(palette, palette_index)
         name = f"{symbol}.png"
         rel = out_dir / name
         write_png_rgba(rel, width, height, pixels)
@@ -965,15 +1032,17 @@ def extract_icons(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
     return files
 
 
-def extract_map_sprites(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
+def extract_map_sprites(source: ProvenanceBoundSource, out_dir: Path) -> list[dict[str, object]]:
     """Render each map sprite (Basic-compressed 0x240 bytes = 2 frames of 3x3 tiles)."""
-    source = read_upstream_text(disasm / MAPSPRITE_ENTRIES_PATH)
+    entries_source = read_upstream_text(source.disasm / MAPSPRITE_ENTRIES_PATH)
     definitions = re.findall(
-        r"^\s*(Mapsprite\d{3}_[012]):\s*incbin\s+\"([^\"]+)\"", source, re.MULTILINE
+        r"^\s*(Mapsprite\d{3}_[012]):\s*incbin\s+\"([^\"]+)\"",
+        entries_source,
+        re.MULTILINE,
     )
     if not definitions:
         raise ValueError("map sprite entries have no definitions")
-    palette = _load_base_palette(disasm)
+    palette = _load_base_palette(source)
     out_dir.mkdir(parents=True, exist_ok=True)
     files = []
     seen = set()
@@ -983,7 +1052,7 @@ def extract_map_sprites(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
         if symbol in seen:
             continue
         seen.add(symbol)
-        data = (disasm / relative_path).read_bytes()
+        data = source.read(relative_path, symbol=symbol)
         decoded = decode_basic_compressed(data, expected_output_bytes=MAPSPRITE_DECODED_BYTES)
         # tiles are stored contiguously (32 bytes each); a frame is 9 tiles arranged
         # column-major on a 3x3 grid (tile 0 top-left, 1 middle-left, 2 bottom-left)
@@ -1009,12 +1078,9 @@ def extract_map_sprites(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
                 origin_y = (tile_index % MAPSPRITE_FRAME_TILES_PER_SIDE) * TILE_SIZE
                 for row in range(TILE_SIZE):
                     for col in range(TILE_SIZE):
-                        color = palette[tile[row * TILE_SIZE + col]]
+                        palette_index = tile[row * TILE_SIZE + col]
                         offset = ((origin_y + row) * width + (origin_x + col)) * 4
-                        if color == (0, 0, 0):
-                            pixels[offset : offset + 4] = [0, 0, 0, 0]
-                        else:
-                            pixels[offset : offset + 4] = [*color, 255]
+                        pixels[offset : offset + 4] = palette_index_rgba(palette, palette_index)
         name = f"{symbol}.png"
         rel = out_dir / name
         write_png_rgba(rel, width, height, pixels)
@@ -1031,16 +1097,16 @@ def extract_graphic_assets(
     out_dir: Path,
 ) -> dict[str, object]:
     """Extract the font sheet, portraits, icons, and map sprites as private PNGs."""
-    rom_path = rom_path.resolve(strict=True)
-    upstream_path = upstream_path.resolve(strict=True)
-    disasm, commit, _toolchain = _resolve_upstream(upstream_path)
-    expected_rom = load_json(repo_path("manifests/roms/sf2-us.json"))
-    rom = rom_path.read_bytes()
-    if len(rom) != expected_rom["sizeBytes"] or _sha256(rom) != expected_rom["hashes"]["sha256"]:
-        raise ValueError("graphic asset extraction ROM identity drift")
+    source, commit, expected_rom = _verified_source(
+        rom_path, upstream_path, owner="graphic asset extraction"
+    )
 
     out_dir = out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
+    _require_fresh_outputs(
+        out_dir,
+        ("assets-manifest.json", "font", "portraits", "icons", "mapsprites"),
+    )
     font_dir = out_dir / "font"
     portrait_dir = out_dir / "portraits"
     icon_dir = out_dir / "icons"
@@ -1048,10 +1114,10 @@ def extract_graphic_assets(
     for directory in (font_dir, portrait_dir, icon_dir, sprite_dir):
         directory.mkdir(parents=True, exist_ok=True)
 
-    font_files = [extract_font_sheet(disasm, font_dir)]
-    portrait_files = extract_portraits(disasm, portrait_dir)
-    icon_files = extract_icons(disasm, icon_dir)
-    sprite_files = extract_map_sprites(disasm, sprite_dir)
+    font_files = [extract_font_sheet(source, font_dir)]
+    portrait_files = extract_portraits(source, portrait_dir)
+    icon_files = extract_icons(source, icon_dir)
+    sprite_files = extract_map_sprites(source, sprite_dir)
 
     all_files = [
         *[{"kind": "font", **row} for row in font_files],
@@ -1096,6 +1162,7 @@ def extract_graphic_assets(
         "Status": "PASS",
     }
 
+
 # ---------------------------------------------------------------------------
 # UI resources, special sprites, battle backgrounds, unused assets
 # ---------------------------------------------------------------------------
@@ -1128,6 +1195,7 @@ BATTLE_BACKGROUND_LAYOUT_COLUMNS = 32
 
 UNUSED_CLOUD_PATH = Path("data/graphics/tech/unusedcloudtiles.bin")
 UNUSED_PALETTE_PATH = Path("data/graphics/tech/unusedbasepalettes.bin")
+UNUSED_OWNER_FIXTURE = repo_path("tests/fixtures/h2/unused-technical-assets-static-v1.json")
 
 
 def _render_tile_pool_sheet(
@@ -1147,22 +1215,19 @@ def _render_tile_pool_sheet(
         origin_y = (tile_index // sheet_columns) * TILE_SIZE
         for row in range(TILE_SIZE):
             for col in range(TILE_SIZE):
-                color = palette[tile[row * TILE_SIZE + col]]
+                palette_index = tile[row * TILE_SIZE + col]
                 offset = ((origin_y + row) * width + (origin_x + col)) * 4
-                if color == (0, 0, 0):
-                    pixels[offset : offset + 4] = [0, 0, 0, 0]
-                else:
-                    pixels[offset : offset + 4] = [*color, 255]
+                pixels[offset : offset + 4] = palette_index_rgba(palette, palette_index)
     return pixels, width, height
 
 
-def extract_ui_resources(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
+def extract_ui_resources(source: ProvenanceBoundSource, out_dir: Path) -> list[dict[str, object]]:
     """Render the base/diamond-menu/yes-no tile sets and the main-menu icons."""
-    palette = _load_base_palette(disasm)
+    palette = _load_base_palette(source)
     out_dir.mkdir(parents=True, exist_ok=True)
     files = []
     for symbol, relative_path, expected, _family in UI_RESOURCE_SPECS:
-        data = (disasm / relative_path).read_bytes()
+        data = source.read(relative_path, symbol=symbol)
         decoded = decode_stack_compressed(data, expected_output_bytes=expected)
         pixels, width, height = _render_tile_pool_sheet(decoded.output, palette)
         name = f"{symbol}.png"
@@ -1171,7 +1236,9 @@ def extract_ui_resources(disasm: Path, out_dir: Path) -> list[dict[str, object]]
         files.append(
             {"file": name, "sha256": _sha256(rel.read_bytes()), "sizeBytes": rel.stat().st_size}
         )
-    main_menu = (disasm / MAIN_MENU_PATH).read_bytes()
+    main_menu = source.read(MAIN_MENU_PATH, symbol="tiles_MainMenu")
+    if len(main_menu) != 7 * MAIN_MENU_ICON_BYTES:
+        raise ValueError(f"main-menu icon payload size drift: {len(main_menu)}")
     for icon_index in range(7):
         icon_start = icon_index * MAIN_MENU_ICON_BYTES
         icon = main_menu[icon_start : icon_start + MAIN_MENU_ICON_BYTES]
@@ -1185,7 +1252,9 @@ def extract_ui_resources(disasm: Path, out_dir: Path) -> list[dict[str, object]]
     return files
 
 
-def extract_special_sprites(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
+def extract_special_sprites(
+    source: ProvenanceBoundSource, out_dir: Path
+) -> list[dict[str, object]]:
     """Render the six special-sprite streams (each with its own 16-color palette).
 
     The Stack decode sizes are confirmed (72 battle-class tiles, 162 for
@@ -1194,27 +1263,28 @@ def extract_special_sprites(disasm: Path, out_dir: Path) -> list[dict[str, objec
     emitted as a raw tile-pool sheet plus candidate composed layouts (3x3, 3x6, 4x4, 6x6)
     for later visual inspection. None of the candidates is verified against a screenshot.
     """
-    source = read_upstream_text(disasm / SPECIAL_SPRITE_ENTRIES_PATH)
+    entries_source = read_upstream_text(source.disasm / SPECIAL_SPRITE_ENTRIES_PATH)
     definitions = re.findall(
-        r"^\s*(SpecialSprite_\w+):\s*incbin\s+\"([^\"]+)\"", source, re.MULTILINE
+        r"^\s*(SpecialSprite_\w+):\s*incbin\s+\"([^\"]+)\"",
+        entries_source,
+        re.MULTILINE,
     )
     if not definitions:
         raise ValueError("special sprite entries have no definitions")
     out_dir.mkdir(parents=True, exist_ok=True)
     files = []
     for symbol, relative_path in definitions:
-        data = (disasm / relative_path).read_bytes()
+        data = source.read(relative_path, symbol=symbol)
         if symbol == "SpecialSprite_EvilSpiritAlt":
             # animation-only stream without a palette header
             palette_words = [0] * 16
             stream = data
         else:
-            palette_words = [
-                int.from_bytes(data[o : o + 2], "big") for o in range(0, 32, 2)
-            ]
+            palette_words = [int.from_bytes(data[o : o + 2], "big") for o in range(0, 32, 2)]
             stream = data[32:]
         palette = [md_cram_color(w) for w in palette_words]
-        decoded = decode_stack_compressed(stream)
+        expected_decoded = 0x1440 if symbol == "SpecialSprite_NazcaShip" else 0x900
+        decoded = decode_stack_compressed(stream, expected_output_bytes=expected_decoded)
         pixels, width, height = _render_tile_pool_sheet(decoded.output, palette)
         name = f"{symbol}.png"
         rel = out_dir / name
@@ -1241,8 +1311,9 @@ def extract_special_sprites(disasm: Path, out_dir: Path) -> list[dict[str, objec
             pixels = [0] * (width * height * 4)
             for frame in range(frame_count):
                 frame_data = decoded.output[
-                    frame * frame_tiles * TILE_BYTES_4BPP :
-                    (frame + 1) * frame_tiles * TILE_BYTES_4BPP
+                    frame * frame_tiles * TILE_BYTES_4BPP : (frame + 1)
+                    * frame_tiles
+                    * TILE_BYTES_4BPP
                 ]
                 tiles = [
                     decode_md_4bpp_tile(frame_data[o : o + TILE_BYTES_4BPP])
@@ -1253,12 +1324,9 @@ def extract_special_sprites(disasm: Path, out_dir: Path) -> list[dict[str, objec
                     origin_y = (tile_index // columns) * TILE_SIZE
                     for row in range(TILE_SIZE):
                         for col in range(TILE_SIZE):
-                            color = palette[tile[row * TILE_SIZE + col]]
+                            palette_index = tile[row * TILE_SIZE + col]
                             offset = ((origin_y + row) * width + (origin_x + col)) * 4
-                            if color == (0, 0, 0):
-                                pixels[offset : offset + 4] = [0, 0, 0, 0]
-                            else:
-                                pixels[offset : offset + 4] = [*color, 255]
+                            pixels[offset : offset + 4] = palette_index_rgba(palette, palette_index)
             name = f"{symbol}_layout{layout_name}.png"
             rel = out_dir / name
             write_png_rgba(rel, width, height, pixels)
@@ -1272,27 +1340,26 @@ def extract_special_sprites(disasm: Path, out_dir: Path) -> list[dict[str, objec
     return files
 
 
-def extract_battle_backgrounds(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
+def extract_battle_backgrounds(
+    source: ProvenanceBoundSource, out_dir: Path
+) -> list[dict[str, object]]:
     """Render each battle background's two tilesets, palette, and composed sheet."""
-    source = read_upstream_text(disasm / BATTLE_BACKGROUND_ENTRIES_PATH)
+    entries_source = read_upstream_text(source.disasm / BATTLE_BACKGROUND_ENTRIES_PATH)
     definitions = re.findall(
-        r"^\s*(Background\d{2}):\s*incbin\s+\"([^\"]+)\"", source, re.MULTILINE
+        r"^\s*(Background\d{2}):\s*incbin\s+\"([^\"]+)\"",
+        entries_source,
+        re.MULTILINE,
     )
     if not definitions:
         raise ValueError("battle background entries have no definitions")
-    layout_source = read_upstream_text(disasm / BATTLE_BACKGROUND_LAYOUT_PATH)
-    layout_tiles = [
-        int(value)
-        for value in re.findall(r"vdpTile\s+(\d+)", layout_source)
-    ]
+    layout_source = read_upstream_text(source.disasm / BATTLE_BACKGROUND_LAYOUT_PATH)
+    layout_tiles = [int(value) for value in re.findall(r"vdpTile\s+(\d+)", layout_source)]
     if len(layout_tiles) != BATTLE_BACKGROUND_LAYOUT_TILES:
-        raise ValueError(
-            f"battle background layout tile-count drift: {len(layout_tiles)}"
-        )
+        raise ValueError(f"battle background layout tile-count drift: {len(layout_tiles)}")
     out_dir.mkdir(parents=True, exist_ok=True)
     files = []
     for symbol, relative_path in definitions:
-        data = (disasm / relative_path).read_bytes()
+        data = source.read(relative_path, symbol=symbol)
         tileset1_offset = int.from_bytes(data[0:2], "big")
         tileset2_offset = 2 + int.from_bytes(data[2:4], "big")
         palette_offset = 4 + int.from_bytes(data[4:6], "big")
@@ -1307,7 +1374,9 @@ def extract_battle_backgrounds(disasm: Path, out_dir: Path) -> list[dict[str, ob
             data[tileset1_offset:tileset2_offset],
             expected_output_bytes=BATTLE_BACKGROUND_TILESET_BYTES,
         )
-        second = decode_stack_compressed(data[tileset2_offset:])
+        second = decode_stack_compressed(
+            data[tileset2_offset:], expected_output_bytes=BATTLE_BACKGROUND_TILESET_BYTES
+        )
         for part, decoded in (("tileset1", first), ("tileset2", second)):
             pixels, width, height = _render_tile_pool_sheet(decoded.output, palette)
             name = f"{symbol}_{part}.png"
@@ -1350,12 +1419,9 @@ def extract_battle_backgrounds(disasm: Path, out_dir: Path) -> list[dict[str, ob
             origin_y = (index // columns) * TILE_SIZE
             for row in range(TILE_SIZE):
                 for col in range(TILE_SIZE):
-                    color = palette[tile[row * TILE_SIZE + col]]
+                    palette_index = tile[row * TILE_SIZE + col]
                     offset = ((origin_y + row) * width + (origin_x + col)) * 4
-                    if color == (0, 0, 0):
-                        pixels[offset : offset + 4] = [0, 0, 0, 0]
-                    else:
-                        pixels[offset : offset + 4] = [*color, 255]
+                    pixels[offset : offset + 4] = palette_index_rgba(palette, palette_index)
         name = f"{symbol}_composed.png"
         rel = out_dir / name
         write_png_rgba(rel, width, height, pixels)
@@ -1369,12 +1435,37 @@ def extract_battle_backgrounds(disasm: Path, out_dir: Path) -> list[dict[str, ob
     return files
 
 
-def extract_unused_assets(disasm: Path, out_dir: Path) -> list[dict[str, object]]:
-    """Render the unused cloud streams and the two unused base palettes."""
+def extract_unused_assets(
+    source: ProvenanceBoundSource,
+    out_dir: Path,
+    *,
+    owner_fixture: dict[str, object] | None = None,
+) -> list[dict[str, object]]:
+    """Render all four accepted unused-cloud streams with both accepted palettes."""
+    owner = owner_fixture or load_json(UNUSED_OWNER_FIXTURE)
+    cloud_facts = owner["cloudFacts"]
+    palette_facts = owner["paletteFacts"]
+    stream_facts = owner["streamFacts"]
+    stream_indices = [fact["index"] for fact in stream_facts]
+    if (
+        owner["id"] != "sf2-unused-technical-assets-static-v1"
+        or stream_indices != list(range(4))
+    ):
+        raise ValueError("unused technical-assets owner fixture drift")
     out_dir.mkdir(parents=True, exist_ok=True)
     files = []
-    cloud = decode_stack_compressed((disasm / UNUSED_CLOUD_PATH).read_bytes()).output
-    palette_data = (disasm / UNUSED_PALETTE_PATH).read_bytes()
+    cloud_data = source.read(
+        UNUSED_CLOUD_PATH,
+        symbol="tiles_UnusedCloud",
+        expected_sha256=cloud_facts["sha256"],
+    )
+    palette_data = source.read(
+        UNUSED_PALETTE_PATH,
+        symbol="palette_UnusedBase",
+        expected_sha256=palette_facts["sha256"],
+    )
+    if len(palette_data) != 2 * PALETTE_BYTES:
+        raise ValueError(f"unused base palette size drift: {len(palette_data)}")
     palettes = [
         [
             md_palette_color(int.from_bytes(palette_data[o : o + 2], "big"))
@@ -1382,14 +1473,35 @@ def extract_unused_assets(disasm: Path, out_dir: Path) -> list[dict[str, object]
         ]
         for p in range(2)
     ]
+    for fact in stream_facts:
+        index = fact["index"]
+        start = fact["startOffset"]
+        end = fact["endOffsetExclusive"]
+        stored = cloud_data[start:end]
+        if len(stored) != fact["storedByteCount"] or _sha256(stored) != fact["sourceSha256"]:
+            raise ValueError(f"unused cloud accepted stream boundary/hash drift: {index}")
+        decoded = decode_stack_compressed(stored, expected_output_bytes=fact["decodedByteCount"])
+        if _sha256(decoded.output) != fact["decodedSha256"]:
+            raise ValueError(f"unused cloud accepted decoded hash drift: {index}")
+        for palette_index, palette in enumerate(palettes):
+            pixels, width, height = _render_tile_pool_sheet(decoded.output, palette)
+            name = f"unusedcloud_stream{index}_palette{palette_index}.png"
+            rel = out_dir / name
+            write_png_rgba(rel, width, height, pixels)
+            files.append(
+                {
+                    "file": name,
+                    "sha256": _sha256(rel.read_bytes()),
+                    "sizeBytes": rel.stat().st_size,
+                    "resourceType": "cloudStream",
+                    "streamIndex": index,
+                    "paletteIndex": palette_index,
+                    "sourceOffset": start,
+                    "decodedByteCount": len(decoded.output),
+                    "decodedSha256": fact["decodedSha256"],
+                }
+            )
     for palette_index, palette in enumerate(palettes):
-        pixels, width, height = _render_tile_pool_sheet(cloud, palette)
-        name = f"unusedcloud_palette{palette_index}.png"
-        rel = out_dir / name
-        write_png_rgba(rel, width, height, pixels)
-        files.append(
-            {"file": name, "sha256": _sha256(rel.read_bytes()), "sizeBytes": rel.stat().st_size}
-        )
         strip = out_dir / f"unusedbase_palette{palette_index}.png"
         write_png_rgba(strip, PALETTE_COLORS * 16, 16, render_palette_strip(palette))
         files.append(
@@ -1397,6 +1509,8 @@ def extract_unused_assets(disasm: Path, out_dir: Path) -> list[dict[str, object]
                 "file": f"unusedbase_palette{palette_index}.png",
                 "sha256": _sha256(strip.read_bytes()),
                 "sizeBytes": strip.stat().st_size,
+                "resourceType": "paletteStrip",
+                "paletteIndex": palette_index,
             }
         )
     return files
@@ -1409,16 +1523,16 @@ def extract_misc_graphics(
     out_dir: Path,
 ) -> dict[str, object]:
     """Extract UI resources, special sprites, battle background sheets, and unused assets."""
-    rom_path = rom_path.resolve(strict=True)
-    upstream_path = upstream_path.resolve(strict=True)
-    disasm, commit, _toolchain = _resolve_upstream(upstream_path)
-    expected_rom = load_json(repo_path("manifests/roms/sf2-us.json"))
-    rom = rom_path.read_bytes()
-    if len(rom) != expected_rom["sizeBytes"] or _sha256(rom) != expected_rom["hashes"]["sha256"]:
-        raise ValueError("misc graphic extraction ROM identity drift")
+    source, commit, expected_rom = _verified_source(
+        rom_path, upstream_path, owner="misc graphic extraction"
+    )
 
     out_dir = out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
+    _require_fresh_outputs(
+        out_dir,
+        ("misc-manifest.json", "ui", "specialsprites", "battlebackgrounds", "unused"),
+    )
     ui_dir = out_dir / "ui"
     sprite_dir = out_dir / "specialsprites"
     background_dir = out_dir / "battlebackgrounds"
@@ -1426,10 +1540,10 @@ def extract_misc_graphics(
     for directory in (ui_dir, sprite_dir, background_dir, unused_dir):
         directory.mkdir(parents=True, exist_ok=True)
 
-    ui_files = extract_ui_resources(disasm, ui_dir)
-    sprite_files = extract_special_sprites(disasm, sprite_dir)
-    background_files = extract_battle_backgrounds(disasm, background_dir)
-    unused_files = extract_unused_assets(disasm, unused_dir)
+    ui_files = extract_ui_resources(source, ui_dir)
+    sprite_files = extract_special_sprites(source, sprite_dir)
+    background_files = extract_battle_backgrounds(source, background_dir)
+    unused_files = extract_unused_assets(source, unused_dir)
 
     all_files = [
         *[{"kind": "ui", **row} for row in ui_files],
@@ -1446,15 +1560,27 @@ def extract_misc_graphics(
         "notes": [
             "UI tile sets and main-menu icons use the base palette",
             "(data/graphics/tech/basepalette.bin); special sprites and battle backgrounds "
-            "carry their own 16-color palettes; battle backgrounds are emitted as raw "
-            "tileset sheets (the screen assembly layout is not yet reconstructed)",
-            "unused cloud tiles are rendered with both unused base palettes",
+            "carry their own 16-color palettes; battle backgrounds are emitted as two raw "
+            "tileset sheets and one source-layout-composed diagnostic sheet",
+            "all four accepted unused-cloud streams are rendered with both unused base palettes; "
+            "the two palette strips are counted separately from stream coverage",
+            "the animation-only special-sprite stream has no owned palette; its synthetic all-zero "
+            "candidate renders nonzero indices as opaque black and remains diagnostic only",
         ],
         "summary": {
             "uiCount": len(ui_files),
             "specialspriteCount": len(sprite_files),
             "battlebackgroundCount": len(background_files),
             "unusedCount": len(unused_files),
+            "unusedCloudStreamCount": len(
+                {row["streamIndex"] for row in unused_files if row["resourceType"] == "cloudStream"}
+            ),
+            "unusedCloudRenderCount": sum(
+                row["resourceType"] == "cloudStream" for row in unused_files
+            ),
+            "unusedPaletteStripCount": sum(
+                row["resourceType"] == "paletteStrip" for row in unused_files
+            ),
             "totalFileCount": len(all_files),
         },
         "files": all_files,

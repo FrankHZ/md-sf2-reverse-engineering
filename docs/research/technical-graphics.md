@@ -304,23 +304,26 @@ to `LoadStackCompressedData`, four to `LoadBasicCompressedData`, and seven to
 twelve completed corpus or wrapper owners; the unowned count is zero. This is a direct named-call
 denominator, not proof that dynamic indirect calls or self-modifying targets cannot exist.
 
-## Renderer Mapping (tooling-verified pixel layout)
+## Renderer Mapping (private extraction tooling)
 
-Status: **Confirmed** for each mapping below except the special-sprite items, which are marked
-**Unknown**/**unconfirmed**; evidence is pinned source plus, where noted, a simulator screenshot
-color-histogram comparison (2026-08-16, `sf2 texture` rail). These are pixel-level rendering
-facts used by the extraction tooling, not new data-contract claims.
+Status: **Confirmed** only for the source/ROM-bound storage shapes and transformations already
+owned by the named H2 rails, plus the project-owned synthetic renderer tests. The RGB channel
+assignment, composed appearance, and original-game screenshot equivalence remain **Inferred** or
+**Unknown** as identified below: the `sf2 texture` rail emits PNGs but does not execute an emulator,
+capture a frame, or compare a color histogram. No prior informal screenshot inspection is promoted
+to reproducible evidence. These mappings guide private extraction tooling; they are not new
+data-contract claims.
 
 - Map 4bpp tiles are 32-byte 8x8 tiles with two pixels per byte, left pixel in the high nibble.
   Decoded tileset streams (4,096 bytes) hold 128 tiles each.
 - Map palettes (`mappaletteNN.bin`, and `basepalette.bin` "Palette for UI and mapsprites") use the
-  `0x0EEE` 9-bit form with the low bit group (bits 1-3) as red, the middle group (bits 5-7) as
-  green, and the high group (bits 9-11) as blue. This channel order was confirmed by swapping red
-  and blue in the renderer and matching the screenshot histogram (grass `(64,160,0)`, roofs
-  `(224,0,32)`, water `(0,64,192)`). Color 0 is forced transparent by `mapload.asm`
-  (`clr.w (PALETTE_1_BASE).l`).
-- Battle backgrounds are confirmed to stay inside the `0x0EEE` mask and use the same `0x0EEE`
-  decode as map palettes (verified by the composed-sheet histogram comparison).
+  accepted `0x0EEE` word mask. The tool maps the low bit group (bits 1-3) to red, the middle group
+  (bits 5-7) to green, and the high group (bits 9-11) to blue; final on-screen channel/color parity
+  is **Inferred** pending a reproducible original-game observation. `mapload.asm` clears effective
+  palette index 0 (`clr.w (PALETTE_1_BASE).l`). The renderer therefore makes palette *index* 0
+  transparent while preserving an RGB-black value at every nonzero index as opaque.
+- Battle-background palette words are confirmed to stay inside the `0x0EEE` mask. The tool applies
+  the same candidate channel mapping as map palettes; final composed color parity is **Unknown**.
 - Special-sprite palettes are each a 32-byte header copied verbatim to `PALETTE_4_BASE` by
   `LoadSpecialSprite` (`specialsprites.asm`); the words do not all fit the `0x0EEE` mask (e.g.
   `0x558` in `taros.bin`), so the tooling decodes them with a candidate 6/5/5 channel layout
@@ -342,8 +345,7 @@ facts used by the extraction tooling, not new data-contract claims.
   cell's iron bars) occupies layout rows 32..63 and is displayed over main rows 0..31. Layout
   words carry a block-section flag (`00`/`01`/`100`/`101`/`11` prefixes in
   `ReadMapLayoutBarrelForBlockFlags`, `mapload.asm`) whose   `0xC000` bit selects the plane
-  palette in `UpdateVdpPlane`; static rendering draws both sections with the map palette (the
-  map 3 cell bars match the simulator screenshot's gray palette entries 9-11). Roof/layer-2
+  palette in `UpdateVdpPlane`; static rendering draws both sections with the map palette. Roof/layer-2
   `slbc` records (`map-content.md`: 79 tables, 114 records) copy/clear blocks into this overlay
   region at runtime. Some overlay content is stored **outside the areas** in the record's
   source rectangle (map 3: the creature-building facade with its iron bars at `(51,20)`,
@@ -361,15 +363,26 @@ facts used by the extraction tooling, not new data-contract claims.
   `basepalette.bin` palette.
 - The variable-width font stores 80 glyphs of 32 bytes (width header, then 15 rows of 12 usable
   pixels in `(left << 4) | (right >> 4)`, bit 11 = column 0).
-- Battle backgrounds are two 6,144-byte Stack tilesets plus a 32-byte palette, composed by the
-  384-entry `layout_BattlesceneBackground` table (VRAM tile numbers 928-1311, 32 columns); the
-  composed sheet matches the game.
+- Battle backgrounds are two 6,144-byte Stack tilesets plus a 32-byte palette. The diagnostic
+  composed sheet applies the 384-entry `layout_BattlesceneBackground` table (VRAM tile numbers
+  928-1311, 32 columns); original rendered-screen equivalence remains **Unknown**.
 - Special sprites decode (Stack) to 72 tiles for the battle class and 162 for
   `SpecialSprite_NazcaShip`; `SpecialSprite_EvilSpiritAlt` is animation-only. The tooling emits
   the raw tile-pool sheet plus candidate composed layouts (3x3, 3x6, 4x4, 6x6) for later
   inspection, but the exact frame assembly (frame size, tile order, linked-sprite arrangement)
-  is **Unknown/unconfirmed**: no candidate matched a screenshot, and this phase does not need
-  special-sprite assembly, so it is deferred.
+  is **Unknown/unconfirmed**: no candidate is accepted as an original-game composition, and this
+  phase does not need special-sprite assembly, so it is deferred. The animation-only stream has
+  no owned palette; its all-zero diagnostic candidate renders palette index 0 transparent and
+  nonzero indices opaque black rather than treating every RGB-black entry as transparent.
+
+All binary inputs consumed by the texture commands are ignored upstream split payloads. Before
+rendering, the tool resolves each payload's owning H1 symbol and requires the complete bytes to equal
+the exact range in the hash-verified USA ROM; accepted unused-cloud stream hashes add a second
+owner-fixture check. A clean upstream Git checkout alone is not treated as payload provenance.
+Texture commands fail closed when their owned output directories or manifests already exist,
+preventing a fresh manifest from silently inheriting stale products. The unused-assets output
+identifies all four accepted Stack streams explicitly, renders each under both base palettes, and
+counts the two palette strips separately from stream coverage.
 
 ## Concentrated Verification Queue
 
