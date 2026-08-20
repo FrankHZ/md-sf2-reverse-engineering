@@ -20,10 +20,46 @@ FIXTURE = repo_path("tests/fixtures/h2/ui-layout-static-v1.json")
 FIXTURE_SCHEMA = repo_path("schemas/h2-ui-layout-static-fixture.schema.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
 
+DIAMOND_MENU_LAYOUT_WIDTH = 18
+DIAMOND_MENU_LAYOUT_HEIGHT = 6
+MENU_LAYOUT_CONSUMERS = (
+    (
+        "layout_DiamondMenu",
+        "code/common/menus/diamondmenu.asm",
+        "ExecuteDiamondMenu",
+    ),
+    (
+        "layout_MagicMenu",
+        "code/common/menus/magicmenu.asm",
+        "ExecuteBattlefieldMagicMenu",
+    ),
+    (
+        "layout_ItemMenu",
+        "code/common/menus/itemmenu.asm",
+        "ExecuteBattlefieldItemMenu",
+    ),
+)
+WINDOW_ENGINE_SOURCE = "code/common/windows/windowengine.asm"
+
 LAYOUT_SPECS = (
-    ("layout_DiamondMenu", "data/graphics/tech/menus/diamondmenulayout.asm", 12, 9),
-    ("layout_MagicMenu", "data/graphics/tech/menus/magicmenulayout.asm", 12, 9),
-    ("layout_ItemMenu", "data/graphics/tech/menus/itemmenulayout.asm", 12, 9),
+    (
+        "layout_DiamondMenu",
+        "data/graphics/tech/menus/diamondmenulayout.asm",
+        DIAMOND_MENU_LAYOUT_WIDTH,
+        DIAMOND_MENU_LAYOUT_HEIGHT,
+    ),
+    (
+        "layout_MagicMenu",
+        "data/graphics/tech/menus/magicmenulayout.asm",
+        DIAMOND_MENU_LAYOUT_WIDTH,
+        DIAMOND_MENU_LAYOUT_HEIGHT,
+    ),
+    (
+        "layout_ItemMenu",
+        "data/graphics/tech/menus/itemmenulayout.asm",
+        DIAMOND_MENU_LAYOUT_WIDTH,
+        DIAMOND_MENU_LAYOUT_HEIGHT,
+    ),
     (
         "layout_SpellLevelIndicator",
         "data/graphics/tech/menus/spelllevelindiacatorlayouts.asm",
@@ -332,6 +368,57 @@ def _layout_shapes() -> list[dict[str, int | str]]:
     ]
 
 
+def _verify_menu_layout_consumer_shapes(disasm: Path) -> None:
+    """Bind the three 108-word menu grids to their source window dimensions.
+
+    ``CreateWindow`` consumes the high byte of ``d0.w`` as width and the low byte
+    as height.  Each owning menu loads ``$1206`` immediately before its one
+    ``CreateWindow`` request and later copies its corresponding layout into that
+    window.  This consumer check prevents another factorization of 108 words from
+    silently redefining the source grid.
+    """
+    expected_operand = (DIAMOND_MENU_LAYOUT_WIDTH << 8) | DIAMOND_MENU_LAYOUT_HEIGHT
+    for layout_symbol, relative_path, entry_symbol in MENU_LAYOUT_CONSUMERS:
+        source = read_upstream_text(disasm / relative_path)
+        entry_match = re.search(
+            rf"^{re.escape(entry_symbol)}:\s*$([\s\S]*?)"
+            rf"^\s*; End of function {re.escape(entry_symbol)}\s*$",
+            source,
+            re.MULTILINE,
+        )
+        if entry_match is None:
+            raise ValueError(f"UI menu consumer entry drift: {entry_symbol}")
+        entry = entry_match.group(1)
+        operands = re.findall(r"^\s*move\.w\s+#\$([0-9A-F]+),d0\s*$", entry, re.MULTILINE)
+        create_calls = re.findall(r"^\s*jsr\s+\(CreateWindow\)\.w\s*$", entry, re.MULTILINE)
+        if operands != [f"{expected_operand:X}"] or len(create_calls) != 1:
+            raise ValueError(f"UI menu CreateWindow shape drift: {entry_symbol}")
+        layout_uses = re.findall(
+            rf"^\s*lea\s+{re.escape(layout_symbol)}\(pc\),\s*a0\s*$",
+            source,
+            re.MULTILINE,
+        )
+        if len(layout_uses) != 1:
+            raise ValueError(f"UI menu layout consumer drift: {layout_symbol}")
+
+    window_source = read_upstream_text(disasm / WINDOW_ENGINE_SOURCE)
+    create_window = re.search(
+        r"^CreateWindow:\s*$([\s\S]*?)^\s*; End of function CreateWindow\s*$",
+        window_source,
+        re.MULTILINE,
+    )
+    if create_window is None:
+        raise ValueError("CreateWindow source boundary drift")
+    shape_sequence = re.compile(
+        r"move\.w\s+d0,d7\s*\n"
+        r"\s*lsr\.w\s+#BYTE_SHIFT_COUNT,d7(?:\s*;[^\r\n]*)?\s*\n"
+        r"\s*andi\.w\s+#BYTE_MASK,d0\s*\n"
+        r"\s*mulu\.w\s+d7,d0",
+    )
+    if shape_sequence.search(create_window.group(1)) is None:
+        raise ValueError("CreateWindow width/height byte-consumption drift")
+
+
 def build_ui_layout_contract(rom_path: Path, upstream_path: Path) -> dict[str, Any]:
     rom_path = rom_path.resolve(strict=True)
     upstream_path = upstream_path.resolve(strict=True)
@@ -344,6 +431,8 @@ def build_ui_layout_contract(rom_path: Path, upstream_path: Path) -> dict[str, A
     rom_hash = hashlib.sha256(rom).hexdigest().upper()
     if rom_hash != load_json(ROM_MANIFEST)["hashes"]["sha256"]:
         raise ValueError("UI-layout input ROM identity drift")
+
+    _verify_menu_layout_consumer_shapes(disasm)
 
     source_paths = sorted({spec[1] for spec in LAYOUT_SPECS} | {BORDER_SOURCE})
     source_paths.append("data/graphics/tech/alphabethighlight/entries.asm")

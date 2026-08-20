@@ -37,6 +37,7 @@ from sf2tool.compression import decode_basic_compressed, decode_stack_compressed
 from sf2tool.h2.battle_scene_engine import _resolve_upstream
 from sf2tool.h2.map_layouts import decode_map_blocks, decode_map_layout
 from sf2tool.h2.map_palettes import COLOR_MASK
+from sf2tool.h2.ui_layouts import DIAMOND_MENU_LAYOUT_HEIGHT, DIAMOND_MENU_LAYOUT_WIDTH
 from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
 from sf2tool.research_index import listing_symbol_addresses
@@ -1224,9 +1225,10 @@ def _render_tile_pool_sheet(
 def extract_ui_resources(source: ProvenanceBoundSource, out_dir: Path) -> list[dict[str, object]]:
     """Render the base/diamond-menu/yes-no tile sets and the main-menu icons.
 
-    The six diamond-menu tile sets (2,304 bytes each) hold 24 strips of 24x8 pixels
-    (96 bytes = three 8x8 tiles side by side), so they are rendered as 24-wide strips
-    rather than as bare 8x8 tile grids.
+    Each 2,304-byte diamond-menu decode has 72 tiles. Because the accepted layout
+    consumes the relevant slot identities in horizontal groups of three, the private
+    diagnostic groups the sequential tile pool into 24 candidate 24x8 strips. This is
+    not an accepted frame, animation, or visible-composition relation.
     """
     palette = _load_base_palette(source)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1288,11 +1290,9 @@ def extract_ui_resources(source: ProvenanceBoundSource, out_dir: Path) -> list[d
 UI_VDP_ENUM_PATH = Path("enums/vdp.asm")
 UI_LAYOUT_SOURCE_ROOT = Path("data/graphics/tech/menus")
 UI_BASE_TILES_PATH = Path("data/graphics/tech/basetiles.bin")
-UI_ITEM_MENU_TILES_PATH = Path("data/graphics/tech/menus/itemmenutiles.bin")
-UI_ICON_HIGHLIGHT_PATH = Path("data/graphics/tech/iconhighlighttiles.bin")
 UI_DIAMOND_BORDER_PATH = Path("data/graphics/tech/menus/diamondmenubordertiles.asm")
+UI_MENU_STRINGS_PATH = Path("code/common/menus/menustringspointertable.asm")
 UI_MENU_TILE_BASE = 0x5C0
-UI_MENU_TILE_COUNT = 64
 UI_LAYOUT_FLAG_VALUES = {
     "PALETTE2": 0x2000,
     "PALETTE3": 0x4000,
@@ -1301,15 +1301,6 @@ UI_LAYOUT_FLAG_VALUES = {
     "MIRROR": 0x800,
     "FLIP": 0x1000,
 }
-
-# Battlefield item menu icon slots (itemmenu.asm): MENUTILE ranges and DMA lengths.
-ITEM_MENU_SLOTS = {
-    "up": {"first": 0x5C0, "count": 6},
-    "left": {"first": 0x5C6, "count": 8},
-    "down": {"first": 0x5CE, "count": 6},
-    "right": {"first": 0x5D4, "count": 8},
-}
-
 
 def parse_vdptile_enums(source: str) -> dict[str, int]:
     """Parse ``VDPTILE_NAME: equ $XXXX`` lines from ``enums/vdp.asm``."""
@@ -1322,7 +1313,7 @@ def parse_vdptile_enums(source: str) -> dict[str, int]:
 
 
 def parse_window_layout(
-    source: str, enums: dict[str, int], *, width: int = 18
+    source: str, enums: dict[str, int], *, width: int = DIAMOND_MENU_LAYOUT_WIDTH
 ) -> list[list[int]]:
     """Parse a ``vdpTile`` layout grid (one tile per line, rows in source order)."""
     rows: list[list[int]] = []
@@ -1353,6 +1344,24 @@ def parse_window_layout(
     if not rows:
         raise ValueError("window layout has no rows")
     return rows
+
+
+def _verify_inline_rom_payload(
+    source: ProvenanceBoundSource,
+    *,
+    symbol: str,
+    payload: bytes,
+    expected_size: int,
+) -> None:
+    """Bind assembled source bytes to one exact H1-resolved canonical-ROM range."""
+    if len(payload) != expected_size:
+        raise ValueError(f"inline graphic source size drift: {symbol} ({len(payload)})")
+    if symbol not in source.addresses:
+        raise ValueError(f"inline graphic H1 symbol is missing: {symbol}")
+    address = source.addresses[symbol]
+    end = address + len(payload)
+    if address < 0 or end > len(source.rom) or source.rom[address:end] != payload:
+        raise ValueError(f"inline graphic source/ROM provenance drift: {symbol}")
 
 
 def parse_dc_b_tiles(source: str) -> bytes:
@@ -1407,11 +1416,11 @@ def extract_ui_windows(
     *,
     out_dir: Path,
 ) -> dict[str, object]:
-    """Render the composed battle action menu (diamond menu) window.
+    """Render a source-shaped diagnostic battle action-menu composition.
 
     The action menu is `ExecuteDiamondMenu` with `MENU_BATTLE_WITH_STAY`: an 18x6
     window whose frame comes from `layout_DiamondMenu` (VDP attribute words
-    referencing `tiles_Base` frame tiles and `tiles_ItemMenu` MENUTILE tiles). The
+    referencing `tiles_Base` frame tiles and dynamically filled MENUTILE slots). The
     four diamond slots are filled like the game's DMA path: up/down take the plain
     24x24 half of the main-menu icon (indices 0/3 = ATTACK/STAY for the battle menu),
     left/right take the bordered 24x32 build of `diamondmenu.asm`
@@ -1419,71 +1428,88 @@ def extract_ui_windows(
     `tiles_DiamondMenuBorder1-4`), and the selected option's name ("ATTACK") is
     written at (11,4) with the base-tiles font like `WriteTilesFromAsciiWithRegularFont`.
     """
-    rom_path = rom_path.resolve(strict=True)
-    upstream_path = upstream_path.resolve(strict=True)
-    disasm, commit, _toolchain = _resolve_upstream(upstream_path)
-    expected_rom = load_json(repo_path("manifests/roms/sf2-us.json"))
-    rom = rom_path.read_bytes()
-    if len(rom) != expected_rom["sizeBytes"] or _sha256(rom) != expected_rom["hashes"]["sha256"]:
-        raise ValueError("ui window render ROM identity drift")
-
-    palette = _load_base_palette(disasm)
-    base_tiles = decode_stack_compressed(
-        (disasm / UI_BASE_TILES_PATH).read_bytes(), expected_output_bytes=8192
-    ).output
-    menu_tiles = decode_stack_compressed(
-        (disasm / UI_ITEM_MENU_TILES_PATH).read_bytes(), expected_output_bytes=2304
-    ).output
-    enums = parse_vdptile_enums(read_upstream_text(disasm / UI_VDP_ENUM_PATH))
-    layout = parse_window_layout(
-        read_upstream_text(disasm / UI_LAYOUT_SOURCE_ROOT / "diamondmenulayout.asm"), enums
+    out_dir = out_dir.resolve()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    _require_fresh_outputs(out_dir, ("windows",))
+    source, commit, expected_rom = _verified_source(
+        rom_path, upstream_path, owner="UI window render"
     )
+    palette = _load_base_palette(source)
+    base_tiles = decode_stack_compressed(
+        source.read(UI_BASE_TILES_PATH, symbol="tiles_Base"), expected_output_bytes=8192
+    ).output
+    enums = parse_vdptile_enums(read_upstream_text(source.disasm / UI_VDP_ENUM_PATH))
+    layout = parse_window_layout(
+        read_upstream_text(source.disasm / UI_LAYOUT_SOURCE_ROOT / "diamondmenulayout.asm"),
+        enums,
+        width=DIAMOND_MENU_LAYOUT_WIDTH,
+    )
+    if len(layout) != DIAMOND_MENU_LAYOUT_HEIGHT:
+        raise ValueError(f"diamond-menu layout height drift: {len(layout)}")
+    layout_bytes = b"".join(word.to_bytes(2, "big") for row in layout for word in row)
+    _verify_inline_rom_payload(
+        source,
+        symbol="layout_DiamondMenu",
+        payload=layout_bytes,
+        expected_size=DIAMOND_MENU_LAYOUT_WIDTH * DIAMOND_MENU_LAYOUT_HEIGHT * 2,
+    )
+    dynamic_slot_ids = {
+        word & 0x7FF for row in layout for word in row if (word & 0x7FF) >= UI_MENU_TILE_BASE
+    }
 
-    main_menu = (disasm / MAIN_MENU_PATH).read_bytes()
-    if len(main_menu) % MAIN_MENU_ICON_BYTES:
+    main_menu = source.read(MAIN_MENU_PATH, symbol="tiles_MainMenu")
+    if len(main_menu) != 7 * MAIN_MENU_ICON_BYTES:
         raise ValueError(f"main menu payload size drift: {len(main_menu)}")
     main_icons = [
         main_menu[offset : offset + MAIN_MENU_ICON_BYTES]
         for offset in range(0, len(main_menu), MAIN_MENU_ICON_BYTES)
     ]
-    if len(main_icons) < 4:
-        raise ValueError(f"main menu icon count drift: {len(main_icons)}")
-
-    border_source = read_upstream_text(disasm / UI_DIAMOND_BORDER_PATH)
+    border_source = read_upstream_text(source.disasm / UI_DIAMOND_BORDER_PATH)
     border_parts = border_source.split("tiles_DiamondMenuBorder")
+    if len(border_parts) != 5:
+        raise ValueError("diamond-menu border source count drift")
     borders = {
         "1": parse_dc_b_tiles(border_parts[1].split(":")[1]),
         "2": parse_dc_b_tiles(border_parts[2].split(":")[1]),
         "3": parse_dc_b_tiles(border_parts[3].split(":")[1]),
         "4": parse_dc_b_tiles(border_parts[4].split(":")[1]),
     }
+    for border_index, payload in borders.items():
+        _verify_inline_rom_payload(
+            source,
+            symbol=f"tiles_DiamondMenuBorder{border_index}",
+            payload=payload,
+            expected_size=48,
+        )
+
+    menu_strings = read_upstream_text(source.disasm / UI_MENU_STRINGS_PATH)
+    attack_match = re.search(r"^aAttack_0:\s+dc\.b\s+'([^']+)',0\s*$", menu_strings, re.MULTILINE)
+    if attack_match is None:
+        raise ValueError("battle action-menu label source drift")
+    selected_label = attack_match.group(1)
+    selected_label_payload = selected_label.encode("ascii") + b"\0"
+    _verify_inline_rom_payload(
+        source,
+        symbol="aAttack_0",
+        payload=selected_label_payload,
+        expected_size=7,
+    )
 
     def render_window(slot_tiles: dict[int, bytes], text: str = "") -> tuple[list[int], int, int]:
+        if slot_tiles and set(slot_tiles) != dynamic_slot_ids:
+            raise ValueError("battle action-menu dynamic slot coverage drift")
         width = len(layout[0]) * TILE_SIZE
         height = len(layout) * TILE_SIZE
         pixels = [0] * (width * height * 4)
         for row_index, row in enumerate(layout):
             for col_index, word in enumerate(row):
                 tile_number = word & 0x7FF
-                if tile_number == 0:
-                    # blank word: the game's tile 0 shows the dark blue interior
-                    for row in range(TILE_SIZE):
-                        for col in range(TILE_SIZE):
-                            offset = (
-                                (row_index * TILE_SIZE + row) * width
-                                + (col_index * TILE_SIZE + col)
-                            ) * 4
-                            pixels[offset : offset + 4] = [0, 36, 146, 255]
-                    continue
                 if tile_number in slot_tiles:
                     tile = decode_md_4bpp_tile(slot_tiles[tile_number])
                 elif tile_number >= UI_MENU_TILE_BASE:
-                    local = tile_number - UI_MENU_TILE_BASE
-                    if local * TILE_BYTES_4BPP + TILE_BYTES_4BPP > len(menu_tiles):
-                        raise ValueError(f"menu tile out of range: {tile_number:04X}")
-                    tile = decode_md_4bpp_tile(
-                        menu_tiles[local * TILE_BYTES_4BPP : (local + 1) * TILE_BYTES_4BPP]
-                    )
+                    # The layout names VRAM slots, not a fixed backing asset. Leave
+                    # unfilled slots transparent in the frame-only diagnostic.
+                    tile = [0] * (TILE_SIZE * TILE_SIZE)
                 else:
                     local = tile_number
                     if local * TILE_BYTES_4BPP + TILE_BYTES_4BPP > len(base_tiles):
@@ -1496,19 +1522,18 @@ def extract_ui_windows(
                 origin_y = row_index * TILE_SIZE
                 for row in range(TILE_SIZE):
                     for col in range(TILE_SIZE):
-                        color = palette[tile[row * TILE_SIZE + col]]
+                        palette_index = tile[row * TILE_SIZE + col]
                         offset = ((origin_y + row) * width + (origin_x + col)) * 4
-                        if color == (0, 0, 0):
-                            pixels[offset : offset + 4] = [0, 0, 0, 0]
-                        else:
-                            pixels[offset : offset + 4] = [*color, 255]
+                        pixels[offset : offset + 4] = palette_index_rgba(
+                            palette, palette_index
+                        )
         if text:
-            # WriteTilesFromAsciiWithRegularFont: the base-tiles glyphs sit one tile
-            # below the ASCII value ('A' 0x41 -> tile 0x40, 'T' 0x54 -> 0x53, ...)
+            # WriteTilesFromAsciiWithRegularFont uses ordinary positive ASCII values
+            # below VDPTILE_CORNER directly as base-tile indexes.
             origin_x = 11 * TILE_SIZE
             origin_y = 4 * TILE_SIZE
             for char_index, char in enumerate(text):
-                tile_number = ord(char) - 1
+                tile_number = ord(char)
                 if tile_number >= 0x60:
                     tile_number += 32
                 local = tile_number
@@ -1519,13 +1544,15 @@ def extract_ui_windows(
                 )
                 for row in range(TILE_SIZE):
                     for col in range(TILE_SIZE):
-                        color = palette[tile[row * TILE_SIZE + col]]
-                        if color == (0, 0, 0):
+                        palette_index = tile[row * TILE_SIZE + col]
+                        if palette_index == 0:
                             continue
                         offset = (
                             (origin_y + row) * width + (origin_x + char_index * 8 + col)
                         ) * 4
-                        pixels[offset : offset + 4] = [*color, 255]
+                        pixels[offset : offset + 4] = palette_index_rgba(
+                            palette, palette_index
+                        )
         return pixels, width, height
 
     def build_bordered_main_icon(icon: bytes, border_top: bytes, border_bottom: bytes) -> bytes:
@@ -1573,14 +1600,13 @@ def extract_ui_windows(
                 overrides[0x5C0 + index] = main_icons[0][start : start + TILE_BYTES_4BPP]
         return overrides
 
-    out_dir = out_dir.resolve()
     window_dir = out_dir / "windows"
     window_dir.mkdir(parents=True, exist_ok=True)
     files = []
     variants = [
         ("actionmenu-frame.png", {}, ""),
-        ("actionmenu.png", slot_overrides(highlight_up=False), "ATTACK"),
-        ("actionmenu-selected.png", slot_overrides(highlight_up=True), "ATTACK"),
+        ("actionmenu.png", slot_overrides(highlight_up=False), selected_label),
+        ("actionmenu-selected.png", slot_overrides(highlight_up=True), selected_label),
     ]
     for name, overrides, text in variants:
         pixels, width, height = render_window(overrides, text)
@@ -1597,11 +1623,13 @@ def extract_ui_windows(
         "romSha256": expected_rom["hashes"]["sha256"],
         "upstream": {"repository": "ShiningForceCentral/SF2DISASM", "commit": commit},
         "notes": [
-            "battle action menu (ExecuteDiamondMenu, MENU_BATTLE_WITH_STAY): "
+            "source-shaped diagnostic battle action menu (ExecuteDiamondMenu, "
+            "MENU_BATTLE_WITH_STAY): "
             "layout_DiamondMenu frame with the four diamond slots filled per the DMA "
             "path (up/down = main-menu icon halves, left/right = bordered builds of "
             "diamondmenu.asm sub_10484/sub_104E6) and the selected option name written "
-            "at (11,4) with the base-tiles font",
+            "at (11,4) with the base-tiles font; original visible composition, palette "
+            "appearance, selection timing, and screenshot equivalence remain unverified",
         ],
         "summary": {"windowRenderCount": len(files)},
         "files": files,
@@ -1924,6 +1952,8 @@ def extract_misc_graphics(
         "upstream": {"repository": "ShiningForceCentral/SF2DISASM", "commit": commit},
         "notes": [
             "UI tile sets and main-menu icons use the base palette",
+            "diamond-menu tile pools are grouped into sequential three-tile diagnostic strips; "
+            "this does not establish frame, animation, or visible composition",
             "(data/graphics/tech/basepalette.bin); special sprites and battle backgrounds "
             "carry their own 16-color palettes; battle backgrounds are emitted as two raw "
             "tileset sheets and one source-layout-composed diagnostic sheet",

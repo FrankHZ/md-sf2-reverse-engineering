@@ -356,7 +356,7 @@ def build_parser() -> argparse.ArgumentParser:
     texture_map.add_argument("--maps", type=str, default="3", help="comma-separated map indices")
     texture_ui = texture_commands.add_parser(
         "ui",
-        help="render the composed battlefield item menu window (frame layout + icon slots)",
+        help="render a source-shaped diagnostic battle action-menu window",
     )
     _add_local_paths(texture_ui)
     texture_ui.add_argument(
