@@ -1382,34 +1382,6 @@ def parse_dc_b_tiles(source: str) -> bytes:
     return bytes(values)
 
 
-def build_bordered_icon(icon: bytes, border_top: bytes, border_bottom: bytes) -> bytes:
-    """Replicate the battlefield item menu's left/right bordered icon buffer.
-
-    Mirrors `itemmenu.asm` ``sub_10874``/``sub_108CA``: the border tiles' first
-    longwords land at offsets ``0``/``0x20`` and the icon tile rows are spread with
-    their 16-byte halves at ``0`` and ``0x30`` per 0x20-stride row; the bottom border
-    is written after the spread. The result is DMA'd as eight contiguous tiles.
-    """
-    if len(icon) != ICON_BYTES:
-        raise ValueError(f"icon must be {ICON_BYTES} bytes, got {len(icon)}")
-    if len(border_top) != 48 or len(border_bottom) != 48:
-        raise ValueError("diamond border tiles must be 48 bytes")
-    buf = bytearray(256)
-    for index in range(4):
-        start = index * 4
-        buf[start : start + 4] = border_top[start : start + 4]
-        buf[0x20 + start : 0x24 + start] = border_top[0x20 + start : 0x24 + start]
-    for row in range(6):
-        base = row * 0x20
-        buf[base : base + 16] = icon[row * 32 : row * 32 + 16]
-        buf[base + 0x30 : base + 0x40] = icon[row * 32 + 16 : row * 32 + 32]
-    for index in range(4):
-        start = index * 4
-        buf[0xC0 + start : 0xC4 + start] = border_bottom[start : start + 4]
-        buf[0xE0 + start : 0xE4 + start] = border_bottom[0x20 + start : 0x24 + start]
-    return bytes(buf)
-
-
 def extract_ui_windows(
     rom_path: Path,
     upstream_path: Path,
