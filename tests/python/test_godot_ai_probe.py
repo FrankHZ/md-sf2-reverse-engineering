@@ -128,33 +128,202 @@ def test_each_step_has_an_explicit_timeout_and_deterministic_result(
     )
 
 
-def test_timeout_kills_and_reaps_process(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_windows_tree_termination_uses_argument_list_and_no_shell() -> None:
+    class TargetProcess:
+        pid = 314
+
+        def __init__(self) -> None:
+            self.alive = True
+            self.killed = False
+
+        def poll(self) -> int | None:
+            return None if self.alive else -9
+
+        def kill(self) -> None:
+            self.killed = True
+            self.alive = False
+
+    target = TargetProcess()
+    captured: dict[str, object] = {}
+
+    class TerminatorProcess:
+        def wait(self, timeout: float) -> int:
+            assert timeout == PROBE.TREE_TERMINATION_TIMEOUT_SECONDS
+            target.alive = False
+            return 0
+
+    def fake_popen(cmd: list[str], **kwargs: object) -> TerminatorProcess:
+        captured["cmd"] = cmd
+        captured["kwargs"] = kwargs
+        return TerminatorProcess()
+
+    taskkill = Path("C:/Windows/System32/taskkill.exe")
+    notes = PROBE._terminate_process_tree(
+        target,
+        platform="nt",
+        taskkill_path=taskkill,
+        popen_factory=fake_popen,
+    )
+
+    assert captured["cmd"] == [str(taskkill), "/PID", "314", "/T", "/F"]
+    assert captured["kwargs"] == {
+        "stdin": subprocess.DEVNULL,
+        "stdout": subprocess.DEVNULL,
+        "stderr": subprocess.DEVNULL,
+        "shell": False,
+    }
+    assert notes == ["Windows process-tree termination exit=0"]
+    assert not target.killed
+
+
+def test_windows_tree_terminator_timeout_is_bounded_and_falls_back() -> None:
+    class TargetProcess:
+        pid = 2718
+
+        def __init__(self) -> None:
+            self.killed = False
+
+        def poll(self) -> None:
+            return None
+
+        def kill(self) -> None:
+            self.killed = True
+
+    class StuckTerminator:
+        def __init__(self) -> None:
+            self.wait_timeouts: list[float] = []
+            self.killed = False
+
+        def wait(self, timeout: float) -> int:
+            self.wait_timeouts.append(timeout)
+            raise subprocess.TimeoutExpired(["taskkill"], timeout)
+
+        def kill(self) -> None:
+            self.killed = True
+
+    target = TargetProcess()
+    terminator = StuckTerminator()
+    notes = PROBE._terminate_process_tree(
+        target,
+        platform="nt",
+        taskkill_path=Path("taskkill.exe"),
+        popen_factory=lambda *_args, **_kwargs: terminator,
+    )
+
+    assert terminator.wait_timeouts == [
+        PROBE.TREE_TERMINATION_TIMEOUT_SECONDS,
+        PROBE.TERMINATOR_REAP_TIMEOUT_SECONDS,
+    ]
+    assert terminator.killed
+    assert target.killed
+    assert any("terminator timed out" in note for note in notes)
+    assert any("terminator did not reap" in note for note in notes)
+    assert notes[-1] == "direct process kill requested as fallback"
+
+
+def test_timeout_tree_cleanup_and_second_communicate_are_bounded(tmp_path: Path) -> None:
     class FakeProcess:
+        pid = 1618
         returncode = -9
 
         def __init__(self) -> None:
             self.killed = False
             self.calls = 0
+            self.stdout = None
+            self.stderr = None
 
         def communicate(self, timeout: float | None = None) -> tuple[str, str]:
             self.calls += 1
-            if timeout is not None:
+            if self.calls == 1:
                 raise subprocess.TimeoutExpired(["fake"], timeout)
+            assert timeout == PROBE.PROCESS_REAP_TIMEOUT_SECONDS
             return "partial stdout", "partial stderr"
 
         def kill(self) -> None:
             self.killed = True
 
     process = FakeProcess()
-    monkeypatch.setattr(PROBE.subprocess, "Popen", lambda *_args, **_kwargs: process)
 
-    with pytest.raises(PROBE.ProbeError, match="timed out after 3s; process was killed and reaped"):
-        PROBE._run(["fake"], tmp_path, 3.0, "fake step")
+    def fake_tree_terminator(target: FakeProcess) -> list[str]:
+        target.kill()
+        return ["mock process-tree termination"]
+
+    with pytest.raises(
+        PROBE.ProbeError,
+        match="termination notes: mock process-tree termination; process was reaped",
+    ):
+        PROBE._run(
+            ["fake"],
+            tmp_path,
+            3.0,
+            "fake step",
+            popen_factory=lambda *_args, **_kwargs: process,
+            tree_terminator=fake_tree_terminator,
+        )
 
     assert process.killed
     assert process.calls == 2
+
+
+def test_second_stage_reap_timeout_closes_capture_handles_without_waiting(
+    tmp_path: Path,
+) -> None:
+    class CapturePipe:
+        def __init__(self) -> None:
+            self.closed = False
+
+        def close(self) -> None:
+            self.closed = True
+
+    class FakeProcess:
+        pid = 1414
+        returncode = -9
+
+        def __init__(self) -> None:
+            self.calls = 0
+            self.killed = False
+            self.stdout = CapturePipe()
+            self.stderr = CapturePipe()
+
+        def communicate(self, timeout: float | None = None) -> tuple[str, str]:
+            self.calls += 1
+            if self.calls == 1:
+                raise subprocess.TimeoutExpired(
+                    ["fake"], timeout, output=b"first output", stderr=b"first error"
+                )
+            assert timeout == PROBE.PROCESS_REAP_TIMEOUT_SECONDS
+            raise subprocess.TimeoutExpired(
+                ["fake"], timeout, output=b"second output", stderr=b"second error"
+            )
+
+        def kill(self) -> None:
+            self.killed = True
+
+    process = FakeProcess()
+
+    def fake_tree_terminator(target: FakeProcess) -> list[str]:
+        target.kill()
+        return ["mock tree fallback"]
+
+    with pytest.raises(
+        PROBE.ProbeError,
+        match=(
+            "pipe reap did not finish within 5s and capture handles were closed"
+        ),
+    ):
+        PROBE._run(
+            ["fake"],
+            tmp_path,
+            3.0,
+            "fake step",
+            popen_factory=lambda *_args, **_kwargs: process,
+            tree_terminator=fake_tree_terminator,
+        )
+
+    assert process.killed
+    assert process.calls == 2
+    assert process.stdout.closed
+    assert process.stderr.closed
 
 
 def test_scratch_must_be_fresh_safe_and_contains_only_project_inputs(tmp_path: Path) -> None:
