@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 import sf2tool.cli as cli
+import sf2tool.verification_plan as verification_plan
 from sf2tool.cli import build_parser
 from sf2tool.h3.bootstrap import COMMAND_LAUNCHES
 from sf2tool.verification_plan import (
@@ -65,6 +66,17 @@ def _git(root: Path, *arguments: str) -> str:
         encoding="utf-8",
     )
     return completed.stdout.strip()
+
+
+def _initialize_git_repo(root: Path) -> str:
+    root.mkdir()
+    _git(root, "init", "--initial-branch=main")
+    _git(root, "config", "user.name", "Verification Plan Test")
+    _git(root, "config", "user.email", "verification-plan@example.invalid")
+    (root / "README.md").write_text("base\n", encoding="utf-8")
+    _git(root, "add", "README.md")
+    _git(root, "commit", "-m", "base")
+    return _git(root, "rev-parse", "HEAD")
 
 
 def _tracked_h2_artifacts() -> set[str]:
@@ -368,14 +380,7 @@ def test_explicit_partition_is_included_and_unknown_id_is_rejected() -> None:
 
 def test_git_range_plan_is_read_only_and_resolves_exact_commits(tmp_path: Path) -> None:
     root = tmp_path / "repo"
-    root.mkdir()
-    _git(root, "init", "--initial-branch=main")
-    _git(root, "config", "user.name", "Verification Plan Test")
-    _git(root, "config", "user.email", "verification-plan@example.invalid")
-    (root / "README.md").write_text("base\n", encoding="utf-8")
-    _git(root, "add", "README.md")
-    _git(root, "commit", "-m", "base")
-    base = _git(root, "rev-parse", "HEAD")
+    base = _initialize_git_repo(root)
     test_path = root / "tests" / "python" / "test_example.py"
     test_path.parent.mkdir(parents=True)
     test_path.write_text("def test_example():\n    assert True\n", encoding="utf-8")
@@ -383,8 +388,10 @@ def test_git_range_plan_is_read_only_and_resolves_exact_commits(tmp_path: Path) 
     _git(root, "commit", "-m", "head")
     head = _git(root, "rev-parse", "HEAD")
     status_before = _git(root, "status", "--short")
+    index_before = (root / ".git" / "index").read_bytes()
 
     plan = build_verification_plan(base, "HEAD", root=root)
+    index_after = (root / ".git" / "index").read_bytes()
 
     assert plan["base"] == base
     assert plan["head"] == head
@@ -395,4 +402,64 @@ def test_git_range_plan_is_read_only_and_resolves_exact_commits(tmp_path: Path) 
         "uv run pytest tests/python/test_example.py"
     ]
     assert plan["executionSemanticsChanged"] is False
+    assert index_after == index_before
     assert _git(root, "status", "--short") == status_before == ""
+
+
+def test_git_range_plan_rejects_a_committed_head_other_than_checked_out_head(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "repo"
+    base = _initialize_git_repo(root)
+    (root / "README.md").write_text("head\n", encoding="utf-8")
+    _git(root, "add", "README.md")
+    _git(root, "commit", "-m", "head")
+    checked_out_head = _git(root, "rev-parse", "HEAD")
+
+    monkeypatch.setattr(
+        verification_plan,
+        "plan_paths",
+        lambda *_args, **_kwargs: pytest.fail("classification must not run"),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=rf"must resolve to the checked-out HEAD commit \({checked_out_head}\); got {base}",
+    ):
+        build_verification_plan(base, base, root=root)
+
+
+@pytest.mark.parametrize(
+    ("path", "tracked"),
+    (
+        ("src/sf2tool/owner.py", True),
+        ("tests/python/test_untracked_owner.py", False),
+    ),
+)
+def test_git_range_plan_rejects_dirty_or_untracked_ownership_inputs_before_classification(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    path: str,
+    tracked: bool,
+) -> None:
+    root = tmp_path / "repo"
+    base = _initialize_git_repo(root)
+    candidate = root / path
+    candidate.parent.mkdir(parents=True)
+    candidate.write_text("original = True\n", encoding="utf-8")
+    if tracked:
+        _git(root, "add", path)
+        _git(root, "commit", "-m", "add ownership input")
+        candidate.write_text("dirty = True\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        verification_plan,
+        "plan_paths",
+        lambda *_args, **_kwargs: pytest.fail("classification must not run"),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=rf"requires a clean analyzed worktree before classification; .*{path}",
+    ):
+        build_verification_plan(base, "HEAD", root=root)

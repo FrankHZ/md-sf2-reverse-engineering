@@ -65,9 +65,11 @@ ownership with no unclassified owner artifact.
 
 ## Accepted Planner Contract
 
-`uv run sf2 verify plan --base <revision> [--head <revision>]` is read-only. It:
+`uv run sf2 verify plan --base <revision> [--head <checked-out-HEAD-revision>]` is read-only. It:
 
-- resolves both revisions to exact commits and diffs their merge base against the head;
+- resolves both revisions to exact commits, requires the requested head to equal the checked-out
+  `HEAD^{commit}`, requires a porcelain-clean analyzed worktree, and then diffs their merge base
+  against that checked-out committed head;
 - reports normalized changed paths, selected partitions, exact selection reasons, suggested narrow
   commands, resource locks, and unclassified evidence paths as deterministic JSON;
 - maps owned H2 modules and their declared/recursive fixture, schema, and extraction-manifest graph
@@ -95,9 +97,12 @@ path under an evidence-owning root selects all plausible partitions. Documentati
 only the always-run public core unless their change is accompanied by, or explicitly declares, an
 evidence dependency.
 
-The planner operates on committed revisions. Dirty and untracked files are deliberately outside its
-claim; a lane must commit an exact candidate or use explicit partition inclusion before treating the
-plan as merge evidence.
+The planner operates only on a clean checked-out committed head. It rejects a different committed
+head, including an arbitrary remote head, because artifact and import ownership are derived from the
+checked-out filesystem rather than Git blobs. It also rejects tracked changes and non-ignored
+untracked files before classification. A lane must check out and commit the exact candidate before
+treating the plan as merge evidence; explicit partition inclusion does not bypass these consistency
+checks.
 
 ## Current Implementation Boundary
 
