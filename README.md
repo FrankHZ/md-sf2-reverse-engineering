@@ -204,7 +204,11 @@ observation, not a screenshot-verified claim. Every area of every requested map 
 from each `2-areas.asm`), plus per-area `...-overlay.png` (the second-layer region at the
 `scndLayerFgndStart`/`scndLayerBgndStart` offset, with the roof/layer-2 `slbc` copy records
 applied so source-stored facades such as the map-3 cell bars appear at their display
-position) and `...-composed.png` (overlay over the main layer). `uv run sf2 texture assets` extracts the font sheet,
+position) and `...-composed.png` (overlay over the main layer). `uv run sf2 texture ui`
+renders the composed battlefield item menu window under `local/derived/graphics/windows/`:
+the `layout_ItemMenu` frame (base window-border tiles + diamond-menu tiles) with the four
+MENUTILE icon slots filled by example item icons, including the `tiles_IconHighlight`
+red-masked selection variant. `uv run sf2 texture assets` extracts the font sheet,
 portraits (8x8 tile grid + per-portrait palette), icons (2x3 tiles, base palette), and
 map sprites (two 3x3 column-major frames per facing). `uv run sf2 texture misc` extracts
 the UI tile sets and main-menu icons, special sprites (raw tile sheets; palette decode and
