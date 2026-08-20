@@ -196,8 +196,9 @@ uv run sf2 verify --full
 16x8 tile grids rendered with map palette 0 for direct viewing, plus all 16 palettes as
 color strips. `uv run sf2 texture map --maps 3` renders real map main-layer regions
 (64x64 block layout, 3x3-tile blocks, five tileset slots, flip/mirror flags) with the
-map palette; the palette channel order (low bits red, high bits blue) was validated
-against a simulator screenshot. Every area of every requested map is emitted under
+map palette. Palette index 0 is transparent; equal RGB black at any nonzero index remains
+opaque. The channel assignment is a tooling interpretation pending a reproducible original-game
+observation, not a screenshot-verified claim. Every area of every requested map is emitted under
 `local/derived/graphics/maps/mapNN/` (all 135 areas across the 79 maps are enumerable
 from each `2-areas.asm`), plus per-area `...-overlay.png` (the second-layer region at the
 `scndLayerFgndStart`/`scndLayerBgndStart` offset, with the roof/layer-2 `slbc` copy records
@@ -206,9 +207,12 @@ position) and `...-composed.png` (overlay over the main layer). `uv run sf2 text
 portraits (8x8 tile grid + per-portrait palette), icons (2x3 tiles, base palette), and
 map sprites (two 3x3 column-major frames per facing). `uv run sf2 texture misc` extracts
 the UI tile sets and main-menu icons, special sprites (raw tile sheets; palette decode and
-frame assembly still unconfirmed), composed battle backgrounds (layout table, 32 columns),
-and the unused cloud/palette payloads. The generated PNGs are private/generated graphics payloads and
-are never tracked; manifests hold metadata and hashes only.
+frame assembly still unconfirmed), diagnostic battle-background compositions (source layout table,
+32 columns; final screen parity unconfirmed), and all four accepted unused-cloud streams under both
+unused base palettes. The generated PNGs are private/generated graphics payloads and are never
+tracked; manifests hold metadata and hashes only. Every ignored upstream binary payload is checked
+against its exact H1-resolved range in the hash-verified ROM before rendering. Commands reject their
+own existing output directories/manifests instead of silently overwriting or retaining stale files.
 
 `verify --full` runs the complete Python suite plus all maintained H1/H2/H3 rails. It is reserved for
 milestones, release/merge readiness, shared harness changes, or explicit full-parity requests. It is

@@ -283,7 +283,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--out-dir", type=_path, default=repo_path("local/derived/graphics")
     )
     texture_extract.add_argument(
-        "--tileset-palette", type=int, default=0, help="palette used to render the sheets"
+        "--tileset-palette",
+        type=int,
+        choices=range(16),
+        default=0,
+        help="palette used to render the sheets (0..15)",
     )
     texture_map = texture_commands.add_parser(
         "map",

@@ -2,16 +2,26 @@
 
 from __future__ import annotations
 
+import hashlib
 import struct
 import zlib
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+from sf2tool.cli import build_parser
 from sf2tool.texture_extract import (
     TILE_BYTES_4BPP,
     TILES_PER_TILESET,
+    ProvenanceBoundSource,
+    TextureExtractionOptions,
+    _require_fresh_outputs,
     decode_md_4bpp_tile,
+    extract_map_textures,
+    extract_unused_assets,
     md_palette_color,
+    parse_map_selection,
     render_palette_strip,
     render_tileset_sheet,
     write_png_rgba,
@@ -50,16 +60,15 @@ def test_render_tileset_sheet():
     palette = [(0, 0, 0), (255, 0, 0), (0, 255, 0), (0, 0, 255)] + [(0, 0, 0)] * 12
     tile = bytearray(TILE_BYTES_4BPP)
     tile[0] = 0x12  # pixel 0 -> index 1 (red), pixel 1 -> index 2 (green)
-    tiles = [decode_md_4bpp_tile(bytes(tile))] + [
-        [0] * 64 for _ in range(TILES_PER_TILESET - 1)
-    ]
+    tile[1] = 0x80  # pixel 2 -> nonzero black, pixel 3 -> transparent index 0
+    tiles = [decode_md_4bpp_tile(bytes(tile))] + [[0] * 64 for _ in range(TILES_PER_TILESET - 1)]
     pixels = render_tileset_sheet(tiles, palette)
     assert len(pixels) == 128 * 64 * 4
     # first tile top-left pixel red, next pixel green
     assert pixels[0:4] == [255, 0, 0, 255]
     assert pixels[4:8] == [0, 255, 0, 255]
-    # color 0 is transparent
-    assert pixels[8:12] == [0, 0, 0, 0]
+    assert pixels[8:12] == [0, 0, 0, 255]
+    assert pixels[12:16] == [0, 0, 0, 0]
 
 
 def test_render_palette_strip():
@@ -67,7 +76,9 @@ def test_render_palette_strip():
     pixels = render_palette_strip(palette)
     assert len(pixels) == 16 * 16 * 16 * 4
     assert pixels[0:4] == [0, 0, 0, 0]
-    assert pixels[16 * 16 * 4 : 16 * 16 * 4 + 4] == [255, 0, 0, 255]
+    assert pixels[16 * 4 : 16 * 4 + 4] == [255, 0, 0, 255]
+    black_index_8 = 8 * 16 * 4
+    assert pixels[black_index_8 : black_index_8 + 4] == [0, 0, 0, 255]
 
 
 def _read_png(path):
@@ -150,6 +161,32 @@ def test_render_map_blocks_synthetic():
     assert pixels[4:8] == [255, 0, 0, 255]
     # tile 1 has priority flag only; pixel (0,8) -> transparent (all index 0)
     assert pixels[8 * 4 : 8 * 4 + 4] == [0, 0, 0, 0]
+
+
+def test_render_map_overlay_preserves_nonzero_black():
+    from sf2tool.texture_extract import (
+        TILE_INDEX_OFFSET,
+        decode_md_4bpp_tile,
+        render_map_blocks,
+    )
+
+    palette = [(0, 0, 0)] + [(255, 0, 0)] * 7 + [(0, 0, 0)] + [(0, 0, 0)] * 7
+    tile = bytearray(32)
+    tile[0] = 0x80
+    pool = [[decode_md_4bpp_tile(bytes(tile))] + [[0] * 64 for _ in range(127)]]
+    blocks = [TILE_INDEX_OFFSET] + [0] * 8
+    pixels = render_map_blocks(
+        [0] * (64 * 64),
+        blocks,
+        pool,
+        palette,
+        origin=(0, 0),
+        width_blocks=1,
+        height_blocks=1,
+        transparent_first=True,
+    )
+    assert pixels[0:4] == [0, 0, 0, 255]
+    assert pixels[4:8] == [0, 0, 0, 0]
 
 
 def test_md_cram_color_decode():
@@ -258,6 +295,106 @@ def test_composite_overlay():
     )
     assert placed == main
     with pytest.raises(ValueError, match="main pixel buffer size drift"):
-        composite_overlay(
-            main, [0] * 4, width=2, height=2, overlay_width=1, offset_x=0, offset_y=0
+        composite_overlay(main, [0] * 4, width=2, height=2, overlay_width=1, offset_x=0, offset_y=0)
+
+
+def test_provenance_bound_source_rejects_mutated_ignored_payload(tmp_path):
+    disasm = tmp_path / "disasm"
+    payload_path = disasm / "data" / "asset.bin"
+    payload_path.parent.mkdir(parents=True)
+    payload_path.write_bytes(b"mutated")
+    source = ProvenanceBoundSource(disasm, b"original", {"Asset": 0})
+    with pytest.raises(ValueError, match="source/ROM provenance drift"):
+        source.read("data/asset.bin", symbol="Asset")
+
+
+def test_map_selection_rejects_duplicate_and_empty_ids():
+    assert parse_map_selection("3, 4") == [3, 4]
+    with pytest.raises(ValueError, match="duplicate map IDs"):
+        parse_map_selection("3,3")
+    with pytest.raises(ValueError, match="empty map ID"):
+        parse_map_selection("3,")
+
+
+def test_tileset_palette_validation_precedes_private_inputs(tmp_path):
+    with pytest.raises(ValueError, match="tileset palette must be in 0..15"):
+        extract_map_textures(
+            Path("missing-rom"),
+            Path("missing-upstream"),
+            out_dir=tmp_path,
+            options=TextureExtractionOptions(tileset_palette=16),
         )
+
+
+def test_tileset_palette_cli_rejects_values_outside_0_to_15():
+    parser = build_parser()
+    valid = parser.parse_args(["texture", "extract", "--tileset-palette", "15"])
+    assert valid.tileset_palette == 15
+    with pytest.raises(SystemExit):
+        parser.parse_args(["texture", "extract", "--tileset-palette", "16"])
+    with pytest.raises(SystemExit):
+        parser.parse_args(["texture", "extract", "--tileset-palette", "-1"])
+
+
+def test_output_collision_fails_closed(tmp_path):
+    (tmp_path / "manifest.json").write_text("stale", encoding="utf-8")
+    with pytest.raises(ValueError, match="texture output collision"):
+        _require_fresh_outputs(tmp_path, ("manifest.json", "tilesets"))
+    (tmp_path / "maps" / "map04").mkdir(parents=True)
+    with pytest.raises(ValueError, match="texture output collision"):
+        _require_fresh_outputs(tmp_path, ("maps",))
+
+
+def test_extract_unused_assets_renders_all_four_streams(tmp_path, monkeypatch):
+    from sf2tool import texture_extract
+
+    cloud = bytes((1, 2, 3, 4))
+    palette = bytes(64)
+    disasm = tmp_path / "disasm"
+    cloud_path = disasm / "data" / "graphics" / "tech" / "unusedcloudtiles.bin"
+    palette_path = disasm / "data" / "graphics" / "tech" / "unusedbasepalettes.bin"
+    cloud_path.parent.mkdir(parents=True)
+    cloud_path.write_bytes(cloud)
+    palette_path.write_bytes(palette)
+    source = ProvenanceBoundSource(
+        disasm,
+        cloud + palette,
+        {"tiles_UnusedCloud": 0, "palette_UnusedBase": len(cloud)},
+    )
+    stream_facts = []
+    decoded_by_stream = {}
+    for index, value in enumerate(cloud):
+        decoded = bytes([value]) * 32
+        decoded_by_stream[value] = decoded
+        stream_facts.append(
+            {
+                "index": index,
+                "startOffset": index,
+                "endOffsetExclusive": index + 1,
+                "storedByteCount": 1,
+                "sourceSha256": hashlib.sha256(bytes([value])).hexdigest().upper(),
+                "decodedByteCount": len(decoded),
+                "decodedSha256": hashlib.sha256(decoded).hexdigest().upper(),
+            }
+        )
+    owner = {
+        "id": "sf2-unused-technical-assets-static-v1",
+        "cloudFacts": {"sha256": hashlib.sha256(cloud).hexdigest().upper()},
+        "paletteFacts": {"sha256": hashlib.sha256(palette).hexdigest().upper()},
+        "streamFacts": stream_facts,
+    }
+
+    def fake_decode(data, *, expected_output_bytes=None):
+        output = decoded_by_stream[data[0]]
+        assert len(output) == expected_output_bytes
+        return SimpleNamespace(output=output)
+
+    monkeypatch.setattr(texture_extract, "decode_stack_compressed", fake_decode)
+    rows = extract_unused_assets(source, tmp_path / "out", owner_fixture=owner)
+    stream_rows = [row for row in rows if row["resourceType"] == "cloudStream"]
+    palette_rows = [row for row in rows if row["resourceType"] == "paletteStrip"]
+    assert len(stream_rows) == 8
+    assert {row["streamIndex"] for row in stream_rows} == {0, 1, 2, 3}
+    assert all(sum(row["streamIndex"] == index for row in stream_rows) == 2 for index in range(4))
+    assert len(palette_rows) == 2
+    assert len(list((tmp_path / "out").glob("unusedcloud_stream*_palette*.png"))) == 8
