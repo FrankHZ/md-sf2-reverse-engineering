@@ -5,7 +5,7 @@
 - 现代化：**允许** 在源兼容轨迹背后使用引擎原生异步完成、事件、future 或回调
 - 未知：调用方准入、命令传输与接受、声音侧标志生命周期、可听完成、过渡行为、调度、经过时间、失败处理与呈现
 
-> 本文件是 [`music-wait-service.md`](../../contracts/music-wait-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`music-wait-service.md`](../../contracts/music-wait-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 

@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：原版己方身份、起始记录、职业元数据、呈现引用、转职映射、成长投影、法术学习列表与指针拓扑
 
-> 本文件是 [`ally-definition-data.md`](../../contracts/ally-definition-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`ally-definition-data.md`](../../contracts/ally-definition-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 

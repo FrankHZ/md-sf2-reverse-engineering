@@ -4,7 +4,7 @@
 - 证据日期：2026-08-09
 - 范围：原版战斗测试、配置与调试战斗动作控制面的实现无关重构，不把源标签或辅助身份提升为普通玩家可达性、UI、运行时效果、持久性、音频或战斗解决含义
 
-> 本文件是 [`debug-control-flow.md`](../../contracts/debug-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`debug-control-flow.md`](../../contracts/debug-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 

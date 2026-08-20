@@ -4,7 +4,7 @@
 - 证据日期：2026-08-09
 - 范围：原版 VInt 调度器、上下文函数槽、等待/睡眠握手、DMA 控制路线、淡入状态机与受限 trap 服务的实现无关重构，不把源静态顺序转换成硬件时序、可见呈现、队列安全、输入/UI 含义或下游子系统效果
 
-> 本文件是 [`interrupt-dma-and-trap-state.md`](../../contracts/interrupt-dma-and-trap-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`interrupt-dma-and-trap-state.md`](../../contracts/interrupt-dma-and-trap-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 

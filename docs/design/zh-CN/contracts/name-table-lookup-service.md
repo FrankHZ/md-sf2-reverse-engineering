@@ -5,7 +5,7 @@
 - 现代化：**允许** 在私有导入等价适配器背后使用引擎原生索引资源
 - 未知：畸形或越界索引、运行时准入、所述字保留之外的调用方可视寄存器/CCR 依赖、编码、本地化、渲染、时序与玩家可见含义
 
-> 本文件是 [`name-table-lookup-service.md`](../../contracts/name-table-lookup-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`name-table-lookup-service.md`](../../contracts/name-table-lookup-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 

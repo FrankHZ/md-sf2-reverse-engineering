@@ -5,7 +5,7 @@
 - 现代化：**允许** 在独立已接受调用方要求生产端点前省略它，或在私有兼容适配器中使用引擎原生类型化写入关系
 - 未知：自然或计算准入、源词汇含义、RAM 用途、后期消费者、寄存器/CCR/栈行为、中断可见性、时序与玩家可见输出
 
-> 本文件是 [`unused-menu-constant-write-control-flow.md`](../../contracts/unused-menu-constant-write-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`unused-menu-constant-write-control-flow.md`](../../contracts/unused-menu-constant-write-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 

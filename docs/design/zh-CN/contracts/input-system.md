@@ -8,7 +8,7 @@
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 - 可追溯性：`tests/fixtures/h2/tech-services-static-v1.json` 中的 `sf2-tech-services-static-v1`；`tests/fixtures/h2/tech-interrupts-static-v1.json` 中的 `sf2-tech-interrupts-static-v1`；`tests/fixtures/h3/controller-input-v1.json` 中的 `sf2-controller-input-runtime-v1`；`src/sf2tool/h2/services.py`；`src/sf2tool/h2/interrupts.py`；以及 `src/sf2tool/h3/controller_input.py`。
 
-> 本文件是 [`input-system.md`](../../contracts/input-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`input-system.md`](../../contracts/input-system.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 已确认的静态合同
 

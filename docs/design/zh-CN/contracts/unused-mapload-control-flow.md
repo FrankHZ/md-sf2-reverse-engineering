@@ -5,7 +5,7 @@
 - 现代化：**允许** 只把它保留为档案兼容元数据、用引擎原生服务替换其协作者，或省略生产端点，除非后续证据建立必需调用方
 - 未知：自然或调试可达性、被调方效果、循环活性、RNG 结果、VDP/VInt 与摄像机行为、时序、呈现，以及已接受辅助局部字保存之外的调用方可视 ABI
 
-> 本文件是 [`unused-mapload-control-flow.md`](../../contracts/unused-mapload-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`unused-mapload-control-flow.md`](../../contracts/unused-mapload-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 

@@ -5,7 +5,7 @@
 - 读者：需要理解玩家动作、顶层状态与子系统交接的研究者、设计文档作者与保真实现者。
 - 范围：只连接当前 `main` 上已接受的 gameflow、地图、输入、对话、队伍/名册、服务、战斗、成长与存档合同；每个解读都保留其 **已确认**、**推断** 或 **未知** 标签。
 
-> 本文件是 [`gameplay-overview.md`](../../synthesis/gameplay-overview.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`gameplay-overview.md`](../../synthesis/gameplay-overview.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 这是[文档路线图](../../documentation-roadmap.md) 所述的第一篇 Layer B 综合。它提供导航，不替换任何研究所有者、测试夹具或子系统合同。**已确认** 指所述边界有链接的 Layer A 证据支持。**推断** 指多个已确认边界被连接成中性的面向玩家解释。**未知** 指当前证据不支持进一步解释。
 

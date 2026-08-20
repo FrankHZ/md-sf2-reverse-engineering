@@ -5,7 +5,7 @@
 - 现代化：**允许** 擦除、内联或保留引擎原生 no-op 兼容接缝
 - 未知：自然可达性、调用方准入、运行时结果、原版栈/寄存器/CCR 行为、时序、玩法含义，以及重制是否需要可调用端点
 
-> 本文件是 [`stats-null-return-service.md`](../../contracts/stats-null-return-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`stats-null-return-service.md`](../../contracts/stats-null-return-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 

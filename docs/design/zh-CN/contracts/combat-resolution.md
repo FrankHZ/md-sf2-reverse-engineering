@@ -5,7 +5,7 @@
 - 证据状态：**已确认子集**；不完整的系统保持 **未知** 且不在本文档中作默认假设
 - 证据所有者：[`runtime-rng-and-battle-math.md`](../../../research/runtime-rng-and-battle-math.md)
 
-> 本文件是 [`combat-resolution.md`](../../contracts/combat-resolution.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`combat-resolution.md`](../../contracts/combat-resolution.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 本文档把已复现的原版行为转化为实现无关的合同。它不规定引擎、UI、动画时序或资源格式。重制版可以用不同方式实现内部细节，但原版保真的规则适配器必须为已提交的 fixtures 产生相同的有序事实。
 

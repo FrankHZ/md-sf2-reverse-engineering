@@ -11,7 +11,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/ally-definition-data.md",
       "sourceSha256": "3eeafe2faf7a2be16e3d859182b74dfc29b68843c9ad2caaf33cc0ca582d6602",
-      "mirrorSha256": "87c342873d965687571ddf1e51883435f6dece76c4d0a85352eeb35342480b8d",
+      "mirrorSha256": "406f15cbc04c475e91b6b696a38cf3a34010297406a849df266d7aa88575e568",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -20,7 +20,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/audio-system.md",
       "sourceSha256": "8ebc53c0ed72b25be33f7acd79fe8d1ea39eaad5624645f102ac4f963309ce0f",
-      "mirrorSha256": "625f0937c18602ead049b803e61a86bb6dc82be169fe524130aa4e36df81caec",
+      "mirrorSha256": "6132cdeea0250ed6de43c460b1e8f0f37b86b19e30ddc21c79ef067f0b5f64e9",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -29,7 +29,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-action-construction.md",
       "sourceSha256": "0b3df07c901a2c3c4aff91c54d6b69b1a1df4c87495ec090d18794ce7af5c27d",
-      "mirrorSha256": "ec49805c0402ea9f9ae1fe1f1acedd5a6c97f5842ae869b305a7efd93d7e4705",
+      "mirrorSha256": "bc35bcf365bd7b350654efbc418ed7d7a60581611c8814d50c1a68240f47ca53",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -38,7 +38,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-ai-decision.md",
       "sourceSha256": "6d8fdc5744384fa4156ed7e49744ebc64e9b7fa0aa5158fb548551ce9237a681",
-      "mirrorSha256": "e669e60b5a00fc044734972b3337a384965339f801090b299ac8f8e88d69aba7",
+      "mirrorSha256": "df49787a7551495c4d5c8eab39624d8fd42c0d8fc68bc5145ff2367d2a8d24bb",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -47,7 +47,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-background-graphics-data.md",
       "sourceSha256": "5fe2d862d7785a3acbf07f95b6b2361941e93eba86f18938a01bd6ee7a6b5ccb",
-      "mirrorSha256": "ca3a21d622e85a4c6d7ab71959732593e7a38e14b529ac51fdc512e769e14ec7",
+      "mirrorSha256": "f366817ba80ac4eb4d2f34d7466b327896b0dabf9019deec447f8f3d63711fbd",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -56,7 +56,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-control-lifecycle.md",
       "sourceSha256": "8dba0ec2904e8e41c039518fba36cfeec401fddbfc65008815f6df5e3a4d382a",
-      "mirrorSha256": "88c3e46ee7a5f2966113adf1a1fd580d927727bf04b0f6242c00d2df138ae099",
+      "mirrorSha256": "98b69635bdc17ba514ac136e0686cba79cbb39f24c030e1c3904451103c26da2",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -65,7 +65,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-cutscene-routing.md",
       "sourceSha256": "9660c2e6cc35d666788b918635453306e7e2fa2eb8cf279da5a51ac8ac18ac75",
-      "mirrorSha256": "da902716a1b73cd77ae08684ed23e22bfc679d22d33bd7718020d1feabe56cf1",
+      "mirrorSha256": "bee84a018d9235cb1bbbd5a829902517786c2cc5395ba6fd53708e45cc515270",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -74,7 +74,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-effect-graphics-data.md",
       "sourceSha256": "e75eaac2344d564ad40af4e3b0b30cd130d97f56b7f637bc06fe643cf768d7b2",
-      "mirrorSha256": "f348c7be3d78d3f691ae87c624e8b773bccee581050e1546374a83c231b652b3",
+      "mirrorSha256": "c6cff68495b57c68807e640651b64914385d85fa4565802de6fd00f6c9674a4e",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -83,7 +83,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-encounter-definition.md",
       "sourceSha256": "8155a751c0094f7020f03c24e6a97b4d819ce285e7e179b724815b68512b94ce",
-      "mirrorSha256": "780bb3f88882842a621c8a2373d696a9805b995da89c1646c1bcc0bd20028c2e",
+      "mirrorSha256": "4a7f639fa6fd6442cf0d13c9299bd2c90575bee489d9d5e6df46d6d993e6726f",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -101,7 +101,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-scene-presentation.md",
       "sourceSha256": "c2c9f22165225b6afcdecb1791b4f14cdccb15956cbc370ad06294e74fa401ef",
-      "mirrorSha256": "0f7154cd9653fa18635acdb6d644136938656308ae21882a195e78dfca760309",
+      "mirrorSha256": "dbe6e52a894831609bfc2bac95e783d66ca5dfe40ccc660beca0619a90d81518",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -110,7 +110,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-sprite-graphics-data.md",
       "sourceSha256": "7f942639a453c3a70acc8b1cf1d727a1f50aa94f237469dae7df802fc428312a",
-      "mirrorSha256": "8e8bf8981cbd49d5b313b5c7230cd0a0d7f81a92194fead353eee5db91a9e80e",
+      "mirrorSha256": "bedcbd2022d97dbbead8bb201bdf9f6e8379e0b1db178a32e1a57852219763de",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -119,7 +119,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battle-weapon-ground-graphics-data.md",
       "sourceSha256": "33c7f06270c57e4797887d485769139a2e93b075554a48c73a78ff3fb89e0fc8",
-      "mirrorSha256": "8337b71f07d8baeff96975fa0f93e59e3b6d83e5210f2917dd70d39cc121d177",
+      "mirrorSha256": "36329e06ab1dbcffb06a0c1b0fe01402661d3c0ba04b0f903e8b706fbd8a63ee",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -128,7 +128,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/battlefield-navigation.md",
       "sourceSha256": "ee68633417b27755e2cdd1408316b5f2a38b892085273121b153e67ea21c8102",
-      "mirrorSha256": "610f083e8a3c2cd57ec0b782448b0cc4f45884a04aaaf133c3e5a4ebc443604b",
+      "mirrorSha256": "ff6cadf290bfc6107465e96fb0e51c42ffcbafc20c5a8ca622dd0293d1a93322",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -137,7 +137,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/byte-copy-service.md",
       "sourceSha256": "cdd1406ae465793af919a850d63647e7ba884fb73560b9e14527c662734dbbfa",
-      "mirrorSha256": "4c41b899ab1dd5d93d0e40a4cedbc5e2ef12e8a29c2e2441396048e4383f06f2",
+      "mirrorSha256": "590b5c3ab255fcf72bf4f30f1b21158165ad56731a1a78c432d860ce2fdc0e88",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -146,7 +146,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/caravan-and-deals-state.md",
       "sourceSha256": "9d00f5691988a89b3019280f256cb216ba746ead5e0c64774fb3d7e4c252ef67",
-      "mirrorSha256": "36bdf8932e55cc5f9f4a2ae446c8588aaf5a3680d089970d554d009a0043de3e",
+      "mirrorSha256": "fc4c55d313cdbf6c5b5758321efe497ab3de349d61d62a9b795eefe6c0e97e81",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -155,16 +155,16 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/combat-resolution.md",
       "sourceSha256": "0b4d5fab51256d6538314409577f2d7349a50d98c60064aaf7348527d19503dc",
-      "mirrorSha256": "a895f0ac44de9d2dc0be898d96ae80f048532263f86907c20f41a00e7e2ca42b",
+      "mirrorSha256": "18d6fa5eb392049fe717513fb6d225c463f4963dbe2ad6b0c77f01b2335e82ba",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/contracts/combatant-state-access.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/combatant-state-access.md",
       "sourceSha256": "cca5f1173ea8811d53c1bdad4b4db95c244e26ce926ffa6b5c9612d6f4c98c6c",
-      "mirrorSha256": "c66a829b614eae79ec74cd3e03bfe831c331c2b232348603287961bb929f66d6",
+      "mirrorSha256": "f34b8f47b7c1ba5d503ad43c2efdf1f6d5d6e1ee4f1fec0f51351404aaa0bd2f",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -173,7 +173,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/debug-control-flow.md",
       "sourceSha256": "f75ad373d808a00605d22a1e49c6827876d08616cce98a2a5cdade394d051890",
-      "mirrorSha256": "0affac68fa2e45c992144e745565b32f430d2ac36df6a70deafbc77e30b784d5",
+      "mirrorSha256": "0366b7021656041b6ef845fe41b9707bbb33325db2b6d38ca4c233c777285fbd",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -182,16 +182,16 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/dialogue-system.md",
       "sourceSha256": "039bab8f24d80ddf546d8a85406a57c0f4ae7ad062d41af3d5211124e1e39dca",
-      "mirrorSha256": "d96a9e16cfbf1754722f06f21106b8a2ed5bc5476a30e9b14109dc0bb6413022",
+      "mirrorSha256": "09e52aac5500897235ff04afaef1ff7ae74b663eded95e1e68cdf0fda4fa5129",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/contracts/enemy-definition-data.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/enemy-definition-data.md",
       "sourceSha256": "6391f05fa5d7ddbaf84d590316232a2f041793d8db6ee3d32b4168f6410dcf4f",
-      "mirrorSha256": "2e0dc8a906e722e2a63dbf955724acc27007771d09c8b6c3e5a411164cfa9f40",
+      "mirrorSha256": "4bae779e22e3dd5d67620ab427574bb0cb6f97f4eab04d7bd90e6a95501c7683",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -200,7 +200,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/exploration-control-flow.md",
       "sourceSha256": "16e279641ab81e3873512a2bdfa72ede296263b6033f0375504caa41fc4b56cf",
-      "mirrorSha256": "5cc8cfa64032f22b8c9c39b3e3c13ca5cb6e455ab440e814131856a5290d4389",
+      "mirrorSha256": "b3c73bd7bed5b28514735432b26d37b9e82d7e7fce6b3d2da7d27eec3107a0d5",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -209,7 +209,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/global-flag-state.md",
       "sourceSha256": "3617a9f9354f0a4bec2fecbc09da1fbb09f2784c1963b1a9e40a97362691bca1",
-      "mirrorSha256": "3f35858f66af1d08e41b0e8fede4122612eb15443af0c0c4161bf19c35cc9892",
+      "mirrorSha256": "8272f8e426982453a0c4a574b036bf41fec649f39bce576678976440dae44c92",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -218,7 +218,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/graphics-service-state.md",
       "sourceSha256": "b7de2b6aabbf3b106d2f046b950f7d9c886d6ac20727069f15054ea129bf3699",
-      "mirrorSha256": "f97de55ccdec8d1a069de7e0a51d87389222cde522013286b06771cf4efe8c47",
+      "mirrorSha256": "47a384fe2fdd1668a650f5b59dd1baeefc8e7ff788b89721491c29a92a4fb212",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -227,16 +227,16 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/input-system.md",
       "sourceSha256": "d43d262c229bb8ef7d1ee119c0e79c0f45319f3f5b5a4fcec2157704d90c6956",
-      "mirrorSha256": "739e4a968350500382891306120afd5a17841f8f64fe162c48ed662bf82fe950",
+      "mirrorSha256": "552e4f0856bb2d2c7a09e8cec69d31b70ef28d2e8c5ee330cb8a097aa6e1732c",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/contracts/interrupt-dma-and-trap-state.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/interrupt-dma-and-trap-state.md",
       "sourceSha256": "bb1ba97f40dd05f49c9df3b3861d12451aa012ccb85fe3e03e0d3b686764e5df",
-      "mirrorSha256": "261d418ce11a661f370e701e54994fcadea5df0fb46ff18755a5cc7db6e4b41f",
+      "mirrorSha256": "545c971288b0710b2997d9978c26ea1c2cc849e6b2e5860f73121bc7e8846b81",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -245,7 +245,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/item-definition-data.md",
       "sourceSha256": "4a06d94859ad048d3895c7be20bdae99a326514e394e3ccac5e1497203a4db74",
-      "mirrorSha256": "1f41160009ee7db3a9e2035b9bc67fea3d1329a4e54a656d2c87b5f8dd02f2cc",
+      "mirrorSha256": "2e8713a1e4d79f24b4a54979cb953f00b3d544c87d46f0ffd576446078aa5aa8",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -254,16 +254,16 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/level-up.md",
       "sourceSha256": "634e8d74e71e77d0c845b7ec3ae1123aa3b46a88656a863fd6362fe230768122",
-      "mirrorSha256": "86d5cee1742fe0dea8b257e5a63dbd2e903f3eb8a9617d379c75306b15082f1d",
+      "mirrorSha256": "dc1a500e1f2a210ea0b7d83304c1f177c50e8302fac4e7ce530ac3ef0fe6fe73",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/contracts/map-area-description-routing.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-area-description-routing.md",
       "sourceSha256": "118dbde98af6cf5b2ff7e51840bd19effb3d5d84083865fd5300df70f65a192a",
-      "mirrorSha256": "73adb1f2733a3e132f9f30113a238d885e97ada1891fe9a8e39b81034d897d18",
+      "mirrorSha256": "8103e976342edbcdc6a19a694a9296b506e29369bb58389440f3a31927df5253",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -272,7 +272,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-camera-update-control-flow.md",
       "sourceSha256": "84d88e2d25c155f9230ae1c30a760da70f3dadf5163911ef0caf6e9f4cee2006",
-      "mirrorSha256": "8df40b913ebe28080b11b5c956616e10f7225faa68d2a58cffe0453b1c4ac515",
+      "mirrorSha256": "915452cf895cf633668075814be55413771ca0ae70837043506beb3ab827f7d2",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -281,7 +281,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-entity-data.md",
       "sourceSha256": "2d29bf2ccc33f07aea7f99087c8e99e5208e104368e8634e18a5c7e27231944e",
-      "mirrorSha256": "c92f79e4c29e6965186fdd273ab7857731606d462bae86ad16fc054f6420abb1",
+      "mirrorSha256": "1f040ffbaee773d479fc706c472a2b998916153ebad692ed7b1ae6d70a8954a3",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -290,7 +290,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-entry-routing-state.md",
       "sourceSha256": "49033c6321208636c1035c9dc032fc3f0094f6b16df71dedd805da5b71b9bc77",
-      "mirrorSha256": "f1385ebb7bb5b3e33fc0b120d21ed21eba57fe4ca012212504f8f85e940caf58",
+      "mirrorSha256": "097b46eb911d41b745f4f97a15135113c44a0e3a4de129efde6d771a45cf3661",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -299,16 +299,16 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-exploration.md",
       "sourceSha256": "2874573332d97f852ef0170a538769cfe24b68fe0f9391bbf4f035c57ace73d1",
-      "mirrorSha256": "1106756727c5cda4f7cf3058359708d9ddf1e8e555decc94b14fd561cd963232",
+      "mirrorSha256": "fe4209185353f825a9a8045a1d241e8eafd103750ff08997ec4944437c6df39c",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-13"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/contracts/map-layout-data.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-layout-data.md",
       "sourceSha256": "6c426e4bbba1ed585248ffc04029f1158a3173e043bb83687f348c03e892768a",
-      "mirrorSha256": "546ceb73108407de7cc96cdbb6b57c85b0862106f91943463a00cbacd8a7e654",
+      "mirrorSha256": "d4236ee16d6a97e61b2896fa708dc3434a0aab6f1f4808e1e63e21780700dff9",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -317,7 +317,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-palette-data.md",
       "sourceSha256": "a8b43019a046887be4a08bce2cc600957b16e9f9cb3f639902ab2e580a7d3b67",
-      "mirrorSha256": "73bb087de8320689a1262e94b43160929d4e79049e0325739b51f86feee61fcd",
+      "mirrorSha256": "78d1fbfa8e1f2b3b9683c9dc676cc092417189c75c345e7cf6444af652cb2391",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -326,7 +326,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-setup-data.md",
       "sourceSha256": "f1f6ff42945f644ea6df9836e60907be52fc053e71e949fca260975d794634ef",
-      "mirrorSha256": "b10b8ceca3f443bbb322bfd43f32a60efb3440e4ee4fcfc97f37c7cd44213721",
+      "mirrorSha256": "d9ac28c03e6898dd12a7c7805d2294d22270fcd44c81978061fcb9e90204c9ce",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -335,7 +335,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-sprite-assignment-surface.md",
       "sourceSha256": "a954fac6b759f9c8b7b0f6e1234706339ecbbae12b01e3c408b54b62b8161313",
-      "mirrorSha256": "ce65edf62bdbae3f6abe4a0ebe095c80ab8af7c683449c56ee39c3956ada86cf",
+      "mirrorSha256": "41ad5bf8cdbd3c572321a565cdb22bce96521a7f465b74716b4cee3148f38ee0",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -344,7 +344,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-sprite-graphics-data.md",
       "sourceSha256": "2c1c13bd410a2df50081f642196616b9c6deb5b4a9187cbcd77d91bb3778f5cc",
-      "mirrorSha256": "29f89ca425fd61ecc94c0c605e309ab00bb62655a0681ccea3fc34874820c6bb",
+      "mirrorSha256": "3a261f1e0afc3f61574269f9f0c4b9aa4576d1fcd24d977cf3dbe98012ff6e34",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -353,7 +353,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/map-tileset-data.md",
       "sourceSha256": "906ffebcfab52eaeddecc7bfdba93529333594278238b33afd9006f933230c3c",
-      "mirrorSha256": "147590af2dbdc1b03aeb6bd6d700e95ee96c77ace44b46b9d4cb12e580dd77c2",
+      "mirrorSha256": "0304885877f7364bc9f6bd245b14ddfab680aa5332f500a06e36e36c6928391b",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -362,7 +362,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/music-wait-service.md",
       "sourceSha256": "732e4fc565f84dccf57249b1eb887a40c751ffd21df45b2941623c635d2a6463",
-      "mirrorSha256": "dd6e4f6f68bb347ab2d62ab94b735ce575f563981991244060460d388f3bb523",
+      "mirrorSha256": "26abdc8f8ef77f9227a36f921ea3f69c7b61064508cb1799e5e9da2ba6eed55b",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -371,7 +371,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/name-table-lookup-service.md",
       "sourceSha256": "b46017d782232aadaa01095311741aeb91d7cede0cead3b07638e69388082127",
-      "mirrorSha256": "cac6c451a42c19759eb9d8a435715a26ca6ece8fb42cb7f2f2eacf7b95fc199b",
+      "mirrorSha256": "4eea59b6fb5d996f42b90302b666b83333304093dc56e724433b9817e066d585",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -380,7 +380,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/new-game-state-initialization.md",
       "sourceSha256": "d39a45cb1aa1674935296e3dafdf453ece7f0f13673a0e17fb9ce200990d898b",
-      "mirrorSha256": "afced24de43683f88b25fd747b63a5f9334b3af9ca7ce7cadf3181039b44bfaf",
+      "mirrorSha256": "713b675c929e03925824dae349ca0ed20376295c6a5754b4f883bbd1a4a0be8d",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -389,7 +389,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/party-membership-state.md",
       "sourceSha256": "91eb03503f6dee4e03848c8ff2d0ffe40ecaba821be14a53e0e5d7fd85b8f0bc",
-      "mirrorSha256": "3e99f7b01dc2c46c39f963ca1794a35e45d17d67d2e40bb2b69a4b9a9f681fd2",
+      "mirrorSha256": "b703f2e3b532816667eacf61c496e97c8c6fadfd0bc4c77179e2e4a628a92b76",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -398,16 +398,16 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/party-roster-state.md",
       "sourceSha256": "8f03630a5c0587d55175d1df908015050e9c0b7b9f3f6f76ab6f372f7cb4436b",
-      "mirrorSha256": "ded8bea54602465ba59396b69ff731c478f8713f180d425288b96e814605d58e",
+      "mirrorSha256": "669904e8360e3163096d46af888a241cd3b8e6261e4a47aa9f9befee1d072f53",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-12"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/contracts/portrait-graphics-data.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/portrait-graphics-data.md",
       "sourceSha256": "944dd2ba1bfc5c53f2fb6b3ca076b8ca1d92a1088a8e7872c4c23800b885e51c",
-      "mirrorSha256": "c03d70e1117919f793a17678571bca530fa9e3522fd0195bf47aab8bcbfd930f",
+      "mirrorSha256": "7828a11a8397854f3ec92f3cf37696d5f968f8f9917f913c8b481060e890218b",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -416,7 +416,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/portrait-window-state.md",
       "sourceSha256": "d8bccb93397f1555b0d52de3e3b9792d83cfa946a9d70d09b0df0845c5f18d4b",
-      "mirrorSha256": "f4141b23ed4c50bf28e482008db5f64d99368e64e713805e12b859db481df0e7",
+      "mirrorSha256": "1d56593f2f3192da0b5cb9ee02fdc13fde192c4bfbce37626626606419593482",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -425,16 +425,16 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/randomness.md",
       "sourceSha256": "e9ffd68d952a20d450f040f1c19f34a1427d42e946bb10e2db7e9f24a716da74",
-      "mirrorSha256": "fadaa5dfbfe1ff1eaf1e540653698701dc4fe51d9d6fd4d26b61ffe65c4ba991",
+      "mirrorSha256": "0cf3da7f2e2283773a719133271830ff9274f53c4f3dcc8f4fa1ab5b377f5b84",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-09"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/contracts/rom-header-data.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/rom-header-data.md",
       "sourceSha256": "db41bedb02d8facb7e506283ec19f3aa3a32c340bd74e3fd54b8a541c605f79c",
-      "mirrorSha256": "39d67a7f66cb99bd6f9457dd560acc660abd0fe862c0317e6b26457b56903b66",
+      "mirrorSha256": "55022c704aee3962a96979bb7e219455c5b099961a34f398ce6fe78c442835e4",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -443,25 +443,25 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/save-system.md",
       "sourceSha256": "4aac852f6afa9008c2894f8d2417f5935dc0a427410e123144c5f673a76fb937",
-      "mirrorSha256": "b3bcbc019ed924f9084791a30a996b70fe0af5547035dd8677487a7dde6233d0",
+      "mirrorSha256": "ac9243b21fb2c229e87db8b6048a489402187587079e13aab3cbf1eb52186848",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-13"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/contracts/service-interactions.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/service-interactions.md",
       "sourceSha256": "e9d1e73a5e8f038311636091045e222738240f936374fd47c020aa0d8489905f",
-      "mirrorSha256": "8674da70ad283533c53f06537e5d9d19d63bda80d4dcde9d43fb1f5bd6e4c98d",
+      "mirrorSha256": "9e64aa68d0d54051011786ff30a0e5ab6b8b02c940898363313115744d013c03",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-13"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/contracts/special-screen-asset-data.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/special-screen-asset-data.md",
       "sourceSha256": "337b9b0e35c040f34f0a14261f35a7e046e43beb90dd790f48ddf58f61c4ed83",
-      "mirrorSha256": "1c3c3354aae7c2e9a488ba735a1d5274ba4551f7c8cf4a692a79c7aa534d4d9b",
+      "mirrorSha256": "2fcc74edac806dc0a77a97191a31d1e75c8cb68c7071b0e292ed051bd8c41021",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -470,7 +470,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/special-screen-control-flow.md",
       "sourceSha256": "7b723a21ef62192236c9b17bf3684196a036afcb6f7ce6132d85e45f53fd319f",
-      "mirrorSha256": "0dd82cc9da3aa68efdc96dd0ac65d3bfe9c984d2f1496fc1db59e2d08ccefb79",
+      "mirrorSha256": "b77a49e00275df3c9a761d196ea247950ddcc6a3196d9a06d58a6bf771441144",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -479,7 +479,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/special-sprite-graphics-data.md",
       "sourceSha256": "8edc0bc540b1b929b4f41e51480dfa359c4e4793e16542b348abc66a36d89287",
-      "mirrorSha256": "5e7a423764fb3d7d55119fb74d974c73fec12f59861307042f51ca8e8d5b3b4d",
+      "mirrorSha256": "496a84e53d3927dc1c713af6091a6a68ebe7f5feb2e898b27f93f40200bbe7b7",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -488,7 +488,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/spell-definition-data.md",
       "sourceSha256": "c702147994fa7c0444348038beba44e20bfa7f473967f92fa903c6453f7f3a60",
-      "mirrorSha256": "344c99c52d8101cbb5be23ff429a32b4ed21f479ca810524c4f308fe5528b7da",
+      "mirrorSha256": "c3d1c61410e2e909e968706f5d18a04d97bd7b3c4f8efd49f2fb44e9ecdd2e96",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -497,16 +497,16 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/spell-resolution.md",
       "sourceSha256": "c5590e673d5a106558727ff56c9f897c7b321b65f946821e2b7524adaa847513",
-      "mirrorSha256": "59baf2bad68473dc8ebe362affc10667afd7c0b571d4fdb9b373f9edb125f5f7",
+      "mirrorSha256": "903cd710764634c648f662545e0b10ac8f5e052ba81c12e13cddbb3c83216ee2",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/contracts/spellbook-state.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/spellbook-state.md",
       "sourceSha256": "369cf6643c02674f9d679b1a80261dbe9cbf3f97d64a11ea1ad31cdc3b4e4015",
-      "mirrorSha256": "52fbedea5cf783cac836518ca2f9d6c6afb900def5b46e5025ea848425e15a16",
+      "mirrorSha256": "11b2191a9550437f8beb0a221560a07db514063d9a5159a89b567c5d37c2fa37",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -515,7 +515,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/sprite-dialogue-property-data.md",
       "sourceSha256": "d6a6fd6bd568c931e33cf76346eb8236e2ba2f459affe7f45046a35f5b998da5",
-      "mirrorSha256": "e97b9daf449b2e8fd5e2b123aa2e311c4623e8261f428bda416239782e20167b",
+      "mirrorSha256": "8e5fbce79dd954186cf7154779555be73fd09e02783d63db36138bbb54b4fa85",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -524,7 +524,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/standalone-map-script-program-data.md",
       "sourceSha256": "444609c8bea14023481da62c49ec4d6c61fb0de1fd426cb50f15f6d1b5cda9de",
-      "mirrorSha256": "8e56274ba9cfb7db2afe0a5858be8559a40e680a5108b0cdcd036c3cfe0cd30b",
+      "mirrorSha256": "0b7ce733b33dafb23140e5a4de6eb5d235a4ddfec10a2eb5b7380624456ca123",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -533,7 +533,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/startup-control-flow.md",
       "sourceSha256": "10acba8d2c212dc93a8eac8b794e44e6d424b58e4555a16444bab5fdc48fd58e",
-      "mirrorSha256": "d3c010d957a2ba94d554aa34a008f3633cfea9e745b616ae1f15a87e6ebbe39f",
+      "mirrorSha256": "e9b4dd4ffad05a881c62d9d287afaaef92f1cc360e47003c22076c094859fad1",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -542,7 +542,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/stats-null-return-service.md",
       "sourceSha256": "823e918d3d9b801f8d01d6e6e251644047093b49cf90d0999f16d76e20c9463f",
-      "mirrorSha256": "c0f32d73e155f62affe0f07a832c552092ec2fd4f927a29b98c29b499293630c",
+      "mirrorSha256": "88761501f3877be54cfe3146fcac1b861c2993042dcef2a435b6199ada7f35e0",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -551,7 +551,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/text-and-font-system.md",
       "sourceSha256": "f500a04a5bfa312e97c0d411c018a392b93d9bfe3febb1f874cb8204b8f5a1c5",
-      "mirrorSha256": "9c8683f6566315a75ee2ac2a75891ac0b2507e579692c25590959f43f2212c83",
+      "mirrorSha256": "95eedd2080812acaf2a96dbe16c02eef85cbd3428e161966cf7444522a7a16a0",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -560,7 +560,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/ui-graphics-asset-data.md",
       "sourceSha256": "c953d9d7ddc0afae7bd6dc4dd1e0d7764c920c152fc0e61442914469dbe4754f",
-      "mirrorSha256": "38e8397e37aa4f93fb24d4986573db3f11da41ec6328ca92ed46c150aefbd3e4",
+      "mirrorSha256": "4008d3e84e20b74f77df4e2c205de5760dfccefeec657c5cab831e071752da60",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -569,7 +569,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/ui-layout-data.md",
       "sourceSha256": "8f78bfed9a92418dab5004aa5de0b129ff62beee05f68510d7e3f27aa0d135b0",
-      "mirrorSha256": "c1a7b1718bf6869acdcfdfb27bf2843786d0d2655dba77bcc66ee0d1258879ba",
+      "mirrorSha256": "421d6d018ab0cc64abcad77ce562e38dbee51023bc30451d04e208d6e1bfc1b3",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -578,7 +578,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/unused-mapload-control-flow.md",
       "sourceSha256": "b9d8078ccc06f02bc5b4c34e8eb9c66a2a0a78e4633172b8be256434081eee76",
-      "mirrorSha256": "fbbfa03d7e38c5ef10ca0c93e29b8dc5dc7161f9a26db60e59b50a6db342c31c",
+      "mirrorSha256": "f52ca5231fa2a4e25ea9c94bc13ed44db322b97d352916d32128ce832091f871",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -587,7 +587,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/unused-menu-constant-write-control-flow.md",
       "sourceSha256": "5654a135dfd65cf5d5d2f77cf33aa4ecdb93eb8f60f732a348367a5eab3f6e44",
-      "mirrorSha256": "3fb7eae06bc00d3df041ffbc5ba8974a07f51fcdd2fbfdab94fe4c8065eed503",
+      "mirrorSha256": "9b1519ebef4d9557efc59dbdbd81978a3bda37f50dca3bbaed946ff1dc7ad4df",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -596,7 +596,7 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/unused-technical-asset-data.md",
       "sourceSha256": "cdb9c2bdb28b6e2fdde21f25af2f7e60ab1f766fd11ad8bd3d2bd57c996ea195",
-      "mirrorSha256": "81692e2615875ab3e6e3407ea873cf881fe8aad331a5ccedcf21ee7150583f11",
+      "mirrorSha256": "ace8efb0c4e4cc0fe16b6e78bac45237acbc4c41fc8db6faaa8d80bd3f0aa40b",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -605,43 +605,43 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/window-system.md",
       "sourceSha256": "445009fa1e9d55e6e30adbfc634c3266c3daf148b9e62d0f618acdcc518fa1de",
-      "mirrorSha256": "e130bbc7ee7d84cde95573784eba3b55fd310547f2700eab3bdc386e5f241063",
+      "mirrorSha256": "9e7c3b0be91be04fe59f6e126237d34ab27d16543f89f24db3dfd88d3199d8d4",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/documentation-roadmap.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/documentation-roadmap.md",
       "sourceSha256": "a9943721171fc057e37201edc8fd2cc6bd82bbb67602b3826c420c341c868448",
-      "mirrorSha256": "ec102f1eb5ca75959527beb62a799d52076362264ca91db79a153dae86040da1",
+      "mirrorSha256": "400b13fa4a588edbb2111a0488966b742cb9824556a132286112809f23c86411",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/synthesis/gameplay-overview.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/gameplay-overview.md",
       "sourceSha256": "29f8f95ee001e9b90c4f0426c1bff241ea21e356f2af8d9b9868506520169d6a",
-      "mirrorSha256": "e316265f0df2ec01a060ac4867249b669fe5f9ac428f1e930eac63c7264c5c9d",
+      "mirrorSha256": "f596b29a9fc182189913db9177e20a4df99645bce15679aa4426ddef1239f598",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/synthesis/map-design-principles.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map-design-principles.md",
       "sourceSha256": "0f9fc7241bacc9edaab3c3d6dc791ea9c02ab70224bb07009002893d9c78b73d",
-      "mirrorSha256": "b4067c5e22a665f4c44ae6fe88f1a0616ebe88bf0cc02374fa7f13f2cca19b2d",
+      "mirrorSha256": "69a400a4ecd49af4d91c11210b5c34ab29148cfe80f66088a8bd207476bdd3d2",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/synthesis/map3-battle01-readiness.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map3-battle01-readiness.md",
       "sourceSha256": "417da4b5237cf938ff87438c34c492fa1ba94c4ea3ab881b69fc44436aae2a40",
-      "mirrorSha256": "25a6bc73c8e6b6fd6b1f143cc95ef04450c946e14a0b83169a99056309a8a3c6",
+      "mirrorSha256": "831f8fd15daef4a047511dc3a8aa186e051783d142149afdb3ddee22d35fbe95",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
       "translatedDate": "2026-08-20"
     },
@@ -650,27 +650,27 @@
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/progression-and-economy.md",
       "sourceSha256": "7c55556b198b55398657fbc61beafd9a7543238d05c0a83476eeca00fab45f6e",
-      "mirrorSha256": "7f35d7231b63224e627bbe3089b3dd7276bdca1a66793bb73767ca71011c4005",
+      "mirrorSha256": "8213f6e015d164a27d55aba065242007ab9c624208a7506bd09774728295d52d",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/synthesis/story-progression.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/story-progression.md",
       "sourceSha256": "071993afd3401e53fbdc4f6cd62e4fd9ac29e1b8f78eb31e9b91aef23c003b03",
-      "mirrorSha256": "73453bf7bc5c90e19d91bf8e7d497b5f11617bb802c0bbbc9bcabae4e795c608",
+      "mirrorSha256": "ed2e38f420a9001b71aad5d7f798015b5fc8b07649f46b75bf38b970823dfcdf",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-12"
+      "translatedDate": "2026-08-20"
     },
     {
       "source": "docs/design/synthesis/tactical-battle-loop.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/tactical-battle-loop.md",
       "sourceSha256": "c4339f9a82fc658964479649d0ffa36a70c764631d0fa89f08eca01b83cccf05",
-      "mirrorSha256": "362d0d2ef9e13b1d2f6f1997e9cd90f3a9316b42ddb192a42083d91733b396f7",
+      "mirrorSha256": "042d8b413bcee3d56d2928d82cea6a2ff4f5026d5fa451bd7fe279f8c9103ea1",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-08"
+      "translatedDate": "2026-08-20"
     }
   ]
 }

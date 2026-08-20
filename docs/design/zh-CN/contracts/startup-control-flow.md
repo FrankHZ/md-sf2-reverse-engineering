@@ -4,7 +4,7 @@
 - 证据日期：2026-08-09
 - 范围：原版 `Start`、`InitializeSystem`、`InitializeGame`、intro/标题交接与区域门控制面的实现无关重构，不把源静态循环范围转换成硬件时序，也不导入资源、音频、新游戏、输入、呈现、持久性或平台生命周期语义
 
-> 本文件是 [`startup-control-flow.md`](../../contracts/startup-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`startup-control-flow.md`](../../contracts/startup-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
