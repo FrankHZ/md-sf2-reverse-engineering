@@ -165,6 +165,7 @@ DIRECT_FUNCTION_SEAM_OBSERVERS = (
 )
 
 WITCH_MENU_OBSERVERS = (
+    "tools/bizhawk/map3_admitted_start_observer.lua",
     "tools/bizhawk/witch_new_game_lifecycle_observer.lua",
     "tools/bizhawk/witch_save_actions_observer.lua",
     "tools/bizhawk/witch_save_menu_actions_observer.lua",
@@ -340,6 +341,15 @@ COMMAND_LAUNCHES = {
     "witch-new-game-lifecycle": _command(
         "sf2tool.h3.witch_new_game_lifecycle", "verify_witch_new_game_lifecycle", "witch-menu",
         _launch("tools/bizhawk/witch_new_game_lifecycle_observer.lua"),
+    ),
+    "map3-admitted-start": _command(
+        "sf2tool.h3.map3_admitted_start",
+        "verify_map3_admitted_start",
+        "witch-menu",
+        _launch(
+            "tools/bizhawk/map3_admitted_start_observer.lua",
+            cases_fixture="tests/fixtures/h3/map3-admitted-start-v1.json",
+        ),
     ),
     "map-setup-selection": _command(
         "sf2tool.h3.map_setup_selection", "verify_map_setup_selection", "map-debug-host",

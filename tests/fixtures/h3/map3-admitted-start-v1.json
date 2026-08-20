@@ -1,0 +1,1238 @@
+{
+  "id": "sf2-map3-admitted-start-runtime-v1",
+  "system": "sf2-map3-admitted-start-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "caseOrder": [
+    "controlled-new-map3-default"
+  ],
+  "cases": [
+    {
+      "caseId": "controlled-new-map3-default",
+      "injectedInitialMenuReturn": 1,
+      "injectedDifficultyMenuReturn": 0,
+      "preconditionSaveFlags": 0
+    }
+  ],
+  "harness": {
+    "maxFrames": 5400,
+    "privateCapturePolicy": "none-recorded; private-capture-paths-remain-ignored"
+  },
+  "privateProvenance": {
+    "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+    "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "tool": "BizHawk 2.11.1",
+    "core": "Genesis Plus GX",
+    "inputCondition": "controlled original Witch/New menu returns: initial=1, difficulty=0, save-flags=0",
+    "timingCondition": "first original WaitForEvent after original MainLoop and Map 3 setup; raw VInt byte/long values are read at source-faithful widths, then the observer normalizes only those three VInt counters to zero outside callbacks before output and scoped restoration",
+    "capturePayload": "not-tracked; hashes-and-trace-shape-only",
+    "configuration": "tracked observer + generated local configuration; one disposable session ROM; no private capture payload"
+  },
+  "static": {
+    "function": {
+      "checkSramAddress": 28326,
+      "newActionAddress": 29702,
+      "newGameAddress": 38710,
+      "saveGameAddress": 28522,
+      "mainLoopAddress": 30148,
+      "explorationLoopAddress": 153536,
+      "runMapSetupInitFunctionAddress": 292092,
+      "setupResolutionReturnAddress": 292100,
+      "initCallAddress": 292114,
+      "initReturnAddress": 292116,
+      "waitForEventAddress": 153884,
+      "selectedInitAddress": 332674,
+      "unexpectedScriptAddresses": [
+        332704,
+        332730
+      ],
+      "unexpectedInitEffectAddress": 292842,
+      "unexpectedInitEffectCallAddress": 332722
+    },
+    "ram": {
+      "COMBATANT_DATA": 16771072,
+      "CURRENT_GOLD": 16774656,
+      "CURRENT_MAP": 16774929,
+      "CURRENT_BATTLE": 16774930,
+      "CURRENT_SAVE_SLOT": 16756890,
+      "EGRESS_MAP": 16774937,
+      "ENTITY_DATA": 16754946,
+      "ENTITY_INDEX_LIST": 16757056,
+      "FRAME_COUNTER": 16768672,
+      "GAME_FLAGS": 16774790,
+      "MAP_EVENT_TYPE": 16754762,
+      "RANDOM_SEED": 16768676,
+      "SECONDS_COUNTER": 16768798,
+      "SECONDS_COUNTER_FRAMES": 16768761,
+      "PLAYER_1_INPUT": 16768663,
+      "COMBATANT_DATA_ENTRY_SIZE": 56,
+      "COMBATANT_ALLIES_COUNTER": 29,
+      "COMBATANT_OFFSET_AGI_CURRENT": 23,
+      "COMBATANT_OFFSET_ATT_CURRENT": 19,
+      "COMBATANT_OFFSET_CLASS": 10,
+      "COMBATANT_OFFSET_DEF_CURRENT": 21,
+      "COMBATANT_OFFSET_HP_CURRENT": 14,
+      "COMBATANT_OFFSET_HP_MAX": 12,
+      "COMBATANT_OFFSET_ITEM_0": 32,
+      "COMBATANT_OFFSET_LEVEL": 11,
+      "COMBATANT_OFFSET_MOV_CURRENT": 25,
+      "COMBATANT_OFFSET_MP_CURRENT": 17,
+      "COMBATANT_OFFSET_MP_MAX": 16,
+      "COMBATANT_OFFSET_SPELLS": 40,
+      "ENTITYDEF_OFFSET_FACING": 16,
+      "ENTITYDEF_OFFSET_X": 0,
+      "ENTITYDEF_OFFSET_Y": 2,
+      "ENTITYDEF_SIZE": 32,
+      "FLAG_INDEX_DIFFICULTY1": 78,
+      "FLAG_INDEX_DIFFICULTY2": 79,
+      "FORCEMEMBER_ACTIVE_FLAGS_START": 32,
+      "FORCEMEMBER_JOINED_FLAGS_START": 0,
+      "LONGWORD_GAMEFLAGS_COUNTER": 31
+    },
+    "timeState": {
+      "frameCounter": {
+        "address": 16768672,
+        "observationWidthBytes": 1,
+        "sourceUpdateWidthBytes": 1,
+        "sourceInstructionAddress": 1516
+      },
+      "randomSeed": {
+        "address": 16768676,
+        "observationWidthBytes": 4,
+        "sourceUpdateWidthBytes": 2,
+        "sourceReadAddress": 5632,
+        "sourceWriteAddress": 5652
+      },
+      "secondsCounter": {
+        "address": 16768798,
+        "observationWidthBytes": 4,
+        "sourceUpdateWidthBytes": 4,
+        "sourceIncrementAddress": 1588,
+        "timerReadAddress": 91538
+      },
+      "secondsCounterFrames": {
+        "address": 16768761,
+        "observationWidthBytes": 1,
+        "sourceUpdateWidthBytes": 1,
+        "sourceWriteAddress": 1592
+      },
+      "normalization": "post-boundary-controlled-zeroed-vint-counters"
+    },
+    "witchNewAction": {
+      "initialMenuInstructionTargetAddress": 65704,
+      "nameAllyInstructionTargetAddress": 65660,
+      "displayTextAddress": 25184,
+      "workRamScratchAddress": 16738306,
+      "initialMenuPage": 1,
+      "difficultyMenuPage": 3,
+      "gameStartMap": 3,
+      "gameStartSavepointX": 56,
+      "gameStartSavepointY": 3,
+      "gameStartFacing": 3,
+      "mainLoopD4": 1
+    },
+    "map3": {
+      "mapIndex": 3,
+      "defaultSetupSymbol": "ms_map3",
+      "defaultSetupAddress": 330472,
+      "flagVariants": [
+        {
+          "flag": 609,
+          "setupSymbol": "ms_map3_flag609",
+          "setupAddress": 330496
+        },
+        {
+          "flag": 506,
+          "setupSymbol": "ms_map3_flag506",
+          "setupAddress": 330520
+        },
+        {
+          "flag": 543,
+          "setupSymbol": "ms_map3_flag543",
+          "setupAddress": 403110
+        }
+      ],
+      "selectedInitSymbol": "ms_map3_InitFunction",
+      "selectedInitAddress": 332674,
+      "selectedInitDirectReturnStub": false,
+      "setupResolutionReturnAddress": 292100,
+      "selectedInitSourcePath": "data/maps/entries/map03/mapsetups/s6_initfunction.asm",
+      "selectedInitStatementCount": 15,
+      "selectedInitScriptTargets": [
+        "cs_513BA",
+        "cs_513A0"
+      ]
+    },
+    "map3SourceRecords": [
+      {
+        "id": "map.data.ms-map3",
+        "sourcePath": "data/maps/entries/map03/mapsetups/pointertable.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag506",
+        "sourcePath": "data/maps/entries/map03/mapsetups/pointertable_506.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag543",
+        "sourcePath": "data/maps/entries/map03/mapsetups/pointertable_543.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag609",
+        "sourcePath": "data/maps/entries/map03/mapsetups/pointertable_609.asm"
+      },
+      {
+        "id": "map.data.ms-map3-entities",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s1_entities.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag506-entities",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s1_entities_506.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag543-entities",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s1_entities_543.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag609-entities",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s1_entities_609.asm"
+      },
+      {
+        "id": "map.data.ms-map3-entityevents",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag506-entityevents",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_506.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag543-entityevents",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_543.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag609-entityevents",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_609.asm"
+      },
+      {
+        "id": "map.data.ms-map3-zoneevents",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s3_zoneevents.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag506-zoneevents",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s3_zoneevents_506.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag543-zoneevents",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s3_zoneevents_543.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag609-zoneevents",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s3_zoneevents_609.asm"
+      },
+      {
+        "id": "map.data.ms-map3-areadescriptions",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s4_descriptions.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag543-areadescriptions",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s4_descriptions_543.asm"
+      },
+      {
+        "id": "map.data.ms-map3-section5",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s5_itemevents.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag543-section5",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s5_itemevents_543.asm"
+      },
+      {
+        "id": "map.data.ms-map3-initfunction",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s6_initfunction.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag506-initfunction",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s6_initfunction_506.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag543-initfunction",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s6_initfunction_543.asm"
+      },
+      {
+        "id": "map.data.ms-map3-flag609-initfunction",
+        "sourcePath": "data/maps/entries/map03/mapsetups/s6_initfunction_609.asm"
+      },
+      {
+        "id": "map.data.cs-513d6",
+        "sourcePath": "data/maps/entries/map03/mapsetups/scripts_1.asm"
+      },
+      {
+        "id": "map.data.cs-628c8",
+        "sourcePath": "data/maps/entries/map03/mapsetups/scripts_2.asm"
+      }
+    ],
+    "defaultGuardFlags": [
+      1,
+      602,
+      603,
+      506,
+      543,
+      609
+    ],
+    "sessionPatches": [
+      {
+        "address": 65704,
+        "width": 6,
+        "originalHex": "4EFA65AE4EFA",
+        "hex": "4EF900FF6822",
+        "purpose": "controlled-witch-menu-alias"
+      },
+      {
+        "address": 65660,
+        "width": 2,
+        "originalHex": "4EFA",
+        "hex": "4E75",
+        "purpose": "name-ally-rts"
+      },
+      {
+        "address": 25184,
+        "width": 2,
+        "originalHex": "48E7",
+        "hex": "4E75",
+        "purpose": "display-text-rts"
+      }
+    ],
+    "harness": {
+      "checkpointAddress": 16738306,
+      "menuThunkAddress": 16738338,
+      "generatedRamBytes": 64,
+      "bootstrapFrameBudget": 1800,
+      "caseFrameBudget": 3600,
+      "romPatchDomain": "MD CART"
+    },
+    "sourceHashes": {
+      "code/gameflow/mainloop.asm": "981566A6849D38AA5E4A1349D99843F19FAD8631D935EAB4E7E25FFBF1429BF1",
+      "code/gameflow/exploration/explorationfunctions_2.asm": "582D5DAFE0C2D457C1D39AD143B52DC666A3C80531D05C1B74CDAC4FE0D2A525",
+      "code/common/scripting/map/mapsetupsfunctions_1.asm": "F99AF47A35E9148176E66865694B2BCEE3D3DF8C6013227F5CB8ECA330AC6531",
+      "code/common/stats/newgame.asm": "47AC24F2ED60B9212F61806FD1323CCB8B347F53481514B8288D2843966EDB95",
+      "code/common/tech/interrupts/vint.asm": "6DA33587A7EF24182ADB718EA5C13B3F295E1CA8B9885D33B764699208696F97",
+      "code/common/menus/timerwindow.asm": "30594645D62B19708FAD38475DC66770986FE6469A1F424A7D53F9911D8BD147",
+      "code/common/tech/randomnumbergenerator.asm": "9BD6B68AA53ABF9D5B4A3B2EB47EF139FBE7BD2824B747BC5AB33D20088DD0C5",
+      "data/maps/entries/map03/mapsetups/s6_initfunction.asm": "C8123A021A7B8DE0A2F44665722AD0BCBAAC4C8261C3DFB5376814C85EC4C1D7"
+    }
+  },
+  "expectedObservation": {
+    "system": "sf2-map3-admitted-start-runtime-v1",
+    "caseOrder": [
+      "controlled-new-map3-default"
+    ],
+    "records": [
+      {
+        "caseId": "controlled-new-map3-default",
+        "chronology": [
+          "check-sram",
+          "witch-new-action",
+          "new-game",
+          "save-game",
+          "main-loop",
+          "exploration-loop",
+          "map-setup-wrapper-entry",
+          "setup-resolution-return",
+          "init-call",
+          "selected-init",
+          "init-return",
+          "wait-for-event"
+        ],
+        "handoff": {
+          "currentMap": 3,
+          "egressMap": 3,
+          "d0": 3,
+          "d1": 56,
+          "d2": 3,
+          "d3": 3,
+          "d4": 1
+        },
+        "selectedSetup": {
+          "setupAddress": 330472,
+          "initAddress": 332674,
+          "setupResolutionReturnPc": 292100,
+          "initCallPc": 292114,
+          "initReturnPc": 292116
+        },
+        "scenarioState": {
+          "playerEntity": {
+            "x": 21504,
+            "y": 1152,
+            "facing": 3
+          },
+          "gold": 0,
+          "difficultyFlags": [
+            false,
+            false
+          ],
+          "joinedFlags": [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "activeFlags": [
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false
+          ],
+          "allies": [
+            {
+              "id": 0,
+              "class": 0,
+              "level": 1,
+              "hpMax": 12,
+              "hpCurrent": 12,
+              "mpMax": 8,
+              "mpCurrent": 8,
+              "attack": 9,
+              "defense": 4,
+              "agility": 4,
+              "move": 6,
+              "items": [
+                0,
+                199,
+                0,
+                0
+              ],
+              "spells": [
+                10,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 1,
+              "class": 4,
+              "level": 1,
+              "hpMax": 11,
+              "hpCurrent": 11,
+              "mpMax": 10,
+              "mpCurrent": 10,
+              "attack": 9,
+              "defense": 5,
+              "agility": 5,
+              "move": 5,
+              "items": [
+                0,
+                213,
+                0,
+                0
+              ],
+              "spells": [
+                0,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 2,
+              "class": 1,
+              "level": 1,
+              "hpMax": 11,
+              "hpCurrent": 11,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 8,
+              "defense": 5,
+              "agility": 7,
+              "move": 7,
+              "items": [
+                0,
+                184,
+                0,
+                0
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 3,
+              "class": 2,
+              "level": 1,
+              "hpMax": 9,
+              "hpCurrent": 9,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 14,
+              "defense": 7,
+              "agility": 4,
+              "move": 5,
+              "items": [
+                0,
+                161,
+                0,
+                0
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 4,
+              "class": 3,
+              "level": 4,
+              "hpMax": 13,
+              "hpCurrent": 13,
+              "mpMax": 13,
+              "mpCurrent": 13,
+              "attack": 9,
+              "defense": 7,
+              "agility": 10,
+              "move": 5,
+              "items": [
+                0,
+                213,
+                0,
+                0
+              ],
+              "spells": [
+                11,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 5,
+              "class": 10,
+              "level": 5,
+              "hpMax": 12,
+              "hpCurrent": 12,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 14,
+              "defense": 10,
+              "agility": 10,
+              "move": 7,
+              "items": [
+                0,
+                231,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 6,
+              "class": 11,
+              "level": 7,
+              "hpMax": 7,
+              "hpCurrent": 7,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 16,
+              "defense": 23,
+              "agility": 10,
+              "move": 5,
+              "items": [
+                0,
+                127,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 7,
+              "class": 9,
+              "level": 9,
+              "hpMax": 22,
+              "hpCurrent": 22,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 26,
+              "defense": 16,
+              "agility": 12,
+              "move": 6,
+              "items": [
+                0,
+                127,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 8,
+              "class": 8,
+              "level": 10,
+              "hpMax": 18,
+              "hpCurrent": 18,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 24,
+              "defense": 13,
+              "agility": 13,
+              "move": 6,
+              "items": [
+                0,
+                173,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 9,
+              "class": 7,
+              "level": 13,
+              "hpMax": 23,
+              "hpCurrent": 23,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 37,
+              "defense": 21,
+              "agility": 20,
+              "move": 5,
+              "items": [
+                0,
+                127,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 10,
+              "class": 6,
+              "level": 14,
+              "hpMax": 28,
+              "hpCurrent": 28,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 27,
+              "defense": 18,
+              "agility": 22,
+              "move": 6,
+              "items": [
+                0,
+                186,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 11,
+              "class": 22,
+              "level": 4,
+              "hpMax": 34,
+              "hpCurrent": 34,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 55,
+              "defense": 34,
+              "agility": 24,
+              "move": 5,
+              "items": [
+                0,
+                177,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 12,
+              "class": 1,
+              "level": 19,
+              "hpMax": 34,
+              "hpCurrent": 34,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 40,
+              "defense": 28,
+              "agility": 29,
+              "move": 7,
+              "items": [
+                0,
+                203,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 13,
+              "class": 5,
+              "level": 21,
+              "hpMax": 35,
+              "hpCurrent": 35,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 42,
+              "defense": 24,
+              "agility": 24,
+              "move": 5,
+              "items": [
+                0,
+                175,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 14,
+              "class": 1,
+              "level": 24,
+              "hpMax": 53,
+              "hpCurrent": 53,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 48,
+              "defense": 30,
+              "agility": 29,
+              "move": 7,
+              "items": [
+                0,
+                203,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 15,
+              "class": 4,
+              "level": 24,
+              "hpMax": 39,
+              "hpCurrent": 39,
+              "mpMax": 46,
+              "mpCurrent": 46,
+              "attack": 39,
+              "defense": 26,
+              "agility": 27,
+              "move": 5,
+              "items": [
+                0,
+                217,
+                0,
+                127
+              ],
+              "spells": [
+                128,
+                78,
+                3,
+                63
+              ]
+            },
+            {
+              "id": 16,
+              "class": 2,
+              "level": 24,
+              "hpMax": 37,
+              "hpCurrent": 37,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 52,
+              "defense": 37,
+              "agility": 27,
+              "move": 5,
+              "items": [
+                0,
+                164,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 17,
+              "class": 3,
+              "level": 24,
+              "hpMax": 26,
+              "hpCurrent": 26,
+              "mpMax": 46,
+              "mpCurrent": 46,
+              "attack": 36,
+              "defense": 24,
+              "agility": 29,
+              "move": 5,
+              "items": [
+                0,
+                217,
+                0,
+                127
+              ],
+              "spells": [
+                75,
+                76,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 18,
+              "class": 5,
+              "level": 24,
+              "hpMax": 35,
+              "hpCurrent": 35,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 45,
+              "defense": 27,
+              "agility": 29,
+              "move": 5,
+              "items": [
+                0,
+                175,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 19,
+              "class": 13,
+              "level": 7,
+              "hpMax": 50,
+              "hpCurrent": 50,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 56,
+              "defense": 33,
+              "agility": 31,
+              "move": 7,
+              "items": [
+                0,
+                206,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 20,
+              "class": 23,
+              "level": 11,
+              "hpMax": 53,
+              "hpCurrent": 53,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 62,
+              "defense": 38,
+              "agility": 38,
+              "move": 6,
+              "items": [
+                0,
+                192,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 21,
+              "class": 18,
+              "level": 11,
+              "hpMax": 43,
+              "hpCurrent": 43,
+              "mpMax": 58,
+              "mpCurrent": 58,
+              "attack": 46,
+              "defense": 30,
+              "agility": 41,
+              "move": 5,
+              "items": [
+                0,
+                220,
+                0,
+                127
+              ],
+              "spells": [
+                29,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 22,
+              "class": 19,
+              "level": 13,
+              "hpMax": 53,
+              "hpCurrent": 53,
+              "mpMax": 49,
+              "mpCurrent": 49,
+              "attack": 53,
+              "defense": 32,
+              "agility": 37,
+              "move": 5,
+              "items": [
+                0,
+                220,
+                0,
+                127
+              ],
+              "spells": [
+                64,
+                66,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 23,
+              "class": 14,
+              "level": 12,
+              "hpMax": 60,
+              "hpCurrent": 60,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 66,
+              "defense": 45,
+              "agility": 44,
+              "move": 7,
+              "items": [
+                0,
+                207,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 24,
+              "class": 15,
+              "level": 14,
+              "hpMax": 60,
+              "hpCurrent": 60,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 71,
+              "defense": 63,
+              "agility": 37,
+              "move": 5,
+              "items": [
+                0,
+                167,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 25,
+              "class": 20,
+              "level": 15,
+              "hpMax": 55,
+              "hpCurrent": 55,
+              "mpMax": 47,
+              "mpCurrent": 47,
+              "attack": 66,
+              "defense": 40,
+              "agility": 42,
+              "move": 5,
+              "items": [
+                0,
+                156,
+                0,
+                127
+              ],
+              "spells": [
+                64,
+                78,
+                7,
+                3
+              ]
+            },
+            {
+              "id": 26,
+              "class": 29,
+              "level": 16,
+              "hpMax": 59,
+              "hpCurrent": 59,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 79,
+              "defense": 62,
+              "agility": 42,
+              "move": 4,
+              "items": [
+                0,
+                127,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 27,
+              "class": 17,
+              "level": 19,
+              "hpMax": 64,
+              "hpCurrent": 64,
+              "mpMax": 72,
+              "mpCurrent": 72,
+              "attack": 52,
+              "defense": 46,
+              "agility": 47,
+              "move": 5,
+              "items": [
+                0,
+                221,
+                0,
+                127
+              ],
+              "spells": [
+                75,
+                140,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 28,
+              "class": 31,
+              "level": 19,
+              "hpMax": 72,
+              "hpCurrent": 72,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 48,
+              "defense": 69,
+              "agility": 52,
+              "move": 6,
+              "items": [
+                0,
+                70,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            },
+            {
+              "id": 29,
+              "class": 30,
+              "level": 14,
+              "hpMax": 45,
+              "hpCurrent": 45,
+              "mpMax": 0,
+              "mpCurrent": 0,
+              "attack": 77,
+              "defense": 72,
+              "agility": 36,
+              "move": 4,
+              "items": [
+                0,
+                127,
+                0,
+                127
+              ],
+              "spells": [
+                63,
+                63,
+                63,
+                63
+              ]
+            }
+          ],
+          "rngSeed": 2568421376,
+          "vintTime": {
+            "normalization": "post-boundary-controlled-zeroed-vint-counters",
+            "frameCounter": 0,
+            "secondsCounter": 0,
+            "secondsCounterFrames": 0
+          }
+        },
+        "programRequest": "none"
+      }
+    ],
+    "callbacksCleared": true,
+    "restoration": {
+      "gameFlags": true,
+      "combatantAllyRecords": true,
+      "mapAndBattleState": true,
+      "playerEntity": true,
+      "gold": true,
+      "timeState": true,
+      "generatedRam": true,
+      "callbacksCleared": true,
+      "sessionCartPatches": true,
+      "sessionRomDeleted": true
+    }
+  },
+  "sourceContext": {
+    "function": {
+      "checkSramAddress": 28326,
+      "newActionAddress": 29702,
+      "newGameAddress": 38710,
+      "saveGameAddress": 28522,
+      "mainLoopAddress": 30148,
+      "explorationLoopAddress": 153536,
+      "runMapSetupInitFunctionAddress": 292092,
+      "initCallAddress": 292114,
+      "initReturnAddress": 292116,
+      "waitForEventAddress": 153884,
+      "selectedInitAddress": 332674
+    },
+    "ram": {
+      "CURRENT_MAP": 16774929,
+      "GAME_FLAGS": 16774790
+    },
+    "map3": {
+      "selectedInitAddress": 332674
+    }
+  }
+}

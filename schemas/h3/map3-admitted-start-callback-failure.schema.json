@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:map3-admitted-start-callback-failure",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "owner", "caseId", "phase", "role", "actualPc", "expectedPc", "callbackCount",
+    "callbacksCleared", "outputRemoved", "restoration", "restorationMismatch", "error"
+  ],
+  "properties": {
+    "owner": {"const": "map3-admitted-start"},
+    "caseId": {"enum": ["bootstrap", "controlled-new-map3-default"]},
+    "phase": {"enum": ["await-check-sram", "await-safe-core-snapshot", "await-checkpoint", "await-witch-new-action", "await-new-game", "await-save-game", "await-main-loop", "await-exploration-loop", "await-map-setup-wrapper", "await-setup-resolution-return", "await-init-call", "await-selected-init", "await-init-return", "await-wait-for-event"]},
+    "role": {"enum": ["bootstrap-check-sram", "checkpoint", "witch-new-action", "new-game", "save-game", "main-loop", "exploration-loop", "map-setup-wrapper-entry", "setup-resolution-return", "init-call", "selected-init", "unexpected-script", "unexpected-init-effect", "init-return", "wait-for-event", "bootstrap-watchdog", "case-watchdog", "restoration", "callback-cleanup"]},
+    "actualPc": {"type": "integer", "minimum": 0},
+    "expectedPc": {"anyOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]},
+    "callbackCount": {"type": "integer", "minimum": 0},
+    "callbacksCleared": {"type": "boolean"},
+    "outputRemoved": {"type": "boolean"},
+    "restoration": {"$ref": "#/definitions/restoration"},
+    "restorationMismatch": {"anyOf": [{"$ref": "#/definitions/restorationMismatch"}, {"type": "null"}]},
+    "error": {"type": "string", "minLength": 1}
+  },
+  "allOf": [{
+    "if": {"properties": {"restoration": {"properties": {"sessionStateRestored": {"const": true}}, "required": ["sessionStateRestored"]}}, "required": ["restoration"]},
+    "then": {"properties": {"restorationMismatch": {"type": "null"}}},
+    "else": {"properties": {"restorationMismatch": {"$ref": "#/definitions/restorationMismatch"}}}
+  }],
+  "definitions": {
+    "restoration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scopeArmed", "gameFlags", "combatantAllyRecords", "mapAndBattleState", "playerEntity", "gold", "timeState", "generatedRam", "sessionCartPatches", "sessionStateRestored", "callbacksCleared", "outputRemoved"],
+      "properties": {
+        "scopeArmed": {"type": "boolean"},
+        "gameFlags": {"type": "boolean"},
+        "combatantAllyRecords": {"type": "boolean"},
+        "mapAndBattleState": {"type": "boolean"},
+        "playerEntity": {"type": "boolean"},
+        "gold": {"type": "boolean"},
+        "timeState": {"type": "boolean"},
+        "generatedRam": {"type": "boolean"},
+        "sessionCartPatches": {"type": "boolean"},
+        "sessionStateRestored": {"type": "boolean"},
+        "callbacksCleared": {"type": "boolean"},
+        "outputRemoved": {"type": "boolean"}
+      }
+    },
+    "restorationMismatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "address", "expected", "actual"],
+      "properties": {
+        "domain": {"enum": ["scope", "gameFlags", "combatantAllyRecords", "mapAndBattleState", "playerEntity", "gold", "timeState", "generatedRam", "sessionCartPatches"]},
+        "address": {"type": "integer", "minimum": 0},
+        "expected": {"type": "integer", "minimum": 0, "maximum": 255},
+        "actual": {"type": "integer", "minimum": 0, "maximum": 255}
+      }
+    }
+  }
+}

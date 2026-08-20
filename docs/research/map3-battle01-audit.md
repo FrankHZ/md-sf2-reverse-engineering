@@ -81,8 +81,8 @@ research gaps registered below.
 
 ## Exact Accepted-Index Audit
 
-The research index at the audit base contains **1,621 records**, **165 fixtures** (74 H2, 91 H3), and
-**2,551 address bindings**. The scenario-relevant denominators are:
+The research index now contains **1,621 records**, **166 fixtures** (74 H2, 92 H3), and
+**2,568 address bindings**. The scenario-relevant denominators are:
 
 | Evidence surface | Exact count | Owner |
 | --- | ---: | --- |
@@ -114,13 +114,15 @@ Because the settings stage clears global flags, the fresh-start flag bitset is e
 default setup rows; the selector and init dispatch for the default/609/506/543 rows are
 runtime-confirmed in isolation.
 
-**Gap (RA-01):** no exact admitted snapshot records every scenario-relevant field — map, position,
-facing, flag bitset, party composition, per-ally stats/items/spells, gold, difficulty, RNG seed, and
-elapsed-time state — at the first Map 3 exploration entry. The New H3 handoff bypasses naming, menu
-selection, and text presentation; the selector/init matrices change only `CURRENT_MAP` and flag bits
-from a debug Map Test prompt. Which of the four Map 3 setups is selected by the natural admitted state
-is **Inferred** (flag-clear ⇒ default), not **Confirmed** in one natural flow, and the selected
-init function/script's state effects are **Unknown**.
+**Confirmed (controlled R1 seam):**
+[`map3-admitted-start`](map3-admitted-start.md) now records the complete scenario-relevant snapshot
+at the first original Map 3 `WaitForEvent`: map/egress, position/facing, all joined and active bits,
+all ally stats/items/spells, gold, difficulty, RNG, and elapsed-time fields. The observed clear-guard
+state selects the default Map 3 setup and crosses the original setup wrapper and init function.
+
+**Remaining RA-01 boundary:** this controlled admission bypasses player naming, menu selection, and
+text presentation. It does not establish a natural player-visible New/load state or route
+reachability; those remain **Unknown** for R2.
 
 ### 2. Map 3 setup selection, init execution, and content
 
@@ -132,13 +134,14 @@ runtime (event bodies replaced with `rts`); the 79-map/1,859-resource canonical 
 runtime; entity population/reload runtime; Map 3 area-description and item-event tables; and
 `map.data.cs-513d6`/`cs-628c8` script containers.
 
-**Gaps:** which Map 3 setup rows the admitted state selects (RA-01 overlap); the ordered
-setup → init function → init script → event → description chain executed at admission with real
-program bodies (RA-02); the story meaning and state effects of flag operands 506/543/609 in Map 3
-setup rows (**Unknown** — they are shared operands across many maps and are not battle/route evidence
-by themselves); direct-`rts` entity-event reachability through normal story routes (**Unknown**,
-explicit map-data queue); init-script side effects and transition persistence (explicit
-`map-init-effects-and-presentation` H3 queue).
+**Confirmed (controlled R1 seam):** the observed default row traverses the original setup wrapper,
+source-derived selection return, indirect init call/return, and `ms_map3_InitFunction` before the
+first exploration wait. No guarded script/program request occurs on that selected default path.
+
+**Remaining RA-02 boundary:** natural admission can still select different state, and the ordered
+init-script → event → description chain with real program bodies is **Unknown**. The story meanings
+and state effects of flags 506/543/609, direct-`rts` event reachability, init effects, and transition
+persistence remain separate Map-data/R2 questions.
 
 ### 3. Exploration loop, player input, and map events
 
@@ -300,8 +303,8 @@ slice under ADR 0003 (one launch per coherent matrix).
 
 | ID | Segment | Gap | Required research closure | Evidence label today | Priority |
 | --- | --- | --- | --- | --- | --- |
-| RA-01 | 1 | Exact admitted Map 3 start state | One grouped matrix from the accepted controlled snapshot→MainLoop seam capturing map, position, facing, flag bitset, party/stats/items/spells, gold, difficulty, RNG, and time fields at first exploration entry; confirm the selected setup row without claiming a canonical original New/load state | **Inferred** (flag-clear ⇒ default) / **Unknown** fields | Blocking |
-| RA-02 | 2 | Map 3 setup/init/event chain effects | Observe the ordered setup → init function → init script → event → description chain at natural admission with real program bodies; record state effects and persistence | **Confirmed** dispatch; **Unknown** effects | Blocking |
+| RA-01 | 1 | Exact admitted Map 3 start state | R1 controlled matrix now captures map, position, facing, flag bitset, party/stats/items/spells, gold, difficulty, RNG, and time at first exploration entry and observes the default row; natural player-visible admission remains R2 | **Confirmed** controlled default / **Unknown** natural state | R2 dependency |
+| RA-02 | 2 | Map 3 setup/init/event chain effects | R1 observes setup → init function and no default guarded program request; R2 must observe a natural real-program/event/description chain and state effects | **Confirmed** controlled default prefix / **Unknown** natural effects | R2 dependency |
 | RA-03 | 3 | Natural Map 3 route | Scripted-input exploration matrix from the admitted state recording ordered inputs, zone events, entity interactions, area inspections, and the exit sequence; accept only the smallest Research-proven route required by option 2A | **Unknown** | Blocking |
 | RA-04 | 7 | Map-to-battle admission | Extend the route matrix to the battle trigger: intermediate maps, trigger coordinates reached, battle-unlock flag state, and before/start cutscene execution in the natural flow | **Confirmed** static; **Unknown** natural | Blocking |
 | RA-05 | 8 | Battle 01 natural encounter state | Capture the full scenario-relevant state at first battle-ready state from the natural flow; bind roster/stats/items/spells/positions/flags and later-round region state | **Confirmed** debug-entry; **Unknown** natural | Blocking |
@@ -331,10 +334,10 @@ inventories (structure already indexed, effects still not).
 The closures follow the static-first, subsystem-batched cadence (ADR 0003) and the
 root/worker slice contract (ADR 0004):
 
-1. **Slice R1 — admitted start and setup chain (RA-01, RA-02, RA-11 foundation):** one grouped H3
-   matrix from the accepted controlled snapshot→MainLoop seam; static join of the 26 Map 3 records to
-   their selected rows in that flow; private immutable-input inventory and deterministic capture
-   conditions for every reached start/setup observable. No new fixture ID is committed by this audit.
+1. **Slice R1 — admitted start and setup chain (RA-01, RA-02, RA-11 foundation):** **completed on
+   the controlled seam** by `sf2-map3-admitted-start-runtime-v1`. It joins the 26 Map 3 records to
+   the observed default row, captures the admitted snapshot, and records private-input identity/tool/
+   timing metadata. It does not close natural route/program effects or full 8C capture work.
 2. **Slice R2 — smallest natural route matrix (RA-03, RA-04, RA-08, RA-09, reached RA-11):** option
    2A fixes the selection rule; observe exploration, mandatory dialogue/menu behavior, transition,
    natural battle admission, and reached map/text/audio/frame/hardware observables in one chronological
@@ -360,6 +363,7 @@ become a readiness report.
 | Audit statement | Evidence label | Accepted owner | Boundary retained |
 | --- | --- | --- | --- |
 | Controlled New reaches MainLoop with current/egress map 3 | **Confirmed** bounded runtime | witch/save H3 rails, [story-progression](../design/synthesis/story-progression.md) | Not a natural player-visible New flow or complete start snapshot |
+| Controlled New reaches first Map 3 exploration wait through default setup/init | **Confirmed** bounded runtime | [`map3-admitted-start`](map3-admitted-start.md), `sf2-map3-admitted-start-runtime-v1` | Not natural reachability, route programs/events, or 8C presentation |
 | 26 Map 3 records exist, aggregate-owned, unassociated | **Confirmed** indexed inventory | `sf2-map-data-static-v1`, [map-data research](map-data-inventory.md) | Not route chronology, selection, or effects |
 | Map 3 default/609/506/543 init dispatch executes its modeled targets | **Confirmed** bounded runtime | `sf2-map-init-dispatch-runtime-v1`, [map-data research](map-data-inventory.md) | Init-script effects, story reachability, persistence |
 | Map 3 setup flag meanings 506/543/609 | **Unknown** | `sf2-map-data-static-v1` | Shared operands across many maps; not route evidence by themselves |
