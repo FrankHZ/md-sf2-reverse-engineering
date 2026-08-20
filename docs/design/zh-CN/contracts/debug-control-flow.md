@@ -43,7 +43,7 @@ fixture 总共直接绑定五条研究记录。`core.window-engine` 保留其既
 
 ## 战斗测试配置
 
-**已确认静态：** `DebugModeBattleTest` 通过向 `DEBUG_MODE_TOGGLE` 与 `SPECIAL_TURBO_TOGGLE` 写 `-1` 开始。然后为 fixture 的精确有序 29 标签非 Bowie 名册调用 `j_JoinForce`。本合同保留该有序符号序列，而不推断结果活跃队伍、计数列表同步、地图放置或后续名册状态。那些属于[party-membership state 合同](../../contracts/party-membership-state.md)或保持 **未知**。
+**已确认静态：** `DebugModeBattleTest` 以写入 `-1` 开始，目标依次是 `DEBUG_MODE_TOGGLE` 与 `SPECIAL_TURBO_TOGGLE`。然后为 fixture 的精确有序 29 标签非 Bowie 名册调用 `j_JoinForce`。本合同保留该有序符号序列，而不推断结果活跃队伍、计数列表同步、地图放置或后续名册状态。那些属于[party-membership state 合同](../../contracts/party-membership-state.md)或保持 **未知**。
 
 源接下来选择 `ALLY_BOWIE`、加载源值 99，并按顺序调用这些设置器：
 
@@ -58,7 +58,7 @@ fixture 总共直接绑定五条研究记录。`core.window-engine` 保留其既
 
 这是静态调用与操作数合同。它不重新定义由[combatant-state access](../../contracts/combatant-state-access.md)拥有的夹断、选择器有效性、派生属性一致性或调用方可视结果。
 
-在本合同之外的其他源交接后，函数通过源 `VINT_FUNCTIONS`/`VINTS_ADD` 形式注册 `VInt_UpdateWindows` 并调用 `InitializeWindowProperties`。指针与交接身份是已确认静态。中断节奏、回调执行、窗口组合、DMA 与可见呈现在本合同之外。
+在本合同之外的其他源交接后，函数注册 `VInt_UpdateWindows`，使用源 `VINT_FUNCTIONS`/`VINTS_ADD` 形式，并调用 `InitializeWindowProperties`。指针与交接身份是已确认静态。中断节奏、回调执行、窗口组合、DMA 与可见呈现在本合同之外。
 
 通用列表配置刻意保留两个不同已接受事实：
 
@@ -101,9 +101,9 @@ fixture 总共直接绑定五条研究记录。`core.window-engine` 保留其既
 
 | 文本身份 | 零结果写入 | 非零结果路线 |
 | ---: | --- | --- |
-| 450 | 向 `SPECIAL_TURBO_TOGGLE` 写 `-1` | 无该写入继续 |
-| 451 | 向 `CONTROL_OPPONENT_TOGGLE` 写 `-1` | 无该写入继续 |
-| 452 | 向 `AUTO_BATTLE_TOGGLE` 写 `-1` | 无该写入继续 |
+| 450 | 写 `-1` 到 `SPECIAL_TURBO_TOGGLE` | 无该写入继续 |
+| 451 | 写 `-1` 到 `CONTROL_OPPONENT_TOGGLE` | 无该写入继续 |
+| 452 | 写 `-1` 到 `AUTO_BATTLE_TOGGLE` | 无该写入继续 |
 | 455 | 设置存档标志位 7 | 清除存档标志位 7 |
 
 这些是源静态结果测试与写入。它们不建立提示按钮含义、初始切换值、互斥、持久性、存档有效性、可访问性、本地化文本或切换名暗示的运行时效果。[special-screen control-flow 合同](../../contracts/special-screen-control-flow.md) 拥有独立 Sega-logo 调试序列与配置处理器边界；它不把该准入证据转移给本合同。

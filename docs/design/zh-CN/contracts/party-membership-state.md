@@ -20,7 +20,7 @@
 
 `sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../tests/fixtures/h2/common-stats-static-v1.json)）是本合同消费的唯一可执行所有者。其验证器是[`stats.py`](../../../../src/sf2tool/h2/stats.py)，其带来源解释是[Common Stats 与 Inventory Services](../../../research/common-stats.md)。
 
-fixture 在十进制地址 `39168` 绑定 `UpdateForce`，并拥有恰好四个 `expected.statsFacts.party` 事实。那四个语义事实不被静默扩展成完整运行时合同。
+fixture 绑定 `UpdateForce`，其十进制地址为 `39168`，并拥有恰好四个 `expected.statsFacts.party` 事实。那四个语义事实不被静默扩展成完整运行时合同。
 
 对固定上游 commit `c834c652b6862bc5679fd7f69a38a7093206efc6` 的独立只读审计审查了 `code/common/stats/battleparty.asm`，从 `UpdateForce` 到 `LeaveBattleParty`。该直接源审查提供下文辅助子结构与时间线。它不把运行时可达性、调用方解读、持久性或呈现升级为已确认证据。
 
@@ -132,7 +132,7 @@ leaveBattleParty(member)
   prefixSynchronization: unknown
 ```
 
-这是逻辑 parity 模型，不是必需引擎内存布局。重制可以在内部使用集合、稳定向量、派生查询、事务或更强同步。其保真适配器必须仍复现两个成员域、计数前缀重建边界、精确 `JoinForce` 时间线与不同离开操作身份。
+这是逻辑一致性模型，不是必需引擎内存布局。重制可以在内部使用集合、稳定向量、派生查询、事务或更强同步。其保真适配器必须仍复现两个成员域、计数前缀重建边界、精确 `JoinForce` 时间线与不同离开操作身份。
 
 ## 原版保真与现代化
 
@@ -140,7 +140,7 @@ leaveBattleParty(member)
 
 重制可以选择即时列表同步、动态容量、显式结果类型、事务名册编辑或不同名册 UI。那些是显式产品决定。如果原版保真适配器保持更强内部不变量，它仍必须在下游兼容测试依赖激活前重建时模拟已接受可观察顺序。
 
-公开 parity fixture 需要结构元数据、符号身份与合成成员索引；它们不需要版权名称、对话、立绘或其他原版资源。
+公开一致性 fixture 需要结构元数据、符号身份与合成成员索引；它们不需要版权名称、对话、立绘或其他原版资源。
 
 ## H4 验收门
 
@@ -159,7 +159,7 @@ leaveBattleParty(member)
 | 合同区域 | 证据标签 | 所有者 | 剩余边界 |
 | --- | --- | --- | --- |
 | 独立已加入/活跃标志；三个重建列表；条件自动激活；`LeaveForce` 离图交接 | **已确认静态** | `sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../tests/fixtures/h2/common-stats-static-v1.json)） | 数字常量、运行时结果、调用方含义 |
-| 六个辅助身份与受限指令/调用顺序 | **已确认静态源审查** | 上游 commit `c834c652b6862bc5679fd7f69a38a7093206efc6` 的固定 `battleparty.asm` | 运行时可达性与调用方可视语义 |
+| 六个辅助身份与受限指令/调用顺序 | **已确认静态源审查** | 固定 `battleparty.asm`，上游 commit `c834c652b6862bc5679fd7f69a38a7093206efc6` | 运行时可达性与调用方可视语义 |
 | 计数前缀内容与计数写入，无后备尾清除 | **已确认静态源审查** | `UpdateForce` 源体 | 并发/无效状态与可见顺序 |
 | 激活后/离开后同步 | **未知** | 未来分组运行时/调用方证据 | 不得发明隐含重建 |
 | 故事、存档/读档、名册 UI、AI/随从、死亡/复活、呈现、平衡 | **独立所有者 / 未知** | 相邻合同与未来综合/运行时工作 | 不得推断完整名册体验 |

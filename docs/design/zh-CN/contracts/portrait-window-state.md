@@ -33,7 +33,7 @@
 
 所属研究文章是[Common Menu Engines 与 Services](../../../research/common-menus.md)与[Technical Graphics 与 Decompression Services](../../../research/technical-graphics.md)。
 
-立绘 fixture 此处保持受限 `LoadPortrait` 消费者见证。静态表身份、指针顺序、载荷所有者别名、头/调色板/流分区、字节/解码计数、parity 与私有导入保真由[Portrait Graphics Data](../../contracts/portrait-graphics-data.md)拥有。本合同从该所有者消费规范记录，不独立拥有或重新验证目录。
+立绘 fixture 此处保持受限 `LoadPortrait` 消费者见证。静态表身份、指针顺序、载荷所有者别名、头/调色板/流分区、字节/解码计数、一致性与私有导入保真由[Portrait Graphics Data](../../contracts/portrait-graphics-data.md)拥有。本合同从该所有者消费规范记录，不独立拥有或重新验证目录。
 
 ## 合同前证据审计
 
@@ -100,7 +100,7 @@ common-menus fixture 是聚合清单。本合同只消费五个所选函数身�
 
 ## 规范立绘数据消费
 
-完整表、载荷所有者图、计数条目序列、调色板、压缩流、解码身份、大小、parity 与公开/私有投影由[Portrait Graphics Data](../../contracts/portrait-graphics-data.md)定义。本合同为有效已接受选择器从该所有者接收一个规范逻辑立绘记录。它只依赖下文源时间线需要的消费者面向形状：
+完整表、载荷所有者图、计数条目序列、调色板、压缩流、解码身份、大小、一致性与公开/私有投影由[Portrait Graphics Data](../../contracts/portrait-graphics-data.md)定义。本合同为有效已接受选择器从该所有者接收一个规范逻辑立绘记录。它只依赖下文源时间线需要的消费者面向形状：
 
 ```text
 CanonicalPortraitRecord {
@@ -172,10 +172,10 @@ CanonicalPortraitRecord {
 **已确认静态源审查：** `VInt_PerformPortraitBlinking` 在立绘窗口索引为零或眨眼控制字节为零时返回。其已接受源操作包括：
 
 - 递减眨眼计数器；在计数器 3 选择 alternate 眼瓦片、在计数器 0 选择原版眼瓦片；
-- 眨眼计数器为 0 时，用 `d6=120` 调用 `GenerateRandomNumber`、给返回 `d7` 加 30，并把结果存储为下一计数器；
+- 眨眼计数器为 0 时，调用 `GenerateRandomNumber` 并使用 `d6=120`、给返回 `d7` 加 30，并把结果存储为下一计数器；
 - 用打字机字节与既有计数器状态门控嘴计数器处理；
 - 计数器到 5 时选择 alternate 嘴瓦片、到零或源重置路径时选择原版嘴瓦片；
-- 用 `d6=5` 调用 `GenerateRandomNumber`、给返回 `d7` 加 `$000A` 并存储结果。
+- 调用 `GenerateRandomNumber` 并使用 `d6=5`、把 `$000A` 加到返回 `d7` 并存储结果。
 
 RNG 操作数与后加是源静态调用事实。它们不是观察概率分布、VInt 频率、墙钟延迟或可见动画时序。
 
@@ -264,7 +264,7 @@ NameWindowState {
 6. 名称窗口保留其索引守卫、创建、初始 `WriteWindowTiles`、当前 HP 读取、战斗员名称读取、所选字体写入器顺序、原始 HP 零→橙与 非零→常规 写入器选择、移动/等待/删除顺序与索引清除；
 7. 无效索引、畸形数据、调用方、VInt/RNG/DMA 节奏、窗口运动、可见帧、调色板结果、本地化、可访问性与许可内容保持独立验收面。
 
-H4 不要求原版汇编指令、Mega Drive VDP 模拟器、公开构建中的原版载荷或帧周期 parity，除非后续显式硬件保真决定添加它们。
+H4 不要求原版汇编指令、Mega Drive VDP 模拟器、公开构建中的原版载荷或帧周期一致性，除非后续显式硬件保真决定添加它们。
 
 ## 证据矩阵
 

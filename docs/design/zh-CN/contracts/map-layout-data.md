@@ -1,8 +1,8 @@
 # 地图布局数据合同
 
-- **已确认原版结构：** 完整 77 所有者 block/layout 载荷语料、其 79 个地图引用、两个共享所有者别名、解码 block 与 layout 维度、聚合解码器命令族计数，以及下文描述的 source/ROM parity 边界。
+- **已确认原版结构：** 完整 77 所有者 block/layout 载荷语料、其 79 个地图引用、两个共享所有者别名、解码 block 与 layout 维度、聚合解码器命令族计数，以及下文描述的 source/ROM 一致性边界。
 - **推断原版行为：** 此处不提升任何内容。
-- **未知原版行为：** 编解码器意图、畸形流恢复、动态或修改载荷准入、碰撞与可通过性含义、事件驱动工作布局变更、重载与存档持久性、地图过渡行为、渲染 VDP parity、呈现时序与玩家面向地图含义。
+- **未知原版行为：** 编解码器意图、畸形流恢复、动态或修改载荷准入、碰撞与可通过性含义、事件驱动工作布局变更、重载与存档持久性、地图过渡行为、渲染 VDP 一致性、呈现时序与玩家面向地图含义。
 - 重制状态：实现无关 Phase 3 私有导入合同；尚未选择渲染器、碰撞模型、导航表示、资源格式、替换地图集或分发许可。
 - 证据日期：2026-08-09
 - 源码基线：`ShiningForceCentral/SF2DISASM`
@@ -18,9 +18,9 @@
 2. 79 个到那些所有者的有序地图引用；
 3. 精确两个共享所有者关系；
 4. 解码 block 与 layout 形状、语料总计、索引边界与聚合解码器族计数器；
-5. 每个拥有压缩载荷的 source/ROM parity。
+5. 每个拥有压缩载荷的 source/ROM 一致性。
 
-可执行所有者是 `sf2-map-layout-decode-v1`，位于 [`tests/fixtures/h2/map-layout-decode-v1.json`](../../../../tests/fixtures/h2/map-layout-decode-v1.json)。研究所有者是[Common Map Engine](../../../research/common-maps.md)与[Map Content Tables 与 Binary Payload Parity](../../../research/map-content.md)。
+可执行所有者是 `sf2-map-layout-decode-v1`，位于 [`tests/fixtures/h2/map-layout-decode-v1.json`](../../../../tests/fixtures/h2/map-layout-decode-v1.json)。研究所有者是[Common Map Engine](../../../research/common-maps.md)与[Map Content Tables 与 Binary Payload 一致性](../../../research/map-content.md)。
 
 fixture 还绑定 `LoadMapLayoutData` 与 `LoadMapBlocks` 的身份。两个身份都是该数据边界的一部分，但 `LoadMapBlocks` 不创建第二条 research-index 关联。唯一关联记录保持 `maps.map-layout`。
 
@@ -49,7 +49,7 @@ PayloadPairs 77 / DecodedBlocks 19771 / DecodedLayoutWords 315392 / PASS
 - 每个所有者贡献一个压缩 block 载荷与一个压缩 layout 载荷；
 - 地图 24 与 46 是对既有所有者对的引用，不是额外载荷所有者。
 
-受追踪证据包含聚合元数据与 parity 结果。原版压缩载荷、解码 block 字、解码 layout 字、逐载荷 hash 与渲染捕获保持私有/生成。
+受追踪证据包含聚合元数据与一致性结果。原版压缩载荷、解码 block 字、解码 layout 字、逐载荷 hash 与渲染捕获保持私有/生成。
 
 ## 所有者与引用图
 
@@ -108,18 +108,18 @@ Block 顺序与每个 16 位字是私有导入身份的一部分。导入器不�
 
 私有导入必须保留每个原始字的 64×64 位置与其配对 block 所有者身份。它必须拒绝或显式报告改变字顺序、改变所有者引用或产生越界 block 索引的原版保真导入。
 
-## 压缩载荷与 Parity 边界
+## 压缩载荷与一致性边界
 
-**已确认静态：** 全部 77 个压缩 block 载荷与全部 77 个压缩 layout 载荷匹配其已接受 ROM 范围。因此公开 parity 计数器：
+**已确认静态：** 全部 77 个压缩 block 载荷与全部 77 个压缩 layout 载荷匹配其已接受 ROM 范围。因此公开一致性计数器：
 
-| 载荷类 | 所有者计数 | source/ROM parity 计数 |
+| 载荷类 | 所有者计数 | source/ROM 一致性计数 |
 | --- | ---: | ---: |
 | 压缩 block 载荷 | 77 | 77 |
 | 压缩 layout 载荷 | 77 | 77 |
 
-受追踪 fixture 不再分发压缩字节、解码字或逐载荷 hash。私有导入器可以在用户拥有的本地输入边界下保留那些值以证明精确往返，但公开报告必须只暴露聚合计数、维度、范围、别名元数据、parity 结果、fixture 溯源与非内容诊断。
+受追踪 fixture 不再分发压缩字节、解码字或逐载荷 hash。私有导入器可以在用户拥有的本地输入边界下保留那些值以证明精确往返，但公开报告必须只暴露聚合计数、维度、范围、别名元数据、一致性结果、fixture 溯源与非内容诊断。
 
-Parity 证明所选源载荷匹配固定原版 ROM。它不证明渲染等价、硬件时序、视觉正确性、事件行为或任何瓦片或布局位的预期含义。
+一致性证明所选源载荷匹配固定原版 ROM。它不证明渲染等价、硬件时序、视觉正确性、事件行为或任何瓦片或布局位的预期含义。
 
 ## 实现无关导入模型
 
@@ -206,7 +206,7 @@ MapLayoutPublicSummary {
 - 别名 24 到 23 与 46 到 7 的两个所有者引用；
 - 完整 block/layout 解码维度、总计、计数范围与最大索引；
 - 精确八与六聚合解码器族计数器；
-- 完整 77 加 77 source/ROM parity。
+- 完整 77 加 77 source/ROM 一致性。
 
 ### 推断
 
@@ -230,7 +230,7 @@ MapLayoutPublicSummary {
 4. 从私有已接受输入复现 19,771 个有序 3×3 block、177,939 个有序 block 字与 22 到 666 的逐所有者计数范围；
 5. 复现 77 个有序 64×64 layout、315,392 个 layout 字、630,784 解码字节与最大 block 索引 665，每个引用在范围内；
 6. 复现精确八 block 与六 layout 聚合解码器族计数器，而不把它们呈现为逐地图统计或玩法语义；
-7. 本地验证全部 77 block 与 77 layout 压缩载荷 parity 关系；
+7. 本地验证全部 77 block 与 77 layout 压缩载荷一致性关系；
 8. 通过合成或私有输入测试检测别名压平、引用重编号、字重排、丢失原始位与越界索引；
 9. 把压缩字节、解码字、逐载荷 hash 与渲染输出保持公开 fixture 与报告之外；
 10. 把碰撞、事件、持久性、过渡、渲染与时序报告为独立合同，而非此处隐含成功条件。
@@ -246,9 +246,9 @@ H4 实现可以急切、惰性或导入构建期间解码。那些选择只在�
 | 解码 blockset | **已确认静态** | 同一 fixture；[map-content 研究](../../../research/map-content.md) | 19,771 个 3×3 block、177,939 字、22..666 范围；原始字保持私有 |
 | 解码 layout | **已确认静态** | 同一 fixture；[map-content 研究](../../../research/map-content.md) | 77 个 64×64 layout、315,392 字、630,784 字节、最大索引 665；无碰撞或层含义 |
 | 解码器族总计 | **已确认静态** | 同一 fixture | 精确聚合 8 加 6 计数器；无逐地图分类、编解码器意图或畸形输入行为 |
-| 压缩 parity | **已确认静态** | 同一 fixture | 77 block 加 77 layout source/ROM 匹配；无公开载荷或 hash |
+| 压缩一致性 | **已确认静态** | 同一 fixture | 77 block 加 77 layout source/ROM 匹配；无公开载荷或 hash |
 | 地图构建与变更 | 独立所有者证据 | [map-exploration 合同](../../contracts/map-exploration.md) | 运行时加载阶段、事件、工作布局状态、重置与持久性此处不复制 |
-| 渲染与呈现 | **未知** | 无消费运行时/呈现 fixture | VDP parity、滚动、动画、可见时序与最终像素保持开放 |
+| 渲染与呈现 | **未知** | 无消费运行时/呈现 fixture | VDP 一致性、滚动、动画、可见时序与最终像素保持开放 |
 
 ## 开放问题
 

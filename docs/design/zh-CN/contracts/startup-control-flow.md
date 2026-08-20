@@ -10,7 +10,7 @@
 
 本合同从源码形状的 `Start` 条目开始。它跟随可选初始配置块、公共 DMA 忙等待、系统与游戏初始化交接、受限 intro/标题返回路线与区域准入分支。它在每个下游子系统交接或源局部终止分支处结束。
 
-- **已确认**：初始配置块被原版 `CTRL1`/`CTRL3` 测试条件跳过；执行时，其已接受静态写入与循环范围是 24 个 VDP 寄存器写入、38 个 Z80 引导字节、65,536 字节 RAM、128 字节 CRAM、80 字节 VSRAM 与四个 PSG 写入；两条配置路线都到达源 DMA 忙等待然后 `InitializeSystem`；系统初始化保留有序 `InitializeVdp`、`InitializeZ80`、`InitializeVdpData`、`InitializeGame` 交接与 19 个维护 VDP 条目；游戏初始化保留有序 `LoadBaseTiles`、`CheckRegion`、`NewGame`、`DisplaySegaLogo` 交接；非零 logo 结果绕过 intro；`GameIntro` 存储其继续指针并在标题交接前于普通辅助返回路径清除它；标题结果分离非零 Witch 交接与零结果 `InitialStack`/`p_Start` 重置路线；`CheckRegion` 用 `0xC0` 掩蔽 `HW_Info`、接受 `0x80`，否则到达其源局部无限循环。
+- **已确认**：初始配置块被原版 `CTRL1`/`CTRL3` 测试条件跳过；执行时，其已接受静态写入与循环范围是 24 个 VDP 寄存器写入、38 个 Z80 引导字节、65,536 字节 RAM、128 字节 CRAM、80 字节 VSRAM 与四个 PSG 写入；两条配置路线都到达源 DMA 忙等待然后 `InitializeSystem`；系统初始化保留有序 `InitializeVdp`、`InitializeZ80`、`InitializeVdpData`、`InitializeGame` 交接与 19 个维护 VDP 条目；游戏初始化保留有序 `LoadBaseTiles`、`CheckRegion`、`NewGame`、`DisplaySegaLogo` 交接；非零 logo 结果绕过 intro；`GameIntro` 存储其继续指针并在标题交接前于普通辅助返回路径清除它；标题结果分离非零 Witch 交接与零结果 `InitialStack`/`p_Start` 重置路线；`CheckRegion` 掩蔽 `HW_Info`，掩码为 `0xC0`，接受值为 `0x80`，否则到达其源局部无限循环。
 - **推断**：无。硬件生命周期、玩家意图与可见启动含义不从寄存器测试、源注释、分支名或辅助身份推断。
 - **未知**：`CTRL1`/`CTRL3` 值是否可靠区分冷启动、软重置或任何其他平台生命周期；重置与 TMSS 变体；Z80 总线与 VDP/DMA 节奏；静态写入循环在不同硬件上产生的状态；产生 logo 或标题结果的精确控制器采样；调试路线可达性；真实硬件区域值与兼容性；被拒绝区域渲染；intro、标题、Witch、logo、淡入、音频与输入时序；持久性；畸形或注入状态；以及玩家可见呈现。
 
@@ -83,7 +83,7 @@ map-data 聚合与每个 `map.data.*` 表记录在本合同消费证据之外。
 
 `InitializeZ80` 在本合同只是交接身份。生成声驱载荷、复制长度解读、总线/重置协议、活跃 Z80 状态、首命令、可听结果与失败行为保持[audio-system](../../contracts/audio-system.md)或 **未知**。
 
-`InitializeVdpData` 同样是交接身份。队列布局、滚动缓冲、调色板、精灵表、DMA 处理、控制器端口配置、完成与渲染在本合同之外。现代实现可以用一个验证服务替换三个平台辅助，前提是其兼容轨迹能在请求原版路线 parity 时复现已接受有序交接。
+`InitializeVdpData` 同样是交接身份。队列布局、滚动缓冲、调色板、精灵表、DMA 处理、控制器端口配置、完成与渲染在本合同之外。现代实现可以用一个验证服务替换三个平台辅助，前提是其兼容轨迹能在请求原版路线一致性时复现已接受有序交接。
 
 ## 游戏初始化交接
 

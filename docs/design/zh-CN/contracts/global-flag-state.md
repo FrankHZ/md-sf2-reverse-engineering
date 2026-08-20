@@ -10,7 +10,7 @@
 
 本合同定义最低已接受全局标志边界。它不定义单个标志的含义、故事或战斗路径何时读取它、它是否在存档/读档循环中存活，或玩家在其值变化时看到什么。
 
-- **已确认**：标志索引经过已接受掩蔽步骤；每字节共享八个标志；位选择从位 7 开始；Check、Set 与 Clear 共享同一 `GetFlag` 解析路径；中断所有者报告四个标志 trap 包装器、在地址 `5888` 识别 `Trap4_CheckFlag`，并把 trap 1 到 4 分组为 Check、Set 与 Clear 操作的包装器。
+- **已确认**：标志索引经过已接受掩蔽步骤；每字节共享八个标志；位选择从位 7 开始；Check、Set 与 Clear 共享同一 `GetFlag` 解析路径；中断所有者报告四个标志 trap 包装器、识别 `Trap4_CheckFlag` 位于地址 `5888`，并把 trap 1 到 4 分组为 Check、Set 与 Clear 操作的包装器。
 - **推断**：无。高层意图刻意不从存储与包装器形状推断。
 - **未知**：已接受掩蔽事实之外的精确可用标志域大小；单个标志的名称与含义；自然与运行时调用方可达性；存档/读档持久性；跨系统顺序；调用方可视结果或条件码使用；内联 trap 操作数解码；返回地址移动；UI 与呈现；调试路由；以及平衡或战役意图。
 
@@ -48,7 +48,7 @@ common-scripting 与 battle-functions 聚合被刻意排除。其排队所有者
 
 ## 标志 Trap 清单边界
 
-**已确认静态：** 中断所有者报告 `flagTrapCount=4`。它在十进制地址 `5888` 识别 `Trap4_CheckFlag`，并描述 trap 1 到 4 为标志 Check、Set 与 Clear 操作周围的包装器。这些只是清单与分组事实。
+**已确认静态：** 中断所有者报告 `flagTrapCount=4`。它识别 `Trap4_CheckFlag`，十进制地址为 `5888`，并描述 trap 1 到 4 为标志 Check、Set 与 Clear 操作周围的包装器。这些只是清单与分组事实。
 
 本合同不解码内联操作数、不规定任何 trap 如何改变已保存返回地址、不把每个 trap 号映射到一个精确操作、不定义返回值或条件码，也不声称运行时可达性。那些细节在专用静态或运行时所有者接受它们之前保持 **未知**。代表 Trap 4 身份不得泛化为完整四条目 ABI 表。
 
@@ -75,7 +75,7 @@ FlagTrapInventory
   groupedOperationKinds: check | set | clear
 ```
 
-这是逻辑 parity 模型，不是必需引擎内存布局。`storageBytes` 刻意没有合同级长度，`normalizedIndex` 的推导刻意没有发明的数字掩码。独立原始与归一化索引保留已接受寻址边界，而不指定有效性或叙事含义。
+这是逻辑一致性模型，不是必需引擎内存布局。`storageBytes` 刻意没有合同级长度，`normalizedIndex` 的推导刻意没有发明的数字掩码。独立原始与归一化索引保留已接受寻址边界，而不指定有效性或叙事含义。
 
 trap 清单是元数据，不是可执行 ABI 规范。重制可以在没有机器 trap 的情况下实现普通玩法消费者，同时在原版保真适配器或诊断层保留该清单。
 
@@ -97,7 +97,7 @@ trap 清单是元数据，不是可执行 ABI 规范。重制可以在没有机�
 4. Check、Set 与 Clear 保持使用一个共享解析路径的不同操作身份；
 5. trap 清单保留计数四、代表 `Trap4_CheckFlag` 身份/地址与受限 Check/Set/Clear 分组，而不发明完整 trap ABI；
 6. 内联操作数解码、返回地址移动、调用方可视结果/条件行为、运行时可达性、持久性、呈现与战役含义保持分别测试或显式 **未知**；
-7. 公开 parity 工件包含结构元数据而非原版版权内容。
+7. 公开一致性工件包含结构元数据而非原版版权内容。
 
 ## 证据矩阵
 
@@ -105,7 +105,7 @@ trap 清单是元数据，不是可执行 ABI 规范。重制可以在没有机�
 | --- | --- | --- | --- |
 | 掩蔽标志索引、每字节八位存储、位 7 优先选择 | **已确认静态** | `sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../tests/fixtures/h2/common-stats-static-v1.json)） | 数字掩码、总容量、语义标志域 |
 | 共享 Check/Set/Clear 引用解析 | **已确认静态** | `sf2-common-stats-static-v1`（[`common-stats-static-v1.json`](../../../../tests/fixtures/h2/common-stats-static-v1.json)） | 运行时结果、顺序、调用方可视 Check 语义 |
-| 四个标志 trap 与 `5888` 的代表 `Trap4_CheckFlag` | **已确认静态清单** | `sf2-tech-interrupts-static-v1`（[`tech-interrupts-static-v1.json`](../../../../tests/fixtures/h2/tech-interrupts-static-v1.json)） | 完整逐 trap 映射、内联 ABI、运行时可达性 |
+| 四个标志 trap 与代表 `Trap4_CheckFlag`（地址 `5888`） | **已确认静态清单** | `sf2-tech-interrupts-static-v1`（[`tech-interrupts-static-v1.json`](../../../../tests/fixtures/h2/tech-interrupts-static-v1.json)） | 完整逐 trap 映射、内联 ABI、运行时可达性 |
 | trap 1-4 围绕 Check/Set/Clear 分组 | **已确认所有者文章** | [Technical Interrupts](../../../research/technical-interrupts.md) 加 `sf2-tech-interrupts-static-v1` | 操作数解码、返回移动、结果与条件 |
 | 战役消费者、持久性、UI、调试路由、平衡 | **独立所有者 / 未知** | 相邻合同与未来运行时/综合工作 | 不得从存储或包装器形状推断高层含义 |
 

@@ -9,7 +9,7 @@
 
 ## 目的
 
-本合同保留已接受 common-map 清单中剩余的未关联函数：`camerafunctions.asm` 中的 `VInt_UpdateViewData`。源首先选择是否运行实体目标调整路径、条件请求新视图目标，然后通过有序覆盖与逐轴门序列派生四个平面轴滚动速度字。
+本合同保留已接受 common-map 清单中剩余的未关联函数：`VInt_UpdateViewData`，位于 `camerafunctions.asm`。源首先选择是否运行实体目标调整路径、条件请求新视图目标，然后通过有序覆盖与逐轴门序列派生四个平面轴滚动速度字。
 
 函数名与源注释暗示摄像机/视图目标跟随行为。该词汇不是玩家可见意图、完整摄像机子系统或特定回调列表执行节奏的证据。合同只拥有受限源静态更新算法。摄像机命令、区域数据、目标服务行为、回调注册与渲染呈现保持其既有所有者。
 
@@ -46,7 +46,7 @@
 
 所属[common-map 研究](../../../research/common-maps.md)、可执行[`maps.py`](../../../../src/sf2tool/h2/maps.py)与提取[`manifest`](../../../../manifests/extractions/common-maps-static.json) 保留完整七文件清单与已接受摘要。生成清单行 hash 完整双函数源文件，因此其文件级调用计数不得被误认为该函数受限双调用面。
 
-受限源形状直接在固定[`camerafunctions.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/maps/camerafunctions.asm)中审查。H1 列表提供条目与排他结束身份。当前 H2 所有者不证明对 H1 与 ROM 的逐字节指令体 parity，本合同不声称它。
+受限源形状直接在固定[`camerafunctions.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/maps/camerafunctions.asm)中审查。H1 列表提供条目与排他结束身份。当前 H2 所有者不证明对 H1 与 ROM 的逐字节指令体一致性，本合同不声称它。
 
 ### 精确 research-index 分母
 
@@ -71,7 +71,7 @@ fixture 的源成员面包含跨七个源路径的八条记录。六条携带直
 
 函数清除 `d0.w`、把原始 `VIEW_TARGET_ENTITY` 字节加载进 `d0.b` 并执行 `bmi.w loc_468C`。取该带符号负分支时，控制直接进入速度派生。它绕过所有实体读取、`IsMapScrollingToViewTarget` 调用、每个 `SetViewDestination` 路径与无调整 `clr.w word_FFA828` 路径。因此既有 `word_FFA828` 值在速度选择前保持不变。
 
-对非负目标字节，源把字左移 `ENTITYDEF_SIZE_BITS`（`5`）、把该偏移加到 `ENTITY_DATA` 并把两个有序字读进 `d4` 与 `d5`。源注释称那些字为实体 X 与 Y。函数然后通过测试 `MAP_AREA_LAYER_TYPE` 选择当前 `d2`/`d3` 对：零读取 View Plane B 像素字；非零读取 View Plane A 像素字。这是原始源选择词汇，不是渲染前景/背景合同。
+对非负目标字节，源把字左移 `ENTITYDEF_SIZE_BITS`（`5`）、把该偏移加到 `ENTITY_DATA` 并把两个有序字读进 `d4` 与 `d5`。源注释称那些字为实体 X 与 Y。函数随后选择当前 `d2`/`d3` 对，并通过测试 `MAP_AREA_LAYER_TYPE` 完成选择：零读取 View Plane B 像素字；非零读取 View Plane A 像素字。这是原始源选择词汇，不是渲染前景/背景合同。
 
 清除 `d6.w` 后，函数调用 `IsMapScrollingToViewTarget`。其 `bne.w return_4706` 分支在非零条件时立即返回，在目标调整、计数器变更、速度选择或四个速度字写入之前。本合同只保留该分支结果；它不把语义指定给被调方。
 
@@ -223,7 +223,7 @@ MapCameraUpdateControlFlow {
 3. 保留非负目标的有序实体/平面读取与非零滚动结果提前返回，而不导入实体 schema、被调方含义或可见摄像机行为。
 4. 保留全部八个字比较操作数与精确带符号 `bge`/`ble` 分支极性、源单位常量与调整操作，不做无符号/几何归一化。
 5. 保留不同的调整非零交接/递增与调整零清除路径；计数器每个交接递增一次。
-6. 保留速度优先级 `24/32 → 光标 64 → 脉动 32 → 非零显式速度` 作为源数据流，而非时序或物理速度。
+6. 保留速度优先级 `24/32 -> cursor 64 -> pulsating 32 -> nonzero explicit speed` 作为源数据流，而非时序或物理速度。
 7. 保留全部四个有序自动滚动门与精确 `move.w`、无符号 `mulu.w`、低字 `lsr.w #8`、`move.w` 存储序列；除非为已准入兼容域证明结果等价，否则不替换通用全乘积公式。
 8. 把命令/H3、目标服务行为、区域输入、VInt 调度、硬件效果、呈现、畸形状态与运行时可达性保持其独立所有者或未知。
 9. 把完整指令体与编码保持公开投影之外；只暴露此处列出的受限元数据、操作关系与溯源。
@@ -233,15 +233,15 @@ MapCameraUpdateControlFlow {
 
 | 主张 | 证据 | 标签 |
 | --- | --- | --- |
-| `VInt_UpdateViewData` 身份与 `0x45C2` 条目 | common-map H2 fixture 与 H1 列表 | Confirmed static |
-| `0x45C2..0x4708` 排他区间与独立等待条目 | 固定源与 H1 列表 | Confirmed static source |
-| 带符号目标路线与不同计数器路径 | 固定 `camerafunctions.asm` | Confirmed static source |
-| 八个带符号阈值/边界分支身份 | 固定源与 H1 列表 | Confirmed static source |
-| 速度值优先级与四个自动滚动门 | 固定 `camerafunctions.asm` | Confirmed static source |
-| 字乘、低字移位与字存储宽度 | 固定源与 H1 列表 | Confirmed static source |
-| 自动摄像机跟随/玩家可见含义 | 仅源码词汇 | Inferred |
-| 被调方效果、运行时可达性、VInt 节奏、轨迹、可见结果 | 未被所选所有者建立 | Unknown |
-| 精确单记录关联边界 | research-index 与 fixture 成员审计 | Confirmed metadata |
+| `VInt_UpdateViewData` 身份与 `0x45C2` 条目 | common-map H2 fixture 与 H1 列表 | 已确认 static |
+| `0x45C2..0x4708` 排他区间与独立等待条目 | 固定源与 H1 列表 | 已确认 static source |
+| 带符号目标路线与不同计数器路径 | 固定 `camerafunctions.asm` | 已确认 static source |
+| 八个带符号阈值/边界分支身份 | 固定源与 H1 列表 | 已确认 static source |
+| 速度值优先级与四个自动滚动门 | 固定 `camerafunctions.asm` | 已确认 static source |
+| 字乘、低字移位与字存储宽度 | 固定源与 H1 列表 | 已确认 static source |
+| 自动摄像机跟随/玩家可见含义 | 仅源码词汇 | 推断 |
+| 被调方效果、运行时可达性、VInt 节奏、轨迹、可见结果 | 未被所选所有者建立 | 未知 |
+| 精确单记录关联边界 | research-index 与 fixture 成员审计 | 已确认 metadata |
 
 ## 复现
 

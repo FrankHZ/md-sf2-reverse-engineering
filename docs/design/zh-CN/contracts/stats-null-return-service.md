@@ -43,7 +43,7 @@
 | 传出直接调用 | `0` |
 | 间接调用站点 | `0` |
 
-受限源形状直接在固定[`unusedsub_9482.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/unusedsub_9482.asm)中审查。已接受 H1 列表独立解析条目与下一排他地址。本合同不声称指令体的逐字节 H1/ROM parity，也不发布编码指令字节。
+受限源形状直接在固定[`unusedsub_9482.asm`](https://github.com/ShiningForceCentral/SF2DISASM/blob/c834c652b6862bc5679fd7f69a38a7093206efc6/disasm/code/common/stats/unusedsub_9482.asm)中审查。已接受 H1 列表独立解析条目与下一排他地址。本合同不声称指令体的逐字节 H1/ROM 一致性，也不发布编码指令字节。
 
 本合同不消费 `expected.statsFacts` 子树。队伍、标志、车队、Deals、战斗员访问、名称查找、法术、新游戏、物品清单、物品属性与其他兄弟行为保持在该源/文件边界之外。
 
@@ -98,7 +98,7 @@ exclusive end at 0x9484
 
 ### 独立跳转接口见证
 
-固定 `s02_jumpinterface.asm` 包含 `0x81F4` 的 `j_nullsub_9482`，其源体跳转到 `nullsub_9482`。[technical-interface 研究](../../../research/technical-interfaces.md) 保留该聚合接口源。其存在是外部源见证，不是普通调用方调用该条目的证据。
+固定 `s02_jumpinterface.asm` 包含 `j_nullsub_9482`，其地址为 `0x81F4`，源体跳转到 `nullsub_9482`。[technical-interface 研究](../../../research/technical-interfaces.md) 保留该聚合接口源。其存在是外部源见证，不是普通调用方调用该条目的证据。
 
 本合同**不**消费 `sf2-tech-interfaces-static-v1`、不拥有 S02 接口，也不关联 `tech.interfaces.jump-s02`。该记录保持不变且未关联。见证被精确记录以阻止“unused”被改写成“no exported seam”。
 
@@ -180,7 +180,7 @@ H4 不需要原版版权载荷。合成适配器状态对可选逻辑 no-op 检�
 
 | 合同区域 | 证据标签 | 所有者 | 剩余边界 |
 | --- | --- | --- | --- |
-| `nullsub_9482` 身份/地址与代表源 | **已确认静态** | `sf2-common-stats-static-v1` | 体字节 parity 与运行时调用 |
+| `nullsub_9482` 身份/地址与代表源 | **已确认静态** | `sf2-common-stats-static-v1` | 体字节一致性与运行时调用 |
 | 精确 `0x9482..0x9484` 区间与唯一立即返回语句 | **已确认静态 source/H1** | 固定源、H1 列表与 common-stats 所有者 | 栈/寄存器/CCR/运行时行为 |
 | 13/1/1/0/0/0 源清单计数与源 SHA | **已确认静态清单** | 摘要绑定 common-stats 生成行 | 传入与间接可达性 |
 | “unused null subroutine”工程分类 | **推断** | 上游文件名、符号与注释 | 死代码状态与设计意图 |

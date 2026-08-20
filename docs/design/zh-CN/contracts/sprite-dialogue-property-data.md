@@ -1,6 +1,6 @@
 # 精灵对话属性数据合同
 
-- **已确认原版结构：** 完整 119 记录地图精灵对话属性表、独立双字节终止符、H1 绑定地址、source/ROM parity 与下文描述的受限查找消费者。
+- **已确认原版结构：** 完整 119 记录地图精灵对话属性表、独立双字节终止符、H1 绑定地址、source/ROM 一致性与下文描述的受限查找消费者。
 - **推断原版行为：** 此处不提升任何内容。
 - **未知原版行为：** 自然回退可达性、调用方准入、立绘抑制与渲染、语音 SFX 播放与时序、文本/窗口/输入同步、提供给该查找的特定实体地图精灵字节的运行时与调用方特定溯源，以及玩家面向含义。
 - 重制状态：实现无关 Phase 3 数据/查找合同；尚未选择对话呈现、立绘渲染器、语音或哔声策略、本地化流程、可访问性行为或许可内容包。
@@ -36,10 +36,10 @@ PortraitBearingRows 80
 Status PASS
 ```
 
-审计检查了专用 fixture、验证器、源所有者文章、私有生成输出、H1 绑定地址、source/ROM 范围与固定消费者源。它还发现两条当前未关联研究记录的精确一对一来来关联边界：
+审计检查了专用 fixture、验证器、源所有者文章、私有生成输出、H1 绑定地址、source/ROM 范围与固定消费者源。它还发现两条当前未关联研究记录的精确一对一未来关联边界：
 
-- 绑定到 `table.GetEntityPortaitAndSpeechSfx` 的 `scripting.entity.getentityportaitandspeechsfx`；
-- 绑定到 `table.table_MapspriteDialogueProperties` 的 `auxiliary.data.table-mapspritedialogueproperties`。
+- `scripting.entity.getentityportaitandspeechsfx` 绑定到 `table.GetEntityPortaitAndSpeechSfx`；
+- `auxiliary.data.table-mapspritedialogueproperties` 绑定到 `table.table_MapspriteDialogueProperties`。
 
 源拼写 `GetEntityPortaitAndSpeechSfx` 只作为原版标识符保留；文章使用“portrait”。聚合 common-scripting 与 auxiliary-data fixture 不是本合同的证据依赖。注册推迟到初步语义接受。
 

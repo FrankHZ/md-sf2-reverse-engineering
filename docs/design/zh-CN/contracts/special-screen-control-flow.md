@@ -119,8 +119,8 @@ witch 边界刻意在顶层控制（此处拥有）与动作内部（他处拥�
 **已确认静态：** 对 `code/specialscreens/witch/witchstart.asm` 的固定审查（记录在所属研究文档中）建立该受限入口接缝：
 
 1. `StartWitchScreen` 调用 `CheckSram`；
-2. 它在到达动作页前用有序 `bpl.s` 分支测试 `d0` 然后 `d1`；
-3. 动作页用 `3` 掩蔽 `SAVE_FLAGS`；
+2. 它在到达动作页前依次测试 `d0`、`d1`，并使用有序 `bpl.s` 分支；
+3. 动作页掩蔽 `SAVE_FLAGS`，掩码为 `3`；
 4. 已接受可用性用例按 `zero`、`allSet` 与 `otherNonzero` 有序，分别提供掩码 `1`、`6` 与 `15`；
 5. 负菜单结果分支回 witch 文本/菜单循环；
 6. 非负结果加倍以索引四行字分发表。
@@ -174,7 +174,7 @@ witch 边界刻意在顶层控制（此处拥有）与动作内部（他处拥�
 - `WitchEnd` 是结尾 witch 初始化源的代表身份；
 - `EndGame` 是代表结尾条目，而结尾 witch 源组拥有落宝石与 witch 眨眼控制身份并连接到结尾序列。
 
-这些是函数/源/地址与操作所有权事实，不是完整指令时间线。像素填充顺序、宝石轨迹、眨眼节奏、VInt 回调、音频、最终组合、正常故事可达性与可见 parity 保持 **未知** 或独立所有者。
+这些是函数/源/地址与操作所有权事实，不是完整指令时间线。像素填充顺序、宝石轨迹、眨眼节奏、VInt 回调、音频、最终组合、正常故事可达性与可见一致性保持 **未知** 或独立所有者。
 
 ## 实现无关控制模型
 
@@ -259,7 +259,7 @@ SpecialScreenControlCorpus {
 把以下系统保持本合同之外：
 
 - [special-screen-asset-data](../../contracts/special-screen-asset-data.md)：压缩与非压缩资源、调色板、布局、witch 帧、hash 与私有载荷；
-- [graphics-service-state](../../contracts/graphics-service-state.md)：解压/显示服务状态及其面向硬件 Unknown；
+- [graphics-service-state](../../contracts/graphics-service-state.md)：解压/显示服务状态及其面向硬件 未知；
 - [save-system](../../contracts/save-system.md)：动作选择器、SRAM 变更、校验和、逐动作服务顺序、新游戏生命周期、读档后路由与持久性边界；
 - [input-system](../../contracts/input-system.md)：控制器采样、重复状态与等待辅助行为；
 - 更宽 gameflow/story 合同：普通路线准入、故事可达性与调用方含义；
@@ -297,7 +297,7 @@ SpecialScreenControlCorpus {
 | Sega-logo 与标题受限控制事实 | **已确认静态** | 专用 fixture 与[Special Screens](../../../research/special-screens.md) source/H1 审查 | 输入节奏、淡入、滚动时序、呈现与正常可达性 |
 | witch SRAM 结果/动作页/分发/菜单接缝 | **已确认静态** | 专用 fixture 与[Special Screens](../../../research/special-screens.md) 固定三源审查 | 逐动作选择器、写入、服务、生命周期、持久性与玩家驱动行为是独立所有者 |
 | 挂起计数器、Start 分支与重置交接 | **已确认静态** | 专用 fixture 与[Special Screens](../../../research/special-screens.md) 直接源审查 | 墙钟/可见时长、输入节奏、淡入、转移与硬件行为 |
-| 结尾操作所有权身份 | **已确认静态** | 专用 fixture 与[Special Screens](../../../research/special-screens.md) 所有者文章 | 完整时间线、VInt 回调、像素、音频、故事可达性与可见 parity |
+| 结尾操作所有权身份 | **已确认静态** | 专用 fixture 与[Special Screens](../../../research/special-screens.md) 所有者文章 | 完整时间线、VInt 回调、像素、音频、故事可达性与可见一致性 |
 | 图形、存档/新游戏行为、输入与呈现 | **独立所有者** | 上文命名的已接受兄弟合同 | 此处不作为证据消费 |
 | 现代化、可访问性、本地化与替换内容 | **刻意设计** | 未来产品/内容决定 | 需要独立验收与许可 |
 

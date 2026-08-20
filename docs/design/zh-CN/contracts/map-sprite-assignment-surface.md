@@ -28,9 +28,9 @@
 - `scriptAssignmentFacts`，包括宏/域计数、空保留 ID 集、最高普通值与 routed-special 值身份；
 - `updateCallerFacts`，包括完整输入种类计数分区；
 - `derivedDomainFacts` 中的范围与排除摘要；以及
-- 保留为显式 Unknown 的两个 `runtimeQuestions`。
+- 保留为显式 未知 的两个 `runtimeQuestions`。
 
-验证器还在忽略的 `local/derived/map-sprite-assignments-static.json` 下生成完整 `scriptAssignments[81]` 与 `updateCallers[20]` 目录。那些目录是私有验证输入。它们刻意缺席公开 fixture，不由本合同发布。
+验证器还生成完整 `scriptAssignments[81]` 与 `updateCallers[20]` 目录，位置在忽略的 `local/derived/map-sprite-assignments-static.json` 下。那些目录是私有验证输入。它们刻意缺席公开 fixture，不由本合同发布。
 
 聚合 `sf2-common-scripting-static-v1` fixture 不被消费。ally-data、enemy-definition、map-entity、map-sprite decode、special-sprite decode、map-data 或运行时 H3 fixture 也不被消费。其已接受结果只通过下文的显式独立所有者边界出现。
 
