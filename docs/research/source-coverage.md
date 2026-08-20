@@ -506,8 +506,11 @@ driver and hardware evidence remains in its normal verification rails, but sound
 other low-remake-value hardware work are no longer default runtime-matrix targets.
 The ADR 0009 scenario audit is owned by
 [`map3-battle01-audit.md`](./map3-battle01-audit.md): it inventories the accepted evidence for the
-Map 3 through Battle 01-completion chain, registers the RA-01..RA-12 research gaps, and names the
-grouped closure matrices; its Status remains OPEN until those rows close.
+Map 3 through Battle 01-completion chain, consumes ADR 0010's accepted
+`1A+2A+3A+4A+5B+6A+7C+8C+9A+10A` profile, registers the RA-01..RA-12 gaps, and names the grouped
+closure matrices. Persistence is deferred by 6A, while reached private-input provenance and exact
+frame/audio/hardware H4 evidence are mandatory under 7C/8C; the audit remains OPEN until those rows
+close.
 The map-script engine is now structurally closed as 90 slots, 82 non-filler opcodes, eight filler
 slots, 83 unique handlers, and 93 macro forms. A complete code/data scan owns all 13,515 macro calls
 and makes eleven unused definitions explicit. All 133 primary operand fields and their 234 bytes are

@@ -182,9 +182,10 @@ Data-side directory inventory and ROM parity:
   aliases, the complete decode/ROM parity of the 43 Stack-compressed terrain payloads, unused joins,
   and old aggregate boundaries.
 - [`map3-battle01-audit.md`](./research/map3-battle01-audit.md): the research-owned gap register for
-  the ADR 0009 Map 3 through Battle 01-completion milestone: the accepted-evidence inventory per
-  scenario segment, the exact index denominators, the RA-01..RA-12 gap register, and the research
-  closure plan; it is an audit, not a readiness report.
+  the ADR 0009 Map 3 through Battle 01-completion milestone: the accepted-evidence inventory, exact
+  index denominators, ADR 0010 profile constraints, RA-01..RA-12 gaps, and ordered Research closure
+  plan, including deferred 6A persistence and mandatory private-local 7C/8C evidence; it remains an
+  open audit, not a readiness report.
 - [`map-data-inventory.md`](./research/map-data-inventory.md): the complete 1,390-file map ASM build
   graph, 727 internal H1 bindings, 662 include-site-only bodies, 64+66 setup-selection rows, ROM
   parity of the 126 six-pointer setup tables, 125 entity-list sources/980 physical records with suffix
