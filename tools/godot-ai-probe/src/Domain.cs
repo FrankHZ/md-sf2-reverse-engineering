@@ -2,7 +2,8 @@ namespace GodotProbe.Domain;
 
 /// <summary>
 /// Deterministic turn-based grid simulation with no Godot dependencies.
-/// Caller-dependent behavior is fully reproducible from the seed.
+/// Seeded output is reproducible only within the controlled probe runtime.
+/// System.Random is not a cross-runtime gameplay or remake determinism contract.
 /// </summary>
 public sealed class SimState
 {
