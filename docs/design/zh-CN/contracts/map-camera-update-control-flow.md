@@ -5,7 +5,7 @@
 - 现代化：**允许** 在已准入兼容输入上使用引擎原生摄像机状态与调度，同时保留等价抽象决定/更新轨迹
 - 未知：自然调用方准入、运行时目标域、被调方效果、寄存器/CCR ABI、中断节奏、滚动轨迹、VDP 可见输出、帧时序与呈现
 
-> 本文件是 [`map-camera-update-control-flow.md`](../../contracts/map-camera-update-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-camera-update-control-flow.md`](../../contracts/map-camera-update-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 

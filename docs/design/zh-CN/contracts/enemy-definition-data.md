@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：103 个原版敌人身份与固定定义、其有序战斗/地图精灵引用、63 行 NPC 地图精灵尾与受限地图精灵查找消费者
 
-> 本文件是 [`enemy-definition-data.md`](../../contracts/enemy-definition-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`enemy-definition-data.md`](../../contracts/enemy-definition-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 

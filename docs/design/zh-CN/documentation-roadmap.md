@@ -4,7 +4,7 @@
 - 记录日期：2026-08-01
 - 范围：将带来源的合同组织成简洁的面向玩家的说明，而不改变其证据标签；未来的重制选择仍需显式决策与 H4 验收边界。
 
-> 本文件是 [`documentation-roadmap.md`](../documentation-roadmap.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`documentation-roadmap.md`](../documentation-roadmap.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 编写语言政策
 

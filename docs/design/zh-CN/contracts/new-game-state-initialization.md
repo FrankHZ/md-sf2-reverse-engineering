@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：七个已接受 `NewGame` 初始化事实的实现无关重构，不导入冷启动路由、数字内容常量、运行时结果、持久性、UI、呈现或平衡含义
 
-> 本文件是 [`new-game-state-initialization.md`](../../contracts/new-game-state-initialization.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`new-game-state-initialization.md`](../../contracts/new-game-state-initialization.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 

@@ -4,7 +4,7 @@
 - 证据日期：2026-08-09
 - 范围：原版顶层探索交接、地图事件与玩家动作优先级、交互准入、物品补充边界与受限探索操作清单的实现无关重构，不导入启动、地图数据、输入时序、战斗结果、下游服务行为、呈现或故事含义
 
-> 本文件是 [`exploration-control-flow.md`](../../contracts/exploration-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`exploration-control-flow.md`](../../contracts/exploration-control-flow.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 

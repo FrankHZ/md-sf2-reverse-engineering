@@ -5,7 +5,7 @@
 - 现代化：**允许** 在准入域内使用引擎原生缓冲与平台 `memmove` 等价物
 - 未知：零长度支持、跨符号边界顺序、地址/长度回绕、畸形或硬件映射范围、调用方可达性、原子性、并发、时序与硬件效果
 
-> 本文件是 [`byte-copy-service.md`](../../contracts/byte-copy-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`byte-copy-service.md`](../../contracts/byte-copy-service.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 目的
 

@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：44 个原版基础法术身份与属性行、89 个固定法术定义、打包身份/等级与动画字段，以及半径 3 存储例外
 
-> 本文件是 [`spell-definition-data.md`](../../contracts/spell-definition-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`spell-definition-data.md`](../../contracts/spell-definition-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 

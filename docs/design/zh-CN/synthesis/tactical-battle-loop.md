@@ -5,7 +5,7 @@
 - 读者：需要理解玩家/AI 控制、动作构建、解决、状态回放与战斗内结果交接的研究者、设计文档作者与保真实现者。
 - 范围：只消费当前 `main` 上已接受的 battle-loop、battle-functions、battle-actions、battle-AI、战场/寻路、battle-scene、战斗、法术、随机性与存档证据。
 
-> 本文件是 [`tactical-battle-loop.md`](../../synthesis/tactical-battle-loop.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`tactical-battle-loop.md`](../../synthesis/tactical-battle-loop.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 这是[文档路线图](../../documentation-roadmap.md) 所述的第二篇 Layer B 综合，扩展了[游戏总览](../../synthesis/gameplay-overview.md)中的战斗边界。它不替换研究所有者、测试夹具或证据绑定子系统合同。**已确认** 指边界有链接的 Layer A 支持。**推断** 指多个已确认边界被连接成中性的面向玩家循环。**未知** 指当前证据不允许进一步解读。
 

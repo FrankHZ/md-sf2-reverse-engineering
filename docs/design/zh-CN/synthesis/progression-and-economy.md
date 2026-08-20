@@ -5,7 +5,7 @@
 - 读者：需要区分原版资源规则与后续产品决定的研究者、保真实现者与设计师。
 - 范围：连接已接受的 EXP、升级、金币、敌人掉落、物品转移与服务证据，而不声称完整的战役经济或预期难度曲线。
 
-> 本文件是 [`progression-and-economy.md`](../../synthesis/progression-and-economy.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`progression-and-economy.md`](../../synthesis/progression-and-economy.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 

@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：原版全局标志状态的实现无关存储与操作身份，不指定战役、持久性、调用方、呈现或平衡含义
 
-> 本文件是 [`global-flag-state.md`](../../contracts/global-flag-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`global-flag-state.md`](../../contracts/global-flag-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 

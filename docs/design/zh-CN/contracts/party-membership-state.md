@@ -4,7 +4,7 @@
 - 证据日期：2026-08-08
 - 范围：已加入部队与活跃队伍成员状态、计数前缀重建与源审查成员辅助的实现无关重构，不导入 map-script 命令行为、持久性、UI、名册选择策略、呈现或平衡含义
 
-> 本文件是 [`party-membership-state.md`](../../contracts/party-membership-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`party-membership-state.md`](../../contracts/party-membership-state.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 

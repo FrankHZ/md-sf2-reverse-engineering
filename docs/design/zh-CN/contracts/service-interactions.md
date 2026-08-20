@@ -13,7 +13,7 @@
   `src/sf2tool/h2/menus.py`、`src/sf2tool/h3/church_raise_lifecycle.py`、`src/sf2tool/h3/church_cure_lifecycle.py`、`src/sf2tool/h3/church_save_lifecycle.py`；以及
   `docs/research/common-menus.md`。
 
-> 本文件是 [`service-interactions.md`](../../contracts/service-interactions.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`service-interactions.md`](../../contracts/service-interactions.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 已确认的交互合同
 

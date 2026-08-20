@@ -4,7 +4,7 @@
 - **未知的原版行为：** 非空地图 52 直接 `rts` 事件配置的正常剧情可达性、精确的 VDP 可见滚动时序、硬件级动画扫描线时序，以及最终的 VDP 可见渲染一致性
 - 重制状态：实现无关的 Phase 3 合同；尚未选择引擎
 
-> 本文件是 [`map-exploration.md`](../../contracts/map-exploration.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-exploration.md`](../../contracts/map-exploration.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 合同边界
 

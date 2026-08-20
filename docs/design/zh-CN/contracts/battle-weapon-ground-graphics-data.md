@@ -4,7 +4,7 @@
 - 证据日期：2026-08-14
 - 范围：原版战斗武器、武器调色板与地面图形语料作为私有、引擎无关导入
 
-> 本文件是 [`battle-weapon-ground-graphics-data.md`](../../contracts/battle-weapon-ground-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`battle-weapon-ground-graphics-data.md`](../../contracts/battle-weapon-ground-graphics-data.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 

@@ -5,7 +5,7 @@
 - 读者：研究者、保真实现者与未来地图设计者，需要一份原版证据已经约束了什么因素的简明模型。
 - 范围：可观察的结构、状态选择、变更阶段、交互排序，以及在空间或体验式地图分析开始之前所需的证据。
 
-> 本文件是 [`map-design-principles.md`](../../synthesis/map-design-principles.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签、源码标识符、fixture ID 与路径按 R2 原样保留。
+> 本文件是 [`map-design-principles.md`](../../synthesis/map-design-principles.md) 的中文镜像。英文原文始终是审阅基线；本镜像为派生文档，遵循 [`glossary.md`](../../glossary.md) 的术语规则（R1–R7）。证据标签按 R1 使用固定中文译法；源码标识符、fixture ID 与路径按 R2 原样保留。
 
 ## 判断边界
 
