@@ -559,13 +559,36 @@ def test_failure_status_is_closed_and_verifier_promotes_cleanup_diagnostics(
     assert not observed_path.exists()
 
 
-def test_index_bindings_match_actual_callbacks_and_keep_map3_aggregate_unassociated(
+def test_index_bindings_close_primary_contract_and_keep_map3_aggregate_unassociated(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     rail._assert_index_bindings()
     index = load_json(rail.INDEX)
-    record = next(item for item in index["records"] if item["id"] == "map.data.ms-map3")
-    record["evidence"].append(
+    path = tmp_path / "research-index.json"
+    monkeypatch.setattr(rail, "INDEX", path)
+    primary_id = "map.data.ms-map3-initfunction"
+
+    for contracts in (
+        None,
+        ["docs/design/contracts/map-exploration.md"],
+        [
+            "docs/design/contracts/map3-controlled-admission.md",
+            "docs/design/contracts/map-exploration.md",
+        ],
+    ):
+        drift = deepcopy(index)
+        primary = next(item for item in drift["records"] if item["id"] == primary_id)
+        if contracts is None:
+            primary.pop("designContracts")
+        else:
+            primary["designContracts"] = contracts
+        path.write_text(json.dumps(drift), encoding="utf-8")
+        with pytest.raises(ValueError, match="primary design contract singleton"):
+            rail._assert_index_bindings()
+
+    drift = deepcopy(index)
+    aggregate = next(item for item in drift["records"] if item["id"] == "map.data.ms-map3")
+    aggregate["evidence"].append(
         {
             "level": "H3",
             "fixture": "tests/fixtures/h3/map3-admitted-start-v1.json",
@@ -579,9 +602,7 @@ def test_index_bindings_match_actual_callbacks_and_keep_map3_aggregate_unassocia
             ],
         }
     )
-    path = tmp_path / "research-index.json"
-    path.write_text(json.dumps(index), encoding="utf-8")
-    monkeypatch.setattr(rail, "INDEX", path)
+    path.write_text(json.dumps(drift), encoding="utf-8")
     with pytest.raises(ValueError, match="binding set|bulk-associate"):
         rail._assert_index_bindings()
 

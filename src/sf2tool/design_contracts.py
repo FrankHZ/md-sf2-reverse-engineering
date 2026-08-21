@@ -298,6 +298,11 @@ CONTRACTS = {
             "sf2-gameflow-core-static-v1"
         ),
     },
+    "docs/design/contracts/map3-controlled-admission.md": {
+        "tests/fixtures/h3/map3-admitted-start-v1.json": (
+            "sf2-map3-admitted-start-runtime-v1"
+        ),
+    },
     "docs/design/contracts/startup-control-flow.md": {
         "tests/fixtures/h2/gameflow-core-static-v1.json": (
             "sf2-gameflow-core-static-v1"

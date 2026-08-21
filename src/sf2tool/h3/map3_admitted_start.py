@@ -993,9 +993,9 @@ def _assert_index_bindings() -> None:
     ):
         raise ValueError("Map 3 admitted-start must not bulk-associate aggregate Map 3 records")
     primary = records["map.data.ms-map3-initfunction"]
-    if primary.get("designContracts"):
-        # The existing owner has no design association; do not silently promote one here.
-        raise ValueError("Map 3 admitted-start primary owner design association drift")
+    expected_primary_contracts = ["docs/design/contracts/map3-controlled-admission.md"]
+    if primary.get("designContracts") != expected_primary_contracts:
+        raise ValueError("Map 3 admitted-start primary design contract singleton drift")
 
 
 def _assert_lua_role_contract() -> None:
