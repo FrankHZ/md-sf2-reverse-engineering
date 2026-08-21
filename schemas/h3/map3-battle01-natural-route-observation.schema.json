@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:map3-battle01-natural-route-observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "caseOrder", "records", "callbacksCleared", "restoration"],
+  "properties": {
+    "system": {"const": "sf2-map3-battle01-natural-route-runtime-v1"},
+    "caseOrder": {"const": ["natural-map3-opening-to-messenger-entry"]},
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {"$ref": "urn:sf2:h3:map3-battle01-natural-route-fixture#/definitions/record"}
+    },
+    "callbacksCleared": {"const": true},
+    "restoration": {"$ref": "urn:sf2:h3:map3-battle01-natural-route-fixture#/definitions/restoration"}
+  }
+}

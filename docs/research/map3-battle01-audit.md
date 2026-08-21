@@ -81,8 +81,8 @@ research gaps registered below.
 
 ## Exact Accepted-Index Audit
 
-The research index now contains **1,621 records**, **166 fixtures** (74 H2, 92 H3), and
-**2,568 address bindings**. The scenario-relevant denominators are:
+The research index now contains **1,621 records**, **167 fixtures** (74 H2, 93 H3), and
+**2,570 address bindings**. The scenario-relevant denominators are:
 
 | Evidence surface | Exact count | Owner |
 | --- | ---: | --- |
@@ -157,6 +157,11 @@ natural admission and behavior when the 2A route requires it (RA-08); and reache
 roof/door/warp/vehicle transition frames. Under 8C these reached observable surfaces join RA-11; they
 are no longer optional presentation work.
 
+**Confirmed (R2 opening only):** from the R1 admitted wait, one original-controller matrix reaches
+the original `cs_5149A` messenger entry before its body.  It observes the house/school doors and
+warps, raw-coordinate zone admissions, Sarah/entity-142 actions, entity-142 re-init, and the
+source-derived logical input corpus.  This does not observe any continuation beyond that entry.
+
 ### 4. Dialogue, interaction, and area descriptions
 
 **Confirmed:** the dialogue command family (2,883 ordered references; 21-case handler-local H3); the
@@ -168,6 +173,10 @@ area-description tables.
 selections, and cursor/state effects (RA-09); the exact reached text/window/portrait output and cadence
 required by 8C (RA-11); and normal-story reachability of the description/init callers. Original text
 and captures remain private-local 7C inputs, not tracked fixture payloads.
+
+**Confirmed (R2 opening only):** the callback chronology identifies reached Map 3 program entries
+through `cs_5149A`'s pre-body boundary.  It does not expose dialogue payload, rendered speaker/window
+state, timing, or the unexecuted messenger body.
 
 ### 5. Field menu and UI
 
@@ -181,6 +190,9 @@ reaches the field menu, that exact behavior is a route-dependent research gap; o
 closes as not reached without requiring a new product choice. Selected 9A's remappable actions,
 reduced-flash mode, and adjusted text are product/H4 deviation surfaces, never original-fidelity
 evidence.
+
+**Confirmed (R2 opening only):** the reached route reports field menu `not-reached`; no menu behavior
+or menu admission is claimed.
 
 ### 6. Map resources, camera, layout
 
@@ -205,6 +217,11 @@ the intermediate maps, the trigger coordinates actually reached, the battle-unlo
 before/start cutscene execution in a natural flow are all **Unknown**. The accepted Battle 01 H3
 entries use Debug Battle Test, which sets the shared intro flag and skips the cutscene scripts; the
 two Battle 01 cutscene data files are indexed but their story effects are not reconstructed.
+
+**Inferred / partial (R2):** source/H1/ROM deterministically reconstruct the Map 3 → 19 → 20 → 21
+→ 40 → 57 topology and Battle 01 routing, but the only runtime observation remains the Map 3 opening
+through `cs_5149A` entry.  The exact remaining seam is the messenger body through F401, the Map 57
+trigger, before/start cutscenes, and battle-ready state.
 
 ### 8. Battle 01 natural encounter setup
 
@@ -305,15 +322,15 @@ slice under ADR 0003 (one launch per coherent matrix).
 | --- | --- | --- | --- | --- | --- |
 | RA-01 | 1 | Exact admitted Map 3 start state | R1 controlled matrix now captures map, position, facing, flag bitset, party/stats/items/spells, gold, difficulty, RNG, and time at first exploration entry and observes the default row; natural player-visible admission remains R2 | **Confirmed** controlled default / **Unknown** natural state | R2 dependency |
 | RA-02 | 2 | Map 3 setup/init/event chain effects | R1 observes setup → init function and no default guarded program request; R2 must observe a natural real-program/event/description chain and state effects | **Confirmed** controlled default prefix / **Unknown** natural effects | R2 dependency |
-| RA-03 | 3 | Natural Map 3 route | Scripted-input exploration matrix from the admitted state recording ordered inputs, zone events, entity interactions, area inspections, and the exit sequence; accept only the smallest Research-proven route required by option 2A | **Unknown** | Blocking |
-| RA-04 | 7 | Map-to-battle admission | Extend the route matrix to the battle trigger: intermediate maps, trigger coordinates reached, battle-unlock flag state, and before/start cutscene execution in the natural flow | **Confirmed** static; **Unknown** natural | Blocking |
+| RA-03 | 3 | Natural Map 3 route | R2 confirms the opening from the admitted state through `cs_5149A` entry-before-body; continuation after that entry remains a separately observed route question | **Confirmed** reached opening / **Unknown** continuation | Blocking |
+| RA-04 | 7 | Map-to-battle admission | Extend from `cs_5149A`'s body to the battle trigger: intermediate maps, trigger coordinates reached, battle-unlock flag state, and before/start cutscene execution in the natural flow | **Confirmed** static; **Inferred** topology; **Unknown** natural admission | Blocking |
 | RA-05 | 8 | Battle 01 natural encounter state | Capture the full scenario-relevant state at first battle-ready state from the natural flow; bind roster/stats/items/spells/positions/flags and later-round region state | **Confirmed** debug-entry; **Unknown** natural | Blocking |
 | RA-06 | 9+10 | Complete playable battle trace | Fixed-seed, scripted-input H4 reference matrix through victory recording the chronological player/AI/navigation/action/resolution/reward/status trace and every reached branch; the trace supplies a deterministic acceptance case without replacing 4A manual agency in ordinary play | **Confirmed** bounded; **Unknown** complete | Blocking |
 | RA-07 | 12 | Victory, after-battle, endpoint state | Continue the battle matrix through victory to the after-battle seam: program execution, return routing, and post-battle state capture | **Confirmed** generic order; **Unknown** natural | Blocking |
-| RA-08 | 5 | Field menu on route | If the 2A route reaches it, close that exact natural admission and behavior; otherwise record it as not reached and excluded from the minimum route | **Confirmed** static only | Route-dependent |
-| RA-09 | 4 | Route dialogue chronology | Dialogue programs, text-line references, speakers, and cursor/state effects on the route, recorded by the route matrix | **Confirmed** corpus; **Unknown** chronology | Blocking |
+| RA-08 | 5 | Field menu on route | R2 opening records `not-reached`; if a later proven continuation reaches it, close that exact admission and behavior | **Confirmed** NotReached opening | Route-dependent |
+| RA-09 | 4 | Route dialogue chronology | R2 records opening callback/program chronology only; text-line references, speakers, cursor/state effects, and messenger-body meaning remain a continuation question | **Confirmed** corpus and opening program chronology; **Unknown** text chronology | Blocking |
 | RA-10 | 14 | Deferred persistence boundary | Record the accepted 6A exclusion, restart-to-admitted-snapshot behavior, and harness-reset ≠ save; retain cross-process durability as a separate-milestone Unknown | **Confirmed** in-process; **Unknown** durable | Deferred / non-blocking |
-| RA-11 | 6/11/15 | Reached 7C/8C presentation, hardware, and private-reference evidence | Inventory and hash every reached private immutable input/capture with provenance and producing tool/core/configuration; deterministically capture and define pixel/palette/frame cadence, animation/timing, audio waveform/chip/timing, VInt/DMA/CRAM/VDP and other reached observables; specify exact or explicitly field-specific tolerances and a licensing-safe public report shape | **Confirmed** static assets and bounded seams; **Unknown** complete reached output | Blocking |
+| RA-11 | 6/11/15 | Reached 7C/8C presentation, hardware, and private-reference evidence | R2 adds private provenance and bounded opening callback/state facts; inventory/hash reached immutable inputs and capture pixel/palette/frame/audio/hardware observables in a separately scoped continuation | **Confirmed** static assets, bounded seams, and opening provenance foundation; **Unknown** complete reached output | Blocking |
 | RA-12 | 13 | Observable endpoint state | State-fact contract for the final scenario-relevant state at accepted endpoint 5B: which fields, in what order, after which after-battle effects | **Unknown** | Blocking |
 
 RA-11 is the only ADR 0005 condition-3 reopening authorized here. Every question must be selected by
@@ -338,10 +355,11 @@ root/worker slice contract (ADR 0004):
    the controlled seam** by `sf2-map3-admitted-start-runtime-v1`. It joins the 26 Map 3 records to
    the observed default row, captures the admitted snapshot, and records private-input identity/tool/
    timing metadata. It does not close natural route/program effects or full 8C capture work.
-2. **Slice R2 — smallest natural route matrix (RA-03, RA-04, RA-08, RA-09, reached RA-11):** option
-   2A fixes the selection rule; observe exploration, mandatory dialogue/menu behavior, transition,
-   natural battle admission, and reached map/text/audio/frame/hardware observables in one chronological
-   matrix. Do not close optional content that the accepted route does not reach.
+2. **Slice R2 — smallest natural route matrix (RA-03, RA-04, RA-08, RA-09, reached RA-11):**
+   **completed only through the Map 3 opening** by
+   `sf2-map3-battle01-natural-route-runtime-v1`: it reaches `cs_5149A` entry-before-body, records
+   field menu `not-reached`, and establishes private provenance/callback-state foundations.  It leaves
+   Map 19/20/21/40/57 and Battle 01 as static reconstruction, not runtime evidence.
 3. **Slice R3 — complete Battle 01 playthrough (RA-05, RA-06, reached RA-11):** fixed seed and
    scripted H4 reference inputs from natural entry through victory; capture every reached logical and
    8C scene/audio/hardware layer while reusing accepted battle, scene, graphics, sound, and timing
@@ -364,6 +382,7 @@ become a readiness report.
 | --- | --- | --- | --- |
 | Controlled New reaches MainLoop with current/egress map 3 | **Confirmed** bounded runtime | witch/save H3 rails, [story-progression](../design/synthesis/story-progression.md) | Not a natural player-visible New flow or complete start snapshot |
 | Controlled New reaches first Map 3 exploration wait through default setup/init | **Confirmed** bounded runtime | [`map3-admitted-start`](map3-admitted-start.md), `sf2-map3-admitted-start-runtime-v1` | Not natural reachability, route programs/events, or 8C presentation |
+| R1 admitted Map 3 opening reaches `cs_5149A` entry-before-body | **Confirmed** bounded runtime | [`map3-battle01-natural-route`](map3-battle01-natural-route.md), `sf2-map3-battle01-natural-route-runtime-v1` | Not a continuous Map 19/20/21/40/57 or Battle 01 runtime route |
 | 26 Map 3 records exist, aggregate-owned, unassociated | **Confirmed** indexed inventory | `sf2-map-data-static-v1`, [map-data research](map-data-inventory.md) | Not route chronology, selection, or effects |
 | Map 3 default/609/506/543 init dispatch executes its modeled targets | **Confirmed** bounded runtime | `sf2-map-init-dispatch-runtime-v1`, [map-data research](map-data-inventory.md) | Init-script effects, story reachability, persistence |
 | Map 3 setup flag meanings 506/543/609 | **Unknown** | `sf2-map-data-static-v1` | Shared operands across many maps; not route evidence by themselves |
@@ -390,3 +409,9 @@ The segment inventory cites the existing rails with their own reproduction comma
 `uv run sf2 h3 map-init-dispatch`, `uv run sf2 h3 map-event-dispatch`, the Battle 01 turn-order/
 activation H3 scripts, and the battle-loop/battle-control/combat/spell rails. Generated outputs stay
 under ignored `local/derived/`.
+
+The bounded R2 opening is reproduced by:
+
+```powershell
+uv run sf2 h3 map3-battle01-natural-route --timeout-seconds 300
+```

@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:map3-battle01-natural-route-callback-failure",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["owner", "caseId", "phase", "role", "actualPc", "expectedPc", "callbackCount", "callbacksCleared", "outputRemoved", "restoration", "restorationMismatch", "error"],
+  "properties": {
+    "owner": {"const": "map3-battle01-natural-route"},
+    "caseId": {"enum": ["bootstrap", "natural-map3-opening-to-messenger-entry"]},
+    "phase": {"enum": ["await-check-sram", "await-checkpoint", "await-r1-new-action", "await-r1-new-game", "await-r1-save-game", "await-r1-main-loop", "await-r1-exploration", "await-r1-setup", "await-r1-init-call", "await-r1-init", "await-r1-init-return", "await-r1-wait", "route"]},
+    "role": {"enum": ["bootstrap-check-sram", "checkpoint", "r1-witch-new-action", "r1-new-game", "r1-save-game", "r1-main-loop", "r1-exploration-loop", "r1-map-setup-wrapper-entry", "r1-setup-resolution-return", "r1-init-call", "map3-init-dispatch", "r1-init-return", "r1-wait-for-event", "input-controller", "input-controller-move-commit", "player-action", "activated-entity", "entity-dispatch", "entity-event", "zone-admission", "zone-event", "step-door", "map-script", "warp", "bootstrap-watchdog", "case-watchdog", "route-phase-watchdog", "restoration", "callback-cleanup"]},
+    "actualPc": {"type": "integer", "minimum": 0},
+    "expectedPc": {"anyOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]},
+    "callbackCount": {"type": "integer", "minimum": 0},
+    "callbacksCleared": {"type": "boolean"},
+    "outputRemoved": {"type": "boolean"},
+    "restoration": {"$ref": "#/definitions/restoration"},
+    "restorationMismatch": {"anyOf": [{"$ref": "#/definitions/restorationMismatch"}, {"type": "null"}]},
+    "error": {"type": "string", "minLength": 1}
+  },
+  "allOf": [{
+    "if": {"properties": {"restoration": {"properties": {"sessionStateRestored": {"const": true}}, "required": ["sessionStateRestored"]}}, "required": ["restoration"]},
+    "then": {"properties": {"restorationMismatch": {"type": "null"}}},
+    "else": {"properties": {"restorationMismatch": {"$ref": "#/definitions/restorationMismatch"}}}
+  }],
+  "definitions": {
+    "restoration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scopeArmed", "gameFlags", "combatantAllyRecords", "mapAndBattleState", "playerEntity", "gold", "generatedRam", "sessionCartPatches", "sessionStateRestored", "callbacksCleared", "outputRemoved"],
+      "properties": {
+        "scopeArmed": {"type": "boolean"}, "gameFlags": {"type": "boolean"}, "combatantAllyRecords": {"type": "boolean"}, "mapAndBattleState": {"type": "boolean"}, "playerEntity": {"type": "boolean"}, "gold": {"type": "boolean"}, "generatedRam": {"type": "boolean"}, "sessionCartPatches": {"type": "boolean"}, "sessionStateRestored": {"type": "boolean"}, "callbacksCleared": {"type": "boolean"}, "outputRemoved": {"type": "boolean"}
+      }
+    },
+    "restorationMismatch": {
+      "type": "object", "additionalProperties": false, "required": ["domain", "address", "expected", "actual"],
+      "properties": {
+        "domain": {"enum": ["scope", "gameFlags", "combatantAllyRecords", "mapAndBattleState", "playerEntity", "gold", "generatedRam", "sessionCartPatches"]},
+        "address": {"type": "integer", "minimum": 0}, "expected": {"type": "integer", "minimum": 0, "maximum": 255}, "actual": {"type": "integer", "minimum": 0, "maximum": 255}
+      }
+    }
+  }
+}
