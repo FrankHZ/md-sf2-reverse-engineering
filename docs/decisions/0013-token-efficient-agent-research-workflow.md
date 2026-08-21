@@ -1,9 +1,10 @@
 # ADR 0013: Token-Efficient Agent Research without Weakening Evidence
 
-- Status: **Proposed**
+- Status: **Accepted**
 - Proposal date: 2026-08-20
-- Scope: agent context, review, telemetry, and artifact-inspection workflow
-- Proposed option: **preserve full-game reverse engineering while reducing repeated context and
+- Acceptance date: 2026-08-20
+- Scope: agent context, review, routing, and artifact-inspection workflow
+- Decision: **preserve full-game reverse engineering while reducing repeated context and
   orchestration work**
 
 ## Context
@@ -25,12 +26,9 @@ metric. The repository does not contain the provider-side split among uncached i
 cache writes, reasoning, and output tokens, and it must not infer monetary cost or exact efficiency
 from an aggregate counter alone.
 
-Official OpenAI model guidance recommends tracking cached-token fields, states that long sessions can
-amplify repeated prompt and tool content, and recommends stating instructions once and exposing only
-relevant tools. It also reports a 41--66% total-token reduction in one internal coding-agent evaluation
-after prompt simplification, while explicitly warning that the result is directional and must be
-validated on representative workloads. Those figures are external guidance, not a forecast or an
-acceptance target for this repository.
+Official OpenAI model guidance states that long sessions can amplify repeated prompt and tool content
+and recommends lean prompts that state each instruction once and expose only relevant tools. This ADR
+adopts those qualitative practices without treating this preservation project as a model benchmark.
 
 ## Reproduced Repository Audit
 
@@ -114,9 +112,9 @@ The audit also identifies repeatable amplification risks:
    repeated semantic review.
 
 The Git audit proves repository scale and churn, not the share of aggregate tokens attributable to
-any one risk. Provider-side or client-side usage telemetry is required before assigning percentages.
+any one risk. This decision therefore makes no percentage, cost, or model-performance claim.
 
-## Proposed Decision
+## Decision
 
 ### Preserve the mission and evidence bar
 
@@ -128,26 +126,17 @@ private-input boundaries, root acceptance, or independent main-gate review.
 A token budget is diagnostic. It is never permission to omit an accepted artifact, weaken a golden,
 silently skip an affected partition, or mark an incomplete slice complete.
 
-### Measure comparable slices before claiming savings
+### Apply best practices without a benchmark program
 
-When the active client exposes the fields, each accepted slice should retain a compact operational
-summary of:
+This repository is not a model or workflow benchmark. It will not add per-role token telemetry,
+prompt collection, billing records, matched-slice experiments, quantitative savings thresholds, or
+extra acceptance work solely to measure this decision. Provider or client aggregate usage may remain
+an anecdotal signal, but it is not durable project evidence and is not copied into tracked reports.
 
-- input, cached-input, cache-write, reasoning, and output tokens by worker, root, and reviewer role;
-- number of agent turns, correction rounds, and runtime launches;
-- first-pass acceptance or the severity and owner of each correction;
-- accepted paths and the exact focused/public commands; and
-- whether a compaction, worker replacement, or unrelated-history fork occurred.
-
-Raw prompts, private source text, tool transcripts, ROM-derived content, and personal billing data
-must not be committed. A later implementation may keep machine-local telemetry and publish only a
-small aggregated, non-sensitive project report. Missing fields remain unknown; they are not estimated
-from elapsed time or repository line counts.
-
-Compare at least three representative slices after adoption with matched earlier or baseline slices.
-Judge efficiency together with first-pass acceptance, evidence completeness, defects found after
-handoff, and gate results. Lower token use is an improvement only when those quality measures do not
-regress.
+The changes are reviewed through the project's existing quality boundary: evidence completeness,
+focused and affected gates, root acceptance, independent main-gate review, and correction severity.
+Ordinary review may identify obvious repeated context or review churn, but it does not create a
+parallel measurement program.
 
 ### Start ordinary workers with bounded context
 
@@ -167,11 +156,13 @@ and not a substitute for the tracked owning artifacts.
 boundary. Incident-specific procedures and detailed lane checklists should move to routed operational
 documents or skills that are read only when their trigger applies.
 
-Resume guidance should offer a small current-frontier view containing exact main identity, active
-milestone, active lanes, accepted counters, immediate dependencies, and owning links. A subsystem
-worker reads that view, ADR 0004's checklist, its owning document, and the bounded sources named in its
-slice. It does not routinely reread the complete root status, documentation index, and full
-source-coverage ledger unless the slice changes or audits those global surfaces.
+Resume guidance should offer a small route containing stable phase and milestone boundaries, runtime
+identity commands, and owning links. Exact main identity, active worktrees, counters, and dependencies
+are derived from Git and the owning manifests at runtime instead of being copied into another stale
+status page. A subsystem worker reads that route, ADR 0004's checklist, its owning document, and the
+bounded sources named in its slice. It does not routinely reread the complete root status,
+documentation index, and full source-coverage ledger unless the slice changes or audits those global
+surfaces.
 
 The later implementation must preserve a durable route to every detailed rule. Prompt reduction must
 not strand a required constraint only in an external task or personal memory.
@@ -204,21 +195,22 @@ milestone, release/merge-readiness, shared-harness, or explicit full-parity gate
 not reinterpret a long-running command as a large token consumer: gate wall-clock time and model
 context are measured separately.
 
-## Proposed Adoption Sequence
+## Adoption Sequence
 
-Acceptance of this ADR would authorize later, separately reviewed implementation slices in this
-order:
+Adoption is split into independently reviewed batches:
 
-1. define the compact, privacy-safe slice telemetry record and capture only fields the client exposes;
-2. add a small current-frontier view and update resume routing to consume it;
-3. reduce duplicated always-injected instructions while preserving routed normative rules;
-4. change ordinary root-to-worker creation to the bounded no-history contract;
-5. standardize machine-reduced artifact and diff summaries; and
-6. evaluate three representative slices before accepting any quantitative savings claim.
+1. add the compact resume route, make global documents opt-in by task ownership, and make ordinary
+   Phase 2 worker creation use the bounded no-history contract;
+2. route incident-specific procedures and detailed checklists out of always-injected instructions
+   where they can be moved without losing a normative trigger or link;
+3. standardize machine-reduced summaries for large artifacts and diffs where existing tools do not
+   already provide them; and
+4. consolidate independent review findings into bounded batches while preserving immediate P0
+   escalation and independent re-review of corrections.
 
-Each slice must declare its exact paths and active-lane dependencies. The current proposal does not
-edit `AGENTS.md`, change a model or reasoning effort, implement telemetry, alter the planner, or start
-Phase 4.
+Each batch declares its exact paths and active-lane dependencies. This decision does not change a
+model or reasoning effort, implement telemetry, alter the affected planner, relax any evidence gate,
+or start Phase 4.
 
 ## Consequences and Risks
 
@@ -226,8 +218,8 @@ Phase 4.
   durable owning documents, and same-worker continuation for the active slice.
 - Consolidated review can take longer before the first response. It should reduce correction churn
   without weakening independent review or preventing immediate reporting of a destructive P0 issue.
-- Client token fields may be absent or use a provider-specific accounting boundary. Missing data stays
-  explicit, and cached-token volume is not treated as uncached monetary cost.
+- Without a dedicated benchmark, the project will not claim a measured percentage reduction. The
+  intended outcome is less repeated context while accepted evidence quality stays unchanged.
 - Moving detailed rules out of `AGENTS.md` can create routing failures. No rule is removed until its
   replacement location, trigger, and link are independently reviewed.
 - Machine summaries can hide malformed detail if their reducers are weak. Reducers need deterministic
