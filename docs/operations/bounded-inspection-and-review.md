@@ -1,8 +1,9 @@
 # Bounded Artifact, Diff, Handoff, and Review Runbook
 
 Use this runbook when a task inspects a large tracked artifact or topic diff, prepares a root or
-main-gate handoff, or independently reviews a candidate. It uses existing Git and `sf2` outputs; it
-does not introduce telemetry, a benchmark, a new acceptance gate, or a substitute for owning evidence.
+main-gate handoff, or independently reviews a candidate. It uses existing Git, GitHub, and `sf2`
+outputs; it does not introduce telemetry, a benchmark, a new acceptance gate, or a substitute for
+owning evidence.
 
 ## Inspect Identity and Shape First
 
@@ -49,7 +50,14 @@ $artifactPath = 'path/to/artifact'
 Get-Item -LiteralPath $artifactPath | Select-Object FullName, Length
 Get-FileHash -LiteralPath $artifactPath -Algorithm SHA256
 git ls-files --stage -- $artifactPath
+git status --short --ignored -- $artifactPath
 ```
+
+An index row proves the path is tracked. A `??` status is non-ignored untracked content and a `!!`
+status is ignored content; both require the owning private/generated policy before use or handoff. No
+output from `git ls-files` alone is not a tracked/private/generated boundary proof. `FullName` is a
+local diagnostic only: a public handoff uses the repository-relative owner path or allowed identity
+and provenance, never a private artifact's absolute machine path.
 
 Then run the artifact's owning extractor, schema validator, H2/H3 command, or contract test and retain
 its bounded summary: identity, counts, owner paths, hashes where public, validation failures, and the
@@ -72,18 +80,36 @@ or a transcript that embeds it.
 A worker-to-root, root-to-main-gate, or correction handoff is concise and self-contained. Include:
 
 1. repository, worktree, branch, exact base, head, merge base, and candidate tree;
-2. exact changed paths, classified by owner and purpose;
-3. dependencies, active-lane/shared-file relationships, and required rebase order;
-4. the bounded evidence or decision summary with Confirmed, Inferred, and Unknown labels where
+2. PR URL and number when a PR exists, plus its Draft/open, mergeable, and check state;
+3. clean worktree status and explicit proof that the local candidate head equals the pushed remote
+   topic head;
+4. exact changed paths, classified by owner and purpose;
+5. dependencies, active-lane/shared-file relationships, and required rebase order;
+6. the bounded evidence or decision summary with Confirmed, Inferred, and Unknown labels where
    research claims are involved;
-5. affected planner partitions and every reproduced command with PASS, FAIL, SKIPPED, or unavailable
+7. affected planner partitions and every reproduced command with PASS, FAIL, SKIPPED, or unavailable
    status plus the exact reason;
-6. private/generated/tracked-boundary result;
-7. findings first, ordered P0, P1, then P2, with an exact path and line, Git object, fixture, address,
+8. private/generated/tracked-boundary result;
+9. findings first, ordered P0, P1, then P2, with an exact path and line, Git object, fixture, address,
    or command result;
-8. residual risks and meaningful test gaps; and
-9. ACCEPT, ACCEPT-WITH-FOLLOW-UP, CORRECTION-REQUIRED, or REJECT, plus the smallest correction owner
+10. residual risks and meaningful test gaps; and
+11. ACCEPT, ACCEPT-WITH-FOLLOW-UP, CORRECTION-REQUIRED, or REJECT, plus the smallest correction owner
    and path scope when applicable.
+
+Exact base, head, and tree identify Git objects but do not prove that the reviewed handoff matches the
+pushed remote candidate. For a PR handoff, reproduce the freeze before review:
+
+```powershell
+git status --short --branch
+git rev-parse HEAD
+git rev-parse '@{upstream}'
+gh pr view --json number,url,state,isDraft,mergeable,headRefOid,statusCheckRollup
+```
+
+The local and upstream object IDs must match, and `headRefOid` must name that same head. Record the
+actual check conclusions rather than only saying that checks exist. Before a worker-to-root handoff
+has a PR or remote topic, mark PR identity, PR state, and remote equality **NotApplicable**, with the
+reason; do not invent remote state.
 
 Do not attach raw prompts, accumulated chat history, repeated progress commentary, complete command
 transcripts, or entire large artifacts. A command's relevant failure excerpt is evidence; unrelated
