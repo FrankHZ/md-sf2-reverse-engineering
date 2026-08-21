@@ -756,6 +756,10 @@ is created only when a real disagreement appears and the choice constrains later
 - [`0012-dependency-aware-partitioned-verification.md`](./decisions/0012-dependency-aware-partitioned-verification.md):
   accepts an always-run public core plus conservative affected Python/H1/H2/H3 partitions, with a
   read-only committed-range planner and explicit resource-lock boundaries for later orchestration.
+- [`0013-token-efficient-agent-research-workflow.md`](./decisions/0013-token-efficient-agent-research-workflow.md):
+  proposes preserving full-game reverse engineering and all accepted evidence gates while measuring
+  role-level usage, bounding ordinary worker context, routing global instructions, machine-reducing
+  large artifacts, and consolidating independent review before any workflow implementation begins.
 
 ## Evidence Vocabulary
 
