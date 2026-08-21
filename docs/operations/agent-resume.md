@@ -36,7 +36,7 @@ Read the smallest owning surface that can answer or govern the task:
 
 | Task | Required owner |
 | --- | --- |
-| Ordinary Phase 2 evidence slice | [ADR 0004](../decisions/0004-single-terra-worker-with-root-acceptance.md), its Worker Acceptance Checklist, the closest [`research/`](../research/) owner, and only the bounded sources named in the slice |
+| Ordinary Phase 2 evidence slice | [`phase2-lane-runbook.md`](./phase2-lane-runbook.md), [ADR 0004](../decisions/0004-single-terra-worker-with-root-acceptance.md), its Worker Acceptance Checklist, the closest [`research/`](../research/) owner, and only the bounded sources named in the slice |
 | Research coverage, aggregate frontier, or cadence | [`research/source-coverage.md`](../research/source-coverage.md) and [ADR 0003](../decisions/0003-static-first-batched-runtime-research.md) |
 | Evidence-bound subsystem contract | Closest [`design/contracts/`](../design/contracts/) owner and its accepted research dependencies |
 | Cross-subsystem or player-facing synthesis | [`design/documentation-roadmap.md`](../design/documentation-roadmap.md) and the closest [`design/synthesis/`](../design/synthesis/) owner |
@@ -49,15 +49,10 @@ from an old handoff or maintain them here.
 
 ## Bounded Worker Handoff
 
-For an ordinary independent Phase 2 slice, the root creates exactly one `terra_reverse_engineer`
-worker with no inherited controller turns (`fork_turns: "none"`). The handoff is self-contained and
-names the exact base and worktree, owning document, bounded source surface, owned tracked files,
-shared-file needs, expected outputs, one narrow H2/H3 command, required references, and exclusions.
-
-Continue corrections with the same worker. Inherit prior conversation only when the new work truly
-depends on it and cannot be reconstructed compactly from accepted repository state. The root still
-performs the independent diff, evidence, gate, private-boundary, and exact-path acceptance required by
-`AGENTS.md`; bounded context is not a weaker review boundary.
+For an ordinary independent Phase 2 slice, follow the normative
+[`phase2-lane-runbook.md`](./phase2-lane-runbook.md). It owns the exact role, bounded no-history
+handoff, same-worker correction, recovery, acceptance, and escalation rules. This resume route does
+not duplicate them.
 
 ## When to Read the Global Documents
 
