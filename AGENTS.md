@@ -83,92 +83,22 @@ hash-verified per worktree or exposed through narrowly scoped read-only paths, b
 
 ## Root/Worker Orchestration Contract
 
-For ordinary Phase 2 work in the active research topic worktree, the root thread scopes one coherent
-slice and its acceptance commands but does not personally reverse engineer or implement that slice. It starts exactly one
-`terra_reverse_engineer` worker with no inherited controller turns (`fork_turns: "none"`) and gives it
-a self-contained handoff naming the exact base and worktree, owning document, bounded source surface,
-expected tracked outputs, one narrow H2/H3 acceptance command, required references, and explicit
-exclusions. If the named role is unavailable, the root must explicitly spawn `gpt-5.6-terra` with the
-same bounded handoff. Do not run parallel write workers in the slice worktree.
+For an ordinary Phase 2 research slice, read and apply the complete
+[`docs/operations/phase2-lane-runbook.md`](./docs/operations/phase2-lane-runbook.md) before delegating.
+That runbook is normative when this trigger applies; its route is not permission to skip it.
+For an active research or design lane that reaches a correction, recovery, or possible blocker, read
+the runbook's corresponding sections before pausing or escalating.
 
-The worker performs the slice: complete static inventory, structured parser/contract, project-owned
-tests and research documentation, and a grouped H3 question queue. It must preserve evidence labels
-and provenance, avoid all project-direction decisions, and hand the completed work back without
-staging or committing. Questions, incomplete evidence, and review findings go back to the same worker
-through a follow-up rather than causing the root to take over reverse engineering.
+The non-negotiable boundary is one bounded Terra worker in the isolated topic worktree, with the root
+scoping and independently accepting the work rather than implementing it. Corrections return to the
+same worker, any replacement is serial after the prior worker is confirmed stopped, and safe in-scope
+work continues through gates and Draft PR handoff. Ask the user only for a material direction or
+authorization boundary, or when the runbook's operational blocker definition is actually met.
 
-Every delegation uses the complete slice contract defined by ADR 0004: owning document, bounded source
-surface, owned tracked files, shared-file needs, expected outputs, one narrow H2/H3 command, and explicit
-exclusions. The worker reads ADR 0004's complete **Worker Acceptance Checklist** before editing and treats
-it as the normative detailed acceptance profile instead of relying on a growing duplicate checklist in
-the injected role prompt. Before handoff it performs that adversarial pass against the complete diff,
-fixes the weaknesses it finds, and reports the corrections. For H3 work, a matching observation file is
-not sufficient: callback exceptions must reach the status/exit contract, diagnostics must identify the
-case plus expected/actual callback state, shared-PC roles need deterministic dispatch, and acceptance
-requires both a passing command and a Lua Console with no errors or residual callbacks.
-
-The root accepts the slice only after it reviews the worker handoff, changed-file list, diff, evidence,
-and counters; reruns the owning narrow command plus `uv run sf2 verify`; scans for private/generated
-inputs and unintended changes; stages only the accepted paths; reviews the cached diff; and commits to
-the current research topic branch, never directly to `main`.
-`uv run sf2 verify --full` remains a milestone, release/merge-readiness, shared-harness, or explicit
-full-parity gate, never the default worker or root command. A design-synthesis branch or a design-only
-advance of `main` never triggers it. This workflow is an operational division of responsibility, not a
-security boundary: worker instructions and root review are both required.
-
-### Continuation and Escalation Policy
-
-An ordinary research or design failure is not a user-approval boundary. The active lane continues
-autonomously when a focused test, H2/H3 run, schema or golden comparison, source/H1/ROM guard,
-counter, rebase, generated-artifact scan, or other acceptance gate fails. It investigates the
-evidence, makes the smallest source-backed correction inside the accepted slice, reruns the invalidated
-gates, and records the correction in the owning artifacts. A failed emulator launch may be repeated
-after a bounded instrumentation or contract repair without asking the user, provided the run remains
-non-destructive, uses the already accepted runtime question, preserves exact launch/failure accounting,
-and does not weaken a golden merely to pass.
-
-Likewise, a mechanical owned-path correction is handled within the lane rather than escalated when it
-is required to keep the accepted slice internally consistent. Examples include a fixture registry
-entry, aggregate counter, translation hash re-anchor, research-index binding, callback-role closure, or
-focused test inventory update. The root documents the added path in the slice contract and handoff,
-checks that no other active lane owns it, and serializes the work if another lane does. It asks the user
-only when the correction would materially change project direction, phase, licensing/distribution,
-private-input treatment, or another decision reserved to the user.
-
-Use **stuck** or **blocked on the user** only for an operational inability to continue: required
-filesystem or service permission is unavailable; the scheduler cannot create or resume the required
-lane agent; a required tool or dependency is unavailable with no safe in-scope fallback; persistent
-infrastructure failure prevents the commands from running; or the responsible research/design lane
-agent is genuinely unresponsive and cannot be resumed. Report that condition promptly with exact
-evidence and the smallest requested intervention. Evidence conflicts, unexpected runtime behavior,
-bounded scope corrections, ordinary failed gates, and an unresponsive child worker are not stuck
-conditions.
-
-Child-worker recovery belongs to the active lane. If its sole worker becomes unresponsive, the lane
-agent verifies that no writer process or filesystem mutation is still active, interrupts or closes
-that worker, and starts exactly one replacement worker with the complete unchanged slice contract in
-the same topic worktree. It then continues the normal worker-review-gate flow without user or
-main-gate approval. The replacement is serial, never concurrent: do not start it until the prior
-worker is confirmed stopped. The lane agent must not use worker failure as a reason to take over the
-slice implementation itself. Escalate only when the lane agent cannot perform this recovery because
-of a persistent scheduler, permission, tool, or infrastructure failure.
-
-Progress checkpoints are commentary, not completion. While safe in-scope work remains, neither a
-worker checkpoint nor a root review checkpoint ends the lane's turn or waits for user authorization.
-Continue through worker handoff, root review, required gates, exact-path staging, commit, push, and
-Draft PR handoff. Send corrections and review findings back to the same worker; do not start a second
-concurrent writer or have the root silently take over implementation. A confirmed-stopped or
-unresponsive worker may be replaced serially under the recovery rule above.
-
-Within the accepted Phase 2 direction, continue autonomously through the root/worker workflow: the
-root scopes, accepts, scans, and commits on the research topic branch; the worker performs the assigned reverse engineering or
-implementation, documentation, and slice-local narrow checks. Do not pause for approval or produce a
-user report after every ordinary slice. Ask the user only before a phase change, modern-engine choice,
-new distribution/licensing posture, destructive treatment of private inputs, or another decision that
-materially changes project direction. Preserve unrelated or unfinished work already present in the
-worktree, and have the root stage only files owned by the accepted slice. After acceptance, the root may
-push the topic branch and open or update its pull request; final integration remains serialized under the
-parallel-worktree contract above.
+Every delegation uses the complete slice contract defined by ADR 0004; its Worker Acceptance
+Checklist is the normative detailed acceptance profile. For H3 work, callback exceptions must reach the status/exit contract
+and acceptance includes a clean Lua Console. `uv run sf2 verify --full`
+remains exceptional: A design-synthesis branch or a design-only advance of `main` never triggers it.
 
 When more documents exist, use these ownership boundaries:
 

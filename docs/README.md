@@ -37,6 +37,9 @@ migrated into ADR 0001 during this audit. No continuing memory synchronization i
 
 - [`agent-resume.md`](./operations/agent-resume.md): compact runtime identity checks, stable project
   boundaries, task-to-owner routing, and the bounded-context handoff for ordinary Phase 2 workers.
+- [`phase2-lane-runbook.md`](./operations/phase2-lane-runbook.md): normative ordinary Phase 2
+  root/worker setup, slice contract, and acceptance procedure, plus event-routed correction,
+  recovery, and escalation rules for active research/design lanes.
 
 ## Research
 
