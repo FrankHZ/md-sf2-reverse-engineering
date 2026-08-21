@@ -133,6 +133,97 @@ def _execute_lua(harness: str) -> None:
         library.lua_close(state)
 
 
+def _run_lua_safe_core_snapshot_checkpoint(tmp_path: Path) -> dict[str, Any]:
+    """Exercise production checkpoint callbacks around the deferred core snapshot."""
+    source = rail.OBSERVER.read_text(encoding="utf-8")
+    callback_registration = source[
+        source.index("local function add_callback(address, role, handler)") : source.index(
+            "local function write_menu_thunk(case)"
+        )
+    ]
+    bootstrap_callbacks = source[
+        source.index('-- "bootstrap-check-sram"') : source.index('-- "r1-witch-new-action"')
+    ]
+    main_loop_start = source.index('status("milestone:observer-started")')
+    snapshot_transition = source[
+        source.index("if pending_core_snapshot then", main_loop_start) : source.index(
+            "    if finish_pending then", main_loop_start
+        )
+    ]
+    result_path = (tmp_path / "lua-safe-core-snapshot-result.json").as_posix()
+    harness = f'''\
+local phase = "await-check-sram"
+local active, scope, saved_state = nil, nil, nil
+local callbacks, callback_order, registered = {{}}, {{}}, {{}}
+local pending_core_snapshot, pending_failure = false, nil
+local route_started, last_callback_role, last_callback_pc = false, nil, nil
+local status_lines, save_calls, jumps = {{}}, 0, {{}}
+local config = {{
+  caseOrder={{"natural-map3-opening-to-messenger-entry"}},
+  cases={{{{injectedInitialMenuReturn=1,injectedDifficultyMenuReturn=0}}}},
+  r1={{
+    functions={{checkSramAddress=1,newActionAddress=2}},
+    harness={{checkpointAddress=3}},
+    sessionPatches={{}}
+  }},
+  ram={{
+    GAME_FLAGS=10,LONGWORD_GAMEFLAGS_COUNTER=0,COMBATANT_DATA=20,
+    COMBATANT_ALLIES_COUNTER=0,COMBATANT_DATA_ENTRY_SIZE=1,CURRENT_MAP=30,
+    ENTITY_DATA=40,ENTITYDEF_SIZE=1,CURRENT_GOLD=50
+  }}
+}}
+local function read_span(_, _) return {{0}} end
+local function patch_cart(_) end
+local function write_jump(address, target)
+  jumps[#jumps+1]={{address=address,target=target}}
+end
+local function write_menu_thunk(_) end
+local function reg(_) return 0x100 end
+local function status(value) status_lines[#status_lines+1]=value end
+local function fail(role, expected_pc, message)
+  pending_failure={{role=role,expectedPc=expected_pc,message=message}}
+end
+memory = {{write_u32_be=function(_, _, _) end}}
+memorysavestate = {{savecorestate=function()
+  save_calls=save_calls+1
+  return {{saved=save_calls}}
+end}}
+event = {{on_bus_exec=function(handler, address, _, _)
+  registered[address]=handler
+  return address
+end}}
+{callback_registration}
+{bootstrap_callbacks}
+registered[config.r1.functions.checkSramAddress]()
+assert(phase == "await-safe-core-snapshot" and pending_core_snapshot,
+  "check-sram did not enter safe deferred snapshot phase")
+registered[config.r1.harness.checkpointAddress]()
+assert(saved_state == nil and phase == "await-safe-core-snapshot",
+  "first checkpoint hit was not inert before core snapshot")
+assert(#status_lines == 1 and #jumps == 1,
+  "first checkpoint hit started controlled admission before snapshot")
+{snapshot_transition}
+assert(saved_state ~= nil and save_calls == 1 and phase == "await-checkpoint",
+  "outer-loop core snapshot did not explicitly arm checkpoint admission")
+registered[config.r1.harness.checkpointAddress]()
+assert(phase == "await-r1-new-action" and #jumps == 2,
+  "checkpoint did not begin admission after explicit phase advance")
+local saved_index, admission_index = nil, nil
+for index, value in ipairs(status_lines) do
+  if value == "milestone:r1-core-state-saved-outside-callback" then saved_index=index end
+  if value == "milestone:r1-controlled-admission-started" then admission_index=index end
+end
+assert(saved_index and admission_index and saved_index < admission_index,
+  "success milestones admitted control before core state save")
+local out=assert(io.open("{result_path}", "w"))
+out:write('{{"saveCalls":'..save_calls..',"savedBeforeAdmission":'
+  .. tostring(saved_index < admission_index) .. ',"phase":"'..phase..'"}}')
+out:close()
+'''
+    _execute_lua(harness)
+    return json.loads((tmp_path / "lua-safe-core-snapshot-result.json").read_text(encoding="utf-8"))
+
+
 def _run_lua_success_finalization_fault(
     tmp_path: Path, *, restoration_mismatch: bool, unregister_fault: bool
 ) -> dict[str, Any]:
@@ -1431,6 +1522,7 @@ def test_callback_failure_schema_closes_reachable_roles_and_phases() -> None:
     }
     reachable_phases = [
         "await-check-sram",
+        "await-safe-core-snapshot",
         "await-checkpoint",
         "await-r1-new-action",
         "await-r1-new-game",
@@ -1607,6 +1699,19 @@ def test_map3_init_alias_uses_one_physical_callback_and_typed_dispatch(tmp_path:
         "callbackCount": 1,
         "role": "map3-init-dispatch",
     }
+
+
+def test_checkpoint_waits_for_outer_core_snapshot_before_controlled_admission(
+    tmp_path: Path,
+) -> None:
+    assert _run_lua_safe_core_snapshot_checkpoint(tmp_path) == {
+        "saveCalls": 1,
+        "savedBeforeAdmission": True,
+        "phase": "await-r1-new-action",
+    }
+    assert rail.SUCCESS_MILESTONES.index(
+        "milestone:r1-core-state-saved-outside-callback"
+    ) < rail.SUCCESS_MILESTONES.index("milestone:r1-controlled-admission-started")
 
 
 @pytest.mark.parametrize(

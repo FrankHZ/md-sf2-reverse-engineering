@@ -727,12 +727,16 @@ add_callback(config.r1.functions.checkSramAddress, "bootstrap-check-sram", funct
     write_jump(config.r1.harness.checkpointAddress, config.r1.harness.checkpointAddress)
     for _, patch in ipairs(config.r1.sessionPatches) do patch_cart(patch) end
     active = { caseId = config.caseOrder[1] }
-    pending_core_snapshot, phase = true, "await-checkpoint"
+    -- The checkpoint self-jump can execute again in this same emulated frame.
+    -- Keep that first hit inert until the outer loop has captured the core
+    -- state; only then does it explicitly arm controlled admission.
+    pending_core_snapshot, phase = true, "await-safe-core-snapshot"
     status("milestone:r1-scope-snapshotted-before-write")
 end)
 
 -- "checkpoint"
 add_callback(config.r1.harness.checkpointAddress, "checkpoint", function()
+    if phase == "await-safe-core-snapshot" then return end
     assert(phase == "await-checkpoint", "R1 checkpoint phase drift")
     write_menu_thunk(config.cases[1])
     write_jump(config.r1.harness.checkpointAddress, config.r1.functions.newActionAddress)
@@ -1230,11 +1234,12 @@ while true do
     if pending_core_snapshot then
         pending_core_snapshot = false
         saved_state = memorysavestate.savecorestate()
+        phase = "await-checkpoint"
         status("milestone:r1-core-state-saved-outside-callback")
     end
     if finish_pending then finalize_success(); if pending_failure then finalize_failure() end; return end
     if frame_count > config.r1.harness.bootstrapFrameBudget + config.cases[1].frameBudget then
-        fail((phase == "await-check-sram" or phase == "await-checkpoint") and "bootstrap-watchdog" or "case-watchdog", nil, "frame budget exceeded at phase " .. phase)
+        fail((phase == "await-check-sram" or phase == "await-safe-core-snapshot" or phase == "await-checkpoint") and "bootstrap-watchdog" or "case-watchdog", nil, "frame budget exceeded at phase " .. phase)
     end
     enforce_route_phase_watchdog()
     if phase == "await-check-sram" then
