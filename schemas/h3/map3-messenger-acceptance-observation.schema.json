@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sf2.example/schemas/h3/map3-messenger-acceptance-observation.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "caseOrder", "records", "callbacksCleared", "restoration"],
+  "properties": {
+    "system": {"const": "sf2-map3-messenger-acceptance-runtime-v1"},
+    "caseOrder": {"const": ["natural-map3-messenger-accept-to-follower-ready-wait"]},
+    "records": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"$ref": "#/$defs/record"}},
+    "callbacksCleared": {"const": true},
+    "restoration": {"$ref": "#/$defs/restoration"}
+  },
+  "$defs": {
+    "flag": {"type": "object", "additionalProperties": false, "required": ["f600", "f66", "f603"], "properties": {"f600": {"type": "boolean"}, "f66": {"type": "boolean"}, "f603": {"type": "boolean"}}},
+    "follower": {"type": "object", "additionalProperties": false, "required": ["follower", "leader", "distance"], "properties": {"follower": {"type": "integer", "minimum": 0, "maximum": 29}, "leader": {"type": "integer", "minimum": 0, "maximum": 29}, "distance": {"const": 2}}},
+    "guard": {"type": "object", "additionalProperties": false, "required": ["id", "x", "y", "facing"], "properties": {"id": {"type": "integer"}, "x": {"type": "integer"}, "y": {"type": "integer"}, "facing": {"type": "integer", "minimum": 0, "maximum": 3}}},
+    "endpoint": {"type": "object", "additionalProperties": false, "required": ["map", "x", "y", "facing"], "properties": {"map": {"const": 3}, "x": {"const": 43}, "y": {"const": 10}, "facing": {"const": 3}}},
+    "record": {"type": "object", "additionalProperties": false, "required": ["caseId", "r1FixtureId", "r2FixtureId", "textIds", "speakerOperands", "promptReturn", "promptFlag89", "joinSelector", "joined", "followers", "guards", "flags", "endpoint", "terminal"], "properties": {"caseId": {"const": "natural-map3-messenger-accept-to-follower-ready-wait"}, "r1FixtureId": {"const": "sf2-map3-admitted-start-runtime-v1"}, "r2FixtureId": {"const": "sf2-map3-battle01-natural-route-runtime-v1"}, "textIds": {"type": "array", "minItems": 18, "maxItems": 18, "items": {"type": "integer"}}, "speakerOperands": {"type": "array", "minItems": 18, "maxItems": 18, "items": {"type": ["integer", "null"]}}, "promptReturn": {"const": 0}, "promptFlag89": {"const": true}, "joinSelector": {"const": 128}, "joined": {"const": [1, 2]}, "followers": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/$defs/follower"}}, "guards": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"$ref": "#/$defs/guard"}}, "flags": {"$ref": "#/$defs/flag"}, "endpoint": {"$ref": "#/$defs/endpoint"}, "terminal": {"const": "WaitForEvent"}}},
+    "restoration": {"type": "object", "additionalProperties": false, "required": ["gameFlags", "combatantAllyRecords", "mapAndBattleState", "playerEntity", "forceAndParty", "followerState", "touchedEntities", "dialogueAndInput", "cameraState", "bootstrapFrame", "gold", "generatedRam", "callbacksCleared", "sessionCartPatches", "sessionRomDeleted"], "properties": {"gameFlags": {"const": true}, "combatantAllyRecords": {"const": true}, "mapAndBattleState": {"const": true}, "playerEntity": {"const": true}, "forceAndParty": {"const": true}, "followerState": {"const": true}, "touchedEntities": {"const": true}, "dialogueAndInput": {"const": true}, "cameraState": {"const": true}, "bootstrapFrame": {"const": true}, "gold": {"const": true}, "generatedRam": {"const": true}, "callbacksCleared": {"const": true}, "sessionCartPatches": {"const": true}, "sessionRomDeleted": {"const": true}}}
+  }
+}

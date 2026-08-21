@@ -81,8 +81,8 @@ research gaps registered below.
 
 ## Exact Accepted-Index Audit
 
-The research index now contains **1,621 records**, **167 fixtures** (74 H2, 93 H3), and
-**2,570 address bindings**. The scenario-relevant denominators are:
+The research index now contains **1,621 records**, **168 fixtures** (74 H2, 94 H3), and
+**2,574 address bindings**. The scenario-relevant denominators are:
 
 | Evidence surface | Exact count | Owner |
 | --- | ---: | --- |
@@ -360,15 +360,22 @@ root/worker slice contract (ADR 0004):
    `sf2-map3-battle01-natural-route-runtime-v1`: it reaches `cs_5149A` entry-before-body, records
    field menu `not-reached`, and establishes private provenance/callback-state foundations.  It leaves
    Map 19/20/21/40/57 and Battle 01 as static reconstruction, not runtime evidence.
-3. **Slice R3 — complete Battle 01 playthrough (RA-05, RA-06, reached RA-11):** fixed seed and
+3. **Slice R2a — messenger acceptance continuation (RA-03, RA-04, RA-08, RA-09, reached
+   RA-11):** **completed only through the post-messenger follower-ready wait** by
+   [map3-messenger-acceptance](map3-messenger-acceptance.md),
+   sf2-map3-messenger-acceptance-runtime-v1. It continues strictly from the accepted R2
+   entry-before-body boundary, accepts the original default-zero prompt path, observes the bounded
+   joins/followers/F603 commit, and stops at the original stable wait. It adds no Castle, later-map,
+   CheckBattle, Battle 01, menu, persistence, rendered-prose, timing, or 8C claim.
+4. **Slice R3 — complete Battle 01 playthrough (RA-05, RA-06, reached RA-11):** fixed seed and
    scripted H4 reference inputs from natural entry through victory; capture every reached logical and
    8C scene/audio/hardware layer while reusing accepted battle, scene, graphics, sound, and timing
    fixtures as authoritative subsystem goldens rather than copying or weakening them.
-4. **Slice R4 — after-battle, endpoint, and H4 definition closure (RA-07, RA-11, RA-12):** continue
+5. **Slice R4 — after-battle, endpoint, and H4 definition closure (RA-07, RA-11, RA-12):** continue
    R3 through the after-program seam to the accepted 5B endpoint; freeze the final state contract,
    private capture manifest, comparison domains, exact or field-specific tolerances, licensing-safe
    public report, and the separate 9A/10A accessibility/deviation assertions.
-5. **Deferred/non-blocking:** RA-10 persistence remains outside the 6A milestone. No save H3 slice is
+6. **Deferred/non-blocking:** RA-10 persistence remains outside the 6A milestone. No save H3 slice is
    part of R1–R4; any later persistence work requires a separate accepted milestone. RA-08 produces a
    dedicated extension only if the Research-proven 2A route actually reaches the field menu.
 
@@ -383,6 +390,7 @@ become a readiness report.
 | Controlled New reaches MainLoop with current/egress map 3 | **Confirmed** bounded runtime | witch/save H3 rails, [story-progression](../design/synthesis/story-progression.md) | Not a natural player-visible New flow or complete start snapshot |
 | Controlled New reaches first Map 3 exploration wait through default setup/init | **Confirmed** bounded runtime | [`map3-admitted-start`](map3-admitted-start.md), `sf2-map3-admitted-start-runtime-v1` | Not natural reachability, route programs/events, or 8C presentation |
 | R1 admitted Map 3 opening reaches `cs_5149A` entry-before-body | **Confirmed** bounded runtime | [`map3-battle01-natural-route`](map3-battle01-natural-route.md), `sf2-map3-battle01-natural-route-runtime-v1` | Not a continuous Map 19/20/21/40/57 or Battle 01 runtime route |
+| R2a accepts the messenger prompt and reaches follower-ready WaitForEvent | **Confirmed** bounded runtime | [map3-messenger-acceptance](map3-messenger-acceptance.md), sf2-map3-messenger-acceptance-runtime-v1 | Not later-map, battle-admission, persistence, prose/presentation, or 8C evidence |
 | 26 Map 3 records exist, aggregate-owned, unassociated | **Confirmed** indexed inventory | `sf2-map-data-static-v1`, [map-data research](map-data-inventory.md) | Not route chronology, selection, or effects |
 | Map 3 default/609/506/543 init dispatch executes its modeled targets | **Confirmed** bounded runtime | `sf2-map-init-dispatch-runtime-v1`, [map-data research](map-data-inventory.md) | Init-script effects, story reachability, persistence |
 | Map 3 setup flag meanings 506/543/609 | **Unknown** | `sf2-map-data-static-v1` | Shared operands across many maps; not route evidence by themselves |

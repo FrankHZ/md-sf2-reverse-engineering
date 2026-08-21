@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sf2.example/schemas/h3/map3-messenger-acceptance-callback-failure.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["owner", "caseId", "phase", "role", "actualPc", "expectedPc", "callbackCount", "callbacksCleared", "outputRemoved", "restoration", "restorationMismatch", "error"],
+  "properties": {
+    "owner": {"const": "map3-messenger-acceptance"},
+    "caseId": {"enum": ["bootstrap", "natural-map3-messenger-accept-to-follower-ready-wait"]},
+    "phase": {"enum": ["await-check-sram", "await-safe-core-snapshot", "await-checkpoint", "await-r1-new-action", "await-r1-new-game", "await-r1-save-game", "await-r1-main-loop", "await-r1-exploration", "await-r1-setup", "await-r1-init-call", "await-r1-init", "await-r1-init-return", "await-r1-wait", "route", "messenger", "follower-ready"]},
+    "role": {"enum": ["bootstrap-check-sram", "checkpoint", "r1-witch-new-action", "r1-new-game", "r1-save-game", "r1-main-loop", "r1-exploration-loop", "r1-map-setup-wrapper-entry", "r1-setup-resolution-return", "r1-init-call", "map3-init-dispatch", "r1-init-return", "r1-wait-for-event", "input-controller", "input-controller-move-commit", "player-action", "activated-entity", "entity-dispatch", "step-door", "zone-admission", "entity-event", "zone-event", "map-script", "warp", "messenger-script-entry", "messenger-text-command", "prompt-story-flow", "prompt-yes-no", "prompt-return", "prompt-set-flag", "prompt-branch", "join-force-command", "join-force-service", "update-force-service", "update-force-return", "join-battle-party-service", "join-battle-party-return", "follower-command", "follower-service", "zone-event8-return", "follower-ready-wait", "bootstrap-watchdog", "case-watchdog", "route-phase-watchdog", "restoration", "callback-cleanup"]},
+    "actualPc": {"type": "integer", "minimum": 0},
+    "expectedPc": {"type": ["integer", "null"], "minimum": 0},
+    "callbackCount": {"type": "integer", "minimum": 0},
+    "callbacksCleared": {"type": "boolean"},
+    "outputRemoved": {"type": "boolean"},
+    "restoration": {"$ref": "#/$defs/restoration"},
+    "restorationMismatch": {"type": ["null", "object"], "additionalProperties": false, "required": ["domain", "address", "expected", "actual"], "properties": {"domain": {"type": "string"}, "address": {"type": "integer", "minimum": 0}, "expected": {"type": "integer", "minimum": 0, "maximum": 255}, "actual": {"type": "integer", "minimum": 0, "maximum": 255}}},
+    "error": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "restoration": {"type": "object", "additionalProperties": false, "required": ["scopeArmed", "gameFlags", "combatantAllyRecords", "mapAndBattleState", "playerEntity", "forceAndParty", "followerState", "touchedEntities", "dialogueAndInput", "cameraState", "bootstrapFrame", "gold", "generatedRam", "sessionCartPatches", "sessionStateRestored", "callbacksCleared", "outputRemoved"], "properties": {"scopeArmed": {"type": "boolean"}, "gameFlags": {"type": "boolean"}, "combatantAllyRecords": {"type": "boolean"}, "mapAndBattleState": {"type": "boolean"}, "playerEntity": {"type": "boolean"}, "forceAndParty": {"type": "boolean"}, "followerState": {"type": "boolean"}, "touchedEntities": {"type": "boolean"}, "dialogueAndInput": {"type": "boolean"}, "cameraState": {"type": "boolean"}, "bootstrapFrame": {"type": "boolean"}, "gold": {"type": "boolean"}, "generatedRam": {"type": "boolean"}, "sessionCartPatches": {"type": "boolean"}, "sessionStateRestored": {"type": "boolean"}, "callbacksCleared": {"type": "boolean"}, "outputRemoved": {"type": "boolean"}}}
+  }
+}

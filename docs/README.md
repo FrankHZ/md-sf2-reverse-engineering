@@ -203,6 +203,10 @@ Data-side directory inventory and ROM parity:
   Map 3 opening from that admitted wait through `cs_5149A` messenger-program entry-before-body, with
   exact callback/state/input facts, field menu NotReached, and a strictly static, Inferred/partial
   Map 19/20/21/40/57 → Battle 01 reconstruction boundary.
+- [map3-messenger-acceptance.md](./research/map3-messenger-acceptance.md): the R2a continuation from
+  original ExecuteMapScript with A0 at cs_5149A through default-zero messenger acceptance, verified
+  joins/followers/Zone Event 8 commit, and the stable follower-ready wait; it preserves R1/R2 guards
+  and does not claim menus, later maps, Battle 01, persistence, prose, timing, or 8C presentation.
 - [`map-data-inventory.md`](./research/map-data-inventory.md): the complete 1,390-file map ASM build
   graph, 727 internal H1 bindings, 662 include-site-only bodies, 64+66 setup-selection rows, ROM
   parity of the 126 six-pointer setup tables, 125 entity-list sources/980 physical records with suffix

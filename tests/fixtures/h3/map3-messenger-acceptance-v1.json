@@ -1,0 +1,860 @@
+{
+  "id": "sf2-map3-messenger-acceptance-runtime-v1",
+  "system": "sf2-map3-messenger-acceptance-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "caseOrder": [
+    "natural-map3-messenger-accept-to-follower-ready-wait"
+  ],
+  "cases": [
+    {
+      "caseId": "natural-map3-messenger-accept-to-follower-ready-wait",
+      "injectedInitialMenuReturn": 1,
+      "injectedDifficultyMenuReturn": 0,
+      "promptDefaultReturn": 0,
+      "frameBudget": 36000
+    }
+  ],
+  "privateProvenance": {
+    "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+    "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "sourceBaseline": "ShiningForceCentral/SF2DISASM",
+    "inputBoundary": "private-local-no-payload"
+  },
+  "static": {
+    "retained": {
+      "r1FixtureSha256": "6F9160C72A9D661603418DC5697C5A8BDBE47EF2E5BA3205CA316CBD9EB1B9E4",
+      "r2FixtureSha256": "38B3D8A6FA84D35FBA145947E73F88C3593A24D48E574599F6EB25E27C0989C3",
+      "projectionSha256": "6FCD096B623649794190BD4D357221277E35C8F6FB01BF27D192B1D6F998DF49"
+    },
+    "functions": {
+      "ExecuteMapScript": 291116,
+      "WaitForEvent": 153884,
+      "RunMapSetupZoneEvent": 292122,
+      "Map3_ZoneEvent8": 331474,
+      "cs_5149A": 332954,
+      "cs_51614": 333332,
+      "csc00_displaySingleTextbox": 291402,
+      "csc02_displayTextbox": 291566,
+      "csc04_setTextIndex": 291698,
+      "csc08_joinForce": 291736,
+      "csc0C_jumpIfFlagSet": 291864,
+      "csc11_promptYesNoForStoryFlow": 291984,
+      "csc2C_followEntity": 290392,
+      "AddFollower": 281646,
+      "YesNoPrompt": 86660,
+      "SetFlag": 39108,
+      "JoinForce": 39254,
+      "UpdateForce": 39168,
+      "JoinBattleParty": 39340
+    },
+    "ram": {
+      "BATTLE_PARTY_MEMBERS": 16758402,
+      "BATTLE_PARTY_MEMBERS_NUMBER": 16758336,
+      "CUTSCENE_DIALOG_INDEX": 16758342,
+      "ENTITY_WALKING_PARAMETERS": 16757152,
+      "FOLLOWERS_LIST": 16756515,
+      "RESERVE_MEMBERS": 16758414,
+      "TARGETS_LIST": 16758354,
+      "TARGETS_LIST_LENGTH": 16758334
+    },
+    "stream": [
+      {
+        "opcode": "textcursor",
+        "operand": "517",
+        "line": 51
+      },
+      {
+        "opcode": "cswait",
+        "operand": "20",
+        "line": 52
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_bowie,up",
+        "line": 53
+      },
+      {
+        "opcode": "cswait",
+        "operand": "60",
+        "line": 54
+      },
+      {
+        "opcode": "setpos",
+        "operand": "142,46,7,left",
+        "line": 55
+      },
+      {
+        "opcode": "entityactionswait",
+        "operand": "142",
+        "line": 56
+      },
+      {
+        "opcode": "moveleft",
+        "operand": "1",
+        "line": 57
+      },
+      {
+        "opcode": "movedown",
+        "operand": "1",
+        "line": 58
+      },
+      {
+        "opcode": "moveleft",
+        "operand": "3",
+        "line": 59
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 60
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "142,down",
+        "line": 61
+      },
+      {
+        "opcode": "nexttext",
+        "operand": "$0,142",
+        "line": 62
+      },
+      {
+        "opcode": "nexttext",
+        "operand": "$0,142",
+        "line": 63
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$0,142",
+        "line": 64
+      },
+      {
+        "opcode": "entityactionswait",
+        "operand": "142",
+        "line": 65
+      },
+      {
+        "opcode": "moveup",
+        "operand": "1",
+        "line": 66
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 67
+      },
+      {
+        "opcode": "cswait",
+        "operand": "120",
+        "line": 68
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$0,143",
+        "line": 69
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_bowie,down",
+        "line": 70
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_sarah,down",
+        "line": 71
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_chester,down",
+        "line": 72
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "142,down",
+        "line": 73
+      },
+      {
+        "opcode": "customactscriptwait",
+        "operand": "143",
+        "line": 74
+      },
+      {
+        "opcode": "ac_setspeed",
+        "operand": "48,48",
+        "line": 75
+      },
+      {
+        "opcode": "ac_jump",
+        "operand": "eas_idle",
+        "line": 76
+      },
+      {
+        "opcode": "ac_end",
+        "operand": "",
+        "line": 77
+      },
+      {
+        "opcode": "setpos",
+        "operand": "143,41,17,up",
+        "line": 78
+      },
+      {
+        "opcode": "entityactionswait",
+        "operand": "143",
+        "line": 79
+      },
+      {
+        "opcode": "moveup",
+        "operand": "6",
+        "line": 80
+      },
+      {
+        "opcode": "moveright",
+        "operand": "1",
+        "line": 81
+      },
+      {
+        "opcode": "moveup",
+        "operand": "2",
+        "line": 82
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 83
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_bowie,up",
+        "line": 84
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_sarah,up",
+        "line": 85
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_chester,up",
+        "line": 86
+      },
+      {
+        "opcode": "entityactionswait",
+        "operand": "143",
+        "line": 87
+      },
+      {
+        "opcode": "moveup",
+        "operand": "1",
+        "line": 88
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 89
+      },
+      {
+        "opcode": "nod",
+        "operand": "143",
+        "line": 90
+      },
+      {
+        "opcode": "nod",
+        "operand": "143",
+        "line": 91
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$0,143",
+        "line": 92
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$0,142",
+        "line": 93
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$0,143",
+        "line": 94
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$0,142",
+        "line": 95
+      },
+      {
+        "opcode": "cswait",
+        "operand": "15",
+        "line": 96
+      },
+      {
+        "opcode": "setactscriptwait",
+        "operand": "143,eas_init",
+        "line": 97
+      },
+      {
+        "opcode": "entityactions",
+        "operand": "143",
+        "line": 98
+      },
+      {
+        "opcode": "movedown",
+        "operand": "3",
+        "line": 99
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 100
+      },
+      {
+        "opcode": "entityactionswait",
+        "operand": "142",
+        "line": 101
+      },
+      {
+        "opcode": "movedown",
+        "operand": "3",
+        "line": 102
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 103
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_bowie,down",
+        "line": 104
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_sarah,down",
+        "line": 105
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_chester,down",
+        "line": 106
+      },
+      {
+        "opcode": "entityactions",
+        "operand": "143",
+        "line": 107
+      },
+      {
+        "opcode": "movedown",
+        "operand": "1",
+        "line": 108
+      },
+      {
+        "opcode": "moveleft",
+        "operand": "1",
+        "line": 109
+      },
+      {
+        "opcode": "movedown",
+        "operand": "2",
+        "line": 110
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 111
+      },
+      {
+        "opcode": "entityactionswait",
+        "operand": "142",
+        "line": 112
+      },
+      {
+        "opcode": "movedown",
+        "operand": "2",
+        "line": 113
+      },
+      {
+        "opcode": "moveleft",
+        "operand": "1",
+        "line": 114
+      },
+      {
+        "opcode": "eawait",
+        "operand": "20",
+        "line": 115
+      },
+      {
+        "opcode": "moveright",
+        "operand": "1",
+        "line": 116
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 117
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "143,up",
+        "line": 118
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "142,up",
+        "line": 119
+      },
+      {
+        "opcode": "setcamdest",
+        "operand": "38,7",
+        "line": 120
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$0,142",
+        "line": 121
+      },
+      {
+        "opcode": "entityactionswait",
+        "operand": "142",
+        "line": 122
+      },
+      {
+        "opcode": "moveleft",
+        "operand": "1",
+        "line": 123
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 124
+      },
+      {
+        "opcode": "entityactions",
+        "operand": "143",
+        "line": 125
+      },
+      {
+        "opcode": "movedown",
+        "operand": "3",
+        "line": 126
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 127
+      },
+      {
+        "opcode": "entityactionswait",
+        "operand": "142",
+        "line": 128
+      },
+      {
+        "opcode": "movedown",
+        "operand": "5",
+        "line": 129
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 130
+      },
+      {
+        "opcode": "hide",
+        "operand": "142",
+        "line": 131
+      },
+      {
+        "opcode": "hide",
+        "operand": "143",
+        "line": 132
+      },
+      {
+        "opcode": "setcamdest",
+        "operand": "38,6",
+        "line": 133
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_bowie,right",
+        "line": 134
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_chester,left",
+        "line": 135
+      },
+      {
+        "opcode": "nexttext",
+        "operand": "$0,ally_chester",
+        "line": 136
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$0,ally_chester",
+        "line": 137
+      },
+      {
+        "opcode": "entityactionswait",
+        "operand": "ally_sarah",
+        "line": 138
+      },
+      {
+        "opcode": "movedown",
+        "operand": "1",
+        "line": 139
+      },
+      {
+        "opcode": "moveright",
+        "operand": "3",
+        "line": 140
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 141
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_sarah,up",
+        "line": 142
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_bowie,down",
+        "line": 143
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_chester,down",
+        "line": 144
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$c0,ally_sarah",
+        "line": 145
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$0,ally_chester",
+        "line": 146
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$c0,ally_sarah",
+        "line": 147
+      },
+      {
+        "opcode": "entityactionswait",
+        "operand": "ally_sarah",
+        "line": 148
+      },
+      {
+        "opcode": "moveleft",
+        "operand": "1",
+        "line": 149
+      },
+      {
+        "opcode": "endactions",
+        "operand": "",
+        "line": 150
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_sarah,up",
+        "line": 151
+      },
+      {
+        "opcode": "nexttext",
+        "operand": "$c0,ally_sarah",
+        "line": 152
+      },
+      {
+        "opcode": "yesno",
+        "operand": "",
+        "line": 153
+      },
+      {
+        "opcode": "jumpifflagset",
+        "operand": "89,cs_51614",
+        "line": 154
+      },
+      {
+        "opcode": "textcursor",
+        "operand": "535",
+        "line": 163
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$0,ally_sarah",
+        "line": 164
+      },
+      {
+        "opcode": "setfacing",
+        "operand": "ally_chester,left",
+        "line": 165
+      },
+      {
+        "opcode": "nextsingletext",
+        "operand": "$0,ally_chester",
+        "line": 166
+      },
+      {
+        "opcode": "setf",
+        "operand": "600",
+        "line": 167
+      },
+      {
+        "opcode": "setf",
+        "operand": "66",
+        "line": 168
+      },
+      {
+        "opcode": "join",
+        "operand": "128",
+        "line": 169
+      },
+      {
+        "opcode": "followentity",
+        "operand": "ally_sarah,ally_bowie,2",
+        "line": 170
+      },
+      {
+        "opcode": "followentity",
+        "operand": "ally_chester,ally_sarah,2",
+        "line": 171
+      },
+      {
+        "opcode": "setpos",
+        "operand": "138,27,3,down",
+        "line": 172
+      },
+      {
+        "opcode": "setpos",
+        "operand": "139,31,3,down",
+        "line": 173
+      },
+      {
+        "opcode": "csc_end",
+        "operand": "",
+        "line": 174
+      }
+    ],
+    "text": {
+      "ids": [
+        517,
+        518,
+        519,
+        520,
+        521,
+        522,
+        523,
+        524,
+        525,
+        526,
+        527,
+        528,
+        529,
+        530,
+        531,
+        535,
+        536,
+        447
+      ],
+      "speakers": [
+        142,
+        142,
+        142,
+        143,
+        143,
+        142,
+        143,
+        142,
+        142,
+        2,
+        2,
+        49153,
+        2,
+        49153,
+        49153,
+        1,
+        2,
+        null
+      ],
+      "controlShapeSha256": "B542F358F80A1537D767AB7CBFFD91E886248B9805ED3111503C32FF29177586"
+    },
+    "ranges": {
+      "messengerScript": {
+        "address": 332954,
+        "length": 440,
+        "sha256": "01C2ACC81830937BDD6510F88F9FA4E4BF67D6E8F1E49A6693BAEF19B88068AA"
+      },
+      "zoneEvent8": {
+        "address": 331474,
+        "length": 24,
+        "sha256": "06B77DD8318014989C0E38C9E0922A9D8C5A1C7E344383091CAFEA1B693DA07F"
+      }
+    },
+    "h1": {
+      "ExecuteMapScript": "23FC",
+      "WaitForEvent": "3038",
+      "RunMapSetupZoneEvent": "48E7",
+      "Map3_ZoneEvent8": "4E41",
+      "cs_5149A": "0004",
+      "cs_51614": "0004",
+      "csc00_displaySingleTextbox": "4A38",
+      "csc02_displayTextbox": "4A38",
+      "csc04_setTextIndex": "31DE",
+      "csc08_joinForce": "31FC",
+      "csc0C_jumpIfFlagSet": "321E",
+      "csc11_promptYesNoForStoryFlow": "2F0E",
+      "csc2C_followEntity": "1016",
+      "AddFollower": "48E7",
+      "YesNoPrompt": "4240",
+      "SetFlag": "48E7",
+      "JoinForce": "2F01",
+      "UpdateForce": "48E7",
+      "JoinBattleParty": "2F01"
+    },
+    "sourceHashes": {
+      "sf2const.asm": "17738776F811F66322F278CFBF10E8B376612F4F9EDFC2C7AA0A5DB81CDFB3FB",
+      "sf2enums.asm": "ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE",
+      "code/common/scripting/map/mapscriptengine_1.asm": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF",
+      "code/common/scripting/map/mapscriptengine_2.asm": "B5D0F6EADA7008D87BF88A6D61CFD357E7C89C91CD0ABB4B3F19C7BAFB42A705",
+      "code/common/scripting/map/mapsetupsfunctions_1.asm": "F99AF47A35E9148176E66865694B2BCEE3D3DF8C6013227F5CB8ECA330AC6531",
+      "code/common/scripting/entity/entityfunctions_2.asm": "4FC789EE714532CBB65F33426B0E7C20A4CE803DFA4DF7D40FD2FC707E90C3CE",
+      "code/common/menus/yesnoprompt.asm": "CF54DD1628DB83CA94F4AACA9E854A8356BB2658A5396A32950F5F31219518CA",
+      "code/common/stats/battleparty.asm": "670A25075D807BA60B0AA3C6D158DDF80E5248264753361DBC495F7655ED8B37",
+      "data/maps/entries/map03/mapsetups/scripts_1.asm": "8EFD115D3A8FF12DDDE016CEEE727E997D03E3088AAAE5039C0FD1A9E6FFBEFC",
+      "data/maps/entries/map03/mapsetups/s3_zoneevents.asm": "D596950A3146D77BF46D50F9AF3CDEA12B7D087254204E1D8D57EFC5631C2F7C"
+    }
+  },
+  "sourceContext": {
+    "function": {
+      "ExecuteMapScript": 291116,
+      "RunMapSetupZoneEvent": 292122,
+      "WaitForEvent": 153884,
+      "cs_5149A": 332954
+    }
+  },
+  "expectedObservation": {
+    "system": "sf2-map3-messenger-acceptance-runtime-v1",
+    "caseOrder": [
+      "natural-map3-messenger-accept-to-follower-ready-wait"
+    ],
+    "records": [
+      {
+        "caseId": "natural-map3-messenger-accept-to-follower-ready-wait",
+        "r1FixtureId": "sf2-map3-admitted-start-runtime-v1",
+        "r2FixtureId": "sf2-map3-battle01-natural-route-runtime-v1",
+        "textIds": [
+          517,
+          518,
+          519,
+          520,
+          521,
+          522,
+          523,
+          524,
+          525,
+          526,
+          527,
+          528,
+          529,
+          530,
+          531,
+          535,
+          536,
+          447
+        ],
+        "speakerOperands": [
+          142,
+          142,
+          142,
+          143,
+          143,
+          142,
+          143,
+          142,
+          142,
+          2,
+          2,
+          49153,
+          2,
+          49153,
+          49153,
+          1,
+          2,
+          null
+        ],
+        "promptReturn": 0,
+        "promptFlag89": true,
+        "joinSelector": 128,
+        "joined": [
+          1,
+          2
+        ],
+        "followers": [
+          {
+            "follower": 1,
+            "leader": 0,
+            "distance": 2
+          },
+          {
+            "follower": 2,
+            "leader": 1,
+            "distance": 2
+          }
+        ],
+        "guards": [
+          {
+            "id": 138,
+            "x": 27,
+            "y": 3,
+            "facing": 3
+          },
+          {
+            "id": 139,
+            "x": 31,
+            "y": 3,
+            "facing": 3
+          }
+        ],
+        "flags": {
+          "f600": true,
+          "f66": true,
+          "f603": true
+        },
+        "endpoint": {
+          "map": 3,
+          "x": 43,
+          "y": 10,
+          "facing": 3
+        },
+        "terminal": "WaitForEvent"
+      }
+    ],
+    "callbacksCleared": true,
+    "restoration": {
+      "gameFlags": true,
+      "combatantAllyRecords": true,
+      "mapAndBattleState": true,
+      "playerEntity": true,
+      "forceAndParty": true,
+      "followerState": true,
+      "touchedEntities": true,
+      "dialogueAndInput": true,
+      "cameraState": true,
+      "bootstrapFrame": true,
+      "gold": true,
+      "generatedRam": true,
+      "callbacksCleared": true,
+      "sessionCartPatches": true,
+      "sessionRomDeleted": true
+    }
+  }
+}

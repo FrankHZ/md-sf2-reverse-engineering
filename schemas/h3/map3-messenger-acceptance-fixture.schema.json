@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sf2.example/schemas/h3/map3-messenger-acceptance-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "system", "romSha256", "emulator", "caseOrder", "cases", "privateProvenance", "static", "sourceContext", "expectedObservation"],
+  "properties": {
+    "id": {"const": "sf2-map3-messenger-acceptance-runtime-v1"},
+    "system": {"const": "sf2-map3-messenger-acceptance-runtime-v1"},
+    "romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
+    "emulator": {"$ref": "#/$defs/emulator"},
+    "caseOrder": {"const": ["natural-map3-messenger-accept-to-follower-ready-wait"]},
+    "cases": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"$ref": "#/$defs/case"}},
+    "privateProvenance": {"$ref": "#/$defs/provenance"},
+    "static": {"$ref": "#/$defs/static"},
+    "sourceContext": {"$ref": "#/$defs/sourceContext"},
+    "expectedObservation": {"$ref": "map3-messenger-acceptance-observation.schema.json"}
+  },
+  "$defs": {
+    "emulator": {"type": "object", "additionalProperties": false, "required": ["name", "version", "core"], "properties": {"name": {"const": "BizHawk"}, "version": {"const": "2.11.1"}, "core": {"const": "Genesis Plus GX"}}},
+    "case": {"type": "object", "additionalProperties": false, "required": ["caseId", "injectedInitialMenuReturn", "injectedDifficultyMenuReturn", "promptDefaultReturn", "frameBudget"], "properties": {"caseId": {"const": "natural-map3-messenger-accept-to-follower-ready-wait"}, "injectedInitialMenuReturn": {"const": 1}, "injectedDifficultyMenuReturn": {"const": 0}, "promptDefaultReturn": {"const": 0}, "frameBudget": {"const": 36000}}},
+    "provenance": {"type": "object", "additionalProperties": false, "required": ["romSha256", "upstreamCommit", "sourceBaseline", "inputBoundary"], "properties": {"romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"}, "upstreamCommit": {"const": "c834c652b6862bc5679fd7f69a38a7093206efc6"}, "sourceBaseline": {"const": "ShiningForceCentral/SF2DISASM"}, "inputBoundary": {"const": "private-local-no-payload"}}},
+    "address": {"type": "integer", "minimum": 0},
+    "h1Word": {"type": "string", "pattern": "^[A-F0-9]{4}$"},
+    "operation": {"type": "object", "additionalProperties": false, "required": ["opcode", "operand", "line"], "properties": {"opcode": {"type": "string"}, "operand": {"type": "string"}, "line": {"type": "integer", "minimum": 1}}},
+    "sourceContext": {"type": "object", "additionalProperties": false, "required": ["function"], "properties": {"function": {"type": "object", "additionalProperties": false, "required": ["ExecuteMapScript", "RunMapSetupZoneEvent", "WaitForEvent", "cs_5149A"], "properties": {"ExecuteMapScript": {"$ref": "#/$defs/address"}, "RunMapSetupZoneEvent": {"$ref": "#/$defs/address"}, "WaitForEvent": {"$ref": "#/$defs/address"}, "cs_5149A": {"$ref": "#/$defs/address"}}}}},
+    "functionMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ExecuteMapScript", "WaitForEvent", "RunMapSetupZoneEvent", "Map3_ZoneEvent8", "cs_5149A", "cs_51614", "csc00_displaySingleTextbox", "csc02_displayTextbox", "csc04_setTextIndex", "csc08_joinForce", "csc0C_jumpIfFlagSet", "csc11_promptYesNoForStoryFlow", "csc2C_followEntity", "AddFollower", "YesNoPrompt", "SetFlag", "JoinForce", "UpdateForce", "JoinBattleParty"],
+      "properties": {
+        "ExecuteMapScript": {"$ref": "#/$defs/address"}, "WaitForEvent": {"$ref": "#/$defs/address"}, "RunMapSetupZoneEvent": {"$ref": "#/$defs/address"}, "Map3_ZoneEvent8": {"$ref": "#/$defs/address"}, "cs_5149A": {"$ref": "#/$defs/address"}, "cs_51614": {"$ref": "#/$defs/address"},
+        "csc00_displaySingleTextbox": {"$ref": "#/$defs/address"}, "csc02_displayTextbox": {"$ref": "#/$defs/address"}, "csc04_setTextIndex": {"$ref": "#/$defs/address"}, "csc08_joinForce": {"$ref": "#/$defs/address"}, "csc0C_jumpIfFlagSet": {"$ref": "#/$defs/address"}, "csc11_promptYesNoForStoryFlow": {"$ref": "#/$defs/address"}, "csc2C_followEntity": {"$ref": "#/$defs/address"}, "AddFollower": {"$ref": "#/$defs/address"},
+        "YesNoPrompt": {"$ref": "#/$defs/address"}, "SetFlag": {"$ref": "#/$defs/address"}, "JoinForce": {"$ref": "#/$defs/address"}, "UpdateForce": {"$ref": "#/$defs/address"}, "JoinBattleParty": {"$ref": "#/$defs/address"}
+      }
+    },
+    "h1Map": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ExecuteMapScript", "WaitForEvent", "RunMapSetupZoneEvent", "Map3_ZoneEvent8", "cs_5149A", "cs_51614", "csc00_displaySingleTextbox", "csc02_displayTextbox", "csc04_setTextIndex", "csc08_joinForce", "csc0C_jumpIfFlagSet", "csc11_promptYesNoForStoryFlow", "csc2C_followEntity", "AddFollower", "YesNoPrompt", "SetFlag", "JoinForce", "UpdateForce", "JoinBattleParty"],
+      "properties": {
+        "ExecuteMapScript": {"$ref": "#/$defs/h1Word"}, "WaitForEvent": {"$ref": "#/$defs/h1Word"}, "RunMapSetupZoneEvent": {"$ref": "#/$defs/h1Word"}, "Map3_ZoneEvent8": {"$ref": "#/$defs/h1Word"}, "cs_5149A": {"$ref": "#/$defs/h1Word"}, "cs_51614": {"$ref": "#/$defs/h1Word"},
+        "csc00_displaySingleTextbox": {"$ref": "#/$defs/h1Word"}, "csc02_displayTextbox": {"$ref": "#/$defs/h1Word"}, "csc04_setTextIndex": {"$ref": "#/$defs/h1Word"}, "csc08_joinForce": {"$ref": "#/$defs/h1Word"}, "csc0C_jumpIfFlagSet": {"$ref": "#/$defs/h1Word"}, "csc11_promptYesNoForStoryFlow": {"$ref": "#/$defs/h1Word"}, "csc2C_followEntity": {"$ref": "#/$defs/h1Word"}, "AddFollower": {"$ref": "#/$defs/h1Word"},
+        "YesNoPrompt": {"$ref": "#/$defs/h1Word"}, "SetFlag": {"$ref": "#/$defs/h1Word"}, "JoinForce": {"$ref": "#/$defs/h1Word"}, "UpdateForce": {"$ref": "#/$defs/h1Word"}, "JoinBattleParty": {"$ref": "#/$defs/h1Word"}
+      }
+    },
+    "ramMap": {"type": "object", "additionalProperties": false, "required": ["BATTLE_PARTY_MEMBERS", "BATTLE_PARTY_MEMBERS_NUMBER", "CUTSCENE_DIALOG_INDEX", "ENTITY_WALKING_PARAMETERS", "FOLLOWERS_LIST", "RESERVE_MEMBERS", "TARGETS_LIST", "TARGETS_LIST_LENGTH"], "properties": {"BATTLE_PARTY_MEMBERS": {"$ref": "#/$defs/address"}, "BATTLE_PARTY_MEMBERS_NUMBER": {"$ref": "#/$defs/address"}, "CUTSCENE_DIALOG_INDEX": {"$ref": "#/$defs/address"}, "ENTITY_WALKING_PARAMETERS": {"$ref": "#/$defs/address"}, "FOLLOWERS_LIST": {"$ref": "#/$defs/address"}, "RESERVE_MEMBERS": {"$ref": "#/$defs/address"}, "TARGETS_LIST": {"$ref": "#/$defs/address"}, "TARGETS_LIST_LENGTH": {"$ref": "#/$defs/address"}}},
+    "range": {"type": "object", "additionalProperties": false, "required": ["address", "length", "sha256"], "properties": {"address": {"$ref": "#/$defs/address"}, "length": {"type": "integer", "minimum": 1}, "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}}},
+    "retained": {"type": "object", "additionalProperties": false, "required": ["r1FixtureSha256", "r2FixtureSha256", "projectionSha256"], "properties": {"r1FixtureSha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}, "r2FixtureSha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}, "projectionSha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}}},
+    "text": {"type": "object", "additionalProperties": false, "required": ["ids", "speakers", "controlShapeSha256"], "properties": {"ids": {"type": "array", "minItems": 18, "maxItems": 18, "items": {"type": "integer"}}, "speakers": {"type": "array", "minItems": 18, "maxItems": 18, "items": {"type": ["integer", "null"]}}, "controlShapeSha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}}},
+    "sourceHashes": {"type": "object", "additionalProperties": false, "required": ["sf2const.asm", "sf2enums.asm", "code/common/scripting/map/mapscriptengine_1.asm", "code/common/scripting/map/mapscriptengine_2.asm", "code/common/scripting/map/mapsetupsfunctions_1.asm", "code/common/scripting/entity/entityfunctions_2.asm", "code/common/menus/yesnoprompt.asm", "code/common/stats/battleparty.asm", "data/maps/entries/map03/mapsetups/scripts_1.asm", "data/maps/entries/map03/mapsetups/s3_zoneevents.asm"], "properties": {"sf2const.asm": {"type": "string", "pattern": "^[A-F0-9]{64}$"}, "sf2enums.asm": {"type": "string", "pattern": "^[A-F0-9]{64}$"}, "code/common/scripting/map/mapscriptengine_1.asm": {"type": "string", "pattern": "^[A-F0-9]{64}$"}, "code/common/scripting/map/mapscriptengine_2.asm": {"type": "string", "pattern": "^[A-F0-9]{64}$"}, "code/common/scripting/map/mapsetupsfunctions_1.asm": {"type": "string", "pattern": "^[A-F0-9]{64}$"}, "code/common/scripting/entity/entityfunctions_2.asm": {"type": "string", "pattern": "^[A-F0-9]{64}$"}, "code/common/menus/yesnoprompt.asm": {"type": "string", "pattern": "^[A-F0-9]{64}$"}, "code/common/stats/battleparty.asm": {"type": "string", "pattern": "^[A-F0-9]{64}$"}, "data/maps/entries/map03/mapsetups/scripts_1.asm": {"type": "string", "pattern": "^[A-F0-9]{64}$"}, "data/maps/entries/map03/mapsetups/s3_zoneevents.asm": {"type": "string", "pattern": "^[A-F0-9]{64}$"}}},
+    "static": {"type": "object", "additionalProperties": false, "required": ["retained", "functions", "ram", "stream", "text", "ranges", "h1", "sourceHashes"], "properties": {"retained": {"$ref": "#/$defs/retained"}, "functions": {"$ref": "#/$defs/functionMap"}, "ram": {"$ref": "#/$defs/ramMap"}, "stream": {"type": "array", "minItems": 116, "maxItems": 116, "items": {"$ref": "#/$defs/operation"}}, "text": {"$ref": "#/$defs/text"}, "ranges": {"type": "object", "additionalProperties": false, "required": ["messengerScript", "zoneEvent8"], "properties": {"messengerScript": {"$ref": "#/$defs/range"}, "zoneEvent8": {"$ref": "#/$defs/range"}}}, "h1": {"$ref": "#/$defs/h1Map"}, "sourceHashes": {"$ref": "#/$defs/sourceHashes"}}}
+  }
+}
