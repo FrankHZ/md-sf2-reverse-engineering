@@ -131,7 +131,7 @@ def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
     assert set(H2_COMMAND_PARTITIONS) == _registered_commands("h2_commands")
     assert set(COMMAND_LAUNCHES) == _registered_commands("h3_commands")
     assert len(H2_COMMAND_PARTITIONS) == 68
-    assert len(COMMAND_LAUNCHES) == 72
+    assert len(COMMAND_LAUNCHES) == 73
     assert len({partition.partition_id for partition in PARTITIONS}) == len(PARTITIONS)
     assert len(H2_PARTITION_IDS) == 6
     assert len(H3_PARTITION_IDS) == 5

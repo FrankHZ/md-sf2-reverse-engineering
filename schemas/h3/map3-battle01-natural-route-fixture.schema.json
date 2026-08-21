@@ -1,0 +1,1567 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:map3-battle01-natural-route-fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "system",
+    "romSha256",
+    "emulator",
+    "caseOrder",
+    "cases",
+    "privateProvenance",
+    "static",
+    "sourceContext",
+    "expectedObservation"
+  ],
+  "properties": {
+    "id": {
+      "const": "sf2-map3-battle01-natural-route-runtime-v1"
+    },
+    "system": {
+      "const": "sf2-map3-battle01-natural-route-runtime-v1"
+    },
+    "romSha256": {
+      "type": "string",
+      "pattern": "^[A-F0-9]{64}$"
+    },
+    "emulator": {
+      "$ref": "#/definitions/emulator"
+    },
+    "caseOrder": {
+      "type": "array",
+      "const": [
+        "natural-map3-opening-to-messenger-entry"
+      ]
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/definitions/case"
+      }
+    },
+    "privateProvenance": {
+      "$ref": "#/definitions/provenance"
+    },
+    "static": {
+      "$ref": "#/definitions/static"
+    },
+    "sourceContext": {
+      "$ref": "#/definitions/sourceContext"
+    },
+    "expectedObservation": {
+      "$ref": "#/definitions/observation"
+    }
+  },
+  "definitions": {
+    "emulator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "core"
+      ],
+      "properties": {
+        "name": {
+          "const": "BizHawk"
+        },
+        "version": {
+          "const": "2.11.1"
+        },
+        "core": {
+          "const": "Genesis Plus GX"
+        }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caseId",
+        "injectedInitialMenuReturn",
+        "injectedDifficultyMenuReturn",
+        "frameBudget"
+      ],
+      "properties": {
+        "caseId": {
+          "const": "natural-map3-opening-to-messenger-entry"
+        },
+        "injectedInitialMenuReturn": {
+          "const": 1
+        },
+        "injectedDifficultyMenuReturn": {
+          "const": 0
+        },
+        "frameBudget": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "romSha256",
+        "upstreamCommit",
+        "tool",
+        "core",
+        "inputCondition",
+        "capturePayload",
+        "configuration"
+      ],
+      "properties": {
+        "romSha256": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        },
+        "upstreamCommit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "tool": {
+          "type": "string",
+          "minLength": 1
+        },
+        "core": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inputCondition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "capturePayload": {
+          "type": "string",
+          "minLength": 1
+        },
+        "configuration": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "functions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "MainLoop",
+        "ExplorationLoop",
+        "WaitForEvent",
+        "ProcessPlayerAction",
+        "GetActivatedEntity",
+        "esc02_controlCharacter",
+        "loc_52E8",
+        "ProcessMapEvent",
+        "ProcessMapEventType1_Warp",
+        "ProcessMapEventType6_ZoneEvent",
+        "RunMapSetupEntityEvent",
+        "RunMapSetupZoneEvent",
+        "ExecuteMapScript",
+        "csc19_setEntityPosAndFacing",
+        "GetEntityAddressFromCharacter",
+        "CheckBattle",
+        "BattleLoop",
+        "ExecuteBeforeBattleCutscene",
+        "LoadBattle",
+        "ExecuteBattleStartCutscene",
+        "ActivateEnemies",
+        "GenerateBattleTurnOrder",
+        "ExecuteIndividualTurn",
+        "FieldMenu",
+        "OpenDoor",
+        "ms_map3_InitFunction",
+        "Map3_ZoneEvent0",
+        "Map3_EntityEvent0",
+        "Map3_EntityEvent15",
+        "Map3_ZoneEvent6",
+        "Map3_ZoneEvent7",
+        "Map3_ZoneEvent8",
+        "Map3_ZoneEvent1",
+        "cs_513A0",
+        "cs_513D6",
+        "cs_513E2",
+        "cs_51444",
+        "cs_51406",
+        "cs_5145C",
+        "cs_5148C",
+        "cs_5149A",
+        "cs_51652",
+        "cs_53104",
+        "ms_map20_InitFunction",
+        "return_53994",
+        "cs_53996",
+        "cs_53B60",
+        "Map21_EntityEvent0",
+        "cs_53EF4",
+        "bbcs_01"
+      ],
+      "properties": {
+        "MainLoop": {
+          "type": "integer"
+        },
+        "ExplorationLoop": {
+          "type": "integer"
+        },
+        "WaitForEvent": {
+          "type": "integer"
+        },
+        "ProcessPlayerAction": {
+          "type": "integer"
+        },
+        "GetActivatedEntity": {
+          "type": "integer"
+        },
+        "esc02_controlCharacter": {
+          "type": "integer"
+        },
+        "loc_52E8": {
+          "type": "integer"
+        },
+        "ProcessMapEvent": {
+          "type": "integer"
+        },
+        "ProcessMapEventType1_Warp": {
+          "type": "integer"
+        },
+        "ProcessMapEventType6_ZoneEvent": {
+          "type": "integer"
+        },
+        "RunMapSetupEntityEvent": {
+          "type": "integer"
+        },
+        "RunMapSetupZoneEvent": {
+          "type": "integer"
+        },
+        "ExecuteMapScript": {
+          "type": "integer"
+        },
+        "csc19_setEntityPosAndFacing": {
+          "type": "integer"
+        },
+        "GetEntityAddressFromCharacter": {
+          "type": "integer"
+        },
+        "CheckBattle": {
+          "type": "integer"
+        },
+        "BattleLoop": {
+          "type": "integer"
+        },
+        "ExecuteBeforeBattleCutscene": {
+          "type": "integer"
+        },
+        "LoadBattle": {
+          "type": "integer"
+        },
+        "ExecuteBattleStartCutscene": {
+          "type": "integer"
+        },
+        "ActivateEnemies": {
+          "type": "integer"
+        },
+        "GenerateBattleTurnOrder": {
+          "type": "integer"
+        },
+        "ExecuteIndividualTurn": {
+          "type": "integer"
+        },
+        "FieldMenu": {
+          "type": "integer"
+        },
+        "OpenDoor": {
+          "type": "integer"
+        },
+        "ms_map3_InitFunction": {
+          "type": "integer"
+        },
+        "Map3_ZoneEvent0": {
+          "type": "integer"
+        },
+        "Map3_EntityEvent0": {
+          "type": "integer"
+        },
+        "Map3_EntityEvent15": {
+          "type": "integer"
+        },
+        "Map3_ZoneEvent6": {
+          "type": "integer"
+        },
+        "Map3_ZoneEvent7": {
+          "type": "integer"
+        },
+        "Map3_ZoneEvent8": {
+          "type": "integer"
+        },
+        "Map3_ZoneEvent1": {
+          "type": "integer"
+        },
+        "cs_513A0": {
+          "type": "integer"
+        },
+        "cs_513D6": {
+          "type": "integer"
+        },
+        "cs_513E2": {
+          "type": "integer"
+        },
+        "cs_51444": {
+          "type": "integer"
+        },
+        "cs_51406": {
+          "type": "integer"
+        },
+        "cs_5145C": {
+          "type": "integer"
+        },
+        "cs_5148C": {
+          "type": "integer"
+        },
+        "cs_5149A": {
+          "type": "integer"
+        },
+        "cs_51652": {
+          "type": "integer"
+        },
+        "cs_53104": {
+          "type": "integer"
+        },
+        "ms_map20_InitFunction": {
+          "type": "integer"
+        },
+        "return_53994": {
+          "type": "integer"
+        },
+        "cs_53996": {
+          "type": "integer"
+        },
+        "cs_53B60": {
+          "type": "integer"
+        },
+        "Map21_EntityEvent0": {
+          "type": "integer"
+        },
+        "cs_53EF4": {
+          "type": "integer"
+        },
+        "bbcs_01": {
+          "type": "integer"
+        }
+      }
+    },
+    "ram": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "CURRENT_MAP",
+        "CURRENT_BATTLE",
+        "GAME_FLAGS",
+        "ENTITY_DATA",
+        "ENTITY_INDEX_LIST",
+        "CURRENT_GOLD",
+        "COMBATANT_DATA",
+        "MAP_EVENT_TYPE",
+        "VIEW_TARGET_ENTITY",
+        "MAP_EVENT_PARAM_1",
+        "MAP_EVENT_PARAM_2",
+        "MAP_EVENT_PARAM_3",
+        "MAP_EVENT_PARAM_4",
+        "BATTLE_AREA_X",
+        "BATTLE_AREA_Y",
+        "BATTLE_AREA_WIDTH",
+        "BATTLE_AREA_HEIGHT",
+        "CURRENT_BATTLE_TURN",
+        "BATTLE_TURN_ORDER",
+        "PLAYER_1_INPUT",
+        "CURRENT_PLAYER_INPUT",
+        "FF0000_RAM_START",
+        "MAP_AREA_LAYER2_STARTX",
+        "MAP_AREA_LAYER2_STARTY",
+        "MAP_AREA_LAYER_TYPE",
+        "MAP_AREA_LAYER1_STARTX",
+        "MAP_AREA_LAYER1_STARTY",
+        "MAP_AREA_LAYER1_ENDX",
+        "MAP_AREA_LAYER1_ENDY",
+        "MAP_TILE_SIZE",
+        "ENTITYDEF_OFFSET_X",
+        "ENTITYDEF_OFFSET_Y",
+        "ENTITYDEF_OFFSET_XDEST",
+        "ENTITYDEF_OFFSET_YDEST",
+        "ENTITYDEF_OFFSET_FACING",
+        "ENTITYDEF_OFFSET_LAYER",
+        "ENTITYDEF_OFFSET_FLAGS_A",
+        "ENTITYDEF_SIZE",
+        "COMBATANT_DATA_ENTRY_SIZE",
+        "COMBATANT_ALLIES_COUNTER",
+        "LONGWORD_GAMEFLAGS_COUNTER",
+        "COMBATANT_MASK_ALL",
+        "ENTITY_ENEMY_INDEX_DIFFERENCE",
+        "ALLY_SARAH",
+        "INPUT_BIT_UP",
+        "INPUT_BIT_DOWN",
+        "INPUT_BIT_LEFT",
+        "INPUT_BIT_RIGHT",
+        "INPUT_BIT_C",
+        "DIRECTION_MASK",
+        "RIGHT",
+        "UP",
+        "LEFT",
+        "DOWN"
+      ],
+      "properties": {
+        "CURRENT_MAP": {
+          "type": "integer"
+        },
+        "CURRENT_BATTLE": {
+          "type": "integer"
+        },
+        "GAME_FLAGS": {
+          "type": "integer"
+        },
+        "ENTITY_DATA": {
+          "type": "integer"
+        },
+        "ENTITY_INDEX_LIST": {
+          "type": "integer"
+        },
+        "CURRENT_GOLD": {
+          "type": "integer"
+        },
+        "COMBATANT_DATA": {
+          "type": "integer"
+        },
+        "MAP_EVENT_TYPE": {
+          "type": "integer"
+        },
+        "VIEW_TARGET_ENTITY": {
+          "type": "integer"
+        },
+        "MAP_EVENT_PARAM_1": {
+          "type": "integer"
+        },
+        "MAP_EVENT_PARAM_2": {
+          "type": "integer"
+        },
+        "MAP_EVENT_PARAM_3": {
+          "type": "integer"
+        },
+        "MAP_EVENT_PARAM_4": {
+          "type": "integer"
+        },
+        "BATTLE_AREA_X": {
+          "type": "integer"
+        },
+        "BATTLE_AREA_Y": {
+          "type": "integer"
+        },
+        "BATTLE_AREA_WIDTH": {
+          "type": "integer"
+        },
+        "BATTLE_AREA_HEIGHT": {
+          "type": "integer"
+        },
+        "CURRENT_BATTLE_TURN": {
+          "type": "integer"
+        },
+        "BATTLE_TURN_ORDER": {
+          "type": "integer"
+        },
+        "PLAYER_1_INPUT": {
+          "type": "integer"
+        },
+        "CURRENT_PLAYER_INPUT": {
+          "type": "integer"
+        },
+        "FF0000_RAM_START": {
+          "type": "integer"
+        },
+        "MAP_AREA_LAYER2_STARTX": {
+          "type": "integer"
+        },
+        "MAP_AREA_LAYER2_STARTY": {
+          "type": "integer"
+        },
+        "MAP_AREA_LAYER_TYPE": {
+          "type": "integer"
+        },
+        "MAP_AREA_LAYER1_STARTX": {
+          "type": "integer"
+        },
+        "MAP_AREA_LAYER1_STARTY": {
+          "type": "integer"
+        },
+        "MAP_AREA_LAYER1_ENDX": {
+          "type": "integer"
+        },
+        "MAP_AREA_LAYER1_ENDY": {
+          "type": "integer"
+        },
+        "MAP_TILE_SIZE": {
+          "type": "integer"
+        },
+        "ENTITYDEF_OFFSET_X": {
+          "type": "integer"
+        },
+        "ENTITYDEF_OFFSET_Y": {
+          "type": "integer"
+        },
+        "ENTITYDEF_OFFSET_XDEST": {
+          "type": "integer"
+        },
+        "ENTITYDEF_OFFSET_YDEST": {
+          "type": "integer"
+        },
+        "ENTITYDEF_OFFSET_FACING": {
+          "type": "integer"
+        },
+        "ENTITYDEF_OFFSET_LAYER": {
+          "type": "integer"
+        },
+        "ENTITYDEF_OFFSET_FLAGS_A": {
+          "type": "integer"
+        },
+        "ENTITYDEF_SIZE": {
+          "type": "integer"
+        },
+        "COMBATANT_DATA_ENTRY_SIZE": {
+          "type": "integer"
+        },
+        "COMBATANT_ALLIES_COUNTER": {
+          "type": "integer"
+        },
+        "LONGWORD_GAMEFLAGS_COUNTER": {
+          "type": "integer"
+        },
+        "COMBATANT_MASK_ALL": {
+          "const": 255
+        },
+        "ENTITY_ENEMY_INDEX_DIFFERENCE": {
+          "const": 96
+        },
+        "ALLY_SARAH": {
+          "const": 1
+        },
+        "INPUT_BIT_UP": {
+          "const": 0
+        },
+        "INPUT_BIT_DOWN": {
+          "const": 1
+        },
+        "INPUT_BIT_LEFT": {
+          "const": 2
+        },
+        "INPUT_BIT_RIGHT": {
+          "const": 3
+        },
+        "INPUT_BIT_C": {
+          "const": 5
+        },
+        "DIRECTION_MASK": {
+          "const": 3
+        },
+        "RIGHT": {
+          "const": 0
+        },
+        "UP": {
+          "const": 1
+        },
+        "LEFT": {
+          "const": 2
+        },
+        "DOWN": {
+          "const": 3
+        }
+      }
+    },
+    "coordinate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "map",
+        "x",
+        "y"
+      ],
+      "properties": {
+        "map": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "x": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      }
+    },
+    "inputPlanStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "waypoint",
+        "from",
+        "to",
+        "input"
+      ],
+      "properties": {
+        "waypoint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from": {
+          "$ref": "#/definitions/coordinate"
+        },
+        "to": {
+          "$ref": "#/definitions/coordinate"
+        },
+        "input": {
+          "enum": [
+            "Up",
+            "Down",
+            "Left",
+            "Right"
+          ]
+        }
+      }
+    },
+    "navigation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "area",
+        "layoutWordCount",
+        "mapOffsetHashBytes",
+        "mapCollidableFlagBit",
+        "blockedLayoutWordFloor",
+        "collisionEnforcedMaps",
+        "eventBeforeCollision",
+        "postWarpLanding",
+        "postWarpSlope",
+        "schoolPathEntityBlocks",
+        "schoolSarahProgram",
+        "postAstralRouteOccupancy",
+        "astralZoneProgram",
+        "entity142ReinitProgram",
+        "inputPlan"
+      ],
+      "properties": {
+        "area": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "startX",
+            "startY",
+            "endX",
+            "endY"
+          ],
+          "properties": {
+            "startX": {
+              "const": 0
+            },
+            "startY": {
+              "const": 0
+            },
+            "endX": {
+              "const": 50
+            },
+            "endY": {
+              "const": 31
+            }
+          }
+        },
+        "layoutWordCount": {
+          "const": 4096
+        },
+        "mapOffsetHashBytes": {
+          "const": 1152
+        },
+        "mapCollidableFlagBit": {
+          "const": 6
+        },
+        "blockedLayoutWordFloor": {
+          "const": 49152
+        },
+        "collisionEnforcedMaps": {
+          "const": [3]
+        },
+        "eventBeforeCollision": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mapWordEventMask",
+            "warpSelector",
+            "zoneSelector",
+            "collisionFloor",
+            "order"
+          ],
+          "properties": {
+            "mapWordEventMask": {"const": 15360},
+            "warpSelector": {"const": 4096},
+            "zoneSelector": {"const": 5120},
+            "collisionFloor": {"const": 49152},
+            "order": {"const": ["warp", "zone", "collision"]}
+          }
+        },
+        "postWarpLanding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["map", "x", "y", "layoutOffsetBytes", "layoutWord"],
+          "properties": {
+            "map": {"const": 3},
+            "x": {"const": 3},
+            "y": {"const": 3},
+            "layoutOffsetBytes": {"const": 390},
+            "layoutWord": {"const": 20533}
+          }
+        },
+        "postWarpSlope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "input",
+            "sourceOffsetBytes",
+            "fromLayoutWord",
+            "to",
+            "toLayoutOffsetBytes",
+            "toLayoutWord"
+          ],
+          "properties": {
+            "input": {"const": "Right"},
+            "sourceOffsetBytes": {"const": 130},
+            "fromLayoutWord": {"const": 20533},
+            "to": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["map", "x", "y"],
+              "properties": {
+                "map": {"const": 3},
+                "x": {"const": 4},
+                "y": {"const": 4}
+              }
+            },
+            "toLayoutOffsetBytes": {"const": 520},
+            "toLayoutWord": {"const": 21572}
+          }
+        },
+        "schoolPathEntityBlocks": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sourceRecord", "entity", "map", "x", "y", "beforeWaypoint"],
+            "properties": {
+              "sourceRecord": {"type": "integer", "minimum": 0},
+              "entity": {"type": "string", "minLength": 1},
+              "map": {"type": "integer", "minimum": 0},
+              "x": {"type": "integer", "minimum": 0},
+              "y": {"type": "integer", "minimum": 0},
+              "beforeWaypoint": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "schoolSarahProgram": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["entityTarget", "event", "program", "completionFlag", "postProgramPosition"],
+          "properties": {
+            "entityTarget": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "map", "x", "y", "facing"],
+              "properties": {
+                "id": {"const": 1},
+                "map": {"const": 3},
+                "x": {"const": 42},
+                "y": {"const": 8},
+                "facing": {"const": "Down"}
+              }
+            },
+            "event": {"const": "Map3_EntityEvent0"},
+            "program": {"const": "cs_513D6"},
+            "completionFlag": {"const": 256},
+            "postProgramPosition": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["map", "x", "y"],
+              "properties": {
+                "map": {"const": 3},
+                "x": {"const": 41},
+                "y": {"const": 7}
+              }
+            }
+          }
+        },
+        "postAstralRouteOccupancy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceRecord", "entity", "map", "x", "y", "unmovedByProgram", "beforeWaypoint"],
+          "properties": {
+            "sourceRecord": {"const": 1},
+            "entity": {"const": "ALLY_CHESTER"},
+            "map": {"const": 3},
+            "x": {"const": 44},
+            "y": {"const": 10},
+            "unmovedByProgram": {"const": "cs_5148C"},
+            "beforeWaypoint": {"const": "map3-zone-messenger"}
+          }
+        },
+        "astralZoneProgram": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["event", "program", "completionFlag", "postProgramPositions"],
+          "properties": {
+            "event": {"const": "Map3_ZoneEvent7"},
+            "program": {"const": "cs_5148C"},
+            "completionFlag": {"const": 260},
+            "postProgramPositions": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["rawCharacter", "entityIndexSelector", "map", "x", "y", "facing"],
+                "properties": {
+                  "rawCharacter": {"type": "integer", "minimum": 0, "maximum": 255},
+                  "entityIndexSelector": {"type": "integer", "minimum": 0, "maximum": 63},
+                  "map": {"const": 3},
+                  "x": {"type": "integer", "minimum": 0},
+                  "y": {"type": "integer", "minimum": 0},
+                  "facing": {"const": "Up"}
+                }
+              }
+            }
+          }
+        },
+        "entity142ReinitProgram": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["triggerFlag", "precedingFlagClear", "program", "postProgramPosition"],
+          "properties": {
+            "triggerFlag": {"const": 602},
+            "precedingFlagClear": {"const": 1},
+            "program": {"const": "cs_513A0"},
+            "postProgramPosition": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["map", "x", "y", "facing"],
+              "properties": {
+                "map": {"const": 3},
+                "x": {"const": 41},
+                "y": {"const": 10},
+                "facing": {"const": "Up"}
+              }
+            }
+          }
+        },
+        "inputPlan": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/inputPlanStep"
+          }
+        }
+      }
+    },
+    "waypoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "map",
+        "x",
+        "y",
+        "facing",
+        "interaction"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "map": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "x": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "y": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "facing": {
+          "enum": [
+            "Up",
+            "Down",
+            "Left",
+            "Right",
+            "None"
+          ]
+        },
+        "interaction": {
+          "enum": [
+            "entity",
+            "zone",
+            "step",
+            "warp",
+            "scene"
+          ]
+        },
+        "completionFlag": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1023
+        },
+        "completionEvent": {
+          "const": "Map3_ZoneEvent7"
+        },
+        "completionDestination": {
+          "$ref": "#/definitions/coordinate"
+        },
+        "entityTarget": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "map",
+            "x",
+            "y",
+            "facing"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "map": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "x": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "y": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "facing": {
+              "enum": ["Up", "Down", "Left", "Right"]
+            }
+          }
+        }
+      }
+    },
+    "warp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fromMap",
+        "toMap",
+        "eventDestinationMap",
+        "x",
+        "y",
+        "destinationX",
+        "destinationY"
+      ],
+      "properties": {
+        "fromMap": {
+          "type": "integer"
+        },
+        "toMap": {
+          "type": "integer"
+        },
+        "eventDestinationMap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "x": {
+          "type": "integer"
+        },
+        "y": {
+          "type": "integer"
+        },
+        "destinationX": {
+          "type": "integer"
+        },
+        "destinationY": {
+          "type": "integer"
+        }
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flags",
+        "maps",
+        "battle01",
+        "navigation",
+        "runtimeOpening",
+        "waypoints",
+        "warps",
+        "scriptSymbols"
+      ],
+      "properties": {
+        "flags": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "afterHouseExit",
+            "afterEntity142",
+            "afterAstralZone",
+            "afterMessenger",
+            "followersAccepted",
+            "followers",
+            "castleAdmitted",
+            "castleScene",
+            "towerAccepted",
+            "battle01Unlocked"
+          ],
+          "properties": {
+            "afterHouseExit": {
+              "const": 601
+            },
+            "afterEntity142": {
+              "const": 602
+            },
+            "afterAstralZone": {
+              "const": 260
+            },
+            "afterMessenger": {
+              "const": 603
+            },
+            "followersAccepted": {
+              "const": 600
+            },
+            "followers": {
+              "const": 66
+            },
+            "castleAdmitted": {
+              "const": 604
+            },
+            "castleScene": {
+              "const": 605
+            },
+            "towerAccepted": {
+              "const": 608
+            },
+            "battle01Unlocked": {
+              "const": 401
+            }
+          }
+        },
+        "maps": {
+          "const": [
+            3,
+            19,
+            20,
+            21,
+            40,
+            57
+          ]
+        },
+        "battle01": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "map",
+            "areaX",
+            "areaY",
+            "areaWidth",
+            "areaHeight",
+            "triggerX",
+            "triggerY",
+            "beforeCutscene"
+          ],
+          "properties": {
+            "id": {
+              "const": 1
+            },
+            "map": {
+              "const": 57
+            },
+            "areaX": {
+              "const": 0
+            },
+            "areaY": {
+              "const": 0
+            },
+            "areaWidth": {
+              "const": 16
+            },
+            "areaHeight": {
+              "const": 20
+            },
+            "triggerX": {
+              "const": 255
+            },
+            "triggerY": {
+              "const": 255
+            },
+            "beforeCutscene": {
+              "const": "bbcs_01"
+            }
+          }
+        },
+        "navigation": {
+          "$ref": "#/definitions/navigation"
+        },
+        "runtimeOpening": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["flags", "navigation", "waypoints", "warps", "scriptSymbols", "endpoint"],
+          "properties": {
+            "flags": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["afterHouseExit", "classroomSarah", "afterEntity142", "afterAstralZone", "afterMessenger"],
+              "properties": {
+                "afterHouseExit": {"const": 601},
+                "classroomSarah": {"const": 256},
+                "afterEntity142": {"const": 602},
+                "afterAstralZone": {"const": 260},
+                "afterMessenger": {"const": 603}
+              }
+            },
+            "navigation": {"$ref": "#/definitions/navigation"},
+            "waypoints": {
+              "type": "array",
+              "minItems": 11,
+              "maxItems": 11,
+              "items": {"$ref": "#/definitions/waypoint"}
+            },
+            "warps": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {"$ref": "#/definitions/warp"}
+            },
+            "scriptSymbols": {
+              "type": "array",
+              "minItems": 5,
+              "maxItems": 5,
+              "uniqueItems": true,
+              "items": {"type": "string", "minLength": 1}
+            },
+            "endpoint": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["sourceTarget", "program", "notYetMutatedFlag"],
+              "properties": {
+                "sourceTarget": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["map", "x", "y"],
+                  "properties": {"map": {"const": 3}, "x": {"const": 43}, "y": {"const": 10}}
+                },
+                "program": {"const": "cs_5149A"},
+                "notYetMutatedFlag": {"const": 603}
+              }
+            }
+          }
+        },
+        "waypoints": {
+          "type": "array",
+          "minItems": 23,
+          "maxItems": 23,
+          "items": {
+            "$ref": "#/definitions/waypoint"
+          }
+        },
+        "warps": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "items": {
+            "$ref": "#/definitions/warp"
+          }
+        },
+        "scriptSymbols": {
+          "type": "array",
+          "minItems": 13,
+          "maxItems": 13,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "static": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "r1",
+        "functions",
+        "ram",
+        "route",
+        "sourceHashDigest"
+      ],
+      "properties": {
+        "r1": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fixtureId",
+            "selectedMap",
+            "selectedSetup",
+            "selectedInit",
+            "admittedStart"
+          ],
+          "properties": {
+            "fixtureId": {
+              "const": "sf2-map3-admitted-start-runtime-v1"
+            },
+            "selectedMap": {
+              "const": 3
+            },
+            "selectedSetup": {
+              "const": "ms_map3"
+            },
+            "selectedInit": {
+              "const": "ms_map3_InitFunction"
+            },
+            "admittedStart": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "map",
+                "x",
+                "y",
+                "facing"
+              ],
+              "properties": {
+                "map": {
+                  "const": 3
+                },
+                "x": {
+                  "const": 56
+                },
+                "y": {
+                  "const": 3
+                },
+                "facing": {
+                  "const": 3
+                }
+              }
+            }
+          }
+        },
+        "functions": {
+          "$ref": "#/definitions/functions"
+        },
+        "ram": {
+          "$ref": "#/definitions/ram"
+        },
+        "route": {
+          "$ref": "#/definitions/route"
+        },
+        "sourceHashDigest": {
+          "type": "string",
+          "pattern": "^[A-F0-9]{64}$"
+        }
+      }
+    },
+    "sourceContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "r1FixtureId",
+        "functions",
+        "battle01"
+      ],
+      "properties": {
+        "r1FixtureId": {
+          "const": "sf2-map3-admitted-start-runtime-v1"
+        },
+        "functions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "MainLoop",
+            "WaitForEvent",
+            "CheckBattle",
+            "BattleLoop",
+            "ExecuteIndividualTurn"
+          ],
+          "properties": {
+            "MainLoop": {
+              "type": "integer"
+            },
+            "WaitForEvent": {
+              "type": "integer"
+            },
+            "CheckBattle": {
+              "type": "integer"
+            },
+            "BattleLoop": {
+              "type": "integer"
+            },
+            "ExecuteIndividualTurn": {
+              "type": "integer"
+            }
+          }
+        },
+        "battle01": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "map",
+            "id"
+          ],
+          "properties": {
+            "map": {
+              "const": 57
+            },
+            "id": {
+              "const": 1
+            }
+          }
+        }
+      }
+    },
+    "inputTrace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "map",
+        "x",
+        "y",
+        "input",
+        "waypoint"
+      ],
+      "properties": {
+        "map": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "integer"
+        },
+        "y": {
+          "type": "integer"
+        },
+        "input": {
+          "enum": [
+            "",
+            "Up",
+            "Down",
+            "Left",
+            "Right",
+            "C",
+            "Start"
+          ]
+        },
+        "waypoint": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "map",
+        "x",
+        "y",
+        "facing"
+      ],
+      "properties": {
+        "map": {
+          "type": "integer"
+        },
+        "x": {
+          "type": "integer"
+        },
+        "y": {
+          "type": "integer"
+        },
+        "facing": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "caseId",
+        "r1Start",
+        "chronology",
+        "logicalInputTrace",
+        "mapTransitions",
+        "scriptTrace",
+        "fieldMenu",
+        "openingMap3"
+      ],
+      "properties": {
+        "caseId": {
+          "const": "natural-map3-opening-to-messenger-entry"
+        },
+        "r1Start": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fixtureId",
+            "map"
+          ],
+          "properties": {
+            "fixtureId": {
+              "const": "sf2-map3-admitted-start-runtime-v1"
+            },
+            "map": {
+              "const": 3
+            }
+          }
+        },
+        "chronology": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "logicalInputTrace": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/inputTrace"
+          }
+        },
+        "mapTransitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/transition"
+          }
+        },
+        "scriptTrace": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "fieldMenu": {
+          "const": "not-reached"
+        },
+        "openingMap3": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceTarget", "program", "afterHouseExit", "classroomSarah", "afterEntity142", "afterAstralZone", "afterMessenger"],
+          "properties": {
+            "sourceTarget": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["map", "x", "y"],
+              "properties": {"map": {"const": 3}, "x": {"const": 43}, "y": {"const": 10}}
+            },
+            "program": {"const": "cs_5149A"},
+            "afterHouseExit": {"const": true},
+            "classroomSarah": {"const": true},
+            "afterEntity142": {"const": true},
+            "afterAstralZone": {"const": true},
+            "afterMessenger": {"const": false}
+          }
+        }
+      }
+    },
+    "restoration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gameFlags",
+        "combatantAllyRecords",
+        "mapAndBattleState",
+        "playerEntity",
+        "gold",
+        "generatedRam",
+        "callbacksCleared",
+        "sessionCartPatches",
+        "sessionRomDeleted"
+      ],
+      "properties": {
+        "gameFlags": {
+          "const": true
+        },
+        "combatantAllyRecords": {
+          "const": true
+        },
+        "mapAndBattleState": {
+          "const": true
+        },
+        "playerEntity": {
+          "const": true
+        },
+        "gold": {
+          "const": true
+        },
+        "generatedRam": {
+          "const": true
+        },
+        "callbacksCleared": {
+          "const": true
+        },
+        "sessionCartPatches": {
+          "const": true
+        },
+        "sessionRomDeleted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "system",
+        "caseOrder",
+        "records",
+        "callbacksCleared",
+        "restoration"
+      ],
+      "properties": {
+        "system": {
+          "const": "sf2-map3-battle01-natural-route-runtime-v1"
+        },
+        "caseOrder": {
+          "const": [
+            "natural-map3-opening-to-messenger-entry"
+          ]
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/record"
+          }
+        },
+        "callbacksCleared": {
+          "const": true
+        },
+        "restoration": {
+          "$ref": "#/definitions/restoration"
+        }
+      }
+    }
+  }
+}

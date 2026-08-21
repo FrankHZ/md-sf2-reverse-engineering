@@ -1,0 +1,6098 @@
+{
+  "id": "sf2-map3-battle01-natural-route-runtime-v1",
+  "system": "sf2-map3-battle01-natural-route-runtime-v1",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "caseOrder": [
+    "natural-map3-opening-to-messenger-entry"
+  ],
+  "cases": [
+    {
+      "caseId": "natural-map3-opening-to-messenger-entry",
+      "injectedInitialMenuReturn": 1,
+      "injectedDifficultyMenuReturn": 0,
+      "frameBudget": 36000
+    }
+  ],
+  "privateProvenance": {
+    "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+    "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+    "tool": "BizHawk 2.11.1",
+    "core": "Genesis Plus GX",
+    "inputCondition": "controlled R1 admitted snapshot followed only by original controller input; no debug battle or coordinate write",
+    "capturePayload": "not-tracked; private captures/assets/audio remain ignored",
+    "configuration": "tracked observer plus generated local configuration and one disposable session ROM"
+  },
+  "static": {
+    "r1": {
+      "fixtureId": "sf2-map3-admitted-start-runtime-v1",
+      "selectedMap": 3,
+      "selectedSetup": "ms_map3",
+      "selectedInit": "ms_map3_InitFunction",
+      "admittedStart": {
+        "map": 3,
+        "x": 56,
+        "y": 3,
+        "facing": 3
+      }
+    },
+    "functions": {
+      "MainLoop": 30148,
+      "ExplorationLoop": 153536,
+      "WaitForEvent": 153884,
+      "ProcessPlayerAction": 154326,
+      "GetActivatedEntity": 145306,
+      "esc02_controlCharacter": 20472,
+      "loc_52E8": 21224,
+      "ProcessMapEvent": 153930,
+      "ProcessMapEventType1_Warp": 153976,
+      "ProcessMapEventType6_ZoneEvent": 154236,
+      "RunMapSetupEntityEvent": 292378,
+      "RunMapSetupZoneEvent": 292122,
+      "ExecuteMapScript": 291116,
+      "csc19_setEntityPosAndFacing": 289298,
+      "GetEntityAddressFromCharacter": 290890,
+      "CheckBattle": 31132,
+      "BattleLoop": 146052,
+      "ExecuteBeforeBattleCutscene": 293456,
+      "LoadBattle": 153104,
+      "ExecuteBattleStartCutscene": 293614,
+      "ActivateEnemies": 152844,
+      "GenerateBattleTurnOrder": 152900,
+      "ExecuteIndividualTurn": 147120,
+      "FieldMenu": 135806,
+      "OpenDoor": 15936,
+      "ms_map3_InitFunction": 332674,
+      "Map3_ZoneEvent0": 331124,
+      "Map3_EntityEvent0": 331604,
+      "Map3_EntityEvent15": 331844,
+      "Map3_ZoneEvent6": 331332,
+      "Map3_ZoneEvent7": 331366,
+      "Map3_ZoneEvent8": 331474,
+      "Map3_ZoneEvent1": 331180,
+      "cs_513A0": 332704,
+      "cs_513D6": 332758,
+      "cs_513E2": 332770,
+      "cs_51444": 332868,
+      "cs_51406": 332806,
+      "cs_5145C": 332892,
+      "cs_5148C": 332940,
+      "cs_5149A": 332954,
+      "cs_51652": 333394,
+      "cs_53104": 340228,
+      "ms_map20_InitFunction": 342374,
+      "return_53994": 342420,
+      "cs_53996": 342422,
+      "cs_53B60": 342880,
+      "Map21_EntityEvent0": 343726,
+      "cs_53EF4": 343796,
+      "bbcs_01": 300220
+    },
+    "ram": {
+      "CURRENT_MAP": 16774929,
+      "CURRENT_BATTLE": 16774930,
+      "GAME_FLAGS": 16774790,
+      "ENTITY_DATA": 16754946,
+      "ENTITY_INDEX_LIST": 16757056,
+      "CURRENT_GOLD": 16774656,
+      "COMBATANT_DATA": 16771072,
+      "MAP_EVENT_TYPE": 16754762,
+      "VIEW_TARGET_ENTITY": 16754732,
+      "MAP_EVENT_PARAM_1": 16754764,
+      "MAP_EVENT_PARAM_2": 16754765,
+      "MAP_EVENT_PARAM_3": 16754766,
+      "MAP_EVENT_PARAM_4": 16754767,
+      "BATTLE_AREA_X": 16774918,
+      "BATTLE_AREA_Y": 16774919,
+      "BATTLE_AREA_WIDTH": 16774920,
+      "BATTLE_AREA_HEIGHT": 16774921,
+      "CURRENT_BATTLE_TURN": 16775066,
+      "BATTLE_TURN_ORDER": 16774938,
+      "PLAYER_1_INPUT": 16768663,
+      "CURRENT_PLAYER_INPUT": 16768667,
+      "FF0000_RAM_START": 16711680,
+      "MAP_AREA_LAYER2_STARTX": 16754742,
+      "MAP_AREA_LAYER2_STARTY": 16754744,
+      "MAP_AREA_LAYER_TYPE": 16756550,
+      "MAP_AREA_LAYER1_STARTX": 16754734,
+      "MAP_AREA_LAYER1_STARTY": 16754736,
+      "MAP_AREA_LAYER1_ENDX": 16754738,
+      "MAP_AREA_LAYER1_ENDY": 16754740,
+      "MAP_TILE_SIZE": 384,
+      "ENTITYDEF_OFFSET_X": 0,
+      "ENTITYDEF_OFFSET_Y": 2,
+      "ENTITYDEF_OFFSET_XDEST": 12,
+      "ENTITYDEF_OFFSET_YDEST": 14,
+      "ENTITYDEF_OFFSET_FACING": 16,
+      "ENTITYDEF_OFFSET_LAYER": 17,
+      "ENTITYDEF_OFFSET_FLAGS_A": 28,
+      "ENTITYDEF_SIZE": 32,
+      "COMBATANT_DATA_ENTRY_SIZE": 56,
+      "COMBATANT_ALLIES_COUNTER": 29,
+      "LONGWORD_GAMEFLAGS_COUNTER": 31,
+      "COMBATANT_MASK_ALL": 255,
+      "ENTITY_ENEMY_INDEX_DIFFERENCE": 96,
+      "ALLY_SARAH": 1,
+      "INPUT_BIT_UP": 0,
+      "INPUT_BIT_DOWN": 1,
+      "INPUT_BIT_LEFT": 2,
+      "INPUT_BIT_RIGHT": 3,
+      "INPUT_BIT_C": 5,
+      "DIRECTION_MASK": 3,
+      "RIGHT": 0,
+      "UP": 1,
+      "LEFT": 2,
+      "DOWN": 3
+    },
+    "route": {
+      "flags": {
+        "afterHouseExit": 601,
+        "afterEntity142": 602,
+        "afterAstralZone": 260,
+        "afterMessenger": 603,
+        "followersAccepted": 600,
+        "followers": 66,
+        "castleAdmitted": 604,
+        "castleScene": 605,
+        "towerAccepted": 608,
+        "battle01Unlocked": 401
+      },
+      "maps": [
+        3,
+        19,
+        20,
+        21,
+        40,
+        57
+      ],
+      "battle01": {
+        "id": 1,
+        "map": 57,
+        "areaX": 0,
+        "areaY": 0,
+        "areaWidth": 16,
+        "areaHeight": 20,
+        "triggerX": 255,
+        "triggerY": 255,
+        "beforeCutscene": "bbcs_01"
+      },
+      "navigation": {
+        "area": {
+          "startX": 0,
+          "startY": 0,
+          "endX": 50,
+          "endY": 31
+        },
+        "layoutWordCount": 4096,
+        "mapOffsetHashBytes": 1152,
+        "mapCollidableFlagBit": 6,
+        "blockedLayoutWordFloor": 49152,
+        "collisionEnforcedMaps": [
+          3
+        ],
+        "eventBeforeCollision": {
+          "mapWordEventMask": 15360,
+          "warpSelector": 4096,
+          "zoneSelector": 5120,
+          "collisionFloor": 49152,
+          "order": [
+            "warp",
+            "zone",
+            "collision"
+          ]
+        },
+        "postWarpLanding": {
+          "map": 3,
+          "x": 3,
+          "y": 3,
+          "layoutOffsetBytes": 390,
+          "layoutWord": 20533
+        },
+        "postWarpSlope": {
+          "input": "Right",
+          "sourceOffsetBytes": 130,
+          "fromLayoutWord": 20533,
+          "to": {
+            "map": 3,
+            "x": 4,
+            "y": 4
+          },
+          "toLayoutOffsetBytes": 520,
+          "toLayoutWord": 21572
+        },
+        "schoolPathEntityBlocks": [
+          {
+            "sourceRecord": 0,
+            "entity": "ALLY_SARAH",
+            "map": 3,
+            "x": 42,
+            "y": 8,
+            "beforeWaypoint": "map3-school-stairs-down"
+          },
+          {
+            "sourceRecord": 1,
+            "entity": "ALLY_CHESTER",
+            "map": 3,
+            "x": 44,
+            "y": 10,
+            "beforeWaypoint": "map3-school-stairs-down"
+          }
+        ],
+        "schoolSarahProgram": {
+          "entityTarget": {
+            "id": 1,
+            "map": 3,
+            "x": 42,
+            "y": 8,
+            "facing": "Down"
+          },
+          "event": "Map3_EntityEvent0",
+          "program": "cs_513D6",
+          "completionFlag": 256,
+          "postProgramPosition": {
+            "map": 3,
+            "x": 41,
+            "y": 7
+          }
+        },
+        "postAstralRouteOccupancy": {
+          "sourceRecord": 1,
+          "entity": "ALLY_CHESTER",
+          "map": 3,
+          "x": 44,
+          "y": 10,
+          "unmovedByProgram": "cs_5148C",
+          "beforeWaypoint": "map3-zone-messenger"
+        },
+        "astralZoneProgram": {
+          "event": "Map3_ZoneEvent7",
+          "program": "cs_5148C",
+          "completionFlag": 260,
+          "postProgramPositions": [
+            {
+              "rawCharacter": 1,
+              "entityIndexSelector": 1,
+              "map": 3,
+              "x": 41,
+              "y": 10,
+              "facing": "Up"
+            },
+            {
+              "rawCharacter": 128,
+              "entityIndexSelector": 32,
+              "map": 3,
+              "x": 6,
+              "y": 4,
+              "facing": "Up"
+            }
+          ]
+        },
+        "entity142ReinitProgram": {
+          "triggerFlag": 602,
+          "precedingFlagClear": 1,
+          "program": "cs_513A0",
+          "postProgramPosition": {
+            "map": 3,
+            "x": 41,
+            "y": 10,
+            "facing": "Up"
+          }
+        },
+        "inputPlan": [
+          {
+            "waypoint": "map3-bowie-house-exit",
+            "from": {
+              "map": 3,
+              "x": 56,
+              "y": 3
+            },
+            "to": {
+              "map": 3,
+              "x": 55,
+              "y": 3
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-bowie-house-exit",
+            "from": {
+              "map": 3,
+              "x": 55,
+              "y": 3
+            },
+            "to": {
+              "map": 3,
+              "x": 54,
+              "y": 3
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-house-exit-zone",
+            "from": {
+              "map": 3,
+              "x": 3,
+              "y": 3
+            },
+            "to": {
+              "map": 3,
+              "x": 4,
+              "y": 4
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-bowie-house-door",
+            "from": {
+              "map": 3,
+              "x": 4,
+              "y": 4
+            },
+            "to": {
+              "map": 3,
+              "x": 4,
+              "y": 5
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-bowie-house-door",
+            "from": {
+              "map": 3,
+              "x": 4,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 4,
+              "y": 6
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-bowie-house-door",
+            "from": {
+              "map": 3,
+              "x": 4,
+              "y": 6
+            },
+            "to": {
+              "map": 3,
+              "x": 4,
+              "y": 7
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-bowie-house-door",
+            "from": {
+              "map": 3,
+              "x": 4,
+              "y": 7
+            },
+            "to": {
+              "map": 3,
+              "x": 4,
+              "y": 8
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 4,
+              "y": 8
+            },
+            "to": {
+              "map": 3,
+              "x": 4,
+              "y": 9
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 4,
+              "y": 9
+            },
+            "to": {
+              "map": 3,
+              "x": 4,
+              "y": 10
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 4,
+              "y": 10
+            },
+            "to": {
+              "map": 3,
+              "x": 4,
+              "y": 11
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 4,
+              "y": 11
+            },
+            "to": {
+              "map": 3,
+              "x": 5,
+              "y": 11
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 5,
+              "y": 11
+            },
+            "to": {
+              "map": 3,
+              "x": 6,
+              "y": 11
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 6,
+              "y": 11
+            },
+            "to": {
+              "map": 3,
+              "x": 6,
+              "y": 12
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 6,
+              "y": 12
+            },
+            "to": {
+              "map": 3,
+              "x": 6,
+              "y": 13
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 6,
+              "y": 13
+            },
+            "to": {
+              "map": 3,
+              "x": 6,
+              "y": 14
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 6,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 7,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 7,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 8,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 8,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 9,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 9,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 10,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 10,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 11,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 11,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 12,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 12,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 13,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 13,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 14,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 14,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 15,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 15,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 16,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 16,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 17,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 17,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 18,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 18,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 19,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 19,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 20,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 20,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 21,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 21,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 22,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 22,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 23,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 23,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 24,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 24,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 25,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 25,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 26,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 26,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 26,
+              "y": 15
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 26,
+              "y": 15
+            },
+            "to": {
+              "map": 3,
+              "x": 27,
+              "y": 15
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 27,
+              "y": 15
+            },
+            "to": {
+              "map": 3,
+              "x": 28,
+              "y": 15
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 28,
+              "y": 15
+            },
+            "to": {
+              "map": 3,
+              "x": 29,
+              "y": 15
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 29,
+              "y": 15
+            },
+            "to": {
+              "map": 3,
+              "x": 29,
+              "y": 16
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 29,
+              "y": 16
+            },
+            "to": {
+              "map": 3,
+              "x": 30,
+              "y": 16
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 30,
+              "y": 16
+            },
+            "to": {
+              "map": 3,
+              "x": 31,
+              "y": 16
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 31,
+              "y": 16
+            },
+            "to": {
+              "map": 3,
+              "x": 32,
+              "y": 16
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 32,
+              "y": 16
+            },
+            "to": {
+              "map": 3,
+              "x": 32,
+              "y": 17
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 32,
+              "y": 17
+            },
+            "to": {
+              "map": 3,
+              "x": 33,
+              "y": 17
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 33,
+              "y": 17
+            },
+            "to": {
+              "map": 3,
+              "x": 34,
+              "y": 17
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 34,
+              "y": 17
+            },
+            "to": {
+              "map": 3,
+              "x": 35,
+              "y": 17
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 35,
+              "y": 17
+            },
+            "to": {
+              "map": 3,
+              "x": 36,
+              "y": 17
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 36,
+              "y": 17
+            },
+            "to": {
+              "map": 3,
+              "x": 37,
+              "y": 17
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 37,
+              "y": 17
+            },
+            "to": {
+              "map": 3,
+              "x": 38,
+              "y": 17
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 38,
+              "y": 17
+            },
+            "to": {
+              "map": 3,
+              "x": 39,
+              "y": 17
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 39,
+              "y": 17
+            },
+            "to": {
+              "map": 3,
+              "x": 40,
+              "y": 17
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 40,
+              "y": 17
+            },
+            "to": {
+              "map": 3,
+              "x": 40,
+              "y": 16
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 40,
+              "y": 16
+            },
+            "to": {
+              "map": 3,
+              "x": 40,
+              "y": 15
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 40,
+              "y": 15
+            },
+            "to": {
+              "map": 3,
+              "x": 40,
+              "y": 14
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 40,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 41,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-door",
+            "from": {
+              "map": 3,
+              "x": 41,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 41,
+              "y": 13
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-sarah-classroom",
+            "from": {
+              "map": 3,
+              "x": 41,
+              "y": 13
+            },
+            "to": {
+              "map": 3,
+              "x": 41,
+              "y": 12
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-sarah-classroom",
+            "from": {
+              "map": 3,
+              "x": 41,
+              "y": 12
+            },
+            "to": {
+              "map": 3,
+              "x": 41,
+              "y": 11
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-sarah-classroom",
+            "from": {
+              "map": 3,
+              "x": 41,
+              "y": 11
+            },
+            "to": {
+              "map": 3,
+              "x": 41,
+              "y": 10
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-sarah-classroom",
+            "from": {
+              "map": 3,
+              "x": 41,
+              "y": 10
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 10
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-sarah-classroom",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 10
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 9
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-school-stairs-down",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 9
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 8
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-school-stairs-down",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 8
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 7
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-school-stairs-down",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 7
+            },
+            "to": {
+              "map": 3,
+              "x": 43,
+              "y": 7
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-stairs-down",
+            "from": {
+              "map": 3,
+              "x": 43,
+              "y": 7
+            },
+            "to": {
+              "map": 3,
+              "x": 44,
+              "y": 7
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-stairs-down",
+            "from": {
+              "map": 3,
+              "x": 44,
+              "y": 7
+            },
+            "to": {
+              "map": 3,
+              "x": 45,
+              "y": 7
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-stairs-down",
+            "from": {
+              "map": 3,
+              "x": 45,
+              "y": 7
+            },
+            "to": {
+              "map": 3,
+              "x": 46,
+              "y": 7
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-astral-zone-introduction",
+            "from": {
+              "map": 3,
+              "x": 59,
+              "y": 12
+            },
+            "to": {
+              "map": 3,
+              "x": 58,
+              "y": 13
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-entity142",
+            "from": {
+              "map": 3,
+              "x": 58,
+              "y": 13
+            },
+            "to": {
+              "map": 3,
+              "x": 58,
+              "y": 14
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-entity142",
+            "from": {
+              "map": 3,
+              "x": 58,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 57,
+              "y": 14
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-entity142",
+            "from": {
+              "map": 3,
+              "x": 57,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 56,
+              "y": 14
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-entity142",
+            "from": {
+              "map": 3,
+              "x": 56,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 55,
+              "y": 14
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-entity142",
+            "from": {
+              "map": 3,
+              "x": 55,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 55,
+              "y": 15
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-entity142",
+            "from": {
+              "map": 3,
+              "x": 55,
+              "y": 15
+            },
+            "to": {
+              "map": 3,
+              "x": 55,
+              "y": 16
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-entity142",
+            "from": {
+              "map": 3,
+              "x": 55,
+              "y": 16
+            },
+            "to": {
+              "map": 3,
+              "x": 55,
+              "y": 17
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-astral-zone",
+            "from": {
+              "map": 3,
+              "x": 55,
+              "y": 17
+            },
+            "to": {
+              "map": 3,
+              "x": 55,
+              "y": 16
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-astral-zone",
+            "from": {
+              "map": 3,
+              "x": 55,
+              "y": 16
+            },
+            "to": {
+              "map": 3,
+              "x": 55,
+              "y": 15
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-astral-zone",
+            "from": {
+              "map": 3,
+              "x": 55,
+              "y": 15
+            },
+            "to": {
+              "map": 3,
+              "x": 55,
+              "y": 14
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-astral-zone",
+            "from": {
+              "map": 3,
+              "x": 55,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 56,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-astral-zone",
+            "from": {
+              "map": 3,
+              "x": 56,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 57,
+              "y": 14
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-astral-zone",
+            "from": {
+              "map": 3,
+              "x": 57,
+              "y": 14
+            },
+            "to": {
+              "map": 3,
+              "x": 57,
+              "y": 13
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-astral-zone",
+            "from": {
+              "map": 3,
+              "x": 57,
+              "y": 13
+            },
+            "to": {
+              "map": 3,
+              "x": 58,
+              "y": 13
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-school-stairs-up",
+            "from": {
+              "map": 3,
+              "x": 58,
+              "y": 13
+            },
+            "to": {
+              "map": 3,
+              "x": 59,
+              "y": 12
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-zone-messenger",
+            "from": {
+              "map": 3,
+              "x": 46,
+              "y": 7
+            },
+            "to": {
+              "map": 3,
+              "x": 46,
+              "y": 8
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-zone-messenger",
+            "from": {
+              "map": 3,
+              "x": 46,
+              "y": 8
+            },
+            "to": {
+              "map": 3,
+              "x": 45,
+              "y": 8
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-zone-messenger",
+            "from": {
+              "map": 3,
+              "x": 45,
+              "y": 8
+            },
+            "to": {
+              "map": 3,
+              "x": 44,
+              "y": 8
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-zone-messenger",
+            "from": {
+              "map": 3,
+              "x": 44,
+              "y": 8
+            },
+            "to": {
+              "map": 3,
+              "x": 43,
+              "y": 8
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-zone-messenger",
+            "from": {
+              "map": 3,
+              "x": 43,
+              "y": 8
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 8
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-zone-messenger",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 8
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 9
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-zone-messenger",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 9
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 10
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map3-zone-messenger",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 10
+            },
+            "to": {
+              "map": 3,
+              "x": 43,
+              "y": 10
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map3-sarah",
+            "from": {
+              "map": 3,
+              "x": 43,
+              "y": 10
+            },
+            "to": {
+              "map": 3,
+              "x": 43,
+              "y": 9
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-sarah",
+            "from": {
+              "map": 3,
+              "x": 43,
+              "y": 9
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 9
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 9
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 8
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 8
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 7
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 7
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 6
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 6
+            },
+            "to": {
+              "map": 3,
+              "x": 42,
+              "y": 5
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 42,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 41,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 41,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 40,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 40,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 39,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 39,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 38,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 38,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 37,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 37,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 36,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 36,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 35,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 35,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 34,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 34,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 33,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 33,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 32,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 32,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 31,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 31,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 30,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 30,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 29,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 29,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 28,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-gate",
+            "from": {
+              "map": 3,
+              "x": 28,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 27,
+              "y": 5
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map3-castle-warp",
+            "from": {
+              "map": 3,
+              "x": 27,
+              "y": 5
+            },
+            "to": {
+              "map": 3,
+              "x": 27,
+              "y": 4
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-castle-warp",
+            "from": {
+              "map": 3,
+              "x": 27,
+              "y": 4
+            },
+            "to": {
+              "map": 3,
+              "x": 27,
+              "y": 3
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-castle-warp",
+            "from": {
+              "map": 3,
+              "x": 27,
+              "y": 3
+            },
+            "to": {
+              "map": 3,
+              "x": 27,
+              "y": 2
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map3-castle-warp",
+            "from": {
+              "map": 3,
+              "x": 27,
+              "y": 2
+            },
+            "to": {
+              "map": 3,
+              "x": 27,
+              "y": 1
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 30
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 29
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 29
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 28
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 28
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 27
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 27
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 26
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 26
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 25
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 25
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 24
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 24
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 23
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 23
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 22
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 22
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 21
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 21
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 20
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 20
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 19
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 19
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 18
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 18
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 17
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 17
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 16
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 16
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 15
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 15
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 14
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 14
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 13
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 13
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 12
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 12
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 11
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 11
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 10
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 10
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 9
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 9
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 8
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 8
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 7
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 7
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 6
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 6
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 5
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 5
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 4
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 4
+            },
+            "to": {
+              "map": 19,
+              "x": 26,
+              "y": 3
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 26,
+              "y": 3
+            },
+            "to": {
+              "map": 19,
+              "x": 25,
+              "y": 3
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 25,
+              "y": 3
+            },
+            "to": {
+              "map": 19,
+              "x": 24,
+              "y": 3
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-kings-room-warp",
+            "from": {
+              "map": 19,
+              "x": 24,
+              "y": 3
+            },
+            "to": {
+              "map": 19,
+              "x": 23,
+              "y": 3
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map20-kings-room-exit",
+            "from": {
+              "map": 20,
+              "x": 23,
+              "y": 39
+            },
+            "to": {
+              "map": 20,
+              "x": 23,
+              "y": 38
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map20-kings-room-exit",
+            "from": {
+              "map": 20,
+              "x": 23,
+              "y": 38
+            },
+            "to": {
+              "map": 20,
+              "x": 23,
+              "y": 37
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-astral",
+            "from": {
+              "map": 19,
+              "x": 23,
+              "y": 3
+            },
+            "to": {
+              "map": 19,
+              "x": 23,
+              "y": 4
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map19-astral",
+            "from": {
+              "map": 19,
+              "x": 23,
+              "y": 4
+            },
+            "to": {
+              "map": 19,
+              "x": 23,
+              "y": 5
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map19-astral",
+            "from": {
+              "map": 19,
+              "x": 23,
+              "y": 5
+            },
+            "to": {
+              "map": 19,
+              "x": 23,
+              "y": 6
+            },
+            "input": "Down"
+          },
+          {
+            "waypoint": "map19-astral",
+            "from": {
+              "map": 19,
+              "x": 23,
+              "y": 6
+            },
+            "to": {
+              "map": 19,
+              "x": 22,
+              "y": 6
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-astral",
+            "from": {
+              "map": 19,
+              "x": 22,
+              "y": 6
+            },
+            "to": {
+              "map": 19,
+              "x": 21,
+              "y": 6
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-astral",
+            "from": {
+              "map": 19,
+              "x": 21,
+              "y": 6
+            },
+            "to": {
+              "map": 19,
+              "x": 20,
+              "y": 6
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-astral",
+            "from": {
+              "map": 19,
+              "x": 20,
+              "y": 6
+            },
+            "to": {
+              "map": 19,
+              "x": 19,
+              "y": 6
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-astral",
+            "from": {
+              "map": 19,
+              "x": 19,
+              "y": 6
+            },
+            "to": {
+              "map": 19,
+              "x": 18,
+              "y": 6
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-astral",
+            "from": {
+              "map": 19,
+              "x": 18,
+              "y": 6
+            },
+            "to": {
+              "map": 19,
+              "x": 17,
+              "y": 6
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-astral",
+            "from": {
+              "map": 19,
+              "x": 17,
+              "y": 6
+            },
+            "to": {
+              "map": 19,
+              "x": 16,
+              "y": 6
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 16,
+              "y": 6
+            },
+            "to": {
+              "map": 19,
+              "x": 16,
+              "y": 5
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 16,
+              "y": 5
+            },
+            "to": {
+              "map": 19,
+              "x": 16,
+              "y": 4
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 16,
+              "y": 4
+            },
+            "to": {
+              "map": 19,
+              "x": 16,
+              "y": 3
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 16,
+              "y": 3
+            },
+            "to": {
+              "map": 19,
+              "x": 16,
+              "y": 2
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 16,
+              "y": 2
+            },
+            "to": {
+              "map": 19,
+              "x": 15,
+              "y": 2
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 15,
+              "y": 2
+            },
+            "to": {
+              "map": 19,
+              "x": 14,
+              "y": 2
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 14,
+              "y": 2
+            },
+            "to": {
+              "map": 19,
+              "x": 13,
+              "y": 2
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 13,
+              "y": 2
+            },
+            "to": {
+              "map": 19,
+              "x": 12,
+              "y": 2
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 12,
+              "y": 2
+            },
+            "to": {
+              "map": 19,
+              "x": 11,
+              "y": 2
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 11,
+              "y": 2
+            },
+            "to": {
+              "map": 19,
+              "x": 10,
+              "y": 2
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 10,
+              "y": 2
+            },
+            "to": {
+              "map": 19,
+              "x": 9,
+              "y": 2
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 9,
+              "y": 2
+            },
+            "to": {
+              "map": 19,
+              "x": 8,
+              "y": 2
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 8,
+              "y": 2
+            },
+            "to": {
+              "map": 19,
+              "x": 7,
+              "y": 2
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map19-west-tower-warp",
+            "from": {
+              "map": 19,
+              "x": 7,
+              "y": 2
+            },
+            "to": {
+              "map": 19,
+              "x": 6,
+              "y": 2
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map20-west-tower-warp",
+            "from": {
+              "map": 20,
+              "x": 6,
+              "y": 37
+            },
+            "to": {
+              "map": 20,
+              "x": 6,
+              "y": 36
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map20-west-tower-warp",
+            "from": {
+              "map": 20,
+              "x": 6,
+              "y": 36
+            },
+            "to": {
+              "map": 20,
+              "x": 5,
+              "y": 36
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map20-west-tower-warp",
+            "from": {
+              "map": 20,
+              "x": 5,
+              "y": 36
+            },
+            "to": {
+              "map": 20,
+              "x": 4,
+              "y": 36
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map20-west-tower-warp",
+            "from": {
+              "map": 20,
+              "x": 4,
+              "y": 36
+            },
+            "to": {
+              "map": 20,
+              "x": 3,
+              "y": 36
+            },
+            "input": "Left"
+          },
+          {
+            "waypoint": "map21-guard",
+            "from": {
+              "map": 21,
+              "x": 3,
+              "y": 16
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 16
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 16
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 15
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 15
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 14
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 14
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 13
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 13
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 12
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 12
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 11
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 11
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 10
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 10
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 9
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 9
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 8
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 8
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 7
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 7
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 6
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 6
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 5
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 5
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 4
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 4
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 3
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 3
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 2
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 2
+            },
+            "to": {
+              "map": 21,
+              "x": 4,
+              "y": 1
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 4,
+              "y": 1
+            },
+            "to": {
+              "map": 21,
+              "x": 5,
+              "y": 1
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 5,
+              "y": 1
+            },
+            "to": {
+              "map": 21,
+              "x": 6,
+              "y": 1
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 6,
+              "y": 1
+            },
+            "to": {
+              "map": 21,
+              "x": 7,
+              "y": 1
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 7,
+              "y": 1
+            },
+            "to": {
+              "map": 21,
+              "x": 8,
+              "y": 1
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map21-tower-exit",
+            "from": {
+              "map": 21,
+              "x": 8,
+              "y": 1
+            },
+            "to": {
+              "map": 21,
+              "x": 9,
+              "y": 1
+            },
+            "input": "Right"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 30
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 29
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 29
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 28
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 28
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 27
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 27
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 26
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 26
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 25
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 25
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 24
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 24
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 23
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 23
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 22
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 22
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 21
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 21
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 20
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 20
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 19
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 19
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 18
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 18
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 17
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 17
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 16
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 16
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 15
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 15
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 14
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 14
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 13
+            },
+            "input": "Up"
+          },
+          {
+            "waypoint": "map40-entrance",
+            "from": {
+              "map": 40,
+              "x": 4,
+              "y": 13
+            },
+            "to": {
+              "map": 40,
+              "x": 4,
+              "y": 12
+            },
+            "input": "Up"
+          }
+        ]
+      },
+      "waypoints": [
+        {
+          "id": "map3-bowie-house-exit",
+          "map": 3,
+          "x": 54,
+          "y": 3,
+          "facing": "None",
+          "interaction": "warp",
+          "completionDestination": {
+            "map": 3,
+            "x": 3,
+            "y": 3
+          }
+        },
+        {
+          "id": "map3-house-exit-zone",
+          "map": 3,
+          "x": 4,
+          "y": 4,
+          "facing": "None",
+          "interaction": "zone",
+          "completionFlag": 601
+        },
+        {
+          "id": "map3-bowie-house-door",
+          "map": 3,
+          "x": 4,
+          "y": 8,
+          "facing": "None",
+          "interaction": "step"
+        },
+        {
+          "id": "map3-school-door",
+          "map": 3,
+          "x": 41,
+          "y": 13,
+          "facing": "None",
+          "interaction": "step"
+        },
+        {
+          "id": "map3-sarah-classroom",
+          "map": 3,
+          "x": 42,
+          "y": 9,
+          "facing": "Up",
+          "interaction": "entity",
+          "entityTarget": {
+            "id": 1,
+            "map": 3,
+            "x": 42,
+            "y": 8,
+            "facing": "Down"
+          },
+          "completionFlag": 256
+        },
+        {
+          "id": "map3-school-stairs-down",
+          "map": 3,
+          "x": 46,
+          "y": 7,
+          "facing": "None",
+          "interaction": "warp",
+          "completionDestination": {
+            "map": 3,
+            "x": 59,
+            "y": 12
+          }
+        },
+        {
+          "id": "map3-astral-zone-introduction",
+          "map": 3,
+          "x": 58,
+          "y": 13,
+          "facing": "None",
+          "interaction": "zone",
+          "completionEvent": "Map3_ZoneEvent7"
+        },
+        {
+          "id": "map3-entity142",
+          "map": 3,
+          "x": 55,
+          "y": 17,
+          "facing": "Left",
+          "interaction": "entity",
+          "entityTarget": {
+            "id": 142,
+            "map": 3,
+            "x": 54,
+            "y": 17,
+            "facing": "Up"
+          },
+          "completionFlag": 602
+        },
+        {
+          "id": "map3-astral-zone",
+          "map": 3,
+          "x": 58,
+          "y": 13,
+          "facing": "None",
+          "interaction": "zone",
+          "completionFlag": 260
+        },
+        {
+          "id": "map3-school-stairs-up",
+          "map": 3,
+          "x": 59,
+          "y": 12,
+          "facing": "None",
+          "interaction": "warp",
+          "completionDestination": {
+            "map": 3,
+            "x": 46,
+            "y": 7
+          }
+        },
+        {
+          "id": "map3-zone-messenger",
+          "map": 3,
+          "x": 43,
+          "y": 10,
+          "facing": "None",
+          "interaction": "zone",
+          "completionFlag": 603
+        },
+        {
+          "id": "map3-sarah",
+          "map": 3,
+          "x": 42,
+          "y": 9,
+          "facing": "Up",
+          "interaction": "entity",
+          "completionFlag": 600
+        },
+        {
+          "id": "map3-castle-gate",
+          "map": 3,
+          "x": 27,
+          "y": 5,
+          "facing": "None",
+          "interaction": "zone",
+          "completionFlag": 604
+        },
+        {
+          "id": "map3-castle-warp",
+          "map": 3,
+          "x": 27,
+          "y": 1,
+          "facing": "None",
+          "interaction": "warp",
+          "completionDestination": {
+            "map": 19,
+            "x": 26,
+            "y": 30
+          }
+        },
+        {
+          "id": "map19-kings-room-warp",
+          "map": 19,
+          "x": 23,
+          "y": 3,
+          "facing": "None",
+          "interaction": "warp",
+          "completionDestination": {
+            "map": 20,
+            "x": 23,
+            "y": 37
+          }
+        },
+        {
+          "id": "map20-palace-scene",
+          "map": 20,
+          "x": 23,
+          "y": 39,
+          "facing": "None",
+          "interaction": "scene",
+          "completionFlag": 605
+        },
+        {
+          "id": "map20-kings-room-exit",
+          "map": 20,
+          "x": 23,
+          "y": 37,
+          "facing": "None",
+          "interaction": "warp",
+          "completionDestination": {
+            "map": 19,
+            "x": 23,
+            "y": 3
+          }
+        },
+        {
+          "id": "map19-astral",
+          "map": 19,
+          "x": 16,
+          "y": 6,
+          "facing": "Up",
+          "interaction": "entity",
+          "completionFlag": 608
+        },
+        {
+          "id": "map19-west-tower-warp",
+          "map": 19,
+          "x": 6,
+          "y": 2,
+          "facing": "None",
+          "interaction": "warp",
+          "completionDestination": {
+            "map": 20,
+            "x": 6,
+            "y": 37
+          }
+        },
+        {
+          "id": "map20-west-tower-warp",
+          "map": 20,
+          "x": 3,
+          "y": 36,
+          "facing": "None",
+          "interaction": "warp",
+          "completionDestination": {
+            "map": 21,
+            "x": 3,
+            "y": 16
+          }
+        },
+        {
+          "id": "map21-guard",
+          "map": 21,
+          "x": 4,
+          "y": 16,
+          "facing": "Right",
+          "interaction": "entity",
+          "completionFlag": 401
+        },
+        {
+          "id": "map21-tower-exit",
+          "map": 21,
+          "x": 9,
+          "y": 1,
+          "facing": "None",
+          "interaction": "warp",
+          "completionDestination": {
+            "map": 40,
+            "x": 4,
+            "y": 30
+          }
+        },
+        {
+          "id": "map40-entrance",
+          "map": 40,
+          "x": 4,
+          "y": 12,
+          "facing": "None",
+          "interaction": "warp",
+          "completionDestination": {
+            "map": 57,
+            "x": 8,
+            "y": 18
+          }
+        }
+      ],
+      "warps": [
+        {
+          "fromMap": 3,
+          "toMap": 3,
+          "eventDestinationMap": 255,
+          "x": 54,
+          "y": 3,
+          "destinationX": 3,
+          "destinationY": 3
+        },
+        {
+          "fromMap": 3,
+          "toMap": 3,
+          "eventDestinationMap": 255,
+          "x": 46,
+          "y": 7,
+          "destinationX": 59,
+          "destinationY": 12
+        },
+        {
+          "fromMap": 3,
+          "toMap": 3,
+          "eventDestinationMap": 255,
+          "x": 59,
+          "y": 12,
+          "destinationX": 46,
+          "destinationY": 7
+        },
+        {
+          "fromMap": 3,
+          "toMap": 19,
+          "eventDestinationMap": 19,
+          "x": 255,
+          "y": 1,
+          "destinationX": 26,
+          "destinationY": 30
+        },
+        {
+          "fromMap": 19,
+          "toMap": 20,
+          "eventDestinationMap": 20,
+          "x": 23,
+          "y": 3,
+          "destinationX": 23,
+          "destinationY": 37
+        },
+        {
+          "fromMap": 20,
+          "toMap": 19,
+          "eventDestinationMap": 19,
+          "x": 23,
+          "y": 37,
+          "destinationX": 23,
+          "destinationY": 3
+        },
+        {
+          "fromMap": 19,
+          "toMap": 20,
+          "eventDestinationMap": 20,
+          "x": 6,
+          "y": 2,
+          "destinationX": 6,
+          "destinationY": 37
+        },
+        {
+          "fromMap": 20,
+          "toMap": 21,
+          "eventDestinationMap": 21,
+          "x": 3,
+          "y": 36,
+          "destinationX": 3,
+          "destinationY": 16
+        },
+        {
+          "fromMap": 21,
+          "toMap": 40,
+          "eventDestinationMap": 40,
+          "x": 9,
+          "y": 1,
+          "destinationX": 4,
+          "destinationY": 30
+        },
+        {
+          "fromMap": 40,
+          "toMap": 57,
+          "eventDestinationMap": 57,
+          "x": 255,
+          "y": 12,
+          "destinationX": 8,
+          "destinationY": 18
+        }
+      ],
+      "scriptSymbols": [
+        "cs_513A0",
+        "cs_513D6",
+        "cs_5145C",
+        "cs_5148C",
+        "cs_5149A",
+        "cs_513E2",
+        "cs_51406",
+        "cs_51652",
+        "cs_53104",
+        "cs_53996",
+        "cs_53B60",
+        "cs_53EF4",
+        "bbcs_01"
+      ],
+      "runtimeOpening": {
+        "flags": {
+          "afterHouseExit": 601,
+          "classroomSarah": 256,
+          "afterEntity142": 602,
+          "afterAstralZone": 260,
+          "afterMessenger": 603
+        },
+        "navigation": {
+          "area": {
+            "startX": 0,
+            "startY": 0,
+            "endX": 50,
+            "endY": 31
+          },
+          "layoutWordCount": 4096,
+          "mapOffsetHashBytes": 1152,
+          "mapCollidableFlagBit": 6,
+          "blockedLayoutWordFloor": 49152,
+          "collisionEnforcedMaps": [
+            3
+          ],
+          "eventBeforeCollision": {
+            "mapWordEventMask": 15360,
+            "warpSelector": 4096,
+            "zoneSelector": 5120,
+            "collisionFloor": 49152,
+            "order": [
+              "warp",
+              "zone",
+              "collision"
+            ]
+          },
+          "postWarpLanding": {
+            "map": 3,
+            "x": 3,
+            "y": 3,
+            "layoutOffsetBytes": 390,
+            "layoutWord": 20533
+          },
+          "postWarpSlope": {
+            "input": "Right",
+            "sourceOffsetBytes": 130,
+            "fromLayoutWord": 20533,
+            "to": {
+              "map": 3,
+              "x": 4,
+              "y": 4
+            },
+            "toLayoutOffsetBytes": 520,
+            "toLayoutWord": 21572
+          },
+          "schoolPathEntityBlocks": [
+            {
+              "sourceRecord": 0,
+              "entity": "ALLY_SARAH",
+              "map": 3,
+              "x": 42,
+              "y": 8,
+              "beforeWaypoint": "map3-school-stairs-down"
+            },
+            {
+              "sourceRecord": 1,
+              "entity": "ALLY_CHESTER",
+              "map": 3,
+              "x": 44,
+              "y": 10,
+              "beforeWaypoint": "map3-school-stairs-down"
+            }
+          ],
+          "schoolSarahProgram": {
+            "entityTarget": {
+              "id": 1,
+              "map": 3,
+              "x": 42,
+              "y": 8,
+              "facing": "Down"
+            },
+            "event": "Map3_EntityEvent0",
+            "program": "cs_513D6",
+            "completionFlag": 256,
+            "postProgramPosition": {
+              "map": 3,
+              "x": 41,
+              "y": 7
+            }
+          },
+          "postAstralRouteOccupancy": {
+            "sourceRecord": 1,
+            "entity": "ALLY_CHESTER",
+            "map": 3,
+            "x": 44,
+            "y": 10,
+            "unmovedByProgram": "cs_5148C",
+            "beforeWaypoint": "map3-zone-messenger"
+          },
+          "astralZoneProgram": {
+            "event": "Map3_ZoneEvent7",
+            "program": "cs_5148C",
+            "completionFlag": 260,
+            "postProgramPositions": [
+              {
+                "rawCharacter": 1,
+                "entityIndexSelector": 1,
+                "map": 3,
+                "x": 41,
+                "y": 10,
+                "facing": "Up"
+              },
+              {
+                "rawCharacter": 128,
+                "entityIndexSelector": 32,
+                "map": 3,
+                "x": 6,
+                "y": 4,
+                "facing": "Up"
+              }
+            ]
+          },
+          "entity142ReinitProgram": {
+            "triggerFlag": 602,
+            "precedingFlagClear": 1,
+            "program": "cs_513A0",
+            "postProgramPosition": {
+              "map": 3,
+              "x": 41,
+              "y": 10,
+              "facing": "Up"
+            }
+          },
+          "inputPlan": [
+            {
+              "waypoint": "map3-bowie-house-exit",
+              "from": {
+                "map": 3,
+                "x": 56,
+                "y": 3
+              },
+              "to": {
+                "map": 3,
+                "x": 55,
+                "y": 3
+              },
+              "input": "Left"
+            },
+            {
+              "waypoint": "map3-bowie-house-exit",
+              "from": {
+                "map": 3,
+                "x": 55,
+                "y": 3
+              },
+              "to": {
+                "map": 3,
+                "x": 54,
+                "y": 3
+              },
+              "input": "Left"
+            },
+            {
+              "waypoint": "map3-house-exit-zone",
+              "from": {
+                "map": 3,
+                "x": 3,
+                "y": 3
+              },
+              "to": {
+                "map": 3,
+                "x": 4,
+                "y": 4
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-bowie-house-door",
+              "from": {
+                "map": 3,
+                "x": 4,
+                "y": 4
+              },
+              "to": {
+                "map": 3,
+                "x": 4,
+                "y": 5
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-bowie-house-door",
+              "from": {
+                "map": 3,
+                "x": 4,
+                "y": 5
+              },
+              "to": {
+                "map": 3,
+                "x": 4,
+                "y": 6
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-bowie-house-door",
+              "from": {
+                "map": 3,
+                "x": 4,
+                "y": 6
+              },
+              "to": {
+                "map": 3,
+                "x": 4,
+                "y": 7
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-bowie-house-door",
+              "from": {
+                "map": 3,
+                "x": 4,
+                "y": 7
+              },
+              "to": {
+                "map": 3,
+                "x": 4,
+                "y": 8
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 4,
+                "y": 8
+              },
+              "to": {
+                "map": 3,
+                "x": 4,
+                "y": 9
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 4,
+                "y": 9
+              },
+              "to": {
+                "map": 3,
+                "x": 4,
+                "y": 10
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 4,
+                "y": 10
+              },
+              "to": {
+                "map": 3,
+                "x": 4,
+                "y": 11
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 4,
+                "y": 11
+              },
+              "to": {
+                "map": 3,
+                "x": 5,
+                "y": 11
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 5,
+                "y": 11
+              },
+              "to": {
+                "map": 3,
+                "x": 6,
+                "y": 11
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 6,
+                "y": 11
+              },
+              "to": {
+                "map": 3,
+                "x": 6,
+                "y": 12
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 6,
+                "y": 12
+              },
+              "to": {
+                "map": 3,
+                "x": 6,
+                "y": 13
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 6,
+                "y": 13
+              },
+              "to": {
+                "map": 3,
+                "x": 6,
+                "y": 14
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 6,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 7,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 7,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 8,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 8,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 9,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 9,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 10,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 10,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 11,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 11,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 12,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 12,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 13,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 13,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 14,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 14,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 15,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 15,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 16,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 16,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 17,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 17,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 18,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 18,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 19,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 19,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 20,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 20,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 21,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 21,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 22,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 22,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 23,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 23,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 24,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 24,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 25,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 25,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 26,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 26,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 26,
+                "y": 15
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 26,
+                "y": 15
+              },
+              "to": {
+                "map": 3,
+                "x": 27,
+                "y": 15
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 27,
+                "y": 15
+              },
+              "to": {
+                "map": 3,
+                "x": 28,
+                "y": 15
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 28,
+                "y": 15
+              },
+              "to": {
+                "map": 3,
+                "x": 29,
+                "y": 15
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 29,
+                "y": 15
+              },
+              "to": {
+                "map": 3,
+                "x": 29,
+                "y": 16
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 29,
+                "y": 16
+              },
+              "to": {
+                "map": 3,
+                "x": 30,
+                "y": 16
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 30,
+                "y": 16
+              },
+              "to": {
+                "map": 3,
+                "x": 31,
+                "y": 16
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 31,
+                "y": 16
+              },
+              "to": {
+                "map": 3,
+                "x": 32,
+                "y": 16
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 32,
+                "y": 16
+              },
+              "to": {
+                "map": 3,
+                "x": 32,
+                "y": 17
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 32,
+                "y": 17
+              },
+              "to": {
+                "map": 3,
+                "x": 33,
+                "y": 17
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 33,
+                "y": 17
+              },
+              "to": {
+                "map": 3,
+                "x": 34,
+                "y": 17
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 34,
+                "y": 17
+              },
+              "to": {
+                "map": 3,
+                "x": 35,
+                "y": 17
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 35,
+                "y": 17
+              },
+              "to": {
+                "map": 3,
+                "x": 36,
+                "y": 17
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 36,
+                "y": 17
+              },
+              "to": {
+                "map": 3,
+                "x": 37,
+                "y": 17
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 37,
+                "y": 17
+              },
+              "to": {
+                "map": 3,
+                "x": 38,
+                "y": 17
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 38,
+                "y": 17
+              },
+              "to": {
+                "map": 3,
+                "x": 39,
+                "y": 17
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 39,
+                "y": 17
+              },
+              "to": {
+                "map": 3,
+                "x": 40,
+                "y": 17
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 40,
+                "y": 17
+              },
+              "to": {
+                "map": 3,
+                "x": 40,
+                "y": 16
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 40,
+                "y": 16
+              },
+              "to": {
+                "map": 3,
+                "x": 40,
+                "y": 15
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 40,
+                "y": 15
+              },
+              "to": {
+                "map": 3,
+                "x": 40,
+                "y": 14
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 40,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 41,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-door",
+              "from": {
+                "map": 3,
+                "x": 41,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 41,
+                "y": 13
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-sarah-classroom",
+              "from": {
+                "map": 3,
+                "x": 41,
+                "y": 13
+              },
+              "to": {
+                "map": 3,
+                "x": 41,
+                "y": 12
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-sarah-classroom",
+              "from": {
+                "map": 3,
+                "x": 41,
+                "y": 12
+              },
+              "to": {
+                "map": 3,
+                "x": 41,
+                "y": 11
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-sarah-classroom",
+              "from": {
+                "map": 3,
+                "x": 41,
+                "y": 11
+              },
+              "to": {
+                "map": 3,
+                "x": 41,
+                "y": 10
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-sarah-classroom",
+              "from": {
+                "map": 3,
+                "x": 41,
+                "y": 10
+              },
+              "to": {
+                "map": 3,
+                "x": 42,
+                "y": 10
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-sarah-classroom",
+              "from": {
+                "map": 3,
+                "x": 42,
+                "y": 10
+              },
+              "to": {
+                "map": 3,
+                "x": 42,
+                "y": 9
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-school-stairs-down",
+              "from": {
+                "map": 3,
+                "x": 42,
+                "y": 9
+              },
+              "to": {
+                "map": 3,
+                "x": 42,
+                "y": 8
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-school-stairs-down",
+              "from": {
+                "map": 3,
+                "x": 42,
+                "y": 8
+              },
+              "to": {
+                "map": 3,
+                "x": 42,
+                "y": 7
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-school-stairs-down",
+              "from": {
+                "map": 3,
+                "x": 42,
+                "y": 7
+              },
+              "to": {
+                "map": 3,
+                "x": 43,
+                "y": 7
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-stairs-down",
+              "from": {
+                "map": 3,
+                "x": 43,
+                "y": 7
+              },
+              "to": {
+                "map": 3,
+                "x": 44,
+                "y": 7
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-stairs-down",
+              "from": {
+                "map": 3,
+                "x": 44,
+                "y": 7
+              },
+              "to": {
+                "map": 3,
+                "x": 45,
+                "y": 7
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-stairs-down",
+              "from": {
+                "map": 3,
+                "x": 45,
+                "y": 7
+              },
+              "to": {
+                "map": 3,
+                "x": 46,
+                "y": 7
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-astral-zone-introduction",
+              "from": {
+                "map": 3,
+                "x": 59,
+                "y": 12
+              },
+              "to": {
+                "map": 3,
+                "x": 58,
+                "y": 13
+              },
+              "input": "Left"
+            },
+            {
+              "waypoint": "map3-entity142",
+              "from": {
+                "map": 3,
+                "x": 58,
+                "y": 13
+              },
+              "to": {
+                "map": 3,
+                "x": 58,
+                "y": 14
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-entity142",
+              "from": {
+                "map": 3,
+                "x": 58,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 57,
+                "y": 14
+              },
+              "input": "Left"
+            },
+            {
+              "waypoint": "map3-entity142",
+              "from": {
+                "map": 3,
+                "x": 57,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 56,
+                "y": 14
+              },
+              "input": "Left"
+            },
+            {
+              "waypoint": "map3-entity142",
+              "from": {
+                "map": 3,
+                "x": 56,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 55,
+                "y": 14
+              },
+              "input": "Left"
+            },
+            {
+              "waypoint": "map3-entity142",
+              "from": {
+                "map": 3,
+                "x": 55,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 55,
+                "y": 15
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-entity142",
+              "from": {
+                "map": 3,
+                "x": 55,
+                "y": 15
+              },
+              "to": {
+                "map": 3,
+                "x": 55,
+                "y": 16
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-entity142",
+              "from": {
+                "map": 3,
+                "x": 55,
+                "y": 16
+              },
+              "to": {
+                "map": 3,
+                "x": 55,
+                "y": 17
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-astral-zone",
+              "from": {
+                "map": 3,
+                "x": 55,
+                "y": 17
+              },
+              "to": {
+                "map": 3,
+                "x": 55,
+                "y": 16
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-astral-zone",
+              "from": {
+                "map": 3,
+                "x": 55,
+                "y": 16
+              },
+              "to": {
+                "map": 3,
+                "x": 55,
+                "y": 15
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-astral-zone",
+              "from": {
+                "map": 3,
+                "x": 55,
+                "y": 15
+              },
+              "to": {
+                "map": 3,
+                "x": 55,
+                "y": 14
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-astral-zone",
+              "from": {
+                "map": 3,
+                "x": 55,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 56,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-astral-zone",
+              "from": {
+                "map": 3,
+                "x": 56,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 57,
+                "y": 14
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-astral-zone",
+              "from": {
+                "map": 3,
+                "x": 57,
+                "y": 14
+              },
+              "to": {
+                "map": 3,
+                "x": 57,
+                "y": 13
+              },
+              "input": "Up"
+            },
+            {
+              "waypoint": "map3-astral-zone",
+              "from": {
+                "map": 3,
+                "x": 57,
+                "y": 13
+              },
+              "to": {
+                "map": 3,
+                "x": 58,
+                "y": 13
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-school-stairs-up",
+              "from": {
+                "map": 3,
+                "x": 58,
+                "y": 13
+              },
+              "to": {
+                "map": 3,
+                "x": 59,
+                "y": 12
+              },
+              "input": "Right"
+            },
+            {
+              "waypoint": "map3-zone-messenger",
+              "from": {
+                "map": 3,
+                "x": 46,
+                "y": 7
+              },
+              "to": {
+                "map": 3,
+                "x": 46,
+                "y": 8
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-zone-messenger",
+              "from": {
+                "map": 3,
+                "x": 46,
+                "y": 8
+              },
+              "to": {
+                "map": 3,
+                "x": 45,
+                "y": 8
+              },
+              "input": "Left"
+            },
+            {
+              "waypoint": "map3-zone-messenger",
+              "from": {
+                "map": 3,
+                "x": 45,
+                "y": 8
+              },
+              "to": {
+                "map": 3,
+                "x": 44,
+                "y": 8
+              },
+              "input": "Left"
+            },
+            {
+              "waypoint": "map3-zone-messenger",
+              "from": {
+                "map": 3,
+                "x": 44,
+                "y": 8
+              },
+              "to": {
+                "map": 3,
+                "x": 43,
+                "y": 8
+              },
+              "input": "Left"
+            },
+            {
+              "waypoint": "map3-zone-messenger",
+              "from": {
+                "map": 3,
+                "x": 43,
+                "y": 8
+              },
+              "to": {
+                "map": 3,
+                "x": 42,
+                "y": 8
+              },
+              "input": "Left"
+            },
+            {
+              "waypoint": "map3-zone-messenger",
+              "from": {
+                "map": 3,
+                "x": 42,
+                "y": 8
+              },
+              "to": {
+                "map": 3,
+                "x": 42,
+                "y": 9
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-zone-messenger",
+              "from": {
+                "map": 3,
+                "x": 42,
+                "y": 9
+              },
+              "to": {
+                "map": 3,
+                "x": 42,
+                "y": 10
+              },
+              "input": "Down"
+            },
+            {
+              "waypoint": "map3-zone-messenger",
+              "from": {
+                "map": 3,
+                "x": 42,
+                "y": 10
+              },
+              "to": {
+                "map": 3,
+                "x": 43,
+                "y": 10
+              },
+              "input": "Right"
+            }
+          ]
+        },
+        "waypoints": [
+          {
+            "id": "map3-bowie-house-exit",
+            "map": 3,
+            "x": 54,
+            "y": 3,
+            "facing": "None",
+            "interaction": "warp",
+            "completionDestination": {
+              "map": 3,
+              "x": 3,
+              "y": 3
+            }
+          },
+          {
+            "id": "map3-house-exit-zone",
+            "map": 3,
+            "x": 4,
+            "y": 4,
+            "facing": "None",
+            "interaction": "zone",
+            "completionFlag": 601
+          },
+          {
+            "id": "map3-bowie-house-door",
+            "map": 3,
+            "x": 4,
+            "y": 8,
+            "facing": "None",
+            "interaction": "step"
+          },
+          {
+            "id": "map3-school-door",
+            "map": 3,
+            "x": 41,
+            "y": 13,
+            "facing": "None",
+            "interaction": "step"
+          },
+          {
+            "id": "map3-sarah-classroom",
+            "map": 3,
+            "x": 42,
+            "y": 9,
+            "facing": "Up",
+            "interaction": "entity",
+            "entityTarget": {
+              "id": 1,
+              "map": 3,
+              "x": 42,
+              "y": 8,
+              "facing": "Down"
+            },
+            "completionFlag": 256
+          },
+          {
+            "id": "map3-school-stairs-down",
+            "map": 3,
+            "x": 46,
+            "y": 7,
+            "facing": "None",
+            "interaction": "warp",
+            "completionDestination": {
+              "map": 3,
+              "x": 59,
+              "y": 12
+            }
+          },
+          {
+            "id": "map3-astral-zone-introduction",
+            "map": 3,
+            "x": 58,
+            "y": 13,
+            "facing": "None",
+            "interaction": "zone",
+            "completionEvent": "Map3_ZoneEvent7"
+          },
+          {
+            "id": "map3-entity142",
+            "map": 3,
+            "x": 55,
+            "y": 17,
+            "facing": "Left",
+            "interaction": "entity",
+            "entityTarget": {
+              "id": 142,
+              "map": 3,
+              "x": 54,
+              "y": 17,
+              "facing": "Up"
+            },
+            "completionFlag": 602
+          },
+          {
+            "id": "map3-astral-zone",
+            "map": 3,
+            "x": 58,
+            "y": 13,
+            "facing": "None",
+            "interaction": "zone",
+            "completionFlag": 260
+          },
+          {
+            "id": "map3-school-stairs-up",
+            "map": 3,
+            "x": 59,
+            "y": 12,
+            "facing": "None",
+            "interaction": "warp",
+            "completionDestination": {
+              "map": 3,
+              "x": 46,
+              "y": 7
+            }
+          },
+          {
+            "id": "map3-zone-messenger",
+            "map": 3,
+            "x": 43,
+            "y": 10,
+            "facing": "None",
+            "interaction": "zone",
+            "completionFlag": 603
+          }
+        ],
+        "warps": [
+          {
+            "fromMap": 3,
+            "toMap": 3,
+            "eventDestinationMap": 255,
+            "x": 54,
+            "y": 3,
+            "destinationX": 3,
+            "destinationY": 3
+          },
+          {
+            "fromMap": 3,
+            "toMap": 3,
+            "eventDestinationMap": 255,
+            "x": 46,
+            "y": 7,
+            "destinationX": 59,
+            "destinationY": 12
+          },
+          {
+            "fromMap": 3,
+            "toMap": 3,
+            "eventDestinationMap": 255,
+            "x": 59,
+            "y": 12,
+            "destinationX": 46,
+            "destinationY": 7
+          }
+        ],
+        "scriptSymbols": [
+          "cs_513A0",
+          "cs_513D6",
+          "cs_5145C",
+          "cs_5148C",
+          "cs_5149A"
+        ],
+        "endpoint": {
+          "sourceTarget": {
+            "map": 3,
+            "x": 43,
+            "y": 10
+          },
+          "program": "cs_5149A",
+          "notYetMutatedFlag": 603
+        }
+      }
+    },
+    "sourceHashDigest": "86D979943156FE00C4B1DA13B15CC9C54A959455D3312AF5DB9B9831A9DCC325"
+  },
+  "sourceContext": {
+    "r1FixtureId": "sf2-map3-admitted-start-runtime-v1",
+    "functions": {
+      "MainLoop": 30148,
+      "WaitForEvent": 153884,
+      "CheckBattle": 31132,
+      "BattleLoop": 146052,
+      "ExecuteIndividualTurn": 147120
+    },
+    "battle01": {
+      "map": 57,
+      "id": 1
+    }
+  },
+  "expectedObservation": {
+    "system": "sf2-map3-battle01-natural-route-runtime-v1",
+    "caseOrder": [
+      "natural-map3-opening-to-messenger-entry"
+    ],
+    "records": [
+      {
+        "caseId": "natural-map3-opening-to-messenger-entry",
+        "r1Start": {
+          "fixtureId": "sf2-map3-admitted-start-runtime-v1",
+          "map": 3
+        },
+        "chronology": [
+          "r1:witch-new-action",
+          "r1:new-game",
+          "r1:save-game",
+          "r1:main-loop",
+          "r1:exploration-loop",
+          "r1:wait-for-event",
+          "map-event:warp:map3-bowie-house-exit",
+          "exploration:3",
+          "map-init:ms_map3_InitFunction",
+          "route:post-warp-wait-for-event",
+          "zone-admission:map3-house-exit-zone",
+          "zone:Map3_ZoneEvent6",
+          "script:cs_5145C",
+          "step:map3-bowie-house-door",
+          "step:map3-school-door",
+          "action:ProcessPlayerAction:map3-sarah-classroom",
+          "action:GetActivatedEntity:map3-sarah-classroom",
+          "action:RunMapSetupEntityEvent:map3-sarah-classroom",
+          "entity:Map3_EntityEvent0",
+          "script:cs_513D6",
+          "state:Sarah:post-cs_513D6",
+          "map-event:warp:map3-school-stairs-down",
+          "exploration:3",
+          "map-init:ms_map3_InitFunction",
+          "route:post-warp-wait-for-event",
+          "zone-admission:map3-astral-zone-introduction",
+          "zone:Map3_ZoneEvent7",
+          "state:Map3:Zone7-pre-entity142",
+          "action:ProcessPlayerAction:map3-entity142",
+          "action:GetActivatedEntity:map3-entity142",
+          "action:RunMapSetupEntityEvent:map3-entity142",
+          "entity:Map3_EntityEvent15",
+          "zone-admission:map3-astral-zone",
+          "zone:Map3_ZoneEvent7",
+          "script:cs_5148C",
+          "state:Map3:post-cs_5148C",
+          "map-event:warp:map3-school-stairs-up",
+          "exploration:3",
+          "map-init:ms_map3_InitFunction",
+          "script:cs_513A0",
+          "state:Map3:entity142-reinit-cs_513A0",
+          "route:post-warp-wait-for-event",
+          "zone-admission:map3-zone-messenger",
+          "zone:Map3_ZoneEvent8",
+          "script:cs_5149A",
+          "endpoint:cs_5149A-entry-before-body"
+        ],
+        "logicalInputTrace": [
+          {
+            "map": 3,
+            "x": 56,
+            "y": 3,
+            "input": "Left",
+            "waypoint": "map3-bowie-house-exit"
+          },
+          {
+            "map": 3,
+            "x": 55,
+            "y": 3,
+            "input": "Left",
+            "waypoint": "map3-bowie-house-exit"
+          },
+          {
+            "map": 3,
+            "x": 3,
+            "y": 3,
+            "input": "Right",
+            "waypoint": "map3-house-exit-zone"
+          },
+          {
+            "map": 3,
+            "x": 4,
+            "y": 4,
+            "input": "Down",
+            "waypoint": "map3-bowie-house-door"
+          },
+          {
+            "map": 3,
+            "x": 4,
+            "y": 5,
+            "input": "Down",
+            "waypoint": "map3-bowie-house-door"
+          },
+          {
+            "map": 3,
+            "x": 4,
+            "y": 6,
+            "input": "Down",
+            "waypoint": "map3-bowie-house-door"
+          },
+          {
+            "map": 3,
+            "x": 4,
+            "y": 7,
+            "input": "Down",
+            "waypoint": "map3-bowie-house-door"
+          },
+          {
+            "map": 3,
+            "x": 4,
+            "y": 8,
+            "input": "Down",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 4,
+            "y": 9,
+            "input": "Down",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 4,
+            "y": 10,
+            "input": "Down",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 4,
+            "y": 11,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 5,
+            "y": 11,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 6,
+            "y": 11,
+            "input": "Down",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 6,
+            "y": 12,
+            "input": "Down",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 6,
+            "y": 13,
+            "input": "Down",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 6,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 7,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 8,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 9,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 10,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 11,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 12,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 13,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 14,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 15,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 16,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 17,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 18,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 19,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 20,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 21,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 22,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 23,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 24,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 25,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 26,
+            "y": 14,
+            "input": "Down",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 26,
+            "y": 15,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 27,
+            "y": 15,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 28,
+            "y": 15,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 29,
+            "y": 15,
+            "input": "Down",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 29,
+            "y": 16,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 30,
+            "y": 16,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 31,
+            "y": 16,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 32,
+            "y": 16,
+            "input": "Down",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 32,
+            "y": 17,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 33,
+            "y": 17,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 34,
+            "y": 17,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 35,
+            "y": 17,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 36,
+            "y": 17,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 37,
+            "y": 17,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 38,
+            "y": 17,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 39,
+            "y": 17,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 40,
+            "y": 17,
+            "input": "Up",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 40,
+            "y": 16,
+            "input": "Up",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 40,
+            "y": 15,
+            "input": "Up",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 40,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 41,
+            "y": 14,
+            "input": "Up",
+            "waypoint": "map3-school-door"
+          },
+          {
+            "map": 3,
+            "x": 41,
+            "y": 13,
+            "input": "Up",
+            "waypoint": "map3-sarah-classroom"
+          },
+          {
+            "map": 3,
+            "x": 41,
+            "y": 12,
+            "input": "Up",
+            "waypoint": "map3-sarah-classroom"
+          },
+          {
+            "map": 3,
+            "x": 41,
+            "y": 11,
+            "input": "Up",
+            "waypoint": "map3-sarah-classroom"
+          },
+          {
+            "map": 3,
+            "x": 41,
+            "y": 10,
+            "input": "Right",
+            "waypoint": "map3-sarah-classroom"
+          },
+          {
+            "map": 3,
+            "x": 42,
+            "y": 10,
+            "input": "Up",
+            "waypoint": "map3-sarah-classroom"
+          },
+          {
+            "map": 3,
+            "x": 42,
+            "y": 9,
+            "input": "C",
+            "waypoint": "map3-sarah-classroom"
+          },
+          {
+            "map": 3,
+            "x": 42,
+            "y": 9,
+            "input": "Up",
+            "waypoint": "map3-school-stairs-down"
+          },
+          {
+            "map": 3,
+            "x": 42,
+            "y": 8,
+            "input": "Up",
+            "waypoint": "map3-school-stairs-down"
+          },
+          {
+            "map": 3,
+            "x": 42,
+            "y": 7,
+            "input": "Right",
+            "waypoint": "map3-school-stairs-down"
+          },
+          {
+            "map": 3,
+            "x": 43,
+            "y": 7,
+            "input": "Right",
+            "waypoint": "map3-school-stairs-down"
+          },
+          {
+            "map": 3,
+            "x": 44,
+            "y": 7,
+            "input": "Right",
+            "waypoint": "map3-school-stairs-down"
+          },
+          {
+            "map": 3,
+            "x": 45,
+            "y": 7,
+            "input": "Right",
+            "waypoint": "map3-school-stairs-down"
+          },
+          {
+            "map": 3,
+            "x": 59,
+            "y": 12,
+            "input": "Left",
+            "waypoint": "map3-astral-zone-introduction"
+          },
+          {
+            "map": 3,
+            "x": 58,
+            "y": 13,
+            "input": "Down",
+            "waypoint": "map3-entity142"
+          },
+          {
+            "map": 3,
+            "x": 58,
+            "y": 14,
+            "input": "Left",
+            "waypoint": "map3-entity142"
+          },
+          {
+            "map": 3,
+            "x": 57,
+            "y": 14,
+            "input": "Left",
+            "waypoint": "map3-entity142"
+          },
+          {
+            "map": 3,
+            "x": 56,
+            "y": 14,
+            "input": "Left",
+            "waypoint": "map3-entity142"
+          },
+          {
+            "map": 3,
+            "x": 55,
+            "y": 14,
+            "input": "Down",
+            "waypoint": "map3-entity142"
+          },
+          {
+            "map": 3,
+            "x": 55,
+            "y": 15,
+            "input": "Down",
+            "waypoint": "map3-entity142"
+          },
+          {
+            "map": 3,
+            "x": 55,
+            "y": 16,
+            "input": "Down",
+            "waypoint": "map3-entity142"
+          },
+          {
+            "map": 3,
+            "x": 55,
+            "y": 17,
+            "input": "Left",
+            "waypoint": "map3-entity142-face"
+          },
+          {
+            "map": 3,
+            "x": 55,
+            "y": 17,
+            "input": "C",
+            "waypoint": "map3-entity142"
+          },
+          {
+            "map": 3,
+            "x": 55,
+            "y": 17,
+            "input": "Up",
+            "waypoint": "map3-astral-zone"
+          },
+          {
+            "map": 3,
+            "x": 55,
+            "y": 16,
+            "input": "Up",
+            "waypoint": "map3-astral-zone"
+          },
+          {
+            "map": 3,
+            "x": 55,
+            "y": 15,
+            "input": "Up",
+            "waypoint": "map3-astral-zone"
+          },
+          {
+            "map": 3,
+            "x": 55,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-astral-zone"
+          },
+          {
+            "map": 3,
+            "x": 56,
+            "y": 14,
+            "input": "Right",
+            "waypoint": "map3-astral-zone"
+          },
+          {
+            "map": 3,
+            "x": 57,
+            "y": 14,
+            "input": "Up",
+            "waypoint": "map3-astral-zone"
+          },
+          {
+            "map": 3,
+            "x": 57,
+            "y": 13,
+            "input": "Right",
+            "waypoint": "map3-astral-zone"
+          },
+          {
+            "map": 3,
+            "x": 58,
+            "y": 13,
+            "input": "Right",
+            "waypoint": "map3-school-stairs-up"
+          },
+          {
+            "map": 3,
+            "x": 46,
+            "y": 7,
+            "input": "Down",
+            "waypoint": "map3-zone-messenger"
+          },
+          {
+            "map": 3,
+            "x": 46,
+            "y": 8,
+            "input": "Left",
+            "waypoint": "map3-zone-messenger"
+          },
+          {
+            "map": 3,
+            "x": 45,
+            "y": 8,
+            "input": "Left",
+            "waypoint": "map3-zone-messenger"
+          },
+          {
+            "map": 3,
+            "x": 44,
+            "y": 8,
+            "input": "Left",
+            "waypoint": "map3-zone-messenger"
+          },
+          {
+            "map": 3,
+            "x": 43,
+            "y": 8,
+            "input": "Left",
+            "waypoint": "map3-zone-messenger"
+          },
+          {
+            "map": 3,
+            "x": 42,
+            "y": 8,
+            "input": "Down",
+            "waypoint": "map3-zone-messenger"
+          },
+          {
+            "map": 3,
+            "x": 42,
+            "y": 9,
+            "input": "Down",
+            "waypoint": "map3-zone-messenger"
+          },
+          {
+            "map": 3,
+            "x": 42,
+            "y": 10,
+            "input": "Right",
+            "waypoint": "map3-zone-messenger"
+          }
+        ],
+        "mapTransitions": [
+          {
+            "map": 3,
+            "x": 56,
+            "y": 3,
+            "facing": 3
+          },
+          {
+            "map": 3,
+            "x": 55,
+            "y": 3,
+            "facing": 2
+          },
+          {
+            "map": 3,
+            "x": 45,
+            "y": 7,
+            "facing": 0
+          },
+          {
+            "map": 3,
+            "x": 58,
+            "y": 13,
+            "facing": 0
+          }
+        ],
+        "scriptTrace": [
+          "cs_5145C",
+          "cs_513D6",
+          "cs_5148C",
+          "cs_513A0",
+          "cs_5149A"
+        ],
+        "fieldMenu": "not-reached",
+        "openingMap3": {
+          "sourceTarget": {
+            "map": 3,
+            "x": 43,
+            "y": 10
+          },
+          "program": "cs_5149A",
+          "afterHouseExit": true,
+          "classroomSarah": true,
+          "afterEntity142": true,
+          "afterAstralZone": true,
+          "afterMessenger": false
+        }
+      }
+    ],
+    "callbacksCleared": true,
+    "restoration": {
+      "gameFlags": true,
+      "combatantAllyRecords": true,
+      "mapAndBattleState": true,
+      "playerEntity": true,
+      "gold": true,
+      "generatedRam": true,
+      "callbacksCleared": true,
+      "sessionCartPatches": true,
+      "sessionRomDeleted": true
+    }
+  }
+}

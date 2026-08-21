@@ -44,8 +44,8 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Records"] == 1621
     assert result["Confirmed"] == 1621
     assert result["H2Fixtures"] == 74
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 92
-    assert result["AddressBindings"] == 2568
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 93
+    assert result["AddressBindings"] == 2570
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1584
@@ -711,6 +711,13 @@ def test_map3_admitted_start_has_one_controlled_witch_runtime_command() -> None:
     assert args.h3_command == "map3-admitted-start"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.timeout_seconds == 180
+
+
+def test_map3_battle01_natural_route_has_one_natural_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "map3-battle01-natural-route"])
+    assert args.h3_command == "map3-battle01-natural-route"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.timeout_seconds == 300
 
 
 def test_map_animation_vdp_has_one_batched_runtime_command() -> None:

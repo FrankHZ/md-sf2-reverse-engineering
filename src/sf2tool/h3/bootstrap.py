@@ -166,6 +166,7 @@ DIRECT_FUNCTION_SEAM_OBSERVERS = (
 
 WITCH_MENU_OBSERVERS = (
     "tools/bizhawk/map3_admitted_start_observer.lua",
+    "tools/bizhawk/map3_battle01_natural_route_observer.lua",
     "tools/bizhawk/witch_new_game_lifecycle_observer.lua",
     "tools/bizhawk/witch_save_actions_observer.lua",
     "tools/bizhawk/witch_save_menu_actions_observer.lua",
@@ -349,6 +350,15 @@ COMMAND_LAUNCHES = {
         _launch(
             "tools/bizhawk/map3_admitted_start_observer.lua",
             cases_fixture="tests/fixtures/h3/map3-admitted-start-v1.json",
+        ),
+    ),
+    "map3-battle01-natural-route": _command(
+        "sf2tool.h3.map3_battle01_natural_route",
+        "verify_map3_battle01_natural_route",
+        "witch-menu",
+        _launch(
+            "tools/bizhawk/map3_battle01_natural_route_observer.lua",
+            cases_fixture="tests/fixtures/h3/map3-battle01-natural-route-v1.json",
         ),
     ),
     "map-setup-selection": _command(

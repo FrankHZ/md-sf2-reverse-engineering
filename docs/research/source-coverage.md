@@ -26,8 +26,8 @@ It says that the file has been reached, not that every instruction in the file i
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 74 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 92 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, and Map 3 admitted-start controlled seam are runtime-confirmed at their bounded seams |
-| Address bindings | 2,568 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 93 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, and the Map 3 natural opening through messenger-program entry are runtime-confirmed at their bounded seams |
+| Address bindings | 2,570 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
