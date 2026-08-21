@@ -10,8 +10,8 @@
 
 This contract begins with the accepted controlled result recorded by
 `sf2-map3-admitted-start-runtime-v1`. It ends when a validated product scenario has constructed the
-same accepted non-time state and setup/init result and is ready to admit the first exploration
-action. It does not own the natural route into Map 3 or any behavior after that boundary.
+exact accepted logical admission projection and setup/init result and is ready to admit the first
+exploration action. It does not own the natural route into Map 3 or any behavior after that boundary.
 
 - **Confirmed controlled evidence**: one original-runtime case reaches the first original
   `WaitForEvent` after the controlled Witch/New, new-game, save-service, main-loop, exploration-loop,
@@ -65,40 +65,51 @@ The original controlled chronology and the product admission path have different
 
 | Surface | Required meaning | Explicit non-claim |
 | --- | --- | --- |
-| original-evidence receipt | identifies the fixture, case, original chronology, private provenance, observation boundary, and harness normalization capability | does not make the route natural or require it in the remake |
-| product-admission result | identifies the validated scenario/package and proves the accepted non-time state plus setup/init result is ready for the first exploration action | does not claim that Witch/New, NewGame, SaveGame, or original MainLoop executed |
+| original-evidence receipt | preserves and compares the complete fixture-owned H3 closure, including the source-shaped handoff, raw D0-D4 values, PCs, addresses, callback identities, chronology, provenance, boundary, and normalization capability | does not make those evidence fields authoritative product state or require the original route in the remake |
+| product-admission result | identifies the validated scenario/package and proves the exact accepted logical map/start-position/facing/flow, force/session, setup/init, no-program-request, and exploration-readiness projection | does not store or synthesize D0-D4, PCs, RAM/ROM addresses, callback identities, or original lifecycle execution |
 
 `OriginalEvidenceReceipt` and `ProductAdmissionResult` are prospective design labels for these two
 surfaces. They are not fixture IDs, executable schemas, C# types, or new ownership of Research data.
 Future implementation may choose different names while preserving the separation.
 
+When an accepted adjacent owner establishes the semantic result of a register-shaped observation,
+the product projection maps that result to the already-named logical field. It MUST NOT retain a
+duplicate register-shaped product field. A raw handoff field without an accepted semantic mapping
+remains evidence-only.
+
 An H4 report MUST keep both results visible. A product-admission success cannot overwrite or relabel
 the original evidence receipt, and an original H3 success cannot prove that a product package was
 validated or admitted.
 
-## Accepted Non-Time Result Seam
+## Accepted Evidence and Product Projections
 
-Product admission MUST consume the exact field closure of the accepted fixture through a versioned,
-validated mapping. The comparison surface contains these categories:
+This contract defines two comparison projections over the fixture evidence. `OriginalEvidenceReceipt`
+MUST preserve and compare the complete source-shaped closure on the original H3 side.
+`ProductAdmissionResult` MUST validate only the exact logical admission projection whose meanings are
+already established by accepted owners. The latter projection contains these product categories:
 
 | Category | Original evidence surface | Product admission obligation |
 | --- | --- | --- |
-| map handoff | current/egress map and the source-shaped main-loop handoff tuple | construct validated logical equivalents for every accepted handoff field without inferring new register meanings |
+| map handoff | current/egress map plus the complete source-shaped main-loop handoff, including raw register facts | validate accepted logical map, start-position, facing, and flow-state fields only; unmapped raw handoff facts remain evidence-only |
 | player and session state | player entity state, gold, and difficulty state | preserve the exact admitted values and accepted field widths/ranges through typed state |
 | force state | every joined/active fact and the complete accepted ally-record fields | construct the full bounded force snapshot; omitted or default-filled records fail admission |
 | setup/init result | selected default setup identity, selected init identity, dispatch return seams, and completion before the first exploration wait | validate the selected logical setup/init IDs and prove their admitted result is complete |
 | guarded program result | the accepted absence of a guarded program request before the boundary | expose the same bounded result; a missing capability is not equivalent to an accepted no-request result |
 | exploration readiness | arrival at the first original exploration wait | admit the first semantic exploration action only after all preceding result checks pass |
 
-Original register names, RAM addresses, ROM addresses, source symbols, and callback PCs belong to the
-evidence receipt and importer provenance. They MUST NOT become authoritative gameplay state or leak
-into the plain domain model. The product mapping may use engine-neutral logical IDs and typed values,
-but it MUST be field-complete, versioned, and diagnosable against the fixture-owned categories.
+Original register names and values, RAM/ROM addresses, source symbols, callback identities, and PCs
+belong to the complete evidence receipt and importer provenance. They MUST NOT become authoritative
+gameplay state or leak into the plain domain model. The product mapping uses engine-neutral logical
+IDs and typed values and MUST be complete for the accepted logical projection, versioned, and
+diagnosable against the fixture-owned categories. Product success MUST NOT require an intentionally
+excluded raw evidence field.
 
-Result equivalence is exact for the admitted non-time fields. It does not require the remake to run
-the original setup code, selected init code, or original main/exploration loops. A future product may
-construct an already-resolved snapshot or execute independently maintained typed programs, provided
-the admitted result and capability report remain identical at this boundary.
+Equality is exact within each projection: the original evidence receipt compares the complete
+fixture-owned closure, while product admission compares the complete accepted logical projection.
+Product result equivalence does not require the remake to run the original setup code, selected init
+code, or original main/exploration loops. A future product may construct an already-resolved snapshot
+or execute independently maintained typed programs, provided the logical admitted result and
+capability report remain identical at this boundary.
 
 ## Time and RNG Separation
 
@@ -144,7 +155,7 @@ the admission boundary requires:
 
 - the accepted fixture/scenario identity and content digest;
 - a supported contract and package version;
-- the complete non-time state categories listed above;
+- the complete accepted logical product projection listed above;
 - validated logical map, setup, init, actor, class, item, and spell references as applicable;
 - explicit provenance class and required capabilities;
 - separate original-evidence and product-admission result fields;
@@ -171,20 +182,23 @@ A future H4 adapter passes this proposed contract only when it can:
    label, while leaving original-runtime reproduction with the H3 owner;
 2. admit a product package through the ordinary validation path without invoking or claiming the
    original Witch/New, new-game, save-service, or main-loop chronology;
-3. compare every admitted non-time field category exactly against the sole fixture owner;
-4. prove the selected setup/init result, no-program-request result, and first-exploration readiness
+3. compare the complete fixture-owned source-shaped closure inside the original-evidence receipt,
+   including raw handoff registers, PCs, addresses, and callback identities on that side only;
+4. compare the exact accepted logical product projection without requiring D0-D4, PCs, RAM/ROM
+   addresses, callback identities, or duplicate register-shaped product fields;
+5. prove the selected setup/init result, no-program-request result, and first-exploration readiness
    without treating source addresses or callback PCs as domain state;
-5. keep raw original time **Unknown/unpublished**, harness-normalized time evidence-only, and product
+6. keep raw original time **Unknown/unpublished**, harness-normalized time evidence-only, and product
    deterministic-clock state separately labeled;
-6. compare the fixture RNG state only for the one controlled case and reject an unexpected RNG field
+7. compare the fixture RNG state only for the one controlled case and reject an unexpected RNG field
    or hidden random source;
-7. report original-evidence and product-admission failures independently, with no fallback counted as
+8. report original-evidence and product-admission failures independently, with no fallback counted as
    exact success;
-8. preserve the fixture as the golden instead of copying selected values into an engine-specific
+9. preserve the fixture as the golden instead of copying selected values into an engine-specific
    snapshot;
-9. avoid claiming that all 26 aggregate Map 3 records, alternative setup rows, or later route events
+10. avoid claiming that all 26 aggregate Map 3 records, alternative setup rows, or later route events
    were reached;
-10. keep complete 8C pixels, palettes, frame cadence, animation, audio, VInt/DMA/CRAM/VDP observations,
+11. keep complete 8C pixels, palettes, frame cadence, animation, audio, VInt/DMA/CRAM/VDP observations,
     ordering, chronology, and tolerances outside this local admission contract.
 
 These checks define future observation seams only. They do not constitute an H4 implementation or a
@@ -230,7 +244,8 @@ R2, R3, R4, or complete 8C closure.
 | Contract statement | Evidence label | Exact owner | Remaining boundary |
 | --- | --- | --- | --- |
 | controlled original chronology reaches the first Map 3 exploration wait | **Confirmed bounded runtime** | `sf2-map3-admitted-start-runtime-v1`; [research owner](../../research/map3-admitted-start.md) | chronology is provenance, not a natural route or product requirement |
-| complete bounded non-time state and selected setup/init result | **Confirmed bounded runtime** | same fixture | values stay fixture-owned; product mapping and H4 implementation are future work |
+| complete source-shaped handoff, PCs, addresses, callbacks, non-time state, and setup/init result | **Confirmed bounded runtime evidence projection** | same fixture | raw evidence fields remain in `OriginalEvidenceReceipt` and outside authoritative product state |
+| exact logical admission result | **Accepted product projection** | same sole fixture; accepted adjacent contracts define semantics only | map/start-position/facing/flow, force/session, setup/init, no-request, and readiness values stay golden-owned; product mapping and H4 implementation are future work |
 | direct evidence denominator 7 records / 17 bindings | **Confirmed indexed relationship** | accepted [research index](../../../manifests/research-index.json) | only four records / nine bindings form the proposed semantic association subset |
 | raw original time values | **Unknown/unpublished** | R1 observer reads source-faithful spans | normalized public values are not original snapshot facts |
 | post-boundary time normalization | **Confirmed controlled harness policy** | same fixture and verifier | does not choose the product deterministic clock |
