@@ -358,6 +358,10 @@
       "translatedDate": "2026-08-20"
     },
     {
+      "source": "docs/design/contracts/map3-controlled-admission.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/contracts/music-wait-service.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/contracts/music-wait-service.md",

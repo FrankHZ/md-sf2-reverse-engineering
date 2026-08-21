@@ -491,6 +491,10 @@ document whose anchors may be updated.
   precedence, player-action priority, interaction admission, and the bounded area, refill, flag, and
   update inventories, while keeping runtime timing, downstream effects, and private table content
   separate or Unknown.
+- [`map3-controlled-admission.md`](./design/contracts/map3-controlled-admission.md): the
+  evidence-bound, implementation-neutral contract separating the complete source-shaped Map 3 H3
+  evidence receipt from the exact logical product-admission projection, while keeping natural-route
+  behavior, later milestones, complete 8C, persistence, and Phase 4 separate or Unknown.
 - [`startup-control-flow.md`](./design/contracts/startup-control-flow.md): the implementation-neutral
   contract for the source-shaped conditional initial setup, bounded write/loop extents, ordered
   system and game handoffs, logo/intro/title return routing, and region admission branch, while
