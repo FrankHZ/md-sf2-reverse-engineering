@@ -650,6 +650,10 @@
       "translatedDate": "2026-08-20"
     },
     {
+      "source": "docs/design/synthesis/phase4-bootstrap-plan.md",
+      "status": "pending"
+    },
+    {
       "source": "docs/design/synthesis/progression-and-economy.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/progression-and-economy.md",

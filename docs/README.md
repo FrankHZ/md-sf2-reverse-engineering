@@ -380,6 +380,9 @@ document whose anchors may be updated.
   design-contract, and product-decision closure ledger for the ADR 0009 Map 3 through Battle 01
   milestone, preserving its explicit NOT READY state and the separate user action required before
   Phase 4 implementation may begin.
+- [`phase4-bootstrap-plan.md`](./design/synthesis/phase4-bootstrap-plan.md): records the Proposed
+  Layer B project-topology, CLI/process, package-admission, deterministic-boundary, and H4 receipt
+  plan while preserving NOT READY and requiring a separate user action before implementation.
 - [`ally-definition-data.md`](./design/contracts/ally-definition-data.md): the implementation-neutral
   contract for the 30 named ally identities, two independent 32-slot start/pointer domains, 32 class
   definitions, promotion tables, five growth curves, 59 ally/class growth records, spell-list
