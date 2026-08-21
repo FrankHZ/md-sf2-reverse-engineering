@@ -212,6 +212,13 @@ Each batch declares its exact paths and active-lane dependencies. This decision 
 model or reasoning effort, implement telemetry, alter the affected planner, relax any evidence gate,
 or start Phase 4.
 
+The routed operational owners are the compact
+[resume route](../operations/agent-resume.md), the
+[Phase 2 lane runbook](../operations/phase2-lane-runbook.md), and the
+[bounded inspection and review runbook](../operations/bounded-inspection-and-review.md). These owners
+implement the sequence without adding a measurement program or duplicating their detailed procedures
+back into this decision record.
+
 ## Consequences and Risks
 
 - A smaller inherited context can omit relevant nuance. The mitigation is a complete slice contract,
@@ -236,4 +243,5 @@ or start Phase 4.
 - [ADR 0004: One Terra Research Worker with Root Acceptance](./0004-single-terra-worker-with-root-acceptance.md).
 - [ADR 0006: Parallel Worktrees with Topic-Branch Integration](./0006-parallel-worktrees-and-topic-branch-integration.md).
 - [ADR 0012: Dependency-Aware Partitioned Verification](./0012-dependency-aware-partitioned-verification.md).
+- [Bounded Artifact, Diff, Handoff, and Review Runbook](../operations/bounded-inspection-and-review.md).
 - [Source coverage ledger](../research/source-coverage.md).

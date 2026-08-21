@@ -58,6 +58,10 @@ The root accepts a completed slice only after it:
 5. commits on the current research topic branch, never directly on `main`; and
 6. pushes and opens or updates the Draft PR for serialized main-gate integration.
 
+Use the bounded identity, diff, artifact, and findings-first handoff in
+[`bounded-inspection-and-review.md`](./bounded-inspection-and-review.md). Do not paste the controller
+history or complete large fixtures into the worker, root, or main-gate handoff.
+
 `uv run sf2 verify --full` remains a milestone, release or merge-readiness, shared-harness, or
 explicit full-parity gate. It is never the default worker or root command. A design-synthesis branch
 or design-only advance of `main` does not trigger it. Worker instructions and root review are both
