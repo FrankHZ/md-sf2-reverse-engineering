@@ -17,18 +17,22 @@ experiments. Every useful discovery should become one or more of:
 
 ## Read First
 
-1. Read `README.md` for scope, current evidence, phases, and repository layout.
-2. Inspect the real workspace before assuming a tool, directory, or generated
-   artifact exists.
-3. Keep changes within the current phase. Do not jump into engine code while the
-   relevant original behavior and data contract are still undefined.
+1. If the client already injected the applicable `AGENTS.md`, do not spend a tool call rereading it.
+   Otherwise read it once before acting.
+2. Inspect the real workspace and derive the exact Git identity, status, active worktrees, and recent
+   commits at runtime before assuming a branch, slice, tool, directory, or generated artifact exists.
+3. Read [`docs/operations/agent-resume.md`](./docs/operations/agent-resume.md), then the closest owning
+   topic document and any decision or checklist named by the task. Read the complete root `README.md`,
+   `docs/README.md`, or `docs/research/source-coverage.md` only when the task changes or audits their
+   global scope, routing, counters, or frontier.
+4. Keep changes within the current phase. Do not jump into engine code while the relevant original
+   behavior and data contract are still undefined.
 
-External agent memory is not a project dependency or source of truth. To resume work, read the
-root `README.md`, `docs/research/source-coverage.md`, `docs/README.md`, and the closest owning topic
-document, then inspect `git status` and recent commits. The repository must contain every durable
-decision, current frontier, evidence counter, reproduction command, and unresolved question needed
-to continue. Do not leave an important project fact only in a chat summary, local agent memory, or
-an ignored generated report.
+External agent memory is not a project dependency or source of truth. The compact resume route points
+to the durable owners; it does not duplicate their counters or findings. The repository must contain
+every durable decision, current frontier, evidence counter, reproduction command, and unresolved
+question needed to continue. Do not leave an important project fact only in a chat summary, local
+agent memory, or an ignored generated report.
 
 External agent memory is disabled for this repository. Do not consult or update a personal/global
 memory store for routine work. If the user explicitly requests a one-time migration audit, copy only
@@ -81,9 +85,11 @@ hash-verified per worktree or exposed through narrowly scoped read-only paths, b
 
 For ordinary Phase 2 work in the active research topic worktree, the root thread scopes one coherent
 slice and its acceptance commands but does not personally reverse engineer or implement that slice. It starts exactly one
-`terra_reverse_engineer` worker and gives it the owning document, bounded source surface, expected
-tracked outputs, and one narrow H2/H3 acceptance command. If the named role is unavailable, the root
-must explicitly spawn `gpt-5.6-terra`. Do not run parallel write workers in the slice worktree.
+`terra_reverse_engineer` worker with no inherited controller turns (`fork_turns: "none"`) and gives it
+a self-contained handoff naming the exact base and worktree, owning document, bounded source surface,
+expected tracked outputs, one narrow H2/H3 acceptance command, required references, and explicit
+exclusions. If the named role is unavailable, the root must explicitly spawn `gpt-5.6-terra` with the
+same bounded handoff. Do not run parallel write workers in the slice worktree.
 
 The worker performs the slice: complete static inventory, structured parser/contract, project-owned
 tests and research documentation, and a grouped H3 question queue. It must preserve evidence labels

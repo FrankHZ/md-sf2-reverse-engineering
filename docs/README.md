@@ -11,13 +11,11 @@ facts, inferences, and remake preferences separate.
 The repository is the durable project record. A fresh contributor or agent should be able to resume
 without a previous chat transcript or external memory store:
 
-1. read the root [`README.md`](../README.md) for scope, baseline, current phase, aggregate evidence,
-   and the active frontier;
-2. read [`research/source-coverage.md`](./research/source-coverage.md) for the exact coverage
-   denominators, verification cadence, and current subsystem direction;
-3. use this index to open the closest research, design, or decision owner;
-4. inspect `git status` and recent commits before assuming the active slice is complete or the
-   worktree is clean;
+1. inspect exact Git identity, status, worktrees, and recent commits at runtime;
+2. read the compact [`operations/agent-resume.md`](./operations/agent-resume.md) route;
+3. open the closest research, design, decision, or operational owner named by that route;
+4. read this complete index or [`research/source-coverage.md`](./research/source-coverage.md) only
+   when changing or auditing global routing, counters, coverage, or frontier; and
 5. reproduce counters from tracked manifests and commands instead of copying a stale progress note.
 
 Topic documents own detailed findings and unknowns, decision records own durable tool/architecture
@@ -34,6 +32,11 @@ commit cadence in `AGENTS.md`, Python/uv and focused commit verification in ADR 
 batched simulation in ADR 0003, and reproducible coverage counters/frontiers in
 `research/source-coverage.md`. The remaining implementation-only Lua syntax-preflight rule was
 migrated into ADR 0001 during this audit. No continuing memory synchronization is required.
+
+## Operations
+
+- [`agent-resume.md`](./operations/agent-resume.md): compact runtime identity checks, stable project
+  boundaries, task-to-owner routing, and the bounded-context handoff for ordinary Phase 2 workers.
 
 ## Research
 
@@ -757,9 +760,9 @@ is created only when a real disagreement appears and the choice constrains later
   accepts an always-run public core plus conservative affected Python/H1/H2/H3 partitions, with a
   read-only committed-range planner and explicit resource-lock boundaries for later orchestration.
 - [`0013-token-efficient-agent-research-workflow.md`](./decisions/0013-token-efficient-agent-research-workflow.md):
-  proposes preserving full-game reverse engineering and all accepted evidence gates while measuring
-  role-level usage, bounding ordinary worker context, routing global instructions, machine-reducing
-  large artifacts, and consolidating independent review before any workflow implementation begins.
+  accepts preserving full-game reverse engineering and all evidence gates while bounding ordinary
+  worker context, routing global instructions, machine-reducing large artifacts, and consolidating
+  independent review without creating a token benchmark program.
 
 ## Evidence Vocabulary
 

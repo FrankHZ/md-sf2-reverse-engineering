@@ -33,6 +33,8 @@ Use the executable sources of truth instead:
 
 - [`docs/research/source-coverage.md`](./docs/research/source-coverage.md) defines coverage
   denominators, evidence cadence, and the current research frontier.
+- [`docs/operations/agent-resume.md`](./docs/operations/agent-resume.md) is the compact task-resume
+  route; it points to durable owners without copying their changing counters.
 - [`manifests/research-index.json`](./manifests/research-index.json) owns indexed findings and their
   source, address, fixture, and document relationships.
 - [`docs/README.md`](./docs/README.md) routes readers to the closest research, design, or decision
@@ -44,13 +46,12 @@ Use the executable sources of truth instead:
 
 For any new task:
 
-1. Read [`AGENTS.md`](./AGENTS.md) for repository workflow, evidence rules, private-input handling,
-   and the definition of done.
-2. Read [`docs/research/source-coverage.md`](./docs/research/source-coverage.md) for the current phase
-   boundary and research cadence.
-3. Use [`docs/README.md`](./docs/README.md) to find the nearest owning topic document.
-4. Inspect `git status`, active worktrees, and recent commits before assuming a branch or slice is
-   complete.
+1. Apply [`AGENTS.md`](./AGENTS.md) once; if the client already injected it, do not reread it.
+2. Inspect the exact Git identity, status, active worktrees, and recent commits at runtime.
+3. Use [`docs/operations/agent-resume.md`](./docs/operations/agent-resume.md) to find the closest
+   owner, then read only that owner and the decisions or checklists required by the task.
+4. Open the complete [`docs/research/source-coverage.md`](./docs/research/source-coverage.md) or
+   [`docs/README.md`](./docs/README.md) only for global coverage, frontier, routing, or index work.
 5. Reproduce a claim from its named command and fixture rather than copying a progress summary.
 
 The design-synthesis entry point is
