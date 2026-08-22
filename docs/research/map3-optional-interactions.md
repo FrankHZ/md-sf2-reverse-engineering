@@ -1,6 +1,7 @@
 # Map 3 optional interactions: static inventory
 
-Status: Draft research backlog; static findings current at 2026-08-21.
+Status: **Confirmed (static)** for the registered Phase 2 H2 inventory;
+findings current at 2026-08-22.
 
 This is useful full-game research, not ADR 0010 selected 2A milestone scope, a
 readiness blocker, or a 2B/2C product decision. ADR 0010 2A excludes unproven
@@ -11,22 +12,24 @@ does not establish original-game route relevance, so this inventory retains
 ## Confirmed static contract
 
 `src/sf2tool/h2/map3_optional_interactions.py` parses the complete default-Map
-3 surface into
+3 surface plus its Map 3 item include-site ownership into
 `tests/fixtures/h2/map3-optional-interactions-static-v1.json`. The fixture is
 canonical UTF-8 JSON and is recursively exact-value and exact-order closed by
 `schemas/h2/map3-optional-interactions-static-fixture.schema.json`. It carries
 public structural symbols, source ownership, aggregate classifications, and
-the already-public entity-event program/text/flag/menu mapping only. It does
-not carry private numeric entity rows, map placements, action payloads,
+the already-public entity-event program/text/flag/menu mapping only. It also
+names the two item include-site symbols and public H1/ROM entry addresses. It
+does not carry private numeric entity rows, map placements, action payloads,
 area-description table entries or text-index sets, dialogue prose, assets, ROM
 payload, or emulator captures.
 
-The confirmed denominator is 12 paths: eight default-Map-3 paths and four
-generic macro/consumer paths.
+The confirmed denominator is 13 paths: eight default-Map-3 paths, the Map 3
+item include-owner path, and four generic macro/consumer paths.
 
 | Inventory | Confirmed count |
 | --- | ---: |
 | Default Map 3 source paths | 8 |
+| Map-entry include-owner paths | 1 |
 | Generic macro/consumer paths | 4 |
 | Entity definitions | 19 |
 | Entity-event routes, including default | 17 |
@@ -54,11 +57,12 @@ and two item rows in memory to derive their exact denominators, macro/consumer
 shapes, source-owner/source-kind counts, and route-relevance counts. The
 tracked projection deliberately retains only those safe aggregates: entity
 macro/action-kind taxonomy; the six-byte area-description/effect shape; and
-item macro/terminator/consumer ownership. Exact private values are re-parsed
-locally against the pinned source and are neither committed nor hashed in the
-public fixture. The detailed rows remain private/local under the accepted
-entity-data and area-description-routing owners, and item placements remain
-private/local under the accepted Map and Exploration Contract
+item macro/terminator/consumer ownership with the two include-site identities
+and entry addresses. Exact private values are re-parsed locally against the
+pinned source and are neither committed nor hashed in the public fixture. The
+detailed rows remain private/local under the accepted entity-data and
+area-description-routing owners, and item placements remain private/local under
+the accepted Map and Exploration Contract
 (`docs/design/contracts/map-exploration.md`) content owner.
 
 ## Route relevance labels
@@ -81,8 +85,11 @@ The read-only source baseline is
 `c834c652b6862bc5679fd7f69a38a7093206efc6`; the input identity is the tracked
 US ROM SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`.
 The bounded default paths are `data/maps/mapsetups.asm`, Map 3 pointer,
-entities, entity-events, descriptions, and item-events setup files, and the
-Map 3 chest/other item tables. The generic paths are
+entities, entity-events, descriptions, and item-events setup files,
+`data/maps/entries.asm`, and the Map 3 chest/other item tables. The two item
+include-site symbols are `Map03s7_ChestItems` at ROM `0x9793A` and
+`Map03s8_OtherItems` at ROM `0x97940`; their leaf tables remain private-source
+provenance rather than public data payload. The generic paths are
 `sf2mapsetupmacros.asm`, `sf2mapmacros.asm`,
 `code/common/scripting/map/mapsetupsfunctions_1.asm`, and
 `code/common/tech/jumpinterfaces/s05_jumpinterface.asm`.
@@ -105,12 +112,15 @@ With a read-only pinned checkout at `$upstream`, run the focused public suite:
 ```powershell
 uv run pytest tests/python/test_map3_optional_interactions.py
 uv run ruff check src/sf2tool/h2/map3_optional_interactions.py tests/python/test_map3_optional_interactions.py
+uv run sf2 h2 map3-optional-interactions --upstream-path $upstream
 ```
 
 The source-backed fixture equality seam is
 `verify_map3_optional_interactions(Path($upstream))`; it parses the inventory,
-validates the exact fixture schema, and fails on semantic drift. No Phase 1
-CLI command or registry entry is added on this Draft branch.
+validates the exact fixture schema, and fails on semantic drift. The
+registered Phase 2 H2 inventory exposes this parser as the H2-only
+`map3-optional-interactions` command; it creates no runtime fixture or product
+readiness claim.
 
 ## H3 question queue
 
@@ -123,17 +133,13 @@ CLI command or registry entry is added on this Draft branch.
 - **Item/default-dispatch outcomes:** chest/hidden-item behavior and the
   runtime result of the otherwise direct-return default item event.
 
-## Future registration proposal (not applied)
+## Candidate registration boundary
 
-If a later index-owning slice registers this fixture, use fixture ID
+The H2 registration uses fixture ID
 `sf2-map3-optional-interactions-static-v1`, verifier
-`src/sf2tool/h2/map3_optional_interactions.py`, document path
-`docs/research/map3-optional-interactions.md`, and association IDs following
-the current `map.data.*` convention: `map.data.ms-map3`,
-`map.data.ms-map3-entities`, `map.data.ms-map3-entityevents`,
-`map.data.ms-map3-areadescriptions`, and `map.data.ms-map3-section5` with
-fixture fields `pointerSetup`, `entityDefinitions`, `entityEventRoutes`,
-`areaDescriptions`, and `defaultItemEvent`. Item-table binding ownership needs
-an index decision because their existing source identities are outside the
-`map.data.ms-map3-*` setup-table family. This proposal changes no registry,
-manifest, CLI, source-coverage counter, or product decision.
+`src/sf2tool/h2/map3_optional_interactions.py`, and this owning document. It
+adds document/evidence associations to the five established `map.data.ms-map3`
+setup-table records and two neutral `map.data.static` include-site records for
+`Map03s7_ChestItems` and `Map03s8_OtherItems` in `data/maps/entries.asm`.
+The leaf item files remain provenance only. This static registration changes no
+H3 queue, design contract, product decision, or readiness boundary.

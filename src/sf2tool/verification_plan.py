@@ -64,6 +64,7 @@ H2_COMMAND_GROUPS = {
         "common-maps",
         "common-scripting",
         "entity-action-scripts",
+        "map3-optional-interactions",
         "map-content",
         "map-data",
         "map-descriptions",

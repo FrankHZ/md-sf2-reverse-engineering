@@ -17,6 +17,9 @@
       "data/maps/entries/map03/7-chest-items.asm",
       "data/maps/entries/map03/8-other-items.asm"
     ],
+    "mapEntryIncludePaths": [
+      "data/maps/entries.asm"
+    ],
     "genericConsumerPaths": [
       "sf2mapsetupmacros.asm",
       "sf2mapmacros.asm",
@@ -680,19 +683,36 @@
     "recordCount": 2,
     "sourceOwners": [
       {
-        "sourcePath": "data/maps/entries/map03/7-chest-items.asm",
         "sourceKind": "chest",
+        "sourcePath": "data/maps/entries/map03/7-chest-items.asm",
+        "includeSymbol": "Map03s7_ChestItems",
+        "entryAddress": 620858,
         "recordCount": 1
       },
       {
-        "sourcePath": "data/maps/entries/map03/8-other-items.asm",
         "sourceKind": "other",
+        "sourcePath": "data/maps/entries/map03/8-other-items.asm",
+        "includeSymbol": "Map03s8_OtherItems",
+        "entryAddress": 620864,
         "recordCount": 1
       }
     ],
     "recordMacro": "mapItem",
     "terminatorMacro": "endWord",
     "unknownRouteRelevanceCount": 2
+  },
+  "sourceContext": {
+    "map3SetupEntryAddresses": {
+      "pointerSetup": 330472,
+      "entityDefinitions": 330544,
+      "entityEventRoutes": 331536,
+      "areaDescriptions": 332512,
+      "defaultItemEvent": 332632
+    },
+    "itemPlacementSourceOwnerEntryAddresses": {
+      "chest": 620858,
+      "other": 620864
+    }
   },
   "defaultItemEvent": {
     "recordMacro": "msDefaultItemEvent",
@@ -720,8 +740,9 @@
     "map3-optional-interactions/item-and-default-dispatch-outcomes"
   ],
   "summary": {
-    "sourcePathCount": 12,
+    "sourcePathCount": 13,
     "defaultMap3SourcePathCount": 8,
+    "mapEntryIncludeSourcePathCount": 1,
     "genericSourcePathCount": 4,
     "entityDefinitionCount": 19,
     "entityEventRouteCount": 17,

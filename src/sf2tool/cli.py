@@ -40,6 +40,7 @@ from sf2tool.h2.icon_graphics import verify_icon_graphics_contract
 from sf2tool.h2.interfaces import verify_interface_inventory
 from sf2tool.h2.interrupts import verify_interrupt_inventory
 from sf2tool.h2.item_auxiliary import verify_item_auxiliary_contract
+from sf2tool.h2.map3_optional_interactions import verify_map3_optional_interactions
 from sf2tool.h2.map_content import verify_map_content_contract
 from sf2tool.h2.map_data import verify_map_data_inventory
 from sf2tool.h2.map_descriptions import verify_map_descriptions_contract
@@ -571,6 +572,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_portraits)
     h2_portraits.add_argument("--output-path", type=_path)
+    h2_map3_optional_interactions = h2_commands.add_parser(
+        "map3-optional-interactions",
+        help="verify the public-safe static Map 3 optional-interaction inventory",
+    )
+    _add_local_paths(h2_map3_optional_interactions, rom=False)
     h2_map_data = h2_commands.add_parser(
         "map-data", help="inventory the complete map ASM include graph and internal symbols"
     )
@@ -1503,6 +1509,8 @@ def dispatch(args: argparse.Namespace) -> None:
                 output_path=args.output_path,
             )
         )
+    elif args.command == "h2" and args.h2_command == "map3-optional-interactions":
+        print_record(verify_map3_optional_interactions(args.upstream_path))
     elif args.command == "h2" and args.h2_command == "map-content":
         print_record(
             verify_map_content_contract(
