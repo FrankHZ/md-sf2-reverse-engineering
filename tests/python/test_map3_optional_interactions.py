@@ -41,8 +41,17 @@ def _synthetic_upstream(tmp_path: Path) -> Path:
     )
     _write(
         root,
+        "data/maps/entries.asm",
+        """
+        Map03s7_ChestItems:include "data\\maps\\entries\\map03\\7-chest-items.asm"
+        Map03s8_OtherItems:include "data\\maps\\entries\\map03\\8-other-items.asm"
+        """,
+    )
+    _write(
+        root,
         "data/maps/entries/map03/mapsetups/pointertable.asm",
         """
+        ; 0x0100..0x0118 :
         ms_map3: dc.l ms_map3_Entities
             dc.l ms_map3_EntityEvents
             dc.l ms_map3_ZoneEvents
@@ -55,6 +64,7 @@ def _synthetic_upstream(tmp_path: Path) -> Path:
         root,
         "data/maps/entries/map03/mapsetups/s1_entities.asm",
         """
+        ; 0x0200..0x020C :
         ms_map3_Entities:
             msFixedEntity 1, 2, DOWN, MAPSPRITE_TEST_FIXED, eas_TestInit
             msWalkingEntity 3, 4, UP, MAPSPRITE_TEST_WALKING, 3, 4, 2
@@ -64,6 +74,7 @@ def _synthetic_upstream(tmp_path: Path) -> Path:
         root,
         "data/maps/entries/map03/mapsetups/s2_entityevents.asm",
         """
+        ; 0x0300..0x0320 :
         ms_map3_EntityEvents:
             msEntityEvent ALLY_SARAH, DOWN, Map3_EntityEvent0-ms_map3_EntityEvents
             msDefaultEntityEvent Map3_DefaultEntityEvent-ms_map3_EntityEvents
@@ -85,6 +96,7 @@ def _synthetic_upstream(tmp_path: Path) -> Path:
         root,
         "data/maps/entries/map03/mapsetups/s4_descriptions.asm",
         """
+        ; 0x0400..0x0406 :
         ms_map3_AreaDescriptions:
             move.w #$FC3,d3
         synthetic_description: msDesc 3, 4, 2, 9
@@ -95,6 +107,7 @@ def _synthetic_upstream(tmp_path: Path) -> Path:
         root,
         "data/maps/entries/map03/mapsetups/s5_itemevents.asm",
         """
+        ; 0x0500..0x0506 :
         ms_map3_Section5:
             msDefaultItemEvent Map3_DefaultItemEvent0-ms_map3_Section5
 
@@ -107,6 +120,7 @@ def _synthetic_upstream(tmp_path: Path) -> Path:
         root,
         "data/maps/entries/map03/7-chest-items.asm",
         """
+            ; 0x1000..0x1006 :
             mapItem 1, 2, 3, TEST_CHEST_ITEM
             endWord
         """,
@@ -115,6 +129,7 @@ def _synthetic_upstream(tmp_path: Path) -> Path:
         root,
         "data/maps/entries/map03/8-other-items.asm",
         """
+            ; 0x1006..0x100C :
             mapItem 4, 5, 6, TEST_OTHER_ITEM
             endWord
         """,
@@ -239,7 +254,7 @@ def test_synthetic_complete_inventory_is_deterministic_and_structural(tmp_path: 
     assert first["entityEventRoutes"] == [
         {
             "recordIndex": 0,
-            "sourceLine": 2,
+            "sourceLine": 3,
             "recordMacro": "msEntityEvent",
             "entityId": "ALLY_SARAH",
             "facing": "DOWN",
@@ -266,7 +281,7 @@ def test_synthetic_complete_inventory_is_deterministic_and_structural(tmp_path: 
         },
         {
             "recordIndex": 1,
-            "sourceLine": 3,
+            "sourceLine": 4,
             "recordMacro": "msDefaultEntityEvent",
             "entityId": "$FD",
             "facing": "0",
@@ -296,11 +311,15 @@ def test_synthetic_complete_inventory_is_deterministic_and_structural(tmp_path: 
             {
                 "sourcePath": "data/maps/entries/map03/7-chest-items.asm",
                 "sourceKind": "chest",
+                "includeSymbol": "Map03s7_ChestItems",
+                "entryAddress": 0x1000,
                 "recordCount": 1,
             },
             {
                 "sourcePath": "data/maps/entries/map03/8-other-items.asm",
                 "sourceKind": "other",
+                "includeSymbol": "Map03s8_OtherItems",
+                "entryAddress": 0x1006,
                 "recordCount": 1,
             },
         ],
@@ -308,10 +327,21 @@ def test_synthetic_complete_inventory_is_deterministic_and_structural(tmp_path: 
         "terminatorMacro": "endWord",
         "unknownRouteRelevanceCount": 2,
     }
+    assert first["sourceContext"] == {
+        "map3SetupEntryAddresses": {
+            "pointerSetup": 0x0100,
+            "entityDefinitions": 0x0200,
+            "entityEventRoutes": 0x0300,
+            "areaDescriptions": 0x0400,
+            "defaultItemEvent": 0x0500,
+        },
+        "itemPlacementSourceOwnerEntryAddresses": {"chest": 0x1000, "other": 0x1006}
+    }
     assert first["defaultItemEvent"]["targetOperationOrder"] == ["rts"]
     assert first["summary"] == {
-        "sourcePathCount": 12,
+        "sourcePathCount": 13,
         "defaultMap3SourcePathCount": 8,
+        "mapEntryIncludeSourcePathCount": 1,
         "genericSourcePathCount": 4,
         "entityDefinitionCount": 2,
         "entityEventRouteCount": 2,
@@ -330,6 +360,12 @@ def test_comments_and_legal_branch_suffix_are_not_misparsed(tmp_path: Path) -> N
         _read(root, event_path)
         + "; msEntityEvent GHOST, UP, Fake-ms_map3_EntityEvents\n"
         + "; txt 999 is a comment, not an event operation\n",
+        encoding="utf-8",
+    )
+    entries_path = "data/maps/entries.asm"
+    (root / entries_path).write_text(
+        _read(root, entries_path)
+        + "; Map03s7_ChestItems:include \"data\\maps\\entries\\map03\\fake.asm\"\n",
         encoding="utf-8",
     )
     assert build_map3_optional_interactions(root) == baseline
@@ -403,6 +439,30 @@ def test_menu_alias_call_shape_and_near_miss_target_are_guarded(tmp_path: Path) 
             "endWord",
             "endWordNearMiss",
             "item placement terminator is missing",
+        ),
+        (
+            "data/maps/entries.asm",
+            "Map03s7_ChestItems",
+            "Map03s7_ChestItemNearMiss",
+            "item include symbol drift",
+        ),
+        (
+            "data/maps/entries/map03/7-chest-items.asm",
+            "0x1000..0x1006",
+            "0x1001..0x1006",
+            "item source range width drift",
+        ),
+        (
+            "data/maps/entries/map03/mapsetups/s1_entities.asm",
+            "ms_map3_Entities:",
+            "ms_map3_EntitiesNearMiss:",
+            "map setup entry symbol drift",
+        ),
+        (
+            "data/maps/entries/map03/mapsetups/s1_entities.asm",
+            "ms_map3_Entities:",
+            "near_miss_setup_label:\nms_map3_Entities:",
+            "map setup entry symbol drift",
         ),
     ],
 )
@@ -494,6 +554,25 @@ def test_closed_fixture_schema_rejects_missing_extra_renamed_order_and_value_cha
     with pytest.raises(ValueError):
         validate_json(renamed, SCHEMA, owner="renamed nested field")
 
+    missing_source_context = copy.deepcopy(fixture)
+    del missing_source_context["sourceContext"]
+    with pytest.raises(ValueError):
+        validate_json(missing_source_context, SCHEMA, owner="missing source context")
+
+    extra_source_owner = copy.deepcopy(fixture)
+    extra_source_owner["itemPlacements"]["sourceOwners"][0]["unexpected"] = True
+    with pytest.raises(ValueError):
+        validate_json(extra_source_owner, SCHEMA, owner="extra source owner field")
+
+    renamed_source_context = copy.deepcopy(fixture)
+    renamed_source_context["sourceContext"]["itemPlacementOwnerAddresses"] = (
+        renamed_source_context["sourceContext"].pop(
+            "itemPlacementSourceOwnerEntryAddresses"
+        )
+    )
+    with pytest.raises(ValueError):
+        validate_json(renamed_source_context, SCHEMA, owner="renamed source context")
+
     reversed_routes = copy.deepcopy(fixture)
     reversed_routes["entityEventRoutes"].reverse()
     with pytest.raises(ValueError):
@@ -559,6 +638,7 @@ def test_tracked_fixture_is_canonical_and_contains_only_structural_text_referenc
     assert_private_keys_absent(fixture["entityDefinitions"])
     assert_private_keys_absent(fixture["areaDescriptions"])
     assert_private_keys_absent(fixture["itemPlacements"])
+    assert_private_keys_absent(fixture["sourceContext"])
 
     def assert_no_private_fingerprint(value: Any) -> None:
         if isinstance(value, dict):
@@ -573,6 +653,7 @@ def test_tracked_fixture_is_canonical_and_contains_only_structural_text_referenc
     assert_no_private_fingerprint(fixture["entityDefinitions"])
     assert_no_private_fingerprint(fixture["areaDescriptions"])
     assert_no_private_fingerprint(fixture["itemPlacements"])
+    assert_no_private_fingerprint(fixture["sourceContext"])
     assert all(
         isinstance(index, int)
         for route in fixture["entityEventRoutes"]

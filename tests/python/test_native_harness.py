@@ -41,14 +41,14 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1621
-    assert result["Confirmed"] == 1621
-    assert result["H2Fixtures"] == 74
+    assert result["Records"] == 1623
+    assert result["Confirmed"] == 1623
+    assert result["H2Fixtures"] == 75
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 94
-    assert result["AddressBindings"] == 2574
+    assert result["AddressBindings"] == 2581
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
-    assert result["H1ListingRecords"] == 1584
+    assert result["H1ListingRecords"] == 1586
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
 

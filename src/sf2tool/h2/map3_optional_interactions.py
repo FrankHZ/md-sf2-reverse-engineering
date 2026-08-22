@@ -19,6 +19,7 @@ TOOLCHAIN = repo_path("manifests/toolchain.json")
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
 
 MAP_SETUP_SOURCE = "data/maps/mapsetups.asm"
+MAP_ENTRIES_SOURCE = "data/maps/entries.asm"
 MAP3_ROOT = "data/maps/entries/map03"
 MAP3_SETUP_ROOT = f"{MAP3_ROOT}/mapsetups"
 DEFAULT_MAP3_SOURCE_PATHS = (
@@ -36,6 +37,45 @@ GENERIC_SOURCE_PATHS = (
     "sf2mapmacros.asm",
     "code/common/scripting/map/mapsetupsfunctions_1.asm",
     "code/common/tech/jumpinterfaces/s05_jumpinterface.asm",
+)
+ITEM_SOURCE_OWNERS = (
+    {
+        "sourceKind": "chest",
+        "sourcePath": f"{MAP3_ROOT}/7-chest-items.asm",
+        "includeSymbol": "Map03s7_ChestItems",
+    },
+    {
+        "sourceKind": "other",
+        "sourcePath": f"{MAP3_ROOT}/8-other-items.asm",
+        "includeSymbol": "Map03s8_OtherItems",
+    },
+)
+MAP3_SETUP_ENTRY_SOURCES = (
+    (
+        "pointerSetup",
+        f"{MAP3_SETUP_ROOT}/pointertable.asm",
+        "ms_map3",
+    ),
+    (
+        "entityDefinitions",
+        f"{MAP3_SETUP_ROOT}/s1_entities.asm",
+        "ms_map3_Entities",
+    ),
+    (
+        "entityEventRoutes",
+        f"{MAP3_SETUP_ROOT}/s2_entityevents.asm",
+        "ms_map3_EntityEvents",
+    ),
+    (
+        "areaDescriptions",
+        f"{MAP3_SETUP_ROOT}/s4_descriptions.asm",
+        "ms_map3_AreaDescriptions",
+    ),
+    (
+        "defaultItemEvent",
+        f"{MAP3_SETUP_ROOT}/s5_itemevents.asm",
+        "ms_map3_Section5",
+    ),
 )
 
 _LABEL = r"@?[A-Za-z_][A-Za-z0-9_]*"
@@ -511,6 +551,107 @@ def _parse_item_placements(
     return rows
 
 
+def _macro_storage_bytes(body: list[str], *, macro: str) -> int:
+    """Derive storage width from the source-faithful data directives in one macro."""
+    width = 0
+    for code in body:
+        match = re.fullmatch(r"(?P<directive>dc|defineShorthand)\.(?P<size>[bwl])\s+.+", code)
+        if match is None:
+            raise ValueError(
+                f"Map 3 optional-interactions {macro} storage directive drift: {code}"
+            )
+        width += {"b": 1, "w": 2, "l": 4}[match.group("size")]
+    return width
+
+
+def _item_placement_entry_span_bytes(map_macros: str) -> int:
+    return _macro_storage_bytes(
+        _macro_body(map_macros, "mapItem"), macro="mapItem"
+    ) + _macro_storage_bytes(_macro_body(map_macros, "endWord"), macro="endWord")
+
+
+def _source_range_entry_address(
+    source: str,
+    *,
+    expected_span_bytes: int | None = None,
+    expected_symbol: str | None = None,
+) -> int:
+    match = re.search(
+        r"(?m)^\s*;\s*0x(?P<entry>[0-9A-Fa-f]+)\.\.0x(?P<end>[0-9A-Fa-f]+)\s*:\s*$",
+        source,
+    )
+    if match is None:
+        raise ValueError("Map 3 optional-interactions source range is missing")
+    entry_address = int(match.group("entry"), 16)
+    end_address = int(match.group("end"), 16)
+    if end_address <= entry_address:
+        raise ValueError("Map 3 optional-interactions source range is invalid")
+    if expected_span_bytes is not None and end_address - entry_address != expected_span_bytes:
+        raise ValueError("Map 3 optional-interactions item source range width drift")
+    if expected_symbol is not None:
+        first_code_line = next(iter(_code_lines(source[match.end() :])), None)
+        first_label = (
+            re.match(rf"(?P<symbol>{_LABEL}):", first_code_line[1])
+            if first_code_line is not None
+            else None
+        )
+        if first_label is None or first_label.group("symbol") != expected_symbol:
+            raise ValueError("Map 3 optional-interactions map setup entry symbol drift")
+    return entry_address
+
+
+def _parse_map3_setup_entry_addresses(sources: dict[str, str]) -> dict[str, int]:
+    return {
+        fixture_field: _source_range_entry_address(
+            sources[source_path], expected_symbol=symbol
+        )
+        for fixture_field, source_path, symbol in MAP3_SETUP_ENTRY_SOURCES
+    }
+
+
+def _parse_item_source_owners(
+    entries_source: str,
+    item_sources: dict[str, str],
+    *,
+    expected_span_bytes: int,
+) -> list[dict[str, Any]]:
+    """Join Map 3 include-site symbols to their bounded item-source entry ranges."""
+    includes: dict[str, str] = {}
+    for _, code in _code_lines(entries_source):
+        match = re.fullmatch(
+            rf"(?P<symbol>{_LABEL}):\s*include\s+\"(?P<path>[^\"]+)\"", code
+        )
+        if match is None:
+            continue
+        source_path = match.group("path").replace("\\", "/")
+        if source_path in includes:
+            raise ValueError(
+                "Map 3 optional-interactions duplicate map-entry item include source"
+            )
+        includes[source_path] = match.group("symbol")
+
+    owners: list[dict[str, Any]] = []
+    for expected in ITEM_SOURCE_OWNERS:
+        source_path = expected["sourcePath"]
+        include_symbol = includes.get(source_path)
+        if include_symbol is None:
+            raise ValueError("Map 3 optional-interactions item include source is missing")
+        if include_symbol != expected["includeSymbol"]:
+            raise ValueError("Map 3 optional-interactions item include symbol drift")
+        source = item_sources.get(source_path)
+        if source is None:
+            raise ValueError("Map 3 optional-interactions item source is missing")
+        owners.append(
+            {
+                **expected,
+                "entryAddress": _source_range_entry_address(
+                    source, expected_span_bytes=expected_span_bytes
+                ),
+            }
+        )
+    return owners
+
+
 def _parse_generic_shapes(
     setup_macros: str, map_macros: str, dispatch_source: str, jump_interfaces: str
 ) -> dict[str, Any]:
@@ -678,8 +819,9 @@ def _summary(
     item_placements: list[dict[str, Any]],
 ) -> dict[str, int]:
     return {
-        "sourcePathCount": len(DEFAULT_MAP3_SOURCE_PATHS) + len(GENERIC_SOURCE_PATHS),
+        "sourcePathCount": len(DEFAULT_MAP3_SOURCE_PATHS) + 1 + len(GENERIC_SOURCE_PATHS),
         "defaultMap3SourcePathCount": len(DEFAULT_MAP3_SOURCE_PATHS),
+        "mapEntryIncludeSourcePathCount": 1,
         "genericSourcePathCount": len(GENERIC_SOURCE_PATHS),
         "entityDefinitionCount": len(entity_definitions),
         "entityEventRouteCount": len(entity_events),
@@ -727,21 +869,19 @@ def _project_area_descriptions(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _project_item_placements(rows: list[dict[str, Any]]) -> dict[str, Any]:
-    source_kinds = ("chest", "other")
-    source_paths = {
-        "chest": f"{MAP3_ROOT}/7-chest-items.asm",
-        "other": f"{MAP3_ROOT}/8-other-items.asm",
-    }
+def _project_item_placements(
+    rows: list[dict[str, Any]], source_owners: list[dict[str, Any]]
+) -> dict[str, Any]:
     return {
         "recordCount": len(rows),
         "sourceOwners": [
             {
-                "sourcePath": source_paths[kind],
-                "sourceKind": kind,
-                "recordCount": sum(row["sourceKind"] == kind for row in rows),
+                **owner,
+                "recordCount": sum(
+                    row["sourceKind"] == owner["sourceKind"] for row in rows
+                ),
             }
-            for kind in source_kinds
+            for owner in source_owners
         ],
         "recordMacro": "mapItem",
         "terminatorMacro": "endWord",
@@ -784,7 +924,11 @@ def build_map3_optional_interactions(upstream_path: Path) -> dict[str, Any]:
     root = _disasm_root(upstream_path)
     sources = {
         path: _source(root, path)
-        for path in (*DEFAULT_MAP3_SOURCE_PATHS, *GENERIC_SOURCE_PATHS)
+        for path in (
+            *DEFAULT_MAP3_SOURCE_PATHS,
+            MAP_ENTRIES_SOURCE,
+            *GENERIC_SOURCE_PATHS,
+        )
     }
     shapes = _parse_generic_shapes(
         sources["sf2mapsetupmacros.asm"],
@@ -817,6 +961,17 @@ def build_map3_optional_interactions(upstream_path: Path) -> dict[str, Any]:
             source_path=f"{MAP3_ROOT}/8-other-items.asm",
         ),
     ]
+    item_source_owners = _parse_item_source_owners(
+        sources[MAP_ENTRIES_SOURCE],
+        {
+            owner["sourcePath"]: sources[owner["sourcePath"]]
+            for owner in ITEM_SOURCE_OWNERS
+        },
+        expected_span_bytes=_item_placement_entry_span_bytes(
+            sources["sf2mapmacros.asm"]
+        ),
+    )
+    setup_entry_addresses = _parse_map3_setup_entry_addresses(sources)
     default_item_event = _parse_default_item_event(
         sources[f"{MAP3_SETUP_ROOT}/s5_itemevents.asm"],
         shapes,
@@ -832,6 +987,7 @@ def build_map3_optional_interactions(upstream_path: Path) -> dict[str, Any]:
         "romSha256": load_json(ROM_MANIFEST)["hashes"]["sha256"],
         "sourceSurface": {
             "defaultMap3Paths": list(DEFAULT_MAP3_SOURCE_PATHS),
+            "mapEntryIncludePaths": [MAP_ENTRIES_SOURCE],
             "genericConsumerPaths": list(GENERIC_SOURCE_PATHS),
         },
         "pointerSetup": pointer_setup,
@@ -839,7 +995,14 @@ def build_map3_optional_interactions(upstream_path: Path) -> dict[str, Any]:
         "entityDefinitions": _project_entity_definitions(entity_definitions),
         "entityEventRoutes": entity_events,
         "areaDescriptions": _project_area_descriptions(area_descriptions),
-        "itemPlacements": _project_item_placements(item_placements),
+        "itemPlacements": _project_item_placements(item_placements, item_source_owners),
+        "sourceContext": {
+            "map3SetupEntryAddresses": setup_entry_addresses,
+            "itemPlacementSourceOwnerEntryAddresses": {
+                owner["sourceKind"]: owner["entryAddress"]
+                for owner in item_source_owners
+            }
+        },
         "defaultItemEvent": default_item_event,
         "acceptedMainCrossChecks": [
             "sf2-map-data-static-v1",
