@@ -1,0 +1,733 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map3-optional-interactions-static-v1",
+  "upstream": {
+    "repository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+  },
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "sourceSurface": {
+    "defaultMap3Paths": [
+      "data/maps/mapsetups.asm",
+      "data/maps/entries/map03/mapsetups/pointertable.asm",
+      "data/maps/entries/map03/mapsetups/s1_entities.asm",
+      "data/maps/entries/map03/mapsetups/s2_entityevents.asm",
+      "data/maps/entries/map03/mapsetups/s4_descriptions.asm",
+      "data/maps/entries/map03/mapsetups/s5_itemevents.asm",
+      "data/maps/entries/map03/7-chest-items.asm",
+      "data/maps/entries/map03/8-other-items.asm"
+    ],
+    "genericConsumerPaths": [
+      "sf2mapsetupmacros.asm",
+      "sf2mapmacros.asm",
+      "code/common/scripting/map/mapsetupsfunctions_1.asm",
+      "code/common/tech/jumpinterfaces/s05_jumpinterface.asm"
+    ]
+  },
+  "pointerSetup": {
+    "mapId": 3,
+    "defaultPointerTable": "ms_map3",
+    "variantFlagsInSourceOrder": [
+      609,
+      506,
+      543
+    ],
+    "pointerSlotsInSourceOrder": [
+      "ms_map3_Entities",
+      "ms_map3_EntityEvents",
+      "ms_map3_ZoneEvents",
+      "ms_map3_AreaDescriptions",
+      "ms_map3_Section5",
+      "ms_map3_InitFunction"
+    ]
+  },
+  "genericShapes": {
+    "entityEvent": {
+      "recordStrideBytes": 4,
+      "defaultSelectorByte": "$FD",
+      "defaultTargetOffsetBytes": 2,
+      "dispatch": "jsr-(a0)"
+    },
+    "itemEvent": {
+      "recordStrideBytes": 6,
+      "defaultSelectorByte": "$FD",
+      "defaultTargetOffsetBytes": 4,
+      "dispatch": "jsr-(a0)"
+    },
+    "areaDescription": {
+      "recordStrideBytes": 6,
+      "firstTextBase": 423,
+      "displayTextCallCount": 2
+    },
+    "menuAlias": {
+      "instructionTarget": "j_ChurchMenu",
+      "effectiveTarget": "ChurchMenu"
+    }
+  },
+  "entityDefinitions": {
+    "sourcePath": "data/maps/entries/map03/mapsetups/s1_entities.asm",
+    "recordCount": 19,
+    "recordMacroCounts": {
+      "msFixedEntity": 16,
+      "msWalkingEntity": 3
+    },
+    "actionKindCounts": {
+      "fixed": 16,
+      "walking": 3
+    }
+  },
+  "entityEventRoutes": [
+    {
+      "recordIndex": 0,
+      "sourceLine": 5,
+      "recordMacro": "msEntityEvent",
+      "entityId": "ALLY_SARAH",
+      "facing": "DOWN",
+      "program": {
+        "target": "Map3_EntityEvent0",
+        "operationOrder": [
+          "chkFlg",
+          "bne.s",
+          "chkFlg",
+          "bne.s",
+          "chkFlg",
+          "bne.s",
+          "txt",
+          "txt",
+          "txt",
+          "chkFlg",
+          "bne.s",
+          "script",
+          "setFlg",
+          "bra.s",
+          "txt",
+          "bra.s",
+          "chkFlg",
+          "bne.s",
+          "script",
+          "rts"
+        ],
+        "textIndices": [
+          512,
+          480,
+          481,
+          502
+        ],
+        "flagConditions": [
+          {
+            "flag": 603,
+            "operationIndex": 0,
+            "branchMnemonic": "bne.s",
+            "branchTarget": "byte_50F8A"
+          },
+          {
+            "flag": 602,
+            "operationIndex": 2,
+            "branchMnemonic": "bne.s",
+            "branchTarget": "byte_50F84"
+          },
+          {
+            "flag": 256,
+            "operationIndex": 4,
+            "branchMnemonic": "bne.s",
+            "branchTarget": "byte_50F6A"
+          },
+          {
+            "flag": 256,
+            "operationIndex": 9,
+            "branchMnemonic": "bne.s",
+            "branchTarget": "loc_50F82"
+          },
+          {
+            "flag": 66,
+            "operationIndex": 16,
+            "branchMnemonic": "bne.s",
+            "branchTarget": "return_50F96"
+          }
+        ],
+        "flagEffects": [
+          {
+            "flag": 256,
+            "operationIndex": 12
+          }
+        ],
+        "scriptTargets": [
+          {
+            "target": "cs_513D6",
+            "operationIndex": 11
+          },
+          {
+            "target": "cs_513E2",
+            "operationIndex": 18
+          }
+        ],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Confirmed",
+        "classification": "mandatory-observed-opening"
+      }
+    },
+    {
+      "recordIndex": 1,
+      "sourceLine": 6,
+      "recordMacro": "msEntityEvent",
+      "entityId": "ALLY_CHESTER",
+      "facing": "RIGHT",
+      "program": {
+        "target": "Map3_EntityEvent1",
+        "operationOrder": [
+          "chkFlg",
+          "bne.s",
+          "chkFlg",
+          "bne.s",
+          "txt",
+          "bra.s",
+          "txt",
+          "txt",
+          "bra.s",
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          482,
+          503,
+          504,
+          507
+        ],
+        "flagConditions": [
+          {
+            "flag": 603,
+            "operationIndex": 0,
+            "branchMnemonic": "bne.s",
+            "branchTarget": "byte_50FB4"
+          },
+          {
+            "flag": 602,
+            "operationIndex": 2,
+            "branchMnemonic": "bne.s",
+            "branchTarget": "byte_50FAA"
+          }
+        ],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 2,
+      "sourceLine": 7,
+      "recordMacro": "msEntityEvent",
+      "entityId": "128",
+      "facing": "UP",
+      "program": {
+        "target": "Map3_EntityEvent2",
+        "operationOrder": [
+          "chkFlg",
+          "bne.s",
+          "txt",
+          "bra.s",
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          483,
+          505
+        ],
+        "flagConditions": [
+          {
+            "flag": 602,
+            "operationIndex": 0,
+            "branchMnemonic": "bne.s",
+            "branchTarget": "byte_50FC6"
+          }
+        ],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 3,
+      "sourceLine": 8,
+      "recordMacro": "msEntityEvent",
+      "entityId": "129",
+      "facing": "DOWN",
+      "program": {
+        "target": "Map3_EntityEvent3",
+        "operationOrder": [
+          "txt",
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          484,
+          485
+        ],
+        "flagConditions": [],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 4,
+      "sourceLine": 9,
+      "recordMacro": "msEntityEvent",
+      "entityId": "130",
+      "facing": "UP",
+      "program": {
+        "target": "Map3_EntityEvent4",
+        "operationOrder": [
+          "txt",
+          "txt",
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          486,
+          487,
+          488
+        ],
+        "flagConditions": [],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 5,
+      "sourceLine": 10,
+      "recordMacro": "msEntityEvent",
+      "entityId": "131",
+      "facing": "UP",
+      "program": {
+        "target": "Map3_EntityEvent5",
+        "operationOrder": [
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          489
+        ],
+        "flagConditions": [],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 6,
+      "sourceLine": 11,
+      "recordMacro": "msEntityEvent",
+      "entityId": "132",
+      "facing": "RIGHT",
+      "program": {
+        "target": "Map3_EntityEvent6",
+        "operationOrder": [
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          490
+        ],
+        "flagConditions": [],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 7,
+      "sourceLine": 12,
+      "recordMacro": "msEntityEvent",
+      "entityId": "133",
+      "facing": "UP",
+      "program": {
+        "target": "Map3_EntityEvent7",
+        "operationOrder": [
+          "txt",
+          "txt",
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          491,
+          492,
+          493
+        ],
+        "flagConditions": [],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 8,
+      "sourceLine": 13,
+      "recordMacro": "msEntityEvent",
+      "entityId": "134",
+      "facing": "UP",
+      "program": {
+        "target": "Map3_EntityEvent8",
+        "operationOrder": [
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          494
+        ],
+        "flagConditions": [],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 9,
+      "sourceLine": 14,
+      "recordMacro": "msEntityEvent",
+      "entityId": "137",
+      "facing": "UP",
+      "program": {
+        "target": "Map3_EntityEvent9",
+        "operationOrder": [
+          "txt",
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          495,
+          496
+        ],
+        "flagConditions": [],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 10,
+      "sourceLine": 15,
+      "recordMacro": "msEntityEvent",
+      "entityId": "138",
+      "facing": "UP",
+      "program": {
+        "target": "Map3_EntityEvent10",
+        "operationOrder": [
+          "chkFlg",
+          "bne.s",
+          "txt",
+          "bra.s",
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          497,
+          508
+        ],
+        "flagConditions": [
+          {
+            "flag": 604,
+            "operationIndex": 0,
+            "branchMnemonic": "bne.s",
+            "branchTarget": "byte_5101A"
+          }
+        ],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 11,
+      "sourceLine": 16,
+      "recordMacro": "msEntityEvent",
+      "entityId": "139",
+      "facing": "UP",
+      "program": {
+        "target": "Map3_EntityEvent11",
+        "operationOrder": [
+          "chkFlg",
+          "bne.s",
+          "txt",
+          "bra.s",
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          497,
+          509
+        ],
+        "flagConditions": [
+          {
+            "flag": 604,
+            "operationIndex": 0,
+            "branchMnemonic": "bne.s",
+            "branchTarget": "byte_5102C"
+          }
+        ],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 12,
+      "sourceLine": 17,
+      "recordMacro": "msEntityEvent",
+      "entityId": "140",
+      "facing": "UP",
+      "program": {
+        "target": "Map3_EntityEvent12",
+        "operationOrder": [
+          "txt",
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          498,
+          499
+        ],
+        "flagConditions": [],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 13,
+      "sourceLine": 18,
+      "recordMacro": "msEntityEvent",
+      "entityId": "141",
+      "facing": "UP",
+      "program": {
+        "target": "Map3_EntityEvent13",
+        "operationOrder": [
+          "jsr",
+          "rts"
+        ],
+        "textIndices": [],
+        "flagConditions": [],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": {
+          "instructionMnemonic": "jsr",
+          "instructionTarget": "j_ChurchMenu",
+          "effectiveTarget": "ChurchMenu",
+          "operationIndex": 0
+        }
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 14,
+      "sourceLine": 19,
+      "recordMacro": "msEntityEvent",
+      "entityId": "144",
+      "facing": "UP",
+      "program": {
+        "target": "Map3_EntityEvent8",
+        "operationOrder": [
+          "txt",
+          "rts"
+        ],
+        "textIndices": [
+          494
+        ],
+        "flagConditions": [],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    },
+    {
+      "recordIndex": 15,
+      "sourceLine": 20,
+      "recordMacro": "msEntityEvent",
+      "entityId": "142",
+      "facing": "DOWN",
+      "program": {
+        "target": "Map3_EntityEvent15",
+        "operationOrder": [
+          "chkFlg",
+          "bne.s",
+          "txt",
+          "setFlg",
+          "txt",
+          "setFlg",
+          "rts"
+        ],
+        "textIndices": [
+          500,
+          501
+        ],
+        "flagConditions": [
+          {
+            "flag": 261,
+            "operationIndex": 0,
+            "branchMnemonic": "bne.s",
+            "branchTarget": "byte_51052"
+          }
+        ],
+        "flagEffects": [
+          {
+            "flag": 261,
+            "operationIndex": 3
+          },
+          {
+            "flag": 602,
+            "operationIndex": 5
+          }
+        ],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Confirmed",
+        "classification": "mandatory-observed-opening"
+      }
+    },
+    {
+      "recordIndex": 16,
+      "sourceLine": 21,
+      "recordMacro": "msDefaultEntityEvent",
+      "entityId": "$FD",
+      "facing": "0",
+      "program": {
+        "target": "Map3_DefaultEntityEvent",
+        "operationOrder": [
+          "rts"
+        ],
+        "textIndices": [],
+        "flagConditions": [],
+        "flagEffects": [],
+        "scriptTargets": [],
+        "menuCall": null
+      },
+      "routeRelevance": {
+        "evidence": "Unknown",
+        "classification": "unknown"
+      }
+    }
+  ],
+  "areaDescriptions": {
+    "sourcePath": "data/maps/entries/map03/mapsetups/s4_descriptions.asm",
+    "recordCount": 17,
+    "recordMacro": "msDesc",
+    "recordStrideBytes": 6,
+    "effectShape": "two-display-text-calls",
+    "routeRelevanceCounts": {
+      "unknown": 17
+    }
+  },
+  "itemPlacements": {
+    "recordCount": 2,
+    "sourceOwners": [
+      {
+        "sourcePath": "data/maps/entries/map03/7-chest-items.asm",
+        "sourceKind": "chest",
+        "recordCount": 1
+      },
+      {
+        "sourcePath": "data/maps/entries/map03/8-other-items.asm",
+        "sourceKind": "other",
+        "recordCount": 1
+      }
+    ],
+    "recordMacro": "mapItem",
+    "terminatorMacro": "endWord",
+    "unknownRouteRelevanceCount": 2
+  },
+  "defaultItemEvent": {
+    "recordMacro": "msDefaultItemEvent",
+    "target": "Map3_DefaultItemEvent0",
+    "targetOperationOrder": [
+      "rts"
+    ],
+    "dispatchShape": {
+      "recordStrideBytes": 6,
+      "defaultSelectorByte": "$FD",
+      "defaultTargetOffsetBytes": 4,
+      "dispatch": "jsr-(a0)"
+    }
+  },
+  "acceptedMainCrossChecks": [
+    "sf2-map-data-static-v1",
+    "sf2-map-events-static-v1",
+    "sf2-map3-battle01-natural-route-runtime-v1",
+    "sf2-map3-messenger-acceptance-runtime-v1"
+  ],
+  "runtimeQuestionGroups": [
+    "map3-optional-interactions/reachability-and-route-relevance",
+    "map3-optional-interactions/flag-dependent-state-and-effects",
+    "map3-optional-interactions/rendered-dialogue-menu-presentation-and-timing",
+    "map3-optional-interactions/item-and-default-dispatch-outcomes"
+  ],
+  "summary": {
+    "sourcePathCount": 12,
+    "defaultMap3SourcePathCount": 8,
+    "genericSourcePathCount": 4,
+    "entityDefinitionCount": 19,
+    "entityEventRouteCount": 17,
+    "mandatoryObservedOpeningRouteCount": 2,
+    "unknownEntityEventRouteCount": 15,
+    "areaDescriptionCount": 17,
+    "itemPlacementCount": 2
+  }
+}
