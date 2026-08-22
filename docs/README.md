@@ -784,6 +784,9 @@ is created only when a real disagreement appears and the choice constrains later
   accepts preserving full-game reverse engineering and all evidence gates while bounding ordinary
   worker context, routing global instructions, machine-reducing large artifacts, and consolidating
   independent review without creating a token benchmark program.
+- [`0014-static-first-runtime-evidence-after-map3-battle01.md`](./decisions/0014-static-first-runtime-evidence-after-map3-battle01.md):
+  accepts the ADR 0009 scenario closure as a bounded H3 exception, makes complete H2 corpora the
+  optional/full-game default, and gates later H3 on caller dependence, contract impact, and rail reuse.
 
 ## Evidence Vocabulary
 
