@@ -271,13 +271,24 @@ complete Python suite followed by H1/H2/H3 and is reserved for phase milestones,
 readiness, changes to shared harness orchestration or legacy rails, and explicit full-parity requests.
 
 Phase 2 research is static-first and subsystem-batched. Inventory the complete source scope, parse
-stable tables and control-flow rules, and record a runtime-question queue before creating H3 work.
-Static source/ROM shape and canonical map imports may be confirmed by deterministic parsers;
-caller-dependent behavioral
-meaning stays inferred until observed. Group related runtime questions into one generated case table
-and one BizHawk launch whenever setup and observation points can be shared. Do not add a one-case
-emulator fixture without a concrete isolation reason. The detailed cadence and coverage denominator
-are owned by `docs/research/source-coverage.md` and ADR 0003.
+stable tables and control-flow rules, and record caller-dependent unknowns in a runtime-question
+queue. That queue is a deferred ambiguity register, not automatic authorization to create H3 work.
+The scenario-specific runtime observations used to close ADR 0009's continuous Map 3-through-Battle
+01 milestone are a bounded exception. Until that scenario evidence closure, new scenario H3 is
+limited to its serialized closure sequence. Optional and later full-game coverage defaults to
+complete H2 static corpora; do not add per-NPC, per-dialogue, per-area, per-item, or equivalent
+per-record H3.
+
+After the ADR 0009 scenario evidence and contract gaps are accepted on `main`, add a new H3 fixture
+only when a caller-dependent semantic cannot be resolved statically, would materially affect an
+accepted implementation-neutral contract or acceptance behavior, and cannot be covered by an
+existing batched scenario or semantic rail. The proposed slice must state why reuse is insufficient
+before ownership is granted. Static source/ROM shape and canonical map imports may be confirmed by
+deterministic parsers; unobserved caller-dependent meaning remains Inferred or Unknown. When runtime
+work passes this gate, group related questions into one generated case table and the fewest practical
+BizHawk launches. Do not add a one-case emulator fixture without a concrete isolation reason. The
+detailed cadence and coverage denominator are owned by `docs/research/source-coverage.md`, ADR 0003,
+and ADR 0014.
 
 Do not weaken a golden expectation merely to make a change pass. First decide
 whether the original evidence, extractor, fixture, or remake behavior is wrong.
