@@ -479,11 +479,17 @@ Phase 2 now works in subsystem batches:
 2. **Parse and model:** turn stable tables and branch rules into Python-owned structured output and
    independent tests. Confirm source/ROM shape statically where possible; label runtime meaning
    `Inferred` when static evidence alone cannot prove it.
-3. **Queue runtime questions:** keep only ambiguity involving timing, state persistence, caller
-   context, signedness/overflow, RNG, undocumented hardware behavior, or conflicting source comments.
-4. **Run one matrix:** group related questions into one generated input table and one BizHawk launch,
-   write all observed results into a compact RAM/output buffer, and validate the batch after exit.
-5. **Close the subsystem:** promote only the reproduced conclusions to `Confirmed`, document remaining
+3. **Record deferred runtime questions:** keep only ambiguity involving timing, state persistence,
+   caller context, signedness/overflow, RNG, undocumented hardware behavior, or conflicting source
+   comments. A question register is not an automatic H3 fixture queue; apply
+   [ADR 0014](../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md).
+4. **Admit runtime selectively:** ADR 0009's serialized R2b/R2c/R3/R4 closure is the bounded scenario
+   exception. Optional and later full-game coverage defaults to complete H2; after that closure, new
+   H3 requires caller dependence, material accepted-contract impact, and no reusable existing rail.
+5. **Run one matrix:** for admitted runtime work, group related questions into one generated input
+   table and one BizHawk launch, write all observed results into a compact RAM/output buffer, and
+   validate the batch after exit.
+6. **Close the subsystem:** promote only the reproduced conclusions to `Confirmed`, document remaining
    unknowns, and update the research index/design contract together.
 
 A one-case emulator fixture is now exceptional: use it only when the scenario cannot share setup or
