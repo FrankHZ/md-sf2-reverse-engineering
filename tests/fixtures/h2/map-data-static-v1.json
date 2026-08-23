@@ -9836,6 +9836,8 @@
       "map.data.cs-628c8",
       "map.data.cs-endingkiss",
       "map.data.eas-fallinearthquakecrack",
+      "map.data.map03-chest-items",
+      "map.data.map03-other-items",
       "map.data.mapsetups",
       "map.data.ms-map0",
       "map.data.ms-map0-areadescriptions",
@@ -11250,6 +11252,8 @@
       {
         "sourcePath": "data/maps/entries.asm",
         "recordIds": [
+          "map.data.map03-chest-items",
+          "map.data.map03-other-items",
           "map.data.pt-mapdata"
         ]
       },

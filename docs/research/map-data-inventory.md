@@ -28,7 +28,7 @@ This batch therefore provides 1,390/1,390 deterministic H2 inventory. It does no
 symbol bindings:
 
 - 727 files define at least one global label in their own source and receive a representative H1
-  address; the read-only research-index source-path join contains 731 accepted records across those
+  address; the read-only research-index source-path join contains 733 accepted records across those
   same 727 unique paths, so a representative address is not treated as one record per path;
 - 662 map-content files contain bodies whose labels are attached at their include sites in
   `entries.asm`; they are hashed and graph-checked but do not receive a falsely relocated symbol;
@@ -39,11 +39,13 @@ discovery boundary.
 
 ### Research-Index Source-Path Membership Correction
 
-**Confirmed (index correction observed 2026-08-09):** the map-data owner's membership predicate is
+**Confirmed (index correction observed 2026-08-22):** the map-data owner's membership predicate is
 only `sourcePath` beginning `data/maps/`, applied to the authoritative
 `manifests/research-index.json`; it does not filter by record ID, subsystem, status, document, or
-evidence. The deterministic H2 join therefore has **731 accepted records over 727 unique discovered
-map ASM paths**. Three paths carry the four additional cross-owner records: map 45
+evidence. The deterministic H2 join therefore has **733 accepted records over 727 unique discovered
+map ASM paths**. The `data/maps/entries.asm` row retains `map.data.pt-mapdata` and adds the accepted
+`map.data.map03-chest-items` and `map.data.map03-other-items` records in canonical ID order. Three
+other paths carry the four additional cross-owner records: map 45
 `s1_entities.asm` has its `map.data.*` record plus `entity.actions.eas-5ffc4` and
 `entity.actions.eas-5ffc8`; map 55 `scripts.asm` has its `map.data.*` record plus
 `entity.actions.eas-5e2c4`; and map 59 `s6_initfunction.asm` has its `map.data.*` record plus

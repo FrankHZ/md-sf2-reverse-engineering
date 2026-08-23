@@ -52,7 +52,7 @@ def _replace_record_id(value: list[str], old: str, new: str) -> list[str]:
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
-def test_map_data_source_path_membership_keeps_731_records_over_727_paths() -> None:
+def test_map_data_source_path_membership_keeps_733_records_over_727_paths() -> None:
     fixture = load_json(FIXTURE_PATH)
     output = build_map_data_inventory(UPSTREAM)
     expected = fixture["expected"]
@@ -60,7 +60,7 @@ def test_map_data_source_path_membership_keeps_731_records_over_727_paths() -> N
     assert output["indexedRecordIds"] == expected["indexedRecordIds"]
     assert output["indexedSourcePaths"] == expected["indexedSourcePaths"]
     assert output["indexedRecordsBySourcePath"] == expected["indexedRecordsBySourcePath"]
-    assert output["summary"]["indexedRecordCount"] == len(output["indexedRecordIds"]) == 731
+    assert output["summary"]["indexedRecordCount"] == len(output["indexedRecordIds"]) == 733
     assert output["summary"]["indexedFileCount"] == len(output["indexedSourcePaths"]) == 727
     assert output["indexedSourcePaths"] == [
         row["sourcePath"] for row in output["indexedRecordsBySourcePath"]
@@ -77,6 +77,11 @@ def test_map_data_source_path_membership_keeps_731_records_over_727_paths() -> N
         if len(row["recordIds"]) > 1
     }
     assert relation == {
+        "data/maps/entries.asm": [
+            "map.data.map03-chest-items",
+            "map.data.map03-other-items",
+            "map.data.pt-mapdata",
+        ],
         "data/maps/entries/map45/mapsetups/s1_entities.asm": [
             "entity.actions.eas-5ffc4",
             "entity.actions.eas-5ffc8",
@@ -92,6 +97,8 @@ def test_map_data_source_path_membership_keeps_731_records_over_727_paths() -> N
         ],
     }
     assert {
+        "map.data.map03-chest-items",
+        "map.data.map03-other-items",
         "entity.actions.eas-5ffc4",
         "entity.actions.eas-5ffc8",
         "entity.actions.eas-5e2c4",
@@ -241,7 +248,7 @@ def test_map_data_schemas_recursively_reject_nested_source_inventory_mutations()
         (
             "duplicate-relation-record-id",
             lambda output: output["indexedRecordsBySourcePath"][1]["recordIds"].append(
-                output["indexedRecordsBySourcePath"][0]["recordIds"][0]
+                output["indexedRecordIds"][-1]
             ),
             "indexed relation duplicate record ID",
         ),
@@ -495,7 +502,7 @@ def test_map_data_source_path_membership_accepts_an_in_scope_record_before_fixtu
     index_path = _write_json(tmp_path / "research-index-in-scope.json", index)
     monkeypatch.setattr(map_data, "RESEARCH_INDEX", index_path)
     output = build_map_data_inventory(UPSTREAM)
-    assert output["summary"]["indexedRecordCount"] == 732
+    assert output["summary"]["indexedRecordCount"] == 734
     assert output["summary"]["indexedFileCount"] == 727
     assert "independent.owner.additional-map-source-record" in output["indexedRecordIds"]
     destination = tmp_path / "in-scope-output.json"
@@ -519,7 +526,7 @@ def test_map_data_source_path_membership_excludes_outside_root_records(
     index_path = _write_json(tmp_path / "research-index-outside-root.json", index)
     monkeypatch.setattr(map_data, "RESEARCH_INDEX", index_path)
     output = build_map_data_inventory(UPSTREAM)
-    assert output["summary"]["indexedRecordCount"] == 731
+    assert output["summary"]["indexedRecordCount"] == 733
     assert "independent.owner.outside-map-root-record" not in output["indexedRecordIds"]
     destination = tmp_path / "outside-root-output.json"
 
@@ -584,5 +591,5 @@ def test_map_data_verifier_rejects_stale_manifest_before_write(
 def test_map_data_build_does_not_read_the_golden_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(map_data, "FIXTURE", Path("does-not-exist.json"))
     output = build_map_data_inventory(UPSTREAM)
-    assert output["summary"]["indexedRecordCount"] == 731
+    assert output["summary"]["indexedRecordCount"] == 733
     assert output["summary"]["indexedFileCount"] == 727
