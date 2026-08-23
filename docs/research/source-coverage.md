@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 76 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 77 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 2,592 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,610 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -57,6 +57,11 @@ The new `sf2-map3-castle-battle-unlock-static-v1` rail is static-only: it derive
 Map 3/19/20/21 castle-to-unlock graph, source/H1/ROM seams, and public structural topology without
 adding an H3 fixture or confirming natural caller order, a continuous route, Battle 01 admission, or
 runtime F401/F256 behavior.
+
+The `sf2-map3-battle01-admission-static-v1` rail begins only at that accepted retained terminal and
+derives the legal Map 21 → 40 → 57 extension plus the static CheckBattle/BattleLoop/cutscene/LoadBattle
+and pre-first-turn spine. Its structural cutscene IDs/hashes and presentation-owner joins deliberately
+exclude prose, runtime state, natural continuity, first actor, player readiness, and complete 8C.
 
 ## Subsystem Boundary
 
@@ -535,6 +540,9 @@ R1/R2 projections and observes only the original default-zero messenger acceptan
 post-ZoneEvent8 follower-ready WaitForEvent. Its prompt/join/follower chronology is confirmed;
 field-menu NotReached, later maps, Battle 01, presentation cadence, and 8C/H4 remain outside that
 one-case continuation.
+The static R2c admission extension then retains that boundary while checking the Map 21/40 warps,
+Map 57 Battle 01 row, initialization, structural before/start cutscene routing, and turn-generation
+position. It records no natural caller order or runtime continuity and creates no H3 fixture.
 The map-script engine is now structurally closed as 90 slots, 82 non-filler opcodes, eight filler
 slots, 83 unique handlers, and 93 macro forms. A complete code/data scan owns all 13,515 macro calls
 and makes eleven unused definitions explicit. All 133 primary operand fields and their 234 bytes are
