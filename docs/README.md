@@ -224,6 +224,10 @@ Data-side directory inventory and ROM parity:
 - [map3-battle01-action-effect.md](./research/map3-battle01-action-effect.md): the public-safe H2
   ApplyActionEffect dispatcher and three Apply-to-DropEnemyItem caller contexts; actual branch/result/
   reward/drop/follow-up/post-effect facts remain Unknown.
+- [map3-battle01-action-completion.md](./research/map3-battle01-action-completion.md): the public-safe
+  H2 action-completion graph from the retained DropEnemyItem resumes through the unentered
+  `ExecuteIndividualTurn` source return edge `0x24106`; natural execution, replay, after-turn, and
+  next-turn facts remain Unknown.
 - [`map-data-inventory.md`](./research/map-data-inventory.md): the complete 1,390-file map ASM build
   graph, 727 internal H1 bindings, 662 include-site-only bodies, 64+66 setup-selection rows, ROM
   parity of the 126 six-pointer setup tables, 125 entity-list sources/980 physical records with suffix

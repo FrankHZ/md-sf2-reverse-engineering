@@ -380,6 +380,7 @@ def test_research_index_has_exactly_eight_new_h2_bindings_and_no_design_drift() 
                 "docs/research/battle-actions.md",
                 "docs/research/map3-battle01-turn-control.md",
                 "docs/research/map3-battle01-action-effect.md",
+                "docs/research/map3-battle01-action-completion.md",
             ],
             "designContracts": ["docs/design/contracts/battle-action-construction.md"],
         },

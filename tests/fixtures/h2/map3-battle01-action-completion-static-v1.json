@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map3-battle01-action-completion-static-v1",
+  "upstream": {
+    "repository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+  },
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "system": "sf2-map3-battle01-action-completion-static-v1",
+  "summary": {
+    "sourceFiles": 9,
+    "h1RomAnchors": 26,
+    "indexObjects": 10,
+    "indexBindings": 20,
+    "battleActionsIndexedRecords": 47,
+    "battleActionsIndexedPaths": 29,
+    "unknowns": 33
+  },
+  "retainedR3b": {
+    "fixtureId": "sf2-map3-battle01-action-effect-static-v1",
+    "fixtureSha256": "CA03519E4644F110679EC0CFFC0283ECC19226C0FCDE2AA91933D2A89D348E71",
+    "actionEffectStaticSha256": "7B1BD0A10E6406CE893A4BF4C6C0ADE2A18AD67928A8354E5DD1C203E7F6BE20",
+    "sha256": "4DBBCB2EFBD492EFE80E0260773B45A995CF38D8D1B8A85F033D74E8967278A9"
+  },
+  "retainedBattleActions": {
+    "fixtureId": "sf2-battle-actions-static-v1",
+    "fixtureSha256": "71885A5FFEA8AFA442011060F6AF7FDA22B646E18A64D3AC857687480F8F8B94",
+    "semanticEngineSha256": "C4FD1B4B8EF7DF8B3EAEE552D33F99393EE263B2749813BC592CEB7236B405CD",
+    "sha256": "727F708DD652C2C1CBE40050AF352C79619D591CAB03CC9AB4A33FDBD5C63FD0"
+  },
+  "sourceContext": {
+    "sourceIdentities": [
+      {"path": "code/gameflow/battle/battleactions/battleactionsengine_1.asm", "sha256": "6E3AEFCE17B0C6B2FDBC7135AC778725ACCD1F54E1A637F462A33E9581247223"},
+      {"path": "code/gameflow/battle/battleactions/battleactionsengine_2.asm", "sha256": "25864B175971B3A42F969B8D847C4D833DAA5670E83DDD90F64F4DBF2EF3BB7B"},
+      {"path": "code/gameflow/battle/battleactions/animateaction.asm", "sha256": "3D803569063A61813B6064211A35002E62BBCABE57D06564691B7A8EE1105AA4"},
+      {"path": "code/gameflow/battle/battleactions/breakuseditem.asm", "sha256": "CF9F4CF1F9EF37EC1C1728BD99147911B0E83B312D083781A5D06DDBDB9A0273"},
+      {"path": "code/gameflow/battle/battleactions/isabletocounterattack.asm", "sha256": "64F03D55CD3E9A247C50CF7B5EA33ED6ADC8ED6D8EA42236B8140CAA173E19BF"},
+      {"path": "code/gameflow/battle/battleactions/createbattlescenemessage.asm", "sha256": "355D1530AFDD1E16B282E7AA67D90108C2B876E39A88C1D8CBE8069A09E84A48"},
+      {"path": "code/gameflow/battle/battleactions/createbattlesceneanimation.asm", "sha256": "55F5F179F518B4B293BBB28F55FA18C354D92869B80A5CD8633595D15FFA2B4E"},
+      {"path": "code/gameflow/battle/battleactions/giveexpandgold.asm", "sha256": "25B5EAF9B91FFD8688C048E857B223206AB9F8B564A1C953DB4DBBECF66DBEB1"},
+      {"path": "code/gameflow/battle/battlefunctions/executeindividualturn.asm", "sha256": "E78A2056013E1E47B705CB3E7D7E64FF21FA34B23110117BEC7FA2C1F1480CB1"}
+    ],
+    "h1RomAnchors": [
+      {"id":"actionCompletionSpine.mainRange","address":40152,"width":254,"sha256":"58741F2269CFA57EE1A66234E3A423DCCE0A93EA80438AA443A49A91365E1342","endAddressExclusive":40406},
+      {"id":"actionCompletionSpine.primaryTargetLoop.resume","address":40152,"width":8,"sha256":"67E6548D4134456E77CF31156B7AB9F3D09B1E99E67BB73E36540EB1F3CC125A"},
+      {"id":"actionCompletionSpine.followupBranches.itemBreak.idleCall","address":40160,"width":4,"sha256":"CB9BB07D5EDB9CAFE9335BC3E0C2D4ED017702ECBECF06BAFA3B7F17112ED2D3"},
+      {"id":"actionCompletionSpine.followupBranches.itemBreak.breakCall","address":40164,"width":4,"sha256":"E4A57F52BA2A55E9FED613DB182AF7CAFFCBA788D656A222A5AF8D3A8ADC3BBD"},
+      {"id":"actionCompletionSpine.followupBranches.doubleAttack.validatorCall","address":40176,"width":4,"sha256":"F171F72038257F8854AB0A745E8526E941F5AA5C50833DF0C1E6DC1F21B2E0FF"},
+      {"id":"actionCompletionSpine.followupBranches.doubleAttack.decision","address":40180,"width":6,"sha256":"8D050EA99493E986358B1E82F9CDBD64C64CAC4F22ADAB66BBB63A9B20CBD233","endAddressExclusive":40186},
+      {"id":"actionCompletionSpine.followupBranches.doubleAttack.block","address":40186,"width":68,"sha256":"1E4C598B6DC7FC4FBB858E576651DC9D8CC8F741257DE57EBE55A311EDFAAAA6","endAddressExclusive":40254},
+      {"id":"actionCompletionSpine.startResumes.secondAttack","address":40250,"width":4,"sha256":"4CF20C4D48A3A2A95746E745DFBD80D5C32F1524601571E9B28F6B6C86E4A65D"},
+      {"id":"actionCompletionSpine.followupBranches.counterAttack.validatorCall","address":40262,"width":4,"sha256":"11F01B91908FA93A460033418AA731A6497A7218686EBE0D398EAC5C04D5AFC3"},
+      {"id":"actionCompletionSpine.followupBranches.counterAttack.decision","address":40266,"width":6,"sha256":"A6FFE79899DA844B04104F40AE791E80C11648A0FC337A83BF8E474EACEC51BB","endAddressExclusive":40272},
+      {"id":"actionCompletionSpine.followupBranches.counterAttack.block","address":40272,"width":76,"sha256":"A260D400E94CB8535428C0A34E18D2A1C0E99DF0388004CA9B4170A2F7A91126","endAddressExclusive":40348},
+      {"id":"actionCompletionSpine.startResumes.counterAttack","address":40344,"width":4,"sha256":"4A55ED18B9AE7C3FFD27C5357BD9FCE6A718A59F01D24822960556FDB25DBA43"},
+      {"id":"actionCompletionSpine.explosionBackedge.range","address":40348,"width":40,"sha256":"5B2D347EFE771F301CC1BE421391BCC3AE70EA74697207ED915CB2050CF43F81","endAddressExclusive":40388},
+      {"id":"actionCompletionSpine.endSequence.writeRange","address":40388,"width":18,"sha256":"258B982E66E17FD1E65D72A6192DF11678B6F2C55B422E90BD98726B3F3CB250","endAddressExclusive":40406},
+      {"id":"actionCompletionSpine.endSequence.battlesceneEndRange","address":41806,"width":166,"sha256":"6A52E9A2AE5A2A17004EE8E4C7DD02235CFB67FA7697E6888DF3905392BCD0DB","endAddressExclusive":41972},
+      {"id":"actionCompletionSpine.followupBranches.doubleAttack.validatorRange","address":42078,"width":62,"sha256":"CBBE1A25FDCD0C6374091F2DAF2DB0DE6FABA895D49E3CFADD4B26EC3964CD5D","endAddressExclusive":42140},
+      {"id":"actionCompletionSpine.followupBranches.counterAttack.validatorRange","address":42140,"width":178,"sha256":"37EF420F0D4C4CD590FC58AD34C578F2491B5BE855C85904016E903B20B80492","endAddressExclusive":42318},
+      {"id":"actionCompletionSpine.functionAddresses.battlesceneScript_SwitchTargets","address":42754,"width":206,"sha256":"1CEC3521749D93C4C7F4508F0CDBDDF66D9BBFF382FA3D8619607CCDB09CF30E","endAddressExclusive":42960},
+      {"id":"actionCompletionSpine.functionAddresses.battlesceneScript_MakeActorIdle","address":42960,"width":40,"sha256":"503B2689F1AECB76DCE45EA3941D8B689E57827F5EFB5AF2F569BAB686124C80","endAddressExclusive":43000},
+      {"id":"actionCompletionSpine.functionAddresses.battlesceneScript_BreakUsedItem","address":48102,"width":266,"sha256":"5BEFA36486DC54B7D0F5E01AD2FEDF520A95B21CAF27C5390204014D6E3851C3","endAddressExclusive":48368},
+      {"id":"actionCompletionSpine.endSequence.determineTargetsEntry","address":40406,"width":2,"sha256":"DC25B05290EE3085FB1E9108097534C677900E8B590C5805AC66E41248026525"},
+      {"id":"actionCompletionSpine.functionAddresses.battlesceneScript_DisplayActionMessage","address":41052,"width":2,"sha256":"C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"},
+      {"id":"actionCompletionSpine.functionAddresses.battlesceneScript_PerformAnimation","address":41472,"width":2,"sha256":"C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"},
+      {"id":"actionCompletionSpine.functionAddresses.battlesceneScript_GiveExpAndGold","address":43000,"width":2,"sha256":"C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"},
+      {"id":"actionCompletionSpine.executeIndividualTurnHandoff.writeCall","address":147712,"width":6,"sha256":"CA5798E60FDA5DCD11C4A6001A20378B1BA14B855420AA31A4B7CE9182889E6E"},
+      {"id":"actionCompletionSpine.executeIndividualTurnHandoff.resume","address":147718,"width":4,"sha256":"CB7ECA4E70C8181673725554862EEACF6D085014C581F878FEEF678CD88335D1"}
+    ]
+  },
+  "actionCompletionSpine": {
+    "functionAddresses": {"WriteBattlesceneScript":39826,"battlesceneScript_DetermineTargetsByAction":40406,"battlesceneScript_DisplayActionMessage":41052,"battlesceneScript_PerformAnimation":41472,"battlesceneScript_End":41806,"battlesceneScript_ValidateDoubleAttack":42078,"battlesceneScript_ValidateCounterAttack":42140,"battlesceneScript_SwitchTargets":42754,"battlesceneScript_MakeActorIdle":42960,"battlesceneScript_GiveExpAndGold":43000,"battlesceneScript_BreakUsedItem":48102,"ExecuteIndividualTurn":147120,"j_WriteBattlesceneScript":33292},
+    "startResumes": {"primaryTargetLoop":40152,"secondAttack":40250,"counterAttack":40344},
+    "primaryTargetLoop": {"resumeAddress":40152,"orderedSteps":["targetAdvance","directionSet","dbfBackedge"],"backedgeAddress":40156,"backedgeTarget":40118,"counterRegister":"d7"},
+    "followupBranches": {
+      "itemBreak": {"idleCallAddress":40160,"breakCallAddress":40164,"sourceRoutes":["actionType","equipmentType","breakableBit","actorSide","brokenBit","randomResult","breakOrRemove"]},
+      "doubleAttack": {"validatorCallAddress":40176,"validatorRangeEndExclusive":42140,"decisionRange":[40180,40186],"zeroBranchTarget":40254,"attackType":"SECOND","blockRange":[40186,40254],"orderedCalls":["SwitchTargets","DisplayActionMessage","PerformAnimation","SwitchTargets","ApplyActionEffect","DropEnemyItem","MakeActorIdle"]},
+      "counterAttack": {"validatorCallAddress":40262,"validatorReturnAddress":42316,"decisionRange":[40266,40272],"zeroBranchTarget":40348,"attackType":"COUNTER","blockRange":[40272,40348],"orderedCalls":["SwitchTargets","DisplayActionMessage","PerformAnimation","SwitchTargets","ApplyActionEffect","DropEnemyItem","MakeActorIdle"]}
+    },
+    "explosionBackedge": {"range":[40348,40388],"zeroBranchTarget":40388,"orderedSteps":["clearExplode","setBurstRock","restoreExplodingActor","idleAndEndAnimation","DetermineTargetsByAction","backedge"],"backedgeAddress":40384,"backedgeTarget":40062},
+    "endSequence": {"writeRange":[40388,40406],"battlesceneEndRange":[41806,41972],"orderedWriteSteps":["restoreActorCopy","battlesceneScript_End","stackRelease","return"],"orderedEndSteps":["endAnimation","SwitchTargets","rewardGate","GiveExpAndGold","currentHpReplay","hideTextBox","endCommand","return"],"returnAddress":40404,"determineTargetsEntry":40406,"currentHpReplayEndAddress":41958},
+    "executeIndividualTurnHandoff": {"callAddress":147712,"resumeAddress":147718,"instructionTarget":"j_WriteBattlesceneScript","instructionTargetAddress":33292,"effectiveTarget":"WriteBattlesceneScript","effectiveTargetAddress":39826},
+    "ownerRecordIds": ["battle.actions.engine","battle.actions.break-used-item","battle.actions.perform-animation","battle.actions.display-message","battle.actions.animate","battle.followup.validate-double","battle.followup.validate-counter","battle.replay.end","battle.replay.give-exp-and-gold","battle.functions.execute-turn"]
+  },
+  "unknowns": {
+    "naturalContinuity":"Unknown","initializedSnapshot":"Unknown","naturalFirstActor":"Unknown","actorControlBranch":"Unknown","playerInputChronology":"Unknown","aiCommandSelected":"Unknown","movementPath":"Unknown","target":"Unknown","action":"Unknown","preResolutionArrival":"Unknown","dispatchBranchReached":"Unknown","perTargetResult":"Unknown","statusOutcome":"Unknown","targetDeath":"Unknown","expAward":"Unknown","goldAward":"Unknown","dropOutcome":"Unknown","followupOutcome":"Unknown","postEffectArrival":"Unknown","afterTurn":"Unknown","multiRoundPlaythrough":"Unknown","victory":"Unknown","playerReady":"Unknown","primaryTargetLoopCompletion":"Unknown","doubleAttackReached":"Unknown","counterAttackReached":"Unknown","explosionReached":"Unknown","itemBreakOutcome":"Unknown","actionConstructionCompletion":"Unknown","writeBattlesceneReturn":"Unknown","battleSceneReplay":"Unknown","executeIndividualTurnReturn":"Unknown","nextTurnDispatch":"Unknown"
+  }
+}
