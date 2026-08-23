@@ -370,6 +370,7 @@ def test_research_index_has_exactly_the_eight_new_h2_bindings() -> None:
         "battle.actions.engine": [
             "docs/research/battle-actions.md",
             "docs/research/map3-battle01-turn-control.md",
+            "docs/research/map3-battle01-action-effect.md",
         ],
         "battle.spriteset.data.slot-01": [
             "docs/research/battle-spriteset-data.md",

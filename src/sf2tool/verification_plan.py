@@ -50,6 +50,7 @@ H2_COMMAND_GROUPS = {
         "battle-scene-engine",
         "battle-spriteset-data",
         "battlefield",
+        "map3-battle01-action-effect",
         "map3-battle01-turn-control",
     ),
     "h2-stats-items": (

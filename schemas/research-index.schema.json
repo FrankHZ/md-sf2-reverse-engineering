@@ -78,7 +78,7 @@
                     "required": ["addressId", "fixtureField"],
                     "properties": {
                       "addressId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
-                      "fixtureField": { "type": "string", "pattern": "^(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" }
+                      "fixtureField": { "type": "string", "pattern": "^(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" }
                     }
                   }
                 }

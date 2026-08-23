@@ -41,14 +41,14 @@ def test_design_contracts_are_traceable() -> None:
 def test_research_index_validates_without_private_inputs() -> None:
     result = verify_index()
     assert result["Status"] == "PASS"
-    assert result["Records"] == 1623
-    assert result["Confirmed"] == 1623
-    assert result["H2Fixtures"] == 78
+    assert result["Records"] == 1625
+    assert result["Confirmed"] == 1625
+    assert result["H2Fixtures"] == 79
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 94
-    assert result["AddressBindings"] == 2618
+    assert result["AddressBindings"] == 2626
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
-    assert result["H1ListingRecords"] == 1586
+    assert result["H1ListingRecords"] == 1588
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
 
@@ -253,6 +253,13 @@ def test_map3_battle01_admission_has_a_dedicated_static_contract_command() -> No
 def test_map3_battle01_turn_control_has_a_dedicated_static_contract_command() -> None:
     args = build_parser().parse_args(["h2", "map3-battle01-turn-control"])
     assert args.h2_command == "map3-battle01-turn-control"
+    assert args.rom_path
+    assert args.upstream_path
+
+
+def test_map3_battle01_action_effect_has_a_dedicated_static_contract_command() -> None:
+    args = build_parser().parse_args(["h2", "map3-battle01-action-effect"])
+    assert args.h2_command == "map3-battle01-action-effect"
     assert args.rom_path
     assert args.upstream_path
 

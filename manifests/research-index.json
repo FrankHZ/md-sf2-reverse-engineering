@@ -161,11 +161,17 @@
     },
     {
       "id": "battle.actions.attack", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_Attack", "sourcePath": "code/gameflow/battle/battleactions/attack.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 43702 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.attackAddress" }] }], "documents": ["docs/research/battle-actions.md"], "designContracts": ["docs/design/contracts/battle-action-construction.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 43702 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.attackAddress" }] },{"level":"H2","fixture":"tests/fixtures/h2/map3-battle01-action-effect-static-v1.json","fixtureId":"sf2-map3-battle01-action-effect-static-v1","verifier":"src/sf2tool/h2/map3_battle01_action_effect.py","bindings":[{"addressId":"entry","fixtureField":"actionEffectSpine.functionAddresses.battlesceneScript_Attack"}]}], "documents": ["docs/research/battle-actions.md","docs/research/map3-battle01-action-effect.md"], "designContracts": ["docs/design/contracts/battle-action-construction.md"]
+    },
+    {
+      "id":"battle.actions.apply-effect-dispatch","subsystem":"battle.actions","status":"confirmed","symbol":"battlesceneScript_ApplyActionEffect","sourcePath":"code/gameflow/battle/battleactions/battleactionsengine_2.asm","addresses":[{"id":"entry","space":"rom","kind":"symbol","value":41972}],"evidence":[{"level":"H2","fixture":"tests/fixtures/h2/map3-battle01-action-effect-static-v1.json","fixtureId":"sf2-map3-battle01-action-effect-static-v1","verifier":"src/sf2tool/h2/map3_battle01_action_effect.py","bindings":[{"addressId":"entry","fixtureField":"actionEffectSpine.functionAddresses.battlesceneScript_ApplyActionEffect"}]}],"documents":["docs/research/map3-battle01-action-effect.md"]
+    },
+    {
+      "id":"battle.actions.cast-spell","subsystem":"battle.actions","status":"confirmed","symbol":"battlesceneScript_CastSpell","sourcePath":"code/gameflow/battle/battleactions/castspell.asm","addresses":[{"id":"entry","space":"rom","kind":"symbol","value":45224}],"evidence":[{"level":"H2","fixture":"tests/fixtures/h2/map3-battle01-action-effect-static-v1.json","fixtureId":"sf2-map3-battle01-action-effect-static-v1","verifier":"src/sf2tool/h2/map3_battle01_action_effect.py","bindings":[{"addressId":"entry","fixtureField":"actionEffectSpine.functionAddresses.battlesceneScript_CastSpell"}]}],"documents":["docs/research/map3-battle01-action-effect.md"]
     },
     {
       "id": "battle.actions.engine", "subsystem": "battle.actions", "status": "confirmed", "symbol": "WriteBattlesceneScript", "sourcePath": "code/gameflow/battle/battleactions/battleactionsengine_1.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 39826 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.engineAddress" }] },{"level":"H2","fixture":"tests/fixtures/h2/map3-battle01-turn-control-static-v1.json","fixtureId":"sf2-map3-battle01-turn-control-static-v1","verifier":"src/sf2tool/h2/map3_battle01_turn_control.py","bindings":[{"addressId":"entry","fixtureField":"commonActionConstruction.functionAddresses.WriteBattlesceneScript"}]}], "documents": ["docs/research/battle-actions.md","docs/research/map3-battle01-turn-control.md"], "designContracts": ["docs/design/contracts/battle-action-construction.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 39826 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.engineAddress" }] },{"level":"H2","fixture":"tests/fixtures/h2/map3-battle01-turn-control-static-v1.json","fixtureId":"sf2-map3-battle01-turn-control-static-v1","verifier":"src/sf2tool/h2/map3_battle01_turn_control.py","bindings":[{"addressId":"entry","fixtureField":"commonActionConstruction.functionAddresses.WriteBattlesceneScript"}]},{"level":"H2","fixture":"tests/fixtures/h2/map3-battle01-action-effect-static-v1.json","fixtureId":"sf2-map3-battle01-action-effect-static-v1","verifier":"src/sf2tool/h2/map3_battle01_action_effect.py","bindings":[{"addressId":"entry","fixtureField":"actionEffectSpine.functionAddresses.WriteBattlesceneScript"}]}], "documents": ["docs/research/battle-actions.md","docs/research/map3-battle01-turn-control.md","docs/research/map3-battle01-action-effect.md"], "designContracts": ["docs/design/contracts/battle-action-construction.md"]
     },
     {
       "id": "battle.actions.break-used-item", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_BreakUsedItem", "sourcePath": "code/gameflow/battle/battleactions/breakuseditem.asm",
@@ -185,7 +191,7 @@
     },
     {
       "id": "battle.actions.display-death", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_DisplayDeathMessage", "sourcePath": "code/gameflow/battle/battleactions/displaydeathmessage.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 45184 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.displayDeathMessageAddress" }] }], "documents": ["docs/research/battle-actions.md"], "designContracts": ["docs/design/contracts/battle-action-construction.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 45184 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.displayDeathMessageAddress" }] },{"level":"H2","fixture":"tests/fixtures/h2/map3-battle01-action-effect-static-v1.json","fixtureId":"sf2-map3-battle01-action-effect-static-v1","verifier":"src/sf2tool/h2/map3_battle01_action_effect.py","bindings":[{"addressId":"entry","fixtureField":"actionEffectSpine.functionAddresses.battlesceneScript_DisplayDeathMessage"}]}], "documents": ["docs/research/battle-actions.md","docs/research/map3-battle01-action-effect.md"], "designContracts": ["docs/design/contracts/battle-action-construction.md"]
     },
     {
       "id": "battle.actions.spell-animation", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_GetSpellanimation", "sourcePath": "code/gameflow/battle/battleactions/getspellanimation.asm",
@@ -213,7 +219,7 @@
     },
     {
       "id": "battle.actions.use-item", "subsystem": "battle.actions", "status": "confirmed", "symbol": "battlesceneScript_UseItem", "sourcePath": "code/gameflow/battle/battleactions/useitem.asm",
-      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 48056 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.useItemAddress" }] }], "documents": ["docs/research/battle-actions.md"], "designContracts": ["docs/design/contracts/battle-action-construction.md"]
+      "addresses": [{ "id": "entry", "space": "rom", "kind": "symbol", "value": 48056 }], "evidence": [{ "level": "H2", "fixture": "tests/fixtures/h2/battle-actions-static-v1.json", "fixtureId": "sf2-battle-actions-static-v1", "verifier": "src/sf2tool/h2/battle_actions.py", "bindings": [{ "addressId": "entry", "fixtureField": "function.useItemAddress" }] },{"level":"H2","fixture":"tests/fixtures/h2/map3-battle01-action-effect-static-v1.json","fixtureId":"sf2-map3-battle01-action-effect-static-v1","verifier":"src/sf2tool/h2/map3_battle01_action_effect.py","bindings":[{"addressId":"entry","fixtureField":"actionEffectSpine.functionAddresses.battlesceneScript_UseItem"}]}], "documents": ["docs/research/battle-actions.md","docs/research/map3-battle01-action-effect.md"], "designContracts": ["docs/design/contracts/battle-action-construction.md"]
     },
     {
       "id": "battle.functions.pulsating-grid", "subsystem": "battle.functions", "status": "confirmed", "symbol": "CreatePulsatingBlocksForGrid", "sourcePath": "code/gameflow/battle/battlefunctions/battlefunctions_0.asm",
@@ -558,9 +564,12 @@
             { "addressId": "damage-exp-return", "fixtureField": "function.damageExpAppliedAddress" },
             { "addressId": "battle-scene-exp", "fixtureField": "ram.battleSceneExpAddress" }
           ]
+        },
+        {
+          "level":"H2","fixture":"tests/fixtures/h2/map3-battle01-action-effect-static-v1.json","fixtureId":"sf2-map3-battle01-action-effect-static-v1","verifier":"src/sf2tool/h2/map3_battle01_action_effect.py","bindings":[{"addressId":"entry","fixtureField":"actionEffectSpine.functionAddresses.battlesceneScript_InflictDamage"}]
         }
       ],
-      "documents": ["docs/research/runtime-rng-and-battle-math.md"],
+      "documents": ["docs/research/runtime-rng-and-battle-math.md", "docs/research/map3-battle01-action-effect.md"],
       "designContracts": ["docs/design/contracts/combat-resolution.md", "docs/design/contracts/spell-resolution.md"]
     },
     {
@@ -944,9 +953,12 @@
             { "addressId": "deals-items", "fixtureField": "ram.dealsItemsAddress" },
             { "addressId": "random-seed", "fixtureField": "ram.seedAddress" }
           ]
+        },
+        {
+          "level":"H2","fixture":"tests/fixtures/h2/map3-battle01-action-effect-static-v1.json","fixtureId":"sf2-map3-battle01-action-effect-static-v1","verifier":"src/sf2tool/h2/map3_battle01_action_effect.py","bindings":[{"addressId":"entry","fixtureField":"actionEffectSpine.functionAddresses.battlesceneScript_DropEnemyItem"}]
         }
       ],
-      "documents": ["docs/research/enemy-promotions.md", "docs/research/runtime-rng-and-battle-math.md"],
+      "documents": ["docs/research/enemy-promotions.md", "docs/research/runtime-rng-and-battle-math.md", "docs/research/map3-battle01-action-effect.md"],
       "designContracts": ["docs/design/contracts/combat-resolution.md"]
     },
     {

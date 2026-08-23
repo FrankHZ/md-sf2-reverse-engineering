@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sf2-battle-actions-static-v1",
-  "outputSha256": "5736A4347EA3CD9B7EA71C194256D8BB274C28216D62838476B0DAADB6C2D543",
+  "outputSha256": "F64BE56039C17270CCF2448D30609587E3C4E5CC106659652DD4B7A0913A244A",
   "summary": {
     "fileCount": 29,
     "sourceLineCount": 4375,
@@ -13,7 +13,7 @@
     "uniqueDirectTargetCount": 98,
     "internalDirectTargetCount": 41,
     "externalDirectTargetCount": 57,
-    "indexedRecordCount": 45,
+    "indexedRecordCount": 47,
     "indexedFileCount": 29
   },
   "battleMessageSummary": {
