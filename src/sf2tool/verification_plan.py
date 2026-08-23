@@ -64,6 +64,7 @@ H2_COMMAND_GROUPS = {
         "common-maps",
         "common-scripting",
         "entity-action-scripts",
+        "map3-battle01-admission",
         "map3-castle-battle-unlock",
         "map3-optional-interactions",
         "map-content",

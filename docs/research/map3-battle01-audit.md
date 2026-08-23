@@ -81,8 +81,8 @@ research gaps registered below.
 
 ## Exact Accepted-Index Audit
 
-The research index now contains **1,623 records**, **170 fixtures** (76 H2, 94 H3), and
-**2,592 address bindings**. The scenario-relevant denominators are:
+The research index now contains **1,623 records**, **171 fixtures** (77 H2, 94 H3), and
+**2,610 address bindings**. The scenario-relevant denominators are:
 
 | Evidence surface | Exact count | Owner |
 | --- | ---: | --- |
@@ -155,6 +155,10 @@ handler cases).
 16-segment/110-input legal graph through Maps 3/19/20/21, its zones, occupancy, and retained warp
 predicates. It is static reachability only, not observed chronology.
 
+**Confirmed (R2c static extension):** the retained R2b terminal model extends through the selected
+Map 21 → 40 → 57 links and the source/H1/ROM-checked CheckBattle/BattleLoop/cutscene/LoadBattle
+spine. This is source legality only; natural R2a → R2b → R2c continuity remains **Unknown**.
+
 **Gaps:** natural inputs and their chronological results along the route (RA-03); VInt-edge event
 publication versus input sampling timing; exploration/VDP frame sequencing; the field-menu branch's
 natural admission and behavior when the 2A route requires it (RA-08); and reached
@@ -219,6 +223,10 @@ confirmed in-process; Battle 01 map link (map 57) and trigger metadata.
 **Confirmed (R2b static fallback):** Map 21 `cs_53EF4` sources F401 via `setStoryFlag 1`, and its
 handler sources F256. This confirms program/flag semantics, not a runtime handoff.
 
+**Confirmed (R2c static extension):** Map 21 → 40 → 57, Battle 01 row selection, F401/F501 checks,
+the new-battle branch, before/start routing, and LoadBattle order are source/H1/ROM-derived. Natural
+admission and caller order remain **Unknown**.
+
 **Gaps (RA-04):** the natural chronological path from Map 3 to the Battle 01 trigger is unobserved —
 the intermediate maps, the trigger coordinates actually reached, the battle-unlock flag state, and the
 before/start cutscene execution in a natural flow are all **Unknown**. The accepted Battle 01 H3
@@ -237,6 +245,10 @@ trigger, before/start cutscenes, and battle-ready state.
 terrain corpus; halved-EXP membership; leader-flag 0 (no leader-victory rule); seed-`0x1234` turn
 order `0:109, 2:8, 1:6, 128:6, 133:6, 129:4, 130:4, 131:4, 132:4`; region activation semantics
 (primary/secondary bits); battlefield grids and movement/range contracts.
+
+**Confirmed (R2c static extension):** Battle 01 definitions are `STARTING`; no Battle 01 row appears
+in the complete region-cutscene table; first-round source order ends at turn-order generation before
+the first individual turn. This is not a natural initialized snapshot or first-actor observation.
 
 **Gap (RA-05):** the natural-entry snapshot (the roster/stats/items/spells/flags/RNG state carried
 into the battle from the route) is **Unknown**; all Battle 01 runtime evidence derives from the debug
@@ -329,15 +341,15 @@ slice under ADR 0003 (one launch per coherent matrix).
 | --- | --- | --- | --- | --- | --- |
 | RA-01 | 1 | Exact admitted Map 3 start state | R1 controlled matrix now captures map, position, facing, flag bitset, party/stats/items/spells, gold, difficulty, RNG, and time at first exploration entry and observes the default row; natural player-visible admission remains R2 | **Confirmed** controlled default / **Unknown** natural state | R2 dependency |
 | RA-02 | 2 | Map 3 setup/init/event chain effects | R1 observes setup → init function and no default guarded program request; R2 must observe a natural real-program/event/description chain and state effects | **Confirmed** controlled default prefix / **Unknown** natural effects | R2 dependency |
-| RA-03 | 3 | Natural Map 3 route | Only accepted R2a runtime reaches the follower-ready wait. R2b confirms a static legal graph after that prefix; the natural continuation remains separately unobserved | **Confirmed** R2a bounded runtime / **Confirmed** R2b static graph / **Unknown** natural continuation | Blocking |
-| RA-04 | 7 | Map-to-battle admission | R2b confirms static program/flag semantics, but Maps 21 → 40 → 57, trigger coordinates, battle admission, and before/start cutscenes still require natural evidence | **Confirmed** static program/flag semantics / **Unknown** natural admission | Blocking |
-| RA-05 | 8 | Battle 01 natural encounter state | Capture the full scenario-relevant state at first battle-ready state from the natural flow; bind roster/stats/items/spells/positions/flags and later-round region state | **Confirmed** debug-entry; **Unknown** natural | Blocking |
+| RA-03 | 3 | Natural Map 3 route | R2c confirms only static R2b-terminal extension/source legality; natural R2a → R2b → R2c continuity remains separately unobserved | **Confirmed** R2a bounded runtime / **Confirmed** R2b/R2c static graph / **Unknown** natural continuity | Blocking |
+| RA-04 | 7 | Map-to-battle admission | R2c confirms static Map 21 → 40 → 57, CheckBattle/BattleLoop/before/start/LoadBattle spine; natural admission and caller order still require evidence | **Confirmed** static spine / **Unknown** natural admission/caller order | Blocking |
+| RA-05 | 8 | Battle 01 natural encounter state | R2c confirms static definitions/init/turn-generation foundation; capture the full natural scenario state and first actor without inferring player readiness | **Confirmed** debug-entry and static foundation; **Unknown** natural snapshot/first actor/player-ready | Blocking |
 | RA-06 | 9+10 | Complete playable battle trace | Fixed-seed, scripted-input H4 reference matrix through victory recording the chronological player/AI/navigation/action/resolution/reward/status trace and every reached branch; the trace supplies a deterministic acceptance case without replacing 4A manual agency in ordinary play | **Confirmed** bounded; **Unknown** complete | Blocking |
 | RA-07 | 12 | Victory, after-battle, endpoint state | Continue the battle matrix through victory to the after-battle seam: program execution, return routing, and post-battle state capture | **Confirmed** generic order; **Unknown** natural | Blocking |
-| RA-08 | 5 | Field menu on route | R2 opening records `not-reached`; if a later proven continuation reaches it, close that exact admission and behavior | **Confirmed** NotReached opening | Route-dependent |
-| RA-09 | 4 | Route dialogue chronology | R2 records opening callback/program chronology only; text-line references, speakers, cursor/state effects, and messenger-body meaning remain a continuation question | **Confirmed** corpus and opening program chronology; **Unknown** text chronology | Blocking |
+| RA-08 | 5 | Field menu on route | R2 opening records `not-reached`; R2c introduces no menu dependency, while route continuity remains Unknown | **Confirmed** NotReached opening / **Unknown** continuity | Route-dependent |
+| RA-09 | 4 | Route dialogue chronology | R2c retains only source command/text IDs and hashes; actual dialogue prose and chronology remain private/Unknown | **Confirmed** structural IDs/hashes / **Unknown** prose and chronology | Blocking |
 | RA-10 | 14 | Deferred persistence boundary | Record the accepted 6A exclusion, restart-to-admitted-snapshot behavior, and harness-reset ≠ save; retain cross-process durability as a separate-milestone Unknown | **Confirmed** in-process; **Unknown** durable | Deferred / non-blocking |
-| RA-11 | 6/11/15 | Reached 7C/8C presentation, hardware, and private-reference evidence | R2 adds private provenance and bounded opening callback/state facts; inventory/hash reached immutable inputs and capture pixel/palette/frame/audio/hardware observables in a separately scoped continuation | **Confirmed** static assets, bounded seams, and opening provenance foundation; **Unknown** complete reached output | Blocking |
+| RA-11 | 6/11/15 | Reached 7C/8C presentation, hardware, and private-reference evidence | R2c retains only static presentation owner IDs/hashes; inventory/hash reached immutable inputs and capture pixel/palette/frame/audio/hardware observables in a separately scoped continuation | **Confirmed** static owner IDs/hashes and bounded seams; **Unknown** complete 8C | Blocking |
 | RA-12 | 13 | Observable endpoint state | State-fact contract for the final scenario-relevant state at accepted endpoint 5B: which fields, in what order, after which after-battle effects | **Unknown** | Blocking |
 
 RA-11 is the only ADR 0005 condition-3 reopening authorized here. Every question must be selected by
@@ -379,15 +391,21 @@ root/worker slice contract (ADR 0004):
    the Maps 3/19/20/21 legal source graph, zone/warp/occupancy topology, and F401/F256 source
    semantics. Natural continuation, Maps 21 → 40 → 57, Battle 01 admission, and R2c readiness remain
    **Unknown**; this is not an H3 observation or readiness promotion.
-5. **Slice R3 — complete Battle 01 playthrough (RA-05, RA-06, reached RA-11):** fixed seed and
+5. **Slice R2c — static Battle 01 admission extension (RA-03, RA-04, RA-05, RA-08, RA-09,
+   RA-11):** **Confirmed H2 static contract** by
+   `sf2-map3-battle01-admission-static-v1`. It begins only from the retained R2b terminal model and
+   derives Maps 21/40/57, battle admission/initialization, structural cutscene IDs/hashes, and
+   pre-first-turn order. Natural continuity, caller order, initialized state, actor, prose, menus, and
+   complete 8C remain **Unknown**.
+6. **Slice R3 — complete Battle 01 playthrough (RA-05, RA-06, reached RA-11):** fixed seed and
    scripted H4 reference inputs from natural entry through victory; capture every reached logical and
    8C scene/audio/hardware layer while reusing accepted battle, scene, graphics, sound, and timing
    fixtures as authoritative subsystem goldens rather than copying or weakening them.
-6. **Slice R4 — after-battle, endpoint, and H4 definition closure (RA-07, RA-11, RA-12):** continue
+7. **Slice R4 — after-battle, endpoint, and H4 definition closure (RA-07, RA-11, RA-12):** continue
    R3 through the after-program seam to the accepted 5B endpoint; freeze the final state contract,
    private capture manifest, comparison domains, exact or field-specific tolerances, licensing-safe
    public report, and the separate 9A/10A accessibility/deviation assertions.
-7. **Deferred/non-blocking:** RA-10 persistence remains outside the 6A milestone. No save H3 slice is
+8. **Deferred/non-blocking:** RA-10 persistence remains outside the 6A milestone. No save H3 slice is
    part of R1–R4; any later persistence work requires a separate accepted milestone. RA-08 produces a
    dedicated extension only if the Research-proven 2A route actually reaches the field menu.
 
