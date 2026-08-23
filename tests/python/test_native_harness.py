@@ -43,9 +43,9 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Status"] == "PASS"
     assert result["Records"] == 1623
     assert result["Confirmed"] == 1623
-    assert result["H2Fixtures"] == 77
+    assert result["H2Fixtures"] == 78
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 94
-    assert result["AddressBindings"] == 2610
+    assert result["AddressBindings"] == 2618
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1586
@@ -246,6 +246,13 @@ def test_map3_castle_battle_unlock_has_a_dedicated_static_contract_command() -> 
 def test_map3_battle01_admission_has_a_dedicated_static_contract_command() -> None:
     args = build_parser().parse_args(["h2", "map3-battle01-admission"])
     assert args.h2_command == "map3-battle01-admission"
+    assert args.rom_path
+    assert args.upstream_path
+
+
+def test_map3_battle01_turn_control_has_a_dedicated_static_contract_command() -> None:
+    args = build_parser().parse_args(["h2", "map3-battle01-turn-control"])
+    assert args.h2_command == "map3-battle01-turn-control"
     assert args.rom_path
     assert args.upstream_path
 

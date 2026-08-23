@@ -218,6 +218,9 @@ Data-side directory inventory and ROM parity:
   extension from the retained Map 21 terminal through Maps 40/57, Battle 01 admission/init, structural
   cutscene IDs/hashes, and the pre-first-turn boundary; natural continuity, caller order, prose, and
   player-ready/8C claims remain Unknown.
+- [map3-battle01-turn-control.md](./research/map3-battle01-turn-control.md): the public-safe H2
+  Battle 01 first-turn consumer/control-to-pre-resolution spine; natural actor/control,
+  input/action/path/target, resolution, after-turn, multi-round, victory, and player-ready remain Unknown.
 - [`map-data-inventory.md`](./research/map-data-inventory.md): the complete 1,390-file map ASM build
   graph, 727 internal H1 bindings, 662 include-site-only bodies, 64+66 setup-selection rows, ROM
   parity of the 126 six-pointer setup tables, 125 entity-list sources/980 physical records with suffix
