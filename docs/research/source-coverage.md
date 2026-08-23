@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 79 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 80 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 2,626 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,646 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -74,6 +74,13 @@ The `sf2-map3-battle01-action-effect-static-v1` rail retains that R3a edge and c
 It adds no H3 fixture: actual dispatch reach, per-target result, status/death/EXP/gold/drop/follow-up,
 post-effect arrival, after-turn, multi-round, victory, and player-ready remain one closed runtime
 Unknown register.
+
+The `sf2-map3-battle01-action-completion-static-v1` rail retains the R3b projection and its
+battle-actions 47-record/29-path boundary, then statically closes the three DropEnemyItem return
+resumes through the primary loop, follow-up choices, explosion backedge, End, and the unentered
+`ExecuteIndividualTurn` source return edge `0x24106`. It adds no H3 fixture: natural continuity,
+actor/action/target/result/branch and loop reachability, reward/drop/status/death/post-effect facts,
+actual return, replay, after-turn, next-turn dispatch, and victory remain **Unknown**.
 
 ## Subsystem Boundary
 

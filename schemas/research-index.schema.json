@@ -78,7 +78,34 @@
                     "required": ["addressId", "fixtureField"],
                     "properties": {
                       "addressId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
-                      "fixtureField": { "type": "string", "pattern": "^(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" }
+                      "fixtureField": {
+                        "type": "string",
+                        "anyOf": [
+                          { "pattern": "^(?!sourceContext\\.actionCompletionSpine\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
+                          { "enum": [
+                            "actionCompletionSpine.functionAddresses.WriteBattlesceneScript",
+                            "actionCompletionSpine.startResumes.primaryTargetLoop",
+                            "actionCompletionSpine.startResumes.secondAttack",
+                            "actionCompletionSpine.startResumes.counterAttack",
+                            "actionCompletionSpine.endSequence.returnAddress",
+                            "actionCompletionSpine.endSequence.determineTargetsEntry",
+                            "actionCompletionSpine.functionAddresses.battlesceneScript_BreakUsedItem",
+                            "actionCompletionSpine.functionAddresses.battlesceneScript_PerformAnimation",
+                            "actionCompletionSpine.functionAddresses.battlesceneScript_DisplayActionMessage",
+                            "actionCompletionSpine.functionAddresses.battlesceneScript_SwitchTargets",
+                            "actionCompletionSpine.functionAddresses.battlesceneScript_MakeActorIdle",
+                            "actionCompletionSpine.functionAddresses.battlesceneScript_ValidateDoubleAttack",
+                            "actionCompletionSpine.followupBranches.doubleAttack.validatorRangeEndExclusive",
+                            "actionCompletionSpine.functionAddresses.battlesceneScript_ValidateCounterAttack",
+                            "actionCompletionSpine.followupBranches.counterAttack.validatorReturnAddress",
+                            "actionCompletionSpine.functionAddresses.battlesceneScript_End",
+                            "actionCompletionSpine.endSequence.currentHpReplayEndAddress",
+                            "actionCompletionSpine.functionAddresses.battlesceneScript_GiveExpAndGold",
+                            "actionCompletionSpine.executeIndividualTurnHandoff.callAddress",
+                            "actionCompletionSpine.executeIndividualTurnHandoff.resumeAddress"
+                          ] }
+                        ]
+                      }
                     }
                   }
                 }
