@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 75 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 76 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 2,581 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,592 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -52,6 +52,11 @@ entries, five promotion sections, 103 enemy names, 103 enemy definitions, 30 ene
 103 used enemy-gold words plus the explicit 69-word unused tail, 119 sprite-dialogue property rows,
 and the Battle 01 placement/scene slice. These heterogeneous structures must not be added into a
 fake “records completed” percentage.
+
+The new `sf2-map3-castle-battle-unlock-static-v1` rail is static-only: it derives the 53-source
+Map 3/19/20/21 castle-to-unlock graph, source/H1/ROM seams, and public structural topology without
+adding an H3 fixture or confirming natural caller order, a continuous route, Battle 01 admission, or
+runtime F401/F256 behavior.
 
 ## Subsystem Boundary
 
