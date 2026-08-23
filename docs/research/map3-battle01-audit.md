@@ -250,10 +250,11 @@ order `0:109, 2:8, 1:6, 128:6, 133:6, 129:4, 130:4, 131:4, 132:4`; region activa
 in the complete region-cutscene table; first-round source order ends at turn-order generation before
 the first individual turn. This is not a natural initialized snapshot or first-actor observation.
 
-**Gap (RA-05):** the natural-entry snapshot (the roster/stats/items/spells/flags/RNG state carried
-into the battle from the route) is **Unknown**; all Battle 01 runtime evidence derives from the debug
-entry path and controlled seeds. Later-round region-state clearing and natural secondary-region data
-remain explicit open questions.
+**Gap (RA-05):** the R3a static rail adds the post-generation first-consumer/control-dispatch
+foundation only. The natural-entry snapshot (the roster/stats/items/spells/flags/RNG state carried into
+the battle from the route) is **Unknown**; all Battle 01 runtime evidence derives from the debug entry
+path and controlled seeds. Later-round region-state clearing and natural secondary-region data remain
+explicit open questions.
 
 ### 9. Player turn and battle menu control
 
@@ -262,7 +263,8 @@ complete shared battle-function file inventory; player-control/cursor/menu stati
 surface.
 
 **Gaps (RA-06 part):** natural player input cadence, cancel paths, and menu selection through a real
-Battle 01 turn are **Unknown**; no natural multi-round playthrough has been observed.
+Battle 01 turn are **Unknown**; no natural multi-round playthrough has been observed. R3a adds only
+the static control-to-pre-resolution spine.
 
 ### 10. AI, navigation, actions, resolution
 
@@ -343,8 +345,8 @@ slice under ADR 0003 (one launch per coherent matrix).
 | RA-02 | 2 | Map 3 setup/init/event chain effects | R1 observes setup → init function and no default guarded program request; R2 must observe a natural real-program/event/description chain and state effects | **Confirmed** controlled default prefix / **Unknown** natural effects | R2 dependency |
 | RA-03 | 3 | Natural Map 3 route | R2c confirms only static R2b-terminal extension/source legality; natural R2a → R2b → R2c continuity remains separately unobserved | **Confirmed** R2a bounded runtime / **Confirmed** R2b/R2c static graph / **Unknown** natural continuity | Blocking |
 | RA-04 | 7 | Map-to-battle admission | R2c confirms static Map 21 → 40 → 57, CheckBattle/BattleLoop/before/start/LoadBattle spine; natural admission and caller order still require evidence | **Confirmed** static spine / **Unknown** natural admission/caller order | Blocking |
-| RA-05 | 8 | Battle 01 natural encounter state | R2c confirms static definitions/init/turn-generation foundation; capture the full natural scenario state and first actor without inferring player readiness | **Confirmed** debug-entry and static foundation; **Unknown** natural snapshot/first actor/player-ready | Blocking |
-| RA-06 | 9+10 | Complete playable battle trace | Fixed-seed, scripted-input H4 reference matrix through victory recording the chronological player/AI/navigation/action/resolution/reward/status trace and every reached branch; the trace supplies a deterministic acceptance case without replacing 4A manual agency in ordinary play | **Confirmed** bounded; **Unknown** complete | Blocking |
+| RA-05 | 8 | Battle 01 natural encounter state | R2c/R3a confirm static definitions/init/turn-generation/first-consumer-control foundation; capture the full natural scenario state and first actor without inferring player readiness | **Confirmed** debug-entry and static foundation; **Unknown** natural snapshot/first actor/player-ready | Blocking |
+| RA-06 | 9+10 | Complete playable battle trace | R3a confirms only the static control-to-pre-resolution spine; fixed-seed, scripted-input H4 reference matrix through victory must record the chronological player/AI/navigation/action/resolution/reward/status trace and every reached branch | **Confirmed** bounded/static spine; **Unknown** complete | Blocking |
 | RA-07 | 12 | Victory, after-battle, endpoint state | Continue the battle matrix through victory to the after-battle seam: program execution, return routing, and post-battle state capture | **Confirmed** generic order; **Unknown** natural | Blocking |
 | RA-08 | 5 | Field menu on route | R2 opening records `not-reached`; R2c introduces no menu dependency, while route continuity remains Unknown | **Confirmed** NotReached opening / **Unknown** continuity | Route-dependent |
 | RA-09 | 4 | Route dialogue chronology | R2c retains only source command/text IDs and hashes; actual dialogue prose and chronology remain private/Unknown | **Confirmed** structural IDs/hashes / **Unknown** prose and chronology | Blocking |
@@ -397,6 +399,8 @@ root/worker slice contract (ADR 0004):
    derives Maps 21/40/57, battle admission/initialization, structural cutscene IDs/hashes, and
    pre-first-turn order. Natural continuity, caller order, initialized state, actor, prose, menus, and
    complete 8C remain **Unknown**.
+   R3a then adds only the post-generation turn/control-to-pre-resolution H2 spine; it does not close
+   natural state, actor/control selection, player input, action/resolution, or any H3 question.
 6. **Slice R3 — complete Battle 01 playthrough (RA-05, RA-06, reached RA-11):** fixed seed and
    scripted H4 reference inputs from natural entry through victory; capture every reached logical and
    8C scene/audio/hardware layer while reusing accepted battle, scene, graphics, sound, and timing
