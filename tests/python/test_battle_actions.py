@@ -945,3 +945,15 @@ def test_battle_message_schemas_recursively_close_compact_contract_mutations() -
             mutation(mutated, fixture_value=fixture_value)
             with pytest.raises(ValueError, match=f"{owner} failed schema validation"):
                 validate_json(mutated, schema, owner=owner)
+
+
+def test_index_relation_rederives_action_effect_records_without_new_source_paths() -> None:
+    output = build_battle_actions_inventory(UPSTREAM)
+    manifest = load_json(battle_actions.MANIFEST)
+    assert output["summary"]["indexedRecordCount"] == 47
+    assert output["summary"]["indexedFileCount"] == 29
+    assert output["summary"] == manifest["summary"]
+    assert {"battle.actions.apply-effect-dispatch", "battle.actions.cast-spell"} <= set(
+        output["indexedRecordIds"]
+    )
+    assert len(output["indexedSourcePaths"]) == 29
