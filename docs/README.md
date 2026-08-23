@@ -211,6 +211,9 @@ Data-side directory inventory and ROM parity:
   static inventory of default Map 3 entity, area-description, and item-interaction structure with
   two Map 3 item include-site identities, retaining route relevance and runtime outcomes as Unknown
   and creating no optional-content H3 fixture.
+- [map3-castle-battle-unlock.md](./research/map3-castle-battle-unlock.md): the public-safe H2 static
+  fallback for the source-derived Map 3/19/20/21 castle-to-unlock graph, zones, warps, occupancy,
+  and F401/F256 program semantics; natural execution and Battle 01 admission remain Unknown.
 - [`map-data-inventory.md`](./research/map-data-inventory.md): the complete 1,390-file map ASM build
   graph, 727 internal H1 bindings, 662 include-site-only bodies, 64+66 setup-selection rows, ROM
   parity of the 126 six-pointer setup tables, 125 entity-list sources/980 physical records with suffix

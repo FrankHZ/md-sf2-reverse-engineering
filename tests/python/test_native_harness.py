@@ -43,9 +43,9 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Status"] == "PASS"
     assert result["Records"] == 1623
     assert result["Confirmed"] == 1623
-    assert result["H2Fixtures"] == 75
+    assert result["H2Fixtures"] == 76
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 94
-    assert result["AddressBindings"] == 2581
+    assert result["AddressBindings"] == 2592
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1586
@@ -234,6 +234,13 @@ def test_map_script_engine_has_a_dedicated_static_contract_command() -> None:
     args = build_parser().parse_args(["h2", "map-script-engine"])
     assert args.h2_command == "map-script-engine"
     assert args.output_path is None
+
+
+def test_map3_castle_battle_unlock_has_a_dedicated_static_contract_command() -> None:
+    args = build_parser().parse_args(["h2", "map3-castle-battle-unlock"])
+    assert args.h2_command == "map3-castle-battle-unlock"
+    assert args.rom_path
+    assert args.upstream_path
 
 
 def test_battle_ai_has_a_source_only_inventory_command() -> None:
