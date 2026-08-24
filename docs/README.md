@@ -814,6 +814,10 @@ is created only when a real disagreement appears and the choice constrains later
 - [`0014-static-first-runtime-evidence-after-map3-battle01.md`](./decisions/0014-static-first-runtime-evidence-after-map3-battle01.md):
   accepts the ADR 0009 scenario closure as a bounded H3 exception, makes complete H2 corpora the
   optional/full-game default, and gates later H3 on caller dependence, contract impact, and rail reuse.
+- [`0015-original-reference-replay-and-h4-boundary.md`](./decisions/0015-original-reference-replay-and-h4-boundary.md):
+  separates passive original-reference replay and private capture from remake H4 PASS, assigns future
+  fixture/index/CLI/planner owners, and caps each authorized runtime slice at two diagnostics plus one
+  frozen acceptance launch without starting R4b, H4, or Phase 4.
 
 ## Evidence Vocabulary
 
