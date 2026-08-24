@@ -46,6 +46,9 @@ from sf2tool.h2.map3_battle01_action_completion import (
 from sf2tool.h2.map3_battle01_action_effect import verify_map3_battle01_action_effect_static
 from sf2tool.h2.map3_battle01_admission import verify_map3_battle01_admission_static
 from sf2tool.h2.map3_battle01_turn_control import verify_map3_battle01_turn_control_static
+from sf2tool.h2.map3_battle01_turn_finalization import (
+    verify_map3_battle01_turn_finalization_static,
+)
 from sf2tool.h2.map3_castle_battle_unlock import verify_map3_castle_battle_unlock_static
 from sf2tool.h2.map3_optional_interactions import verify_map3_optional_interactions
 from sf2tool.h2.map_content import verify_map_content_contract
@@ -609,6 +612,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="verify the static Battle 01 post-DropEnemyItem completion contract",
     )
     _add_local_paths(h2_map3_battle01_action_completion)
+    h2_map3_battle01_turn_finalization = h2_commands.add_parser(
+        "map3-battle01-turn-finalization",
+        help="verify the static Battle 01 caller finalization contract",
+    )
+    _add_local_paths(h2_map3_battle01_turn_finalization)
     h2_map_data = h2_commands.add_parser(
         "map-data", help="inventory the complete map ASM include graph and internal symbols"
     )
@@ -1554,6 +1562,10 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map3-battle01-action-completion":
         print_record(
             verify_map3_battle01_action_completion_static(args.rom_path, args.upstream_path)
+        )
+    elif args.command == "h2" and args.h2_command == "map3-battle01-turn-finalization":
+        print_record(
+            verify_map3_battle01_turn_finalization_static(args.rom_path, args.upstream_path)
         )
     elif args.command == "h2" and args.h2_command == "map-content":
         print_record(

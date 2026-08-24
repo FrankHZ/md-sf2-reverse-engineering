@@ -130,7 +130,7 @@ def _expected_artifact_commands(
 def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
     assert set(H2_COMMAND_PARTITIONS) == _registered_commands("h2_commands")
     assert set(COMMAND_LAUNCHES) == _registered_commands("h3_commands")
-    assert len(H2_COMMAND_PARTITIONS) == 74
+    assert len(H2_COMMAND_PARTITIONS) == 75
     assert len(COMMAND_LAUNCHES) == 74
     assert len({partition.partition_id for partition in PARTITIONS}) == len(PARTITIONS)
     assert len(H2_PARTITION_IDS) == 6
@@ -350,6 +350,23 @@ def test_map3_battle01_action_completion_artifacts_select_only_h2_without_h3() -
     assert _partition_ids(plan) == {"public-core", "h2-battle-logic"}
     assert _partition(plan, "h2-battle-logic")["commands"] == [
         "uv run sf2 h2 map3-battle01-action-completion"
+    ]
+    assert not any(partition_id.startswith("h3-") for partition_id in _partition_ids(plan))
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_map3_battle01_turn_finalization_artifacts_select_only_h2_without_h3() -> None:
+    plan = plan_paths(
+        (
+            "src/sf2tool/h2/map3_battle01_turn_finalization.py",
+            "tests/fixtures/h2/map3-battle01-turn-finalization-static-v1.json",
+            "schemas/h2/map3-battle01-turn-finalization-static-fixture.schema.json",
+        ),
+        root=ROOT,
+    )
+    assert _partition_ids(plan) == {"public-core", "h2-battle-logic"}
+    assert _partition(plan, "h2-battle-logic")["commands"] == [
+        "uv run sf2 h2 map3-battle01-turn-finalization"
     ]
     assert not any(partition_id.startswith("h3-") for partition_id in _partition_ids(plan))
     assert plan["unclassifiedPaths"] == []

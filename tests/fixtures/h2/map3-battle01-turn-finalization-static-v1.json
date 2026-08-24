@@ -1,0 +1,458 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map3-battle01-turn-finalization-static-v1",
+  "upstream": {
+    "repository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+  },
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "system": "sf2-map3-battle01-turn-finalization-static-v1",
+  "summary": {
+    "sourceFiles": 11,
+    "h1RomAnchors": 34,
+    "indexObjects": 11,
+    "indexBindings": 28,
+    "unknowns": 40
+  },
+  "retainedR3c": {
+    "fixtureId": "sf2-map3-battle01-action-completion-static-v1",
+    "fixtureSha256": "B33F812C2B885F6DB1622E2DBDB28CBA01B8205577D438C378C002A99A7B3AD3",
+    "actionCompletionSpineSha256": "78EF221868A8D1733F167B8EA3C0A003316535BFA8939F3D807CE36830F0A12B",
+    "sha256": "A6008721283BC8AECEC9F3DD6AF7A177702288E6CE81A0C7E8D19587EE464918"
+  },
+  "retainedOwners": {
+    "battleFunctions": {
+      "fixtureId": "sf2-battle-functions-static-v1",
+      "fixtureSha256": "F00AE9451DACD447CF0216A5DCCFB89AA890367AAB9C1625BE95485DD3AD67F2",
+      "semanticSha256": "DA4E29056469ACFF79F003A034807869A2AA2346A57A7BF8CE184F242910956E",
+      "sha256": "EA686DC91AC999F516D40952B1D5E2B722DEC3FAF7AD58FD19E69D067C632EDA"
+    },
+    "battleSceneEngine": {
+      "fixtureId": "sf2-battle-scene-engine-static-v1",
+      "fixtureSha256": "72E5FFA36363DDE90C54D71E3BDC844B3A5DE50ABB7BF04D98E6AF6D7E149CE6",
+      "semanticSha256": "90F9959ED579702C598729F3D7B378D020F5BF510CC70DB440DA8B5CC6BE433C",
+      "sha256": "224297F5109923767874B757A1515DA79CE319C19BB4DC8B55AA04F3B5502F9D"
+    },
+    "battleCutscenes": {
+      "fixtureId": "sf2-battle-cutscenes-static-v1",
+      "fixtureSha256": "D474A28C1EA8F5F2A89155FF217B719C91C08FE523AB4F8E5A53FD8131F41181",
+      "semanticSha256": "2FA69D04FABDFA8098CD5195BF518350E6A84FCF8C4ECCF9CEC4C8395C1E8999",
+      "sha256": "DECB5511A2A846EDDCBAB20FBBC3A8BE4EF0F05EC640E7DBB6CEA1C81647996C"
+    },
+    "battleLoop": {
+      "fixtureId": "sf2-battle-loop-static-v1",
+      "fixtureSha256": "B1DDFE150ACEDF415E7DDB32445B1C8A7B72396354C2DD7DE5452E5B3CA96069",
+      "semanticSha256": "004343B5C5DB8DC9A75F700ECF991F509A1FDAEF20122E71A08A3862EF2AD05B",
+      "sha256": "099EA0AD06DED63F84F4454951469C99A3708DB238BA83ADF2CBFE927BD5543F"
+    },
+    "battleControl": {
+      "fixtureId": "sf2-battle-control-static-v1",
+      "fixtureSha256": "138AE5531B9EE6D88B41EF8A191550A754BD1B5D84A155E352B48EE4E562F3E8",
+      "semanticSha256": "7B3E1B429DC9506DC50F383479161F0F0B56745D6CB72B4952F857C000866A59",
+      "sha256": "7E1E2A210AC8F108C75B32D6AD49C544187F2EE1E242DB9DC1E6E7C8577F744F"
+    },
+    "afterTurnStatusLifecycle": {
+      "fixtureId": "sf2-after-turn-status-lifecycle-v1",
+      "fixtureSha256": "F262B80D0470CB65334CB80FCCBEF9CD763FD206A166764807B180146799B1D0",
+      "semanticSha256": "140AC53A321DC1D7A8EFC3AB218EBF4DE811A64B40F57E490941128DD363F90D",
+      "sha256": "205D90F10E6DAF942A0DBBAF63C979D4B2DF9AD3C2E6ADC27F6CDA1C00E16895"
+    }
+  },
+  "sourceContext": {
+    "sourceIdentities": [
+      {
+        "path": "code/gameflow/battle/battlefunctions/executeindividualturn.asm",
+        "sha256": "E78A2056013E1E47B705CB3E7D7E64FF21FA34B23110117BEC7FA2C1F1480CB1"
+      },
+      {
+        "path": "code/gameflow/battle/battlescenes/initializebattlescene.asm",
+        "sha256": "E766B5EA1C33B85F384FCBAC86CD564170E778954A2A70F68EF5E9C133B169BC"
+      },
+      {
+        "path": "code/gameflow/battle/battlescenes/battlesceneengine_0.asm",
+        "sha256": "F9B6D0DCFCCA29C1BD7F5ED5D77FB64CECE88BD1B38AEF318481948AFB4D62F2"
+      },
+      {
+        "path": "code/gameflow/battle/cutscenes/afterenemyleaderdeathpositions.asm",
+        "sha256": "5395C8CD260654039659DD6CC9DC2AC439EBEEF5474D178A8BAE99A02C9E5F32"
+      },
+      {
+        "path": "code/gameflow/battle/battlefunctions/loadBattle.asm",
+        "sha256": "E486586C6F332E40B5967559509D8C9BC47EE42A34906958C9BAA56F8BF33BC4"
+      },
+      {
+        "path": "code/gameflow/battle/battleloop_1.asm",
+        "sha256": "0825FACE884D1BE79C98C37522C1B130A379392B96FB0C8E82008A72E8EB8507"
+      },
+      {
+        "path": "code/gameflow/battle/cutscenes/battleendcutscenesstart.asm",
+        "sha256": "B2E7B3CE0E2FF805B9D4DFA9695FF13A21421A49F9D2AB854998D46A4E288574"
+      },
+      {
+        "path": "code/gameflow/battle/battleloop/processkilledcombatants.asm",
+        "sha256": "80C8DF78867E04DCE3E776B4057931B8A7D2638A80D5B261825F976053A38542"
+      },
+      {
+        "path": "code/gameflow/battle/battleloop/countremainingcombatants.asm",
+        "sha256": "34FB458DC049B5A6D40D68FFBA7064CBCF99B6C8FD4114BB59C9064A44BFE4C9"
+      },
+      {
+        "path": "code/gameflow/battle/battleloop/processafterturneffects.asm",
+        "sha256": "544401BCA49F878ED8FC7806D40ABC85FBD7740EE3DBBEE3A4A503527F790C89"
+      },
+      {
+        "path": "code/gameflow/battle/battleloop_2.asm",
+        "sha256": "F4F89E9EEAB68F1D16BC204A47B2882870CAF53F1C9B6A99B3B60629CF9A51CC"
+      }
+    ],
+    "h1RomAnchors": [
+      {
+        "id": "turnFinalizationSpine.replay.resume",
+        "address": 147718,
+        "width": 4,
+        "sha256": "CB7ECA4E70C8181673725554862EEACF6D085014C581F878FEEF678CD88335D1"
+      },
+      {
+        "id": "turnFinalizationSpine.replay.musicSelector",
+        "address": 147722,
+        "width": 154,
+        "sha256": "AD642A6A20CBF43EB0F2503220875D78E5E43B13B228C6B862A9ABEFB3718958",
+        "endAddressExclusive": 147876
+      },
+      {
+        "id": "turnFinalizationSpine.replay.actorSelector",
+        "address": 147876,
+        "width": 32,
+        "sha256": "5B09F54DCC7A731DE000439C080CA48334668BFDD24BD10DD20876F6E0F72E86",
+        "endAddressExclusive": 147908
+      },
+      {
+        "id": "turnFinalizationSpine.replay.initializeCall",
+        "address": 147912,
+        "width": 6,
+        "sha256": "A2BA849F02ECA582080DF544EA18A1E9F00E02984EDC074467A4316FA54EA798"
+      },
+      {
+        "id": "turnFinalizationSpine.replay.executeCall",
+        "address": 147924,
+        "width": 6,
+        "sha256": "75C1C6D6DCE397FD813D8DB2755A3F8C01D139ABC002A403253B80A34B599B8B"
+      },
+      {
+        "id": "turnFinalizationSpine.replay.endCall",
+        "address": 147930,
+        "width": 6,
+        "sha256": "5A482DD24D0C2F4A9AB7B825F86C98B4883CE4374DA7DD223CA90A1824538C4E"
+      },
+      {
+        "id": "turnFinalizationSpine.replay.leaderDeathPositionsCall",
+        "address": 147936,
+        "width": 6,
+        "sha256": "935B9FE646744BBA16CDDEE24D4275B79D8A9EB33C062C698BB98E2179057D31"
+      },
+      {
+        "id": "turnFinalizationSpine.replay.loadBattleCall",
+        "address": 147956,
+        "width": 4,
+        "sha256": "BA5224CE7BD7DE60EB22756019645573C55AF7D31061049B977AB86F7975C159"
+      },
+      {
+        "id": "turnFinalizationSpine.replay.reloadRange",
+        "address": 147962,
+        "width": 20,
+        "sha256": "E5F88E3F67ABC518412E8DB989759117BD0EEDB2E6ACD044B3F532D006324831",
+        "endAddressExclusive": 147982
+      },
+      {
+        "id": "turnFinalizationSpine.replay.return",
+        "address": 148030,
+        "width": 4,
+        "sha256": "BA344679E7B3E0206A6FC736EEEF8A5F640E8EEF8D56B41E0C25D8FC87EFCBCC",
+        "endAddressExclusive": 148034
+      },
+      {
+        "id": "turnFinalizationSpine.functionAddresses.InitializeBattlescene",
+        "address": 98322,
+        "width": 2,
+        "sha256": "E866578C59C1A7F878EE0E17925A755F6158EC26B04CA9C6157E4065DBBD2977"
+      },
+      {
+        "id": "turnFinalizationSpine.functionAddresses.ExecuteBattlesceneScript",
+        "address": 99224,
+        "width": 2,
+        "sha256": "0E1FC688579057E6C81911BDD5D8691BDFFC02279516063E19D3890D6E041978"
+      },
+      {
+        "id": "turnFinalizationSpine.replay.executeEnd",
+        "address": 99306,
+        "width": 2,
+        "sha256": "663DD04A9305D32B3CCF48D4D3815B00393F9C5B9E1AB162EF97D06BB7F3C1B5"
+      },
+      {
+        "id": "turnFinalizationSpine.functionAddresses.EndBattlescene",
+        "address": 102986,
+        "width": 2,
+        "sha256": "663DD04A9305D32B3CCF48D4D3815B00393F9C5B9E1AB162EF97D06BB7F3C1B5"
+      },
+      {
+        "id": "turnFinalizationSpine.functionAddresses.ApplyPositionsAfterEnemyLeaderDies",
+        "address": 294302,
+        "width": 2,
+        "sha256": "C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"
+      },
+      {
+        "id": "turnFinalizationSpine.functionAddresses.LoadBattle",
+        "address": 153104,
+        "width": 2,
+        "sha256": "B813D21BDB2AE744A65AD78D0695CBF15A7750CA8A4828B4518913A26849BD05"
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.executeTurnCall",
+        "address": 146260,
+        "width": 4,
+        "sha256": "04DFED650E0E4B0092193E8B0A3290133B19F1D55FC510985A0F9CD8C1B7D5BD"
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.executeTurnResume",
+        "address": 146264,
+        "width": 18,
+        "sha256": "519207578B36C3FC7E78E1353CAD131981A1B7A69DBEFB5F66F38BC36A8EF27C",
+        "endAddressExclusive": 146282
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.defeatedCutsceneCall",
+        "address": 146282,
+        "width": 4,
+        "sha256": "2E9F3DF6D7EE65D962A6E56B1BDC14C8F88084A8FDA3A4A8B103CB0D70486BA7"
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.processKilledFirstCall",
+        "address": 146288,
+        "width": 4,
+        "sha256": "4FCAF1528350C6B09B061C8D997E83543D2B0D9FB80F7E1C84DD7A475CA06BCA"
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.countFirstCall",
+        "address": 146294,
+        "width": 4,
+        "sha256": "5C7CE694C475BC189DC1EF4F6FC1E51C3ADBF6998E59C8E0EAEF892818C2F4FC"
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.preAfterTurnOutcome",
+        "address": 146298,
+        "width": 12,
+        "sha256": "5541EE172498B1F3F1E51FB6CFD927425617BDDC530E4E7F3F6706D73BFB8724",
+        "endAddressExclusive": 146310
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.defeatedCutscene",
+        "address": 146310,
+        "width": 14,
+        "sha256": "5F2DA8633C4A298AC01D96DEAE84CE12B0207737F92DF64BCFE4C3FF2BBDE73A",
+        "endAddressExclusive": 146324
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.afterTurnCall",
+        "address": 146324,
+        "width": 4,
+        "sha256": "E1B79494D948A2BA7B459A10512A326C33ED262A1683226F0A3396F47E8F3102"
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.processKilledSecondCall",
+        "address": 146328,
+        "width": 4,
+        "sha256": "DC53DCBF0BF70BBB6AF17B2908CFC7AC53FF3985EA342132E26116ED42E6C58D"
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.countSecondCall",
+        "address": 146334,
+        "width": 4,
+        "sha256": "2216333BD29EA027B8BF6353A343545BFADA2130206E8548404D5207F9EAFB5C"
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.postAfterTurnOutcome",
+        "address": 146338,
+        "width": 12,
+        "sha256": "D90F945093E5C58AF132B6413D8CB8D27F4D5D43D7464AF4D6F8CF97F070BBC3",
+        "endAddressExclusive": 146350
+      },
+      {
+        "id": "turnFinalizationSpine.outerLoop.nextTurnBackedge",
+        "address": 146350,
+        "width": 6,
+        "sha256": "CC559BF8099E85F9C4240BA7046E64892001D4C291087272B2E26F077B195AFF",
+        "endAddressExclusive": 146356
+      },
+      {
+        "id": "turnFinalizationSpine.functionAddresses.BattleEndCutscenesStart",
+        "address": 293778,
+        "width": 2,
+        "sha256": "C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"
+      },
+      {
+        "id": "turnFinalizationSpine.functionAddresses.ProcessKilledCombatants",
+        "address": 148760,
+        "width": 2,
+        "sha256": "9B18BC91CFA6FE9AA7757E6FB8B301E4CAD6E4F699A3A698868FC3C7EB11401B"
+      },
+      {
+        "id": "turnFinalizationSpine.functionAddresses.CountRemainingCombatants",
+        "address": 146520,
+        "width": 2,
+        "sha256": "FC686C314491E1F68BF1899FC54B2327353C44DD1AB4ED56538EF623EDD1E866"
+      },
+      {
+        "id": "turnFinalizationSpine.functionAddresses.ProcessAfterTurnEffects",
+        "address": 148034,
+        "width": 2,
+        "sha256": "FFE9AAEAA2A2D5048174DF0B80599EF0197EC024C4B051BC9860CFF58EF7F9F3"
+      },
+      {
+        "id": "turnFinalizationSpine.outcomeBoundaries.victory",
+        "address": 146618,
+        "width": 2,
+        "sha256": "FFE9AAEAA2A2D5048174DF0B80599EF0197EC024C4B051BC9860CFF58EF7F9F3"
+      },
+      {
+        "id": "turnFinalizationSpine.outcomeBoundaries.defeat",
+        "address": 146756,
+        "width": 2,
+        "sha256": "FFE9AAEAA2A2D5048174DF0B80599EF0197EC024C4B051BC9860CFF58EF7F9F3"
+      }
+    ]
+  },
+  "turnFinalizationSpine": {
+    "functionAddresses": {
+      "ExecuteIndividualTurn": 147120,
+      "InitializeBattlescene": 98322,
+      "ExecuteBattlesceneScript": 99224,
+      "EndBattlescene": 102986,
+      "ApplyPositionsAfterEnemyLeaderDies": 294302,
+      "LoadBattle": 153104,
+      "BattleLoop": 146052,
+      "ExecuteBattleCutscene_Defeated": 293778,
+      "ProcessKilledCombatants": 148760,
+      "CountRemainingCombatants": 146520,
+      "ProcessAfterTurnEffects": 148034,
+      "BattleLoop_Victory": 146618,
+      "BattleLoop_Defeat": 146756
+    },
+    "replayContinuation": {
+      "resumeAddress": 147718,
+      "musicSelectorRange": [
+        147722,
+        147876
+      ],
+      "actorSelectorRange": [
+        147876,
+        147908
+      ],
+      "initializeBattlesceneCallAddress": 147912,
+      "executeBattlesceneCallAddress": 147924,
+      "executeBattlesceneScriptEndAddress": 99306,
+      "endBattlesceneCallAddress": 147930,
+      "leaderDeathPositionsCallAddress": 147936,
+      "loadBattleCallAddress": 147956,
+      "reloadRange": [
+        147962,
+        147982
+      ],
+      "returnAddress": 148032,
+      "orderedSteps": [
+        "musicSelector",
+        "actorSelector",
+        "InitializeBattlescene",
+        "ExecuteBattlesceneScript",
+        "EndBattlescene",
+        "ApplyPositionsAfterEnemyLeaderDies",
+        "LoadBattle",
+        "return"
+      ]
+    },
+    "outerLoop": {
+      "executeTurnCallAddress": 146260,
+      "executeTurnResumeAddress": 146264,
+      "defeatedCutsceneCallAddress": 146282,
+      "processKilledFirstCallAddress": 146288,
+      "countFirstCallAddress": 146294,
+      "preAfterTurnOutcomeRange": [
+        146298,
+        146310
+      ],
+      "defeatedCutsceneRange": [
+        146310,
+        146324
+      ],
+      "processKilledSecondCallAddress": 146328,
+      "afterTurnCallAddress": 146324,
+      "afterTurnResumeAddress": 146328,
+      "countSecondCallAddress": 146334,
+      "postAfterTurnOutcomeRange": [
+        146338,
+        146350
+      ],
+      "nextTurnDispatchAddress": 146354,
+      "backedgeAddress": 146350,
+      "backedgeTarget": 146240
+    },
+    "outcomeBoundaries": {
+      "victoryAddress": 146618,
+      "defeatAddress": 146756
+    },
+    "ownerRecordIds": [
+      "battle.functions.execute-turn",
+      "battle.replay.execute-script",
+      "battle.scene.initialize",
+      "battle.cutscene.leader-death-positions",
+      "battle.functions.load-battle",
+      "battle.control.main-loop",
+      "battle.cutscene.battle-end-start",
+      "battle.loop.process-killed",
+      "battle.loop.count-remaining",
+      "battle.status.after-turn-expiry",
+      "battle.control.outcomes"
+    ]
+  },
+  "unknowns": {
+    "naturalContinuity": "Unknown",
+    "initializedSnapshot": "Unknown",
+    "naturalFirstActor": "Unknown",
+    "actorControlBranch": "Unknown",
+    "playerInputChronology": "Unknown",
+    "aiCommandSelected": "Unknown",
+    "movementPath": "Unknown",
+    "target": "Unknown",
+    "action": "Unknown",
+    "preResolutionArrival": "Unknown",
+    "dispatchBranchReached": "Unknown",
+    "perTargetResult": "Unknown",
+    "statusOutcome": "Unknown",
+    "targetDeath": "Unknown",
+    "expAward": "Unknown",
+    "goldAward": "Unknown",
+    "dropOutcome": "Unknown",
+    "followupOutcome": "Unknown",
+    "postEffectArrival": "Unknown",
+    "afterTurn": "Unknown",
+    "multiRoundPlaythrough": "Unknown",
+    "victory": "Unknown",
+    "playerReady": "Unknown",
+    "primaryTargetLoopCompletion": "Unknown",
+    "doubleAttackReached": "Unknown",
+    "counterAttackReached": "Unknown",
+    "explosionReached": "Unknown",
+    "itemBreakOutcome": "Unknown",
+    "actionConstructionCompletion": "Unknown",
+    "writeBattlesceneReturn": "Unknown",
+    "battleSceneReplay": "Unknown",
+    "executeIndividualTurnReturn": "Unknown",
+    "nextTurnDispatch": "Unknown",
+    "battleSceneMusicBranch": "Unknown",
+    "battleSceneInitialization": "Unknown",
+    "battleSceneTeardown": "Unknown",
+    "battlefieldReload": "Unknown",
+    "defeatedCutscene": "Unknown",
+    "preAfterTurnOutcomeGate": "Unknown",
+    "postAfterTurnOutcomeGate": "Unknown"
+  }
+}

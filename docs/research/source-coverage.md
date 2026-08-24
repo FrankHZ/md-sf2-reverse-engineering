@@ -82,6 +82,12 @@ resumes through the primary loop, follow-up choices, explosion backedge, End, an
 actor/action/target/result/branch and loop reachability, reward/drop/status/death/post-effect facts,
 actual return, replay, after-turn, next-turn dispatch, and victory remain **Unknown**.
 
+The `sf2-map3-battle01-turn-finalization-static-v1` rail starts at that unentered `0x24106`
+continuation and statically guards caller replay/teardown/reload plus BattleLoop cleanup/count,
+after-turn, outcome edges, and the unentered `0x23BB2 -> 0x23B40` backedge. It is H2-only;
+natural continuity and all reached branches/results, player readiness, victory/defeat bodies, and R4
+remain **Unknown**.
+
 ## Subsystem Boundary
 
 The current evidence is deep but narrow:

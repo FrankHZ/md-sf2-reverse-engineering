@@ -345,12 +345,14 @@ def test_research_index_has_exactly_the_eight_new_h2_bindings() -> None:
             "docs/research/battle-loop.md",
             "docs/research/map3-battle01-admission.md",
             "docs/research/map3-battle01-turn-control.md",
+            "docs/research/map3-battle01-turn-finalization.md",
         ],
         "battle.functions.execute-turn": [
             "docs/research/battle-functions.md",
             "docs/research/map3-battle01-admission.md",
             "docs/research/map3-battle01-turn-control.md",
             "docs/research/map3-battle01-action-completion.md",
+            "docs/research/map3-battle01-turn-finalization.md",
         ],
         "battle.functions.player-input": [
             "docs/research/battle-functions.md",

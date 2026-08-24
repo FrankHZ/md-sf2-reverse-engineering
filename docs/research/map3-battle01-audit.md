@@ -263,9 +263,9 @@ complete shared battle-function file inventory; player-control/cursor/menu stati
 surface.
 
 **Gaps (RA-06 part):** natural player input cadence, cancel paths, and menu selection through a real
-Battle 01 turn are **Unknown**; no natural multi-round playthrough has been observed. R3a/R3b/R3c add
-only the **Confirmed** static control-to-ApplyActionEffect-to-DropEnemyItem-to-action-completion graph
-through source return edge `0x24106`; actual branches, loops, and results remain **Unknown**.
+Battle 01 turn are **Unknown**; no natural multi-round playthrough has been observed. R3a/R3b/R3c/R3d add
+only the **Confirmed** static control-to-ApplyActionEffect-to-DropEnemyItem-to-action-completion/caller-finalization graph
+through the unentered `0x23BB2 -> 0x23B40` backedge; actual branches, loops, and results remain **Unknown**.
 
 ### 10. AI, navigation, actions, resolution
 
@@ -347,8 +347,8 @@ slice under ADR 0003 (one launch per coherent matrix).
 | RA-03 | 3 | Natural Map 3 route | R2c confirms only static R2b-terminal extension/source legality; natural R2a → R2b → R2c continuity remains separately unobserved | **Confirmed** R2a bounded runtime / **Confirmed** R2b/R2c static graph / **Unknown** natural continuity | Blocking |
 | RA-04 | 7 | Map-to-battle admission | R2c confirms static Map 21 → 40 → 57, CheckBattle/BattleLoop/before/start/LoadBattle spine; natural admission and caller order still require evidence | **Confirmed** static spine / **Unknown** natural admission/caller order | Blocking |
 | RA-05 | 8 | Battle 01 natural encounter state | R2c/R3a confirm static definitions/init/turn-generation/first-consumer-control foundation; capture the full natural scenario state and first actor without inferring player readiness | **Confirmed** debug-entry and static foundation; **Unknown** natural snapshot/first actor/player-ready | Blocking |
-| RA-06 | 9+10 | Complete playable battle trace | R3a/R3b/R3c confirm only the static control-to-ApplyActionEffect-to-DropEnemyItem-to-action-completion graph through source return edge `0x24106`; fixed-seed, scripted-input H4 reference matrix through victory must record the chronological player/AI/navigation/action/resolution/reward/status trace and every reached branch | **Confirmed** bounded/static graph; **Unknown** complete | Blocking |
-| RA-07 | 12 | Victory, after-battle, endpoint state | Continue the battle matrix through victory to the after-battle seam: program execution, return routing, and post-battle state capture | **Confirmed** generic order; **Unknown** natural | Blocking |
+| RA-06 | 9+10 | Complete playable battle trace | R3a/R3b/R3c/R3d confirm only the static control-to-ApplyActionEffect-to-DropEnemyItem-to-action-completion/caller-finalization graph through unentered `0x23BB2 -> 0x23B40`; fixed-seed, scripted-input H4 reference matrix through victory must record the chronological player/AI/navigation/action/resolution/reward/status trace and every reached branch | **Confirmed** bounded/static graph; **Unknown** complete | Blocking |
+| RA-07 | 12 | Victory, after-battle, endpoint state | R3d adds only static unentered victory/defeat edges; continue the battle matrix through victory to the after-battle seam: program execution, return routing, and post-battle state capture | **Confirmed** generic order/static edges; **Unknown** natural | Blocking |
 | RA-08 | 5 | Field menu on route | R2 opening records `not-reached`; R2c introduces no menu dependency, while route continuity remains Unknown | **Confirmed** NotReached opening / **Unknown** continuity | Route-dependent |
 | RA-09 | 4 | Route dialogue chronology | R2c retains only source command/text IDs and hashes; actual dialogue prose and chronology remain private/Unknown | **Confirmed** structural IDs/hashes / **Unknown** prose and chronology | Blocking |
 | RA-10 | 14 | Deferred persistence boundary | Record the accepted 6A exclusion, restart-to-admitted-snapshot behavior, and harness-reset ≠ save; retain cross-process durability as a separate-milestone Unknown | **Confirmed** in-process; **Unknown** durable | Deferred / non-blocking |
