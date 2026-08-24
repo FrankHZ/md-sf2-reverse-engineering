@@ -141,6 +141,8 @@ observation, and reproduction commands.
   diamond/yes-no compressed graphics, the complete icon storage/copy/highlight contracts, the 27 leaf
   UI layouts/2,394 VDP words, the spell-level pointer and diamond-border contracts, and alternate
   boundaries.
+- [`field-menu-control.md`](./research/field-menu-control.md): the separately owned static FieldMenu
+  caller, selector, branch/call-order, force-list-helper, and explicit runtime-Unknown boundary.
 - [`technical-interrupts.md`](./research/technical-interrupts.md): VInt, DMA, fade, input repeat,
   wait/sleep handshake, trap routing, and hardware timing awaiting batched verification.
 - [`technical-graphics.md`](./research/technical-graphics.md): decompression, display initialization,

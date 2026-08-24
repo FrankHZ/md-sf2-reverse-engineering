@@ -159,6 +159,11 @@ predicates. It is static reachability only, not observed chronology.
 Map 21 → 40 → 57 links and the source/H1/ROM-checked CheckBattle/BattleLoop/cutscene/LoadBattle
 spine. This is source legality only; natural R2a → R2b → R2c continuity remains **Unknown**.
 
+**Confirmed (RA-08 static graph only):** the FieldMenu source/H1/ROM control graph has two guarded
+alias-resolved callers, selector branches, and helper/order boundaries. The accepted R2 and R2a
+runtime seams both retain field menu **NotReached**; later natural continuity, admission, input, and
+outcomes remain **Unknown**.
+
 **Gaps:** natural inputs and their chronological results along the route (RA-03); VInt-edge event
 publication versus input sampling timing; exploration/VDP frame sequencing; the field-menu branch's
 natural admission and behavior when the 2A route requires it (RA-08); and reached
@@ -351,7 +356,7 @@ slice under ADR 0003 (one launch per coherent matrix).
 | RA-05 | 8 | Battle 01 natural encounter state | R2c/R3a confirm static definitions/init/turn-generation/first-consumer-control foundation; capture the full natural scenario state and first actor without inferring player readiness | **Confirmed** debug-entry and static foundation; **Unknown** natural snapshot/first actor/player-ready | Blocking |
 | RA-06 | 9+10 | Complete playable battle trace | R3a/R3b/R3c/R3d confirm only the static control-to-ApplyActionEffect-to-DropEnemyItem-to-action-completion/caller-finalization graph through unentered `0x23BB2 -> 0x23B40`; fixed-seed, scripted-input H4 reference matrix through victory must record the chronological player/AI/navigation/action/resolution/reward/status trace and every reached branch | **Confirmed** bounded/static graph; **Unknown** complete | Blocking |
 | RA-07 | 12 | Victory, after-battle, endpoint state | R4a confirms only the selected unentered victory body → Battle 01 after-battle program → `F401`/`F501` → `d4=1` → MainLoop SwitchMap/Exploration static spine; R4b must observe natural execution, program completion/effects, return routing, and post-battle state | **Confirmed** selected static spine; **Unknown** natural/runtime endpoint | Blocking |
-| RA-08 | 5 | Field menu on route | R2 opening records `not-reached`; R2c introduces no menu dependency, while route continuity remains Unknown | **Confirmed** NotReached opening / **Unknown** continuity | Route-dependent |
+| RA-08 | 5 | Field menu on route | H2 confirms only the static caller/selector/control graph. R2 and R2a both record `NotReached`; later route continuity and any natural menu admission/outcome remain unobserved | **Confirmed** static graph and R2/R2a NotReached / **Unknown** natural continuity | Route-dependent |
 | RA-09 | 4 | Route dialogue chronology | R2c retains only source command/text IDs and hashes; actual dialogue prose and chronology remain private/Unknown | **Confirmed** structural IDs/hashes / **Unknown** prose and chronology | Blocking |
 | RA-10 | 14 | Deferred persistence boundary | Record the accepted 6A exclusion, restart-to-admitted-snapshot behavior, and harness-reset ≠ save; retain cross-process durability as a separate-milestone Unknown | **Confirmed** in-process; **Unknown** durable | Deferred / non-blocking |
 | RA-11 | 6/11/15 | Reached 7C/8C presentation, hardware, and private-reference evidence | R2c retains only static presentation owner IDs/hashes; inventory/hash reached immutable inputs and capture pixel/palette/frame/audio/hardware observables in a separately scoped continuation | **Confirmed** static owner IDs/hashes and bounded seams; **Unknown** complete 8C | Blocking |

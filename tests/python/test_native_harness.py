@@ -43,9 +43,9 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Status"] == "PASS"
     assert result["Records"] == 1625
     assert result["Confirmed"] == 1625
-    assert result["H2Fixtures"] == 82
+    assert result["H2Fixtures"] == 83
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 94
-    assert result["AddressBindings"] == 2703
+    assert result["AddressBindings"] == 2727
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1588
@@ -339,6 +339,14 @@ def test_common_menus_has_a_source_only_inventory_command() -> None:
     assert args.h2_command == "common-menus"
     assert args.output_path is None
     assert not hasattr(args, "rom_path")
+
+
+def test_field_menu_control_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "field-menu-control"])
+    assert args.h2_command == "field-menu-control"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.upstream_path.name == "SF2DISASM"
+    assert not hasattr(args, "output_path")
 
 
 def test_tech_interrupts_has_a_source_only_inventory_command() -> None:
