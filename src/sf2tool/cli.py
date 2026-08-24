@@ -34,6 +34,7 @@ from sf2tool.h2.enemy_drops import verify_enemy_item_drops
 from sf2tool.h2.enemy_gold import verify_enemy_gold
 from sf2tool.h2.enemy_map_sprites import verify_enemy_map_sprites_contract
 from sf2tool.h2.entity_action_scripts import verify_entity_action_script_contract
+from sf2tool.h2.field_menu_control import verify_field_menu_control_static
 from sf2tool.h2.gameflow import verify_gameflow_inventory
 from sf2tool.h2.graphics import verify_graphics_inventory
 from sf2tool.h2.icon_graphics import verify_icon_graphics_contract
@@ -457,6 +458,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_common_menus, rom=False)
     h2_common_menus.add_argument("--output-path", type=_path)
+    h2_field_menu_control = h2_commands.add_parser(
+        "field-menu-control", help="verify the FieldMenu static source/H1/ROM control spine"
+    )
+    _add_local_paths(h2_field_menu_control)
     h2_tech_interrupts = h2_commands.add_parser(
         "tech-interrupts", help="inventory VInt, DMA, fading, traps, and technical handlers"
     )
@@ -1371,6 +1376,8 @@ def dispatch(args: argparse.Namespace) -> None:
                 output_path=args.output_path,
             )
         )
+    elif args.command == "h2" and args.h2_command == "field-menu-control":
+        print_json(verify_field_menu_control_static(args.rom_path, args.upstream_path))
     elif args.command == "h2" and args.h2_command == "tech-interrupts":
         print_record(
             verify_interrupt_inventory(

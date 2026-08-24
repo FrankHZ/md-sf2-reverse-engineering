@@ -115,6 +115,7 @@ H2_COMMAND_GROUPS = {
     "h2-services-state": (
         "auxiliary-data",
         "common-menus",
+        "field-menu-control",
         "gameflow-core",
         "remaining-core",
         "tech-graphics",

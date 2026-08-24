@@ -18,6 +18,10 @@
 
 ## Inventory and Layout Ownership
 
+The bounded FieldMenu control graph has its separate owner in
+[field-menu-control.md](field-menu-control.md); this common-menus document retains its accepted
+inventory, parser, fixture, and schemas unchanged.
+
 The recursive `code/common/menus` boundary contains 42 files and 14,827 source lines: 32 at the
 directory root, two each under blacksmith, caravan, church, and item, and one each under main and
 shop. The source parser records 646 global labels, 1,380 direct call sites, and 29 indirect call

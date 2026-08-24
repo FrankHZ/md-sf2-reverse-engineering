@@ -1,0 +1,165 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/field-menu-control-static-fixture.schema.json",
+  "title": "SF2 FieldMenu static control fixture",
+  "$ref": "#/$defs/fixture",
+  "$defs": {
+    "sourceIdentity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {"path": {"type": "string"}, "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}}
+    },
+    "anchor": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "address", "width", "sha256"],
+      "properties": {
+        "id": {"type": "string"}, "address": {"type": "integer", "minimum": 0},
+        "width": {"type": "integer", "minimum": 1}, "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+        "endAddressExclusive": {"type": "integer", "minimum": 0}
+      }
+    },
+    "retainedOwner": {
+      "type": "object", "additionalProperties": false,
+      "required": ["fixtureId", "fixtureSha256"],
+      "properties": {
+        "fixtureId": {"type": "string", "pattern": "^sf2-[a-z0-9-]+-v1$"},
+        "fixtureSha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}
+      }
+    },
+    "selectorMapping": {
+      "type": "object", "additionalProperties": false,
+      "required": ["member", "magic", "item"],
+      "properties": {"member": {"const": 0}, "magic": {"const": 1}, "item": {"const": 2}}
+    },
+    "itemSelectorMapping": {
+      "type": "object", "additionalProperties": false,
+      "required": ["use", "give", "equip", "drop"],
+      "properties": {"use": {"const": 0}, "give": {"const": 1}, "equip": {"const": 2}, "drop": {"const": "fallthrough"}}
+    },
+    "fixture": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaVersion", "id", "upstream", "romSha256", "system", "summary", "retainedOwners", "sourceContext", "fieldMenuSpine", "unknowns"],
+      "properties": {
+        "schemaVersion": {"const": 1},
+        "id": {"const": "sf2-field-menu-control-static-v1"},
+        "upstream": {
+          "type": "object", "additionalProperties": false, "required": ["repository", "commit"],
+          "properties": {"repository": {"const": "https://github.com/ShiningForceCentral/SF2DISASM.git"}, "commit": {"const": "c834c652b6862bc5679fd7f69a38a7093206efc6"}}
+        },
+        "romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
+        "system": {"const": "sf2-field-menu-control-static-v1"},
+        "summary": {
+          "type": "object", "additionalProperties": false, "required": ["sourceFiles", "h1RomAnchors", "unknowns"],
+          "properties": {"sourceFiles": {"const": 9}, "h1RomAnchors": {"const": 23}, "unknowns": {"const": 18}}
+        },
+        "retainedOwners": {
+          "type": "object", "additionalProperties": false,
+          "required": ["commonMenus", "gameflowCore", "coreStatsData", "itemAuxiliary", "mapSetup", "techInterfaces", "commonStats"],
+          "properties": {
+            "commonMenus": {"$ref": "#/$defs/retainedOwner"}, "gameflowCore": {"$ref": "#/$defs/retainedOwner"},
+            "coreStatsData": {"$ref": "#/$defs/retainedOwner"}, "itemAuxiliary": {"$ref": "#/$defs/retainedOwner"},
+            "mapSetup": {"$ref": "#/$defs/retainedOwner"}, "techInterfaces": {"$ref": "#/$defs/retainedOwner"},
+            "commonStats": {"$ref": "#/$defs/retainedOwner"}
+          }
+        },
+        "sourceContext": {
+          "type": "object", "additionalProperties": false, "required": ["sourceIdentities", "h1RomAnchors", "mainactionsShape"],
+          "properties": {
+            "sourceIdentities": {"type": "array", "minItems": 9, "maxItems": 9, "items": {"$ref": "#/$defs/sourceIdentity"}},
+            "h1RomAnchors": {"type": "array", "minItems": 23, "maxItems": 23, "items": {"$ref": "#/$defs/anchor"}},
+            "mainactionsShape": {
+              "type": "object", "additionalProperties": false,
+              "required": ["physicalLines", "nonEmptyLines", "statements", "globalLabels", "localLabels", "directCalls", "directCallTargets"],
+              "properties": {"physicalLines": {"const": 696}, "nonEmptyLines": {"const": 679}, "statements": {"const": 481}, "globalLabels": {"const": 12}, "localLabels": {"const": 46}, "directCalls": {"const": 69}, "directCallTargets": {"const": 33}}
+            }
+          }
+        },
+        "fieldMenuSpine": {"$ref": "#/$defs/fieldMenuSpine"},
+        "unknowns": {"$ref": "#/$defs/unknowns"}
+      }
+    },
+    "fieldMenuSpine": {
+      "type": "object", "additionalProperties": false,
+      "required": ["functionAddresses", "jumpInterfaces", "entryAndCallers", "mainDispatch", "memberAction", "magicAction", "itemAction", "searchAction", "forceListHelper", "excludedUnusedTail"],
+      "properties": {
+        "functionAddresses": {"$ref": "#/$defs/functionAddresses"}, "jumpInterfaces": {"$ref": "#/$defs/jumpInterfaces"},
+        "entryAndCallers": {"$ref": "#/$defs/entryAndCallers"}, "mainDispatch": {"$ref": "#/$defs/mainDispatch"},
+        "memberAction": {"$ref": "#/$defs/memberAction"}, "magicAction": {"$ref": "#/$defs/magicAction"},
+        "itemAction": {"$ref": "#/$defs/itemAction"}, "searchAction": {"$ref": "#/$defs/searchAction"},
+        "forceListHelper": {"$ref": "#/$defs/forceListHelper"}, "excludedUnusedTail": {"$ref": "#/$defs/excludedUnusedTail"}
+      }
+    },
+    "functionAddresses": {
+      "type": "object", "additionalProperties": false, "required": ["FieldMenu", "PopulateGenericListWithCurrentForceMembers", "ExecuteDiamondMenu", "MembersMain", "MembersItem", "MembersMagic", "BuildMemberScreen", "AltYesNoPrompt", "IsItemUsableOnField", "UseItemOnField", "RunMapSetupItemEvent", "GetSavepointForMap", "CheckArea", "UpdateForce"],
+      "properties": {"FieldMenu": {"const": 135806}, "PopulateGenericListWithCurrentForceMembers": {"const": 137708}, "ExecuteDiamondMenu": {"const": 66038}, "MembersMain": {"const": 77798}, "MembersItem": {"const": 77828}, "MembersMagic": {"const": 77872}, "BuildMemberScreen": {"const": 72746}, "AltYesNoPrompt": {"const": 86668}, "IsItemUsableOnField": {"const": 141770}, "UseItemOnField": {"const": 141804}, "RunMapSetupItemEvent": {"const": 292230}, "GetSavepointForMap": {"const": 30188}, "CheckArea": {"const": 145506}, "UpdateForce": {"const": 39168}}
+    },
+    "jumpInterfaces": {
+      "type": "object", "additionalProperties": false, "required": ["ExecuteDiamondMenu", "MembersMain", "MembersItem", "MembersMagic"],
+      "properties": {"ExecuteDiamondMenu": {"const": 65536}, "MembersMain": {"const": 65600}, "MembersItem": {"const": 65604}, "MembersMagic": {"const": 65608}}
+    },
+    "entryAndCallers": {
+      "type": "object", "additionalProperties": false,
+      "required": ["jumpInterfaceAddress", "instructionTarget", "effectiveTarget", "callerCount", "instructionTargetSiteCount", "effectiveTargetSiteCount", "debugCallAddress", "debugReturnAddress", "explorationCallAddress", "explorationReturnAddress"],
+      "properties": {"jumpInterfaceAddress": {"const": 131080}, "instructionTarget": {"const": "j_FieldMenu"}, "effectiveTarget": {"const": "FieldMenu"}, "callerCount": {"const": 2}, "instructionTargetSiteCount": {"const": 2}, "effectiveTargetSiteCount": {"const": 2}, "debugCallAddress": {"const": 30852}, "debugReturnAddress": {"const": 30858}, "explorationCallAddress": {"const": 154588}, "explorationReturnAddress": {"const": 154594}}
+    },
+    "mainDispatch": {
+      "type": "object", "additionalProperties": false, "required": ["menuConstant", "selectorMapping", "fallthrough", "cancel"],
+      "properties": {"menuConstant": {"const": "MENU_FIELD"}, "selectorMapping": {"$ref": "#/$defs/selectorMapping"}, "fallthrough": {"const": "search"}, "cancel": {"const": -1}}
+    },
+    "memberAction": {
+      "type": "object", "additionalProperties": false, "required": ["selector", "listScreen", "cancel", "handoff", "handoffAddress", "return"],
+      "properties": {"selector": {"const": 0}, "listScreen": {"const": "MembersMain"}, "cancel": {"const": -1}, "handoff": {"const": "BuildMemberScreen"}, "handoffAddress": {"const": 72746}, "return": {"const": "StartMember"}}
+    },
+    "magicAction": {
+      "type": "object", "additionalProperties": false, "required": ["selector", "listScreen", "cancel", "detox", "egress"],
+      "properties": {"selector": {"const": 1}, "listScreen": {"const": "MembersMagic"}, "cancel": {"const": -1}, "detox": {"$ref": "#/$defs/detox"}, "egress": {"$ref": "#/$defs/egress"}}
+    },
+    "detox": {
+      "type": "object", "additionalProperties": false, "required": ["spell", "spellId", "targetListScreen", "levelBranches", "callOrder", "textIds"],
+      "properties": {"spell": {"const": "SPELL_DETOX"}, "spellId": {"const": 2}, "targetListScreen": {"const": "MembersItem"}, "levelBranches": {"const": [1, 2, "fallthrough"]}, "callOrder": {"const": ["GetSpellDefinitionAddress", "DecreaseCurrentMp", "GetStatusEffects", "UnequipAllItemsIfNotCursed", "SetStatusEffects", "UpdateCombatantStats"]}, "textIds": {"const": [108, 243, 303, 302, 301, 422]}}
+    },
+    "egress": {
+      "type": "object", "additionalProperties": false, "required": ["spell", "spellId", "overworldMapRange", "callOrder", "GetSavepointForMap", "postSavepointWrites", "textIds"],
+      "properties": {"spell": {"const": "SPELL_EGRESS"}, "spellId": {"const": 10}, "overworldMapRange": {"const": [66, 78]}, "callOrder": {"const": ["GetSpellDefinitionAddress", "DecreaseCurrentMp", "ExecuteFlashScreenScript", "GetSavepointForMap"]}, "GetSavepointForMap": {"const": 30188}, "postSavepointWrites": {"const": ["MAP_EVENT_TYPE=1", "byte=0", "d0", "d1", "d2", "d3", "PLAYER_TYPE=0"]}, "textIds": {"const": [243, 312]}}
+    },
+    "itemAction": {
+      "type": "object", "additionalProperties": false, "required": ["menuConstant", "selectorMapping", "cancel", "use", "give", "equip", "drop"],
+      "properties": {"menuConstant": {"const": "MENU_ITEM"}, "selectorMapping": {"$ref": "#/$defs/itemSelectorMapping"}, "cancel": {"const": -1}, "use": {"$ref": "#/$defs/itemUse"}, "give": {"$ref": "#/$defs/itemGive"}, "equip": {"$ref": "#/$defs/itemEquip"}, "drop": {"$ref": "#/$defs/itemDrop"}}
+    },
+    "itemUse": {
+      "type": "object", "additionalProperties": false, "required": ["angelWing", "angelWingId", "overworldMapRange", "angelWingCallOrder", "fieldUsabilityTarget", "IsItemUsableOnField", "usableFieldItemsAddress", "mapItemEventTarget", "RunMapSetupItemEvent", "targetUseTarget", "UseItemOnField", "branchOrder", "textIds"],
+      "properties": {"angelWing": {"const": "ITEM_ANGEL_WING"}, "angelWingId": {"const": 4}, "overworldMapRange": {"const": [66, 78]}, "angelWingCallOrder": {"const": ["RemoveItemBySlot", "Egress"]}, "fieldUsabilityTarget": {"const": "IsItemUsableOnField"}, "IsItemUsableOnField": {"const": 141770}, "usableFieldItemsAddress": {"const": 141794}, "mapItemEventTarget": {"const": "RunMapSetupItemEvent"}, "RunMapSetupItemEvent": {"const": 292230}, "targetUseTarget": {"const": "UseItemOnField"}, "UseItemOnField": {"const": 141804}, "branchOrder": {"const": ["angelWing", "fieldUsability", "mapItemEvent", "targetUse"]}, "textIds": {"const": [73, 422]}}
+    },
+    "itemGive": {
+      "type": "object", "additionalProperties": false, "required": ["branchOrder", "inventoryCapacity", "cursedGuardTargets", "exchangeCallOrder", "textIds"],
+      "properties": {"branchOrder": {"const": ["selection", "equipmentType", "cursedGuards", "recipient", "give", "exchange"]}, "inventoryCapacity": {"const": 4}, "cursedGuardTargets": {"const": ["GetEquippedWeapon", "GetEquippedRing", "IsItemCursed"]}, "exchangeCallOrder": {"const": ["UnequipItemBySlotIfNotCursed", "DropItemBySlot", "AddItem", "RemoveItemBySlot", "AddItem"]}, "textIds": {"const": [55, 54, 74, 65, 66]}}
+    },
+    "itemEquip": {
+      "type": "object", "additionalProperties": false, "required": ["selector", "listScreen", "cancel"],
+      "properties": {"selector": {"const": 2}, "listScreen": {"const": "MembersItem"}, "cancel": {"const": -1}}
+    },
+    "itemDrop": {
+      "type": "object", "additionalProperties": false, "required": ["unsellableMask", "rareMask", "confirmationTarget", "AltYesNoPrompt", "confirmationAccept", "branchOrder", "textIds"],
+      "properties": {"unsellableMask": {"const": 16}, "rareMask": {"const": 8}, "confirmationTarget": {"const": "alt_YesNoPrompt"}, "AltYesNoPrompt": {"const": 86668}, "confirmationAccept": {"const": 0}, "branchOrder": {"const": ["unsellable", "confirmation", "cursedGuards", "remove", "rareDeals"]}, "textIds": {"const": [62, 69, 55, 67]}}
+    },
+    "searchAction": {
+      "type": "object", "additionalProperties": false, "required": ["clearRegister", "target", "CheckArea", "return"],
+      "properties": {"clearRegister": {"const": "d6"}, "target": {"const": "CheckArea"}, "CheckArea": {"const": 145506}, "return": {"const": "ExitMain"}}
+    },
+    "forceListHelper": {
+      "type": "object", "additionalProperties": false, "required": ["UpdateForce", "callOrder", "counter", "copyOrder"],
+      "properties": {"UpdateForce": {"const": 39168}, "callOrder": {"const": ["UpdateForce", "TARGETS_LIST_LENGTH", "copyBytes", "DBF"]}, "counter": {"const": "TARGETS_LIST_LENGTH-1"}, "copyOrder": {"const": "TARGETS_LIST-to-GENERIC_LIST"}}
+    },
+    "excludedUnusedTail": {
+      "type": "object", "additionalProperties": false, "required": ["tableAddress", "tableByteCount", "helperAddress", "helperByteCount"],
+      "properties": {"tableAddress": {"const": 137750}, "tableByteCount": {"const": 6}, "helperAddress": {"const": 137756}, "helperByteCount": {"const": 30}}
+    },
+    "unknowns": {
+      "type": "object", "additionalProperties": false,
+      "required": ["natural-story-field-menu-reachability", "caller-entry-state", "actual-main-choice", "actual-member-selection-and-return", "actual-magic-selection-and-target", "actual-detox-status-outcome", "actual-egress-map-and-event-outcome", "actual-item-submenu-choice", "actual-item-use-selection-target-and-result", "actual-map-item-event-consumption", "actual-item-give-or-exchange", "actual-item-equip-result", "actual-item-drop-confirmation-and-result", "actual-search-area-result", "input-repeat-cancel-and-cadence", "window-cursor-portrait-text-sound-presentation", "persistence-across-map-save-story", "caller-return-state-and-vint-reactivation"],
+      "properties": {
+        "natural-story-field-menu-reachability": {"const": "Unknown"}, "caller-entry-state": {"const": "Unknown"}, "actual-main-choice": {"const": "Unknown"}, "actual-member-selection-and-return": {"const": "Unknown"}, "actual-magic-selection-and-target": {"const": "Unknown"}, "actual-detox-status-outcome": {"const": "Unknown"}, "actual-egress-map-and-event-outcome": {"const": "Unknown"}, "actual-item-submenu-choice": {"const": "Unknown"}, "actual-item-use-selection-target-and-result": {"const": "Unknown"}, "actual-map-item-event-consumption": {"const": "Unknown"}, "actual-item-give-or-exchange": {"const": "Unknown"}, "actual-item-equip-result": {"const": "Unknown"}, "actual-item-drop-confirmation-and-result": {"const": "Unknown"}, "actual-search-area-result": {"const": "Unknown"}, "input-repeat-cancel-and-cadence": {"const": "Unknown"}, "window-cursor-portrait-text-sound-presentation": {"const": "Unknown"}, "persistence-across-map-save-story": {"const": "Unknown"}, "caller-return-state-and-vint-reactivation": {"const": "Unknown"}
+      }
+    }
+  }
+}
