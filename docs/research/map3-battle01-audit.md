@@ -81,8 +81,8 @@ research gaps registered below.
 
 ## Exact Accepted-Index Audit
 
-The research index now contains **1,625 records**, **173 fixtures** (79 H2, 94 H3), and
-**2,626 address bindings**. The scenario-relevant denominators are:
+The research index now contains **1,625 records**, **176 fixtures** (82 H2, 94 H3), and
+**2,703 address bindings**. The scenario-relevant denominators are:
 
 | Evidence surface | Exact count | Owner |
 | --- | ---: | --- |
@@ -291,17 +291,19 @@ must not expand into unrelated driver behavior.
 
 ### 12. Victory, after-battle, return
 
-**Confirmed:** generic victory mutation order (heal party, after-battle seam, clear unlocked, set
-completed at +100, return `D4=1`); defeat path (restore leader HP, halve gold, egress); cutscene
-routing (after-battle skips when completed flag set, then joins the per-battle table); Battle 01
-after-battle cutscene data indexed; after-battle positions data table.
+**Confirmed (static only):** `BattleLoop_Victory` at `0x23CBA` selects the bounded Battle 01
+after-battle route/program, clears source-derived `F401`, sets source-derived `F501`, returns
+`d4 = 1`, and MainLoop calls SwitchMap then the unentered ExplorationLoop target. This adds the
+selected static spine to the generic victory mutation order (heal party, after-battle seam, clear
+unlocked, set completed at +100, return `D4=1`); the generic defeat path (restore leader HP, halve
+gold, egress), cutscene routing, and Battle 01 after-battle data remain retained static evidence.
 
-**Gaps (RA-07):** no natural victory has been observed through the normal controller; the Battle 01
-after-battle MAPSCRIPT's effects, the return routing into the following map state, and the exact
-observable endpoint state are **Unknown**. ADR 0010 option 5B fixes the endpoint shape as the first
-stable player-controllable state after victory mutation, after-battle program execution, and return
-handoff; Research still must establish its exact values and the presentation/hardware trace through
-that boundary.
+**Gaps (RA-07):** the selected R4a static spine does not observe a natural victory, actual Battle 01
+after-battle MAPSCRIPT completion/effects, return chronology, or an observable endpoint state; all
+remain **Unknown**. ADR 0010 option 5B fixes the endpoint shape as the first stable
+player-controllable state after victory mutation, after-battle program execution, and return handoff;
+it does not provide the missing trace. R4b/H4 must establish those runtime facts. RA-06, RA-11, and
+RA-12 remain **Unknown**; the audit is **OPEN** and **NOT READY**.
 
 ### 13. Observable endpoint state
 
@@ -348,7 +350,7 @@ slice under ADR 0003 (one launch per coherent matrix).
 | RA-04 | 7 | Map-to-battle admission | R2c confirms static Map 21 → 40 → 57, CheckBattle/BattleLoop/before/start/LoadBattle spine; natural admission and caller order still require evidence | **Confirmed** static spine / **Unknown** natural admission/caller order | Blocking |
 | RA-05 | 8 | Battle 01 natural encounter state | R2c/R3a confirm static definitions/init/turn-generation/first-consumer-control foundation; capture the full natural scenario state and first actor without inferring player readiness | **Confirmed** debug-entry and static foundation; **Unknown** natural snapshot/first actor/player-ready | Blocking |
 | RA-06 | 9+10 | Complete playable battle trace | R3a/R3b/R3c/R3d confirm only the static control-to-ApplyActionEffect-to-DropEnemyItem-to-action-completion/caller-finalization graph through unentered `0x23BB2 -> 0x23B40`; fixed-seed, scripted-input H4 reference matrix through victory must record the chronological player/AI/navigation/action/resolution/reward/status trace and every reached branch | **Confirmed** bounded/static graph; **Unknown** complete | Blocking |
-| RA-07 | 12 | Victory, after-battle, endpoint state | R3d adds only static unentered victory/defeat edges; continue the battle matrix through victory to the after-battle seam: program execution, return routing, and post-battle state capture | **Confirmed** generic order/static edges; **Unknown** natural | Blocking |
+| RA-07 | 12 | Victory, after-battle, endpoint state | R4a confirms only the selected unentered victory body → Battle 01 after-battle program → `F401`/`F501` → `d4=1` → MainLoop SwitchMap/Exploration static spine; R4b must observe natural execution, program completion/effects, return routing, and post-battle state | **Confirmed** selected static spine; **Unknown** natural/runtime endpoint | Blocking |
 | RA-08 | 5 | Field menu on route | R2 opening records `not-reached`; R2c introduces no menu dependency, while route continuity remains Unknown | **Confirmed** NotReached opening / **Unknown** continuity | Route-dependent |
 | RA-09 | 4 | Route dialogue chronology | R2c retains only source command/text IDs and hashes; actual dialogue prose and chronology remain private/Unknown | **Confirmed** structural IDs/hashes / **Unknown** prose and chronology | Blocking |
 | RA-10 | 14 | Deferred persistence boundary | Record the accepted 6A exclusion, restart-to-admitted-snapshot behavior, and harness-reset ≠ save; retain cross-process durability as a separate-milestone Unknown | **Confirmed** in-process; **Unknown** durable | Deferred / non-blocking |
@@ -406,8 +408,8 @@ root/worker slice contract (ADR 0004):
    scripted H4 reference inputs from natural entry through victory; capture every reached logical and
    8C scene/audio/hardware layer while reusing accepted battle, scene, graphics, sound, and timing
    fixtures as authoritative subsystem goldens rather than copying or weakening them.
-7. **Slice R4 — after-battle, endpoint, and H4 definition closure (RA-07, RA-11, RA-12):** continue
-   R3 through the after-program seam to the accepted 5B endpoint; freeze the final state contract,
+7. **Slice R4b — after-battle, endpoint, and H4 definition closure (RA-07, RA-11, RA-12):** after
+   R4a's selected static spine, continue through the observed after-program seam to the accepted 5B endpoint; freeze the final state contract,
    private capture manifest, comparison domains, exact or field-specific tolerances, licensing-safe
    public report, and the separate 9A/10A accessibility/deviation assertions.
 8. **Deferred/non-blocking:** RA-10 persistence remains outside the 6A milestone. No save H3 slice is

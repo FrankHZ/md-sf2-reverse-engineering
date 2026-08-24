@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 80 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 82 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 2,646 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,703 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -87,6 +87,12 @@ continuation and statically guards caller replay/teardown/reload plus BattleLoop
 after-turn, outcome edges, and the unentered `0x23BB2 -> 0x23B40` backedge. It is H2-only;
 natural continuity and all reached branches/results, player readiness, victory/defeat bodies, and R4
 remain **Unknown**.
+
+The `sf2-map3-battle01-victory-return-static-v1` rail starts at the unentered Victory body
+`0x23CBA`, retains the selected after-battle route/program, `F401` clear then `F501` set,
+`d4 = 1` return, and MainLoop SwitchMap/Exploration call edge. Its 16-source/46-anchor corpus is
+H2-only: natural victory, executed program/join effects, re-entry chronology, stable 5B endpoint,
+complete 8C, R4b, and H3 remain **Unknown**.
 
 ## Subsystem Boundary
 

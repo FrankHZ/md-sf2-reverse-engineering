@@ -231,6 +231,9 @@ Data-side directory inventory and ROM parity:
 - [map3-battle01-turn-finalization.md](./research/map3-battle01-turn-finalization.md): the public-safe
   H2 caller-finalization spine through replay/teardown/reload and both cleanup/count joins to the
   unentered `0x23BB2 -> 0x23B40` next-turn backedge; runtime outcomes remain Unknown.
+- [map3-battle01-victory-return.md](./research/map3-battle01-victory-return.md): the H2-selected
+  Victory → after-battle program → F401/F501 → MainLoop SwitchMap/Exploration call spine; natural
+  victory, executed effects, and endpoint state remain Unknown.
 - [`map-data-inventory.md`](./research/map-data-inventory.md): the complete 1,390-file map ASM build
   graph, 727 internal H1 bindings, 662 include-site-only bodies, 64+66 setup-selection rows, ROM
   parity of the 126 six-pointer setup tables, 125 entity-list sources/980 physical records with suffix

@@ -133,6 +133,37 @@
                             "turnFinalizationSpine.functionAddresses.ProcessAfterTurnEffects",
                             "turnFinalizationSpine.functionAddresses.BattleLoop_Victory",
                             "turnFinalizationSpine.outcomeBoundaries.defeatAddress"
+                          ] },
+                          { "enum": [
+                            "victoryReturnSpine.victoryBody.entryAddress",
+                            "victoryReturnSpine.victoryBody.afterBattleCallAddress",
+                            "victoryReturnSpine.victoryBody.clearUnlockedFlagCallAddress",
+                            "victoryReturnSpine.victoryBody.setCompletedFlagCallAddress",
+                            "victoryReturnSpine.victoryBody.resultAddress",
+                            "victoryReturnSpine.victoryBody.returnAddress",
+                            "victoryReturnSpine.functionAddresses.HealLivingAndImmortalAllies",
+                            "victoryReturnSpine.afterBattleRouting.entryAddress",
+                            "victoryReturnSpine.afterBattleRouting.completionCheckAddress",
+                            "victoryReturnSpine.afterBattleRouting.routeLoadAddress",
+                            "victoryReturnSpine.afterBattleRouting.executeScriptCallAddress",
+                            "victoryReturnSpine.afterBattleRouting.executeScriptResumeAddress",
+                            "victoryReturnSpine.functionAddresses.ExecuteMapScript",
+                            "victoryReturnSpine.afterBattleRouting.tableAddress",
+                            "victoryReturnSpine.afterBattleRouting.battle01RowAddress",
+                            "victoryReturnSpine.battle01AfterBattleProgram.entryAddress",
+                            "victoryReturnSpine.battle01AfterBattleProgram.programEndAddress",
+                            "victoryReturnSpine.battle01AfterBattleProgram.entityTableAddress",
+                            "victoryReturnSpine.afterBattleJoin.entryAddress",
+                            "victoryReturnSpine.afterBattleJoin.joinCallAddress",
+                            "victoryReturnSpine.afterBattleJoin.returnAddress",
+                            "victoryReturnSpine.afterBattleJoin.tableAddress",
+                            "victoryReturnSpine.afterBattleJoin.battle01RowAddress",
+                            "victoryReturnSpine.mainLoopReturn.mainLoopEntryAddress",
+                            "victoryReturnSpine.mainLoopReturn.battleLoopCallAddress",
+                            "victoryReturnSpine.mainLoopReturn.postBattleResumeAddress",
+                            "victoryReturnSpine.mainLoopReturn.explorationCallAddress",
+                            "victoryReturnSpine.functionAddresses.SwitchMap",
+                            "victoryReturnSpine.functionAddresses.ExplorationLoop"
                           ] }
                         ]
                       }

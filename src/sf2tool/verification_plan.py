@@ -54,6 +54,7 @@ H2_COMMAND_GROUPS = {
         "map3-battle01-action-effect",
         "map3-battle01-turn-control",
         "map3-battle01-turn-finalization",
+        "map3-battle01-victory-return",
     ),
     "h2-stats-items": (
         "ally-data",
