@@ -583,6 +583,12 @@ def test_research_index_has_only_the_exact_action_completion_registration() -> N
             "entry",
             "write-battlescene-call",
             "write-battlescene-resume",
+            "initialize-battlescene-call",
+            "execute-battlescene-call",
+            "end-battlescene-call",
+            "leader-death-positions-call",
+            "reload-battle-call",
+            "return",
         },
     }
     expected_new_address_shapes = {

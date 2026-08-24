@@ -81,7 +81,7 @@
                       "fixtureField": {
                         "type": "string",
                         "anyOf": [
-                          { "pattern": "^(?!sourceContext\\.actionCompletionSpine\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
+                          { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
                           { "enum": [
                             "actionCompletionSpine.functionAddresses.WriteBattlesceneScript",
                             "actionCompletionSpine.startResumes.primaryTargetLoop",
@@ -103,6 +103,36 @@
                             "actionCompletionSpine.functionAddresses.battlesceneScript_GiveExpAndGold",
                             "actionCompletionSpine.executeIndividualTurnHandoff.callAddress",
                             "actionCompletionSpine.executeIndividualTurnHandoff.resumeAddress"
+                          ] },
+                          { "enum": [
+                            "turnFinalizationSpine.replayContinuation.resumeAddress",
+                            "turnFinalizationSpine.replayContinuation.initializeBattlesceneCallAddress",
+                            "turnFinalizationSpine.replayContinuation.executeBattlesceneCallAddress",
+                            "turnFinalizationSpine.replayContinuation.executeBattlesceneScriptEndAddress",
+                            "turnFinalizationSpine.replayContinuation.endBattlesceneCallAddress",
+                            "turnFinalizationSpine.replayContinuation.leaderDeathPositionsCallAddress",
+                            "turnFinalizationSpine.replayContinuation.loadBattleCallAddress",
+                            "turnFinalizationSpine.replayContinuation.returnAddress",
+                            "turnFinalizationSpine.functionAddresses.InitializeBattlescene",
+                            "turnFinalizationSpine.functionAddresses.ExecuteBattlesceneScript",
+                            "turnFinalizationSpine.functionAddresses.EndBattlescene",
+                            "turnFinalizationSpine.functionAddresses.ApplyPositionsAfterEnemyLeaderDies",
+                            "turnFinalizationSpine.functionAddresses.LoadBattle",
+                            "turnFinalizationSpine.functionAddresses.BattleLoop",
+                            "turnFinalizationSpine.outerLoop.executeTurnResumeAddress",
+                            "turnFinalizationSpine.outerLoop.defeatedCutsceneCallAddress",
+                            "turnFinalizationSpine.outerLoop.processKilledFirstCallAddress",
+                            "turnFinalizationSpine.outerLoop.countFirstCallAddress",
+                            "turnFinalizationSpine.outerLoop.afterTurnCallAddress",
+                            "turnFinalizationSpine.outerLoop.afterTurnResumeAddress",
+                            "turnFinalizationSpine.outerLoop.countSecondCallAddress",
+                            "turnFinalizationSpine.outerLoop.nextTurnDispatchAddress",
+                            "turnFinalizationSpine.functionAddresses.ExecuteBattleCutscene_Defeated",
+                            "turnFinalizationSpine.functionAddresses.ProcessKilledCombatants",
+                            "turnFinalizationSpine.functionAddresses.CountRemainingCombatants",
+                            "turnFinalizationSpine.functionAddresses.ProcessAfterTurnEffects",
+                            "turnFinalizationSpine.functionAddresses.BattleLoop_Victory",
+                            "turnFinalizationSpine.outcomeBoundaries.defeatAddress"
                           ] }
                         ]
                       }
