@@ -263,6 +263,10 @@ Data-side directory inventory and ROM parity:
 - [`map-event-direct-state.md`](./research/map-event-direct-state.md): the complete direct fixed-RAM
   source/H1/ROM footprint in map-event target programs, including contextual versus physical alias
   accounting and grouped runtime Unknowns.
+- [`map-event-direct-control.md`](./research/map-event-direct-control.md): the complete caller-side
+  raw-68000 direct-call/tail-transfer topology in the retained map-event program corpus, including
+  alias-aware effective targets, callee-entry owners, lexical continuations, physical-PC
+  deduplication, and grouped runtime Unknowns.
 - [`map-content.md`](./research/map-content.md): the complete source/H1/ROM parity of 79 46-byte map
   entries, 662 source-form content sections, and 154 private blocks/layout payloads, the canonical
   Python decode of 77 bitstream pairs, the 1,859-resource/79-map engine-neutral import (including 64

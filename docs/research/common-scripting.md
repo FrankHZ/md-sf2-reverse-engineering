@@ -1060,6 +1060,15 @@ index `tests/fixtures/h2/map-events-static-v1.json`, semantic shard
 `tests/fixtures/h2/map-events/sound-commands.json`, recomposed fields `soundCommand*`. Evidence date:
 2026-08-02.
 
+**Confirmed — retained map-event direct-control join:**
+`sf2-map-event-direct-control-static-v1` consumes the already complete 914-program map-event corpus
+without duplicating its map-script or service algorithms. Its caller-side relation retains the 205
+raw direct `jsr`/`bsr`/`jmp` contexts, alias-aware effective targets, and only lexical call
+continuations or tail suffixes. `ExecuteMapScript`, `DisplayText`, `Sleep`, and other effective
+callee identities remain source-owner joins, not a second interpretation of their bodies. Normal
+reachability, caller state/order, callee effects, timing, persistence, and presentation remain the
+direct-control owner's grouped **Unknown** boundary.
+
 **Confirmed (bounded H3):** `sf2-map-script-control-audio-runtime-v1` runs six RAM-owned streams in
 one BizHawk 2.11.1 / Genesis Plus GX Map Test 0 launch through the unmodified `ExecuteMapScript` loop.
 The observer confirms the normal `csWait` D0=1 call's one `WaitForVInt` entry and the debug

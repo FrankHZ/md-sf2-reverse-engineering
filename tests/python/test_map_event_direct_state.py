@@ -250,6 +250,41 @@ def test_fixture_schema_is_closed_and_rejects_private_or_runtime_fields() -> Non
 
 def test_research_index_adds_exact_direct_state_bindings_without_object_drift() -> None:
     index = load_json(INDEX)
+    normalized = deepcopy(index)
+    removed_direct_control_records: set[str] = set()
+    for record in normalized["records"]:
+        direct_control = [
+            evidence
+            for evidence in record["evidence"]
+            if evidence["fixtureId"] == "sf2-map-event-direct-control-static-v1"
+        ]
+        if not direct_control:
+            continue
+        assert len(direct_control) == 1
+        assert direct_control[0] == {
+            "level": "H2",
+            "fixture": "tests/fixtures/h2/map-event-direct-control-static-v1.json",
+            "fixtureId": "sf2-map-event-direct-control-static-v1",
+            "verifier": "src/sf2tool/h2/map_event_direct_control.py",
+            "bindings": [
+                {
+                    "addressId": "entry",
+                    "fixtureField": (
+                        f"eventDirectControl.sourceFiles.{record['symbol']}.tableEntryAddress"
+                    ),
+                }
+            ],
+        }
+        assert record["documents"].count("docs/research/map-event-direct-control.md") == 1
+        assert record["documents"][-1] == "docs/research/map-event-direct-control.md"
+        record["evidence"] = [
+            evidence
+            for evidence in record["evidence"]
+            if evidence["fixtureId"] != "sf2-map-event-direct-control-static-v1"
+        ]
+        record["documents"].remove("docs/research/map-event-direct-control.md")
+        removed_direct_control_records.add(record["id"])
+    assert len(removed_direct_control_records) == 53
     base = json.loads(
         subprocess.run(
             ["git", "show", f"{BASE}:manifests/research-index.json"],
@@ -260,7 +295,7 @@ def test_research_index_adds_exact_direct_state_bindings_without_object_drift() 
             encoding="utf-8",
         ).stdout
     )
-    records = {record["id"]: record for record in index["records"]}
+    records = {record["id"]: record for record in normalized["records"]}
     base_records = {record["id"]: record for record in base["records"]}
     assert set(records) == set(base_records)
 

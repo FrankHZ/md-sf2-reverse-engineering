@@ -20,6 +20,8 @@ _PRE_SLICE_INDEX_SHA256 = "5DB260172DBCA315A46AE1E713785BCE0E97081939500E2C213BB
 _DIRECT_STATE_FIXTURE_ID = "sf2-map-event-direct-state-static-v1"
 _DIRECT_STATE_VERIFIER = "src/sf2tool/h2/map_event_direct_state.py"
 _DIRECT_STATE_DOCUMENT = "docs/research/map-event-direct-state.md"
+_DIRECT_CONTROL_FIXTURE_ID = "sf2-map-event-direct-control-static-v1"
+_DIRECT_CONTROL_DOCUMENT = "docs/research/map-event-direct-control.md"
 _DIRECT_STATE_OWNER_IDS = {
     "map.data.ms-map2-entityevents", "map.data.ms-map3-flag506-entityevents",
     "map.data.ms-map3-flag609-entityevents", "map.data.ms-map5-flag530-entityevents",
@@ -660,6 +662,7 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
     removed_later_document_records: set[str] = set()
     removed_direct_state_evidence_records: set[str] = set()
     removed_direct_state_document_records: set[str] = set()
+    removed_direct_control_records: set[str] = set()
 
     def remove_later_field_search_document(documents: list[str]) -> None:
         assert documents[-2:] == [
@@ -671,6 +674,36 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
 
     for record in normalized["records"]:
         record_id = record["id"]
+        direct_control_evidence = [
+            evidence
+            for evidence in record["evidence"]
+            if evidence["fixtureId"] == _DIRECT_CONTROL_FIXTURE_ID
+        ]
+        if direct_control_evidence:
+            assert len(direct_control_evidence) == 1
+            assert direct_control_evidence[0] == {
+                "level": "H2",
+                "fixture": "tests/fixtures/h2/map-event-direct-control-static-v1.json",
+                "fixtureId": _DIRECT_CONTROL_FIXTURE_ID,
+                "verifier": "src/sf2tool/h2/map_event_direct_control.py",
+                "bindings": [
+                    {
+                        "addressId": "entry",
+                        "fixtureField": (
+                            f"eventDirectControl.sourceFiles.{record['symbol']}.tableEntryAddress"
+                        ),
+                    }
+                ],
+            }
+            assert record["documents"].count(_DIRECT_CONTROL_DOCUMENT) == 1
+            assert record["documents"][-1] == _DIRECT_CONTROL_DOCUMENT
+            record["evidence"] = [
+                evidence
+                for evidence in record["evidence"]
+                if evidence["fixtureId"] != _DIRECT_CONTROL_FIXTURE_ID
+            ]
+            record["documents"].remove(_DIRECT_CONTROL_DOCUMENT)
+            removed_direct_control_records.add(record_id)
         direct_state_evidence = [
             evidence
             for evidence in record["evidence"]
@@ -778,6 +811,7 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
     assert removed_later_document_records == later_owner_ids
     assert removed_direct_state_evidence_records == _DIRECT_STATE_OWNER_IDS
     assert removed_direct_state_document_records == _DIRECT_STATE_OWNER_IDS
+    assert len(removed_direct_control_records) == 53
     assert _canonical_sha256(normalized) == _PRE_SLICE_INDEX_SHA256
 
     malformed_later_documents = list(records["menus.field-main"]["documents"])
