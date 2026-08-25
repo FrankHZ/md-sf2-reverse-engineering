@@ -36,6 +36,7 @@ from sf2tool.h2.enemy_map_sprites import verify_enemy_map_sprites_contract
 from sf2tool.h2.entity_action_scripts import verify_entity_action_script_contract
 from sf2tool.h2.field_item_effects import verify_field_item_effects_static
 from sf2tool.h2.field_menu_control import verify_field_menu_control_static
+from sf2tool.h2.field_search_control import verify_field_search_control_static
 from sf2tool.h2.gameflow import verify_gameflow_inventory
 from sf2tool.h2.graphics import verify_graphics_inventory
 from sf2tool.h2.icon_graphics import verify_icon_graphics_contract
@@ -467,6 +468,10 @@ def build_parser() -> argparse.ArgumentParser:
         "field-item-effects", help="verify static exploration-field item effects"
     )
     _add_local_paths(h2_field_item_effects)
+    h2_field_search_control = h2_commands.add_parser(
+        "field-search-control", help="verify the static field-search control spine"
+    )
+    _add_local_paths(h2_field_search_control)
     h2_tech_interrupts = h2_commands.add_parser(
         "tech-interrupts", help="inventory VInt, DMA, fading, traps, and technical handlers"
     )
@@ -1385,6 +1390,8 @@ def dispatch(args: argparse.Namespace) -> None:
         print_json(verify_field_menu_control_static(args.rom_path, args.upstream_path))
     elif args.command == "h2" and args.h2_command == "field-item-effects":
         print_json(verify_field_item_effects_static(args.rom_path, args.upstream_path))
+    elif args.command == "h2" and args.h2_command == "field-search-control":
+        print_json(verify_field_search_control_static(args.rom_path, args.upstream_path))
     elif args.command == "h2" and args.h2_command == "tech-interrupts":
         print_record(
             verify_interrupt_inventory(

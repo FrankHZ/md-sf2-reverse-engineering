@@ -43,15 +43,15 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Status"] == "PASS"
     assert result["Records"] == 1625
     assert result["Confirmed"] == 1625
-    assert result["H2Fixtures"] == 84
+    assert result["H2Fixtures"] == 85
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 94
-    assert result["AddressBindings"] == 2747
+    assert result["AddressBindings"] == 2768
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1588
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
-    assert result["ResearchDocuments"] == 46
+    assert result["ResearchDocuments"] == 47
     assert result["DesignContracts"] == 68
 
 
@@ -354,6 +354,14 @@ def test_field_menu_control_has_a_static_rom_parity_command() -> None:
 def test_field_item_effects_has_a_static_rom_parity_command() -> None:
     args = build_parser().parse_args(["h2", "field-item-effects"])
     assert args.h2_command == "field-item-effects"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.upstream_path.name == "SF2DISASM"
+    assert not hasattr(args, "output_path")
+
+
+def test_field_search_control_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "field-search-control"])
+    assert args.h2_command == "field-search-control"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.upstream_path.name == "SF2DISASM"
     assert not hasattr(args, "output_path")

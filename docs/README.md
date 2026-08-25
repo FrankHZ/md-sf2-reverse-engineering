@@ -143,6 +143,9 @@ observation, and reproduction commands.
   boundaries.
 - [`field-menu-control.md`](./research/field-menu-control.md): the separately owned static FieldMenu
   caller, selector, branch/call-order, force-list-helper, and explicit runtime-Unknown boundary.
+- [`field-search-control.md`](./research/field-search-control.md): the static `CheckArea` caller,
+  faced-tile, block-dispatch, content, fallback, and rollback control spine with its grouped runtime
+  Unknown register.
 - [`field-item-effects.md`](./research/field-item-effects.md): the static exploration-field item
   caller/usability/dispatch/effect contract, H1/ROM guards, retained-owner joins, and grouped runtime
   Unknown boundary.

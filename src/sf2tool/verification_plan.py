@@ -117,6 +117,7 @@ H2_COMMAND_GROUPS = {
         "common-menus",
         "field-item-effects",
         "field-menu-control",
+        "field-search-control",
         "gameflow-core",
         "remaining-core",
         "tech-graphics",

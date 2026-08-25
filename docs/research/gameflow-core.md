@@ -86,6 +86,10 @@ when every inventory is full, the chest is closed or the non-chest item is resto
 chest, scroll, and plane update code is owned by the same exploration boundary, but its visible frame
 sequence is not promoted from static evidence.
 
+The bounded [field-search-control.md](field-search-control.md) owner retains the exact static
+`CheckArea` caller polarity, faced-tile derivation, dispatch order, content classification, and
+fallback/rollback control. This core document retains the broader exploration inventory only.
+
 ## Concentrated Runtime Queue
 
 No emulator was launched for this inventory. Four coherent matrices remain queued:
