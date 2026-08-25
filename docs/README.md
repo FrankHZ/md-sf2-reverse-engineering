@@ -143,6 +143,9 @@ observation, and reproduction commands.
   boundaries.
 - [`field-menu-control.md`](./research/field-menu-control.md): the separately owned static FieldMenu
   caller, selector, branch/call-order, force-list-helper, and explicit runtime-Unknown boundary.
+- [`field-item-effects.md`](./research/field-item-effects.md): the static exploration-field item
+  caller/usability/dispatch/effect contract, H1/ROM guards, retained-owner joins, and grouped runtime
+  Unknown boundary.
 - [`technical-interrupts.md`](./research/technical-interrupts.md): VInt, DMA, fade, input repeat,
   wait/sleep handshake, trap routing, and hardware timing awaiting batched verification.
 - [`technical-graphics.md`](./research/technical-graphics.md): decompression, display initialization,
