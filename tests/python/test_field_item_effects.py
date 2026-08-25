@@ -22,6 +22,8 @@ _DIRECT_STATE_VERIFIER = "src/sf2tool/h2/map_event_direct_state.py"
 _DIRECT_STATE_DOCUMENT = "docs/research/map-event-direct-state.md"
 _DIRECT_CONTROL_FIXTURE_ID = "sf2-map-event-direct-control-static-v1"
 _DIRECT_CONTROL_DOCUMENT = "docs/research/map-event-direct-control.md"
+_HANDOFF_FIXTURE_ID = "sf2-map-event-direct-handoff-static-v1"
+_HANDOFF_DOCUMENT = "docs/research/map-event-direct-handoff.md"
 _DIRECT_STATE_OWNER_IDS = {
     "map.data.ms-map2-entityevents", "map.data.ms-map3-flag506-entityevents",
     "map.data.ms-map3-flag609-entityevents", "map.data.ms-map5-flag530-entityevents",
@@ -663,6 +665,7 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
     removed_direct_state_evidence_records: set[str] = set()
     removed_direct_state_document_records: set[str] = set()
     removed_direct_control_records: set[str] = set()
+    removed_handoff_records: set[str] = set()
 
     def remove_later_field_search_document(documents: list[str]) -> None:
         assert documents[-2:] == [
@@ -674,6 +677,37 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
 
     for record in normalized["records"]:
         record_id = record["id"]
+        handoff_evidence = [
+            evidence
+            for evidence in record["evidence"]
+            if evidence["fixtureId"] == _HANDOFF_FIXTURE_ID
+        ]
+        if handoff_evidence:
+            assert handoff_evidence == [
+                {
+                    "level": "H2",
+                    "fixture": "tests/fixtures/h2/map-event-direct-handoff-static-v1.json",
+                    "fixtureId": _HANDOFF_FIXTURE_ID,
+                    "verifier": "src/sf2tool/h2/map_event_direct_handoff.py",
+                    "bindings": [
+                        {
+                            "addressId": "entry",
+                            "fixtureField": (
+                                f"eventDirectHandoff.sourceFiles.{record['symbol']}.tableEntryAddress"
+                            ),
+                        }
+                    ],
+                }
+            ]
+            assert record["documents"].count(_HANDOFF_DOCUMENT) == 1
+            assert record["documents"][-1] == _HANDOFF_DOCUMENT
+            record["evidence"] = [
+                evidence
+                for evidence in record["evidence"]
+                if evidence["fixtureId"] != _HANDOFF_FIXTURE_ID
+            ]
+            record["documents"].remove(_HANDOFF_DOCUMENT)
+            removed_handoff_records.add(record_id)
         direct_control_evidence = [
             evidence
             for evidence in record["evidence"]
@@ -812,6 +846,7 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
     assert removed_direct_state_evidence_records == _DIRECT_STATE_OWNER_IDS
     assert removed_direct_state_document_records == _DIRECT_STATE_OWNER_IDS
     assert len(removed_direct_control_records) == 53
+    assert len(removed_handoff_records) == 53
     assert _canonical_sha256(normalized) == _PRE_SLICE_INDEX_SHA256
 
     malformed_later_documents = list(records["menus.field-main"]["documents"])

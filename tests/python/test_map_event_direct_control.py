@@ -30,6 +30,8 @@ BASE = "76895279f133c2d49ba10a71196d85429378fd6d"
 FIXTURE_ID = "sf2-map-event-direct-control-static-v1"
 DOCUMENT = "docs/research/map-event-direct-control.md"
 VERIFIER = "src/sf2tool/h2/map_event_direct_control.py"
+HANDOFF_FIXTURE_ID = "sf2-map-event-direct-handoff-static-v1"
+HANDOFF_DOCUMENT = "docs/research/map-event-direct-handoff.md"
 
 
 def _fixture() -> dict[str, Any]:
@@ -376,7 +378,42 @@ def test_fixture_schema_is_recursively_closed_public_and_exact() -> None:
 
 
 def test_research_index_delta_is_exact_53_object_append_without_record_or_address_drift() -> None:
-    index = load_json(INDEX)
+    index = deepcopy(load_json(INDEX))
+    removed_handoff_records: set[str] = set()
+    for record in index["records"]:
+        handoff = [
+            evidence
+            for evidence in record["evidence"]
+            if evidence["fixtureId"] == HANDOFF_FIXTURE_ID
+        ]
+        if not handoff:
+            continue
+        assert handoff == [
+            {
+                "level": "H2",
+                "fixture": "tests/fixtures/h2/map-event-direct-handoff-static-v1.json",
+                "fixtureId": HANDOFF_FIXTURE_ID,
+                "verifier": "src/sf2tool/h2/map_event_direct_handoff.py",
+                "bindings": [
+                    {
+                        "addressId": "entry",
+                        "fixtureField": (
+                            f"eventDirectHandoff.sourceFiles.{record['symbol']}.tableEntryAddress"
+                        ),
+                    }
+                ],
+            }
+        ]
+        assert record["documents"].count(HANDOFF_DOCUMENT) == 1
+        assert record["documents"][-1] == HANDOFF_DOCUMENT
+        record["evidence"] = [
+            evidence
+            for evidence in record["evidence"]
+            if evidence["fixtureId"] != HANDOFF_FIXTURE_ID
+        ]
+        record["documents"].remove(HANDOFF_DOCUMENT)
+        removed_handoff_records.add(record["id"])
+    assert len(removed_handoff_records) == 53
     base = json.loads(
         subprocess.run(
             ["git", "show", f"{BASE}:manifests/research-index.json"],
@@ -425,16 +462,16 @@ def test_research_index_delta_is_exact_53_object_append_without_record_or_addres
         "Index": "manifests/research-index.json",
         "Records": 1625,
         "Confirmed": 1625,
-        "H2Fixtures": 87,
+        "H2Fixtures": 88,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 2859,
+        "AddressBindings": 2912,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1588,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 49,
+        "ResearchDocuments": 50,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,
