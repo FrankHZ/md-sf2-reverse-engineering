@@ -20,6 +20,30 @@ SCHEMA = field_search.SCHEMA
 INDEX = repo_path("manifests/research-index.json")
 INDEX_SCHEMA = repo_path("schemas/research-index.schema.json")
 _PRE_SLICE_INDEX_SHA256 = "841468CA1B4A75120BFEE0A363254839B019E23C0A704DFA2B873574E2033457"
+_DIRECT_STATE_FIXTURE_ID = "sf2-map-event-direct-state-static-v1"
+_DIRECT_STATE_VERIFIER = "src/sf2tool/h2/map_event_direct_state.py"
+_DIRECT_STATE_DOCUMENT = "docs/research/map-event-direct-state.md"
+_DIRECT_STATE_OWNER_IDS = {
+    "map.data.ms-map2-entityevents", "map.data.ms-map3-flag506-entityevents",
+    "map.data.ms-map3-flag609-entityevents", "map.data.ms-map5-flag530-entityevents",
+    "map.data.ms-map5-flag650-entityevents", "map.data.ms-map6-flag701-entityevents",
+    "map.data.ms-map8-entityevents", "map.data.ms-map9-entityevents",
+    "map.data.ms-map10-entityevents", "map.data.ms-map13-entityevents",
+    "map.data.ms-map13-flag513-entityevents", "map.data.ms-map15-entityevents",
+    "map.data.ms-map16-entityevents", "map.data.ms-map16-flag530-entityevents",
+    "map.data.ms-map18-entityevents", "map.data.ms-map19-flag506-entityevents",
+    "map.data.ms-map21-flag506-entityevents", "map.data.ms-map25-entityevents",
+    "map.data.ms-map29-entityevents", "map.data.ms-map31-flag830-entityevents",
+    "map.data.ms-map38-entityevents", "map.data.ms-map40-entityevents",
+    "map.data.ms-map44-flag507-entityevents", "map.data.ms-map63-entityevents",
+    "map.data.ms-map3-zoneevents", "map.data.ms-map16-zoneevents",
+    "map.data.ms-map20-flag543-zoneevents", "map.data.ms-map22-zoneevents",
+    "map.data.ms-map28-zoneevents", "map.data.ms-map66-zoneevents",
+    "map.data.ms-map69-zoneevents", "map.data.ms-map70-zoneevents",
+    "map.data.ms-map72-zoneevents", "map.data.ms-map74-zoneevents",
+    "map.data.ms-map76-zoneevents", "map.data.ms-map77-zoneevents",
+    "map.data.ms-map37-section5", "map.data.ms-map77-section5",
+}
 
 
 def _canonical_sha256(value: object) -> str:
@@ -865,8 +889,38 @@ def test_field_search_index_delta_is_exact_and_rejects_unknown_roots() -> None:
     removed_evidence: set[str] = set()
     removed_addresses: set[tuple[str, str, int]] = set()
     removed_documents: set[str] = set()
+    removed_direct_state_evidence: set[str] = set()
+    removed_direct_state_documents: set[str] = set()
     for record in normalized["records"]:
         record_id = record["id"]
+        direct_state_evidence = [
+            evidence
+            for evidence in record["evidence"]
+            if evidence["fixtureId"] == _DIRECT_STATE_FIXTURE_ID
+        ]
+        if direct_state_evidence:
+            assert record_id in _DIRECT_STATE_OWNER_IDS
+            assert len(direct_state_evidence) == 1
+            assert direct_state_evidence[0]["level"] == "H2"
+            assert direct_state_evidence[0]["fixture"] == (
+                "tests/fixtures/h2/map-event-direct-state-static-v1.json"
+            )
+            assert direct_state_evidence[0]["verifier"] == _DIRECT_STATE_VERIFIER
+            assert direct_state_evidence[0]["bindings"] == [
+                {
+                    "addressId": "entry",
+                    "fixtureField": (
+                        "eventDirectState.sourceFiles."
+                        f"{record['symbol']}.tableEntryAddress"
+                    ),
+                }
+            ]
+            removed_direct_state_evidence.add(record_id)
+        record["evidence"] = [
+            item
+            for item in record["evidence"]
+            if item["fixtureId"] != _DIRECT_STATE_FIXTURE_ID
+        ]
         evidence = [item for item in record["evidence"] if item["fixtureId"] == field_search.ID]
         if evidence:
             assert record_id in owner_ids and len(evidence) == 1 and evidence[0]["level"] == "H2"
@@ -882,6 +936,12 @@ def test_field_search_index_delta_is_exact_and_rejects_unknown_roots() -> None:
             else:
                 retained_addresses.append(address)
         record["addresses"] = retained_addresses
+        if _DIRECT_STATE_DOCUMENT in record["documents"]:
+            assert record_id in _DIRECT_STATE_OWNER_IDS
+            assert record["documents"].count(_DIRECT_STATE_DOCUMENT) == 1
+            assert record["documents"][-1] == _DIRECT_STATE_DOCUMENT
+            record["documents"].remove(_DIRECT_STATE_DOCUMENT)
+            removed_direct_state_documents.add(record_id)
         if "docs/research/field-search-control.md" in record["documents"]:
             assert record_id in owner_ids
             assert record["documents"].count("docs/research/field-search-control.md") == 1
@@ -890,6 +950,8 @@ def test_field_search_index_delta_is_exact_and_rejects_unknown_roots() -> None:
     assert removed_evidence == owner_ids
     assert removed_addresses == expected_new_addresses
     assert removed_documents == owner_ids
+    assert removed_direct_state_evidence == _DIRECT_STATE_OWNER_IDS
+    assert removed_direct_state_documents == _DIRECT_STATE_OWNER_IDS
     assert _canonical_sha256(normalized) == _PRE_SLICE_INDEX_SHA256
 
     def invalid(field: str) -> None:

@@ -1,0 +1,2352 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "upstream",
+    "romSha256",
+    "sourceContext",
+    "retainedOwners",
+    "summary",
+    "eventDirectState",
+    "unknowns"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-map-event-direct-state-static-v1"
+    },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "commit"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "commit": {
+          "type": "string"
+        }
+      }
+    },
+    "romSha256": {
+      "type": "string",
+      "pattern": "^[0-9A-F]{64}$"
+    },
+    "sourceContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "h1Listing",
+        "sourceIdentities",
+        "motherCorpus"
+      ],
+      "properties": {
+        "h1Listing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          }
+        },
+        "sourceIdentities": {
+          "type": "array",
+          "minItems": 40,
+          "maxItems": 40,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "motherCorpus": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "categories",
+            "mapEventsOutputSha256"
+          ],
+          "properties": {
+            "categories": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "category",
+                  "programContextCount",
+                  "operationCount",
+                  "rawInstructionContextCount"
+                ],
+                "properties": {
+                  "category": {
+                    "enum": [
+                      "entityEvents",
+                      "zoneEvents",
+                      "itemEvents"
+                    ]
+                  },
+                  "programContextCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operationCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "rawInstructionContextCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            },
+            "mapEventsOutputSha256": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "retainedOwners": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mapEvents",
+        "mapData"
+      ],
+      "properties": {
+        "mapEvents": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fixtureId",
+            "fixtureSha256",
+            "outputSha256"
+          ],
+          "properties": {
+            "fixtureId": {
+              "type": "string"
+            },
+            "fixtureSha256": {
+              "type": "string"
+            },
+            "outputSha256": {
+              "type": "string"
+            }
+          }
+        },
+        "mapData": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "fixtureId",
+            "fixtureSha256",
+            "outputSha256"
+          ],
+          "properties": {
+            "fixtureId": {
+              "type": "string"
+            },
+            "fixtureSha256": {
+              "type": "string"
+            },
+            "outputSha256": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceIdentityCount",
+        "programContextCount",
+        "positiveDirectProgramContextCount",
+        "zeroDirectProgramContextCount",
+        "contextInstructionSiteCount",
+        "physicalInstructionSiteCount",
+        "contextAccessSiteCount",
+        "physicalAccessSiteCount",
+        "symbolDefinitionCount",
+        "sourceFileCount"
+      ],
+      "properties": {
+        "sourceIdentityCount": {
+          "const": 40
+        },
+        "programContextCount": {
+          "const": 914
+        },
+        "positiveDirectProgramContextCount": {
+          "const": 65
+        },
+        "zeroDirectProgramContextCount": {
+          "const": 849
+        },
+        "contextInstructionSiteCount": {
+          "const": 127
+        },
+        "physicalInstructionSiteCount": {
+          "const": 124
+        },
+        "contextAccessSiteCount": {
+          "const": 152
+        },
+        "physicalAccessSiteCount": {
+          "const": 148
+        },
+        "symbolDefinitionCount": {
+          "const": 13
+        },
+        "sourceFileCount": {
+          "const": 38
+        }
+      }
+    },
+    "eventDirectState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "symbolDefinitions",
+        "symbolDefinitionOrder",
+        "categorySummaries",
+        "accessSites",
+        "accessSiteOrder",
+        "programProfiles",
+        "programProfileOrder",
+        "sourceFiles",
+        "sourceFileOrder",
+        "digests"
+      ],
+      "properties": {
+        "symbolDefinitions": {
+          "type": "array",
+          "minItems": 13,
+          "maxItems": 13,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "symbol",
+              "address",
+              "sourcePath",
+              "sourceLine"
+            ],
+            "properties": {
+              "symbol": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourcePath": {
+                "const": "sf2const.asm"
+              },
+              "sourceLine": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "symbolDefinitionOrder": {
+          "type": "array",
+          "minItems": 13,
+          "maxItems": 13,
+          "items": {
+            "type": "string"
+          }
+        },
+        "categorySummaries": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "category",
+              "programContextCount",
+              "positiveDirectProgramContextCount",
+              "zeroDirectProgramContextCount",
+              "contextInstructionSiteCount",
+              "physicalInstructionSiteCount",
+              "contextAccessSiteCount",
+              "physicalAccessSiteCount",
+              "sourceFileCount"
+            ],
+            "properties": {
+              "category": {
+                "enum": [
+                  "entityEvents",
+                  "zoneEvents",
+                  "itemEvents"
+                ]
+              },
+              "programContextCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "positiveDirectProgramContextCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "zeroDirectProgramContextCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "contextInstructionSiteCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "physicalInstructionSiteCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "contextAccessSiteCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "physicalAccessSiteCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourceFileCount": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "accessSites": {
+          "type": "array",
+          "minItems": 152,
+          "maxItems": 152,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "siteOrder",
+              "category",
+              "programSymbol",
+              "programEntryAddress",
+              "tableSymbol",
+              "sourcePath",
+              "sourceLine",
+              "romPc",
+              "mnemonic",
+              "width",
+              "operandTexts",
+              "accessOperandIndex",
+              "symbol",
+              "address",
+              "accessKind",
+              "instructionByteLength",
+              "instructionSha256",
+              "valueKind",
+              "valueToken",
+              "resolvedValue"
+            ],
+            "properties": {
+              "siteOrder": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "category": {
+                "enum": [
+                  "entityEvents",
+                  "zoneEvents",
+                  "itemEvents"
+                ]
+              },
+              "programSymbol": {
+                "type": "string"
+              },
+              "programEntryAddress": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "tableSymbol": {
+                "type": "string"
+              },
+              "sourcePath": {
+                "type": "string"
+              },
+              "sourceLine": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "romPc": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "mnemonic": {
+                "enum": [
+                  "move",
+                  "cmpi",
+                  "tst",
+                  "clr"
+                ]
+              },
+              "width": {
+                "enum": [
+                  "b",
+                  "w",
+                  "l"
+                ]
+              },
+              "operandTexts": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 2,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "accessOperandIndex": {
+                "enum": [
+                  0,
+                  1
+                ]
+              },
+              "symbol": {
+                "type": "string"
+              },
+              "address": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "accessKind": {
+                "enum": [
+                  "read",
+                  "write"
+                ]
+              },
+              "instructionByteLength": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "instructionSha256": {
+                "type": "string"
+              },
+              "valueKind": {
+                "enum": [
+                  "immediate-enum",
+                  "immediate-number",
+                  "register",
+                  "ram-copy",
+                  "other"
+                ]
+              },
+              "valueToken": {
+                "type": [
+                  "string",
+                  "integer",
+                  "null"
+                ]
+              },
+              "resolvedValue": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "accessSiteOrder": {
+          "type": "array",
+          "minItems": 152,
+          "maxItems": 152,
+          "items": {
+            "type": "string"
+          }
+        },
+        "programProfiles": {
+          "type": "array",
+          "minItems": 65,
+          "maxItems": 65,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "category",
+              "programSymbol",
+              "programEntryAddress",
+              "sourcePath",
+              "tableSymbol",
+              "tableEntryAddress",
+              "contextInstructionSiteCount",
+              "contextAccessSiteCount"
+            ],
+            "properties": {
+              "category": {
+                "enum": [
+                  "entityEvents",
+                  "zoneEvents",
+                  "itemEvents"
+                ]
+              },
+              "programSymbol": {
+                "type": "string"
+              },
+              "programEntryAddress": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourcePath": {
+                "type": "string"
+              },
+              "tableSymbol": {
+                "type": "string"
+              },
+              "tableEntryAddress": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "contextInstructionSiteCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "contextAccessSiteCount": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "programProfileOrder": {
+          "type": "array",
+          "minItems": 65,
+          "maxItems": 65,
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceFiles": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ms_map10_EntityEvents",
+            "ms_map13_EntityEvents",
+            "ms_map13_flag513_EntityEvents",
+            "ms_map15_EntityEvents",
+            "ms_map16_flag530_EntityEvents",
+            "ms_map16_EntityEvents",
+            "ms_map18_EntityEvents",
+            "ms_map19_flag506_EntityEvents",
+            "ms_map21_flag506_EntityEvents",
+            "ms_map25_EntityEvents",
+            "ms_map29_EntityEvents",
+            "ms_map2_EntityEvents",
+            "ms_map31_flag830_EntityEvents",
+            "ms_map38_EntityEvents",
+            "ms_map3_flag506_EntityEvents",
+            "ms_map3_flag609_EntityEvents",
+            "ms_map40_EntityEvents",
+            "ms_map44_flag507_EntityEvents",
+            "ms_map5_flag650_EntityEvents",
+            "ms_map5_flag530_EntityEvents",
+            "ms_map63_EntityEvents",
+            "ms_map6_flag701_EntityEvents",
+            "ms_map8_EntityEvents",
+            "ms_map9_EntityEvents",
+            "ms_map16_ZoneEvents",
+            "ms_map20_flag543_ZoneEvents",
+            "ms_map22_ZoneEvents",
+            "ms_map28_ZoneEvents",
+            "ms_map3_ZoneEvents",
+            "ms_map66_ZoneEvents",
+            "ms_map69_ZoneEvents",
+            "ms_map70_ZoneEvents",
+            "ms_map72_ZoneEvents",
+            "ms_map74_ZoneEvents",
+            "ms_map76_ZoneEvents",
+            "ms_map77_ZoneEvents",
+            "ms_map37_Section5",
+            "ms_map77_Section5"
+          ],
+          "properties": {
+            "ms_map10_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map13_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map13_flag513_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map15_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map16_flag530_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map16_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map18_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map19_flag506_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map21_flag506_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map25_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map29_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map2_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map31_flag830_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map38_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map3_flag506_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map3_flag609_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map40_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map44_flag507_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map5_flag650_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map5_flag530_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map63_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map6_flag701_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map8_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map9_EntityEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map16_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map20_flag543_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map22_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map28_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map3_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map66_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map69_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map70_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map72_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map74_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map76_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map77_ZoneEvents": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map37_Section5": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "ms_map77_Section5": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "category",
+                "tableSymbol",
+                "tableEntryAddress",
+                "sourcePath",
+                "programContextCount",
+                "contextInstructionSiteCount",
+                "contextAccessSiteCount"
+              ],
+              "properties": {
+                "category": {
+                  "enum": [
+                    "entityEvents",
+                    "zoneEvents",
+                    "itemEvents"
+                  ]
+                },
+                "tableSymbol": {
+                  "type": "string"
+                },
+                "tableEntryAddress": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "sourcePath": {
+                  "type": "string"
+                },
+                "programContextCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextInstructionSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "contextAccessSiteCount": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "sourceFileOrder": {
+          "type": "array",
+          "minItems": 38,
+          "maxItems": 38,
+          "items": {
+            "type": "string"
+          }
+        },
+        "digests": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "accessSitesSha256",
+            "programProfilesSha256",
+            "sourceFilesSha256"
+          ],
+          "properties": {
+            "accessSitesSha256": {
+              "type": "string"
+            },
+            "programProfilesSha256": {
+              "type": "string"
+            },
+            "sourceFilesSha256": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "unknowns": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "normal-story-program-reachability",
+        "caller-entry-state",
+        "runtime-branch-and-access-order",
+        "runtime-before-after-values",
+        "callee-and-service-side-effects",
+        "cross-map-state-lifetime",
+        "save-load-persistence",
+        "input-text-portrait-audio-vint-timing",
+        "player-facing-story-meaning"
+      ],
+      "properties": {
+        "normal-story-program-reachability": {
+          "const": "Unknown"
+        },
+        "caller-entry-state": {
+          "const": "Unknown"
+        },
+        "runtime-branch-and-access-order": {
+          "const": "Unknown"
+        },
+        "runtime-before-after-values": {
+          "const": "Unknown"
+        },
+        "callee-and-service-side-effects": {
+          "const": "Unknown"
+        },
+        "cross-map-state-lifetime": {
+          "const": "Unknown"
+        },
+        "save-load-persistence": {
+          "const": "Unknown"
+        },
+        "input-text-portrait-audio-vint-timing": {
+          "const": "Unknown"
+        },
+        "player-facing-story-meaning": {
+          "const": "Unknown"
+        }
+      }
+    }
+  }
+}

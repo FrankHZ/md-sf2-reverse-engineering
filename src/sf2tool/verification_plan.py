@@ -74,6 +74,7 @@ H2_COMMAND_GROUPS = {
         "map3-optional-interactions",
         "map-content",
         "map-data",
+        "map-event-direct-state",
         "map-descriptions",
         "map-entities",
         "map-events",

@@ -2199,6 +2199,7 @@ uv run sf2 h3 entity-movement
 uv run sf2 h2 map-setup
 uv run sf2 h2 map-entities
 uv run sf2 h2 map-events
+uv run sf2 h2 map-event-direct-state
 uv run sf2 h2 map-descriptions
 uv run sf2 h2 map-init
 uv run sf2 h2 map-scripts
