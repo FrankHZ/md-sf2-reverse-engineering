@@ -81,7 +81,7 @@
                       "fixtureField": {
                         "type": "string",
                         "anyOf": [
-                          { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
+                          { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
                           { "enum": [
                             "actionCompletionSpine.functionAddresses.WriteBattlesceneScript",
                             "actionCompletionSpine.startResumes.primaryTargetLoop",

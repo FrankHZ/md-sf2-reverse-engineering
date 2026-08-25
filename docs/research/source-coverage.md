@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 83 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 84 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 2,727 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,747 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -98,6 +98,13 @@ The `sf2-field-menu-control-static-v1` rail closes the bounded nine-source Field
 23 H1/ROM anchors, exactly two alias-resolved caller sites, selector/call-order branches, and the
 force-list copy helper. It is H2-only: natural story reachability, caller state/return, inputs,
 outcomes, presentation, and persistence remain an 18-question **Unknown** queue.
+
+The `sf2-field-item-effects-static-v1` rail closes the eight-source exploration-field item surface:
+two direct `UseItemOnField` callers, the nine-ID usability/dispatch order and sentinels, fourteen
+H1/ROM intervals, status-clear branches, static 2..4 gain construction, movement/MP boundaries, and
+LevelUp argument/message branches. It adds no H3 fixture; natural caller reach, selected target,
+dispatch/result/state readback, consumption/persistence, and presentation remain its twelve grouped
+**Unknown** questions.
 
 ## Subsystem Boundary
 

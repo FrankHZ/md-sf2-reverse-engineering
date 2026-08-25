@@ -36,6 +36,11 @@ owners. It does not restate their algorithms or payloads.
 
 ## Confirmed static spine
 
+The target-use call at `0x2157C` is additionally consumed by the separate
+[field-item-effects.md](field-item-effects.md) static owner. That owner retains its own two-caller
+inventory, dispatcher/effect ranges, and runtime-Unknown queue; this FieldMenu control contract's
+actual item-use Unknown remains unchanged.
+
 - `j_FieldMenu` at `0x20008` aliases `FieldMenu` at `0x2127E`. Its only guarded
   direct callers are debug Battle Test at `0x7884` and exploration at `0x25BDC`;
   both instruction return addresses are also retained.
