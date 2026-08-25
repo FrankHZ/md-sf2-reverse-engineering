@@ -22,6 +22,8 @@ SCHEMA = ROOT / "schemas/h2/map-event-direct-state-static-fixture.schema.json"
 INDEX = ROOT / "manifests/research-index.json"
 INDEX_SCHEMA = ROOT / "schemas/research-index.schema.json"
 BASE = "18ee3120d8f67afb44e2da08c045c2a2fa6da88a"
+HANDOFF_FIXTURE_ID = "sf2-map-event-direct-handoff-static-v1"
+HANDOFF_DOCUMENT = "docs/research/map-event-direct-handoff.md"
 EXPECTED_INDEX_BINDINGS = {
     "map.data.ms-map2-entityevents": "ms_map2_EntityEvents",
     "map.data.ms-map3-flag506-entityevents": "ms_map3_flag506_EntityEvents",
@@ -251,6 +253,41 @@ def test_fixture_schema_is_closed_and_rejects_private_or_runtime_fields() -> Non
 def test_research_index_adds_exact_direct_state_bindings_without_object_drift() -> None:
     index = load_json(INDEX)
     normalized = deepcopy(index)
+    removed_handoff_records: set[str] = set()
+    for record in normalized["records"]:
+        handoff = [
+            evidence
+            for evidence in record["evidence"]
+            if evidence["fixtureId"] == HANDOFF_FIXTURE_ID
+        ]
+        if not handoff:
+            continue
+        assert handoff == [
+            {
+                "level": "H2",
+                "fixture": "tests/fixtures/h2/map-event-direct-handoff-static-v1.json",
+                "fixtureId": HANDOFF_FIXTURE_ID,
+                "verifier": "src/sf2tool/h2/map_event_direct_handoff.py",
+                "bindings": [
+                    {
+                        "addressId": "entry",
+                        "fixtureField": (
+                            f"eventDirectHandoff.sourceFiles.{record['symbol']}.tableEntryAddress"
+                        ),
+                    }
+                ],
+            }
+        ]
+        assert record["documents"].count(HANDOFF_DOCUMENT) == 1
+        assert record["documents"][-1] == HANDOFF_DOCUMENT
+        record["evidence"] = [
+            evidence
+            for evidence in record["evidence"]
+            if evidence["fixtureId"] != HANDOFF_FIXTURE_ID
+        ]
+        record["documents"].remove(HANDOFF_DOCUMENT)
+        removed_handoff_records.add(record["id"])
+    assert len(removed_handoff_records) == 53
     removed_direct_control_records: set[str] = set()
     for record in normalized["records"]:
         direct_control = [

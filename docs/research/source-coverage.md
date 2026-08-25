@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 87 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 88 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 2,859 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,912 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -954,6 +954,14 @@ physical direct-transfer PCs (143 returning calls and 62 tail jumps), 35 effecti
 jump-interface aliases, and 251 source/H1/ROM anchors. It is H2-only: caller reachability/order,
 entry/return register state, callee effects, tail-return behavior, persistence, and presentation remain
 one 12-question Unknown queue. Evidence date: 2026-08-25. The
+adjacent direct-handoff inventory retains semantic caller depth rather than new transfer topology:
+the 205 retained transfer contexts have 184 contextual/177 physical immediately preceding raw setup
+operations (56 empty, 118 one-operation, 29 two-operation, and two four-operation groups), plus 143
+contextual/139 physical first lexical direct-call continuations. Its 327 contextual operations join to
+299 physical source/H1/ROM anchors with 17 role overlaps; 78 `sf2enums.asm` identities have 120
+contextual uses. It is H2-only and leaves actual preparation, machine state, callee effects/returns,
+branch selection, reachability, persistence, timing, UI, dialogue, audio, and story meaning Unknown.
+Evidence date: 2026-08-25. The
 preceding map-event boundary facts retain their 2026-07-27 evidence date. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 

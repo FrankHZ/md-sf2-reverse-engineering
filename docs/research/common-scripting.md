@@ -1069,6 +1069,18 @@ callee identities remain source-owner joins, not a second interpretation of thei
 reachability, caller state/order, callee effects, timing, persistence, and presentation remain the
 direct-control owner's grouped **Unknown** boundary.
 
+**Confirmed — retained map-event direct-handoff join:**
+`sf2-map-event-direct-handoff-static-v1` adds caller-side semantic handoff depth without changing
+that topology: the maximal adjacent preceding raw setup group at all 205 direct transfers and the
+first lexical consumer after each of 143 returning calls. Its 184 contextual/177 physical setup
+operations and 143 contextual/139 physical continuations combine to 327 contextual/299 physical
+source/H1/ROM-anchored operations, with 17 shared role PCs; 78 `sf2enums.asm` identities account for
+120 contextual immediate uses. It retains direct-state and direct-control references rather than
+copying their state, alias, target, or callee facts. Actual preparation path, register/CCR and
+fixed-state values, callee entry/effects/returns, continuation selection, reachability, persistence,
+timing, UI, dialogue, audio, and story meaning remain the handoff owner's grouped **Unknown**
+boundary.
+
 **Confirmed (bounded H3):** `sf2-map-script-control-audio-runtime-v1` runs six RAM-owned streams in
 one BizHawk 2.11.1 / Genesis Plus GX Map Test 0 launch through the unmodified `ExecuteMapScript` loop.
 The observer confirms the normal `csWait` D0=1 call's one `WaitForVInt` entry and the debug
@@ -2209,6 +2221,8 @@ uv run sf2 h2 map-setup
 uv run sf2 h2 map-entities
 uv run sf2 h2 map-events
 uv run sf2 h2 map-event-direct-state
+uv run sf2 h2 map-event-direct-control
+uv run sf2 h2 map-event-direct-handoff
 uv run sf2 h2 map-descriptions
 uv run sf2 h2 map-init
 uv run sf2 h2 map-scripts

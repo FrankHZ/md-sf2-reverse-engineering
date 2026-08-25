@@ -267,6 +267,9 @@ Data-side directory inventory and ROM parity:
   raw-68000 direct-call/tail-transfer topology in the retained map-event program corpus, including
   alias-aware effective targets, callee-entry owners, lexical continuations, physical-PC
   deduplication, and grouped runtime Unknowns.
+- [`map-event-direct-handoff.md`](./research/map-event-direct-handoff.md): the retained callers'
+  maximal immediate raw setup groups and direct-call first lexical continuations, with source/H1/ROM
+  anchors and enum joins; this adds handoff depth without re-owning transfer topology or callee bodies.
 - [`map-content.md`](./research/map-content.md): the complete source/H1/ROM parity of 79 46-byte map
   entries, 662 source-form content sections, and 154 private blocks/layout payloads, the canonical
   Python decode of 77 bitstream pairs, the 1,859-resource/79-map engine-neutral import (including 64
