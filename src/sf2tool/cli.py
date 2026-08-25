@@ -61,6 +61,7 @@ from sf2tool.h2.map_content import verify_map_content_contract
 from sf2tool.h2.map_data import verify_map_data_inventory
 from sf2tool.h2.map_descriptions import verify_map_descriptions_contract
 from sf2tool.h2.map_entities import verify_map_entities_contract
+from sf2tool.h2.map_event_direct_state import verify_map_event_direct_state_contract
 from sf2tool.h2.map_events import verify_map_events_contract
 from sf2tool.h2.map_import import verify_canonical_map_import
 from sf2tool.h2.map_init import verify_map_init_contract
@@ -777,6 +778,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_events)
     h2_map_events.add_argument("--output-path", type=_path)
+    h2_map_event_direct_state = h2_commands.add_parser(
+        "map-event-direct-state",
+        help="inventory direct fixed-RAM raw instructions in map-event programs",
+    )
+    _add_local_paths(h2_map_event_direct_state)
+    h2_map_event_direct_state.add_argument("--output-path", type=_path)
     h2_map_descriptions = h2_commands.add_parser(
         "map-descriptions", help="decode area-description wrappers and payload tables against ROM"
     )
@@ -1776,6 +1783,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-events":
         print_record(
             verify_map_events_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-event-direct-state":
+        print_record(
+            verify_map_event_direct_state_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

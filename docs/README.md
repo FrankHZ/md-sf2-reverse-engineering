@@ -260,6 +260,9 @@ Data-side directory inventory and ROM parity:
   standalone scripts/8,058 statements; the ten-case selector and six-case init-dispatch single-launch
   H3 matrices additionally confirm missing/default, last-set-flag-wins, alias route, and
   active/scripted/direct-return init calls.
+- [`map-event-direct-state.md`](./research/map-event-direct-state.md): the complete direct fixed-RAM
+  source/H1/ROM footprint in map-event target programs, including contextual versus physical alias
+  accounting and grouped runtime Unknowns.
 - [`map-content.md`](./research/map-content.md): the complete source/H1/ROM parity of 79 46-byte map
   entries, 662 source-form content sections, and 154 private blocks/layout payloads, the canonical
   Python decode of 77 bitstream pairs, the 1,859-resource/79-map engine-neutral import (including 64

@@ -43,15 +43,15 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Status"] == "PASS"
     assert result["Records"] == 1625
     assert result["Confirmed"] == 1625
-    assert result["H2Fixtures"] == 85
+    assert result["H2Fixtures"] == 86
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 94
-    assert result["AddressBindings"] == 2768
+    assert result["AddressBindings"] == 2806
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1588
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
-    assert result["ResearchDocuments"] == 47
+    assert result["ResearchDocuments"] == 48
     assert result["DesignContracts"] == 68
 
 
@@ -875,6 +875,13 @@ def test_map_entity_payload_prefix_classifies_record_encoding() -> None:
 def test_map_events_has_a_static_rom_parity_command() -> None:
     args = build_parser().parse_args(["h2", "map-events"])
     assert args.h2_command == "map-events"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
+def test_map_event_direct_state_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "map-event-direct-state"])
+    assert args.h2_command == "map-event-direct-state"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.output_path is None
 

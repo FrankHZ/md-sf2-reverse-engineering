@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-08-24
+- Evidence date: 2026-08-25
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 85 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 86 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 2,768 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 2,806 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -944,7 +944,11 @@ physical/setup/route aggregate weights of 3. Its complete 914-program source com
 positive caller and 913 zero-use callers without reproducing zero rows; source namespaces are two
 `sound-command`, one `music`, and zero `sfx`. The enum join is bounded to the maintained
 sound-data source domain and remains a static routing fact, not driver, audible, timing, persistence,
-or caller-context evidence; those runtime questions remain Unknown. Evidence date: 2026-08-02. The
+or caller-context evidence; those runtime questions remain Unknown. The adjacent direct fixed-RAM
+  map-event inventory is 65 positive/849 zero program contexts, 127 contextual/124 physical
+  instruction PCs, and 152 contextual/148 physical read/write edges across 13 source-defined symbols;
+  it is H2-only and retains lifetime, caller, service, timing, persistence, and story meaning as one
+  nine-question Unknown queue. Evidence date: 2026-08-25. The
 preceding map-event boundary facts retain their 2026-07-27 evidence date. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 
