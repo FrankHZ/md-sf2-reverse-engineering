@@ -1,0 +1,276 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2-research.example/schemas/h2/field-search-control-static-fixture.schema.json",
+  "$ref": "#/$defs/fixture",
+  "$defs": {
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixtureId", "fixtureSha256"],
+      "properties": {
+        "fixtureId": {"type": "string", "pattern": "^sf2-[a-z0-9-]+-v1$"},
+        "fixtureSha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}
+      }
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "address", "endAddressExclusive", "byteLength", "sha256"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "address": {"type": "integer", "minimum": 0},
+        "endAddressExclusive": {"type": "integer", "minimum": 1},
+        "byteLength": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"}
+      }
+    },
+    "caller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["callAddress", "returnAddress", "instructionTarget", "effectiveTarget", "d6Value", "returnTarget"],
+      "properties": {
+        "callAddress": {"const": 137694},
+        "returnAddress": {"const": 137700},
+        "instructionTarget": {"const": "j_CheckArea"},
+        "effectiveTarget": {"const": "CheckArea"},
+        "d6Value": {"const": 0},
+        "returnTarget": {"const": "ExitMain"}
+      }
+    },
+    "processCaller": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["callAddress", "returnAddress", "instructionTarget", "effectiveTarget", "d6Value", "nonzeroBranch"],
+      "properties": {
+        "callAddress": {"const": 154562},
+        "returnAddress": {"const": 154568},
+        "instructionTarget": {"const": "CheckArea"},
+        "effectiveTarget": {"const": "CheckArea"},
+        "d6Value": {"const": 1},
+        "nonzeroBranch": {"const": "return_25BF2"}
+      }
+    },
+    "blockKind": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "mask", "contentTarget", "actionTextId", "emptyTextId"],
+      "properties": {
+        "kind": {"type": "string", "enum": ["chest", "vase", "barrel", "bookshelf", "genericSearchable"]},
+        "mask": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "contentTarget": {"type": "string", "enum": ["OpenChest", "CheckNonChestItem"]},
+        "actionTextId": {"type": "integer", "minimum": 0},
+        "emptyTextId": {"type": "integer", "minimum": 0}
+      }
+    },
+    "fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "id", "system", "romSha256", "upstream", "sourceContext", "retainedOwners", "fieldSearchSpine", "unknowns", "summary"],
+      "properties": {
+        "schemaVersion": {"const": 1},
+        "id": {"const": "sf2-field-search-control-static-v1"},
+        "system": {"const": "sf2-field-search-control-static-v1"},
+        "romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
+        "upstream": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["repository", "commit"],
+          "properties": {
+            "repository": {"const": "https://github.com/ShiningForceCentral/SF2DISASM.git"},
+            "commit": {"const": "c834c652b6862bc5679fd7f69a38a7093206efc6"}
+          }
+        },
+        "sourceContext": {"$ref": "#/$defs/sourceContext"},
+        "retainedOwners": {"$ref": "#/$defs/retainedOwners"},
+        "fieldSearchSpine": {"$ref": "#/$defs/fieldSearchSpine"},
+        "unknowns": {"$ref": "#/$defs/unknowns"},
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceFiles", "h1RomAnchors", "callers", "unknowns"],
+          "properties": {
+            "sourceFiles": {"const": 17},
+            "h1RomAnchors": {"const": 22},
+            "callers": {"const": 2},
+            "unknowns": {"const": 14}
+          }
+        }
+      }
+    },
+    "sourceContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceIdentities", "h1RomAnchors", "layoutIncludes", "callerInventory"],
+      "properties": {
+        "sourceIdentities": {
+          "type": "array",
+          "minItems": 17,
+          "maxItems": 17,
+          "items": {"$ref": "#/$defs/sourceIdentity"},
+          "const": [
+            {"path": "sf2const.asm", "sha256": "17738776F811F66322F278CFBF10E8B376612F4F9EDFC2C7AA0A5DB81CDFB3FB"},
+            {"path": "sf2enums.asm", "sha256": "ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE"},
+            {"path": "layout/sf2-05-0x020000-0x028000.asm", "sha256": "F5FD087710CE328C5D3DD8ADBCE2CDFD8D60F4F850743BA020F69EC56E5D63C6"},
+            {"path": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm", "sha256": "479D19D5CBA2D585A1AE74DD2A8CF67C455DF96FCBD2EEBB6808C6318F53A464"},
+            {"path": "code/common/tech/jumpinterfaces/s05_jumpinterface.asm", "sha256": "175361E5E65A358B02705C0A4C61D55500209429F88D2C1FAEF4F4113E6975CE"},
+            {"path": "code/common/tech/jumpinterfaces/s07_jumpinterface.asm", "sha256": "A7884F9F6B4E465FEBD531BA5B538EDB1FF5BC93FBB67DFCFAED7BFB208F25AE"},
+            {"path": "code/common/menus/main/mainactions.asm", "sha256": "E69B3D40DF6658CF761A035FA1B6643DD9770B3C82F4CBB21D5AC4D3A50F2777"},
+            {"path": "code/gameflow/exploration/explorationvints.asm", "sha256": "977A8D25FC1F8B155A5AC8D7360A6513C0C7A76ADCCC5C6A29EB55D34DB66D3B"},
+            {"path": "code/gameflow/exploration/explorationfunctions_0.asm", "sha256": "BBFED0DF86D68A813047650B3E10754382881C17B2F644F8F1BC897F77EA3B4E"},
+            {"path": "code/gameflow/exploration/explorationfunctions_1.asm", "sha256": "E122508EBC4089056F4B5E6788520AB6DB213B0AE829042F0E88C7BC0B572907"},
+            {"path": "code/gameflow/exploration/exploration.asm", "sha256": "C38279815C832B5D65B443092048BB92E19FAEE47B81734A3EF0D16AA0E445A0"},
+            {"path": "code/gameflow/battle/battlefunctions/battlefunctions_0.asm", "sha256": "706732153061EE4846FE15B544F72C2BEEB29E0FC12F42BC959664FA470E3B76"},
+            {"path": "code/common/scripting/map/mapsetupsfunctions_1.asm", "sha256": "F99AF47A35E9148176E66865694B2BCEE3D3DF8C6013227F5CB8ECA330AC6531"},
+            {"path": "code/common/stats/gold.asm", "sha256": "E578316F1E5CBA89AF55B6E5FDC7022B08669DD93FC7564ED73EB065D2D4A88E"},
+            {"path": "code/common/stats/itemstats.asm", "sha256": "DBDB7320F86EA8A24C1E2684631EAFCD3A4F92A95C6EFDC7E3A3F579672CBC7B"},
+            {"path": "code/common/stats/battleparty.asm", "sha256": "670A25075D807BA60B0AA3C6D158DDF80E5248264753361DBC495F7655ED8B37"},
+            {"path": "data/stats/items/chestgoldamounts.asm", "sha256": "BA250BBD5ADA3BD7DCD181B6CF0BE07FAF7C600DFA8CCF3F44E18C4C40E9FCA0"}
+          ]
+        },
+        "h1RomAnchors": {
+          "type": "array",
+          "minItems": 22,
+          "maxItems": 22,
+          "items": {"$ref": "#/$defs/anchor"},
+          "const": [
+            {"id":"callers.fieldMenu.call","address":137694,"endAddressExclusive":137700,"byteLength":6,"sha256":"C62DAF7E8AD355165B374296C460E54FEE55727B44A48516736D41E754A62580"},
+            {"id":"callers.processPlayerAction.noEntityCall","address":154562,"endAddressExclusive":154568,"byteLength":6,"sha256":"E29C7A2C0F7D4747D86EFA08325D5E77C9B42728232D1EB2690E1DE149B5FC3F"},
+            {"id":"functionAddresses.j_CheckArea","address":131148,"endAddressExclusive":131152,"byteLength":4,"sha256":"0FCE7FFA1D69B88D08B7031C2D3EF3C374A9EC04EDAAF3948B18EFD3FA94A95B"},
+            {"id":"functionAddresses.CheckArea","address":145506,"endAddressExclusive":145820,"byteLength":314,"sha256":"3BAF6E8D531D63A2930506D5E5F1C9816B5FB4E72CEBA0D78C72EF6F12BEF3E9"},
+            {"id":"functionAddresses.GetChestGoldAmount","address":145820,"endAddressExclusive":145838,"byteLength":18,"sha256":"3228409AFD0B23B60CA2AB01490C221181D39143CC6FB7C181DDE2EFE6928579"},
+            {"id":"goldPath.table","address":145838,"endAddressExclusive":145864,"byteLength":26,"sha256":"6B90584C63F5A797A7DE156AC557DFC0C3D74E0245099D2ACEB10C64E2710DCA"},
+            {"id":"itemRecipientPath.entry","address":145864,"endAddressExclusive":146052,"byteLength":188,"sha256":"89CE3CAE75FD701B63BBC046D0692DAEE77C64DE62267732BC80393E1FFDA9E3"},
+            {"id":"blockDispatch.OpenChest","address":16726,"endAddressExclusive":16728,"byteLength":2,"sha256":"C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"},
+            {"id":"fullInventoryRollback.CloseChest","address":16788,"endAddressExclusive":16790,"byteLength":2,"sha256":"C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"},
+            {"id":"blockDispatch.CheckNonChestItem","address":16886,"endAddressExclusive":16888,"byteLength":2,"sha256":"C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"},
+            {"id":"fullInventoryRollback.RefillNonChestItem","address":16922,"endAddressExclusive":16924,"byteLength":2,"sha256":"C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"},
+            {"id":"itemRecipientPath.FadeOut_WaitForP1Input","address":145240,"endAddressExclusive":145242,"byteLength":2,"sha256":"B813D21BDB2AE744A65AD78D0695CBF15A7750CA8A4828B4518913A26849BD05"},
+            {"id":"areaDescriptionFallback.j_RunMapSetupAreaDescription","address":278708,"endAddressExclusive":278712,"byteLength":4,"sha256":"C77463D871472226AEF2C7AFF5E84E6FA650BCC169EDA69BA0DC254F1E66DC96"},
+            {"id":"areaDescriptionFallback.RunMapSetupAreaDescription","address":292610,"endAddressExclusive":292612,"byteLength":2,"sha256":"C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"},
+            {"id":"goldPath.j_IncreaseGold","address":33116,"endAddressExclusive":33120,"byteLength":4,"sha256":"423946DC7457601A3F186E5D79417E6CFA677B5074A70440E676A892433FA5F6"},
+            {"id":"goldPath.IncreaseGold","address":35226,"endAddressExclusive":35228,"byteLength":2,"sha256":"72B58559AB70A20D9422293C265A3BA32D6B04F5364F387EF85E1E62194B6A95"},
+            {"id":"itemRecipientPath.j_GetItemBySlotAndHeldItemsNumber","address":33140,"endAddressExclusive":33144,"byteLength":4,"sha256":"1F0AD3C5600864DD5823467651E30A74CB064FB0D62174835A4A79A5EA7F0485"},
+            {"id":"itemRecipientPath.GetItemBySlotAndHeldItemsNumber","address":35834,"endAddressExclusive":35836,"byteLength":2,"sha256":"C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"},
+            {"id":"itemRecipientPath.j_AddItem","address":33176,"endAddressExclusive":33180,"byteLength":4,"sha256":"1A53371A21186DCF8450D3B6A6D43C73D9CFFBADDBF432BFDB9223032CF40BEC"},
+            {"id":"itemRecipientPath.AddItem","address":36002,"endAddressExclusive":36004,"byteLength":2,"sha256":"C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"},
+            {"id":"itemRecipientPath.j_UpdateForce","address":33392,"endAddressExclusive":33396,"byteLength":4,"sha256":"27DF8F8F40CE8341F4DF33AC01355BAC6BCB7B183C8FDE3384B60EB40FC207F2"},
+            {"id":"itemRecipientPath.UpdateForce","address":39168,"endAddressExclusive":39170,"byteLength":2,"sha256":"C6FBA2F87C802756A1B0F6BAB014C591B8E2C520669337A542F6CD7790D5EB9B"}
+          ]
+        },
+        "layoutIncludes": {"const": ["code\\gameflow\\exploration\\explorationfunctions_0.asm", "data\\stats\\items\\chestgoldamounts.asm", "code\\gameflow\\exploration\\explorationfunctions_1.asm"]},
+        "callerInventory": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["instructionTargetSiteCounts", "effectiveTargetSiteCounts"],
+          "properties": {
+            "instructionTargetSiteCounts": {
+              "type": "object", "additionalProperties": false,
+              "required": ["j_CheckArea", "CheckArea"],
+              "properties": {"j_CheckArea": {"const": 1}, "CheckArea": {"const": 1}}
+            },
+            "effectiveTargetSiteCounts": {
+              "type": "object", "additionalProperties": false,
+              "required": ["CheckArea"],
+              "properties": {"CheckArea": {"const": 2}}
+            }
+          }
+        }
+      }
+    },
+    "retainedOwners": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gameflowCore", "fieldMenuControl", "mapDescriptions", "commonStats", "coreStatsData", "itemAuxiliary", "techInterfaces"],
+      "properties": {
+        "gameflowCore": {"allOf": [{"$ref": "#/$defs/owner"}, {"properties": {"fixtureId": {"const": "sf2-gameflow-core-static-v1"}}}]},
+        "fieldMenuControl": {"allOf": [{"$ref": "#/$defs/owner"}, {"properties": {"fixtureId": {"const": "sf2-field-menu-control-static-v1"}}}]},
+        "mapDescriptions": {"allOf": [{"$ref": "#/$defs/owner"}, {"properties": {"fixtureId": {"const": "sf2-map-descriptions-static-v1"}}}]},
+        "commonStats": {"allOf": [{"$ref": "#/$defs/owner"}, {"properties": {"fixtureId": {"const": "sf2-common-stats-static-v1"}}}]},
+        "coreStatsData": {"allOf": [{"$ref": "#/$defs/owner"}, {"properties": {"fixtureId": {"const": "sf2-core-stats-data-static-v1"}}}]},
+        "itemAuxiliary": {"allOf": [{"$ref": "#/$defs/owner"}, {"properties": {"fixtureId": {"const": "sf2-item-auxiliary-static-v1"}}}]},
+        "techInterfaces": {"allOf": [{"$ref": "#/$defs/owner"}, {"properties": {"fixtureId": {"const": "sf2-tech-interfaces-static-v1"}}}]}
+      }
+    },
+    "fieldSearchSpine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["callers", "functionAddresses", "targetCoordinate", "blockDispatch", "areaDescriptionFallback", "contentClassification", "goldPath", "itemRecipientPath", "fullInventoryRollback", "returnContract", "publicTextIds"],
+      "properties": {
+        "callers": {
+          "type": "object", "additionalProperties": false,
+          "required": ["fieldMenu", "processPlayerActionNoEntity"],
+          "properties": {"fieldMenu": {"$ref": "#/$defs/caller"}, "processPlayerActionNoEntity": {"$ref": "#/$defs/processCaller"}}
+        },
+        "functionAddresses": {
+          "type": "object", "additionalProperties": false,
+          "required": ["j_CheckArea", "CheckArea", "GetChestGoldAmount", "table_ChestGoldAmounts", "itemHandoff", "OpenChest", "CloseChest", "CheckNonChestItem", "RefillNonChestItem", "FadeOut_WaitForP1Input", "j_RunMapSetupAreaDescription", "RunMapSetupAreaDescription", "j_IncreaseGold", "IncreaseGold", "j_GetItemBySlotAndHeldItemsNumber", "GetItemBySlotAndHeldItemsNumber", "j_AddItem", "AddItem", "j_UpdateForce", "UpdateForce"],
+          "properties": {
+            "j_CheckArea": {"const": 131148}, "CheckArea": {"const": 145506}, "GetChestGoldAmount": {"const": 145820}, "table_ChestGoldAmounts": {"const": 145838}, "itemHandoff": {"const": 145864}, "OpenChest": {"const": 16726}, "CloseChest": {"const": 16788}, "CheckNonChestItem": {"const": 16886}, "RefillNonChestItem": {"const": 16922}, "FadeOut_WaitForP1Input": {"const": 145240}, "j_RunMapSetupAreaDescription": {"const": 278708}, "RunMapSetupAreaDescription": {"const": 292610}, "j_IncreaseGold": {"const": 33116}, "IncreaseGold": {"const": 35226}, "j_GetItemBySlotAndHeldItemsNumber": {"const": 33140}, "GetItemBySlotAndHeldItemsNumber": {"const": 35834}, "j_AddItem": {"const": 33176}, "AddItem": {"const": 36002}, "j_UpdateForce": {"const": 33392}, "UpdateForce": {"const": 39168}
+          }
+        },
+        "targetCoordinate": {
+          "type": "object", "additionalProperties": false,
+          "required": ["viewTargetEntity", "negativeBranch", "negativeReturn", "entityScaleShift", "directionMask", "directionOffsetIndexShift", "pixelOffsetTable", "tileSize", "layoutRowWidth", "layoutWordScale", "layoutBase", "blockMask"],
+          "properties": {
+            "viewTargetEntity": {"const": "VIEW_TARGET_ENTITY"}, "negativeBranch": {"const": "bpl"}, "negativeReturn": {"const": "rts"}, "entityScaleShift": {"const": "ENTITYDEF_SIZE_BITS"}, "directionMask": {"const": 3}, "directionOffsetIndexShift": {"const": 2}, "pixelOffsetTable": {"const": "table_PixelOffsets_X"}, "tileSize": {"const": 384}, "layoutRowWidth": {"const": 64}, "layoutWordScale": {"const": 2}, "layoutBase": {"const": "FF0000_RAM_START"}, "blockMask": {"const": 15360}
+          }
+        },
+        "blockDispatch": {
+          "type": "object", "additionalProperties": false,
+          "required": ["itemEntryMask", "itemNothing", "kinds"],
+          "properties": {
+            "itemEntryMask": {"const": 127}, "itemNothing": {"const": 127},
+            "kinds": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/$defs/blockKind"}, "const": [{"kind":"chest","mask":6144,"contentTarget":"OpenChest","actionTextId":403,"emptyTextId":408},{"kind":"vase","mask":11264,"contentTarget":"CheckNonChestItem","actionTextId":404,"emptyTextId":409},{"kind":"barrel","mask":12288,"contentTarget":"CheckNonChestItem","actionTextId":405,"emptyTextId":410},{"kind":"bookshelf","mask":13312,"contentTarget":"CheckNonChestItem","actionTextId":427,"emptyTextId":412},{"kind":"genericSearchable","mask":7168,"contentTarget":"CheckNonChestItem","actionTextId":423,"emptyTextId":412}]}
+          }
+        },
+        "areaDescriptionFallback": {
+          "type": "object", "additionalProperties": false,
+          "required": ["instructionTarget", "effectiveTarget", "handledBranch", "d6Test", "d6OneReturn", "d6ZeroDefaultTextIds", "defaultReturn", "closeText"],
+          "properties": {"instructionTarget": {"const": "j_RunMapSetupAreaDescription"}, "effectiveTarget": {"const": "RunMapSetupAreaDescription"}, "handledBranch": {"const": "bne"}, "d6Test": {"const": "tst"}, "d6OneReturn": {"const": 0}, "d6ZeroDefaultTextIds": {"const": [423, 412]}, "defaultReturn": {"const": -1}, "closeText": {"const": "clsTxt"}}
+        },
+        "contentClassification": {
+          "type": "object", "additionalProperties": false,
+          "required": ["goldChestStart", "goldBranch", "itemBranch", "itemEntryMask", "itemNothing"],
+          "properties": {"goldChestStart": {"const": 128}, "goldBranch": {"const": "bge"}, "itemBranch": {"const": "blt"}, "itemEntryMask": {"const": 127}, "itemNothing": {"const": 127}}
+        },
+        "goldPath": {
+          "type": "object", "additionalProperties": false,
+          "required": ["functionAddress", "tableAddress", "indexTransform", "tableValues", "increaseGoldInstructionTarget", "increaseGoldEffectiveTarget", "callOrder"],
+          "properties": {"functionAddress": {"const": 145820}, "tableAddress": {"const": 145838}, "indexTransform": {"const": ["subtractGoldChestStart", "maskItemEntryIndex", "doubleWordIndex"]}, "tableValues": {"type": "array", "minItems": 13, "maxItems": 13, "items": {"type": "integer", "minimum": 0}, "const": [10,20,30,40,50,60,70,80,90,100,110,120,130]}, "increaseGoldInstructionTarget": {"const": "j_IncreaseGold"}, "increaseGoldEffectiveTarget": {"const": "IncreaseGold"}, "callOrder": {"const": ["GetChestGoldAmount", "IncreaseGold", "MUSIC_ITEM", "txt414", "FadeOut_WaitForP1Input"]}}
+        },
+        "itemRecipientPath": {
+          "type": "object", "additionalProperties": false,
+          "required": ["leaderIndex", "inventoryCapacity", "leaderFirst", "forceUpdateInstructionTarget", "forceUpdateEffectiveTarget", "recipientList", "counter", "loop", "firstEligibleAction", "textIds"],
+          "properties": {"leaderIndex": {"const": 0}, "inventoryCapacity": {"const": 4}, "leaderFirst": {"const": true}, "forceUpdateInstructionTarget": {"const": "j_UpdateForce"}, "forceUpdateEffectiveTarget": {"const": "UpdateForce"}, "recipientList": {"const": "OTHER_FORCE_MEMBERS_LIST"}, "counter": {"const": "TARGETS_LIST_LENGTH-2"}, "loop": {"const": "DBF"}, "firstEligibleAction": {"const": "AddItem"}, "textIds": {"const": [413, 415, 416]}}
+        },
+        "fullInventoryRollback": {
+          "type": "object", "additionalProperties": false,
+          "required": ["textId", "callOrder", "returnTarget"],
+          "properties": {"textId": {"const": 417}, "callOrder": {"const": ["CloseChest", "RefillNonChestItem"]}, "returnTarget": {"const": "byte_23994"}}
+        },
+        "returnContract": {
+          "type": "object", "additionalProperties": false,
+          "required": ["negativeViewTarget", "areaDescriptionHandled", "areaDescriptionUnhandledD6One", "areaDescriptionUnhandledD6Zero", "processPlayerActionNonzeroBranch"],
+          "properties": {"negativeViewTarget": {"const": "rts"}, "areaDescriptionHandled": {"const": -1}, "areaDescriptionUnhandledD6One": {"const": 0}, "areaDescriptionUnhandledD6Zero": {"const": -1}, "processPlayerActionNonzeroBranch": {"const": "return_25BF2"}}
+        },
+        "publicTextIds": {"type": "array", "minItems": 17, "maxItems": 17, "items": {"type": "integer", "minimum": 0}, "const": [403,408,404,409,405,410,427,412,423,412,423,412,414,413,415,416,417]}
+      }
+    },
+    "unknowns": {
+      "type": "object", "additionalProperties": false,
+      "required": ["natural-search-reachability", "actual-caller-entry-state", "actual-view-target-entity", "actual-facing-and-target-coordinate", "actual-block-kind", "actual-area-description-row-or-callback", "actual-chest-or-nonchest-content", "actual-gold-before-and-after", "actual-item-recipient-and-capacity", "actual-item-flag-open-close-refill-state", "actual-return-code-and-caller-branch", "input-text-sound-and-fade-cadence", "persistence-after-map-switch-save-load", "route-specific-search-outcome"],
+      "properties": {
+        "natural-search-reachability": {"const": "Unknown"}, "actual-caller-entry-state": {"const": "Unknown"}, "actual-view-target-entity": {"const": "Unknown"}, "actual-facing-and-target-coordinate": {"const": "Unknown"}, "actual-block-kind": {"const": "Unknown"}, "actual-area-description-row-or-callback": {"const": "Unknown"}, "actual-chest-or-nonchest-content": {"const": "Unknown"}, "actual-gold-before-and-after": {"const": "Unknown"}, "actual-item-recipient-and-capacity": {"const": "Unknown"}, "actual-item-flag-open-close-refill-state": {"const": "Unknown"}, "actual-return-code-and-caller-branch": {"const": "Unknown"}, "input-text-sound-and-fade-cadence": {"const": "Unknown"}, "persistence-after-map-switch-save-load": {"const": "Unknown"}, "route-specific-search-outcome": {"const": "Unknown"}
+      }
+    }
+  }
+}

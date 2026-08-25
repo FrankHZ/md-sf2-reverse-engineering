@@ -342,7 +342,12 @@ def test_field_menu_index_bindings_are_exact_and_reject_alias_roots() -> None:
         for record_id, record in records.items()
         if any(record_id == expected_record for expected_record, _, _ in expected)
     )
-    assert records["menus.field-main"]["documents"][-1] == "docs/research/field-item-effects.md"
+    field_main_documents = records["menus.field-main"]["documents"]
+    assert field_main_documents[-2:] == [
+        "docs/research/field-search-control.md",
+        "docs/research/field-item-effects.md",
+    ]
+    assert field_main_documents.count("docs/research/field-search-control.md") == 1
 
     def invalid(field: str) -> None:
         broken = deepcopy(index)

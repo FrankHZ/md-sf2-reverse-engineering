@@ -60,6 +60,10 @@ actual item-use Unknown remains unchanged.
   `UpdateForce`, copies `TARGETS_LIST_LENGTH` to the generic-list length, then
   copies target bytes in `DBF` counter order.
 
+The separate [field-search-control.md](field-search-control.md) owner retains
+the exact static `CheckArea` coordinate, dispatch, content, and fallback spine;
+the FieldMenu runtime `actual-search-area-result` remains **Unknown** here.
+
 These are source/H1/ROM control, branch, address, call-order, and constant
 facts. They do not establish natural reachability, caller-visible state,
 hardware persistence, input timing, presentation, or observed outcomes.

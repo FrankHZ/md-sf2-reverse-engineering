@@ -488,6 +488,133 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
         ("menus.field-item-effects", "increase-mp", 142218),
         ("menus.field-item-effects", "level-up", 142274),
     }
+    field_search_id = "sf2-field-search-control-static-v1"
+    field_search_document = "docs/research/field-search-control.md"
+    expected_later_bindings = {
+        (
+            "tech.interfaces.jump-s02",
+            "increase-gold",
+            "fieldSearchSpine.functionAddresses.j_IncreaseGold",
+        ),
+        (
+            "tech.interfaces.jump-s02",
+            "get-item-slots",
+            "fieldSearchSpine.functionAddresses.j_GetItemBySlotAndHeldItemsNumber",
+        ),
+        ("tech.interfaces.jump-s02", "add-item", "fieldSearchSpine.functionAddresses.j_AddItem"),
+        (
+            "tech.interfaces.jump-s02",
+            "update-force",
+            "fieldSearchSpine.functionAddresses.j_UpdateForce",
+        ),
+        (
+            "tech.interfaces.jump-s05",
+            "check-area",
+            "fieldSearchSpine.functionAddresses.j_CheckArea",
+        ),
+        (
+            "tech.interfaces.jump-s07",
+            "run-area-description",
+            "fieldSearchSpine.functionAddresses.j_RunMapSetupAreaDescription",
+        ),
+        ("menus.field-main", "search-call", "fieldSearchSpine.callers.fieldMenu.callAddress"),
+        (
+            "gameflow.exploration.actions",
+            "check-area-call",
+            "fieldSearchSpine.callers.processPlayerActionNoEntity.callAddress",
+        ),
+        (
+            "gameflow.exploration.interaction",
+            "check-area",
+            "fieldSearchSpine.functionAddresses.CheckArea",
+        ),
+        (
+            "gameflow.exploration.interaction",
+            "get-chest-gold",
+            "fieldSearchSpine.functionAddresses.GetChestGoldAmount",
+        ),
+        (
+            "gameflow.exploration.item-handoff",
+            "entry",
+            "fieldSearchSpine.functionAddresses.itemHandoff",
+        ),
+        (
+            "gameflow.exploration.engine",
+            "open-chest",
+            "fieldSearchSpine.functionAddresses.OpenChest",
+        ),
+        (
+            "gameflow.exploration.engine",
+            "close-chest",
+            "fieldSearchSpine.functionAddresses.CloseChest",
+        ),
+        (
+            "gameflow.exploration.engine",
+            "check-nonchest-item",
+            "fieldSearchSpine.functionAddresses.CheckNonChestItem",
+        ),
+        (
+            "gameflow.exploration.engine",
+            "refill-nonchest-item",
+            "fieldSearchSpine.functionAddresses.RefillNonChestItem",
+        ),
+        (
+            "map.setup.area-description",
+            "entry",
+            "fieldSearchSpine.functionAddresses.RunMapSetupAreaDescription",
+        ),
+        ("stats.party", "entry", "fieldSearchSpine.functionAddresses.UpdateForce"),
+        ("battle.replay.increase-gold", "entry", "fieldSearchSpine.functionAddresses.IncreaseGold"),
+        (
+            "stats.item-stats",
+            "get-item-slots",
+            "fieldSearchSpine.functionAddresses.GetItemBySlotAndHeldItemsNumber",
+        ),
+        ("stats.item-stats", "add-item", "fieldSearchSpine.functionAddresses.AddItem"),
+        ("stats.data.chest-gold", "entry", "fieldSearchSpine.goldPath.tableAddress"),
+    }
+    later_owner_ids = {record_id for record_id, _, _ in expected_later_bindings}
+    assert len(expected_later_bindings) == 21
+    assert len(later_owner_ids) == 13
+    expected_later_addresses = {
+        ("tech.interfaces.jump-s02", "increase-gold", 33116),
+        ("tech.interfaces.jump-s02", "get-item-slots", 33140),
+        ("tech.interfaces.jump-s02", "add-item", 33176),
+        ("tech.interfaces.jump-s02", "update-force", 33392),
+        ("tech.interfaces.jump-s05", "check-area", 131148),
+        ("tech.interfaces.jump-s07", "run-area-description", 278708),
+        ("menus.field-main", "search-call", 137694),
+        ("gameflow.exploration.actions", "check-area-call", 154562),
+        ("gameflow.exploration.interaction", "get-chest-gold", 145820),
+        ("gameflow.exploration.engine", "open-chest", 16726),
+        ("gameflow.exploration.engine", "close-chest", 16788),
+        ("gameflow.exploration.engine", "check-nonchest-item", 16886),
+        ("gameflow.exploration.engine", "refill-nonchest-item", 16922),
+        ("stats.item-stats", "get-item-slots", 35834),
+        ("stats.item-stats", "add-item", 36002),
+    }
+    assert len(expected_later_addresses) == 15
+    actual_later_bindings = {
+        (record_id, binding["addressId"], binding["fixtureField"])
+        for record_id, record in records.items()
+        for evidence in record["evidence"]
+        if evidence["fixtureId"] == field_search_id
+        for binding in evidence["bindings"]
+    }
+    assert actual_later_bindings == expected_later_bindings
+    assert {
+        record_id
+        for record_id, record in records.items()
+        if field_search_document in record["documents"]
+    } == later_owner_ids
+    assert all(
+        records[record_id]["documents"].count(field_search_document) == 1
+        for record_id in later_owner_ids
+    )
+    assert records["menus.field-main"]["documents"][-2:] == [
+        field_search_document,
+        "docs/research/field-item-effects.md",
+    ]
     actual_addresses = {
         (record_id, address["id"], address["value"])
         for record_id, record in records.items()
@@ -504,6 +631,18 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
     removed_evidence_records: set[str] = set()
     removed_addresses: set[tuple[str, str, int]] = set()
     removed_document_records: set[str] = set()
+    removed_later_evidence_records: set[str] = set()
+    removed_later_addresses: set[tuple[str, str, int]] = set()
+    removed_later_document_records: set[str] = set()
+
+    def remove_later_field_search_document(documents: list[str]) -> None:
+        assert documents[-2:] == [
+            field_search_document,
+            "docs/research/field-item-effects.md",
+        ]
+        assert documents.count(field_search_document) == 1
+        documents.remove(field_search_document)
+
     for record in normalized["records"]:
         record_id = record["id"]
         field_item_evidence = [
@@ -521,14 +660,50 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
             for evidence in record["evidence"]
             if evidence["fixtureId"] != field_item_effects.ID
         ]
+        later_evidence = [
+            evidence for evidence in record["evidence"] if evidence["fixtureId"] == field_search_id
+        ]
+        if later_evidence:
+            assert record_id in later_owner_ids
+            assert len(later_evidence) == 1
+            assert later_evidence[0]["level"] == "H2"
+            assert later_evidence[0]["fixture"] == (
+                "tests/fixtures/h2/field-search-control-static-v1.json"
+            )
+            assert later_evidence[0]["verifier"] == "src/sf2tool/h2/field_search_control.py"
+            expected_record_bindings = {
+                (address_id, fixture_field)
+                for owner_id, address_id, fixture_field in expected_later_bindings
+                if owner_id == record_id
+            }
+            actual_record_bindings = {
+                (binding["addressId"], binding["fixtureField"])
+                for binding in later_evidence[0]["bindings"]
+            }
+            assert actual_record_bindings == expected_record_bindings
+            assert len(later_evidence[0]["bindings"]) == len(expected_record_bindings)
+            removed_later_evidence_records.add(record_id)
+        record["evidence"] = [
+            evidence for evidence in record["evidence"] if evidence["fixtureId"] != field_search_id
+        ]
         retained_addresses = []
         for address in record["addresses"]:
             address_key = (record_id, address["id"], address["value"])
             if address_key in expected_new_addresses:
                 removed_addresses.add(address_key)
+            elif address_key in expected_later_addresses:
+                removed_later_addresses.add(address_key)
             else:
                 retained_addresses.append(address)
         record["addresses"] = retained_addresses
+        if field_search_document in record["documents"]:
+            assert record_id in later_owner_ids
+            assert record["documents"].count(field_search_document) == 1
+            if record_id == "menus.field-main":
+                remove_later_field_search_document(record["documents"])
+            else:
+                record["documents"].remove(field_search_document)
+            removed_later_document_records.add(record_id)
         if "docs/research/field-item-effects.md" in record["documents"]:
             assert record_id in expected_owner_ids
             assert record["documents"][-1] == "docs/research/field-item-effects.md"
@@ -538,7 +713,15 @@ def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> 
     assert removed_evidence_records == expected_owner_ids
     assert removed_addresses == expected_new_addresses
     assert removed_document_records == expected_owner_ids
+    assert removed_later_evidence_records == later_owner_ids
+    assert removed_later_addresses == expected_later_addresses
+    assert removed_later_document_records == later_owner_ids
     assert _canonical_sha256(normalized) == _PRE_SLICE_INDEX_SHA256
+
+    malformed_later_documents = list(records["menus.field-main"]["documents"])
+    malformed_later_documents[-2] = "docs/research/unrelated.md"
+    with pytest.raises(AssertionError):
+        remove_later_field_search_document(malformed_later_documents)
 
     def invalid(field: str) -> None:
         broken = deepcopy(index)
