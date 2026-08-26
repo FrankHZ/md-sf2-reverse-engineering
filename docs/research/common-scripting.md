@@ -1100,6 +1100,17 @@ request consumption, menu outcome, map transition, timing, persistence, normal-s
 story meaning; those remain the grouped Unknown boundary in
 [`map-event-request-state.md`](./map-event-request-state.md).
 
+**Confirmed — bounded request-consumption topology:**
+`sf2-map-event-request-consumption-static-v1` starts only at eight named
+consumer contexts for the six request-state symbols. It records the 13
+source-shaped reads/resets/clear accesses, their local branch or direct-handoff
+shape, 12 symbol/context relations, and 18 H1/ROM anchors without entering a
+callee or asserting that a writer reaches one. The retained 39-positive/
+875-zero writer inventory stays owned by
+[`map-event-request-state.md`](./map-event-request-state.md); caller state,
+values, timing, destinations, persistence, and meaning remain Unknown in
+[`map-event-request-consumption.md`](./map-event-request-consumption.md).
+
 **Confirmed (bounded H3):** `sf2-map-script-control-audio-runtime-v1` runs six RAM-owned streams in
 one BizHawk 2.11.1 / Genesis Plus GX Map Test 0 launch through the unmodified `ExecuteMapScript` loop.
 The observer confirms the normal `csWait` D0=1 call's one `WaitForVInt` entry and the debug

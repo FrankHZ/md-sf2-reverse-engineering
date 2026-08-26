@@ -585,8 +585,34 @@ def test_request_state_cli_registration() -> None:
     assert args.output_path is None
 
 
+def _without_request_consumption(index: dict[str, object]) -> dict[str, object]:
+    for record in index["records"]:
+        evidence = [
+            item
+            for item in record["evidence"]
+            if item["fixtureId"] == "sf2-map-event-request-consumption-static-v1"
+        ]
+        if not evidence:
+            continue
+        assert len(evidence) == 1
+        assert record["documents"].count("docs/research/map-event-request-consumption.md") == 1
+        record["evidence"] = [item for item in record["evidence"] if item not in evidence]
+        record["documents"].remove("docs/research/map-event-request-consumption.md")
+        record["addresses"] = [
+            address
+            for address in record["addresses"]
+            if address["id"]
+            not in {
+                "get-shop-inventory-address",
+                "process-map-event",
+                "declare-raft-entity",
+                "raft-refresh",
+            }
+        ]
+    return index
+
 def test_request_state_index_delta_is_exact_24_binding_append_without_object_drift() -> None:
-    index = load_json(INDEX)
+    index = _without_request_consumption(load_json(INDEX))
     validate_json(index, INDEX_SCHEMA, owner="map-event request-state index")
     base = json.loads(
         subprocess.run(
@@ -664,16 +690,16 @@ def test_request_state_index_delta_is_exact_24_binding_append_without_object_dri
         "Index": "manifests/research-index.json",
         "Records": 1625,
         "Confirmed": 1625,
-        "H2Fixtures": 91,
+        "H2Fixtures": 92,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 2968,
+        "AddressBindings": 2976,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1588,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 53,
+        "ResearchDocuments": 54,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

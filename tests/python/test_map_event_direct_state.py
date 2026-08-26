@@ -125,6 +125,32 @@ def _without_request_state(index):
     return normalized
 
 
+def _without_request_consumption(index: dict[str, object]) -> dict[str, object]:
+    for record in index["records"]:
+        evidence = [
+            item
+            for item in record["evidence"]
+            if item["fixtureId"] == "sf2-map-event-request-consumption-static-v1"
+        ]
+        if not evidence:
+            continue
+        assert len(evidence) == 1
+        assert record["documents"].count("docs/research/map-event-request-consumption.md") == 1
+        record["evidence"] = [item for item in record["evidence"] if item not in evidence]
+        record["documents"].remove("docs/research/map-event-request-consumption.md")
+        record["addresses"] = [
+            address
+            for address in record["addresses"]
+            if address["id"]
+            not in {
+                "get-shop-inventory-address",
+                "process-map-event",
+                "declare-raft-entity",
+                "raft-refresh",
+            }
+        ]
+    return index
+
 def _without_dialogue_state(index: dict[str, object]) -> dict[str, object]:
     normalized = deepcopy(index)
     removed: set[str] = set()
@@ -379,8 +405,10 @@ def test_fixture_schema_is_closed_and_rejects_private_or_runtime_fields() -> Non
 
 
 def test_research_index_adds_exact_direct_state_bindings_without_object_drift() -> None:
-    index = _without_predicate_results(
-        _without_dialogue_state(_without_request_state(load_json(INDEX)))
+    index = _without_request_consumption(
+        _without_predicate_results(
+            _without_dialogue_state(_without_request_state(load_json(INDEX)))
+        )
     )
     normalized = deepcopy(index)
     removed_handoff_records: set[str] = set()

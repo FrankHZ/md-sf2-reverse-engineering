@@ -273,6 +273,9 @@ Data-side directory inventory and ROM parity:
 - [`map-event-request-state.md`](./research/map-event-request-state.md): the 39-program static
   request-state write relation, six fixed-RAM write classes, caller-local may/must definitions at
   alias-aware ShopMenu transfers and returns, source/H1/ROM anchors, and grouped runtime Unknown boundary.
+- [`map-event-request-consumption.md`](./research/map-event-request-consumption.md): the bounded
+  consumer-side source/H1/ROM topology for the six request-state symbols: 13 accesses across eight
+  contexts, 12 symbol/context relations, 21 contextual roles, 18 physical anchors, and grouped runtime Unknowns.
 - [`map-event-direct-handoff.md`](./research/map-event-direct-handoff.md): the retained callers'
   maximal immediate raw setup groups and direct-call first lexical continuations, with source/H1/ROM
   anchors and enum joins; this adds handoff depth without re-owning transfer topology or callee bodies.

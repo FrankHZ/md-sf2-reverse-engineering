@@ -97,6 +97,32 @@ def _without_request_state(index):
     return normalized
 
 
+def _without_request_consumption(index: dict[str, Any]) -> dict[str, Any]:
+    for record in index["records"]:
+        evidence = [
+            item
+            for item in record["evidence"]
+            if item["fixtureId"] == "sf2-map-event-request-consumption-static-v1"
+        ]
+        if not evidence:
+            continue
+        assert len(evidence) == 1
+        assert record["documents"].count("docs/research/map-event-request-consumption.md") == 1
+        record["evidence"] = [item for item in record["evidence"] if item not in evidence]
+        record["documents"].remove("docs/research/map-event-request-consumption.md")
+        record["addresses"] = [
+            address
+            for address in record["addresses"]
+            if address["id"]
+            not in {
+                "get-shop-inventory-address",
+                "process-map-event",
+                "declare-raft-entity",
+                "raft-refresh",
+            }
+        ]
+    return index
+
 def _without_dialogue_state(index: dict[str, Any]) -> dict[str, Any]:
     normalized = deepcopy(index)
     removed: set[str] = set()
@@ -506,8 +532,10 @@ def test_fixture_schema_is_recursively_closed_public_and_exact() -> None:
 
 
 def test_research_index_delta_is_exact_53_object_append_without_record_or_address_drift() -> None:
-    index = _without_predicate_results(
-        _without_dialogue_state(_without_request_state(load_json(INDEX)))
+    index = _without_request_consumption(
+        _without_predicate_results(
+            _without_dialogue_state(_without_request_state(load_json(INDEX)))
+        )
     )
     removed_handoff_records: set[str] = set()
     for record in index["records"]:
@@ -592,16 +620,16 @@ def test_research_index_delta_is_exact_53_object_append_without_record_or_addres
         "Index": "manifests/research-index.json",
         "Records": 1625,
         "Confirmed": 1625,
-        "H2Fixtures": 91,
+        "H2Fixtures": 92,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 2968,
+        "AddressBindings": 2976,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1588,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 53,
+        "ResearchDocuments": 54,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,
