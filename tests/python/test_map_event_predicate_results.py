@@ -32,6 +32,27 @@ INDEX_SCHEMA = ROOT / "schemas/research-index.schema.json"
 BASE = "02301229ef25a7f0a366f843c76042aceaf0524f"
 DOCUMENT = "docs/research/map-event-predicate-results.md"
 VERIFIER = "src/sf2tool/h2/map_event_predicate_results.py"
+_DIALOGUE_STATE_FIXTURE_ID = "sf2-map-event-dialogue-state-static-v1"
+_DIALOGUE_STATE_DOCUMENT = "docs/research/map-event-dialogue-state.md"
+_DIALOGUE_STATE_OWNER_IDS = {
+    "map.data.ms-map3-flag506-entityevents",
+    "map.data.ms-map3-zoneevents",
+    "map.data.ms-map5-flag530-entityevents",
+    "map.data.ms-map5-flag650-entityevents",
+    "map.data.ms-map6-flag701-entityevents",
+    "map.data.ms-map16-flag530-entityevents",
+    "map.data.ms-map18-entityevents",
+    "map.data.ms-map19-flag506-entityevents",
+    "map.data.ms-map20-flag543-zoneevents",
+    "map.data.ms-map21-flag506-entityevents",
+    "map.data.ms-map25-entityevents",
+    "map.data.ms-map37-section5",
+    "map.data.ms-map40-entityevents",
+    "map.data.ms-map44-flag507-entityevents",
+    "map.data.ms-map63-entityevents",
+    "map.data.ms-map72-zoneevents",
+    "map.data.ms-map77-section5",
+}
 EXPECTED_INDEX_BINDINGS = {
     "map.data.ms-map10-flag722-entityevents": "ms_map10_flag722_EntityEvents",
     "map.data.ms-map11-entityevents": "ms_map11_EntityEvents",
@@ -49,6 +70,41 @@ EXPECTED_INDEX_BINDINGS = {
     "map.data.ms-map72-zoneevents": "ms_map72_ZoneEvents",
     "map.data.ms-map9-entityevents": "ms_map9_EntityEvents",
 }
+
+
+def _without_dialogue_state(index: dict[str, object]) -> dict[str, object]:
+    normalized = deepcopy(index)
+    removed: set[str] = set()
+    for record in normalized["records"]:
+        evidence = [
+            item for item in record["evidence"] if item["fixtureId"] == _DIALOGUE_STATE_FIXTURE_ID
+        ]
+        if not evidence:
+            continue
+        assert record["id"] in _DIALOGUE_STATE_OWNER_IDS
+        assert evidence == [
+            {
+                "level": "H2",
+                "fixture": "tests/fixtures/h2/map-event-dialogue-state-static-v1.json",
+                "fixtureId": _DIALOGUE_STATE_FIXTURE_ID,
+                "verifier": "src/sf2tool/h2/map_event_dialogue_state.py",
+                "bindings": [
+                    {
+                        "addressId": "entry",
+                        "fixtureField": (
+                            "eventDialogueState.sourceFiles."
+                            f"{record['symbol']}.tableEntryAddress"
+                        ),
+                    }
+                ],
+            }
+        ]
+        assert record["documents"][-1] == _DIALOGUE_STATE_DOCUMENT
+        record["evidence"].remove(evidence[0])
+        record["documents"].pop()
+        removed.add(record["id"])
+    assert removed == _DIALOGUE_STATE_OWNER_IDS
+    return normalized
 
 
 def _fixture() -> dict[str, object]:
@@ -278,7 +334,7 @@ def test_fixture_schema_is_recursively_closed_ordered_and_public() -> None:
 
 
 def test_research_index_delta_is_exact_15_binding_append_without_object_or_design_drift() -> None:
-    index = load_json(INDEX)
+    index = _without_dialogue_state(load_json(INDEX))
     base = json.loads(
         subprocess.run(
             ["git", "show", f"{BASE}:manifests/research-index.json"],
@@ -321,16 +377,16 @@ def test_research_index_delta_is_exact_15_binding_append_without_object_or_desig
         "Index": "manifests/research-index.json",
         "Records": 1625,
         "Confirmed": 1625,
-        "H2Fixtures": 89,
+        "H2Fixtures": 90,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 2927,
+        "AddressBindings": 2944,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1588,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 51,
+        "ResearchDocuments": 52,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

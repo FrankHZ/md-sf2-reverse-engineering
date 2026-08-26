@@ -1081,6 +1081,16 @@ fixed-state values, callee entry/effects/returns, continuation selection, reacha
 timing, UI, dialogue, audio, and story meaning remain the handoff owner's grouped **Unknown**
 boundary.
 
+**Confirmed — retained map-event dialogue-state join:**
+`sf2-map-event-dialogue-state-static-v1` selects 24 positive contexts from the complete 914-program
+map-event corpus and retains five source-defined dialogue-state symbols, their 100 contextual
+state-access edges at 72 physical PCs, and 89 contextual/76 physical text/close sites. It computes
+source/H1/ROM-guarded CFG and may/must reaching definitions at every text/close and return site,
+including the Map 6 Entity13 shared suffix without synthesizing a Default-to-tail edge. The 17 exact
+table-owner joins, 22 source identities, 414/374 operation and 72/64 label shape, and 379 anchors are
+owned by [`map-event-dialogue-state.md`](./map-event-dialogue-state.md). It does not establish runtime
+reachability, displayed text, portrait/audio behavior, timing, persistence, or story meaning.
+
 **Confirmed (bounded H3):** `sf2-map-script-control-audio-runtime-v1` runs six RAM-owned streams in
 one BizHawk 2.11.1 / Genesis Plus GX Map Test 0 launch through the unmodified `ExecuteMapScript` loop.
 The observer confirms the normal `csWait` D0=1 call's one `WaitForVInt` entry and the debug
@@ -2222,6 +2232,7 @@ uv run sf2 h2 map-entities
 uv run sf2 h2 map-events
 uv run sf2 h2 map-event-direct-state
 uv run sf2 h2 map-event-direct-control
+uv run sf2 h2 map-event-dialogue-state
 uv run sf2 h2 map-event-direct-handoff
 uv run sf2 h2 map-event-predicate-results
 uv run sf2 h2 map-descriptions

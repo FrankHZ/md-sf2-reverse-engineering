@@ -29,6 +29,27 @@ _HANDOFF_FIXTURE_ID = "sf2-map-event-direct-handoff-static-v1"
 _HANDOFF_DOCUMENT = "docs/research/map-event-direct-handoff.md"
 _PREDICATE_FIXTURE_ID = "sf2-map-event-predicate-results-static-v1"
 _PREDICATE_DOCUMENT = "docs/research/map-event-predicate-results.md"
+_DIALOGUE_STATE_FIXTURE_ID = "sf2-map-event-dialogue-state-static-v1"
+_DIALOGUE_STATE_DOCUMENT = "docs/research/map-event-dialogue-state.md"
+_DIALOGUE_STATE_OWNER_IDS = {
+    "map.data.ms-map3-flag506-entityevents",
+    "map.data.ms-map3-zoneevents",
+    "map.data.ms-map5-flag530-entityevents",
+    "map.data.ms-map5-flag650-entityevents",
+    "map.data.ms-map6-flag701-entityevents",
+    "map.data.ms-map16-flag530-entityevents",
+    "map.data.ms-map18-entityevents",
+    "map.data.ms-map19-flag506-entityevents",
+    "map.data.ms-map20-flag543-zoneevents",
+    "map.data.ms-map21-flag506-entityevents",
+    "map.data.ms-map25-entityevents",
+    "map.data.ms-map37-section5",
+    "map.data.ms-map40-entityevents",
+    "map.data.ms-map44-flag507-entityevents",
+    "map.data.ms-map63-entityevents",
+    "map.data.ms-map72-zoneevents",
+    "map.data.ms-map77-section5",
+}
 _DIRECT_STATE_OWNER_IDS = {
     "map.data.ms-map2-entityevents", "map.data.ms-map3-flag506-entityevents",
     "map.data.ms-map3-flag609-entityevents", "map.data.ms-map5-flag530-entityevents",
@@ -50,6 +71,41 @@ _DIRECT_STATE_OWNER_IDS = {
     "map.data.ms-map76-zoneevents", "map.data.ms-map77-zoneevents",
     "map.data.ms-map37-section5", "map.data.ms-map77-section5",
 }
+
+
+def _without_dialogue_state(index: dict[str, Any]) -> dict[str, Any]:
+    normalized = deepcopy(index)
+    removed: set[str] = set()
+    for record in normalized["records"]:
+        evidence = [
+            item for item in record["evidence"] if item["fixtureId"] == _DIALOGUE_STATE_FIXTURE_ID
+        ]
+        if not evidence:
+            continue
+        assert record["id"] in _DIALOGUE_STATE_OWNER_IDS
+        assert evidence == [
+            {
+                "level": "H2",
+                "fixture": "tests/fixtures/h2/map-event-dialogue-state-static-v1.json",
+                "fixtureId": _DIALOGUE_STATE_FIXTURE_ID,
+                "verifier": "src/sf2tool/h2/map_event_dialogue_state.py",
+                "bindings": [
+                    {
+                        "addressId": "entry",
+                        "fixtureField": (
+                            "eventDialogueState.sourceFiles."
+                            f"{record['symbol']}.tableEntryAddress"
+                        ),
+                    }
+                ],
+            }
+        ]
+        assert record["documents"][-1] == _DIALOGUE_STATE_DOCUMENT
+        record["evidence"].remove(evidence[0])
+        record["documents"].pop()
+        removed.add(record["id"])
+    assert removed == _DIALOGUE_STATE_OWNER_IDS
+    return normalized
 
 
 def _without_predicate_results(index: dict[str, Any]) -> dict[str, Any]:
@@ -794,7 +850,7 @@ def test_field_search_retained_owner_digest_drift_rejects_fixture_comparison(
 
 
 def test_field_search_index_delta_is_exact_and_rejects_unknown_roots() -> None:
-    index = _without_predicate_results(load_json(INDEX))
+    index = _without_predicate_results(_without_dialogue_state(load_json(INDEX)))
     records = {record["id"]: record for record in index["records"]}
     expected = {
         (
