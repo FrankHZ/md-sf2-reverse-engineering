@@ -68,6 +68,9 @@ from sf2tool.h2.map_event_direct_state import verify_map_event_direct_state_cont
 from sf2tool.h2.map_event_predicate_results import (
     verify_map_event_predicate_results_contract,
 )
+from sf2tool.h2.map_event_request_consumption import (
+    verify_map_event_request_consumption_contract,
+)
 from sf2tool.h2.map_event_request_state import verify_map_event_request_state_contract
 from sf2tool.h2.map_events import verify_map_events_contract
 from sf2tool.h2.map_import import verify_canonical_map_import
@@ -797,6 +800,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_event_request_state)
     h2_map_event_request_state.add_argument("--output-path", type=_path)
+    h2_map_event_request_consumption = h2_commands.add_parser(
+        "map-event-request-consumption",
+        help="verify bounded static consumers of map-event request state",
+    )
+    _add_local_paths(h2_map_event_request_consumption)
+    h2_map_event_request_consumption.add_argument("--output-path", type=_path)
     h2_map_event_dialogue_state = h2_commands.add_parser(
         "map-event-dialogue-state",
         help="verify bounded map-event dialogue state flow, text sites, and reaching definitions",
@@ -1836,6 +1845,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-event-request-state":
         print_record(
             verify_map_event_request_state_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-event-request-consumption":
+        print_record(
+            verify_map_event_request_consumption_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

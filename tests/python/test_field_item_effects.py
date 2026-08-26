@@ -106,6 +106,32 @@ def _without_request_state(index):
     return normalized
 
 
+def _without_request_consumption(index):
+    for record in index["records"]:
+        evidence = [
+            item
+            for item in record["evidence"]
+            if item["fixtureId"] == "sf2-map-event-request-consumption-static-v1"
+        ]
+        if not evidence:
+            continue
+        assert len(evidence) == 1
+        assert record["documents"].count("docs/research/map-event-request-consumption.md") == 1
+        record["evidence"] = [item for item in record["evidence"] if item not in evidence]
+        record["documents"].remove("docs/research/map-event-request-consumption.md")
+        record["addresses"] = [
+            address
+            for address in record["addresses"]
+            if address["id"]
+            not in {
+                "get-shop-inventory-address",
+                "process-map-event",
+                "declare-raft-entity",
+                "raft-refresh",
+            }
+        ]
+    return index
+
 def _without_dialogue_state(index):
     normalized = deepcopy(index)
     removed: set[str] = set()
@@ -545,8 +571,10 @@ def test_field_item_effects_every_h1_rom_anchor_rejects_one_byte_drift() -> None
 
 
 def test_field_item_effects_index_delta_is_exact_and_rejects_unknown_roots() -> None:
-    index = _without_predicate_results(
-        _without_dialogue_state(_without_request_state(load_json(INDEX)))
+    index = _without_request_consumption(
+        _without_predicate_results(
+            _without_dialogue_state(_without_request_state(load_json(INDEX)))
+        )
     )
     records = {record["id"]: record for record in index["records"]}
     expected = {

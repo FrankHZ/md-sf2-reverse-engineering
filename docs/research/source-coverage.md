@@ -984,7 +984,12 @@ entity and nine zone programs selected by 45 source-defined writes to `CURRENT_S
 262-operation/82-label CFG derives source-defined may/must reaching definitions only through 31
 retained `j_ShopMenu → ShopMenu` transfers (28 returning/three tail) and 36 returns. It does not
 enter callees or claim actual request values, consumption, maps/UI, timing, persistence, reachability,
-or story meaning. Evidence date: 2026-08-26. The preceding map-event boundary facts retain their
+or story meaning. Evidence date: 2026-08-26. The paired static request-consumption inventory guards
+seven source identities, six fixed-RAM definitions, eight consumer contexts, 13 lifecycle accesses,
+12 symbol/context relations, 21 contextual roles, and 18 H1/ROM anchors without claiming a
+producer-to-consumer path. Its grouped Unknown queue retains actual entry state, values, timing,
+dispatch/destination outcomes, raft state, persistence, and input/UI/map-transition/audio/story meaning.
+The preceding map-event boundary facts retain their
 2026-07-27 evidence date. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 

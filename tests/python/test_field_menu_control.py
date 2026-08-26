@@ -14,6 +14,56 @@ SCHEMA = field_menu.SCHEMA
 INDEX = repo_path("manifests/research-index.json")
 INDEX_SCHEMA = repo_path("schemas/research-index.schema.json")
 ROM = repo_path("local/roms/sf2-us.bin")
+_REQUEST_CONSUMPTION_FIXTURE = (
+    "tests/fixtures/h2/map-event-request-consumption-static-v1.json"
+)
+
+
+def _without_request_consumption(index: dict[str, object]) -> dict[str, object]:
+    expected_records = {
+        "battle.loop.egress-position",
+        "gameflow.exploration.loop",
+        "menus.field-main",
+        "menus.shop-actions",
+        "scripting.map.followersfunctions-2",
+        "scripting.map.mapfunctions",
+    }
+    expected_addresses = {
+        ("menus.shop-actions", "get-shop-inventory-address", 133202),
+        ("gameflow.exploration.loop", "process-map-event", 153930),
+        ("scripting.map.mapfunctions", "declare-raft-entity", 278954),
+        ("scripting.map.followersfunctions-2", "raft-refresh", 279556),
+    }
+    removed_records: set[str] = set()
+    removed_addresses: set[tuple[str, str, int]] = set()
+    for record in index["records"]:
+        evidence = [
+            item
+            for item in record["evidence"]
+            if item["fixtureId"] == "sf2-map-event-request-consumption-static-v1"
+        ]
+        if not evidence:
+            continue
+        assert len(evidence) == 1
+        assert evidence[0]["fixture"] == _REQUEST_CONSUMPTION_FIXTURE
+        assert evidence[0]["verifier"] == "src/sf2tool/h2/map_event_request_consumption.py"
+        assert record["documents"].count("docs/research/map-event-request-consumption.md") == 1
+        record["evidence"] = [item for item in record["evidence"] if item not in evidence]
+        record["documents"].remove("docs/research/map-event-request-consumption.md")
+        retained_addresses = []
+        for address in record["addresses"]:
+            candidate = (record["id"], address["id"], address["value"])
+            if candidate in expected_addresses:
+                assert address["space"] == "rom"
+                assert address["kind"] == "observation"
+                removed_addresses.add(candidate)
+            else:
+                retained_addresses.append(address)
+        record["addresses"] = retained_addresses
+        removed_records.add(record["id"])
+    assert removed_records == expected_records
+    assert removed_addresses == expected_addresses
+    return index
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
@@ -256,7 +306,7 @@ def test_field_menu_h1_rom_anchor_projection_rejects_one_byte_drift() -> None:
 
 
 def test_field_menu_index_bindings_are_exact_and_reject_alias_roots() -> None:
-    index = load_json(INDEX)
+    index = _without_request_consumption(load_json(INDEX))
     records = {record["id"]: record for record in index["records"]}
     expected = {
         (

@@ -1,0 +1,917 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-event-request-consumption-static-v1",
+  "system": "map-event-request-consumption",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "upstream": {
+    "repository": "ShiningForceCentral/SF2DISASM",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+  },
+  "retainedOwners": {
+    "mapEventRequestState": {
+      "fixtureId": "sf2-map-event-request-state-static-v1",
+      "fixtureSha256": "5EAC8508A3F563EECC7A5294B1BD840F145E8AC1C963D8B89F84EAC2B7EEEA50"
+    },
+    "commonMenus": {
+      "fixtureId": "sf2-common-menus-static-v1",
+      "fixtureSha256": "52ED7A7E03F7FB0367CAA5EEA2AA86B80E0B1ACCA3B65D5151D6407FA03644BB"
+    },
+    "gameflowCore": {
+      "fixtureId": "sf2-gameflow-core-static-v1",
+      "fixtureSha256": "7BB94D3825685D61CFC1ABE4DDD1D59F238D5C3DBE70D65B69A94ABCD970B12E"
+    },
+    "fieldMenuControl": {
+      "fixtureId": "sf2-field-menu-control-static-v1",
+      "fixtureSha256": "EB67D16ED9432F0CFAAD89DB58777EB4AFA576D3A91436BF566BE35F3EB1508B"
+    },
+    "battleLoop": {
+      "fixtureId": "sf2-battle-loop-static-v1",
+      "fixtureSha256": "B1DDFE150ACEDF415E7DDB32445B1C8A7B72396354C2DD7DE5452E5B3CA96069"
+    },
+    "commonScripting": {
+      "fixtureId": "sf2-common-scripting-static-v1",
+      "fixtureSha256": "E184BB32FAC595B6F21F58BC86A1F20F27CC22D9F57992045DE84B3DDFC622CF"
+    },
+    "commonMaps": {
+      "fixtureId": "sf2-common-maps-static-v1",
+      "fixtureSha256": "DE73B9F75B9F663FCFD7A4D63178247873A8F9B2B1FCDD65D70D660ACBE04B6F"
+    }
+  },
+  "sourceContext": {
+    "h1Listing": {
+      "path": "build/sf2build-h1.lst",
+      "sha256": "F28FAF604DD8F37AE3EDAA819DD1C9A601863B0596F2C83602CA3D572BB8644D"
+    },
+    "sourceIdentities": [
+      {
+        "path": "sf2const.asm",
+        "sha256": "17738776F811F66322F278CFBF10E8B376612F4F9EDFC2C7AA0A5DB81CDFB3FB"
+      },
+      {
+        "path": "code/common/menus/shop/shopactions.asm",
+        "sha256": "855AF26EBD2CC088540FB3ABDF4370F15396A2F10845DA1ADA11A4F53C621574"
+      },
+      {
+        "path": "code/gameflow/exploration/explorationfunctions_2.asm",
+        "sha256": "582D5DAFE0C2D457C1D39AD143B52DC666A3C80531D05C1B74CDAC4FE0D2A525"
+      },
+      {
+        "path": "code/common/menus/main/mainactions.asm",
+        "sha256": "E69B3D40DF6658CF761A035FA1B6643DD9770B3C82F4CBB21D5AC4D3A50F2777"
+      },
+      {
+        "path": "code/gameflow/battle/battleloop/getegresspositionforbattle.asm",
+        "sha256": "133F863C5DD1BA9D7696B5B30228EE9819F199720D2C522E83F3754E87D1CD6E"
+      },
+      {
+        "path": "code/common/scripting/map/mapfunctions.asm",
+        "sha256": "B497B9DEF6C277734D99572EA1AE603DB31C383A21D99267B228025F33581929"
+      },
+      {
+        "path": "code/common/scripting/map/followersfunctions_2.asm",
+        "sha256": "5D566EEC23D0A4FD603575A32B879DBA3AD95EE748ACE6A25691502E8C205A02"
+      }
+    ],
+    "anchors": [
+      {
+        "id": "pc:020852",
+        "romPc": 133202,
+        "roles": [
+          "context-entry:get-shop-inventory-address"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "9395F20004DEEA4836E18129EC5DB16985500E8DC283E714C0F082C183741A0F",
+        "romInstructionSha256": "9395F20004DEEA4836E18129EC5DB16985500E8DC283E714C0F082C183741A0F"
+      },
+      {
+        "id": "pc:02085C",
+        "romPc": 133212,
+        "roles": [
+          "access:get-shop-inventory-address/current-shop-index/read"
+        ],
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "8565E8E42AD30F7F65E48EC8CA4749C03B4E77BB82C3DC58BEEC94EDA4288EA2",
+        "romInstructionSha256": "8565E8E42AD30F7F65E48EC8CA4749C03B4E77BB82C3DC58BEEC94EDA4288EA2"
+      },
+      {
+        "id": "pc:02127E",
+        "romPc": 135806,
+        "roles": [
+          "context-entry:field-menu"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "E86E97EED73ED4AE6C7D1817F0CE44BCEA86BF8EEA69FCC6E4537C4EDFD923E3",
+        "romInstructionSha256": "E86E97EED73ED4AE6C7D1817F0CE44BCEA86BF8EEA69FCC6E4537C4EDFD923E3"
+      },
+      {
+        "id": "pc:021384",
+        "romPc": 136068,
+        "roles": [
+          "access:field-menu/egress-map/read"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "C2AF8F3B181C031BAA6C7EE787C8128B58392EF1448841AA351050C4F8A068E8",
+        "romInstructionSha256": "C2AF8F3B181C031BAA6C7EE787C8128B58392EF1448841AA351050C4F8A068E8"
+      },
+      {
+        "id": "pc:023E50",
+        "romPc": 147024,
+        "roles": [
+          "context-entry:get-egress-position-for-battle"
+        ],
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "718468BC9070E7C449284CFC9EB02A76E07AF725717BE651E57119974EA89D92",
+        "romInstructionSha256": "718468BC9070E7C449284CFC9EB02A76E07AF725717BE651E57119974EA89D92"
+      },
+      {
+        "id": "pc:023EA6",
+        "romPc": 147110,
+        "roles": [
+          "access:get-egress-position-for-battle/egress-map/read"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "C2AF8F3B181C031BAA6C7EE787C8128B58392EF1448841AA351050C4F8A068E8",
+        "romInstructionSha256": "C2AF8F3B181C031BAA6C7EE787C8128B58392EF1448841AA351050C4F8A068E8"
+      },
+      {
+        "id": "pc:0257C0",
+        "romPc": 153536,
+        "roles": [
+          "context-entry:exploration-loop",
+          "access:exploration-loop/map-event-type/reset"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "B80B86A4C95B3B22BADE37B26F9E07CCB95BDFA006EE514C983F0A4C3E911EC0",
+        "romInstructionSha256": "B80B86A4C95B3B22BADE37B26F9E07CCB95BDFA006EE514C983F0A4C3E911EC0"
+      },
+      {
+        "id": "pc:02591C",
+        "romPc": 153884,
+        "roles": [
+          "context-entry:wait-for-event",
+          "access:wait-for-event/map-event-type/entry-poll-read"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "80A746F6DEC66527F134C17FF5C485697AEFCBBBFC7E46675AE168085DE20253",
+        "romInstructionSha256": "80A746F6DEC66527F134C17FF5C485697AEFCBBBFC7E46675AE168085DE20253"
+      },
+      {
+        "id": "pc:025934",
+        "romPc": 153908,
+        "roles": [
+          "access:wait-for-event/map-event-type/loop-poll-read"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "80A746F6DEC66527F134C17FF5C485697AEFCBBBFC7E46675AE168085DE20253",
+        "romInstructionSha256": "80A746F6DEC66527F134C17FF5C485697AEFCBBBFC7E46675AE168085DE20253"
+      },
+      {
+        "id": "pc:02594A",
+        "romPc": 153930,
+        "roles": [
+          "context-entry:process-map-event",
+          "access:process-map-event/map-event-type/pre-dispatch-clear"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "B80B86A4C95B3B22BADE37B26F9E07CCB95BDFA006EE514C983F0A4C3E911EC0",
+        "romInstructionSha256": "B80B86A4C95B3B22BADE37B26F9E07CCB95BDFA006EE514C983F0A4C3E911EC0"
+      },
+      {
+        "id": "pc:0441AA",
+        "romPc": 278954,
+        "roles": [
+          "context-entry:declare-raft-entity"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "BA9D33EBE8AE7EB92CC3C0A65E6994044044BB0F62290BC50A98441B3108632E",
+        "romInstructionSha256": "BA9D33EBE8AE7EB92CC3C0A65E6994044044BB0F62290BC50A98441B3108632E"
+      },
+      {
+        "id": "pc:0441FC",
+        "romPc": 279036,
+        "roles": [
+          "access:declare-raft-entity/raft-map/read"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "470143780B611E4BAFAF1EAFF44488B7A164A8F68F970ECD96224E8C5D0322BF",
+        "romInstructionSha256": "470143780B611E4BAFAF1EAFF44488B7A164A8F68F970ECD96224E8C5D0322BF"
+      },
+      {
+        "id": "pc:044202",
+        "romPc": 279042,
+        "roles": [
+          "access:declare-raft-entity/raft-x/read"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "DA1852EC9476606E93534B2D499037FFEE82CFAE9CA4B85AC33F95B7A5A8B737",
+        "romInstructionSha256": "DA1852EC9476606E93534B2D499037FFEE82CFAE9CA4B85AC33F95B7A5A8B737"
+      },
+      {
+        "id": "pc:044206",
+        "romPc": 279046,
+        "roles": [
+          "access:declare-raft-entity/raft-y/read"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "8ADC315AF0B7BA0DF5E69E9236324A3DB760200A64CB2030C09DAE2AC5108595",
+        "romInstructionSha256": "8ADC315AF0B7BA0DF5E69E9236324A3DB760200A64CB2030C09DAE2AC5108595"
+      },
+      {
+        "id": "pc:044404",
+        "romPc": 279556,
+        "roles": [
+          "context-entry:raft-refresh"
+        ],
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "0204151645350C706883BC20CA035A2CAA7BEBB1407D89B132B7E0B60738D90D",
+        "romInstructionSha256": "0204151645350C706883BC20CA035A2CAA7BEBB1407D89B132B7E0B60738D90D"
+      },
+      {
+        "id": "pc:04442C",
+        "romPc": 279596,
+        "roles": [
+          "access:raft-refresh/raft-map/read"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "470143780B611E4BAFAF1EAFF44488B7A164A8F68F970ECD96224E8C5D0322BF",
+        "romInstructionSha256": "470143780B611E4BAFAF1EAFF44488B7A164A8F68F970ECD96224E8C5D0322BF"
+      },
+      {
+        "id": "pc:044434",
+        "romPc": 279604,
+        "roles": [
+          "access:raft-refresh/raft-x/read"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "DA1852EC9476606E93534B2D499037FFEE82CFAE9CA4B85AC33F95B7A5A8B737",
+        "romInstructionSha256": "DA1852EC9476606E93534B2D499037FFEE82CFAE9CA4B85AC33F95B7A5A8B737"
+      },
+      {
+        "id": "pc:044438",
+        "romPc": 279608,
+        "roles": [
+          "access:raft-refresh/raft-y/read"
+        ],
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "8ADC315AF0B7BA0DF5E69E9236324A3DB760200A64CB2030C09DAE2AC5108595",
+        "romInstructionSha256": "8ADC315AF0B7BA0DF5E69E9236324A3DB760200A64CB2030C09DAE2AC5108595"
+      }
+    ]
+  },
+  "eventRequestConsumption": {
+    "symbolDefinitions": [
+      {
+        "symbol": "CURRENT_SHOP_INDEX",
+        "address": 16758482,
+        "sourcePath": "sf2const.asm",
+        "sourceLine": 516
+      },
+      {
+        "symbol": "MAP_EVENT_TYPE",
+        "address": 16754762,
+        "sourcePath": "sf2const.asm",
+        "sourceLine": 230
+      },
+      {
+        "symbol": "EGRESS_MAP",
+        "address": 16774937,
+        "sourcePath": "sf2const.asm",
+        "sourceLine": 682
+      },
+      {
+        "symbol": "RAFT_MAP",
+        "address": 16774931,
+        "sourcePath": "sf2const.asm",
+        "sourceLine": 677
+      },
+      {
+        "symbol": "RAFT_X",
+        "address": 16774932,
+        "sourcePath": "sf2const.asm",
+        "sourceLine": 678
+      },
+      {
+        "symbol": "RAFT_Y",
+        "address": 16774933,
+        "sourcePath": "sf2const.asm",
+        "sourceLine": 679
+      }
+    ],
+    "accessSites": [
+      {
+        "siteOrder": 0,
+        "id": "get-shop-inventory-address/current-shop-index/read",
+        "contextId": "get-shop-inventory-address",
+        "symbol": "CURRENT_SHOP_INDEX",
+        "address": 16758482,
+        "accessKind": "read",
+        "width": "b",
+        "sourceLine": 711,
+        "romPc": 133212,
+        "role": "inventory-index-read"
+      },
+      {
+        "siteOrder": 1,
+        "id": "exploration-loop/map-event-type/reset",
+        "contextId": "exploration-loop",
+        "symbol": "MAP_EVENT_TYPE",
+        "address": 16754762,
+        "accessKind": "clear",
+        "width": "w",
+        "sourceLine": 10,
+        "romPc": 153536,
+        "role": "entry-reset"
+      },
+      {
+        "siteOrder": 2,
+        "id": "wait-for-event/map-event-type/entry-poll-read",
+        "contextId": "wait-for-event",
+        "symbol": "MAP_EVENT_TYPE",
+        "address": 16754762,
+        "accessKind": "read",
+        "width": "w",
+        "sourceLine": 176,
+        "romPc": 153884,
+        "role": "entry-poll-read"
+      },
+      {
+        "siteOrder": 3,
+        "id": "wait-for-event/map-event-type/loop-poll-read",
+        "contextId": "wait-for-event",
+        "symbol": "MAP_EVENT_TYPE",
+        "address": 16754762,
+        "accessKind": "read",
+        "width": "w",
+        "sourceLine": 185,
+        "romPc": 153908,
+        "role": "loop-poll-read"
+      },
+      {
+        "siteOrder": 4,
+        "id": "process-map-event/map-event-type/pre-dispatch-clear",
+        "contextId": "process-map-event",
+        "symbol": "MAP_EVENT_TYPE",
+        "address": 16754762,
+        "accessKind": "clear",
+        "width": "w",
+        "sourceLine": 206,
+        "romPc": 153930,
+        "role": "pre-dispatch-consume-clear"
+      },
+      {
+        "siteOrder": 5,
+        "id": "field-menu/egress-map/read",
+        "contextId": "field-menu",
+        "symbol": "EGRESS_MAP",
+        "address": 16774937,
+        "accessKind": "read",
+        "width": "b",
+        "sourceLine": 116,
+        "romPc": 136068,
+        "role": "field-egress-read"
+      },
+      {
+        "siteOrder": 6,
+        "id": "get-egress-position-for-battle/egress-map/read",
+        "contextId": "get-egress-position-for-battle",
+        "symbol": "EGRESS_MAP",
+        "address": 16774937,
+        "accessKind": "read",
+        "width": "b",
+        "sourceLine": 54,
+        "romPc": 147110,
+        "role": "battle-egress-fallback-read"
+      },
+      {
+        "siteOrder": 7,
+        "id": "declare-raft-entity/raft-map/read",
+        "contextId": "declare-raft-entity",
+        "symbol": "RAFT_MAP",
+        "address": 16774931,
+        "accessKind": "read",
+        "width": "b",
+        "sourceLine": 157,
+        "romPc": 279036,
+        "role": "raft-presence-map-read"
+      },
+      {
+        "siteOrder": 8,
+        "id": "declare-raft-entity/raft-x/read",
+        "contextId": "declare-raft-entity",
+        "symbol": "RAFT_X",
+        "address": 16774932,
+        "accessKind": "read",
+        "width": "b",
+        "sourceLine": 161,
+        "romPc": 279042,
+        "role": "raft-coordinate-x-read"
+      },
+      {
+        "siteOrder": 9,
+        "id": "declare-raft-entity/raft-y/read",
+        "contextId": "declare-raft-entity",
+        "symbol": "RAFT_Y",
+        "address": 16774933,
+        "accessKind": "read",
+        "width": "b",
+        "sourceLine": 162,
+        "romPc": 279046,
+        "role": "raft-coordinate-y-read"
+      },
+      {
+        "siteOrder": 10,
+        "id": "raft-refresh/raft-map/read",
+        "contextId": "raft-refresh",
+        "symbol": "RAFT_MAP",
+        "address": 16774931,
+        "accessKind": "read",
+        "width": "b",
+        "sourceLine": 78,
+        "romPc": 279596,
+        "role": "raft-presence-map-read"
+      },
+      {
+        "siteOrder": 11,
+        "id": "raft-refresh/raft-x/read",
+        "contextId": "raft-refresh",
+        "symbol": "RAFT_X",
+        "address": 16774932,
+        "accessKind": "read",
+        "width": "b",
+        "sourceLine": 80,
+        "romPc": 279604,
+        "role": "raft-coordinate-x-read"
+      },
+      {
+        "siteOrder": 12,
+        "id": "raft-refresh/raft-y/read",
+        "contextId": "raft-refresh",
+        "symbol": "RAFT_Y",
+        "address": 16774933,
+        "accessKind": "read",
+        "width": "b",
+        "sourceLine": 81,
+        "romPc": 279608,
+        "role": "raft-coordinate-y-read"
+      }
+    ],
+    "accessOrder": [
+      "get-shop-inventory-address/current-shop-index/read",
+      "exploration-loop/map-event-type/reset",
+      "wait-for-event/map-event-type/entry-poll-read",
+      "wait-for-event/map-event-type/loop-poll-read",
+      "process-map-event/map-event-type/pre-dispatch-clear",
+      "field-menu/egress-map/read",
+      "get-egress-position-for-battle/egress-map/read",
+      "declare-raft-entity/raft-map/read",
+      "declare-raft-entity/raft-x/read",
+      "declare-raft-entity/raft-y/read",
+      "raft-refresh/raft-map/read",
+      "raft-refresh/raft-x/read",
+      "raft-refresh/raft-y/read"
+    ],
+    "consumerContexts": {
+      "getShopInventoryAddress": {
+        "contextOrder": 0,
+        "id": "get-shop-inventory-address",
+        "sourcePath": "code/common/menus/shop/shopactions.asm",
+        "entrySymbol": "GetShopInventoryAddress",
+        "entryAddress": 133202,
+        "accessIds": [
+          "get-shop-inventory-address/current-shop-index/read"
+        ],
+        "roles": [
+          {
+            "kind": "context-entry",
+            "id": "context-entry:get-shop-inventory-address"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:get-shop-inventory-address/current-shop-index/read"
+          }
+        ],
+        "controlShapes": [
+          {
+            "sourceLine": 713,
+            "kind": "conditional-branch",
+            "mnemonic": "bcs.w",
+            "target": "@Done"
+          }
+        ]
+      },
+      "explorationLoop": {
+        "contextOrder": 1,
+        "id": "exploration-loop",
+        "sourcePath": "code/gameflow/exploration/explorationfunctions_2.asm",
+        "entrySymbol": "ExplorationLoop",
+        "entryAddress": 153536,
+        "accessIds": [
+          "exploration-loop/map-event-type/reset"
+        ],
+        "roles": [
+          {
+            "kind": "context-entry",
+            "id": "context-entry:exploration-loop"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:exploration-loop/map-event-type/reset"
+          }
+        ],
+        "controlShapes": []
+      },
+      "waitForEvent": {
+        "contextOrder": 2,
+        "id": "wait-for-event",
+        "sourcePath": "code/gameflow/exploration/explorationfunctions_2.asm",
+        "entrySymbol": "WaitForEvent",
+        "entryAddress": 153884,
+        "accessIds": [
+          "wait-for-event/map-event-type/entry-poll-read",
+          "wait-for-event/map-event-type/loop-poll-read"
+        ],
+        "roles": [
+          {
+            "kind": "context-entry",
+            "id": "context-entry:wait-for-event"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:wait-for-event/map-event-type/entry-poll-read"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:wait-for-event/map-event-type/loop-poll-read"
+          }
+        ],
+        "controlShapes": [
+          {
+            "sourceLine": 177,
+            "kind": "conditional-branch",
+            "mnemonic": "bne.s",
+            "target": "loc_25930"
+          },
+          {
+            "sourceLine": 186,
+            "kind": "conditional-branch",
+            "mnemonic": "beq.s",
+            "target": "loc_2593C"
+          }
+        ]
+      },
+      "processMapEvent": {
+        "contextOrder": 3,
+        "id": "process-map-event",
+        "sourcePath": "code/gameflow/exploration/explorationfunctions_2.asm",
+        "entrySymbol": "ProcessMapEvent",
+        "entryAddress": 153930,
+        "accessIds": [
+          "process-map-event/map-event-type/pre-dispatch-clear"
+        ],
+        "roles": [
+          {
+            "kind": "context-entry",
+            "id": "context-entry:process-map-event"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:process-map-event/map-event-type/pre-dispatch-clear"
+          }
+        ],
+        "controlShapes": [
+          {
+            "sourceLine": 208,
+            "kind": "conditional-branch",
+            "mnemonic": "beq.w",
+            "target": "ProcessMapEventType1_Warp"
+          },
+          {
+            "sourceLine": 210,
+            "kind": "conditional-branch",
+            "mnemonic": "beq.w",
+            "target": "ProcessMapEventType2_GetIntoCaravan"
+          },
+          {
+            "sourceLine": 212,
+            "kind": "conditional-branch",
+            "mnemonic": "beq.w",
+            "target": "ProcessMapEventType3_GetIntoRaft"
+          },
+          {
+            "sourceLine": 214,
+            "kind": "conditional-branch",
+            "mnemonic": "beq.w",
+            "target": "ProcessMapEventType4_GetOutOfCaravan"
+          },
+          {
+            "sourceLine": 216,
+            "kind": "conditional-branch",
+            "mnemonic": "beq.w",
+            "target": "ProcessMapEventType5_GetOutOfRaft"
+          },
+          {
+            "sourceLine": 218,
+            "kind": "conditional-branch",
+            "mnemonic": "beq.w",
+            "target": "ProcessMapEventType6_ZoneEvent"
+          }
+        ]
+      },
+      "fieldMenu": {
+        "contextOrder": 4,
+        "id": "field-menu",
+        "sourcePath": "code/common/menus/main/mainactions.asm",
+        "entrySymbol": "FieldMenu",
+        "entryAddress": 135806,
+        "accessIds": [
+          "field-menu/egress-map/read"
+        ],
+        "roles": [
+          {
+            "kind": "context-entry",
+            "id": "context-entry:field-menu"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:field-menu/egress-map/read"
+          }
+        ],
+        "controlShapes": [
+          {
+            "sourceLine": 105,
+            "kind": "conditional-branch",
+            "mnemonic": "blt.s",
+            "target": "byte_21348"
+          },
+          {
+            "sourceLine": 107,
+            "kind": "conditional-branch",
+            "mnemonic": "bgt.s",
+            "target": "byte_21348"
+          },
+          {
+            "sourceLine": 117,
+            "kind": "direct-call",
+            "mnemonic": "jsr",
+            "target": "GetSavepointForMap"
+          }
+        ]
+      },
+      "getEgressPositionForBattle": {
+        "contextOrder": 5,
+        "id": "get-egress-position-for-battle",
+        "sourcePath": "code/gameflow/battle/battleloop/getegresspositionforbattle.asm",
+        "entrySymbol": "GetEgressPositionForBattle",
+        "entryAddress": 147024,
+        "accessIds": [
+          "get-egress-position-for-battle/egress-map/read"
+        ],
+        "roles": [
+          {
+            "kind": "context-entry",
+            "id": "context-entry:get-egress-position-for-battle"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:get-egress-position-for-battle/egress-map/read"
+          }
+        ],
+        "controlShapes": [
+          {
+            "sourceLine": 49,
+            "kind": "conditional-branch",
+            "mnemonic": "bne.s",
+            "target": "loc_23EA6"
+          },
+          {
+            "sourceLine": 57,
+            "kind": "direct-call",
+            "mnemonic": "jsr",
+            "target": "GetSavepointForMap"
+          }
+        ]
+      },
+      "declareRaftEntity": {
+        "contextOrder": 6,
+        "id": "declare-raft-entity",
+        "sourcePath": "code/common/scripting/map/mapfunctions.asm",
+        "entrySymbol": "DeclareRaftEntity",
+        "entryAddress": 278954,
+        "accessIds": [
+          "declare-raft-entity/raft-map/read",
+          "declare-raft-entity/raft-x/read",
+          "declare-raft-entity/raft-y/read"
+        ],
+        "roles": [
+          {
+            "kind": "context-entry",
+            "id": "context-entry:declare-raft-entity"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:declare-raft-entity/raft-map/read"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:declare-raft-entity/raft-x/read"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:declare-raft-entity/raft-y/read"
+          }
+        ],
+        "controlShapes": [
+          {
+            "sourceLine": 153,
+            "kind": "conditional-branch",
+            "mnemonic": "beq.w",
+            "target": "@Done"
+          },
+          {
+            "sourceLine": 158,
+            "kind": "conditional-branch",
+            "mnemonic": "bne.s",
+            "target": "@RaftNotOnMap"
+          },
+          {
+            "sourceLine": 175,
+            "kind": "direct-call",
+            "mnemonic": "bsr.w",
+            "target": "DeclareNewEntity"
+          }
+        ]
+      },
+      "raftRefresh": {
+        "contextOrder": 7,
+        "id": "raft-refresh",
+        "sourcePath": "code/common/scripting/map/followersfunctions_2.asm",
+        "entrySymbol": "sub_44404",
+        "entryAddress": 279556,
+        "accessIds": [
+          "raft-refresh/raft-map/read",
+          "raft-refresh/raft-x/read",
+          "raft-refresh/raft-y/read"
+        ],
+        "roles": [
+          {
+            "kind": "context-entry",
+            "id": "context-entry:raft-refresh"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:raft-refresh/raft-map/read"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:raft-refresh/raft-x/read"
+          },
+          {
+            "kind": "request-access",
+            "id": "access:raft-refresh/raft-y/read"
+          }
+        ],
+        "controlShapes": [
+          {
+            "sourceLine": 76,
+            "kind": "conditional-branch",
+            "mnemonic": "beq.w",
+            "target": "return_4446A"
+          },
+          {
+            "sourceLine": 79,
+            "kind": "conditional-branch",
+            "mnemonic": "bne.w",
+            "target": "return_4446A"
+          },
+          {
+            "sourceLine": 96,
+            "kind": "direct-call",
+            "mnemonic": "bsr.w",
+            "target": "DeclareNewEntity"
+          }
+        ]
+      }
+    },
+    "symbolContextRelations": [
+      {
+        "contextId": "get-shop-inventory-address",
+        "symbol": "CURRENT_SHOP_INDEX",
+        "accessIds": [
+          "get-shop-inventory-address/current-shop-index/read"
+        ]
+      },
+      {
+        "contextId": "exploration-loop",
+        "symbol": "MAP_EVENT_TYPE",
+        "accessIds": [
+          "exploration-loop/map-event-type/reset"
+        ]
+      },
+      {
+        "contextId": "wait-for-event",
+        "symbol": "MAP_EVENT_TYPE",
+        "accessIds": [
+          "wait-for-event/map-event-type/entry-poll-read",
+          "wait-for-event/map-event-type/loop-poll-read"
+        ]
+      },
+      {
+        "contextId": "process-map-event",
+        "symbol": "MAP_EVENT_TYPE",
+        "accessIds": [
+          "process-map-event/map-event-type/pre-dispatch-clear"
+        ]
+      },
+      {
+        "contextId": "field-menu",
+        "symbol": "EGRESS_MAP",
+        "accessIds": [
+          "field-menu/egress-map/read"
+        ]
+      },
+      {
+        "contextId": "get-egress-position-for-battle",
+        "symbol": "EGRESS_MAP",
+        "accessIds": [
+          "get-egress-position-for-battle/egress-map/read"
+        ]
+      },
+      {
+        "contextId": "declare-raft-entity",
+        "symbol": "RAFT_MAP",
+        "accessIds": [
+          "declare-raft-entity/raft-map/read"
+        ]
+      },
+      {
+        "contextId": "declare-raft-entity",
+        "symbol": "RAFT_X",
+        "accessIds": [
+          "declare-raft-entity/raft-x/read"
+        ]
+      },
+      {
+        "contextId": "declare-raft-entity",
+        "symbol": "RAFT_Y",
+        "accessIds": [
+          "declare-raft-entity/raft-y/read"
+        ]
+      },
+      {
+        "contextId": "raft-refresh",
+        "symbol": "RAFT_MAP",
+        "accessIds": [
+          "raft-refresh/raft-map/read"
+        ]
+      },
+      {
+        "contextId": "raft-refresh",
+        "symbol": "RAFT_X",
+        "accessIds": [
+          "raft-refresh/raft-x/read"
+        ]
+      },
+      {
+        "contextId": "raft-refresh",
+        "symbol": "RAFT_Y",
+        "accessIds": [
+          "raft-refresh/raft-y/read"
+        ]
+      }
+    ],
+    "roleCounts": {
+      "contextEntry": 8,
+      "requestAccess": 13,
+      "total": 21
+    }
+  },
+  "unknowns": {
+    "normalStoryProducerConsumerReachability": "Unknown",
+    "selectedProducerAndDefinition": "Unknown",
+    "actualConsumerEntryState": "Unknown",
+    "actualConsumerReadValue": "Unknown",
+    "actualMapEventPollAndClearTiming": "Unknown",
+    "actualMapEventDispatchPath": "Unknown",
+    "actualShopSelectionAndOutcome": "Unknown",
+    "actualFieldEgressDestination": "Unknown",
+    "actualBattleEgressFallbackDestination": "Unknown",
+    "actualRaftPresenceAndCoordinates": "Unknown",
+    "crossMapSaveLoadPersistence": "Unknown",
+    "inputUiMapTransitionAudioStoryMeaning": "Unknown"
+  },
+  "summary": {
+    "retainedPositiveProgramContextCount": 39,
+    "retainedZeroProgramContextCount": 875,
+    "retainedContextOperationCount": 262,
+    "retainedWriteDefinitionSiteCount": 45,
+    "retainedHandoffStateSiteCount": 67,
+    "retainedHandoffStateRelationCount": 69,
+    "sourceFileCount": 7,
+    "consumerContextCount": 8,
+    "symbolDefinitionCount": 6,
+    "lifecycleAccessCount": 13,
+    "symbolContextRelationCount": 12,
+    "contextRoleCount": 21,
+    "physicalAnchorCount": 18
+  }
+}

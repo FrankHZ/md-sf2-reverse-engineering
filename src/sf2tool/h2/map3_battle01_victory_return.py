@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import re
@@ -343,6 +344,54 @@ _INDEX_CONTRACT = {
     ),
 }
 _OWNER_DOCUMENT = "docs/research/map3-battle01-victory-return.md"
+
+_REQUEST_CONSUMPTION_FIXTURE_ID = "sf2-map-event-request-consumption-static-v1"
+_REQUEST_CONSUMPTION_FIXTURE = "tests/fixtures/h2/map-event-request-consumption-static-v1.json"
+_REQUEST_CONSUMPTION_VERIFIER = "src/sf2tool/h2/map_event_request_consumption.py"
+_REQUEST_CONSUMPTION_DOCUMENT = "docs/research/map-event-request-consumption.md"
+_REQUEST_CONSUMPTION_BINDINGS = {
+    "menus.shop-actions": (
+        (
+            "get-shop-inventory-address",
+            "eventRequestConsumption.consumerContexts.getShopInventoryAddress.entryAddress",
+        ),
+    ),
+    "gameflow.exploration.loop": (
+        ("entry", "eventRequestConsumption.consumerContexts.explorationLoop.entryAddress"),
+        ("wait-for-event", "eventRequestConsumption.consumerContexts.waitForEvent.entryAddress"),
+        (
+            "process-map-event",
+            "eventRequestConsumption.consumerContexts.processMapEvent.entryAddress",
+        ),
+    ),
+    "menus.field-main": (
+        ("entry", "eventRequestConsumption.consumerContexts.fieldMenu.entryAddress"),
+    ),
+    "battle.loop.egress-position": (
+        (
+            "entry",
+            "eventRequestConsumption.consumerContexts.getEgressPositionForBattle.entryAddress",
+        ),
+    ),
+    "scripting.map.mapfunctions": (
+        (
+            "declare-raft-entity",
+            "eventRequestConsumption.consumerContexts.declareRaftEntity.entryAddress",
+        ),
+    ),
+    "scripting.map.followersfunctions-2": (
+        ("raft-refresh", "eventRequestConsumption.consumerContexts.raftRefresh.entryAddress"),
+    ),
+}
+_REQUEST_CONSUMPTION_ADDRESSES = {
+    ("menus.shop-actions", "get-shop-inventory-address", 133202),
+    ("gameflow.exploration.loop", "process-map-event", 153930),
+    ("scripting.map.mapfunctions", "declare-raft-entity", 278954),
+    ("scripting.map.followersfunctions-2", "raft-refresh", 279556),
+}
+_REQUEST_CONSUMPTION_ADDRESS_IDS = frozenset(
+    address_id for _, address_id, _ in _REQUEST_CONSUMPTION_ADDRESSES
+)
 
 _UNKNOWN_KEYS = (
     "naturalContinuity",
@@ -967,6 +1016,108 @@ def _retained_owners() -> dict[str, dict[str, str]]:
     return {key: _retained_fixture(*value) for key, value in owners.items()}
 
 
+def _normalize_request_consumption_later_owner_index(index: dict[str, Any]) -> dict[str, Any]:
+    """Remove only the exact later request-consumption delta before R4a checks."""
+    normalized = copy.deepcopy(index)
+    records = normalized.get("records")
+    if not isinstance(records, list):
+        raise ValueError("Map 3 Battle 01 victory/return request-consumption index shape drift")
+
+    removed_records: set[str] = set()
+    removed_addresses: set[tuple[str, str, int]] = set()
+    removed_address_rows: list[tuple[str, str, int]] = []
+    for record in records:
+        record_id = record.get("id")
+        evidence_items = record.get("evidence")
+        documents = record.get("documents")
+        addresses = record.get("addresses")
+        if not isinstance(record_id, str):
+            raise ValueError(
+                "Map 3 Battle 01 victory/return request-consumption record identity drift"
+            )
+        if not isinstance(evidence_items, list):
+            raise ValueError(
+                "Map 3 Battle 01 victory/return request-consumption evidence shape drift"
+            )
+        if not isinstance(addresses, list):
+            raise ValueError(
+                "Map 3 Battle 01 victory/return request-consumption address shape drift"
+            )
+        request_evidence = [
+            item
+            for item in evidence_items
+            if isinstance(item, dict) and item.get("fixtureId") == _REQUEST_CONSUMPTION_FIXTURE_ID
+        ]
+        if not request_evidence:
+            if isinstance(documents, list) and _REQUEST_CONSUMPTION_DOCUMENT in documents:
+                raise ValueError(
+                    "Map 3 Battle 01 victory/return request-consumption document owner drift"
+                )
+            if any(
+                isinstance(address, dict) and address.get("id") in _REQUEST_CONSUMPTION_ADDRESS_IDS
+                for address in addresses
+            ):
+                raise ValueError(
+                    "Map 3 Battle 01 victory/return request-consumption address owner drift"
+                )
+            continue
+        binding_rows = _REQUEST_CONSUMPTION_BINDINGS.get(record_id)
+        if binding_rows is None:
+            raise ValueError(
+                "Map 3 Battle 01 victory/return request-consumption owner-record drift"
+            )
+        expected_evidence = {
+            "level": "H2",
+            "fixture": _REQUEST_CONSUMPTION_FIXTURE,
+            "fixtureId": _REQUEST_CONSUMPTION_FIXTURE_ID,
+            "verifier": _REQUEST_CONSUMPTION_VERIFIER,
+            "bindings": [
+                {"addressId": address_id, "fixtureField": fixture_field}
+                for address_id, fixture_field in binding_rows
+            ],
+        }
+        if len(request_evidence) != 1 or request_evidence[0] != expected_evidence:
+            raise ValueError("Map 3 Battle 01 victory/return request-consumption evidence drift")
+        if not isinstance(documents, list) or documents.count(_REQUEST_CONSUMPTION_DOCUMENT) != 1:
+            raise ValueError("Map 3 Battle 01 victory/return request-consumption document drift")
+        if documents[-1] != _REQUEST_CONSUMPTION_DOCUMENT:
+            raise ValueError(
+                "Map 3 Battle 01 victory/return request-consumption document order drift"
+            )
+        retained_addresses = []
+        for address in addresses:
+            if not isinstance(address, dict):
+                raise ValueError(
+                    "Map 3 Battle 01 victory/return request-consumption address shape drift"
+                )
+            address_id = address.get("id")
+            if address_id not in _REQUEST_CONSUMPTION_ADDRESS_IDS:
+                retained_addresses.append(address)
+                continue
+            candidate = (record_id, address_id, address.get("value"))
+            if candidate not in _REQUEST_CONSUMPTION_ADDRESSES:
+                raise ValueError("Map 3 Battle 01 victory/return request-consumption address drift")
+            if address.get("space") != "rom" or address.get("kind") != "observation":
+                raise ValueError("Map 3 Battle 01 victory/return request-consumption address drift")
+            removed_addresses.add(candidate)
+            removed_address_rows.append(candidate)
+
+        record["evidence"] = [item for item in evidence_items if item not in request_evidence]
+        documents.remove(_REQUEST_CONSUMPTION_DOCUMENT)
+        record["addresses"] = retained_addresses
+        removed_records.add(record_id)
+
+    if removed_records != set(_REQUEST_CONSUMPTION_BINDINGS):
+        raise ValueError(
+            "Map 3 Battle 01 victory/return request-consumption owner-record set drift"
+        )
+    if removed_addresses != _REQUEST_CONSUMPTION_ADDRESSES or len(removed_address_rows) != len(
+        _REQUEST_CONSUMPTION_ADDRESSES
+    ):
+        raise ValueError("Map 3 Battle 01 victory/return request-consumption address set drift")
+    return normalized
+
+
 def _owner_evidence(index: dict[str, Any]) -> list[dict[str, Any]]:
     records = {record["id"]: record for record in index["records"]}
     if len(records) != len(index["records"]):
@@ -1128,7 +1279,7 @@ def build_map3_battle01_victory_return_static(
         raise ValueError(
             "Map 3 Battle 01 victory/return pre-construction retained projection drift"
         )
-    index = load_json(RESEARCH_INDEX)
+    index = _normalize_request_consumption_later_owner_index(load_json(RESEARCH_INDEX))
     evidence = _owner_evidence(index)
     unknowns = {key: "Unknown" for key in _UNKNOWN_KEYS}
     spine["ownerRecordIds"] = list(_OWNER_RECORD_IDS)

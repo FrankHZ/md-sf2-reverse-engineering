@@ -1,0 +1,350 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SF2 map-event request-consumption static fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "system",
+    "romSha256",
+    "upstream",
+    "retainedOwners",
+    "sourceContext",
+    "eventRequestConsumption",
+    "unknowns",
+    "summary"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "const": "sf2-map-event-request-consumption-static-v1" },
+    "system": { "const": "map-event-request-consumption" },
+    "romSha256": { "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9" },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "const": "ShiningForceCentral/SF2DISASM" },
+        "commit": { "const": "c834c652b6862bc5679fd7f69a38a7093206efc6" }
+      }
+    },
+    "retainedOwners": { "$ref": "#/$defs/retainedOwners" },
+    "sourceContext": { "$ref": "#/$defs/sourceContext" },
+    "eventRequestConsumption": { "$ref": "#/$defs/eventRequestConsumption" },
+    "unknowns": { "$ref": "#/$defs/unknowns" },
+    "summary": { "$ref": "#/$defs/summary" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[A-F0-9]{64}$" },
+    "retainedOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixtureId", "fixtureSha256"],
+      "properties": {
+        "fixtureId": { "type": "string", "pattern": "^sf2-[a-z0-9-]+-static-v1$" },
+        "fixtureSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "retainedOwners": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mapEventRequestState",
+        "commonMenus",
+        "gameflowCore",
+        "fieldMenuControl",
+        "battleLoop",
+        "commonScripting",
+        "commonMaps"
+      ],
+      "properties": {
+        "mapEventRequestState": { "$ref": "#/$defs/retainedOwner" },
+        "commonMenus": { "$ref": "#/$defs/retainedOwner" },
+        "gameflowCore": { "$ref": "#/$defs/retainedOwner" },
+        "fieldMenuControl": { "$ref": "#/$defs/retainedOwner" },
+        "battleLoop": { "$ref": "#/$defs/retainedOwner" },
+        "commonScripting": { "$ref": "#/$defs/retainedOwner" },
+        "commonMaps": { "$ref": "#/$defs/retainedOwner" }
+      }
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "enum": [
+            "sf2const.asm",
+            "code/common/menus/shop/shopactions.asm",
+            "code/gameflow/exploration/explorationfunctions_2.asm",
+            "code/common/menus/main/mainactions.asm",
+            "code/gameflow/battle/battleloop/getegresspositionforbattle.asm",
+            "code/common/scripting/map/mapfunctions.asm",
+            "code/common/scripting/map/followersfunctions_2.asm"
+          ]
+        },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "anchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "romPc",
+        "roles",
+        "instructionByteLength",
+        "h1InstructionSha256",
+        "romInstructionSha256"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^pc:[0-9A-F]{6}$" },
+        "romPc": { "type": "integer", "minimum": 0 },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^(context-entry|access):" }
+        },
+        "instructionByteLength": { "type": "integer", "minimum": 2 },
+        "h1InstructionSha256": { "$ref": "#/$defs/sha256" },
+        "romInstructionSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "sourceContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["h1Listing", "sourceIdentities", "anchors"],
+      "properties": {
+        "h1Listing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256"],
+          "properties": {
+            "path": { "const": "build/sf2build-h1.lst" },
+            "sha256": { "const": "F28FAF604DD8F37AE3EDAA819DD1C9A601863B0596F2C83602CA3D572BB8644D" }
+          }
+        },
+        "sourceIdentities": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/sourceIdentity" }
+        },
+        "anchors": {
+          "type": "array",
+          "minItems": 18,
+          "maxItems": 18,
+          "items": { "$ref": "#/$defs/anchor" }
+        }
+      }
+    },
+    "symbolDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol", "address", "sourcePath", "sourceLine"],
+      "properties": {
+        "symbol": { "enum": ["CURRENT_SHOP_INDEX", "MAP_EVENT_TYPE", "EGRESS_MAP", "RAFT_MAP", "RAFT_X", "RAFT_Y"] },
+        "address": { "type": "integer", "minimum": 0 },
+        "sourcePath": { "const": "sf2const.asm" },
+        "sourceLine": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "accessSite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["siteOrder", "id", "contextId", "symbol", "address", "accessKind", "width", "sourceLine", "romPc", "role"],
+      "properties": {
+        "siteOrder": { "type": "integer", "minimum": 0 },
+        "id": { "type": "string" },
+        "contextId": { "type": "string" },
+        "symbol": { "enum": ["CURRENT_SHOP_INDEX", "MAP_EVENT_TYPE", "EGRESS_MAP", "RAFT_MAP", "RAFT_X", "RAFT_Y"] },
+        "address": { "type": "integer", "minimum": 0 },
+        "accessKind": { "enum": ["read", "clear"] },
+        "width": { "enum": ["b", "w"] },
+        "sourceLine": { "type": "integer", "minimum": 1 },
+        "romPc": { "type": "integer", "minimum": 0 },
+        "role": { "type": "string" }
+      }
+    },
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": { "enum": ["context-entry", "request-access"] },
+        "id": { "type": "string" }
+      }
+    },
+    "controlShape": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceLine", "kind", "mnemonic", "target"],
+      "properties": {
+        "sourceLine": { "type": "integer", "minimum": 1 },
+        "kind": { "enum": ["conditional-branch", "direct-call"] },
+        "mnemonic": { "type": "string" },
+        "target": { "type": "string" }
+      }
+    },
+    "consumerContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contextOrder", "id", "sourcePath", "entrySymbol", "entryAddress", "accessIds", "roles", "controlShapes"],
+      "properties": {
+        "contextOrder": { "type": "integer", "minimum": 0 },
+        "id": { "type": "string" },
+        "sourcePath": { "type": "string" },
+        "entrySymbol": { "type": "string" },
+        "entryAddress": { "type": "integer", "minimum": 0 },
+        "accessIds": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "roles": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/role" } },
+        "controlShapes": { "type": "array", "items": { "$ref": "#/$defs/controlShape" } }
+      }
+    },
+    "symbolContextRelation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contextId", "symbol", "accessIds"],
+      "properties": {
+        "contextId": { "type": "string" },
+        "symbol": { "enum": ["CURRENT_SHOP_INDEX", "MAP_EVENT_TYPE", "EGRESS_MAP", "RAFT_MAP", "RAFT_X", "RAFT_Y"] },
+        "accessIds": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+      }
+    },
+    "eventRequestConsumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbolDefinitions", "accessSites", "accessOrder", "consumerContexts", "symbolContextRelations", "roleCounts"],
+      "properties": {
+        "symbolDefinitions": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": { "$ref": "#/$defs/symbolDefinition" }
+        },
+        "accessSites": {
+          "type": "array",
+          "minItems": 13,
+          "maxItems": 13,
+          "items": { "$ref": "#/$defs/accessSite" }
+        },
+        "accessOrder": {
+          "const": [
+            "get-shop-inventory-address/current-shop-index/read",
+            "exploration-loop/map-event-type/reset",
+            "wait-for-event/map-event-type/entry-poll-read",
+            "wait-for-event/map-event-type/loop-poll-read",
+            "process-map-event/map-event-type/pre-dispatch-clear",
+            "field-menu/egress-map/read",
+            "get-egress-position-for-battle/egress-map/read",
+            "declare-raft-entity/raft-map/read",
+            "declare-raft-entity/raft-x/read",
+            "declare-raft-entity/raft-y/read",
+            "raft-refresh/raft-map/read",
+            "raft-refresh/raft-x/read",
+            "raft-refresh/raft-y/read"
+          ]
+        },
+        "consumerContexts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "getShopInventoryAddress",
+            "explorationLoop",
+            "waitForEvent",
+            "processMapEvent",
+            "fieldMenu",
+            "getEgressPositionForBattle",
+            "declareRaftEntity",
+            "raftRefresh"
+          ],
+          "properties": {
+            "getShopInventoryAddress": { "$ref": "#/$defs/consumerContext" },
+            "explorationLoop": { "$ref": "#/$defs/consumerContext" },
+            "waitForEvent": { "$ref": "#/$defs/consumerContext" },
+            "processMapEvent": { "$ref": "#/$defs/consumerContext" },
+            "fieldMenu": { "$ref": "#/$defs/consumerContext" },
+            "getEgressPositionForBattle": { "$ref": "#/$defs/consumerContext" },
+            "declareRaftEntity": { "$ref": "#/$defs/consumerContext" },
+            "raftRefresh": { "$ref": "#/$defs/consumerContext" }
+          }
+        },
+        "symbolContextRelations": {
+          "type": "array",
+          "minItems": 12,
+          "maxItems": 12,
+          "items": { "$ref": "#/$defs/symbolContextRelation" }
+        },
+        "roleCounts": { "const": { "contextEntry": 8, "requestAccess": 13, "total": 21 } }
+      }
+    },
+    "unknowns": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "normalStoryProducerConsumerReachability",
+        "selectedProducerAndDefinition",
+        "actualConsumerEntryState",
+        "actualConsumerReadValue",
+        "actualMapEventPollAndClearTiming",
+        "actualMapEventDispatchPath",
+        "actualShopSelectionAndOutcome",
+        "actualFieldEgressDestination",
+        "actualBattleEgressFallbackDestination",
+        "actualRaftPresenceAndCoordinates",
+        "crossMapSaveLoadPersistence",
+        "inputUiMapTransitionAudioStoryMeaning"
+      ],
+      "properties": {
+        "normalStoryProducerConsumerReachability": { "const": "Unknown" },
+        "selectedProducerAndDefinition": { "const": "Unknown" },
+        "actualConsumerEntryState": { "const": "Unknown" },
+        "actualConsumerReadValue": { "const": "Unknown" },
+        "actualMapEventPollAndClearTiming": { "const": "Unknown" },
+        "actualMapEventDispatchPath": { "const": "Unknown" },
+        "actualShopSelectionAndOutcome": { "const": "Unknown" },
+        "actualFieldEgressDestination": { "const": "Unknown" },
+        "actualBattleEgressFallbackDestination": { "const": "Unknown" },
+        "actualRaftPresenceAndCoordinates": { "const": "Unknown" },
+        "crossMapSaveLoadPersistence": { "const": "Unknown" },
+        "inputUiMapTransitionAudioStoryMeaning": { "const": "Unknown" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "retainedPositiveProgramContextCount",
+        "retainedZeroProgramContextCount",
+        "retainedContextOperationCount",
+        "retainedWriteDefinitionSiteCount",
+        "retainedHandoffStateSiteCount",
+        "retainedHandoffStateRelationCount",
+        "sourceFileCount",
+        "consumerContextCount",
+        "symbolDefinitionCount",
+        "lifecycleAccessCount",
+        "symbolContextRelationCount",
+        "contextRoleCount",
+        "physicalAnchorCount"
+      ],
+      "properties": {
+        "retainedPositiveProgramContextCount": { "const": 39 },
+        "retainedZeroProgramContextCount": { "const": 875 },
+        "retainedContextOperationCount": { "const": 262 },
+        "retainedWriteDefinitionSiteCount": { "const": 45 },
+        "retainedHandoffStateSiteCount": { "const": 67 },
+        "retainedHandoffStateRelationCount": { "const": 69 },
+        "sourceFileCount": { "const": 7 },
+        "consumerContextCount": { "const": 8 },
+        "symbolDefinitionCount": { "const": 6 },
+        "lifecycleAccessCount": { "const": 13 },
+        "symbolContextRelationCount": { "const": 12 },
+        "contextRoleCount": { "const": 21 },
+        "physicalAnchorCount": { "const": 18 }
+      }
+    }
+  }
+}
