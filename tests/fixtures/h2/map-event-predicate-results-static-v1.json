@@ -1,0 +1,2269 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-event-predicate-results-static-v1",
+  "upstream": {
+    "repository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+  },
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "retainedOwners": {
+    "mapEvents": {
+      "fixtureId": "sf2-map-events-static-v1",
+      "fixtureSha256": "082FEED85338A776E734777255678650B40B57C3517ECA9DD54EEC8C7F8558C6",
+      "outputSha256": "0C075C8C82318C750BE2C7C37483C0E17EC7F899FB9A6B745E1BAC01FF60AA94"
+    },
+    "directState": {
+      "fixtureId": "sf2-map-event-direct-state-static-v1",
+      "fixtureSha256": "2756ED5556939AD0DE9A98101A38C12F985D6BA2E892611B7610EDCB366F74D7",
+      "outputSha256": "CBB64D022F49F811E903A9458B944FFBC1978EF5D2038EFFBF114A7AA425627A"
+    },
+    "directControl": {
+      "fixtureId": "sf2-map-event-direct-control-static-v1",
+      "fixtureSha256": "6645CA05C16A13FDAA6FCC43F155E70EFE7B76F43ACA12FFFBF8EBA6E5AA5CBD",
+      "outputSha256": "CE5178147C24BEDF3CB146C0AB55B80DB7270DB3A3904EB867E20ED0E41779D4"
+    },
+    "directHandoff": {
+      "fixtureId": "sf2-map-event-direct-handoff-static-v1",
+      "fixtureSha256": "66535A7F951A96BDB44745CFF300B790BFC67B844C9E9FAE8764F1E069122208",
+      "outputSha256": "F0A5CEE2D98900CFC96BD4930557614823DA0F9E3FB9BB646B2EE83D64B2CC52"
+    }
+  },
+  "sourceContext": {
+    "h1Listing": {
+      "path": "build/sf2build-h1.lst",
+      "sha256": "F28FAF604DD8F37AE3EDAA819DD1C9A601863B0596F2C83602CA3D572BB8644D"
+    },
+    "sourceIdentities": [
+      {
+        "path": "data/maps/entries/map03/mapsetups/s2_entityevents_506.asm",
+        "sha256": "2F56C9CD727667BC5B531954CFB7F5BF38F3A22FC84E06BC9EF18A535D3FFAE8"
+      },
+      {
+        "path": "data/maps/entries/map03/mapsetups/s2_entityevents_543.asm",
+        "sha256": "46CE9779C195463D9761D72C68F8A8F6D73BF8FB857AC332B446557D2AE0D6CD"
+      },
+      {
+        "path": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "sha256": "28447F14F1AC53E7DA13FD1914CC947A8A83FB863FF7385C95EB6D320CF27C28"
+      },
+      {
+        "path": "data/maps/entries/map09/mapsetups/s2_entityevents.asm",
+        "sha256": "2BB2A511659894BD1E6665E3FA7074321D8B49EB2ED31938669F85194CB4D3F6"
+      },
+      {
+        "path": "data/maps/entries/map10/mapsetups/s2_entityevents_722.asm",
+        "sha256": "D5D66170A2EBB20A498592F220E49CFA924DAECAB940402BED88E3D34447B583"
+      },
+      {
+        "path": "data/maps/entries/map11/mapsetups/s2_entityevents.asm",
+        "sha256": "98A4A4A801DAFECFBED81B2C1917EA1B462F4FFA1C4443824633406297D911A8"
+      },
+      {
+        "path": "data/maps/entries/map20/mapsetups/s3_zoneevents_543.asm",
+        "sha256": "D6520566FCAAF38364594C9F1894E2EF9835BBA88B076889A5304406AF788AC6"
+      },
+      {
+        "path": "data/maps/entries/map22/mapsetups/s5_itemevents.asm",
+        "sha256": "8AEE31768526E041E5F1B65554555392AF68A4EA88EF6BB4B5C2891E54FECE45"
+      },
+      {
+        "path": "data/maps/entries/map25/mapsetups/s2_entityevents.asm",
+        "sha256": "7434E11A7DC6B01C16A2BF18F92E3E6C1C975817475A6780E843CA27B4EDFF80"
+      },
+      {
+        "path": "data/maps/entries/map28/mapsetups/s3_zoneevents.asm",
+        "sha256": "6E8892C79EEB7B4A6CC8211DB276C6D28C586E50A0D08E35E107538D7B61A992"
+      },
+      {
+        "path": "data/maps/entries/map31/mapsetups/s2_entityevents_830.asm",
+        "sha256": "814EF6C23BE3E9C13C1BA13C3D1B20CDA96E56F0D6552751D849A3E879A33801"
+      },
+      {
+        "path": "data/maps/entries/map44/mapsetups/s2_entityevents_507.asm",
+        "sha256": "60D320BA96A4B963FF31B32CA29D700F941CA875D433938042F13B0910F1B361"
+      },
+      {
+        "path": "data/maps/entries/map63/mapsetups/s2_entityevents.asm",
+        "sha256": "73178462F724C5066242346DC9A01B6F97E4252CA0CB7561DB8F7E1C5E5B16CE"
+      },
+      {
+        "path": "data/maps/entries/map67/mapsetups/s3_zoneevents.asm",
+        "sha256": "32682FE73625E3E1CA042356067FAB058965381B4F8EB89728C6653FDBB3FE16"
+      },
+      {
+        "path": "data/maps/entries/map72/mapsetups/s3_zoneevents.asm",
+        "sha256": "4C208C116B2CCF855E6BC4EB963E97E513434777C485A6ABEB53CA3DAD66EB0A"
+      },
+      {
+        "path": "sf2const.asm",
+        "sha256": "17738776F811F66322F278CFBF10E8B376612F4F9EDFC2C7AA0A5DB81CDFB3FB"
+      },
+      {
+        "path": "sf2enums.asm",
+        "sha256": "ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE"
+      },
+      {
+        "path": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        "sha256": "479D19D5CBA2D585A1AE74DD2A8CF67C455DF96FCBD2EEBB6808C6318F53A464"
+      },
+      {
+        "path": "code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm",
+        "sha256": "05519524B04D8E99050600CCAD13E6CC3465417737B2AB21C7330F72C8F3F5C6"
+      },
+      {
+        "path": "code/common/menus/yesnoprompt.asm",
+        "sha256": "CF54DD1628DB83CA94F4AACA9E854A8356BB2658A5396A32950F5F31219518CA"
+      },
+      {
+        "path": "code/common/stats/itemstats.asm",
+        "sha256": "DBDB7320F86EA8A24C1E2684631EAFCD3A4F92A95C6EFDC7E3A3F579672CBC7B"
+      },
+      {
+        "path": "code/common/stats/iteminventory.asm",
+        "sha256": "E1B8B995CC4A862E9F800D32C21283B68B7EE2E35267840E45DA0E2D6CC69DAA"
+      },
+      {
+        "path": "code/common/stats/combatantstats_1.asm",
+        "sha256": "4F3C81D22C3EF873D2CA7728DE50F26289B48697CB47EB56583A7D747CB03585"
+      },
+      {
+        "path": "code/common/scripting/entity/entityfunctions_2.asm",
+        "sha256": "4FC789EE714532CBB65F33426B0E7C20A4CE803DFA4DF7D40FD2FC707E90C3CE"
+      }
+    ],
+    "physicalCallerAnchors": [
+      {
+        "role": "producer",
+        "romPc": 356128,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+        "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+      },
+      {
+        "role": "branch",
+        "romPc": 356130,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "D4480A3EC72E4EAA4D734E1F13DFA62CBE2A86009FE32A618A4BAEC9A265DEF4"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 356122,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721",
+        "romInstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721"
+      },
+      {
+        "role": "producer",
+        "romPc": 358980,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+        "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+      },
+      {
+        "role": "branch",
+        "romPc": 358982,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 358974,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721",
+        "romInstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721"
+      },
+      {
+        "role": "producer",
+        "romPc": 381700,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+        "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+      },
+      {
+        "role": "branch",
+        "romPc": 381702,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 381690,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721",
+        "romInstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721"
+      },
+      {
+        "role": "producer",
+        "romPc": 382204,
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "DC765660B06EE03DD16FD7CA5B957E8C805161AC2C4AF28C5A100AB2AB432CA1",
+        "romInstructionSha256": "DC765660B06EE03DD16FD7CA5B957E8C805161AC2C4AF28C5A100AB2AB432CA1"
+      },
+      {
+        "role": "branch",
+        "romPc": 382208,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "B3529F78982D3E1F0E3966CA195E56A9A3825209FC606FB231C0855A98FA25A8"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 382198,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721",
+        "romInstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721"
+      },
+      {
+        "role": "producer",
+        "romPc": 332418,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+        "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+      },
+      {
+        "role": "branch",
+        "romPc": 332420,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "E4AB4E3B1493D5A997B4E51CDEFBAA10570EF3EA9432BD72E7B6A89654CEB7F6"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 332408,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721",
+        "romInstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721"
+      },
+      {
+        "role": "producer",
+        "romPc": 403422,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+        "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+      },
+      {
+        "role": "branch",
+        "romPc": 403424,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "F0D5B4D85390981D713E2A89C5716F604631D9F24C25666866041DD80E048ACA"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 403416,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721",
+        "romInstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721"
+      },
+      {
+        "role": "producer",
+        "romPc": 345402,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721",
+        "romInstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721"
+      },
+      {
+        "role": "branch",
+        "romPc": 345408,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "5B0996542B876496E30FCCC66032D097AD4F74F1FE7B62566819CE7B8596ACCA"
+      },
+      {
+        "role": "producer",
+        "romPc": 379296,
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+        "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+      },
+      {
+        "role": "branch",
+        "romPc": 379300,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "DEDD9B44D63933C531036A340F2F97A3136574683469B126FD218E8FD2B1C44C"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 379290,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349",
+        "romInstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349"
+      },
+      {
+        "role": "producer",
+        "romPc": 346582,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E",
+        "romInstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E"
+      },
+      {
+        "role": "branch",
+        "romPc": 346588,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+      },
+      {
+        "role": "producer",
+        "romPc": 346610,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E",
+        "romInstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E"
+      },
+      {
+        "role": "branch",
+        "romPc": 346616,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+      },
+      {
+        "role": "producer",
+        "romPc": 346810,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E",
+        "romInstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E"
+      },
+      {
+        "role": "branch",
+        "romPc": 346816,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "5B0996542B876496E30FCCC66032D097AD4F74F1FE7B62566819CE7B8596ACCA"
+      },
+      {
+        "role": "producer",
+        "romPc": 346874,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E",
+        "romInstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E"
+      },
+      {
+        "role": "branch",
+        "romPc": 346880,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+      },
+      {
+        "role": "producer",
+        "romPc": 346906,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E",
+        "romInstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E"
+      },
+      {
+        "role": "branch",
+        "romPc": 346912,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+      },
+      {
+        "role": "producer",
+        "romPc": 347220,
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+        "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+      },
+      {
+        "role": "branch",
+        "romPc": 347224,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "608CDB524384F5EE06EDC2830D6B13A92047229398768FF88E28AD68D02569E8"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 347214,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349",
+        "romInstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349"
+      },
+      {
+        "role": "producer",
+        "romPc": 347310,
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "DC765660B06EE03DD16FD7CA5B957E8C805161AC2C4AF28C5A100AB2AB432CA1",
+        "romInstructionSha256": "DC765660B06EE03DD16FD7CA5B957E8C805161AC2C4AF28C5A100AB2AB432CA1"
+      },
+      {
+        "role": "branch",
+        "romPc": 347314,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "B3529F78982D3E1F0E3966CA195E56A9A3825209FC606FB231C0855A98FA25A8"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 347306,
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "116CC7A22999ADE415FB024C5896DF3955392933654B96B830503F69D47A4152",
+        "romInstructionSha256": "116CC7A22999ADE415FB024C5896DF3955392933654B96B830503F69D47A4152"
+      },
+      {
+        "role": "producer",
+        "romPc": 354292,
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+        "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+      },
+      {
+        "role": "branch",
+        "romPc": 354296,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "092FCFBBCFCA3B5BE7AE1B5E58538E92C35AB273AE13664FED0D67484C8E78A6"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 354286,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349",
+        "romInstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349"
+      },
+      {
+        "role": "producer",
+        "romPc": 406212,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+        "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+      },
+      {
+        "role": "branch",
+        "romPc": 406214,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "9EA4D7ECCFE9C659B1C37C3F9F104D3D24E56F5A1228CBCE1784E03156DE492B"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 406206,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721",
+        "romInstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721"
+      },
+      {
+        "role": "producer",
+        "romPc": 390016,
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "2CF3AFA5AA20FFDC806C686508EB714D6D8F8ED379BC2ECAC3F65DBACBD10C1A",
+        "romInstructionSha256": "2CF3AFA5AA20FFDC806C686508EB714D6D8F8ED379BC2ECAC3F65DBACBD10C1A"
+      },
+      {
+        "role": "branch",
+        "romPc": 390020,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "romInstructionSha256": "5B0996542B876496E30FCCC66032D097AD4F74F1FE7B62566819CE7B8596ACCA"
+      },
+      {
+        "role": "producer",
+        "romPc": 326472,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "2C24576872F7B538B5A2C8E8B9DB551F58C49B5316AAE1AF86D201E44908D0E2",
+        "romInstructionSha256": "2C24576872F7B538B5A2C8E8B9DB551F58C49B5316AAE1AF86D201E44908D0E2"
+      },
+      {
+        "role": "branch",
+        "romPc": 326474,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "78F993C3392521C9DB0E0819B09F95C5C4141EF1CAD923ADE3BEE913BC6BDFD2",
+        "romInstructionSha256": "768C71D785BF6BBBF8C4D6AF6582041F2659027140A962CD0C55B11EDDFD5E3D"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 326466,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "4C2CF75AF0F1A51E843DA9C8A2FDC5B7CFF4A5B96A7DB3E1C21978564F783B7A",
+        "romInstructionSha256": "4C2CF75AF0F1A51E843DA9C8A2FDC5B7CFF4A5B96A7DB3E1C21978564F783B7A"
+      },
+      {
+        "role": "producer",
+        "romPc": 327350,
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+        "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+      },
+      {
+        "role": "branch",
+        "romPc": 327354,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "78F993C3392521C9DB0E0819B09F95C5C4141EF1CAD923ADE3BEE913BC6BDFD2",
+        "romInstructionSha256": "0FCD4AC08FA092197D9A11DF0E56C910373281674746A5C6F704649DC9E2202C"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 327344,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349",
+        "romInstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349"
+      },
+      {
+        "role": "producer",
+        "romPc": 327364,
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+        "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+      },
+      {
+        "role": "branch",
+        "romPc": 327368,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "78F993C3392521C9DB0E0819B09F95C5C4141EF1CAD923ADE3BEE913BC6BDFD2",
+        "romInstructionSha256": "A3801C94A672D95F2EF8D87A512A67A7FC86FD77AB7263E5CE3AB2D31C1D8B8E"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 327358,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349",
+        "romInstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349"
+      },
+      {
+        "role": "producer",
+        "romPc": 366104,
+        "instructionByteLength": 4,
+        "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+        "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+      },
+      {
+        "role": "branch",
+        "romPc": 366108,
+        "instructionByteLength": 2,
+        "h1InstructionSha256": "78F993C3392521C9DB0E0819B09F95C5C4141EF1CAD923ADE3BEE913BC6BDFD2",
+        "romInstructionSha256": "C6988A6881F0312AED6878FE6F40767807D62E1A004432BC4CDB19C302ED47FF"
+      },
+      {
+        "role": "result-origin-call",
+        "romPc": 366098,
+        "instructionByteLength": 6,
+        "h1InstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349",
+        "romInstructionSha256": "44B434260D61F49D0FEEADE042CC817E3B21E2FEC6EF8164139EE9A2662B2349"
+      }
+    ],
+    "entrySeams": [
+      {
+        "role": "effective-entry",
+        "symbol": "GetCurrentHp",
+        "entryAddress": 33590,
+        "sourcePath": "code/common/stats/combatantstats_1.asm",
+        "sourceLine": 95
+      },
+      {
+        "role": "effective-entry",
+        "symbol": "GetItemInventoryLocation",
+        "entryAddress": 37190,
+        "sourcePath": "code/common/stats/itemstats.asm",
+        "sourceLine": 980
+      },
+      {
+        "role": "effective-entry",
+        "symbol": "YesNoPrompt",
+        "entryAddress": 86660,
+        "sourcePath": "code/common/menus/yesnoprompt.asm",
+        "sourceLine": 8
+      },
+      {
+        "role": "effective-entry",
+        "symbol": "WaitForEntityToStopMoving",
+        "entryAddress": 282020,
+        "sourcePath": "code/common/scripting/entity/entityfunctions_2.asm",
+        "sourceLine": 358
+      },
+      {
+        "role": "effective-entry",
+        "symbol": "ReceiveMandatoryItem",
+        "entryAddress": 324746,
+        "sourcePath": "code/common/stats/iteminventory.asm",
+        "sourceLine": 13
+      },
+      {
+        "role": "jump-interface-alias",
+        "symbol": "j_GetCurrentHp",
+        "entryAddress": 32840,
+        "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        "sourceLine": 194
+      },
+      {
+        "role": "jump-interface-alias",
+        "symbol": "j_GetItemInventoryLocation",
+        "entryAddress": 33232,
+        "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        "sourceLine": 1208
+      },
+      {
+        "role": "jump-interface-alias",
+        "symbol": "j_YesNoPrompt",
+        "entryAddress": 65656,
+        "sourcePath": "code/common/tech/jumpinterfaces/s03_jumpinterface_1.asm",
+        "sourceLine": 308
+      }
+    ]
+  },
+  "eventPredicateResults": {
+    "categorySummaries": [
+      {
+        "category": "entityEvents",
+        "programContextCount": 684,
+        "contextPairCount": 18,
+        "positiveProgramContextCount": 14,
+        "zeroProgramContextCount": 670,
+        "physicalProducerCount": 16,
+        "physicalPairCount": 16,
+        "sourceFileCount": 10
+      },
+      {
+        "category": "zoneEvents",
+        "programContextCount": 150,
+        "contextPairCount": 5,
+        "positiveProgramContextCount": 4,
+        "zeroProgramContextCount": 146,
+        "physicalProducerCount": 5,
+        "physicalPairCount": 5,
+        "sourceFileCount": 4
+      },
+      {
+        "category": "itemEvents",
+        "programContextCount": 80,
+        "contextPairCount": 1,
+        "positiveProgramContextCount": 1,
+        "zeroProgramContextCount": 79,
+        "physicalProducerCount": 1,
+        "physicalPairCount": 1,
+        "sourceFileCount": 1
+      }
+    ],
+    "sourceFiles": {
+      "ms_map3_flag506_EntityEvents": {
+        "category": "entityEvents",
+        "tableEntryAddress": 332234,
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_506.asm"
+      },
+      "ms_map3_flag543_EntityEvents": {
+        "category": "entityEvents",
+        "tableEntryAddress": 403256,
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_543.asm"
+      },
+      "ms_map6_flag701_EntityEvents": {
+        "category": "entityEvents",
+        "tableEntryAddress": 346500,
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm"
+      },
+      "ms_map9_EntityEvents": {
+        "category": "entityEvents",
+        "tableEntryAddress": 354082,
+        "sourcePath": "data/maps/entries/map09/mapsetups/s2_entityevents.asm"
+      },
+      "ms_map10_flag722_EntityEvents": {
+        "category": "entityEvents",
+        "tableEntryAddress": 355996,
+        "sourcePath": "data/maps/entries/map10/mapsetups/s2_entityevents_722.asm"
+      },
+      "ms_map11_EntityEvents": {
+        "category": "entityEvents",
+        "tableEntryAddress": 358924,
+        "sourcePath": "data/maps/entries/map11/mapsetups/s2_entityevents.asm"
+      },
+      "ms_map25_EntityEvents": {
+        "category": "entityEvents",
+        "tableEntryAddress": 381476,
+        "sourcePath": "data/maps/entries/map25/mapsetups/s2_entityevents.asm"
+      },
+      "ms_map31_flag830_EntityEvents": {
+        "category": "entityEvents",
+        "tableEntryAddress": 382110,
+        "sourcePath": "data/maps/entries/map31/mapsetups/s2_entityevents_830.asm"
+      },
+      "ms_map44_flag507_EntityEvents": {
+        "category": "entityEvents",
+        "tableEntryAddress": 345226,
+        "sourcePath": "data/maps/entries/map44/mapsetups/s2_entityevents_507.asm"
+      },
+      "ms_map63_EntityEvents": {
+        "category": "entityEvents",
+        "tableEntryAddress": 379274,
+        "sourcePath": "data/maps/entries/map63/mapsetups/s2_entityevents.asm"
+      },
+      "ms_map20_flag543_ZoneEvents": {
+        "category": "zoneEvents",
+        "tableEntryAddress": 406170,
+        "sourcePath": "data/maps/entries/map20/mapsetups/s3_zoneevents_543.asm"
+      },
+      "ms_map28_ZoneEvents": {
+        "category": "zoneEvents",
+        "tableEntryAddress": 389996,
+        "sourcePath": "data/maps/entries/map28/mapsetups/s3_zoneevents.asm"
+      },
+      "ms_map67_ZoneEvents": {
+        "category": "zoneEvents",
+        "tableEntryAddress": 326412,
+        "sourcePath": "data/maps/entries/map67/mapsetups/s3_zoneevents.asm"
+      },
+      "ms_map72_ZoneEvents": {
+        "category": "zoneEvents",
+        "tableEntryAddress": 327268,
+        "sourcePath": "data/maps/entries/map72/mapsetups/s3_zoneevents.asm"
+      },
+      "ms_map22_Section5": {
+        "category": "itemEvents",
+        "tableEntryAddress": 366084,
+        "sourcePath": "data/maps/entries/map22/mapsetups/s5_itemevents.asm"
+      }
+    },
+    "sourceFileOrder": [
+      "ms_map10_flag722_EntityEvents",
+      "ms_map11_EntityEvents",
+      "ms_map20_flag543_ZoneEvents",
+      "ms_map22_Section5",
+      "ms_map25_EntityEvents",
+      "ms_map28_ZoneEvents",
+      "ms_map31_flag830_EntityEvents",
+      "ms_map3_flag506_EntityEvents",
+      "ms_map3_flag543_EntityEvents",
+      "ms_map44_flag507_EntityEvents",
+      "ms_map63_EntityEvents",
+      "ms_map67_ZoneEvents",
+      "ms_map6_flag701_EntityEvents",
+      "ms_map72_ZoneEvents",
+      "ms_map9_EntityEvents"
+    ],
+    "pairs": [
+      {
+        "siteOrder": 0,
+        "category": "entityEvents",
+        "programSymbol": "Map10_2D2_EntityEvent19",
+        "programEntryAddress": 356108,
+        "tableSymbol": "ms_map10_flag722_EntityEvents",
+        "tableEntryAddress": 355996,
+        "sourcePath": "data/maps/entries/map10/mapsetups/s2_entityevents_722.asm",
+        "producer": {
+          "sourceOrder": 5,
+          "sourceLine": 45,
+          "romPc": 356128,
+          "sourceMnemonic": "tst.w",
+          "width": ".w",
+          "form": "tst",
+          "comparisonOperand": null,
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 6,
+          "sourceLine": 46,
+          "romPc": 356130,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_56F30",
+          "targetAddress": 356144,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_YesNoPrompt",
+          "kind": "direct-call-return",
+          "transferRomPc": 356122,
+          "instructionTargetSymbol": "j_YesNoPrompt",
+          "effectiveTargetSymbol": "YesNoPrompt",
+          "returnContinuationRomPc": 356128,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 356128,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+          "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+        },
+        "branchAnchor": {
+          "romPc": 356130,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "D4480A3EC72E4EAA4D734E1F13DFA62CBE2A86009FE32A618A4BAEC9A265DEF4"
+        }
+      },
+      {
+        "siteOrder": 1,
+        "category": "entityEvents",
+        "programSymbol": "Map11_EntityEvent3",
+        "programEntryAddress": 358970,
+        "tableSymbol": "ms_map11_EntityEvents",
+        "tableEntryAddress": 358924,
+        "sourcePath": "data/maps/entries/map11/mapsetups/s2_entityevents.asm",
+        "producer": {
+          "sourceOrder": 2,
+          "sourceLine": 57,
+          "romPc": 358980,
+          "sourceMnemonic": "tst.w",
+          "width": ".w",
+          "form": "tst",
+          "comparisonOperand": null,
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 3,
+          "sourceLine": 58,
+          "romPc": 358982,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_57A56",
+          "targetAddress": 358998,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_YesNoPrompt",
+          "kind": "direct-call-return",
+          "transferRomPc": 358974,
+          "instructionTargetSymbol": "j_YesNoPrompt",
+          "effectiveTargetSymbol": "YesNoPrompt",
+          "returnContinuationRomPc": 358980,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 358980,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+          "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+        },
+        "branchAnchor": {
+          "romPc": 358982,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+        }
+      },
+      {
+        "siteOrder": 2,
+        "category": "entityEvents",
+        "programSymbol": "Map25_EntityEvent7",
+        "programEntryAddress": 381674,
+        "tableSymbol": "ms_map25_EntityEvents",
+        "tableEntryAddress": 381476,
+        "sourcePath": "data/maps/entries/map25/mapsetups/s2_entityevents.asm",
+        "producer": {
+          "sourceOrder": 7,
+          "sourceLine": 155,
+          "romPc": 381700,
+          "sourceMnemonic": "tst.w",
+          "width": ".w",
+          "form": "tst",
+          "comparisonOperand": null,
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 8,
+          "sourceLine": 156,
+          "romPc": 381702,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_5D316",
+          "targetAddress": 381718,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_YesNoPrompt",
+          "kind": "direct-call-return",
+          "transferRomPc": 381690,
+          "instructionTargetSymbol": "j_YesNoPrompt",
+          "effectiveTargetSymbol": "YesNoPrompt",
+          "returnContinuationRomPc": 381696,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 381700,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+          "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+        },
+        "branchAnchor": {
+          "romPc": 381702,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+        }
+      },
+      {
+        "siteOrder": 3,
+        "category": "entityEvents",
+        "programSymbol": "Map31_33E_EntityEvent4",
+        "programEntryAddress": 382194,
+        "tableSymbol": "ms_map31_flag830_EntityEvents",
+        "tableEntryAddress": 382110,
+        "sourcePath": "data/maps/entries/map31/mapsetups/s2_entityevents_830.asm",
+        "producer": {
+          "sourceOrder": 2,
+          "sourceLine": 75,
+          "romPc": 382204,
+          "sourceMnemonic": "btst",
+          "width": null,
+          "form": "btst",
+          "comparisonOperand": null,
+          "testedOperand": "d0",
+          "bitOperand": "#0"
+        },
+        "branch": {
+          "sourceOrder": 3,
+          "sourceLine": 76,
+          "romPc": 382208,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_5D508",
+          "targetAddress": 382216,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_YesNoPrompt",
+          "kind": "direct-call-return",
+          "transferRomPc": 382198,
+          "instructionTargetSymbol": "j_YesNoPrompt",
+          "effectiveTargetSymbol": "YesNoPrompt",
+          "returnContinuationRomPc": 382204,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 382204,
+          "instructionByteLength": 4,
+          "h1InstructionSha256": "DC765660B06EE03DD16FD7CA5B957E8C805161AC2C4AF28C5A100AB2AB432CA1",
+          "romInstructionSha256": "DC765660B06EE03DD16FD7CA5B957E8C805161AC2C4AF28C5A100AB2AB432CA1"
+        },
+        "branchAnchor": {
+          "romPc": 382208,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "B3529F78982D3E1F0E3966CA195E56A9A3825209FC606FB231C0855A98FA25A8"
+        }
+      },
+      {
+        "siteOrder": 4,
+        "category": "entityEvents",
+        "programSymbol": "Map3_1FA_EntityEvent15",
+        "programEntryAddress": 332374,
+        "tableSymbol": "ms_map3_flag506_EntityEvents",
+        "tableEntryAddress": 332234,
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_506.asm",
+        "producer": {
+          "sourceOrder": 10,
+          "sourceLine": 162,
+          "romPc": 332418,
+          "sourceMnemonic": "tst.w",
+          "width": ".w",
+          "form": "tst",
+          "comparisonOperand": null,
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 11,
+          "sourceLine": 163,
+          "romPc": 332420,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "return_512B8",
+          "targetAddress": 332472,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_YesNoPrompt",
+          "kind": "direct-call-return",
+          "transferRomPc": 332408,
+          "instructionTargetSymbol": "j_YesNoPrompt",
+          "effectiveTargetSymbol": "YesNoPrompt",
+          "returnContinuationRomPc": 332414,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 332418,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+          "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+        },
+        "branchAnchor": {
+          "romPc": 332420,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "E4AB4E3B1493D5A997B4E51CDEFBAA10570EF3EA9432BD72E7B6A89654CEB7F6"
+        }
+      },
+      {
+        "siteOrder": 5,
+        "category": "entityEvents",
+        "programSymbol": "Map3_21F_EntityEvent10",
+        "programEntryAddress": 403408,
+        "tableSymbol": "ms_map3_flag543_EntityEvents",
+        "tableEntryAddress": 403256,
+        "sourcePath": "data/maps/entries/map03/mapsetups/s2_entityevents_543.asm",
+        "producer": {
+          "sourceOrder": 3,
+          "sourceLine": 167,
+          "romPc": 403422,
+          "sourceMnemonic": "tst.w",
+          "width": ".w",
+          "form": "tst",
+          "comparisonOperand": null,
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 4,
+          "sourceLine": 168,
+          "romPc": 403424,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_627F2",
+          "targetAddress": 403442,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_YesNoPrompt",
+          "kind": "direct-call-return",
+          "transferRomPc": 403416,
+          "instructionTargetSymbol": "j_YesNoPrompt",
+          "effectiveTargetSymbol": "YesNoPrompt",
+          "returnContinuationRomPc": 403422,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 403422,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+          "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+        },
+        "branchAnchor": {
+          "romPc": 403424,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "F0D5B4D85390981D713E2A89C5716F604631D9F24C25666866041DD80E048ACA"
+        }
+      },
+      {
+        "siteOrder": 6,
+        "category": "entityEvents",
+        "programSymbol": "Map44_1FB_EntityEvent7",
+        "programEntryAddress": 345360,
+        "tableSymbol": "ms_map44_flag507_EntityEvents",
+        "tableEntryAddress": 345226,
+        "sourcePath": "data/maps/entries/map44/mapsetups/s2_entityevents_507.asm",
+        "producer": {
+          "sourceOrder": 9,
+          "sourceLine": 212,
+          "romPc": 345402,
+          "sourceMnemonic": "jsr",
+          "width": null,
+          "form": "direct-jsr-CCR",
+          "comparisonOperand": null,
+          "testedOperand": null,
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 10,
+          "sourceLine": 213,
+          "romPc": 345408,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_5454A",
+          "targetAddress": 345418,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_YesNoPrompt",
+          "kind": "direct-call-ccr",
+          "transferRomPc": 345402,
+          "instructionTargetSymbol": "j_YesNoPrompt",
+          "effectiveTargetSymbol": "YesNoPrompt",
+          "returnContinuationRomPc": 345408,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 345402,
+          "instructionByteLength": 6,
+          "h1InstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721",
+          "romInstructionSha256": "85799081AA7A2358231DC735A34D1EBBCD6648886187931A75A001C2170B9721"
+        },
+        "branchAnchor": {
+          "romPc": 345408,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "5B0996542B876496E30FCCC66032D097AD4F74F1FE7B62566819CE7B8596ACCA"
+        }
+      },
+      {
+        "siteOrder": 7,
+        "category": "entityEvents",
+        "programSymbol": "Map63_EntityEvent0",
+        "programEntryAddress": 379282,
+        "tableSymbol": "ms_map63_EntityEvents",
+        "tableEntryAddress": 379274,
+        "sourcePath": "data/maps/entries/map63/mapsetups/s2_entityevents.asm",
+        "producer": {
+          "sourceOrder": 4,
+          "sourceLine": 18,
+          "romPc": 379296,
+          "sourceMnemonic": "cmpi.w",
+          "width": ".w",
+          "form": "cmpi",
+          "comparisonOperand": "#-1",
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 5,
+          "sourceLine": 19,
+          "romPc": 379300,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "loc_5C9D2",
+          "targetAddress": 379346,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_GetItemInventoryLocation",
+          "kind": "direct-call-return",
+          "transferRomPc": 379290,
+          "instructionTargetSymbol": "j_GetItemInventoryLocation",
+          "effectiveTargetSymbol": "GetItemInventoryLocation",
+          "returnContinuationRomPc": 379296,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 379296,
+          "instructionByteLength": 4,
+          "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+          "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+        },
+        "branchAnchor": {
+          "romPc": 379300,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "DEDD9B44D63933C531036A340F2F97A3136574683469B126FD218E8FD2B1C44C"
+        }
+      },
+      {
+        "siteOrder": 8,
+        "category": "entityEvents",
+        "programSymbol": "Map6_EntityEvent0",
+        "programEntryAddress": 346560,
+        "tableSymbol": "ms_map6_flag701_EntityEvents",
+        "tableEntryAddress": 346500,
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "producer": {
+          "sourceOrder": 7,
+          "sourceLine": 36,
+          "romPc": 346582,
+          "sourceMnemonic": "cmpi.b",
+          "width": ".b",
+          "form": "cmpi",
+          "comparisonOperand": "#1",
+          "testedOperand": "((EVENT_RELATIVE_POSITION-$1000000)).w",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 8,
+          "sourceLine": 37,
+          "romPc": 346588,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_549EC",
+          "targetAddress": 346604,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "EVENT_RELATIVE_POSITION",
+          "kind": "direct-fixed-ram",
+          "transferRomPc": null,
+          "instructionTargetSymbol": null,
+          "effectiveTargetSymbol": null,
+          "returnContinuationRomPc": null,
+          "directStateAccessSiteOrder": 80
+        },
+        "producerAnchor": {
+          "romPc": 346582,
+          "instructionByteLength": 6,
+          "h1InstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E",
+          "romInstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E"
+        },
+        "branchAnchor": {
+          "romPc": 346588,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+        }
+      },
+      {
+        "siteOrder": 9,
+        "category": "entityEvents",
+        "programSymbol": "Map6_EntityEvent0",
+        "programEntryAddress": 346560,
+        "tableSymbol": "ms_map6_flag701_EntityEvents",
+        "tableEntryAddress": 346500,
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "producer": {
+          "sourceOrder": 14,
+          "sourceLine": 49,
+          "romPc": 346610,
+          "sourceMnemonic": "cmpi.b",
+          "width": ".b",
+          "form": "cmpi",
+          "comparisonOperand": "#1",
+          "testedOperand": "((EVENT_RELATIVE_POSITION-$1000000)).w",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 15,
+          "sourceLine": 50,
+          "romPc": 346616,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_54A08",
+          "targetAddress": 346632,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "EVENT_RELATIVE_POSITION",
+          "kind": "direct-fixed-ram",
+          "transferRomPc": null,
+          "instructionTargetSymbol": null,
+          "effectiveTargetSymbol": null,
+          "returnContinuationRomPc": null,
+          "directStateAccessSiteOrder": 82
+        },
+        "producerAnchor": {
+          "romPc": 346610,
+          "instructionByteLength": 6,
+          "h1InstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E",
+          "romInstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E"
+        },
+        "branchAnchor": {
+          "romPc": 346616,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+        }
+      },
+      {
+        "siteOrder": 10,
+        "category": "entityEvents",
+        "programSymbol": "Map6_EntityEvent4",
+        "programEntryAddress": 346780,
+        "tableSymbol": "ms_map6_flag701_EntityEvents",
+        "tableEntryAddress": 346500,
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "producer": {
+          "sourceOrder": 10,
+          "sourceLine": 193,
+          "romPc": 346810,
+          "sourceMnemonic": "cmpi.b",
+          "width": ".b",
+          "form": "cmpi",
+          "comparisonOperand": "#1",
+          "testedOperand": "((EVENT_RELATIVE_POSITION-$1000000)).w",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 11,
+          "sourceLine": 194,
+          "romPc": 346816,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_54ACA",
+          "targetAddress": 346826,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "EVENT_RELATIVE_POSITION",
+          "kind": "direct-fixed-ram",
+          "transferRomPc": null,
+          "instructionTargetSymbol": null,
+          "effectiveTargetSymbol": null,
+          "returnContinuationRomPc": null,
+          "directStateAccessSiteOrder": 84
+        },
+        "producerAnchor": {
+          "romPc": 346810,
+          "instructionByteLength": 6,
+          "h1InstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E",
+          "romInstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E"
+        },
+        "branchAnchor": {
+          "romPc": 346816,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "5B0996542B876496E30FCCC66032D097AD4F74F1FE7B62566819CE7B8596ACCA"
+        }
+      },
+      {
+        "siteOrder": 11,
+        "category": "entityEvents",
+        "programSymbol": "Map6_EntityEvent5",
+        "programEntryAddress": 346840,
+        "tableSymbol": "ms_map6_flag701_EntityEvents",
+        "tableEntryAddress": 346500,
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "producer": {
+          "sourceOrder": 11,
+          "sourceLine": 236,
+          "romPc": 346874,
+          "sourceMnemonic": "cmpi.b",
+          "width": ".b",
+          "form": "cmpi",
+          "comparisonOperand": "#1",
+          "testedOperand": "((EVENT_RELATIVE_POSITION-$1000000)).w",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 12,
+          "sourceLine": 237,
+          "romPc": 346880,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_54B10",
+          "targetAddress": 346896,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "EVENT_RELATIVE_POSITION",
+          "kind": "direct-fixed-ram",
+          "transferRomPc": null,
+          "instructionTargetSymbol": null,
+          "effectiveTargetSymbol": null,
+          "returnContinuationRomPc": null,
+          "directStateAccessSiteOrder": 85
+        },
+        "producerAnchor": {
+          "romPc": 346874,
+          "instructionByteLength": 6,
+          "h1InstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E",
+          "romInstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E"
+        },
+        "branchAnchor": {
+          "romPc": 346880,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+        }
+      },
+      {
+        "siteOrder": 12,
+        "category": "entityEvents",
+        "programSymbol": "Map6_EntityEvent5",
+        "programEntryAddress": 346840,
+        "tableSymbol": "ms_map6_flag701_EntityEvents",
+        "tableEntryAddress": 346500,
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "producer": {
+          "sourceOrder": 19,
+          "sourceLine": 250,
+          "romPc": 346906,
+          "sourceMnemonic": "cmpi.b",
+          "width": ".b",
+          "form": "cmpi",
+          "comparisonOperand": "#1",
+          "testedOperand": "((EVENT_RELATIVE_POSITION-$1000000)).w",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 20,
+          "sourceLine": 251,
+          "romPc": 346912,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_54B30",
+          "targetAddress": 346928,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "EVENT_RELATIVE_POSITION",
+          "kind": "direct-fixed-ram",
+          "transferRomPc": null,
+          "instructionTargetSymbol": null,
+          "effectiveTargetSymbol": null,
+          "returnContinuationRomPc": null,
+          "directStateAccessSiteOrder": 87
+        },
+        "producerAnchor": {
+          "romPc": 346906,
+          "instructionByteLength": 6,
+          "h1InstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E",
+          "romInstructionSha256": "0A4774F3BC6E74418624F60C721179C7B11A36DA2BE77715F2DADA7B63B3F87E"
+        },
+        "branchAnchor": {
+          "romPc": 346912,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "6F41899897D38EEEF914A3586D78CDBD2A0E36F31DECAA0A9283570FEC36FFF9"
+        }
+      },
+      {
+        "siteOrder": 13,
+        "category": "entityEvents",
+        "programSymbol": "Map6_EntityEvent13",
+        "programEntryAddress": 347152,
+        "tableSymbol": "ms_map6_flag701_EntityEvents",
+        "tableEntryAddress": 346500,
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "producer": {
+          "sourceOrder": 19,
+          "sourceLine": 491,
+          "romPc": 347220,
+          "sourceMnemonic": "cmpi.w",
+          "width": ".w",
+          "form": "cmpi",
+          "comparisonOperand": "#-1",
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 20,
+          "sourceLine": 492,
+          "romPc": 347224,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_54C8E",
+          "targetAddress": 347278,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_GetItemInventoryLocation",
+          "kind": "direct-call-return",
+          "transferRomPc": 347214,
+          "instructionTargetSymbol": "j_GetItemInventoryLocation",
+          "effectiveTargetSymbol": "GetItemInventoryLocation",
+          "returnContinuationRomPc": 347220,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 347220,
+          "instructionByteLength": 4,
+          "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+          "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+        },
+        "branchAnchor": {
+          "romPc": 347224,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "608CDB524384F5EE06EDC2830D6B13A92047229398768FF88E28AD68D02569E8"
+        }
+      },
+      {
+        "siteOrder": 14,
+        "category": "entityEvents",
+        "programSymbol": "Map6_EntityEvent13",
+        "programEntryAddress": 347152,
+        "tableSymbol": "ms_map6_flag701_EntityEvents",
+        "tableEntryAddress": 346500,
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "producer": {
+          "sourceOrder": 41,
+          "sourceLine": 515,
+          "romPc": 347310,
+          "sourceMnemonic": "btst",
+          "width": null,
+          "form": "btst",
+          "comparisonOperand": null,
+          "testedOperand": "d0",
+          "bitOperand": "#0"
+        },
+        "branch": {
+          "sourceOrder": 42,
+          "sourceLine": 516,
+          "romPc": 347314,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_54CBA",
+          "targetAddress": 347322,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "ReceiveMandatoryItem",
+          "kind": "direct-call-return",
+          "transferRomPc": 347306,
+          "instructionTargetSymbol": "ReceiveMandatoryItem",
+          "effectiveTargetSymbol": "ReceiveMandatoryItem",
+          "returnContinuationRomPc": 347310,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 347310,
+          "instructionByteLength": 4,
+          "h1InstructionSha256": "DC765660B06EE03DD16FD7CA5B957E8C805161AC2C4AF28C5A100AB2AB432CA1",
+          "romInstructionSha256": "DC765660B06EE03DD16FD7CA5B957E8C805161AC2C4AF28C5A100AB2AB432CA1"
+        },
+        "branchAnchor": {
+          "romPc": 347314,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "B3529F78982D3E1F0E3966CA195E56A9A3825209FC606FB231C0855A98FA25A8"
+        }
+      },
+      {
+        "siteOrder": 15,
+        "category": "entityEvents",
+        "programSymbol": "Map6_DefaultEntityEvent",
+        "programEntryAddress": 347184,
+        "tableSymbol": "ms_map6_flag701_EntityEvents",
+        "tableEntryAddress": 346500,
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "producer": {
+          "sourceOrder": 10,
+          "sourceLine": 491,
+          "romPc": 347220,
+          "sourceMnemonic": "cmpi.w",
+          "width": ".w",
+          "form": "cmpi",
+          "comparisonOperand": "#-1",
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 11,
+          "sourceLine": 492,
+          "romPc": 347224,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_54C8E",
+          "targetAddress": 347278,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_GetItemInventoryLocation",
+          "kind": "direct-call-return",
+          "transferRomPc": 347214,
+          "instructionTargetSymbol": "j_GetItemInventoryLocation",
+          "effectiveTargetSymbol": "GetItemInventoryLocation",
+          "returnContinuationRomPc": 347220,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 347220,
+          "instructionByteLength": 4,
+          "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+          "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+        },
+        "branchAnchor": {
+          "romPc": 347224,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "608CDB524384F5EE06EDC2830D6B13A92047229398768FF88E28AD68D02569E8"
+        }
+      },
+      {
+        "siteOrder": 16,
+        "category": "entityEvents",
+        "programSymbol": "Map6_DefaultEntityEvent",
+        "programEntryAddress": 347184,
+        "tableSymbol": "ms_map6_flag701_EntityEvents",
+        "tableEntryAddress": 346500,
+        "sourcePath": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+        "producer": {
+          "sourceOrder": 32,
+          "sourceLine": 515,
+          "romPc": 347310,
+          "sourceMnemonic": "btst",
+          "width": null,
+          "form": "btst",
+          "comparisonOperand": null,
+          "testedOperand": "d0",
+          "bitOperand": "#0"
+        },
+        "branch": {
+          "sourceOrder": 33,
+          "sourceLine": 516,
+          "romPc": 347314,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_54CBA",
+          "targetAddress": 347322,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "ReceiveMandatoryItem",
+          "kind": "direct-call-return",
+          "transferRomPc": 347306,
+          "instructionTargetSymbol": "ReceiveMandatoryItem",
+          "effectiveTargetSymbol": "ReceiveMandatoryItem",
+          "returnContinuationRomPc": 347310,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 347310,
+          "instructionByteLength": 4,
+          "h1InstructionSha256": "DC765660B06EE03DD16FD7CA5B957E8C805161AC2C4AF28C5A100AB2AB432CA1",
+          "romInstructionSha256": "DC765660B06EE03DD16FD7CA5B957E8C805161AC2C4AF28C5A100AB2AB432CA1"
+        },
+        "branchAnchor": {
+          "romPc": 347314,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "B3529F78982D3E1F0E3966CA195E56A9A3825209FC606FB231C0855A98FA25A8"
+        }
+      },
+      {
+        "siteOrder": 17,
+        "category": "entityEvents",
+        "programSymbol": "Map9_EntityEvent0",
+        "programEntryAddress": 354278,
+        "tableSymbol": "ms_map9_EntityEvents",
+        "tableEntryAddress": 354082,
+        "sourcePath": "data/maps/entries/map09/mapsetups/s2_entityevents.asm",
+        "producer": {
+          "sourceOrder": 4,
+          "sourceLine": 168,
+          "romPc": 354292,
+          "sourceMnemonic": "cmpi.w",
+          "width": ".w",
+          "form": "cmpi",
+          "comparisonOperand": "#-1",
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 5,
+          "sourceLine": 169,
+          "romPc": 354296,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_56804",
+          "targetAddress": 354308,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_GetItemInventoryLocation",
+          "kind": "direct-call-return",
+          "transferRomPc": 354286,
+          "instructionTargetSymbol": "j_GetItemInventoryLocation",
+          "effectiveTargetSymbol": "GetItemInventoryLocation",
+          "returnContinuationRomPc": 354292,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 354292,
+          "instructionByteLength": 4,
+          "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+          "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+        },
+        "branchAnchor": {
+          "romPc": 354296,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "092FCFBBCFCA3B5BE7AE1B5E58538E92C35AB273AE13664FED0D67484C8E78A6"
+        }
+      },
+      {
+        "siteOrder": 18,
+        "category": "zoneEvents",
+        "programSymbol": "Map20_21F_ZoneEvent0",
+        "programEntryAddress": 406188,
+        "tableSymbol": "ms_map20_flag543_ZoneEvents",
+        "tableEntryAddress": 406170,
+        "sourcePath": "data/maps/entries/map20/mapsetups/s3_zoneevents_543.asm",
+        "producer": {
+          "sourceOrder": 5,
+          "sourceLine": 31,
+          "romPc": 406212,
+          "sourceMnemonic": "tst.w",
+          "width": ".w",
+          "form": "tst",
+          "comparisonOperand": null,
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 6,
+          "sourceLine": 32,
+          "romPc": 406214,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_632E0",
+          "targetAddress": 406240,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_YesNoPrompt",
+          "kind": "direct-call-return",
+          "transferRomPc": 406206,
+          "instructionTargetSymbol": "j_YesNoPrompt",
+          "effectiveTargetSymbol": "YesNoPrompt",
+          "returnContinuationRomPc": 406212,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 406212,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720",
+          "romInstructionSha256": "15DF69F80D06957F82D037F6E2C740212EC311FB1D197713204A7E9EB4583720"
+        },
+        "branchAnchor": {
+          "romPc": 406214,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "9EA4D7ECCFE9C659B1C37C3F9F104D3D24E56F5A1228CBCE1784E03156DE492B"
+        }
+      },
+      {
+        "siteOrder": 19,
+        "category": "zoneEvents",
+        "programSymbol": "Map28_DefaultZoneEvent",
+        "programEntryAddress": 390000,
+        "tableSymbol": "ms_map28_ZoneEvents",
+        "tableEntryAddress": 389996,
+        "sourcePath": "data/maps/entries/map28/mapsetups/s3_zoneevents.asm",
+        "producer": {
+          "sourceOrder": 5,
+          "sourceLine": 17,
+          "romPc": 390016,
+          "sourceMnemonic": "tst.b",
+          "width": ".b",
+          "form": "tst",
+          "comparisonOperand": null,
+          "testedOperand": "((ENTITY_FACING-$1000000)).w",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 6,
+          "sourceLine": 18,
+          "romPc": 390020,
+          "sourceMnemonic": "bne.s",
+          "targetSymbol": "byte_5F38E",
+          "targetAddress": 390030,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "ENTITY_FACING",
+          "kind": "direct-fixed-ram-after-wait",
+          "transferRomPc": 390010,
+          "instructionTargetSymbol": "WaitForEntityToStopMoving",
+          "effectiveTargetSymbol": "WaitForEntityToStopMoving",
+          "returnContinuationRomPc": 390016,
+          "directStateAccessSiteOrder": 115
+        },
+        "producerAnchor": {
+          "romPc": 390016,
+          "instructionByteLength": 4,
+          "h1InstructionSha256": "2CF3AFA5AA20FFDC806C686508EB714D6D8F8ED379BC2ECAC3F65DBACBD10C1A",
+          "romInstructionSha256": "2CF3AFA5AA20FFDC806C686508EB714D6D8F8ED379BC2ECAC3F65DBACBD10C1A"
+        },
+        "branchAnchor": {
+          "romPc": 390020,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+          "romInstructionSha256": "5B0996542B876496E30FCCC66032D097AD4F74F1FE7B62566819CE7B8596ACCA"
+        }
+      },
+      {
+        "siteOrder": 20,
+        "category": "zoneEvents",
+        "programSymbol": "Map67_ZoneEvent0",
+        "programEntryAddress": 326450,
+        "tableSymbol": "ms_map67_ZoneEvents",
+        "tableEntryAddress": 326412,
+        "sourcePath": "data/maps/entries/map67/mapsetups/s3_zoneevents.asm",
+        "producer": {
+          "sourceOrder": 6,
+          "sourceLine": 40,
+          "romPc": 326472,
+          "sourceMnemonic": "tst.w",
+          "width": ".w",
+          "form": "tst",
+          "comparisonOperand": null,
+          "testedOperand": "d1",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 7,
+          "sourceLine": 41,
+          "romPc": 326474,
+          "sourceMnemonic": "beq.s",
+          "targetSymbol": "return_4FB56",
+          "targetAddress": 326486,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_GetCurrentHp",
+          "kind": "direct-call-return",
+          "transferRomPc": 326466,
+          "instructionTargetSymbol": "j_GetCurrentHp",
+          "effectiveTargetSymbol": "GetCurrentHp",
+          "returnContinuationRomPc": 326472,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 326472,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "2C24576872F7B538B5A2C8E8B9DB551F58C49B5316AAE1AF86D201E44908D0E2",
+          "romInstructionSha256": "2C24576872F7B538B5A2C8E8B9DB551F58C49B5316AAE1AF86D201E44908D0E2"
+        },
+        "branchAnchor": {
+          "romPc": 326474,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "78F993C3392521C9DB0E0819B09F95C5C4141EF1CAD923ADE3BEE913BC6BDFD2",
+          "romInstructionSha256": "768C71D785BF6BBBF8C4D6AF6582041F2659027140A962CD0C55B11EDDFD5E3D"
+        }
+      },
+      {
+        "siteOrder": 21,
+        "category": "zoneEvents",
+        "programSymbol": "Map72_ZoneEvent3",
+        "programEntryAddress": 327320,
+        "tableSymbol": "ms_map72_ZoneEvents",
+        "tableEntryAddress": 327268,
+        "sourcePath": "data/maps/entries/map72/mapsetups/s3_zoneevents.asm",
+        "producer": {
+          "sourceOrder": 9,
+          "sourceLine": 43,
+          "romPc": 327350,
+          "sourceMnemonic": "cmpi.w",
+          "width": ".w",
+          "form": "cmpi",
+          "comparisonOperand": "#-1",
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 10,
+          "sourceLine": 44,
+          "romPc": 327354,
+          "sourceMnemonic": "beq.s",
+          "targetSymbol": "loc_4FEF4",
+          "targetAddress": 327412,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_GetItemInventoryLocation",
+          "kind": "direct-call-return",
+          "transferRomPc": 327344,
+          "instructionTargetSymbol": "j_GetItemInventoryLocation",
+          "effectiveTargetSymbol": "GetItemInventoryLocation",
+          "returnContinuationRomPc": 327350,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 327350,
+          "instructionByteLength": 4,
+          "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+          "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+        },
+        "branchAnchor": {
+          "romPc": 327354,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "78F993C3392521C9DB0E0819B09F95C5C4141EF1CAD923ADE3BEE913BC6BDFD2",
+          "romInstructionSha256": "0FCD4AC08FA092197D9A11DF0E56C910373281674746A5C6F704649DC9E2202C"
+        }
+      },
+      {
+        "siteOrder": 22,
+        "category": "zoneEvents",
+        "programSymbol": "Map72_ZoneEvent3",
+        "programEntryAddress": 327320,
+        "tableSymbol": "ms_map72_ZoneEvents",
+        "tableEntryAddress": 327268,
+        "sourcePath": "data/maps/entries/map72/mapsetups/s3_zoneevents.asm",
+        "producer": {
+          "sourceOrder": 13,
+          "sourceLine": 47,
+          "romPc": 327364,
+          "sourceMnemonic": "cmpi.w",
+          "width": ".w",
+          "form": "cmpi",
+          "comparisonOperand": "#-1",
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 14,
+          "sourceLine": 48,
+          "romPc": 327368,
+          "sourceMnemonic": "beq.s",
+          "targetSymbol": "loc_4FEE6",
+          "targetAddress": 327398,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_GetItemInventoryLocation",
+          "kind": "direct-call-return",
+          "transferRomPc": 327358,
+          "instructionTargetSymbol": "j_GetItemInventoryLocation",
+          "effectiveTargetSymbol": "GetItemInventoryLocation",
+          "returnContinuationRomPc": 327364,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 327364,
+          "instructionByteLength": 4,
+          "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+          "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+        },
+        "branchAnchor": {
+          "romPc": 327368,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "78F993C3392521C9DB0E0819B09F95C5C4141EF1CAD923ADE3BEE913BC6BDFD2",
+          "romInstructionSha256": "A3801C94A672D95F2EF8D87A512A67A7FC86FD77AB7263E5CE3AB2D31C1D8B8E"
+        }
+      },
+      {
+        "siteOrder": 23,
+        "category": "itemEvents",
+        "programSymbol": "Map22_ItemEvent0",
+        "programEntryAddress": 366096,
+        "tableSymbol": "ms_map22_Section5",
+        "tableEntryAddress": 366084,
+        "sourcePath": "data/maps/entries/map22/mapsetups/s5_itemevents.asm",
+        "producer": {
+          "sourceOrder": 2,
+          "sourceLine": 15,
+          "romPc": 366104,
+          "sourceMnemonic": "cmpi.w",
+          "width": ".w",
+          "form": "cmpi",
+          "comparisonOperand": "#-1",
+          "testedOperand": "d0",
+          "bitOperand": null
+        },
+        "branch": {
+          "sourceOrder": 3,
+          "sourceLine": 16,
+          "romPc": 366108,
+          "sourceMnemonic": "beq.s",
+          "targetSymbol": "byte_59624",
+          "targetAddress": 366116,
+          "takenTargetKind": "target",
+          "fallthroughKind": "next-lexical-operation"
+        },
+        "resultOrigin": {
+          "symbol": "j_GetItemInventoryLocation",
+          "kind": "direct-call-return",
+          "transferRomPc": 366098,
+          "instructionTargetSymbol": "j_GetItemInventoryLocation",
+          "effectiveTargetSymbol": "GetItemInventoryLocation",
+          "returnContinuationRomPc": 366104,
+          "directStateAccessSiteOrder": null
+        },
+        "producerAnchor": {
+          "romPc": 366104,
+          "instructionByteLength": 4,
+          "h1InstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200",
+          "romInstructionSha256": "8C7CD95098CA047C1B75481BFDDF460123F63E4DE5122E36AACD4A33D2977200"
+        },
+        "branchAnchor": {
+          "romPc": 366108,
+          "instructionByteLength": 2,
+          "h1InstructionSha256": "78F993C3392521C9DB0E0819B09F95C5C4141EF1CAD923ADE3BEE913BC6BDFD2",
+          "romInstructionSha256": "C6988A6881F0312AED6878FE6F40767807D62E1A004432BC4CDB19C302ED47FF"
+        }
+      }
+    ],
+    "pairOrder": [
+      "entityEvents|Map10_2D2_EntityEvent19|356128|356130",
+      "entityEvents|Map11_EntityEvent3|358980|358982",
+      "entityEvents|Map25_EntityEvent7|381700|381702",
+      "entityEvents|Map31_33E_EntityEvent4|382204|382208",
+      "entityEvents|Map3_1FA_EntityEvent15|332418|332420",
+      "entityEvents|Map3_21F_EntityEvent10|403422|403424",
+      "entityEvents|Map44_1FB_EntityEvent7|345402|345408",
+      "entityEvents|Map63_EntityEvent0|379296|379300",
+      "entityEvents|Map6_EntityEvent0|346582|346588",
+      "entityEvents|Map6_EntityEvent0|346610|346616",
+      "entityEvents|Map6_EntityEvent4|346810|346816",
+      "entityEvents|Map6_EntityEvent5|346874|346880",
+      "entityEvents|Map6_EntityEvent5|346906|346912",
+      "entityEvents|Map6_EntityEvent13|347220|347224",
+      "entityEvents|Map6_EntityEvent13|347310|347314",
+      "entityEvents|Map6_DefaultEntityEvent|347220|347224",
+      "entityEvents|Map6_DefaultEntityEvent|347310|347314",
+      "entityEvents|Map9_EntityEvent0|354292|354296",
+      "zoneEvents|Map20_21F_ZoneEvent0|406212|406214",
+      "zoneEvents|Map28_DefaultZoneEvent|390016|390020",
+      "zoneEvents|Map67_ZoneEvent0|326472|326474",
+      "zoneEvents|Map72_ZoneEvent3|327350|327354",
+      "zoneEvents|Map72_ZoneEvent3|327364|327368",
+      "itemEvents|Map22_ItemEvent0|366104|366108"
+    ],
+    "physicalPairs": [
+      {
+        "producerRomPc": 326472,
+        "branchRomPc": 326474,
+        "contextSiteOrders": [
+          20
+        ]
+      },
+      {
+        "producerRomPc": 327350,
+        "branchRomPc": 327354,
+        "contextSiteOrders": [
+          21
+        ]
+      },
+      {
+        "producerRomPc": 327364,
+        "branchRomPc": 327368,
+        "contextSiteOrders": [
+          22
+        ]
+      },
+      {
+        "producerRomPc": 332418,
+        "branchRomPc": 332420,
+        "contextSiteOrders": [
+          4
+        ]
+      },
+      {
+        "producerRomPc": 345402,
+        "branchRomPc": 345408,
+        "contextSiteOrders": [
+          6
+        ]
+      },
+      {
+        "producerRomPc": 346582,
+        "branchRomPc": 346588,
+        "contextSiteOrders": [
+          8
+        ]
+      },
+      {
+        "producerRomPc": 346610,
+        "branchRomPc": 346616,
+        "contextSiteOrders": [
+          9
+        ]
+      },
+      {
+        "producerRomPc": 346810,
+        "branchRomPc": 346816,
+        "contextSiteOrders": [
+          10
+        ]
+      },
+      {
+        "producerRomPc": 346874,
+        "branchRomPc": 346880,
+        "contextSiteOrders": [
+          11
+        ]
+      },
+      {
+        "producerRomPc": 346906,
+        "branchRomPc": 346912,
+        "contextSiteOrders": [
+          12
+        ]
+      },
+      {
+        "producerRomPc": 347220,
+        "branchRomPc": 347224,
+        "contextSiteOrders": [
+          13,
+          15
+        ]
+      },
+      {
+        "producerRomPc": 347310,
+        "branchRomPc": 347314,
+        "contextSiteOrders": [
+          14,
+          16
+        ]
+      },
+      {
+        "producerRomPc": 354292,
+        "branchRomPc": 354296,
+        "contextSiteOrders": [
+          17
+        ]
+      },
+      {
+        "producerRomPc": 356128,
+        "branchRomPc": 356130,
+        "contextSiteOrders": [
+          0
+        ]
+      },
+      {
+        "producerRomPc": 358980,
+        "branchRomPc": 358982,
+        "contextSiteOrders": [
+          1
+        ]
+      },
+      {
+        "producerRomPc": 366104,
+        "branchRomPc": 366108,
+        "contextSiteOrders": [
+          23
+        ]
+      },
+      {
+        "producerRomPc": 379296,
+        "branchRomPc": 379300,
+        "contextSiteOrders": [
+          7
+        ]
+      },
+      {
+        "producerRomPc": 381700,
+        "branchRomPc": 381702,
+        "contextSiteOrders": [
+          2
+        ]
+      },
+      {
+        "producerRomPc": 382204,
+        "branchRomPc": 382208,
+        "contextSiteOrders": [
+          3
+        ]
+      },
+      {
+        "producerRomPc": 390016,
+        "branchRomPc": 390020,
+        "contextSiteOrders": [
+          19
+        ]
+      },
+      {
+        "producerRomPc": 403422,
+        "branchRomPc": 403424,
+        "contextSiteOrders": [
+          5
+        ]
+      },
+      {
+        "producerRomPc": 406212,
+        "branchRomPc": 406214,
+        "contextSiteOrders": [
+          18
+        ]
+      }
+    ],
+    "physicalPairOrder": [
+      "326472|326474",
+      "327350|327354",
+      "327364|327368",
+      "332418|332420",
+      "345402|345408",
+      "346582|346588",
+      "346610|346616",
+      "346810|346816",
+      "346874|346880",
+      "346906|346912",
+      "347220|347224",
+      "347310|347314",
+      "354292|354296",
+      "356128|356130",
+      "358980|358982",
+      "366104|366108",
+      "379296|379300",
+      "381700|381702",
+      "382204|382208",
+      "390016|390020",
+      "403422|403424",
+      "406212|406214"
+    ],
+    "resultOriginCohorts": [
+      {
+        "symbol": "j_YesNoPrompt",
+        "contextPairCount": 8,
+        "physicalPairCount": 8
+      },
+      {
+        "symbol": "j_GetItemInventoryLocation",
+        "contextPairCount": 7,
+        "physicalPairCount": 6
+      },
+      {
+        "symbol": "EVENT_RELATIVE_POSITION",
+        "contextPairCount": 5,
+        "physicalPairCount": 5
+      },
+      {
+        "symbol": "ReceiveMandatoryItem",
+        "contextPairCount": 2,
+        "physicalPairCount": 1
+      },
+      {
+        "symbol": "j_GetCurrentHp",
+        "contextPairCount": 1,
+        "physicalPairCount": 1
+      },
+      {
+        "symbol": "ENTITY_FACING",
+        "contextPairCount": 1,
+        "physicalPairCount": 1
+      }
+    ],
+    "producerFormCohorts": [
+      {
+        "form": "cmpi",
+        "contextPairCount": 12,
+        "physicalPairCount": 11
+      },
+      {
+        "form": "tst",
+        "contextPairCount": 8,
+        "physicalPairCount": 8
+      },
+      {
+        "form": "btst",
+        "contextPairCount": 3,
+        "physicalPairCount": 2
+      },
+      {
+        "form": "direct-jsr-CCR",
+        "contextPairCount": 1,
+        "physicalPairCount": 1
+      }
+    ],
+    "branchCohorts": [
+      {
+        "opcode": "bne",
+        "contextPairCount": 20,
+        "physicalPairCount": 18
+      },
+      {
+        "opcode": "beq",
+        "contextPairCount": 4,
+        "physicalPairCount": 4
+      }
+    ]
+  },
+  "unknowns": {
+    "naturalProgramReachability": "Unknown",
+    "callerEntryRegisterAndState": "Unknown",
+    "actualYesNoPromptResult": "Unknown",
+    "actualInventoryLocationResult": "Unknown",
+    "actualMandatoryItemResult": "Unknown",
+    "actualCurrentHpResult": "Unknown",
+    "actualEventRelativePosition": "Unknown",
+    "actualEntityFacing": "Unknown",
+    "actualCcrAndPredicateEvaluation": "Unknown",
+    "actualBranchSelection": "Unknown",
+    "successorExecutionAndSideEffects": "Unknown",
+    "tailAndReturnState": "Unknown",
+    "crossMapStateLifetime": "Unknown",
+    "saveLoadPersistence": "Unknown",
+    "inputUiDialogueAudioTimingAndStoryMeaning": "Unknown"
+  },
+  "summary": {
+    "programContextCount": 914,
+    "operationCount": 3579,
+    "conditionalContextCount": 340,
+    "conditionalPhysicalCount": 336,
+    "directFlagContextExclusionCount": 316,
+    "directFlagPhysicalExclusionCount": 314,
+    "contextPairCount": 24,
+    "physicalPairCount": 22,
+    "positiveProgramContextCount": 19,
+    "zeroProgramContextCount": 895,
+    "sourceFileCount": 15,
+    "sourceIdentityCount": 24,
+    "physicalCallerAnchorCount": 59,
+    "entrySeamCount": 8
+  }
+}

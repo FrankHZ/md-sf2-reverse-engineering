@@ -33,10 +33,46 @@ BASE = "2c567569412d9ef74582cda7f13156b33653f648"
 FIXTURE_ID = "sf2-map-event-direct-handoff-static-v1"
 DOCUMENT = "docs/research/map-event-direct-handoff.md"
 VERIFIER = "src/sf2tool/h2/map_event_direct_handoff.py"
+PREDICATE_FIXTURE_ID = "sf2-map-event-predicate-results-static-v1"
+PREDICATE_DOCUMENT = "docs/research/map-event-predicate-results.md"
 
 
 def _fixture() -> dict[str, Any]:
     return load_json(FIXTURE)
+
+
+def _without_predicate_results(index: dict[str, Any]) -> dict[str, Any]:
+    normalized = deepcopy(index)
+    removed: set[str] = set()
+    for record in normalized["records"]:
+        evidence = [
+            item for item in record["evidence"] if item["fixtureId"] == PREDICATE_FIXTURE_ID
+        ]
+        if not evidence:
+            continue
+        assert evidence == [
+            {
+                "level": "H2",
+                "fixture": "tests/fixtures/h2/map-event-predicate-results-static-v1.json",
+                "fixtureId": PREDICATE_FIXTURE_ID,
+                "verifier": "src/sf2tool/h2/map_event_predicate_results.py",
+                "bindings": [
+                    {
+                        "addressId": "entry",
+                        "fixtureField": (
+                            "eventPredicateResults.sourceFiles."
+                            f"{record['symbol']}.tableEntryAddress"
+                        ),
+                    }
+                ],
+            }
+        ]
+        assert record["documents"][-1] == PREDICATE_DOCUMENT
+        record["evidence"].remove(evidence[0])
+        record["documents"].pop()
+        removed.add(record["id"])
+    assert len(removed) == 15
+    return normalized
 
 
 def _projection(parent: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
@@ -522,7 +558,7 @@ def test_fixture_schema_is_recursively_closed_ordered_and_public() -> None:
 
 
 def test_research_index_delta_is_exact_53_binding_append_without_record_or_address_drift() -> None:
-    index = load_json(INDEX)
+    index = _without_predicate_results(load_json(INDEX))
     base = json.loads(
         subprocess.run(
             ["git", "show", f"{BASE}:manifests/research-index.json"],
@@ -585,16 +621,16 @@ def test_research_index_delta_is_exact_53_binding_append_without_record_or_addre
         "Index": "manifests/research-index.json",
         "Records": 1625,
         "Confirmed": 1625,
-        "H2Fixtures": 88,
+        "H2Fixtures": 89,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 2912,
+        "AddressBindings": 2927,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1588,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 50,
+        "ResearchDocuments": 51,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

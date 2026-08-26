@@ -961,7 +961,15 @@ contextual/139 physical first lexical direct-call continuations. Its 327 context
 299 physical source/H1/ROM anchors with 17 role overlaps; 78 `sf2enums.asm` identities have 120
 contextual uses. It is H2-only and leaves actual preparation, machine state, callee effects/returns,
 branch selection, reachability, persistence, timing, UI, dialogue, audio, and story meaning Unknown.
-Evidence date: 2026-08-25. The
+The adjacent predicate-result inventory retains only the 24 contextual/
+22 physical non-`chkFlg` pairs from the complete 340 contextual/336 physical immediate conditional
+corpus: 316 contextual/314 physical direct-flag branches remain exclusively with their existing owner.
+Its 19 positive/895 zero program contexts split 18 entity/5 zone/1 item pairs; its source-shaped
+`cmpi`/`tst`/`btst`/direct-`jsr`-CCR producers join six exact result-origin cohorts to branch opcode,
+target, and lexical fallthrough identities. It guards 59 physical caller anchors and eight retained
+alias/effective entry seams without entering a callee body, and leaves actual predicate values, CCR,
+branch selection, reachability, effects, persistence, timing, and story meaning Unknown. Evidence date:
+2026-08-25. The
 preceding map-event boundary facts retain their 2026-07-27 evidence date. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
 

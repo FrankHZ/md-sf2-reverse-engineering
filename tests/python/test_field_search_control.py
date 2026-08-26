@@ -27,6 +27,8 @@ _DIRECT_CONTROL_FIXTURE_ID = "sf2-map-event-direct-control-static-v1"
 _DIRECT_CONTROL_DOCUMENT = "docs/research/map-event-direct-control.md"
 _HANDOFF_FIXTURE_ID = "sf2-map-event-direct-handoff-static-v1"
 _HANDOFF_DOCUMENT = "docs/research/map-event-direct-handoff.md"
+_PREDICATE_FIXTURE_ID = "sf2-map-event-predicate-results-static-v1"
+_PREDICATE_DOCUMENT = "docs/research/map-event-predicate-results.md"
 _DIRECT_STATE_OWNER_IDS = {
     "map.data.ms-map2-entityevents", "map.data.ms-map3-flag506-entityevents",
     "map.data.ms-map3-flag609-entityevents", "map.data.ms-map5-flag530-entityevents",
@@ -48,6 +50,40 @@ _DIRECT_STATE_OWNER_IDS = {
     "map.data.ms-map76-zoneevents", "map.data.ms-map77-zoneevents",
     "map.data.ms-map37-section5", "map.data.ms-map77-section5",
 }
+
+
+def _without_predicate_results(index: dict[str, Any]) -> dict[str, Any]:
+    normalized = deepcopy(index)
+    removed: set[str] = set()
+    for record in normalized["records"]:
+        evidence = [
+            item for item in record["evidence"] if item["fixtureId"] == _PREDICATE_FIXTURE_ID
+        ]
+        if not evidence:
+            continue
+        assert evidence == [
+            {
+                "level": "H2",
+                "fixture": "tests/fixtures/h2/map-event-predicate-results-static-v1.json",
+                "fixtureId": _PREDICATE_FIXTURE_ID,
+                "verifier": "src/sf2tool/h2/map_event_predicate_results.py",
+                "bindings": [
+                    {
+                        "addressId": "entry",
+                        "fixtureField": (
+                            "eventPredicateResults.sourceFiles."
+                            f"{record['symbol']}.tableEntryAddress"
+                        ),
+                    }
+                ],
+            }
+        ]
+        assert record["documents"][-1] == _PREDICATE_DOCUMENT
+        record["evidence"].remove(evidence[0])
+        record["documents"].pop()
+        removed.add(record["id"])
+    assert len(removed) == 15
+    return normalized
 
 
 def _canonical_sha256(value: object) -> str:
@@ -758,7 +794,7 @@ def test_field_search_retained_owner_digest_drift_rejects_fixture_comparison(
 
 
 def test_field_search_index_delta_is_exact_and_rejects_unknown_roots() -> None:
-    index = load_json(INDEX)
+    index = _without_predicate_results(load_json(INDEX))
     records = {record["id"]: record for record in index["records"]}
     expected = {
         (
