@@ -78,6 +78,7 @@ H2_COMMAND_GROUPS = {
         "map-event-dialogue-state",
         "map-event-direct-handoff",
         "map-event-predicate-results",
+        "map-event-request-state",
         "map-event-direct-state",
         "map-descriptions",
         "map-entities",
