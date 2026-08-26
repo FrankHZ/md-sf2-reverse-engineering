@@ -37,6 +37,8 @@ PREDICATE_FIXTURE_ID = "sf2-map-event-predicate-results-static-v1"
 PREDICATE_DOCUMENT = "docs/research/map-event-predicate-results.md"
 _DIALOGUE_STATE_FIXTURE_ID = "sf2-map-event-dialogue-state-static-v1"
 _DIALOGUE_STATE_DOCUMENT = "docs/research/map-event-dialogue-state.md"
+_REQUEST_STATE_FIXTURE_ID = "sf2-map-event-request-state-static-v1"
+_REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
 _DIALOGUE_STATE_OWNER_IDS = {
     "map.data.ms-map3-flag506-entityevents",
     "map.data.ms-map3-zoneevents",
@@ -60,6 +62,40 @@ _DIALOGUE_STATE_OWNER_IDS = {
 
 def _fixture() -> dict[str, Any]:
     return load_json(FIXTURE)
+
+
+def _without_request_state(index):
+    normalized = deepcopy(index)
+    removed: set[str] = set()
+    for record in normalized["records"]:
+        evidence = [
+            item for item in record["evidence"] if item["fixtureId"] == _REQUEST_STATE_FIXTURE_ID
+        ]
+        if not evidence:
+            continue
+        assert evidence == [
+            {
+                "level": "H2",
+                "fixture": "tests/fixtures/h2/map-event-request-state-static-v1.json",
+                "fixtureId": _REQUEST_STATE_FIXTURE_ID,
+                "verifier": "src/sf2tool/h2/map_event_request_state.py",
+                "bindings": [
+                    {
+                        "addressId": "entry",
+                        "fixtureField": (
+                            "eventRequestState.sourceFiles."
+                            f"{record['symbol']}.tableEntryAddress"
+                        ),
+                    }
+                ],
+            }
+        ]
+        assert record["documents"][-1] == _REQUEST_STATE_DOCUMENT
+        record["evidence"].remove(evidence[0])
+        record["documents"].pop()
+        removed.add(record["id"])
+    assert len(removed) == 24
+    return normalized
 
 
 def _without_dialogue_state(index: dict[str, Any]) -> dict[str, Any]:
@@ -614,7 +650,9 @@ def test_fixture_schema_is_recursively_closed_ordered_and_public() -> None:
 
 
 def test_research_index_delta_is_exact_53_binding_append_without_record_or_address_drift() -> None:
-    index = _without_predicate_results(_without_dialogue_state(load_json(INDEX)))
+    index = _without_predicate_results(
+        _without_dialogue_state(_without_request_state(load_json(INDEX)))
+    )
     base = json.loads(
         subprocess.run(
             ["git", "show", f"{BASE}:manifests/research-index.json"],
@@ -677,16 +715,16 @@ def test_research_index_delta_is_exact_53_binding_append_without_record_or_addre
         "Index": "manifests/research-index.json",
         "Records": 1625,
         "Confirmed": 1625,
-        "H2Fixtures": 90,
+        "H2Fixtures": 91,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 2944,
+        "AddressBindings": 2968,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1588,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 52,
+        "ResearchDocuments": 53,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

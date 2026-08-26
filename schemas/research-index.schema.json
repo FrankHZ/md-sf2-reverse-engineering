@@ -81,7 +81,7 @@
                       "fixtureField": {
                         "type": "string",
                         "anyOf": [
-                          { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventPredicateResults|eventDialogueState)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
+                          { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventPredicateResults|eventDialogueState|eventRequestState)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
                           { "enum": [
                             "eventPredicateResults.sourceFiles.ms_map10_flag722_EntityEvents.tableEntryAddress",
                             "eventPredicateResults.sourceFiles.ms_map11_EntityEvents.tableEntryAddress",
@@ -117,6 +117,32 @@
                             "eventDialogueState.sourceFiles.ms_map63_EntityEvents.tableEntryAddress",
                             "eventDialogueState.sourceFiles.ms_map72_ZoneEvents.tableEntryAddress",
                             "eventDialogueState.sourceFiles.ms_map77_Section5.tableEntryAddress"
+                          ] },
+                          { "enum": [
+                            "eventRequestState.sourceFiles.ms_map10_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map13_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map13_flag513_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map15_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map16_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map16_flag530_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map16_ZoneEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map2_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map22_ZoneEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map25_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map29_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map3_flag609_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map31_flag830_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map38_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map5_flag530_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map6_flag701_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map66_ZoneEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map69_ZoneEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map70_ZoneEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map74_ZoneEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map76_ZoneEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map77_ZoneEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map8_EntityEvents.tableEntryAddress",
+                            "eventRequestState.sourceFiles.ms_map9_EntityEvents.tableEntryAddress"
                           ] },
                           { "enum": [
                             "actionCompletionSpine.functionAddresses.WriteBattlesceneScript",

@@ -1091,6 +1091,15 @@ table-owner joins, 22 source identities, 414/374 operation and 72/64 label shape
 owned by [`map-event-dialogue-state.md`](./map-event-dialogue-state.md). It does not establish runtime
 reachability, displayed text, portrait/audio behavior, timing, persistence, or story meaning.
 
+**Confirmed — retained map-event request-state join:**
+`sf2-map-event-request-state-static-v1` selects the 39 entity/zone contexts that directly write one
+of six source-defined request-state symbols. It retains their complete 262-operation caller-local CFG,
+45 source writes, 31 alias-aware `j_ShopMenu → ShopMenu` transfer sites, 36 returns, and source-defined
+may/must reaching definitions at all 67 handoffs without entering a callee. It does not establish
+request consumption, menu outcome, map transition, timing, persistence, normal-story reachability, or
+story meaning; those remain the grouped Unknown boundary in
+[`map-event-request-state.md`](./map-event-request-state.md).
+
 **Confirmed (bounded H3):** `sf2-map-script-control-audio-runtime-v1` runs six RAM-owned streams in
 one BizHawk 2.11.1 / Genesis Plus GX Map Test 0 launch through the unmodified `ExecuteMapScript` loop.
 The observer confirms the normal `csWait` D0=1 call's one `WaitForVInt` entry and the debug

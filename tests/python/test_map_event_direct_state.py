@@ -28,6 +28,8 @@ PREDICATE_FIXTURE_ID = "sf2-map-event-predicate-results-static-v1"
 PREDICATE_DOCUMENT = "docs/research/map-event-predicate-results.md"
 _DIALOGUE_STATE_FIXTURE_ID = "sf2-map-event-dialogue-state-static-v1"
 _DIALOGUE_STATE_DOCUMENT = "docs/research/map-event-dialogue-state.md"
+_REQUEST_STATE_FIXTURE_ID = "sf2-map-event-request-state-static-v1"
+_REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
 _DIALOGUE_STATE_OWNER_IDS = {
     "map.data.ms-map3-flag506-entityevents",
     "map.data.ms-map3-zoneevents",
@@ -87,6 +89,40 @@ EXPECTED_INDEX_BINDINGS = {
     "map.data.ms-map37-section5": "ms_map37_Section5",
     "map.data.ms-map77-section5": "ms_map77_Section5",
 }
+
+
+def _without_request_state(index):
+    normalized = deepcopy(index)
+    removed: set[str] = set()
+    for record in normalized["records"]:
+        evidence = [
+            item for item in record["evidence"] if item["fixtureId"] == _REQUEST_STATE_FIXTURE_ID
+        ]
+        if not evidence:
+            continue
+        assert evidence == [
+            {
+                "level": "H2",
+                "fixture": "tests/fixtures/h2/map-event-request-state-static-v1.json",
+                "fixtureId": _REQUEST_STATE_FIXTURE_ID,
+                "verifier": "src/sf2tool/h2/map_event_request_state.py",
+                "bindings": [
+                    {
+                        "addressId": "entry",
+                        "fixtureField": (
+                            "eventRequestState.sourceFiles."
+                            f"{record['symbol']}.tableEntryAddress"
+                        ),
+                    }
+                ],
+            }
+        ]
+        assert record["documents"][-1] == _REQUEST_STATE_DOCUMENT
+        record["evidence"].remove(evidence[0])
+        record["documents"].pop()
+        removed.add(record["id"])
+    assert len(removed) == 24
+    return normalized
 
 
 def _without_dialogue_state(index: dict[str, object]) -> dict[str, object]:
@@ -343,7 +379,9 @@ def test_fixture_schema_is_closed_and_rejects_private_or_runtime_fields() -> Non
 
 
 def test_research_index_adds_exact_direct_state_bindings_without_object_drift() -> None:
-    index = _without_predicate_results(_without_dialogue_state(load_json(INDEX)))
+    index = _without_predicate_results(
+        _without_dialogue_state(_without_request_state(load_json(INDEX)))
+    )
     normalized = deepcopy(index)
     removed_handoff_records: set[str] = set()
     for record in normalized["records"]:

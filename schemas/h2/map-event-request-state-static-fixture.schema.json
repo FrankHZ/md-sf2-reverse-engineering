@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "sourceContext", "retainedOwners", "eventRequestState", "unknowns", "summary"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "id": {"const": "sf2-map-event-request-state-static-v1"},
+    "upstream": {"$ref": "#/$defs/upstream"},
+    "romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
+    "sourceContext": {"$ref": "#/$defs/sourceContext"},
+    "retainedOwners": {"$ref": "#/$defs/retainedOwners"},
+    "eventRequestState": {"$ref": "#/$defs/eventRequestState"},
+    "unknowns": {"$ref": "#/$defs/unknowns"},
+    "summary": {"$ref": "#/$defs/summary"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "upstream": {
+      "type": "object", "additionalProperties": false, "required": ["repository", "commit"],
+      "properties": {"repository": {"const": "ShiningForceCentral/SF2DISASM"}, "commit": {"const": "c834c652b6862bc5679fd7f69a38a7093206efc6"}}
+    },
+    "sourceIdentity": {
+      "type": "object", "additionalProperties": false, "required": ["path", "sha256"],
+      "properties": {"path": {"type": "string", "pattern": "^(?!.*(?:local|\\\\)).+\\.asm$"}, "sha256": {"$ref": "#/$defs/sha256"}}
+    },
+    "anchor": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "kind", "romPc", "instructionByteLength", "h1InstructionSha256", "romInstructionSha256"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^operation:[0-9A-F]{6}$"},
+        "kind": {"const": "target-program-operation"},
+        "romPc": {"type": "integer", "minimum": 0, "maximum": 2097151},
+        "instructionByteLength": {"type": "integer", "minimum": 2, "maximum": 16},
+        "h1InstructionSha256": {"$ref": "#/$defs/sha256"},
+        "romInstructionSha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "sourceContext": {
+      "type": "object", "additionalProperties": false, "required": ["h1Listing", "sourceIdentities", "anchors"],
+      "properties": {
+        "h1Listing": {"type": "object", "additionalProperties": false, "required": ["path", "sha256"], "properties": {"path": {"const": "build/sf2build-h1.lst"}, "sha256": {"$ref": "#/$defs/sha256"}}},
+        "sourceIdentities": {"type": "array", "minItems": 27, "maxItems": 27, "items": {"$ref": "#/$defs/sourceIdentity"}},
+        "anchors": {"type": "array", "minItems": 262, "maxItems": 262, "items": {"$ref": "#/$defs/anchor"}}
+      }
+    },
+    "retainedOwner": {
+      "type": "object", "additionalProperties": false, "required": ["fixtureId", "fixtureSha256", "outputSha256"],
+      "properties": {"fixtureId": {"type": "string", "pattern": "^sf2-"}, "fixtureSha256": {"$ref": "#/$defs/sha256"}, "outputSha256": {"$ref": "#/$defs/sha256"}}
+    },
+    "retainedOwners": {
+      "type": "object", "additionalProperties": false, "required": ["mapEvents", "directState", "directControl", "directHandoff", "predicateResults", "dialogueState"],
+      "properties": {"mapEvents": {"$ref": "#/$defs/retainedOwner"}, "directState": {"$ref": "#/$defs/retainedOwner"}, "directControl": {"$ref": "#/$defs/retainedOwner"}, "directHandoff": {"$ref": "#/$defs/retainedOwner"}, "predicateResults": {"$ref": "#/$defs/retainedOwner"}, "dialogueState": {"$ref": "#/$defs/retainedOwner"}}
+    },
+    "symbol": {"enum": ["CURRENT_SHOP_INDEX", "MAP_EVENT_TYPE", "EGRESS_MAP", "RAFT_MAP", "RAFT_X", "RAFT_Y"]},
+    "symbolDefinition": {
+      "type": "object", "additionalProperties": false, "required": ["symbol", "address", "sourcePath", "sourceLine"],
+      "properties": {"symbol": {"$ref": "#/$defs/symbol"}, "address": {"type": "integer", "minimum": 0, "maximum": 16777215}, "sourcePath": {"const": "sf2const.asm"}, "sourceLine": {"type": "integer", "minimum": 1}}
+    },
+    "label": {
+      "type": "object", "additionalProperties": false, "required": ["sourceOrder", "symbol", "romPc"],
+      "properties": {"sourceOrder": {"type": "integer", "minimum": 0}, "symbol": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"}, "romPc": {"type": "integer", "minimum": 0, "maximum": 2097151}}
+    },
+    "definitionId": {"type": "string", "pattern": "^write:[0-9A-F]{6}:(?:CURRENT_SHOP_INDEX|MAP_EVENT_TYPE|EGRESS_MAP|RAFT_MAP|RAFT_X|RAFT_Y)$"},
+    "operation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourceOrder", "sourceLine", "romPc", "family", "sourceMnemonic", "mnemonic", "sizeSuffix", "operandCount", "controlFlowKind", "instructionTargetAddress", "effectiveTargetAddress", "operandTexts", "definitionIds"],
+      "properties": {
+        "sourceOrder": {"type": "integer", "minimum": 0}, "sourceLine": {"type": "integer", "minimum": 1}, "romPc": {"type": "integer", "minimum": 0, "maximum": 2097151},
+        "family": {"enum": ["event-service-macro", "raw-68000-control-flow", "raw-68000-instruction"]}, "sourceMnemonic": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*(?:\\.[A-Za-z])?$"}, "mnemonic": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "sizeSuffix": {"type": ["string", "null"], "enum": [".b", ".w", ".l", ".s", null]}, "operandCount": {"type": "integer", "minimum": 0, "maximum": 2}, "controlFlowKind": {"enum": ["ordinary", "conditional-branch", "unconditional-branch", "direct-call", "direct-jump", "return"]},
+        "instructionTargetAddress": {"type": ["integer", "null"], "minimum": 0, "maximum": 2097151}, "effectiveTargetAddress": {"type": ["integer", "null"], "minimum": 0, "maximum": 2097151}, "operandTexts": {"type": "array", "minItems": 0, "maxItems": 2, "items": {"type": "string"}}, "definitionIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/definitionId"}}
+      }
+    },
+    "edge": {
+      "type": "object", "additionalProperties": false, "required": ["fromSourceOrder", "role", "toSourceOrder", "externalTargetAddress"],
+      "properties": {"fromSourceOrder": {"type": "integer", "minimum": 0}, "role": {"enum": ["fallthrough", "taken", "transfer"]}, "toSourceOrder": {"type": ["integer", "null"], "minimum": 0}, "externalTargetAddress": {"type": ["integer", "null"], "minimum": 0, "maximum": 2097151}}
+    },
+    "programFlow": {
+      "type": "object", "additionalProperties": false, "required": ["category", "programSymbol", "programEntryAddress", "tableSymbol", "sourcePath", "labels", "operations", "edges"],
+      "properties": {"category": {"enum": ["entityEvents", "zoneEvents"]}, "programSymbol": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"}, "programEntryAddress": {"type": "integer", "minimum": 0, "maximum": 2097151}, "tableSymbol": {"type": "string", "pattern": "^ms_map"}, "sourcePath": {"type": "string", "pattern": "^data/maps/entries/"}, "labels": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/label"}}, "operations": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/operation"}}, "edges": {"type": "array", "items": {"$ref": "#/$defs/edge"}}}
+    },
+    "writeDefinitionSite": {
+      "type": "object", "additionalProperties": false,
+      "required": ["siteOrder", "id", "category", "programSymbol", "programEntryAddress", "tableSymbol", "sourcePath", "sourceOrder", "sourceLine", "romPc", "mnemonic", "width", "operandTexts", "accessOperandIndex", "symbol", "address", "valueKind", "valueToken", "resolvedValue"],
+      "properties": {"siteOrder": {"type": "integer", "minimum": 0}, "id": {"$ref": "#/$defs/definitionId"}, "category": {"enum": ["entityEvents", "zoneEvents"]}, "programSymbol": {"type": "string"}, "programEntryAddress": {"type": "integer", "minimum": 0, "maximum": 2097151}, "tableSymbol": {"type": "string", "pattern": "^ms_map"}, "sourcePath": {"type": "string", "pattern": "^data/maps/entries/"}, "sourceOrder": {"type": "integer", "minimum": 0}, "sourceLine": {"type": "integer", "minimum": 1}, "romPc": {"type": "integer", "minimum": 0, "maximum": 2097151}, "mnemonic": {"const": "move"}, "width": {"enum": ["b", "w", "l"]}, "operandTexts": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string"}}, "accessOperandIndex": {"const": 1}, "symbol": {"$ref": "#/$defs/symbol"}, "address": {"type": "integer", "minimum": 0, "maximum": 16777215}, "valueKind": {"enum": ["immediate-enum", "immediate-number"]}, "valueToken": {"type": "string", "pattern": "^#"}, "resolvedValue": {"type": "integer", "minimum": 0, "maximum": 16777215}}
+    },
+    "state": {
+      "type": "object", "additionalProperties": false, "required": ["symbol", "mayDefinitionIds", "mustDefinitionIds"],
+      "properties": {"symbol": {"$ref": "#/$defs/symbol"}, "mayDefinitionIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/definitionId"}}, "mustDefinitionIds": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/definitionId"}}}
+    },
+    "handoffStateSite": {
+      "type": "object", "additionalProperties": false,
+      "required": ["siteOrder", "kind", "transferKind", "category", "programSymbol", "programEntryAddress", "tableSymbol", "sourcePath", "sourceOrder", "sourceLine", "romPc", "instructionTargetSymbol", "instructionTargetAddress", "effectiveTargetSymbol", "effectiveTargetAddress", "state"],
+      "properties": {"siteOrder": {"type": "integer", "minimum": 0}, "kind": {"enum": ["shop-menu-transfer", "program-return"]}, "transferKind": {"enum": ["direct-call", "direct-jump", "return"]}, "category": {"enum": ["entityEvents", "zoneEvents"]}, "programSymbol": {"type": "string"}, "programEntryAddress": {"type": "integer", "minimum": 0, "maximum": 2097151}, "tableSymbol": {"type": "string", "pattern": "^ms_map"}, "sourcePath": {"type": "string", "pattern": "^data/maps/entries/"}, "sourceOrder": {"type": "integer", "minimum": 0}, "sourceLine": {"type": "integer", "minimum": 1}, "romPc": {"type": "integer", "minimum": 0, "maximum": 2097151}, "instructionTargetSymbol": {"type": ["string", "null"]}, "instructionTargetAddress": {"type": ["integer", "null"], "minimum": 0, "maximum": 2097151}, "effectiveTargetSymbol": {"type": ["string", "null"]}, "effectiveTargetAddress": {"type": ["integer", "null"], "minimum": 0, "maximum": 2097151}, "state": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/state"}}}
+    },
+    "sourceFile": {
+      "type": "object", "additionalProperties": false, "required": ["category", "tableSymbol", "tableEntryAddress", "sourcePath"],
+      "properties": {"category": {"enum": ["entityEvents", "zoneEvents"]}, "tableSymbol": {"type": "string", "pattern": "^ms_map"}, "tableEntryAddress": {"type": "integer", "minimum": 0, "maximum": 2097151}, "sourcePath": {"type": "string", "pattern": "^data/maps/entries/"}}
+    },
+    "digests": {
+      "type": "object", "additionalProperties": false, "required": ["programFlowsSha256", "writeDefinitionSitesSha256", "handoffStateSitesSha256"],
+      "properties": {"programFlowsSha256": {"$ref": "#/$defs/sha256"}, "writeDefinitionSitesSha256": {"$ref": "#/$defs/sha256"}, "handoffStateSitesSha256": {"$ref": "#/$defs/sha256"}}
+    },
+    "eventRequestState": {
+      "type": "object", "additionalProperties": false,
+      "required": ["symbolDefinitions", "symbolDefinitionOrder", "programFlows", "programFlowOrder", "writeDefinitionSites", "writeDefinitionSiteOrder", "handoffStateSites", "handoffStateSiteOrder", "sourceFiles", "sourceFileOrder", "digests"],
+      "properties": {
+        "symbolDefinitions": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/symbolDefinition"}}, "symbolDefinitionOrder": {"const": ["CURRENT_SHOP_INDEX:16758482", "MAP_EVENT_TYPE:16754762", "EGRESS_MAP:16774937", "RAFT_MAP:16774931", "RAFT_X:16774932", "RAFT_Y:16774933"]},
+        "programFlows": {"type": "array", "minItems": 39, "maxItems": 39, "items": {"$ref": "#/$defs/programFlow"}}, "programFlowOrder": {"const": ["entityEvents|Map10_EntityEvent2|355824", "entityEvents|Map10_EntityEvent9|355894", "entityEvents|Map13_EntityEvent4|360592", "entityEvents|Map13_EntityEvent5|360606", "entityEvents|Map13_201_EntityEvent9|360866", "entityEvents|Map15_EntityEvent9|380792", "entityEvents|Map15_EntityEvent11|380814", "entityEvents|Map16_212_EntityEvent9|397546", "entityEvents|Map16_212_EntityEvent15|397614", "entityEvents|Map16_297_EntityEvent7|335486", "entityEvents|Map16_297_EntityEvent16|335572", "entityEvents|Map25_EntityEvent5|381562", "entityEvents|Map25_EntityEvent7|381674", "entityEvents|Map29_EntityEvent2|368924", "entityEvents|Map2_EntityEvent7|387492", "entityEvents|Map2_EntityEvent8|387506", "entityEvents|Map31_33E_EntityEvent1|382164", "entityEvents|Map31_33E_EntityEvent9|382274", "entityEvents|Map38_EntityEvent12|384172", "entityEvents|Map38_EntityEvent13|384186", "entityEvents|Map3_261_EntityEvent3|332026", "entityEvents|Map3_261_EntityEvent26|332220", "entityEvents|Map5_212_EntityEvent3|394344", "entityEvents|Map6_EntityEvent0|346560", "entityEvents|Map6_EntityEvent5|346840", "entityEvents|Map8_2C4_EntityEvent6|352482", "entityEvents|Map8_2C4_EntityEvent13|352550", "entityEvents|Map9_EntityEvent5|354152", "entityEvents|Map9_EntityEvent6|354166", "entityEvents|Map9_EntityEvent11|354264", "zoneEvents|Map16_ZoneEvent1|335618", "zoneEvents|Map22_ZoneEvent0|366056", "zoneEvents|Map66_ZoneEvent0|326304", "zoneEvents|Map66_ZoneEvent2|326330", "zoneEvents|Map69_DefaultZoneEvent|327102", "zoneEvents|Map70_DefaultZoneEvent|327198", "zoneEvents|Map74_ZoneEvent0|330124", "zoneEvents|Map76_DefaultZoneEvent|330280", "zoneEvents|Map77_DefaultZoneEvent|330350"]},
+        "writeDefinitionSites": {"type": "array", "minItems": 45, "maxItems": 45, "items": {"$ref": "#/$defs/writeDefinitionSite"}}, "writeDefinitionSiteOrder": {"const": ["write:056DF0:CURRENT_SHOP_INDEX", "write:056E36:CURRENT_SHOP_INDEX", "write:058090:CURRENT_SHOP_INDEX", "write:05809E:CURRENT_SHOP_INDEX", "write:0581F2:RAFT_MAP", "write:0581F8:RAFT_X", "write:0581FE:RAFT_Y", "write:05CF78:CURRENT_SHOP_INDEX", "write:05CF8E:CURRENT_SHOP_INDEX", "write:0610EA:CURRENT_SHOP_INDEX", "write:06112E:CURRENT_SHOP_INDEX", "write:051E7E:CURRENT_SHOP_INDEX", "write:051ED4:CURRENT_SHOP_INDEX", "write:05D2C4:CURRENT_SHOP_INDEX", "write:05D32A:CURRENT_SHOP_INDEX", "write:05A11C:CURRENT_SHOP_INDEX", "write:05E9A4:CURRENT_SHOP_INDEX", "write:05E9B2:CURRENT_SHOP_INDEX", "write:05D4D4:CURRENT_SHOP_INDEX", "write:05D542:CURRENT_SHOP_INDEX", "write:05DCAC:CURRENT_SHOP_INDEX", "write:05DCBA:CURRENT_SHOP_INDEX", "write:0510FA:CURRENT_SHOP_INDEX", "write:0511BC:CURRENT_SHOP_INDEX", "write:060468:CURRENT_SHOP_INDEX", "write:0549DE:CURRENT_SHOP_INDEX", "write:0549FA:CURRENT_SHOP_INDEX", "write:054B02:CURRENT_SHOP_INDEX", "write:054B22:CURRENT_SHOP_INDEX", "write:0560E2:CURRENT_SHOP_INDEX", "write:056126:CURRENT_SHOP_INDEX", "write:05612C:CURRENT_SHOP_INDEX", "write:056768:CURRENT_SHOP_INDEX", "write:056776:CURRENT_SHOP_INDEX", "write:0567D8:CURRENT_SHOP_INDEX", "write:051F08:EGRESS_MAP", "write:0595F4:EGRESS_MAP", "write:04FAB0:MAP_EVENT_TYPE", "write:04FACA:MAP_EVENT_TYPE", "write:04FDC8:MAP_EVENT_TYPE", "write:04FE28:MAP_EVENT_TYPE", "write:050996:MAP_EVENT_TYPE", "write:0509BC:MAP_EVENT_TYPE", "write:050A32:MAP_EVENT_TYPE", "write:050A78:MAP_EVENT_TYPE"]},
+        "handoffStateSites": {"type": "array", "minItems": 67, "maxItems": 67, "items": {"$ref": "#/$defs/handoffStateSite"}}, "handoffStateSiteOrder": {"const": ["shop-menu-transfer|entityEvents|Map10_EntityEvent2|355824|355830", "program-return|entityEvents|Map10_EntityEvent2|355824|355836", "shop-menu-transfer|entityEvents|Map10_EntityEvent9|355894|355900", "program-return|entityEvents|Map10_EntityEvent9|355894|355906", "shop-menu-transfer|entityEvents|Map13_EntityEvent4|360592|360598", "program-return|entityEvents|Map13_EntityEvent4|360592|360604", "shop-menu-transfer|entityEvents|Map13_EntityEvent5|360606|360612", "program-return|entityEvents|Map13_EntityEvent5|360606|360618", "program-return|entityEvents|Map13_201_EntityEvent9|360866|360982", "shop-menu-transfer|entityEvents|Map15_EntityEvent9|380792|380798", "program-return|entityEvents|Map15_EntityEvent9|380792|380804", "shop-menu-transfer|entityEvents|Map15_EntityEvent11|380814|380820", "program-return|entityEvents|Map15_EntityEvent11|380814|380826", "shop-menu-transfer|entityEvents|Map16_212_EntityEvent9|397546|397552", "program-return|entityEvents|Map16_212_EntityEvent9|397546|397558", "shop-menu-transfer|entityEvents|Map16_212_EntityEvent15|397614|397620", "program-return|entityEvents|Map16_212_EntityEvent15|397614|397626", "shop-menu-transfer|entityEvents|Map16_297_EntityEvent7|335486|335492", "program-return|entityEvents|Map16_297_EntityEvent7|335486|335498", "shop-menu-transfer|entityEvents|Map16_297_EntityEvent16|335572|335578", "program-return|entityEvents|Map16_297_EntityEvent16|335572|335584", "shop-menu-transfer|entityEvents|Map25_EntityEvent5|381562|381642", "program-return|entityEvents|Map25_EntityEvent5|381562|381648", "shop-menu-transfer|entityEvents|Map25_EntityEvent7|381674|381744", "program-return|entityEvents|Map25_EntityEvent7|381674|381750", "shop-menu-transfer|entityEvents|Map29_EntityEvent2|368924|368930", "shop-menu-transfer|entityEvents|Map2_EntityEvent7|387492|387498", "program-return|entityEvents|Map2_EntityEvent7|387492|387504", "shop-menu-transfer|entityEvents|Map2_EntityEvent8|387506|387512", "program-return|entityEvents|Map2_EntityEvent8|387506|387518", "shop-menu-transfer|entityEvents|Map31_33E_EntityEvent1|382164|382170", "program-return|entityEvents|Map31_33E_EntityEvent1|382164|382176", "shop-menu-transfer|entityEvents|Map31_33E_EntityEvent9|382274|382280", "program-return|entityEvents|Map31_33E_EntityEvent9|382274|382286", "shop-menu-transfer|entityEvents|Map38_EntityEvent12|384172|384178", "program-return|entityEvents|Map38_EntityEvent12|384172|384184", "shop-menu-transfer|entityEvents|Map38_EntityEvent13|384186|384192", "program-return|entityEvents|Map38_EntityEvent13|384186|384198", "shop-menu-transfer|entityEvents|Map3_261_EntityEvent3|332026|332032", "program-return|entityEvents|Map3_261_EntityEvent3|332026|332038", "shop-menu-transfer|entityEvents|Map3_261_EntityEvent26|332220|332226", "program-return|entityEvents|Map3_261_EntityEvent26|332220|332232", "shop-menu-transfer|entityEvents|Map5_212_EntityEvent3|394344|394350", "program-return|entityEvents|Map5_212_EntityEvent3|394344|394356", "shop-menu-transfer|entityEvents|Map6_EntityEvent0|346560|346596", "shop-menu-transfer|entityEvents|Map6_EntityEvent0|346560|346624", "program-return|entityEvents|Map6_EntityEvent0|346560|346636", "shop-menu-transfer|entityEvents|Map6_EntityEvent5|346840|346888", "shop-menu-transfer|entityEvents|Map6_EntityEvent5|346840|346920", "program-return|entityEvents|Map6_EntityEvent5|346840|346932", "shop-menu-transfer|entityEvents|Map8_2C4_EntityEvent6|352482|352488", "shop-menu-transfer|entityEvents|Map8_2C4_EntityEvent13|352550|352562", "shop-menu-transfer|entityEvents|Map9_EntityEvent5|354152|354158", "program-return|entityEvents|Map9_EntityEvent5|354152|354164", "shop-menu-transfer|entityEvents|Map9_EntityEvent6|354166|354172", "program-return|entityEvents|Map9_EntityEvent6|354166|354178", "shop-menu-transfer|entityEvents|Map9_EntityEvent11|354264|354270", "program-return|entityEvents|Map9_EntityEvent11|354264|354276", "program-return|zoneEvents|Map16_ZoneEvent1|335618|335654", "program-return|zoneEvents|Map22_ZoneEvent0|366056|366080", "program-return|zoneEvents|Map66_ZoneEvent0|326304|326328", "program-return|zoneEvents|Map66_ZoneEvent2|326330|326354", "program-return|zoneEvents|Map69_DefaultZoneEvent|327102|327120", "program-return|zoneEvents|Map70_DefaultZoneEvent|327198|327216", "program-return|zoneEvents|Map74_ZoneEvent0|330124|330180", "program-return|zoneEvents|Map76_DefaultZoneEvent|330280|330298", "program-return|zoneEvents|Map77_DefaultZoneEvent|330350|330368"]},
+        "sourceFiles": {"type": "object", "propertyNames": {"enum": ["ms_map10_EntityEvents", "ms_map13_EntityEvents", "ms_map13_flag513_EntityEvents", "ms_map15_EntityEvents", "ms_map16_EntityEvents", "ms_map16_flag530_EntityEvents", "ms_map16_ZoneEvents", "ms_map2_EntityEvents", "ms_map22_ZoneEvents", "ms_map25_EntityEvents", "ms_map29_EntityEvents", "ms_map3_flag609_EntityEvents", "ms_map31_flag830_EntityEvents", "ms_map38_EntityEvents", "ms_map5_flag530_EntityEvents", "ms_map6_flag701_EntityEvents", "ms_map66_ZoneEvents", "ms_map69_ZoneEvents", "ms_map70_ZoneEvents", "ms_map74_ZoneEvents", "ms_map76_ZoneEvents", "ms_map77_ZoneEvents", "ms_map8_EntityEvents", "ms_map9_EntityEvents"]}, "minProperties": 24, "maxProperties": 24, "additionalProperties": {"$ref": "#/$defs/sourceFile"}},
+        "sourceFileOrder": {"const": ["entityEvents|ms_map2_EntityEvents|387384", "entityEvents|ms_map3_flag609_EntityEvents|331868", "entityEvents|ms_map5_flag530_EntityEvents|394298", "entityEvents|ms_map6_flag701_EntityEvents|346500", "entityEvents|ms_map8_EntityEvents|352388", "entityEvents|ms_map9_EntityEvents|354082", "entityEvents|ms_map10_EntityEvents|355712", "entityEvents|ms_map13_EntityEvents|360478", "entityEvents|ms_map13_flag513_EntityEvents|360780", "entityEvents|ms_map15_EntityEvents|380650", "entityEvents|ms_map16_EntityEvents|335410", "entityEvents|ms_map16_flag530_EntityEvents|397400", "zoneEvents|ms_map16_ZoneEvents|335588", "zoneEvents|ms_map22_ZoneEvents|366046", "entityEvents|ms_map25_EntityEvents|381476", "entityEvents|ms_map29_EntityEvents|368880", "entityEvents|ms_map31_flag830_EntityEvents|382110", "entityEvents|ms_map38_EntityEvents|383862", "zoneEvents|ms_map66_ZoneEvents|326288", "zoneEvents|ms_map69_ZoneEvents|327074", "zoneEvents|ms_map70_ZoneEvents|327166", "zoneEvents|ms_map74_ZoneEvents|330116", "zoneEvents|ms_map76_ZoneEvents|330276", "zoneEvents|ms_map77_ZoneEvents|330346"]}, "digests": {"$ref": "#/$defs/digests"}
+      }
+    },
+    "unknowns": {
+      "type": "object", "additionalProperties": false,
+      "required": ["normalStoryProgramReachability", "selectedControlFlowPath", "callerEntryState", "actualRequestWriteOrder", "actualDefinitionAtHandoff", "actualShopSelection", "actualShopMenuEntryAndOutcome", "actualEgressDestination", "actualRaftDestinationAndCoordinates", "actualMapEventReloadRequestConsumption", "actualProgramReturnState", "crossMapStateLifetime", "saveLoadPersistence", "inputUiMapTransitionAudioTimingAndStoryMeaning"],
+      "properties": {"normalStoryProgramReachability": {"const": "Unknown"}, "selectedControlFlowPath": {"const": "Unknown"}, "callerEntryState": {"const": "Unknown"}, "actualRequestWriteOrder": {"const": "Unknown"}, "actualDefinitionAtHandoff": {"const": "Unknown"}, "actualShopSelection": {"const": "Unknown"}, "actualShopMenuEntryAndOutcome": {"const": "Unknown"}, "actualEgressDestination": {"const": "Unknown"}, "actualRaftDestinationAndCoordinates": {"const": "Unknown"}, "actualMapEventReloadRequestConsumption": {"const": "Unknown"}, "actualProgramReturnState": {"const": "Unknown"}, "crossMapStateLifetime": {"const": "Unknown"}, "saveLoadPersistence": {"const": "Unknown"}, "inputUiMapTransitionAudioTimingAndStoryMeaning": {"const": "Unknown"}}
+    },
+    "summary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["motherProgramContextCount", "motherOperationCount", "positiveProgramContextCount", "zeroProgramContextCount", "entityProgramContextCount", "zoneProgramContextCount", "sourceFileCount", "sourceIdentityCount", "symbolDefinitionCount", "contextOperationCount", "physicalOperationCount", "contextLabelCount", "physicalLabelCount", "ordinaryOperationCount", "conditionalBranchCount", "unconditionalBranchCount", "directCallCount", "directJumpCount", "returnCount", "writeDefinitionSiteCount", "currentShopIndexWriteCount", "mapEventTypeWriteCount", "egressMapWriteCount", "raftMapWriteCount", "raftXWriteCount", "raftYWriteCount", "uniqueSourceOperandCount", "enumSourceOperandCount", "numericSourceOperandCount", "shopMenuTransferSiteCount", "shopMenuReturningCallCount", "shopMenuTailJumpCount", "returnStateSiteCount", "handoffStateSiteCount", "handoffStateRelationCount", "h1RomAnchorCount"],
+      "properties": {"motherProgramContextCount": {"const": 914}, "motherOperationCount": {"const": 3579}, "positiveProgramContextCount": {"const": 39}, "zeroProgramContextCount": {"const": 875}, "entityProgramContextCount": {"const": 30}, "zoneProgramContextCount": {"const": 9}, "sourceFileCount": {"const": 24}, "sourceIdentityCount": {"const": 27}, "symbolDefinitionCount": {"const": 6}, "contextOperationCount": {"const": 262}, "physicalOperationCount": {"const": 262}, "contextLabelCount": {"const": 82}, "physicalLabelCount": {"const": 82}, "ordinaryOperationCount": {"const": 139}, "conditionalBranchCount": {"const": 34}, "unconditionalBranchCount": {"const": 21}, "directCallCount": {"const": 29}, "directJumpCount": {"const": 3}, "returnCount": {"const": 36}, "writeDefinitionSiteCount": {"const": 45}, "currentShopIndexWriteCount": {"const": 32}, "mapEventTypeWriteCount": {"const": 8}, "egressMapWriteCount": {"const": 2}, "raftMapWriteCount": {"const": 1}, "raftXWriteCount": {"const": 1}, "raftYWriteCount": {"const": 1}, "uniqueSourceOperandCount": {"const": 37}, "enumSourceOperandCount": {"const": 35}, "numericSourceOperandCount": {"const": 2}, "shopMenuTransferSiteCount": {"const": 31}, "shopMenuReturningCallCount": {"const": 28}, "shopMenuTailJumpCount": {"const": 3}, "returnStateSiteCount": {"const": 36}, "handoffStateSiteCount": {"const": 67}, "handoffStateRelationCount": {"const": 69}, "h1RomAnchorCount": {"const": 262}}
+    }
+  }
+}
