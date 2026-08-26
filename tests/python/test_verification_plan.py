@@ -130,7 +130,7 @@ def _expected_artifact_commands(
 def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
     assert set(H2_COMMAND_PARTITIONS) == _registered_commands("h2_commands")
     assert set(COMMAND_LAUNCHES) == _registered_commands("h3_commands")
-    assert len(H2_COMMAND_PARTITIONS) == 83
+    assert len(H2_COMMAND_PARTITIONS) == 84
     assert len(COMMAND_LAUNCHES) == 74
     assert len({partition.partition_id for partition in PARTITIONS}) == len(PARTITIONS)
     assert len(H2_PARTITION_IDS) == 6
@@ -249,6 +249,7 @@ def test_h2_manifest_selects_its_declared_owner_command() -> None:
 
     assert _partition_ids(plan) == {"public-core", "h2-map-scripting"}
     assert _partition(plan, "h2-map-scripting")["commands"] == [
+        "uv run sf2 h2 map-event-dialogue-state",
         "uv run sf2 h2 map-event-direct-control",
         "uv run sf2 h2 map-event-direct-handoff",
         "uv run sf2 h2 map-event-direct-state",
@@ -305,6 +306,23 @@ def test_map_event_direct_handoff_artifacts_select_only_the_handoff_command() ->
     assert _partition_ids(plan) == {"public-core", "h2-map-scripting"}
     assert _partition(plan, "h2-map-scripting")["commands"] == [
         "uv run sf2 h2 map-event-direct-handoff"
+    ]
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_map_event_dialogue_state_artifacts_select_only_its_command() -> None:
+    plan = plan_paths(
+        (
+            "src/sf2tool/h2/map_event_dialogue_state.py",
+            "schemas/h2/map-event-dialogue-state-static-fixture.schema.json",
+            "tests/fixtures/h2/map-event-dialogue-state-static-v1.json",
+        ),
+        root=ROOT,
+    )
+
+    assert _partition_ids(plan) == {"public-core", "h2-map-scripting"}
+    assert _partition(plan, "h2-map-scripting")["commands"] == [
+        "uv run sf2 h2 map-event-dialogue-state"
     ]
     assert plan["unclassifiedPaths"] == []
 

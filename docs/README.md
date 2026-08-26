@@ -267,6 +267,9 @@ Data-side directory inventory and ROM parity:
   raw-68000 direct-call/tail-transfer topology in the retained map-event program corpus, including
   alias-aware effective targets, callee-entry owners, lexical continuations, physical-PC
   deduplication, and grouped runtime Unknowns.
+- [`map-event-dialogue-state.md`](./research/map-event-dialogue-state.md): the 24-program static
+  dialogue-state/control-flow relation, its five fixed-state symbols, text/close reaching definitions,
+  source/H1/ROM anchors, exact table-owner joins, and grouped runtime Unknown boundary.
 - [`map-event-direct-handoff.md`](./research/map-event-direct-handoff.md): the retained callers'
   maximal immediate raw setup groups and direct-call first lexical continuations, with source/H1/ROM
   anchors and enum joins; this adds handoff depth without re-owning transfer topology or callee bodies.
