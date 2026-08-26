@@ -2223,6 +2223,7 @@ uv run sf2 h2 map-events
 uv run sf2 h2 map-event-direct-state
 uv run sf2 h2 map-event-direct-control
 uv run sf2 h2 map-event-direct-handoff
+uv run sf2 h2 map-event-predicate-results
 uv run sf2 h2 map-descriptions
 uv run sf2 h2 map-init
 uv run sf2 h2 map-scripts

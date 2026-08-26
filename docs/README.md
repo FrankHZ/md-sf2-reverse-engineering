@@ -270,6 +270,10 @@ Data-side directory inventory and ROM parity:
 - [`map-event-direct-handoff.md`](./research/map-event-direct-handoff.md): the retained callers'
   maximal immediate raw setup groups and direct-call first lexical continuations, with source/H1/ROM
   anchors and enum joins; this adds handoff depth without re-owning transfer topology or callee bodies.
+- [`map-event-predicate-results.md`](./research/map-event-predicate-results.md): the complete static
+  non-`chkFlg` predicate-result relation in the retained map-event corpus, including source-shaped
+  compare/test/direct-CCR producer forms, alias-aware result origins, branch polarity and target/fallthrough
+  identities, physical-PC deduplication, and grouped runtime Unknowns.
 - [`map-content.md`](./research/map-content.md): the complete source/H1/ROM parity of 79 46-byte map
   entries, 662 source-form content sections, and 154 private blocks/layout payloads, the canonical
   Python decode of 77 bitstream pairs, the 1,859-resource/79-map engine-neutral import (including 64
