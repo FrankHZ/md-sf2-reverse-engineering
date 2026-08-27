@@ -274,6 +274,9 @@ Data-side directory inventory and ROM parity:
 - [`map-event-combatant-state.md`](./research/map-event-combatant-state.md): two selected zone-event
   combatant getter/setter caller chains, alias/effective targets, selector operands, and the retained
   CurrentHp predicate boundary without runtime-effect claims.
+- [`map-event-random-battle-state.md`](./research/map-event-random-battle-state.md): the static
+  `CheckRandomBattle` caller corpus, completion/step/RNG gates, request-write sequence, alias-aware
+  service entries, and grouped runtime Unknown boundary.
 - [`map-event-direct-control.md`](./research/map-event-direct-control.md): the complete caller-side
   raw-68000 direct-call/tail-transfer topology in the retained map-event program corpus, including
   alias-aware effective targets, callee-entry owners, lexical continuations, physical-PC

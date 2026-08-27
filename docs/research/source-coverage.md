@@ -20,14 +20,14 @@ It says that the file has been reached, not that every instruction in the file i
 | Metric | Current value | Meaning |
 | --- | ---: | --- |
 | Pinned ASM files | 2,106 | 387 under `disasm/code`, 1,690 under `disasm/data`, 29 root/support files |
-| Indexed findings | 1,626 | 1,589 H1-backed plus 37 Z80 music-bank records |
+| Indexed findings | 1,627 | 1,590 H1-backed plus 37 Z80 music-bank records |
 | Indexed source files | 1,398 | 381 code files and 1,017 data files |
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 95 | Deterministic source/ROM contracts, often covering complete corpora; the prior prose value 91 lagged the executable 92-fixture/2,976-binding baseline before this slice |
+| H2 fixture files | 96 | Deterministic source/ROM contracts, often covering complete corpora; the prior prose value 91 lagged the executable 92-fixture/2,976-binding baseline before this slice |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 3,019 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 3,035 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -111,6 +111,13 @@ The `sf2-field-search-control-static-v1` rail closes the 17-source, 22-anchor
 fixture: natural reachability, caller/target state, selected block/content,
 return/outcome, timing, and persistence remain an ordered 14-question
 **Unknown** register.
+
+The `sf2-map-event-random-battle-state-static-v1` rail closes seven positive/907 zero map-event
+programs as eight caller contexts in six zone tables. It anchors `CheckRandomBattle`
+`0x47856..0x478C6`, preserving the 34-source-statement/35-H1-row `sndCom` expansion boundary, its
+completion-flag and step/RNG gates, ordered request writes, and seven retained alias/service joins.
+It is H2-only: selected callers, inputs/results, presentation, downstream battle admission, and
+persistence remain a single grouped 14-question Unknown queue.
 
 ## Subsystem Boundary
 

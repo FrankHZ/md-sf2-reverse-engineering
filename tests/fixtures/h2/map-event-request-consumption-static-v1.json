@@ -30,7 +30,7 @@
     },
     "commonScripting": {
       "fixtureId": "sf2-common-scripting-static-v1",
-      "fixtureSha256": "E184BB32FAC595B6F21F58BC86A1F20F27CC22D9F57992045DE84B3DDFC622CF"
+      "fixtureSha256": "CCAB42A30157A92FC033113C6951412A06ADFE2549859CDF79D9DF025FA0EB71"
     },
     "commonMaps": {
       "fixtureId": "sf2-common-maps-static-v1",

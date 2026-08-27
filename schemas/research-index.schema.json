@@ -83,6 +83,24 @@
                         "anyOf": [
                           { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventPredicateResults|eventDialogueState|eventRequestState|eventRequestConsumption|interactionState|eventItemTransactions)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventRequestConsumption|interactionState)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
                           { "enum": [
+                            "eventRandomBattleState.functionAddresses.entryAddress",
+                            "eventRandomBattleState.completionFlagGate.callAddress",
+                            "eventRandomBattleState.requestWriteSequence.setFlagCallAddress",
+                            "eventRandomBattleState.callerSites.map66-default-battle3.tableEntryAddress",
+                            "eventRandomBattleState.callerSites.map67-default-battle21.tableEntryAddress",
+                            "eventRandomBattleState.callerSites.map68-default-battle19.tableEntryAddress",
+                            "eventRandomBattleState.callerSites.map69-event0-battle17.tableEntryAddress",
+                            "eventRandomBattleState.callerSites.map70-event0-battle14.tableEntryAddress",
+                            "eventRandomBattleState.callerSites.map72-event0-battle26.tableEntryAddress",
+                            "eventRandomBattleState.serviceEntries.j_CheckFlag.instructionTargetAddress",
+                            "eventRandomBattleState.serviceEntries.j_SetFlag.instructionTargetAddress",
+                            "eventRandomBattleState.serviceEntries.j_CheckFlag.effectiveTargetAddress",
+                            "eventRandomBattleState.serviceEntries.j_SetFlag.effectiveTargetAddress",
+                            "eventRandomBattleState.serviceEntries.GenerateRandomNumber.effectiveTargetAddress",
+                            "eventRandomBattleState.serviceEntries.WaitForViewScrollEnd.effectiveTargetAddress",
+                            "eventRandomBattleState.serviceEntries.ExecuteFlashScreenScript.effectiveTargetAddress"
+                          ] },
+                          { "enum": [
                             "eventItemTransactions.sourceFiles.ms_map6_flag701_EntityEvents.tableEntryAddress",
                             "eventItemTransactions.sourceFiles.ms_map8_Section5.tableEntryAddress",
                             "eventItemTransactions.sourceFiles.ms_map9_EntityEvents.tableEntryAddress",

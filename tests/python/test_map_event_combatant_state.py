@@ -17,6 +17,9 @@ from sf2tool.h2.map_event_combatant_state import (
 from sf2tool.h2.map_event_item_transactions import (
     normalize_map_event_item_transactions_later_owner_index,
 )
+from sf2tool.h2.map_event_random_battle_state import (
+    _remove_map_event_random_battle_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 
@@ -149,7 +152,7 @@ def _record(index: dict[str, object], record_id: str) -> dict[str, object]:
 
 
 def test_strict_later_owner_normalizer_reconstructs_only_the_exact_delta() -> None:
-    index = load_json(INDEX)
+    index = _remove_map_event_random_battle_state_later_owner_index_delta(load_json(INDEX))
     predecessor = _remove_map_event_combatant_state_later_owner_index_delta(index)
     assert len(index["records"]) - len(predecessor["records"]) == 1
     assert "stats.combatant-getters" not in {record["id"] for record in predecessor["records"]}

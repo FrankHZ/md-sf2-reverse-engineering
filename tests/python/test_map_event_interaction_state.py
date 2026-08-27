@@ -29,6 +29,9 @@ from sf2tool.h2.map_event_interaction_state import (
 from sf2tool.h2.map_event_item_transactions import (
     _remove_map_event_item_transactions_index_delta,
 )
+from sf2tool.h2.map_event_random_battle_state import (
+    _remove_map_event_random_battle_state_later_owner_index_delta,
+)
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
 
@@ -41,7 +44,11 @@ INDEX = ROOT / "manifests/research-index.json"
 def load_json(path: Path) -> dict[str, object]:
     value = _load_json(path)
     return (
-        _remove_map_event_combatant_state_later_owner_index_delta(value) if path == INDEX else value
+        _remove_map_event_combatant_state_later_owner_index_delta(
+            _remove_map_event_random_battle_state_later_owner_index_delta(value)
+        )
+        if path == INDEX
+        else value
     )
 
 
