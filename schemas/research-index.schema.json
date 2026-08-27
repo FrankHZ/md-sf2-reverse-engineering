@@ -99,6 +99,20 @@
                             "eventItemTransactions.itemEventReturnHandoff.resultTestAddress"
                           ] },
                           { "enum": [
+                            "eventCombatantState.sourceFiles.ms_map20_flag501_ZoneEvents.tableEntryAddress",
+                            "eventCombatantState.sourceFiles.ms_map67_ZoneEvents.tableEntryAddress",
+                            "eventCombatantState.serviceEntries.GetMaxMp.instructionTargetAddress",
+                            "eventCombatantState.serviceEntries.GetMaxHp.instructionTargetAddress",
+                            "eventCombatantState.serviceEntries.GetCurrentHp.instructionTargetAddress",
+                            "eventCombatantState.serviceEntries.SetCurrentMp.instructionTargetAddress",
+                            "eventCombatantState.serviceEntries.SetCurrentHp.instructionTargetAddress",
+                            "eventCombatantState.serviceEntries.GetMaxHp.effectiveEntryAddress",
+                            "eventCombatantState.serviceEntries.GetCurrentHp.effectiveEntryAddress",
+                            "eventCombatantState.serviceEntries.GetMaxMp.effectiveEntryAddress",
+                            "eventCombatantState.serviceEntries.SetCurrentMp.effectiveEntryAddress",
+                            "eventCombatantState.serviceEntries.SetCurrentHp.effectiveEntryAddress"
+                          ] },
+                          { "enum": [
                             "eventPredicateResults.sourceFiles.ms_map10_flag722_EntityEvents.tableEntryAddress",
                             "eventPredicateResults.sourceFiles.ms_map11_EntityEvents.tableEntryAddress",
                             "eventPredicateResults.sourceFiles.ms_map20_flag543_ZoneEvents.tableEntryAddress",

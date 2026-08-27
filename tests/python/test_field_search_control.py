@@ -10,8 +10,8 @@ from typing import Any
 import pytest
 
 import sf2tool.h2.field_search_control as field_search
-from sf2tool.h2.map_event_item_transactions import (
-    normalize_map_event_item_transactions_later_owner_index as normalize_later_owner_index,
+from sf2tool.h2.map_event_combatant_state import (
+    normalize_map_event_combatant_state_later_owner_index as normalize_later_owner_index,
 )
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json

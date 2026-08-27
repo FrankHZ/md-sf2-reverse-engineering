@@ -10,13 +10,13 @@ from typing import Any
 import pytest
 
 from sf2tool.cli import build_parser
+from sf2tool.h2.map_event_combatant_state import (
+    normalize_map_event_combatant_state_later_owner_index as normalize_later_owner_index,
+)
 from sf2tool.h2.map_event_direct_control import (
     _UNKNOWN_KEYS,
     _direct_control_projection,
     _mother_corpus_projection,
-)
-from sf2tool.h2.map_event_item_transactions import (
-    normalize_map_event_item_transactions_later_owner_index as normalize_later_owner_index,
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json as _load_json
@@ -627,18 +627,18 @@ def test_research_index_delta_is_exact_53_object_append_without_record_or_addres
         ]
     assert verify_index(UPSTREAM) == {
         "Index": "manifests/research-index.json",
-        "Records": 1625,
-        "Confirmed": 1625,
-        "H2Fixtures": 94,
+        "Records": 1626,
+        "Confirmed": 1626,
+        "H2Fixtures": 95,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 3007,
+        "AddressBindings": 3019,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
-        "H1ListingRecords": 1588,
+        "H1ListingRecords": 1589,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 56,
+        "ResearchDocuments": 57,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

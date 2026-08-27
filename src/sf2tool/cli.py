@@ -61,6 +61,9 @@ from sf2tool.h2.map_content import verify_map_content_contract
 from sf2tool.h2.map_data import verify_map_data_inventory
 from sf2tool.h2.map_descriptions import verify_map_descriptions_contract
 from sf2tool.h2.map_entities import verify_map_entities_contract
+from sf2tool.h2.map_event_combatant_state import (
+    verify_map_event_combatant_state_contract,
+)
 from sf2tool.h2.map_event_dialogue_state import verify_map_event_dialogue_state_contract
 from sf2tool.h2.map_event_direct_control import verify_map_event_direct_control_contract
 from sf2tool.h2.map_event_direct_handoff import verify_map_event_direct_handoff_contract
@@ -812,6 +815,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_event_item_transactions)
     h2_map_event_item_transactions.add_argument("--output-path", type=_path)
+    h2_map_event_combatant_state = h2_commands.add_parser(
+        "map-event-combatant-state",
+        help="verify static map-event combatant getter/setter caller structure",
+    )
+    _add_local_paths(h2_map_event_combatant_state)
+    h2_map_event_combatant_state.add_argument("--output-path", type=_path)
     h2_map_event_request_state = h2_commands.add_parser(
         "map-event-request-state",
         help="verify map-event request-state writes and caller-local handoff definitions",
@@ -1871,6 +1880,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-event-item-transactions":
         print_record(
             verify_map_event_item_transactions_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-event-combatant-state":
+        print_record(
+            verify_map_event_combatant_state_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

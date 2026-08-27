@@ -12,6 +12,9 @@ from shutil import copy2
 import pytest
 
 import sf2tool.h2.map_event_interaction_state as interaction_module
+from sf2tool.h2.map_event_combatant_state import (
+    _remove_map_event_combatant_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_interaction_state import (
     _FUNCTION_SPECS,
     _SEAM_SPECS,
@@ -26,11 +29,20 @@ from sf2tool.h2.map_event_interaction_state import (
 from sf2tool.h2.map_event_item_transactions import (
     _remove_map_event_item_transactions_index_delta,
 )
-from sf2tool.jsonio import load_json, validate_json
+from sf2tool.jsonio import load_json as _load_json
+from sf2tool.jsonio import validate_json
 
 ROOT = Path(__file__).resolve().parents[2]
 ROM = ROOT / "local/roms/sf2-us.bin"
 UPSTREAM = ROOT / "local/upstream/SF2DISASM"
+INDEX = ROOT / "manifests/research-index.json"
+
+
+def load_json(path: Path) -> dict[str, object]:
+    value = _load_json(path)
+    return (
+        _remove_map_event_combatant_state_later_owner_index_delta(value) if path == INDEX else value
+    )
 
 
 def _fixture() -> dict[str, object]:
@@ -65,9 +77,16 @@ def _replaced_line(path: Path, line_number: int, replacement: str) -> Iterator[N
         path.write_bytes(original)
 
 
-def test_interaction_state_projection_is_closed_and_exact() -> None:
+def test_interaction_state_projection_is_closed_and_exact(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fixture = _fixture()
     validate_json(fixture, SCHEMA, owner="map-event interaction-state fixture")
+    monkeypatch.setattr(
+        interaction_module,
+        "_fresh_retained_owners",
+        lambda _rom_path, _upstream_path: fixture["retainedOwners"],
+    )
     rebuilt = build_map_event_interaction_state_contract(ROM, UPSTREAM)
     validate_json(rebuilt, SCHEMA, owner="map-event interaction-state rebuilt contract")
     assert rebuilt == fixture
@@ -490,7 +509,7 @@ def test_index_binds_the_actual_field_menu_item_call_not_legacy_observation() ->
 
 
 def test_later_owner_normalizer_reconstructs_the_exact_closed_index_delta() -> None:
-    index = load_json(ROOT / "manifests/research-index.json")
+    index = load_json(INDEX)
     prior_index = _remove_map_event_item_transactions_index_delta(index)
     normalized = normalize_interaction_state_later_owner_index(prior_index)
 
@@ -511,7 +530,9 @@ def test_later_owner_normalizer_reconstructs_the_exact_closed_index_delta() -> N
         == 17
     )
     assert index != normalized
-    assert {record["id"] for record in index["records"]} == set(normalized_records)
+    assert {record["id"] for record in index["records"]} - {"stats.combatant-getters"} == set(
+        normalized_records
+    )
     assert (
         sum(
             len(record["addresses"]) - len(normalized_records[record_id]["addresses"])

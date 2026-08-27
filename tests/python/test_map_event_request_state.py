@@ -15,10 +15,10 @@ import pytest
 
 import sf2tool.h2.map_event_request_state as request_state_module
 from sf2tool.cli import build_parser
-from sf2tool.h2.map_event_direct_state import FIXTURE as DIRECT_STATE_FIXTURE
-from sf2tool.h2.map_event_item_transactions import (
-    normalize_map_event_item_transactions_later_owner_index as normalize_later_owner_index,
+from sf2tool.h2.map_event_combatant_state import (
+    normalize_map_event_combatant_state_later_owner_index as normalize_later_owner_index,
 )
+from sf2tool.h2.map_event_direct_state import FIXTURE as DIRECT_STATE_FIXTURE
 from sf2tool.h2.map_event_request_state import (
     FIXTURE,
     ID,
@@ -697,18 +697,18 @@ def test_request_state_index_delta_is_exact_24_binding_append_without_object_dri
             validate_json(broken, INDEX_SCHEMA, owner="map-event request-state index")
     assert verify_index(UPSTREAM) == {
         "Index": "manifests/research-index.json",
-        "Records": 1625,
-        "Confirmed": 1625,
-        "H2Fixtures": 94,
+        "Records": 1626,
+        "Confirmed": 1626,
+        "H2Fixtures": 95,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 3007,
+        "AddressBindings": 3019,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
-        "H1ListingRecords": 1588,
+        "H1ListingRecords": 1589,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 56,
+        "ResearchDocuments": 57,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

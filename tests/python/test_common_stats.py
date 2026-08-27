@@ -5,6 +5,9 @@ from copy import deepcopy
 import pytest
 
 from sf2tool.h2 import stats as stats_module
+from sf2tool.h2.map_event_combatant_state import (
+    normalize_map_event_combatant_state_later_owner_index,
+)
 from sf2tool.h2.stats import (
     _combatant_clamp_contract,
     _combatant_distance_contract,
@@ -220,6 +223,47 @@ def test_combatant_getter_contract_matches_full_fixture_and_boundaries() -> None
         "callerAndRuntimeOutcome": "unknown",
         "setterAndClampFollowup": "unknown",
     }
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_common_stats_index_relation_adds_only_combatant_getters_without_function_drift() -> None:
+    current_index = load_json(RESEARCH_INDEX)
+    accepted_base_index = normalize_map_event_combatant_state_later_owner_index(current_index)
+
+    def indexed_records(index: dict[str, object]) -> dict[str, dict[str, object]]:
+        return {
+            record["id"]: record
+            for record in index["records"]
+            if record["sourcePath"].startswith("code/common/stats/")
+        }
+
+    current_records = indexed_records(current_index)
+    accepted_base_records = indexed_records(accepted_base_index)
+    assert set(current_records) - set(accepted_base_records) == {"stats.combatant-getters"}
+    assert set(accepted_base_records) - set(current_records) == set()
+
+    output = build_stats_inventory(UPSTREAM)
+    assert output["summary"]["indexedRecordCount"] == 22
+    assert output["summary"]["indexedFileCount"] == 17
+    assert output["indexedRecordIds"] == sorted(current_records)
+    assert output["indexedSourcePaths"] == sorted(
+        {record["sourcePath"] for record in current_records.values()}
+    )
+    assert {
+        record["sourcePath"] for record in current_records.values()
+    } == {record["sourcePath"] for record in accepted_base_records.values()}
+
+    def function_evidence(index: dict[str, object]) -> set[tuple[str, str, str]]:
+        return {
+            (record["id"], binding["fixtureField"], binding["addressId"])
+            for record in index["records"]
+            for evidence in record.get("evidence", [])
+            if evidence.get("fixtureId") == stats_module.ID
+            for binding in evidence.get("bindings", [])
+        }
+
+    assert function_evidence(current_index) == function_evidence(accepted_base_index)
+    assert output["statsFacts"] == load_json(FIXTURE)["expected"]["statsFacts"]
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
