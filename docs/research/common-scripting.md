@@ -25,6 +25,12 @@
 - Source baseline: `ShiningForceCentral/SF2DISASM`
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
 
+The bounded map-event interaction-state rail separately joins the S07 map-setup jump interfaces and
+`RunMapSetupItemEvent`/`RunMapSetupEntityEvent` stores without re-owning this scripting corpus. Its
+four alias-aware interface entries and two `d2` byte stores are source/H1/ROM facts only; caller
+reachability, selected handlers, state values, timing, persistence, and presentation remain with its
+grouped Unknown queue in `map-event-interaction-state.md`.
+
 ## Confirmed Inventory
 
 The recursive `code/common/scripting` boundary contains 29 files, 11,153 source lines, 888 global

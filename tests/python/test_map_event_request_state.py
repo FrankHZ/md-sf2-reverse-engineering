@@ -16,6 +16,7 @@ import pytest
 import sf2tool.h2.map_event_request_state as request_state_module
 from sf2tool.cli import build_parser
 from sf2tool.h2.map_event_direct_state import FIXTURE as DIRECT_STATE_FIXTURE
+from sf2tool.h2.map_event_interaction_state import normalize_interaction_state_later_owner_index
 from sf2tool.h2.map_event_request_state import (
     FIXTURE,
     ID,
@@ -25,7 +26,8 @@ from sf2tool.h2.map_event_request_state import (
     _selected_programs,
     _selected_write_rows,
 )
-from sf2tool.jsonio import load_json, validate_json
+from sf2tool.jsonio import load_json as _load_json
+from sf2tool.jsonio import validate_json
 from sf2tool.research_index import verify_index
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -36,6 +38,11 @@ ROM = ROOT / "local/roms/sf2-us.bin"
 BASE = "0fe7e33b96f39761198404de60d3f0fd5456c426"
 DOCUMENT = "docs/research/map-event-request-state.md"
 VERIFIER = "src/sf2tool/h2/map_event_request_state.py"
+
+
+def load_json(path):
+    value = _load_json(path)
+    return normalize_interaction_state_later_owner_index(value) if path == INDEX else value
 EXPECTED_INDEX_BINDINGS = {
     "map.data.ms-map10-entityevents": "ms_map10_EntityEvents",
     "map.data.ms-map13-entityevents": "ms_map13_EntityEvents",
@@ -690,16 +697,16 @@ def test_request_state_index_delta_is_exact_24_binding_append_without_object_dri
         "Index": "manifests/research-index.json",
         "Records": 1625,
         "Confirmed": 1625,
-        "H2Fixtures": 92,
+        "H2Fixtures": 93,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 2976,
+        "AddressBindings": 2993,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1588,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 54,
+        "ResearchDocuments": 55,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

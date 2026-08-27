@@ -1,0 +1,309 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SF2 map-event interaction-state static fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstream", "romSha256", "sourceContext", "retainedOwners", "interactionState", "unknowns", "summary"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "id": {"const": "sf2-map-event-interaction-state-static-v1"},
+    "upstream": {"$ref": "#/$defs/upstream"},
+    "romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
+    "sourceContext": {"$ref": "#/$defs/sourceContext"},
+    "retainedOwners": {"$ref": "#/$defs/retainedOwners"},
+    "interactionState": {"$ref": "#/$defs/interactionState"},
+    "unknowns": {"$ref": "#/$defs/unknowns"},
+    "summary": {"$ref": "#/$defs/summary"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": {"const": "ShiningForceCentral/SF2DISASM"},
+        "commit": {"const": "c834c652b6862bc5679fd7f69a38a7093206efc6"}
+      }
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "sourceContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["h1Listing", "sourceIdentities", "seamRanges"],
+      "properties": {
+        "h1Listing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256"],
+          "properties": {
+            "path": {"const": "build/sf2build-h1.lst"},
+            "sha256": {"const": "F28FAF604DD8F37AE3EDAA819DD1C9A601863B0596F2C83602CA3D572BB8644D"}
+          }
+        },
+        "sourceIdentities": {
+          "type": "array",
+          "minItems": 12,
+          "maxItems": 12,
+          "items": [
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "sf2const.asm"}}}]},
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "code/gameflow/exploration/explorationfunctions_0.asm"}}}]},
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "code/gameflow/exploration/explorationvints.asm"}}}]},
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "code/gameflow/battle/battlefunctions/battlefunctions_0.asm"}}}]},
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "code/common/tech/jumpinterfaces/s07_jumpinterface.asm"}}}]},
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "code/common/menus/getplayerentityposition.asm"}}}]},
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "code/common/menus/main/mainactions.asm"}}}]},
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "code/common/scripting/map/mapsetupsfunctions_1.asm"}}}]},
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "code/gameflow/exploration/explorationfunctions_2.asm"}}}]},
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "data/maps/entries/map06/mapsetups/s2_entityevents_701.asm"}}}]},
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "data/maps/entries/map09/mapsetups/s2_entityevents.asm"}}}]},
+            {"allOf": [{"$ref": "#/$defs/sourceIdentity"}, {"properties": {"path": {"const": "data/maps/entries/map28/mapsetups/s3_zoneevents.asm"}}}]}
+          ],
+          "additionalItems": false
+        },
+        "seamRanges": {"$ref": "#/$defs/seamRanges"}
+      }
+    },
+    "retainedOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixtureId", "fixtureSha256"],
+      "properties": {
+        "fixtureId": {"type": "string", "pattern": "^sf2-[a-z0-9-]+-static-v1$"},
+        "fixtureSha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "retainedOwners": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mapEvents", "mapEventDirectState", "mapEventDirectControl", "mapEventDirectHandoff", "mapEventPredicateResults", "mapEventDialogueState", "mapSetup", "gameflowCore", "commonMenus", "fieldMenuControl", "battleFunctions", "techInterfaces"],
+      "properties": {
+        "mapEvents": {"$ref": "#/$defs/retainedOwner"},
+        "mapEventDirectState": {"$ref": "#/$defs/retainedOwner"},
+        "mapEventDirectControl": {"$ref": "#/$defs/retainedOwner"},
+        "mapEventDirectHandoff": {"$ref": "#/$defs/retainedOwner"},
+        "mapEventPredicateResults": {"$ref": "#/$defs/retainedOwner"},
+        "mapEventDialogueState": {"$ref": "#/$defs/retainedOwner"},
+        "mapSetup": {"$ref": "#/$defs/retainedOwner"},
+        "gameflowCore": {"$ref": "#/$defs/retainedOwner"},
+        "commonMenus": {"$ref": "#/$defs/retainedOwner"},
+        "fieldMenuControl": {"$ref": "#/$defs/retainedOwner"},
+        "battleFunctions": {"$ref": "#/$defs/retainedOwner"},
+        "techInterfaces": {"$ref": "#/$defs/retainedOwner"}
+      }
+    },
+    "symbolDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["symbol", "address", "width", "sourcePath", "sourceLine"],
+      "properties": {
+        "symbol": {"enum": ["ENTITY_FACING", "EVENT_RELATIVE_POSITION"]},
+        "address": {"type": "integer", "minimum": 0},
+        "width": {"const": "b"},
+        "sourcePath": {"const": "sf2const.asm"},
+        "sourceLine": {"type": "integer", "minimum": 1}
+      }
+    },
+    "range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sourcePath", "entrySymbol", "startAddress", "endAddressExclusive", "sourceOperationCount", "h1RomByteLength", "h1InstructionSha256", "romInstructionSha256"],
+      "properties": {
+        "id": {"type": "string"},
+        "sourcePath": {"type": "string"},
+        "entrySymbol": {"type": "string"},
+        "startAddress": {"type": "integer", "minimum": 0},
+        "endAddressExclusive": {"type": "integer", "minimum": 1},
+        "sourceOperationCount": {"type": "integer", "minimum": 1},
+        "h1RomByteLength": {"type": "integer", "minimum": 1},
+        "h1InstructionSha256": {"$ref": "#/$defs/sha256"},
+        "romInstructionSha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "functionRanges": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": [
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "get-activated-entity"}, "startAddress": {"const": 145306}, "endAddressExclusive": {"const": 145476}, "sourceOperationCount": {"const": 57}, "h1RomByteLength": {"const": 170}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "get-entity-event-index"}, "startAddress": {"const": 143178}, "endAddressExclusive": {"const": 143222}, "sourceOperationCount": {"const": 15}, "h1RomByteLength": {"const": 44}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "get-player-entity-position"}, "startAddress": {"const": 142432}, "endAddressExclusive": {"const": 142468}, "sourceOperationCount": {"const": 9}, "h1RomByteLength": {"const": 36}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "run-map-setup-item-event"}, "startAddress": {"const": 292230}, "endAddressExclusive": {"const": 292378}, "sourceOperationCount": {"const": 39}, "h1RomByteLength": {"const": 148}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "run-map-setup-entity-event"}, "startAddress": {"const": 292378}, "endAddressExclusive": {"const": 292572}, "sourceOperationCount": {"const": 59}, "h1RomByteLength": {"const": 194}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "get-rhode-facing"}, "startAddress": {"const": 292914}, "endAddressExclusive": {"const": 292950}, "sourceOperationCount": {"const": 10}, "h1RomByteLength": {"const": 36}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "process-map-event-type6-zone-event"}, "startAddress": {"const": 154236}, "endAddressExclusive": {"const": 154260}, "sourceOperationCount": {"const": 6}, "h1RomByteLength": {"const": 24}}}]}
+      ],
+      "additionalItems": false
+    },
+    "seamRanges": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": [
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "process-player-action-entity-success"}, "startAddress": {"const": 154538}, "endAddressExclusive": {"const": 154560}, "sourceOperationCount": {"const": 6}, "h1RomByteLength": {"const": 22}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "field-item-invocation"}, "startAddress": {"const": 136478}, "endAddressExclusive": {"const": 136502}, "sourceOperationCount": {"const": 6}, "h1RomByteLength": {"const": 24}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "s07-map-setup-jump-interfaces"}, "startAddress": {"const": 278652}, "endAddressExclusive": {"const": 278668}, "sourceOperationCount": {"const": 4}, "h1RomByteLength": {"const": 16}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "map9-rhode-facing-caller"}, "startAddress": {"const": 354352}, "endAddressExclusive": {"const": 354362}, "sourceOperationCount": {"const": 2}, "h1RomByteLength": {"const": 10}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "map6-relative-position-predicate-pairs"}, "startAddress": {"const": 346582}, "endAddressExclusive": {"const": 346914}, "sourceOperationCount": {"const": 10}, "h1RomByteLength": {"const": 40}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "map9-relative-position-transform"}, "startAddress": {"const": 354220}, "endAddressExclusive": {"const": 354236}, "sourceOperationCount": {"const": 4}, "h1RomByteLength": {"const": 16}}}]},
+        {"allOf": [{"$ref": "#/$defs/range"}, {"properties": {"id": {"const": "map28-facing-wait-predicate"}, "startAddress": {"const": 390010}, "endAddressExclusive": {"const": 390022}, "sourceOperationCount": {"const": 3}, "h1RomByteLength": {"const": 12}}}]}
+      ],
+      "additionalItems": false
+    },
+    "dispatchContexts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entityAcquisition", "entityDispatch", "itemInvocation", "zoneFacing"],
+      "properties": {
+        "entityAcquisition": {
+          "type": "object", "additionalProperties": false, "required": ["entryAddress", "rangeId", "resultRegister"],
+          "properties": {"entryAddress": {"const": 145306}, "rangeId": {"const": "get-activated-entity"}, "resultRegister": {"const": "d2"}}
+        },
+        "entityDispatch": {
+          "type": "object", "additionalProperties": false, "required": ["processPlayerActionAddress", "getEntityEventIndexAddress", "runEntityEventCallAddress"],
+          "properties": {"processPlayerActionAddress": {"const": 154538}, "getEntityEventIndexAddress": {"const": 143178}, "runEntityEventCallAddress": {"const": 154550}}
+        },
+        "itemInvocation": {
+          "type": "object", "additionalProperties": false, "required": ["getPlayerEntityPositionAddress", "runMapSetupItemEventCallAddress"],
+          "properties": {"getPlayerEntityPositionAddress": {"const": 142432}, "runMapSetupItemEventCallAddress": {"const": 136490}}
+        },
+        "zoneFacing": {
+          "type": "object", "additionalProperties": false, "required": ["processMapEventType6Address", "runMapSetupZoneEventAddress"],
+          "properties": {"processMapEventType6Address": {"const": 154236}, "runMapSetupZoneEventAddress": {"const": 292122}}
+        }
+      }
+    },
+    "jumpInterface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["interfaceOrder", "id", "entryAddress", "instructionTarget", "effectiveTarget", "effectiveTargetAddress"],
+      "properties": {
+        "interfaceOrder": {"type": "integer", "minimum": 0},
+        "id": {"type": "string"}, "entryAddress": {"type": "integer", "minimum": 0},
+        "instructionTarget": {"type": "string"}, "effectiveTarget": {"type": "string"}, "effectiveTargetAddress": {"type": "integer", "minimum": 0}
+      }
+    },
+    "producerWrite": {
+      "type": "object", "additionalProperties": false,
+      "required": ["writeOrder", "id", "contextId", "symbol", "address", "romPc", "width", "sourceRegister", "entryAddress"],
+      "properties": {
+        "writeOrder": {"type": "integer", "minimum": 0}, "id": {"enum": ["item-event-d2", "entity-event-d2"]},
+        "contextId": {"enum": ["item-invocation", "entity-dispatch"]}, "symbol": {"const": "EVENT_RELATIVE_POSITION"},
+        "address": {"const": 16758353}, "romPc": {"enum": [292242, 292382]}, "width": {"const": "b"}, "sourceRegister": {"const": "d2"}, "entryAddress": {"enum": [292230, 292378]}
+      }
+    },
+    "consumerRead": {
+      "type": "object", "additionalProperties": false,
+      "required": ["readOrder", "id", "symbol", "address", "romPc", "width", "role"],
+      "properties": {
+        "readOrder": {"type": "integer", "minimum": 0}, "id": {"type": "string"}, "symbol": {"enum": ["ENTITY_FACING", "EVENT_RELATIVE_POSITION"]},
+        "address": {"type": "integer", "minimum": 0}, "romPc": {"type": "integer", "minimum": 0}, "width": {"const": "b"},
+        "role": {"enum": ["player-position", "rhode-facing", "map6-predicate", "map9-transform"]}, "targetRegister": {"enum": ["d1", "d3"]}
+      }
+    },
+    "readGroup": {
+      "type": "object", "additionalProperties": false,
+      "required": ["reads"],
+      "properties": {
+        "entryAddress": {"type": "integer", "minimum": 0},
+        "tableEntryAddress": {"type": "integer", "minimum": 0},
+        "reads": {"type": "array", "items": {"$ref": "#/$defs/consumerRead"}}
+      }
+    },
+    "predicateJoin": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["predicateOrder", "id", "branchMnemonic", "branchAddress", "targetAddress", "fallthroughAddress", "producerReadId", "immediateValue"],
+          "properties": {"predicateOrder": {"type": "integer", "minimum": 0}, "id": {"type": "string", "pattern": "^map6-relative-position-[0-4]$"}, "branchMnemonic": {"const": "bne"}, "branchAddress": {"type": "integer", "minimum": 0}, "targetAddress": {"type": "integer", "minimum": 0}, "fallthroughAddress": {"type": "integer", "minimum": 0}, "producerReadId": {"type": "string", "pattern": "^map6/relative-position-[0-4]$"}, "immediateValue": {"const": 1}}
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["predicateOrder", "id", "branchMnemonic", "branchAddress", "targetAddress", "fallthroughAddress", "producerSymbol", "producerAddress"],
+          "properties": {"predicateOrder": {"const": 5}, "id": {"const": "map28-entity-facing"}, "branchMnemonic": {"const": "bne"}, "branchAddress": {"const": 390020}, "targetAddress": {"const": 390030}, "fallthroughAddress": {"const": 390022}, "producerSymbol": {"const": "ENTITY_FACING"}, "producerAddress": {"const": 16754962}}
+        }
+      ]
+    },
+    "multiplexedRole": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["id", "symbol", "producerWriteId", "dispatchContextId", "inputRegister", "inputRole"],
+          "properties": {"id": {"enum": ["event-relative-position/entity-event-d2", "event-relative-position/item-event-d2"]}, "symbol": {"const": "EVENT_RELATIVE_POSITION"}, "producerWriteId": {"enum": ["entity-event-d2", "item-event-d2"]}, "dispatchContextId": {"enum": ["entityDispatch", "itemInvocation"]}, "inputRegister": {"const": "d2"}, "inputRole": {"enum": ["player-facing", "player-y-tile"]}}
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["id", "symbol", "consumerReadId", "boundedWriterCount"],
+          "properties": {"id": {"const": "entity-facing/map28-consumer-only"}, "symbol": {"const": "ENTITY_FACING"}, "consumerReadId": {"const": "map28-entity-facing"}, "boundedWriterCount": {"const": 0}}
+        }
+      ]
+    },
+    "digests": {
+      "type": "object", "additionalProperties": false,
+      "required": ["functionRangesSha256", "seamRangesSha256", "dispatchContextsSha256", "producerWritesSha256", "consumerReadsSha256", "predicateJoinsSha256"],
+      "properties": {
+        "functionRangesSha256": {"$ref": "#/$defs/sha256"}, "seamRangesSha256": {"$ref": "#/$defs/sha256"}, "dispatchContextsSha256": {"$ref": "#/$defs/sha256"}, "producerWritesSha256": {"$ref": "#/$defs/sha256"}, "consumerReadsSha256": {"$ref": "#/$defs/sha256"}, "predicateJoinsSha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "interactionState": {
+      "type": "object", "additionalProperties": false,
+      "required": ["symbolDefinitions", "functionRanges", "dispatchContexts", "jumpInterfaces", "producerWrites", "consumerReads", "predicateJoins", "multiplexedRoles", "anchorOrder", "digests"],
+      "properties": {
+        "symbolDefinitions": {"type": "array", "minItems": 2, "maxItems": 2, "items": [{"allOf": [{"$ref": "#/$defs/symbolDefinition"}, {"properties": {"symbol": {"const": "ENTITY_FACING"}, "address": {"const": 16754962}}}]}, {"allOf": [{"$ref": "#/$defs/symbolDefinition"}, {"properties": {"symbol": {"const": "EVENT_RELATIVE_POSITION"}, "address": {"const": 16758353}}}]}], "additionalItems": false},
+        "functionRanges": {"$ref": "#/$defs/functionRanges"}, "dispatchContexts": {"$ref": "#/$defs/dispatchContexts"},
+        "jumpInterfaces": {
+          "type": "object", "additionalProperties": false,
+          "required": ["runMapSetupEntityEvent", "runMapSetupZoneEvent", "runMapSetupEntityEvent0", "runMapSetupItemEvent"],
+          "properties": {
+            "runMapSetupEntityEvent": {"allOf": [{"$ref": "#/$defs/jumpInterface"}, {"properties": {"id": {"const": "run-map-setup-entity-event"}, "entryAddress": {"const": 278652}, "effectiveTargetAddress": {"const": 292378}}}]},
+            "runMapSetupZoneEvent": {"allOf": [{"$ref": "#/$defs/jumpInterface"}, {"properties": {"id": {"const": "run-map-setup-zone-event"}, "entryAddress": {"const": 278656}, "effectiveTargetAddress": {"const": 292122}}}]},
+            "runMapSetupEntityEvent0": {"allOf": [{"$ref": "#/$defs/jumpInterface"}, {"properties": {"id": {"const": "run-map-setup-entity-event-0"}, "entryAddress": {"const": 278660}, "effectiveTargetAddress": {"const": 292378}}}]},
+            "runMapSetupItemEvent": {"allOf": [{"$ref": "#/$defs/jumpInterface"}, {"properties": {"id": {"const": "run-map-setup-item-event"}, "entryAddress": {"const": 278664}, "effectiveTargetAddress": {"const": 292230}}}]}
+          }
+        },
+        "producerWrites": {
+          "type": "object", "additionalProperties": false, "required": ["itemEventD2", "entityEventD2"],
+          "properties": {
+            "itemEventD2": {"allOf": [{"$ref": "#/$defs/producerWrite"}, {"properties": {"id": {"const": "item-event-d2"}, "writeOrder": {"const": 0}, "romPc": {"const": 292242}, "entryAddress": {"const": 292230}}}]},
+            "entityEventD2": {"allOf": [{"$ref": "#/$defs/producerWrite"}, {"properties": {"id": {"const": "entity-event-d2"}, "writeOrder": {"const": 1}, "romPc": {"const": 292382}, "entryAddress": {"const": 292378}}}]}
+          }
+        },
+        "consumerReads": {
+          "type": "object", "additionalProperties": false,
+          "required": ["getPlayerEntityPosition", "getRhodeFacing", "map6", "map9", "map28"],
+          "properties": {
+            "getPlayerEntityPosition": {"allOf": [{"$ref": "#/$defs/readGroup"}, {"properties": {"entryAddress": {"const": 142432}, "reads": {"minItems": 1, "maxItems": 1}}}]},
+            "getRhodeFacing": {"allOf": [{"$ref": "#/$defs/readGroup"}, {"properties": {"entryAddress": {"const": 292914}, "reads": {"minItems": 1, "maxItems": 1}}}]},
+            "map6": {"allOf": [{"$ref": "#/$defs/readGroup"}, {"properties": {"tableEntryAddress": {"const": 346500}, "reads": {"minItems": 5, "maxItems": 5}}}]},
+            "map9": {"allOf": [{"$ref": "#/$defs/readGroup"}, {"properties": {"tableEntryAddress": {"const": 354082}, "reads": {"minItems": 1, "maxItems": 1}}}]},
+            "map28": {"allOf": [{"$ref": "#/$defs/readGroup"}, {"properties": {"tableEntryAddress": {"const": 389996}, "reads": {"minItems": 0, "maxItems": 0}}}]}
+          }
+        },
+        "predicateJoins": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/predicateJoin"}},
+        "multiplexedRoles": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/$defs/multiplexedRole"}},
+        "anchorOrder": {"const": ["get-activated-entity", "get-entity-event-index", "get-player-entity-position", "run-map-setup-item-event", "run-map-setup-entity-event", "get-rhode-facing", "process-map-event-type6-zone-event", "process-player-action-entity-success", "field-item-invocation", "s07-map-setup-jump-interfaces", "map9-rhode-facing-caller", "map6-relative-position-predicate-pairs", "map9-relative-position-transform", "map28-facing-wait-predicate"]},
+        "digests": {"$ref": "#/$defs/digests"}
+      }
+    },
+    "unknowns": {
+      "type": "object", "additionalProperties": false,
+      "required": ["naturalEntityInteractionReachability", "activatedEntityIdentity", "entityFacingValue", "playerFacingValue", "eventRelativePositionRuntimeValue", "predicateBranchTaken", "itemInvocationReachability", "itemPlayerYRuntimeValue", "itemHandlerSelectionAndOutcome", "zoneInvocationReachability", "zoneBranchAndScript", "stateLifetimePersistenceTimingPresentationStoryMeaning"],
+      "properties": {
+        "naturalEntityInteractionReachability": {"const": "Unknown"}, "activatedEntityIdentity": {"const": "Unknown"}, "entityFacingValue": {"const": "Unknown"}, "playerFacingValue": {"const": "Unknown"}, "eventRelativePositionRuntimeValue": {"const": "Unknown"}, "predicateBranchTaken": {"const": "Unknown"}, "itemInvocationReachability": {"const": "Unknown"}, "itemPlayerYRuntimeValue": {"const": "Unknown"}, "itemHandlerSelectionAndOutcome": {"const": "Unknown"}, "zoneInvocationReachability": {"const": "Unknown"}, "zoneBranchAndScript": {"const": "Unknown"}, "stateLifetimePersistenceTimingPresentationStoryMeaning": {"const": "Unknown"}
+      }
+    },
+    "summary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourceIdentityCount", "functionRangeCount", "seamGroupCount", "sourceOperationCount", "h1RomByteCount", "symbolDefinitionCount", "producerWriteCount", "consumerReadCount", "predicateJoinCount", "jumpInterfaceCount"],
+      "properties": {"sourceIdentityCount": {"const": 12}, "functionRangeCount": {"const": 7}, "seamGroupCount": {"const": 7}, "sourceOperationCount": {"const": 230}, "h1RomByteCount": {"const": 792}, "symbolDefinitionCount": {"const": 2}, "producerWriteCount": {"const": 2}, "consumerReadCount": {"const": 8}, "predicateJoinCount": {"const": 6}, "jumpInterfaceCount": {"const": 4}}
+    }
+  }
+}

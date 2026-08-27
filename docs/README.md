@@ -263,6 +263,10 @@ Data-side directory inventory and ROM parity:
 - [`map-event-direct-state.md`](./research/map-event-direct-state.md): the complete direct fixed-RAM
   source/H1/ROM footprint in map-event target programs, including contextual versus physical alias
   accounting and grouped runtime Unknowns.
+- [`map-event-interaction-state.md`](./research/map-event-interaction-state.md): the bounded
+  cross-owner source/H1/ROM state-flow relation for `EVENT_RELATIVE_POSITION` and `ENTITY_FACING`,
+  including the two `d2` writers, eight reads, six predicates, S07 alias targets, and grouped runtime
+  Unknowns without assigning a universal byte meaning.
 - [`map-event-direct-control.md`](./research/map-event-direct-control.md): the complete caller-side
   raw-68000 direct-call/tail-transfer topology in the retained map-event program corpus, including
   alias-aware effective targets, callee-entry owners, lexical continuations, physical-PC

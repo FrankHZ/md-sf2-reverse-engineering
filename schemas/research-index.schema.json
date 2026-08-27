@@ -81,7 +81,7 @@
                       "fixtureField": {
                         "type": "string",
                         "anyOf": [
-                          { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventPredicateResults|eventDialogueState|eventRequestState|eventRequestConsumption)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventRequestConsumption)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
+                          { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventPredicateResults|eventDialogueState|eventRequestState|eventRequestConsumption|interactionState)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventRequestConsumption|interactionState)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
                           { "enum": [
                             "eventPredicateResults.sourceFiles.ms_map10_flag722_EntityEvents.tableEntryAddress",
                             "eventPredicateResults.sourceFiles.ms_map11_EntityEvents.tableEntryAddress",
