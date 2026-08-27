@@ -5,8 +5,8 @@ from copy import deepcopy
 import pytest
 
 from sf2tool.h2 import stats as stats_module
-from sf2tool.h2.map_event_combatant_state import (
-    normalize_map_event_combatant_state_later_owner_index,
+from sf2tool.h2.map_event_random_battle_state import (
+    normalize_map_event_random_battle_state_later_owner_index,
 )
 from sf2tool.h2.stats import (
     _combatant_clamp_contract,
@@ -228,7 +228,9 @@ def test_combatant_getter_contract_matches_full_fixture_and_boundaries() -> None
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
 def test_common_stats_index_relation_adds_only_combatant_getters_without_function_drift() -> None:
     current_index = load_json(RESEARCH_INDEX)
-    accepted_base_index = normalize_map_event_combatant_state_later_owner_index(current_index)
+    accepted_base_index = normalize_map_event_random_battle_state_later_owner_index(
+        current_index
+    )
 
     def indexed_records(index: dict[str, object]) -> dict[str, dict[str, object]]:
         return {
@@ -811,8 +813,12 @@ def test_combatant_distance_inventory_scans_injected_owning_file_call(tmp_path) 
         ("0000941E                            GetDistanceBetweenCombatants:",
          "00009420                            GetDistanceBetweenCombatants:"),
         ("0000941E 48E7 DC00", "0000941E 48E7 DC"),
-        ("00009482                                ; End of function GetDistanceBetweenCombatants",
-         "00009480                                ; End of function GetDistanceBetweenCombatants"),
+        (
+            "00009482                                ; End of function "
+            "GetDistanceBetweenCombatants",
+            "00009480                                ; End of function "
+            "GetDistanceBetweenCombatants",
+        ),
     ),
 )
 def test_combatant_distance_h1_boundary_and_encoding_guards_reject_mutations(

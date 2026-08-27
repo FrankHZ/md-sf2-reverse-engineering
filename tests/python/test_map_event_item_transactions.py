@@ -28,6 +28,9 @@ from sf2tool.h2.map_event_item_transactions import (
     normalize_map_event_item_transactions_later_owner_index,
     verify_map_event_item_transactions_contract,
 )
+from sf2tool.h2.map_event_random_battle_state import (
+    _remove_map_event_random_battle_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 
@@ -651,7 +654,9 @@ def test_map_setup_retained_owner_identity_and_path_are_exact(
 
 
 def test_strict_later_owner_normalizer_proves_only_the_declared_delta() -> None:
-    index = _remove_map_event_combatant_state_later_owner_index_delta(load_json(INDEX))
+    index = _remove_map_event_combatant_state_later_owner_index_delta(
+        _remove_map_event_random_battle_state_later_owner_index_delta(load_json(INDEX))
+    )
     prior = _remove_map_event_item_transactions_index_delta(index)
     assert normalize_map_event_item_transactions_later_owner_index(index) == (
         normalize_interaction_state_later_owner_index(prior)

@@ -669,9 +669,9 @@
               },
               "commonScripting": {
                 "fixtureId": "sf2-common-scripting-static-v1",
-                "fixtureSha256": "E184BB32FAC595B6F21F58BC86A1F20F27CC22D9F57992045DE84B3DDFC622CF",
-                "semanticSha256": "B6248C4FC1F109057B3F0869886EBA5F8A5FE3C32241FA14E15774900DF27CEE",
-                "sha256": "519D82514CAFA621CA8557D9E3F87E5F25A531F9485756D99EBC48F3CBA820A8"
+                "fixtureSha256": "CCAB42A30157A92FC033113C6951412A06ADFE2549859CDF79D9DF025FA0EB71",
+                "semanticSha256": "2C5303120E710E02619F74941CEA7C81C19DB17DAEFDFA025D59F9B3CBB6792D",
+                "sha256": "2D96608AB747091D9147709C0190DAD10E743A799ECBBF33828966BE272E48A3"
               },
               "commonStats": {
                 "fixtureId": "sf2-common-stats-static-v1",

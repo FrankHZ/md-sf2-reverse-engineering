@@ -1,0 +1,1369 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-event-random-battle-state-static-v1",
+  "system": "map-event-random-battle-state",
+  "upstream": {
+    "repository": "https://github.com/ShiningForceCentral/SF2DISASM",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+  },
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "sourceContext": {
+    "h1Listing": {
+      "path": "build/sf2build-h1.lst",
+      "sha256": "F28FAF604DD8F37AE3EDAA819DD1C9A601863B0596F2C83602CA3D572BB8644D"
+    },
+    "motherFixture": {
+      "id": "sf2-map-events-static-v1",
+      "sha256": "082FEED85338A776E734777255678650B40B57C3517ECA9DD54EEC8C7F8558C6"
+    },
+    "sourceIdentities": [
+      {
+        "path": "sf2const.asm",
+        "sha256": "17738776F811F66322F278CFBF10E8B376612F4F9EDFC2C7AA0A5DB81CDFB3FB"
+      },
+      {
+        "path": "sf2enums.asm",
+        "sha256": "ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE"
+      },
+      {
+        "path": "sf2macros.asm",
+        "sha256": "ED16C400B5EEDB04EE75D3FE20EB3EF2CA64F54DA3AC322509879B8ABA341FE2"
+      },
+      {
+        "path": "layout/sf2-01-0x000000-0x008000.asm",
+        "sha256": "D8F6D0B45932B2338CA7161A3E13443C0391475EF468FD5FB4077299208B8562"
+      },
+      {
+        "path": "layout/sf2-02-0x008000-0x010000.asm",
+        "sha256": "1BDD447BC4745C653FE2DE228E99FB72A9E5AA181906192ED2DB4E7A5362F012"
+      },
+      {
+        "path": "layout/sf2-07-0x044000-0x064000.asm",
+        "sha256": "933D37545567A172AD4B8777B3AFC9DBD1F5725A18890E483EB6E823882B1CA5"
+      },
+      {
+        "path": "code/common/scripting/map/mapsetupsfunctions_1.asm",
+        "sha256": "F99AF47A35E9148176E66865694B2BCEE3D3DF8C6013227F5CB8ECA330AC6531"
+      },
+      {
+        "path": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        "sha256": "479D19D5CBA2D585A1AE74DD2A8CF67C455DF96FCBD2EEBB6808C6318F53A464"
+      },
+      {
+        "path": "code/common/stats/gameflags.asm",
+        "sha256": "1D9BA2EAD0CEA13718D20B0E96D86FD0AC01730E1C6C07A15F9E3EF875A45DD9"
+      },
+      {
+        "path": "code/common/tech/randomnumbergenerator.asm",
+        "sha256": "9BD6B68AA53ABF9D5B4A3B2EB47EF139FBE7BD2824B747BC5AB33D20088DD0C5"
+      },
+      {
+        "path": "code/common/maps/camerafunctions.asm",
+        "sha256": "4DB0C8388B2736D3CFDBB8765C2215AD52DC608FAA6981A8EBD37E494829CEC0"
+      },
+      {
+        "path": "code/common/tech/graphics/flashwhite.asm",
+        "sha256": "E3CE7ABC99569B36D78E60A5D40CC3EFFAF0B89987FED7C6481FF739A6BA79D8"
+      },
+      {
+        "path": "data/maps/entries/map66/mapsetups/s3_zoneevents.asm",
+        "sha256": "B715417ED175A9ADE17AA8D00963B74F60E5031311D57135E99FB439A47143AA"
+      },
+      {
+        "path": "data/maps/entries/map67/mapsetups/s3_zoneevents.asm",
+        "sha256": "32682FE73625E3E1CA042356067FAB058965381B4F8EB89728C6653FDBB3FE16"
+      },
+      {
+        "path": "data/maps/entries/map68/mapsetups/s3_zoneevents.asm",
+        "sha256": "2E8C0E3D114A6479D1B262C76D9064EDD72B8E3E122CE7ECA45C4C97F0183A15"
+      },
+      {
+        "path": "data/maps/entries/map69/mapsetups/s3_zoneevents.asm",
+        "sha256": "4A74F12C97187BBEE880968133D84A1037305A0A6FE3C0B6637DF62AD3C96443"
+      },
+      {
+        "path": "data/maps/entries/map70/mapsetups/s3_zoneevents.asm",
+        "sha256": "448CAAC061DD6028D05A084E4502BAE4065685BA3D9B7E88C0C6E2D476EC720C"
+      },
+      {
+        "path": "data/maps/entries/map72/mapsetups/s3_zoneevents.asm",
+        "sha256": "4C208C116B2CCF855E6BC4EB963E97E513434777C485A6ABEB53CA3DAD66EB0A"
+      }
+    ],
+    "callerAnchors": [
+      {
+        "address": 326356,
+        "sourceStatement": "move.w #BATTLE_TO_HAWEL_HOUSE,d0",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "C06791951E7EBEC545D4671CF32D187C0E3A8FC426D848D661073F02DCAE4D92",
+        "h1StatementSha256": "6CF1D1E36B1D785AAE01F21008A850CE53A2BC34B8EB720E0F162779931AA425",
+        "romInstructionSha256": "C06791951E7EBEC545D4671CF32D187C0E3A8FC426D848D661073F02DCAE4D92"
+      },
+      {
+        "address": 326360,
+        "sourceStatement": "jsr CheckRandomBattle",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A",
+        "h1StatementSha256": "53B8DBAFBAAE28681C3F1B13572F071A984843395F5B239425237371E4B8EE7E",
+        "romInstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A"
+      },
+      {
+        "address": 326366,
+        "sourceStatement": "rts",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD",
+        "h1StatementSha256": "2E303736208C8DE17740991F4D89E8BA4136ADD0880DD8A1C84C0084EE6033B5",
+        "romInstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD"
+      },
+      {
+        "address": 326488,
+        "sourceStatement": "move.w #BATTLE_DEVIL_TAIL,d0",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "E5BB2756D0176C78B5DEF5D752D82DDD61E12AB674E2E0EC37CD5CE58786CB0B",
+        "h1StatementSha256": "6112EFEEE9C6DDF626787A0E22246E08EB9F532A5239E99DC4885B907D0EA86B",
+        "romInstructionSha256": "E5BB2756D0176C78B5DEF5D752D82DDD61E12AB674E2E0EC37CD5CE58786CB0B"
+      },
+      {
+        "address": 326492,
+        "sourceStatement": "jsr CheckRandomBattle",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A",
+        "h1StatementSha256": "53B8DBAFBAAE28681C3F1B13572F071A984843395F5B239425237371E4B8EE7E",
+        "romInstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A"
+      },
+      {
+        "address": 326498,
+        "sourceStatement": "rts",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD",
+        "h1StatementSha256": "2E303736208C8DE17740991F4D89E8BA4136ADD0880DD8A1C84C0084EE6033B5",
+        "romInstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD"
+      },
+      {
+        "address": 327024,
+        "sourceStatement": "move.w #BATTLE_OUTSIDE_ELVEN_VILLAGE,d0",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "D64AEBA4AE919A02964EC2E8972AD41780DE52E7CEEFBF82057007EFBF26B3CE",
+        "h1StatementSha256": "B6A2CEED0A39DED1BE47A3B2765E68C0947F3224CA4F33A596D851C0CE9ACC32",
+        "romInstructionSha256": "D64AEBA4AE919A02964EC2E8972AD41780DE52E7CEEFBF82057007EFBF26B3CE"
+      },
+      {
+        "address": 327028,
+        "sourceStatement": "jsr CheckRandomBattle",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A",
+        "h1StatementSha256": "53B8DBAFBAAE28681C3F1B13572F071A984843395F5B239425237371E4B8EE7E",
+        "romInstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A"
+      },
+      {
+        "address": 327034,
+        "sourceStatement": "rts",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD",
+        "h1StatementSha256": "2E303736208C8DE17740991F4D89E8BA4136ADD0880DD8A1C84C0084EE6033B5",
+        "romInstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD"
+      },
+      {
+        "address": 327090,
+        "sourceStatement": "move.w #BATTLE_TO_TAROS_SHRINE,d0",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "1B1A50181BAABDF0277B65CC6E5BDBF4EDEBAA2541B8C66945F167FD8AD67593",
+        "h1StatementSha256": "F453B0303484DE9A9DD260E67DBC6F8E0511EFB40936A6E55EB515C461EC7DF1",
+        "romInstructionSha256": "1B1A50181BAABDF0277B65CC6E5BDBF4EDEBAA2541B8C66945F167FD8AD67593"
+      },
+      {
+        "address": 327094,
+        "sourceStatement": "jsr CheckRandomBattle",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A",
+        "h1StatementSha256": "53B8DBAFBAAE28681C3F1B13572F071A984843395F5B239425237371E4B8EE7E",
+        "romInstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A"
+      },
+      {
+        "address": 327100,
+        "sourceStatement": "rts",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD",
+        "h1StatementSha256": "2E303736208C8DE17740991F4D89E8BA4136ADD0880DD8A1C84C0084EE6033B5",
+        "romInstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD"
+      },
+      {
+        "address": 327186,
+        "sourceStatement": "move.w #BATTLE_SOUTHEAST_DESERT,d0",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "208E3F5237DF1823B5D717C1CDAA9495249AD6645C88F9B9DE7843FB106C61FE",
+        "h1StatementSha256": "6ECF35400FDCAE97BDE34809665C6B00D0FCDCD8935B7179A9C7113F27345965",
+        "romInstructionSha256": "208E3F5237DF1823B5D717C1CDAA9495249AD6645C88F9B9DE7843FB106C61FE"
+      },
+      {
+        "address": 327190,
+        "sourceStatement": "jsr CheckRandomBattle",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A",
+        "h1StatementSha256": "53B8DBAFBAAE28681C3F1B13572F071A984843395F5B239425237371E4B8EE7E",
+        "romInstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A"
+      },
+      {
+        "address": 327196,
+        "sourceStatement": "rts",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD",
+        "h1StatementSha256": "2E303736208C8DE17740991F4D89E8BA4136ADD0880DD8A1C84C0084EE6033B5",
+        "romInstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD"
+      },
+      {
+        "address": 327308,
+        "sourceStatement": "move.w #BATTLE_OUTSIDE_KETTO,d0",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "0CA71DB9E7CA0AFAA7721A240C4D697D01AB0E3A441B27370C685F2B20410195",
+        "h1StatementSha256": "F3BACE70F9F3C38A1113391ADC7987A56C19026D16BDB6676762B895058C995E",
+        "romInstructionSha256": "0CA71DB9E7CA0AFAA7721A240C4D697D01AB0E3A441B27370C685F2B20410195"
+      },
+      {
+        "address": 327312,
+        "sourceStatement": "jsr CheckRandomBattle",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A",
+        "h1StatementSha256": "53B8DBAFBAAE28681C3F1B13572F071A984843395F5B239425237371E4B8EE7E",
+        "romInstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A"
+      },
+      {
+        "address": 327318,
+        "sourceStatement": "rts",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD",
+        "h1StatementSha256": "2E303736208C8DE17740991F4D89E8BA4136ADD0880DD8A1C84C0084EE6033B5",
+        "romInstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD"
+      },
+      {
+        "address": 327436,
+        "sourceStatement": "move.w #BATTLE_NORTH_CLIFF,d0",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "0258AFCE6E9A4B7FD1FB109164E1C9042CB1BBB4CB230A1F6C69212AA5617844",
+        "h1StatementSha256": "6ED25F5DC4BD1442507575423AF8098B4EF4996A5417DF5F0E6AC30B7411BA5C",
+        "romInstructionSha256": "0258AFCE6E9A4B7FD1FB109164E1C9042CB1BBB4CB230A1F6C69212AA5617844"
+      },
+      {
+        "address": 327440,
+        "sourceStatement": "jsr CheckRandomBattle",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A",
+        "h1StatementSha256": "53B8DBAFBAAE28681C3F1B13572F071A984843395F5B239425237371E4B8EE7E",
+        "romInstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A"
+      },
+      {
+        "address": 327446,
+        "sourceStatement": "bra.s return_4FF22",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "F3DF0A62B10F205B0F29768AA3D69E777154CAAA179F64AABB0A4899C666B017",
+        "h1StatementSha256": "CA12F6826FDA2533D7E4758B14377F9156C387DD3AD6319B792B9C4CC914EA21",
+        "romInstructionSha256": "0C8BA0F0C16B077EB2110FF67BB3EA7E2C08D9494D21D2F7C468EA88250EB5B6"
+      },
+      {
+        "address": 327448,
+        "sourceStatement": "move.w #BATTLE_TO_NORTH_PARMECIA,d0",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "BC400F2E893A203F6CCAF0FD513EDA6557D510C967B2207CD71F74F6AA6477CE",
+        "h1StatementSha256": "F2294AC84CD539C35C6060C3ADBFC9AD89DBC74D51B5307298493F8E90A2D0AF",
+        "romInstructionSha256": "BC400F2E893A203F6CCAF0FD513EDA6557D510C967B2207CD71F74F6AA6477CE"
+      },
+      {
+        "address": 327452,
+        "sourceStatement": "jsr CheckRandomBattle",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A",
+        "h1StatementSha256": "53B8DBAFBAAE28681C3F1B13572F071A984843395F5B239425237371E4B8EE7E",
+        "romInstructionSha256": "78B9609538975133F1A5AF5FB708CCEFAFD21357BA2EC6EC1FC17CAB8539949A"
+      },
+      {
+        "address": 327458,
+        "sourceStatement": "rts",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD",
+        "h1StatementSha256": "2E303736208C8DE17740991F4D89E8BA4136ADD0880DD8A1C84C0084EE6033B5",
+        "romInstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD"
+      }
+    ],
+    "functionAnchors": [
+      {
+        "address": 292950,
+        "sourceStatement": "movem.l d1/d6-d7,-(sp)",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "88618A6927CCD958410DD84FCBCD115E27DD121E9F76A7AD57B7F18850418568",
+        "h1StatementSha256": "5EBF0CDCB244A75CBB4A00DC42A45B1B1FFB74677DF14244250C5D285126466B",
+        "romInstructionSha256": "88618A6927CCD958410DD84FCBCD115E27DD121E9F76A7AD57B7F18850418568"
+      },
+      {
+        "address": 292954,
+        "sourceStatement": "move.w #BATTLE_COMPLETED_FLAGS_START,d1",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "2C5340949DF7817C563D20FB65B0D1BC143C62A1DCCC20880C29A230B380E2F7",
+        "h1StatementSha256": "70991560C5CEDEDD6F401553222FED74FB5F9EA3DB905050F1557B477D3DDD83",
+        "romInstructionSha256": "2C5340949DF7817C563D20FB65B0D1BC143C62A1DCCC20880C29A230B380E2F7"
+      },
+      {
+        "address": 292958,
+        "sourceStatement": "add.w d0,d1",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "2B8F0A0A5427D9C2ED674E6C9D3F40C35D98832D7347FE6298758AC53A9F9DF2",
+        "h1StatementSha256": "48EEBDD5362CB4833491B72FDEBE2D4B6916D598DD52FF8D627500413E65B68B",
+        "romInstructionSha256": "2B8F0A0A5427D9C2ED674E6C9D3F40C35D98832D7347FE6298758AC53A9F9DF2"
+      },
+      {
+        "address": 292960,
+        "sourceStatement": "jsr j_CheckFlag",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "A84DE4B92C1452AB5DC0C2F269B5A8EFFF5C3E86C94764C674C031D187863898",
+        "h1StatementSha256": "C8099FC48D19C29852BFB64C6BB33A872C638B9255705EABFFCC638F3EEE6AFA",
+        "romInstructionSha256": "A84DE4B92C1452AB5DC0C2F269B5A8EFFF5C3E86C94764C674C031D187863898"
+      },
+      {
+        "address": 292966,
+        "sourceStatement": "bne.s loc_4786E",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "h1StatementSha256": "E17AF6C1EBD708D409208895E7B88B96CFF2A85FC48710A01E947E73BFD2ECAE",
+        "romInstructionSha256": "B3529F78982D3E1F0E3966CA195E56A9A3825209FC606FB231C0855A98FA25A8"
+      },
+      {
+        "address": 292968,
+        "sourceStatement": "moveq #-1,d1",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "D0F2CC98C4828757C981B0274A7F40881FE7B055895951F258E614005CE86EE9",
+        "h1StatementSha256": "21BA8EA336C6D9675595B5EB6FC0E9C63A8DCE4183B34748CE3B6940902890A9",
+        "romInstructionSha256": "D0F2CC98C4828757C981B0274A7F40881FE7B055895951F258E614005CE86EE9"
+      },
+      {
+        "address": 292970,
+        "sourceStatement": "bra.w loc_47896",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "2BAAED212BEBC4EBEEB19752C47FF7C4420ADF7806F577722B487A08B605EE13",
+        "h1StatementSha256": "042375826F3536AC3B376DAE4CF315E81173D1D9BA310FDEDD4D835EFBD7B7B2",
+        "romInstructionSha256": "C2903C49822DB70977EC275DBA052289F4613EA5264C694099739637375179E1"
+      },
+      {
+        "address": 292974,
+        "sourceStatement": "tst.w ((STEP_COUNTER-$1000000)).w",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "9CA38E1E58EFB7A8BE9D2D4664B01122672085A9627E3ED7338031010312FE19",
+        "h1StatementSha256": "5AC2E2DD5DFBFB4CAD38FB235F9E2546C62378C30186BC1574E0408CEA685E81",
+        "romInstructionSha256": "9CA38E1E58EFB7A8BE9D2D4664B01122672085A9627E3ED7338031010312FE19"
+      },
+      {
+        "address": 292978,
+        "sourceStatement": "beq.s loc_4787A",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "78F993C3392521C9DB0E0819B09F95C5C4141EF1CAD923ADE3BEE913BC6BDFD2",
+        "h1StatementSha256": "4245E6607AECA5CE815DD86FAE9ED6F01365AF00D677C9E3099A58D022855753",
+        "romInstructionSha256": "C6988A6881F0312AED6878FE6F40767807D62E1A004432BC4CDB19C302ED47FF"
+      },
+      {
+        "address": 292980,
+        "sourceStatement": "clr.w d1",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "296D71A7F66E75B751C597094536329DCF2CF484F83E475D91F7AEA1FF4C9738",
+        "h1StatementSha256": "E62283F3DA017699AC98DCB81E8F03BE14AB9836DC229E8E71FA6C71554FB470",
+        "romInstructionSha256": "296D71A7F66E75B751C597094536329DCF2CF484F83E475D91F7AEA1FF4C9738"
+      },
+      {
+        "address": 292982,
+        "sourceStatement": "bra.w loc_47896",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "2BAAED212BEBC4EBEEB19752C47FF7C4420ADF7806F577722B487A08B605EE13",
+        "h1StatementSha256": "042375826F3536AC3B376DAE4CF315E81173D1D9BA310FDEDD4D835EFBD7B7B2",
+        "romInstructionSha256": "5843C2FB9AA98FFDA5E774498B6F261D6F4E16EABCF7684704531A8E36942F28"
+      },
+      {
+        "address": 292986,
+        "sourceStatement": "moveq #8,d6",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "BE4DF54C9B58576B4BDB6FE51DAA8496A38231799CE92D5894AAACA26F2E5DF5",
+        "h1StatementSha256": "63D099F2AE8322C5BD1F60629686B2FC054F7372EC80E69AE6399C2DADD1D0FD",
+        "romInstructionSha256": "BE4DF54C9B58576B4BDB6FE51DAA8496A38231799CE92D5894AAACA26F2E5DF5"
+      },
+      {
+        "address": 292988,
+        "sourceStatement": "jsr (GenerateRandomNumber).w",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "EF89DFBBFF9C4B7533B7898C3C029DDB01D03C2A7D00A6331E9F76F98ACDD4F6",
+        "h1StatementSha256": "A0950EE849672F25E3DC2CBEB3CD235F2BA28EB5E39149D7A79A59083A9B4A00",
+        "romInstructionSha256": "EF89DFBBFF9C4B7533B7898C3C029DDB01D03C2A7D00A6331E9F76F98ACDD4F6"
+      },
+      {
+        "address": 292992,
+        "sourceStatement": "tst.w d7",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "EE4781E782F3CC9D2AA776386D3B83040BD98F7EC4E273560C3E18F96D46D718",
+        "h1StatementSha256": "49AC9D502BFB9D15F8B7E91BD51EFD1180058BEE8AA27A36723ABE5FAA96AF97",
+        "romInstructionSha256": "EE4781E782F3CC9D2AA776386D3B83040BD98F7EC4E273560C3E18F96D46D718"
+      },
+      {
+        "address": 292994,
+        "sourceStatement": "bne.s loc_47888",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "887A0529FD9D76EB33C0EC808C05DAAF32FA9F5E21E4C32224FB4BFAAA0AF385",
+        "h1StatementSha256": "BE26CF02AFF936FEAF52B38BEA86AB9D8F8E066ECE1AB0D83C97F78BB57835F5",
+        "romInstructionSha256": "90A9CC7163C4B805D0E1901427A03821EEF88A18D24B361626281E01A5C0A18D"
+      },
+      {
+        "address": 292996,
+        "sourceStatement": "moveq #-1,d1",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "D0F2CC98C4828757C981B0274A7F40881FE7B055895951F258E614005CE86EE9",
+        "h1StatementSha256": "21BA8EA336C6D9675595B5EB6FC0E9C63A8DCE4183B34748CE3B6940902890A9",
+        "romInstructionSha256": "D0F2CC98C4828757C981B0274A7F40881FE7B055895951F258E614005CE86EE9"
+      },
+      {
+        "address": 292998,
+        "sourceStatement": "bra.s loc_47896",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "F3DF0A62B10F205B0F29768AA3D69E777154CAAA179F64AABB0A4899C666B017",
+        "h1StatementSha256": "C3620D6496490C5CDC15096FF73D1A9627C8AFA28863F81974F1E03267810DC1",
+        "romInstructionSha256": "B2FAB9602BAE9BEC33D7263B66C8499F771B972CF0918EF82361E86463B05624"
+      },
+      {
+        "address": 293000,
+        "sourceStatement": "clr.w d1",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "296D71A7F66E75B751C597094536329DCF2CF484F83E475D91F7AEA1FF4C9738",
+        "h1StatementSha256": "E62283F3DA017699AC98DCB81E8F03BE14AB9836DC229E8E71FA6C71554FB470",
+        "romInstructionSha256": "296D71A7F66E75B751C597094536329DCF2CF484F83E475D91F7AEA1FF4C9738"
+      },
+      {
+        "address": 293002,
+        "sourceStatement": "moveq #4,d6",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "EFA4CA699B405D918E3D6E85A98F0C96E019FF84C7C3E82394886A28042D0A52",
+        "h1StatementSha256": "B0EFFCBA97081ACFF9778B7F314FFF5275E0D05B54B21A64A1E520221A8E188A",
+        "romInstructionSha256": "EFA4CA699B405D918E3D6E85A98F0C96E019FF84C7C3E82394886A28042D0A52"
+      },
+      {
+        "address": 293004,
+        "sourceStatement": "jsr (GenerateRandomNumber).w",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "EF89DFBBFF9C4B7533B7898C3C029DDB01D03C2A7D00A6331E9F76F98ACDD4F6",
+        "h1StatementSha256": "A0950EE849672F25E3DC2CBEB3CD235F2BA28EB5E39149D7A79A59083A9B4A00",
+        "romInstructionSha256": "EF89DFBBFF9C4B7533B7898C3C029DDB01D03C2A7D00A6331E9F76F98ACDD4F6"
+      },
+      {
+        "address": 293008,
+        "sourceStatement": "addq.l #2,d7",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "0597F422744D4BAB1E8ED66DCE1C47FE11CA63C8918069B0703EC3603B8C9925",
+        "h1StatementSha256": "026642C023C8D14904365D7416858662106361A3DD59D4219EB666A1B4B37ACF",
+        "romInstructionSha256": "0597F422744D4BAB1E8ED66DCE1C47FE11CA63C8918069B0703EC3603B8C9925"
+      },
+      {
+        "address": 293010,
+        "sourceStatement": "move.w d7,((STEP_COUNTER-$1000000)).w",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "D4036B7F9BEA1A492F10929049E51CAEFD78C1DD95255B3DA511FA3969634197",
+        "h1StatementSha256": "3E225F77DC29908400801DDEA976384361995A4E3B870D951AA60A8BAB1C8D94",
+        "romInstructionSha256": "D4036B7F9BEA1A492F10929049E51CAEFD78C1DD95255B3DA511FA3969634197"
+      },
+      {
+        "address": 293014,
+        "sourceStatement": "tst.w d1",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "2C24576872F7B538B5A2C8E8B9DB551F58C49B5316AAE1AF86D201E44908D0E2",
+        "h1StatementSha256": "0E229AF9CE29EFE2981861E0C9AED590797CC2E1F9CF3D498A5AAC7DB264AC4A",
+        "romInstructionSha256": "2C24576872F7B538B5A2C8E8B9DB551F58C49B5316AAE1AF86D201E44908D0E2"
+      },
+      {
+        "address": 293016,
+        "sourceStatement": "beq.s loc_478C0",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "78F993C3392521C9DB0E0819B09F95C5C4141EF1CAD923ADE3BEE913BC6BDFD2",
+        "h1StatementSha256": "A1926E4EA163B7DA7926B00C79391B4426C15E88FACE988C7086E4DB029B73B3",
+        "romInstructionSha256": "BB7F2C7E0EE69789110F2C43258745285AF3F53079EFFF7722C707D2411CA8E0"
+      },
+      {
+        "address": 293018,
+        "sourceStatement": "move.w #BATTLE_UNLOCKED_FLAGS_START,d1",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "AA17BB38076928EE59012D511A67ECB45F02C202588D4CB8A342435B0326B0F4",
+        "h1StatementSha256": "1ECD365AF8F8063A67C779D96DBF2622D2FBA8E929C1F9CAD983318C7A80667F",
+        "romInstructionSha256": "AA17BB38076928EE59012D511A67ECB45F02C202588D4CB8A342435B0326B0F4"
+      },
+      {
+        "address": 293022,
+        "sourceStatement": "add.w d0,d1",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "2B8F0A0A5427D9C2ED674E6C9D3F40C35D98832D7347FE6298758AC53A9F9DF2",
+        "h1StatementSha256": "48EEBDD5362CB4833491B72FDEBE2D4B6916D598DD52FF8D627500413E65B68B",
+        "romInstructionSha256": "2B8F0A0A5427D9C2ED674E6C9D3F40C35D98832D7347FE6298758AC53A9F9DF2"
+      },
+      {
+        "address": 293024,
+        "sourceStatement": "jsr j_SetFlag",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "EEBFCE9048D90D5E36C207815C653D3637A4EF3C39F140B8DE5EF95B76F7F466",
+        "h1StatementSha256": "3CA86CAA35854E348C7299DFF3302006FB3FAE1D26754483F9CFB21B0E3A4EB2",
+        "romInstructionSha256": "EEBFCE9048D90D5E36C207815C653D3637A4EF3C39F140B8DE5EF95B76F7F466"
+      },
+      {
+        "address": 293030,
+        "sourceStatement": "move.l #$100FF,((MAP_EVENT_TYPE-$1000000)).w",
+        "h1ListedByteCount": 8,
+        "romEncodedByteCount": 8,
+        "h1InstructionSha256": "85AA920E9EA2D6CAC634D58598F2925D8D9B762394B519DD176C21EEAE563C44",
+        "h1StatementSha256": "3BB3561C214A7CF5D03AE1085002424041E5D772286D629CAD482DC13CA6AD7A",
+        "romInstructionSha256": "85AA920E9EA2D6CAC634D58598F2925D8D9B762394B519DD176C21EEAE563C44"
+      },
+      {
+        "address": 293038,
+        "sourceStatement": "move.w #30000,((STEP_COUNTER-$1000000)).w",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "E493155ADE6C77A14D464A8EF03BF9CF190B0A9115C8E163A175E768975C374A",
+        "h1StatementSha256": "3197B54B457A70B9F50DAF995C477DA8143570D3095FC836CA15F2D80CF7C892",
+        "romInstructionSha256": "E493155ADE6C77A14D464A8EF03BF9CF190B0A9115C8E163A175E768975C374A"
+      },
+      {
+        "address": 293044,
+        "sourceStatement": "jsr (WaitForViewScrollEnd).w",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "8432D3D7EFDA48BA9AA0ED20E77605C5C2BF538E73F012565CF058F78E7B503C",
+        "h1StatementSha256": "701966CA11A90B0CB34CCDDC2E236CD7674840BDCDBABF964E2CC8EDC74E6823",
+        "romInstructionSha256": "8432D3D7EFDA48BA9AA0ED20E77605C5C2BF538E73F012565CF058F78E7B503C"
+      },
+      {
+        "address": 293048,
+        "sourceStatement": "sndCom SFX_BOOST",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "837C1D7C41AF6A9BB9F0EEAA9DEFCF5347E827F2E443AB9B614FB54DAD4DAFC7",
+        "h1StatementSha256": "952E33EE8ADFB3A0E70A960120086F711DDD023CD97DAAB7F59EFBA324AA8C4E",
+        "romInstructionSha256": "837C1D7C41AF6A9BB9F0EEAA9DEFCF5347E827F2E443AB9B614FB54DAD4DAFC7"
+      },
+      {
+        "address": 293052,
+        "sourceStatement": "bsr.w ExecuteFlashScreenScript",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "A2D398922901344D08180DC41D3E9D73D8C148C7F6E092835BBB28E02DBCF184",
+        "h1StatementSha256": "0FA80041AC04F0E5AAB850F494E424FD9C393B73E58429EEEE00128625BE6725",
+        "romInstructionSha256": "E0EEF2798D5C30A9A1089AF375A6B98CF28EB5EB3F7937F23283FC8ED7A14C59"
+      },
+      {
+        "address": 293056,
+        "sourceStatement": "movem.l (sp)+,d1/d6-d7",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "DA3EF8FC2D5E7A074C3E881624DDC238E82C1ACADE415432D8E7AD21B28B6409",
+        "h1StatementSha256": "41AAADE1AAA4BB65E1661F062E97B01193BF669F87A41EF25E072A82EC3560E6",
+        "romInstructionSha256": "DA3EF8FC2D5E7A074C3E881624DDC238E82C1ACADE415432D8E7AD21B28B6409"
+      },
+      {
+        "address": 293060,
+        "sourceStatement": "rts",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD",
+        "h1StatementSha256": "2E303736208C8DE17740991F4D89E8BA4136ADD0880DD8A1C84C0084EE6033B5",
+        "romInstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD"
+      },
+      {
+        "address": 293050,
+        "sourceStatement": "dc.w SFX_BOOST",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "8C941A526A0ADC76166600D48309556769AAC616405011874D3CA7C2048064E7",
+        "h1StatementSha256": "CE72691EA129E87503388CD0D5E7F6C1EE9D7023D7C3981EF05E12DB37A62D4C",
+        "romInstructionSha256": "8C941A526A0ADC76166600D48309556769AAC616405011874D3CA7C2048064E7"
+      }
+    ],
+    "retainedServiceAnchors": [
+      {
+        "address": 33380,
+        "sourceStatement": "j_CheckFlag:",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "09F97D4A50BD92D44C0ACF49EAACFBF349585D0E6A56E561962684D305BA84F5",
+        "h1StatementSha256": "2D8DC684FFDC482636E4D71303E765A103E9398370B0A956B8C4DA0F2E681A2F",
+        "romInstructionSha256": "8E54F1F257C163A5E8B0C28E4CC439E2610A41C5756DDD69B2DE4D4EE2CF9E95"
+      },
+      {
+        "address": 39092,
+        "sourceStatement": "CheckFlag:",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "ED3FEB179DC869DF8D6650A69D152355F69CD0457C9E074FD1911C0E617DD29E",
+        "h1StatementSha256": "4D29F8C44258B173EA7ECDFD0EC9F54211A6F9950EBD1E8E786101DD6AAD7035",
+        "romInstructionSha256": "ED3FEB179DC869DF8D6650A69D152355F69CD0457C9E074FD1911C0E617DD29E"
+      },
+      {
+        "address": 33384,
+        "sourceStatement": "j_SetFlag:",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "09F97D4A50BD92D44C0ACF49EAACFBF349585D0E6A56E561962684D305BA84F5",
+        "h1StatementSha256": "14CC0FCBB4F274EB782A04CE3CB3A9B4CCFE17505A82926C7AC298BA57FEEB7A",
+        "romInstructionSha256": "60A1BF30682A6ACEBED15CF28835C01DC1D186C1CF79038F53AAAF8705BBD722"
+      },
+      {
+        "address": 39108,
+        "sourceStatement": "SetFlag:",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "ED3FEB179DC869DF8D6650A69D152355F69CD0457C9E074FD1911C0E617DD29E",
+        "h1StatementSha256": "4D29F8C44258B173EA7ECDFD0EC9F54211A6F9950EBD1E8E786101DD6AAD7035",
+        "romInstructionSha256": "ED3FEB179DC869DF8D6650A69D152355F69CD0457C9E074FD1911C0E617DD29E"
+      },
+      {
+        "address": 5632,
+        "sourceStatement": "GenerateRandomNumber:",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "h1InstructionSha256": "09AB647E21357EB9B6F8851F6E053EA8DB1405E18009E9F130B90684608B8EBE",
+        "h1StatementSha256": "F2DD03AFF4D2A43F3952A94EA6C6CD23DB1C3759DFDB502EF6049249EA04F647",
+        "romInstructionSha256": "09AB647E21357EB9B6F8851F6E053EA8DB1405E18009E9F130B90684608B8EBE"
+      },
+      {
+        "address": 18184,
+        "sourceStatement": "WaitForViewScrollEnd:",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "h1InstructionSha256": "0CCC1CA29E3E1289999A9D8DBDB4564F151E2253DA3725006322F26C12BAA36A",
+        "h1StatementSha256": "BE6D9C31E5AD23F2C601086BDBC07B30FEA5A4313C2DA16697BBBAF80B575596",
+        "romInstructionSha256": "0CCC1CA29E3E1289999A9D8DBDB4564F151E2253DA3725006322F26C12BAA36A"
+      },
+      {
+        "address": 294634,
+        "sourceStatement": "ExecuteFlashScreenScript:",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "h1InstructionSha256": "6B54ECA5EF29C8D9035A05D93C51043D2F8701E7266475BF6BFB44A272231CEE",
+        "h1StatementSha256": "DA7796499D6415EDCF3EE9A47CF6667AED5243D9A507B78D2A683017F456A839",
+        "romInstructionSha256": "53B2D30B26D409306CA6ADA97C9CFA206423089C25D51129D20D8CB81B826793"
+      }
+    ]
+  },
+  "retainedOwners": {
+    "mapEvents": {
+      "fixtureId": "sf2-map-events-static-v1",
+      "fixtureSha256": "082FEED85338A776E734777255678650B40B57C3517ECA9DD54EEC8C7F8558C6"
+    }
+  },
+  "eventRandomBattleState": {
+    "functionAddresses": {
+      "entryAddress": 292950,
+      "endAddressExclusive": 293062,
+      "sourceStatementCount": 34,
+      "h1InstructionRowCount": 35,
+      "ownedByteCount": 112,
+      "statements": [
+        {
+          "address": 292950,
+          "sourceStatement": "movem.l d1/d6-d7,-(sp)"
+        },
+        {
+          "address": 292954,
+          "sourceStatement": "move.w #BATTLE_COMPLETED_FLAGS_START,d1"
+        },
+        {
+          "address": 292958,
+          "sourceStatement": "add.w d0,d1"
+        },
+        {
+          "address": 292960,
+          "sourceStatement": "jsr j_CheckFlag"
+        },
+        {
+          "address": 292966,
+          "sourceStatement": "bne.s loc_4786E"
+        },
+        {
+          "address": 292968,
+          "sourceStatement": "moveq #-1,d1"
+        },
+        {
+          "address": 292970,
+          "sourceStatement": "bra.w loc_47896"
+        },
+        {
+          "address": 292974,
+          "sourceStatement": "tst.w ((STEP_COUNTER-$1000000)).w"
+        },
+        {
+          "address": 292978,
+          "sourceStatement": "beq.s loc_4787A"
+        },
+        {
+          "address": 292980,
+          "sourceStatement": "clr.w d1"
+        },
+        {
+          "address": 292982,
+          "sourceStatement": "bra.w loc_47896"
+        },
+        {
+          "address": 292986,
+          "sourceStatement": "moveq #8,d6"
+        },
+        {
+          "address": 292988,
+          "sourceStatement": "jsr (GenerateRandomNumber).w"
+        },
+        {
+          "address": 292992,
+          "sourceStatement": "tst.w d7"
+        },
+        {
+          "address": 292994,
+          "sourceStatement": "bne.s loc_47888"
+        },
+        {
+          "address": 292996,
+          "sourceStatement": "moveq #-1,d1"
+        },
+        {
+          "address": 292998,
+          "sourceStatement": "bra.s loc_47896"
+        },
+        {
+          "address": 293000,
+          "sourceStatement": "clr.w d1"
+        },
+        {
+          "address": 293002,
+          "sourceStatement": "moveq #4,d6"
+        },
+        {
+          "address": 293004,
+          "sourceStatement": "jsr (GenerateRandomNumber).w"
+        },
+        {
+          "address": 293008,
+          "sourceStatement": "addq.l #2,d7"
+        },
+        {
+          "address": 293010,
+          "sourceStatement": "move.w d7,((STEP_COUNTER-$1000000)).w"
+        },
+        {
+          "address": 293014,
+          "sourceStatement": "tst.w d1"
+        },
+        {
+          "address": 293016,
+          "sourceStatement": "beq.s loc_478C0"
+        },
+        {
+          "address": 293018,
+          "sourceStatement": "move.w #BATTLE_UNLOCKED_FLAGS_START,d1"
+        },
+        {
+          "address": 293022,
+          "sourceStatement": "add.w d0,d1"
+        },
+        {
+          "address": 293024,
+          "sourceStatement": "jsr j_SetFlag"
+        },
+        {
+          "address": 293030,
+          "sourceStatement": "move.l #$100FF,((MAP_EVENT_TYPE-$1000000)).w"
+        },
+        {
+          "address": 293038,
+          "sourceStatement": "move.w #30000,((STEP_COUNTER-$1000000)).w"
+        },
+        {
+          "address": 293044,
+          "sourceStatement": "jsr (WaitForViewScrollEnd).w"
+        },
+        {
+          "address": 293048,
+          "sourceStatement": "sndCom SFX_BOOST"
+        },
+        {
+          "address": 293052,
+          "sourceStatement": "bsr.w ExecuteFlashScreenScript"
+        },
+        {
+          "address": 293056,
+          "sourceStatement": "movem.l (sp)+,d1/d6-d7"
+        },
+        {
+          "address": 293060,
+          "sourceStatement": "rts"
+        }
+      ]
+    },
+    "battleIdentities": {
+      "BATTLE_TO_HAWEL_HOUSE": {
+        "value": 3
+      },
+      "BATTLE_DEVIL_TAIL": {
+        "value": 21
+      },
+      "BATTLE_OUTSIDE_ELVEN_VILLAGE": {
+        "value": 19
+      },
+      "BATTLE_TO_TAROS_SHRINE": {
+        "value": 17
+      },
+      "BATTLE_SOUTHEAST_DESERT": {
+        "value": 14
+      },
+      "BATTLE_OUTSIDE_KETTO": {
+        "value": 26
+      },
+      "BATTLE_NORTH_CLIFF": {
+        "value": 8
+      },
+      "BATTLE_TO_NORTH_PARMECIA": {
+        "value": 24
+      }
+    },
+    "callerSites": {
+      "map66-default-battle3": {
+        "callerOrder": 0,
+        "tableSymbol": "ms_map66_ZoneEvents",
+        "tableEntryAddress": 326288,
+        "programSymbol": "Map66_DefaultZoneEvent",
+        "sourcePath": "data/maps/entries/map66/mapsetups/s3_zoneevents.asm",
+        "battleIdentity": "BATTLE_TO_HAWEL_HOUSE",
+        "battleId": 3,
+        "setup": {
+          "address": 326356,
+          "sourceLine": 53,
+          "mnemonic": "move",
+          "sizeSuffix": ".w",
+          "operandTexts": [
+            "#BATTLE_TO_HAWEL_HOUSE",
+            "d0"
+          ],
+          "family": "raw-68000-instruction",
+          "controlFlowKind": "ordinary",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        },
+        "call": {
+          "address": 326360,
+          "sourceLine": 54,
+          "mnemonic": "jsr",
+          "sizeSuffix": null,
+          "operandTexts": [
+            "CheckRandomBattle"
+          ],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "direct-call",
+          "instructionTarget": "CheckRandomBattle",
+          "effectiveTarget": "CheckRandomBattle"
+        },
+        "continuation": {
+          "address": 326366,
+          "sourceLine": 55,
+          "mnemonic": "rts",
+          "sizeSuffix": null,
+          "operandTexts": [],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "return",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        }
+      },
+      "map67-default-battle21": {
+        "callerOrder": 1,
+        "tableSymbol": "ms_map67_ZoneEvents",
+        "tableEntryAddress": 326412,
+        "programSymbol": "Map67_DefaultZoneEvent",
+        "sourcePath": "data/maps/entries/map67/mapsetups/s3_zoneevents.asm",
+        "battleIdentity": "BATTLE_DEVIL_TAIL",
+        "battleId": 21,
+        "setup": {
+          "address": 326488,
+          "sourceLine": 56,
+          "mnemonic": "move",
+          "sizeSuffix": ".w",
+          "operandTexts": [
+            "#BATTLE_DEVIL_TAIL",
+            "d0"
+          ],
+          "family": "raw-68000-instruction",
+          "controlFlowKind": "ordinary",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        },
+        "call": {
+          "address": 326492,
+          "sourceLine": 57,
+          "mnemonic": "jsr",
+          "sizeSuffix": null,
+          "operandTexts": [
+            "CheckRandomBattle"
+          ],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "direct-call",
+          "instructionTarget": "CheckRandomBattle",
+          "effectiveTarget": "CheckRandomBattle"
+        },
+        "continuation": {
+          "address": 326498,
+          "sourceLine": 58,
+          "mnemonic": "rts",
+          "sizeSuffix": null,
+          "operandTexts": [],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "return",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        }
+      },
+      "map68-default-battle19": {
+        "callerOrder": 2,
+        "tableSymbol": "ms_map68_ZoneEvents",
+        "tableEntryAddress": 327020,
+        "programSymbol": "Map68_DefaultZoneEvent",
+        "sourcePath": "data/maps/entries/map68/mapsetups/s3_zoneevents.asm",
+        "battleIdentity": "BATTLE_OUTSIDE_ELVEN_VILLAGE",
+        "battleId": 19,
+        "setup": {
+          "address": 327024,
+          "sourceLine": 12,
+          "mnemonic": "move",
+          "sizeSuffix": ".w",
+          "operandTexts": [
+            "#BATTLE_OUTSIDE_ELVEN_VILLAGE",
+            "d0"
+          ],
+          "family": "raw-68000-instruction",
+          "controlFlowKind": "ordinary",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        },
+        "call": {
+          "address": 327028,
+          "sourceLine": 13,
+          "mnemonic": "jsr",
+          "sizeSuffix": null,
+          "operandTexts": [
+            "CheckRandomBattle"
+          ],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "direct-call",
+          "instructionTarget": "CheckRandomBattle",
+          "effectiveTarget": "CheckRandomBattle"
+        },
+        "continuation": {
+          "address": 327034,
+          "sourceLine": 14,
+          "mnemonic": "rts",
+          "sizeSuffix": null,
+          "operandTexts": [],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "return",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        }
+      },
+      "map69-event0-battle17": {
+        "callerOrder": 3,
+        "tableSymbol": "ms_map69_ZoneEvents",
+        "tableEntryAddress": 327074,
+        "programSymbol": "Map69_ZoneEvent0",
+        "sourcePath": "data/maps/entries/map69/mapsetups/s3_zoneevents.asm",
+        "battleIdentity": "BATTLE_TO_TAROS_SHRINE",
+        "battleId": 17,
+        "setup": {
+          "address": 327090,
+          "sourceLine": 15,
+          "mnemonic": "move",
+          "sizeSuffix": ".w",
+          "operandTexts": [
+            "#BATTLE_TO_TAROS_SHRINE",
+            "d0"
+          ],
+          "family": "raw-68000-instruction",
+          "controlFlowKind": "ordinary",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        },
+        "call": {
+          "address": 327094,
+          "sourceLine": 16,
+          "mnemonic": "jsr",
+          "sizeSuffix": null,
+          "operandTexts": [
+            "CheckRandomBattle"
+          ],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "direct-call",
+          "instructionTarget": "CheckRandomBattle",
+          "effectiveTarget": "CheckRandomBattle"
+        },
+        "continuation": {
+          "address": 327100,
+          "sourceLine": 17,
+          "mnemonic": "rts",
+          "sizeSuffix": null,
+          "operandTexts": [],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "return",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        }
+      },
+      "map70-event0-battle14": {
+        "callerOrder": 4,
+        "tableSymbol": "ms_map70_ZoneEvents",
+        "tableEntryAddress": 327166,
+        "programSymbol": "Map70_ZoneEvent0",
+        "sourcePath": "data/maps/entries/map70/mapsetups/s3_zoneevents.asm",
+        "battleIdentity": "BATTLE_SOUTHEAST_DESERT",
+        "battleId": 14,
+        "setup": {
+          "address": 327186,
+          "sourceLine": 16,
+          "mnemonic": "move",
+          "sizeSuffix": ".w",
+          "operandTexts": [
+            "#BATTLE_SOUTHEAST_DESERT",
+            "d0"
+          ],
+          "family": "raw-68000-instruction",
+          "controlFlowKind": "ordinary",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        },
+        "call": {
+          "address": 327190,
+          "sourceLine": 17,
+          "mnemonic": "jsr",
+          "sizeSuffix": null,
+          "operandTexts": [
+            "CheckRandomBattle"
+          ],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "direct-call",
+          "instructionTarget": "CheckRandomBattle",
+          "effectiveTarget": "CheckRandomBattle"
+        },
+        "continuation": {
+          "address": 327196,
+          "sourceLine": 18,
+          "mnemonic": "rts",
+          "sizeSuffix": null,
+          "operandTexts": [],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "return",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        }
+      },
+      "map72-event0-battle26": {
+        "callerOrder": 5,
+        "tableSymbol": "ms_map72_ZoneEvents",
+        "tableEntryAddress": 327268,
+        "programSymbol": "Map72_ZoneEvent0",
+        "sourcePath": "data/maps/entries/map72/mapsetups/s3_zoneevents.asm",
+        "battleIdentity": "BATTLE_OUTSIDE_KETTO",
+        "battleId": 26,
+        "setup": {
+          "address": 327308,
+          "sourceLine": 21,
+          "mnemonic": "move",
+          "sizeSuffix": ".w",
+          "operandTexts": [
+            "#BATTLE_OUTSIDE_KETTO",
+            "d0"
+          ],
+          "family": "raw-68000-instruction",
+          "controlFlowKind": "ordinary",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        },
+        "call": {
+          "address": 327312,
+          "sourceLine": 22,
+          "mnemonic": "jsr",
+          "sizeSuffix": null,
+          "operandTexts": [
+            "CheckRandomBattle"
+          ],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "direct-call",
+          "instructionTarget": "CheckRandomBattle",
+          "effectiveTarget": "CheckRandomBattle"
+        },
+        "continuation": {
+          "address": 327318,
+          "sourceLine": 23,
+          "mnemonic": "rts",
+          "sizeSuffix": null,
+          "operandTexts": [],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "return",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        }
+      },
+      "map72-default-north-cliff-battle8": {
+        "callerOrder": 6,
+        "tableSymbol": "ms_map72_ZoneEvents",
+        "tableEntryAddress": 327268,
+        "programSymbol": "Map72_DefaultZoneEvent",
+        "sourcePath": "data/maps/entries/map72/mapsetups/s3_zoneevents.asm",
+        "battleIdentity": "BATTLE_NORTH_CLIFF",
+        "battleId": 8,
+        "setup": {
+          "address": 327436,
+          "sourceLine": 85,
+          "mnemonic": "move",
+          "sizeSuffix": ".w",
+          "operandTexts": [
+            "#BATTLE_NORTH_CLIFF",
+            "d0"
+          ],
+          "family": "raw-68000-instruction",
+          "controlFlowKind": "ordinary",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        },
+        "call": {
+          "address": 327440,
+          "sourceLine": 86,
+          "mnemonic": "jsr",
+          "sizeSuffix": null,
+          "operandTexts": [
+            "CheckRandomBattle"
+          ],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "direct-call",
+          "instructionTarget": "CheckRandomBattle",
+          "effectiveTarget": "CheckRandomBattle"
+        },
+        "continuation": {
+          "address": 327446,
+          "sourceLine": 87,
+          "mnemonic": "bra",
+          "sizeSuffix": ".s",
+          "operandTexts": [
+            "return_4FF22"
+          ],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "unconditional-branch",
+          "instructionTarget": "return_4FF22",
+          "effectiveTarget": "return_4FF22"
+        }
+      },
+      "map72-default-north-parmecia-battle24": {
+        "callerOrder": 7,
+        "tableSymbol": "ms_map72_ZoneEvents",
+        "tableEntryAddress": 327268,
+        "programSymbol": "Map72_DefaultZoneEvent",
+        "sourcePath": "data/maps/entries/map72/mapsetups/s3_zoneevents.asm",
+        "battleIdentity": "BATTLE_TO_NORTH_PARMECIA",
+        "battleId": 24,
+        "setup": {
+          "address": 327448,
+          "sourceLine": 90,
+          "mnemonic": "move",
+          "sizeSuffix": ".w",
+          "operandTexts": [
+            "#BATTLE_TO_NORTH_PARMECIA",
+            "d0"
+          ],
+          "family": "raw-68000-instruction",
+          "controlFlowKind": "ordinary",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        },
+        "call": {
+          "address": 327452,
+          "sourceLine": 91,
+          "mnemonic": "jsr",
+          "sizeSuffix": null,
+          "operandTexts": [
+            "CheckRandomBattle"
+          ],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "direct-call",
+          "instructionTarget": "CheckRandomBattle",
+          "effectiveTarget": "CheckRandomBattle"
+        },
+        "continuation": {
+          "address": 327458,
+          "sourceLine": 94,
+          "mnemonic": "rts",
+          "sizeSuffix": null,
+          "operandTexts": [],
+          "family": "raw-68000-control-flow",
+          "controlFlowKind": "return",
+          "instructionTarget": null,
+          "effectiveTarget": null
+        }
+      }
+    },
+    "completionFlagGate": {
+      "baseSymbol": "BATTLE_COMPLETED_FLAGS_START",
+      "callAddress": 292960,
+      "branchAddress": 292966,
+      "completedBranchTarget": 292974,
+      "notCompletedReturnFlagValue": -1
+    },
+    "stepCounterGate": {
+      "symbol": "STEP_COUNTER",
+      "address": 16757142,
+      "testAddress": 292974,
+      "nonzeroBranchAddress": 292978,
+      "nonzeroReturnFlagValue": 0
+    },
+    "randomCadence": {
+      "firstRange": 8,
+      "firstCallAddress": 292988,
+      "firstZeroReturnFlagValue": -1,
+      "secondRange": 4,
+      "secondCallAddress": 293004,
+      "secondResultIncrement": 2,
+      "stepCounterWriteAddress": 293010
+    },
+    "requestWriteSequence": {
+      "unlockedFlagBaseSymbol": "BATTLE_UNLOCKED_FLAGS_START",
+      "setFlagCallAddress": 293024,
+      "mapEventTypeSymbol": "MAP_EVENT_TYPE",
+      "mapEventTypeAddress": 16754762,
+      "mapEventTypeValue": 65791,
+      "mapEventTypeWriteAddress": 293030,
+      "stepCounterValue": 30000,
+      "stepCounterWriteAddress": 293038,
+      "waitCallAddress": 293044,
+      "soundCommandAddress": 293048,
+      "soundOperandAddress": 293050,
+      "soundSymbol": "SFX_BOOST",
+      "flashCallAddress": 293052
+    },
+    "returnContract": {
+      "selectionTestAddress": 293014,
+      "selectedReturnBranchAddress": 293016,
+      "selectedReturnTarget": 293056,
+      "restoreAddress": 293056,
+      "returnAddress": 293060
+    },
+    "serviceEntries": {
+      "j_CheckFlag": {
+        "serviceOrder": 0,
+        "instructionTarget": "j_CheckFlag",
+        "instructionTargetAddress": 33380,
+        "effectiveTarget": "CheckFlag",
+        "effectiveTargetAddress": 39092,
+        "effectiveSourcePath": "code/common/stats/gameflags.asm"
+      },
+      "j_SetFlag": {
+        "serviceOrder": 1,
+        "instructionTarget": "j_SetFlag",
+        "instructionTargetAddress": 33384,
+        "effectiveTarget": "SetFlag",
+        "effectiveTargetAddress": 39108,
+        "effectiveSourcePath": "code/common/stats/gameflags.asm"
+      },
+      "GenerateRandomNumber": {
+        "serviceOrder": 2,
+        "instructionTarget": "GenerateRandomNumber",
+        "instructionTargetAddress": 5632,
+        "effectiveTarget": "GenerateRandomNumber",
+        "effectiveTargetAddress": 5632,
+        "effectiveSourcePath": "code/common/tech/randomnumbergenerator.asm"
+      },
+      "WaitForViewScrollEnd": {
+        "serviceOrder": 3,
+        "instructionTarget": "WaitForViewScrollEnd",
+        "instructionTargetAddress": 18184,
+        "effectiveTarget": "WaitForViewScrollEnd",
+        "effectiveTargetAddress": 18184,
+        "effectiveSourcePath": "code/common/maps/camerafunctions.asm"
+      },
+      "ExecuteFlashScreenScript": {
+        "serviceOrder": 4,
+        "instructionTarget": "ExecuteFlashScreenScript",
+        "instructionTargetAddress": 294634,
+        "effectiveTarget": "ExecuteFlashScreenScript",
+        "effectiveTargetAddress": 294634,
+        "effectiveSourcePath": "code/common/tech/graphics/flashwhite.asm"
+      }
+    }
+  },
+  "unknowns": {
+    "naturalCallerReachability": "Unknown",
+    "actualSelectedCaller": "Unknown",
+    "actualBattleId": "Unknown",
+    "completedFlagValueResult": "Unknown",
+    "entryStepCounter": "Unknown",
+    "firstRngResult": "Unknown",
+    "secondRngResult": "Unknown",
+    "selectedReturnPathResultRegister": "Unknown",
+    "unlockedFlagBeforeAfter": "Unknown",
+    "mapEventTypeBeforeAfter": "Unknown",
+    "stepCounterRuntimeResult": "Unknown",
+    "waitSoundFlashRuntimeCompletionPresentation": "Unknown",
+    "downstreamCheckBattleBattleLoopAdmission": "Unknown",
+    "persistenceMapSaveLoad": "Unknown"
+  },
+  "summary": {
+    "sourceIdentityCount": 18,
+    "motherProgramContextCount": 914,
+    "positiveProgramContextCount": 7,
+    "zeroProgramContextCount": 907,
+    "callerContextCount": 8,
+    "physicalTableCount": 6,
+    "sourceOperationCount": 58,
+    "h1InstructionRowCount": 59,
+    "ownedByteCount": 208,
+    "retainedServiceJoinCount": 7,
+    "anchorCount": 66
+  }
+}

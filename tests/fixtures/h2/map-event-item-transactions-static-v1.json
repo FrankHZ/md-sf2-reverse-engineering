@@ -41,7 +41,7 @@
     },
     "requestConsumption": {
       "fixtureId": "sf2-map-event-request-consumption-static-v1",
-      "fixtureSha256": "191824505CCBF3C18D9A23C95EF6B7CC3A1B0FB1A71E387035EF821857A26C88"
+      "fixtureSha256": "1721F0C239EA9C19AC302F3690829B1160776A7846C945B4C5B51F6CDAA3F26B"
     },
     "commonStats": {
       "fixtureId": "sf2-common-stats-static-v1",

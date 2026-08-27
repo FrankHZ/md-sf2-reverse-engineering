@@ -35,7 +35,7 @@ grouped Unknown queue in `map-event-interaction-state.md`.
 
 The recursive `code/common/scripting` boundary contains 29 files, 11,153 source lines, 888 global
 labels, and 576 direct call sites across entity, map, text, and end-credit helpers. Twenty-eight files
-have a representative global symbol bound to the H1 listing. They now own 126 indexed findings across
+have a representative global symbol bound to the H1 listing. They now own 127 indexed findings across
 those 28 indexed source paths. The H2 fixture keeps the exact ordered record IDs and per-source-path
 relation; membership is the general recursive `sourcePath` boundary, without an ID, subsystem,
 document, or evidence-level exception. Record count and indexed-file count are intentionally separate

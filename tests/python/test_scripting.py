@@ -49,7 +49,7 @@ def _source_record(record_id: str, source_path: str) -> dict[str, Any]:
 
 
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
-def test_scripting_recursive_source_membership_keeps_126_records_over_28_paths() -> None:
+def test_scripting_recursive_source_membership_keeps_127_records_over_28_paths() -> None:
     fixture = load_json(FIXTURE_PATH)
     output = scripting.build_scripting_inventory(UPSTREAM)
     expected = fixture["expected"]
@@ -60,7 +60,7 @@ def test_scripting_recursive_source_membership_keeps_126_records_over_28_paths()
         "indexedRecordsBySourcePath",
     ):
         assert output[field] == expected[field]
-    assert output["summary"]["indexedRecordCount"] == len(output["indexedRecordIds"]) == 126
+    assert output["summary"]["indexedRecordCount"] == len(output["indexedRecordIds"]) == 127
     assert output["summary"]["indexedFileCount"] == len(output["indexedSourcePaths"]) == 28
     assert output["summary"]["fileCount"] == 29
     assert output["summary"]["unlabeledFileCount"] == 1
@@ -70,7 +70,7 @@ def test_scripting_recursive_source_membership_keeps_126_records_over_28_paths()
         "map/mapscriptengine_1.asm"
     )
     assert len(output["indexedRecordsBySourcePath"][17]["recordIds"]) == 58
-    assert len(output["indexedRecordsBySourcePath"][19]["recordIds"]) == 16
+    assert len(output["indexedRecordsBySourcePath"][19]["recordIds"]) == 17
     assert len(output["indexedRecordsBySourcePath"][23]["recordIds"]) == 12
 
 
@@ -87,8 +87,8 @@ def test_scripting_schemas_leave_record_corpus_to_fixture_and_verifier() -> None
     ):
         assert "const" not in output_schema["properties"][field]
         assert "const" not in fixture_expected[field]
-    assert output_schema["properties"]["indexedRecordIds"].get("maxItems") != 126
-    assert fixture_expected["indexedRecordIds"].get("maxItems") != 126
+    assert output_schema["properties"]["indexedRecordIds"].get("maxItems") != 127
+    assert fixture_expected["indexedRecordIds"].get("maxItems") != 127
     assert output_summary["fileCount"] == {"const": 29}
     assert output_summary["indexedFileCount"] == {"const": 28}
     assert output_summary["unlabeledFileCount"] == {"const": 1}
@@ -482,7 +482,7 @@ def test_scripting_source_membership_accepts_new_nested_record_before_fixture_ch
 
     output = scripting.build_scripting_inventory(UPSTREAM)
     assert record_id in output["indexedRecordIds"]
-    assert output["summary"]["indexedRecordCount"] == 127
+    assert output["summary"]["indexedRecordCount"] == 128
     assert output["summary"]["indexedFileCount"] == 28
     assert record_id in output["indexedRecordsBySourcePath"][17]["recordIds"]
     destination = tmp_path / "new-member-output.json"
@@ -506,10 +506,10 @@ def test_scripting_source_membership_excludes_outside_record(
     # before any ID, subsystem, document, or evidence metadata could matter.
     output = scripting.build_scripting_inventory(UPSTREAM)
     assert "independent.owner.outside-scripting" not in output["indexedRecordIds"]
-    assert output["summary"]["indexedRecordCount"] == 126
+    assert output["summary"]["indexedRecordCount"] == 127
     destination = tmp_path / "outside-scripting-output.json"
     result = scripting.verify_scripting_inventory(UPSTREAM, output_path=destination)
-    assert result["IndexedRecords"] == 126
+    assert result["IndexedRecords"] == 127
     assert destination.is_file()
 
 
@@ -535,7 +535,7 @@ def test_scripting_rejects_under_root_record_missing_from_discovered_inventory(
 def test_scripting_build_does_not_read_golden_fixture(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(scripting, "FIXTURE", Path("does-not-exist.json"))
     output = scripting.build_scripting_inventory(UPSTREAM)
-    assert output["summary"]["indexedRecordCount"] == 126
+    assert output["summary"]["indexedRecordCount"] == 127
 
 
 def test_scripting_jump_table_parser_accepts_real_shape_and_rejects_near_misses(

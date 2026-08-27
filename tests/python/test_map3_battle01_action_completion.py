@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 
 from sf2tool.h2 import map3_battle01_action_completion as completion
-from sf2tool.h2.map_event_combatant_state import (
-    normalize_map_event_combatant_state_later_owner_index,
+from sf2tool.h2.map_event_random_battle_state import (
+    normalize_map_event_random_battle_state_later_owner_index,
 )
 from sf2tool.jsonio import load_json, validate_json
 
@@ -472,7 +472,9 @@ def test_retained_battle_actions_projection_drift_at_golden_boundary_rejects(
 
 
 def test_research_index_has_only_the_exact_action_completion_registration() -> None:
-    index = normalize_map_event_combatant_state_later_owner_index(load_json(RESEARCH_INDEX))
+    index = normalize_map_event_random_battle_state_later_owner_index(
+        load_json(RESEARCH_INDEX)
+    )
     validate_json(index, RESEARCH_INDEX_SCHEMA, owner="research index")
     assert len(index["records"]) == 1625
 

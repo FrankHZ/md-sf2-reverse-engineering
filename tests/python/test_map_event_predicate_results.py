@@ -10,9 +10,6 @@ import pytest
 
 from sf2tool.cli import build_parser
 from sf2tool.h2 import map_event_predicate_results as predicate_module
-from sf2tool.h2.map_event_combatant_state import (
-    normalize_map_event_combatant_state_later_owner_index as normalize_later_owner_index,
-)
 from sf2tool.h2.map_event_direct_control import FIXTURE as DIRECT_CONTROL_FIXTURE
 from sf2tool.h2.map_event_direct_state import FIXTURE as DIRECT_STATE_FIXTURE
 from sf2tool.h2.map_event_predicate_results import (
@@ -22,6 +19,9 @@ from sf2tool.h2.map_event_predicate_results import (
     _predicate_projection,
     _producer,
     _validate_contract_order,
+)
+from sf2tool.h2.map_event_random_battle_state import (
+    normalize_map_event_random_battle_state_later_owner_index as normalize_later_owner_index,
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json as _load_json
@@ -448,18 +448,18 @@ def test_research_index_delta_is_exact_15_binding_append_without_object_or_desig
         assert records[record_id] == base_records[record_id]
     assert verify_index(UPSTREAM) == {
         "Index": "manifests/research-index.json",
-        "Records": 1626,
-        "Confirmed": 1626,
-        "H2Fixtures": 95,
+        "Records": 1627,
+        "Confirmed": 1627,
+        "H2Fixtures": 96,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 3019,
+        "AddressBindings": 3035,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
-        "H1ListingRecords": 1589,
+        "H1ListingRecords": 1590,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 57,
+        "ResearchDocuments": 58,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,
