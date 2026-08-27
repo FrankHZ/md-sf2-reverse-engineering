@@ -6,6 +6,7 @@ import hashlib
 import json
 import re
 import subprocess
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -17,8 +18,8 @@ from sf2tool.h2.map3_battle01_turn_finalization import (
 from sf2tool.h2.map3_battle01_turn_finalization import (
     build_map3_battle01_turn_finalization_static,
 )
-from sf2tool.h2.map_event_interaction_state import (
-    normalize_interaction_state_later_owner_index,
+from sf2tool.h2.map_event_item_transactions import (
+    normalize_map_event_item_transactions_later_owner_index,
 )
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
@@ -1018,10 +1019,11 @@ def _retained_owners() -> dict[str, dict[str, str]]:
     return {key: _retained_fixture(*value) for key, value in owners.items()}
 
 
-def _normalize_request_consumption_later_owner_index(index: dict[str, Any]) -> dict[str, Any]:
-    """Remove only the exact later request-consumption delta before R4a checks."""
-    normalized = normalize_interaction_state_later_owner_index(index)
-    records = normalized.get("records")
+def _remove_request_consumption_later_owner_index_delta(
+    index: dict[str, Any], *, require_document_terminal: bool
+) -> dict[str, Any]:
+    """Validate and remove only the exact request-consumption later-owner delta."""
+    records = index.get("records")
     if not isinstance(records, list):
         raise ValueError("Map 3 Battle 01 victory/return request-consumption index shape drift")
 
@@ -1082,7 +1084,7 @@ def _normalize_request_consumption_later_owner_index(index: dict[str, Any]) -> d
             raise ValueError("Map 3 Battle 01 victory/return request-consumption evidence drift")
         if not isinstance(documents, list) or documents.count(_REQUEST_CONSUMPTION_DOCUMENT) != 1:
             raise ValueError("Map 3 Battle 01 victory/return request-consumption document drift")
-        if documents[-1] != _REQUEST_CONSUMPTION_DOCUMENT:
+        if require_document_terminal and documents[-1] != _REQUEST_CONSUMPTION_DOCUMENT:
             raise ValueError(
                 "Map 3 Battle 01 victory/return request-consumption document order drift"
             )
@@ -1117,7 +1119,18 @@ def _normalize_request_consumption_later_owner_index(index: dict[str, Any]) -> d
         _REQUEST_CONSUMPTION_ADDRESSES
     ):
         raise ValueError("Map 3 Battle 01 victory/return request-consumption address set drift")
-    return normalized
+    return index
+
+
+def _normalize_request_consumption_later_owner_index(index: dict[str, Any]) -> dict[str, Any]:
+    """Remove only the exact later request-consumption delta before R4a checks."""
+    _remove_request_consumption_later_owner_index_delta(
+        deepcopy(index), require_document_terminal=False
+    )
+    normalized = normalize_map_event_item_transactions_later_owner_index(index)
+    return _remove_request_consumption_later_owner_index_delta(
+        normalized, require_document_terminal=True
+    )
 
 
 def _owner_evidence(index: dict[str, Any]) -> list[dict[str, Any]]:

@@ -10,7 +10,9 @@ from typing import Any
 import pytest
 
 import sf2tool.h2.field_search_control as field_search
-from sf2tool.h2.map_event_interaction_state import normalize_interaction_state_later_owner_index
+from sf2tool.h2.map_event_item_transactions import (
+    normalize_map_event_item_transactions_later_owner_index as normalize_later_owner_index,
+)
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
 from sf2tool.paths import repo_path
@@ -39,7 +41,7 @@ _REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
 
 def load_json(path):
     value = _load_json(path)
-    return normalize_interaction_state_later_owner_index(value) if path == INDEX else value
+    return normalize_later_owner_index(value) if path == INDEX else value
 _DIALOGUE_STATE_OWNER_IDS = {
     "map.data.ms-map3-flag506-entityevents",
     "map.data.ms-map3-zoneevents",

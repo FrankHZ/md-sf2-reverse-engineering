@@ -23,6 +23,9 @@ from sf2tool.h2.map_event_interaction_state import (
     normalize_interaction_state_later_owner_index,
     verify_map_event_interaction_state_contract,
 )
+from sf2tool.h2.map_event_item_transactions import (
+    _remove_map_event_item_transactions_index_delta,
+)
 from sf2tool.jsonio import load_json, validate_json
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -488,11 +491,12 @@ def test_index_binds_the_actual_field_menu_item_call_not_legacy_observation() ->
 
 def test_later_owner_normalizer_reconstructs_the_exact_closed_index_delta() -> None:
     index = load_json(ROOT / "manifests/research-index.json")
-    normalized = normalize_interaction_state_later_owner_index(index)
+    prior_index = _remove_map_event_item_transactions_index_delta(index)
+    normalized = normalize_interaction_state_later_owner_index(prior_index)
 
     candidate_records = {
         record["id"]: record
-        for record in index["records"]
+        for record in prior_index["records"]
         if any(evidence["fixtureId"] == ID for evidence in record["evidence"])
     }
     normalized_records = {record["id"]: record for record in normalized["records"]}

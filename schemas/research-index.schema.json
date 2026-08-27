@@ -81,7 +81,23 @@
                       "fixtureField": {
                         "type": "string",
                         "anyOf": [
-                          { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventPredicateResults|eventDialogueState|eventRequestState|eventRequestConsumption|interactionState)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventRequestConsumption|interactionState)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
+                          { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventPredicateResults|eventDialogueState|eventRequestState|eventRequestConsumption|interactionState|eventItemTransactions)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventRequestConsumption|interactionState)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
+                          { "enum": [
+                            "eventItemTransactions.sourceFiles.ms_map6_flag701_EntityEvents.tableEntryAddress",
+                            "eventItemTransactions.sourceFiles.ms_map8_Section5.tableEntryAddress",
+                            "eventItemTransactions.sourceFiles.ms_map9_EntityEvents.tableEntryAddress",
+                            "eventItemTransactions.sourceFiles.ms_map22_Section5.tableEntryAddress",
+                            "eventItemTransactions.sourceFiles.ms_map63_EntityEvents.tableEntryAddress",
+                            "eventItemTransactions.sourceFiles.ms_map63_Section5.tableEntryAddress",
+                            "eventItemTransactions.sourceFiles.ms_map72_ZoneEvents.tableEntryAddress",
+                            "eventItemTransactions.serviceEntries.GetItemInventoryLocation.entryAddress",
+                            "eventItemTransactions.serviceEntries.RemoveItemBySlot.entryAddress",
+                            "eventItemTransactions.serviceEntries.ReceiveMandatoryItem.entryAddress",
+                            "eventItemTransactions.serviceEntries.RemoveItemFromInventory.entryAddress",
+                            "eventItemTransactions.itemEventReturnHandoff.runMapSetupItemEventEntryAddress",
+                            "eventItemTransactions.itemEventReturnHandoff.callAddress",
+                            "eventItemTransactions.itemEventReturnHandoff.resultTestAddress"
+                          ] },
                           { "enum": [
                             "eventPredicateResults.sourceFiles.ms_map10_flag722_EntityEvents.tableEntryAddress",
                             "eventPredicateResults.sourceFiles.ms_map11_EntityEvents.tableEntryAddress",

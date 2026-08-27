@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 93 | Deterministic source/ROM contracts, often covering complete corpora; the prior prose value 91 lagged the executable 92-fixture/2,976-binding baseline before this slice |
+| H2 fixture files | 94 | Deterministic source/ROM contracts, often covering complete corpora; the prior prose value 91 lagged the executable 92-fixture/2,976-binding baseline before this slice |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 2,993 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 3,007 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -997,7 +997,13 @@ entity-facing and player-Y-tile input roles are source-flow facts, not a univers
 reachability, values, branch outcomes, service results, lifetime, persistence, timing, presentation,
 and story claims remain the grouped **Unknown** queue. This raises the executable H2 fixture count
 from the accepted 92 baseline to 93 and address bindings from 2,976 to 2,993; the previously published
-91/2,968 counters were documentation debt rather than an unobserved baseline.
+91/2,968 counters were documentation debt rather than an unobserved baseline. The adjacent
+item-transaction rail narrows the retained map-event corpus to eight contexts/seven physical programs,
+15 contextual/13 physical item-service calls, nine contextual/seven physical result-predicate joins,
+five item-event `d6` writes, and the FieldMenu/map-setup handoff. It is static-only: actual inventory,
+service result, branch selection, consumption/acquisition, persistence, input, dialogue, audio,
+presentation, and story meaning remain its grouped **Unknown** register. It raises H2 fixtures to 94
+and address bindings to 3,007 without adding an H3 rail.
 The preceding map-event boundary facts retain their
 2026-07-27 evidence date. All 32 animation tables also have
 complete cache/source/target/counter/cycle bounds, with all 108 source ranges inside cache:
