@@ -5,7 +5,9 @@ from copy import deepcopy
 import pytest
 
 import sf2tool.h2.field_menu_control as field_menu
-from sf2tool.jsonio import load_json, validate_json
+from sf2tool.h2.map_event_interaction_state import normalize_interaction_state_later_owner_index
+from sf2tool.jsonio import load_json as _load_json
+from sf2tool.jsonio import validate_json
 from sf2tool.paths import repo_path
 
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
@@ -17,6 +19,11 @@ ROM = repo_path("local/roms/sf2-us.bin")
 _REQUEST_CONSUMPTION_FIXTURE = (
     "tests/fixtures/h2/map-event-request-consumption-static-v1.json"
 )
+
+
+def load_json(path):
+    value = _load_json(path)
+    return normalize_interaction_state_later_owner_index(value) if path == INDEX else value
 
 
 def _without_request_consumption(index: dict[str, object]) -> dict[str, object]:

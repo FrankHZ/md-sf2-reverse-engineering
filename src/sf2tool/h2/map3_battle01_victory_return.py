@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import copy
 import hashlib
 import json
 import re
@@ -17,6 +16,9 @@ from sf2tool.h2.map3_battle01_turn_finalization import (
 )
 from sf2tool.h2.map3_battle01_turn_finalization import (
     build_map3_battle01_turn_finalization_static,
+)
+from sf2tool.h2.map_event_interaction_state import (
+    normalize_interaction_state_later_owner_index,
 )
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
@@ -1018,7 +1020,7 @@ def _retained_owners() -> dict[str, dict[str, str]]:
 
 def _normalize_request_consumption_later_owner_index(index: dict[str, Any]) -> dict[str, Any]:
     """Remove only the exact later request-consumption delta before R4a checks."""
-    normalized = copy.deepcopy(index)
+    normalized = normalize_interaction_state_later_owner_index(index)
     records = normalized.get("records")
     if not isinstance(records, list):
         raise ValueError("Map 3 Battle 01 victory/return request-consumption index shape drift")

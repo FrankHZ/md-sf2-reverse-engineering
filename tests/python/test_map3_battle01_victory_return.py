@@ -210,6 +210,11 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
     assert index == original
     assert normalized != index
     assert len(victory_return._owner_evidence(normalized)) == 11
+    assert all(
+        evidence["fixtureId"] != "sf2-map-event-interaction-state-static-v1"
+        for record in normalized["records"]
+        for evidence in record["evidence"]
+    )
 
     def record_for(value: dict[str, object], record_id: str) -> dict[str, object]:
         return next(record for record in value["records"] if record["id"] == record_id)
@@ -228,7 +233,9 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
 
     malformed = copy.deepcopy(original)
     documents = record_for(malformed, "menus.field-main")["documents"]
-    documents[-1] = "docs/research/wrong.md"
+    documents[documents.index(victory_return._REQUEST_CONSUMPTION_DOCUMENT)] = (
+        "docs/research/wrong.md"
+    )
     with pytest.raises(ValueError, match="request-consumption document drift"):
         victory_return._normalize_request_consumption_later_owner_index(malformed)
 
