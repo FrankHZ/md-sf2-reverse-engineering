@@ -83,6 +83,7 @@ H2_COMMAND_GROUPS = {
         "map-event-direct-state",
         "map-event-interaction-state",
         "map-event-item-transactions",
+        "map-event-combatant-state",
         "map-descriptions",
         "map-entities",
         "map-events",

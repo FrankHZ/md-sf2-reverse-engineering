@@ -42,7 +42,9 @@ routine's complete instruction/local-label corpus, H1 address, offset use-site, 
 terminal, aliases, and instruction-scoped callers. Exact values and order belong to the fixture and
 owner verifier rather than being duplicated as schema `const` payloads.
 Reproduce with `uv run sf2 h2 common-stats`; observed 2026-07-22 canonical SHA-256 is
-`E9A59AD35815F78345CBB35BED7DE21521AC4E4C6C44E5227BDF64DD07517D76`.
+`DDED2A13694C3F01ECFD633656F89FBD574595860F091FA572B33855EC1449F7`. Its exact relation now
+contains 22 indexed records across the same 17 source paths: `stats.combatant-getters` is the one
+additional record and shares an already-indexed common-stats source path.
 
 `combatantstats_3.asm` is consulted only for the ABI used here: its three dependency routines retain
 the parsed instruction records, static ally/enemy/error branch polarity, derived 56-byte entry stride,
@@ -76,7 +78,7 @@ algorithms are separately modelled below; this wrapper surface alone does not es
 `uv run sf2 h2 common-stats` parses the seven routine entries in source order, their H1 addresses,
 the complete instruction/local-label corpora, and `BYTE_MASK=255`, `TWO_TURN_THRESHOLD=128`, and
 `TURN_AGILITY_MASK=127` from `sf2enums.asm`. The observed canonical extraction digest on
-2026-07-22 is `E9A59AD35815F78345CBB35BED7DE21521AC4E4C6C44E5227BDF64DD07517D76`.
+2026-07-22 is `DDED2A13694C3F01ECFD633656F89FBD574595860F091FA572B33855EC1449F7`.
 
 The six byte/word/long helpers retain exact entry-call, field access, arithmetic, branch,
 comparison/assignment, preservation/restoration, write, normalization, and terminal records. The
@@ -154,6 +156,15 @@ map-event callers of `GetItemInventoryLocation`, `ReceiveMandatoryItem`, `Remove
 tests. This is not a second inventory-service algorithm: service bodies, inventory mutation, return
 values, caller-visible effects, and persistence remain owned by the common-stats/item-inventory
 surfaces or **Unknown** pending bounded runtime evidence.
+
+## Bounded Map-Event Combatant-State Caller Join
+
+**Confirmed — caller-side join only.** `sf2-map-event-combatant-state-static-v1` records the two
+selected zone-event programs' source-shaped calls to `GetMaxHp`, `SetCurrentHp`, `GetMaxMp`,
+`SetCurrentMp`, and `GetCurrentHp`, including their S02 jump-interface/effective-entry seams. The
+Map 20 Sarah/Chester order and Map 67 Elric selector plus `tst.w d1`/`beq.s` shape are caller facts,
+not a second getter/setter implementation. Values, writes, predicate outcome, reachability, effects,
+and persistence remain **Unknown**.
 
 ## Reproduction
 

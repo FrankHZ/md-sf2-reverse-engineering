@@ -13,6 +13,9 @@ from shutil import copy2
 import pytest
 
 import sf2tool.h2.map_event_item_transactions as transactions_module
+from sf2tool.h2.map_event_combatant_state import (
+    _remove_map_event_combatant_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_interaction_state import (
     normalize_interaction_state_later_owner_index,
 )
@@ -648,7 +651,7 @@ def test_map_setup_retained_owner_identity_and_path_are_exact(
 
 
 def test_strict_later_owner_normalizer_proves_only_the_declared_delta() -> None:
-    index = load_json(INDEX)
+    index = _remove_map_event_combatant_state_later_owner_index_delta(load_json(INDEX))
     prior = _remove_map_event_item_transactions_index_delta(index)
     assert normalize_map_event_item_transactions_later_owner_index(index) == (
         normalize_interaction_state_later_owner_index(prior)

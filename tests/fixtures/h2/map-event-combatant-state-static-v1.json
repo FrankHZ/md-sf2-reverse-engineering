@@ -1,0 +1,1288 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-event-combatant-state-static-v1",
+  "upstream": {
+    "repository": "https://github.com/ShiningForceCentral/SF2DISASM",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+  },
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "retainedOwners": {
+    "mapEvents": {
+      "fixtureId": "sf2-map-events-static-v1",
+      "fixtureSha256": "082FEED85338A776E734777255678650B40B57C3517ECA9DD54EEC8C7F8558C6"
+    },
+    "commonStats": {
+      "fixtureId": "sf2-common-stats-static-v1",
+      "fixtureSha256": "828368BBD364873EB9D58DB473DBE2B26D3F4524F7F74593902C91B2D4989865"
+    },
+    "techInterfaces": {
+      "fixtureId": "sf2-tech-interfaces-static-v1",
+      "fixtureSha256": "0B8F066032B1645740F968502DE1C3260CCB1BE8F7140147CB74B04DFB22D2F2"
+    }
+  },
+  "sourceContext": {
+    "h1Listing": {
+      "path": "build/sf2build-h1.lst",
+      "sha256": "F28FAF604DD8F37AE3EDAA819DD1C9A601863B0596F2C83602CA3D572BB8644D"
+    },
+    "sourceIdentities": [
+      {
+        "path": "sf2enums.asm",
+        "sha256": "ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE"
+      },
+      {
+        "path": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        "sha256": "479D19D5CBA2D585A1AE74DD2A8CF67C455DF96FCBD2EEBB6808C6318F53A464"
+      },
+      {
+        "path": "code/common/stats/combatantstats_1.asm",
+        "sha256": "4F3C81D22C3EF873D2CA7728DE50F26289B48697CB47EB56583A7D747CB03585"
+      },
+      {
+        "path": "code/common/stats/combatantstats_2.asm",
+        "sha256": "112970FB112D39C72A1C6E59B0EA164D98EE4AB3E98887F63DC6D3B890648991"
+      },
+      {
+        "path": "data/maps/entries/map20/mapsetups/s3_zoneevents_501.asm",
+        "sha256": "A9CEA6487B255E69AE5208553452B18313F57F64DDEEC401FECC04028697A988"
+      },
+      {
+        "path": "data/maps/entries/map67/mapsetups/s3_zoneevents.asm",
+        "sha256": "32682FE73625E3E1CA042356067FAB058965381B4F8EB89728C6653FDBB3FE16"
+      }
+    ],
+    "physicalOperationAnchors": [
+      {
+        "address": 326450,
+        "mnemonic": "chkflg",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "FFCF12335F7CD3D77FCC3EB8F4E0C01A1A28B1E754B6FD28C2CF71B36BDBF4A9",
+        "h1StatementSha256": "3A30E8F11CC3E6377E5BD3AC0376F9BCB7D23BBA79894EC3DAC47E5170B2BCDC"
+      },
+      {
+        "address": 326454,
+        "mnemonic": "bne",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "romInstructionSha256": "39BF98D59E48D7CC299758170D6C22E1AB8165DC72A0DF84F46FF8FC482BF1FB",
+        "h1StatementSha256": "AF214152448BCFD2FAF97ACB0948B4DAC7C5D9679F960F00BF985DA861156573"
+      },
+      {
+        "address": 326456,
+        "mnemonic": "chkflg",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "5F02D9B8D5C691C5D8229777352A11CFBF84DCCDCDE121EE5CC5305CA155A3E7",
+        "h1StatementSha256": "3A30E8F11CC3E6377E5BD3AC0376F9BCB7D23BBA79894EC3DAC47E5170B2BCDC"
+      },
+      {
+        "address": 326460,
+        "mnemonic": "beq",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "romInstructionSha256": "99935F26C09050BA9AF8D2523AEAE34631C3ABC5D314DE83C491140A44D231AA",
+        "h1StatementSha256": "28CD5AA73A4607B7C70C2B975142E133B4777F9E98CFC0BB3F629FB4AA405721"
+      },
+      {
+        "address": 326462,
+        "mnemonic": "move",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "B4477C9A438A658CDF735B47852E892537CEEF65EEB231BDCD4A0D3B65B9D9E8",
+        "h1StatementSha256": "1E760A9CA7080EFE85E1B7675CA4994611B5CDDAC58E557C9B929CFEE440E8EB"
+      },
+      {
+        "address": 326466,
+        "mnemonic": "jsr",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "romInstructionSha256": "4C2CF75AF0F1A51E843DA9C8A2FDC5B7CFF4A5B96A7DB3E1C21978564F783B7A",
+        "h1StatementSha256": "3AE16B3338C11F864FA9D563AD40696C6E04C2380AC34ECDE27A80A0FF55D394"
+      },
+      {
+        "address": 326472,
+        "mnemonic": "tst",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "romInstructionSha256": "2C24576872F7B538B5A2C8E8B9DB551F58C49B5316AAE1AF86D201E44908D0E2",
+        "h1StatementSha256": "0E229AF9CE29EFE2981861E0C9AED590797CC2E1F9CF3D498A5AAC7DB264AC4A"
+      },
+      {
+        "address": 326474,
+        "mnemonic": "beq",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "romInstructionSha256": "768C71D785BF6BBBF8C4D6AF6582041F2659027140A962CD0C55B11EDDFD5E3D",
+        "h1StatementSha256": "28CD5AA73A4607B7C70C2B975142E133B4777F9E98CFC0BB3F629FB4AA405721"
+      },
+      {
+        "address": 326476,
+        "mnemonic": "script",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 6,
+        "romInstructionSha256": "5A36E87A8D896E28AF18BD0F117A3F91ACCC6AC466CB506403E9C180B2FFCB3F",
+        "h1StatementSha256": "E872DEFCCC5640B07FED959B6DE0D555787CD610120126BCC4C1260DC43FB718"
+      },
+      {
+        "address": 326482,
+        "mnemonic": "setflg",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "99B8A6BF322EB3AE31E6F175BC4AC2A3F4E23C198ADA3D953BD39DF59D8F69BF",
+        "h1StatementSha256": "C6CA631BC234C6966B1500896815A7EE35CC902361C22B3D1B0134D8A3809AEB"
+      },
+      {
+        "address": 326486,
+        "mnemonic": "rts",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "romInstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD",
+        "h1StatementSha256": "2E303736208C8DE17740991F4D89E8BA4136ADD0880DD8A1C84C0084EE6033B5"
+      },
+      {
+        "address": 341870,
+        "mnemonic": "moveq",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "romInstructionSha256": "1F2E6D00279B4659B6D6F1AD57E12568E4A50F80908AF50D1E861001B2BE2A3B",
+        "h1StatementSha256": "8667887BF84EC35735566755DA2AF532BFD98056037B8E035C9D26F66A091828"
+      },
+      {
+        "address": 341872,
+        "mnemonic": "jsr",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "romInstructionSha256": "ED1EF0FA147CC4B0F72A09C8620AE8D4549CFAED34C676536AF5114F13A6F4BD",
+        "h1StatementSha256": "2AAE0E55C060216B595DDA0BCEEF42A8B6EAAC17B3654876903C39A1FAA0DF52"
+      },
+      {
+        "address": 341878,
+        "mnemonic": "jsr",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "romInstructionSha256": "EF9C397DE08C31B8E7CB09A4A4877DFF6C4AFF68BC91DC5B254B662D5F1F8159",
+        "h1StatementSha256": "027E792F8BF39622B1B28355E384FB48D964791A939C2DF48F0AC286F50B78F9"
+      },
+      {
+        "address": 341884,
+        "mnemonic": "jsr",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "romInstructionSha256": "B191DEF3CCE680982F3506F3FC87ACFA939E4F888667127B57E99AC45BA32B04",
+        "h1StatementSha256": "C3652E0A45FB53F8830FA8BC098249B5D9612D302A1EF047DCEF27816F20299B"
+      },
+      {
+        "address": 341890,
+        "mnemonic": "jsr",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "romInstructionSha256": "336AE11C6825483B27D1C20E7DFFF936C7ACA82F8B82445B1B54504712600BCA",
+        "h1StatementSha256": "D91F9B9EF13E66B3A3AA904BE58F0CEF7086690E608D232D0E65C37AF5A33B49"
+      },
+      {
+        "address": 341896,
+        "mnemonic": "moveq",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "romInstructionSha256": "A10E1D8B32F98C84D002BFA431E1D995FEF4856E0D133936982B59D550CE57F8",
+        "h1StatementSha256": "D1724790D24CC9C25DD29D318DDF285E23CAEB23B3746808D22B9A1CD1C93400"
+      },
+      {
+        "address": 341898,
+        "mnemonic": "jsr",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "romInstructionSha256": "ED1EF0FA147CC4B0F72A09C8620AE8D4549CFAED34C676536AF5114F13A6F4BD",
+        "h1StatementSha256": "2AAE0E55C060216B595DDA0BCEEF42A8B6EAAC17B3654876903C39A1FAA0DF52"
+      },
+      {
+        "address": 341904,
+        "mnemonic": "jsr",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "romInstructionSha256": "EF9C397DE08C31B8E7CB09A4A4877DFF6C4AFF68BC91DC5B254B662D5F1F8159",
+        "h1StatementSha256": "027E792F8BF39622B1B28355E384FB48D964791A939C2DF48F0AC286F50B78F9"
+      },
+      {
+        "address": 341910,
+        "mnemonic": "jsr",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "romInstructionSha256": "B191DEF3CCE680982F3506F3FC87ACFA939E4F888667127B57E99AC45BA32B04",
+        "h1StatementSha256": "C3652E0A45FB53F8830FA8BC098249B5D9612D302A1EF047DCEF27816F20299B"
+      },
+      {
+        "address": 341916,
+        "mnemonic": "jsr",
+        "h1ListedByteCount": 6,
+        "romEncodedByteCount": 6,
+        "romInstructionSha256": "336AE11C6825483B27D1C20E7DFFF936C7ACA82F8B82445B1B54504712600BCA",
+        "h1StatementSha256": "D91F9B9EF13E66B3A3AA904BE58F0CEF7086690E608D232D0E65C37AF5A33B49"
+      },
+      {
+        "address": 341922,
+        "mnemonic": "script",
+        "h1ListedByteCount": 4,
+        "romEncodedByteCount": 6,
+        "romInstructionSha256": "C36BF95819D5669CA3CC4E2FC81EA9DC18EA126AF39725CF4222D1A93D2107C9",
+        "h1StatementSha256": "43CA2951EF6E365E6F96D42DB2BE6C13B744226128759938D8F997C960B8374A"
+      },
+      {
+        "address": 341928,
+        "mnemonic": "rts",
+        "h1ListedByteCount": 2,
+        "romEncodedByteCount": 2,
+        "romInstructionSha256": "1CEEABF0C6A5A30BAD12CDAC0E3AB015A7188A42E6AEBB556AAD00BB9CD693AD",
+        "h1StatementSha256": "2E303736208C8DE17740991F4D89E8BA4136ADD0880DD8A1C84C0084EE6033B5"
+      }
+    ],
+    "eventTableAnchors": [
+      {
+        "address": 341862,
+        "role": "event-table-entry",
+        "sourceFileId": "ms_map20_flag501_ZoneEvents",
+        "sourcePath": "data/maps/entries/map20/mapsetups/s3_zoneevents_501.asm",
+        "sourceLine": 5,
+        "h1ListedByteCount": 1,
+        "romEncodedByteCount": 1,
+        "romInstructionSha256": "77ADFC95029E73B173F60E556F915B0CD8850848111358B1C370FB7C154E61FD",
+        "h1StatementSha256": "D8478B3D853D55B65A5C223FD46F7482D3CB58EB10E6C32EC9305B43D532E648"
+      },
+      {
+        "address": 326412,
+        "role": "event-table-entry",
+        "sourceFileId": "ms_map67_ZoneEvents",
+        "sourcePath": "data/maps/entries/map67/mapsetups/s3_zoneevents.asm",
+        "sourceLine": 5,
+        "h1ListedByteCount": 1,
+        "romEncodedByteCount": 1,
+        "romInstructionSha256": "19581E27DE7CED00FF1CE50B2047E7A567C76B1CBAEBABE5EF03F7C3017BB5B7",
+        "h1StatementSha256": "D601F9588BCC5C933DA7D6F0F55195171C87D7F1986B6B03BD16277F003B3020"
+      }
+    ],
+    "serviceSeamAnchors": [
+      {
+        "address": 32780,
+        "role": "instruction-target",
+        "serviceEntryId": "GetMaxMp",
+        "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        "sourceLine": 38,
+        "sourceStatementSha256": "CDF394C8674059B1B09BBD05877B3DD1D3D02739115F0ABBDEEEC0DAED9C2577",
+        "h1ListedByteCount": 4,
+        "h1EncodedSha256": "09F97D4A50BD92D44C0ACF49EAACFBF349585D0E6A56E561962684D305BA84F5",
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "CACA64AD83C406C2952B8FAA2BA43F5A9A3E66B83C9A01E7D00F184DED172B1D",
+        "h1StatementSha256": "E0502D93751C1115B837FED578D36D22FC78E12996A29E6D7516161C560F052A"
+      },
+      {
+        "address": 33606,
+        "role": "effective-entry",
+        "serviceEntryId": "GetMaxMp",
+        "sourcePath": "code/common/stats/combatantstats_1.asm",
+        "sourceLine": 109,
+        "sourceStatementSha256": "FB937F0F087813AD171FA96211DAADEF0023B5411A9986660E47DDE60636367E",
+        "h1ListedByteCount": 4,
+        "h1EncodedSha256": "9584BAFB80B125E86311CE02651CD19A5D90DDE6E2DA5838FDD4B6FC60AAAF97",
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "9584BAFB80B125E86311CE02651CD19A5D90DDE6E2DA5838FDD4B6FC60AAAF97",
+        "h1StatementSha256": "F7A674A3B362F447EC2C801BED2120D43452E163ED145FCBCBB26B729846444A"
+      },
+      {
+        "address": 32784,
+        "role": "instruction-target",
+        "serviceEntryId": "GetMaxHp",
+        "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        "sourceLine": 48,
+        "sourceStatementSha256": "58A596A7742380F8920B57CC504771BD5BF252B64296392A9EAA71133C2B4FA4",
+        "h1ListedByteCount": 4,
+        "h1EncodedSha256": "09F97D4A50BD92D44C0ACF49EAACFBF349585D0E6A56E561962684D305BA84F5",
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "433B1E33119568F6BA2ED24BF23375EA914B72639DD4E490B3BC4171C7742A5B",
+        "h1StatementSha256": "865E5670C313AAC7A36990D62E3967BF22CF9C81B413A2493E1447EB81FA29FB"
+      },
+      {
+        "address": 33574,
+        "role": "effective-entry",
+        "serviceEntryId": "GetMaxHp",
+        "sourcePath": "code/common/stats/combatantstats_1.asm",
+        "sourceLine": 81,
+        "sourceStatementSha256": "0B976A5CCD7734B4DE039DA612B67F1F8B24B39589A35D7558F1A4506376CC5A",
+        "h1ListedByteCount": 4,
+        "h1EncodedSha256": "9584BAFB80B125E86311CE02651CD19A5D90DDE6E2DA5838FDD4B6FC60AAAF97",
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "9584BAFB80B125E86311CE02651CD19A5D90DDE6E2DA5838FDD4B6FC60AAAF97",
+        "h1StatementSha256": "F7A674A3B362F447EC2C801BED2120D43452E163ED145FCBCBB26B729846444A"
+      },
+      {
+        "address": 32840,
+        "role": "instruction-target",
+        "serviceEntryId": "GetCurrentHp",
+        "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        "sourceLine": 194,
+        "sourceStatementSha256": "4F4A956454F4FB51A7E77A8B824503EC7DB2FA51D74EB397543EE9BCFB6ABA1F",
+        "h1ListedByteCount": 4,
+        "h1EncodedSha256": "09F97D4A50BD92D44C0ACF49EAACFBF349585D0E6A56E561962684D305BA84F5",
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "77BD2E18A0B11B9B8421167FAD4D6410C13480DE5BABFCB37EEE64C94EB22D5A",
+        "h1StatementSha256": "6183BC66F77DF9C71FB28CBD22A6149B335179331680586D1ADDDB67A9182B0F"
+      },
+      {
+        "address": 33590,
+        "role": "effective-entry",
+        "serviceEntryId": "GetCurrentHp",
+        "sourcePath": "code/common/stats/combatantstats_1.asm",
+        "sourceLine": 95,
+        "sourceStatementSha256": "7FC93F1A4535FD85BB4561BF299E6F662BBDECAF5233530567EF2405A29AF9D9",
+        "h1ListedByteCount": 4,
+        "h1EncodedSha256": "9584BAFB80B125E86311CE02651CD19A5D90DDE6E2DA5838FDD4B6FC60AAAF97",
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "9584BAFB80B125E86311CE02651CD19A5D90DDE6E2DA5838FDD4B6FC60AAAF97",
+        "h1StatementSha256": "F7A674A3B362F447EC2C801BED2120D43452E163ED145FCBCBB26B729846444A"
+      },
+      {
+        "address": 32952,
+        "role": "instruction-target",
+        "serviceEntryId": "SetCurrentMp",
+        "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        "sourceLine": 486,
+        "sourceStatementSha256": "F0244BA7368C3DF45B96932CC6A86FB447E63D94CBD1F1F233B61203B4177A79",
+        "h1ListedByteCount": 4,
+        "h1EncodedSha256": "09F97D4A50BD92D44C0ACF49EAACFBF349585D0E6A56E561962684D305BA84F5",
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "50378ECE2102B35144C80E3DEDF33AA9428D58DE73FB557D98D0E516F0F5AF2B",
+        "h1StatementSha256": "04A2940C6723B29FF3FC8F5DC3DFE1436E2EB23882AE4AF6DDA3476F9506275E"
+      },
+      {
+        "address": 34246,
+        "role": "effective-entry",
+        "serviceEntryId": "SetCurrentMp",
+        "sourcePath": "code/common/stats/combatantstats_2.asm",
+        "sourceLine": 107,
+        "sourceStatementSha256": "B590A10F1944A1DABC53845FE508FB2B9FDFFEDF6B97066B6ABC59FE5A532B59",
+        "h1ListedByteCount": 4,
+        "h1EncodedSha256": "9584BAFB80B125E86311CE02651CD19A5D90DDE6E2DA5838FDD4B6FC60AAAF97",
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "9584BAFB80B125E86311CE02651CD19A5D90DDE6E2DA5838FDD4B6FC60AAAF97",
+        "h1StatementSha256": "F7A674A3B362F447EC2C801BED2120D43452E163ED145FCBCBB26B729846444A"
+      },
+      {
+        "address": 32960,
+        "role": "instruction-target",
+        "serviceEntryId": "SetCurrentHp",
+        "sourcePath": "code/common/tech/jumpinterfaces/s02_jumpinterface.asm",
+        "sourceLine": 506,
+        "sourceStatementSha256": "114F21E2ADB910681920111BD1A1739BF634CF69400361C824155EC0A6F11CCD",
+        "h1ListedByteCount": 4,
+        "h1EncodedSha256": "09F97D4A50BD92D44C0ACF49EAACFBF349585D0E6A56E561962684D305BA84F5",
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "984C3ACB0727B35687A4FE41613D22EF6D85FC107302B6BC691061EBFF6A621D",
+        "h1StatementSha256": "A837F50CAED05CC36F7B5AEF1D6CCB3B932994441D7AB14ABBDBA26ED513D9D2"
+      },
+      {
+        "address": 34214,
+        "role": "effective-entry",
+        "serviceEntryId": "SetCurrentHp",
+        "sourcePath": "code/common/stats/combatantstats_2.asm",
+        "sourceLine": 79,
+        "sourceStatementSha256": "0A58D4EE10710589136C1EB6E31BE83BE4EAA4181D185C024E969B9CDCA6A930",
+        "h1ListedByteCount": 4,
+        "h1EncodedSha256": "9584BAFB80B125E86311CE02651CD19A5D90DDE6E2DA5838FDD4B6FC60AAAF97",
+        "romEncodedByteCount": 4,
+        "romInstructionSha256": "9584BAFB80B125E86311CE02651CD19A5D90DDE6E2DA5838FDD4B6FC60AAAF97",
+        "h1StatementSha256": "F7A674A3B362F447EC2C801BED2120D43452E163ED145FCBCBB26B729846444A"
+      }
+    ]
+  },
+  "eventCombatantState": {
+    "sourceFileOrder": [
+      "ms_map20_flag501_ZoneEvents",
+      "ms_map67_ZoneEvents"
+    ],
+    "sourceFiles": {
+      "ms_map20_flag501_ZoneEvents": {
+        "sourcePath": "data/maps/entries/map20/mapsetups/s3_zoneevents_501.asm",
+        "tableEntryAddress": 341862,
+        "tableSymbol": "ms_map20_flag501_ZoneEvents"
+      },
+      "ms_map67_ZoneEvents": {
+        "sourcePath": "data/maps/entries/map67/mapsetups/s3_zoneevents.asm",
+        "tableEntryAddress": 326412,
+        "tableSymbol": "ms_map67_ZoneEvents"
+      }
+    },
+    "programContextOrder": [
+      "map20-zone-event0",
+      "map67-zone-event0"
+    ],
+    "programContexts": {
+      "map20-zone-event0": {
+        "contextOrder": 0,
+        "sourceFileId": "ms_map20_flag501_ZoneEvents",
+        "programSymbol": "Map20_1F5_ZoneEvent0",
+        "physicalProgramId": "map20-zone-event0",
+        "entryAddress": 341870,
+        "endAddressExclusive": 341930,
+        "operationIds": [
+          "map20-zone-event0:05376E",
+          "map20-zone-event0:053770",
+          "map20-zone-event0:053776",
+          "map20-zone-event0:05377C",
+          "map20-zone-event0:053782",
+          "map20-zone-event0:053788",
+          "map20-zone-event0:05378A",
+          "map20-zone-event0:053790",
+          "map20-zone-event0:053796",
+          "map20-zone-event0:05379C",
+          "map20-zone-event0:0537A2",
+          "map20-zone-event0:0537A8"
+        ],
+        "labelAddresses": [
+          341870
+        ],
+        "operations": [
+          {
+            "operationOrder": 0,
+            "operationId": "map20-zone-event0:05376E",
+            "sourceLine": 13,
+            "address": 341870,
+            "mnemonic": "moveq",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "#1",
+              "d0"
+            ],
+            "operandShapes": [
+              "numeric-immediate",
+              "register"
+            ],
+            "family": "raw-68000-instruction",
+            "controlFlowKind": "ordinary",
+            "target": null
+          },
+          {
+            "operationOrder": 1,
+            "operationId": "map20-zone-event0:053770",
+            "sourceLine": 14,
+            "address": 341872,
+            "mnemonic": "jsr",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "j_GetMaxHp"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "direct-call",
+            "target": {
+              "instructionTarget": "j_GetMaxHp",
+              "instructionTargetAddress": 32784,
+              "effectiveTarget": "GetMaxHp",
+              "effectiveTargetAddress": 33574,
+              "scope": "external"
+            }
+          },
+          {
+            "operationOrder": 2,
+            "operationId": "map20-zone-event0:053776",
+            "sourceLine": 15,
+            "address": 341878,
+            "mnemonic": "jsr",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "j_SetCurrentHp"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "direct-call",
+            "target": {
+              "instructionTarget": "j_SetCurrentHp",
+              "instructionTargetAddress": 32960,
+              "effectiveTarget": "SetCurrentHp",
+              "effectiveTargetAddress": 34214,
+              "scope": "external"
+            }
+          },
+          {
+            "operationOrder": 3,
+            "operationId": "map20-zone-event0:05377C",
+            "sourceLine": 16,
+            "address": 341884,
+            "mnemonic": "jsr",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "j_GetMaxMp"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "direct-call",
+            "target": {
+              "instructionTarget": "j_GetMaxMp",
+              "instructionTargetAddress": 32780,
+              "effectiveTarget": "GetMaxMp",
+              "effectiveTargetAddress": 33606,
+              "scope": "external"
+            }
+          },
+          {
+            "operationOrder": 4,
+            "operationId": "map20-zone-event0:053782",
+            "sourceLine": 17,
+            "address": 341890,
+            "mnemonic": "jsr",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "j_SetCurrentMp"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "direct-call",
+            "target": {
+              "instructionTarget": "j_SetCurrentMp",
+              "instructionTargetAddress": 32952,
+              "effectiveTarget": "SetCurrentMp",
+              "effectiveTargetAddress": 34246,
+              "scope": "external"
+            }
+          },
+          {
+            "operationOrder": 5,
+            "operationId": "map20-zone-event0:053788",
+            "sourceLine": 18,
+            "address": 341896,
+            "mnemonic": "moveq",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "#2",
+              "d0"
+            ],
+            "operandShapes": [
+              "numeric-immediate",
+              "register"
+            ],
+            "family": "raw-68000-instruction",
+            "controlFlowKind": "ordinary",
+            "target": null
+          },
+          {
+            "operationOrder": 6,
+            "operationId": "map20-zone-event0:05378A",
+            "sourceLine": 19,
+            "address": 341898,
+            "mnemonic": "jsr",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "j_GetMaxHp"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "direct-call",
+            "target": {
+              "instructionTarget": "j_GetMaxHp",
+              "instructionTargetAddress": 32784,
+              "effectiveTarget": "GetMaxHp",
+              "effectiveTargetAddress": 33574,
+              "scope": "external"
+            }
+          },
+          {
+            "operationOrder": 7,
+            "operationId": "map20-zone-event0:053790",
+            "sourceLine": 20,
+            "address": 341904,
+            "mnemonic": "jsr",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "j_SetCurrentHp"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "direct-call",
+            "target": {
+              "instructionTarget": "j_SetCurrentHp",
+              "instructionTargetAddress": 32960,
+              "effectiveTarget": "SetCurrentHp",
+              "effectiveTargetAddress": 34214,
+              "scope": "external"
+            }
+          },
+          {
+            "operationOrder": 8,
+            "operationId": "map20-zone-event0:053796",
+            "sourceLine": 21,
+            "address": 341910,
+            "mnemonic": "jsr",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "j_GetMaxMp"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "direct-call",
+            "target": {
+              "instructionTarget": "j_GetMaxMp",
+              "instructionTargetAddress": 32780,
+              "effectiveTarget": "GetMaxMp",
+              "effectiveTargetAddress": 33606,
+              "scope": "external"
+            }
+          },
+          {
+            "operationOrder": 9,
+            "operationId": "map20-zone-event0:05379C",
+            "sourceLine": 22,
+            "address": 341916,
+            "mnemonic": "jsr",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "j_SetCurrentMp"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "direct-call",
+            "target": {
+              "instructionTarget": "j_SetCurrentMp",
+              "instructionTargetAddress": 32952,
+              "effectiveTarget": "SetCurrentMp",
+              "effectiveTargetAddress": 34246,
+              "scope": "external"
+            }
+          },
+          {
+            "operationOrder": 10,
+            "operationId": "map20-zone-event0:0537A2",
+            "sourceLine": 23,
+            "address": 341922,
+            "mnemonic": "script",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "cs_53B66"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "event-service-macro",
+            "controlFlowKind": "ordinary",
+            "target": null
+          },
+          {
+            "operationOrder": 11,
+            "operationId": "map20-zone-event0:0537A8",
+            "sourceLine": 24,
+            "address": 341928,
+            "mnemonic": "rts",
+            "sizeSuffix": null,
+            "operandTexts": [],
+            "operandShapes": [],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "return",
+            "target": null
+          }
+        ]
+      },
+      "map67-zone-event0": {
+        "contextOrder": 1,
+        "sourceFileId": "ms_map67_ZoneEvents",
+        "programSymbol": "Map67_ZoneEvent0",
+        "physicalProgramId": "map67-zone-event0",
+        "entryAddress": 326450,
+        "endAddressExclusive": 326488,
+        "operationIds": [
+          "map67-zone-event0:04FB32",
+          "map67-zone-event0:04FB36",
+          "map67-zone-event0:04FB38",
+          "map67-zone-event0:04FB3C",
+          "map67-zone-event0:04FB3E",
+          "map67-zone-event0:04FB42",
+          "map67-zone-event0:04FB48",
+          "map67-zone-event0:04FB4A",
+          "map67-zone-event0:04FB4C",
+          "map67-zone-event0:04FB52",
+          "map67-zone-event0:04FB56"
+        ],
+        "labelAddresses": [
+          326450,
+          326486
+        ],
+        "operations": [
+          {
+            "operationOrder": 0,
+            "operationId": "map67-zone-event0:04FB32",
+            "sourceLine": 34,
+            "address": 326450,
+            "mnemonic": "chkflg",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "751"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "event-service-macro",
+            "controlFlowKind": "ordinary",
+            "target": null
+          },
+          {
+            "operationOrder": 1,
+            "operationId": "map67-zone-event0:04FB36",
+            "sourceLine": 35,
+            "address": 326454,
+            "mnemonic": "bne",
+            "sizeSuffix": ".s",
+            "operandTexts": [
+              "return_4FB56"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "conditional-branch",
+            "target": {
+              "instructionTarget": "return_4FB56",
+              "instructionTargetAddress": 326486,
+              "effectiveTarget": "return_4FB56",
+              "effectiveTargetAddress": 326486,
+              "scope": "internal"
+            }
+          },
+          {
+            "operationOrder": 2,
+            "operationId": "map67-zone-event0:04FB38",
+            "sourceLine": 36,
+            "address": 326456,
+            "mnemonic": "chkflg",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "13"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "event-service-macro",
+            "controlFlowKind": "ordinary",
+            "target": null
+          },
+          {
+            "operationOrder": 3,
+            "operationId": "map67-zone-event0:04FB3C",
+            "sourceLine": 37,
+            "address": 326460,
+            "mnemonic": "beq",
+            "sizeSuffix": ".s",
+            "operandTexts": [
+              "return_4FB56"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "conditional-branch",
+            "target": {
+              "instructionTarget": "return_4FB56",
+              "instructionTargetAddress": 326486,
+              "effectiveTarget": "return_4FB56",
+              "effectiveTargetAddress": 326486,
+              "scope": "internal"
+            }
+          },
+          {
+            "operationOrder": 4,
+            "operationId": "map67-zone-event0:04FB3E",
+            "sourceLine": 38,
+            "address": 326462,
+            "mnemonic": "move",
+            "sizeSuffix": ".w",
+            "operandTexts": [
+              "#ALLY_ELRIC",
+              "d0"
+            ],
+            "operandShapes": [
+              "ally-immediate",
+              "register"
+            ],
+            "family": "raw-68000-instruction",
+            "controlFlowKind": "ordinary",
+            "target": null
+          },
+          {
+            "operationOrder": 5,
+            "operationId": "map67-zone-event0:04FB42",
+            "sourceLine": 39,
+            "address": 326466,
+            "mnemonic": "jsr",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "j_GetCurrentHp"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "direct-call",
+            "target": {
+              "instructionTarget": "j_GetCurrentHp",
+              "instructionTargetAddress": 32840,
+              "effectiveTarget": "GetCurrentHp",
+              "effectiveTargetAddress": 33590,
+              "scope": "external"
+            }
+          },
+          {
+            "operationOrder": 6,
+            "operationId": "map67-zone-event0:04FB48",
+            "sourceLine": 40,
+            "address": 326472,
+            "mnemonic": "tst",
+            "sizeSuffix": ".w",
+            "operandTexts": [
+              "d1"
+            ],
+            "operandShapes": [
+              "register"
+            ],
+            "family": "raw-68000-instruction",
+            "controlFlowKind": "ordinary",
+            "target": null
+          },
+          {
+            "operationOrder": 7,
+            "operationId": "map67-zone-event0:04FB4A",
+            "sourceLine": 41,
+            "address": 326474,
+            "mnemonic": "beq",
+            "sizeSuffix": ".s",
+            "operandTexts": [
+              "return_4FB56"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "conditional-branch",
+            "target": {
+              "instructionTarget": "return_4FB56",
+              "instructionTargetAddress": 326486,
+              "effectiveTarget": "return_4FB56",
+              "effectiveTargetAddress": 326486,
+              "scope": "internal"
+            }
+          },
+          {
+            "operationOrder": 8,
+            "operationId": "map67-zone-event0:04FB4C",
+            "sourceLine": 42,
+            "address": 326476,
+            "mnemonic": "script",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "cs_4FC32"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "event-service-macro",
+            "controlFlowKind": "ordinary",
+            "target": null
+          },
+          {
+            "operationOrder": 9,
+            "operationId": "map67-zone-event0:04FB52",
+            "sourceLine": 43,
+            "address": 326482,
+            "mnemonic": "setflg",
+            "sizeSuffix": null,
+            "operandTexts": [
+              "751"
+            ],
+            "operandShapes": [
+              "symbol"
+            ],
+            "family": "event-service-macro",
+            "controlFlowKind": "ordinary",
+            "target": null
+          },
+          {
+            "operationOrder": 10,
+            "operationId": "map67-zone-event0:04FB56",
+            "sourceLine": 46,
+            "address": 326486,
+            "mnemonic": "rts",
+            "sizeSuffix": null,
+            "operandTexts": [],
+            "operandShapes": [],
+            "family": "raw-68000-control-flow",
+            "controlFlowKind": "return",
+            "target": null
+          }
+        ]
+      }
+    },
+    "physicalProgramOrder": [
+      "map20-zone-event0",
+      "map67-zone-event0"
+    ],
+    "physicalPrograms": {
+      "map20-zone-event0": {
+        "sourcePath": "data/maps/entries/map20/mapsetups/s3_zoneevents_501.asm",
+        "programSymbol": "Map20_1F5_ZoneEvent0",
+        "entryAddress": 341870,
+        "endAddressExclusive": 341930,
+        "encodedByteCount": 60,
+        "operationAddresses": [
+          341870,
+          341872,
+          341878,
+          341884,
+          341890,
+          341896,
+          341898,
+          341904,
+          341910,
+          341916,
+          341922,
+          341928
+        ],
+        "labelAddresses": [
+          341870
+        ]
+      },
+      "map67-zone-event0": {
+        "sourcePath": "data/maps/entries/map67/mapsetups/s3_zoneevents.asm",
+        "programSymbol": "Map67_ZoneEvent0",
+        "entryAddress": 326450,
+        "endAddressExclusive": 326488,
+        "encodedByteCount": 38,
+        "operationAddresses": [
+          326450,
+          326454,
+          326456,
+          326460,
+          326462,
+          326466,
+          326472,
+          326474,
+          326476,
+          326482,
+          326486
+        ],
+        "labelAddresses": [
+          326450,
+          326486
+        ]
+      }
+    },
+    "allySelectorOrder": [
+      "Sarah",
+      "Chester",
+      "Elric"
+    ],
+    "allySelectors": {
+      "Sarah": {
+        "selectorOrder": 0,
+        "sourceSymbol": "ALLY_SARAH",
+        "value": 1,
+        "enumSourceLine": 3040
+      },
+      "Chester": {
+        "selectorOrder": 1,
+        "sourceSymbol": "ALLY_CHESTER",
+        "value": 2,
+        "enumSourceLine": 3041
+      },
+      "Elric": {
+        "selectorOrder": 2,
+        "sourceSymbol": "ALLY_ELRIC",
+        "value": 13,
+        "enumSourceLine": 3052
+      }
+    },
+    "serviceEntryOrder": [
+      "GetMaxMp",
+      "GetMaxHp",
+      "GetCurrentHp",
+      "SetCurrentMp",
+      "SetCurrentHp"
+    ],
+    "serviceEntries": {
+      "GetMaxMp": {
+        "entryOrder": 0,
+        "instructionTarget": "j_GetMaxMp",
+        "instructionTargetAddress": 32780,
+        "effectiveEntry": "GetMaxMp",
+        "effectiveEntryAddress": 33606,
+        "effectiveSourcePath": "code/common/stats/combatantstats_1.asm"
+      },
+      "GetMaxHp": {
+        "entryOrder": 1,
+        "instructionTarget": "j_GetMaxHp",
+        "instructionTargetAddress": 32784,
+        "effectiveEntry": "GetMaxHp",
+        "effectiveEntryAddress": 33574,
+        "effectiveSourcePath": "code/common/stats/combatantstats_1.asm"
+      },
+      "GetCurrentHp": {
+        "entryOrder": 2,
+        "instructionTarget": "j_GetCurrentHp",
+        "instructionTargetAddress": 32840,
+        "effectiveEntry": "GetCurrentHp",
+        "effectiveEntryAddress": 33590,
+        "effectiveSourcePath": "code/common/stats/combatantstats_1.asm"
+      },
+      "SetCurrentMp": {
+        "entryOrder": 3,
+        "instructionTarget": "j_SetCurrentMp",
+        "instructionTargetAddress": 32952,
+        "effectiveEntry": "SetCurrentMp",
+        "effectiveEntryAddress": 34246,
+        "effectiveSourcePath": "code/common/stats/combatantstats_2.asm"
+      },
+      "SetCurrentHp": {
+        "entryOrder": 4,
+        "instructionTarget": "j_SetCurrentHp",
+        "instructionTargetAddress": 32960,
+        "effectiveEntry": "SetCurrentHp",
+        "effectiveEntryAddress": 34214,
+        "effectiveSourcePath": "code/common/stats/combatantstats_2.asm"
+      }
+    },
+    "serviceCallOrder": [
+      "map20-zone-event0:GetMaxHp:053770",
+      "map20-zone-event0:SetCurrentHp:053776",
+      "map20-zone-event0:GetMaxMp:05377C",
+      "map20-zone-event0:SetCurrentMp:053782",
+      "map20-zone-event0:GetMaxHp:05378A",
+      "map20-zone-event0:SetCurrentHp:053790",
+      "map20-zone-event0:GetMaxMp:053796",
+      "map20-zone-event0:SetCurrentMp:05379C",
+      "map67-zone-event0:GetCurrentHp:04FB42"
+    ],
+    "serviceCalls": {
+      "map20-zone-event0:GetMaxHp:053770": {
+        "serviceCallOrder": 0,
+        "contextId": "map20-zone-event0",
+        "physicalProgramId": "map20-zone-event0",
+        "allySelectorId": "Sarah",
+        "serviceEntryId": "GetMaxHp",
+        "sourceLine": 14,
+        "callAddress": 341872,
+        "instructionTarget": "j_GetMaxHp",
+        "instructionTargetAddress": 32784,
+        "effectiveTarget": "GetMaxHp",
+        "effectiveTargetAddress": 33574
+      },
+      "map20-zone-event0:SetCurrentHp:053776": {
+        "serviceCallOrder": 1,
+        "contextId": "map20-zone-event0",
+        "physicalProgramId": "map20-zone-event0",
+        "allySelectorId": "Sarah",
+        "serviceEntryId": "SetCurrentHp",
+        "sourceLine": 15,
+        "callAddress": 341878,
+        "instructionTarget": "j_SetCurrentHp",
+        "instructionTargetAddress": 32960,
+        "effectiveTarget": "SetCurrentHp",
+        "effectiveTargetAddress": 34214
+      },
+      "map20-zone-event0:GetMaxMp:05377C": {
+        "serviceCallOrder": 2,
+        "contextId": "map20-zone-event0",
+        "physicalProgramId": "map20-zone-event0",
+        "allySelectorId": "Sarah",
+        "serviceEntryId": "GetMaxMp",
+        "sourceLine": 16,
+        "callAddress": 341884,
+        "instructionTarget": "j_GetMaxMp",
+        "instructionTargetAddress": 32780,
+        "effectiveTarget": "GetMaxMp",
+        "effectiveTargetAddress": 33606
+      },
+      "map20-zone-event0:SetCurrentMp:053782": {
+        "serviceCallOrder": 3,
+        "contextId": "map20-zone-event0",
+        "physicalProgramId": "map20-zone-event0",
+        "allySelectorId": "Sarah",
+        "serviceEntryId": "SetCurrentMp",
+        "sourceLine": 17,
+        "callAddress": 341890,
+        "instructionTarget": "j_SetCurrentMp",
+        "instructionTargetAddress": 32952,
+        "effectiveTarget": "SetCurrentMp",
+        "effectiveTargetAddress": 34246
+      },
+      "map20-zone-event0:GetMaxHp:05378A": {
+        "serviceCallOrder": 4,
+        "contextId": "map20-zone-event0",
+        "physicalProgramId": "map20-zone-event0",
+        "allySelectorId": "Chester",
+        "serviceEntryId": "GetMaxHp",
+        "sourceLine": 19,
+        "callAddress": 341898,
+        "instructionTarget": "j_GetMaxHp",
+        "instructionTargetAddress": 32784,
+        "effectiveTarget": "GetMaxHp",
+        "effectiveTargetAddress": 33574
+      },
+      "map20-zone-event0:SetCurrentHp:053790": {
+        "serviceCallOrder": 5,
+        "contextId": "map20-zone-event0",
+        "physicalProgramId": "map20-zone-event0",
+        "allySelectorId": "Chester",
+        "serviceEntryId": "SetCurrentHp",
+        "sourceLine": 20,
+        "callAddress": 341904,
+        "instructionTarget": "j_SetCurrentHp",
+        "instructionTargetAddress": 32960,
+        "effectiveTarget": "SetCurrentHp",
+        "effectiveTargetAddress": 34214
+      },
+      "map20-zone-event0:GetMaxMp:053796": {
+        "serviceCallOrder": 6,
+        "contextId": "map20-zone-event0",
+        "physicalProgramId": "map20-zone-event0",
+        "allySelectorId": "Chester",
+        "serviceEntryId": "GetMaxMp",
+        "sourceLine": 21,
+        "callAddress": 341910,
+        "instructionTarget": "j_GetMaxMp",
+        "instructionTargetAddress": 32780,
+        "effectiveTarget": "GetMaxMp",
+        "effectiveTargetAddress": 33606
+      },
+      "map20-zone-event0:SetCurrentMp:05379C": {
+        "serviceCallOrder": 7,
+        "contextId": "map20-zone-event0",
+        "physicalProgramId": "map20-zone-event0",
+        "allySelectorId": "Chester",
+        "serviceEntryId": "SetCurrentMp",
+        "sourceLine": 22,
+        "callAddress": 341916,
+        "instructionTarget": "j_SetCurrentMp",
+        "instructionTargetAddress": 32952,
+        "effectiveTarget": "SetCurrentMp",
+        "effectiveTargetAddress": 34246
+      },
+      "map67-zone-event0:GetCurrentHp:04FB42": {
+        "serviceCallOrder": 8,
+        "contextId": "map67-zone-event0",
+        "physicalProgramId": "map67-zone-event0",
+        "allySelectorId": "Elric",
+        "serviceEntryId": "GetCurrentHp",
+        "sourceLine": 39,
+        "callAddress": 326466,
+        "instructionTarget": "j_GetCurrentHp",
+        "instructionTargetAddress": 32840,
+        "effectiveTarget": "GetCurrentHp",
+        "effectiveTargetAddress": 33590
+      }
+    },
+    "restorationChainOrder": [
+      "Sarah",
+      "Chester"
+    ],
+    "restorationChains": {
+      "Sarah": {
+        "chainOrder": 0,
+        "contextId": "map20-zone-event0",
+        "allySelectorId": "Sarah",
+        "serviceCallIds": [
+          "map20-zone-event0:GetMaxHp:053770",
+          "map20-zone-event0:SetCurrentHp:053776",
+          "map20-zone-event0:GetMaxMp:05377C",
+          "map20-zone-event0:SetCurrentMp:053782"
+        ],
+        "serviceEntryOrder": [
+          "GetMaxHp",
+          "SetCurrentHp",
+          "GetMaxMp",
+          "SetCurrentMp"
+        ]
+      },
+      "Chester": {
+        "chainOrder": 1,
+        "contextId": "map20-zone-event0",
+        "allySelectorId": "Chester",
+        "serviceCallIds": [
+          "map20-zone-event0:GetMaxHp:05378A",
+          "map20-zone-event0:SetCurrentHp:053790",
+          "map20-zone-event0:GetMaxMp:053796",
+          "map20-zone-event0:SetCurrentMp:05379C"
+        ],
+        "serviceEntryOrder": [
+          "GetMaxHp",
+          "SetCurrentHp",
+          "GetMaxMp",
+          "SetCurrentMp"
+        ]
+      }
+    },
+    "resultPredicate": {
+      "serviceCallId": "map67-zone-event0:GetCurrentHp:04FB42",
+      "producerAddress": 326472,
+      "producerMnemonic": "tst",
+      "producerSizeSuffix": ".w",
+      "producerOperands": [
+        "d1"
+      ],
+      "branchAddress": 326474,
+      "branchMnemonic": "beq",
+      "branchSizeSuffix": ".s",
+      "targetAddress": 326486,
+      "fallthroughAddress": 326476
+    },
+    "digests": {
+      "programContextsSha256": "AAF77F94AA99367AB9C3CDB84B1807AE25DF4A6A1E51E28B8A597C034A177952",
+      "serviceCallsSha256": "0EDDA93146331B4F2A324A85560F83856E6FB388897DEBDAB505635E01A6CC6B",
+      "restorationChainsSha256": "BF678B0DE29E838A55F2D64A66576883E7ED29D3739AA5BC8EC893933362B4F0",
+      "resultPredicateSha256": "28907384112E08BF0EB4C320CCBCFF7017FBF7B04F5983B826512B04DB3A113D"
+    }
+  },
+  "unknowns": {
+    "naturalProgramReachability": "Unknown",
+    "selectedProgramContext": "Unknown",
+    "callerEntryRegistersAndState": "Unknown",
+    "actualServiceEntryAndReturnOrder": "Unknown",
+    "actualAllyIdentityAtEachService": "Unknown",
+    "actualMaxHpAndMpResults": "Unknown",
+    "actualCurrentHpResult": "Unknown",
+    "actualCurrentHpAndMpWrites": "Unknown",
+    "actualHpPredicateValueAndBranch": "Unknown",
+    "actualScriptAndFlagEffects": "Unknown",
+    "persistenceAcrossMapSwitchSaveLoad": "Unknown",
+    "inputDialogueAudioPresentationTimingAndStoryMeaning": "Unknown"
+  },
+  "summary": {
+    "sourceIdentityCount": 6,
+    "motherProgramContextCount": 914,
+    "positiveProgramContextCount": 2,
+    "zeroProgramContextCount": 912,
+    "physicalProgramCount": 2,
+    "contextOperationCount": 23,
+    "physicalOperationCount": 23,
+    "contextEncodedByteCount": 98,
+    "physicalEncodedByteCount": 98,
+    "physicalLabelCount": 3,
+    "eventServiceMacroPhysicalOperationCount": 5,
+    "rawInstructionPhysicalOperationCount": 4,
+    "rawControlPhysicalOperationCount": 14,
+    "statCallCount": 9,
+    "allySelectorCount": 3,
+    "restorationChainCount": 2,
+    "resultPredicateCount": 1,
+    "anchorCount": 35
+  }
+}
