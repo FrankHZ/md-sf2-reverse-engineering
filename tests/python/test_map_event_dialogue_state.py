@@ -19,7 +19,9 @@ from sf2tool.h2.map_event_dialogue_state import (
     _physical_anchor,
     _physical_state_access_pcs,
 )
-from sf2tool.h2.map_event_interaction_state import normalize_interaction_state_later_owner_index
+from sf2tool.h2.map_event_item_transactions import (
+    normalize_map_event_item_transactions_later_owner_index as normalize_later_owner_index,
+)
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
 from sf2tool.research_index import verify_index
@@ -40,7 +42,7 @@ _REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
 
 def load_json(path):
     value = _load_json(path)
-    return normalize_interaction_state_later_owner_index(value) if path == INDEX else value
+    return normalize_later_owner_index(value) if path == INDEX else value
 EXPECTED_INDEX_BINDINGS = {
     "map.data.ms-map3-flag506-entityevents": "ms_map3_flag506_EntityEvents",
     "map.data.ms-map3-zoneevents": "ms_map3_ZoneEvents",
@@ -711,16 +713,16 @@ def test_research_index_delta_is_exact_17_binding_append_without_object_or_desig
         "Index": "manifests/research-index.json",
         "Records": 1625,
         "Confirmed": 1625,
-        "H2Fixtures": 93,
+        "H2Fixtures": 94,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 2993,
+        "AddressBindings": 3007,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1588,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 55,
+        "ResearchDocuments": 56,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

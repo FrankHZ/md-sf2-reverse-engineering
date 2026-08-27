@@ -146,6 +146,15 @@ borrowing their canonical files' addresses.
 Field-item dispatch and usability therefore belong to the common-menu rail. UI behavior and
 caller-sensitive edge cases remain grouped runtime questions; this batch adds no emulator run.
 
+## Bounded Item-Transaction Caller Join
+
+**Confirmed — caller-side join only.** `sf2-map-event-item-transactions-static-v1` records selected
+map-event callers of `GetItemInventoryLocation`, `ReceiveMandatoryItem`, `RemoveItemBySlot`, and
+`RemoveItemFromInventory`, including their alias/effective entry identities and source-shaped result
+tests. This is not a second inventory-service algorithm: service bodies, inventory mutation, return
+values, caller-visible effects, and persistence remain owned by the common-stats/item-inventory
+surfaces or **Unknown** pending bounded runtime evidence.
+
 ## Reproduction
 
 ```powershell

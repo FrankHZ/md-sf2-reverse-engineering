@@ -68,6 +68,9 @@ from sf2tool.h2.map_event_direct_state import verify_map_event_direct_state_cont
 from sf2tool.h2.map_event_interaction_state import (
     verify_map_event_interaction_state_contract,
 )
+from sf2tool.h2.map_event_item_transactions import (
+    verify_map_event_item_transactions_contract,
+)
 from sf2tool.h2.map_event_predicate_results import (
     verify_map_event_predicate_results_contract,
 )
@@ -803,6 +806,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_event_interaction_state)
     h2_map_event_interaction_state.add_argument("--output-path", type=_path)
+    h2_map_event_item_transactions = h2_commands.add_parser(
+        "map-event-item-transactions",
+        help="verify static map-event item service choreography and FieldMenu return seam",
+    )
+    _add_local_paths(h2_map_event_item_transactions)
+    h2_map_event_item_transactions.add_argument("--output-path", type=_path)
     h2_map_event_request_state = h2_commands.add_parser(
         "map-event-request-state",
         help="verify map-event request-state writes and caller-local handoff definitions",
@@ -1854,6 +1863,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-event-interaction-state":
         print_record(
             verify_map_event_interaction_state_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-event-item-transactions":
+        print_record(
+            verify_map_event_item_transactions_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

@@ -14,7 +14,9 @@ from shutil import copy2
 import pytest
 
 import sf2tool.h2.map_event_request_consumption as consumption_module
-from sf2tool.h2.map_event_interaction_state import normalize_interaction_state_later_owner_index
+from sf2tool.h2.map_event_item_transactions import (
+    normalize_map_event_item_transactions_later_owner_index as normalize_later_owner_index,
+)
 from sf2tool.h2.map_event_request_consumption import (
     _CONTEXTS,
     FIXTURE,
@@ -41,7 +43,7 @@ CONSUMER_CONTEXT_FIELD = "eventRequestConsumption.consumerContexts"
 
 def load_json(path):
     value = _load_json(path)
-    return normalize_interaction_state_later_owner_index(value) if path == INDEX else value
+    return normalize_later_owner_index(value) if path == INDEX else value
 
 
 def _observation(address_id: str, value: int) -> dict[str, object]:
@@ -365,16 +367,16 @@ def test_request_consumption_index_delta_is_exact_without_object_drift() -> None
         "Index": "manifests/research-index.json",
         "Records": 1625,
         "Confirmed": 1625,
-        "H2Fixtures": 93,
+        "H2Fixtures": 94,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 2993,
+        "AddressBindings": 3007,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1588,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 55,
+        "ResearchDocuments": 56,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,
