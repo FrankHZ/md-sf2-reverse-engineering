@@ -1,6 +1,6 @@
 # 地图与探索合同
 
-- **已确认的原版行为：** 79 个地图定义、共享图块/布局所有权、源码形式的区域/事件/物品/动画、64x64 解码布局、配置选择、有记录的首匹配分发规则、静态过渡使用方优先级、按加载路径的布局持久性、源码形状的 map-script 实体填充/重载、`cloneEntity`、camera-control 与 entity-placement 命令记录，以及分批的帧级实体移动/动作时序
+- **已确认的原版行为：** 79 个地图定义、共享图块/布局所有权、源码形式的区域/事件/物品/动画、64x64 解码布局、配置选择、有记录的首匹配分发规则、静态过渡使用方优先级、按加载路径的布局持久性、源码形状的 map-script 实体填充/重载、`cloneEntity`、camera-control 与 entity-placement 命令记录、有界静态 map-event 状态/控制/调用方/内容形状，以及分批的帧级实体移动/动作时序
 - **未知的原版行为：** 非空地图 52 直接 `rts` 事件配置的正常剧情可达性、精确的 VDP 可见滚动时序、硬件级动画扫描线时序，以及最终的 VDP 可见渲染一致性
 - 重制状态：实现无关的 Phase 3 合同；尚未选择引擎
 
@@ -30,6 +30,32 @@
   `tests/fixtures/h2/canonical-map-import-v1.json`；
 - `sf2-map-events-static-v1`，位于
   `tests/fixtures/h2/map-events-static-v1.json`；
+- `sf2-map-event-direct-state-static-v1`，位于
+  `tests/fixtures/h2/map-event-direct-state-static-v1.json`；
+- `sf2-map-event-direct-control-static-v1`，位于
+  `tests/fixtures/h2/map-event-direct-control-static-v1.json`；
+- `sf2-map-event-direct-handoff-static-v1`，位于
+  `tests/fixtures/h2/map-event-direct-handoff-static-v1.json`；
+- `sf2-map-event-predicate-results-static-v1`，位于
+  `tests/fixtures/h2/map-event-predicate-results-static-v1.json`；
+- `sf2-map-event-dialogue-state-static-v1`，位于
+  `tests/fixtures/h2/map-event-dialogue-state-static-v1.json`；
+- `sf2-map-event-request-state-static-v1`，位于
+  `tests/fixtures/h2/map-event-request-state-static-v1.json`；
+- `sf2-map-event-request-consumption-static-v1`，位于
+  `tests/fixtures/h2/map-event-request-consumption-static-v1.json`；
+- `sf2-map-event-interaction-state-static-v1`，位于
+  `tests/fixtures/h2/map-event-interaction-state-static-v1.json`；
+- `sf2-map-event-item-transactions-static-v1`，位于
+  `tests/fixtures/h2/map-event-item-transactions-static-v1.json`；
+- `sf2-map-event-random-battle-state-static-v1`，位于
+  `tests/fixtures/h2/map-event-random-battle-state-static-v1.json`；
+- `sf2-map-event-combatant-state-static-v1`，位于
+  `tests/fixtures/h2/map-event-combatant-state-static-v1.json`；
+- `sf2-map-event-tactical-base-quote-state-static-v1`，位于
+  `tests/fixtures/h2/map-event-tactical-base-quote-state-static-v1.json`；
+- `sf2-map-event-scripted-transition-state-static-v1`，位于
+  `tests/fixtures/h2/map-event-scripted-transition-state-static-v1.json`；
 - `sf2-map-init-static-v1`，位于
   `tests/fixtures/h2/map-init-static-v1.json`；
 - `sf2-map-script-engine-static-v1`，位于
@@ -62,6 +88,34 @@
   `tests/fixtures/h3/map-script-screen-presentation-v1.json`；
 - `sf2-map-entity-lifecycle-presentation-runtime-v1`，位于
   `tests/fixtures/h3/map-entity-lifecycle-presentation-v1.json`。
+
+### 静态地图事件证据边界
+
+以上新增的十三个 map-event H2 fixture 是字段闭合的静态证据所有者。本合同只消费其中
+以下源码/H1/ROM 形状：
+
+| Fixture | 消费的静态形状 |
+| --- | --- |
+| `sf2-map-event-direct-state-static-v1` | 直接固定 RAM 读写同一性、宽度、操作数顺序、上下文/物理计数与溯源 |
+| `sf2-map-event-direct-control-static-v1` | 调用方侧直接调用/尾传递同一性、别名、词法延续与溯源 |
+| `sf2-map-event-direct-handoff-static-v1` | 相邻调用方准备形状与返回后的第一个词法延续形状 |
+| `sf2-map-event-predicate-results-static-v1` | 源码形状的生产者/测试/分支对、分支极性、目标与 fallthrough |
+| `sf2-map-event-dialogue-state-static-v1` | 有界对话状态访问、数字文本/哨兵同一性、局部控制形状与 reaching-definition 同一性 |
+| `sf2-map-event-request-state-static-v1` | 请求状态写入类别，以及有界 handoff/return 接缝处的调用方局部 reaching definitions |
+| `sf2-map-event-request-consumption-static-v1` | 使用方侧固定状态访问、局部分支与直接 handoff 拓扑 |
+| `sf2-map-event-interaction-state-static-v1` | 有界 `ENTITY_FACING`/`EVENT_RELATIVE_POSITION` 生产者、使用方、谓词与接缝 |
+| `sf2-map-event-item-transactions-static-v1` | 调用方侧服务顺序、谓词形状、源码常量与 FieldMenu/`d6` 返回接缝 |
+| `sf2-map-event-random-battle-state-static-v1` | `CheckRandomBattle` 周围的静态调用方库存与源码有序局部请求/控制形状 |
+| `sf2-map-event-combatant-state-static-v1` | 调用方侧角色 getter/setter 顺序、选择器与局部谓词形状 |
+| `sf2-map-event-tactical-base-quote-state-static-v1` | 静态调用方/被调用方分支与服务形状，以及不含解码文本的数字引文行 ID 域 |
+| `sf2-map-event-scripted-transition-state-static-v1` | 一个有界程序流的命令/载荷嵌套、处理器连接、指针目标与终止形状 |
+
+这些所有者增加的是可追踪深度，而不是已观察执行。它们不确立程序的自然可达性、实际采取的
+路径或分支、入口/运行时值、被调用方成功或效果、状态生命周期或存档/读档持久性、对话或剧情
+含义、输入/音频/呈现/时序、地图或战斗完成、R4b/H4/8C 一致性，或任何其他未观察的运行时
+行为。源码名称、数字文本 ID、调用、写入与分支标签仍是结构同一性。完整源码/H1/ROM 材料与
+私有生成连接仍是验证输入；公共合同只保留已接受 fixture 已公开的有界结构记录、计数、哈希与
+溯源。
 
 canonical-import fixture 是本合同的可执行序列化。其完整生成载荷在 `local/derived/` 下保持私有；只有聚合结构与溯源受追踪。
 

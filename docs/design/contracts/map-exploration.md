@@ -3,8 +3,9 @@
 - **Confirmed original behavior:** 79 map definitions, shared block/layout ownership, source-form
   areas/events/items/animations, 64x64 decoded layouts, setup selection, documented first-match
   dispatch rules, static transition-consumer priority, load-path-specific layout persistence,
-  source-shaped map-script entity population/reload, cloneEntity, camera-control, and entity-placement command records, and batched frame-level entity
-  movement/action timing
+  source-shaped map-script entity population/reload, cloneEntity, camera-control, and entity-placement
+  command records, bounded static map-event state/control/caller/content shapes, and batched
+  frame-level entity movement/action timing
 - **Unknown original behavior:** normal-story
   reachability of the non-empty map 52 direct-`rts` event setup, exact VDP-visible scroll timing,
   hardware-level animation scanline timing, and final VDP-visible rendered parity
@@ -40,6 +41,32 @@ Evidence is executable through:
   `tests/fixtures/h2/canonical-map-import-v1.json`;
 - `sf2-map-events-static-v1` in
   `tests/fixtures/h2/map-events-static-v1.json`;
+- `sf2-map-event-direct-state-static-v1` in
+  `tests/fixtures/h2/map-event-direct-state-static-v1.json`;
+- `sf2-map-event-direct-control-static-v1` in
+  `tests/fixtures/h2/map-event-direct-control-static-v1.json`;
+- `sf2-map-event-direct-handoff-static-v1` in
+  `tests/fixtures/h2/map-event-direct-handoff-static-v1.json`;
+- `sf2-map-event-predicate-results-static-v1` in
+  `tests/fixtures/h2/map-event-predicate-results-static-v1.json`;
+- `sf2-map-event-dialogue-state-static-v1` in
+  `tests/fixtures/h2/map-event-dialogue-state-static-v1.json`;
+- `sf2-map-event-request-state-static-v1` in
+  `tests/fixtures/h2/map-event-request-state-static-v1.json`;
+- `sf2-map-event-request-consumption-static-v1` in
+  `tests/fixtures/h2/map-event-request-consumption-static-v1.json`;
+- `sf2-map-event-interaction-state-static-v1` in
+  `tests/fixtures/h2/map-event-interaction-state-static-v1.json`;
+- `sf2-map-event-item-transactions-static-v1` in
+  `tests/fixtures/h2/map-event-item-transactions-static-v1.json`;
+- `sf2-map-event-random-battle-state-static-v1` in
+  `tests/fixtures/h2/map-event-random-battle-state-static-v1.json`;
+- `sf2-map-event-combatant-state-static-v1` in
+  `tests/fixtures/h2/map-event-combatant-state-static-v1.json`;
+- `sf2-map-event-tactical-base-quote-state-static-v1` in
+  `tests/fixtures/h2/map-event-tactical-base-quote-state-static-v1.json`;
+- `sf2-map-event-scripted-transition-state-static-v1` in
+  `tests/fixtures/h2/map-event-scripted-transition-state-static-v1.json`;
 - `sf2-map-init-static-v1` in
   `tests/fixtures/h2/map-init-static-v1.json`;
 - `sf2-map-script-engine-static-v1` in
@@ -72,6 +99,35 @@ Evidence is executable through:
   `tests/fixtures/h3/map-script-screen-presentation-v1.json`.
 - `sf2-map-entity-lifecycle-presentation-runtime-v1` in
   `tests/fixtures/h3/map-entity-lifecycle-presentation-v1.json`.
+
+### Static Map-Event Evidence Boundary
+
+The thirteen map-event H2 fixtures added above are field-closed static evidence owners. This
+contract consumes only the following source/H1/ROM shapes from them:
+
+| Fixture | Consumed static shape |
+| --- | --- |
+| `sf2-map-event-direct-state-static-v1` | Direct fixed-RAM read/write identities, widths, operand order, context/physical accounting, and provenance |
+| `sf2-map-event-direct-control-static-v1` | Caller-side direct-call/tail-transfer identities, aliases, lexical continuations, and provenance |
+| `sf2-map-event-direct-handoff-static-v1` | Adjacent caller preparation and first lexical post-return continuation shapes |
+| `sf2-map-event-predicate-results-static-v1` | Source-shaped producer/test/branch pairs, branch polarity, target, and fallthrough |
+| `sf2-map-event-dialogue-state-static-v1` | Bounded dialogue-state accesses, numeric text/sentinel identities, local control shape, and reaching-definition identities |
+| `sf2-map-event-request-state-static-v1` | Request-state write classes and caller-local reaching definitions at bounded handoff/return seams |
+| `sf2-map-event-request-consumption-static-v1` | Consumer-side fixed-state access, local branch, and direct handoff topology |
+| `sf2-map-event-interaction-state-static-v1` | Bounded `ENTITY_FACING`/`EVENT_RELATIVE_POSITION` producers, consumers, predicates, and seams |
+| `sf2-map-event-item-transactions-static-v1` | Caller-side service order, predicate shape, source constants, and FieldMenu/`d6` return seams |
+| `sf2-map-event-random-battle-state-static-v1` | Static caller inventory and source-ordered local request/control shape around `CheckRandomBattle` |
+| `sf2-map-event-combatant-state-static-v1` | Caller-side combatant getter/setter order, selectors, and local predicate shape |
+| `sf2-map-event-tactical-base-quote-state-static-v1` | Static caller/callee branch and service shape plus numeric quote-line ID domain, without decoded text |
+| `sf2-map-event-scripted-transition-state-static-v1` | One bounded program stream's command/payload nesting, handler joins, pointer targets, and termination shape |
+
+These owners add traceability depth, not observed execution. They do not establish natural program
+reachability, the path or branch actually taken, entry/runtime values, callee success or effects,
+state lifetime or save/load persistence, dialogue or story meaning, input/audio/presentation/timing,
+map or battle completion, R4b/H4/8C parity, or any other unobserved runtime behavior. Source names,
+numeric text IDs, calls, writes, and branch labels remain structural identities. Complete source/H1/ROM
+material and private generated joins remain verification inputs; the public contract retains only the
+bounded structural records, counts, hashes, and provenance already exposed by the accepted fixtures.
 
 The canonical-import fixture is the executable serialization of this contract. Its full generated payload stays
 private under `local/derived/`; only aggregate structure and provenance are tracked.
