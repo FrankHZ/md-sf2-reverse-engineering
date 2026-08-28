@@ -14,6 +14,10 @@ ROM = ROOT / "local/roms/sf2-us.bin"
 UPSTREAM = ROOT / "local/upstream/SF2DISASM"
 
 
+def _normalize_later_owner_index(index):
+    return victory_return._normalize_request_consumption_later_owner_index(index)
+
+
 def test_scoped_source_inventory_and_h1_rom_anchors_are_complete() -> None:
     text, identities = victory_return._read_source_surface(UPSTREAM / "disasm")
     assert len(text) == len(identities) == 16
@@ -206,7 +210,7 @@ def test_index_delta_has_exact_eleven_objects_eighteen_addresses_and_twenty_nine
 def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
     index = json.loads((ROOT / "manifests/research-index.json").read_text(encoding="utf-8"))
     original = copy.deepcopy(index)
-    normalized = victory_return._normalize_request_consumption_later_owner_index(index)
+    normalized = _normalize_later_owner_index(index)
     assert index == original
     assert normalized != index
     assert len(victory_return._owner_evidence(normalized)) == 11
@@ -234,7 +238,7 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
     malformed = copy.deepcopy(original)
     request_evidence(record_for(malformed, "menus.shop-actions"))["verifier"] = "wrong"
     with pytest.raises(ValueError, match="request-consumption evidence drift"):
-        victory_return._normalize_request_consumption_later_owner_index(malformed)
+        _normalize_later_owner_index(malformed)
 
     malformed = copy.deepcopy(original)
     documents = record_for(malformed, "menus.field-main")["documents"]
@@ -242,7 +246,7 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
         "docs/research/wrong.md"
     )
     with pytest.raises(ValueError, match="request-consumption document drift"):
-        victory_return._normalize_request_consumption_later_owner_index(malformed)
+        _normalize_later_owner_index(malformed)
 
     malformed = copy.deepcopy(original)
     address = next(
@@ -252,25 +256,25 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
     )
     address["value"] += 1
     with pytest.raises(ValueError, match="request-consumption address drift"):
-        victory_return._normalize_request_consumption_later_owner_index(malformed)
+        _normalize_later_owner_index(malformed)
 
     malformed = copy.deepcopy(original)
     addresses = record_for(malformed, "menus.shop-actions")["addresses"]
     address = next(item for item in addresses if item["id"] == "get-shop-inventory-address")
     addresses.append(copy.deepcopy(address))
     with pytest.raises(ValueError, match="request-consumption address set drift"):
-        victory_return._normalize_request_consumption_later_owner_index(malformed)
+        _normalize_later_owner_index(malformed)
 
     malformed = copy.deepcopy(original)
     record_for(malformed, "battle.control.outcomes")["evidence"].append(
         copy.deepcopy(request_evidence(record_for(original, "menus.shop-actions")))
     )
     with pytest.raises(ValueError, match="request-consumption owner-record drift"):
-        victory_return._normalize_request_consumption_later_owner_index(malformed)
+        _normalize_later_owner_index(malformed)
 
 
 def test_index_contract_rejects_binding_address_document_and_accepted_base_drift() -> None:
-    index = victory_return._normalize_request_consumption_later_owner_index(
+    index = _normalize_later_owner_index(
         json.loads((ROOT / "manifests/research-index.json").read_text(encoding="utf-8"))
     )
     victory_return._owner_evidence(index)
@@ -330,7 +334,7 @@ def test_index_contract_rejects_binding_address_document_and_accepted_base_drift
 def test_index_contract_rejects_every_authorized_delta_dimension(
     mutation: object, error: str
 ) -> None:
-    malformed = victory_return._normalize_request_consumption_later_owner_index(
+    malformed = _normalize_later_owner_index(
         json.loads((ROOT / "manifests/research-index.json").read_text(encoding="utf-8"))
     )
     record = next(item for item in malformed["records"] if item["id"] == "battle.control.outcomes")
@@ -340,7 +344,7 @@ def test_index_contract_rejects_every_authorized_delta_dimension(
 
 
 def test_index_contract_rejects_missing_extra_and_unrelated_owner_record_drift() -> None:
-    index = victory_return._normalize_request_consumption_later_owner_index(
+    index = _normalize_later_owner_index(
         json.loads((ROOT / "manifests/research-index.json").read_text(encoding="utf-8"))
     )
 
@@ -385,7 +389,7 @@ def test_summary_is_derived_from_the_closed_denominators() -> None:
         fixture["sourceContext"]["sourceIdentities"],
         fixture["sourceContext"]["h1RomAnchors"],
         victory_return._owner_evidence(
-            victory_return._normalize_request_consumption_later_owner_index(
+            _normalize_later_owner_index(
                 json.loads((ROOT / "manifests/research-index.json").read_text(encoding="utf-8"))
             )
         ),

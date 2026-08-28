@@ -15,6 +15,9 @@ import sf2tool.h2.map_event_interaction_state as interaction_module
 from sf2tool.h2.map_event_combatant_state import (
     _remove_map_event_combatant_state_later_owner_index_delta,
 )
+from sf2tool.h2.map_event_flag_lifecycle_state import (
+    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_interaction_state import (
     _FUNCTION_SPECS,
     _SEAM_SPECS,
@@ -60,7 +63,9 @@ def _interaction_predecessor_index(index: dict[str, object]) -> dict[str, object
         _remove_map_event_combatant_state_later_owner_index_delta(
             _remove_map_event_random_battle_state_later_owner_index_delta(
                 _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
-                    _remove_map_event_scripted_transition_state_later_owner_index_delta(index)
+                    _remove_map_event_scripted_transition_state_later_owner_index_delta(
+                        _remove_map_event_flag_lifecycle_state_later_owner_index_delta(index)
+                    )
                 )
             )
         )

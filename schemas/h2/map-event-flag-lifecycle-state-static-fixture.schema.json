@@ -1,0 +1,1506 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/md-sf2/schemas/h2/map-event-flag-lifecycle-state-static-fixture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "upstreamCommit",
+    "romSha256",
+    "sourceContext",
+    "retainedOwners",
+    "flagLifecycleState",
+    "unknowns",
+    "summary"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-map-event-flag-lifecycle-state-static-v1"
+    },
+    "upstreamCommit": {
+      "const": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+    },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "sourceContext": {
+      "$ref": "#/$defs/sourceContext"
+    },
+    "retainedOwners": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mapEventsDirectFlags",
+        "directState",
+        "directControl",
+        "directHandoff",
+        "predicateResults",
+        "commonStatsFlags",
+        "technicalInterruptTrapFlags"
+      ],
+      "properties": {
+        "mapEventsDirectFlags": {
+          "$ref": "#/$defs/owner"
+        },
+        "directState": {
+          "$ref": "#/$defs/owner"
+        },
+        "directControl": {
+          "$ref": "#/$defs/owner"
+        },
+        "directHandoff": {
+          "$ref": "#/$defs/owner"
+        },
+        "predicateResults": {
+          "$ref": "#/$defs/owner"
+        },
+        "commonStatsFlags": {
+          "$ref": "#/$defs/owner"
+        },
+        "technicalInterruptTrapFlags": {
+          "$ref": "#/$defs/owner"
+        }
+      }
+    },
+    "flagLifecycleState": {
+      "$ref": "#/$defs/facts"
+    },
+    "unknowns": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "naturalProgramReachability",
+        "callerEntryFlagState",
+        "actualFlagValueAtRead",
+        "actualConditionalBranchSelection",
+        "actualMutationReachability",
+        "runtimeFlagValueAfterMutation",
+        "crossProgramLifecycleOrdering",
+        "mapSetupAndRecordSelection",
+        "calleeAndScriptEffects",
+        "saveLoadAndCrossMapPersistence",
+        "dialogueAudioPresentationAndTiming",
+        "storyMeaning"
+      ],
+      "properties": {
+        "naturalProgramReachability": {
+          "const": "Unknown"
+        },
+        "callerEntryFlagState": {
+          "const": "Unknown"
+        },
+        "actualFlagValueAtRead": {
+          "const": "Unknown"
+        },
+        "actualConditionalBranchSelection": {
+          "const": "Unknown"
+        },
+        "actualMutationReachability": {
+          "const": "Unknown"
+        },
+        "runtimeFlagValueAfterMutation": {
+          "const": "Unknown"
+        },
+        "crossProgramLifecycleOrdering": {
+          "const": "Unknown"
+        },
+        "mapSetupAndRecordSelection": {
+          "const": "Unknown"
+        },
+        "calleeAndScriptEffects": {
+          "const": "Unknown"
+        },
+        "saveLoadAndCrossMapPersistence": {
+          "const": "Unknown"
+        },
+        "dialogueAudioPresentationAndTiming": {
+          "const": "Unknown"
+        },
+        "storyMeaning": {
+          "const": "Unknown"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "motherProgramContextCount",
+        "motherOperationCount",
+        "positiveProgramContextCount",
+        "zeroProgramContextCount",
+        "lifecycleRelationCount",
+        "numericFlagCount",
+        "relationLocalAccessCount",
+        "readAccessCount",
+        "setAccessCount",
+        "clearAccessCount",
+        "selectedProgramAccessCount",
+        "sourceFileCount",
+        "contextualOperationCount",
+        "physicalOperationCount",
+        "contextualLabelCount",
+        "contextualEncodedByteCount",
+        "physicalUniqueByteCount",
+        "intervalCount",
+        "overlapByteCount"
+      ],
+      "properties": {
+        "motherProgramContextCount": {
+          "const": 914
+        },
+        "motherOperationCount": {
+          "const": 3579
+        },
+        "positiveProgramContextCount": {
+          "const": 117
+        },
+        "zeroProgramContextCount": {
+          "const": 797
+        },
+        "lifecycleRelationCount": {
+          "const": 131
+        },
+        "numericFlagCount": {
+          "const": 82
+        },
+        "relationLocalAccessCount": {
+          "const": 272
+        },
+        "readAccessCount": {
+          "const": 135
+        },
+        "setAccessCount": {
+          "const": 131
+        },
+        "clearAccessCount": {
+          "const": 6
+        },
+        "selectedProgramAccessCount": {
+          "const": 348
+        },
+        "sourceFileCount": {
+          "const": 67
+        },
+        "contextualOperationCount": {
+          "const": 1177
+        },
+        "physicalOperationCount": {
+          "const": 1137
+        },
+        "contextualLabelCount": {
+          "const": 339
+        },
+        "contextualEncodedByteCount": {
+          "const": 4216
+        },
+        "physicalUniqueByteCount": {
+          "const": 4066
+        },
+        "intervalCount": {
+          "const": 79
+        },
+        "overlapByteCount": {
+          "const": 150
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha": {
+      "type": "string",
+      "pattern": "^[0-9A-F]{64}$"
+    },
+    "branch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceOrder",
+        "sourceLine",
+        "address",
+        "mnemonic",
+        "sizeSuffix",
+        "branchPolarity",
+        "targetSymbol",
+        "targetAddress",
+        "fallthroughAddress"
+      ],
+      "properties": {
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mnemonic": {
+          "enum": [
+            "bne",
+            "beq"
+          ]
+        },
+        "sizeSuffix": {
+          "enum": [
+            ".s",
+            ".w"
+          ]
+        },
+        "branchPolarity": {
+          "enum": [
+            "equal",
+            "not-equal"
+          ]
+        },
+        "targetSymbol": {
+          "type": "string"
+        },
+        "targetAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fallthroughAddress": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceOrder",
+        "sourceLine",
+        "address",
+        "mnemonic",
+        "sizeSuffix",
+        "controlFlowKind"
+      ],
+      "properties": {
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mnemonic": {
+          "type": "string",
+          "pattern": "^[a-z]+$"
+        },
+        "sizeSuffix": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            ".b",
+            ".w",
+            ".l",
+            ".s",
+            null
+          ]
+        },
+        "controlFlowKind": {
+          "enum": [
+            "ordinary",
+            "conditional-branch",
+            "return",
+            "unconditional-branch",
+            "direct-call",
+            "direct-jump"
+          ]
+        },
+        "targetSymbol": {
+          "type": "string"
+        },
+        "targetAddress": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceOrder",
+        "sourceLine",
+        "symbol",
+        "address"
+      ],
+      "properties": {
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "symbol": {
+          "type": "string"
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "access": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accessOrder",
+        "accessKind",
+        "sourceMacro",
+        "flagNumber",
+        "sourceOrder",
+        "sourceLine",
+        "address"
+      ],
+      "properties": {
+        "accessOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "accessKind": {
+          "enum": [
+            "read",
+            "set",
+            "clear"
+          ]
+        },
+        "sourceMacro": {
+          "enum": [
+            "chkFlg",
+            "setFlg",
+            "clrFlg"
+          ]
+        },
+        "flagNumber": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2047
+        },
+        "sourceOrder": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "immediateBranch": {
+          "$ref": "#/$defs/branch"
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accessKind",
+        "sourceMacro",
+        "sourcePath",
+        "definitionSourceLine",
+        "trapOperand",
+        "flagOperandOrdinal",
+        "emissionStatementTemplates",
+        "emissionStatementCount",
+        "trapEntryAddress"
+      ],
+      "properties": {
+        "accessKind": {
+          "enum": [
+            "read",
+            "set",
+            "clear"
+          ]
+        },
+        "sourceMacro": {
+          "enum": [
+            "chkFlg",
+            "setFlg",
+            "clrFlg"
+          ]
+        },
+        "sourcePath": {
+          "const": "sf2macros.asm"
+        },
+        "definitionSourceLine": {
+          "enum": [
+            32,
+            37,
+            42
+          ]
+        },
+        "trapOperand": {
+          "enum": [
+            "#CHECK_FLAG",
+            "#SET_FLAG",
+            "#CLEAR_FLAG"
+          ]
+        },
+        "flagOperandOrdinal": {
+          "const": 1
+        },
+        "emissionStatementTemplates": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "string"
+          }
+        },
+        "emissionStatementCount": {
+          "const": 2
+        },
+        "trapEntryAddress": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "flow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contextOrder",
+        "category",
+        "programSymbol",
+        "entryAddress",
+        "sourcePath",
+        "entrySourceLine",
+        "endAddressExclusive",
+        "encodedSpanBytes",
+        "labels",
+        "operations"
+      ],
+      "properties": {
+        "contextOrder": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 116
+        },
+        "category": {
+          "enum": [
+            "entityEvents",
+            "zoneEvents",
+            "itemEvents"
+          ]
+        },
+        "programSymbol": {
+          "type": "string"
+        },
+        "entryAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourcePath": {
+          "type": "string",
+          "pattern": "^data/maps/entries/"
+        },
+        "entrySourceLine": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "endAddressExclusive": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "encodedSpanBytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "labels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/label"
+          }
+        },
+        "operations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/operation"
+          }
+        }
+      }
+    },
+    "relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relationOrder",
+        "category",
+        "programSymbol",
+        "programEntryAddress",
+        "sourcePath",
+        "flagNumber",
+        "accesses"
+      ],
+      "properties": {
+        "relationOrder": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 130
+        },
+        "category": {
+          "enum": [
+            "entityEvents",
+            "zoneEvents",
+            "itemEvents"
+          ]
+        },
+        "programSymbol": {
+          "type": "string"
+        },
+        "programEntryAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sourcePath": {
+          "type": "string",
+          "pattern": "^data/maps/entries/"
+        },
+        "flagNumber": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2047
+        },
+        "accesses": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/$defs/access"
+          }
+        }
+      }
+    },
+    "sourceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "category",
+        "sourcePath",
+        "tableSymbol",
+        "tableEntryAddress"
+      ],
+      "properties": {
+        "category": {
+          "enum": [
+            "entityEvents",
+            "zoneEvents",
+            "itemEvents"
+          ]
+        },
+        "sourcePath": {
+          "type": "string",
+          "pattern": "^data/maps/entries/"
+        },
+        "tableSymbol": {
+          "type": "string",
+          "pattern": "^ms_map[0-9]+(?:_flag[0-9]+)?_(?:EntityEvents|ZoneEvents|ItemEvents|Section5)$"
+        },
+        "tableEntryAddress": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "flagTotal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flagNumber",
+        "relationCount",
+        "accessCount",
+        "readCount",
+        "setCount",
+        "clearCount"
+      ],
+      "properties": {
+        "flagNumber": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2047
+        },
+        "relationCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "accessCount": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "readCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "setCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "clearCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "physical": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "h1ByteLength",
+        "contextOrders"
+      ],
+      "properties": {
+        "address": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "h1ByteLength": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "contextOrders": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 116
+          }
+        }
+      }
+    },
+    "interval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "startAddress",
+        "endAddressExclusive"
+      ],
+      "properties": {
+        "startAddress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "endAddressExclusive": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fixtureId",
+        "fixtureSha256",
+        "verifierPath",
+        "verifierSha256",
+        "semanticSha256"
+      ],
+      "properties": {
+        "fixtureId": {
+          "type": "string"
+        },
+        "fixtureSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "verifierPath": {
+          "type": "string",
+          "pattern": "^src/sf2tool/h2/"
+        },
+        "verifierSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        },
+        "semanticSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-F]{64}$"
+        }
+      }
+    },
+    "sourceContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceIdentities",
+        "h1Listing",
+        "motherDenominators",
+        "selectedDenominators"
+      ],
+      "properties": {
+        "sourceIdentities": {
+          "type": "array",
+          "minItems": 69,
+          "maxItems": 69,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9A-F]{64}$"
+              }
+            }
+          }
+        },
+        "h1Listing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "const": "build/sf2build-h1.lst"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9A-F]{64}$"
+            }
+          }
+        },
+        "motherDenominators": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "programContextCount",
+            "operationCount"
+          ],
+          "properties": {
+            "programContextCount": {
+              "const": 914
+            },
+            "operationCount": {
+              "const": 3579
+            }
+          }
+        },
+        "selectedDenominators": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "programContextCount",
+            "lifecycleRelationCount",
+            "sourceFileCount"
+          ],
+          "properties": {
+            "programContextCount": {
+              "const": 117
+            },
+            "lifecycleRelationCount": {
+              "const": 131
+            },
+            "sourceFileCount": {
+              "const": 67
+            }
+          }
+        }
+      }
+    },
+    "facts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "serviceDefinitions",
+        "dispatchEntries",
+        "selectionSummary",
+        "sourceFiles",
+        "programFlows",
+        "lifecycleRelations",
+        "flagTotals",
+        "intervalCoverage",
+        "digests"
+      ],
+      "properties": {
+        "serviceDefinitions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "chkFlg",
+            "setFlg",
+            "clrFlg"
+          ],
+          "properties": {
+            "chkFlg": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/service"
+                },
+                {
+                  "properties": {
+                    "accessKind": {
+                      "const": "read"
+                    },
+                    "sourceMacro": {
+                      "const": "chkFlg"
+                    },
+                    "emissionStatementTemplates": {
+                      "const": ["trap #check_flag", "dc.w \\1"]
+                    },
+                    "trapEntryAddress": {
+                      "const": 5888
+                    }
+                  }
+                }
+              ]
+            },
+            "setFlg": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/service"
+                },
+                {
+                  "properties": {
+                    "accessKind": {
+                      "const": "set"
+                    },
+                    "sourceMacro": {
+                      "const": "setFlg"
+                    },
+                    "emissionStatementTemplates": {
+                      "const": ["trap #set_flag", "dc.w \\1"]
+                    },
+                    "trapEntryAddress": {
+                      "const": null
+                    }
+                  }
+                }
+              ]
+            },
+            "clrFlg": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/service"
+                },
+                {
+                  "properties": {
+                    "accessKind": {
+                      "const": "clear"
+                    },
+                    "sourceMacro": {
+                      "const": "clrFlg"
+                    },
+                    "emissionStatementTemplates": {
+                      "const": ["trap #clear_flag", "dc.w \\1"]
+                    },
+                    "trapEntryAddress": {
+                      "const": null
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "dispatchEntries": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "entityEvent",
+            "zoneEvent",
+            "itemEvent"
+          ],
+          "properties": {
+            "entityEvent": {
+              "const": 292378
+            },
+            "zoneEvent": {
+              "const": 292122
+            },
+            "itemEvent": {
+              "const": 292230
+            }
+          }
+        },
+        "selectionSummary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "motherProgramContextCount",
+            "motherOperationCount",
+            "positiveProgramContextCount",
+            "zeroProgramContextCount",
+            "lifecycleRelationCount",
+            "numericFlagCount",
+            "relationLocalAccessCount",
+            "selectedProgramAccessCount",
+            "categoryRelationCounts",
+            "accessSequenceCounts",
+            "sourceFileOrder",
+            "programFlowOrder",
+            "lifecycleRelationOrder"
+          ],
+          "properties": {
+            "motherProgramContextCount": {
+              "const": 914
+            },
+            "motherOperationCount": {
+              "const": 3579
+            },
+            "positiveProgramContextCount": {
+              "const": 117
+            },
+            "zeroProgramContextCount": {
+              "const": 797
+            },
+            "lifecycleRelationCount": {
+              "const": 131
+            },
+            "numericFlagCount": {
+              "const": 82
+            },
+            "relationLocalAccessCount": {
+              "const": 272
+            },
+            "selectedProgramAccessCount": {
+              "const": 348
+            },
+            "categoryRelationCounts": {
+              "const": {
+                "entityEvents": 65,
+                "zoneEvents": 62,
+                "itemEvents": 4
+              }
+            },
+            "accessSequenceCounts": {
+              "const": [
+                {
+                  "accessKinds": [
+                    "read",
+                    "set"
+                  ],
+                  "relationCount": 121
+                },
+                {
+                  "accessKinds": [
+                    "read",
+                    "set",
+                    "read",
+                    "set"
+                  ],
+                  "relationCount": 3
+                },
+                {
+                  "accessKinds": [
+                    "read",
+                    "clear"
+                  ],
+                  "relationCount": 2
+                },
+                {
+                  "accessKinds": [
+                    "read",
+                    "read",
+                    "set"
+                  ],
+                  "relationCount": 1
+                },
+                {
+                  "accessKinds": [
+                    "set",
+                    "read"
+                  ],
+                  "relationCount": 1
+                },
+                {
+                  "accessKinds": [
+                    "read",
+                    "clear",
+                    "clear"
+                  ],
+                  "relationCount": 1
+                },
+                {
+                  "accessKinds": [
+                    "read",
+                    "set",
+                    "clear"
+                  ],
+                  "relationCount": 1
+                },
+                {
+                  "accessKinds": [
+                    "read",
+                    "clear",
+                    "set"
+                  ],
+                  "relationCount": 1
+                }
+              ]
+            },
+            "sourceFileOrder": {
+              "const": [
+                "entityEvents|data/maps/entries/map01/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map03/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map03/mapsetups/s2_entityevents_609.asm",
+                "entityEvents|data/maps/entries/map05/mapsetups/s2_entityevents_530.asm",
+                "entityEvents|data/maps/entries/map06/mapsetups/s2_entityevents_701.asm",
+                "entityEvents|data/maps/entries/map07/mapsetups/s2_entityevents_805.asm",
+                "entityEvents|data/maps/entries/map08/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map09/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map10/mapsetups/s2_entityevents_722.asm",
+                "entityEvents|data/maps/entries/map13/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map13/mapsetups/s2_entityevents_513.asm",
+                "entityEvents|data/maps/entries/map17/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map19/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map19/mapsetups/s2_entityevents_501.asm",
+                "entityEvents|data/maps/entries/map19/mapsetups/s2_entityevents_609.asm",
+                "entityEvents|data/maps/entries/map20/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map20/mapsetups/s2_entityevents_501.asm",
+                "entityEvents|data/maps/entries/map20/mapsetups/s2_entityevents_609.asm",
+                "entityEvents|data/maps/entries/map21/mapsetups/s2_entityevents_506.asm",
+                "entityEvents|data/maps/entries/map22/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map25/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map31/mapsetups/s2_entityevents_830.asm",
+                "entityEvents|data/maps/entries/map36/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map36/mapsetups/s2_entityevents_530.asm",
+                "entityEvents|data/maps/entries/map37/mapsetups/s2_entityevents_999.asm",
+                "entityEvents|data/maps/entries/map38/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map56/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map61/mapsetups/s2_entityevents.asm",
+                "entityEvents|data/maps/entries/map62/mapsetups/s2_entityevents.asm",
+                "itemEvents|data/maps/entries/map08/mapsetups/s5_itemevents.asm",
+                "itemEvents|data/maps/entries/map09/mapsetups/s5_itemevents.asm",
+                "itemEvents|data/maps/entries/map41/mapsetups/s5_itemevents.asm",
+                "itemEvents|data/maps/entries/map77/mapsetups/s5_itemevents.asm",
+                "zoneEvents|data/maps/entries/map00/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map03/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map05/mapsetups/s3_zoneevents_530.asm",
+                "zoneEvents|data/maps/entries/map06/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map07/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map08/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map09/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map10/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map10/mapsetups/s3_zoneevents_722.asm",
+                "zoneEvents|data/maps/entries/map11/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map13/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map15/mapsetups/s3_zoneevents_530.asm",
+                "zoneEvents|data/maps/entries/map16/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map17/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map18/mapsetups/s3_zoneevents_530.asm",
+                "zoneEvents|data/maps/entries/map19/mapsetups/s3_zoneevents_507.asm",
+                "zoneEvents|data/maps/entries/map20/mapsetups/s3_zoneevents_543.asm",
+                "zoneEvents|data/maps/entries/map26/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map27/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map30/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map31/mapsetups/s3_zoneevents_830.asm",
+                "zoneEvents|data/maps/entries/map33/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map34/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map38/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map39/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map42/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map51/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map52/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map56/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map61/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map62/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map63/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map67/mapsetups/s3_zoneevents.asm",
+                "zoneEvents|data/maps/entries/map72/mapsetups/s3_zoneevents.asm"
+              ]
+            },
+            "programFlowOrder": {
+              "const": [
+                "entityEvents|Map10_2D2_EntityEvent19|356108",
+                "entityEvents|Map10_2D2_EntityEvent25|356200",
+                "entityEvents|Map13_EntityEvent1|360534",
+                "entityEvents|Map13_EntityEvent3|360568",
+                "entityEvents|Map13_EntityEvent10|360666",
+                "entityEvents|Map13_201_EntityEvent9|360866",
+                "entityEvents|Map17_EntityEvent3|336826",
+                "entityEvents|Map19_EntityEvent0|339514",
+                "entityEvents|Map19_EntityEvent1|339534",
+                "entityEvents|Map19_EntityEvent4|339566",
+                "entityEvents|Map19_EntityEvent5|339586",
+                "entityEvents|Map19_EntityEvent6|339606",
+                "entityEvents|Map19_EntityEvent7|339626",
+                "entityEvents|Map19_EntityEvent8|339646",
+                "entityEvents|Map19_EntityEvent10|339672",
+                "entityEvents|Map19_EntityEvent12|339698",
+                "entityEvents|Map19_1F5_EntityEvent0|339824",
+                "entityEvents|Map19_261_EntityEvent1|339918",
+                "entityEvents|Map1_EntityEvent8|386830",
+                "entityEvents|Map20_EntityEvent2|341964",
+                "entityEvents|Map20_EntityEvent6|342014",
+                "entityEvents|Map20_1F5_EntityEvent3|342116",
+                "entityEvents|Map20_1F5_EntityEvent4|342136",
+                "entityEvents|Map20_1F5_EntityEvent5|342156",
+                "entityEvents|Map20_1F5_EntityEvent6|342176",
+                "entityEvents|Map20_261_EntityEvent1|342234",
+                "entityEvents|Map20_261_EntityEvent2|342254",
+                "entityEvents|Map20_261_EntityEvent4|342274",
+                "entityEvents|Map21_EntityEvent0|343726",
+                "entityEvents|Map22_EntityEvent7|365866",
+                "entityEvents|Map22_EntityEvent8|365908",
+                "entityEvents|Map22_EntityEvent10|365970",
+                "entityEvents|Map25_EntityEvent5|381562",
+                "entityEvents|Map25_EntityEvent6|381650",
+                "entityEvents|Map25_EntityEvent7|381674",
+                "entityEvents|Map31_33E_EntityEvent8|382246",
+                "entityEvents|Map36_EntityEvent4|383134",
+                "entityEvents|Map36_212_EntityEvent0|383316",
+                "entityEvents|Map36_212_EntityEvent5|383370",
+                "entityEvents|Map37_3E7_EntityEvent1|391678",
+                "entityEvents|Map38_EntityEvent9|384008",
+                "entityEvents|Map38_EntityEvent10|384086",
+                "entityEvents|Map3_EntityEvent0|331604",
+                "entityEvents|Map3_EntityEvent15|331844",
+                "entityEvents|Map3_261_EntityEvent0|331980",
+                "entityEvents|Map3_261_EntityEvent1|332000",
+                "entityEvents|Map3_261_EntityEvent23|332158",
+                "entityEvents|Map3_261_EntityEvent24|332180",
+                "entityEvents|Map3_261_EntityEvent25|332200",
+                "entityEvents|Map56_EntityEvent0|398514",
+                "entityEvents|Map5_212_EntityEvent4|394358",
+                "entityEvents|Map61_EntityEvent0|378490",
+                "entityEvents|Map62_EntityEvent0|378818",
+                "entityEvents|Map62_EntityEvent1|378870",
+                "entityEvents|Map6_EntityEvent13|347152",
+                "entityEvents|Map6_DefaultEntityEvent|347184",
+                "entityEvents|Map7_EntityEvent11|349620",
+                "entityEvents|Map8_EntityEvent0|352400",
+                "entityEvents|Map9_EntityEvent0|354278",
+                "entityEvents|Map9_EntityEvent1|354370",
+                "zoneEvents|Map0_ZoneEvent0|385968",
+                "zoneEvents|Map10_ZoneEvent0|356252",
+                "zoneEvents|Map10_ZoneEvent1|356270",
+                "zoneEvents|Map10_2D2_ZoneEvent0|356296",
+                "zoneEvents|Map11_ZoneEvent0|359026",
+                "zoneEvents|Map13_ZoneEvent0|361018",
+                "zoneEvents|Map13_ZoneEvent1|361084",
+                "zoneEvents|Map13_ZoneEvent2|361108",
+                "zoneEvents|Map15_212_ZoneEvent0|380936",
+                "zoneEvents|Map16_ZoneEvent0|335600",
+                "zoneEvents|Map16_ZoneEvent1|335618",
+                "zoneEvents|Map17_ZoneEvent0|336884",
+                "zoneEvents|Map17_ZoneEvent1|336902",
+                "zoneEvents|Map18_212_ZoneEvent0|397922",
+                "zoneEvents|Map19_1FA_ZoneEvent0|339382",
+                "zoneEvents|Map19_1FA_ZoneEvent1|339400",
+                "zoneEvents|Map19_1FB_ZoneEvent0|339422",
+                "zoneEvents|Map19_1FB_ZoneEvent1|339440",
+                "zoneEvents|Map20_21F_ZoneEvent1|406266",
+                "zoneEvents|Map20_21F_ZoneEvent2|406320",
+                "zoneEvents|Map26_ZoneEvent0|368062",
+                "zoneEvents|Map27_ZoneEvent0|368538",
+                "zoneEvents|Map30_ZoneEvent0|369354",
+                "zoneEvents|Map31_33E_ZoneEvent0|382304",
+                "zoneEvents|Map33_ZoneEvent0|371352",
+                "zoneEvents|Map34_ZoneEvent0|374430",
+                "zoneEvents|Map38_ZoneEvent0|384222",
+                "zoneEvents|Map38_ZoneEvent1|384240",
+                "zoneEvents|Map39_ZoneEvent0|385212",
+                "zoneEvents|Map3_ZoneEvent0|331124",
+                "zoneEvents|Map3_ZoneEvent1|331180",
+                "zoneEvents|Map3_ZoneEvent4|331256",
+                "zoneEvents|Map3_ZoneEvent6|331332",
+                "zoneEvents|Map3_ZoneEvent7|331366",
+                "zoneEvents|Map3_ZoneEvent8|331474",
+                "zoneEvents|Map42_ZoneEvent0|392716",
+                "zoneEvents|Map51_ZoneEvent0|377586",
+                "zoneEvents|Map52_ZoneEvent0|378038",
+                "zoneEvents|Map56_ZoneEvent0|398558",
+                "zoneEvents|Map5_212_ZoneEvent0|394454",
+                "zoneEvents|Map61_ZoneEvent0|378534",
+                "zoneEvents|Map62_ZoneEvent0|378932",
+                "zoneEvents|Map62_ZoneEvent2|378956",
+                "zoneEvents|Map63_ZoneEvent0|379382",
+                "zoneEvents|Map67_ZoneEvent0|326450",
+                "zoneEvents|Map6_ZoneEvent0|347368",
+                "zoneEvents|Map6_ZoneEvent2|347410",
+                "zoneEvents|Map6_ZoneEvent3|347428",
+                "zoneEvents|Map72_ZoneEvent3|327320",
+                "zoneEvents|Map7_ZoneEvent0|350134",
+                "zoneEvents|Map8_ZoneEvent0|352702",
+                "zoneEvents|Map8_ZoneEvent2|352730",
+                "zoneEvents|Map9_ZoneEvent0|354406",
+                "itemEvents|Map41_ItemEvent0|390266",
+                "itemEvents|Map77_ItemEvent0|330394",
+                "itemEvents|Map8_ItemEvent0|353010",
+                "itemEvents|Map9_ItemEvent0|354480"
+              ]
+            },
+            "lifecycleRelationOrder": {
+              "const": [
+                "entityEvents|Map10_2D2_EntityEvent19|356108|799",
+                "entityEvents|Map10_2D2_EntityEvent25|356200|723",
+                "entityEvents|Map13_EntityEvent1|360534|256",
+                "entityEvents|Map13_EntityEvent3|360568|711",
+                "entityEvents|Map13_EntityEvent10|360666|257",
+                "entityEvents|Map13_201_EntityEvent9|360866|716",
+                "entityEvents|Map13_201_EntityEvent9|360866|260",
+                "entityEvents|Map13_201_EntityEvent9|360866|261",
+                "entityEvents|Map13_201_EntityEvent9|360866|262",
+                "entityEvents|Map17_EntityEvent3|336826|256",
+                "entityEvents|Map19_EntityEvent0|339514|256",
+                "entityEvents|Map19_EntityEvent1|339534|257",
+                "entityEvents|Map19_EntityEvent4|339566|258",
+                "entityEvents|Map19_EntityEvent5|339586|259",
+                "entityEvents|Map19_EntityEvent6|339606|260",
+                "entityEvents|Map19_EntityEvent7|339626|261",
+                "entityEvents|Map19_EntityEvent8|339646|262",
+                "entityEvents|Map19_EntityEvent10|339672|263",
+                "entityEvents|Map19_EntityEvent12|339698|607",
+                "entityEvents|Map19_1F5_EntityEvent0|339824|256",
+                "entityEvents|Map19_261_EntityEvent1|339918|257",
+                "entityEvents|Map1_EntityEvent8|386830|841",
+                "entityEvents|Map20_EntityEvent2|341964|256",
+                "entityEvents|Map20_EntityEvent6|342014|257",
+                "entityEvents|Map20_1F5_EntityEvent3|342116|259",
+                "entityEvents|Map20_1F5_EntityEvent4|342136|260",
+                "entityEvents|Map20_1F5_EntityEvent5|342156|261",
+                "entityEvents|Map20_1F5_EntityEvent6|342176|262",
+                "entityEvents|Map20_261_EntityEvent1|342234|257",
+                "entityEvents|Map20_261_EntityEvent2|342254|258",
+                "entityEvents|Map20_261_EntityEvent4|342274|260",
+                "entityEvents|Map21_EntityEvent0|343726|256",
+                "entityEvents|Map22_EntityEvent7|365866|256",
+                "entityEvents|Map22_EntityEvent8|365908|777",
+                "entityEvents|Map22_EntityEvent10|365970|258",
+                "entityEvents|Map25_EntityEvent5|381562|800",
+                "entityEvents|Map25_EntityEvent6|381650|256",
+                "entityEvents|Map25_EntityEvent7|381674|257",
+                "entityEvents|Map31_33E_EntityEvent8|382246|832",
+                "entityEvents|Map36_EntityEvent4|383134|810",
+                "entityEvents|Map36_212_EntityEvent0|383316|811",
+                "entityEvents|Map36_212_EntityEvent5|383370|257",
+                "entityEvents|Map37_3E7_EntityEvent1|391678|257",
+                "entityEvents|Map38_EntityEvent9|384008|256",
+                "entityEvents|Map38_EntityEvent10|384086|257",
+                "entityEvents|Map3_EntityEvent0|331604|256",
+                "entityEvents|Map3_EntityEvent15|331844|261",
+                "entityEvents|Map3_261_EntityEvent0|331980|256",
+                "entityEvents|Map3_261_EntityEvent1|332000|257",
+                "entityEvents|Map3_261_EntityEvent23|332158|278",
+                "entityEvents|Map3_261_EntityEvent24|332180|279",
+                "entityEvents|Map3_261_EntityEvent25|332200|280",
+                "entityEvents|Map56_EntityEvent0|398514|903",
+                "entityEvents|Map5_212_EntityEvent4|394358|945",
+                "entityEvents|Map61_EntityEvent0|378490|256",
+                "entityEvents|Map62_EntityEvent0|378818|258",
+                "entityEvents|Map62_EntityEvent1|378870|729",
+                "entityEvents|Map62_EntityEvent1|378870|728",
+                "entityEvents|Map6_EntityEvent13|347152|804",
+                "entityEvents|Map6_DefaultEntityEvent|347184|804",
+                "entityEvents|Map7_EntityEvent11|349620|256",
+                "entityEvents|Map8_EntityEvent0|352400|256",
+                "entityEvents|Map9_EntityEvent0|354278|727",
+                "entityEvents|Map9_EntityEvent0|354278|798",
+                "entityEvents|Map9_EntityEvent1|354370|256",
+                "zoneEvents|Map0_ZoneEvent0|385968|801",
+                "zoneEvents|Map10_ZoneEvent0|356252|720",
+                "zoneEvents|Map10_ZoneEvent1|356270|721",
+                "zoneEvents|Map10_2D2_ZoneEvent0|356296|724",
+                "zoneEvents|Map11_ZoneEvent0|359026|722",
+                "zoneEvents|Map13_ZoneEvent0|361018|710",
+                "zoneEvents|Map13_ZoneEvent0|361018|715",
+                "zoneEvents|Map13_ZoneEvent1|361084|717",
+                "zoneEvents|Map13_ZoneEvent2|361108|718",
+                "zoneEvents|Map15_212_ZoneEvent0|380936|820",
+                "zoneEvents|Map16_ZoneEvent0|335600|663",
+                "zoneEvents|Map16_ZoneEvent1|335618|664",
+                "zoneEvents|Map17_ZoneEvent0|336884|661",
+                "zoneEvents|Map17_ZoneEvent1|336902|662",
+                "zoneEvents|Map18_212_ZoneEvent0|397922|76",
+                "zoneEvents|Map19_1FA_ZoneEvent0|339382|620",
+                "zoneEvents|Map19_1FA_ZoneEvent1|339400|621",
+                "zoneEvents|Map19_1FB_ZoneEvent0|339422|622",
+                "zoneEvents|Map19_1FB_ZoneEvent1|339440|623",
+                "zoneEvents|Map20_21F_ZoneEvent1|406266|983",
+                "zoneEvents|Map20_21F_ZoneEvent2|406320|984",
+                "zoneEvents|Map26_ZoneEvent0|368062|780",
+                "zoneEvents|Map27_ZoneEvent0|368538|781",
+                "zoneEvents|Map30_ZoneEvent0|369354|69",
+                "zoneEvents|Map30_ZoneEvent0|369354|760",
+                "zoneEvents|Map31_33E_ZoneEvent0|382304|834",
+                "zoneEvents|Map33_ZoneEvent0|371352|774",
+                "zoneEvents|Map33_ZoneEvent0|371352|786",
+                "zoneEvents|Map34_ZoneEvent0|374430|784",
+                "zoneEvents|Map38_ZoneEvent0|384222|911",
+                "zoneEvents|Map38_ZoneEvent1|384240|76",
+                "zoneEvents|Map39_ZoneEvent0|385212|830",
+                "zoneEvents|Map3_ZoneEvent0|331124|257",
+                "zoneEvents|Map3_ZoneEvent1|331180|258",
+                "zoneEvents|Map3_ZoneEvent1|331180|604",
+                "zoneEvents|Map3_ZoneEvent4|331256|259",
+                "zoneEvents|Map3_ZoneEvent4|331256|604",
+                "zoneEvents|Map3_ZoneEvent6|331332|601",
+                "zoneEvents|Map3_ZoneEvent7|331366|260",
+                "zoneEvents|Map3_ZoneEvent8|331474|603",
+                "zoneEvents|Map42_ZoneEvent0|392716|901",
+                "zoneEvents|Map51_ZoneEvent0|377586|470",
+                "zoneEvents|Map52_ZoneEvent0|378038|713",
+                "zoneEvents|Map56_ZoneEvent0|398558|904",
+                "zoneEvents|Map56_ZoneEvent0|398558|903",
+                "zoneEvents|Map5_212_ZoneEvent0|394454|941",
+                "zoneEvents|Map61_ZoneEvent0|378534|730",
+                "zoneEvents|Map62_ZoneEvent0|378932|256",
+                "zoneEvents|Map62_ZoneEvent2|378956|257",
+                "zoneEvents|Map63_ZoneEvent0|379382|256",
+                "zoneEvents|Map67_ZoneEvent0|326450|751",
+                "zoneEvents|Map6_ZoneEvent0|347368|706",
+                "zoneEvents|Map6_ZoneEvent0|347368|803",
+                "zoneEvents|Map6_ZoneEvent2|347410|701",
+                "zoneEvents|Map6_ZoneEvent3|347428|806",
+                "zoneEvents|Map72_ZoneEvent3|327320|750",
+                "zoneEvents|Map72_ZoneEvent3|327320|256",
+                "zoneEvents|Map7_ZoneEvent0|350134|702",
+                "zoneEvents|Map7_ZoneEvent0|350134|805",
+                "zoneEvents|Map8_ZoneEvent0|352702|258",
+                "zoneEvents|Map8_ZoneEvent2|352730|708",
+                "zoneEvents|Map9_ZoneEvent0|354406|726",
+                "itemEvents|Map41_ItemEvent0|390266|930",
+                "itemEvents|Map77_ItemEvent0|330394|900",
+                "itemEvents|Map8_ItemEvent0|353010|731",
+                "itemEvents|Map9_ItemEvent0|354480|727"
+              ]
+            }
+          }
+        },
+        "sourceFiles": {
+          "type": "array",
+          "minItems": 67,
+          "maxItems": 67,
+          "items": {
+            "$ref": "#/$defs/sourceFile"
+          }
+        },
+        "programFlows": {
+          "type": "array",
+          "minItems": 117,
+          "maxItems": 117,
+          "items": {
+            "$ref": "#/$defs/flow"
+          }
+        },
+        "lifecycleRelations": {
+          "type": "array",
+          "minItems": 131,
+          "maxItems": 131,
+          "items": {
+            "$ref": "#/$defs/relation"
+          }
+        },
+        "flagTotals": {
+          "type": "array",
+          "minItems": 82,
+          "maxItems": 82,
+          "items": {
+            "$ref": "#/$defs/flagTotal"
+          }
+        },
+        "intervalCoverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "contextualOperationCount",
+            "physicalOperationCount",
+            "contextualLabelCount",
+            "contextualEncodedByteCount",
+            "physicalUniqueByteCount",
+            "overlapByteCount",
+            "physicalOperations",
+            "intervals"
+          ],
+          "properties": {
+            "contextualOperationCount": {
+              "const": 1177
+            },
+            "physicalOperationCount": {
+              "const": 1137
+            },
+            "contextualLabelCount": {
+              "const": 339
+            },
+            "contextualEncodedByteCount": {
+              "const": 4216
+            },
+            "physicalUniqueByteCount": {
+              "const": 4066
+            },
+            "overlapByteCount": {
+              "const": 150
+            },
+            "physicalOperations": {
+              "type": "array",
+              "minItems": 1137,
+              "maxItems": 1137,
+              "items": {
+                "$ref": "#/$defs/physical"
+              }
+            },
+            "intervals": {
+              "type": "array",
+              "minItems": 79,
+              "maxItems": 79,
+              "items": {
+                "$ref": "#/$defs/interval"
+              }
+            }
+          }
+        },
+        "digests": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "programFlowSha256",
+            "lifecycleRelationSha256",
+            "intervalCoverageSha256"
+          ],
+          "properties": {
+            "programFlowSha256": {
+              "type": "string",
+              "pattern": "^[0-9A-F]{64}$"
+            },
+            "lifecycleRelationSha256": {
+              "type": "string",
+              "pattern": "^[0-9A-F]{64}$"
+            },
+            "intervalCoverageSha256": {
+              "type": "string",
+              "pattern": "^[0-9A-F]{64}$"
+            }
+          }
+        }
+      }
+    }
+  }
+}
