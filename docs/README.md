@@ -277,6 +277,9 @@ Data-side directory inventory and ROM parity:
 - [`map-event-random-battle-state.md`](./research/map-event-random-battle-state.md): the static
   `CheckRandomBattle` caller corpus, completion/step/RNG gates, request-write sequence, alias-aware
   service entries, and grouped runtime Unknown boundary.
+- [`map-event-tactical-base-quote-state.md`](./research/map-event-tactical-base-quote-state.md): the
+  complete Map 37/46 `DisplayTacticalBaseQuote` tail-caller corpus, source quote-line domain,
+  alias-aware portrait-name/current-HP/flag/text service boundary, and grouped runtime Unknowns.
 - [`map-event-direct-control.md`](./research/map-event-direct-control.md): the complete caller-side
   raw-68000 direct-call/tail-transfer topology in the retained map-event program corpus, including
   alias-aware effective targets, callee-entry owners, lexical continuations, physical-PC

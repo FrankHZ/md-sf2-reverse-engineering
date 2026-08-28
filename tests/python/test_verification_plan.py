@@ -52,7 +52,9 @@ def _partition_ids(plan: dict[str, object]) -> set[str]:
 
 def _partition(plan: dict[str, object], partition_id: str) -> dict[str, object]:
     return next(  # type: ignore[return-value]
-        row for row in plan["partitions"] if row["id"] == partition_id  # type: ignore[index, union-attr]
+        row
+        for row in plan["partitions"]
+        if row["id"] == partition_id  # type: ignore[index, union-attr]
     )
 
 
@@ -130,7 +132,7 @@ def _expected_artifact_commands(
 def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
     assert set(H2_COMMAND_PARTITIONS) == _registered_commands("h2_commands")
     assert set(COMMAND_LAUNCHES) == _registered_commands("h3_commands")
-    assert len(H2_COMMAND_PARTITIONS) == 90
+    assert len(H2_COMMAND_PARTITIONS) == 91
     assert len(COMMAND_LAUNCHES) == 74
     assert len({partition.partition_id for partition in PARTITIONS}) == len(PARTITIONS)
     assert len(H2_PARTITION_IDS) == 6
@@ -345,6 +347,21 @@ def test_map_event_random_battle_state_artifacts_select_its_command() -> None:
     ]
 
 
+def test_map_event_tactical_base_quote_state_artifacts_select_its_command() -> None:
+    plan = plan_paths(
+        (
+            "src/sf2tool/h2/map_event_tactical_base_quote_state.py",
+            "schemas/h2/map-event-tactical-base-quote-state-static-fixture.schema.json",
+            "tests/fixtures/h2/map-event-tactical-base-quote-state-static-v1.json",
+        ),
+        root=ROOT,
+    )
+    assert _partition_ids(plan) == {"public-core", "h2-map-scripting"}
+    assert _partition(plan, "h2-map-scripting")["commands"] == [
+        "uv run sf2 h2 map-event-tactical-base-quote-state"
+    ]
+
+
 def test_map_event_request_state_artifacts_select_only_its_command() -> None:
     plan = plan_paths(
         (
@@ -403,6 +420,7 @@ def test_map_event_direct_control_artifacts_select_only_the_direct_control_comma
         "uv run sf2 h2 map-event-direct-control",
         "uv run sf2 h2 map-event-interaction-state",
         "uv run sf2 h2 map-event-item-transactions",
+        "uv run sf2 h2 map-event-tactical-base-quote-state",
     ]
     assert plan["unclassifiedPaths"] == []
 
@@ -422,6 +440,7 @@ def test_map_event_direct_handoff_artifacts_select_only_the_handoff_command() ->
         "uv run sf2 h2 map-event-direct-handoff",
         "uv run sf2 h2 map-event-interaction-state",
         "uv run sf2 h2 map-event-item-transactions",
+        "uv run sf2 h2 map-event-tactical-base-quote-state",
     ]
     assert plan["unclassifiedPaths"] == []
 
@@ -703,9 +722,7 @@ def test_map3_messenger_artifacts_select_only_their_bounded_command() -> None:
     )
 
     assert _partition_ids(plan) == {"public-core", "h3-witch"}
-    assert _partition(plan, "h3-witch")["commands"] == [
-        "uv run sf2 h3 map3-messenger-acceptance"
-    ]
+    assert _partition(plan, "h3-witch")["commands"] == ["uv run sf2 h3 map3-messenger-acceptance"]
     assert plan["unclassifiedPaths"] == []
 
 
@@ -738,9 +755,7 @@ def test_legacy_launcher_transitively_selects_h1_rebuild() -> None:
     assert "h1-original" in _partition_ids(plan)
 
 
-@pytest.mark.parametrize(
-    "path", ("manifests/roms/sf2-us.json", "manifests/toolchain.json")
-)
+@pytest.mark.parametrize("path", ("manifests/roms/sf2-us.json", "manifests/toolchain.json"))
 def test_shared_identity_manifest_selects_every_evidence_partition(path: str) -> None:
     plan = plan_paths((path,), root=ROOT)
 
@@ -761,9 +776,7 @@ def test_docs_only_plan_keeps_only_always_run_public_core() -> None:
 
     assert _partition_ids(plan) == {"public-core"}
     assert plan["unclassifiedPaths"] == []
-    assert _partition(plan, "public-core")["externalGates"] == [
-        "GitHub Public / tracked-inputs"
-    ]
+    assert _partition(plan, "public-core")["externalGates"] == ["GitHub Public / tracked-inputs"]
 
 
 def test_aggregate_indexes_are_owned_by_the_always_run_public_core() -> None:

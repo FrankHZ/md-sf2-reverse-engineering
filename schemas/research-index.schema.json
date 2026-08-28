@@ -101,6 +101,20 @@
                             "eventRandomBattleState.serviceEntries.ExecuteFlashScreenScript.effectiveTargetAddress"
                           ] },
                           { "enum": [
+                            "tacticalBaseQuoteState.sourceFiles.map37.tableEntryAddress",
+                            "tacticalBaseQuoteState.sourceFiles.map46.tableEntryAddress",
+                            "tacticalBaseQuoteState.functionFlow.entryAddress",
+                            "tacticalBaseQuoteState.serviceEntries.j_OpenNameUnderPortraitWindow.instructionTargetAddress",
+                            "tacticalBaseQuoteState.serviceEntries.j_CloseNameUnderPortraitWindow.instructionTargetAddress",
+                            "tacticalBaseQuoteState.serviceEntries.j_OpenNameUnderPortraitWindow.effectiveTargetAddress",
+                            "tacticalBaseQuoteState.serviceEntries.j_CloseNameUnderPortraitWindow.effectiveTargetAddress",
+                            "tacticalBaseQuoteState.serviceEntries.j_GetCurrentHp.instructionTargetAddress",
+                            "tacticalBaseQuoteState.serviceEntries.j_CheckFlag.instructionTargetAddress",
+                            "tacticalBaseQuoteState.serviceEntries.j_GetCurrentHp.effectiveTargetAddress",
+                            "tacticalBaseQuoteState.serviceEntries.j_CheckFlag.effectiveTargetAddress",
+                            "tacticalBaseQuoteState.serviceEntries.DisplayText.effectiveTargetAddress"
+                          ] },
+                          { "enum": [
                             "eventItemTransactions.sourceFiles.ms_map6_flag701_EntityEvents.tableEntryAddress",
                             "eventItemTransactions.sourceFiles.ms_map8_Section5.tableEntryAddress",
                             "eventItemTransactions.sourceFiles.ms_map9_EntityEvents.tableEntryAddress",
