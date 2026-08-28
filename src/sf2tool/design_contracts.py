@@ -338,6 +338,45 @@ CONTRACTS = {
         "tests/fixtures/h2/map-layout-decode-v1.json": "sf2-map-layout-decode-v1",
         "tests/fixtures/h2/canonical-map-import-v1.json": "sf2-canonical-map-import-v1",
         "tests/fixtures/h2/map-events-static-v1.json": "sf2-map-events-static-v1",
+        "tests/fixtures/h2/map-event-direct-state-static-v1.json": (
+            "sf2-map-event-direct-state-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-direct-control-static-v1.json": (
+            "sf2-map-event-direct-control-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-direct-handoff-static-v1.json": (
+            "sf2-map-event-direct-handoff-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-predicate-results-static-v1.json": (
+            "sf2-map-event-predicate-results-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-dialogue-state-static-v1.json": (
+            "sf2-map-event-dialogue-state-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-request-state-static-v1.json": (
+            "sf2-map-event-request-state-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-request-consumption-static-v1.json": (
+            "sf2-map-event-request-consumption-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-interaction-state-static-v1.json": (
+            "sf2-map-event-interaction-state-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-item-transactions-static-v1.json": (
+            "sf2-map-event-item-transactions-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-random-battle-state-static-v1.json": (
+            "sf2-map-event-random-battle-state-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-combatant-state-static-v1.json": (
+            "sf2-map-event-combatant-state-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-tactical-base-quote-state-static-v1.json": (
+            "sf2-map-event-tactical-base-quote-state-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-scripted-transition-state-static-v1.json": (
+            "sf2-map-event-scripted-transition-state-static-v1"
+        ),
         "tests/fixtures/h2/map-init-static-v1.json": "sf2-map-init-static-v1",
         "tests/fixtures/h3/map-setup-selection-v1.json": (
             "sf2-map-setup-selection-runtime-v1"
