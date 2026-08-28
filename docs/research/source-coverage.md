@@ -556,9 +556,10 @@ Phase 2 now works in subsystem batches:
    caller context, signedness/overflow, RNG, undocumented hardware behavior, or conflicting source
    comments. A question register is not an automatic H3 fixture queue; apply
    [ADR 0014](../decisions/0014-static-first-runtime-evidence-after-map3-battle01.md).
-4. **Admit runtime selectively:** ADR 0009's serialized R2b/R2c/R3/R4 closure is the bounded scenario
-   exception. Optional and later full-game coverage defaults to complete H2; after that closure, new
-   H3 requires caller dependence, material accepted-contract impact, and no reusable existing rail.
+4. **Admit runtime conditionally:** under [ADR 0016](../decisions/0016-remake-start-evidence-deferral.md),
+   ADR 0014's three-part gate applies now. Optional, later full-game, and continuous-scenario
+   coverage default to complete H2; new H3 requires caller dependence, material accepted-contract or
+   acceptance impact, and no reusable existing rail. Natural end-to-end continuity is not a fallback.
 5. **Run one matrix:** for admitted runtime work, group related questions into one generated input
    table and one BizHawk launch, write all observed results into a compact RAM/output buffer, and
    validate the batch after exit.
@@ -578,11 +579,12 @@ deterministic H2 inventory; its 1,017/1,690 domain-aware reach includes 37 Z80 s
 remaining gap reflects include-site-only map bodies, alternates, and unlabeled storage rather than
 unknown files.
 
-The next work is semantic depth, not another sweep for filenames or artificial index percentage. Under
-ADR 0005's 2026-07-23 priority decision, the active frontier is event semantics/state flow, map
-interactions, UI/menu/save behavior, and implementation-neutral content contracts. Existing H1/H2/H3
-driver and hardware evidence remains in its normal verification rails, but sound-driver exactness and
-other low-remake-value hardware work are no longer default runtime-matrix targets.
+The next work is semantic depth, not another sweep for filenames or artificial index percentage. The
+current frontier is the highest-priority honest independent static H2 gaps: event semantics/state
+flow, map interactions, UI/menu/save behavior, and implementation-neutral content contracts. Under
+ADR 0005's 2026-07-23 priority decision, existing H1/H2/H3 driver and hardware evidence remains in
+its normal verification rails, but sound-driver exactness and other low-remake-value hardware work are
+no longer default runtime-matrix targets.
 The registered Map 3 optional-interactions H2 rail deterministically covers its 13-path public-safe
 source surface, including the two item include-site identities, while preserving four grouped Unknown
 runtime-question categories. Under ADR 0014, those Unknowns are a deferred ambiguity register, not a
@@ -590,11 +592,11 @@ per-entity, per-area, or per-item H3 fixture queue.
 The ADR 0009 scenario audit is owned by
 [`map3-battle01-audit.md`](./map3-battle01-audit.md): it inventories the accepted evidence for the
 Map 3 through Battle 01-completion chain, consumes ADR 0010's accepted
-`1A+2A+3A+4A+5B+6A+7C+8C+9A+10A` profile, registers the RA-01..RA-12 gaps, and names the grouped
-closure matrices. Persistence is deferred by 6A, while reached private-input provenance and exact
-frame/audio/hardware H4 evidence are mandatory under 7C/8C; the audit remains OPEN until those rows
-close. Its completed R1 rail is the one-case/one-launch
-`sf2-map3-admitted-start-runtime-v1` controlled admission from original Witch/New through original
+`1A+2A+3A+4A+5B+6A+7C+8C+9A+10A` profile, registers the RA-01..RA-12 gaps, and routes its deferred
+questions through ADR 0016 and ADR 0014 rather than an automatic R2/R3/R4 runtime queue. Persistence
+is deferred by 6A, while reached private-input provenance and exact frame/audio/hardware H4 evidence
+remain eventual 7C/8C acceptance work; the audit remains OPEN for that target. Its completed R1 rail
+is the one-case/one-launch `sf2-map3-admitted-start-runtime-v1` controlled admission from original Witch/New through original
 MainLoop, the default Map 3 setup/init chain, and the first `WaitForEvent`. It binds the exact 26
 Map 3 source-path records without adding design associations, captures only licensing-safe state/
 trace facts, and leaves natural route, program/event effects, presentation, and Battle 01 work to

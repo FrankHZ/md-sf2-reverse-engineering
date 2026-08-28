@@ -2,7 +2,7 @@
 
 - Status: **Accepted**
 - Decision date: 2026-08-24
-- Scope: original-console scenario replay, private reference capture, and remake H4 ownership
+- Scope: conditional original-console scenario replay, private reference capture, and remake H4 ownership
 
 ## Context
 
@@ -13,7 +13,7 @@ separates original evidence, deterministic remake behavior, Godot adapters, and 
 Those decisions do not yet name the boundary between replaying the original ROM to acquire reference
 evidence and passing H4 against a remake.
 
-That distinction is necessary before any R4b or H4 runner work. An original-console replay can prove
+That distinction is necessary if an R4b or H4 runner work item is admitted. An original-console replay can prove
 what the pinned game did under one controlled input trace. It cannot prove that a remake matches it.
 Conversely, a remake H4 runner must consume accepted evidence; it must not generate its golden by
 running an original emulator inside the same comparison and must not treat Lua as a second gameplay
@@ -47,10 +47,16 @@ The following terms are normative:
   original-reference replay, matching original capture, emulator exit code, or clean Lua Console is
   never by itself an H4 PASS.
 
-Original-reference replay is a Phase 2 Research/H3 evidence operation. H4 definition is a Design-owned
-acceptance surface before Phase 4, and H4 execution is a later remake acceptance operation after the
-separate Phase 4 start action. Neither owner may rename original replay as remake parity or use an H4
-label to promote unaccepted runtime observations.
+Original-reference replay is a Phase 2 Research/H3 evidence operation. H4 definition is Design-owned
+eventual-milestone and conditional acceptance work, and H4 execution is a later remake acceptance
+operation after the separate Phase 4 start action. Neither owner may rename original replay as remake
+parity or use an H4 label to promote unaccepted runtime observations.
+
+Under [ADR 0016](./0016-remake-start-evidence-deferral.md), original-reference replay, complete 8C
+capture, continuous-scenario evidence, and H4 capability are not default prerequisites for a separately
+user-authorized implementation start. They remain conditional evidence and acceptance work. A concrete
+implementation or acceptance ambiguity may trigger them only through ADR 0014's immediate three-part
+H3 gate, with accepted static owners and reusable rails considered first.
 
 ### Keep the original observer passive
 
@@ -92,8 +98,8 @@ This decision reserves ownership classes without creating their paths or command
 
 | Surface | Future owner and boundary |
 | --- | --- |
-| Original-reference runner capability | One Phase 2 Research tooling slice under the H3/original-runtime boundary. It owns runner preflight, passive-observer enforcement, typed receipts, timeouts, cleanup, and capability tests, but no R4b scenario claim. |
-| R4b scenario reference evidence | A later, separate Research scenario-evidence slice. It consumes the accepted capability runner and owns the frozen R4b input trace, private captures, public-safe Research projection, evidence labels, provenance, and any justified research-index associations. |
+| Original-reference runner capability | One conditionally admitted Phase 2 Research tooling slice under the H3/original-runtime boundary. It owns runner preflight, passive-observer enforcement, typed receipts, timeouts, cleanup, and capability tests, but no R4b scenario claim. |
+| R4b scenario reference evidence | A later, separately and conditionally admitted Research scenario-evidence slice. It consumes the accepted capability runner and owns the frozen R4b input trace, private captures, public-safe Research projection, evidence labels, provenance, and any justified research-index associations. |
 | H3 fixture and counter | The scenario-evidence slice owns any future `schemas/h3/` and `tests/fixtures/h3/` entry plus its H3 registry/native-counter update. Capability-only diagnostics do not increment scenario-fixture counters. |
 | H4 fixture and counter | A later Design/H4-definition slice owns future `schemas/h4/` and `tests/fixtures/h4/` definitions and a distinct H4 counter. It consumes accepted Research from `main`; it does not relabel an H3 receipt. |
 | Research index | The Research scenario-evidence slice owns reference-evidence records/associations. A later H4-definition slice may add only the accepted H4 association needed by its fixture. Both are serialized shared-file changes with exact parsed-object proofs. |
@@ -128,9 +134,9 @@ unexpected process survival, cleanup failure, or input/capture identity drift is
 runner must not overwrite a prior receipt or delete an arbitrary caller path to recover from a
 collision.
 
-### Sequence capability before scenario evidence
+### Sequence capability before conditionally admitted scenario evidence
 
-Runtime work proceeds in two separately reviewed slices:
+If the gate admits the work, runtime work proceeds in two separately reviewed slices:
 
 1. **Runner capability slice:** establish deterministic input replay, passive observation, receipt
    shape, bounded process lifecycle, private-output isolation, and cleanup against a capability case.
@@ -141,8 +147,8 @@ Runtime work proceeds in two separately reviewed slices:
    projection plus required associations.
 
 Only accepted scenario evidence on `main` may feed a later H4-definition slice. H4 runner
-implementation and remake H4 execution remain after the ADR 0009 readiness gate and separate user
-Phase 4 start action.
+implementation and remake H4 execution remain later acceptance work after the separate user Phase 4
+start action; they are not a default implementation-start gate.
 
 ### Enforce a hard launch stop-loss
 
@@ -160,6 +166,10 @@ the golden pass. Opening a nominally new slice only to reset the launch count is
 runtime work requires independently accepted new static evidence or a separately corrected runner
 capability and fresh main-gate ownership.
 
+Failed R2b and original-reference replay launches or candidates remain non-evidence under their
+existing owners. They cannot be resurrected, renamed, reset, or reused to obtain a new launch budget;
+this ADR permits no nominal reset or fourth launch.
+
 ## Relationship to Existing Decisions
 
 [ADR 0001](./0001-bizhawk-for-h3-runtime-observation.md) remains authoritative for the pinned BizHawk
@@ -172,6 +182,10 @@ public core and H1/H2/H3 planner. This decision reserves a future first-class H4
 change the planner. [ADR 0014](./0014-static-first-runtime-evidence-after-map3-battle01.md) continues
 to require static-first Research and does not turn a runtime-question register into automatic replay
 authorization.
+
+[ADR 0016](./0016-remake-start-evidence-deferral.md) controls the separate user-authorized
+implementation-start policy; it does not weaken this decision's passive-observer, receipt, cleanup,
+private-boundary, ownership, or stop-loss requirements.
 
 ## Consequences
 
@@ -193,4 +207,5 @@ authorization.
 - [ADR 0011: Phase 4 Remake Runtime Architecture](./0011-phase4-remake-runtime-architecture.md).
 - [ADR 0012: Dependency-Aware Partitioned Verification](./0012-dependency-aware-partitioned-verification.md).
 - [ADR 0014: Static-First Runtime Evidence after Map 3 to Battle 01](./0014-static-first-runtime-evidence-after-map3-battle01.md).
+- [ADR 0016: Remake-Start Evidence Deferral](./0016-remake-start-evidence-deferral.md).
 - [Map 3 Battle 01 Victory and Return Static Evidence](../research/map3-battle01-victory-return.md).

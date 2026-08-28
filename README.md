@@ -22,10 +22,12 @@ project decisions belong in their owning tracked documents.
   tooling.
 - **Remake implementation:** not started. The accepted first playable milestone is one continuous
   scenario from Map 3 through completion of Battle 01 under
-  [ADR 0009](./docs/decisions/0009-first-phase4-playable-slice.md). Research and Design must first
-  complete targeted gap audits, close the required evidence and contract gaps, and receive a
-  main-gate readiness report; Phase 4 still requires a separate explicit start action. No
-  distributable asset strategy or MCP implementation has been selected.
+  [ADR 0009](./docs/decisions/0009-first-phase4-playable-slice.md). Its eventual acceptance retains
+  targeted Research/Design gap closure and a main-gate readiness report. Under
+  [ADR 0016](./docs/decisions/0016-remake-start-evidence-deferral.md), those natural-continuity and
+  H4 rows are not default prerequisites for a separately explicit user-authorized bounded start; they
+  remain deferred/conditional acceptance work. No distributable asset strategy or MCP implementation
+  has been selected.
 
 This README intentionally does **not** maintain fixture totals, address counts, coverage percentages,
 or per-subsystem corpus sizes. Those snapshots became stale as soon as another research slice merged.
@@ -283,8 +285,10 @@ contract. A future remake must use placeholders or properly licensed assets for 
    battle simulation, and explicit modernization choices — partially prepared by current design
    synthesis; upper-layer decisions remain future work.
 - **Phase 4 — Modern Engine Vertical Slice:** the Godot 4.7.2 .NET/C# baseline and first continuous
-  Map 3-through-Battle 01-completion milestone are accepted; Research/Design gap audits, main-gate
-  readiness, and a separate explicit start action remain pending — implementation not started.
+  Map 3-through-Battle 01-completion milestone are accepted as the eventual acceptance target;
+  Research/Design gap audits and main-gate readiness remain open for that target. A separate explicit
+  user authorization may start a bounded implementation slice under ADR 0016 — implementation has
+  not started.
 - **Phase 5 — Content and Productization:** licensed/placeholder assets, localization, accessibility,
    distribution, and release QA — not started.
 

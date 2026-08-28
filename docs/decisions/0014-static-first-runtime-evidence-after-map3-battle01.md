@@ -2,7 +2,7 @@
 
 - Status: **Accepted**
 - Decision date: 2026-08-21
-- Scope: Phase 2 H2/H3 selection during and after the ADR 0009 scenario closure
+- Scope: Phase 2 H2/H3 selection before and after the ADR 0009 scenario closure
 
 ## Context
 
@@ -14,29 +14,27 @@ per-dialogue, per-area, and per-item runtime cases even when deterministic sourc
 already establish the implementation-relevant contract.
 
 [ADR 0009](./0009-first-phase4-playable-slice.md) and
-[ADR 0010](./0010-map3-battle01-product-acceptance.md) deliberately require one continuous scenario
-from Map 3 through completion of Battle 01. Under the current user scheduling direction, the R2b and
-R2c continuations and later R3 and R4 Research slices retain scenario-specific observation because
-together they must close that exact route, admission, playthrough, victory, after-battle, and endpoint
-evidence boundary. They are a bounded milestone exception, not the default cadence for later
-full-game inventory. These labels govern scheduling only; each slice becomes accepted evidence only
-after its normal independent review and integration to `main`.
+[ADR 0010](./0010-map3-battle01-product-acceptance.md) deliberately retain one continuous scenario
+from Map 3 through completion of Battle 01 as the eventual milestone acceptance target. The R2b/R2c
+static contracts and later R3/R4 labels do not create an automatic scenario-observation queue. Each
+becomes accepted evidence only after its normal independent review and integration to `main`.
 
 The long-term full-game reverse-engineering mission remains unchanged. The question is how much new
-runtime observation is justified after the selected scenario's evidence gate is closed.
+runtime observation is justified for a concrete ambiguity, whether or not the selected scenario's
+eventual acceptance evidence has closed.
 
 ## Decision
 
-### Concentrate scenario observation on the first playable slice
+### Keep continuous-scenario evidence conditional
 
-Retain the scenario-specific H3 work required by the user-scheduled R2b/R2c/R3/R4 closure sequence
-because it collectively proves the continuous Map 3-to-Battle 01-completion boundary selected by
-ADR 0009. Do not generalize that scenario cadence into a requirement to observe every optional or
-later-game content record.
+Retain the continuous Map 3-to-Battle 01 boundary selected by ADR 0009 as an eventual acceptance
+target. Do not treat R2b/R2c/R3/R4 labels as a default requirement to observe that route before a
+separately authorized implementation starts, and do not generalize them into a requirement to observe
+every optional or later-game content record.
 
-Until the scenario evidence closure, new scenario-specific H3 is limited to that owned closure
-sequence. Optional and full-game inventory may proceed statically, but it does not create a parallel
-content-by-content H3 lane.
+Optional and full-game inventory may proceed statically. A continuous-scenario question uses the same
+immediate H3 admission gate as every other deferred question; it does not create a parallel
+content-by-content H3 lane or an end-to-end fallback requirement.
 
 For this decision, closing the ADR 0009 scenario means that the required Research and Design evidence
 and contract gaps for the continuous scenario have been accepted on `main`. It does not mean Phase 4
@@ -55,10 +53,10 @@ because the static corpus records an unresolved runtime question. A runtime-ques
 deferred ambiguity register. It is not an automatic emulator-fixture queue, acceptance requirement,
 or promise that every Unknown will be observed.
 
-### Admit new H3 only through a three-part gate
+### Admit new H3 only through a three-part gate, now
 
-After the ADR 0009 scenario evidence closure, a new H3 fixture is allowed only when all three
-conditions hold:
+A new H3 fixture is allowed only when all three conditions hold, including before ADR 0009 scenario
+evidence closure:
 
 1. the relevant caller-dependent semantic cannot be established by deterministic static analysis;
 2. its answer would materially affect an accepted implementation-neutral contract or acceptance
@@ -67,9 +65,10 @@ conditions hold:
    fixture.
 
 Before ownership is granted, the proposed slice contract must identify the exact caller-dependent
-question, the affected accepted contract, and why an existing rail cannot be extended or reused. If
-the gate passes, related cases still use one generated matrix and the smallest practical number of
-emulator launches. A one-case fixture continues to require a concrete isolation reason.
+question, the affected accepted contract or acceptance behavior, the accepted static/H1/ROM/H2 owners
+already reused, and why an existing rail cannot be extended or reused. If the gate passes, related
+cases still use one generated matrix and the smallest practical number of emulator launches. A
+one-case fixture continues to require a concrete isolation reason.
 
 If the gate does not pass, retain the behavior as Inferred or Unknown at the appropriate boundary.
 Do not promote it to Confirmed, infer player-visible semantics from static shape, or block an
@@ -91,19 +90,21 @@ new H3 after the ADR 0009 scenario closure.
 
 ADR 0005's remake-value test and ADR 0013's evidence-preserving efficiency rules remain in force.
 Neither token cost nor emulator runtime alone is evidence for skipping a contract-relevant runtime
-question that passes this decision's gate.
+question that passes this decision's gate. ADR 0016 controls the separate implementation-start policy;
+this ADR supplies its immediate runtime admission rule.
 
 ## Consequences
 
-- The current Map 3-through-Battle 01 scenario retains the runtime evidence needed to close its exact
-  continuous milestone boundary.
+- The current Map 3-through-Battle 01 scenario retains its eventual continuous-milestone evidence
+  boundary without becoming a default precondition for implementation start.
 - Later optional and full-game coverage scales primarily through complete H2 corpora rather than a
   linear growth of content-specific emulator fixtures.
 - Deferred H3 question groups remain useful records of uncertainty without becoming an automatic
   work queue.
 - New runtime work has an explicit implementation-value and rail-reuse justification before it
   consumes a Research lane.
-- Phase 4, Godot work, H4 implementation, and the ADR 0009 phase-transition gate are unchanged.
+- Phase 4 start authorization is separately controlled by ADR 0016; milestone acceptance, Godot work,
+  and H4 completion remain distinct later gates.
 
 ## References
 
@@ -112,4 +113,5 @@ question that passes this decision's gate.
 - [ADR 0009: First Phase 4 Playable Slice](./0009-first-phase4-playable-slice.md).
 - [ADR 0010: Map 3 to Battle 01 Product Acceptance Profile](./0010-map3-battle01-product-acceptance.md).
 - [ADR 0013: Token-Efficient Agent Research without Weakening Evidence](./0013-token-efficient-agent-research-workflow.md).
+- [ADR 0016: Remake-Start Evidence Deferral](./0016-remake-start-evidence-deferral.md).
 - [Map 3 to Battle 01 Research Audit](../research/map3-battle01-audit.md).
