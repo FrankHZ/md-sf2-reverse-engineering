@@ -19,6 +19,9 @@ from sf2tool.h2.map_event_random_battle_state import (
     build_map_event_random_battle_state_contract,
     normalize_map_event_random_battle_state_later_owner_index,
 )
+from sf2tool.h2.map_event_scripted_transition_state import (
+    _remove_map_event_scripted_transition_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_tactical_base_quote_state import (
     _remove_map_event_tactical_base_quote_state_later_owner_index_delta,
 )
@@ -236,7 +239,9 @@ def test_schema_rejects_unknown_root_and_nested_fields() -> None:
 
 
 def test_later_owner_index_delta_is_exact() -> None:
-    index = _remove_map_event_tactical_base_quote_state_later_owner_index_delta(load_json(_INDEX))
+    index = _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
+        _remove_map_event_scripted_transition_state_later_owner_index_delta(load_json(_INDEX))
+    )
     predecessor = _remove_map_event_random_battle_state_later_owner_index_delta(index)
     assert hashlib.sha256(canonical_json_bytes(predecessor)).hexdigest().upper() == (
         random_battle_module._PREDECESSOR_INDEX_SHA256
@@ -287,7 +292,9 @@ def test_later_owner_normalizer_rejects_each_address_delta_mutation(
     mutation: str,
 ) -> None:
     altered = deepcopy(
-        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(load_json(_INDEX))
+        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
+            _remove_map_event_scripted_transition_state_later_owner_index_delta(load_json(_INDEX))
+        )
     )
     record = _record(altered, record_id)
     address = next(
@@ -316,7 +323,9 @@ def test_later_owner_normalizer_rejects_each_binding_delta_mutation(
     mutation: str,
 ) -> None:
     altered = deepcopy(
-        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(load_json(_INDEX))
+        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
+            _remove_map_event_scripted_transition_state_later_owner_index_delta(load_json(_INDEX))
+        )
     )
     bindings = _fixture_evidence(_record(altered, record_id))["bindings"]
     binding = next(
@@ -340,7 +349,9 @@ def test_later_owner_normalizer_rejects_each_binding_delta_mutation(
 
 
 def test_later_owner_normalizer_rejects_missing_exact_delta() -> None:
-    index = _remove_map_event_tactical_base_quote_state_later_owner_index_delta(load_json(_INDEX))
+    index = _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
+        _remove_map_event_scripted_transition_state_later_owner_index_delta(load_json(_INDEX))
+    )
     altered = deepcopy(index)
     record = next(row for row in altered["records"] if row["id"] == "stats.flags")
     record["documents"].remove(_DOCUMENT)

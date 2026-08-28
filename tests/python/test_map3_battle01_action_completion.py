@@ -6,10 +6,20 @@ from pathlib import Path
 import pytest
 
 from sf2tool.h2 import map3_battle01_action_completion as completion
+from sf2tool.h2.map_event_scripted_transition_state import (
+    _remove_map_event_scripted_transition_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_tactical_base_quote_state import (
-    normalize_map_event_tactical_base_quote_state_later_owner_index,
+    normalize_map_event_tactical_base_quote_state_later_owner_index as _normalize_later_owner_index,
 )
 from sf2tool.jsonio import load_json, validate_json
+
+
+def normalize_later_owner_index(index):
+    return _normalize_later_owner_index(
+        _remove_map_event_scripted_transition_state_later_owner_index_delta(index)
+    )
+
 
 ROOT = Path(__file__).resolve().parents[2]
 ROM = ROOT / "local/roms/sf2-us.bin"
@@ -472,7 +482,7 @@ def test_retained_battle_actions_projection_drift_at_golden_boundary_rejects(
 
 
 def test_research_index_has_only_the_exact_action_completion_registration() -> None:
-    index = normalize_map_event_tactical_base_quote_state_later_owner_index(
+    index = normalize_later_owner_index(
         load_json(RESEARCH_INDEX)
     )
     validate_json(index, RESEARCH_INDEX_SCHEMA, owner="research index")

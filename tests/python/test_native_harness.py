@@ -43,15 +43,15 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Status"] == "PASS"
     assert result["Records"] == 1627
     assert result["Confirmed"] == 1627
-    assert result["H2Fixtures"] == 97
+    assert result["H2Fixtures"] == 98
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 94
-    assert result["AddressBindings"] == 3047
+    assert result["AddressBindings"] == 3067
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1590
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
-    assert result["ResearchDocuments"] == 59
+    assert result["ResearchDocuments"] == 60
     assert result["DesignContracts"] == 68
 
 
@@ -917,6 +917,13 @@ def test_map_event_random_battle_state_has_a_static_rom_parity_command() -> None
 def test_map_event_tactical_base_quote_state_has_a_static_rom_parity_command() -> None:
     args = build_parser().parse_args(["h2", "map-event-tactical-base-quote-state"])
     assert args.h2_command == "map-event-tactical-base-quote-state"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
+def test_map_event_scripted_transition_state_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "map-event-scripted-transition-state"])
+    assert args.h2_command == "map-event-scripted-transition-state"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.output_path is None
 

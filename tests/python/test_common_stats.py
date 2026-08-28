@@ -5,8 +5,11 @@ from copy import deepcopy
 import pytest
 
 from sf2tool.h2 import stats as stats_module
+from sf2tool.h2.map_event_scripted_transition_state import (
+    _remove_map_event_scripted_transition_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_tactical_base_quote_state import (
-    normalize_map_event_tactical_base_quote_state_later_owner_index,
+    normalize_map_event_tactical_base_quote_state_later_owner_index as _normalize_later_owner_index,
 )
 from sf2tool.h2.stats import (
     _combatant_clamp_contract,
@@ -19,6 +22,13 @@ from sf2tool.h2.stats import (
 )
 from sf2tool.jsonio import load_json, schema_composition_audit, validate_json
 from sf2tool.paths import repo_path
+
+
+def normalize_later_owner_index(index):
+    return _normalize_later_owner_index(
+        _remove_map_event_scripted_transition_state_later_owner_index_delta(index)
+    )
+
 
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
 FIXTURE = repo_path("tests/fixtures/h2/common-stats-static-v1.json")
@@ -228,7 +238,7 @@ def test_combatant_getter_contract_matches_full_fixture_and_boundaries() -> None
 @pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
 def test_common_stats_index_relation_adds_only_combatant_getters_without_function_drift() -> None:
     current_index = load_json(RESEARCH_INDEX)
-    accepted_base_index = normalize_map_event_tactical_base_quote_state_later_owner_index(
+    accepted_base_index = normalize_later_owner_index(
         current_index
     )
 

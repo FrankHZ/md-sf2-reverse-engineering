@@ -32,6 +32,9 @@ from sf2tool.h2.map_event_item_transactions import (
 from sf2tool.h2.map_event_random_battle_state import (
     _remove_map_event_random_battle_state_later_owner_index_delta,
 )
+from sf2tool.h2.map_event_scripted_transition_state import (
+    _remove_map_event_scripted_transition_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_tactical_base_quote_state import (
     _remove_map_event_tactical_base_quote_state_later_owner_index_delta,
 )
@@ -56,7 +59,9 @@ def _interaction_predecessor_index(index: dict[str, object]) -> dict[str, object
     return _remove_map_event_item_transactions_index_delta(
         _remove_map_event_combatant_state_later_owner_index_delta(
             _remove_map_event_random_battle_state_later_owner_index_delta(
-                _remove_map_event_tactical_base_quote_state_later_owner_index_delta(index)
+                _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
+                    _remove_map_event_scripted_transition_state_later_owner_index_delta(index)
+                )
             )
         )
     )

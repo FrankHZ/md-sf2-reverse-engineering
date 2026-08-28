@@ -115,6 +115,28 @@
                             "tacticalBaseQuoteState.serviceEntries.DisplayText.effectiveTargetAddress"
                           ] },
                           { "enum": [
+                            "scriptedTransitionState.sourceProgram.enclosingScriptEntryAddress",
+                            "scriptedTransitionState.sourceProgram.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.setCameraDestination.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.dispatch.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.setFacing.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.setBlocks.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.nextSingleText.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.setActscript.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.entityActions.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.playSound.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.executeSubroutine.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.warp.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.loadMapFadeIn.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.loadMapEntities.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.setSprite.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.fadeIn.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.customActscript.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.entityActionDispatcher.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.setQuake.entryAddress",
+                            "scriptedTransitionState.retainedHandlers.flashWhite.entryAddress"
+                          ] },
+                          { "enum": [
                             "eventItemTransactions.sourceFiles.ms_map6_flag701_EntityEvents.tableEntryAddress",
                             "eventItemTransactions.sourceFiles.ms_map8_Section5.tableEntryAddress",
                             "eventItemTransactions.sourceFiles.ms_map9_EntityEvents.tableEntryAddress",

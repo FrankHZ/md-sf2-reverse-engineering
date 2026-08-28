@@ -5,8 +5,11 @@ from copy import deepcopy
 import pytest
 
 import sf2tool.h2.field_menu_control as field_menu
+from sf2tool.h2.map_event_scripted_transition_state import (
+    _remove_map_event_scripted_transition_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_tactical_base_quote_state import (
-    normalize_map_event_tactical_base_quote_state_later_owner_index as normalize_later_owner_index,
+    normalize_map_event_tactical_base_quote_state_later_owner_index as _normalize_later_owner_index,
 )
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
@@ -21,6 +24,12 @@ ROM = repo_path("local/roms/sf2-us.bin")
 _REQUEST_CONSUMPTION_FIXTURE = (
     "tests/fixtures/h2/map-event-request-consumption-static-v1.json"
 )
+
+
+def normalize_later_owner_index(index):
+    return _normalize_later_owner_index(
+        _remove_map_event_scripted_transition_state_later_owner_index_delta(index)
+    )
 
 
 def load_json(path):

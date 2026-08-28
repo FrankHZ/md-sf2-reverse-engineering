@@ -79,6 +79,7 @@ H2_COMMAND_GROUPS = {
         "map-event-direct-handoff",
         "map-event-predicate-results",
         "map-event-random-battle-state",
+        "map-event-scripted-transition-state",
         "map-event-tactical-base-quote-state",
         "map-event-request-state",
         "map-event-request-consumption",
