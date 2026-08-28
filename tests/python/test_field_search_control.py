@@ -10,8 +10,11 @@ from typing import Any
 import pytest
 
 import sf2tool.h2.field_search_control as field_search
+from sf2tool.h2.map_event_scripted_transition_state import (
+    _remove_map_event_scripted_transition_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_tactical_base_quote_state import (
-    normalize_map_event_tactical_base_quote_state_later_owner_index as normalize_later_owner_index,
+    normalize_map_event_tactical_base_quote_state_later_owner_index as _normalize_later_owner_index,
 )
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
@@ -37,6 +40,12 @@ _DIALOGUE_STATE_FIXTURE_ID = "sf2-map-event-dialogue-state-static-v1"
 _DIALOGUE_STATE_DOCUMENT = "docs/research/map-event-dialogue-state.md"
 _REQUEST_STATE_FIXTURE_ID = "sf2-map-event-request-state-static-v1"
 _REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
+
+
+def normalize_later_owner_index(index):
+    return _normalize_later_owner_index(
+        _remove_map_event_scripted_transition_state_later_owner_index_delta(index)
+    )
 
 
 def load_json(path):

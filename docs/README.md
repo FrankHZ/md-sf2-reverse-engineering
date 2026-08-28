@@ -280,6 +280,9 @@ Data-side directory inventory and ROM parity:
 - [`map-event-tactical-base-quote-state.md`](./research/map-event-tactical-base-quote-state.md): the
   complete Map 37/46 `DisplayTacticalBaseQuote` tail-caller corpus, source quote-line domain,
   alias-aware portrait-name/current-HP/flag/text service boundary, and grouped runtime Unknowns.
+- [`map-event-scripted-transition-state.md`](./research/map-event-scripted-transition-state.md): the
+  complete one-positive/913-zero Map 21 scripted-transition command-stream corpus, its source/H1/ROM
+  operation, payload, pointer, and handler-entry joins, and its deferred runtime Unknown register.
 - [`map-event-direct-control.md`](./research/map-event-direct-control.md): the complete caller-side
   raw-68000 direct-call/tail-transfer topology in the retained map-event program corpus, including
   alias-aware effective targets, callee-entry owners, lexical continuations, physical-PC

@@ -1,0 +1,2995 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map-event-scripted-transition-state-static-v1",
+  "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "sourceIdentity": [
+    {
+      "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+      "sha256": "D469D9F6D9D5F0FCC88954255C4F2117634F6940DA6E6D398FF270E46A5ACBB1"
+    },
+    {
+      "sourcePath": "sf2cutscenemacros.asm",
+      "sha256": "F95CEE5C3E36A3F35B93722083D286099878A2EC2534882B049A4B85DEB21DB2"
+    },
+    {
+      "sourcePath": "sf2enums.asm",
+      "sha256": "ABA0DFEE4F4D3BFCD49646C03B5229DD6458FFC3A90174907823D710884020EE"
+    },
+    {
+      "sourcePath": "data/scripting/entity/eas_actions.asm",
+      "sha256": "8C4312D69370D882C32A61276D94D744C3252FD6C32EB9351932F17EE39178F0"
+    },
+    {
+      "sourcePath": "data/scripting/entity/eas_main.asm",
+      "sha256": "E727C63249C9F0853DF18FE103892B809EF60883778B3BC70C4A9A6CDE0C0D31"
+    },
+    {
+      "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+      "sha256": "17F52906D05B933F318D509204460743591BA9F802D21B121D37217F156F83BF"
+    },
+    {
+      "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+      "sha256": "B5D0F6EADA7008D87BF88A6D61CFD357E7C89C91CD0ABB4B3F19C7BAFB42A705"
+    },
+    {
+      "sourcePath": "code/common/scripting/entity/entityscriptengine_2.asm",
+      "sha256": "2FB8DABA0CE8613606F604D7D06168C447E3B62E6A5717729B3FDBB662A5B7A3"
+    }
+  ],
+  "scriptedTransitionState": {
+    "sourceProgram": {
+      "canonicalSymbol": "Map21_DefaultZoneEvent",
+      "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+      "entrySourceLine": 24,
+      "entryAddress": 345526,
+      "enclosingScriptEntryAddress": 345464,
+      "endAddressExclusive": 345876,
+      "terminalAddress": 345874,
+      "encodedSpanBytes": 350,
+      "referenceCounts": {
+        "physicalRecordCount": 1,
+        "setupRecordReferenceCount": 4,
+        "routeRecordReferenceCount": 4
+      },
+      "operationWeightCounts": {
+        "uniquePhysicalOperationCount": 87,
+        "physicalRecordWeightedOperationCount": 87,
+        "setupRecordReferenceWeightedOperationCount": 348,
+        "routeRecordReferenceWeightedOperationCount": 348
+      }
+    },
+    "selectionSummary": {
+      "motherProgramCount": 914,
+      "positiveProgramCount": 1,
+      "zeroProgramCount": 913,
+      "sourceOperationCount": 87,
+      "commandDefinitionCount": 27,
+      "payloadContextCount": 4,
+      "inheritedPayloadContextCount": 1,
+      "retainedHandlerCount": 19,
+      "pointerTargetCount": 5,
+      "addressAnchorCount": 111
+    },
+    "sourceMacroCounts": [
+      {
+        "sourceMacro": "csWait",
+        "count": 17
+      },
+      {
+        "sourceMacro": "setFacing",
+        "count": 9
+      },
+      {
+        "sourceMacro": "setCamDest",
+        "count": 4
+      },
+      {
+        "sourceMacro": "setBlocks",
+        "count": 9
+      },
+      {
+        "sourceMacro": "nextSingleText",
+        "count": 6
+      },
+      {
+        "sourceMacro": "setActscriptWait",
+        "count": 3
+      },
+      {
+        "sourceMacro": "entityActions",
+        "count": 2
+      },
+      {
+        "sourceMacro": "customActscriptWait",
+        "count": 1
+      },
+      {
+        "sourceMacro": "moveRight",
+        "count": 7
+      },
+      {
+        "sourceMacro": "moveUp",
+        "count": 4
+      },
+      {
+        "sourceMacro": "moveDown",
+        "count": 1
+      },
+      {
+        "sourceMacro": "moveLeft",
+        "count": 1
+      },
+      {
+        "sourceMacro": "endActions",
+        "count": 3
+      },
+      {
+        "sourceMacro": "ac_setSpeed",
+        "count": 1
+      },
+      {
+        "sourceMacro": "ac_jump",
+        "count": 1
+      },
+      {
+        "sourceMacro": "ac_end",
+        "count": 1
+      },
+      {
+        "sourceMacro": "clearF",
+        "count": 2
+      },
+      {
+        "sourceMacro": "executeSubroutine",
+        "count": 1
+      },
+      {
+        "sourceMacro": "loadMapFadeIn",
+        "count": 1
+      },
+      {
+        "sourceMacro": "loadMapEntities",
+        "count": 1
+      },
+      {
+        "sourceMacro": "setSprite",
+        "count": 1
+      },
+      {
+        "sourceMacro": "fadeInB",
+        "count": 1
+      },
+      {
+        "sourceMacro": "setQuake",
+        "count": 5
+      },
+      {
+        "sourceMacro": "playSound",
+        "count": 1
+      },
+      {
+        "sourceMacro": "flashScreenWhite",
+        "count": 2
+      },
+      {
+        "sourceMacro": "warp",
+        "count": 1
+      },
+      {
+        "sourceMacro": "csc_end",
+        "count": 1
+      }
+    ],
+    "operationRows": [
+      {
+        "sourceOrder": 0,
+        "sourceLine": 25,
+        "address": 345526,
+        "sourceMacro": "moveDown",
+        "definitionId": "entity-action-payload-command:moveDown",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 1
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "67294D0EFF78C6DBF4AE91576D495F81CA8F9967119CFF318132F79D41285DFC",
+          "romSha256": "67294D0EFF78C6DBF4AE91576D495F81CA8F9967119CFF318132F79D41285DFC"
+        }
+      },
+      {
+        "sourceOrder": 1,
+        "sourceLine": 26,
+        "address": 345528,
+        "sourceMacro": "moveRight",
+        "definitionId": "entity-action-payload-command:moveRight",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 1
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "B413F47D13EE2FE6C845B2EE141AF81DE858DF4EC549A58B7970BB96645BC8D2",
+          "romSha256": "B413F47D13EE2FE6C845B2EE141AF81DE858DF4EC549A58B7970BB96645BC8D2"
+        }
+      },
+      {
+        "sourceOrder": 2,
+        "sourceLine": 27,
+        "address": 345530,
+        "sourceMacro": "moveRight",
+        "definitionId": "entity-action-payload-command:moveRight",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 1
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "B413F47D13EE2FE6C845B2EE141AF81DE858DF4EC549A58B7970BB96645BC8D2",
+          "romSha256": "B413F47D13EE2FE6C845B2EE141AF81DE858DF4EC549A58B7970BB96645BC8D2"
+        }
+      },
+      {
+        "sourceOrder": 3,
+        "sourceLine": 28,
+        "address": 345532,
+        "sourceMacro": "moveRight",
+        "definitionId": "entity-action-payload-command:moveRight",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 2
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "FCF0A6C700DD13E274B6FBA8DEEA8DD9B26E4EEDDE3495717CAC8408C9C5177F",
+          "romSha256": "FCF0A6C700DD13E274B6FBA8DEEA8DD9B26E4EEDDE3495717CAC8408C9C5177F"
+        }
+      },
+      {
+        "sourceOrder": 4,
+        "sourceLine": 29,
+        "address": 345534,
+        "sourceMacro": "endActions",
+        "definitionId": "entity-action-payload-command:endActions",
+        "family": "entity-action-payload-command",
+        "operands": [],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "AF472CF2977DBFCCC45851E12525627FC9ECC03F274F108A865B18A672F38BA6",
+          "romSha256": "AF472CF2977DBFCCC45851E12525627FC9ECC03F274F108A865B18A672F38BA6"
+        }
+      },
+      {
+        "sourceOrder": 5,
+        "sourceLine": 30,
+        "address": 345536,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 30
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "B90B821C60D7ECD85194007FE6DF35D3D4C8CB19CB83F05AD277D3B0A624EFFC",
+          "romSha256": "B90B821C60D7ECD85194007FE6DF35D3D4C8CB19CB83F05AD277D3B0A624EFFC"
+        }
+      },
+      {
+        "sourceOrder": 6,
+        "sourceLine": 31,
+        "address": 345538,
+        "sourceMacro": "setFacing",
+        "definitionId": "map-script-macro:setFacing",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "ALLY_BOWIE",
+            "value": 0
+          },
+          {
+            "kind": "enum",
+            "symbol": "DOWN",
+            "value": 3
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "EB8AC7E820BB53351703FAF1CE24FE9D889A1BC35A431E1257DEA7984B9BA9F9",
+          "romSha256": "EB8AC7E820BB53351703FAF1CE24FE9D889A1BC35A431E1257DEA7984B9BA9F9"
+        }
+      },
+      {
+        "sourceOrder": 7,
+        "sourceLine": 32,
+        "address": 345542,
+        "sourceMacro": "setFacing",
+        "definitionId": "map-script-macro:setFacing",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_B",
+            "value": 31
+          },
+          {
+            "kind": "enum",
+            "symbol": "DOWN",
+            "value": 3
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "EADB44AC881F0227319F9622EAF14FAC862ABD3769A718BCBE4ADE064EE9439F",
+          "romSha256": "EADB44AC881F0227319F9622EAF14FAC862ABD3769A718BCBE4ADE064EE9439F"
+        }
+      },
+      {
+        "sourceOrder": 8,
+        "sourceLine": 33,
+        "address": 345546,
+        "sourceMacro": "setFacing",
+        "definitionId": "map-script-macro:setFacing",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_A",
+            "value": 30
+          },
+          {
+            "kind": "enum",
+            "symbol": "DOWN",
+            "value": 3
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "56F32A865DACC598197DF10AD062A32F5DD5BCE420B0A764718FF04AD28589B4",
+          "romSha256": "56F32A865DACC598197DF10AD062A32F5DD5BCE420B0A764718FF04AD28589B4"
+        }
+      },
+      {
+        "sourceOrder": 9,
+        "sourceLine": 34,
+        "address": 345550,
+        "sourceMacro": "setFacing",
+        "definitionId": "map-script-macro:setFacing",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_D",
+            "value": 159
+          },
+          {
+            "kind": "enum",
+            "symbol": "DOWN",
+            "value": 3
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "AE08522083AD0DFAE915AF32358662C12BA65AC814FFCC902ACAEE666A7285D8",
+          "romSha256": "AE08522083AD0DFAE915AF32358662C12BA65AC814FFCC902ACAEE666A7285D8"
+        }
+      },
+      {
+        "sourceOrder": 10,
+        "sourceLine": 35,
+        "address": 345554,
+        "sourceMacro": "setCamDest",
+        "definitionId": "map-script-macro:setCamDest",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 10
+          },
+          {
+            "kind": "numeric",
+            "value": 11
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 6,
+          "h1Sha256": "988398A738DE971973E68B2790F061F9B8F92DE65BBBD40DD504110F59FAF5D5",
+          "romSha256": "988398A738DE971973E68B2790F061F9B8F92DE65BBBD40DD504110F59FAF5D5"
+        }
+      },
+      {
+        "sourceOrder": 11,
+        "sourceLine": 36,
+        "address": 345560,
+        "sourceMacro": "setBlocks",
+        "definitionId": "map-script-macro:setBlocks",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 15
+          },
+          {
+            "kind": "numeric",
+            "value": 22
+          },
+          {
+            "kind": "numeric",
+            "value": 3
+          },
+          {
+            "kind": "numeric",
+            "value": 1
+          },
+          {
+            "kind": "numeric",
+            "value": 12
+          },
+          {
+            "kind": "numeric",
+            "value": 22
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "A21A2B64E730EC67C60E70D232CCBDE7693F6EFC42A386CDBE7187F045A4CD5E",
+          "romSha256": "A21A2B64E730EC67C60E70D232CCBDE7693F6EFC42A386CDBE7187F045A4CD5E"
+        }
+      },
+      {
+        "sourceOrder": 12,
+        "sourceLine": 37,
+        "address": 345568,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 4
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1",
+          "romSha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1"
+        }
+      },
+      {
+        "sourceOrder": 13,
+        "sourceLine": 38,
+        "address": 345570,
+        "sourceMacro": "setBlocks",
+        "definitionId": "map-script-macro:setBlocks",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 15
+          },
+          {
+            "kind": "numeric",
+            "value": 21
+          },
+          {
+            "kind": "numeric",
+            "value": 3
+          },
+          {
+            "kind": "numeric",
+            "value": 1
+          },
+          {
+            "kind": "numeric",
+            "value": 12
+          },
+          {
+            "kind": "numeric",
+            "value": 21
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "2EA0D80DC69912E7A014FBBACFDCB60AED6BFC79AB769C13A149F96743B5CCC0",
+          "romSha256": "2EA0D80DC69912E7A014FBBACFDCB60AED6BFC79AB769C13A149F96743B5CCC0"
+        }
+      },
+      {
+        "sourceOrder": 14,
+        "sourceLine": 39,
+        "address": 345578,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 4
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1",
+          "romSha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1"
+        }
+      },
+      {
+        "sourceOrder": 15,
+        "sourceLine": 40,
+        "address": 345580,
+        "sourceMacro": "setBlocks",
+        "definitionId": "map-script-macro:setBlocks",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 15
+          },
+          {
+            "kind": "numeric",
+            "value": 20
+          },
+          {
+            "kind": "numeric",
+            "value": 3
+          },
+          {
+            "kind": "numeric",
+            "value": 1
+          },
+          {
+            "kind": "numeric",
+            "value": 12
+          },
+          {
+            "kind": "numeric",
+            "value": 20
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "1F95D2F172B3D120B4EF290FEB1B7727DEE5655C7C17D6E06E3F85D688E40A22",
+          "romSha256": "1F95D2F172B3D120B4EF290FEB1B7727DEE5655C7C17D6E06E3F85D688E40A22"
+        }
+      },
+      {
+        "sourceOrder": 16,
+        "sourceLine": 41,
+        "address": 345588,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 4
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1",
+          "romSha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1"
+        }
+      },
+      {
+        "sourceOrder": 17,
+        "sourceLine": 42,
+        "address": 345590,
+        "sourceMacro": "setBlocks",
+        "definitionId": "map-script-macro:setBlocks",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 15
+          },
+          {
+            "kind": "numeric",
+            "value": 19
+          },
+          {
+            "kind": "numeric",
+            "value": 3
+          },
+          {
+            "kind": "numeric",
+            "value": 1
+          },
+          {
+            "kind": "numeric",
+            "value": 12
+          },
+          {
+            "kind": "numeric",
+            "value": 19
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "F863FBCE1BB03368962497D02CA242127EF900F59D6D06409309CDA95DAC6EFD",
+          "romSha256": "F863FBCE1BB03368962497D02CA242127EF900F59D6D06409309CDA95DAC6EFD"
+        }
+      },
+      {
+        "sourceOrder": 18,
+        "sourceLine": 43,
+        "address": 345598,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 4
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1",
+          "romSha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1"
+        }
+      },
+      {
+        "sourceOrder": 19,
+        "sourceLine": 44,
+        "address": 345600,
+        "sourceMacro": "setBlocks",
+        "definitionId": "map-script-macro:setBlocks",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 15
+          },
+          {
+            "kind": "numeric",
+            "value": 18
+          },
+          {
+            "kind": "numeric",
+            "value": 3
+          },
+          {
+            "kind": "numeric",
+            "value": 1
+          },
+          {
+            "kind": "numeric",
+            "value": 12
+          },
+          {
+            "kind": "numeric",
+            "value": 18
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "45C7004ADE75EC8670A849DC87D5D8DEC5266926D473B5EBFBD52D1F31E48A5E",
+          "romSha256": "45C7004ADE75EC8670A849DC87D5D8DEC5266926D473B5EBFBD52D1F31E48A5E"
+        }
+      },
+      {
+        "sourceOrder": 20,
+        "sourceLine": 45,
+        "address": 345608,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 4
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1",
+          "romSha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1"
+        }
+      },
+      {
+        "sourceOrder": 21,
+        "sourceLine": 46,
+        "address": 345610,
+        "sourceMacro": "setBlocks",
+        "definitionId": "map-script-macro:setBlocks",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 15
+          },
+          {
+            "kind": "numeric",
+            "value": 17
+          },
+          {
+            "kind": "numeric",
+            "value": 3
+          },
+          {
+            "kind": "numeric",
+            "value": 1
+          },
+          {
+            "kind": "numeric",
+            "value": 12
+          },
+          {
+            "kind": "numeric",
+            "value": 17
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "9E4114971F3A3B8D0679A344B9C89EE4A29DBBB9125E033DE63C9297E324C743",
+          "romSha256": "9E4114971F3A3B8D0679A344B9C89EE4A29DBBB9125E033DE63C9297E324C743"
+        }
+      },
+      {
+        "sourceOrder": 22,
+        "sourceLine": 47,
+        "address": 345618,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 4
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1",
+          "romSha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1"
+        }
+      },
+      {
+        "sourceOrder": 23,
+        "sourceLine": 48,
+        "address": 345620,
+        "sourceMacro": "setBlocks",
+        "definitionId": "map-script-macro:setBlocks",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 15
+          },
+          {
+            "kind": "numeric",
+            "value": 16
+          },
+          {
+            "kind": "numeric",
+            "value": 3
+          },
+          {
+            "kind": "numeric",
+            "value": 1
+          },
+          {
+            "kind": "numeric",
+            "value": 12
+          },
+          {
+            "kind": "numeric",
+            "value": 16
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "1E67A58B05EE4A5663860B011D6D0897FBC5853046F1C15768ABDAF57F809A59",
+          "romSha256": "1E67A58B05EE4A5663860B011D6D0897FBC5853046F1C15768ABDAF57F809A59"
+        }
+      },
+      {
+        "sourceOrder": 24,
+        "sourceLine": 49,
+        "address": 345628,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 4
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1",
+          "romSha256": "057CBBFB4F5936E7B5E66856BF25D1FB46A0413143C0E7528BA137D2C2D024D1"
+        }
+      },
+      {
+        "sourceOrder": 25,
+        "sourceLine": 50,
+        "address": 345630,
+        "sourceMacro": "setBlocks",
+        "definitionId": "map-script-macro:setBlocks",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 15
+          },
+          {
+            "kind": "numeric",
+            "value": 15
+          },
+          {
+            "kind": "numeric",
+            "value": 3
+          },
+          {
+            "kind": "numeric",
+            "value": 1
+          },
+          {
+            "kind": "numeric",
+            "value": 12
+          },
+          {
+            "kind": "numeric",
+            "value": 15
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "5FB04B40C7170C87A5CB0256BB2CC296401751237D46034D122A4827F52BA2DA",
+          "romSha256": "5FB04B40C7170C87A5CB0256BB2CC296401751237D46034D122A4827F52BA2DA"
+        }
+      },
+      {
+        "sourceOrder": 26,
+        "sourceLine": 51,
+        "address": 345638,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 15
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "640D0036BC32511A83BA0360AD00E804393910EEA0C06551C113EC106766697D",
+          "romSha256": "640D0036BC32511A83BA0360AD00E804393910EEA0C06551C113EC106766697D"
+        }
+      },
+      {
+        "sourceOrder": 27,
+        "sourceLine": 52,
+        "address": 345640,
+        "sourceMacro": "setCamDest",
+        "definitionId": "map-script-macro:setCamDest",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 13
+          },
+          {
+            "kind": "numeric",
+            "value": 12
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 6,
+          "h1Sha256": "944A25FE43FAC92D2619257D95D7C9998F61E5CCF77A9161123D0BF5AD9AB4D0",
+          "romSha256": "944A25FE43FAC92D2619257D95D7C9998F61E5CCF77A9161123D0BF5AD9AB4D0"
+        }
+      },
+      {
+        "sourceOrder": 28,
+        "sourceLine": 53,
+        "address": 345646,
+        "sourceMacro": "setFacing",
+        "definitionId": "map-script-macro:setFacing",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_D",
+            "value": 159
+          },
+          {
+            "kind": "enum",
+            "symbol": "RIGHT",
+            "value": 0
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "8EDF493E1163896256E45AFC6C5C2AD534C21BC3B39610AA9309D7740649789E",
+          "romSha256": "8EDF493E1163896256E45AFC6C5C2AD534C21BC3B39610AA9309D7740649789E"
+        }
+      },
+      {
+        "sourceOrder": 29,
+        "sourceLine": 54,
+        "address": 345650,
+        "sourceMacro": "nextSingleText",
+        "definitionId": "map-script-macro:nextSingleText",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 0
+          },
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_D",
+            "value": 159
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "097E8B9BBB0F33CDE7B4406757FFA57DF58CA0C32A9860BF37B1B640C76B8E44",
+          "romSha256": "097E8B9BBB0F33CDE7B4406757FFA57DF58CA0C32A9860BF37B1B640C76B8E44"
+        }
+      },
+      {
+        "sourceOrder": 30,
+        "sourceLine": 55,
+        "address": 345654,
+        "sourceMacro": "setFacing",
+        "definitionId": "map-script-macro:setFacing",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_B",
+            "value": 31
+          },
+          {
+            "kind": "enum",
+            "symbol": "LEFT",
+            "value": 2
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "0175ADA69365D9031BEC79BA9FEA85EBFCC1BE3BC6D61E084E37A44606C47990",
+          "romSha256": "0175ADA69365D9031BEC79BA9FEA85EBFCC1BE3BC6D61E084E37A44606C47990"
+        }
+      },
+      {
+        "sourceOrder": 31,
+        "sourceLine": 56,
+        "address": 345658,
+        "sourceMacro": "nextSingleText",
+        "definitionId": "map-script-macro:nextSingleText",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 192
+          },
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_B",
+            "value": 31
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "26EA67F824B6D63502240C1EE705651888A1D2AA06CCDC88A9F5E4156F5D85D8",
+          "romSha256": "26EA67F824B6D63502240C1EE705651888A1D2AA06CCDC88A9F5E4156F5D85D8"
+        }
+      },
+      {
+        "sourceOrder": 32,
+        "sourceLine": 57,
+        "address": 345662,
+        "sourceMacro": "setFacing",
+        "definitionId": "map-script-macro:setFacing",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_B",
+            "value": 31
+          },
+          {
+            "kind": "enum",
+            "symbol": "DOWN",
+            "value": 3
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "EADB44AC881F0227319F9622EAF14FAC862ABD3769A718BCBE4ADE064EE9439F",
+          "romSha256": "EADB44AC881F0227319F9622EAF14FAC862ABD3769A718BCBE4ADE064EE9439F"
+        }
+      },
+      {
+        "sourceOrder": 33,
+        "sourceLine": 58,
+        "address": 345666,
+        "sourceMacro": "nextSingleText",
+        "definitionId": "map-script-macro:nextSingleText",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 192
+          },
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_B",
+            "value": 31
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "26EA67F824B6D63502240C1EE705651888A1D2AA06CCDC88A9F5E4156F5D85D8",
+          "romSha256": "26EA67F824B6D63502240C1EE705651888A1D2AA06CCDC88A9F5E4156F5D85D8"
+        }
+      },
+      {
+        "sourceOrder": 34,
+        "sourceLine": 59,
+        "address": 345670,
+        "sourceMacro": "setActscriptWait",
+        "definitionId": "map-script-macro:setActscriptWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_D",
+            "value": 159
+          },
+          {
+            "kind": "pointer",
+            "symbol": "eas_Jump",
+            "address": 286276
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "D2A7F7EC2169B60B53E3FCD9966724F0D4905E185D32036335291B9E93EC5C85",
+          "romSha256": "D2A7F7EC2169B60B53E3FCD9966724F0D4905E185D32036335291B9E93EC5C85"
+        }
+      },
+      {
+        "sourceOrder": 35,
+        "sourceLine": 60,
+        "address": 345678,
+        "sourceMacro": "setActscriptWait",
+        "definitionId": "map-script-macro:setActscriptWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_D",
+            "value": 159
+          },
+          {
+            "kind": "pointer",
+            "symbol": "eas_Jump",
+            "address": 286276
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "D2A7F7EC2169B60B53E3FCD9966724F0D4905E185D32036335291B9E93EC5C85",
+          "romSha256": "D2A7F7EC2169B60B53E3FCD9966724F0D4905E185D32036335291B9E93EC5C85"
+        }
+      },
+      {
+        "sourceOrder": 36,
+        "sourceLine": 61,
+        "address": 345686,
+        "sourceMacro": "nextSingleText",
+        "definitionId": "map-script-macro:nextSingleText",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 0
+          },
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_D",
+            "value": 159
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "097E8B9BBB0F33CDE7B4406757FFA57DF58CA0C32A9860BF37B1B640C76B8E44",
+          "romSha256": "097E8B9BBB0F33CDE7B4406757FFA57DF58CA0C32A9860BF37B1B640C76B8E44"
+        }
+      },
+      {
+        "sourceOrder": 37,
+        "sourceLine": 62,
+        "address": 345690,
+        "sourceMacro": "setFacing",
+        "definitionId": "map-script-macro:setFacing",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_A",
+            "value": 30
+          },
+          {
+            "kind": "enum",
+            "symbol": "RIGHT",
+            "value": 0
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "98F59E8CB2CFA5199EC512250DB34A3D27C0F9A626B8CBDAF81EDFA6D71D3228",
+          "romSha256": "98F59E8CB2CFA5199EC512250DB34A3D27C0F9A626B8CBDAF81EDFA6D71D3228"
+        }
+      },
+      {
+        "sourceOrder": 38,
+        "sourceLine": 63,
+        "address": 345694,
+        "sourceMacro": "nextSingleText",
+        "definitionId": "map-script-macro:nextSingleText",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 0
+          },
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_A",
+            "value": 30
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "560231689713A5933B6C8AC3E6B2F243730E49E1C6B0C610C41E8E8DAD26044C",
+          "romSha256": "560231689713A5933B6C8AC3E6B2F243730E49E1C6B0C610C41E8E8DAD26044C"
+        }
+      },
+      {
+        "sourceOrder": 39,
+        "sourceLine": 64,
+        "address": 345698,
+        "sourceMacro": "setFacing",
+        "definitionId": "map-script-macro:setFacing",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_A",
+            "value": 30
+          },
+          {
+            "kind": "enum",
+            "symbol": "DOWN",
+            "value": 3
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "56F32A865DACC598197DF10AD062A32F5DD5BCE420B0A764718FF04AD28589B4",
+          "romSha256": "56F32A865DACC598197DF10AD062A32F5DD5BCE420B0A764718FF04AD28589B4"
+        }
+      },
+      {
+        "sourceOrder": 40,
+        "sourceLine": 65,
+        "address": 345702,
+        "sourceMacro": "entityActions",
+        "definitionId": "entity-action-wrapper:entityActions",
+        "family": "entity-action-wrapper",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_B",
+            "value": 31
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "537F48F1CC4DB18F75C2C192BD251C5B58DE0D46BC700E774387A597E39CADFB",
+          "romSha256": "537F48F1CC4DB18F75C2C192BD251C5B58DE0D46BC700E774387A597E39CADFB"
+        }
+      },
+      {
+        "sourceOrder": 41,
+        "sourceLine": 66,
+        "address": 345706,
+        "sourceMacro": "moveUp",
+        "definitionId": "entity-action-payload-command:moveUp",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 1
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:65:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "9DCF97A184F32623D11A73124CEB99A5709B083721E878A16D78F596718BA7B2",
+          "romSha256": "9DCF97A184F32623D11A73124CEB99A5709B083721E878A16D78F596718BA7B2"
+        }
+      },
+      {
+        "sourceOrder": 42,
+        "sourceLine": 67,
+        "address": 345708,
+        "sourceMacro": "moveLeft",
+        "definitionId": "entity-action-payload-command:moveLeft",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 2
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:65:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "50CFF72C8E550546D661EC235431888FB2F9F7BADA40C17020D47F6CCC117AAE",
+          "romSha256": "50CFF72C8E550546D661EC235431888FB2F9F7BADA40C17020D47F6CCC117AAE"
+        }
+      },
+      {
+        "sourceOrder": 43,
+        "sourceLine": 68,
+        "address": 345710,
+        "sourceMacro": "endActions",
+        "definitionId": "entity-action-payload-command:endActions",
+        "family": "entity-action-payload-command",
+        "operands": [],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:65:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "AF472CF2977DBFCCC45851E12525627FC9ECC03F274F108A865B18A672F38BA6",
+          "romSha256": "AF472CF2977DBFCCC45851E12525627FC9ECC03F274F108A865B18A672F38BA6"
+        }
+      },
+      {
+        "sourceOrder": 44,
+        "sourceLine": 69,
+        "address": 345712,
+        "sourceMacro": "setCamDest",
+        "definitionId": "map-script-macro:setCamDest",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 11
+          },
+          {
+            "kind": "numeric",
+            "value": 12
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 6,
+          "h1Sha256": "BE7EA68DE0ABAE9B5FB82474A76348F4B2B2E23499271F0406A7C87ED2082E5D",
+          "romSha256": "BE7EA68DE0ABAE9B5FB82474A76348F4B2B2E23499271F0406A7C87ED2082E5D"
+        }
+      },
+      {
+        "sourceOrder": 45,
+        "sourceLine": 70,
+        "address": 345718,
+        "sourceMacro": "nextSingleText",
+        "definitionId": "map-script-macro:nextSingleText",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 192
+          },
+          {
+            "kind": "enum",
+            "symbol": "FOLLOWER_B",
+            "value": 31
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "26EA67F824B6D63502240C1EE705651888A1D2AA06CCDC88A9F5E4156F5D85D8",
+          "romSha256": "26EA67F824B6D63502240C1EE705651888A1D2AA06CCDC88A9F5E4156F5D85D8"
+        }
+      },
+      {
+        "sourceOrder": 46,
+        "sourceLine": 71,
+        "address": 345722,
+        "sourceMacro": "clearF",
+        "definitionId": "map-script-macro:clearF",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 74
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 6,
+          "h1Sha256": "F2C96C88AE6E049771BD6804DB1F77037FDD97BED6BE7231192D202D8D0DFEF6",
+          "romSha256": "F2C96C88AE6E049771BD6804DB1F77037FDD97BED6BE7231192D202D8D0DFEF6"
+        }
+      },
+      {
+        "sourceOrder": 47,
+        "sourceLine": 72,
+        "address": 345728,
+        "sourceMacro": "setCamDest",
+        "definitionId": "map-script-macro:setCamDest",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 11
+          },
+          {
+            "kind": "numeric",
+            "value": 13
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 6,
+          "h1Sha256": "9AEB98C972B9AAD655C7448823E98DBB9D9009A6E59A3CF36A0C347FFC27B8C9",
+          "romSha256": "9AEB98C972B9AAD655C7448823E98DBB9D9009A6E59A3CF36A0C347FFC27B8C9"
+        }
+      },
+      {
+        "sourceOrder": 48,
+        "sourceLine": 73,
+        "address": 345734,
+        "sourceMacro": "executeSubroutine",
+        "definitionId": "map-script-macro:executeSubroutine",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "pointer",
+            "symbol": "csub_54714",
+            "address": 345876
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 6,
+          "h1Sha256": "3BF06591B415AA9C1E64F44E2BB48BBEC3EFB845914240EFFD899A1B88C97C7C",
+          "romSha256": "A2334AFCF332CDD13F7FAE283783803F1DD5B6CCFDCD81019A83A075DC169432"
+        }
+      },
+      {
+        "sourceOrder": 49,
+        "sourceLine": 74,
+        "address": 345740,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 120
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "CAFBCCBA36C537016ABFE9A70723FF1D2CD158DA5B2599E960D12378F4D06F58",
+          "romSha256": "CAFBCCBA36C537016ABFE9A70723FF1D2CD158DA5B2599E960D12378F4D06F58"
+        }
+      },
+      {
+        "sourceOrder": 50,
+        "sourceLine": 75,
+        "address": 345742,
+        "sourceMacro": "loadMapFadeIn",
+        "definitionId": "map-script-macro:loadMapFadeIn",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "MAP_OVERWORLD_GRANSEAL_KINGDOM",
+            "value": 66
+          },
+          {
+            "kind": "numeric",
+            "value": 28
+          },
+          {
+            "kind": "numeric",
+            "value": 26
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "6BBD053EA34E320CEEB99815713AD86B3F464FB3D8C0CE3FE38952284E699381",
+          "romSha256": "6BBD053EA34E320CEEB99815713AD86B3F464FB3D8C0CE3FE38952284E699381"
+        }
+      },
+      {
+        "sourceOrder": 51,
+        "sourceLine": 76,
+        "address": 345750,
+        "sourceMacro": "loadMapEntities",
+        "definitionId": "map-script-macro:loadMapEntities",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "pointer",
+            "symbol": "ce_54736",
+            "address": 345910
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 6,
+          "h1Sha256": "E121064F41E5F2237E53ADA585FA1778A17A1294FCE3806B5E750732601268C9",
+          "romSha256": "7EECEBC4E9948B4EE80B33EFF2350830337C87BFAD11AED4AE7C48699A9C9BBD"
+        }
+      },
+      {
+        "sourceOrder": 52,
+        "sourceLine": 77,
+        "address": 345756,
+        "sourceMacro": "setActscriptWait",
+        "definitionId": "map-script-macro:setActscriptWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "ALLY_BOWIE",
+            "value": 0
+          },
+          {
+            "kind": "pointer",
+            "symbol": "eas_Init",
+            "address": 286926
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "3B0AAA6A73A4E185D603CDB39F2B52A16A08A8C25114D223B201D6191E433509",
+          "romSha256": "3B0AAA6A73A4E185D603CDB39F2B52A16A08A8C25114D223B201D6191E433509"
+        }
+      },
+      {
+        "sourceOrder": 53,
+        "sourceLine": 78,
+        "address": 345764,
+        "sourceMacro": "setSprite",
+        "definitionId": "map-script-macro:setSprite",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "ALLY_BOWIE",
+            "value": 0
+          },
+          {
+            "kind": "enum",
+            "symbol": "MAPSPRITE_SHIP",
+            "value": 211
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 6,
+          "h1Sha256": "57A84904E6649DB038F4E402AC35BB02F40CA23D3AD2A3DA4B5B2AE68B6B5E8C",
+          "romSha256": "57A84904E6649DB038F4E402AC35BB02F40CA23D3AD2A3DA4B5B2AE68B6B5E8C"
+        }
+      },
+      {
+        "sourceOrder": 54,
+        "sourceLine": 79,
+        "address": 345770,
+        "sourceMacro": "fadeInB",
+        "definitionId": "map-script-macro:fadeInB",
+        "family": "map-script-macro",
+        "operands": [],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "85224A5C0186B205A3E0A1AC0AC023BFB8CC6F4BF19C90BE88FC5F0C2316A9FA",
+          "romSha256": "85224A5C0186B205A3E0A1AC0AC023BFB8CC6F4BF19C90BE88FC5F0C2316A9FA"
+        }
+      },
+      {
+        "sourceOrder": 55,
+        "sourceLine": 80,
+        "address": 345772,
+        "sourceMacro": "customActscriptWait",
+        "definitionId": "entity-action-wrapper:customActscriptWait",
+        "family": "entity-action-wrapper",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "ALLY_BOWIE",
+            "value": 0
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "0D5BFB70E9A92D774C5A3B3E2E18097A0E19321247FB0E9D1A14BF3F599E2B5B",
+          "romSha256": "0D5BFB70E9A92D774C5A3B3E2E18097A0E19321247FB0E9D1A14BF3F599E2B5B"
+        }
+      },
+      {
+        "sourceOrder": 56,
+        "sourceLine": 81,
+        "address": 345776,
+        "sourceMacro": "ac_setSpeed",
+        "definitionId": "entity-action-command:ac_setSpeed",
+        "family": "entity-action-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 20
+          },
+          {
+            "kind": "numeric",
+            "value": 20
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:80:entity-action-command-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "7CBBB929933F368C09A1363A07B1BE8BB755FAF52D706B8B2912978148E2FDCC",
+          "romSha256": "7CBBB929933F368C09A1363A07B1BE8BB755FAF52D706B8B2912978148E2FDCC"
+        }
+      },
+      {
+        "sourceOrder": 57,
+        "sourceLine": 82,
+        "address": 345780,
+        "sourceMacro": "ac_jump",
+        "definitionId": "entity-action-command:ac_jump",
+        "family": "entity-action-command",
+        "operands": [
+          {
+            "kind": "pointer",
+            "symbol": "eas_Idle",
+            "address": 283132
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:80:entity-action-command-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 6,
+          "h1Sha256": "466784E9F26B5BD25186D5E5B9B751756B2C207319DEDB730E13525256E601FC",
+          "romSha256": "466784E9F26B5BD25186D5E5B9B751756B2C207319DEDB730E13525256E601FC"
+        }
+      },
+      {
+        "sourceOrder": 58,
+        "sourceLine": 83,
+        "address": 345786,
+        "sourceMacro": "ac_end",
+        "definitionId": "entity-action-command:ac_end",
+        "family": "entity-action-command",
+        "operands": [],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:80:entity-action-command-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "AF472CF2977DBFCCC45851E12525627FC9ECC03F274F108A865B18A672F38BA6",
+          "romSha256": "AF472CF2977DBFCCC45851E12525627FC9ECC03F274F108A865B18A672F38BA6"
+        }
+      },
+      {
+        "sourceOrder": 59,
+        "sourceLine": 84,
+        "address": 345788,
+        "sourceMacro": "entityActions",
+        "definitionId": "entity-action-wrapper:entityActions",
+        "family": "entity-action-wrapper",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "ALLY_BOWIE",
+            "value": 0
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "97EB2A26AD6F464A3BA0D1BC65D9814321B448CA044B8752298BDDC8EE1752BC",
+          "romSha256": "97EB2A26AD6F464A3BA0D1BC65D9814321B448CA044B8752298BDDC8EE1752BC"
+        }
+      },
+      {
+        "sourceOrder": 60,
+        "sourceLine": 85,
+        "address": 345792,
+        "sourceMacro": "moveRight",
+        "definitionId": "entity-action-payload-command:moveRight",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 1
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "B413F47D13EE2FE6C845B2EE141AF81DE858DF4EC549A58B7970BB96645BC8D2",
+          "romSha256": "B413F47D13EE2FE6C845B2EE141AF81DE858DF4EC549A58B7970BB96645BC8D2"
+        }
+      },
+      {
+        "sourceOrder": 61,
+        "sourceLine": 86,
+        "address": 345794,
+        "sourceMacro": "moveUp",
+        "definitionId": "entity-action-payload-command:moveUp",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 2
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "A12871FEE210FB8619291EAEA194581CBD2531E4B23759D225F6806923F63222",
+          "romSha256": "A12871FEE210FB8619291EAEA194581CBD2531E4B23759D225F6806923F63222"
+        }
+      },
+      {
+        "sourceOrder": 62,
+        "sourceLine": 87,
+        "address": 345796,
+        "sourceMacro": "moveRight",
+        "definitionId": "entity-action-payload-command:moveRight",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 1
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "B413F47D13EE2FE6C845B2EE141AF81DE858DF4EC549A58B7970BB96645BC8D2",
+          "romSha256": "B413F47D13EE2FE6C845B2EE141AF81DE858DF4EC549A58B7970BB96645BC8D2"
+        }
+      },
+      {
+        "sourceOrder": 63,
+        "sourceLine": 88,
+        "address": 345798,
+        "sourceMacro": "moveUp",
+        "definitionId": "entity-action-payload-command:moveUp",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 1
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "9DCF97A184F32623D11A73124CEB99A5709B083721E878A16D78F596718BA7B2",
+          "romSha256": "9DCF97A184F32623D11A73124CEB99A5709B083721E878A16D78F596718BA7B2"
+        }
+      },
+      {
+        "sourceOrder": 64,
+        "sourceLine": 89,
+        "address": 345800,
+        "sourceMacro": "moveRight",
+        "definitionId": "entity-action-payload-command:moveRight",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 1
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "B413F47D13EE2FE6C845B2EE141AF81DE858DF4EC549A58B7970BB96645BC8D2",
+          "romSha256": "B413F47D13EE2FE6C845B2EE141AF81DE858DF4EC549A58B7970BB96645BC8D2"
+        }
+      },
+      {
+        "sourceOrder": 65,
+        "sourceLine": 90,
+        "address": 345802,
+        "sourceMacro": "moveUp",
+        "definitionId": "entity-action-payload-command:moveUp",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 2
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "A12871FEE210FB8619291EAEA194581CBD2531E4B23759D225F6806923F63222",
+          "romSha256": "A12871FEE210FB8619291EAEA194581CBD2531E4B23759D225F6806923F63222"
+        }
+      },
+      {
+        "sourceOrder": 66,
+        "sourceLine": 91,
+        "address": 345804,
+        "sourceMacro": "moveRight",
+        "definitionId": "entity-action-payload-command:moveRight",
+        "family": "entity-action-payload-command",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 3
+          }
+        ],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "583C7DFB7B3055D99465544032A571E10A134B1B6F769422BBB71FD7FA167A5D",
+          "romSha256": "583C7DFB7B3055D99465544032A571E10A134B1B6F769422BBB71FD7FA167A5D"
+        }
+      },
+      {
+        "sourceOrder": 67,
+        "sourceLine": 92,
+        "address": 345806,
+        "sourceMacro": "endActions",
+        "definitionId": "entity-action-payload-command:endActions",
+        "family": "entity-action-payload-command",
+        "operands": [],
+        "payloadContextIds": [
+          "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload"
+        ],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "AF472CF2977DBFCCC45851E12525627FC9ECC03F274F108A865B18A672F38BA6",
+          "romSha256": "AF472CF2977DBFCCC45851E12525627FC9ECC03F274F108A865B18A672F38BA6"
+        }
+      },
+      {
+        "sourceOrder": 68,
+        "sourceLine": 93,
+        "address": 345808,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 60
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "D83FBD09B92561E6CFE8388628EA5DCBA001C19649CB9120B470BB663FF24FBD",
+          "romSha256": "D83FBD09B92561E6CFE8388628EA5DCBA001C19649CB9120B470BB663FF24FBD"
+        }
+      },
+      {
+        "sourceOrder": 69,
+        "sourceLine": 94,
+        "address": 345810,
+        "sourceMacro": "setQuake",
+        "definitionId": "map-script-macro:setQuake",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 3
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "A2582E90019731EB7452EF546738D4B28056DF1E62EEBB5EFD3E500D15131ED2",
+          "romSha256": "A2582E90019731EB7452EF546738D4B28056DF1E62EEBB5EFD3E500D15131ED2"
+        }
+      },
+      {
+        "sourceOrder": 70,
+        "sourceLine": 95,
+        "address": 345814,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 60
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "D83FBD09B92561E6CFE8388628EA5DCBA001C19649CB9120B470BB663FF24FBD",
+          "romSha256": "D83FBD09B92561E6CFE8388628EA5DCBA001C19649CB9120B470BB663FF24FBD"
+        }
+      },
+      {
+        "sourceOrder": 71,
+        "sourceLine": 96,
+        "address": 345816,
+        "sourceMacro": "setQuake",
+        "definitionId": "map-script-macro:setQuake",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 5
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "708DE22F64893056A6D6C74B75310916A52F182EFE14566FDF14D8607A5E724B",
+          "romSha256": "708DE22F64893056A6D6C74B75310916A52F182EFE14566FDF14D8607A5E724B"
+        }
+      },
+      {
+        "sourceOrder": 72,
+        "sourceLine": 97,
+        "address": 345820,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 30
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "B90B821C60D7ECD85194007FE6DF35D3D4C8CB19CB83F05AD277D3B0A624EFFC",
+          "romSha256": "B90B821C60D7ECD85194007FE6DF35D3D4C8CB19CB83F05AD277D3B0A624EFFC"
+        }
+      },
+      {
+        "sourceOrder": 73,
+        "sourceLine": 98,
+        "address": 345822,
+        "sourceMacro": "playSound",
+        "definitionId": "map-script-macro:playSound",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "SFX_INTRO_LIGHTNING",
+            "value": 118
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "66101F154F3EFEED90B0C5AC742CE08C6034A2CF7B9CE24F083C358B72610CC6",
+          "romSha256": "66101F154F3EFEED90B0C5AC742CE08C6034A2CF7B9CE24F083C358B72610CC6"
+        }
+      },
+      {
+        "sourceOrder": 74,
+        "sourceLine": 99,
+        "address": 345826,
+        "sourceMacro": "flashScreenWhite",
+        "definitionId": "map-script-macro:flashScreenWhite",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 30
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "F2CBA09680C15A1AE5BC6B82BDEE8FA5CB36B4E59E57A9D848A9E245EB7740C8",
+          "romSha256": "F2CBA09680C15A1AE5BC6B82BDEE8FA5CB36B4E59E57A9D848A9E245EB7740C8"
+        }
+      },
+      {
+        "sourceOrder": 75,
+        "sourceLine": 100,
+        "address": 345830,
+        "sourceMacro": "setBlocks",
+        "definitionId": "map-script-macro:setBlocks",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 0
+          },
+          {
+            "kind": "numeric",
+            "value": 49
+          },
+          {
+            "kind": "numeric",
+            "value": 10
+          },
+          {
+            "kind": "numeric",
+            "value": 15
+          },
+          {
+            "kind": "numeric",
+            "value": 28
+          },
+          {
+            "kind": "numeric",
+            "value": 23
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 8,
+          "h1Sha256": "EA5449EE716D248CE12B33CD28733D881CAA4666386DE31D3B0FD56F72405E68",
+          "romSha256": "EA5449EE716D248CE12B33CD28733D881CAA4666386DE31D3B0FD56F72405E68"
+        }
+      },
+      {
+        "sourceOrder": 76,
+        "sourceLine": 101,
+        "address": 345838,
+        "sourceMacro": "flashScreenWhite",
+        "definitionId": "map-script-macro:flashScreenWhite",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 30
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "F2CBA09680C15A1AE5BC6B82BDEE8FA5CB36B4E59E57A9D848A9E245EB7740C8",
+          "romSha256": "F2CBA09680C15A1AE5BC6B82BDEE8FA5CB36B4E59E57A9D848A9E245EB7740C8"
+        }
+      },
+      {
+        "sourceOrder": 77,
+        "sourceLine": 102,
+        "address": 345842,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 60
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "D83FBD09B92561E6CFE8388628EA5DCBA001C19649CB9120B470BB663FF24FBD",
+          "romSha256": "D83FBD09B92561E6CFE8388628EA5DCBA001C19649CB9120B470BB663FF24FBD"
+        }
+      },
+      {
+        "sourceOrder": 78,
+        "sourceLine": 103,
+        "address": 345844,
+        "sourceMacro": "setQuake",
+        "definitionId": "map-script-macro:setQuake",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 3
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "A2582E90019731EB7452EF546738D4B28056DF1E62EEBB5EFD3E500D15131ED2",
+          "romSha256": "A2582E90019731EB7452EF546738D4B28056DF1E62EEBB5EFD3E500D15131ED2"
+        }
+      },
+      {
+        "sourceOrder": 79,
+        "sourceLine": 104,
+        "address": 345848,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 60
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "D83FBD09B92561E6CFE8388628EA5DCBA001C19649CB9120B470BB663FF24FBD",
+          "romSha256": "D83FBD09B92561E6CFE8388628EA5DCBA001C19649CB9120B470BB663FF24FBD"
+        }
+      },
+      {
+        "sourceOrder": 80,
+        "sourceLine": 105,
+        "address": 345850,
+        "sourceMacro": "setQuake",
+        "definitionId": "map-script-macro:setQuake",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 1
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "726056C69819D59DE2127DA94AA5C1A679E329AE3A1E001DC450E25F5D04BF49",
+          "romSha256": "726056C69819D59DE2127DA94AA5C1A679E329AE3A1E001DC450E25F5D04BF49"
+        }
+      },
+      {
+        "sourceOrder": 81,
+        "sourceLine": 106,
+        "address": 345854,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 90
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "10BD4269B180515A7E4F4E582B2FE1BB38FD422210DACF1E19F4437675ABE613",
+          "romSha256": "10BD4269B180515A7E4F4E582B2FE1BB38FD422210DACF1E19F4437675ABE613"
+        }
+      },
+      {
+        "sourceOrder": 82,
+        "sourceLine": 107,
+        "address": 345856,
+        "sourceMacro": "setQuake",
+        "definitionId": "map-script-macro:setQuake",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 0
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 4,
+          "h1Sha256": "C4678D324AFBEE5FCDE0EE4142FCBF825542D1B04809E3A1365939D39E38076D",
+          "romSha256": "C4678D324AFBEE5FCDE0EE4142FCBF825542D1B04809E3A1365939D39E38076D"
+        }
+      },
+      {
+        "sourceOrder": 83,
+        "sourceLine": 108,
+        "address": 345860,
+        "sourceMacro": "csWait",
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 120
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "CAFBCCBA36C537016ABFE9A70723FF1D2CD158DA5B2599E960D12378F4D06F58",
+          "romSha256": "CAFBCCBA36C537016ABFE9A70723FF1D2CD158DA5B2599E960D12378F4D06F58"
+        }
+      },
+      {
+        "sourceOrder": 84,
+        "sourceLine": 109,
+        "address": 345862,
+        "sourceMacro": "warp",
+        "definitionId": "map-script-macro:warp",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "enum",
+            "symbol": "MAP_OVERWORLD_NEW_GRANSEAL_KINGDOM",
+            "value": 73
+          },
+          {
+            "kind": "numeric",
+            "value": 26
+          },
+          {
+            "kind": "numeric",
+            "value": 13
+          },
+          {
+            "kind": "enum",
+            "symbol": "RIGHT",
+            "value": 0
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 6,
+          "h1Sha256": "A6B66C26959E3DF542926592B0B57891C823E1ECF210817D8CBEB5582C23B275",
+          "romSha256": "A6B66C26959E3DF542926592B0B57891C823E1ECF210817D8CBEB5582C23B275"
+        }
+      },
+      {
+        "sourceOrder": 85,
+        "sourceLine": 110,
+        "address": 345868,
+        "sourceMacro": "clearF",
+        "definitionId": "map-script-macro:clearF",
+        "family": "map-script-macro",
+        "operands": [
+          {
+            "kind": "numeric",
+            "value": 640
+          }
+        ],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 6,
+          "h1Sha256": "F6BB0EBEBF5F3600460813E3E0262F3FE348E8A2C41F6B560C464D83496BC413",
+          "romSha256": "F6BB0EBEBF5F3600460813E3E0262F3FE348E8A2C41F6B560C464D83496BC413"
+        }
+      },
+      {
+        "sourceOrder": 86,
+        "sourceLine": 111,
+        "address": 345874,
+        "sourceMacro": "csc_end",
+        "definitionId": "stream-terminator:csc_end",
+        "family": "stream-terminator",
+        "operands": [],
+        "payloadContextIds": [],
+        "h1Rom": {
+          "encodedByteLength": 2,
+          "h1Sha256": "CA2FD00FA001190744C15C317643AB092E7048CE086A243E2BE9437C898DE1BB",
+          "romSha256": "CA2FD00FA001190744C15C317643AB092E7048CE086A243E2BE9437C898DE1BB"
+        }
+      }
+    ],
+    "commandDefinitions": [
+      {
+        "definitionId": "entity-action-payload-command:moveDown",
+        "family": "entity-action-payload-command",
+        "sourceMacro": "moveDown",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 523,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": null,
+          "opcode": null,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": null,
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "entity-action-payload-command:moveRight",
+        "family": "entity-action-payload-command",
+        "sourceMacro": "moveRight",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 508,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": null,
+          "opcode": null,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": null,
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "entity-action-payload-command:endActions",
+        "family": "entity-action-payload-command",
+        "sourceMacro": "endActions",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 588,
+        "formalParameterOrdinals": [],
+        "encoding": {
+          "catalog": null,
+          "opcode": null,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": null,
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:csWait",
+        "family": "map-script-macro",
+        "sourceMacro": "csWait",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 8,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": null,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": null,
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:setFacing",
+        "family": "map-script-macro",
+        "sourceMacro": "setFacing",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 237,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 35,
+          "encodedBytes": 4,
+          "aliasOf": null,
+          "handler": "csc23_setEntityFacing",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:setCamDest",
+        "family": "map-script-macro",
+        "sourceMacro": "setCamDest",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 334,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 50,
+          "encodedBytes": 6,
+          "aliasOf": null,
+          "handler": "csc32_setCameraDestInTiles",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:setBlocks",
+        "family": "map-script-macro",
+        "sourceMacro": "setBlocks",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 345,
+        "formalParameterOrdinals": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 52,
+          "encodedBytes": 8,
+          "aliasOf": null,
+          "handler": "csc34_setBlocks",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:nextSingleText",
+        "family": "map-script-macro",
+        "sourceMacro": "nextSingleText",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 13,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 0,
+          "encodedBytes": 4,
+          "aliasOf": null,
+          "handler": "csc00_displaySingleTextbox",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:setActscriptWait",
+        "family": "map-script-macro",
+        "sourceMacro": "setActscriptWait",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 160,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 21,
+          "encodedBytes": 8,
+          "aliasOf": "csc15",
+          "handler": "csc15_setEntityActscript",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "entity-action-wrapper:entityActions",
+        "family": "entity-action-wrapper",
+        "sourceMacro": "entityActions",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 304,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 45,
+          "encodedBytes": 4,
+          "aliasOf": "csc2D",
+          "handler": "csc2D_entityActionSequence",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "entity-action-payload-command:moveUp",
+        "family": "entity-action-payload-command",
+        "sourceMacro": "moveUp",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 513,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": null,
+          "opcode": null,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": null,
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "entity-action-payload-command:moveLeft",
+        "family": "entity-action-payload-command",
+        "sourceMacro": "moveLeft",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 518,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": null,
+          "opcode": null,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": null,
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:clearF",
+        "family": "map-script-macro",
+        "sourceMacro": "clearF",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 117,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 16,
+          "encodedBytes": 6,
+          "aliasOf": "csc10",
+          "handler": "csc10_toggleFlag",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:executeSubroutine",
+        "family": "map-script-macro",
+        "sourceMacro": "executeSubroutine",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 73,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 10,
+          "encodedBytes": 6,
+          "aliasOf": null,
+          "handler": "csc0A_executeSubroutine",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:loadMapFadeIn",
+        "family": "map-script-macro",
+        "sourceMacro": "loadMapFadeIn",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 369,
+        "formalParameterOrdinals": [
+          1,
+          2,
+          3
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 55,
+          "encodedBytes": 8,
+          "aliasOf": null,
+          "handler": "csc37_loadMapAndFadeIn",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:loadMapEntities",
+        "family": "map-script-macro",
+        "sourceMacro": "loadMapEntities",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 413,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 66,
+          "encodedBytes": 6,
+          "aliasOf": null,
+          "handler": "csc42_loadMapEntities",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:setSprite",
+        "family": "map-script-macro",
+        "sourceMacro": "setSprite",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 191,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 26,
+          "encodedBytes": 6,
+          "aliasOf": null,
+          "handler": "csc1A_setEntitySprite",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:fadeInB",
+        "family": "map-script-macro",
+        "sourceMacro": "fadeInB",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 376,
+        "formalParameterOrdinals": [],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 57,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": "csc39_fadeInFromBlack",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "entity-action-wrapper:customActscriptWait",
+        "family": "entity-action-wrapper",
+        "sourceMacro": "customActscriptWait",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 145,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 20,
+          "encodedBytes": 4,
+          "aliasOf": "csc14",
+          "handler": "csc14_setEntityActscriptManual",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "entity-action-command:ac_setSpeed",
+        "family": "entity-action-command",
+        "sourceMacro": "ac_setSpeed",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 724,
+        "formalParameterOrdinals": [
+          1,
+          2
+        ],
+        "encoding": {
+          "catalog": "entity-action-scripts",
+          "opcode": 16,
+          "encodedBytes": 4,
+          "aliasOf": null,
+          "handler": "esc10_setSpeed",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "entity-action-command:ac_jump",
+        "family": "entity-action-command",
+        "sourceMacro": "ac_jump",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 847,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": "entity-action-scripts",
+          "opcode": 52,
+          "encodedBytes": 6,
+          "aliasOf": null,
+          "handler": "esc34_jump",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "entity-action-command:ac_end",
+        "family": "entity-action-command",
+        "sourceMacro": "ac_end",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 635,
+        "formalParameterOrdinals": [],
+        "encoding": {
+          "catalog": "entity-action-scripts",
+          "opcode": 32896,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": null,
+          "isInlineTerminator": true
+        }
+      },
+      {
+        "definitionId": "map-script-macro:setQuake",
+        "family": "map-script-macro",
+        "sourceMacro": "setQuake",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 340,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 51,
+          "encodedBytes": 4,
+          "aliasOf": null,
+          "handler": "csc33_setQuakeAmount",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:playSound",
+        "family": "map-script-macro",
+        "sourceMacro": "playSound",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 47,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 5,
+          "encodedBytes": 4,
+          "aliasOf": null,
+          "handler": "csc05_playSound",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:flashScreenWhite",
+        "family": "map-script-macro",
+        "sourceMacro": "flashScreenWhite",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 408,
+        "formalParameterOrdinals": [
+          1
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 65,
+          "encodedBytes": 4,
+          "aliasOf": null,
+          "handler": "csc41_flashScreenWhite",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "map-script-macro:warp",
+        "family": "map-script-macro",
+        "sourceMacro": "warp",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 56,
+        "formalParameterOrdinals": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": 7,
+          "encodedBytes": 6,
+          "aliasOf": null,
+          "handler": "csc07_warp",
+          "isInlineTerminator": false
+        }
+      },
+      {
+        "definitionId": "stream-terminator:csc_end",
+        "family": "stream-terminator",
+        "sourceMacro": "csc_end",
+        "sourcePath": "sf2cutscenemacros.asm",
+        "definitionSourceLine": 595,
+        "formalParameterOrdinals": [],
+        "encoding": {
+          "catalog": "map-script-engine",
+          "opcode": null,
+          "encodedBytes": 2,
+          "aliasOf": null,
+          "handler": null,
+          "isInlineTerminator": false
+        }
+      }
+    ],
+    "payloadContexts": [
+      {
+        "contextId": "data/maps/entries/map44/mapsetups/scripts.asm:22:entity-action-payload",
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "openerSourceLine": 22,
+        "openerSourceMacro": "entityActionsWait",
+        "contextFamily": "entity-action-payload",
+        "parentContextId": null,
+        "terminatorSourceMacro": "endActions",
+        "terminatorSourceLine": 29,
+        "inheritedAtProgramEntry": true
+      },
+      {
+        "contextId": "data/maps/entries/map44/mapsetups/scripts.asm:65:entity-action-payload",
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "openerSourceLine": 65,
+        "openerSourceMacro": "entityActions",
+        "contextFamily": "entity-action-payload",
+        "parentContextId": null,
+        "terminatorSourceMacro": "endActions",
+        "terminatorSourceLine": 68,
+        "inheritedAtProgramEntry": false
+      },
+      {
+        "contextId": "data/maps/entries/map44/mapsetups/scripts.asm:80:entity-action-command-payload",
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "openerSourceLine": 80,
+        "openerSourceMacro": "customActscriptWait",
+        "contextFamily": "entity-action-command-payload",
+        "parentContextId": null,
+        "terminatorSourceMacro": "ac_end",
+        "terminatorSourceLine": 83,
+        "inheritedAtProgramEntry": false
+      },
+      {
+        "contextId": "data/maps/entries/map44/mapsetups/scripts.asm:84:entity-action-payload",
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "openerSourceLine": 84,
+        "openerSourceMacro": "entityActions",
+        "contextFamily": "entity-action-payload",
+        "parentContextId": null,
+        "terminatorSourceMacro": "endActions",
+        "terminatorSourceLine": 92,
+        "inheritedAtProgramEntry": false
+      }
+    ],
+    "pointerTargets": [
+      {
+        "symbol": "csub_54714",
+        "address": 345876,
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "sourceLine": 116
+      },
+      {
+        "symbol": "ce_54736",
+        "address": 345910,
+        "sourcePath": "data/maps/entries/map44/mapsetups/scripts.asm",
+        "sourceLine": 136
+      },
+      {
+        "symbol": "eas_Jump",
+        "address": 286276,
+        "sourcePath": "data/scripting/entity/eas_actions.asm",
+        "sourceLine": 4
+      },
+      {
+        "symbol": "eas_Init",
+        "address": 286926,
+        "sourcePath": "data/scripting/entity/eas_actions.asm",
+        "sourceLine": 168
+      },
+      {
+        "symbol": "eas_Idle",
+        "address": 283132,
+        "sourcePath": "data/scripting/entity/eas_main.asm",
+        "sourceLine": 301
+      }
+    ],
+    "retainedHandlers": {
+      "setCameraDestination": {
+        "handler": "csc32_setCameraDestInTiles",
+        "entryAddress": 288006,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 8
+      },
+      "dispatch": {
+        "handler": "rjt_cutsceneScriptCommands",
+        "entryAddress": 291200,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLine": 45
+      },
+      "setFacing": {
+        "handler": "csc23_setEntityFacing",
+        "entryAddress": 289824,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 1231
+      },
+      "setBlocks": {
+        "handler": "csc34_setBlocks",
+        "entryAddress": 288102,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 66
+      },
+      "nextSingleText": {
+        "handler": "csc00_displaySingleTextbox",
+        "entryAddress": 291402,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLine": 166
+      },
+      "setActscript": {
+        "handler": "csc15_setEntityActscript",
+        "entryAddress": 289144,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 801
+      },
+      "entityActions": {
+        "handler": "csc2D_entityActionSequence",
+        "entryAddress": 288738,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 502
+      },
+      "playSound": {
+        "handler": "csc05_playSound",
+        "entryAddress": 291704,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLine": 325
+      },
+      "executeSubroutine": {
+        "handler": "csc0A_executeSubroutine",
+        "entryAddress": 291850,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLine": 421
+      },
+      "warp": {
+        "handler": "csc07_warp",
+        "entryAddress": 291714,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLine": 347
+      },
+      "loadMapFadeIn": {
+        "handler": "csc37_loadMapAndFadeIn",
+        "entryAddress": 288154,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 113
+      },
+      "loadMapEntities": {
+        "handler": "csc42_loadMapEntities",
+        "entryAddress": 288394,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 296
+      },
+      "setSprite": {
+        "handler": "csc1A_setEntitySprite",
+        "entryAddress": 289352,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 929
+      },
+      "fadeIn": {
+        "handler": "csc39_fadeInFromBlack",
+        "entryAddress": 288260,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 165
+      },
+      "customActscript": {
+        "handler": "csc14_setEntityActscriptManual",
+        "entryAddress": 289104,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 774
+      },
+      "entityActionDispatcher": {
+        "handler": "rjt_EntityScriptCommands",
+        "entryAddress": 20252,
+        "sourcePath": "code/common/scripting/entity/entityscriptengine_2.asm",
+        "sourceLine": 58
+      },
+      "setQuake": {
+        "handler": "csc33_setQuakeAmount",
+        "entryAddress": 288030,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 24
+      },
+      "flashWhite": {
+        "handler": "csc41_flashScreenWhite",
+        "entryAddress": 288368,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_1.asm",
+        "sourceLine": 275
+      },
+      "clearFlag": {
+        "handler": "csc10_toggleFlag",
+        "entryAddress": 291962,
+        "sourcePath": "code/common/scripting/map/mapscriptengine_2.asm",
+        "sourceLine": 542
+      }
+    }
+  },
+  "unknowns": {
+    "naturalProgramReachability": "Unknown",
+    "callerEntryState": "Unknown",
+    "actualScriptExecution": "Unknown",
+    "runtimeEntityIdentityAndState": "Unknown",
+    "runtimeEntityMovementAndFacing": "Unknown",
+    "runtimeCameraProgression": "Unknown",
+    "runtimeMapBlockEffects": "Unknown",
+    "runtimeSubroutineEffects": "Unknown",
+    "runtimeMapAndEntityLoadEffects": "Unknown",
+    "runtimeWarpCompletionAndDestination": "Unknown",
+    "runtimeFlagValuesLifetimeAndPersistence": "Unknown",
+    "runtimeDialogueAudioAndPresentation": "Unknown",
+    "runtimeTimingAndCadence": "Unknown",
+    "postScriptControlAndEndpoint": "Unknown"
+  },
+  "unknownOrder": [
+    "naturalProgramReachability",
+    "callerEntryState",
+    "actualScriptExecution",
+    "runtimeEntityIdentityAndState",
+    "runtimeEntityMovementAndFacing",
+    "runtimeCameraProgression",
+    "runtimeMapBlockEffects",
+    "runtimeSubroutineEffects",
+    "runtimeMapAndEntityLoadEffects",
+    "runtimeWarpCompletionAndDestination",
+    "runtimeFlagValuesLifetimeAndPersistence",
+    "runtimeDialogueAudioAndPresentation",
+    "runtimeTimingAndCadence",
+    "postScriptControlAndEndpoint"
+  ]
+}

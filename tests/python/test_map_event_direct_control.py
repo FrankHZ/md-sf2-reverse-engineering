@@ -15,8 +15,11 @@ from sf2tool.h2.map_event_direct_control import (
     _direct_control_projection,
     _mother_corpus_projection,
 )
+from sf2tool.h2.map_event_scripted_transition_state import (
+    _remove_map_event_scripted_transition_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_tactical_base_quote_state import (
-    normalize_map_event_tactical_base_quote_state_later_owner_index as normalize_later_owner_index,
+    normalize_map_event_tactical_base_quote_state_later_owner_index as _normalize_later_owner_index,
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json as _load_json
@@ -42,6 +45,12 @@ _DIALOGUE_STATE_FIXTURE_ID = "sf2-map-event-dialogue-state-static-v1"
 _DIALOGUE_STATE_DOCUMENT = "docs/research/map-event-dialogue-state.md"
 _REQUEST_STATE_FIXTURE_ID = "sf2-map-event-request-state-static-v1"
 _REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
+
+
+def normalize_later_owner_index(index):
+    return _normalize_later_owner_index(
+        _remove_map_event_scripted_transition_state_later_owner_index_delta(index)
+    )
 
 
 def load_json(path):
@@ -630,16 +639,16 @@ def test_research_index_delta_is_exact_53_object_append_without_record_or_addres
         "Index": "manifests/research-index.json",
         "Records": 1627,
         "Confirmed": 1627,
-        "H2Fixtures": 97,
+        "H2Fixtures": 98,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 3047,
+        "AddressBindings": 3067,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1590,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 59,
+        "ResearchDocuments": 60,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

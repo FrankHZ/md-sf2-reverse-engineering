@@ -20,6 +20,9 @@ from sf2tool.h2.map_event_item_transactions import (
 from sf2tool.h2.map_event_random_battle_state import (
     _remove_map_event_random_battle_state_later_owner_index_delta,
 )
+from sf2tool.h2.map_event_scripted_transition_state import (
+    _remove_map_event_scripted_transition_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_tactical_base_quote_state import (
     _remove_map_event_tactical_base_quote_state_later_owner_index_delta,
 )
@@ -156,7 +159,9 @@ def _record(index: dict[str, object], record_id: str) -> dict[str, object]:
 
 def test_strict_later_owner_normalizer_reconstructs_only_the_exact_delta() -> None:
     index = _remove_map_event_random_battle_state_later_owner_index_delta(
-        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(load_json(INDEX))
+        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
+            _remove_map_event_scripted_transition_state_later_owner_index_delta(load_json(INDEX))
+        )
     )
     predecessor = _remove_map_event_combatant_state_later_owner_index_delta(index)
     assert len(index["records"]) - len(predecessor["records"]) == 1

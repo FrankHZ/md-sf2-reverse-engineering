@@ -84,6 +84,9 @@ from sf2tool.h2.map_event_request_consumption import (
     verify_map_event_request_consumption_contract,
 )
 from sf2tool.h2.map_event_request_state import verify_map_event_request_state_contract
+from sf2tool.h2.map_event_scripted_transition_state import (
+    verify_map_event_scripted_transition_state_contract,
+)
 from sf2tool.h2.map_event_tactical_base_quote_state import (
     verify_map_event_tactical_base_quote_state_contract,
 )
@@ -875,6 +878,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_event_tactical_base_quote_state)
     h2_map_event_tactical_base_quote_state.add_argument("--output-path", type=_path)
+    h2_map_event_scripted_transition_state = h2_commands.add_parser(
+        "map-event-scripted-transition-state",
+        help="verify the selected Map 21 static scripted-transition program projection",
+    )
+    _add_local_paths(h2_map_event_scripted_transition_state)
+    h2_map_event_scripted_transition_state.add_argument("--output-path", type=_path)
     h2_map_descriptions = h2_commands.add_parser(
         "map-descriptions", help="decode area-description wrappers and payload tables against ROM"
     )
@@ -1970,6 +1979,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-event-tactical-base-quote-state":
         print_record(
             verify_map_event_tactical_base_quote_state_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-event-scripted-transition-state":
+        print_record(
+            verify_map_event_scripted_transition_state_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,
