@@ -85,6 +85,7 @@ H2_COMMAND_GROUPS = {
         "map-event-request-consumption",
         "map-event-direct-state",
         "map-event-flag-lifecycle-state",
+        "map-event-cross-program-flag-state",
         "map-event-interaction-state",
         "map-event-item-transactions",
         "map-event-combatant-state",

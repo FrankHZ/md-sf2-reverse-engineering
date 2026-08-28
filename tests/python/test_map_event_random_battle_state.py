@@ -11,6 +11,9 @@ import pytest
 
 import sf2tool.h2.map_event_random_battle_state as random_battle_module
 from sf2tool.h2.map_event_combatant_state import canonical_json_bytes
+from sf2tool.h2.map_event_cross_program_flag_state import (
+    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_flag_lifecycle_state import (
     _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
 )
@@ -31,6 +34,13 @@ from sf2tool.h2.map_event_tactical_base_quote_state import (
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
+
+
+def _remove_cross_program_flag_lifecycle_deltas(index):
+    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(index)
+    )
+
 
 ROM = repo_path("local/roms/sf2-us.bin")
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
@@ -244,7 +254,7 @@ def test_schema_rejects_unknown_root_and_nested_fields() -> None:
 def test_later_owner_index_delta_is_exact() -> None:
     index = _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
         _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_map_event_flag_lifecycle_state_later_owner_index_delta(load_json(_INDEX))
+            _remove_cross_program_flag_lifecycle_deltas(load_json(_INDEX))
         )
     )
     predecessor = _remove_map_event_random_battle_state_later_owner_index_delta(index)
@@ -299,7 +309,7 @@ def test_later_owner_normalizer_rejects_each_address_delta_mutation(
     altered = deepcopy(
         _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
             _remove_map_event_scripted_transition_state_later_owner_index_delta(
-                _remove_map_event_flag_lifecycle_state_later_owner_index_delta(load_json(_INDEX))
+                _remove_cross_program_flag_lifecycle_deltas(load_json(_INDEX))
             )
         )
     )
@@ -332,7 +342,7 @@ def test_later_owner_normalizer_rejects_each_binding_delta_mutation(
     altered = deepcopy(
         _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
             _remove_map_event_scripted_transition_state_later_owner_index_delta(
-                _remove_map_event_flag_lifecycle_state_later_owner_index_delta(load_json(_INDEX))
+                _remove_cross_program_flag_lifecycle_deltas(load_json(_INDEX))
             )
         )
     )
@@ -360,7 +370,7 @@ def test_later_owner_normalizer_rejects_each_binding_delta_mutation(
 def test_later_owner_normalizer_rejects_missing_exact_delta() -> None:
     index = _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
         _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_map_event_flag_lifecycle_state_later_owner_index_delta(load_json(_INDEX))
+            _remove_cross_program_flag_lifecycle_deltas(load_json(_INDEX))
         )
     )
     altered = deepcopy(index)

@@ -5,6 +5,9 @@ from copy import deepcopy
 import pytest
 
 import sf2tool.h2.field_menu_control as field_menu
+from sf2tool.h2.map_event_cross_program_flag_state import (
+    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_flag_lifecycle_state import (
     _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
 )
@@ -17,6 +20,13 @@ from sf2tool.h2.map_event_tactical_base_quote_state import (
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
 from sf2tool.paths import repo_path
+
+
+def _remove_cross_program_flag_lifecycle_deltas(index):
+    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(index)
+    )
+
 
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
 FIXTURE = field_menu.FIXTURE
@@ -32,7 +42,7 @@ _REQUEST_CONSUMPTION_FIXTURE = (
 def normalize_later_owner_index(index):
     return _normalize_later_owner_index(
         _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_map_event_flag_lifecycle_state_later_owner_index_delta(index)
+            _remove_cross_program_flag_lifecycle_deltas(index)
         )
     )
 

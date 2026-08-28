@@ -18,11 +18,8 @@ from sf2tool.h2.map3_battle01_turn_finalization import (
 from sf2tool.h2.map3_battle01_turn_finalization import (
     build_map3_battle01_turn_finalization_static,
 )
-from sf2tool.h2.map_event_flag_lifecycle_state import (
-    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_scripted_transition_state import (
-    normalize_map_event_scripted_transition_state_later_owner_index,
+from sf2tool.h2.map_event_cross_program_flag_state import (
+    normalize_map_event_cross_program_flag_state_later_owner_index,
 )
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
@@ -1130,12 +1127,7 @@ def _normalize_request_consumption_later_owner_index(index: dict[str, Any]) -> d
     _remove_request_consumption_later_owner_index_delta(
         deepcopy(index), require_document_terminal=False
     )
-    flag_lifecycle_predecessor = _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
-        index
-    )
-    normalized = normalize_map_event_scripted_transition_state_later_owner_index(
-        flag_lifecycle_predecessor
-    )
+    normalized = normalize_map_event_cross_program_flag_state_later_owner_index(index)
     return _remove_request_consumption_later_owner_index_delta(
         normalized, require_document_terminal=True
     )

@@ -9,6 +9,9 @@ from shutil import copy2
 import pytest
 
 import sf2tool.h2.map_event_scripted_transition_state as transition_module
+from sf2tool.h2.map_event_cross_program_flag_state import (
+    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_flag_lifecycle_state import (
     _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
 )
@@ -28,6 +31,13 @@ from sf2tool.h2.map_event_scripted_transition_state import (
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
+
+
+def _remove_cross_program_flag_lifecycle_deltas(index):
+    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(index)
+    )
+
 
 ROM = repo_path("local/roms/sf2-us.bin")
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
@@ -223,7 +233,7 @@ def test_id_and_fixture_path_are_stable() -> None:
 
 
 def test_latest_index_normalizer_removes_only_this_exact_delta() -> None:
-    current = _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
+    current = _remove_cross_program_flag_lifecycle_deltas(
         load_json(RESEARCH_INDEX)
     )
     predecessor = _remove_map_event_scripted_transition_state_later_owner_index_delta(current)

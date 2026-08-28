@@ -210,9 +210,57 @@ def test_index_delta_has_exact_eleven_objects_eighteen_addresses_and_twenty_nine
 def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
     index = json.loads((ROOT / "manifests/research-index.json").read_text(encoding="utf-8"))
     original = copy.deepcopy(index)
+    cross_program_fixture_id = "sf2-map-event-cross-program-flag-state-static-v1"
+    cross_program_document = "docs/research/map-event-cross-program-flag-state.md"
+    cross_program_bindings = {
+        "map.setup.entity-event": "crossProgramFlagState.categoryRoles.entityEvents",
+        "map.setup.zone-event": "crossProgramFlagState.categoryRoles.zoneEvents",
+        "map.setup.item-event": "crossProgramFlagState.categoryRoles.itemEvents",
+        "tech.interrupts.trap-flags": "crossProgramFlagState.serviceJoin.trapEntryAddress",
+    }
+
+    def record_for(value: dict[str, object], record_id: str) -> dict[str, object]:
+        return next(record for record in value["records"] if record["id"] == record_id)
+
+    def cross_program_evidence(record: dict[str, object]) -> dict[str, object]:
+        return next(
+            item
+            for item in record["evidence"]
+            if item["fixtureId"] == cross_program_fixture_id
+        )
+
+    for record_id, fixture_field in cross_program_bindings.items():
+        record = record_for(original, record_id)
+        assert cross_program_evidence(record) == {
+            "level": "H2",
+            "fixture": "tests/fixtures/h2/map-event-cross-program-flag-state-static-v1.json",
+            "fixtureId": cross_program_fixture_id,
+            "verifier": "src/sf2tool/h2/map_event_cross_program_flag_state.py",
+            "bindings": [{"addressId": "entry", "fixtureField": fixture_field}],
+        }
+        assert record["documents"].count(cross_program_document) == 1
+        assert record["documents"][-1] == cross_program_document
+
+    after_cross_program = (
+        victory_return.normalize_map_event_cross_program_flag_state_later_owner_index(
+            original
+        )
+    )
+    assert all(
+        evidence["fixtureId"] != cross_program_fixture_id
+        for record in after_cross_program["records"]
+        for evidence in record["evidence"]
+    )
+    assert all(
+        cross_program_document not in record["documents"]
+        for record in after_cross_program["records"]
+    )
     normalized = _normalize_later_owner_index(index)
     assert index == original
     assert normalized != index
+    assert normalized == victory_return._remove_request_consumption_later_owner_index_delta(
+        after_cross_program, require_document_terminal=True
+    )
     assert len(victory_return._owner_evidence(normalized)) == 11
     assert all(
         evidence["fixtureId"] != "sf2-map-event-interaction-state-static-v1"
@@ -225,15 +273,31 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
         for evidence in record["evidence"]
     )
 
-    def record_for(value: dict[str, object], record_id: str) -> dict[str, object]:
-        return next(record for record in value["records"] if record["id"] == record_id)
-
     def request_evidence(record: dict[str, object]) -> dict[str, object]:
         return next(
             item
             for item in record["evidence"]
             if item["fixtureId"] == "sf2-map-event-request-consumption-static-v1"
         )
+
+    malformed = copy.deepcopy(original)
+    cross_program_evidence(record_for(malformed, "map.setup.entity-event"))["verifier"] = "wrong"
+    with pytest.raises(ValueError, match="cross-program flag state index delta drift"):
+        _normalize_later_owner_index(malformed)
+
+    malformed = copy.deepcopy(original)
+    record_for(malformed, "map.setup.zone-event")["evidence"].remove(
+        cross_program_evidence(record_for(malformed, "map.setup.zone-event"))
+    )
+    with pytest.raises(ValueError, match="cross-program flag state index delta drift"):
+        _normalize_later_owner_index(malformed)
+
+    malformed = copy.deepcopy(original)
+    record_for(malformed, "map.setup.item-event")["evidence"].append(
+        copy.deepcopy(cross_program_evidence(record_for(original, "map.setup.item-event")))
+    )
+    with pytest.raises(ValueError, match="cross-program flag state index delta drift"):
+        _normalize_later_owner_index(malformed)
 
     malformed = copy.deepcopy(original)
     request_evidence(record_for(malformed, "menus.shop-actions"))["verifier"] = "wrong"

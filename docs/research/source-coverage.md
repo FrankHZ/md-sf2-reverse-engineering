@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-08-26
+- Evidence date: 2026-08-28
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 99 | Deterministic source/ROM contracts, often covering complete corpora; the accepted-main prose value 96 lagged the executable 97-fixture/3,047-binding baseline before this slice |
+| H2 fixture files | 100 | Deterministic source/ROM contracts, often covering complete corpora; the accepted-main prose value 96 lagged the executable 97-fixture/3,047-binding baseline before this slice |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 3,071 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 3,075 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -144,6 +144,20 @@ selected bodies retain 67 source files, 1,177 contextual/1,137 physical operatio
 4,216 contextual/4,066 physical bytes, and 79 merged intervals; all branch, macro-emission,
 source/H1/ROM, and contextual-alias guards run before fixture comparison. Its twelve runtime questions
 remain **Unknown** and it adds no H3 rail.
+
+The `sf2-map-event-cross-program-flag-state-static-v1` rail retains the complete direct-flag source
+surface while excluding all same-program pairs through the accepted 131-relation lifecycle join. Its
+91 assigned source identities are 90 map-event ASM files plus `sf2macros.asm`; 493 contextual/490
+physical direct accesses split into 316/314 reads, 169/168 sets, and 8/8 clears. Every read retains
+its immediate consumer, producing 809 contextual/804 physical anchor PCs and 2,610 contextual/2,592
+physical bytes. It derives only 720 unique `(flag, writer program, distinct reader program)` static
+candidates across 49 flags: entity→entity 374, entity→item 2, entity→zone 123, item→entity 2,
+item→zone 1, zone→entity 182, and zone→zone 36; item→item and zone→item are absent. Its 195 positive
+programs comprise 190 readers and 135 writers. The 151 numeric flags split into 128 read, 114 written,
+91 overlaps, 37 read-only, and 23 write-only; 42 overlaps are same-program-only, 40 are both same/
+cross, and nine are cross-only. It is H2-only: reachability, entry state, branch and mutation results,
+producer/consumer order, intervening mutations, selection, persistence, callee effects, and
+dialogue/audio/presentation/story meaning remain one twelve-question **Unknown** queue.
 
 ## Subsystem Boundary
 

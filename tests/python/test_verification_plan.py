@@ -132,7 +132,7 @@ def _expected_artifact_commands(
 def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
     assert set(H2_COMMAND_PARTITIONS) == _registered_commands("h2_commands")
     assert set(COMMAND_LAUNCHES) == _registered_commands("h3_commands")
-    assert len(H2_COMMAND_PARTITIONS) == 93
+    assert len(H2_COMMAND_PARTITIONS) == 94
     assert len(COMMAND_LAUNCHES) == 74
     assert len({partition.partition_id for partition in PARTITIONS}) == len(PARTITIONS)
     assert len(H2_PARTITION_IDS) == 6
@@ -296,6 +296,23 @@ def test_map_event_flag_lifecycle_state_artifacts_select_only_its_command() -> N
     assert _partition_ids(plan) == {"public-core", "h2-map-scripting"}
     assert _partition(plan, "h2-map-scripting")["commands"] == [
         "uv run sf2 h2 map-event-flag-lifecycle-state"
+    ]
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_map_event_cross_program_flag_state_artifacts_select_only_its_command() -> None:
+    plan = plan_paths(
+        (
+            "src/sf2tool/h2/map_event_cross_program_flag_state.py",
+            "schemas/h2/map-event-cross-program-flag-state-static-fixture.schema.json",
+            "tests/fixtures/h2/map-event-cross-program-flag-state-static-v1.json",
+        ),
+        root=ROOT,
+    )
+
+    assert _partition_ids(plan) == {"public-core", "h2-map-scripting"}
+    assert _partition(plan, "h2-map-scripting")["commands"] == [
+        "uv run sf2 h2 map-event-cross-program-flag-state"
     ]
     assert plan["unclassifiedPaths"] == []
 

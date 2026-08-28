@@ -8,6 +8,9 @@ from pathlib import Path
 import pytest
 
 from sf2tool.cli import build_parser
+from sf2tool.h2.map_event_cross_program_flag_state import (
+    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_direct_state import (
     _direct_access_positions,
     _direct_state_projection,
@@ -25,6 +28,13 @@ from sf2tool.h2.map_event_tactical_base_quote_state import (
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
+
+
+def _remove_cross_program_flag_lifecycle_deltas(index):
+    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(index)
+    )
+
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "tests/fixtures/h2/map-event-direct-state-static-v1.json"
@@ -45,7 +55,7 @@ _REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
 def normalize_later_owner_index(index):
     return _normalize_later_owner_index(
         _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_map_event_flag_lifecycle_state_later_owner_index_delta(index)
+            _remove_cross_program_flag_lifecycle_deltas(index)
         )
     )
 

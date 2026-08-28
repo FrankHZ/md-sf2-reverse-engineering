@@ -14,6 +14,9 @@ from sf2tool.h2.map_event_combatant_state import (
     build_map_event_combatant_state_contract,
     normalize_map_event_combatant_state_later_owner_index,
 )
+from sf2tool.h2.map_event_cross_program_flag_state import (
+    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_flag_lifecycle_state import (
     _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
 )
@@ -31,6 +34,13 @@ from sf2tool.h2.map_event_tactical_base_quote_state import (
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
+
+
+def _remove_cross_program_flag_lifecycle_deltas(index):
+    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(index)
+    )
+
 
 ROOT = Path(__file__).resolve().parents[2]
 ROM = ROOT / "local/roms/sf2-us.bin"
@@ -164,7 +174,7 @@ def test_strict_later_owner_normalizer_reconstructs_only_the_exact_delta() -> No
     index = _remove_map_event_random_battle_state_later_owner_index_delta(
         _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
             _remove_map_event_scripted_transition_state_later_owner_index_delta(
-                _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
+                _remove_cross_program_flag_lifecycle_deltas(
                     load_json(INDEX)
                 )
             )
