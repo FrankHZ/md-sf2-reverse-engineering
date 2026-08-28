@@ -18,8 +18,8 @@ from sf2tool.h2.map_event_direct_handoff import (
     _mother_corpus_projection,
     _validate_contract_order,
 )
-from sf2tool.h2.map_event_random_battle_state import (
-    normalize_map_event_random_battle_state_later_owner_index as normalize_later_owner_index,
+from sf2tool.h2.map_event_tactical_base_quote_state import (
+    normalize_map_event_tactical_base_quote_state_later_owner_index as normalize_later_owner_index,
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json as _load_json
@@ -48,6 +48,8 @@ _REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
 def load_json(path):
     value = _load_json(path)
     return normalize_later_owner_index(value) if path == INDEX else value
+
+
 _DIALOGUE_STATE_OWNER_IDS = {
     "map.data.ms-map3-flag506-entityevents",
     "map.data.ms-map3-zoneevents",
@@ -92,8 +94,7 @@ def _without_request_state(index):
                     {
                         "addressId": "entry",
                         "fixtureField": (
-                            "eventRequestState.sourceFiles."
-                            f"{record['symbol']}.tableEntryAddress"
+                            f"eventRequestState.sourceFiles.{record['symbol']}.tableEntryAddress"
                         ),
                     }
                 ],
@@ -133,6 +134,7 @@ def _without_request_consumption(index: dict[str, Any]) -> dict[str, Any]:
         ]
     return index
 
+
 def _without_dialogue_state(index: dict[str, Any]) -> dict[str, Any]:
     normalized = deepcopy(index)
     removed: set[str] = set()
@@ -153,8 +155,7 @@ def _without_dialogue_state(index: dict[str, Any]) -> dict[str, Any]:
                     {
                         "addressId": "entry",
                         "fixtureField": (
-                            "eventDialogueState.sourceFiles."
-                            f"{record['symbol']}.tableEntryAddress"
+                            f"eventDialogueState.sourceFiles.{record['symbol']}.tableEntryAddress"
                         ),
                     }
                 ],
@@ -752,16 +753,16 @@ def test_research_index_delta_is_exact_53_binding_append_without_record_or_addre
         "Index": "manifests/research-index.json",
         "Records": 1627,
         "Confirmed": 1627,
-        "H2Fixtures": 96,
+        "H2Fixtures": 97,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 3035,
+        "AddressBindings": 3047,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1590,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 58,
+        "ResearchDocuments": 59,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

@@ -84,6 +84,9 @@ from sf2tool.h2.map_event_request_consumption import (
     verify_map_event_request_consumption_contract,
 )
 from sf2tool.h2.map_event_request_state import verify_map_event_request_state_contract
+from sf2tool.h2.map_event_tactical_base_quote_state import (
+    verify_map_event_tactical_base_quote_state_contract,
+)
 from sf2tool.h2.map_events import verify_map_events_contract
 from sf2tool.h2.map_import import verify_canonical_map_import
 from sf2tool.h2.map_init import verify_map_init_contract
@@ -866,6 +869,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_event_random_battle_state)
     h2_map_event_random_battle_state.add_argument("--output-path", type=_path)
+    h2_map_event_tactical_base_quote_state = h2_commands.add_parser(
+        "map-event-tactical-base-quote-state",
+        help="verify static DisplayTacticalBaseQuote callers and source branch shape",
+    )
+    _add_local_paths(h2_map_event_tactical_base_quote_state)
+    h2_map_event_tactical_base_quote_state.add_argument("--output-path", type=_path)
     h2_map_descriptions = h2_commands.add_parser(
         "map-descriptions", help="decode area-description wrappers and payload tables against ROM"
     )
@@ -1953,6 +1962,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-event-random-battle-state":
         print_record(
             verify_map_event_random_battle_state_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-event-tactical-base-quote-state":
+        print_record(
+            verify_map_event_tactical_base_quote_state_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

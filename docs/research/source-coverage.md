@@ -119,6 +119,13 @@ completion-flag and step/RNG gates, ordered request writes, and seven retained a
 It is H2-only: selected callers, inputs/results, presentation, downstream battle admission, and
 persistence remain a single grouped 14-question Unknown queue.
 
+The `sf2-map-event-tactical-base-quote-state-static-v1` rail separately closes 54 positive/860 zero
+map-event caller contexts: 25 Map 37 and 29 Map 46 entity-event tail jumps, with the exact 29-selector
+source enum domain. It guards the 16-instruction `$4790E..$47948` callee and its alias-aware
+portrait-name/current-HP/flag/text service boundary: 124 owned source/H1 rows / 490 bytes plus nine
+joins, 133 anchors total. Its 59 quote-line IDs are static source operands; reachability, runtime HP
+and flag state, selected text, service completion, presentation, and persistence remain Unknown.
+
 ## Subsystem Boundary
 
 The current evidence is deep but narrow:

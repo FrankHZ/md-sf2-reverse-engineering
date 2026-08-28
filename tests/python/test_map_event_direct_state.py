@@ -13,8 +13,8 @@ from sf2tool.h2.map_event_direct_state import (
     _direct_state_projection,
     _mother_corpus_projection,
 )
-from sf2tool.h2.map_event_random_battle_state import (
-    normalize_map_event_random_battle_state_later_owner_index as normalize_later_owner_index,
+from sf2tool.h2.map_event_tactical_base_quote_state import (
+    normalize_map_event_tactical_base_quote_state_later_owner_index as normalize_later_owner_index,
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json as _load_json

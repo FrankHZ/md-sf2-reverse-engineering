@@ -32,6 +32,9 @@ from sf2tool.h2.map_event_item_transactions import (
 from sf2tool.h2.map_event_random_battle_state import (
     _remove_map_event_random_battle_state_later_owner_index_delta,
 )
+from sf2tool.h2.map_event_tactical_base_quote_state import (
+    _remove_map_event_tactical_base_quote_state_later_owner_index_delta,
+)
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
 
@@ -42,18 +45,25 @@ INDEX = ROOT / "manifests/research-index.json"
 
 
 def load_json(path: Path) -> dict[str, object]:
-    value = _load_json(path)
-    return (
-        _remove_map_event_combatant_state_later_owner_index_delta(
-            _remove_map_event_random_battle_state_later_owner_index_delta(value)
-        )
-        if path == INDEX
-        else value
-    )
+    return _load_json(path)
 
 
 def _fixture() -> dict[str, object]:
     return load_json(FIXTURE)
+
+
+def _interaction_predecessor_index(index: dict[str, object]) -> dict[str, object]:
+    return _remove_map_event_item_transactions_index_delta(
+        _remove_map_event_combatant_state_later_owner_index_delta(
+            _remove_map_event_random_battle_state_later_owner_index_delta(
+                _remove_map_event_tactical_base_quote_state_later_owner_index_delta(index)
+            )
+        )
+    )
+
+
+def _normalize_interaction_predecessor_index(index: dict[str, object]) -> dict[str, object]:
+    return normalize_interaction_state_later_owner_index(_interaction_predecessor_index(index))
 
 
 def _mutable_inputs(tmp_path: Path) -> tuple[Path, Path]:
@@ -517,8 +527,8 @@ def test_index_binds_the_actual_field_menu_item_call_not_legacy_observation() ->
 
 def test_later_owner_normalizer_reconstructs_the_exact_closed_index_delta() -> None:
     index = load_json(INDEX)
-    prior_index = _remove_map_event_item_transactions_index_delta(index)
-    normalized = normalize_interaction_state_later_owner_index(prior_index)
+    prior_index = _interaction_predecessor_index(index)
+    normalized = _normalize_interaction_predecessor_index(index)
 
     candidate_records = {
         record["id"]: record
@@ -537,9 +547,10 @@ def test_later_owner_normalizer_reconstructs_the_exact_closed_index_delta() -> N
         == 17
     )
     assert index != normalized
-    assert {record["id"] for record in index["records"]} - {"stats.combatant-getters"} == set(
-        normalized_records
-    )
+    assert {record["id"] for record in index["records"]} - {
+        "map.setup.check-random-battle",
+        "stats.combatant-getters",
+    } == set(normalized_records)
     assert (
         sum(
             len(record["addresses"]) - len(normalized_records[record_id]["addresses"])

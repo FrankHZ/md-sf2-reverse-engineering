@@ -5,8 +5,8 @@ from copy import deepcopy
 import pytest
 
 import sf2tool.h2.field_menu_control as field_menu
-from sf2tool.h2.map_event_random_battle_state import (
-    normalize_map_event_random_battle_state_later_owner_index as normalize_later_owner_index,
+from sf2tool.h2.map_event_tactical_base_quote_state import (
+    normalize_map_event_tactical_base_quote_state_later_owner_index as normalize_later_owner_index,
 )
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json

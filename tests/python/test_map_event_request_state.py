@@ -16,9 +16,6 @@ import pytest
 import sf2tool.h2.map_event_request_state as request_state_module
 from sf2tool.cli import build_parser
 from sf2tool.h2.map_event_direct_state import FIXTURE as DIRECT_STATE_FIXTURE
-from sf2tool.h2.map_event_random_battle_state import (
-    normalize_map_event_random_battle_state_later_owner_index as normalize_later_owner_index,
-)
 from sf2tool.h2.map_event_request_state import (
     FIXTURE,
     ID,
@@ -27,6 +24,9 @@ from sf2tool.h2.map_event_request_state import (
     _reaching_definitions,
     _selected_programs,
     _selected_write_rows,
+)
+from sf2tool.h2.map_event_tactical_base_quote_state import (
+    normalize_map_event_tactical_base_quote_state_later_owner_index as normalize_later_owner_index,
 )
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
@@ -45,6 +45,8 @@ VERIFIER = "src/sf2tool/h2/map_event_request_state.py"
 def load_json(path):
     value = _load_json(path)
     return normalize_later_owner_index(value) if path == INDEX else value
+
+
 EXPECTED_INDEX_BINDINGS = {
     "map.data.ms-map10-entityevents": "ms_map10_EntityEvents",
     "map.data.ms-map13-entityevents": "ms_map13_EntityEvents",
@@ -620,6 +622,7 @@ def _without_request_consumption(index: dict[str, object]) -> dict[str, object]:
         ]
     return index
 
+
 def test_request_state_index_delta_is_exact_24_binding_append_without_object_drift() -> None:
     index = _without_request_consumption(load_json(INDEX))
     validate_json(index, INDEX_SCHEMA, owner="map-event request-state index")
@@ -699,16 +702,16 @@ def test_request_state_index_delta_is_exact_24_binding_append_without_object_dri
         "Index": "manifests/research-index.json",
         "Records": 1627,
         "Confirmed": 1627,
-        "H2Fixtures": 96,
+        "H2Fixtures": 97,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 3035,
+        "AddressBindings": 3047,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1590,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 58,
+        "ResearchDocuments": 59,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

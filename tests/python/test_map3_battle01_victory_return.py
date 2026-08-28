@@ -215,6 +215,11 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
         for record in normalized["records"]
         for evidence in record["evidence"]
     )
+    assert all(
+        evidence["fixtureId"] != "sf2-map-event-tactical-base-quote-state-static-v1"
+        for record in normalized["records"]
+        for evidence in record["evidence"]
+    )
 
     def record_for(value: dict[str, object], record_id: str) -> dict[str, object]:
         return next(record for record in value["records"] if record["id"] == record_id)
