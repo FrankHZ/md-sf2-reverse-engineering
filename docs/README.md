@@ -200,9 +200,9 @@ Data-side directory inventory and ROM parity:
   and old aggregate boundaries.
 - [`map3-battle01-audit.md`](./research/map3-battle01-audit.md): the research-owned gap register for
   the ADR 0009 Map 3 through Battle 01-completion milestone: the accepted-evidence inventory, exact
-  index denominators, ADR 0010 profile constraints, RA-01..RA-12 gaps, and ordered Research closure
-  plan, including deferred 6A persistence and mandatory private-local 7C/8C evidence; it remains an
-  open audit, not a readiness report.
+  index denominators, ADR 0010 profile constraints, RA-01..RA-12 gaps, and conditional Research
+  routing, including deferred 6A persistence and eventual private-local 7C/8C evidence; it remains
+  an open audit, not a readiness report or default implementation-start blocker.
 - [`map3-admitted-start.md`](./research/map3-admitted-start.md): the R1 controlled Witch/New →
   MainLoop → default Map 3 setup/init → first exploration-wait evidence, its exact 26-record static
   join and admitted state fixture, scoped runtime restoration, and RA-11 private provenance
@@ -457,11 +457,12 @@ document whose anchors may be updated.
   and authorial intent as Unknown boundaries.
 - [`map3-battle01-readiness.md`](./design/synthesis/map3-battle01-readiness.md): records the evidence,
   design-contract, and product-decision closure ledger for the ADR 0009 Map 3 through Battle 01
-  milestone, preserving its explicit NOT READY state and the separate user action required before
-  Phase 4 implementation may begin.
+  milestone, preserving its explicit NOT READY eventual-acceptance state while ADR 0016 permits a
+  separate user-authorized bounded implementation start.
 - [`phase4-bootstrap-plan.md`](./design/synthesis/phase4-bootstrap-plan.md): records the Proposed
   Layer B project-topology, CLI/process, package-admission, deterministic-boundary, and H4 receipt
-  plan while preserving NOT READY and requiring a separate user action before implementation.
+  plan while preserving NOT READY for eventual acceptance and requiring a separate user action before
+  bounded implementation.
 - [`ally-definition-data.md`](./design/contracts/ally-definition-data.md): the implementation-neutral
   contract for the 30 named ally identities, two independent 32-slot start/pointer domains, 32 class
   definitions, promotion tables, five growth curves, 59 ally/class growth records, spell-list
@@ -843,12 +844,13 @@ is created only when a real disagreement appears and the choice constrains later
   start remake implementation.
 - [`0009-first-phase4-playable-slice.md`](./decisions/0009-first-phase4-playable-slice.md):
   accepts one continuous Map 3-through-Battle 01-completion scenario as the first playable milestone
-  and requires independent Research and Design gap audits, accepted gap closure, main-gate readiness,
-  and a separate explicit Phase 4 start action before implementation.
+  and preserves independent Research and Design gap audits, accepted gap closure, main-gate readiness,
+  and a separate explicit Phase 4 start action for eventual milestone acceptance.
 - [`0010-map3-battle01-product-acceptance.md`](./decisions/0010-map3-battle01-product-acceptance.md):
   accepts the private-local Map 3-through-Battle 01 product profile, including natural playable
   continuity, original private assets with no public redistribution, frame/audio/hardware-exact
-  parity, modern accessible controls, and the remaining Research/H4 gates before Phase 4 may start.
+  parity, modern accessible controls, and the remaining Research/H4 gates for eventual milestone
+  acceptance.
 - [`0011-phase4-remake-runtime-architecture.md`](./decisions/0011-phase4-remake-runtime-architecture.md):
   accepts the deterministic modular-monolith boundary, plain-C# authoritative state, validated data
   ports, thin Godot adapters, and layered H4 gates without starting Phase 4 implementation.
@@ -860,12 +862,17 @@ is created only when a real disagreement appears and the choice constrains later
   worker context, routing global instructions, machine-reducing large artifacts, and consolidating
   independent review without creating a token benchmark program.
 - [`0014-static-first-runtime-evidence-after-map3-battle01.md`](./decisions/0014-static-first-runtime-evidence-after-map3-battle01.md):
-  accepts the ADR 0009 scenario closure as a bounded H3 exception, makes complete H2 corpora the
-  optional/full-game default, and gates later H3 on caller dependence, contract impact, and rail reuse.
+  makes complete H2 corpora the optional/full-game default and applies its H3 gate immediately on
+  caller dependence, contract impact, and rail reuse.
 - [`0015-original-reference-replay-and-h4-boundary.md`](./decisions/0015-original-reference-replay-and-h4-boundary.md):
   separates passive original-reference replay and private capture from remake H4 PASS, assigns future
-  fixture/index/CLI/planner owners, and caps each authorized runtime slice at two diagnostics plus one
-  frozen acceptance launch without starting R4b, H4, or Phase 4.
+  fixture/index/CLI/planner owners, conditionally admits replay capability, and caps each authorized
+  runtime slice at two diagnostics plus one frozen acceptance launch without starting R4b, H4, or
+  Phase 4.
+- [`0016-remake-start-evidence-deferral.md`](./decisions/0016-remake-start-evidence-deferral.md):
+  controls the distinction between the eventual continuous milestone acceptance target and a separate
+  user-authorized bounded implementation start; it routes deferred runtime questions through the
+  immediate static-first H3 gate without changing evidence labels or stop-losses.
 
 ## Evidence Vocabulary
 

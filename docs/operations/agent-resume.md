@@ -24,8 +24,9 @@ and dependencies are worktree and handoff state, not a second tracked source of 
   independently maintained remake.
 - Phase 2 research and evidence-bound contracts remain active.
 - Godot 4.7.2 .NET/C# is the accepted Phase 4 baseline, but Phase 4 implementation has not started.
-- The current scheduling frontier is the continuous Map 3-through-completion-of-Battle 01 playable
-  milestone. It narrows near-term ordering, not the full-game mission.
+- The current scheduling frontier is the highest-priority honest independent static H2 gaps. The
+  continuous Map 3-through-completion-of-Battle 01 milestone remains an eventual acceptance target,
+  not an automatic runtime-closure queue or default implementation-start prerequisite.
 - Private ROMs, extracted assets, runtime captures, downloaded tools, and generated binaries remain
   local and untracked.
 - Repository documents and exact Git objects are durable state. Old chats and external memory are not.
@@ -37,10 +38,10 @@ Read the smallest owning surface that can answer or govern the task:
 | Task | Required owner |
 | --- | --- |
 | Ordinary Phase 2 evidence slice | [`phase2-lane-runbook.md`](./phase2-lane-runbook.md), [ADR 0004](../decisions/0004-single-terra-worker-with-root-acceptance.md), its Worker Acceptance Checklist, the closest [`research/`](../research/) owner, and only the bounded sources named in the slice |
-| Research coverage, aggregate frontier, or cadence | [`research/source-coverage.md`](../research/source-coverage.md) and [ADR 0003](../decisions/0003-static-first-batched-runtime-research.md) |
+| Research coverage, aggregate frontier, or cadence | [`research/source-coverage.md`](../research/source-coverage.md), [ADR 0003](../decisions/0003-static-first-batched-runtime-research.md), and [ADR 0016](../decisions/0016-remake-start-evidence-deferral.md) |
 | Evidence-bound subsystem contract | Closest [`design/contracts/`](../design/contracts/) owner and its accepted research dependencies |
 | Cross-subsystem or player-facing synthesis | [`design/documentation-roadmap.md`](../design/documentation-roadmap.md) and the closest [`design/synthesis/`](../design/synthesis/) owner |
-| Phase 4 readiness or first playable milestone | [ADR 0008](../decisions/0008-godot-csharp-cli-first-remake-tooling.md), [ADR 0009](../decisions/0009-first-phase4-playable-slice.md), [ADR 0010](../decisions/0010-map3-battle01-product-acceptance.md), and [ADR 0011](../decisions/0011-phase4-remake-runtime-architecture.md) |
+| Phase 4 readiness or first playable milestone | [ADR 0008](../decisions/0008-godot-csharp-cli-first-remake-tooling.md), [ADR 0009](../decisions/0009-first-phase4-playable-slice.md), [ADR 0010](../decisions/0010-map3-battle01-product-acceptance.md), [ADR 0011](../decisions/0011-phase4-remake-runtime-architecture.md), and [ADR 0016](../decisions/0016-remake-start-evidence-deferral.md) |
 | Verification selection | [ADR 0012](../decisions/0012-dependency-aware-partitioned-verification.md) and `uv run sf2 verify plan --base origin/main --head HEAD` on a clean committed head |
 | Large artifact or diff inspection; PR handoff or review | [`bounded-inspection-and-review.md`](./bounded-inspection-and-review.md) |
 | Global documentation routing or decision inventory | [`../README.md`](../../README.md), [`docs/README.md`](../README.md), and the affected index owners |

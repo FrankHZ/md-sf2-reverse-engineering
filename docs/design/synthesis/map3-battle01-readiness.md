@@ -1,6 +1,6 @@
 # Map 3 to Battle 01 Readiness Ledger
 
-- Status: **NOT READY** for Phase 4 implementation
+- Status: **NOT READY** for eventual continuous-milestone acceptance; not a default blocker for a separately authorized implementation start
 - Initial gap-audit date: 2026-08-14
 - Initial gap-audit base: commit `21f98cfc9dee5b3589d0612e1058be5a9666fd3a`, tree
   `6eb4208567f403685c303e9c5f1145aeadf67974`
@@ -10,6 +10,7 @@
 - Milestone owner: [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md)
 - Tooling boundary: [ADR 0008](../../decisions/0008-godot-csharp-cli-first-remake-tooling.md)
 - Product profile: [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md)
+- Start-policy amendment: [ADR 0016](../../decisions/0016-remake-start-evidence-deferral.md)
 - Scope: Layer B readiness accounting for one continuous playable scenario from an admitted Map 3
   start through observable completion of Battle 01
 
@@ -18,10 +19,10 @@
 This document is a readiness ledger. It does not own original-game evidence, define a new scenario
 contract, select a product experience, authorize Phase 4, or replace the fixtures and contracts it
 links. Its purpose is to state what accepted `main` can already support, what remains open, who must
-own each closure, and what the later Phase 4 start gate must inspect.
+own each closure, and what eventual continuous-milestone acceptance must inspect.
 
 The product-choice slots and battle-functions contract are now closed, but the current judgment is
-still **NOT READY** because accepted evidence does not yet join the controlled Map
+still **NOT READY** for eventual milestone acceptance because accepted evidence does not yet join the controlled Map
 3 handoff, a natural chronological exploration route, Battle 01 admission, a complete playable
 battle, the after-battle program, and one exact observable ending state.
 
@@ -34,6 +35,8 @@ The following distinctions are normative:
 - a numeric ID or source label is not player-facing meaning;
 - a private original asset is not a distributable remake asset;
 - a readiness closure is not authorization to create `remake/` or begin Phase 4.
+- **NOT READY** in this ledger is not a default implementation-start blocker; ADR 0016 requires a
+  separate explicit user authorization and concrete-slice dependency review instead.
 
 No unmerged Research result contributes to this ledger. A future update may consume new evidence only
 after it is accepted on `main`.
@@ -65,9 +68,9 @@ not install Godot, select an MCP adapter, choose distributable assets, create a 
 authorize implementation. The first implementation acceptance profile remains CLI-only.
 
 [ADR 0009](../../decisions/0009-first-phase4-playable-slice.md) accepts exactly one first milestone:
-a continuous playable scenario from Map 3 through **completion** of Battle 01. It requires Research
-and Design gap closure, a main-gate readiness report, and a separate user start action. Battle entry,
-initialization, or an isolated mechanic cannot satisfy the milestone.
+a continuous playable scenario from Map 3 through **completion** of Battle 01. Its eventual acceptance
+requires Research and Design gap closure, a main-gate readiness report, and a separate user start
+action. Battle entry, initialization, or an isolated mechanic cannot satisfy the milestone.
 
 [ADR 0010](../../decisions/0010-map3-battle01-product-acceptance.md) accepts the exact profile
 `1A + 2A + 3A + 4A + 5B + 6A + 7C + 8C + 9A + 10A`. It selects a private-local original-asset
@@ -75,7 +78,14 @@ profile with no public redistribution and frame/audio/hardware-exact parity. Tho
 product slots but expand Research, private-provenance, and H4 work; they do not make the scenario ready.
 
 This ledger therefore remains **NOT READY** until all remaining closure rows below are accepted on
-`main`.
+`main` for the eventual continuous milestone. Its status does not itself reject a separately
+user-authorized bounded implementation start under ADR 0016.
+
+[ADR 0016](../../decisions/0016-remake-start-evidence-deferral.md) controls that separate start
+policy. It preserves this ledger's eventual acceptance target while allowing a user-authorized
+implementation slice to require only the accepted owners it concretely needs. Natural continuity,
+original-reference replay, complete 8C capture, the continuous-scenario contract, and H4 completion
+remain **OPEN** acceptance work rather than default pre-start blockers.
 
 ## Exact Accepted-Index Audit
 
@@ -226,9 +236,9 @@ natural Battle 01 reachability remain separate or **Unknown** as required.
 profile recorded above without rewriting product choices as original behavior. Closing these choices
 does not start Phase 4.
 
-### Slice 3: Research closures
+### Slice 3: eventual milestone Research closures
 
-Research must merge dedicated evidence for:
+Eventual continuous-milestone acceptance requires dedicated evidence for:
 
 1. exact admitted Map 3 start provenance and the natural chronological route into Battle 01;
 2. selected setup/event/program/dialogue/menu/state effects along that route;
@@ -241,8 +251,9 @@ Research must merge dedicated evidence for:
 7. private reference-capture provenance, deterministic capture conditions, exact or field-specific
    tolerances, and licensing-safe public reporting.
 
-Research may group these observations into one or more fixtures. Design must not name unaccepted
-fixture IDs or consume unmerged conclusions in advance.
+Research may group these observations into one or more fixtures only when ADR 0014's immediate
+three-part gate admits the caller-dependent question. Design must not name unaccepted fixture IDs or
+consume unmerged conclusions in advance. This list is not a default implementation-start queue.
 
 ### Slice 4: continuous-scenario contract
 
@@ -278,7 +289,9 @@ This ledger may change from **NOT READY** to **READY FOR PHASE-TRANSITION DECISI
   tolerances, and declared expected deviations are fully specified and accepted on `main`;
 - main-gate independently reports readiness.
 
-Even then, Phase 4 begins only after the separate user start action required by ADR 0009.
+Even then, Phase 4 begins only after the separate user start action required by ADR 0009. Before then,
+ADR 0016 permits a separately authorized bounded implementation start without changing this ledger's
+status.
 
 ## H4 Composition Rules
 
@@ -303,10 +316,10 @@ Each layer must reference its owning accepted fixture. The continuous adapter mu
 subsystem fixtures, copy their expected numbers into engine-specific tests, require original RAM/ROM
 addresses in the remake, or publish private original text, graphics, audio, or captures.
 
-Before Phase 4, readiness requires this acceptance surface and its executable check definitions to be
-complete and accepted, not executed successfully against a remake that does not yet exist. Building
-the remake adapter and obtaining H4 PASS results are Phase 4 implementation and milestone gates after
-the separate user start action.
+Before the continuous milestone is accepted, readiness requires this acceptance surface and its
+executable check definitions to be complete and accepted, not executed successfully against a remake
+that does not yet exist. Building the remake adapter and obtaining H4 PASS results are Phase 4
+implementation and milestone gates after the separate user start action.
 
 ## Public and Private Boundary
 
@@ -353,7 +366,8 @@ uploads, public-CI requirements, or distributable build contents.
 | main-gate readiness report accepted | OPEN | Main-gate |
 | separate user Phase 4 start action | OPEN | User |
 
-The ledger remains **NOT READY** while any required row is open.
+The ledger remains **NOT READY** for eventual continuous-milestone acceptance while any required row
+is open. Those rows do not block a separately user-authorized concrete implementation slice by default.
 
 ## Evidence Matrix
 

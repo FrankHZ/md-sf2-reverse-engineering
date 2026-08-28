@@ -7,7 +7,7 @@
 - Layer: **Layer B design synthesis** over accepted architecture and readiness boundaries
 - Scope: future Phase 4 project topology, bootstrap admission, CLI gates, observation ports, profile
   separation, and implementation-start checklist
-- Readiness effect: **none**; the Map 3 to Battle 01 ledger remains **NOT READY**
+- Readiness effect: **none**; the Map 3 to Battle 01 ledger remains **NOT READY** for eventual milestone acceptance
 
 ## Judgment Boundary
 
@@ -29,10 +29,13 @@ executable schema, or implementation. Its semantic association is deliberately e
 - executable verifier or CLI registrations: none;
 - new evidence labels, counters, or accepted command families: none.
 
-The accepted [readiness ledger](map3-battle01-readiness.md) remains **NOT READY**, and the accepted
+The accepted [readiness ledger](map3-battle01-readiness.md) remains **NOT READY** for eventual
+continuous-milestone acceptance, and the accepted
 [Research gap audit](../../research/map3-battle01-audit.md) remains **OPEN**. This plan does not fill
 any RA-01..RA-12 value, select a route or seed, define an exact state, name a new fixture, accept a
-command, identify a capture, state an observable result, or choose a comparison tolerance.
+command, identify a capture, state an observable result, or choose a comparison tolerance. Under
+[ADR 0016](../../decisions/0016-remake-start-evidence-deferral.md), those statuses are not default
+blockers for a separately user-authorized bounded implementation start.
 
 This proposal does not create `remake/`, select the exact .NET SDK, target framework, or package set,
 write engine code, install or run Godot, invoke editor/import/export, select or use MCP, authorize a
@@ -48,7 +51,7 @@ Every section and table uses these exact timing classes:
 | Timing class | Meaning | Owner boundary |
 | --- | --- | --- |
 | **Fixed now** | Already selected by accepted ADRs or safely derivable as architecture, interface shape, gate ordering, or failure policy without original-game values. | Design synthesis may state the rule now. |
-| **Research-dependent** | Requires accepted R1-R4 evidence or the later continuous-scenario contract. | Research and evidence-bound Design owners supply identities, values, reached capabilities, comparison domains, and tolerances. |
+| **Research-dependent** | Requires accepted evidence owned by the concrete implementation or acceptance slice; the eventual continuous milestone requires its R1-R4 and continuous-scenario owners. | Research and evidence-bound Design owners supply identities, values, reached capabilities, comparison domains, and tolerances. |
 | **After separate user Phase-4 start** | Creates or executes the modern-engine implementation. | The later implementation lane materializes files, code, schemas, runners, scenes, packages, adapters, and gates. |
 
 An item classified **Fixed now** can constrain a future implementation without authorizing that
@@ -417,12 +420,14 @@ review; this document does not choose one.
 **Timing classification: Fixed now for checklist and ordering; Research-dependent for readiness/H4
 inputs; After separate user Phase-4 start for every checked action.**
 
-The first authorized bootstrap slice must not begin until main-gate reports readiness and the user
-separately starts Phase 4. It then performs this checklist in order:
+The first authorized bootstrap slice may begin only after the user separately authorizes Phase 4 under
+ADR 0016. It requires the accepted owners needed for that concrete slice, not every R1-R4,
+natural-continuity, private 7C/8C, or H4 owner. It then performs this checklist in order:
 
-1. record the exact accepted `main`, readiness report, and separate user start action;
-2. verify all Research-dependent scenario/H4 owners required for the first implementation step are
-   accepted and reference them without copying their goldens;
+1. record the exact accepted `main`, separate user start action, and the concrete slice boundary;
+2. verify only the accepted Research-dependent owners required for that first implementation step and
+   reference them without copying their goldens; retain absent eventual-milestone owners as explicit
+   deferred/conditional boundaries;
 3. select and review the exact .NET SDK, target framework, Godot official build artifact, NuGet
    sources, direct/transitive packages, licenses, hashes, and restore-lock files;
 4. create only the accepted four-production-project topology and named outer test projects;
@@ -482,8 +487,8 @@ and never becomes an implementation dependency.
 | package-envelope and admission-validation categories | **Fixed now** | ADR 0011 plus this synthesis |
 | deterministic clock/RNG/input abstractions and forbidden ambient APIs | **Fixed now** | ADR 0011 plus accepted subsystem owners |
 | 6A/7C/8C/9A/10A composition and claim separation | **Fixed now** | ADR 0010/0011 plus this synthesis |
-| exact admitted and endpoint state, selected setup/program/content IDs, natural route/admission | **Research-dependent** | R1-R4 and the future continuous-scenario contract |
-| complete battle trace/seed, private inventory/captures, reached observables, comparison domains/tolerances | **Research-dependent** | R1-R4 and accepted H4/scenario owners |
+| exact admitted and endpoint state, selected setup/program/content IDs, natural route/admission | **Research-dependent** for eventual continuous acceptance; conditional for a concrete start slice | R1-R4 and the future continuous-scenario contract |
+| complete battle trace/seed, private inventory/captures, reached observables, comparison domains/tolerances | **Research-dependent** for eventual continuous acceptance; conditional for a concrete start slice | R1-R4 and accepted H4/scenario owners |
 | exact receipt members, contract associations, command capability set, package records and schemas | **Research-dependent** before implementation | future continuous-scenario and evidence-bound contract owners |
 | exact SDK/TFM/packages/artifacts, files/projects/code/tests/runners/scenes/adapters/backends/export presets | **After separate user Phase-4 start** | authorized implementation/bootstrap slices |
 | Godot import/run/export and H4 execution | **After separate user Phase-4 start** | authorized implementation and milestone gates |
@@ -552,6 +557,7 @@ scenario ready or starting implementation. It would not create a project, select
 accepted Godot 4.7.2, install or run Godot, adopt MCP, populate H4, authorize private redistribution,
 or change any Research gap.
 
-The readiness ledger remains **NOT READY**. R1-R4, the continuous-scenario contract, complete H4
-definitions, private-input acceptance, main-gate readiness, and the separate user Phase 4 start action
-all remain required.
+The readiness ledger remains **NOT READY** for eventual continuous-milestone acceptance. R1-R4, the
+continuous-scenario contract, complete H4 definitions, private-input acceptance, and main-gate
+readiness remain required for that target; a separate user authorization under ADR 0016 may start a
+bounded implementation slice earlier.

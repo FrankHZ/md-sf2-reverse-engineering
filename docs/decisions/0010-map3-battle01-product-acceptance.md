@@ -30,7 +30,7 @@ not an accepted choice.
 
 This decision selects product scope classes. It MUST NOT invent original-game facts that
 Research has not accepted. Exact scenario values marked `Research-owned exact value required` remain
-blocking blanks for the later continuous-scenario contract.
+open blanks for the later continuous-scenario contract and its eventual milestone acceptance.
 
 This decision does not:
 
@@ -176,7 +176,7 @@ only licensing-safe metadata, checks, hashes, and results that do not reconstruc
 | --- | --- | --- |
 | 8A — HISTORICAL RECOMMENDATION, NOT SELECTED | Functional state/structure tier: accepted scene/resource/request identities and order, deterministic project-owned layout/screenshot regression, and replacement cue presence. | Does not require original pixel, palette, animation-frame, waveform, chip, DMA, VInt, or timing parity. |
 | 8B | Add bounded screenshot, palette, or animation comparison to the original. | Requires targeted Research, private comparison inputs, tolerances, and licensing-safe public results. |
-| **8C — SELECTED** | Require frame/audio/hardware-exact parity for the private local milestone/profile. | Materially expands pre-Phase-4 Research and H4 closure; no such complete parity is claimed on accepted `main`. |
+| **8C — SELECTED** | Require frame/audio/hardware-exact parity for the private local milestone/profile. | Materially expands eventual-milestone Research and H4 closure; no such complete parity is claimed on accepted `main`. |
 
 Selected 8C requires accepted evidence and executable H4 definitions for pixel and palette output,
 frame cadence, animation order and timing, audio waveform/chip behavior/timing, VInt, DMA, CRAM, VDP,
@@ -261,7 +261,7 @@ The accepted profile fixes these policy classes without claiming original facts:
 
 Selecting a class does not fill its Research-owned fields or authorize Phase 4.
 
-## Exact Research-Dependent Blanks
+## Exact Research-Dependent Blanks for Eventual Milestone Acceptance
 
 All of the following block the later continuous-scenario contract and remain open on accepted `main`:
 
@@ -286,15 +286,18 @@ IDs or treat an unmerged observation as accepted. After the required owners merg
 `docs/design/contracts/map3-battle01-continuous-scenario.md` with its exact fixture and association set
 derived from accepted evidence.
 
-## Pre-Phase-4 Acceptance Consequences
+## Eventual Milestone Acceptance Consequences
 
 Although accepted, this ADR does not make the scenario ready. The readiness ledger remains
 **NOT READY** until Research closures, the continuous-scenario contract, any route-required
 conditional contracts, the private-local asset inventory/provenance and no-public-distribution
 boundary, complete 8C H4 acceptance definitions, main-gate readiness review, and the separate user
-Phase 4 start action are complete.
+Phase 4 start action are complete for the eventual continuous milestone. Under
+[ADR 0016](./0016-remake-start-evidence-deferral.md), these open rows do not block a separately
+user-authorized bounded implementation start by default.
 
-Before Phase 4, the continuous H4 acceptance contract must specify executable check definitions for:
+Before the continuous milestone is accepted, the continuous H4 acceptance contract must specify
+executable check definitions for:
 
 1. admitted-state identity and provenance;
 2. logical input and natural exploration route;
@@ -308,8 +311,9 @@ Before Phase 4, the continuous H4 acceptance contract must specify executable ch
    accessibility assertions;
 9. every expected deviation as a separately reported layer.
 
-Those definitions must be accepted before Phase 4. Implementing the adapter and obtaining H4 PASS
-remain Phase 4 work after the separate user start action.
+Those definitions must be accepted before the continuous milestone is accepted. Implementing the
+adapter and obtaining H4 PASS remain Phase 4 and milestone-acceptance work after the separate user
+start action.
 
 ## Decision Integration
 
@@ -318,4 +322,4 @@ decision index entry in `docs/README.md`. It has no executable fixture, research
 translation-manifest entry, or registry dependency.
 
 No accepted choice in this ADR starts Godot work, adopts MCP, creates remake code, or authorizes
-Phase 4.
+Phase 4. A separate user authorization under ADR 0016 is required for a bounded implementation start.
