@@ -43,15 +43,15 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Status"] == "PASS"
     assert result["Records"] == 1627
     assert result["Confirmed"] == 1627
-    assert result["H2Fixtures"] == 99
+    assert result["H2Fixtures"] == 100
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 94
-    assert result["AddressBindings"] == 3071
+    assert result["AddressBindings"] == 3075
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1590
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
-    assert result["ResearchDocuments"] == 61
+    assert result["ResearchDocuments"] == 62
     assert result["DesignContracts"] == 68
 
 
@@ -889,6 +889,13 @@ def test_map_event_direct_state_has_a_static_rom_parity_command() -> None:
 def test_map_event_flag_lifecycle_state_has_a_static_rom_parity_command() -> None:
     args = build_parser().parse_args(["h2", "map-event-flag-lifecycle-state"])
     assert args.h2_command == "map-event-flag-lifecycle-state"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.output_path is None
+
+
+def test_map_event_cross_program_flag_state_has_a_static_rom_parity_command() -> None:
+    args = build_parser().parse_args(["h2", "map-event-cross-program-flag-state"])
+    assert args.h2_command == "map-event-cross-program-flag-state"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.output_path is None
 

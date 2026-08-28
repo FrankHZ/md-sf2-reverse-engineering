@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sf2-research.example/schemas/h2/map-event-cross-program-flag-state-static-fixture.schema.json",
+  "title": "Map-event cross-program direct-flag state fixture",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "upstreamCommit", "romSha256", "sourceContext", "retainedOwners", "crossProgramFlagState", "unknowns", "summary"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "id": {"const": "sf2-map-event-cross-program-flag-state-static-v1"},
+    "upstreamCommit": {"const": "c834c652b6862bc5679fd7f69a38a7093206efc6"},
+    "romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
+    "sourceContext": {"$ref": "#/$defs/sourceContext"},
+    "retainedOwners": {"$ref": "#/$defs/retainedOwners"},
+    "crossProgramFlagState": {"$ref": "#/$defs/facts"},
+    "unknowns": {"$ref": "#/$defs/unknowns"},
+    "summary": {"$ref": "#/$defs/summary"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "sourcePath": {"type": "string", "pattern": "^(?!local/)[A-Za-z0-9_./-]+$"},
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixtureId", "fixtureSha256", "verifierPath", "verifierSha256", "semanticSha256"],
+      "properties": {
+        "fixtureId": {"type": "string", "minLength": 1},
+        "fixtureSha256": {"$ref": "#/$defs/sha256"},
+        "verifierPath": {"type": "string", "pattern": "^src/sf2tool/h2/[a-z0-9_]+\\.py$"},
+        "verifierSha256": {"$ref": "#/$defs/sha256"},
+        "semanticSha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {"path": {"$ref": "#/$defs/sourcePath"}, "sha256": {"$ref": "#/$defs/sha256"}}
+    },
+    "sourceContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceIdentities", "h1Listing", "motherDenominators", "directFlagSourceSummary"],
+      "properties": {
+        "sourceIdentities": {"type": "array", "minItems": 91, "maxItems": 91, "items": {"$ref": "#/$defs/sourceIdentity"}},
+        "h1Listing": {
+          "type": "object", "additionalProperties": false, "required": ["path", "sha256"],
+          "properties": {"path": {"const": "build/sf2build-h1.lst"}, "sha256": {"$ref": "#/$defs/sha256"}}
+        },
+        "motherDenominators": {
+          "type": "object", "additionalProperties": false, "required": ["programContextCount", "operationCount"],
+          "properties": {"programContextCount": {"const": 914}, "operationCount": {"const": 3579}}
+        },
+        "directFlagSourceSummary": {
+          "type": "object", "additionalProperties": false, "required": ["mapEventSourceFileCount", "sourceIdentityCount", "macroDefinitionCount"],
+          "properties": {"mapEventSourceFileCount": {"const": 90}, "sourceIdentityCount": {"const": 91}, "macroDefinitionCount": {"const": 3}}
+        }
+      }
+    },
+    "retainedOwners": {
+      "type": "object", "additionalProperties": false, "required": ["mapEventsDirectFlags", "flagLifecycleState"],
+      "properties": {"mapEventsDirectFlags": {"$ref": "#/$defs/owner"}, "flagLifecycleState": {"$ref": "#/$defs/owner"}}
+    },
+    "program": {
+      "type": "object", "additionalProperties": false,
+      "required": ["contextOrder", "category", "programSymbol", "programEntryAddress", "programKey", "sourcePath"],
+      "properties": {
+        "contextOrder": {"type": "integer", "minimum": 0, "maximum": 913},
+        "category": {"enum": ["entityEvents", "zoneEvents", "itemEvents"]},
+        "programSymbol": {"type": "string", "minLength": 1},
+        "programEntryAddress": {"type": "integer", "minimum": 0},
+        "programKey": {"type": "string", "pattern": "^(entityEvents|zoneEvents|itemEvents)\\|[^|]+\\|[0-9]+$"},
+        "sourcePath": {"$ref": "#/$defs/sourcePath"}
+      }
+    },
+    "consumer": {
+      "type": "object", "additionalProperties": false,
+      "required": ["operationSourceOrder", "sourceLine", "address", "sourceMnemonic", "mnemonic", "sizeSuffix", "branchPolarity", "targetSymbol", "targetAddress"],
+      "properties": {
+        "operationSourceOrder": {"type": "integer", "minimum": 0}, "sourceLine": {"type": "integer", "minimum": 1}, "address": {"type": "integer", "minimum": 0},
+        "sourceMnemonic": {"enum": ["bne.s", "bne.w", "beq.s"]}, "mnemonic": {"enum": ["bne", "beq"]}, "sizeSuffix": {"enum": [".s", ".w"]},
+        "branchPolarity": {"enum": ["not-equal", "equal"]}, "targetSymbol": {"type": "string", "minLength": 1}, "targetAddress": {"type": "integer", "minimum": 0}
+      }
+    },
+    "accessBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["siteOrder", "category", "programSymbol", "programEntryAddress", "programKey", "sourcePath", "flagNumber", "accessKind", "sourceMacro", "operationSourceOrder", "sourceLine", "address"],
+      "properties": {
+        "siteOrder": {"type": "integer", "minimum": 0, "maximum": 492}, "category": {"enum": ["entityEvents", "zoneEvents", "itemEvents"]},
+        "programSymbol": {"type": "string", "minLength": 1}, "programEntryAddress": {"type": "integer", "minimum": 0},
+        "programKey": {"type": "string", "pattern": "^(entityEvents|zoneEvents|itemEvents)\\|[^|]+\\|[0-9]+$"}, "sourcePath": {"$ref": "#/$defs/sourcePath"},
+        "flagNumber": {"type": "integer", "minimum": 0}, "accessKind": {"enum": ["read", "set", "clear"]}, "sourceMacro": {"enum": ["chkFlg", "setFlg", "clrFlg"]},
+        "operationSourceOrder": {"type": "integer", "minimum": 0}, "sourceLine": {"type": "integer", "minimum": 1}, "address": {"type": "integer", "minimum": 0}
+      }
+    },
+    "readerAccess": {
+      "type": "object", "additionalProperties": false,
+      "required": ["siteOrder", "category", "programSymbol", "programEntryAddress", "programKey", "sourcePath", "flagNumber", "accessKind", "sourceMacro", "operationSourceOrder", "sourceLine", "address", "immediateConditionConsumer"],
+      "properties": {
+        "siteOrder": {"type": "integer", "minimum": 0, "maximum": 492}, "category": {"enum": ["entityEvents", "zoneEvents", "itemEvents"]},
+        "programSymbol": {"type": "string", "minLength": 1}, "programEntryAddress": {"type": "integer", "minimum": 0},
+        "programKey": {"type": "string", "pattern": "^(entityEvents|zoneEvents|itemEvents)\\|[^|]+\\|[0-9]+$"}, "sourcePath": {"$ref": "#/$defs/sourcePath"},
+        "flagNumber": {"type": "integer", "minimum": 0}, "accessKind": {"const": "read"}, "sourceMacro": {"const": "chkFlg"},
+        "operationSourceOrder": {"type": "integer", "minimum": 0}, "sourceLine": {"type": "integer", "minimum": 1}, "address": {"type": "integer", "minimum": 0},
+        "immediateConditionConsumer": {"$ref": "#/$defs/consumer"}
+      }
+    },
+    "writerAccess": {
+      "allOf": [
+        {"$ref": "#/$defs/accessBase"},
+        {"properties": {"accessKind": {"enum": ["set", "clear"]}, "sourceMacro": {"enum": ["setFlg", "clrFlg"]}}}
+      ]
+    },
+    "cohort": {
+      "type": "object", "additionalProperties": false,
+      "required": ["cohortOrder", "category", "programSymbol", "programEntryAddress", "programKey", "sourcePath", "flagNumber", "accessSiteOrders", "accessKinds"],
+      "properties": {
+        "cohortOrder": {"type": "integer", "minimum": 0}, "category": {"enum": ["entityEvents", "zoneEvents", "itemEvents"]},
+        "programSymbol": {"type": "string", "minLength": 1}, "programEntryAddress": {"type": "integer", "minimum": 0},
+        "programKey": {"type": "string", "pattern": "^(entityEvents|zoneEvents|itemEvents)\\|[^|]+\\|[0-9]+$"}, "sourcePath": {"$ref": "#/$defs/sourcePath"},
+        "flagNumber": {"type": "integer", "minimum": 0}, "accessSiteOrders": {"type": "array", "minItems": 1, "maxItems": 2, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 492}},
+        "accessKinds": {"type": "array", "minItems": 1, "maxItems": 2, "items": {"enum": ["read", "set", "clear"]}}
+      }
+    },
+    "candidate": {
+      "type": "object", "additionalProperties": false, "required": ["edgeOrder", "flagNumber", "writerCohortOrder", "readerCohortOrder"],
+      "properties": {"edgeOrder": {"type": "integer", "minimum": 0, "maximum": 719}, "flagNumber": {"type": "integer", "minimum": 0}, "writerCohortOrder": {"type": "integer", "minimum": 0, "maximum": 170}, "readerCohortOrder": {"type": "integer", "minimum": 0, "maximum": 309}}
+    },
+    "pairTotal": {
+      "type": "object", "additionalProperties": false, "required": ["writerCategory", "readerCategory", "candidateCount"],
+      "properties": {"writerCategory": {"enum": ["entityEvents", "zoneEvents", "itemEvents"]}, "readerCategory": {"enum": ["entityEvents", "zoneEvents", "itemEvents"]}, "candidateCount": {"type": "integer", "minimum": 1}}
+    },
+    "anchor": {
+      "type": "object", "additionalProperties": false, "required": ["address", "h1ByteLength", "contextRoleKeys"],
+      "properties": {"address": {"type": "integer", "minimum": 0}, "h1ByteLength": {"type": "integer", "minimum": 2}, "contextRoleKeys": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[0-9]+\\|(direct-flag|immediate-consumer)$"}}}
+    },
+    "coverage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["contextualAccessSiteCount", "physicalAccessSiteCount", "contextualReadAccessSiteCount", "physicalReadAccessSiteCount", "contextualSetAccessSiteCount", "physicalSetAccessSiteCount", "contextualClearAccessSiteCount", "physicalClearAccessSiteCount", "contextualImmediateReadConsumerCount", "physicalImmediateReadConsumerCount", "contextualAnchorPcCount", "physicalAnchorPcCount", "contextualAnchorEncodedByteCount", "physicalAnchorByteCount", "overlapAnchorByteCount", "physicalAnchors"],
+      "properties": {
+        "contextualAccessSiteCount": {"const": 493}, "physicalAccessSiteCount": {"const": 490}, "contextualReadAccessSiteCount": {"const": 316}, "physicalReadAccessSiteCount": {"const": 314},
+        "contextualSetAccessSiteCount": {"const": 169}, "physicalSetAccessSiteCount": {"const": 168}, "contextualClearAccessSiteCount": {"const": 8}, "physicalClearAccessSiteCount": {"const": 8},
+        "contextualImmediateReadConsumerCount": {"const": 316}, "physicalImmediateReadConsumerCount": {"const": 314}, "contextualAnchorPcCount": {"const": 809}, "physicalAnchorPcCount": {"const": 804},
+        "contextualAnchorEncodedByteCount": {"const": 2610}, "physicalAnchorByteCount": {"const": 2592}, "overlapAnchorByteCount": {"const": 18},
+        "physicalAnchors": {"type": "array", "minItems": 804, "maxItems": 804, "items": {"$ref": "#/$defs/anchor"}}
+      }
+    },
+    "flagDomains": {
+      "type": "object", "additionalProperties": false,
+      "required": ["all", "read", "written", "readWriteOverlap", "readOnly", "writeOnly", "sameProgramLifecycle", "crossProgram", "sameProgramOnly", "bothSameAndCrossProgram", "crossProgramOnly"],
+      "properties": {
+        "all": {"$ref": "#/$defs/flag151"}, "read": {"$ref": "#/$defs/flag128"}, "written": {"$ref": "#/$defs/flag114"}, "readWriteOverlap": {"$ref": "#/$defs/flag91"},
+        "readOnly": {"$ref": "#/$defs/flag37"}, "writeOnly": {"$ref": "#/$defs/flag23"}, "sameProgramLifecycle": {"$ref": "#/$defs/flag82"}, "crossProgram": {"$ref": "#/$defs/flag49"},
+        "sameProgramOnly": {"$ref": "#/$defs/flag42"}, "bothSameAndCrossProgram": {"$ref": "#/$defs/flag40"}, "crossProgramOnly": {"$ref": "#/$defs/flag9"}
+      }
+    },
+    "flag151": {"type": "array", "minItems": 151, "maxItems": 151, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "flag128": {"type": "array", "minItems": 128, "maxItems": 128, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "flag114": {"type": "array", "minItems": 114, "maxItems": 114, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "flag91": {"type": "array", "minItems": 91, "maxItems": 91, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "flag82": {"type": "array", "minItems": 82, "maxItems": 82, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "flag49": {"type": "array", "minItems": 49, "maxItems": 49, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "flag42": {"type": "array", "minItems": 42, "maxItems": 42, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "flag40": {"type": "array", "minItems": 40, "maxItems": 40, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "flag37": {"type": "array", "minItems": 37, "maxItems": 37, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "flag23": {"type": "array", "minItems": 23, "maxItems": 23, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "flag9": {"type": "array", "minItems": 9, "maxItems": 9, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "partitions": {
+      "type": "object", "additionalProperties": false, "required": ["programContextCount", "readerProgramContextCount", "writerProgramContextCount", "flagDomains", "sameProgramLifecycleJoin"],
+      "properties": {
+        "programContextCount": {"const": 195}, "readerProgramContextCount": {"const": 190}, "writerProgramContextCount": {"const": 135}, "flagDomains": {"$ref": "#/$defs/flagDomains"},
+        "sameProgramLifecycleJoin": {"type": "object", "additionalProperties": false, "required": ["lifecycleRelationCount", "lifecycleFlagCount", "retainedRelationDigest"], "properties": {"lifecycleRelationCount": {"const": 131}, "lifecycleFlagCount": {"const": 82}, "retainedRelationDigest": {"$ref": "#/$defs/sha256"}}}
+      }
+    },
+    "macroDefinition": {
+      "type": "object", "additionalProperties": false, "required": ["sourceMacro", "accessKind", "sourcePath", "definitionSourceLine", "trapOperand", "flagOperandOrdinal", "emissionStatementCount"],
+      "properties": {"sourceMacro": {"enum": ["chkFlg", "setFlg", "clrFlg"]}, "accessKind": {"enum": ["read", "set", "clear"]}, "sourcePath": {"const": "sf2macros.asm"}, "definitionSourceLine": {"type": "integer", "minimum": 1}, "trapOperand": {"enum": ["#CHECK_FLAG", "#SET_FLAG", "#CLEAR_FLAG"]}, "flagOperandOrdinal": {"const": 1}, "emissionStatementCount": {"const": 2}}
+    },
+    "digests": {
+      "type": "object", "additionalProperties": false, "required": ["readerAccessSiteSha256", "writerAccessSiteSha256", "candidateSha256", "coverageSha256"],
+      "properties": {"readerAccessSiteSha256": {"$ref": "#/$defs/sha256"}, "writerAccessSiteSha256": {"$ref": "#/$defs/sha256"}, "candidateSha256": {"$ref": "#/$defs/sha256"}, "coverageSha256": {"$ref": "#/$defs/sha256"}}
+    },
+    "facts": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sourceMacroDefinitions", "categoryRoles", "serviceJoin", "programDomain", "readerAccessSites", "writerAccessSites", "readerCohorts", "writerCohorts", "partitions", "crossProgramCandidates", "categoryPairTotals", "physicalContextCoverage", "digests"],
+      "properties": {
+        "sourceMacroDefinitions": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/$defs/macroDefinition"}},
+        "categoryRoles": {"type": "object", "additionalProperties": false, "required": ["entityEvents", "zoneEvents", "itemEvents"], "properties": {"entityEvents": {"const": 292378}, "zoneEvents": {"const": 292122}, "itemEvents": {"const": 292230}}},
+        "serviceJoin": {"type": "object", "additionalProperties": false, "required": ["trapEntryAddress"], "properties": {"trapEntryAddress": {"const": 5888}}},
+        "programDomain": {"type": "array", "minItems": 914, "maxItems": 914, "items": {"$ref": "#/$defs/program"}},
+        "readerAccessSites": {"type": "array", "minItems": 316, "maxItems": 316, "items": {"$ref": "#/$defs/readerAccess"}},
+        "writerAccessSites": {"type": "array", "minItems": 177, "maxItems": 177, "items": {"$ref": "#/$defs/writerAccess"}},
+        "readerCohorts": {"type": "array", "minItems": 310, "maxItems": 310, "items": {"$ref": "#/$defs/cohort"}},
+        "writerCohorts": {"type": "array", "minItems": 171, "maxItems": 171, "items": {"$ref": "#/$defs/cohort"}},
+        "partitions": {"$ref": "#/$defs/partitions"}, "crossProgramCandidates": {"type": "array", "minItems": 720, "maxItems": 720, "items": {"$ref": "#/$defs/candidate"}},
+        "categoryPairTotals": {"type": "array", "minItems": 7, "maxItems": 7, "items": {"$ref": "#/$defs/pairTotal"}}, "physicalContextCoverage": {"$ref": "#/$defs/coverage"}, "digests": {"$ref": "#/$defs/digests"}
+      }
+    },
+    "unknowns": {
+      "type": "object", "additionalProperties": false,
+      "required": ["naturalProgramReachability", "callerEntryFlagState", "actualFlagValueAtRead", "actualConditionalBranchSelection", "actualMutationReachability", "runtimeFlagValueAfterMutation", "producerConsumerTemporalOrder", "interveningFlagMutations", "mapSetupAndRecordSelection", "saveLoadAndCrossMapPersistence", "calleeScriptAndServiceEffects", "dialogueAudioPresentationAndStoryMeaning"],
+      "properties": {
+        "naturalProgramReachability": {"const": "Unknown"}, "callerEntryFlagState": {"const": "Unknown"}, "actualFlagValueAtRead": {"const": "Unknown"}, "actualConditionalBranchSelection": {"const": "Unknown"}, "actualMutationReachability": {"const": "Unknown"}, "runtimeFlagValueAfterMutation": {"const": "Unknown"}, "producerConsumerTemporalOrder": {"const": "Unknown"}, "interveningFlagMutations": {"const": "Unknown"}, "mapSetupAndRecordSelection": {"const": "Unknown"}, "saveLoadAndCrossMapPersistence": {"const": "Unknown"}, "calleeScriptAndServiceEffects": {"const": "Unknown"}, "dialogueAudioPresentationAndStoryMeaning": {"const": "Unknown"}
+      }
+    },
+    "summary": {
+      "type": "object", "additionalProperties": false,
+      "required": ["motherProgramContextCount", "motherOperationCount", "sourceIdentityCount", "mapEventSourceFileCount", "contextualAccessSiteCount", "physicalAccessSiteCount", "contextualReadAccessSiteCount", "physicalReadAccessSiteCount", "contextualSetAccessSiteCount", "physicalSetAccessSiteCount", "contextualClearAccessSiteCount", "physicalClearAccessSiteCount", "contextualImmediateReadConsumerCount", "physicalImmediateReadConsumerCount", "contextualAnchorPcCount", "physicalAnchorPcCount", "contextualAnchorEncodedByteCount", "physicalAnchorByteCount", "overlapAnchorByteCount", "programContextCount", "readerProgramContextCount", "writerProgramContextCount", "numericFlagCount", "readFlagCount", "writtenFlagCount", "readWriteOverlapFlagCount", "readOnlyFlagCount", "writeOnlyFlagCount", "sameProgramLifecycleFlagCount", "sameProgramLifecycleRelationCount", "sameProgramOnlyFlagCount", "bothSameAndCrossProgramFlagCount", "crossProgramOnlyFlagCount", "crossProgramFlagCount", "crossProgramCandidateCount"],
+      "properties": {
+        "motherProgramContextCount": {"const": 914}, "motherOperationCount": {"const": 3579}, "sourceIdentityCount": {"const": 91}, "mapEventSourceFileCount": {"const": 90}, "contextualAccessSiteCount": {"const": 493}, "physicalAccessSiteCount": {"const": 490}, "contextualReadAccessSiteCount": {"const": 316}, "physicalReadAccessSiteCount": {"const": 314}, "contextualSetAccessSiteCount": {"const": 169}, "physicalSetAccessSiteCount": {"const": 168}, "contextualClearAccessSiteCount": {"const": 8}, "physicalClearAccessSiteCount": {"const": 8}, "contextualImmediateReadConsumerCount": {"const": 316}, "physicalImmediateReadConsumerCount": {"const": 314}, "contextualAnchorPcCount": {"const": 809}, "physicalAnchorPcCount": {"const": 804}, "contextualAnchorEncodedByteCount": {"const": 2610}, "physicalAnchorByteCount": {"const": 2592}, "overlapAnchorByteCount": {"const": 18}, "programContextCount": {"const": 195}, "readerProgramContextCount": {"const": 190}, "writerProgramContextCount": {"const": 135}, "numericFlagCount": {"const": 151}, "readFlagCount": {"const": 128}, "writtenFlagCount": {"const": 114}, "readWriteOverlapFlagCount": {"const": 91}, "readOnlyFlagCount": {"const": 37}, "writeOnlyFlagCount": {"const": 23}, "sameProgramLifecycleFlagCount": {"const": 82}, "sameProgramLifecycleRelationCount": {"const": 131}, "sameProgramOnlyFlagCount": {"const": 42}, "bothSameAndCrossProgramFlagCount": {"const": 40}, "crossProgramOnlyFlagCount": {"const": 9}, "crossProgramFlagCount": {"const": 49}, "crossProgramCandidateCount": {"const": 720}
+      }
+    }
+  }
+}

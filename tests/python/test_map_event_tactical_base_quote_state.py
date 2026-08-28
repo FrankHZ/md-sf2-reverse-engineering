@@ -11,6 +11,9 @@ import pytest
 
 import sf2tool.h2.map_event_tactical_base_quote_state as tactical_module
 from sf2tool.h2.map_event_combatant_state import canonical_json_bytes
+from sf2tool.h2.map_event_cross_program_flag_state import (
+    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_flag_lifecycle_state import (
     _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
 )
@@ -32,6 +35,13 @@ from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
 
+
+def _remove_cross_program_flag_lifecycle_deltas(index):
+    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(index)
+    )
+
+
 ROM = repo_path("local/roms/sf2-us.bin")
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
 INDEX = repo_path("manifests/research-index.json")
@@ -52,7 +62,7 @@ _CHANGED_IDS = {
 def normalize_later_owner_index(index):
     return _normalize_later_owner_index(
         _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_map_event_flag_lifecycle_state_later_owner_index_delta(index)
+            _remove_cross_program_flag_lifecycle_deltas(index)
         )
     )
 _ADDRESS_DELTA = (
@@ -455,7 +465,7 @@ def _totals(index: dict[str, object]) -> dict[str, int]:
 def test_later_owner_index_delta_is_exact_and_delegates() -> None:
     current = load_json(INDEX)
     tactical_current = _remove_map_event_scripted_transition_state_later_owner_index_delta(
-        _remove_map_event_flag_lifecycle_state_later_owner_index_delta(current)
+        _remove_cross_program_flag_lifecycle_deltas(current)
     )
     predecessor = _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
         tactical_current
@@ -530,14 +540,14 @@ def test_later_owner_normalizer_rejects_every_binding_delta_mutation(
 
 def test_later_owner_normalizer_rejects_document_and_unrelated_drift() -> None:
     altered = _remove_map_event_scripted_transition_state_later_owner_index_delta(
-        _remove_map_event_flag_lifecycle_state_later_owner_index_delta(load_json(INDEX))
+        _remove_cross_program_flag_lifecycle_deltas(load_json(INDEX))
     )
     _record(altered, "stats.flags")["documents"].remove(DOCUMENT)
     with pytest.raises(ValueError, match="record fields drift"):
         _normalize_later_owner_index(altered)
     unrelated = deepcopy(
         _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_map_event_flag_lifecycle_state_later_owner_index_delta(load_json(INDEX))
+            _remove_cross_program_flag_lifecycle_deltas(load_json(INDEX))
         )
     )
     _record(unrelated, "stats.flags")["symbol"] = "Unexpected"

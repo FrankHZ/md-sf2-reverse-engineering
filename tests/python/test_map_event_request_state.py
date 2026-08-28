@@ -15,6 +15,9 @@ import pytest
 
 import sf2tool.h2.map_event_request_state as request_state_module
 from sf2tool.cli import build_parser
+from sf2tool.h2.map_event_cross_program_flag_state import (
+    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_direct_state import FIXTURE as DIRECT_STATE_FIXTURE
 from sf2tool.h2.map_event_flag_lifecycle_state import (
     _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
@@ -38,6 +41,13 @@ from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
 from sf2tool.research_index import verify_index
 
+
+def _remove_cross_program_flag_lifecycle_deltas(index):
+    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(index)
+    )
+
+
 ROOT = Path(__file__).resolve().parents[2]
 INDEX = ROOT / "manifests/research-index.json"
 INDEX_SCHEMA = ROOT / "schemas/research-index.schema.json"
@@ -51,7 +61,7 @@ VERIFIER = "src/sf2tool/h2/map_event_request_state.py"
 def normalize_later_owner_index(index):
     return _normalize_later_owner_index(
         _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_map_event_flag_lifecycle_state_later_owner_index_delta(index)
+            _remove_cross_program_flag_lifecycle_deltas(index)
         )
     )
 
@@ -716,16 +726,16 @@ def test_request_state_index_delta_is_exact_24_binding_append_without_object_dri
         "Index": "manifests/research-index.json",
         "Records": 1627,
         "Confirmed": 1627,
-        "H2Fixtures": 99,
+        "H2Fixtures": 100,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 3071,
+        "AddressBindings": 3075,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1590,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 61,
+        "ResearchDocuments": 62,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,

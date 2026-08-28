@@ -81,7 +81,7 @@
                       "fixtureField": {
                         "type": "string",
                         "anyOf": [
-                          { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventPredicateResults|eventDialogueState|eventRequestState|eventRequestConsumption|interactionState|eventItemTransactions|flagLifecycleState)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventRequestConsumption|interactionState)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
+                          { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventPredicateResults|eventDialogueState|eventRequestState|eventRequestConsumption|interactionState|eventItemTransactions|flagLifecycleState|crossProgramFlagState)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventRequestConsumption|interactionState)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
                           { "enum": [
                             "eventRandomBattleState.functionAddresses.entryAddress",
                             "eventRandomBattleState.completionFlagGate.callAddress",
@@ -316,6 +316,12 @@
                             "flagLifecycleState.dispatchEntries.zoneEvent",
                             "flagLifecycleState.dispatchEntries.itemEvent",
                             "flagLifecycleState.serviceDefinitions.chkFlg.trapEntryAddress"
+                          ] },
+                          { "enum": [
+                            "crossProgramFlagState.categoryRoles.entityEvents",
+                            "crossProgramFlagState.categoryRoles.zoneEvents",
+                            "crossProgramFlagState.categoryRoles.itemEvents",
+                            "crossProgramFlagState.serviceJoin.trapEntryAddress"
                           ] }
                         ]
                       }

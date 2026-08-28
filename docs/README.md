@@ -267,6 +267,10 @@ Data-side directory inventory and ROM parity:
   same-program, same-numeric-flag direct `chkFlg`/`setFlg`/`clrFlg` lifecycle relation corpus,
   including source-order access sequences, immediate branches, complete local CFG bodies, physical
   alias accounting, and grouped runtime Unknowns.
+- [`map-event-cross-program-flag-state.md`](./research/map-event-cross-program-flag-state.md): the
+  complete static direct-flag writer-to-distinct-reader program candidate corpus, including the
+  retained same-program lifecycle join, immediate read consumers, contextual/physical anchor
+  accounting, category-pair totals, and grouped runtime Unknowns.
 - [`map-event-interaction-state.md`](./research/map-event-interaction-state.md): the bounded
   cross-owner source/H1/ROM state-flow relation for `EVENT_RELATIVE_POSITION` and `ENTITY_FACING`,
   including the two `d2` writers, eight reads, six predicates, S07 alias targets, and grouped runtime

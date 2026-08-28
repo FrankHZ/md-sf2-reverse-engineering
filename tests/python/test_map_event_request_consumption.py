@@ -14,6 +14,9 @@ from shutil import copy2
 import pytest
 
 import sf2tool.h2.map_event_request_consumption as consumption_module
+from sf2tool.h2.map_event_cross_program_flag_state import (
+    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_flag_lifecycle_state import (
     _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
 )
@@ -37,6 +40,13 @@ from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
 from sf2tool.research_index import verify_index
 
+
+def _remove_cross_program_flag_lifecycle_deltas(index):
+    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(index)
+    )
+
+
 ROOT = Path(__file__).resolve().parents[2]
 BASE = "7577d0cb617d5880c7666899b44ed24fa3e58120"
 DOCUMENT = "docs/research/map-event-request-consumption.md"
@@ -50,7 +60,7 @@ CONSUMER_CONTEXT_FIELD = "eventRequestConsumption.consumerContexts"
 def normalize_later_owner_index(index):
     return _normalize_later_owner_index(
         _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_map_event_flag_lifecycle_state_later_owner_index_delta(index)
+            _remove_cross_program_flag_lifecycle_deltas(index)
         )
     )
 
@@ -381,16 +391,16 @@ def test_request_consumption_index_delta_is_exact_without_object_drift() -> None
         "Index": "manifests/research-index.json",
         "Records": 1627,
         "Confirmed": 1627,
-        "H2Fixtures": 99,
+        "H2Fixtures": 100,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 3071,
+        "AddressBindings": 3075,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1590,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 61,
+        "ResearchDocuments": 62,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,
