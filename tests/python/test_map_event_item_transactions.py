@@ -16,6 +16,9 @@ import sf2tool.h2.map_event_item_transactions as transactions_module
 from sf2tool.h2.map_event_combatant_state import (
     _remove_map_event_combatant_state_later_owner_index_delta,
 )
+from sf2tool.h2.map_event_flag_lifecycle_state import (
+    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_interaction_state import (
     normalize_interaction_state_later_owner_index,
 )
@@ -664,7 +667,7 @@ def test_strict_later_owner_normalizer_proves_only_the_declared_delta() -> None:
         _remove_map_event_random_battle_state_later_owner_index_delta(
             _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
                 _remove_map_event_scripted_transition_state_later_owner_index_delta(
-                    load_json(INDEX)
+                    _remove_map_event_flag_lifecycle_state_later_owner_index_delta(load_json(INDEX))
                 )
             )
         )
@@ -702,6 +705,10 @@ def test_strict_later_owner_normalizer_proves_only_the_declared_delta() -> None:
         "tests/python/test_field_item_effects.py",
         "tests/python/test_field_menu_control.py",
         "tests/python/test_field_search_control.py",
+        "tests/python/test_common_stats.py",
+        "tests/python/test_map3_battle01_action_completion.py",
+        "tests/python/test_map3_battle01_victory_return.py",
+        "tests/python/test_map_event_combatant_state.py",
         "tests/python/test_map_event_dialogue_state.py",
         "tests/python/test_map_event_direct_control.py",
         "tests/python/test_map_event_direct_handoff.py",
@@ -710,6 +717,7 @@ def test_strict_later_owner_normalizer_proves_only_the_declared_delta() -> None:
         "tests/python/test_map_event_predicate_results.py",
         "tests/python/test_map_event_request_consumption.py",
         "tests/python/test_map_event_request_state.py",
+        "tests/python/test_map_event_scripted_transition_state.py",
         "src/sf2tool/h2/map3_battle01_victory_return.py",
     ),
 )
@@ -719,7 +727,32 @@ def test_all_sibling_compatibility_paths_accept_the_exact_later_owner_index(
     namespace = runpy.run_path(str(ROOT / relative_path))
     index = load_json(INDEX)
     if relative_path.endswith("map3_battle01_victory_return.py"):
-        normalized = namespace["_normalize_request_consumption_later_owner_index"](index)
+        if relative_path.startswith("tests/"):
+            normalized = namespace["_normalize_later_owner_index"](index)
+        else:
+            normalized = namespace["_normalize_request_consumption_later_owner_index"](index)
+    elif relative_path.endswith("test_common_stats.py") or relative_path.endswith(
+        "test_map3_battle01_action_completion.py"
+    ):
+        normalized = namespace["normalize_later_owner_index"](index)
+    elif relative_path.endswith("test_map_event_combatant_state.py"):
+        normalized = namespace["normalize_map_event_combatant_state_later_owner_index"](
+            namespace["_remove_map_event_random_battle_state_later_owner_index_delta"](
+                namespace["_remove_map_event_tactical_base_quote_state_later_owner_index_delta"](
+                    namespace["_remove_map_event_scripted_transition_state_later_owner_index_delta"](
+                        namespace[
+                            "_remove_map_event_flag_lifecycle_state_later_owner_index_delta"
+                        ](index)
+                    )
+                )
+            )
+        )
+    elif relative_path.endswith("test_map_event_scripted_transition_state.py"):
+        normalized = namespace["normalize_map_event_scripted_transition_state_later_owner_index"](
+            namespace["_remove_map_event_flag_lifecycle_state_later_owner_index_delta"](
+                index
+            )
+        )
     elif relative_path.endswith("test_map_event_interaction_state.py"):
         normalized = namespace["_normalize_interaction_predecessor_index"](index)
     else:

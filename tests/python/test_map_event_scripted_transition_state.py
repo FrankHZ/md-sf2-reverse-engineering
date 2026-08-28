@@ -9,6 +9,9 @@ from shutil import copy2
 import pytest
 
 import sf2tool.h2.map_event_scripted_transition_state as transition_module
+from sf2tool.h2.map_event_flag_lifecycle_state import (
+    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_scripted_transition_state import (
     _PREDECESSOR_INDEX_SHA256,
     FIXTURE,
@@ -220,7 +223,9 @@ def test_id_and_fixture_path_are_stable() -> None:
 
 
 def test_latest_index_normalizer_removes_only_this_exact_delta() -> None:
-    current = load_json(RESEARCH_INDEX)
+    current = _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
+        load_json(RESEARCH_INDEX)
+    )
     predecessor = _remove_map_event_scripted_transition_state_later_owner_index_delta(current)
     assert transition_module._sha(canonical_json_bytes(predecessor)) == _PREDECESSOR_INDEX_SHA256
     current_records = {row["id"]: row for row in current["records"]}

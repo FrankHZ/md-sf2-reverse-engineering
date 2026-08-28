@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 98 | Deterministic source/ROM contracts, often covering complete corpora; the accepted-main prose value 96 lagged the executable 97-fixture/3,047-binding baseline before this slice |
+| H2 fixture files | 99 | Deterministic source/ROM contracts, often covering complete corpora; the accepted-main prose value 96 lagged the executable 97-fixture/3,047-binding baseline before this slice |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 3,067 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 3,071 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -135,6 +135,15 @@ map/entity dispatcher table joins. The 111 owned anchors are the 87 operation ro
 definition-handler entries, and five pointer targets; dispatcher joins are retained-owner links, not
 additional owned anchors. Runtime reachability, effects, timing, and endpoint remain its ordered
 14-question **Unknown** register; it adds no H3 rail.
+
+The `sf2-map-event-flag-lifecycle-state-static-v1` rail selects only same-program, same-numeric-flag
+direct `chkFlg`/`setFlg` or `clrFlg` relations from the accepted 914-context/3,579-operation
+map-events corpus. It proves 117 positive/797 zero contexts, 131 relations over 82 flags, and the
+source-local access order without claiming runtime reachability or mutation execution. The complete
+selected bodies retain 67 source files, 1,177 contextual/1,137 physical operations, 339 labels,
+4,216 contextual/4,066 physical bytes, and 79 merged intervals; all branch, macro-emission,
+source/H1/ROM, and contextual-alias guards run before fixture comparison. Its twelve runtime questions
+remain **Unknown** and it adds no H3 rail.
 
 ## Subsystem Boundary
 
