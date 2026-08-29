@@ -74,6 +74,9 @@ from sf2tool.h2.map_event_direct_state import verify_map_event_direct_state_cont
 from sf2tool.h2.map_event_flag_lifecycle_state import (
     verify_map_event_flag_lifecycle_state_contract,
 )
+from sf2tool.h2.map_event_flag_route_selection import (
+    verify_map_event_flag_route_selection_contract,
+)
 from sf2tool.h2.map_event_interaction_state import (
     verify_map_event_interaction_state_contract,
 )
@@ -830,6 +833,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map_event_cross_program_flag_state)
     h2_map_event_cross_program_flag_state.add_argument("--output-path", type=_path)
+    h2_map_event_flag_route_selection = h2_commands.add_parser(
+        "map-event-flag-route-selection",
+        help="classify static cross-program flag candidates by map-event route topology",
+    )
+    _add_local_paths(h2_map_event_flag_route_selection)
+    h2_map_event_flag_route_selection.add_argument("--output-path", type=_path)
     h2_map_event_interaction_state = h2_commands.add_parser(
         "map-event-interaction-state",
         help="verify bounded fixed-RAM interaction-state producers, consumers, and aliases",
@@ -1925,6 +1934,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map-event-cross-program-flag-state":
         print_record(
             verify_map_event_cross_program_flag_state_contract(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map-event-flag-route-selection":
+        print_record(
+            verify_map_event_flag_route_selection_contract(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

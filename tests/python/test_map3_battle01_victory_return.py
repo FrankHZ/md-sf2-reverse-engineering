@@ -8,6 +8,12 @@ import pytest
 from jsonschema import Draft7Validator
 
 from sf2tool.h2 import map3_battle01_victory_return as victory_return
+from sf2tool.h2.map_event_cross_program_flag_state import (
+    normalize_map_event_cross_program_flag_state_later_owner_index,
+)
+from sf2tool.h2.map_event_flag_route_selection import (
+    _remove_map_event_flag_route_selection_later_owner_index_delta,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 ROM = ROOT / "local/roms/sf2-us.bin"
@@ -229,8 +235,11 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
             if item["fixtureId"] == cross_program_fixture_id
         )
 
+    after_route_selection = _remove_map_event_flag_route_selection_later_owner_index_delta(
+        original
+    )
     for record_id, fixture_field in cross_program_bindings.items():
-        record = record_for(original, record_id)
+        record = record_for(after_route_selection, record_id)
         assert cross_program_evidence(record) == {
             "level": "H2",
             "fixture": "tests/fixtures/h2/map-event-cross-program-flag-state-static-v1.json",
@@ -241,10 +250,8 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
         assert record["documents"].count(cross_program_document) == 1
         assert record["documents"][-1] == cross_program_document
 
-    after_cross_program = (
-        victory_return.normalize_map_event_cross_program_flag_state_later_owner_index(
-            original
-        )
+    after_cross_program = normalize_map_event_cross_program_flag_state_later_owner_index(
+        after_route_selection
     )
     assert all(
         evidence["fixtureId"] != cross_program_fixture_id

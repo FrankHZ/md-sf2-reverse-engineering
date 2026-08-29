@@ -24,6 +24,9 @@ from sf2tool.h2.map_event_cross_program_flag_state import (
     canonical_json_bytes,
     normalize_map_event_cross_program_flag_state_later_owner_index,
 )
+from sf2tool.h2.map_event_flag_route_selection import (
+    _remove_map_event_flag_route_selection_later_owner_index_delta,
+)
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
@@ -302,9 +305,10 @@ def test_retained_owners_are_hash_locked_before_projection(
 
 def test_index_delta_is_exact_and_chains_predecessor_normalization() -> None:
     current = load_json(RESEARCH_INDEX)
-    predecessor = _remove_map_event_cross_program_flag_state_later_owner_index_delta(current)
+    cross_current = _remove_map_event_flag_route_selection_later_owner_index_delta(current)
+    predecessor = _remove_map_event_cross_program_flag_state_later_owner_index_delta(cross_current)
     assert _sha(canonical_json_bytes(predecessor)) == _PREDECESSOR_INDEX_SHA256
-    current_by_id = {row["id"]: row for row in current["records"]}
+    current_by_id = {row["id"]: row for row in cross_current["records"]}
     previous_by_id = {row["id"]: row for row in predecessor["records"]}
     changed = {
         record_id
@@ -317,9 +321,9 @@ def test_index_delta_is_exact_and_chains_predecessor_normalization() -> None:
         "map.setup.item-event",
         "tech.interrupts.trap-flags",
     }
-    assert normalize_map_event_cross_program_flag_state_later_owner_index(current)
+    assert normalize_map_event_cross_program_flag_state_later_owner_index(cross_current)
 
-    stale = deepcopy(current)
+    stale = deepcopy(cross_current)
     next(row for row in stale["records"] if row["id"] == "map.setup.entity-event")[
         "documents"
     ].append("docs/research/map-event-cross-program-flag-state.md")

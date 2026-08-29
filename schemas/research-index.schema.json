@@ -322,6 +322,14 @@
                             "crossProgramFlagState.categoryRoles.zoneEvents",
                             "crossProgramFlagState.categoryRoles.itemEvents",
                             "crossProgramFlagState.serviceJoin.trapEntryAddress"
+                          ] },
+                          { "enum": [
+                            "flagRouteSelection.retainedIdentities.entityEvents",
+                            "flagRouteSelection.retainedIdentities.zoneEvents",
+                            "flagRouteSelection.retainedIdentities.itemEvents",
+                            "flagRouteSelection.retainedIdentities.trapEntryAddress",
+                            "flagRouteSelection.retainedIdentities.selectorEntryAddress",
+                            "flagRouteSelection.retainedIdentities.mapSetupsEntryAddress"
                           ] }
                         ]
                       }

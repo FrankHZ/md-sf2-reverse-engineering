@@ -25,6 +25,9 @@ from sf2tool.h2.map_event_dialogue_state import (
 from sf2tool.h2.map_event_flag_lifecycle_state import (
     _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
 )
+from sf2tool.h2.map_event_flag_route_selection import (
+    _remove_map_event_flag_route_selection_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_scripted_transition_state import (
     _remove_map_event_scripted_transition_state_later_owner_index_delta,
 )
@@ -38,7 +41,9 @@ from sf2tool.research_index import verify_index
 
 def _remove_cross_program_flag_lifecycle_deltas(index):
     return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
-        _remove_map_event_cross_program_flag_state_later_owner_index_delta(index)
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(
+            _remove_map_event_flag_route_selection_later_owner_index_delta(index)
+        )
     )
 
 
@@ -740,16 +745,16 @@ def test_research_index_delta_is_exact_17_binding_append_without_object_or_desig
         "Index": "manifests/research-index.json",
         "Records": 1627,
         "Confirmed": 1627,
-        "H2Fixtures": 100,
+        "H2Fixtures": 101,
         "H3Fixtures": 94,
         "H3FixtureFiles": 94,
-        "AddressBindings": 3075,
+        "AddressBindings": 3081,
         "IndexedCodeFiles": 381,
         "IndexedDataFiles": 1017,
         "H1ListingRecords": 1590,
         "AlternateListingRecords": 37,
         "Z80MusicBankRecords": 37,
-        "ResearchDocuments": 62,
+        "ResearchDocuments": 63,
         "DesignContracts": 68,
         "UpstreamSourcesChecked": True,
         "H1ListingChecked": True,
