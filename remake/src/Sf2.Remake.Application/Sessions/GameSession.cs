@@ -125,6 +125,16 @@ public sealed record GameSessionSnapshot
         SyntheticFlags = syntheticFlags ?? throw new ArgumentNullException(nameof(syntheticFlags));
         Discoveries = discoveries ?? throw new ArgumentNullException(nameof(discoveries));
         Inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
+        if (contextSelection is not null &&
+            (exploration is null ||
+             contextSelection.Map != exploration.Map ||
+             contextSelection.Position != exploration.PlayerPosition))
+        {
+            throw new ArgumentException(
+                "Exploration context must identify the exact live map and player position.",
+                nameof(contextSelection));
+        }
+
         if (fieldSearch is not null &&
             (fieldSearch.Status == MapFieldSearchStatus.Discovered) !=
             Discoveries.IsDiscovered(fieldSearch.Discovery))
@@ -148,6 +158,7 @@ public sealed record GameSessionSnapshot
             (exploration is null ||
              contextSelection is null ||
              fieldSearch.Map != exploration.Map ||
+             fieldSearch.Map != contextSelection.Map ||
              fieldSearch.Position != exploration.PlayerPosition ||
              fieldSearch.Position != contextSelection.Position ||
              fieldSearch.Setup != contextSelection.SelectedSetup ||
@@ -182,9 +193,17 @@ public sealed record GameSessionSnapshot
         List<MapEntityDefinition> copiedEntities = [];
         foreach (MapEntityDefinition entity in entities)
         {
-            copiedEntities.Add(entity ?? throw new ArgumentException(
+            MapEntityDefinition admittedEntity = entity ?? throw new ArgumentException(
                 "Snapshot entities cannot contain null values.",
-                nameof(entities)));
+                nameof(entities));
+            if (admittedEntity.Map != Exploration.Map)
+            {
+                throw new ArgumentException(
+                    "Snapshot entities must belong to the exact live map.",
+                    nameof(entities));
+            }
+
+            copiedEntities.Add(admittedEntity);
         }
 
         Entities = new ReadOnlyCollection<MapEntityDefinition>(copiedEntities);
@@ -549,20 +568,23 @@ public sealed class GameSession
                     "Map context selection is not admitted in this flow stage."));
         }
 
+        MapId map = Snapshot.Exploration.Map;
         MapPosition position = Snapshot.Exploration.PlayerPosition;
         byte x = checked((byte)position.X);
         byte y = checked((byte)position.Y);
+        MapExplorationRuntimeDefinition runtime = _mapContext.MapRuntimes.GetRequired(map);
         MapSetupId selectedSetup = _mapContext.SetupCatalog.Select(
-            Snapshot.Exploration.Map,
+            map,
             _mapContext.VoidSetup,
             Snapshot.SyntheticFlags.IsSet);
         AreaDescriptionSelection areaDescription = MapAreaDescriptionSelector.Select(
-            _mapContext.AreaDescriptions,
+            runtime.AreaDescriptions,
             new MapAreaDescriptionQuery(x, y, command.AreaDescriptionAdmission));
         ZoneEventSelection zoneEvent = MapSetupEventSelector.Select(
-            _mapContext.ZoneEvents,
+            runtime.ZoneEvents,
             new ZoneEventQuery(x, y));
         ExplorationContextSelectionSnapshot selection = new(
+            map,
             position,
             selectedSetup,
             areaDescription,
@@ -781,6 +803,7 @@ public sealed class GameSession
 
         ExplorationContextSelectionSnapshot? selection = Snapshot.ContextSelection;
         if (selection is null ||
+            selection.Map != Snapshot.Exploration.Map ||
             selection.Position != Snapshot.Exploration.PlayerPosition)
         {
             return new GameSessionCommandRejected(
@@ -884,11 +907,9 @@ public sealed class GameSession
         }
 
         long acknowledgedAtStep = checked(Snapshot.SimulationStep + 1);
-        ExplorationMovementState relocated = new(
-            definition.DestinationMap,
-            Snapshot.Exploration.Layout,
-            Snapshot.Exploration.Walkability,
-            definition.DestinationPosition);
+        ExplorationMovementState relocated = _mapContext.MapRuntimes
+            .GetRequired(definition.DestinationMap)
+            .CreateExplorationState(definition.DestinationPosition);
         MapLocalTransitionSnapshot acknowledged = pending.Acknowledge(acknowledgedAtStep);
         Snapshot = new GameSessionSnapshot(
             Snapshot.ScenarioId,
@@ -906,7 +927,8 @@ public sealed class GameSession
             lastEventEffect: null,
             acknowledged,
             Snapshot.Facing,
-            Snapshot.Entities,
+            _mapContext.EntityInteractions.Entities.Where(
+                entity => entity.Map == relocated.Map),
             entityInteraction: null,
             dialogue: null,
             fieldSearch: null,
@@ -1161,7 +1183,9 @@ public sealed class GameSession
         }
 
         ExplorationContextSelectionSnapshot? selection = Snapshot.ContextSelection;
-        if (selection is null || selection.Position != Snapshot.Exploration.PlayerPosition)
+        if (selection is null ||
+            selection.Map != Snapshot.Exploration.Map ||
+            selection.Position != Snapshot.Exploration.PlayerPosition)
         {
             return new GameSessionCommandRejected(
                 Snapshot,
@@ -1268,6 +1292,7 @@ public sealed class GameSession
             Snapshot.Exploration.Map != pending.Map ||
             Snapshot.Exploration.PlayerPosition != pending.Position ||
             selection is null ||
+            selection.Map != pending.Map ||
             selection.Position != pending.Position ||
             selection.SelectedSetup != pending.Setup ||
             selection.ZoneEvent.Target != pending.ZoneTarget)
@@ -1559,7 +1584,8 @@ public sealed class GameSession
                 lastEventEffect: null,
                 localTransition: null,
                 accepted.Scenario.MapContext.InitialFacing,
-                accepted.Scenario.MapContext.EntityInteractions.Entities,
+                accepted.Scenario.MapContext.EntityInteractions.Entities.Where(
+                    entity => entity.Map == accepted.Scenario.StartState.Map),
                 entityInteraction: null,
                 dialogue: null,
                 fieldSearch: null,

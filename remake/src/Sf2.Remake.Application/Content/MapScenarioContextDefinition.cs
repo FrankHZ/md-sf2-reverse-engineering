@@ -9,11 +9,10 @@ public sealed class MapScenarioContextDefinition
     private readonly HashSet<FlagId> _initialSetFlagLookup;
 
     public MapScenarioContextDefinition(
+        MapExplorationRuntimeCatalog mapRuntimes,
         MapSetupCatalog setupCatalog,
         MapSetupId voidSetup,
         IEnumerable<FlagId> initialSetFlags,
-        MapAreaDescriptionSource areaDescriptions,
-        MapSetupEventTable<ZoneEventRecord> zoneEvents,
         MapEventRequestCatalog eventRequests,
         MapEventEffectCatalog eventEffects,
         MapLocalTransitionCatalog localTransitions,
@@ -23,12 +22,10 @@ public sealed class MapScenarioContextDefinition
         MapFieldSearchCatalog fieldSearches,
         MapItemAcquisitionCatalog itemAcquisitions)
     {
+        MapRuntimes = mapRuntimes ?? throw new ArgumentNullException(nameof(mapRuntimes));
         SetupCatalog = setupCatalog ?? throw new ArgumentNullException(nameof(setupCatalog));
         VoidSetup = voidSetup ?? throw new ArgumentNullException(nameof(voidSetup));
         ArgumentNullException.ThrowIfNull(initialSetFlags);
-        AreaDescriptions = areaDescriptions ??
-            throw new ArgumentNullException(nameof(areaDescriptions));
-        ZoneEvents = zoneEvents ?? throw new ArgumentNullException(nameof(zoneEvents));
         EventRequests = eventRequests ?? throw new ArgumentNullException(nameof(eventRequests));
         EventEffects = eventEffects ?? throw new ArgumentNullException(nameof(eventEffects));
         LocalTransitions = localTransitions ??
@@ -65,11 +62,26 @@ public sealed class MapScenarioContextDefinition
 
         _initialSetFlags = copiedFlags.AsReadOnly();
 
-        HashSet<EventTargetId> specificTargets = ZoneEvents.Records
+        HashSet<MapId> runtimeMaps = MapRuntimes.Definitions
+            .Select(definition => definition.Map)
+            .ToHashSet();
+        HashSet<MapId> setupMaps = SetupCatalog.Entries
+            .Select(entry => entry.Map)
+            .ToHashSet();
+        if (!runtimeMaps.SetEquals(setupMaps))
+        {
+            throw new ArgumentException(
+                "Map exploration runtime and setup catalogs must own the same exact map IDs.",
+                nameof(setupCatalog));
+        }
+
+        HashSet<EventTargetId> specificTargets = MapRuntimes.Definitions
+            .SelectMany(definition => definition.ZoneEvents.Records)
             .Where(record => !record.IsDefault)
             .Select(record => record.Target)
             .ToHashSet();
-        HashSet<EventTargetId> defaultTargets = ZoneEvents.Records
+        HashSet<EventTargetId> defaultTargets = MapRuntimes.Definitions
+            .SelectMany(definition => definition.ZoneEvents.Records)
             .Where(record => record.IsDefault)
             .Select(record => record.Target)
             .ToHashSet();
@@ -132,12 +144,11 @@ public sealed class MapScenarioContextDefinition
         HashSet<PresentationCueId> effectCueIds = EventEffects.Definitions
             .Select(definition => definition.Cue)
             .ToHashSet();
-        HashSet<MapId> setupMaps = SetupCatalog.Entries
-            .Select(entry => entry.Map)
-            .ToHashSet();
         foreach (MapLocalTransitionDefinition definition in LocalTransitions.Definitions)
         {
-            List<ZoneEventRecord> sourceRecords = ZoneEvents.Records
+            MapExplorationRuntimeDefinition sourceRuntime =
+                MapRuntimes.GetRequired(definition.SourceMap);
+            List<ZoneEventRecord> sourceRecords = sourceRuntime.ZoneEvents.Records
                 .Where(record => !record.IsDefault && record.Target == definition.ZoneTarget)
                 .ToList();
             if (sourceRecords.Count != 1 ||
@@ -259,8 +270,10 @@ public sealed class MapScenarioContextDefinition
             bool ownsSetup = setupEntry.Route.DefaultSetup == search.Setup ||
                 setupEntry.Route.FlagAlternatives.Any(
                     alternative => alternative.Setup == search.Setup);
+            MapExplorationRuntimeDefinition searchRuntime =
+                MapRuntimes.GetRequired(search.Map);
             ZoneEventSelection selectedZone = MapSetupEventSelector.Select(
-                ZoneEvents,
+                searchRuntime.ZoneEvents,
                 new ZoneEventQuery(
                     checked((byte)search.Position.X),
                     checked((byte)search.Position.Y)));
@@ -301,15 +314,13 @@ public sealed class MapScenarioContextDefinition
         }
     }
 
+    public MapExplorationRuntimeCatalog MapRuntimes { get; }
+
     public MapSetupCatalog SetupCatalog { get; }
 
     public MapSetupId VoidSetup { get; }
 
     public IReadOnlyList<FlagId> InitialSetFlags => _initialSetFlags;
-
-    public MapAreaDescriptionSource AreaDescriptions { get; }
-
-    public MapSetupEventTable<ZoneEventRecord> ZoneEvents { get; }
 
     public MapEventRequestCatalog EventRequests { get; }
 

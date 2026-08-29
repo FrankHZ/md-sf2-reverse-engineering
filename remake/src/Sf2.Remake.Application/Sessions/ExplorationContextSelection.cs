@@ -20,17 +20,21 @@ public sealed record SelectExplorationContextCommand : IGameSessionCommand
 public sealed record ExplorationContextSelectionSnapshot
 {
     public ExplorationContextSelectionSnapshot(
+        MapId map,
         MapPosition position,
         MapSetupId selectedSetup,
         AreaDescriptionSelection areaDescription,
         ZoneEventSelection zoneEvent)
     {
+        Map = map ?? throw new ArgumentNullException(nameof(map));
         Position = position ?? throw new ArgumentNullException(nameof(position));
         SelectedSetup = selectedSetup ?? throw new ArgumentNullException(nameof(selectedSetup));
         AreaDescription = areaDescription ??
             throw new ArgumentNullException(nameof(areaDescription));
         ZoneEvent = zoneEvent ?? throw new ArgumentNullException(nameof(zoneEvent));
     }
+
+    public MapId Map { get; }
 
     public MapPosition Position { get; }
 

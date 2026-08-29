@@ -26,6 +26,142 @@ public sealed class GameSessionTests
     }
 
     [Fact]
+    public void RuntimeCatalogRequiresExactMapIdentityAndSolelyBuildsTheStartState()
+    {
+        MapScenarioAccepted accepted = Assert.IsType<MapScenarioAccepted>(
+            CreateAcceptedSource().Admit(Request()));
+        MapExplorationRuntimeCatalog runtimes = accepted.Scenario.MapContext.MapRuntimes;
+        MapExplorationRuntimeDefinition runtime = Assert.Single(runtimes.Definitions);
+
+        Assert.Equal(accepted.Scenario.AdmissionFacts.CurrentMap, runtime.Map);
+        Assert.Same(runtime.Layout, accepted.Scenario.StartState.Layout);
+        Assert.Same(runtime.Walkability, accepted.Scenario.StartState.Walkability);
+        Assert.Equal(
+            accepted.Scenario.AdmissionFacts.LogicalStartPosition,
+            accepted.Scenario.StartState.PlayerPosition);
+        Assert.Same(runtime, runtimes.GetRequired(new MapId("map3")));
+        Assert.Throws<ArgumentException>(() => runtimes.GetRequired(new MapId("missing-map")));
+        Assert.Throws<ArgumentException>(() => new MapExplorationRuntimeCatalog([]));
+        Assert.Throws<ArgumentException>(
+            () => new MapExplorationRuntimeCatalog([runtime, runtime]));
+
+        MapSetupCatalog wrongSetupCatalog = new(
+            [
+                new MapSetupCatalogEntry(
+                    new MapId("other-map"),
+                    new MapSetupRoute(new MapSetupId("other-setup"), [])),
+            ]);
+        Assert.Throws<ArgumentException>(
+            () => CreateMapContext(
+                new MapId("map3"),
+                mapRuntimes: runtimes,
+                setupCatalog: wrongSetupCatalog));
+    }
+
+    [Fact]
+    public void SnapshotProjectsOnlyCurrentMapEntitiesFromTheFullRuntimeCatalog()
+    {
+        MapId map3 = new("map3");
+        MapId secondMap = new("synthetic-second-map");
+        MapScenarioContextDefinition seedContext = CreateMapContext(map3);
+        MapExplorationRuntimeDefinition map3Runtime = Assert.Single(
+            seedContext.MapRuntimes.Definitions);
+        MapExplorationRuntimeCatalog runtimes = new(
+            [
+                map3Runtime,
+                new MapExplorationRuntimeDefinition(
+                    secondMap,
+                    map3Runtime.Layout,
+                    map3Runtime.Walkability,
+                    map3Runtime.AreaDescriptions,
+                    map3Runtime.ZoneEvents),
+            ]);
+        MapSetupCatalog setupCatalog = new(
+            [
+                new MapSetupCatalogEntry(
+                    map3,
+                    new MapSetupRoute(
+                        new MapSetupId("synthetic-setup"),
+                        [
+                            new MapSetupFlagVariant(
+                                new FlagId("alternate-enabled"),
+                                new MapSetupId("alternate-setup")),
+                        ])),
+                new MapSetupCatalogEntry(
+                    secondMap,
+                    new MapSetupRoute(new MapSetupId("second-setup"), [])),
+            ]);
+        MapEntityInteractionCatalog entities = new(
+            [
+                EntityDefinition(),
+                EntityDefinition(
+                    entity: "second-entity",
+                    map: secondMap,
+                    x: 2,
+                    target: "second-target"),
+            ],
+            [
+                InteractionDefinition(),
+                InteractionDefinition("second-request", "second-target", "second-cue"),
+            ]);
+        MapDialogueCatalog dialogues = new(
+            [
+                DialogueDefinition(),
+                DialogueDefinition(
+                    dialogue: "second-dialogue",
+                    target: "second-target",
+                    closeCue: "second-dialogue-closed",
+                    lines:
+                    [
+                        DialogueLine(
+                            "second-line",
+                            "Second project-authored placeholder.",
+                            "second-line-presented"),
+                    ]),
+            ]);
+        MapScenarioContextDefinition context = CreateMapContext(
+            map3,
+            entityInteractions: entities,
+            dialogues: dialogues,
+            mapRuntimes: runtimes,
+            setupCatalog: setupCatalog);
+        MapPosition start = new(1, 1);
+        MapScenarioDefinition definition = new(
+            "synthetic-scenario",
+            "Synthetic scenario",
+            map3,
+            start,
+            new ScenarioAdmissionFacts(
+                map3,
+                map3,
+                start,
+                opaqueStartFacing: 3,
+                "synthetic-setup",
+                "synthetic-init",
+                noProgramRequest: true,
+                explorationReady: true),
+            context);
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(
+                new AcceptedSource(
+                    definition,
+                    new ScenarioAdmissionReceipt(
+                        "synthetic-package",
+                        schemaVersion: 1,
+                        "digest",
+                        ContentProfile.PublicSynthetic,
+                        exactControlledAdmission: false,
+                        ["evidence-owner"],
+                        ["capability"])),
+                Request()));
+
+        Assert.Equal(2, context.EntityInteractions.Entities.Count);
+        MapEntityDefinition projected = Assert.Single(started.Session.Snapshot.Entities);
+        Assert.Equal(map3, projected.Map);
+        Assert.Equal("placeholder-entity", projected.Entity.Value);
+    }
+
+    [Fact]
     public void BlockedMoveAdvancesLogicalStepWithoutChangingPosition()
     {
         GameSessionStarted started = Assert.IsType<GameSessionStarted>(
@@ -51,6 +187,7 @@ public sealed class GameSessionTests
             started.Session.Apply(
                 new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
 
+        Assert.Equal(moved.Snapshot.Exploration.Map, selected.Selection.Map);
         Assert.Equal(moved.Snapshot.Exploration.PlayerPosition, selected.Selection.Position);
         Assert.Equal("synthetic-setup", selected.Selection.SelectedSetup.Value);
         Assert.Equal(AreaDescriptionSelectionKind.Text, selected.Selection.AreaDescription.Kind);
@@ -1475,18 +1612,6 @@ public sealed class GameSessionTests
     {
         MapId map = new("map3");
         MapPosition start = new(1, 1);
-        ExplorationMovementState exploration = new(
-            map,
-            new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
-            new SyntheticWalkabilityGrid(
-                3,
-                3,
-                [
-                    false, false, false,
-                    true, true, true,
-                    true, true, true,
-                ]),
-            start);
         ScenarioAdmissionFacts facts = new(
             map,
             map,
@@ -1499,7 +1624,8 @@ public sealed class GameSessionTests
         MapScenarioDefinition definition = new(
             "synthetic-scenario",
             "Synthetic scenario",
-            exploration,
+            map,
+            start,
             facts,
             CreateMapContext(
                 map,
@@ -1543,9 +1669,11 @@ public sealed class GameSessionTests
         MapEntityInteractionCatalog? entityInteractions = null,
         MapDialogueCatalog? dialogues = null,
         MapFieldSearchCatalog? fieldSearches = null,
-        MapItemAcquisitionCatalog? itemAcquisitions = null)
+        MapItemAcquisitionCatalog? itemAcquisitions = null,
+        MapExplorationRuntimeCatalog? mapRuntimes = null,
+        MapSetupCatalog? setupCatalog = null)
     {
-        MapSetupCatalog setupCatalog = new(
+        MapSetupCatalog admittedSetupCatalog = setupCatalog ?? new(
             [
                 new MapSetupCatalogEntry(
                     map,
@@ -1590,12 +1718,27 @@ public sealed class GameSessionTests
                     effectFlag,
                     effectCue)]
                 : []);
+        MapExplorationRuntimeCatalog admittedMapRuntimes = mapRuntimes ?? new(
+            [
+                new MapExplorationRuntimeDefinition(
+                    map,
+                    new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
+                    new SyntheticWalkabilityGrid(
+                        3,
+                        3,
+                        [
+                            false, false, false,
+                            true, true, true,
+                            true, true, true,
+                        ]),
+                    descriptions,
+                    zoneEvents),
+            ]);
         return new MapScenarioContextDefinition(
-            setupCatalog,
+            admittedMapRuntimes,
+            admittedSetupCatalog,
             new MapSetupId("void-setup"),
             initialSetFlags ?? [],
-            descriptions,
-            zoneEvents,
             eventRequests,
             eventEffects,
             localTransitions ?? new MapLocalTransitionCatalog([TransitionDefinition()]),
