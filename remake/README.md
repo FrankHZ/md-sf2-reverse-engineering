@@ -33,10 +33,19 @@ function targets, and entries are process-local Domain values, not a public cont
 content loaders translate accepted source tables into these typed values is deferred to a later
 Application/Content boundary.
 
+The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy
+reducer. The reducer clones the input, then performs forward word-by-word reads and writes on that clone,
+preserving the accepted cascade behavior for overlapping copies. Logical words remain opaque `ushort`
+values; original memory addresses, byte offsets, script cursors, and display-update behavior are not
+part of the API. This reducer consumes the bounded copy chronology and seven-case observation boundary
+from `sf2-map-block-mutation-runtime-v1`, with command-shape provenance retained by
+`sf2-map-script-engine-static-v1`.
+
 Natural route, event, and area-description reachability; actual flag values and lifetime; target
 effects; decoded text; inventory or story mutation; persistence; Map 3 admission; Battle 01 continuity;
 presentation; Godot integration; H4; and milestone acceptance remain Unknown or deferred at their
-existing owners.
+existing owners. Flag, step, roof, collision, reload, VDP/DMA, script-cursor, and update-toggle effects
+around working-layout mutation likewise remain outside this reducer.
 
 ## Toolchain and dependencies
 
