@@ -871,6 +871,48 @@ def test_remake_test_change_selects_dotnet_without_replaying_godot() -> None:
     assert plan["unclassifiedPaths"] == []
 
 
+@pytest.mark.parametrize(
+    "path",
+    (
+        "remake/future-runtime.json",
+        "remake/tools/package_public_content.py",
+        "remake/assets/public-synthetic/map3-placeholder.png",
+        "remake/config/runtime-profile.cfg",
+    ),
+)
+def test_unknown_remake_runtime_paths_conservatively_select_both_partitions(
+    path: str,
+) -> None:
+    plan = plan_paths((path,), root=ROOT)
+
+    assert _partition_ids(plan) == {"public-core", "remake-dotnet", "remake-godot"}
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_every_tracked_remake_path_has_closed_partition_ownership() -> None:
+    completed = subprocess.run(
+        ["git", "ls-files", "-z", "--", "remake"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+    )
+    tracked_paths = tuple(
+        value.decode("utf-8") for value in completed.stdout.split(b"\0") if value
+    )
+
+    assert tracked_paths
+    for path in tracked_paths:
+        plan = plan_paths((path,), root=ROOT)
+        if path.endswith(".md"):
+            expected = {"public-core"}
+        elif path.startswith("remake/tests/"):
+            expected = {"public-core", "remake-dotnet"}
+        else:
+            expected = {"public-core", "remake-dotnet", "remake-godot"}
+        assert _partition_ids(plan) == expected, path
+        assert plan["unclassifiedPaths"] == [], path
+
+
 def test_remake_godot_runner_and_test_have_explicit_non_evidence_ownership() -> None:
     runner = plan_paths(("src/sf2tool/remake_godot.py",), root=ROOT)
     test = plan_paths(("tests/python/test_remake_godot.py",), root=ROOT)
@@ -909,6 +951,46 @@ def test_remake_toolchain_lock_selects_both_non_evidence_partitions() -> None:
     plan = plan_paths(("remake/toolchain.json",), root=ROOT)
 
     assert _partition_ids(plan) == {"public-core", "remake-dotnet", "remake-godot"}
+    assert plan["unclassifiedPaths"] == []
+
+
+@pytest.mark.parametrize("path", ("pyproject.toml", "uv.lock", ".python-version"))
+def test_python_runner_toolchain_inputs_also_select_remake_godot(path: str) -> None:
+    plan = plan_paths((path,), root=ROOT)
+
+    assert _partition_ids(plan) == {
+        "public-core",
+        "tooling-python",
+        "remake-godot",
+        *EVIDENCE_PARTITION_IDS,
+    }
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_transitive_runner_path_dependency_selects_remake_godot() -> None:
+    plan = plan_paths(("src/sf2tool/paths.py",), root=ROOT)
+
+    assert _partition_ids(plan) == {
+        "public-core",
+        "tooling-python",
+        "remake-godot",
+        *EVIDENCE_PARTITION_IDS,
+    }
+    assert "src/sf2tool/paths.py reaches sf2tool.remake_godot" in _partition(
+        plan, "remake-godot"
+    )["reasons"]
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_verification_planner_owner_change_selects_both_remake_partitions() -> None:
+    plan = plan_paths(("src/sf2tool/verification_plan.py",), root=ROOT)
+
+    assert _partition_ids(plan) == {
+        "public-core",
+        "tooling-python",
+        "remake-dotnet",
+        "remake-godot",
+    }
     assert plan["unclassifiedPaths"] == []
 
 

@@ -603,6 +603,13 @@ def _select_dependents(
                 pending.append(dependent)
 
     matched = False
+    if "sf2tool.remake_godot" in seen:
+        _selection_entry(
+            selected,
+            "remake-godot",
+            f"{path} reaches sf2tool.remake_godot",
+        )
+        matched = True
     if "sf2tool.harness" in seen:
         _selection_entry(selected, "h1-original", f"{path} reaches sf2tool.harness")
         matched = True
@@ -641,16 +648,10 @@ def plan_paths(
     for path in changed_paths:
         normalized = path.replace("\\", "/")
         if normalized.startswith("remake/"):
-            if not normalized.endswith(".md"):
-                _selection_entry(selected, "remake-dotnet", normalized)
-            if normalized.startswith(("remake/src/", "remake/game/")) or normalized in {
-                "remake/Sf2.Remake.sln",
-                "remake/Directory.Build.props",
-                "remake/Directory.Packages.props",
-                "remake/NuGet.Config",
-                "remake/global.json",
-                "remake/toolchain.json",
-            }:
+            if normalized.endswith(".md"):
+                continue
+            _selection_entry(selected, "remake-dotnet", normalized)
+            if not normalized.startswith("remake/tests/"):
                 _selection_entry(selected, "remake-godot", normalized)
             continue
 
@@ -768,6 +769,7 @@ def plan_paths(
 
         if normalized in {"pyproject.toml", "uv.lock", ".python-version"}:
             _selection_entry(selected, "tooling-python", normalized)
+            _selection_entry(selected, "remake-godot", normalized)
             _select_all(selected, EVIDENCE_PARTITION_IDS, f"shared toolchain input: {normalized}")
             continue
 
@@ -783,6 +785,13 @@ def plan_paths(
                 EVIDENCE_PARTITION_IDS,
                 f"shared CLI input: {normalized}",
             )
+            continue
+
+        if normalized == "src/sf2tool/verification_plan.py":
+            _selection_entry(selected, "tooling-python", normalized)
+            _selection_entry(selected, "remake-dotnet", normalized)
+            _selection_entry(selected, "remake-godot", normalized)
+            _select_dependents(selected, root, normalized)
             continue
 
         if normalized.startswith("src/sf2tool/") and normalized.endswith(".py"):

@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import ctypes
 import hashlib
 import json
+import os
+import subprocess
 import sys
 import zipfile
+from ctypes import wintypes
 from pathlib import Path
 
 import pytest
@@ -21,6 +25,42 @@ from sf2tool.remake_godot import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+def _pid_is_running(process_id: int) -> bool:
+    if os.name == "nt":
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        kernel32.OpenProcess.restype = wintypes.HANDLE
+        kernel32.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+        kernel32.WaitForSingleObject.restype = wintypes.DWORD
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.CloseHandle.restype = wintypes.BOOL
+        handle = kernel32.OpenProcess(0x00100000, False, process_id)
+        if not handle:
+            return False
+        try:
+            return kernel32.WaitForSingleObject(handle, 0) == 0x00000102
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(process_id, 0)
+    except ProcessLookupError:
+        return False
+    return True
+
+
+def _spawn_child_script(pid_path: Path, *, exit_code: int | None) -> str:
+    final_statement = "time.sleep(60)" if exit_code is None else f"raise SystemExit({exit_code})"
+    return (
+        "import subprocess, sys, time; from pathlib import Path; "
+        "child = subprocess.Popen("
+        "[sys.executable, '-c', 'import time; time.sleep(60)'], "
+        "stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); "
+        f"Path({str(pid_path)!r}).write_text(str(child.pid), encoding='utf-8'); "
+        "print('output-before-cleanup', flush=True); "
+        f"{final_statement}"
+    )
 
 
 def test_tracked_toolchain_manifest_locks_official_godot_dotnet_release() -> None:
@@ -130,20 +170,63 @@ def test_bounded_process_records_success_without_shell(tmp_path: Path) -> None:
     assert receipt.cleanup_status == "clean"
 
 
-def test_bounded_process_times_out_and_reaps_process(tmp_path: Path) -> None:
-    receipt = run_bounded_process(
-        "timeout",
+def test_bounded_timeout_reaps_owned_descendant_and_preserves_unrelated_process(
+    tmp_path: Path,
+) -> None:
+    owned_pid_path = tmp_path / "owned-timeout.pid"
+    unrelated = subprocess.Popen(
         [sys.executable, "-c", "import time; time.sleep(60)"],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        receipt = run_bounded_process(
+            "timeout",
+            [sys.executable, "-c", _spawn_child_script(owned_pid_path, exit_code=None)],
+            cwd=tmp_path,
+            environment={},
+            timeout=1,
+            termination_timeout=5,
+            reap_timeout=5,
+        )
+
+        owned_pid = int(owned_pid_path.read_text(encoding="utf-8"))
+        assert receipt.timed_out
+        assert receipt.cleanup_status == "clean"
+        assert "output-before-cleanup" in receipt.stdout_tail
+        assert not receipt.passed
+        assert not _pid_is_running(owned_pid)
+        assert _pid_is_running(unrelated.pid)
+    finally:
+        unrelated.terminate()
+        try:
+            unrelated.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            unrelated.kill()
+            unrelated.wait(timeout=5)
+
+
+def test_bounded_failure_reaps_owned_descendant(tmp_path: Path) -> None:
+    owned_pid_path = tmp_path / "owned-failure.pid"
+
+    receipt = run_bounded_process(
+        "failure",
+        [sys.executable, "-c", _spawn_child_script(owned_pid_path, exit_code=7)],
         cwd=tmp_path,
         environment={},
-        timeout=1,
+        timeout=10,
         termination_timeout=5,
         reap_timeout=5,
     )
 
-    assert receipt.timed_out
+    owned_pid = int(owned_pid_path.read_text(encoding="utf-8"))
+    assert receipt.exit_code == 7
+    assert not receipt.timed_out
     assert receipt.cleanup_status == "clean"
+    assert "output-before-cleanup" in receipt.stdout_tail
     assert not receipt.passed
+    assert not _pid_is_running(owned_pid)
 
 
 def test_smoke_receipt_requires_exact_public_synthetic_projection() -> None:

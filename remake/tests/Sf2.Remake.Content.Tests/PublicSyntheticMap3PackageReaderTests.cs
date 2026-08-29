@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Content;
 using Sf2.Remake.Domain.Maps;
@@ -33,7 +34,10 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         Assert.Equal(
             [PublicSyntheticMap3PackageReader.Capability],
             accepted.Receipt.Capabilities);
-        Assert.Equal(64, accepted.Receipt.ContentDigest.Length);
+        string trackedDigest = Convert.ToHexString(
+            SHA256.HashData(File.ReadAllBytes(PackagePath()))).ToLowerInvariant();
+        Assert.Equal(PublicSyntheticMap3PackageReader.ExpectedContentDigest, trackedDigest);
+        Assert.Equal(trackedDigest, accepted.Receipt.ContentDigest);
     }
 
     [Fact]
@@ -118,6 +122,32 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         }
     }
 
+    [Fact]
+    public void OtherwiseValidLayoutMutationUnderSamePackageIdFailsDigestAdmission()
+    {
+        AssertDigestMismatch(
+            original => original.Replace(
+                "\"x\": 54, \"y\": 1, \"word\": 1",
+                "\"x\": 54, \"y\": 1, \"word\": 2",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void OtherwiseValidWalkabilityMutationUnderSamePackageIdFailsDigestAdmission()
+    {
+        AssertDigestMismatch(
+            original => original.Replace(
+                "\"x\": 56, \"y\": 2",
+                "\"x\": 55, \"y\": 2",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void WhitespaceOnlyByteMutationUnderSamePackageIdFailsDigestAdmission()
+    {
+        AssertDigestMismatch(original => original + "\n");
+    }
+
     private static MapScenarioRequest Request() =>
         new(
             PublicSyntheticMap3PackageReader.PackageId,
@@ -133,6 +163,30 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         }
 
         return Assert.IsType<MapScenarioAccepted>(result);
+    }
+
+    private static void AssertDigestMismatch(Func<string, string> mutate)
+    {
+        string original = File.ReadAllText(PackagePath(), System.Text.Encoding.UTF8);
+        string modified = mutate(original);
+        Assert.NotEqual(original, modified);
+        string contentRoot = CreateTemporaryContentRoot(modified);
+        try
+        {
+            PublicSyntheticMap3PackageReader reader = new(contentRoot);
+
+            MapScenarioRejected rejected = Assert.IsType<MapScenarioRejected>(
+                reader.Admit(Request()));
+
+            Assert.Equal(
+                ScenarioAdmissionFailureCode.ContentDigestMismatch,
+                rejected.Diagnostic.Code);
+            Assert.Equal("contentDigest", rejected.Diagnostic.Field);
+        }
+        finally
+        {
+            Directory.Delete(contentRoot, recursive: true);
+        }
     }
 
     private static string PackagePath() =>

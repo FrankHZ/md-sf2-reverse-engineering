@@ -11,6 +11,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
     public const string PackageId = "public-synthetic-map3-smoke-v1";
     public const string Capability = "map3-synthetic-exploration-smoke";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
+    public const string ExpectedContentDigest =
+        "be660d6bc40f341c5f818e0a0dcbc31bcf806f062d78fa4b8aaf2ed41f63c026";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -88,6 +90,16 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                 $"The synthetic package is unavailable: {error.GetType().Name}.");
         }
 
+        string contentDigest =
+            Convert.ToHexString(SHA256.HashData(documentBytes)).ToLowerInvariant();
+        if (!string.Equals(contentDigest, ExpectedContentDigest, StringComparison.Ordinal))
+        {
+            return Reject(
+                ScenarioAdmissionFailureCode.ContentDigestMismatch,
+                "contentDigest",
+                "The public-synthetic package bytes do not match the tracked package identity.");
+        }
+
         try
         {
             PublicSyntheticMap3Document? document =
@@ -133,7 +145,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             ScenarioAdmissionReceipt receipt = new(
                 document.PackageId,
                 document.SchemaVersion,
-                Convert.ToHexString(SHA256.HashData(documentBytes)).ToLowerInvariant(),
+                contentDigest,
                 ContentProfile.PublicSynthetic,
                 document.ExactControlledAdmission,
                 document.EvidenceOwnerIds,
