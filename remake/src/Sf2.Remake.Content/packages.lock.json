@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net8.0": {
+      "sf2.remake.application": {
+        "type": "Project",
+        "dependencies": {
+          "Sf2.Remake.Domain": "[1.0.0, )"
+        }
+      },
+      "sf2.remake.domain": {
+        "type": "Project"
+      }
+    }
+  }
+}

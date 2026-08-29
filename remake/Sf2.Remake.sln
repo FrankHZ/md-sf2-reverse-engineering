@@ -4,7 +4,17 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sf2.Remake.Domain", "src\Sf2.Remake.Domain\Sf2.Remake.Domain.csproj", "{6501E4A7-075F-45BB-AB9D-E6C0838A5296}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sf2.Remake.Application", "src\Sf2.Remake.Application\Sf2.Remake.Application.csproj", "{A35724F9-C07C-4924-A5FB-80DFA8BC5782}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sf2.Remake.Content", "src\Sf2.Remake.Content\Sf2.Remake.Content.csproj", "{B7E1D34E-DB0B-4C99-B919-3433E7B82183}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sf2.Remake.Godot", "game\Sf2.Remake.Godot.csproj", "{CD9F4631-EF38-4F4A-87F0-039E8610B48A}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sf2.Remake.Domain.Tests", "tests\Sf2.Remake.Domain.Tests\Sf2.Remake.Domain.Tests.csproj", "{3A50F51E-8ECD-4F3C-9420-B4F28BD2BE74}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sf2.Remake.Application.Tests", "tests\Sf2.Remake.Application.Tests\Sf2.Remake.Application.Tests.csproj", "{D6238806-10B1-468E-BFA9-5A839493E9D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sf2.Remake.Content.Tests", "tests\Sf2.Remake.Content.Tests\Sf2.Remake.Content.Tests.csproj", "{E40C2D3F-D2FD-4A69-9450-0DE3A65864C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,9 +26,29 @@ Global
 		{6501E4A7-075F-45BB-AB9D-E6C0838A5296}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6501E4A7-075F-45BB-AB9D-E6C0838A5296}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6501E4A7-075F-45BB-AB9D-E6C0838A5296}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A35724F9-C07C-4924-A5FB-80DFA8BC5782}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A35724F9-C07C-4924-A5FB-80DFA8BC5782}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A35724F9-C07C-4924-A5FB-80DFA8BC5782}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A35724F9-C07C-4924-A5FB-80DFA8BC5782}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7E1D34E-DB0B-4C99-B919-3433E7B82183}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7E1D34E-DB0B-4C99-B919-3433E7B82183}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7E1D34E-DB0B-4C99-B919-3433E7B82183}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7E1D34E-DB0B-4C99-B919-3433E7B82183}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD9F4631-EF38-4F4A-87F0-039E8610B48A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD9F4631-EF38-4F4A-87F0-039E8610B48A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD9F4631-EF38-4F4A-87F0-039E8610B48A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD9F4631-EF38-4F4A-87F0-039E8610B48A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3A50F51E-8ECD-4F3C-9420-B4F28BD2BE74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3A50F51E-8ECD-4F3C-9420-B4F28BD2BE74}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A50F51E-8ECD-4F3C-9420-B4F28BD2BE74}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A50F51E-8ECD-4F3C-9420-B4F28BD2BE74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6238806-10B1-468E-BFA9-5A839493E9D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6238806-10B1-468E-BFA9-5A839493E9D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6238806-10B1-468E-BFA9-5A839493E9D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6238806-10B1-468E-BFA9-5A839493E9D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E40C2D3F-D2FD-4A69-9450-0DE3A65864C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E40C2D3F-D2FD-4A69-9450-0DE3A65864C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E40C2D3F-D2FD-4A69-9450-0DE3A65864C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E40C2D3F-D2FD-4A69-9450-0DE3A65864C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
