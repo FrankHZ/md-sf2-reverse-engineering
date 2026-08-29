@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Domain.Maps;
 
@@ -22,7 +23,10 @@ public sealed record GameSessionSnapshot
         long lastCueSequence,
         MapEventRequestSnapshot? eventRequest,
         MapEventEffectSnapshot? lastEventEffect,
-        MapLocalTransitionSnapshot? localTransition)
+        MapLocalTransitionSnapshot? localTransition,
+        SemanticFacing facing,
+        IEnumerable<MapEntityDefinition> entities,
+        MapEntityInteractionSnapshot? entityInteraction)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         if (!Enum.IsDefined(profile))
@@ -51,12 +55,28 @@ public sealed record GameSessionSnapshot
                 nameof(localTransition));
         }
 
-        if (eventRequest?.Status == MapEventRequestStatus.Pending &&
-            localTransition?.Status == MapLocalTransitionStatus.Pending)
+        if (!Enum.IsDefined(facing))
+        {
+            throw new ArgumentOutOfRangeException(nameof(facing));
+        }
+
+        if (entityInteraction is not null &&
+            entityInteraction.CueSequence > lastCueSequence)
+        {
+            throw new ArgumentException(
+                "The entity-interaction cue sequence cannot exceed the session cue sequence.",
+                nameof(entityInteraction));
+        }
+
+        int pendingAcknowledgements =
+            (eventRequest?.Status == MapEventRequestStatus.Pending ? 1 : 0) +
+            (localTransition?.Status == MapLocalTransitionStatus.Pending ? 1 : 0) +
+            (entityInteraction?.Status == MapEntityInteractionStatus.Pending ? 1 : 0);
+        if (pendingAcknowledgements > 1)
         {
             throw new ArgumentException(
                 "Only one acknowledgement-requiring request can be pending.",
-                nameof(localTransition));
+                nameof(entityInteraction));
         }
 
         SyntheticFlags = syntheticFlags ?? throw new ArgumentNullException(nameof(syntheticFlags));
@@ -80,6 +100,18 @@ public sealed record GameSessionSnapshot
         EventRequest = eventRequest;
         LastEventEffect = lastEventEffect;
         LocalTransition = localTransition;
+        Facing = facing;
+        ArgumentNullException.ThrowIfNull(entities);
+        List<MapEntityDefinition> copiedEntities = [];
+        foreach (MapEntityDefinition entity in entities)
+        {
+            copiedEntities.Add(entity ?? throw new ArgumentException(
+                "Snapshot entities cannot contain null values.",
+                nameof(entities)));
+        }
+
+        Entities = new ReadOnlyCollection<MapEntityDefinition>(copiedEntities);
+        EntityInteraction = entityInteraction;
     }
 
     public string ScenarioId { get; }
@@ -105,6 +137,12 @@ public sealed record GameSessionSnapshot
     public MapEventEffectSnapshot? LastEventEffect { get; }
 
     public MapLocalTransitionSnapshot? LocalTransition { get; }
+
+    public SemanticFacing Facing { get; }
+
+    public IReadOnlyList<MapEntityDefinition> Entities { get; }
+
+    public MapEntityInteractionSnapshot? EntityInteraction { get; }
 }
 
 public interface IGameSessionCommand;
@@ -136,6 +174,7 @@ public enum GameSessionCommandFailureCode
     EventEffectNotAdmitted,
     EventEffectAlreadyApplied,
     LocalTransitionNotAdmitted,
+    EntityInteractionNotAdmitted,
 }
 
 public sealed record GameSessionCommandDiagnostic
@@ -258,9 +297,20 @@ public sealed class GameSession
                     "The pending local-transition request must be acknowledged first."));
         }
 
+        if (Snapshot.EntityInteraction?.Status == MapEntityInteractionStatus.Pending &&
+            command is not AcknowledgeEntityInteractionCommand)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.PendingAcknowledgement,
+                    "The pending entity interaction must be acknowledged first."));
+        }
+
         return command switch
         {
             MoveExplorationCommand move => ApplyMove(move),
+            TurnExplorationCommand turn => ApplyTurn(turn),
             SelectExplorationContextCommand selectContext => ApplyContextSelection(selectContext),
             RequestSelectedZoneEventCommand => ApplyEventRequest(),
             AcknowledgeMapEventRequestCommand acknowledge =>
@@ -268,6 +318,9 @@ public sealed class GameSession
             RequestSelectedLocalTransitionCommand => ApplyLocalTransitionRequest(),
             AcknowledgeMapLocalTransitionCommand acknowledgeTransition =>
                 ApplyLocalTransitionAcknowledgement(acknowledgeTransition),
+            RequestEntityInteractionCommand => ApplyEntityInteractionRequest(),
+            AcknowledgeEntityInteractionCommand acknowledgeInteraction =>
+                ApplyEntityInteractionAcknowledgement(acknowledgeInteraction),
             _ => new GameSessionCommandRejected(
                 Snapshot,
                 new GameSessionCommandDiagnostic(
@@ -302,8 +355,41 @@ public sealed class GameSession
             Snapshot.LastCueSequence,
             Snapshot.EventRequest,
             Snapshot.LastEventEffect,
-            Snapshot.LocalTransition);
+            Snapshot.LocalTransition,
+            ToSemanticFacing(command.Direction),
+            Snapshot.Entities,
+            entityInteraction: null);
         return new GameSessionCommandApplied(Snapshot, transition.Outcome);
+    }
+
+    private GameSessionCommandResult ApplyTurn(TurnExplorationCommand command)
+    {
+        if (Snapshot.FlowStage != GameFlowStage.Exploration)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.WrongFlowStage,
+                    "Exploration facing input is not admitted in this flow stage."));
+        }
+
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            checked(Snapshot.SimulationStep + 1),
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
+            contextSelection: null,
+            Snapshot.LastCueSequence,
+            Snapshot.EventRequest,
+            Snapshot.LastEventEffect,
+            Snapshot.LocalTransition,
+            command.Facing,
+            Snapshot.Entities,
+            entityInteraction: null);
+        return new GameSessionFacingChanged(Snapshot, command.Facing);
     }
 
     private GameSessionCommandResult ApplyContextSelection(
@@ -348,7 +434,10 @@ public sealed class GameSession
             Snapshot.LastCueSequence,
             Snapshot.EventRequest,
             Snapshot.LastEventEffect,
-            Snapshot.LocalTransition);
+            Snapshot.LocalTransition,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            entityInteraction: null);
         return new GameSessionContextSelected(Snapshot, selection);
     }
 
@@ -430,7 +519,10 @@ public sealed class GameSession
             cueSequence,
             request,
             Snapshot.LastEventEffect,
-            Snapshot.LocalTransition);
+            Snapshot.LocalTransition,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            Snapshot.EntityInteraction);
         return new GameSessionEventRequested(Snapshot, request, cue);
     }
 
@@ -505,7 +597,10 @@ public sealed class GameSession
             effectCueSequence,
             acknowledged,
             effect,
-            Snapshot.LocalTransition);
+            Snapshot.LocalTransition,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            Snapshot.EntityInteraction);
         return new GameSessionEventEffectApplied(
             Snapshot,
             acknowledged,
@@ -574,7 +669,10 @@ public sealed class GameSession
             cueSequence,
             Snapshot.EventRequest,
             Snapshot.LastEventEffect,
-            transition);
+            transition,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            Snapshot.EntityInteraction);
         return new GameSessionLocalTransitionRequested(Snapshot, transition, cue);
     }
 
@@ -639,8 +737,178 @@ public sealed class GameSession
             Snapshot.LastCueSequence,
             eventRequest: null,
             lastEventEffect: null,
-            acknowledged);
+            acknowledged,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            entityInteraction: null);
         return new GameSessionLocalTransitionApplied(Snapshot, acknowledged);
+    }
+
+    private GameSessionCommandResult ApplyEntityInteractionRequest()
+    {
+        if (Snapshot.FlowStage != GameFlowStage.Exploration)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.WrongFlowStage,
+                    "Entity interactions are not admitted in this flow stage."));
+        }
+
+        MapPosition? targetPosition = PositionAhead(
+            Snapshot.Exploration,
+            Snapshot.Facing);
+        MapEntityDefinition? entity = targetPosition is null
+            ? null
+            : _mapContext.EntityInteractions.FindEntityAt(
+                Snapshot.Exploration.Map,
+                targetPosition);
+        MapEntityInteractionDefinition? definition = entity is null
+            ? null
+            : _mapContext.EntityInteractions.FindByTarget(entity.InteractionTarget);
+        if (targetPosition is null || entity is null || definition is null)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.EntityInteractionNotAdmitted,
+                    "There is no admitted synthetic entity interaction one tile ahead."));
+        }
+
+        long requestedAtStep = checked(Snapshot.SimulationStep + 1);
+        long cueSequence = checked(Snapshot.LastCueSequence + 1);
+        MapEntityInteractionSnapshot interaction = MapEntityInteractionSnapshot.Pending(
+            entity,
+            definition,
+            Snapshot.Exploration.PlayerPosition,
+            Snapshot.Facing,
+            requestedAtStep,
+            cueSequence);
+        MapEntityInteractionCue cue = new(
+            definition.Cue,
+            definition.Request,
+            entity.Entity,
+            definition.Target,
+            entity.Position,
+            cueSequence);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            requestedAtStep,
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
+            contextSelection: null,
+            cueSequence,
+            Snapshot.EventRequest,
+            Snapshot.LastEventEffect,
+            Snapshot.LocalTransition,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            interaction);
+        return new GameSessionEntityInteractionRequested(Snapshot, interaction, cue);
+    }
+
+    private GameSessionCommandResult ApplyEntityInteractionAcknowledgement(
+        AcknowledgeEntityInteractionCommand command)
+    {
+        MapEntityInteractionSnapshot? pending = Snapshot.EntityInteraction;
+        if (pending?.Status != MapEntityInteractionStatus.Pending)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.NoPendingAcknowledgement,
+                    "There is no pending entity interaction to acknowledge."));
+        }
+
+        if (pending.Request != command.Request ||
+            pending.CueSequence != command.CueSequence ||
+            pending.Entity != command.Entity ||
+            pending.Target != command.Target)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.AcknowledgementMismatch,
+                    "The acknowledgement does not match the pending request, cue sequence, entity, and target."));
+        }
+
+        MapEntityDefinition? entity = _mapContext.EntityInteractions.FindEntity(pending.Entity);
+        MapEntityInteractionDefinition? definition =
+            _mapContext.EntityInteractions.FindByRequest(pending.Request);
+        MapPosition? targetPosition = PositionAhead(Snapshot.Exploration, Snapshot.Facing);
+        if (entity is null ||
+            definition is null ||
+            entity.InteractionTarget != pending.Target ||
+            definition.Target != pending.Target ||
+            entity.Map != Snapshot.Exploration.Map ||
+            entity.Position != pending.EntityPosition ||
+            targetPosition != entity.Position ||
+            Snapshot.Exploration.PlayerPosition != pending.PlayerPosition ||
+            Snapshot.Facing != pending.Facing)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.EntityInteractionNotAdmitted,
+                    "The pending request no longer has one exact admitted entity interaction."));
+        }
+
+        long acknowledgedAtStep = checked(Snapshot.SimulationStep + 1);
+        MapEntityInteractionSnapshot acknowledged = pending.Acknowledge(acknowledgedAtStep);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            acknowledgedAtStep,
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
+            contextSelection: null,
+            Snapshot.LastCueSequence,
+            Snapshot.EventRequest,
+            Snapshot.LastEventEffect,
+            Snapshot.LocalTransition,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            acknowledged);
+        return new GameSessionEntityInteractionAcknowledged(Snapshot, acknowledged);
+    }
+
+    private static SemanticFacing ToSemanticFacing(ExplorationDirection direction) =>
+        direction switch
+        {
+            ExplorationDirection.North => SemanticFacing.North,
+            ExplorationDirection.East => SemanticFacing.East,
+            ExplorationDirection.South => SemanticFacing.South,
+            ExplorationDirection.West => SemanticFacing.West,
+            _ => throw new ArgumentOutOfRangeException(nameof(direction)),
+        };
+
+    private static MapPosition? PositionAhead(
+        ExplorationMovementState exploration,
+        SemanticFacing facing)
+    {
+        MapPosition position = exploration.PlayerPosition;
+        (int deltaX, int deltaY) = facing switch
+        {
+            SemanticFacing.North => (0, -1),
+            SemanticFacing.East => (1, 0),
+            SemanticFacing.South => (0, 1),
+            SemanticFacing.West => (-1, 0),
+            _ => throw new ArgumentOutOfRangeException(nameof(facing)),
+        };
+        int x = position.X + deltaX;
+        int y = position.Y + deltaY;
+        if (x < 0 || x >= exploration.Walkability.Width ||
+            y < 0 || y >= exploration.Walkability.Height)
+        {
+            return null;
+        }
+
+        return new MapPosition(x, y);
     }
 
     private static GameSessionStarted StartAccepted(MapScenarioAccepted accepted)
@@ -659,7 +927,10 @@ public sealed class GameSession
                 lastCueSequence: 0,
                 eventRequest: null,
                 lastEventEffect: null,
-                localTransition: null),
+                localTransition: null,
+                accepted.Scenario.MapContext.InitialFacing,
+                accepted.Scenario.MapContext.EntityInteractions.Entities,
+                entityInteraction: null),
             accepted.Scenario.MapContext);
         return new GameSessionStarted(
             session,

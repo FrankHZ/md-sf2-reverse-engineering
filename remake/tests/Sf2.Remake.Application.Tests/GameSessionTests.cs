@@ -459,6 +459,199 @@ public sealed class GameSessionTests
     }
 
     [Fact]
+    public void EntityInteractionSelectsOneTileAheadAndRequiresExactAcknowledgement()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        GameSessionSnapshot initial = started.Session.Snapshot;
+
+        Assert.Equal(SemanticFacing.North, initial.Facing);
+        MapEntityDefinition entity = Assert.Single(initial.Entities);
+        Assert.Equal("placeholder-entity", entity.Entity.Value);
+        Assert.Equal(new MapPosition(1, 0), entity.Position);
+
+        GameSessionEntityInteractionRequested requested =
+            Assert.IsType<GameSessionEntityInteractionRequested>(
+                started.Session.Apply(new RequestEntityInteractionCommand()));
+
+        Assert.Equal(MapEntityInteractionStatus.Pending, requested.Interaction.Status);
+        Assert.Equal("placeholder-request", requested.Interaction.Request.Value);
+        Assert.Equal("placeholder-entity", requested.Interaction.Entity.Value);
+        Assert.Equal("placeholder-target", requested.Interaction.Target.Value);
+        Assert.Equal(new MapPosition(1, 1), requested.Interaction.PlayerPosition);
+        Assert.Equal(new MapPosition(1, 0), requested.Interaction.EntityPosition);
+        Assert.Equal(SemanticFacing.North, requested.Interaction.Facing);
+        Assert.Equal(1, requested.Interaction.RequestedAtStep);
+        Assert.Equal(1, requested.Interaction.CueSequence);
+        Assert.Null(requested.Interaction.AcknowledgedAtStep);
+        Assert.Equal("placeholder-cue", requested.Cue.Cue.Value);
+        Assert.True(requested.Cue.RequiresAcknowledgement);
+        Assert.Null(requested.Snapshot.ContextSelection);
+        Assert.Same(requested.Interaction, requested.Snapshot.EntityInteraction);
+
+        GameSessionCommandRejected blockedTurn = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new TurnExplorationCommand(SemanticFacing.East)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.PendingAcknowledgement,
+            blockedTurn.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        AcknowledgeEntityInteractionCommand[] wrongAcknowledgements =
+        [
+            new(
+                new MapEntityInteractionRequestId("wrong-request"),
+                requested.Cue.Sequence,
+                requested.Interaction.Entity,
+                requested.Interaction.Target),
+            new(
+                requested.Interaction.Request,
+                requested.Cue.Sequence + 1,
+                requested.Interaction.Entity,
+                requested.Interaction.Target),
+            new(
+                requested.Interaction.Request,
+                requested.Cue.Sequence,
+                new MapEntityId("wrong-entity"),
+                requested.Interaction.Target),
+            new(
+                requested.Interaction.Request,
+                requested.Cue.Sequence,
+                requested.Interaction.Entity,
+                new MapEntityInteractionTargetId("wrong-target")),
+        ];
+        foreach (AcknowledgeEntityInteractionCommand wrong in wrongAcknowledgements)
+        {
+            GameSessionCommandRejected rejected = Assert.IsType<GameSessionCommandRejected>(
+                started.Session.Apply(wrong));
+            Assert.Equal(
+                GameSessionCommandFailureCode.AcknowledgementMismatch,
+                rejected.Diagnostic.Code);
+            Assert.Same(requested.Snapshot, started.Session.Snapshot);
+        }
+
+        GameSessionEntityInteractionAcknowledged acknowledged =
+            Assert.IsType<GameSessionEntityInteractionAcknowledged>(
+                started.Session.Apply(
+                    new AcknowledgeEntityInteractionCommand(
+                        requested.Interaction.Request,
+                        requested.Cue.Sequence,
+                        requested.Interaction.Entity,
+                        requested.Interaction.Target)));
+        Assert.Equal(MapEntityInteractionStatus.Acknowledged, acknowledged.Interaction.Status);
+        Assert.Equal(2, acknowledged.Interaction.AcknowledgedAtStep);
+        Assert.Equal(2, acknowledged.Snapshot.SimulationStep);
+        Assert.Equal(1, acknowledged.Snapshot.LastCueSequence);
+
+        GameSessionCommandRejected duplicate = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(
+                new AcknowledgeEntityInteractionCommand(
+                    requested.Interaction.Request,
+                    requested.Cue.Sequence,
+                    requested.Interaction.Entity,
+                    requested.Interaction.Target)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.NoPendingAcknowledgement,
+            duplicate.Diagnostic.Code);
+        Assert.Same(acknowledged.Snapshot, started.Session.Snapshot);
+    }
+
+    [Fact]
+    public void EntityFacingStalenessAndRestartRemainSessionOwned()
+    {
+        GameSessionStarted first = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        GameSessionEntityInteractionRequested request =
+            Assert.IsType<GameSessionEntityInteractionRequested>(
+                first.Session.Apply(new RequestEntityInteractionCommand()));
+        Assert.IsType<GameSessionEntityInteractionAcknowledged>(
+            first.Session.Apply(
+                new AcknowledgeEntityInteractionCommand(
+                    request.Interaction.Request,
+                    request.Cue.Sequence,
+                    request.Interaction.Entity,
+                    request.Interaction.Target)));
+
+        GameSessionCommandApplied moved = Assert.IsType<GameSessionCommandApplied>(
+            first.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.Equal(SemanticFacing.East, moved.Snapshot.Facing);
+        Assert.Null(moved.Snapshot.EntityInteraction);
+
+        GameSessionFacingChanged turned = Assert.IsType<GameSessionFacingChanged>(
+            first.Session.Apply(new TurnExplorationCommand(SemanticFacing.North)));
+        Assert.Equal(SemanticFacing.North, turned.Facing);
+        Assert.Equal(new MapPosition(2, 1), turned.Snapshot.Exploration.PlayerPosition);
+        Assert.Null(turned.Snapshot.ContextSelection);
+        Assert.Null(turned.Snapshot.EntityInteraction);
+
+        GameSessionCommandRejected noEntity = Assert.IsType<GameSessionCommandRejected>(
+            first.Session.Apply(new RequestEntityInteractionCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.EntityInteractionNotAdmitted,
+            noEntity.Diagnostic.Code);
+        Assert.Same(turned.Snapshot, first.Session.Snapshot);
+
+        GameSessionStarted restarted = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        Assert.Equal(SemanticFacing.North, restarted.Session.Snapshot.Facing);
+        Assert.Null(restarted.Session.Snapshot.EntityInteraction);
+        Assert.NotSame(first.Session.Snapshot, restarted.Session.Snapshot);
+
+        GameSessionEntityInteractionRequested restartedRequest =
+            Assert.IsType<GameSessionEntityInteractionRequested>(
+                restarted.Session.Apply(new RequestEntityInteractionCommand()));
+        Assert.IsType<GameSessionEntityInteractionAcknowledged>(
+            restarted.Session.Apply(
+                new AcknowledgeEntityInteractionCommand(
+                    restartedRequest.Interaction.Request,
+                    restartedRequest.Cue.Sequence,
+                    restartedRequest.Interaction.Entity,
+                    restartedRequest.Interaction.Target)));
+        GameSessionContextSelected selected = Assert.IsType<GameSessionContextSelected>(
+            restarted.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        Assert.Null(selected.Snapshot.EntityInteraction);
+    }
+
+    [Fact]
+    public void EntityCatalogAndScenarioRejectDuplicateOverlapDanglingOrPassableDefinitions()
+    {
+        MapId map = new("map3");
+        MapEntityDefinition entity = EntityDefinition();
+        MapEntityInteractionDefinition interaction = InteractionDefinition();
+
+        Assert.Throws<ArgumentException>(() => new MapEntityInteractionCatalog(
+            [entity, EntityDefinition(entity: "placeholder-entity", x: 2)],
+            [interaction]));
+        Assert.Throws<ArgumentException>(() => new MapEntityInteractionCatalog(
+            [entity, EntityDefinition(entity: "other-entity")],
+            [interaction]));
+        Assert.Throws<ArgumentException>(() => new MapEntityInteractionCatalog(
+            [entity, EntityDefinition(entity: "other-entity", x: 2)],
+            [interaction]));
+        Assert.Throws<ArgumentException>(() => new MapEntityInteractionCatalog(
+            [entity],
+            []));
+        Assert.Throws<ArgumentException>(() => new MapEntityInteractionCatalog(
+            [entity],
+            [interaction, InteractionDefinition(request: "unused", target: "unused")]));
+
+        MapEntityInteractionCatalog wrongMap = new(
+            [EntityDefinition(map: new MapId("missing-map"))],
+            [interaction]);
+        Assert.Throws<ArgumentException>(() => CreateMapContext(map, entityInteractions: wrongMap));
+
+        MapEntityInteractionCatalog passable = new(
+            [EntityDefinition(x: 2, y: 1)],
+            [interaction]);
+        Assert.Throws<ArgumentException>(() => CreateAcceptedSource(entityInteractions: passable));
+
+        MapEntityInteractionCatalog outsideGrid = new(
+            [EntityDefinition(x: 5, y: 5)],
+            [interaction]);
+        Assert.Throws<ArgumentException>(() => CreateAcceptedSource(entityInteractions: outsideGrid));
+    }
+
+    [Fact]
     public void EventRequestCatalogAndContextRejectDuplicateOrDanglingIdentities()
     {
         MapEventRequestDefinition first = RequestDefinition(
@@ -655,7 +848,8 @@ public sealed class GameSessionTests
         new("synthetic-package", ContentProfile.PublicSynthetic);
 
     private static IMapScenarioSource CreateAcceptedSource(
-        MapLocalTransitionCatalog? localTransitions = null)
+        MapLocalTransitionCatalog? localTransitions = null,
+        MapEntityInteractionCatalog? entityInteractions = null)
     {
         MapId map = new("map3");
         MapPosition start = new(1, 1);
@@ -685,7 +879,10 @@ public sealed class GameSessionTests
             "Synthetic scenario",
             exploration,
             facts,
-            CreateMapContext(map, localTransitions: localTransitions));
+            CreateMapContext(
+                map,
+                localTransitions: localTransitions,
+                entityInteractions: entityInteractions));
         ScenarioAdmissionReceipt receipt = new(
             "synthetic-package",
             schemaVersion: 1,
@@ -717,7 +914,8 @@ public sealed class GameSessionTests
         string effectCue = "variant-applied",
         IEnumerable<FlagId>? initialSetFlags = null,
         bool includeEffect = true,
-        MapLocalTransitionCatalog? localTransitions = null)
+        MapLocalTransitionCatalog? localTransitions = null,
+        MapEntityInteractionCatalog? entityInteractions = null)
     {
         MapSetupCatalog setupCatalog = new(
             [
@@ -772,7 +970,11 @@ public sealed class GameSessionTests
             zoneEvents,
             eventRequests,
             eventEffects,
-            localTransitions ?? new MapLocalTransitionCatalog([TransitionDefinition()]));
+            localTransitions ?? new MapLocalTransitionCatalog([TransitionDefinition()]),
+            SemanticFacing.North,
+            entityInteractions ?? new MapEntityInteractionCatalog(
+                [EntityDefinition()],
+                [InteractionDefinition()]));
     }
 
     private static MapEventRequestDefinition RequestDefinition(
@@ -816,6 +1018,27 @@ public sealed class GameSessionTests
             destinationMap ?? new MapId("map3"),
             destination ?? new MapPosition(2, 2),
             new OpaqueMapOrientationId(orientation),
+            new PresentationCueId(cue));
+
+    private static MapEntityDefinition EntityDefinition(
+        string entity = "placeholder-entity",
+        MapId? map = null,
+        int x = 1,
+        int y = 0,
+        string target = "placeholder-target") =>
+        new(
+            new MapEntityId(entity),
+            map ?? new MapId("map3"),
+            new MapPosition(x, y),
+            new MapEntityInteractionTargetId(target));
+
+    private static MapEntityInteractionDefinition InteractionDefinition(
+        string request = "placeholder-request",
+        string target = "placeholder-target",
+        string cue = "placeholder-cue") =>
+        new(
+            new MapEntityInteractionRequestId(request),
+            new MapEntityInteractionTargetId(target),
             new PresentationCueId(cue));
 
     private sealed record UnknownCommand : IGameSessionCommand;

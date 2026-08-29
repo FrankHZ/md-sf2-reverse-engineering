@@ -113,6 +113,24 @@ public sealed record MapScenarioDefinition
             }
         }
 
+        HashSet<MapPosition> transitionPositions = mapContext.LocalTransitions.Definitions
+            .SelectMany(transition =>
+                new[] { transition.SourcePosition, transition.DestinationPosition })
+            .ToHashSet();
+        foreach (MapEntityDefinition entity in mapContext.EntityInteractions.Entities)
+        {
+            if (entity.Map != startState.Map ||
+                !startState.Walkability.Contains(entity.Position) ||
+                startState.Walkability.IsPassable(entity.Position) ||
+                entity.Position == startState.PlayerPosition ||
+                transitionPositions.Contains(entity.Position))
+            {
+                throw new ArgumentException(
+                    $"Entity '{entity.Entity}' requires one in-bounds synthetic solid cell that does not overlap admission or transition positions.",
+                    nameof(mapContext));
+            }
+        }
+
         ScenarioId = scenarioId;
         DisplayName = displayName;
     }

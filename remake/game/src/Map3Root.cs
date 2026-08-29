@@ -20,6 +20,8 @@ public sealed partial class Map3Root : Node2D
     private Label? _eventRequestStatus;
     private Label? _effectStatus;
     private Label? _transitionStatus;
+    private Label? _entityStatus;
+    private Label? _entityInteractionStatus;
 
     public override void _Ready()
     {
@@ -71,6 +73,30 @@ public sealed partial class Map3Root : Node2D
         else if (Input.IsActionJustPressed("acknowledge_transition"))
         {
             ApplyLocalTransitionAcknowledgement();
+        }
+        else if (Input.IsActionJustPressed("turn_north"))
+        {
+            ApplyTurn(SemanticFacing.North);
+        }
+        else if (Input.IsActionJustPressed("turn_east"))
+        {
+            ApplyTurn(SemanticFacing.East);
+        }
+        else if (Input.IsActionJustPressed("turn_south"))
+        {
+            ApplyTurn(SemanticFacing.South);
+        }
+        else if (Input.IsActionJustPressed("turn_west"))
+        {
+            ApplyTurn(SemanticFacing.West);
+        }
+        else if (Input.IsActionJustPressed("request_entity_interaction"))
+        {
+            ApplyEntityInteractionRequest();
+        }
+        else if (Input.IsActionJustPressed("acknowledge_entity_interaction"))
+        {
+            ApplyEntityInteractionAcknowledgement();
         }
     }
 
@@ -221,6 +247,62 @@ public sealed partial class Map3Root : Node2D
         ProjectRejection((GameSessionCommandRejected)result);
     }
 
+    private void ApplyTurn(SemanticFacing facing)
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(new TurnExplorationCommand(facing));
+        if (result is GameSessionFacingChanged)
+        {
+            ProjectSnapshot($"Facing {facing}");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyEntityInteractionRequest()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(new RequestEntityInteractionCommand());
+        if (result is GameSessionEntityInteractionRequested)
+        {
+            ProjectSnapshot("Placeholder entity interaction pending");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyEntityInteractionAcknowledgement()
+    {
+        if (_session?.Snapshot.EntityInteraction is not MapEntityInteractionSnapshot interaction)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new AcknowledgeEntityInteractionCommand(
+                interaction.Request,
+                interaction.CueSequence,
+                interaction.Entity,
+                interaction.Target));
+        if (result is GameSessionEntityInteractionAcknowledged)
+        {
+            ProjectSnapshot("Placeholder entity interaction acknowledged");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
     private void ProjectRejection(GameSessionCommandRejected rejected)
     {
         if (_status is not null)
@@ -237,7 +319,9 @@ public sealed partial class Map3Root : Node2D
             _contextStatus is null ||
             _eventRequestStatus is null ||
             _effectStatus is null ||
-            _transitionStatus is null)
+            _transitionStatus is null ||
+            _entityStatus is null ||
+            _entityInteractionStatus is null)
         {
             return;
         }
@@ -248,7 +332,8 @@ public sealed partial class Map3Root : Node2D
             $"Map {snapshot.AdmissionFacts.CurrentMap}  " +
             $"Tile ({snapshot.Exploration.PlayerPosition.X}, " +
             $"{snapshot.Exploration.PlayerPosition.Y})  " +
-            $"Step {snapshot.SimulationStep}  {outcome}  |  WASD / Enter / Z / X / C / V";
+            $"Facing {snapshot.Facing}  Step {snapshot.SimulationStep}  {outcome}  |  " +
+            "WASD move / arrows turn / Enter / Z X / C V / F G";
         _contextStatus.Text = snapshot.ContextSelection is null
             ? "Context not selected."
             : FormatContext(snapshot.ContextSelection);
@@ -261,6 +346,10 @@ public sealed partial class Map3Root : Node2D
         _transitionStatus.Text = snapshot.LocalTransition is null
             ? "Local transition: none."
             : FormatLocalTransition(snapshot.LocalTransition);
+        _entityStatus.Text = FormatEntities(snapshot.Entities);
+        _entityInteractionStatus.Text = snapshot.EntityInteraction is null
+            ? "Placeholder interaction: none."
+            : FormatEntityInteraction(snapshot.EntityInteraction);
     }
 
     private void RunHeadlessSmoke()
@@ -391,7 +480,53 @@ public sealed partial class Map3Root : Node2D
             return;
         }
 
-        ProjectSnapshot("Synthetic local transition applied");
+        GameSessionFacingChanged? turned = _session.Apply(
+            new TurnExplorationCommand(SemanticFacing.North)) as GameSessionFacingChanged;
+        if (turned is null ||
+            turned.Facing != SemanticFacing.North ||
+            turned.Snapshot.Exploration.PlayerPosition != new MapPosition(55, 4) ||
+            turned.Snapshot.EntityInteraction is not null)
+        {
+            FailStartup("The bounded synthetic facing command was not applied.");
+            return;
+        }
+
+        GameSessionEntityInteractionRequested? entityRequested = _session.Apply(
+            new RequestEntityInteractionCommand()) as GameSessionEntityInteractionRequested;
+        if (entityRequested is null ||
+            entityRequested.Interaction.Status != MapEntityInteractionStatus.Pending ||
+            entityRequested.Interaction.Entity.Value !=
+                "synthetic-map3-placeholder-guide" ||
+            entityRequested.Interaction.Target.Value !=
+                "synthetic-map3-placeholder-guide-target" ||
+            entityRequested.Interaction.PlayerPosition != new MapPosition(55, 4) ||
+            entityRequested.Interaction.EntityPosition != new MapPosition(55, 3) ||
+            entityRequested.Interaction.Facing != SemanticFacing.North ||
+            entityRequested.Cue.Cue.Value != "synthetic-map3-placeholder-guide-cue" ||
+            !entityRequested.Cue.RequiresAcknowledgement)
+        {
+            FailStartup("The bounded placeholder entity interaction was not admitted.");
+            return;
+        }
+
+        GameSessionEntityInteractionAcknowledged? entityAcknowledged = _session.Apply(
+            new AcknowledgeEntityInteractionCommand(
+                entityRequested.Interaction.Request,
+                entityRequested.Cue.Sequence,
+                entityRequested.Interaction.Entity,
+                entityRequested.Interaction.Target)) as
+            GameSessionEntityInteractionAcknowledged;
+        if (entityAcknowledged is null ||
+            entityAcknowledged.Interaction.Status !=
+                MapEntityInteractionStatus.Acknowledged ||
+            entityAcknowledged.Interaction.CueSequence != entityRequested.Cue.Sequence ||
+            entityAcknowledged.Snapshot.Exploration.PlayerPosition != new MapPosition(55, 4))
+        {
+            FailStartup("The bounded placeholder entity interaction was not acknowledged.");
+            return;
+        }
+
+        ProjectSnapshot("Placeholder entity interaction acknowledged");
         object receipt = new
         {
             status = "Pass",
@@ -449,7 +584,7 @@ public sealed partial class Map3Root : Node2D
 
         Label explanation = new()
         {
-            Text = "Project-authored selectors, cues, effects, and local transitions; opaque targets are never executed.",
+            Text = "Project-authored selectors, cues, transitions, and placeholder entity interactions; targets are never interpreted.",
             Position = new Vector2(24, 55),
         };
         explanation.AddThemeFontSizeOverride("font_size", 16);
@@ -500,6 +635,22 @@ public sealed partial class Map3Root : Node2D
         };
         _transitionStatus.AddThemeFontSizeOverride("font_size", 15);
         AddChild(_transitionStatus);
+
+        _entityStatus = new Label
+        {
+            Text = "Placeholder entities: none.",
+            Position = new Vector2(24, 600),
+        };
+        _entityStatus.AddThemeFontSizeOverride("font_size", 15);
+        AddChild(_entityStatus);
+
+        _entityInteractionStatus = new Label
+        {
+            Text = "Placeholder interaction: none.",
+            Position = new Vector2(24, 630),
+        };
+        _entityInteractionStatus.AddThemeFontSizeOverride("font_size", 15);
+        AddChild(_entityInteractionStatus);
     }
 
     private static void RegisterInputMap()
@@ -513,6 +664,12 @@ public sealed partial class Map3Root : Node2D
         RegisterAction("acknowledge_event", Key.X);
         RegisterAction("request_transition", Key.C);
         RegisterAction("acknowledge_transition", Key.V);
+        RegisterAction("turn_north", Key.Up);
+        RegisterAction("turn_east", Key.Right);
+        RegisterAction("turn_south", Key.Down);
+        RegisterAction("turn_west", Key.Left);
+        RegisterAction("request_entity_interaction", Key.F);
+        RegisterAction("acknowledge_entity_interaction", Key.G);
     }
 
     private static void RegisterAction(string action, Key physicalKey)
@@ -570,4 +727,17 @@ public sealed partial class Map3Root : Node2D
         $"Cue #{transition.CueSequence}  ({transition.SourcePosition.X}, " +
         $"{transition.SourcePosition.Y}) -> ({transition.DestinationPosition.X}, " +
         $"{transition.DestinationPosition.Y})  Orientation {transition.DestinationOrientation}";
+
+    private static string FormatEntities(IReadOnlyList<MapEntityDefinition> entities) =>
+        entities.Count == 0
+            ? "Placeholder entities: none."
+            : "Placeholder entities: " + string.Join(
+                ", ",
+                entities.Select(entity =>
+                    $"{entity.Entity}@({entity.Position.X},{entity.Position.Y})"));
+
+    private static string FormatEntityInteraction(MapEntityInteractionSnapshot interaction) =>
+        $"Placeholder interaction {interaction.Request}: {interaction.Status}  " +
+        $"Cue #{interaction.CueSequence}  Entity {interaction.Entity}  " +
+        $"Target {interaction.Target} (uninterpreted)";
 }

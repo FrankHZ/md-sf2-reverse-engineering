@@ -38,6 +38,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 PublicSyntheticMap3PackageReader.EventRequestCapability,
                 PublicSyntheticMap3PackageReader.StateEffectCapability,
                 PublicSyntheticMap3PackageReader.LocalTransitionCapability,
+                PublicSyntheticMap3PackageReader.EntityInteractionCapability,
             ],
             accepted.Receipt.Capabilities);
         string trackedDigest = Convert.ToHexString(
@@ -73,6 +74,9 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             new ZoneEventQuery(58, 3));
         MapLocalTransitionDefinition? transition =
             context.LocalTransitions.FindByTarget(transitionZone.Target);
+        MapEntityDefinition entity = Assert.Single(context.EntityInteractions.Entities);
+        MapEntityInteractionDefinition interaction = Assert.Single(
+            context.EntityInteractions.Interactions);
 
         Assert.Equal("ms_map3", setup.Value);
         Assert.Equal(AreaDescriptionSelectionKind.Text, area.Kind);
@@ -100,6 +104,19 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         Assert.Equal("synthetic-arrival-south", transition.DestinationOrientation.Value);
         Assert.Equal("synthetic-map3-local-transition-ready", transition.Cue.Value);
         Assert.Null(context.EventRequests.FindByTarget(transition.ZoneTarget));
+        Assert.Equal(SemanticFacing.East, context.InitialFacing);
+        Assert.Equal("synthetic-map3-placeholder-guide", entity.Entity.Value);
+        Assert.Equal("map3", entity.Map.Value);
+        Assert.Equal(new MapPosition(55, 3), entity.Position);
+        Assert.Equal(
+            "synthetic-map3-placeholder-guide-target",
+            entity.InteractionTarget.Value);
+        Assert.False(accepted.Scenario.StartState.Walkability.IsPassable(entity.Position));
+        Assert.Equal("synthetic-map3-placeholder-guide-request", interaction.Request.Value);
+        Assert.Equal(entity.InteractionTarget, interaction.Target);
+        Assert.Equal("synthetic-map3-placeholder-guide-cue", interaction.Cue.Value);
+        Assert.Same(entity, context.EntityInteractions.FindEntityAt(entity.Map, entity.Position));
+        Assert.Same(interaction, context.EntityInteractions.FindByTarget(entity.InteractionTarget));
     }
 
     [Fact]
@@ -241,6 +258,33 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         "\"x\": 55,\n          \"y\": 4",
         "\"x\": 56,\n          \"y\": 2")]
     public void LocalTransitionIdentityOrCrossReferenceByteMutationFailsDigestAdmission(
+        string oldValue,
+        string newValue)
+    {
+        AssertDigestMismatch(
+            original => original.Replace(oldValue, newValue, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(
+        "\"initialSemanticFacing\": \"east\"",
+        "\"initialSemanticFacing\": \"default\"")]
+    [InlineData(
+        "\"entityId\": \"synthetic-map3-placeholder-guide\"",
+        "\"entityId\": \"synthetic-map3-placeholder-guide-copy\"")]
+    [InlineData(
+        "\"x\": 55,\n          \"y\": 3",
+        "\"x\": 55,\n          \"y\": 4")]
+    [InlineData(
+        "\"interactionTargetId\": \"synthetic-map3-placeholder-guide-target\"",
+        "\"interactionTargetId\": \"missing-target\"")]
+    [InlineData(
+        "\"kind\": \"specific\"",
+        "\"kind\": \"default\"")]
+    [InlineData(
+        "\"targetId\": \"synthetic-map3-placeholder-guide-target\"",
+        "\"targetId\": \"missing-target\"")]
+    public void EntityIdentityPoseOrCrossReferenceByteMutationFailsDigestAdmission(
         string oldValue,
         string newValue)
     {
