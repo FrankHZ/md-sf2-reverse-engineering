@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Sf2.Remake.Domain</RootNamespace>
+    <AssemblyName>Sf2.Remake.Domain</AssemblyName>
+  </PropertyGroup>
+</Project>
