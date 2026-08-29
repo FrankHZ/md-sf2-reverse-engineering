@@ -219,7 +219,6 @@ PARTITIONS = (
         ("uv run python -m sf2tool.remake_godot",),
         parallel_safe=False,
         resource_lock="godot-remake-runtime",
-        external_gates=("GitHub Public / remake-godot",),
     ),
     VerificationPartition(
         "h1-original",

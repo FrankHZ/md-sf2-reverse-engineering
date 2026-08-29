@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import xml.etree.ElementTree as element_tree
 from pathlib import Path
 
@@ -23,6 +24,7 @@ EXPECTED_REFERENCES = {
         "Sf2.Remake.Domain",
     },
 }
+PUBLIC_WORKFLOW = ROOT / ".github/workflows/public-checks.yml"
 
 
 def _project_document(path: Path) -> element_tree.Element:
@@ -102,3 +104,46 @@ def test_solution_hosts_four_production_projects_and_godot_export_host() -> None
     godot_solution = (REMAKE / "game/Sf2.Remake.Godot.sln").read_text(encoding="utf-8")
     assert '= "Sf2.Remake.Godot", "Sf2.Remake.Godot.csproj"' in godot_solution
     assert godot_solution.count("\nProject(") == 1
+
+
+def test_public_workflow_is_one_lightweight_tracked_input_job() -> None:
+    workflow = PUBLIC_WORKFLOW.read_text(encoding="utf-8")
+    jobs = workflow.split("\njobs:\n", maxsplit=1)
+    assert len(jobs) == 2
+    assert re.findall(r"(?m)^  ([a-z0-9-]+):$", jobs[1]) == ["tracked-inputs"]
+
+    expected_run_commands = (
+        "uv sync --locked",
+        "uv run ruff check src tests/python",
+        "uv run pytest tests/python/test_native_harness.py",
+        (
+            "uv run pytest tests/python/test_remake_architecture.py "
+            "tests/python/test_verification_plan.py"
+        ),
+        "uv run sf2 design-contracts test",
+        "dotnet restore Sf2.Remake.sln --locked-mode",
+        "dotnet build Sf2.Remake.sln --configuration Release --no-restore",
+        "dotnet test Sf2.Remake.sln --configuration Release --no-build --no-restore",
+    )
+    assert re.findall(r"(?m)^        run: (.+)$", jobs[1]) == list(
+        expected_run_commands
+    )
+    for command in expected_run_commands:
+        assert workflow.count(command) == 1
+
+    assert "- name: Build remake solution" in workflow
+    assert "- name: Test remake solution" in workflow
+    forbidden_fragments = (
+        "remake-godot:",
+        "godotengine/godot-builds",
+        "Download locked official Godot artifacts",
+        "Godot_v4.7.2",
+        "sf2tool.remake_godot",
+        "Import, run, and export",
+        "--toolchain-root",
+        "--scratch-parent",
+        "Build remake domain",
+        "Test remake domain",
+    )
+    for fragment in forbidden_fragments:
+        assert fragment not in workflow
