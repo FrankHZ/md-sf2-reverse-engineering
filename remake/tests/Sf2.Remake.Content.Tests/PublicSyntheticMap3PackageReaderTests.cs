@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Content;
+using Sf2.Remake.Domain.Items;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
 
@@ -41,6 +42,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 PublicSyntheticMap3PackageReader.EntityInteractionCapability,
                 PublicSyntheticMap3PackageReader.DialogueCapability,
                 PublicSyntheticMap3PackageReader.FieldSearchCapability,
+                PublicSyntheticMap3PackageReader.ItemAcquisitionCapability,
             ],
             accepted.Receipt.Capabilities);
         string trackedDigest = Convert.ToHexString(
@@ -81,6 +83,8 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             context.EntityInteractions.Interactions);
         MapDialogueDefinition dialogue = Assert.Single(context.Dialogues.Definitions);
         MapFieldSearchDefinition search = Assert.Single(context.FieldSearches.Definitions);
+        MapItemAcquisitionDefinition acquisition = Assert.Single(
+            context.ItemAcquisitions.Definitions);
 
         Assert.Equal("ms_map3", setup.Value);
         Assert.Equal(AreaDescriptionSelectionKind.Text, area.Kind);
@@ -164,6 +168,23 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 search.Position,
                 search.Setup,
                 search.ZoneTarget));
+        Assert.Equal(search.Discovery, acquisition.Discovery);
+        Assert.Equal(
+            "synthetic-map3-placeholder-item-acquisition-request",
+            acquisition.Request.Value);
+        Assert.Equal(
+            "synthetic-map3-placeholder-item-acquisition-result",
+            acquisition.Result.Value);
+        Assert.Equal(new ItemId("synthetic-map3-placeholder-item"), acquisition.Item);
+        Assert.Equal(
+            "synthetic-map3-placeholder-item-acquisition-pending",
+            acquisition.RequestCue.Value);
+        Assert.Equal(
+            "synthetic-map3-placeholder-item-acquired",
+            acquisition.AcquiredCue.Value);
+        Assert.Same(
+            acquisition,
+            context.ItemAcquisitions.FindByDiscovery(search.Discovery));
     }
 
     [Fact]
@@ -401,6 +422,39 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         "\"discoveryCueId\": \"synthetic-map3-placeholder-discovered\"",
         "\"discoveryCueId\": \"synthetic-map3-field-search-pending\"")]
     public void FieldSearchIdentityLocationOrCrossReferenceByteMutationFailsDigestAdmission(
+        string oldValue,
+        string newValue)
+    {
+        AssertDigestMismatch(
+            original => original.Replace(oldValue, newValue, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(
+        "\"kind\": \"specific\",\n        \"discoveryId\"",
+        "\"kind\": \"default\",\n        \"discoveryId\"")]
+    [InlineData(
+        "\"discoveryId\": \"synthetic-map3-placeholder-discovery\",\n        \"requestId\": \"synthetic-map3-placeholder-item-acquisition-request\"",
+        "\"discoveryId\": \"missing-discovery\",\n        \"requestId\": \"synthetic-map3-placeholder-item-acquisition-request\"")]
+    [InlineData(
+        "\"requestId\": \"synthetic-map3-placeholder-item-acquisition-request\"",
+        "\"requestId\": \"default\"")]
+    [InlineData(
+        "\"resultId\": \"synthetic-map3-placeholder-item-acquisition-result\"",
+        "\"resultId\": \"default\"")]
+    [InlineData(
+        "\"itemId\": \"synthetic-map3-placeholder-item\"",
+        "\"itemId\": \"default\"")]
+    [InlineData(
+        "\"requestCueId\": \"synthetic-map3-placeholder-item-acquisition-pending\"",
+        "\"requestCueId\": \"synthetic-map3-placeholder-discovered\"")]
+    [InlineData(
+        "\"acquiredCueId\": \"synthetic-map3-placeholder-item-acquired\"",
+        "\"acquiredCueId\": \"synthetic-map3-placeholder-item-acquisition-pending\"")]
+    [InlineData(
+        "\"acquiredCueId\": \"synthetic-map3-placeholder-item-acquired\"",
+        "\"acquiredCueId\": \"synthetic-map3-placeholder-item-acquired\",\n        \"unknownField\": true")]
+    public void ItemAcquisitionIdentityCueOrCrossReferenceByteMutationFailsDigestAdmission(
         string oldValue,
         string newValue)
     {

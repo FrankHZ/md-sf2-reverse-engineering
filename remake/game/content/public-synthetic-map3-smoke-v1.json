@@ -19,7 +19,8 @@
     "public-synthetic-map3-local-transition-v1",
     "public-synthetic-map3-entity-interaction-v1",
     "public-synthetic-map3-placeholder-dialogue-v1",
-    "public-synthetic-map3-field-search-v1"
+    "public-synthetic-map3-field-search-v1",
+    "public-synthetic-map3-placeholder-item-acquisition-v1"
   ],
   "scenarioId": "map3-public-synthetic-smoke",
   "displayName": "Map 3 public-synthetic exploration smoke",
@@ -224,6 +225,17 @@
         "zoneTargetId": "synthetic-no-zone",
         "requestCueId": "synthetic-map3-field-search-pending",
         "discoveryCueId": "synthetic-map3-placeholder-discovered"
+      }
+    ],
+    "itemAcquisitions": [
+      {
+        "kind": "specific",
+        "discoveryId": "synthetic-map3-placeholder-discovery",
+        "requestId": "synthetic-map3-placeholder-item-acquisition-request",
+        "resultId": "synthetic-map3-placeholder-item-acquisition-result",
+        "itemId": "synthetic-map3-placeholder-item",
+        "requestCueId": "synthetic-map3-placeholder-item-acquisition-pending",
+        "acquiredCueId": "synthetic-map3-placeholder-item-acquired"
       }
     ]
   }

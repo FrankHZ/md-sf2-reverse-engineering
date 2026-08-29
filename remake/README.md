@@ -16,7 +16,8 @@ requires an exact acknowledgement, and projects the resulting immutable snapshot
 package-declared synthetic flag effect; re-selecting context then exposes the already-declared synthetic
 setup variant. A second exact synthetic zone now admits a typed same-map local-transition request;
 acknowledging it atomically relocates the session to a package-declared passable cell and projects the
-result in Godot. The official Godot 4.7.2 .NET CLI gate performs a
+result in Godot. The accepted field-search discovery can now admit one exact project-authored placeholder
+item acquisition through an immutable Domain inventory. The official Godot 4.7.2 .NET CLI gate performs a
 hash-locked import, headless source run, export, and headless exported-build run using only tracked
 redistribution-safe inputs.
 
@@ -87,8 +88,20 @@ immutable discovery receipt, and a session-local once-only discovery set. Wrong,
 and repeated confirmations are zero-mutation; movement or context re-selection clears stale lifecycle
 state without removing the admitted discovery, while restart reconstructs an empty discovery set.
 Godot sends only semantic search/acknowledge commands and projects typed pending/discovered/result/cue
-state. The placeholder token is not inventory, equipment, a consumable, original text or item identity,
-or evidence of original search rules, coordinates, event-target meaning, or natural reachability.
+state. The discovery token is not itself an item, equipment, a consumable, original text or item identity;
+it only admits the separately typed placeholder acquisition below. Neither lifecycle is evidence of
+original search rules, coordinates, event-target meaning, item behavior, or natural reachability.
+
+The placeholder item-acquisition vertical maps that one discovered identity to one unique synthetic
+request/result pair, one project-authored opaque item ID, and distinct pending/acquired cues. Domain owns
+the immutable item inventory and deterministic unique-acquisition reducer; Application remains the sole
+mutation facade, requires the exact discovery/request/cue-sequence/result/item acknowledgement, and applies
+the Domain result atomically. Wrong, stale, duplicate, and repeated commands are zero-mutation. Movement or
+context re-selection clears the acquisition lifecycle view while acquired inventory remains session state;
+restart creates an empty inventory. Godot sends only semantic acquire/acknowledge commands and projects the
+typed lifecycle, receipt, cue, and inventory snapshot. This slice adds no item use, equipment, giving,
+dropping, Caravan, capacity, consumption, persistence, save/load, icon, text, stat, effect, or original item
+identity/semantics.
 
 The Domain's broader implemented behavior includes a pure map-setup selector with engine-native
 catalog and event-table admission boundaries. The catalog maps opaque map
@@ -129,6 +142,10 @@ The same package admits exactly one field-search record whose context/request/re
 selected map/position/setup/zone, and two cues are unique and closed. The selected setup and zone must
 match the existing typed context selectors, the cell must be in-bounds and passable, and its cues cannot
 collide with any other presentation lifecycle.
+It also admits exactly one item-acquisition record whose discovery must resolve to that field search and
+whose request, result, opaque item, and two cue IDs are globally unique at their typed boundaries. The raw
+package remains byte-digest locked and rejects unknown shape, defaults, dangling references, duplicate
+identities, and cue reuse before a session starts.
 General canonical/private import and original content remain deferred.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy
@@ -160,7 +177,7 @@ Entity pixel-to-cell conversion, terminated source tables, and original dispatch
 the API.
 
 Natural route, original-map fidelity, event and area-description reachability; original flag values and
-lifetime; target effects; decoded text; inventory or story mutation; persistence; original/natural Map 3
+lifetime; target effects; decoded text; original inventory or story mutation; persistence; original/natural Map 3
 admission; Battle 01 continuity;
 original entity identity, placement, facing, dialogue, interaction effects, or reachability;
 original field-search locations, predicates, targets, discoveries, items, or reachability;

@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
+using Sf2.Remake.Domain.Items;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
 
@@ -920,6 +921,232 @@ public sealed class GameSessionTests
     }
 
     [Fact]
+    public void ItemAcquisitionRequiresDiscoveryAndExactAcknowledgementThenAcquiresOnce()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        GameSessionSnapshot initial = started.Session.Snapshot;
+        MapDiscoveryId discovery = new("placeholder-discovery");
+
+        GameSessionCommandRejected undiscovered = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new RequestMapItemAcquisitionCommand(discovery)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.ItemAcquisitionNotAdmitted,
+            undiscovered.Diagnostic.Code);
+        Assert.Same(initial, started.Session.Snapshot);
+
+        Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        GameSessionFieldSearchRequested searchRequested =
+            Assert.IsType<GameSessionFieldSearchRequested>(
+                started.Session.Apply(new RequestFieldSearchCommand()));
+        Assert.IsType<GameSessionFieldSearchDiscovered>(
+            started.Session.Apply(
+                new AcknowledgeFieldSearchCommand(
+                    searchRequested.Search.Request,
+                    searchRequested.Cue.Sequence,
+                    searchRequested.Search.Result)));
+
+        GameSessionItemAcquisitionRequested requested =
+            Assert.IsType<GameSessionItemAcquisitionRequested>(
+                started.Session.Apply(new RequestMapItemAcquisitionCommand(discovery)));
+        Assert.Equal(MapItemAcquisitionStatus.Pending, requested.Acquisition.Status);
+        Assert.Equal("placeholder-item-acquisition-request", requested.Acquisition.Request.Value);
+        Assert.Equal("placeholder-item-acquisition-result", requested.Acquisition.Result.Value);
+        Assert.Equal("placeholder-item", requested.Acquisition.Item.Value);
+        Assert.Equal(
+            "placeholder-item-acquisition-pending",
+            requested.Cue.Cue.Value);
+        Assert.Equal(MapItemAcquisitionCueKind.AcquisitionPending, requested.Cue.Kind);
+        Assert.True(requested.Cue.RequiresAcknowledgement);
+        Assert.Empty(requested.Snapshot.Inventory.Items);
+
+        GameSessionCommandRejected blockedMove = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.PendingAcknowledgement,
+            blockedMove.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        AcknowledgeMapItemAcquisitionCommand[] wrongAcknowledgements =
+        [
+            new(
+                new MapItemAcquisitionRequestId("wrong-request"),
+                requested.Cue.Sequence,
+                requested.Acquisition.Result,
+                requested.Acquisition.Item),
+            new(
+                requested.Acquisition.Request,
+                requested.Cue.Sequence + 1,
+                requested.Acquisition.Result,
+                requested.Acquisition.Item),
+            new(
+                requested.Acquisition.Request,
+                requested.Cue.Sequence,
+                new MapItemAcquisitionResultId("wrong-result"),
+                requested.Acquisition.Item),
+            new(
+                requested.Acquisition.Request,
+                requested.Cue.Sequence,
+                requested.Acquisition.Result,
+                new ItemId("wrong-item")),
+        ];
+        foreach (AcknowledgeMapItemAcquisitionCommand wrong in wrongAcknowledgements)
+        {
+            GameSessionCommandRejected rejected = Assert.IsType<GameSessionCommandRejected>(
+                started.Session.Apply(wrong));
+            Assert.Equal(
+                GameSessionCommandFailureCode.AcknowledgementMismatch,
+                rejected.Diagnostic.Code);
+            Assert.Same(requested.Snapshot, started.Session.Snapshot);
+        }
+
+        GameSessionItemAcquired acquired = Assert.IsType<GameSessionItemAcquired>(
+            started.Session.Apply(
+                new AcknowledgeMapItemAcquisitionCommand(
+                    requested.Acquisition.Request,
+                    requested.Cue.Sequence,
+                    requested.Acquisition.Result,
+                    requested.Acquisition.Item)));
+        Assert.Equal(MapItemAcquisitionStatus.Acquired, acquired.Acquisition.Status);
+        Assert.Equal("placeholder-item-acquired", acquired.Cue.Cue.Value);
+        Assert.Equal(MapItemAcquisitionCueKind.ItemAcquired, acquired.Cue.Kind);
+        Assert.False(acquired.Cue.RequiresAcknowledgement);
+        Assert.Equal(requested.Acquisition.Discovery, acquired.Receipt.Discovery);
+        Assert.Equal(requested.Acquisition.Request, acquired.Receipt.Request);
+        Assert.Equal(requested.Acquisition.Result, acquired.Receipt.Result);
+        Assert.Equal(requested.Acquisition.Item, acquired.Receipt.Item);
+        Assert.Equal(requested.Cue.Sequence, acquired.Receipt.RequestCueSequence);
+        Assert.Equal(acquired.Cue.Sequence, acquired.Receipt.AcquiredCueSequence);
+        Assert.Equal([requested.Acquisition.Item], acquired.Snapshot.Inventory.Items);
+
+        GameSessionCommandRejected duplicateAcknowledgement =
+            Assert.IsType<GameSessionCommandRejected>(
+                started.Session.Apply(
+                    new AcknowledgeMapItemAcquisitionCommand(
+                        requested.Acquisition.Request,
+                        requested.Cue.Sequence,
+                        requested.Acquisition.Result,
+                        requested.Acquisition.Item)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.NoPendingAcknowledgement,
+            duplicateAcknowledgement.Diagnostic.Code);
+        Assert.Same(acquired.Snapshot, started.Session.Snapshot);
+
+        GameSessionCommandRejected repeatRequest = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new RequestMapItemAcquisitionCommand(discovery)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.ItemAlreadyAcquired,
+            repeatRequest.Diagnostic.Code);
+        Assert.Same(acquired.Snapshot, started.Session.Snapshot);
+    }
+
+    [Fact]
+    public void ItemAcquisitionLifecycleClearsButInventoryPersistsUntilRestart()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        GameSessionFieldSearchRequested searchRequested =
+            Assert.IsType<GameSessionFieldSearchRequested>(
+                started.Session.Apply(new RequestFieldSearchCommand()));
+        GameSessionFieldSearchDiscovered discovered =
+            Assert.IsType<GameSessionFieldSearchDiscovered>(
+                started.Session.Apply(
+                    new AcknowledgeFieldSearchCommand(
+                        searchRequested.Search.Request,
+                        searchRequested.Cue.Sequence,
+                        searchRequested.Search.Result)));
+        GameSessionItemAcquisitionRequested requested =
+            Assert.IsType<GameSessionItemAcquisitionRequested>(
+                started.Session.Apply(
+                    new RequestMapItemAcquisitionCommand(discovered.Search.Discovery)));
+        GameSessionItemAcquired acquired = Assert.IsType<GameSessionItemAcquired>(
+            started.Session.Apply(
+                new AcknowledgeMapItemAcquisitionCommand(
+                    requested.Acquisition.Request,
+                    requested.Cue.Sequence,
+                    requested.Acquisition.Result,
+                    requested.Acquisition.Item)));
+
+        GameSessionContextSelected reselected = Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        Assert.Null(reselected.Snapshot.FieldSearch);
+        Assert.Null(reselected.Snapshot.ItemAcquisition);
+        Assert.True(reselected.Snapshot.Inventory.Contains(acquired.Acquisition.Item));
+
+        GameSessionCommandApplied moved = Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.Null(moved.Snapshot.ItemAcquisition);
+        Assert.True(moved.Snapshot.Inventory.Contains(acquired.Acquisition.Item));
+
+        GameSessionStarted restarted = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        Assert.Empty(restarted.Session.Snapshot.Inventory.Items);
+        Assert.Null(restarted.Session.Snapshot.ItemAcquisition);
+        Assert.Equal(0, restarted.Session.Snapshot.SimulationStep);
+        Assert.Equal(0, restarted.Session.Snapshot.LastCueSequence);
+    }
+
+    [Fact]
+    public void ItemAcquisitionCatalogRejectsDuplicateDanglingOrReusedIdentities()
+    {
+        MapItemAcquisitionDefinition first = ItemAcquisitionDefinition();
+        Assert.Throws<ArgumentException>(() => ItemAcquisitionDefinition(
+            requestCue: "same-cue",
+            acquiredCue: "same-cue"));
+        Assert.Throws<ArgumentException>(() => new MapItemAcquisitionCatalog(
+            [first, ItemAcquisitionDefinition(
+                request: "request-2",
+                result: "result-2",
+                item: "item-2",
+                requestCue: "request-cue-2",
+                acquiredCue: "acquired-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapItemAcquisitionCatalog(
+            [first, ItemAcquisitionDefinition(
+                discovery: "discovery-2",
+                result: "result-2",
+                item: "item-2",
+                requestCue: "request-cue-2",
+                acquiredCue: "acquired-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapItemAcquisitionCatalog(
+            [first, ItemAcquisitionDefinition(
+                discovery: "discovery-2",
+                request: "request-2",
+                item: "item-2",
+                requestCue: "request-cue-2",
+                acquiredCue: "acquired-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapItemAcquisitionCatalog(
+            [first, ItemAcquisitionDefinition(
+                discovery: "discovery-2",
+                request: "request-2",
+                result: "result-2",
+                requestCue: "request-cue-2",
+                acquiredCue: "acquired-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapItemAcquisitionCatalog(
+            [first, ItemAcquisitionDefinition(
+                discovery: "discovery-2",
+                request: "request-2",
+                result: "result-2",
+                item: "item-2",
+                requestCue: "placeholder-item-acquisition-pending",
+                acquiredCue: "acquired-cue-2")]));
+
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            itemAcquisitions: new MapItemAcquisitionCatalog(
+                [ItemAcquisitionDefinition(discovery: "missing-discovery")])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            itemAcquisitions: new MapItemAcquisitionCatalog(
+                [ItemAcquisitionDefinition(requestCue: "placeholder-discovered")])));
+    }
+
+    [Fact]
     public void FieldSearchCatalogAndScenarioRejectDuplicateDanglingOrInvalidDefinitions()
     {
         MapFieldSearchDefinition first = FieldSearchDefinition();
@@ -1243,7 +1470,8 @@ public sealed class GameSessionTests
         MapLocalTransitionCatalog? localTransitions = null,
         MapEntityInteractionCatalog? entityInteractions = null,
         MapDialogueCatalog? dialogues = null,
-        MapFieldSearchCatalog? fieldSearches = null)
+        MapFieldSearchCatalog? fieldSearches = null,
+        MapItemAcquisitionCatalog? itemAcquisitions = null)
     {
         MapId map = new("map3");
         MapPosition start = new(1, 1);
@@ -1278,7 +1506,8 @@ public sealed class GameSessionTests
                 localTransitions: localTransitions,
                 entityInteractions: entityInteractions,
                 dialogues: dialogues,
-                fieldSearches: fieldSearches));
+                fieldSearches: fieldSearches,
+                itemAcquisitions: itemAcquisitions));
         ScenarioAdmissionReceipt receipt = new(
             "synthetic-package",
             schemaVersion: 1,
@@ -1313,7 +1542,8 @@ public sealed class GameSessionTests
         MapLocalTransitionCatalog? localTransitions = null,
         MapEntityInteractionCatalog? entityInteractions = null,
         MapDialogueCatalog? dialogues = null,
-        MapFieldSearchCatalog? fieldSearches = null)
+        MapFieldSearchCatalog? fieldSearches = null,
+        MapItemAcquisitionCatalog? itemAcquisitions = null)
     {
         MapSetupCatalog setupCatalog = new(
             [
@@ -1374,7 +1604,9 @@ public sealed class GameSessionTests
                 [EntityDefinition()],
                 [InteractionDefinition()]),
             dialogues ?? new MapDialogueCatalog([DialogueDefinition()]),
-            fieldSearches ?? new MapFieldSearchCatalog([FieldSearchDefinition()]));
+            fieldSearches ?? new MapFieldSearchCatalog([FieldSearchDefinition()]),
+            itemAcquisitions ?? new MapItemAcquisitionCatalog(
+                [ItemAcquisitionDefinition()]));
     }
 
     private static MapEventRequestDefinition RequestDefinition(
@@ -1487,6 +1719,21 @@ public sealed class GameSessionTests
             new EventTargetId(zoneTarget),
             new PresentationCueId(requestCue),
             new PresentationCueId(discoveryCue));
+
+    private static MapItemAcquisitionDefinition ItemAcquisitionDefinition(
+        string discovery = "placeholder-discovery",
+        string request = "placeholder-item-acquisition-request",
+        string result = "placeholder-item-acquisition-result",
+        string item = "placeholder-item",
+        string requestCue = "placeholder-item-acquisition-pending",
+        string acquiredCue = "placeholder-item-acquired") =>
+        new(
+            new MapDiscoveryId(discovery),
+            new MapItemAcquisitionRequestId(request),
+            new MapItemAcquisitionResultId(result),
+            new ItemId(item),
+            new PresentationCueId(requestCue),
+            new PresentationCueId(acquiredCue));
 
     private static MapDialogueSnapshot CloseDialogue(
         GameSession session,

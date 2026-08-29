@@ -24,6 +24,7 @@ public sealed partial class Map3Root : Node2D
     private Label? _entityInteractionStatus;
     private Label? _dialogueStatus;
     private Label? _fieldSearchStatus;
+    private Label? _itemAcquisitionStatus;
 
     public override void _Ready()
     {
@@ -111,6 +112,14 @@ public sealed partial class Map3Root : Node2D
         else if (Input.IsActionJustPressed("acknowledge_field_search"))
         {
             ApplyFieldSearchAcknowledgement();
+        }
+        else if (Input.IsActionJustPressed("request_item_acquisition"))
+        {
+            ApplyItemAcquisitionRequest();
+        }
+        else if (Input.IsActionJustPressed("acknowledge_item_acquisition"))
+        {
+            ApplyItemAcquisitionAcknowledgement();
         }
     }
 
@@ -390,6 +399,52 @@ public sealed partial class Map3Root : Node2D
         ProjectRejection((GameSessionCommandRejected)result);
     }
 
+    private void ApplyItemAcquisitionRequest()
+    {
+        if (_session?.Snapshot.FieldSearch is not MapFieldSearchSnapshot
+            {
+                Status: MapFieldSearchStatus.Discovered,
+            } search)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new RequestMapItemAcquisitionCommand(search.Discovery));
+        if (result is GameSessionItemAcquisitionRequested requested)
+        {
+            ProjectSnapshot($"Placeholder item {requested.Acquisition.Item} pending acquisition");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyItemAcquisitionAcknowledgement()
+    {
+        if (_session?.Snapshot.ItemAcquisition is not MapItemAcquisitionSnapshot
+            {
+                Status: MapItemAcquisitionStatus.Pending,
+            } acquisition)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new AcknowledgeMapItemAcquisitionCommand(
+                acquisition.Request,
+                acquisition.RequestCueSequence,
+                acquisition.Result,
+                acquisition.Item));
+        if (result is GameSessionItemAcquired acquired)
+        {
+            ProjectSnapshot($"Placeholder item {acquired.Receipt.Item} acquired once");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
     private void ProjectRejection(GameSessionCommandRejected rejected)
     {
         if (_status is not null)
@@ -410,7 +465,8 @@ public sealed partial class Map3Root : Node2D
             _entityStatus is null ||
             _entityInteractionStatus is null ||
             _dialogueStatus is null ||
-            _fieldSearchStatus is null)
+            _fieldSearchStatus is null ||
+            _itemAcquisitionStatus is null)
         {
             return;
         }
@@ -422,7 +478,7 @@ public sealed partial class Map3Root : Node2D
             $"Tile ({snapshot.Exploration.PlayerPosition.X}, " +
             $"{snapshot.Exploration.PlayerPosition.Y})  " +
             $"Facing {snapshot.Facing}  Step {snapshot.SimulationStep}  {outcome}  |  " +
-            "WASD move / arrows turn / Enter / Z X / C V / F G / H / Q E";
+            "WASD move / arrows turn / Enter / Z X / C V / F G / H / Q E / R T";
         _contextStatus.Text = snapshot.ContextSelection is null
             ? "Context not selected."
             : FormatContext(snapshot.ContextSelection);
@@ -443,6 +499,7 @@ public sealed partial class Map3Root : Node2D
             ? "Placeholder dialogue: none."
             : FormatDialogue(snapshot.Dialogue);
         _fieldSearchStatus.Text = FormatFieldSearch(snapshot);
+        _itemAcquisitionStatus.Text = FormatItemAcquisition(snapshot);
     }
 
     private void RunHeadlessSmoke()
@@ -719,7 +776,68 @@ public sealed partial class Map3Root : Node2D
             return;
         }
 
-        ProjectSnapshot("Placeholder field-search discovery admitted once");
+        GameSessionItemAcquisitionRequested? itemRequested = _session.Apply(
+            new RequestMapItemAcquisitionCommand(searchDiscovered.Receipt.Discovery)) as
+            GameSessionItemAcquisitionRequested;
+        if (itemRequested is null ||
+            itemRequested.Acquisition.Status != MapItemAcquisitionStatus.Pending ||
+            itemRequested.Acquisition.Discovery != searchDiscovered.Receipt.Discovery ||
+            itemRequested.Acquisition.Request.Value !=
+                "synthetic-map3-placeholder-item-acquisition-request" ||
+            itemRequested.Acquisition.Result.Value !=
+                "synthetic-map3-placeholder-item-acquisition-result" ||
+            itemRequested.Acquisition.Item.Value != "synthetic-map3-placeholder-item" ||
+            itemRequested.Cue.Cue.Value !=
+                "synthetic-map3-placeholder-item-acquisition-pending" ||
+            !itemRequested.Cue.RequiresAcknowledgement ||
+            itemRequested.Snapshot.Inventory.Items.Count != 0)
+        {
+            FailStartup("The bounded placeholder item acquisition was not admitted.");
+            return;
+        }
+
+        GameSessionItemAcquired? itemAcquired = _session.Apply(
+            new AcknowledgeMapItemAcquisitionCommand(
+                itemRequested.Acquisition.Request,
+                itemRequested.Cue.Sequence,
+                itemRequested.Acquisition.Result,
+                itemRequested.Acquisition.Item)) as GameSessionItemAcquired;
+        if (itemAcquired is null ||
+            itemAcquired.Acquisition.Status != MapItemAcquisitionStatus.Acquired ||
+            itemAcquired.Receipt.Discovery != itemRequested.Acquisition.Discovery ||
+            itemAcquired.Receipt.Request != itemRequested.Acquisition.Request ||
+            itemAcquired.Receipt.Result != itemRequested.Acquisition.Result ||
+            itemAcquired.Receipt.Item != itemRequested.Acquisition.Item ||
+            itemAcquired.Cue.Cue.Value != "synthetic-map3-placeholder-item-acquired" ||
+            itemAcquired.Cue.RequiresAcknowledgement ||
+            itemAcquired.Snapshot.Inventory.Items.Count != 1 ||
+            itemAcquired.Snapshot.Inventory.Items.Single() != itemAcquired.Receipt.Item)
+        {
+            FailStartup("The bounded placeholder item was not acquired atomically.");
+            return;
+        }
+
+        GameSessionSnapshot acquiredSnapshot = itemAcquired.Snapshot;
+        GameSessionCommandRejected? repeatedAcquisition = _session.Apply(
+            new RequestMapItemAcquisitionCommand(itemAcquired.Receipt.Discovery)) as
+            GameSessionCommandRejected;
+        GameSessionCommandRejected? duplicateAcquisitionAcknowledgement = _session.Apply(
+            new AcknowledgeMapItemAcquisitionCommand(
+                itemRequested.Acquisition.Request,
+                itemRequested.Cue.Sequence,
+                itemRequested.Acquisition.Result,
+                itemRequested.Acquisition.Item)) as GameSessionCommandRejected;
+        if (repeatedAcquisition?.Diagnostic.Code !=
+                GameSessionCommandFailureCode.ItemAlreadyAcquired ||
+            duplicateAcquisitionAcknowledgement?.Diagnostic.Code !=
+                GameSessionCommandFailureCode.NoPendingAcknowledgement ||
+            !ReferenceEquals(acquiredSnapshot, _session.Snapshot))
+        {
+            FailStartup("The bounded placeholder item acquisition was not once-only.");
+            return;
+        }
+
+        ProjectSnapshot("Placeholder field-search discovery and item acquisition admitted once");
         object receipt = new
         {
             status = "Pass",
@@ -777,7 +895,7 @@ public sealed partial class Map3Root : Node2D
 
         Label explanation = new()
         {
-            Text = "Project-authored selectors, transitions, entity interaction, and placeholder dialogue; targets are never interpreted.",
+            Text = "Project-authored selectors, interaction, discovery, and placeholder item acquisition; targets are never interpreted.",
             Position = new Vector2(24, 55),
         };
         explanation.AddThemeFontSizeOverride("font_size", 16);
@@ -862,6 +980,15 @@ public sealed partial class Map3Root : Node2D
         _fieldSearchStatus.AddThemeFontSizeOverride("font_size", 15);
         _fieldSearchStatus.AddThemeColorOverride("font_color", new Color("b8f2c2"));
         AddChild(_fieldSearchStatus);
+
+        _itemAcquisitionStatus = new Label
+        {
+            Text = "Placeholder inventory: empty.",
+            Position = new Vector2(24, 720),
+        };
+        _itemAcquisitionStatus.AddThemeFontSizeOverride("font_size", 15);
+        _itemAcquisitionStatus.AddThemeColorOverride("font_color", new Color("ffe2a8"));
+        AddChild(_itemAcquisitionStatus);
     }
 
     private static void RegisterInputMap()
@@ -884,6 +1011,8 @@ public sealed partial class Map3Root : Node2D
         RegisterAction("advance_dialogue", Key.H);
         RegisterAction("request_field_search", Key.Q);
         RegisterAction("acknowledge_field_search", Key.E);
+        RegisterAction("request_item_acquisition", Key.R);
+        RegisterAction("acknowledge_item_acquisition", Key.T);
     }
 
     private static void RegisterAction(string action, Key physicalKey)
@@ -973,5 +1102,17 @@ public sealed partial class Map3Root : Node2D
             : $"Synthetic field search {snapshot.FieldSearch.Context}: " +
                 $"{snapshot.FieldSearch.Status}  Result {snapshot.FieldSearch.Result}  " +
                 $"Discovery {snapshot.FieldSearch.Discovery}  Discoveries [{discoveries}]";
+    }
+
+    private static string FormatItemAcquisition(GameSessionSnapshot snapshot)
+    {
+        string items = snapshot.Inventory.Items.Count == 0
+            ? "empty"
+            : string.Join(", ", snapshot.Inventory.Items);
+        return snapshot.ItemAcquisition is null
+            ? $"Placeholder inventory [{items}]  [R acquire / T ack]"
+            : $"Placeholder item acquisition {snapshot.ItemAcquisition.Request}: " +
+                $"{snapshot.ItemAcquisition.Status}  Result {snapshot.ItemAcquisition.Result}  " +
+                $"Item {snapshot.ItemAcquisition.Item}  Inventory [{items}]";
     }
 }

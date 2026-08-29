@@ -20,7 +20,8 @@ public sealed class MapScenarioContextDefinition
         SemanticFacing initialFacing,
         MapEntityInteractionCatalog entityInteractions,
         MapDialogueCatalog dialogues,
-        MapFieldSearchCatalog fieldSearches)
+        MapFieldSearchCatalog fieldSearches,
+        MapItemAcquisitionCatalog itemAcquisitions)
     {
         SetupCatalog = setupCatalog ?? throw new ArgumentNullException(nameof(setupCatalog));
         VoidSetup = voidSetup ?? throw new ArgumentNullException(nameof(voidSetup));
@@ -42,6 +43,8 @@ public sealed class MapScenarioContextDefinition
             throw new ArgumentNullException(nameof(entityInteractions));
         Dialogues = dialogues ?? throw new ArgumentNullException(nameof(dialogues));
         FieldSearches = fieldSearches ?? throw new ArgumentNullException(nameof(fieldSearches));
+        ItemAcquisitions = itemAcquisitions ??
+            throw new ArgumentNullException(nameof(itemAcquisitions));
 
         List<FlagId> copiedFlags = [];
         _initialSetFlagLookup = [];
@@ -276,6 +279,26 @@ public sealed class MapScenarioContextDefinition
                     nameof(fieldSearches));
             }
         }
+
+        foreach (MapItemAcquisitionDefinition acquisition in ItemAcquisitions.Definitions)
+        {
+            MapFieldSearchDefinition? sourceSearch = FieldSearches.Definitions.SingleOrDefault(
+                search => search.Discovery == acquisition.Discovery);
+            if (sourceSearch is null)
+            {
+                throw new ArgumentException(
+                    $"Item acquisition '{acquisition.Request}' references an unknown field-search discovery.",
+                    nameof(itemAcquisitions));
+            }
+
+            if (!occupiedCueIds.Add(acquisition.RequestCue) ||
+                !occupiedCueIds.Add(acquisition.AcquiredCue))
+            {
+                throw new ArgumentException(
+                    $"Item acquisition '{acquisition.Request}' cannot reuse another presentation cue ID.",
+                    nameof(itemAcquisitions));
+            }
+        }
     }
 
     public MapSetupCatalog SetupCatalog { get; }
@@ -301,6 +324,8 @@ public sealed class MapScenarioContextDefinition
     public MapDialogueCatalog Dialogues { get; }
 
     public MapFieldSearchCatalog FieldSearches { get; }
+
+    public MapItemAcquisitionCatalog ItemAcquisitions { get; }
 
     public bool IsInitiallySet(FlagId flag)
     {

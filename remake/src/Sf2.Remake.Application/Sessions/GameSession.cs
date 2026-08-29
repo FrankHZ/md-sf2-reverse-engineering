@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Sf2.Remake.Application.Content;
+using Sf2.Remake.Domain.Items;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Sessions;
@@ -20,6 +21,7 @@ public sealed record GameSessionSnapshot
         ScenarioAdmissionFacts admissionFacts,
         PublicSyntheticFlagStateSnapshot syntheticFlags,
         PublicSyntheticDiscoveryStateSnapshot discoveries,
+        ItemInventoryState inventory,
         ExplorationContextSelectionSnapshot? contextSelection,
         long lastCueSequence,
         MapEventRequestSnapshot? eventRequest,
@@ -29,7 +31,8 @@ public sealed record GameSessionSnapshot
         IEnumerable<MapEntityDefinition> entities,
         MapEntityInteractionSnapshot? entityInteraction,
         MapDialogueSnapshot? dialogue,
-        MapFieldSearchSnapshot? fieldSearch)
+        MapFieldSearchSnapshot? fieldSearch,
+        MapItemAcquisitionSnapshot? itemAcquisition)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         if (!Enum.IsDefined(profile))
@@ -87,6 +90,15 @@ public sealed record GameSessionSnapshot
                 nameof(fieldSearch));
         }
 
+        long? itemAcquisitionCueSequence = itemAcquisition?.AcquiredCueSequence ??
+            itemAcquisition?.RequestCueSequence;
+        if (itemAcquisitionCueSequence > lastCueSequence)
+        {
+            throw new ArgumentException(
+                "The item-acquisition cue sequence cannot exceed the session cue sequence.",
+                nameof(itemAcquisition));
+        }
+
         if (dialogue is not null &&
             (entityInteraction?.Status != MapEntityInteractionStatus.Acknowledged ||
              entityInteraction.Target != dialogue.TriggerTarget ||
@@ -101,7 +113,8 @@ public sealed record GameSessionSnapshot
             (eventRequest?.Status == MapEventRequestStatus.Pending ? 1 : 0) +
             (localTransition?.Status == MapLocalTransitionStatus.Pending ? 1 : 0) +
             (entityInteraction?.Status == MapEntityInteractionStatus.Pending ? 1 : 0) +
-            (fieldSearch?.Status == MapFieldSearchStatus.Pending ? 1 : 0);
+            (fieldSearch?.Status == MapFieldSearchStatus.Pending ? 1 : 0) +
+            (itemAcquisition?.Status == MapItemAcquisitionStatus.Pending ? 1 : 0);
         if (pendingAcknowledgements > 1)
         {
             throw new ArgumentException(
@@ -111,6 +124,7 @@ public sealed record GameSessionSnapshot
 
         SyntheticFlags = syntheticFlags ?? throw new ArgumentNullException(nameof(syntheticFlags));
         Discoveries = discoveries ?? throw new ArgumentNullException(nameof(discoveries));
+        Inventory = inventory ?? throw new ArgumentNullException(nameof(inventory));
         if (fieldSearch is not null &&
             (fieldSearch.Status == MapFieldSearchStatus.Discovered) !=
             Discoveries.IsDiscovered(fieldSearch.Discovery))
@@ -118,6 +132,16 @@ public sealed record GameSessionSnapshot
             throw new ArgumentException(
                 "Field-search lifecycle status must agree with the session discovery set.",
                 nameof(fieldSearch));
+        }
+
+        if (itemAcquisition is not null &&
+            (!Discoveries.IsDiscovered(itemAcquisition.Discovery) ||
+             (itemAcquisition.Status == MapItemAcquisitionStatus.Acquired) !=
+             Inventory.Contains(itemAcquisition.Item)))
+        {
+            throw new ArgumentException(
+                "Item-acquisition lifecycle state must reference an admitted discovery and agree with inventory ownership.",
+                nameof(itemAcquisition));
         }
 
         if (fieldSearch is not null &&
@@ -167,6 +191,7 @@ public sealed record GameSessionSnapshot
         EntityInteraction = entityInteraction;
         Dialogue = dialogue;
         FieldSearch = fieldSearch;
+        ItemAcquisition = itemAcquisition;
     }
 
     public string ScenarioId { get; }
@@ -184,6 +209,8 @@ public sealed record GameSessionSnapshot
     public PublicSyntheticFlagStateSnapshot SyntheticFlags { get; }
 
     public PublicSyntheticDiscoveryStateSnapshot Discoveries { get; }
+
+    public ItemInventoryState Inventory { get; }
 
     public ExplorationContextSelectionSnapshot? ContextSelection { get; }
 
@@ -204,6 +231,8 @@ public sealed record GameSessionSnapshot
     public MapDialogueSnapshot? Dialogue { get; }
 
     public MapFieldSearchSnapshot? FieldSearch { get; }
+
+    public MapItemAcquisitionSnapshot? ItemAcquisition { get; }
 }
 
 public interface IGameSessionCommand;
@@ -241,6 +270,8 @@ public enum GameSessionCommandFailureCode
     DialogueIdentityMismatch,
     FieldSearchNotAdmitted,
     FieldSearchAlreadyDiscovered,
+    ItemAcquisitionNotAdmitted,
+    ItemAlreadyAcquired,
 }
 
 public sealed record GameSessionCommandDiagnostic
@@ -393,6 +424,16 @@ public sealed class GameSession
                     "The pending field search must be acknowledged first."));
         }
 
+        if (Snapshot.ItemAcquisition?.Status == MapItemAcquisitionStatus.Pending &&
+            command is not AcknowledgeMapItemAcquisitionCommand)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.PendingAcknowledgement,
+                    "The pending item acquisition must be acknowledged first."));
+        }
+
         return command switch
         {
             MoveExplorationCommand move => ApplyMove(move),
@@ -411,6 +452,10 @@ public sealed class GameSession
             RequestFieldSearchCommand => ApplyFieldSearchRequest(),
             AcknowledgeFieldSearchCommand acknowledgeSearch =>
                 ApplyFieldSearchAcknowledgement(acknowledgeSearch),
+            RequestMapItemAcquisitionCommand requestItem =>
+                ApplyItemAcquisitionRequest(requestItem),
+            AcknowledgeMapItemAcquisitionCommand acknowledgeItem =>
+                ApplyItemAcquisitionAcknowledgement(acknowledgeItem),
             _ => new GameSessionCommandRejected(
                 Snapshot,
                 new GameSessionCommandDiagnostic(
@@ -442,6 +487,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
             Snapshot.Discoveries,
+            Snapshot.Inventory,
             contextSelection: null,
             Snapshot.LastCueSequence,
             Snapshot.EventRequest,
@@ -451,7 +497,8 @@ public sealed class GameSession
             Snapshot.Entities,
             entityInteraction: null,
             dialogue: null,
-            fieldSearch: null);
+            fieldSearch: null,
+            itemAcquisition: null);
         return new GameSessionCommandApplied(Snapshot, transition.Outcome);
     }
 
@@ -475,6 +522,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
             Snapshot.Discoveries,
+            Snapshot.Inventory,
             contextSelection: null,
             Snapshot.LastCueSequence,
             Snapshot.EventRequest,
@@ -484,7 +532,8 @@ public sealed class GameSession
             Snapshot.Entities,
             entityInteraction: null,
             dialogue: null,
-            fieldSearch: null);
+            fieldSearch: null,
+            itemAcquisition: null);
         return new GameSessionFacingChanged(Snapshot, command.Facing);
     }
 
@@ -527,6 +576,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
             Snapshot.Discoveries,
+            Snapshot.Inventory,
             selection,
             Snapshot.LastCueSequence,
             Snapshot.EventRequest,
@@ -536,7 +586,8 @@ public sealed class GameSession
             Snapshot.Entities,
             entityInteraction: null,
             dialogue: null,
-            fieldSearch: null);
+            fieldSearch: null,
+            itemAcquisition: null);
         return new GameSessionContextSelected(Snapshot, selection);
     }
 
@@ -615,6 +666,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
             Snapshot.Discoveries,
+            Snapshot.Inventory,
             Snapshot.ContextSelection,
             cueSequence,
             request,
@@ -624,7 +676,8 @@ public sealed class GameSession
             Snapshot.Entities,
             Snapshot.EntityInteraction,
             Snapshot.Dialogue,
-            Snapshot.FieldSearch);
+            Snapshot.FieldSearch,
+            Snapshot.ItemAcquisition);
         return new GameSessionEventRequested(Snapshot, request, cue);
     }
 
@@ -696,6 +749,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             syntheticFlags,
             Snapshot.Discoveries,
+            Snapshot.Inventory,
             contextSelection: null,
             effectCueSequence,
             acknowledged,
@@ -705,7 +759,8 @@ public sealed class GameSession
             Snapshot.Entities,
             Snapshot.EntityInteraction,
             Snapshot.Dialogue,
-            fieldSearch: null);
+            fieldSearch: null,
+            itemAcquisition: null);
         return new GameSessionEventEffectApplied(
             Snapshot,
             acknowledged,
@@ -771,6 +826,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
             Snapshot.Discoveries,
+            Snapshot.Inventory,
             Snapshot.ContextSelection,
             cueSequence,
             Snapshot.EventRequest,
@@ -780,7 +836,8 @@ public sealed class GameSession
             Snapshot.Entities,
             Snapshot.EntityInteraction,
             Snapshot.Dialogue,
-            Snapshot.FieldSearch);
+            Snapshot.FieldSearch,
+            Snapshot.ItemAcquisition);
         return new GameSessionLocalTransitionRequested(Snapshot, transition, cue);
     }
 
@@ -842,6 +899,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
             Snapshot.Discoveries,
+            Snapshot.Inventory,
             contextSelection: null,
             Snapshot.LastCueSequence,
             eventRequest: null,
@@ -851,7 +909,8 @@ public sealed class GameSession
             Snapshot.Entities,
             entityInteraction: null,
             dialogue: null,
-            fieldSearch: null);
+            fieldSearch: null,
+            itemAcquisition: null);
         return new GameSessionLocalTransitionApplied(Snapshot, acknowledged);
     }
 
@@ -911,6 +970,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
             Snapshot.Discoveries,
+            Snapshot.Inventory,
             contextSelection: null,
             cueSequence,
             Snapshot.EventRequest,
@@ -920,7 +980,8 @@ public sealed class GameSession
             Snapshot.Entities,
             interaction,
             dialogue: null,
-            fieldSearch: null);
+            fieldSearch: null,
+            itemAcquisition: null);
         return new GameSessionEntityInteractionRequested(Snapshot, interaction, cue);
     }
 
@@ -1001,6 +1062,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
             Snapshot.Discoveries,
+            Snapshot.Inventory,
             contextSelection: null,
             dialogueCueSequence,
             Snapshot.EventRequest,
@@ -1010,7 +1072,8 @@ public sealed class GameSession
             Snapshot.Entities,
             acknowledged,
             dialogue,
-            fieldSearch: null);
+            fieldSearch: null,
+            itemAcquisition: null);
         return new GameSessionEntityInteractionAcknowledged(
             Snapshot,
             acknowledged,
@@ -1069,6 +1132,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
             Snapshot.Discoveries,
+            Snapshot.Inventory,
             Snapshot.ContextSelection,
             cueSequence,
             Snapshot.EventRequest,
@@ -1078,7 +1142,8 @@ public sealed class GameSession
             Snapshot.Entities,
             Snapshot.EntityInteraction,
             advanced,
-            Snapshot.FieldSearch);
+            Snapshot.FieldSearch,
+            Snapshot.ItemAcquisition);
         return advanced.Status == MapDialogueStatus.Open
             ? new GameSessionDialogueAdvanced(Snapshot, advanced, cue)
             : new GameSessionDialogueClosed(Snapshot, advanced, cue);
@@ -1150,6 +1215,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
             Snapshot.Discoveries,
+            Snapshot.Inventory,
             Snapshot.ContextSelection,
             cueSequence,
             Snapshot.EventRequest,
@@ -1159,7 +1225,8 @@ public sealed class GameSession
             Snapshot.Entities,
             Snapshot.EntityInteraction,
             Snapshot.Dialogue,
-            search);
+            search,
+            itemAcquisition: null);
         return new GameSessionFieldSearchRequested(Snapshot, search, cue);
     }
 
@@ -1246,6 +1313,7 @@ public sealed class GameSession
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
             discoveries,
+            Snapshot.Inventory,
             Snapshot.ContextSelection,
             discoveryCueSequence,
             Snapshot.EventRequest,
@@ -1255,10 +1323,184 @@ public sealed class GameSession
             Snapshot.Entities,
             Snapshot.EntityInteraction,
             Snapshot.Dialogue,
-            discovered);
+            discovered,
+            itemAcquisition: null);
         return new GameSessionFieldSearchDiscovered(
             Snapshot,
             discovered,
+            receipt,
+            cue);
+    }
+
+    private GameSessionCommandResult ApplyItemAcquisitionRequest(
+        RequestMapItemAcquisitionCommand command)
+    {
+        if (Snapshot.FlowStage != GameFlowStage.Exploration)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.WrongFlowStage,
+                    "Item acquisition is not admitted in this flow stage."));
+        }
+
+        MapItemAcquisitionDefinition? definition =
+            _mapContext.ItemAcquisitions.FindByDiscovery(command.Discovery);
+        if (definition is null ||
+            !Snapshot.Discoveries.IsDiscovered(command.Discovery) ||
+            Snapshot.FieldSearch?.Status != MapFieldSearchStatus.Discovered ||
+            Snapshot.FieldSearch.Discovery != command.Discovery)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.ItemAcquisitionNotAdmitted,
+                    "Item acquisition requires the exact current admitted field-search discovery."));
+        }
+
+        if (Snapshot.Inventory.Contains(definition.Item))
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.ItemAlreadyAcquired,
+                    $"Item '{definition.Item}' has already been acquired in this session."));
+        }
+
+        long requestedAtStep = checked(Snapshot.SimulationStep + 1);
+        long cueSequence = checked(Snapshot.LastCueSequence + 1);
+        MapItemAcquisitionSnapshot acquisition = MapItemAcquisitionSnapshot.Pending(
+            definition,
+            requestedAtStep,
+            cueSequence);
+        MapItemAcquisitionCue cue = new(
+            definition.RequestCue,
+            definition.Discovery,
+            definition.Request,
+            definition.Result,
+            definition.Item,
+            MapItemAcquisitionCueKind.AcquisitionPending,
+            cueSequence);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            requestedAtStep,
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
+            Snapshot.Inventory,
+            Snapshot.ContextSelection,
+            cueSequence,
+            Snapshot.EventRequest,
+            Snapshot.LastEventEffect,
+            Snapshot.LocalTransition,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            Snapshot.EntityInteraction,
+            Snapshot.Dialogue,
+            Snapshot.FieldSearch,
+            acquisition);
+        return new GameSessionItemAcquisitionRequested(
+            Snapshot,
+            acquisition,
+            cue);
+    }
+
+    private GameSessionCommandResult ApplyItemAcquisitionAcknowledgement(
+        AcknowledgeMapItemAcquisitionCommand command)
+    {
+        MapItemAcquisitionSnapshot? pending = Snapshot.ItemAcquisition;
+        if (pending?.Status != MapItemAcquisitionStatus.Pending)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.NoPendingAcknowledgement,
+                    "There is no pending item acquisition to acknowledge."));
+        }
+
+        if (pending.Request != command.Request ||
+            pending.RequestCueSequence != command.CueSequence ||
+            pending.Result != command.Result ||
+            pending.Item != command.Item)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.AcknowledgementMismatch,
+                    "The acknowledgement does not match the pending item-acquisition request, cue sequence, result, and item."));
+        }
+
+        MapItemAcquisitionDefinition? definition =
+            _mapContext.ItemAcquisitions.FindByRequest(pending.Request);
+        if (definition is null ||
+            definition.Discovery != pending.Discovery ||
+            definition.Result != pending.Result ||
+            definition.Item != pending.Item ||
+            !Snapshot.Discoveries.IsDiscovered(pending.Discovery) ||
+            Snapshot.FieldSearch?.Status != MapFieldSearchStatus.Discovered ||
+            Snapshot.FieldSearch.Discovery != pending.Discovery)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.ItemAcquisitionNotAdmitted,
+                    "The pending item acquisition no longer has its exact admitted discovery mapping."));
+        }
+
+        ItemAcquisitionResult domainResult = ItemInventoryReducer.TryAcquireUnique(
+            Snapshot.Inventory,
+            definition.Item);
+        if (domainResult.Outcome != ItemAcquisitionOutcome.Acquired)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.ItemAlreadyAcquired,
+                    $"Item '{definition.Item}' has already been acquired in this session."));
+        }
+
+        long acquiredAtStep = checked(Snapshot.SimulationStep + 1);
+        long acquiredCueSequence = checked(Snapshot.LastCueSequence + 1);
+        MapItemAcquisitionSnapshot acquired = pending.Acquire(
+            definition,
+            acquiredAtStep,
+            acquiredCueSequence);
+        MapItemAcquisitionReceipt receipt = new(acquired);
+        MapItemAcquisitionCue cue = new(
+            definition.AcquiredCue,
+            definition.Discovery,
+            definition.Request,
+            definition.Result,
+            definition.Item,
+            MapItemAcquisitionCueKind.ItemAcquired,
+            acquiredCueSequence);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            acquiredAtStep,
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
+            domainResult.State,
+            Snapshot.ContextSelection,
+            acquiredCueSequence,
+            Snapshot.EventRequest,
+            Snapshot.LastEventEffect,
+            Snapshot.LocalTransition,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            Snapshot.EntityInteraction,
+            Snapshot.Dialogue,
+            Snapshot.FieldSearch,
+            acquired);
+        return new GameSessionItemAcquired(
+            Snapshot,
+            acquired,
             receipt,
             cue);
     }
@@ -1310,6 +1552,7 @@ public sealed class GameSession
                 new PublicSyntheticFlagStateSnapshot(
                     accepted.Scenario.MapContext.InitialSetFlags),
                 new PublicSyntheticDiscoveryStateSnapshot([]),
+                new ItemInventoryState([]),
                 contextSelection: null,
                 lastCueSequence: 0,
                 eventRequest: null,
@@ -1319,7 +1562,8 @@ public sealed class GameSession
                 accepted.Scenario.MapContext.EntityInteractions.Entities,
                 entityInteraction: null,
                 dialogue: null,
-                fieldSearch: null),
+                fieldSearch: null,
+                itemAcquisition: null),
             accepted.Scenario.MapContext);
         return new GameSessionStarted(
             session,
