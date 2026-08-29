@@ -19,6 +19,7 @@ public sealed record GameSessionSnapshot
         ExplorationMovementState exploration,
         ScenarioAdmissionFacts admissionFacts,
         PublicSyntheticFlagStateSnapshot syntheticFlags,
+        PublicSyntheticDiscoveryStateSnapshot discoveries,
         ExplorationContextSelectionSnapshot? contextSelection,
         long lastCueSequence,
         MapEventRequestSnapshot? eventRequest,
@@ -27,7 +28,8 @@ public sealed record GameSessionSnapshot
         SemanticFacing facing,
         IEnumerable<MapEntityDefinition> entities,
         MapEntityInteractionSnapshot? entityInteraction,
-        MapDialogueSnapshot? dialogue)
+        MapDialogueSnapshot? dialogue,
+        MapFieldSearchSnapshot? fieldSearch)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         if (!Enum.IsDefined(profile))
@@ -76,6 +78,15 @@ public sealed record GameSessionSnapshot
                 nameof(dialogue));
         }
 
+        long? fieldSearchCueSequence = fieldSearch?.DiscoveryCueSequence ??
+            fieldSearch?.RequestCueSequence;
+        if (fieldSearchCueSequence > lastCueSequence)
+        {
+            throw new ArgumentException(
+                "The field-search cue sequence cannot exceed the session cue sequence.",
+                nameof(fieldSearch));
+        }
+
         if (dialogue is not null &&
             (entityInteraction?.Status != MapEntityInteractionStatus.Acknowledged ||
              entityInteraction.Target != dialogue.TriggerTarget ||
@@ -89,7 +100,8 @@ public sealed record GameSessionSnapshot
         int pendingAcknowledgements =
             (eventRequest?.Status == MapEventRequestStatus.Pending ? 1 : 0) +
             (localTransition?.Status == MapLocalTransitionStatus.Pending ? 1 : 0) +
-            (entityInteraction?.Status == MapEntityInteractionStatus.Pending ? 1 : 0);
+            (entityInteraction?.Status == MapEntityInteractionStatus.Pending ? 1 : 0) +
+            (fieldSearch?.Status == MapFieldSearchStatus.Pending ? 1 : 0);
         if (pendingAcknowledgements > 1)
         {
             throw new ArgumentException(
@@ -98,6 +110,29 @@ public sealed record GameSessionSnapshot
         }
 
         SyntheticFlags = syntheticFlags ?? throw new ArgumentNullException(nameof(syntheticFlags));
+        Discoveries = discoveries ?? throw new ArgumentNullException(nameof(discoveries));
+        if (fieldSearch is not null &&
+            (fieldSearch.Status == MapFieldSearchStatus.Discovered) !=
+            Discoveries.IsDiscovered(fieldSearch.Discovery))
+        {
+            throw new ArgumentException(
+                "Field-search lifecycle status must agree with the session discovery set.",
+                nameof(fieldSearch));
+        }
+
+        if (fieldSearch is not null &&
+            (exploration is null ||
+             contextSelection is null ||
+             fieldSearch.Map != exploration.Map ||
+             fieldSearch.Position != exploration.PlayerPosition ||
+             fieldSearch.Position != contextSelection.Position ||
+             fieldSearch.Setup != contextSelection.SelectedSetup ||
+             fieldSearch.ZoneTarget != contextSelection.ZoneEvent.Target))
+        {
+            throw new ArgumentException(
+                "Field-search lifecycle state requires its exact current exploration context.",
+                nameof(fieldSearch));
+        }
         if (lastEventEffect is not null &&
             (lastEventEffect.CueSequence > lastCueSequence ||
              !SyntheticFlags.IsSet(lastEventEffect.Flag)))
@@ -131,6 +166,7 @@ public sealed record GameSessionSnapshot
         Entities = new ReadOnlyCollection<MapEntityDefinition>(copiedEntities);
         EntityInteraction = entityInteraction;
         Dialogue = dialogue;
+        FieldSearch = fieldSearch;
     }
 
     public string ScenarioId { get; }
@@ -146,6 +182,8 @@ public sealed record GameSessionSnapshot
     public ScenarioAdmissionFacts AdmissionFacts { get; }
 
     public PublicSyntheticFlagStateSnapshot SyntheticFlags { get; }
+
+    public PublicSyntheticDiscoveryStateSnapshot Discoveries { get; }
 
     public ExplorationContextSelectionSnapshot? ContextSelection { get; }
 
@@ -164,6 +202,8 @@ public sealed record GameSessionSnapshot
     public MapEntityInteractionSnapshot? EntityInteraction { get; }
 
     public MapDialogueSnapshot? Dialogue { get; }
+
+    public MapFieldSearchSnapshot? FieldSearch { get; }
 }
 
 public interface IGameSessionCommand;
@@ -199,6 +239,8 @@ public enum GameSessionCommandFailureCode
     DialogueNotAdmitted,
     DialogueNotOpen,
     DialogueIdentityMismatch,
+    FieldSearchNotAdmitted,
+    FieldSearchAlreadyDiscovered,
 }
 
 public sealed record GameSessionCommandDiagnostic
@@ -341,6 +383,16 @@ public sealed class GameSession
                     "The open dialogue line must be advanced before another session command."));
         }
 
+        if (Snapshot.FieldSearch?.Status == MapFieldSearchStatus.Pending &&
+            command is not AcknowledgeFieldSearchCommand)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.PendingAcknowledgement,
+                    "The pending field search must be acknowledged first."));
+        }
+
         return command switch
         {
             MoveExplorationCommand move => ApplyMove(move),
@@ -356,6 +408,9 @@ public sealed class GameSession
             AcknowledgeEntityInteractionCommand acknowledgeInteraction =>
                 ApplyEntityInteractionAcknowledgement(acknowledgeInteraction),
             AdvanceDialogueCommand advanceDialogue => ApplyDialogueAdvance(advanceDialogue),
+            RequestFieldSearchCommand => ApplyFieldSearchRequest(),
+            AcknowledgeFieldSearchCommand acknowledgeSearch =>
+                ApplyFieldSearchAcknowledgement(acknowledgeSearch),
             _ => new GameSessionCommandRejected(
                 Snapshot,
                 new GameSessionCommandDiagnostic(
@@ -386,6 +441,7 @@ public sealed class GameSession
             transition.State,
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
             contextSelection: null,
             Snapshot.LastCueSequence,
             Snapshot.EventRequest,
@@ -394,7 +450,8 @@ public sealed class GameSession
             ToSemanticFacing(command.Direction),
             Snapshot.Entities,
             entityInteraction: null,
-            dialogue: null);
+            dialogue: null,
+            fieldSearch: null);
         return new GameSessionCommandApplied(Snapshot, transition.Outcome);
     }
 
@@ -417,6 +474,7 @@ public sealed class GameSession
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
             contextSelection: null,
             Snapshot.LastCueSequence,
             Snapshot.EventRequest,
@@ -425,7 +483,8 @@ public sealed class GameSession
             command.Facing,
             Snapshot.Entities,
             entityInteraction: null,
-            dialogue: null);
+            dialogue: null,
+            fieldSearch: null);
         return new GameSessionFacingChanged(Snapshot, command.Facing);
     }
 
@@ -467,6 +526,7 @@ public sealed class GameSession
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
             selection,
             Snapshot.LastCueSequence,
             Snapshot.EventRequest,
@@ -475,7 +535,8 @@ public sealed class GameSession
             Snapshot.Facing,
             Snapshot.Entities,
             entityInteraction: null,
-            dialogue: null);
+            dialogue: null,
+            fieldSearch: null);
         return new GameSessionContextSelected(Snapshot, selection);
     }
 
@@ -553,6 +614,7 @@ public sealed class GameSession
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
             Snapshot.ContextSelection,
             cueSequence,
             request,
@@ -561,7 +623,8 @@ public sealed class GameSession
             Snapshot.Facing,
             Snapshot.Entities,
             Snapshot.EntityInteraction,
-            Snapshot.Dialogue);
+            Snapshot.Dialogue,
+            Snapshot.FieldSearch);
         return new GameSessionEventRequested(Snapshot, request, cue);
     }
 
@@ -632,6 +695,7 @@ public sealed class GameSession
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
             syntheticFlags,
+            Snapshot.Discoveries,
             contextSelection: null,
             effectCueSequence,
             acknowledged,
@@ -640,7 +704,8 @@ public sealed class GameSession
             Snapshot.Facing,
             Snapshot.Entities,
             Snapshot.EntityInteraction,
-            Snapshot.Dialogue);
+            Snapshot.Dialogue,
+            fieldSearch: null);
         return new GameSessionEventEffectApplied(
             Snapshot,
             acknowledged,
@@ -705,6 +770,7 @@ public sealed class GameSession
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
             Snapshot.ContextSelection,
             cueSequence,
             Snapshot.EventRequest,
@@ -713,7 +779,8 @@ public sealed class GameSession
             Snapshot.Facing,
             Snapshot.Entities,
             Snapshot.EntityInteraction,
-            Snapshot.Dialogue);
+            Snapshot.Dialogue,
+            Snapshot.FieldSearch);
         return new GameSessionLocalTransitionRequested(Snapshot, transition, cue);
     }
 
@@ -774,6 +841,7 @@ public sealed class GameSession
             relocated,
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
             contextSelection: null,
             Snapshot.LastCueSequence,
             eventRequest: null,
@@ -782,7 +850,8 @@ public sealed class GameSession
             Snapshot.Facing,
             Snapshot.Entities,
             entityInteraction: null,
-            dialogue: null);
+            dialogue: null,
+            fieldSearch: null);
         return new GameSessionLocalTransitionApplied(Snapshot, acknowledged);
     }
 
@@ -841,6 +910,7 @@ public sealed class GameSession
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
             contextSelection: null,
             cueSequence,
             Snapshot.EventRequest,
@@ -849,7 +919,8 @@ public sealed class GameSession
             Snapshot.Facing,
             Snapshot.Entities,
             interaction,
-            dialogue: null);
+            dialogue: null,
+            fieldSearch: null);
         return new GameSessionEntityInteractionRequested(Snapshot, interaction, cue);
     }
 
@@ -929,6 +1000,7 @@ public sealed class GameSession
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
             contextSelection: null,
             dialogueCueSequence,
             Snapshot.EventRequest,
@@ -937,7 +1009,8 @@ public sealed class GameSession
             Snapshot.Facing,
             Snapshot.Entities,
             acknowledged,
-            dialogue);
+            dialogue,
+            fieldSearch: null);
         return new GameSessionEntityInteractionAcknowledged(
             Snapshot,
             acknowledged,
@@ -995,6 +1068,7 @@ public sealed class GameSession
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
             Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
             Snapshot.ContextSelection,
             cueSequence,
             Snapshot.EventRequest,
@@ -1003,10 +1077,190 @@ public sealed class GameSession
             Snapshot.Facing,
             Snapshot.Entities,
             Snapshot.EntityInteraction,
-            advanced);
+            advanced,
+            Snapshot.FieldSearch);
         return advanced.Status == MapDialogueStatus.Open
             ? new GameSessionDialogueAdvanced(Snapshot, advanced, cue)
             : new GameSessionDialogueClosed(Snapshot, advanced, cue);
+    }
+
+    private GameSessionCommandResult ApplyFieldSearchRequest()
+    {
+        if (Snapshot.FlowStage != GameFlowStage.Exploration)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.WrongFlowStage,
+                    "Field search is not admitted in this flow stage."));
+        }
+
+        ExplorationContextSelectionSnapshot? selection = Snapshot.ContextSelection;
+        if (selection is null || selection.Position != Snapshot.Exploration.PlayerPosition)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.ContextSelectionRequired,
+                    "A current exploration-context selection is required for field search."));
+        }
+
+        MapFieldSearchDefinition? definition = _mapContext.FieldSearches.FindForSelection(
+            Snapshot.Exploration.Map,
+            Snapshot.Exploration.PlayerPosition,
+            selection.SelectedSetup,
+            selection.ZoneEvent.Target);
+        if (definition is null)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.FieldSearchNotAdmitted,
+                    "The selected synthetic map context has no admitted field search."));
+        }
+
+        if (Snapshot.Discoveries.IsDiscovered(definition.Discovery))
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.FieldSearchAlreadyDiscovered,
+                    $"Discovery '{definition.Discovery}' has already been admitted in this session."));
+        }
+
+        long requestedAtStep = checked(Snapshot.SimulationStep + 1);
+        long cueSequence = checked(Snapshot.LastCueSequence + 1);
+        MapFieldSearchSnapshot search = MapFieldSearchSnapshot.Pending(
+            definition,
+            requestedAtStep,
+            cueSequence);
+        MapFieldSearchCue cue = new(
+            definition.RequestCue,
+            definition.Request,
+            definition.Result,
+            definition.Discovery,
+            MapFieldSearchCueKind.SearchPending,
+            cueSequence);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            requestedAtStep,
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
+            Snapshot.ContextSelection,
+            cueSequence,
+            Snapshot.EventRequest,
+            Snapshot.LastEventEffect,
+            Snapshot.LocalTransition,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            Snapshot.EntityInteraction,
+            Snapshot.Dialogue,
+            search);
+        return new GameSessionFieldSearchRequested(Snapshot, search, cue);
+    }
+
+    private GameSessionCommandResult ApplyFieldSearchAcknowledgement(
+        AcknowledgeFieldSearchCommand command)
+    {
+        MapFieldSearchSnapshot? pending = Snapshot.FieldSearch;
+        if (pending?.Status != MapFieldSearchStatus.Pending)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.NoPendingAcknowledgement,
+                    "There is no pending field search to acknowledge."));
+        }
+
+        if (pending.Request != command.Request ||
+            pending.RequestCueSequence != command.CueSequence ||
+            pending.Result != command.Result)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.AcknowledgementMismatch,
+                    "The acknowledgement does not match the pending field-search request, cue sequence, and result."));
+        }
+
+        MapFieldSearchDefinition? definition =
+            _mapContext.FieldSearches.FindByRequest(pending.Request);
+        ExplorationContextSelectionSnapshot? selection = Snapshot.ContextSelection;
+        if (definition is null ||
+            definition.Context != pending.Context ||
+            definition.Result != pending.Result ||
+            definition.Discovery != pending.Discovery ||
+            definition.Map != pending.Map ||
+            definition.Position != pending.Position ||
+            definition.Setup != pending.Setup ||
+            definition.ZoneTarget != pending.ZoneTarget ||
+            Snapshot.Exploration.Map != pending.Map ||
+            Snapshot.Exploration.PlayerPosition != pending.Position ||
+            selection is null ||
+            selection.Position != pending.Position ||
+            selection.SelectedSetup != pending.Setup ||
+            selection.ZoneEvent.Target != pending.ZoneTarget)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.FieldSearchNotAdmitted,
+                    "The pending search no longer has one exact admitted synthetic context."));
+        }
+
+        if (Snapshot.Discoveries.IsDiscovered(definition.Discovery))
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.FieldSearchAlreadyDiscovered,
+                    $"Discovery '{definition.Discovery}' has already been admitted in this session."));
+        }
+
+        long discoveredAtStep = checked(Snapshot.SimulationStep + 1);
+        long discoveryCueSequence = checked(Snapshot.LastCueSequence + 1);
+        PublicSyntheticDiscoveryStateSnapshot discoveries =
+            Snapshot.Discoveries.DiscoverOnce(definition.Discovery);
+        MapFieldSearchSnapshot discovered = pending.Discover(
+            definition,
+            discoveredAtStep,
+            discoveryCueSequence);
+        MapFieldSearchReceipt receipt = new(discovered);
+        MapFieldSearchCue cue = new(
+            definition.DiscoveryCue,
+            definition.Request,
+            definition.Result,
+            definition.Discovery,
+            MapFieldSearchCueKind.DiscoveryPresented,
+            discoveryCueSequence);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            discoveredAtStep,
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
+            discoveries,
+            Snapshot.ContextSelection,
+            discoveryCueSequence,
+            Snapshot.EventRequest,
+            Snapshot.LastEventEffect,
+            Snapshot.LocalTransition,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            Snapshot.EntityInteraction,
+            Snapshot.Dialogue,
+            discovered);
+        return new GameSessionFieldSearchDiscovered(
+            Snapshot,
+            discovered,
+            receipt,
+            cue);
     }
 
     private static SemanticFacing ToSemanticFacing(ExplorationDirection direction) =>
@@ -1055,6 +1309,7 @@ public sealed class GameSession
                 accepted.Scenario.AdmissionFacts,
                 new PublicSyntheticFlagStateSnapshot(
                     accepted.Scenario.MapContext.InitialSetFlags),
+                new PublicSyntheticDiscoveryStateSnapshot([]),
                 contextSelection: null,
                 lastCueSequence: 0,
                 eventRequest: null,
@@ -1063,7 +1318,8 @@ public sealed class GameSession
                 accepted.Scenario.MapContext.InitialFacing,
                 accepted.Scenario.MapContext.EntityInteractions.Entities,
                 entityInteraction: null,
-                dialogue: null),
+                dialogue: null,
+                fieldSearch: null),
             accepted.Scenario.MapContext);
         return new GameSessionStarted(
             session,

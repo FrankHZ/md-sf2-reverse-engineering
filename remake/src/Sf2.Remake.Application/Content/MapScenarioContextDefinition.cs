@@ -19,7 +19,8 @@ public sealed class MapScenarioContextDefinition
         MapLocalTransitionCatalog localTransitions,
         SemanticFacing initialFacing,
         MapEntityInteractionCatalog entityInteractions,
-        MapDialogueCatalog dialogues)
+        MapDialogueCatalog dialogues,
+        MapFieldSearchCatalog fieldSearches)
     {
         SetupCatalog = setupCatalog ?? throw new ArgumentNullException(nameof(setupCatalog));
         VoidSetup = voidSetup ?? throw new ArgumentNullException(nameof(voidSetup));
@@ -40,6 +41,7 @@ public sealed class MapScenarioContextDefinition
         EntityInteractions = entityInteractions ??
             throw new ArgumentNullException(nameof(entityInteractions));
         Dialogues = dialogues ?? throw new ArgumentNullException(nameof(dialogues));
+        FieldSearches = fieldSearches ?? throw new ArgumentNullException(nameof(fieldSearches));
 
         List<FlagId> copiedFlags = [];
         _initialSetFlagLookup = [];
@@ -239,6 +241,41 @@ public sealed class MapScenarioContextDefinition
                 }
             }
         }
+
+        foreach (MapFieldSearchDefinition search in FieldSearches.Definitions)
+        {
+            if (!setupMaps.Contains(search.Map))
+            {
+                throw new ArgumentException(
+                    $"Field-search context '{search.Context}' references an unadmitted map.",
+                    nameof(fieldSearches));
+            }
+
+            MapSetupCatalogEntry setupEntry = SetupCatalog.Entries.Single(
+                entry => entry.Map == search.Map);
+            bool ownsSetup = setupEntry.Route.DefaultSetup == search.Setup ||
+                setupEntry.Route.FlagAlternatives.Any(
+                    alternative => alternative.Setup == search.Setup);
+            ZoneEventSelection selectedZone = MapSetupEventSelector.Select(
+                ZoneEvents,
+                new ZoneEventQuery(
+                    checked((byte)search.Position.X),
+                    checked((byte)search.Position.Y)));
+            if (!ownsSetup || selectedZone.Target != search.ZoneTarget)
+            {
+                throw new ArgumentException(
+                    $"Field-search context '{search.Context}' must reference one exact admitted setup and selected zone.",
+                    nameof(fieldSearches));
+            }
+
+            if (!occupiedCueIds.Add(search.RequestCue) ||
+                !occupiedCueIds.Add(search.DiscoveryCue))
+            {
+                throw new ArgumentException(
+                    $"Field-search context '{search.Context}' cannot reuse another presentation cue ID.",
+                    nameof(fieldSearches));
+            }
+        }
     }
 
     public MapSetupCatalog SetupCatalog { get; }
@@ -262,6 +299,8 @@ public sealed class MapScenarioContextDefinition
     public MapEntityInteractionCatalog EntityInteractions { get; }
 
     public MapDialogueCatalog Dialogues { get; }
+
+    public MapFieldSearchCatalog FieldSearches { get; }
 
     public bool IsInitiallySet(FlagId flag)
     {

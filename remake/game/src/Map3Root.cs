@@ -23,6 +23,7 @@ public sealed partial class Map3Root : Node2D
     private Label? _entityStatus;
     private Label? _entityInteractionStatus;
     private Label? _dialogueStatus;
+    private Label? _fieldSearchStatus;
 
     public override void _Ready()
     {
@@ -102,6 +103,14 @@ public sealed partial class Map3Root : Node2D
         else if (Input.IsActionJustPressed("advance_dialogue"))
         {
             ApplyDialogueAdvance();
+        }
+        else if (Input.IsActionJustPressed("request_field_search"))
+        {
+            ApplyFieldSearchRequest();
+        }
+        else if (Input.IsActionJustPressed("acknowledge_field_search"))
+        {
+            ApplyFieldSearchAcknowledgement();
         }
     }
 
@@ -340,6 +349,47 @@ public sealed partial class Map3Root : Node2D
         }
     }
 
+    private void ApplyFieldSearchRequest()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(new RequestFieldSearchCommand());
+        if (result is GameSessionFieldSearchRequested requested)
+        {
+            ProjectSnapshot($"Synthetic field search {requested.Search.Context} pending");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyFieldSearchAcknowledgement()
+    {
+        if (_session?.Snapshot.FieldSearch is not MapFieldSearchSnapshot
+            {
+                Status: MapFieldSearchStatus.Pending,
+            } search)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new AcknowledgeFieldSearchCommand(
+                search.Request,
+                search.RequestCueSequence,
+                search.Result));
+        if (result is GameSessionFieldSearchDiscovered discovered)
+        {
+            ProjectSnapshot($"Placeholder discovery {discovered.Receipt.Discovery} admitted");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
     private void ProjectRejection(GameSessionCommandRejected rejected)
     {
         if (_status is not null)
@@ -359,7 +409,8 @@ public sealed partial class Map3Root : Node2D
             _transitionStatus is null ||
             _entityStatus is null ||
             _entityInteractionStatus is null ||
-            _dialogueStatus is null)
+            _dialogueStatus is null ||
+            _fieldSearchStatus is null)
         {
             return;
         }
@@ -371,7 +422,7 @@ public sealed partial class Map3Root : Node2D
             $"Tile ({snapshot.Exploration.PlayerPosition.X}, " +
             $"{snapshot.Exploration.PlayerPosition.Y})  " +
             $"Facing {snapshot.Facing}  Step {snapshot.SimulationStep}  {outcome}  |  " +
-            "WASD move / arrows turn / Enter / Z X / C V / F G / H";
+            "WASD move / arrows turn / Enter / Z X / C V / F G / H / Q E";
         _contextStatus.Text = snapshot.ContextSelection is null
             ? "Context not selected."
             : FormatContext(snapshot.ContextSelection);
@@ -391,6 +442,7 @@ public sealed partial class Map3Root : Node2D
         _dialogueStatus.Text = snapshot.Dialogue is null
             ? "Placeholder dialogue: none."
             : FormatDialogue(snapshot.Dialogue);
+        _fieldSearchStatus.Text = FormatFieldSearch(snapshot);
     }
 
     private void RunHeadlessSmoke()
@@ -605,7 +657,69 @@ public sealed partial class Map3Root : Node2D
             return;
         }
 
-        ProjectSnapshot("Placeholder dialogue lifecycle closed");
+        GameSessionContextSelected? searchContext = _session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)) as
+            GameSessionContextSelected;
+        if (searchContext is null ||
+            searchContext.Selection.Position != new MapPosition(55, 4) ||
+            searchContext.Selection.SelectedSetup.Value != "synthetic-map3-variant" ||
+            searchContext.Selection.ZoneEvent.Target.Value != "synthetic-no-zone")
+        {
+            FailStartup("The bounded synthetic field-search context did not match.");
+            return;
+        }
+
+        GameSessionFieldSearchRequested? searchRequested = _session.Apply(
+            new RequestFieldSearchCommand()) as GameSessionFieldSearchRequested;
+        if (searchRequested is null ||
+            searchRequested.Search.Status != MapFieldSearchStatus.Pending ||
+            searchRequested.Search.Context.Value !=
+                "synthetic-map3-arrival-search-context" ||
+            searchRequested.Search.Request.Value !=
+                "synthetic-map3-field-search-request" ||
+            searchRequested.Search.Result.Value !=
+                "synthetic-map3-field-search-result" ||
+            searchRequested.Search.Discovery.Value !=
+                "synthetic-map3-placeholder-discovery" ||
+            searchRequested.Cue.Cue.Value != "synthetic-map3-field-search-pending" ||
+            !searchRequested.Cue.RequiresAcknowledgement)
+        {
+            FailStartup("The bounded synthetic field search was not admitted.");
+            return;
+        }
+
+        GameSessionFieldSearchDiscovered? searchDiscovered = _session.Apply(
+            new AcknowledgeFieldSearchCommand(
+                searchRequested.Search.Request,
+                searchRequested.Cue.Sequence,
+                searchRequested.Search.Result)) as GameSessionFieldSearchDiscovered;
+        if (searchDiscovered is null ||
+            searchDiscovered.Search.Status != MapFieldSearchStatus.Discovered ||
+            searchDiscovered.Receipt.Context != searchRequested.Search.Context ||
+            searchDiscovered.Receipt.Result != searchRequested.Search.Result ||
+            searchDiscovered.Receipt.Discovery != searchRequested.Search.Discovery ||
+            searchDiscovered.Cue.Cue.Value !=
+                "synthetic-map3-placeholder-discovered" ||
+            searchDiscovered.Cue.RequiresAcknowledgement ||
+            !searchDiscovered.Snapshot.Discoveries.IsDiscovered(
+                searchDiscovered.Receipt.Discovery))
+        {
+            FailStartup("The bounded placeholder discovery was not applied atomically.");
+            return;
+        }
+
+        GameSessionSnapshot discoveredSnapshot = searchDiscovered.Snapshot;
+        GameSessionCommandRejected? repeatedSearch = _session.Apply(
+            new RequestFieldSearchCommand()) as GameSessionCommandRejected;
+        if (repeatedSearch?.Diagnostic.Code !=
+                GameSessionCommandFailureCode.FieldSearchAlreadyDiscovered ||
+            !ReferenceEquals(discoveredSnapshot, _session.Snapshot))
+        {
+            FailStartup("The bounded placeholder discovery was not once-only.");
+            return;
+        }
+
+        ProjectSnapshot("Placeholder field-search discovery admitted once");
         object receipt = new
         {
             status = "Pass",
@@ -739,6 +853,15 @@ public sealed partial class Map3Root : Node2D
         _dialogueStatus.AddThemeFontSizeOverride("font_size", 15);
         _dialogueStatus.AddThemeColorOverride("font_color", new Color("c6e5ff"));
         AddChild(_dialogueStatus);
+
+        _fieldSearchStatus = new Label
+        {
+            Text = "Synthetic field search: none.",
+            Position = new Vector2(24, 690),
+        };
+        _fieldSearchStatus.AddThemeFontSizeOverride("font_size", 15);
+        _fieldSearchStatus.AddThemeColorOverride("font_color", new Color("b8f2c2"));
+        AddChild(_fieldSearchStatus);
     }
 
     private static void RegisterInputMap()
@@ -759,6 +882,8 @@ public sealed partial class Map3Root : Node2D
         RegisterAction("request_entity_interaction", Key.F);
         RegisterAction("acknowledge_entity_interaction", Key.G);
         RegisterAction("advance_dialogue", Key.H);
+        RegisterAction("request_field_search", Key.Q);
+        RegisterAction("acknowledge_field_search", Key.E);
     }
 
     private static void RegisterAction(string action, Key physicalKey)
@@ -837,4 +962,16 @@ public sealed partial class Map3Root : Node2D
                 $"Cue #{dialogue.CueSequence}  [H advances]"
             : $"Placeholder dialogue {dialogue.Dialogue}: closed  " +
                 $"Cue #{dialogue.CueSequence}";
+
+    private static string FormatFieldSearch(GameSessionSnapshot snapshot)
+    {
+        string discoveries = snapshot.Discoveries.Discoveries.Count == 0
+            ? "none"
+            : string.Join(", ", snapshot.Discoveries.Discoveries);
+        return snapshot.FieldSearch is null
+            ? $"Synthetic field search: none. Discoveries [{discoveries}]  [Q search / E ack]"
+            : $"Synthetic field search {snapshot.FieldSearch.Context}: " +
+                $"{snapshot.FieldSearch.Status}  Result {snapshot.FieldSearch.Result}  " +
+                $"Discovery {snapshot.FieldSearch.Discovery}  Discoveries [{discoveries}]";
+    }
 }

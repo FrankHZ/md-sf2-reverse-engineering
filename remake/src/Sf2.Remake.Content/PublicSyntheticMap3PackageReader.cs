@@ -21,9 +21,11 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         "public-synthetic-map3-entity-interaction-v1";
     public const string DialogueCapability =
         "public-synthetic-map3-placeholder-dialogue-v1";
+    public const string FieldSearchCapability =
+        "public-synthetic-map3-field-search-v1";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
     public const string ExpectedContentDigest =
-        "a3c1c6fd928d723fb9543d565732f6845401d4b0ddab8228a731ab2c73703045";
+        "2e9167f8390738c7be6b572a1e2705b8ab1ddc9defa519cb2d1e80509c0dcb00";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -231,6 +233,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     LocalTransitionCapability,
                     EntityInteractionCapability,
                     DialogueCapability,
+                    FieldSearchCapability,
                 ],
                 StringComparer.Ordinal) ||
             !document.EvidenceOwnerIds.SequenceEqual([EvidenceOwner], StringComparer.Ordinal))
@@ -277,6 +280,14 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                 ScenarioAdmissionFailureCode.InvalidMap,
                 "layout",
                 "The synthetic layout and walkability dimensions or defaults are invalid.");
+        }
+
+        if (document.MapContext.FieldSearches.Length != 1)
+        {
+            return Diagnostic(
+                ScenarioAdmissionFailureCode.InvalidDocument,
+                "mapContext.fieldSearches",
+                "The bounded public-synthetic package requires exactly one field-search definition.");
         }
 
         return null;
@@ -401,6 +412,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             context.EntityInteractions.Select(BuildEntityInteractionDefinition));
         MapDialogueCatalog dialogues = new(
             context.Dialogues.Select(BuildDialogueDefinition));
+        MapFieldSearchCatalog fieldSearches = new(
+            context.FieldSearches.Select(BuildFieldSearchDefinition));
         return new MapScenarioContextDefinition(
             setupCatalog,
             new MapSetupId(context.VoidSetupId),
@@ -412,7 +425,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             localTransitions,
             ParseSemanticFacing(initialSemanticFacing),
             entityInteractions,
-            dialogues);
+            dialogues,
+            fieldSearches);
     }
 
     private static MapEntityInteractionDefinition BuildEntityInteractionDefinition(
@@ -447,6 +461,28 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     line.Text,
                     new PresentationCueId(line.CueId))),
             new PresentationCueId(entry.CloseCueId));
+    }
+
+    private static MapFieldSearchDefinition BuildFieldSearchDefinition(
+        FieldSearchDocument entry)
+    {
+        if (!string.Equals(entry.Kind, "specific", StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "Synthetic field searches admit only explicit non-default contexts.");
+        }
+
+        return new MapFieldSearchDefinition(
+            new MapFieldSearchContextId(entry.ContextId),
+            new MapFieldSearchRequestId(entry.RequestId),
+            new MapFieldSearchResultId(entry.ResultId),
+            new MapDiscoveryId(entry.DiscoveryId),
+            new MapId(entry.MapId),
+            new MapPosition(entry.Position.X, entry.Position.Y),
+            new MapSetupId(entry.SetupId),
+            new EventTargetId(entry.ZoneTargetId),
+            new PresentationCueId(entry.RequestCueId),
+            new PresentationCueId(entry.DiscoveryCueId));
     }
 
     private static SemanticFacing ParseSemanticFacing(string value) =>
@@ -660,6 +696,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required EntityInteractionDocument[] EntityInteractions { get; init; }
 
         public required DialogueDocument[] Dialogues { get; init; }
+
+        public required FieldSearchDocument[] FieldSearches { get; init; }
     }
 
     private sealed class SetupCatalogEntryDocument
@@ -808,5 +846,30 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required string Text { get; init; }
 
         public required string CueId { get; init; }
+    }
+
+    private sealed class FieldSearchDocument
+    {
+        public required string Kind { get; init; }
+
+        public required string ContextId { get; init; }
+
+        public required string RequestId { get; init; }
+
+        public required string ResultId { get; init; }
+
+        public required string DiscoveryId { get; init; }
+
+        public required string MapId { get; init; }
+
+        public required PositionDocument Position { get; init; }
+
+        public required string SetupId { get; init; }
+
+        public required string ZoneTargetId { get; init; }
+
+        public required string RequestCueId { get; init; }
+
+        public required string DiscoveryCueId { get; init; }
     }
 }
