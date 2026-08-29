@@ -79,6 +79,17 @@ none. Godot sends only semantic acknowledge/advance commands and projects the ty
 project-owned placeholder strings. It does not own sequencing or claim original dialogue IDs, speaker,
 text, timing, window, portrait, audio, story meaning, or natural reachability.
 
+The field-search vertical declares one exact project-authored searchable Map 3 position and selected
+synthetic setup/zone context. Content binds that context to stable semantic request/result IDs, one
+opaque placeholder discovery identity, and distinct pending/discovery cues. Application owns search
+admission, the single pending acknowledgement, exact request/cue-sequence/result matching, the
+immutable discovery receipt, and a session-local once-only discovery set. Wrong, stale, duplicate,
+and repeated confirmations are zero-mutation; movement or context re-selection clears stale lifecycle
+state without removing the admitted discovery, while restart reconstructs an empty discovery set.
+Godot sends only semantic search/acknowledge commands and projects typed pending/discovered/result/cue
+state. The placeholder token is not inventory, equipment, a consumable, original text or item identity,
+or evidence of original search rules, coordinates, event-target meaning, or natural reachability.
+
 The Domain's broader implemented behavior includes a pure map-setup selector with engine-native
 catalog and event-table admission boundaries. The catalog maps opaque map
 IDs to already parsed routes, rejects duplicate map IDs, and delegates every known route to the ordered
@@ -114,6 +125,10 @@ admitted player and local-transition endpoint cells.
 It also validates a closed one-to-one interaction-target/dialogue mapping, one to three trimmed single-line
 placeholder strings of at most 120 characters, globally unique dialogue and line IDs, and globally unique
 line/close presentation cues that cannot collide with other admitted cues.
+The same package admits exactly one field-search record whose context/request/result/discovery IDs,
+selected map/position/setup/zone, and two cues are unique and closed. The selected setup and zone must
+match the existing typed context selectors, the cell must be in-bounds and passable, and its cues cannot
+collide with any other presentation lifecycle.
 General canonical/private import and original content remain deferred.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy
@@ -148,6 +163,7 @@ Natural route, original-map fidelity, event and area-description reachability; o
 lifetime; target effects; decoded text; inventory or story mutation; persistence; original/natural Map 3
 admission; Battle 01 continuity;
 original entity identity, placement, facing, dialogue, interaction effects, or reachability;
+original field-search locations, predicates, targets, discoveries, items, or reachability;
 complete Application/Content/Godot game layers; original presentation; H4; private-content admission;
 and milestone acceptance remain Unknown or deferred at their existing owners. The bounded synthetic
 Map 3 admission above is not evidence of the original natural route or a full-content implementation.

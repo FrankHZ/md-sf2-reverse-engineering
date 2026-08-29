@@ -40,6 +40,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 PublicSyntheticMap3PackageReader.LocalTransitionCapability,
                 PublicSyntheticMap3PackageReader.EntityInteractionCapability,
                 PublicSyntheticMap3PackageReader.DialogueCapability,
+                PublicSyntheticMap3PackageReader.FieldSearchCapability,
             ],
             accepted.Receipt.Capabilities);
         string trackedDigest = Convert.ToHexString(
@@ -79,6 +80,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         MapEntityInteractionDefinition interaction = Assert.Single(
             context.EntityInteractions.Interactions);
         MapDialogueDefinition dialogue = Assert.Single(context.Dialogues.Definitions);
+        MapFieldSearchDefinition search = Assert.Single(context.FieldSearches.Definitions);
 
         Assert.Equal("ms_map3", setup.Value);
         Assert.Equal(AreaDescriptionSelectionKind.Text, area.Kind);
@@ -145,6 +147,23 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             "synthetic-map3-placeholder-guide-dialogue-closed",
             dialogue.CloseCue.Value);
         Assert.Same(dialogue, context.Dialogues.FindByTarget(entity.InteractionTarget));
+        Assert.Equal("synthetic-map3-arrival-search-context", search.Context.Value);
+        Assert.Equal("synthetic-map3-field-search-request", search.Request.Value);
+        Assert.Equal("synthetic-map3-field-search-result", search.Result.Value);
+        Assert.Equal("synthetic-map3-placeholder-discovery", search.Discovery.Value);
+        Assert.Equal("map3", search.Map.Value);
+        Assert.Equal(new MapPosition(55, 4), search.Position);
+        Assert.Equal("synthetic-map3-variant", search.Setup.Value);
+        Assert.Equal("synthetic-no-zone", search.ZoneTarget.Value);
+        Assert.Equal("synthetic-map3-field-search-pending", search.RequestCue.Value);
+        Assert.Equal("synthetic-map3-placeholder-discovered", search.DiscoveryCue.Value);
+        Assert.Same(
+            search,
+            context.FieldSearches.FindForSelection(
+                search.Map,
+                search.Position,
+                search.Setup,
+                search.ZoneTarget));
     }
 
     [Fact]
@@ -343,6 +362,45 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         "\"closeCueId\": \"synthetic-map3-placeholder-guide-dialogue-closed\"",
         "\"closeCueId\": \"synthetic-map3-placeholder-guide-cue\"")]
     public void DialogueIdentityTextCueOrCrossReferenceByteMutationFailsDigestAdmission(
+        string oldValue,
+        string newValue)
+    {
+        AssertDigestMismatch(
+            original => original.Replace(oldValue, newValue, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(
+        "\"kind\": \"specific\",\n        \"contextId\"",
+        "\"kind\": \"default\",\n        \"contextId\"")]
+    [InlineData(
+        "\"contextId\": \"synthetic-map3-arrival-search-context\"",
+        "\"contextId\": \"default\"")]
+    [InlineData(
+        "\"requestId\": \"synthetic-map3-field-search-request\"",
+        "\"requestId\": \"default\"")]
+    [InlineData(
+        "\"resultId\": \"synthetic-map3-field-search-result\"",
+        "\"resultId\": \"default\"")]
+    [InlineData(
+        "\"discoveryId\": \"synthetic-map3-placeholder-discovery\"",
+        "\"discoveryId\": \"default\"")]
+    [InlineData(
+        "\"mapId\": \"map3\",\n        \"position\"",
+        "\"mapId\": \"missing-map\",\n        \"position\"")]
+    [InlineData(
+        "\"x\": 55,\n          \"y\": 4",
+        "\"x\": 56,\n          \"y\": 2")]
+    [InlineData(
+        "\"setupId\": \"synthetic-map3-variant\"",
+        "\"setupId\": \"missing-setup\"")]
+    [InlineData(
+        "\"zoneTargetId\": \"synthetic-no-zone\"",
+        "\"zoneTargetId\": \"missing-zone\"")]
+    [InlineData(
+        "\"discoveryCueId\": \"synthetic-map3-placeholder-discovered\"",
+        "\"discoveryCueId\": \"synthetic-map3-field-search-pending\"")]
+    public void FieldSearchIdentityLocationOrCrossReferenceByteMutationFailsDigestAdmission(
         string oldValue,
         string newValue)
     {

@@ -127,6 +127,18 @@ public sealed record MapScenarioDefinition
             {
                 throw new ArgumentException(
                     $"Entity '{entity.Entity}' requires one in-bounds synthetic solid cell that does not overlap admission or transition positions.",
+                nameof(mapContext));
+            }
+        }
+
+        foreach (MapFieldSearchDefinition search in mapContext.FieldSearches.Definitions)
+        {
+            if (search.Map != startState.Map ||
+                !startState.Walkability.Contains(search.Position) ||
+                !startState.Walkability.IsPassable(search.Position))
+            {
+                throw new ArgumentException(
+                    $"Field-search context '{search.Context}' requires one in-bounds passable cell on the admitted scenario map.",
                     nameof(mapContext));
             }
         }

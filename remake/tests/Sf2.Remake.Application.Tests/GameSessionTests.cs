@@ -779,6 +779,232 @@ public sealed class GameSessionTests
     }
 
     [Fact]
+    public void FieldSearchRequiresExactContextAndAcknowledgementThenDiscoversOnce()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        GameSessionSnapshot initial = started.Session.Snapshot;
+
+        GameSessionCommandRejected missingContext = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new RequestFieldSearchCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.ContextSelectionRequired,
+            missingContext.Diagnostic.Code);
+        Assert.Same(initial, started.Session.Snapshot);
+
+        Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        GameSessionFieldSearchRequested requested =
+            Assert.IsType<GameSessionFieldSearchRequested>(
+                started.Session.Apply(new RequestFieldSearchCommand()));
+        Assert.Equal(MapFieldSearchStatus.Pending, requested.Search.Status);
+        Assert.Equal("field-search-context", requested.Search.Context.Value);
+        Assert.Equal("field-search-request", requested.Search.Request.Value);
+        Assert.Equal("field-search-result", requested.Search.Result.Value);
+        Assert.Equal("placeholder-discovery", requested.Search.Discovery.Value);
+        Assert.Equal(new MapPosition(1, 1), requested.Search.Position);
+        Assert.Equal("synthetic-setup", requested.Search.Setup.Value);
+        Assert.Equal("no-zone", requested.Search.ZoneTarget.Value);
+        Assert.Equal("field-search-pending", requested.Cue.Cue.Value);
+        Assert.Equal(MapFieldSearchCueKind.SearchPending, requested.Cue.Kind);
+        Assert.True(requested.Cue.RequiresAcknowledgement);
+        Assert.False(requested.Snapshot.Discoveries.IsDiscovered(requested.Search.Discovery));
+
+        GameSessionCommandRejected blockedMove = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.PendingAcknowledgement,
+            blockedMove.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        AcknowledgeFieldSearchCommand[] wrongAcknowledgements =
+        [
+            new(
+                new MapFieldSearchRequestId("wrong-request"),
+                requested.Cue.Sequence,
+                requested.Search.Result),
+            new(
+                requested.Search.Request,
+                requested.Cue.Sequence + 1,
+                requested.Search.Result),
+            new(
+                requested.Search.Request,
+                requested.Cue.Sequence,
+                new MapFieldSearchResultId("wrong-result")),
+        ];
+        foreach (AcknowledgeFieldSearchCommand wrong in wrongAcknowledgements)
+        {
+            GameSessionCommandRejected rejected = Assert.IsType<GameSessionCommandRejected>(
+                started.Session.Apply(wrong));
+            Assert.Equal(
+                GameSessionCommandFailureCode.AcknowledgementMismatch,
+                rejected.Diagnostic.Code);
+            Assert.Same(requested.Snapshot, started.Session.Snapshot);
+        }
+
+        GameSessionFieldSearchDiscovered discovered =
+            Assert.IsType<GameSessionFieldSearchDiscovered>(
+                started.Session.Apply(
+                    new AcknowledgeFieldSearchCommand(
+                        requested.Search.Request,
+                        requested.Cue.Sequence,
+                        requested.Search.Result)));
+        Assert.Equal(MapFieldSearchStatus.Discovered, discovered.Search.Status);
+        Assert.Equal("placeholder-discovered", discovered.Cue.Cue.Value);
+        Assert.Equal(MapFieldSearchCueKind.DiscoveryPresented, discovered.Cue.Kind);
+        Assert.False(discovered.Cue.RequiresAcknowledgement);
+        Assert.Equal(requested.Search.RequestedAtStep, discovered.Receipt.RequestedAtStep);
+        Assert.Equal(requested.Cue.Sequence, discovered.Receipt.RequestCueSequence);
+        Assert.Equal(discovered.Cue.Sequence, discovered.Receipt.DiscoveryCueSequence);
+        Assert.Equal(discovered.Search.DiscoveredAtStep, discovered.Receipt.DiscoveredAtStep);
+        Assert.Equal(discovered.Search.Discovery, discovered.Receipt.Discovery);
+        Assert.True(discovered.Snapshot.Discoveries.IsDiscovered(discovered.Search.Discovery));
+
+        GameSessionCommandRejected duplicateAcknowledgement =
+            Assert.IsType<GameSessionCommandRejected>(
+                started.Session.Apply(
+                    new AcknowledgeFieldSearchCommand(
+                        requested.Search.Request,
+                        requested.Cue.Sequence,
+                        requested.Search.Result)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.NoPendingAcknowledgement,
+            duplicateAcknowledgement.Diagnostic.Code);
+        Assert.Same(discovered.Snapshot, started.Session.Snapshot);
+
+        GameSessionCommandRejected repeatSearch = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new RequestFieldSearchCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.FieldSearchAlreadyDiscovered,
+            repeatSearch.Diagnostic.Code);
+        Assert.Same(discovered.Snapshot, started.Session.Snapshot);
+    }
+
+    [Fact]
+    public void FieldSearchLifecycleClearsButDiscoveryPersistsUntilRestart()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        GameSessionFieldSearchRequested requested =
+            Assert.IsType<GameSessionFieldSearchRequested>(
+                started.Session.Apply(new RequestFieldSearchCommand()));
+        GameSessionFieldSearchDiscovered discovered =
+            Assert.IsType<GameSessionFieldSearchDiscovered>(
+                started.Session.Apply(
+                    new AcknowledgeFieldSearchCommand(
+                        requested.Search.Request,
+                        requested.Cue.Sequence,
+                        requested.Search.Result)));
+
+        GameSessionContextSelected reselected = Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        Assert.Null(reselected.Snapshot.FieldSearch);
+        Assert.True(reselected.Snapshot.Discoveries.IsDiscovered(discovered.Search.Discovery));
+
+        GameSessionCommandApplied moved = Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.Null(moved.Snapshot.FieldSearch);
+        Assert.True(moved.Snapshot.Discoveries.IsDiscovered(discovered.Search.Discovery));
+
+        GameSessionStarted restarted = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        Assert.Empty(restarted.Session.Snapshot.Discoveries.Discoveries);
+        Assert.Null(restarted.Session.Snapshot.FieldSearch);
+        Assert.Equal(0, restarted.Session.Snapshot.SimulationStep);
+        Assert.Equal(0, restarted.Session.Snapshot.LastCueSequence);
+    }
+
+    [Fact]
+    public void FieldSearchCatalogAndScenarioRejectDuplicateDanglingOrInvalidDefinitions()
+    {
+        MapFieldSearchDefinition first = FieldSearchDefinition();
+        Assert.Throws<ArgumentException>(() => FieldSearchDefinition(
+            requestCue: "same-cue",
+            discoveryCue: "same-cue"));
+        Assert.Throws<ArgumentException>(() => new MapFieldSearchCatalog(
+            [first, FieldSearchDefinition(
+                context: "field-search-context",
+                request: "request-2",
+                result: "result-2",
+                discovery: "discovery-2",
+                position: new MapPosition(2, 1),
+                requestCue: "request-cue-2",
+                discoveryCue: "discovery-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapFieldSearchCatalog(
+            [first, FieldSearchDefinition(
+                context: "context-2",
+                request: "field-search-request",
+                result: "result-2",
+                discovery: "discovery-2",
+                position: new MapPosition(2, 1),
+                requestCue: "request-cue-2",
+                discoveryCue: "discovery-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapFieldSearchCatalog(
+            [first, FieldSearchDefinition(
+                context: "context-2",
+                request: "request-2",
+                result: "field-search-result",
+                discovery: "discovery-2",
+                position: new MapPosition(2, 1),
+                requestCue: "request-cue-2",
+                discoveryCue: "discovery-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapFieldSearchCatalog(
+            [first, FieldSearchDefinition(
+                context: "context-2",
+                request: "request-2",
+                result: "result-2",
+                discovery: "placeholder-discovery",
+                position: new MapPosition(2, 1),
+                requestCue: "request-cue-2",
+                discoveryCue: "discovery-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapFieldSearchCatalog(
+            [first, FieldSearchDefinition(
+                context: "context-2",
+                request: "request-2",
+                result: "result-2",
+                discovery: "discovery-2",
+                position: new MapPosition(2, 1),
+                requestCue: "field-search-pending",
+                discoveryCue: "discovery-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapFieldSearchCatalog(
+            [first, FieldSearchDefinition(
+                context: "context-2",
+                request: "request-2",
+                result: "result-2",
+                discovery: "discovery-2",
+                requestCue: "request-cue-2",
+                discoveryCue: "discovery-cue-2")]));
+
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            fieldSearches: new MapFieldSearchCatalog(
+                [FieldSearchDefinition(map: new MapId("missing-map"))])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            fieldSearches: new MapFieldSearchCatalog(
+                [FieldSearchDefinition(setup: "missing-setup")])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            fieldSearches: new MapFieldSearchCatalog(
+                [FieldSearchDefinition(zoneTarget: "missing-zone")])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            fieldSearches: new MapFieldSearchCatalog(
+                [FieldSearchDefinition(requestCue: "placeholder-cue")])));
+        Assert.Throws<ArgumentException>(() => CreateAcceptedSource(
+            fieldSearches: new MapFieldSearchCatalog(
+                [FieldSearchDefinition(position: new MapPosition(1, 0))])));
+        Assert.Throws<ArgumentException>(() => CreateAcceptedSource(
+            fieldSearches: new MapFieldSearchCatalog(
+                [FieldSearchDefinition(position: new MapPosition(5, 5))])));
+    }
+
+    [Fact]
     public void EntityCatalogAndScenarioRejectDuplicateOverlapDanglingOrPassableDefinitions()
     {
         MapId map = new("map3");
@@ -1016,7 +1242,8 @@ public sealed class GameSessionTests
     private static IMapScenarioSource CreateAcceptedSource(
         MapLocalTransitionCatalog? localTransitions = null,
         MapEntityInteractionCatalog? entityInteractions = null,
-        MapDialogueCatalog? dialogues = null)
+        MapDialogueCatalog? dialogues = null,
+        MapFieldSearchCatalog? fieldSearches = null)
     {
         MapId map = new("map3");
         MapPosition start = new(1, 1);
@@ -1050,7 +1277,8 @@ public sealed class GameSessionTests
                 map,
                 localTransitions: localTransitions,
                 entityInteractions: entityInteractions,
-                dialogues: dialogues));
+                dialogues: dialogues,
+                fieldSearches: fieldSearches));
         ScenarioAdmissionReceipt receipt = new(
             "synthetic-package",
             schemaVersion: 1,
@@ -1084,7 +1312,8 @@ public sealed class GameSessionTests
         bool includeEffect = true,
         MapLocalTransitionCatalog? localTransitions = null,
         MapEntityInteractionCatalog? entityInteractions = null,
-        MapDialogueCatalog? dialogues = null)
+        MapDialogueCatalog? dialogues = null,
+        MapFieldSearchCatalog? fieldSearches = null)
     {
         MapSetupCatalog setupCatalog = new(
             [
@@ -1144,7 +1373,8 @@ public sealed class GameSessionTests
             entityInteractions ?? new MapEntityInteractionCatalog(
                 [EntityDefinition()],
                 [InteractionDefinition()]),
-            dialogues ?? new MapDialogueCatalog([DialogueDefinition()]));
+            dialogues ?? new MapDialogueCatalog([DialogueDefinition()]),
+            fieldSearches ?? new MapFieldSearchCatalog([FieldSearchDefinition()]));
     }
 
     private static MapEventRequestDefinition RequestDefinition(
@@ -1234,6 +1464,29 @@ public sealed class GameSessionTests
             new MapDialogueLineId(line),
             text,
             new PresentationCueId(cue));
+
+    private static MapFieldSearchDefinition FieldSearchDefinition(
+        string context = "field-search-context",
+        string request = "field-search-request",
+        string result = "field-search-result",
+        string discovery = "placeholder-discovery",
+        MapId? map = null,
+        MapPosition? position = null,
+        string setup = "synthetic-setup",
+        string zoneTarget = "no-zone",
+        string requestCue = "field-search-pending",
+        string discoveryCue = "placeholder-discovered") =>
+        new(
+            new MapFieldSearchContextId(context),
+            new MapFieldSearchRequestId(request),
+            new MapFieldSearchResultId(result),
+            new MapDiscoveryId(discovery),
+            map ?? new MapId("map3"),
+            position ?? new MapPosition(1, 1),
+            new MapSetupId(setup),
+            new EventTargetId(zoneTarget),
+            new PresentationCueId(requestCue),
+            new PresentationCueId(discoveryCue));
 
     private static MapDialogueSnapshot CloseDialogue(
         GameSession session,
