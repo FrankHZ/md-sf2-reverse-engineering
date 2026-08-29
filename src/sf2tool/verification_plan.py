@@ -203,6 +203,25 @@ PARTITIONS = (
         ("uv run pytest",),
     ),
     VerificationPartition(
+        "remake-dotnet",
+        "remake",
+        "Locked restore, build, and pure-C# tests for the remake solution.",
+        (
+            "dotnet restore remake/Sf2.Remake.sln --locked-mode",
+            "dotnet build remake/Sf2.Remake.sln --configuration Release --no-restore",
+            "dotnet test remake/Sf2.Remake.sln --configuration Release --no-build --no-restore",
+        ),
+    ),
+    VerificationPartition(
+        "remake-godot",
+        "remake",
+        "Hash-locked official Godot import, public-synthetic run, export, and cleanup gate.",
+        ("uv run python -m sf2tool.remake_godot",),
+        parallel_safe=False,
+        resource_lock="godot-remake-runtime",
+        external_gates=("GitHub Public / remake-godot",),
+    ),
+    VerificationPartition(
         "h1-original",
         "affected",
         "Bit-perfect original rebuild and source/toolchain identity.",
@@ -243,6 +262,7 @@ PARTITIONS = (
 PARTITIONS_BY_ID = {partition.partition_id: partition for partition in PARTITIONS}
 H2_PARTITION_IDS = tuple(H2_COMMAND_GROUPS)
 H3_PARTITION_IDS = tuple(H3_PROFILE_PARTITIONS.values())
+REMAKE_PARTITION_IDS = ("remake-dotnet", "remake-godot")
 EVIDENCE_PARTITION_IDS = ("h1-original", *H2_PARTITION_IDS, *H3_PARTITION_IDS)
 ARTIFACT_PREFIXES = (
     "manifests/extractions/",
@@ -620,6 +640,51 @@ def plan_paths(
 
     for path in changed_paths:
         normalized = path.replace("\\", "/")
+        if normalized.startswith("remake/"):
+            if not normalized.endswith(".md"):
+                _selection_entry(selected, "remake-dotnet", normalized)
+            if normalized.startswith(("remake/src/", "remake/game/")) or normalized in {
+                "remake/Sf2.Remake.sln",
+                "remake/Directory.Build.props",
+                "remake/Directory.Packages.props",
+                "remake/NuGet.Config",
+                "remake/global.json",
+                "remake/toolchain.json",
+            }:
+                _selection_entry(selected, "remake-godot", normalized)
+            continue
+
+        if normalized == "src/sf2tool/remake_godot.py":
+            _selection_entry(selected, "tooling-python", normalized)
+            _selection_entry(selected, "remake-godot", normalized)
+            continue
+
+        if normalized == "tests/python/test_remake_godot.py":
+            _selection_entry(
+                selected,
+                "tooling-python",
+                normalized,
+                (f"uv run pytest {normalized}",),
+            )
+            _selection_entry(selected, "remake-godot", normalized)
+            continue
+
+        if normalized == "tests/python/test_remake_architecture.py":
+            _selection_entry(
+                selected,
+                "tooling-python",
+                normalized,
+                (f"uv run pytest {normalized}",),
+            )
+            _selection_entry(selected, "remake-dotnet", normalized)
+            _selection_entry(selected, "remake-godot", normalized)
+            continue
+
+        if normalized == ".github/workflows/public-checks.yml":
+            _selection_entry(selected, "remake-dotnet", normalized)
+            _selection_entry(selected, "remake-godot", normalized)
+            continue
+
         if normalized.startswith("src/sf2tool/h2/") and normalized.endswith(".py"):
             module = Path(normalized).stem
             command = H2_MODULE_COMMANDS.get(module)
