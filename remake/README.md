@@ -227,6 +227,9 @@ dotnet build Sf2.Remake.sln --configuration Release --no-restore
 dotnet test Sf2.Remake.sln --configuration Release --no-build --no-restore
 ```
 
-The repository Public workflow runs the same locked restore, build, and test sequence and the official
-Godot 4.7.2 public-synthetic import/run/export gate. No H3, H4, private-input, original-fidelity, or
+Relevant remake slices require the maintained local official Godot 4.7.2 gate: exact artifact and
+version preflight, public-synthetic import, headless source run, export, exported-build run, and owned
+process cleanup. GitHub Public intentionally stays lightweight: its sole `tracked-inputs` job runs the
+locked whole-solution restore, build, and test sequence plus public tooling, architecture, planner, and
+design checks, and it does not download or run Godot. No H3, H4, private-input, original-fidelity, or
 emulator gate is implied by that public profile.

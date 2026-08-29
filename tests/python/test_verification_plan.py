@@ -855,9 +855,10 @@ def test_remake_domain_change_selects_dotnet_and_stable_godot_smoke() -> None:
     assert _partition(plan, "remake-dotnet")["layer"] == "remake"
     assert _partition(plan, "remake-godot")["layer"] == "remake"
     assert _partition(plan, "remake-godot")["resourceLock"] == "godot-remake-runtime"
-    assert _partition(plan, "remake-godot")["externalGates"] == [
-        "GitHub Public / remake-godot"
+    assert _partition(plan, "remake-godot")["commands"] == [
+        "uv run python -m sf2tool.remake_godot"
     ]
+    assert _partition(plan, "remake-godot")["externalGates"] == []
     assert plan["unclassifiedPaths"] == []
 
 
