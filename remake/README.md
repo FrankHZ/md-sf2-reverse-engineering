@@ -12,7 +12,9 @@ synthetic package, starts an Application `GameSession` in Map 3 exploration, app
 selects one bounded setup, area-description result, and opaque zone-event target through the accepted
 Domain selectors, admits a typed Application-owned request/cue for that selected synthetic target,
 requires an exact acknowledgement, and projects the resulting immutable snapshot in Godot with a persistent
-`PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY` label. The official Godot 4.7.2 .NET CLI gate performs a
+`PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY` label. That acknowledgement now atomically applies one
+package-declared synthetic flag effect; re-selecting context then exposes the already-declared synthetic
+setup variant. The official Godot 4.7.2 .NET CLI gate performs a
 hash-locked import, headless source run, export, and headless exported-build run using only tracked
 redistribution-safe inputs.
 
@@ -30,6 +32,14 @@ session commands while an acknowledgement is pending. Godot sends semantic comma
 result; it neither interprets the opaque target nor decides whether an acknowledgement is valid. This
 synthetic presentation request is not the original game's guarded `PROGRAM_REQUEST`; the admitted-start
 fact `NoProgramRequest` remains unchanged and no original program effect is claimed.
+
+The state-effect vertical adds one exact request-to-effect-to-flag mapping. Application owns the mutable
+session flag snapshot, checks request/cue/effect identity on acknowledgement, applies the flag exactly once,
+emits a typed non-blocking effect cue and receipt, and clears the prior context selection before the new setup
+can be observed. Duplicate acknowledgements and repeat effect requests cannot mutate the snapshot, while a
+new session reconstructs the package's initially clear flag state. Godot only sends the semantic
+acknowledgement and renders the resulting flag, effect, and selected-setup facts. The synthetic flag and cue
+do not claim an original flag number, target effect, program lifecycle, persistence rule, or natural route.
 
 The Domain's broader implemented behavior includes a pure map-setup selector with engine-native
 catalog and event-table admission boundaries. The catalog maps opaque map

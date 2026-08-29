@@ -18,6 +18,7 @@ public sealed partial class Map3Root : Node2D
     private Label? _status;
     private Label? _contextStatus;
     private Label? _eventRequestStatus;
+    private Label? _effectStatus;
 
     public override void _Ready()
     {
@@ -159,10 +160,13 @@ public sealed partial class Map3Root : Node2D
         }
 
         GameSessionCommandResult result = _session.Apply(
-            new AcknowledgeMapEventRequestCommand(request.Request, request.CueSequence));
-        if (result is GameSessionEventRequestAcknowledged)
+            new AcknowledgeMapEventRequestCommand(
+                request.Request,
+                request.CueSequence,
+                request.ExpectedEffect));
+        if (result is GameSessionEventEffectApplied)
         {
-            ProjectSnapshot("Event request acknowledged");
+            ProjectSnapshot("Synthetic effect applied; re-select context");
             return;
         }
 
@@ -183,7 +187,8 @@ public sealed partial class Map3Root : Node2D
             _viewport is null ||
             _status is null ||
             _contextStatus is null ||
-            _eventRequestStatus is null)
+            _eventRequestStatus is null ||
+            _effectStatus is null)
         {
             return;
         }
@@ -201,6 +206,9 @@ public sealed partial class Map3Root : Node2D
         _eventRequestStatus.Text = snapshot.EventRequest is null
             ? "Event request: none."
             : FormatEventRequest(snapshot.EventRequest);
+        _effectStatus.Text = snapshot.LastEventEffect is null
+            ? "Synthetic effect: none."
+            : FormatEffect(snapshot);
     }
 
     private void RunHeadlessSmoke()
@@ -245,19 +253,38 @@ public sealed partial class Map3Root : Node2D
             return;
         }
 
-        GameSessionEventRequestAcknowledged? acknowledged = _session.Apply(
+        GameSessionEventEffectApplied? acknowledged = _session.Apply(
             new AcknowledgeMapEventRequestCommand(
                 requested.Request.Request,
-                requested.Cue.Sequence)) as GameSessionEventRequestAcknowledged;
+                requested.Cue.Sequence,
+                requested.Request.ExpectedEffect)) as GameSessionEventEffectApplied;
         if (acknowledged is null ||
             acknowledged.Request.Status != MapEventRequestStatus.Acknowledged ||
-            acknowledged.Request.CueSequence != requested.Cue.Sequence)
+            acknowledged.Request.CueSequence != requested.Cue.Sequence ||
+            acknowledged.Effect.Effect.Value !=
+                "synthetic-map3-east-zone-variant-effect" ||
+            acknowledged.Effect.Flag.Value != "synthetic-map3-variant-enabled" ||
+            acknowledged.Cue.Cue.Value != "synthetic-map3-variant-applied" ||
+            acknowledged.Cue.RequiresAcknowledgement ||
+            acknowledged.Snapshot.ContextSelection is not null ||
+            !acknowledged.Snapshot.SyntheticFlags.IsSet(acknowledged.Effect.Flag))
         {
-            FailStartup("The bounded synthetic event request was not acknowledged.");
+            FailStartup("The bounded synthetic state effect was not applied atomically.");
             return;
         }
 
-        ProjectSnapshot("Event request acknowledged");
+        GameSessionContextSelected? reselected = _session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)) as
+            GameSessionContextSelected;
+        if (reselected is null ||
+            reselected.Selection.SelectedSetup.Value != "synthetic-map3-variant" ||
+            reselected.Selection.Position != acknowledged.Snapshot.Exploration.PlayerPosition)
+        {
+            FailStartup("The synthetic setup variant was not visible after context re-selection.");
+            return;
+        }
+
+        ProjectSnapshot("Synthetic effect applied and context re-selected");
         object receipt = new
         {
             status = "Pass",
@@ -315,7 +342,7 @@ public sealed partial class Map3Root : Node2D
 
         Label explanation = new()
         {
-            Text = "Project-authored selectors and request cues; opaque targets are never interpreted or executed.",
+            Text = "Project-authored selectors, request cues, and synthetic effects; opaque targets are never executed.",
             Position = new Vector2(24, 55),
         };
         explanation.AddThemeFontSizeOverride("font_size", 16);
@@ -350,6 +377,14 @@ public sealed partial class Map3Root : Node2D
         };
         _eventRequestStatus.AddThemeFontSizeOverride("font_size", 15);
         AddChild(_eventRequestStatus);
+
+        _effectStatus = new Label
+        {
+            Text = "Synthetic effect: none.",
+            Position = new Vector2(24, 540),
+        };
+        _effectStatus.AddThemeFontSizeOverride("font_size", 15);
+        AddChild(_effectStatus);
     }
 
     private static void RegisterInputMap()
@@ -402,5 +437,14 @@ public sealed partial class Map3Root : Node2D
 
     private static string FormatEventRequest(MapEventRequestSnapshot request) =>
         $"Event request {request.Request}: {request.Status}  " +
-        $"Cue #{request.CueSequence}  Target {request.Target} (opaque)";
+        $"Cue #{request.CueSequence}  Effect {request.ExpectedEffect}  " +
+        $"Target {request.Target} (opaque)";
+
+    private static string FormatEffect(GameSessionSnapshot snapshot)
+    {
+        MapEventEffectSnapshot effect = snapshot.LastEventEffect!;
+        string setFlags = string.Join(", ", snapshot.SyntheticFlags.SetFlags);
+        return $"Synthetic effect {effect.Effect}: applied once at step " +
+            $"{effect.AppliedAtStep}; flag {effect.Flag}; setup flags [{setFlags}]";
+    }
 }
