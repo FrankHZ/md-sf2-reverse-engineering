@@ -9,10 +9,18 @@ the continuous Map 3 through Battle 01 milestone ready.
 The bounded `public-synthetic-map3-smoke-v1` vertical now composes the production Domain, Application,
 and Content assemblies through a thin Godot adapter. It admits only the exact tracked project-authored
 synthetic package, starts an Application `GameSession` in Map 3 exploration, applies one logical move,
-and projects the resulting immutable snapshot in Godot with a persistent
+selects one bounded setup, area-description result, and opaque zone-event target through the accepted
+Domain selectors, and projects the resulting immutable snapshot in Godot with a persistent
 `PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY` label. The official Godot 4.7.2 .NET CLI gate performs a
 hash-locked import, headless source run, export, and headless exported-build run using only tracked
 redistribution-safe inputs.
+
+The selector vertical is driven by `SelectExplorationContextCommand` through the same Application
+`GameSession` mutation facade as movement. Its typed public-synthetic package owns a setup catalog,
+bounded synthetic flag set, area-description source, and zone-event table. The resulting snapshot
+contains only the selected logical setup, logical text indexes or opaque function identity, and opaque
+zone target. Godot displays those values but does not execute a function or event target; moving clears
+the position-specific selection so stale adapter state cannot become gameplay state.
 
 The Domain's broader implemented behavior includes a pure map-setup selector with engine-native
 catalog and event-table admission boundaries. The catalog maps opaque map
@@ -37,9 +45,9 @@ Production code and ordinary unit tests do not load those fixture files. Tests u
 opaque IDs and synthetic routes, event tables, and area descriptions. The selectors do not contain
 original sentinels, addresses, relative offsets, source symbols, pointer tables, the original route or
 event corpus, map content, decoded text, ROM data, or private assets. Catalog IDs, event targets,
-function targets, and entries are process-local Domain values, not a public content or save format. How
-content loaders translate accepted source tables into these typed values is deferred to a later
-Application/Content boundary.
+function targets, and entries are process-local Domain values, not a public content or save format.
+The current Content adapter translates only the exact digest-locked project-authored synthetic package
+into those typed values. General canonical/private import and original content remain deferred.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy
 reducer. The reducer clones the input, then performs forward word-by-word reads and writes on that clone,
@@ -69,7 +77,7 @@ restore an active snapshot; other cells are neutral. Typed outcomes describe onl
 Entity pixel-to-cell conversion, terminated source tables, and original dispatcher state stay outside
 the API.
 
-Natural route, original-map fidelity, event and area-description reachability; actual flag values and
+Natural route, original-map fidelity, event and area-description reachability; original flag values and
 lifetime; target effects; decoded text; inventory or story mutation; persistence; original/natural Map 3
 admission; Battle 01 continuity;
 complete Application/Content/Godot game layers; original presentation; H4; private-content admission;

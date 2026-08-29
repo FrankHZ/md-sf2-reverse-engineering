@@ -10,9 +10,10 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
 {
     public const string PackageId = "public-synthetic-map3-smoke-v1";
     public const string Capability = "map3-synthetic-exploration-smoke";
+    public const string ContextCapability = "public-synthetic-map3-context-selection-v1";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
     public const string ExpectedContentDigest =
-        "be660d6bc40f341c5f818e0a0dcbc31bcf806f062d78fa4b8aaf2ed41f63c026";
+        "b3affbb98c94a8dee46b551822edbd7f7ce6653c48b97abc57804a7e7da973e4";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -120,6 +121,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
 
             WorkingMapLayout layout = BuildLayout(document.LayoutRecipe);
             SyntheticWalkabilityGrid walkability = BuildWalkability(document.Walkability);
+            MapScenarioContextDefinition mapContext = BuildMapContext(document.MapContext);
             MapPosition start = new(
                 document.Admission.LogicalStartPosition.X,
                 document.Admission.LogicalStartPosition.Y);
@@ -141,7 +143,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                 document.ScenarioId,
                 document.DisplayName,
                 startState,
-                admissionFacts);
+                admissionFacts,
+                mapContext);
             ScenarioAdmissionReceipt receipt = new(
                 document.PackageId,
                 document.SchemaVersion,
@@ -207,13 +210,15 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                 "Public content must use the exact project-authored synthetic provenance.");
         }
 
-        if (!document.Capabilities.SequenceEqual([Capability], StringComparer.Ordinal) ||
+        if (!document.Capabilities.SequenceEqual(
+                [Capability, ContextCapability],
+                StringComparer.Ordinal) ||
             !document.EvidenceOwnerIds.SequenceEqual([EvidenceOwner], StringComparer.Ordinal))
         {
             return Diagnostic(
                 ScenarioAdmissionFailureCode.InvalidDocument,
                 "capabilities",
-                "The public package capability and evidence labels must remain closed singletons.");
+                "The public package capabilities and evidence labels must remain closed sets.");
         }
 
         if (!string.Equals(document.ScenarioId, ScenarioId, StringComparison.Ordinal) ||
@@ -319,6 +324,81 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             cells);
     }
 
+    private static MapScenarioContextDefinition BuildMapContext(MapContextDocument context)
+    {
+        MapSetupCatalog setupCatalog = new(
+            context.SetupCatalog.Select(entry =>
+                new MapSetupCatalogEntry(
+                    new MapId(entry.MapId),
+                    new MapSetupRoute(
+                        new MapSetupId(entry.DefaultSetupId),
+                        entry.FlagAlternatives.Select(alternative =>
+                            new MapSetupFlagVariant(
+                                new FlagId(alternative.FlagId),
+                                new MapSetupId(alternative.SetupId)))))));
+        MapAreaDescriptionSource areaDescriptions = MapAreaDescriptionSource.Table(
+            context.AreaDescriptions.DescriptionTextBase,
+            context.AreaDescriptions.Entries.Select(BuildAreaDescriptionEntry));
+        MapSetupEventTable<ZoneEventRecord> zoneEvents = new(
+            context.ZoneEvents.Select(BuildZoneEventRecord));
+        return new MapScenarioContextDefinition(
+            setupCatalog,
+            new MapSetupId(context.VoidSetupId),
+            context.SetFlags.Select(flag => new FlagId(flag)),
+            areaDescriptions,
+            zoneEvents);
+    }
+
+    private static MapAreaDescriptionEntry BuildAreaDescriptionEntry(
+        AreaDescriptionEntryDocument entry)
+    {
+        if (!string.Equals(entry.Condition, "always", StringComparison.Ordinal) ||
+            !string.Equals(entry.Payload.Kind, "text", StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "The bounded public-synthetic context admits only ordinary text descriptions.");
+        }
+
+        return new MapAreaDescriptionEntry(
+            CheckedByte(entry.X, "mapContext.areaDescriptions.entries.x"),
+            CheckedByte(entry.Y, "mapContext.areaDescriptions.entries.y"),
+            AreaDescriptionCondition.Always,
+            AreaDescriptionPayload.Text(
+                entry.Payload.InvestigationOffset,
+                entry.Payload.DescriptionOffset));
+    }
+
+    private static ZoneEventRecord BuildZoneEventRecord(ZoneEventDocument entry)
+    {
+        EventTargetId target = new(entry.TargetId);
+        return entry.Kind switch
+        {
+            "specific" when entry.X is not null && entry.Y is not null =>
+                ZoneEventRecord.Specific(
+                    EventFieldMatch.Exact(CheckedByte(
+                        entry.X.Value,
+                        "mapContext.zoneEvents.x")),
+                    EventFieldMatch.Exact(CheckedByte(
+                        entry.Y.Value,
+                        "mapContext.zoneEvents.y")),
+                    target),
+            "default" when entry.X is null && entry.Y is null =>
+                ZoneEventRecord.Default(target),
+            _ => throw new ArgumentException(
+                "Synthetic zone events require a specific X/Y pair or one coordinate-free default."),
+        };
+    }
+
+    private static byte CheckedByte(int value, string field)
+    {
+        if (value is < byte.MinValue or > byte.MaxValue)
+        {
+            throw new ArgumentOutOfRangeException(field);
+        }
+
+        return checked((byte)value);
+    }
+
     private static int CheckedIndex(int x, int y, string field)
     {
         if (x < 0 || x >= WorkingMapLayout.ColumnCount ||
@@ -367,6 +447,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required LayoutRecipeDocument LayoutRecipe { get; init; }
 
         public required WalkabilityDocument Walkability { get; init; }
+
+        public required MapContextDocument MapContext { get; init; }
     }
 
     private sealed class ProvenanceDocument
@@ -439,6 +521,73 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required int Width { get; init; }
 
         public required int Height { get; init; }
+    }
+
+    private sealed class MapContextDocument
+    {
+        public required string VoidSetupId { get; init; }
+
+        public required string[] SetFlags { get; init; }
+
+        public required SetupCatalogEntryDocument[] SetupCatalog { get; init; }
+
+        public required AreaDescriptionsDocument AreaDescriptions { get; init; }
+
+        public required ZoneEventDocument[] ZoneEvents { get; init; }
+    }
+
+    private sealed class SetupCatalogEntryDocument
+    {
+        public required string MapId { get; init; }
+
+        public required string DefaultSetupId { get; init; }
+
+        public required SetupFlagAlternativeDocument[] FlagAlternatives { get; init; }
+    }
+
+    private sealed class SetupFlagAlternativeDocument
+    {
+        public required string FlagId { get; init; }
+
+        public required string SetupId { get; init; }
+    }
+
+    private sealed class AreaDescriptionsDocument
+    {
+        public required int DescriptionTextBase { get; init; }
+
+        public required AreaDescriptionEntryDocument[] Entries { get; init; }
+    }
+
+    private sealed class AreaDescriptionEntryDocument
+    {
+        public required int X { get; init; }
+
+        public required int Y { get; init; }
+
+        public required string Condition { get; init; }
+
+        public required AreaDescriptionPayloadDocument Payload { get; init; }
+    }
+
+    private sealed class AreaDescriptionPayloadDocument
+    {
+        public required string Kind { get; init; }
+
+        public required int InvestigationOffset { get; init; }
+
+        public required int DescriptionOffset { get; init; }
+    }
+
+    private sealed class ZoneEventDocument
+    {
+        public required string Kind { get; init; }
+
+        public int? X { get; init; }
+
+        public int? Y { get; init; }
+
+        public required string TargetId { get; init; }
     }
 
     private sealed class PositionDocument

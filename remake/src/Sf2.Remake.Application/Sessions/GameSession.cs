@@ -16,7 +16,8 @@ public sealed record GameSessionSnapshot
         GameFlowStage flowStage,
         long simulationStep,
         ExplorationMovementState exploration,
-        ScenarioAdmissionFacts admissionFacts)
+        ScenarioAdmissionFacts admissionFacts,
+        ExplorationContextSelectionSnapshot? contextSelection)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         if (!Enum.IsDefined(profile))
@@ -36,6 +37,7 @@ public sealed record GameSessionSnapshot
         SimulationStep = simulationStep;
         Exploration = exploration ?? throw new ArgumentNullException(nameof(exploration));
         AdmissionFacts = admissionFacts ?? throw new ArgumentNullException(nameof(admissionFacts));
+        ContextSelection = contextSelection;
     }
 
     public string ScenarioId { get; }
@@ -49,6 +51,8 @@ public sealed record GameSessionSnapshot
     public ExplorationMovementState Exploration { get; }
 
     public ScenarioAdmissionFacts AdmissionFacts { get; }
+
+    public ExplorationContextSelectionSnapshot? ContextSelection { get; }
 }
 
 public interface IGameSessionCommand;
@@ -144,9 +148,14 @@ public sealed record GameSessionStartRejected(
 
 public sealed class GameSession
 {
-    private GameSession(GameSessionSnapshot snapshot)
+    private readonly MapScenarioContextDefinition _mapContext;
+
+    private GameSession(
+        GameSessionSnapshot snapshot,
+        MapScenarioContextDefinition mapContext)
     {
         Snapshot = snapshot;
+        _mapContext = mapContext;
     }
 
     public GameSessionSnapshot Snapshot { get; private set; }
@@ -172,6 +181,7 @@ public sealed class GameSession
         return command switch
         {
             MoveExplorationCommand move => ApplyMove(move),
+            SelectExplorationContextCommand selectContext => ApplyContextSelection(selectContext),
             _ => new GameSessionCommandRejected(
                 Snapshot,
                 new GameSessionCommandDiagnostic(
@@ -200,8 +210,50 @@ public sealed class GameSession
             Snapshot.FlowStage,
             checked(Snapshot.SimulationStep + 1),
             transition.State,
-            Snapshot.AdmissionFacts);
+            Snapshot.AdmissionFacts,
+            contextSelection: null);
         return new GameSessionCommandApplied(Snapshot, transition.Outcome);
+    }
+
+    private GameSessionCommandResult ApplyContextSelection(
+        SelectExplorationContextCommand command)
+    {
+        if (Snapshot.FlowStage != GameFlowStage.Exploration)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.WrongFlowStage,
+                    "Map context selection is not admitted in this flow stage."));
+        }
+
+        MapPosition position = Snapshot.Exploration.PlayerPosition;
+        byte x = checked((byte)position.X);
+        byte y = checked((byte)position.Y);
+        MapSetupId selectedSetup = _mapContext.SetupCatalog.Select(
+            Snapshot.Exploration.Map,
+            _mapContext.VoidSetup,
+            _mapContext.IsFlagSet);
+        AreaDescriptionSelection areaDescription = MapAreaDescriptionSelector.Select(
+            _mapContext.AreaDescriptions,
+            new MapAreaDescriptionQuery(x, y, command.AreaDescriptionAdmission));
+        ZoneEventSelection zoneEvent = MapSetupEventSelector.Select(
+            _mapContext.ZoneEvents,
+            new ZoneEventQuery(x, y));
+        ExplorationContextSelectionSnapshot selection = new(
+            position,
+            selectedSetup,
+            areaDescription,
+            zoneEvent);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            checked(Snapshot.SimulationStep + 1),
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            selection);
+        return new GameSessionContextSelected(Snapshot, selection);
     }
 
     private static GameSessionStarted StartAccepted(MapScenarioAccepted accepted)
@@ -213,7 +265,9 @@ public sealed class GameSession
                 GameFlowStage.Exploration,
                 simulationStep: 0,
                 accepted.Scenario.StartState,
-                accepted.Scenario.AdmissionFacts));
+                accepted.Scenario.AdmissionFacts,
+                contextSelection: null),
+            accepted.Scenario.MapContext);
         return new GameSessionStarted(
             session,
             accepted.Scenario.DisplayName,

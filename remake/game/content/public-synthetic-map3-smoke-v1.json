@@ -12,7 +12,8 @@
     "sf2-map3-admitted-start-runtime-v1"
   ],
   "capabilities": [
-    "map3-synthetic-exploration-smoke"
+    "map3-synthetic-exploration-smoke",
+    "public-synthetic-map3-context-selection-v1"
   ],
   "scenarioId": "map3-public-synthetic-smoke",
   "displayName": "Map 3 public-synthetic exploration smoke",
@@ -75,6 +76,49 @@
     ],
     "blockedCells": [
       { "x": 56, "y": 2 }
+    ]
+  },
+  "mapContext": {
+    "voidSetupId": "synthetic-void-setup",
+    "setFlags": [],
+    "setupCatalog": [
+      {
+        "mapId": "map3",
+        "defaultSetupId": "ms_map3",
+        "flagAlternatives": [
+          {
+            "flagId": "synthetic-map3-variant-enabled",
+            "setupId": "synthetic-map3-variant"
+          }
+        ]
+      }
+    ],
+    "areaDescriptions": {
+      "descriptionTextBase": 1000,
+      "entries": [
+        {
+          "x": 57,
+          "y": 3,
+          "condition": "always",
+          "payload": {
+            "kind": "text",
+            "investigationOffset": 0,
+            "descriptionOffset": 0
+          }
+        }
+      ]
+    },
+    "zoneEvents": [
+      {
+        "kind": "specific",
+        "x": 57,
+        "y": 3,
+        "targetId": "synthetic-map3-east-zone"
+      },
+      {
+        "kind": "default",
+        "targetId": "synthetic-no-zone"
+      }
     ]
   }
 }
