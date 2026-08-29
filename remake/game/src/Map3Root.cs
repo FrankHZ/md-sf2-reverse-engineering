@@ -19,6 +19,7 @@ public sealed partial class Map3Root : Node2D
     private Label? _contextStatus;
     private Label? _eventRequestStatus;
     private Label? _effectStatus;
+    private Label? _transitionStatus;
 
     public override void _Ready()
     {
@@ -62,6 +63,14 @@ public sealed partial class Map3Root : Node2D
         else if (Input.IsActionJustPressed("acknowledge_event"))
         {
             ApplyEventRequestAcknowledgement();
+        }
+        else if (Input.IsActionJustPressed("request_transition"))
+        {
+            ApplyLocalTransitionRequest();
+        }
+        else if (Input.IsActionJustPressed("acknowledge_transition"))
+        {
+            ApplyLocalTransitionAcknowledgement();
         }
     }
 
@@ -173,6 +182,45 @@ public sealed partial class Map3Root : Node2D
         ProjectRejection((GameSessionCommandRejected)result);
     }
 
+    private void ApplyLocalTransitionRequest()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new RequestSelectedLocalTransitionCommand());
+        if (result is GameSessionLocalTransitionRequested)
+        {
+            ProjectSnapshot("Local transition pending");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyLocalTransitionAcknowledgement()
+    {
+        if (_session?.Snapshot.LocalTransition is not MapLocalTransitionSnapshot transition)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new AcknowledgeMapLocalTransitionCommand(
+                transition.Request,
+                transition.CueSequence,
+                transition.Transition));
+        if (result is GameSessionLocalTransitionApplied)
+        {
+            ProjectSnapshot("Synthetic local transition applied");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
     private void ProjectRejection(GameSessionCommandRejected rejected)
     {
         if (_status is not null)
@@ -188,7 +236,8 @@ public sealed partial class Map3Root : Node2D
             _status is null ||
             _contextStatus is null ||
             _eventRequestStatus is null ||
-            _effectStatus is null)
+            _effectStatus is null ||
+            _transitionStatus is null)
         {
             return;
         }
@@ -199,7 +248,7 @@ public sealed partial class Map3Root : Node2D
             $"Map {snapshot.AdmissionFacts.CurrentMap}  " +
             $"Tile ({snapshot.Exploration.PlayerPosition.X}, " +
             $"{snapshot.Exploration.PlayerPosition.Y})  " +
-            $"Step {snapshot.SimulationStep}  {outcome}  |  WASD / Enter / Z / X";
+            $"Step {snapshot.SimulationStep}  {outcome}  |  WASD / Enter / Z / X / C / V";
         _contextStatus.Text = snapshot.ContextSelection is null
             ? "Context not selected."
             : FormatContext(snapshot.ContextSelection);
@@ -209,6 +258,9 @@ public sealed partial class Map3Root : Node2D
         _effectStatus.Text = snapshot.LastEventEffect is null
             ? "Synthetic effect: none."
             : FormatEffect(snapshot);
+        _transitionStatus.Text = snapshot.LocalTransition is null
+            ? "Local transition: none."
+            : FormatLocalTransition(snapshot.LocalTransition);
     }
 
     private void RunHeadlessSmoke()
@@ -284,7 +336,62 @@ public sealed partial class Map3Root : Node2D
             return;
         }
 
-        ProjectSnapshot("Synthetic effect applied and context re-selected");
+        GameSessionCommandApplied? transitionMove = _session.Apply(
+            new MoveExplorationCommand(ExplorationDirection.East)) as GameSessionCommandApplied;
+        if (transitionMove is null ||
+            transitionMove.Outcome != ExplorationMovementOutcome.Moved ||
+            transitionMove.Snapshot.Exploration.PlayerPosition != new MapPosition(58, 3))
+        {
+            FailStartup("The bounded synthetic transition source was not reached.");
+            return;
+        }
+
+        GameSessionContextSelected? transitionSelection = _session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)) as
+            GameSessionContextSelected;
+        if (transitionSelection is null ||
+            transitionSelection.Selection.ZoneEvent.Target.Value !=
+                "synthetic-map3-local-transition-zone")
+        {
+            FailStartup("The bounded synthetic local-transition context did not match.");
+            return;
+        }
+
+        GameSessionLocalTransitionRequested? transitionRequest = _session.Apply(
+            new RequestSelectedLocalTransitionCommand()) as
+            GameSessionLocalTransitionRequested;
+        if (transitionRequest is null ||
+            transitionRequest.Transition.Status != MapLocalTransitionStatus.Pending ||
+            transitionRequest.Transition.SourcePosition != new MapPosition(58, 3) ||
+            transitionRequest.Transition.DestinationPosition != new MapPosition(55, 4) ||
+            transitionRequest.Cue.Cue.Value != "synthetic-map3-local-transition-ready" ||
+            !transitionRequest.Cue.RequiresAcknowledgement)
+        {
+            FailStartup("The bounded synthetic local transition was not admitted.");
+            return;
+        }
+
+        GameSessionLocalTransitionApplied? transitionApplied = _session.Apply(
+            new AcknowledgeMapLocalTransitionCommand(
+                transitionRequest.Transition.Request,
+                transitionRequest.Cue.Sequence,
+                transitionRequest.Transition.Transition)) as
+            GameSessionLocalTransitionApplied;
+        if (transitionApplied is null ||
+            transitionApplied.Transition.Status != MapLocalTransitionStatus.Acknowledged ||
+            transitionApplied.Snapshot.Exploration.Map.Value != "map3" ||
+            transitionApplied.Snapshot.Exploration.PlayerPosition != new MapPosition(55, 4) ||
+            transitionApplied.Transition.DestinationOrientation.Value !=
+                "synthetic-arrival-south" ||
+            transitionApplied.Snapshot.ContextSelection is not null ||
+            transitionApplied.Snapshot.EventRequest is not null ||
+            transitionApplied.Snapshot.LastEventEffect is not null)
+        {
+            FailStartup("The bounded synthetic local transition was not applied atomically.");
+            return;
+        }
+
+        ProjectSnapshot("Synthetic local transition applied");
         object receipt = new
         {
             status = "Pass",
@@ -342,7 +449,7 @@ public sealed partial class Map3Root : Node2D
 
         Label explanation = new()
         {
-            Text = "Project-authored selectors, request cues, and synthetic effects; opaque targets are never executed.",
+            Text = "Project-authored selectors, cues, effects, and local transitions; opaque targets are never executed.",
             Position = new Vector2(24, 55),
         };
         explanation.AddThemeFontSizeOverride("font_size", 16);
@@ -385,6 +492,14 @@ public sealed partial class Map3Root : Node2D
         };
         _effectStatus.AddThemeFontSizeOverride("font_size", 15);
         AddChild(_effectStatus);
+
+        _transitionStatus = new Label
+        {
+            Text = "Local transition: none.",
+            Position = new Vector2(24, 570),
+        };
+        _transitionStatus.AddThemeFontSizeOverride("font_size", 15);
+        AddChild(_transitionStatus);
     }
 
     private static void RegisterInputMap()
@@ -396,6 +511,8 @@ public sealed partial class Map3Root : Node2D
         RegisterAction("select_context", Key.Enter);
         RegisterAction("request_event", Key.Z);
         RegisterAction("acknowledge_event", Key.X);
+        RegisterAction("request_transition", Key.C);
+        RegisterAction("acknowledge_transition", Key.V);
     }
 
     private static void RegisterAction(string action, Key physicalKey)
@@ -447,4 +564,10 @@ public sealed partial class Map3Root : Node2D
         return $"Synthetic effect {effect.Effect}: applied once at step " +
             $"{effect.AppliedAtStep}; flag {effect.Flag}; setup flags [{setFlags}]";
     }
+
+    private static string FormatLocalTransition(MapLocalTransitionSnapshot transition) =>
+        $"Local transition {transition.Transition}: {transition.Status}  " +
+        $"Cue #{transition.CueSequence}  ({transition.SourcePosition.X}, " +
+        $"{transition.SourcePosition.Y}) -> ({transition.DestinationPosition.X}, " +
+        $"{transition.DestinationPosition.Y})  Orientation {transition.DestinationOrientation}";
 }

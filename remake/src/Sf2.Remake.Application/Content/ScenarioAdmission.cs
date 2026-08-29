@@ -93,6 +93,26 @@ public sealed record MapScenarioDefinition
                 nameof(startState));
         }
 
+        foreach (MapLocalTransitionDefinition transition in mapContext.LocalTransitions.Definitions)
+        {
+            if (transition.SourceMap != startState.Map ||
+                transition.DestinationMap != startState.Map)
+            {
+                throw new ArgumentException(
+                    $"Local transition '{transition.Transition}' must remain on the admitted scenario map.",
+                    nameof(mapContext));
+            }
+
+            if (transition.SourcePosition == transition.DestinationPosition ||
+                !startState.Walkability.IsPassable(transition.SourcePosition) ||
+                !startState.Walkability.IsPassable(transition.DestinationPosition))
+            {
+                throw new ArgumentException(
+                    $"Local transition '{transition.Transition}' requires distinct passable source and destination cells.",
+                    nameof(mapContext));
+            }
+        }
+
         ScenarioId = scenarioId;
         DisplayName = displayName;
     }

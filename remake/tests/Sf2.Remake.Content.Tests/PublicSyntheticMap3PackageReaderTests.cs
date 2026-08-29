@@ -37,6 +37,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 PublicSyntheticMap3PackageReader.ContextCapability,
                 PublicSyntheticMap3PackageReader.EventRequestCapability,
                 PublicSyntheticMap3PackageReader.StateEffectCapability,
+                PublicSyntheticMap3PackageReader.LocalTransitionCapability,
             ],
             accepted.Receipt.Capabilities);
         string trackedDigest = Convert.ToHexString(
@@ -67,6 +68,11 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             new ZoneEventQuery(56, 3));
         MapEventRequestDefinition? request = context.EventRequests.FindByTarget(zone.Target);
         MapEventEffectDefinition? effect = context.EventEffects.FindByRequest(request!.Request);
+        ZoneEventSelection transitionZone = MapSetupEventSelector.Select(
+            context.ZoneEvents,
+            new ZoneEventQuery(58, 3));
+        MapLocalTransitionDefinition? transition =
+            context.LocalTransitions.FindByTarget(transitionZone.Target);
 
         Assert.Equal("ms_map3", setup.Value);
         Assert.Equal(AreaDescriptionSelectionKind.Text, area.Kind);
@@ -82,6 +88,18 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         Assert.Equal("synthetic-map3-variant-enabled", effect.Flag.Value);
         Assert.Equal("synthetic-map3-variant-applied", effect.Cue.Value);
         Assert.False(context.IsInitiallySet(effect.Flag));
+        Assert.Equal("synthetic-map3-local-transition-zone", transitionZone.Target.Value);
+        Assert.NotNull(transition);
+        Assert.Equal("synthetic-map3-local-transition-request", transition.Request.Value);
+        Assert.Equal("synthetic-map3-local-transition", transition.Transition.Value);
+        Assert.Equal("map3", transition.SourceMap.Value);
+        Assert.Equal(new MapPosition(58, 3), transition.SourcePosition);
+        Assert.Equal("synthetic-map3-variant", transition.SourceSetup.Value);
+        Assert.Equal("map3", transition.DestinationMap.Value);
+        Assert.Equal(new MapPosition(55, 4), transition.DestinationPosition);
+        Assert.Equal("synthetic-arrival-south", transition.DestinationOrientation.Value);
+        Assert.Equal("synthetic-map3-local-transition-ready", transition.Cue.Value);
+        Assert.Null(context.EventRequests.FindByTarget(transition.ZoneTarget));
     }
 
     [Fact]
@@ -203,7 +221,31 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             original => original.Replace(
                 "\"flagId\": \"synthetic-map3-variant-enabled\"",
                 "\"flagId\": \"synthetic-map3-missing-variant\"",
-                StringComparison.Ordinal));
+            StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(
+        "\"zoneTargetId\": \"synthetic-map3-local-transition-zone\"",
+        "\"zoneTargetId\": \"synthetic-no-zone\"")]
+    [InlineData(
+        "\"sourceMapId\": \"map3\"",
+        "\"sourceMapId\": \"missing-map\"")]
+    [InlineData(
+        "\"x\": 58,\n          \"y\": 3",
+        "\"x\": 57,\n          \"y\": 3")]
+    [InlineData(
+        "\"destinationMapId\": \"map3\"",
+        "\"destinationMapId\": \"missing-map\"")]
+    [InlineData(
+        "\"x\": 55,\n          \"y\": 4",
+        "\"x\": 56,\n          \"y\": 2")]
+    public void LocalTransitionIdentityOrCrossReferenceByteMutationFailsDigestAdmission(
+        string oldValue,
+        string newValue)
+    {
+        AssertDigestMismatch(
+            original => original.Replace(oldValue, newValue, StringComparison.Ordinal));
     }
 
     [Fact]

@@ -14,7 +14,9 @@ Domain selectors, admits a typed Application-owned request/cue for that selected
 requires an exact acknowledgement, and projects the resulting immutable snapshot in Godot with a persistent
 `PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY` label. That acknowledgement now atomically applies one
 package-declared synthetic flag effect; re-selecting context then exposes the already-declared synthetic
-setup variant. The official Godot 4.7.2 .NET CLI gate performs a
+setup variant. A second exact synthetic zone now admits a typed same-map local-transition request;
+acknowledging it atomically relocates the session to a package-declared passable cell and projects the
+result in Godot. The official Godot 4.7.2 .NET CLI gate performs a
 hash-locked import, headless source run, export, and headless exported-build run using only tracked
 redistribution-safe inputs.
 
@@ -40,6 +42,19 @@ can be observed. Duplicate acknowledgements and repeat effect requests cannot mu
 new session reconstructs the package's initially clear flag state. Godot only sends the semantic
 acknowledgement and renders the resulting flag, effect, and selected-setup facts. The synthetic flag and cue
 do not claim an original flag number, target effect, program lifecycle, persistence rule, or natural route.
+
+The local-transition vertical adds `RequestSelectedLocalTransitionCommand` and
+`AcknowledgeMapLocalTransitionCommand`. Content binds one exact non-default synthetic zone to a unique
+request and transition ID, source map/position/setup context, same-map destination position, opaque synthetic arrival
+orientation, and presentation cue. Admission rejects duplicate or reused IDs and cues, default or
+dangling targets, source-zone mismatches, unadmitted or cross-map references, identical endpoints, and
+blocked destinations. Application owns the one pending transition and exact request/cue-sequence/transition
+acknowledgement, then replaces the exploration position atomically while retaining the immutable layout,
+walkability, and session-owned synthetic flags. It clears the position-specific context plus earlier event
+request/effect snapshots; wrong or duplicate acknowledgements cannot mutate state, and restart begins at
+the admitted start without transition state. Godot sends only those semantic commands and projects the
+snapshot, cue, orientation label, and relocation result. It does not interpret the zone target, execute
+original warp logic, or claim original coordinates, facing semantics, predicates, effects, or reachability.
 
 The Domain's broader implemented behavior includes a pure map-setup selector with engine-native
 catalog and event-table admission boundaries. The catalog maps opaque map
@@ -67,6 +82,8 @@ event corpus, map content, decoded text, ROM data, or private assets. Catalog ID
 function targets, and entries are process-local Domain values, not a public content or save format.
 The current Content adapter translates only the exact digest-locked project-authored synthetic package
 into those typed values and validates its event-request IDs, cue IDs, and specific-zone cross-references.
+It also validates the bounded local-transition IDs, exact source-zone mapping, admitted same-map endpoints,
+passability, opaque orientation, and cue ownership.
 General canonical/private import and original content remain deferred.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy

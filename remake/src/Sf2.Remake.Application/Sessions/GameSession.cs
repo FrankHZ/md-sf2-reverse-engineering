@@ -21,7 +21,8 @@ public sealed record GameSessionSnapshot
         ExplorationContextSelectionSnapshot? contextSelection,
         long lastCueSequence,
         MapEventRequestSnapshot? eventRequest,
-        MapEventEffectSnapshot? lastEventEffect)
+        MapEventEffectSnapshot? lastEventEffect,
+        MapLocalTransitionSnapshot? localTransition)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         if (!Enum.IsDefined(profile))
@@ -41,6 +42,21 @@ public sealed record GameSessionSnapshot
             throw new ArgumentException(
                 "The event-request cue sequence cannot exceed the session cue sequence.",
                 nameof(eventRequest));
+        }
+
+        if (localTransition is not null && localTransition.CueSequence > lastCueSequence)
+        {
+            throw new ArgumentException(
+                "The local-transition cue sequence cannot exceed the session cue sequence.",
+                nameof(localTransition));
+        }
+
+        if (eventRequest?.Status == MapEventRequestStatus.Pending &&
+            localTransition?.Status == MapLocalTransitionStatus.Pending)
+        {
+            throw new ArgumentException(
+                "Only one acknowledgement-requiring request can be pending.",
+                nameof(localTransition));
         }
 
         SyntheticFlags = syntheticFlags ?? throw new ArgumentNullException(nameof(syntheticFlags));
@@ -63,6 +79,7 @@ public sealed record GameSessionSnapshot
         LastCueSequence = lastCueSequence;
         EventRequest = eventRequest;
         LastEventEffect = lastEventEffect;
+        LocalTransition = localTransition;
     }
 
     public string ScenarioId { get; }
@@ -86,6 +103,8 @@ public sealed record GameSessionSnapshot
     public MapEventRequestSnapshot? EventRequest { get; }
 
     public MapEventEffectSnapshot? LastEventEffect { get; }
+
+    public MapLocalTransitionSnapshot? LocalTransition { get; }
 }
 
 public interface IGameSessionCommand;
@@ -116,6 +135,7 @@ public enum GameSessionCommandFailureCode
     AcknowledgementMismatch,
     EventEffectNotAdmitted,
     EventEffectAlreadyApplied,
+    LocalTransitionNotAdmitted,
 }
 
 public sealed record GameSessionCommandDiagnostic
@@ -228,6 +248,16 @@ public sealed class GameSession
                     "The pending map-event request must be acknowledged first."));
         }
 
+        if (Snapshot.LocalTransition?.Status == MapLocalTransitionStatus.Pending &&
+            command is not AcknowledgeMapLocalTransitionCommand)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.PendingAcknowledgement,
+                    "The pending local-transition request must be acknowledged first."));
+        }
+
         return command switch
         {
             MoveExplorationCommand move => ApplyMove(move),
@@ -235,6 +265,9 @@ public sealed class GameSession
             RequestSelectedZoneEventCommand => ApplyEventRequest(),
             AcknowledgeMapEventRequestCommand acknowledge =>
                 ApplyEventRequestAcknowledgement(acknowledge),
+            RequestSelectedLocalTransitionCommand => ApplyLocalTransitionRequest(),
+            AcknowledgeMapLocalTransitionCommand acknowledgeTransition =>
+                ApplyLocalTransitionAcknowledgement(acknowledgeTransition),
             _ => new GameSessionCommandRejected(
                 Snapshot,
                 new GameSessionCommandDiagnostic(
@@ -268,7 +301,8 @@ public sealed class GameSession
             contextSelection: null,
             Snapshot.LastCueSequence,
             Snapshot.EventRequest,
-            Snapshot.LastEventEffect);
+            Snapshot.LastEventEffect,
+            Snapshot.LocalTransition);
         return new GameSessionCommandApplied(Snapshot, transition.Outcome);
     }
 
@@ -313,7 +347,8 @@ public sealed class GameSession
             selection,
             Snapshot.LastCueSequence,
             Snapshot.EventRequest,
-            Snapshot.LastEventEffect);
+            Snapshot.LastEventEffect,
+            Snapshot.LocalTransition);
         return new GameSessionContextSelected(Snapshot, selection);
     }
 
@@ -394,7 +429,8 @@ public sealed class GameSession
             Snapshot.ContextSelection,
             cueSequence,
             request,
-            Snapshot.LastEventEffect);
+            Snapshot.LastEventEffect,
+            Snapshot.LocalTransition);
         return new GameSessionEventRequested(Snapshot, request, cue);
     }
 
@@ -468,12 +504,143 @@ public sealed class GameSession
             contextSelection: null,
             effectCueSequence,
             acknowledged,
-            effect);
+            effect,
+            Snapshot.LocalTransition);
         return new GameSessionEventEffectApplied(
             Snapshot,
             acknowledged,
             effect,
             cue);
+    }
+
+    private GameSessionCommandResult ApplyLocalTransitionRequest()
+    {
+        if (Snapshot.FlowStage != GameFlowStage.Exploration)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.WrongFlowStage,
+                    "Local transitions are not admitted in this flow stage."));
+        }
+
+        ExplorationContextSelectionSnapshot? selection = Snapshot.ContextSelection;
+        if (selection is null ||
+            selection.Position != Snapshot.Exploration.PlayerPosition)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.ContextSelectionRequired,
+                    "A current exploration-context selection is required."));
+        }
+
+        MapLocalTransitionDefinition? definition = _mapContext.LocalTransitions.FindByTarget(
+            selection.ZoneEvent.Target);
+        if (definition is null ||
+            definition.SourceMap != Snapshot.Exploration.Map ||
+            definition.SourcePosition != Snapshot.Exploration.PlayerPosition ||
+            definition.SourceSetup != selection.SelectedSetup)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.LocalTransitionNotAdmitted,
+                    $"Zone target '{selection.ZoneEvent.Target}' has no exact admitted local transition."));
+        }
+
+        long requestedAtStep = checked(Snapshot.SimulationStep + 1);
+        long cueSequence = checked(Snapshot.LastCueSequence + 1);
+        MapLocalTransitionSnapshot transition = MapLocalTransitionSnapshot.Pending(
+            definition,
+            requestedAtStep,
+            cueSequence);
+        MapLocalTransitionCue cue = new(
+            definition.Cue,
+            definition.Request,
+            definition.Transition,
+            definition.ZoneTarget,
+            definition.SourcePosition,
+            cueSequence);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            requestedAtStep,
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
+            Snapshot.ContextSelection,
+            cueSequence,
+            Snapshot.EventRequest,
+            Snapshot.LastEventEffect,
+            transition);
+        return new GameSessionLocalTransitionRequested(Snapshot, transition, cue);
+    }
+
+    private GameSessionCommandResult ApplyLocalTransitionAcknowledgement(
+        AcknowledgeMapLocalTransitionCommand command)
+    {
+        MapLocalTransitionSnapshot? pending = Snapshot.LocalTransition;
+        if (pending?.Status != MapLocalTransitionStatus.Pending)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.NoPendingAcknowledgement,
+                    "There is no pending local transition to acknowledge."));
+        }
+
+        if (pending.Request != command.Request ||
+            pending.CueSequence != command.CueSequence ||
+            pending.Transition != command.Transition)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.AcknowledgementMismatch,
+                    "The acknowledgement does not match the pending request, cue sequence, and transition."));
+        }
+
+        MapLocalTransitionDefinition? definition = _mapContext.LocalTransitions.FindByRequest(
+            pending.Request);
+        if (definition is null ||
+            definition.Transition != pending.Transition ||
+            definition.SourceMap != Snapshot.Exploration.Map ||
+            definition.SourcePosition != Snapshot.Exploration.PlayerPosition ||
+            definition.SourceSetup != Snapshot.ContextSelection?.SelectedSetup ||
+            definition.DestinationMap != pending.DestinationMap ||
+            definition.DestinationPosition != pending.DestinationPosition ||
+            definition.DestinationOrientation != pending.DestinationOrientation)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.LocalTransitionNotAdmitted,
+                    "The pending request has no exact admitted local transition."));
+        }
+
+        long acknowledgedAtStep = checked(Snapshot.SimulationStep + 1);
+        ExplorationMovementState relocated = new(
+            definition.DestinationMap,
+            Snapshot.Exploration.Layout,
+            Snapshot.Exploration.Walkability,
+            definition.DestinationPosition);
+        MapLocalTransitionSnapshot acknowledged = pending.Acknowledge(acknowledgedAtStep);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            acknowledgedAtStep,
+            relocated,
+            Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
+            contextSelection: null,
+            Snapshot.LastCueSequence,
+            eventRequest: null,
+            lastEventEffect: null,
+            acknowledged);
+        return new GameSessionLocalTransitionApplied(Snapshot, acknowledged);
     }
 
     private static GameSessionStarted StartAccepted(MapScenarioAccepted accepted)
@@ -491,7 +658,8 @@ public sealed class GameSession
                 contextSelection: null,
                 lastCueSequence: 0,
                 eventRequest: null,
-                lastEventEffect: null),
+                lastEventEffect: null,
+                localTransition: null),
             accepted.Scenario.MapContext);
         return new GameSessionStarted(
             session,

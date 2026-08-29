@@ -251,6 +251,214 @@ public sealed class GameSessionTests
     }
 
     [Fact]
+    public void LocalTransitionRequiresFreshSelectedAndAdmittedSourceContext()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        GameSessionSnapshot initial = started.Session.Snapshot;
+
+        GameSessionCommandRejected missingSelection = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new RequestSelectedLocalTransitionCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.ContextSelectionRequired,
+            missingSelection.Diagnostic.Code);
+        Assert.Same(initial, started.Session.Snapshot);
+
+        Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+        GameSessionContextSelected eventContext = Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        GameSessionCommandRejected wrongTarget = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new RequestSelectedLocalTransitionCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.LocalTransitionNotAdmitted,
+            wrongTarget.Diagnostic.Code);
+        Assert.Same(eventContext.Snapshot, started.Session.Snapshot);
+
+        Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.West)));
+        Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.South)));
+        GameSessionContextSelected transitionContext = Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        Assert.Equal("local-transition-zone", transitionContext.Selection.ZoneEvent.Target.Value);
+        GameSessionCommandRejected wrongSetup = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new RequestSelectedLocalTransitionCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.LocalTransitionNotAdmitted,
+            wrongSetup.Diagnostic.Code);
+        Assert.Same(transitionContext.Snapshot, started.Session.Snapshot);
+        Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+
+        GameSessionCommandRejected staleContext = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new RequestSelectedLocalTransitionCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.ContextSelectionRequired,
+            staleContext.Diagnostic.Code);
+        Assert.Same(started.Session.Snapshot, staleContext.Snapshot);
+    }
+
+    [Fact]
+    public void LocalTransitionAcknowledgementRelocatesAtomicallyAndClearsStaleLifecycleState()
+    {
+        GameSessionStarted started = StartAtEastContext();
+        GameSessionEventRequested eventRequest = Assert.IsType<GameSessionEventRequested>(
+            started.Session.Apply(new RequestSelectedZoneEventCommand()));
+        Assert.IsType<GameSessionEventEffectApplied>(
+            started.Session.Apply(
+                new AcknowledgeMapEventRequestCommand(
+                    eventRequest.Request.Request,
+                    eventRequest.Cue.Sequence,
+                    eventRequest.Request.ExpectedEffect)));
+        Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.West)));
+        Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.South)));
+        GameSessionContextSelected selected = Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+
+        GameSessionLocalTransitionRequested requested =
+            Assert.IsType<GameSessionLocalTransitionRequested>(
+                started.Session.Apply(new RequestSelectedLocalTransitionCommand()));
+
+        Assert.Equal("local-transition-request", requested.Transition.Request.Value);
+        Assert.Equal("local-transition", requested.Transition.Transition.Value);
+        Assert.Equal(selected.Selection.ZoneEvent.Target, requested.Transition.Target);
+        Assert.Equal(new MapPosition(1, 2), requested.Transition.SourcePosition);
+        Assert.Equal("alternate-setup", requested.Transition.SourceSetup.Value);
+        Assert.Equal(new MapPosition(2, 2), requested.Transition.DestinationPosition);
+        Assert.Equal("synthetic-arrival-east", requested.Transition.DestinationOrientation.Value);
+        Assert.Equal(MapLocalTransitionStatus.Pending, requested.Transition.Status);
+        Assert.Equal(8, requested.Transition.RequestedAtStep);
+        Assert.Equal(3, requested.Transition.CueSequence);
+        Assert.Equal("local-transition-ready", requested.Cue.Cue.Value);
+        Assert.True(requested.Cue.RequiresAcknowledgement);
+        Assert.Same(requested.Transition, requested.Snapshot.LocalTransition);
+
+        GameSessionCommandRejected blockedMove = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.PendingAcknowledgement,
+            blockedMove.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        GameSessionCommandRejected wrongRequest = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(
+                new AcknowledgeMapLocalTransitionCommand(
+                    new MapLocalTransitionRequestId("wrong-request"),
+                    requested.Cue.Sequence,
+                    requested.Transition.Transition)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.AcknowledgementMismatch,
+            wrongRequest.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        GameSessionCommandRejected wrongSequence = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(
+                new AcknowledgeMapLocalTransitionCommand(
+                    requested.Transition.Request,
+                    requested.Cue.Sequence + 1,
+                    requested.Transition.Transition)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.AcknowledgementMismatch,
+            wrongSequence.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        GameSessionCommandRejected wrongTransition = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(
+                new AcknowledgeMapLocalTransitionCommand(
+                    requested.Transition.Request,
+                    requested.Cue.Sequence,
+                    new MapLocalTransitionId("wrong-transition"))));
+        Assert.Equal(
+            GameSessionCommandFailureCode.AcknowledgementMismatch,
+            wrongTransition.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        GameSessionLocalTransitionApplied applied =
+            Assert.IsType<GameSessionLocalTransitionApplied>(
+                started.Session.Apply(
+                    new AcknowledgeMapLocalTransitionCommand(
+                        requested.Transition.Request,
+                        requested.Cue.Sequence,
+                        requested.Transition.Transition)));
+
+        Assert.Equal(MapLocalTransitionStatus.Acknowledged, applied.Transition.Status);
+        Assert.Equal(9, applied.Transition.AcknowledgedAtStep);
+        Assert.Equal(9, applied.Snapshot.SimulationStep);
+        Assert.Equal(3, applied.Snapshot.LastCueSequence);
+        Assert.Equal(new MapPosition(2, 2), applied.Snapshot.Exploration.PlayerPosition);
+        Assert.Equal("map3", applied.Snapshot.Exploration.Map.Value);
+        Assert.Null(applied.Snapshot.ContextSelection);
+        Assert.Null(applied.Snapshot.EventRequest);
+        Assert.Null(applied.Snapshot.LastEventEffect);
+        Assert.True(applied.Snapshot.SyntheticFlags.IsSet(new FlagId("alternate-enabled")));
+        Assert.Same(applied.Transition, applied.Snapshot.LocalTransition);
+
+        GameSessionCommandRejected duplicateAcknowledgement =
+            Assert.IsType<GameSessionCommandRejected>(
+                started.Session.Apply(
+                    new AcknowledgeMapLocalTransitionCommand(
+                        requested.Transition.Request,
+                        requested.Cue.Sequence,
+                        requested.Transition.Transition)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.NoPendingAcknowledgement,
+            duplicateAcknowledgement.Diagnostic.Code);
+        Assert.Same(applied.Snapshot, started.Session.Snapshot);
+    }
+
+    [Fact]
+    public void LocalTransitionStateIsIsolatedAcrossRestart()
+    {
+        IMapScenarioSource source = CreateAcceptedSource();
+        GameSessionStarted first = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(source, Request()));
+        GameSessionStarted restarted = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(source, Request()));
+        Assert.IsType<GameSessionCommandApplied>(
+            first.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.IsType<GameSessionContextSelected>(
+            first.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        GameSessionEventRequested eventRequest = Assert.IsType<GameSessionEventRequested>(
+            first.Session.Apply(new RequestSelectedZoneEventCommand()));
+        Assert.IsType<GameSessionEventEffectApplied>(
+            first.Session.Apply(
+                new AcknowledgeMapEventRequestCommand(
+                    eventRequest.Request.Request,
+                    eventRequest.Cue.Sequence,
+                    eventRequest.Request.ExpectedEffect)));
+        Assert.IsType<GameSessionCommandApplied>(
+            first.Session.Apply(new MoveExplorationCommand(ExplorationDirection.West)));
+        Assert.IsType<GameSessionCommandApplied>(
+            first.Session.Apply(new MoveExplorationCommand(ExplorationDirection.South)));
+        Assert.IsType<GameSessionContextSelected>(
+            first.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        GameSessionLocalTransitionRequested requested =
+            Assert.IsType<GameSessionLocalTransitionRequested>(
+                first.Session.Apply(new RequestSelectedLocalTransitionCommand()));
+        Assert.IsType<GameSessionLocalTransitionApplied>(
+            first.Session.Apply(
+                new AcknowledgeMapLocalTransitionCommand(
+                    requested.Transition.Request,
+                    requested.Cue.Sequence,
+                    requested.Transition.Transition)));
+
+        Assert.Equal(new MapPosition(2, 2), first.Session.Snapshot.Exploration.PlayerPosition);
+        Assert.Equal(MapLocalTransitionStatus.Acknowledged, first.Session.Snapshot.LocalTransition?.Status);
+        Assert.Equal(new MapPosition(1, 1), restarted.Session.Snapshot.Exploration.PlayerPosition);
+        Assert.Null(restarted.Session.Snapshot.LocalTransition);
+        Assert.Equal(0, restarted.Session.Snapshot.SimulationStep);
+        Assert.Equal(0, restarted.Session.Snapshot.LastCueSequence);
+    }
+
+    [Fact]
     public void EventRequestCatalogAndContextRejectDuplicateOrDanglingIdentities()
     {
         MapEventRequestDefinition first = RequestDefinition(
@@ -308,6 +516,73 @@ public sealed class GameSessionTests
     }
 
     [Fact]
+    public void LocalTransitionCatalogAndScenarioRejectDuplicateOrDanglingDefinitions()
+    {
+        MapId map = new("map3");
+        MapLocalTransitionDefinition first = TransitionDefinition();
+        Assert.Throws<ArgumentException>(() => new MapLocalTransitionCatalog(
+            [first, TransitionDefinition(
+                request: "local-transition-request",
+                transition: "other-transition",
+                target: "other-target",
+                cue: "other-cue")]));
+        Assert.Throws<ArgumentException>(() => new MapLocalTransitionCatalog(
+            [first, TransitionDefinition(
+                request: "other-request",
+                transition: "local-transition",
+                target: "other-target",
+                cue: "other-cue")]));
+        Assert.Throws<ArgumentException>(() => new MapLocalTransitionCatalog(
+            [first, TransitionDefinition(
+                request: "other-request",
+                transition: "other-transition",
+                target: "local-transition-zone",
+                cue: "other-cue")]));
+        Assert.Throws<ArgumentException>(() => new MapLocalTransitionCatalog(
+            [first, TransitionDefinition(
+                request: "other-request",
+                transition: "other-transition",
+                target: "other-target",
+                cue: "local-transition-ready")]));
+
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            map,
+            localTransitions: new MapLocalTransitionCatalog(
+                [TransitionDefinition(target: "no-zone")])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            map,
+            localTransitions: new MapLocalTransitionCatalog(
+                [TransitionDefinition(target: "east-zone", source: new MapPosition(2, 1))])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            map,
+            localTransitions: new MapLocalTransitionCatalog(
+                [TransitionDefinition(source: new MapPosition(2, 2))])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            map,
+            localTransitions: new MapLocalTransitionCatalog(
+                [TransitionDefinition(sourceMap: new MapId("missing-map"))])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            map,
+            localTransitions: new MapLocalTransitionCatalog(
+                [TransitionDefinition(destinationMap: new MapId("missing-map"))])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            map,
+            localTransitions: new MapLocalTransitionCatalog(
+                [TransitionDefinition(sourceSetup: "missing-setup")])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            map,
+            localTransitions: new MapLocalTransitionCatalog(
+                [TransitionDefinition(cue: "east-zone-selected")])));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new MapPosition(64, 0));
+        Assert.Throws<ArgumentException>(() => CreateAcceptedSource(
+            new MapLocalTransitionCatalog(
+                [TransitionDefinition(destination: new MapPosition(1, 2))])));
+        Assert.Throws<ArgumentException>(() => CreateAcceptedSource(
+            new MapLocalTransitionCatalog(
+                [TransitionDefinition(destination: new MapPosition(0, 0))])));
+    }
+
+    [Fact]
     public void RestartCreatesIndependentSessionFromImmutableDefinition()
     {
         IMapScenarioSource source = CreateAcceptedSource();
@@ -339,6 +614,7 @@ public sealed class GameSessionTests
         Assert.Null(restarted.Session.Snapshot.EventRequest);
         Assert.Empty(restarted.Session.Snapshot.SyntheticFlags.SetFlags);
         Assert.Null(restarted.Session.Snapshot.LastEventEffect);
+        Assert.Null(restarted.Session.Snapshot.LocalTransition);
 
         GameSessionContextSelected restartedSelection = Assert.IsType<GameSessionContextSelected>(
             restarted.Session.Apply(
@@ -378,7 +654,8 @@ public sealed class GameSessionTests
     private static MapScenarioRequest Request() =>
         new("synthetic-package", ContentProfile.PublicSynthetic);
 
-    private static IMapScenarioSource CreateAcceptedSource()
+    private static IMapScenarioSource CreateAcceptedSource(
+        MapLocalTransitionCatalog? localTransitions = null)
     {
         MapId map = new("map3");
         MapPosition start = new(1, 1);
@@ -408,7 +685,7 @@ public sealed class GameSessionTests
             "Synthetic scenario",
             exploration,
             facts,
-            CreateMapContext(map));
+            CreateMapContext(map, localTransitions: localTransitions));
         ScenarioAdmissionReceipt receipt = new(
             "synthetic-package",
             schemaVersion: 1,
@@ -439,7 +716,8 @@ public sealed class GameSessionTests
         string effectFlag = "alternate-enabled",
         string effectCue = "variant-applied",
         IEnumerable<FlagId>? initialSetFlags = null,
-        bool includeEffect = true)
+        bool includeEffect = true,
+        MapLocalTransitionCatalog? localTransitions = null)
     {
         MapSetupCatalog setupCatalog = new(
             [
@@ -470,6 +748,10 @@ public sealed class GameSessionTests
                     EventFieldMatch.Exact(2),
                     EventFieldMatch.Exact(1),
                     new EventTargetId("east-zone")),
+                ZoneEventRecord.Specific(
+                    EventFieldMatch.Exact(1),
+                    EventFieldMatch.Exact(2),
+                    new EventTargetId("local-transition-zone")),
                 ZoneEventRecord.Default(new EventTargetId("no-zone")),
             ]);
         MapEventRequestCatalog eventRequests = new(
@@ -489,7 +771,8 @@ public sealed class GameSessionTests
             descriptions,
             zoneEvents,
             eventRequests,
-            eventEffects);
+            eventEffects,
+            localTransitions ?? new MapLocalTransitionCatalog([TransitionDefinition()]));
     }
 
     private static MapEventRequestDefinition RequestDefinition(
@@ -510,6 +793,29 @@ public sealed class GameSessionTests
             new MapEventEffectId(effect),
             new MapEventRequestId(request),
             new FlagId(flag),
+            new PresentationCueId(cue));
+
+    private static MapLocalTransitionDefinition TransitionDefinition(
+        string request = "local-transition-request",
+        string transition = "local-transition",
+        string target = "local-transition-zone",
+        MapId? sourceMap = null,
+        MapPosition? source = null,
+        string sourceSetup = "alternate-setup",
+        MapId? destinationMap = null,
+        MapPosition? destination = null,
+        string orientation = "synthetic-arrival-east",
+        string cue = "local-transition-ready") =>
+        new(
+            new MapLocalTransitionRequestId(request),
+            new MapLocalTransitionId(transition),
+            new EventTargetId(target),
+            sourceMap ?? new MapId("map3"),
+            source ?? new MapPosition(1, 2),
+            new MapSetupId(sourceSetup),
+            destinationMap ?? new MapId("map3"),
+            destination ?? new MapPosition(2, 2),
+            new OpaqueMapOrientationId(orientation),
             new PresentationCueId(cue));
 
     private sealed record UnknownCommand : IGameSessionCommand;
