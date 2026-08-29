@@ -43,17 +43,26 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 PublicSyntheticMap3PackageReader.DialogueCapability,
                 PublicSyntheticMap3PackageReader.FieldSearchCapability,
                 PublicSyntheticMap3PackageReader.ItemAcquisitionCapability,
+                PublicSyntheticMap3PackageReader.OutboundTransitionCapability,
             ],
             accepted.Receipt.Capabilities);
         string trackedDigest = Convert.ToHexString(
             SHA256.HashData(File.ReadAllBytes(PackagePath()))).ToLowerInvariant();
         Assert.Equal(PublicSyntheticMap3PackageReader.ExpectedContentDigest, trackedDigest);
         Assert.Equal(trackedDigest, accepted.Receipt.ContentDigest);
-        MapExplorationRuntimeDefinition runtime = Assert.Single(
-            accepted.Scenario.MapContext.MapRuntimes.Definitions);
+        Assert.Equal(2, accepted.Scenario.MapContext.MapRuntimes.Definitions.Count);
+        MapExplorationRuntimeDefinition runtime =
+            accepted.Scenario.MapContext.MapRuntimes.GetRequired(new MapId("map3"));
         Assert.Equal(accepted.Scenario.StartState.Map, runtime.Map);
         Assert.Same(runtime.Layout, accepted.Scenario.StartState.Layout);
         Assert.Same(runtime.Walkability, accepted.Scenario.StartState.Walkability);
+        MapExplorationRuntimeDefinition outboundRuntime =
+            accepted.Scenario.MapContext.MapRuntimes.GetRequired(
+                new MapId("public-synthetic-outbound-shell"));
+        Assert.NotSame(runtime.Layout, outboundRuntime.Layout);
+        Assert.NotSame(runtime.Walkability, outboundRuntime.Walkability);
+        Assert.True(outboundRuntime.Walkability.IsPassable(new MapPosition(1, 1)));
+        Assert.False(outboundRuntime.Walkability.IsPassable(new MapPosition(0, 0)));
     }
 
     [Fact]
@@ -92,6 +101,13 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         MapFieldSearchDefinition search = Assert.Single(context.FieldSearches.Definitions);
         MapItemAcquisitionDefinition acquisition = Assert.Single(
             context.ItemAcquisitions.Definitions);
+        ZoneEventSelection outboundZone = MapSetupEventSelector.Select(
+            runtime.ZoneEvents,
+            new ZoneEventQuery(54, 4));
+        MapOutboundTransitionDefinition outboundTransition = Assert.Single(
+            context.OutboundTransitions.Definitions);
+        MapExplorationRuntimeDefinition outboundRuntime = context.MapRuntimes.GetRequired(
+            outboundTransition.DestinationMap);
 
         Assert.Equal("ms_map3", setup.Value);
         Assert.Equal(AreaDescriptionSelectionKind.Text, area.Kind);
@@ -192,6 +208,66 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         Assert.Same(
             acquisition,
             context.ItemAcquisitions.FindByDiscovery(search.Discovery));
+        Assert.Equal("synthetic-map3-outbound-transition-zone", outboundZone.Target.Value);
+        Assert.Equal(outboundZone.Target, outboundTransition.ZoneTarget);
+        Assert.Equal("synthetic-map3-outbound-transition-request", outboundTransition.Request.Value);
+        Assert.Equal("synthetic-map3-outbound-transition", outboundTransition.Transition.Value);
+        Assert.Equal(new MapId("map3"), outboundTransition.SourceMap);
+        Assert.Equal(new MapPosition(54, 4), outboundTransition.SourcePosition);
+        Assert.Equal(new MapSetupId("synthetic-map3-variant"), outboundTransition.SourceSetup);
+        Assert.Equal(
+            new MapId("public-synthetic-outbound-shell"),
+            outboundTransition.DestinationMap);
+        Assert.Equal(new MapPosition(1, 1), outboundTransition.DestinationPosition);
+        Assert.Equal(
+            new MapSetupId("public-synthetic-outbound-shell-setup"),
+            outboundTransition.DestinationSetup);
+        Assert.Equal(SemanticFacing.East, outboundTransition.DestinationFacing);
+        Assert.Equal(
+            "synthetic-map3-outbound-transition-ready",
+            outboundTransition.Cue.Value);
+        Assert.Same(
+            outboundTransition,
+            context.OutboundTransitions.FindByTarget(outboundZone.Target));
+        Assert.True(outboundRuntime.Walkability.IsPassable(
+            outboundTransition.DestinationPosition));
+        MapSetupId outboundSetup = context.SetupCatalog.Select(
+            outboundTransition.DestinationMap,
+            context.VoidSetup,
+            context.IsInitiallySet);
+        Assert.Equal(outboundTransition.DestinationSetup, outboundSetup);
+        ZoneEventSelection outboundFallback = MapSetupEventSelector.Select(
+            outboundRuntime.ZoneEvents,
+            new ZoneEventQuery(1, 1));
+        Assert.Equal("synthetic-outbound-shell-no-zone", outboundFallback.Target.Value);
+    }
+
+    [Theory]
+    [InlineData("public-synthetic-map3-outbound-cross-map-transition-v1", "changed-outbound-capability")]
+    [InlineData("public-synthetic-outbound-shell", "changed-outbound-shell")]
+    [InlineData("synthetic-map3-outbound-transition-request", "changed-outbound-request")]
+    [InlineData("synthetic-map3-outbound-transition", "changed-outbound-transition")]
+    [InlineData("synthetic-map3-outbound-transition-zone", "changed-outbound-zone")]
+    [InlineData("public-synthetic-outbound-shell-setup", "changed-outbound-setup")]
+    [InlineData("synthetic-map3-outbound-transition-ready", "changed-outbound-cue")]
+    public void OutboundIdentityOrCrossReferenceByteMutationFailsDigestAdmission(
+        string oldValue,
+        string newValue)
+    {
+        AssertDigestMismatch(original =>
+            original.Replace(oldValue, newValue, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData("\"destinationFacing\": \"east\"", "\"destinationFacing\": \"west\"")]
+    [InlineData("\"x\": 54", "\"x\": 53")]
+    [InlineData("\"width\": 2, \"height\": 2", "\"width\": 3, \"height\": 2")]
+    public void OutboundPoseFacingOrRuntimeByteMutationFailsDigestAdmission(
+        string oldValue,
+        string newValue)
+    {
+        AssertDigestMismatch(original =>
+            original.Replace(oldValue, newValue, StringComparison.Ordinal));
     }
 
     [Fact]

@@ -20,7 +20,8 @@
     "public-synthetic-map3-entity-interaction-v1",
     "public-synthetic-map3-placeholder-dialogue-v1",
     "public-synthetic-map3-field-search-v1",
-    "public-synthetic-map3-placeholder-item-acquisition-v1"
+    "public-synthetic-map3-placeholder-item-acquisition-v1",
+    "public-synthetic-map3-outbound-cross-map-transition-v1"
   ],
   "scenarioId": "map3-public-synthetic-smoke",
   "displayName": "Map 3 public-synthetic exploration smoke",
@@ -100,6 +101,11 @@
             "setupId": "synthetic-map3-variant"
           }
         ]
+      },
+      {
+        "mapId": "public-synthetic-outbound-shell",
+        "defaultSetupId": "public-synthetic-outbound-shell-setup",
+        "flagAlternatives": []
       }
     ],
     "areaDescriptions": {
@@ -129,6 +135,12 @@
         "x": 58,
         "y": 3,
         "targetId": "synthetic-map3-local-transition-zone"
+      },
+      {
+        "kind": "specific",
+        "x": 54,
+        "y": 4,
+        "targetId": "synthetic-map3-outbound-transition-zone"
       },
       {
         "kind": "default",
@@ -236,6 +248,71 @@
         "itemId": "synthetic-map3-placeholder-item",
         "requestCueId": "synthetic-map3-placeholder-item-acquisition-pending",
         "acquiredCueId": "synthetic-map3-placeholder-item-acquired"
+      }
+    ],
+    "outboundTransitions": [
+      {
+        "requestId": "synthetic-map3-outbound-transition-request",
+        "transitionId": "synthetic-map3-outbound-transition",
+        "zoneTargetId": "synthetic-map3-outbound-transition-zone",
+        "sourceMapId": "map3",
+        "sourcePosition": {
+          "x": 54,
+          "y": 4
+        },
+        "sourceSetupId": "synthetic-map3-variant",
+        "destinationMapId": "public-synthetic-outbound-shell",
+        "destinationPosition": {
+          "x": 1,
+          "y": 1
+        },
+        "destinationSetupId": "public-synthetic-outbound-shell-setup",
+        "destinationFacing": "east",
+        "cueId": "synthetic-map3-outbound-transition-ready"
+      }
+    ]
+  },
+  "outboundShell": {
+    "mapId": "public-synthetic-outbound-shell",
+    "layoutRecipe": {
+      "width": 64,
+      "height": 64,
+      "defaultWord": 0,
+      "cells": [
+        { "x": 1, "y": 1, "word": 3 },
+        { "x": 2, "y": 1, "word": 4 },
+        { "x": 1, "y": 2, "word": 4 },
+        { "x": 2, "y": 2, "word": 3 }
+      ]
+    },
+    "walkability": {
+      "width": 64,
+      "height": 64,
+      "defaultPassable": false,
+      "passableRectangles": [
+        { "x": 1, "y": 1, "width": 2, "height": 2 }
+      ],
+      "blockedCells": []
+    },
+    "areaDescriptions": {
+      "descriptionTextBase": 2000,
+      "entries": [
+        {
+          "x": 1,
+          "y": 1,
+          "condition": "always",
+          "payload": {
+            "kind": "text",
+            "investigationOffset": 0,
+            "descriptionOffset": 0
+          }
+        }
+      ]
+    },
+    "zoneEvents": [
+      {
+        "kind": "default",
+        "targetId": "synthetic-outbound-shell-no-zone"
       }
     ]
   }

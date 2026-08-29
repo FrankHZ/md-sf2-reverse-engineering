@@ -17,9 +17,10 @@ package-declared synthetic flag effect; re-selecting context then exposes the al
 setup variant. A second exact synthetic zone now admits a typed same-map local-transition request;
 acknowledging it atomically relocates the session to a package-declared passable cell and projects the
 result in Godot. The accepted field-search discovery can now admit one exact project-authored placeholder
-item acquisition through an immutable Domain inventory. The official Godot 4.7.2 .NET CLI gate performs a
-hash-locked import, headless source run, export, and headless exported-build run using only tracked
-redistribution-safe inputs.
+item acquisition through an immutable Domain inventory. One distinct synthetic zone now admits an outbound
+transition into a tiny second project-authored public-synthetic map shell. The official Godot 4.7.2 .NET CLI
+gate performs a hash-locked import, headless source run, export, and headless exported-build run using only
+tracked redistribution-safe inputs.
 
 The selector vertical is driven by `SelectExplorationContextCommand` through the same Application
 `GameSession` mutation facade as movement. Its typed public-synthetic package owns a setup catalog,
@@ -31,13 +32,12 @@ the position-specific selection so stale adapter state cannot become gameplay st
 Application now admits those map-specific values through an exact `MapId` exploration-runtime
 catalog. Each immutable runtime definition binds one Domain working layout and synthetic walkability
 grid to that map's area-description source and zone-event table; lookup has no default or fallback.
-The current tracked package still contributes exactly one Map 3 runtime, with identical bytes,
-capabilities, and digest. Scenario start is constructed only from that admitted runtime plus the
-logical start position. Setup and runtime map-ID sets must match exactly, context snapshots carry the
-live map ID, and the session projects only entities belonging to the live map while retaining the full
-typed catalog for authoritative lookup. The existing local transition remains same-map and rebuilds
-its destination state from that map's admitted runtime; this boundary does not admit a second map or
-authorize a cross-map command.
+The current tracked package contributes exactly one synthetic Map 3 runtime and one intentionally tiny
+`public-synthetic-outbound-shell` runtime. Scenario start is constructed only from the admitted Map 3
+runtime plus the logical start position. Setup and runtime map-ID sets must match exactly, context snapshots
+carry the live map ID, and the session projects only entities belonging to the live map while retaining the
+full typed catalog for authoritative lookup. The existing local transition remains same-map and rebuilds
+its destination state from that map's admitted runtime.
 
 The request vertical adds `RequestSelectedZoneEventCommand` and
 `AcknowledgeMapEventRequestCommand`. Application admits only package-declared request-to-specific-zone
@@ -67,6 +67,19 @@ request/effect snapshots; wrong or duplicate acknowledgements cannot mutate stat
 the admitted start without transition state. Godot sends only those semantic commands and projects the
 snapshot, cue, orientation label, and relocation result. It does not interpret the zone target, execute
 original warp logic, or claim original coordinates, facing semantics, predicates, effects, or reachability.
+
+The outbound-transition vertical is a separate `RequestSelectedOutboundTransitionCommand` and
+`AcknowledgeMapOutboundTransitionCommand` lifecycle. Content binds one exact non-default Map 3 synthetic
+zone to unique request/transition/cue identities, exact source map/position/setup state, and an exact
+destination runtime/map/position/setup/semantic-facing projection. Admission rejects same-map, dangling,
+default, duplicate, blocked, mismatched-setup, or reused-cue definitions. A matching acknowledgement
+atomically replaces the live exploration runtime, facing, context, and current-map entity projection while
+retaining the session's synthetic flags, discoveries, and immutable inventory. Old event, local-transition,
+interaction, dialogue, search, and acquisition lifecycle views are cleared; wrong, stale, and duplicate
+acknowledgements are zero-mutation, and restart returns to the admitted Map 3 state. Godot sends only the
+semantic request/acknowledgement and projects the typed transition plus live exploration map/context. The
+second map is project-authored synthetic content, not original Map 21; this lifecycle claims no original
+map identity, layout, coordinates, warp predicate, facing, asset, story, natural reach, or fidelity.
 
 The entity-interaction vertical adds one project-authored placeholder entity on an admitted synthetic
 solid cell plus one exact entity-target/request/cue mapping. A separately declared semantic facing is
@@ -157,6 +170,9 @@ It also admits exactly one item-acquisition record whose discovery must resolve 
 whose request, result, opaque item, and two cue IDs are globally unique at their typed boundaries. The raw
 package remains byte-digest locked and rejects unknown shape, defaults, dangling references, duplicate
 identities, and cue reuse before a session starts.
+The same closed package admits exactly one outbound transition and one second synthetic runtime. Their map,
+setup, zone, endpoint, facing, request, transition, and cue references are validated against the exact runtime
+and setup catalogs before a session starts.
 General canonical/private import and original content remain deferred.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy
@@ -192,6 +208,7 @@ lifetime; target effects; decoded text; original inventory or story mutation; pe
 admission; Battle 01 continuity;
 original entity identity, placement, facing, dialogue, interaction effects, or reachability;
 original field-search locations, predicates, targets, discoveries, items, or reachability;
+original outbound maps, Map 21 identity, layouts, coordinates, warp predicates, or natural reachability;
 complete Application/Content/Godot game layers; original presentation; H4; private-content admission;
 and milestone acceptance remain Unknown or deferred at their existing owners. The bounded synthetic
 Map 3 admission above is not evidence of the original natural route or a full-content implementation.

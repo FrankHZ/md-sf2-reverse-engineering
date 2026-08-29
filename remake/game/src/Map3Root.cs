@@ -25,6 +25,7 @@ public sealed partial class Map3Root : Node2D
     private Label? _dialogueStatus;
     private Label? _fieldSearchStatus;
     private Label? _itemAcquisitionStatus;
+    private Label? _outboundTransitionStatus;
 
     public override void _Ready()
     {
@@ -120,6 +121,14 @@ public sealed partial class Map3Root : Node2D
         else if (Input.IsActionJustPressed("acknowledge_item_acquisition"))
         {
             ApplyItemAcquisitionAcknowledgement();
+        }
+        else if (Input.IsActionJustPressed("request_outbound_transition"))
+        {
+            ApplyOutboundTransitionRequest();
+        }
+        else if (Input.IsActionJustPressed("acknowledge_outbound_transition"))
+        {
+            ApplyOutboundTransitionAcknowledgement();
         }
     }
 
@@ -445,6 +454,45 @@ public sealed partial class Map3Root : Node2D
         ProjectRejection((GameSessionCommandRejected)result);
     }
 
+    private void ApplyOutboundTransitionRequest()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new RequestSelectedOutboundTransitionCommand());
+        if (result is GameSessionOutboundTransitionRequested)
+        {
+            ProjectSnapshot("Outbound transition pending");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyOutboundTransitionAcknowledgement()
+    {
+        if (_session?.Snapshot.OutboundTransition is not MapOutboundTransitionSnapshot transition)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new AcknowledgeMapOutboundTransitionCommand(
+                transition.Request,
+                transition.CueSequence,
+                transition.Transition));
+        if (result is GameSessionOutboundTransitionApplied)
+        {
+            ProjectSnapshot("Public-synthetic outbound transition applied");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
     private void ProjectRejection(GameSessionCommandRejected rejected)
     {
         if (_status is not null)
@@ -466,7 +514,8 @@ public sealed partial class Map3Root : Node2D
             _entityInteractionStatus is null ||
             _dialogueStatus is null ||
             _fieldSearchStatus is null ||
-            _itemAcquisitionStatus is null)
+            _itemAcquisitionStatus is null ||
+            _outboundTransitionStatus is null)
         {
             return;
         }
@@ -474,11 +523,11 @@ public sealed partial class Map3Root : Node2D
         GameSessionSnapshot snapshot = _session.Snapshot;
         _viewport.Project(snapshot);
         _status.Text =
-            $"Map {snapshot.AdmissionFacts.CurrentMap}  " +
+            $"Map {snapshot.Exploration.Map}  " +
             $"Tile ({snapshot.Exploration.PlayerPosition.X}, " +
             $"{snapshot.Exploration.PlayerPosition.Y})  " +
             $"Facing {snapshot.Facing}  Step {snapshot.SimulationStep}  {outcome}  |  " +
-            "WASD move / arrows turn / Enter / Z X / C V / F G / H / Q E / R T";
+            "WASD move / arrows turn / Enter / Z X / C V / F G / H / Q E / R T / Y U";
         _contextStatus.Text = snapshot.ContextSelection is null
             ? "Context not selected."
             : FormatContext(snapshot.ContextSelection);
@@ -500,6 +549,9 @@ public sealed partial class Map3Root : Node2D
             : FormatDialogue(snapshot.Dialogue);
         _fieldSearchStatus.Text = FormatFieldSearch(snapshot);
         _itemAcquisitionStatus.Text = FormatItemAcquisition(snapshot);
+        _outboundTransitionStatus.Text = snapshot.OutboundTransition is null
+            ? "Outbound transition: none."
+            : FormatOutboundTransition(snapshot.OutboundTransition);
     }
 
     private void RunHeadlessSmoke()
@@ -837,7 +889,76 @@ public sealed partial class Map3Root : Node2D
             return;
         }
 
-        ProjectSnapshot("Placeholder field-search discovery and item acquisition admitted once");
+        GameSessionCommandApplied? outboundMove = _session.Apply(
+            new MoveExplorationCommand(ExplorationDirection.West)) as GameSessionCommandApplied;
+        GameSessionContextSelected? outboundContext = _session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)) as
+            GameSessionContextSelected;
+        if (outboundMove?.Outcome != ExplorationMovementOutcome.Moved ||
+            outboundMove.Snapshot.Exploration.PlayerPosition != new MapPosition(54, 4) ||
+            outboundContext?.Selection.Map.Value != "map3" ||
+            outboundContext.Selection.ZoneEvent.Target.Value !=
+                "synthetic-map3-outbound-transition-zone")
+        {
+            FailStartup("The bounded public-synthetic outbound source context did not match.");
+            return;
+        }
+
+        GameSessionOutboundTransitionRequested? outboundRequested = _session.Apply(
+            new RequestSelectedOutboundTransitionCommand()) as
+            GameSessionOutboundTransitionRequested;
+        if (outboundRequested is null ||
+            outboundRequested.Transition.Status != MapOutboundTransitionStatus.Pending ||
+            outboundRequested.Transition.SourceMap.Value != "map3" ||
+            outboundRequested.Transition.DestinationMap.Value !=
+                "public-synthetic-outbound-shell" ||
+            outboundRequested.Cue.Cue.Value != "synthetic-map3-outbound-transition-ready" ||
+            !outboundRequested.Cue.RequiresAcknowledgement)
+        {
+            FailStartup("The bounded public-synthetic outbound transition was not admitted.");
+            return;
+        }
+
+        GameSessionOutboundTransitionApplied? outboundApplied = _session.Apply(
+            new AcknowledgeMapOutboundTransitionCommand(
+                outboundRequested.Transition.Request,
+                outboundRequested.Cue.Sequence,
+                outboundRequested.Transition.Transition)) as
+            GameSessionOutboundTransitionApplied;
+        if (outboundApplied is null ||
+            outboundApplied.Transition.Status != MapOutboundTransitionStatus.Acknowledged ||
+            outboundApplied.Snapshot.Exploration.Map.Value !=
+                "public-synthetic-outbound-shell" ||
+            outboundApplied.Snapshot.Exploration.PlayerPosition != new MapPosition(1, 1) ||
+            outboundApplied.Snapshot.Facing != SemanticFacing.East ||
+            outboundApplied.Snapshot.ContextSelection is not null ||
+            outboundApplied.Snapshot.Entities.Count != 0 ||
+            !outboundApplied.Snapshot.SyntheticFlags.IsSet(
+                new FlagId("synthetic-map3-variant-enabled")) ||
+            !outboundApplied.Snapshot.Discoveries.IsDiscovered(
+                itemAcquired.Receipt.Discovery) ||
+            !outboundApplied.Snapshot.Inventory.Contains(itemAcquired.Receipt.Item))
+        {
+            FailStartup("The bounded public-synthetic runtime swap was not atomic.");
+            return;
+        }
+
+        GameSessionContextSelected? outboundShellContext = _session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)) as
+            GameSessionContextSelected;
+        if (outboundShellContext?.Selection.Map.Value !=
+                "public-synthetic-outbound-shell" ||
+            outboundShellContext.Selection.SelectedSetup.Value !=
+                "public-synthetic-outbound-shell-setup" ||
+            outboundShellContext.Selection.Position != new MapPosition(1, 1) ||
+            outboundShellContext.Selection.ZoneEvent.Target.Value !=
+                "synthetic-outbound-shell-no-zone")
+        {
+            FailStartup("The public-synthetic outbound shell context did not match.");
+            return;
+        }
+
+        ProjectSnapshot("Public-synthetic outbound shell admitted");
         object receipt = new
         {
             status = "Pass",
@@ -895,7 +1016,7 @@ public sealed partial class Map3Root : Node2D
 
         Label explanation = new()
         {
-            Text = "Project-authored selectors, interaction, discovery, and placeholder item acquisition; targets are never interpreted.",
+            Text = "Project-authored selectors, placeholder state, and outbound shell; targets are never interpreted.",
             Position = new Vector2(24, 55),
         };
         explanation.AddThemeFontSizeOverride("font_size", 16);
@@ -989,6 +1110,15 @@ public sealed partial class Map3Root : Node2D
         _itemAcquisitionStatus.AddThemeFontSizeOverride("font_size", 15);
         _itemAcquisitionStatus.AddThemeColorOverride("font_color", new Color("ffe2a8"));
         AddChild(_itemAcquisitionStatus);
+
+        _outboundTransitionStatus = new Label
+        {
+            Text = "Outbound transition: none.",
+            Position = new Vector2(24, 750),
+        };
+        _outboundTransitionStatus.AddThemeFontSizeOverride("font_size", 15);
+        _outboundTransitionStatus.AddThemeColorOverride("font_color", new Color("d8c6ff"));
+        AddChild(_outboundTransitionStatus);
     }
 
     private static void RegisterInputMap()
@@ -1013,6 +1143,8 @@ public sealed partial class Map3Root : Node2D
         RegisterAction("acknowledge_field_search", Key.E);
         RegisterAction("request_item_acquisition", Key.R);
         RegisterAction("acknowledge_item_acquisition", Key.T);
+        RegisterAction("request_outbound_transition", Key.Y);
+        RegisterAction("acknowledge_outbound_transition", Key.U);
     }
 
     private static void RegisterAction(string action, Key physicalKey)
@@ -1115,4 +1247,12 @@ public sealed partial class Map3Root : Node2D
                 $"{snapshot.ItemAcquisition.Status}  Result {snapshot.ItemAcquisition.Result}  " +
                 $"Item {snapshot.ItemAcquisition.Item}  Inventory [{items}]";
     }
+
+    private static string FormatOutboundTransition(MapOutboundTransitionSnapshot transition) =>
+        $"Outbound transition {transition.Transition}: {transition.Status}  " +
+        $"Cue #{transition.CueSequence}  {transition.SourceMap}" +
+        $"@({transition.SourcePosition.X},{transition.SourcePosition.Y}) -> " +
+        $"{transition.DestinationMap}" +
+        $"@({transition.DestinationPosition.X},{transition.DestinationPosition.Y})  " +
+        $"Facing {transition.DestinationFacing}";
 }

@@ -20,7 +20,8 @@ public sealed class MapScenarioContextDefinition
         MapEntityInteractionCatalog entityInteractions,
         MapDialogueCatalog dialogues,
         MapFieldSearchCatalog fieldSearches,
-        MapItemAcquisitionCatalog itemAcquisitions)
+        MapItemAcquisitionCatalog itemAcquisitions,
+        MapOutboundTransitionCatalog? outboundTransitions = null)
     {
         MapRuntimes = mapRuntimes ?? throw new ArgumentNullException(nameof(mapRuntimes));
         SetupCatalog = setupCatalog ?? throw new ArgumentNullException(nameof(setupCatalog));
@@ -42,6 +43,7 @@ public sealed class MapScenarioContextDefinition
         FieldSearches = fieldSearches ?? throw new ArgumentNullException(nameof(fieldSearches));
         ItemAcquisitions = itemAcquisitions ??
             throw new ArgumentNullException(nameof(itemAcquisitions));
+        OutboundTransitions = outboundTransitions ?? new MapOutboundTransitionCatalog([]);
 
         List<FlagId> copiedFlags = [];
         _initialSetFlagLookup = [];
@@ -146,6 +148,13 @@ public sealed class MapScenarioContextDefinition
             .ToHashSet();
         foreach (MapLocalTransitionDefinition definition in LocalTransitions.Definitions)
         {
+            if (definition.SourceMap != definition.DestinationMap)
+            {
+                throw new ArgumentException(
+                    $"Local transition '{definition.Transition}' must remain within one map runtime.",
+                    nameof(localTransitions));
+            }
+
             MapExplorationRuntimeDefinition sourceRuntime =
                 MapRuntimes.GetRequired(definition.SourceMap);
             List<ZoneEventRecord> sourceRecords = sourceRuntime.ZoneEvents.Records
@@ -201,11 +210,79 @@ public sealed class MapScenarioContextDefinition
         HashSet<PresentationCueId> transitionCueIds = LocalTransitions.Definitions
             .Select(definition => definition.Cue)
             .ToHashSet();
+        HashSet<EventTargetId> localTransitionTargets = LocalTransitions.Definitions
+            .Select(definition => definition.ZoneTarget)
+            .ToHashSet();
+        foreach (MapOutboundTransitionDefinition definition in OutboundTransitions.Definitions)
+        {
+            MapExplorationRuntimeDefinition sourceRuntime =
+                MapRuntimes.GetRequired(definition.SourceMap);
+            MapExplorationRuntimeDefinition destinationRuntime =
+                MapRuntimes.GetRequired(definition.DestinationMap);
+            List<ZoneEventRecord> sourceRecords = sourceRuntime.ZoneEvents.Records
+                .Where(record => !record.IsDefault && record.Target == definition.ZoneTarget)
+                .ToList();
+            if (sourceRecords.Count != 1 ||
+                sourceRecords[0].X.ExactValue is not byte sourceX ||
+                sourceRecords[0].Y.ExactValue is not byte sourceY ||
+                sourceX != definition.SourcePosition.X ||
+                sourceY != definition.SourcePosition.Y ||
+                defaultTargets.Contains(definition.ZoneTarget))
+            {
+                throw new ArgumentException(
+                    $"Outbound transition '{definition.Transition}' must reference one exact non-default source zone.",
+                    nameof(outboundTransitions));
+            }
+
+            if (EventRequests.FindByTarget(definition.ZoneTarget) is not null ||
+                localTransitionTargets.Contains(definition.ZoneTarget))
+            {
+                throw new ArgumentException(
+                    $"Outbound transition '{definition.Transition}' cannot reuse another admitted target.",
+                    nameof(outboundTransitions));
+            }
+
+            MapSetupCatalogEntry sourceSetupEntry = SetupCatalog.Entries.Single(
+                entry => entry.Map == definition.SourceMap);
+            MapSetupCatalogEntry destinationSetupEntry = SetupCatalog.Entries.Single(
+                entry => entry.Map == definition.DestinationMap);
+            bool ownsSourceSetup = OwnsSetup(sourceSetupEntry, definition.SourceSetup);
+            bool ownsDestinationSetup =
+                OwnsSetup(destinationSetupEntry, definition.DestinationSetup);
+            MapSetupId selectedDestinationSetup = SetupCatalog.Select(
+                definition.DestinationMap,
+                VoidSetup,
+                IsInitiallySet);
+            if (!ownsSourceSetup ||
+                !ownsDestinationSetup ||
+                selectedDestinationSetup != definition.DestinationSetup ||
+                !sourceRuntime.Walkability.IsPassable(definition.SourcePosition) ||
+                !destinationRuntime.Walkability.IsPassable(definition.DestinationPosition))
+            {
+                throw new ArgumentException(
+                    $"Outbound transition '{definition.Transition}' must reference exact admitted source and destination runtime state.",
+                    nameof(outboundTransitions));
+            }
+
+            if (requestCueIds.Contains(definition.Cue) ||
+                effectCueIds.Contains(definition.Cue) ||
+                transitionCueIds.Contains(definition.Cue))
+            {
+                throw new ArgumentException(
+                    $"Outbound transition '{definition.Transition}' cannot reuse another cue ID.",
+                    nameof(outboundTransitions));
+            }
+        }
+
+        HashSet<PresentationCueId> outboundTransitionCueIds = OutboundTransitions.Definitions
+            .Select(definition => definition.Cue)
+            .ToHashSet();
         foreach (MapEntityInteractionDefinition definition in EntityInteractions.Interactions)
         {
             if (requestCueIds.Contains(definition.Cue) ||
                 effectCueIds.Contains(definition.Cue) ||
-                transitionCueIds.Contains(definition.Cue))
+                transitionCueIds.Contains(definition.Cue) ||
+                outboundTransitionCueIds.Contains(definition.Cue))
             {
                 throw new ArgumentException(
                     $"Entity interaction '{definition.Request}' cannot reuse another cue ID.",
@@ -239,6 +316,7 @@ public sealed class MapScenarioContextDefinition
         HashSet<PresentationCueId> occupiedCueIds = requestCueIds
             .Concat(effectCueIds)
             .Concat(transitionCueIds)
+            .Concat(outboundTransitionCueIds)
             .Concat(EntityInteractions.Interactions.Select(definition => definition.Cue))
             .ToHashSet();
         foreach (MapDialogueDefinition dialogue in Dialogues.Definitions)
@@ -338,9 +416,15 @@ public sealed class MapScenarioContextDefinition
 
     public MapItemAcquisitionCatalog ItemAcquisitions { get; }
 
+    public MapOutboundTransitionCatalog OutboundTransitions { get; }
+
     public bool IsInitiallySet(FlagId flag)
     {
         ArgumentNullException.ThrowIfNull(flag);
         return _initialSetFlagLookup.Contains(flag);
     }
+
+    private static bool OwnsSetup(MapSetupCatalogEntry entry, MapSetupId setup) =>
+        entry.Route.DefaultSetup == setup ||
+        entry.Route.FlagAlternatives.Any(alternative => alternative.Setup == setup);
 }
