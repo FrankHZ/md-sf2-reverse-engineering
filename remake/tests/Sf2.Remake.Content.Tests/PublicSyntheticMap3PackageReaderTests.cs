@@ -49,6 +49,11 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             SHA256.HashData(File.ReadAllBytes(PackagePath()))).ToLowerInvariant();
         Assert.Equal(PublicSyntheticMap3PackageReader.ExpectedContentDigest, trackedDigest);
         Assert.Equal(trackedDigest, accepted.Receipt.ContentDigest);
+        MapExplorationRuntimeDefinition runtime = Assert.Single(
+            accepted.Scenario.MapContext.MapRuntimes.Definitions);
+        Assert.Equal(accepted.Scenario.StartState.Map, runtime.Map);
+        Assert.Same(runtime.Layout, accepted.Scenario.StartState.Layout);
+        Assert.Same(runtime.Walkability, accepted.Scenario.StartState.Walkability);
     }
 
     [Fact]
@@ -58,23 +63,25 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         MapScenarioAccepted accepted = AssertAccepted(reader.Admit(Request()));
 
         MapScenarioContextDefinition context = accepted.Scenario.MapContext;
+        MapExplorationRuntimeDefinition runtime =
+            context.MapRuntimes.GetRequired(accepted.Scenario.StartState.Map);
         MapSetupId setup = context.SetupCatalog.Select(
             accepted.Scenario.StartState.Map,
             context.VoidSetup,
             context.IsInitiallySet);
         AreaDescriptionSelection area = MapAreaDescriptionSelector.Select(
-            context.AreaDescriptions,
+            runtime.AreaDescriptions,
             new MapAreaDescriptionQuery(57, 3, AreaDescriptionAdmission.Ordinary));
         ZoneEventSelection zone = MapSetupEventSelector.Select(
-            context.ZoneEvents,
+            runtime.ZoneEvents,
             new ZoneEventQuery(57, 3));
         ZoneEventSelection fallbackZone = MapSetupEventSelector.Select(
-            context.ZoneEvents,
+            runtime.ZoneEvents,
             new ZoneEventQuery(56, 3));
         MapEventRequestDefinition? request = context.EventRequests.FindByTarget(zone.Target);
         MapEventEffectDefinition? effect = context.EventEffects.FindByRequest(request!.Request);
         ZoneEventSelection transitionZone = MapSetupEventSelector.Select(
-            context.ZoneEvents,
+            runtime.ZoneEvents,
             new ZoneEventQuery(58, 3));
         MapLocalTransitionDefinition? transition =
             context.LocalTransitions.FindByTarget(transitionZone.Target);

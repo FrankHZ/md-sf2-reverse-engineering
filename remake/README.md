@@ -28,6 +28,17 @@ contains only the selected logical setup, logical text indexes or opaque functio
 zone target. Godot displays those values but does not execute a function or event target; moving clears
 the position-specific selection so stale adapter state cannot become gameplay state.
 
+Application now admits those map-specific values through an exact `MapId` exploration-runtime
+catalog. Each immutable runtime definition binds one Domain working layout and synthetic walkability
+grid to that map's area-description source and zone-event table; lookup has no default or fallback.
+The current tracked package still contributes exactly one Map 3 runtime, with identical bytes,
+capabilities, and digest. Scenario start is constructed only from that admitted runtime plus the
+logical start position. Setup and runtime map-ID sets must match exactly, context snapshots carry the
+live map ID, and the session projects only entities belonging to the live map while retaining the full
+typed catalog for authoritative lookup. The existing local transition remains same-map and rebuilds
+its destination state from that map's admitted runtime; this boundary does not admit a second map or
+authorize a cross-map command.
+
 The request vertical adds `RequestSelectedZoneEventCommand` and
 `AcknowledgeMapEventRequestCommand`. Application admits only package-declared request-to-specific-zone
 cross-references, owns the pending/acknowledged snapshot and monotonic cue sequence, and rejects other

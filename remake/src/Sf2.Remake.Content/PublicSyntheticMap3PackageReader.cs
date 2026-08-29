@@ -136,19 +136,18 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
 
             WorkingMapLayout layout = BuildLayout(document.LayoutRecipe);
             SyntheticWalkabilityGrid walkability = BuildWalkability(document.Walkability);
+            MapId currentMap = new(document.Admission.CurrentMap);
             MapScenarioContextDefinition mapContext = BuildMapContext(
                 document.MapContext,
-                document.InitialSemanticFacing);
+                document.InitialSemanticFacing,
+                currentMap,
+                layout,
+                walkability);
             MapPosition start = new(
                 document.Admission.LogicalStartPosition.X,
                 document.Admission.LogicalStartPosition.Y);
-            ExplorationMovementState startState = new(
-                new MapId(document.Admission.CurrentMap),
-                layout,
-                walkability,
-                start);
             ScenarioAdmissionFacts admissionFacts = new(
-                new MapId(document.Admission.CurrentMap),
+                currentMap,
                 new MapId(document.Admission.EgressMap),
                 start,
                 checked((byte)document.Admission.OpaqueStartFacing),
@@ -159,7 +158,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             MapScenarioDefinition scenario = new(
                 document.ScenarioId,
                 document.DisplayName,
-                startState,
+                currentMap,
+                start,
                 admissionFacts,
                 mapContext);
             ScenarioAdmissionReceipt receipt = new(
@@ -369,7 +369,10 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
 
     private static MapScenarioContextDefinition BuildMapContext(
         MapContextDocument context,
-        string initialSemanticFacing)
+        string initialSemanticFacing,
+        MapId currentMap,
+        WorkingMapLayout layout,
+        SyntheticWalkabilityGrid walkability)
     {
         MapSetupCatalog setupCatalog = new(
             context.SetupCatalog.Select(entry =>
@@ -386,6 +389,15 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             context.AreaDescriptions.Entries.Select(BuildAreaDescriptionEntry));
         MapSetupEventTable<ZoneEventRecord> zoneEvents = new(
             context.ZoneEvents.Select(BuildZoneEventRecord));
+        MapExplorationRuntimeCatalog mapRuntimes = new(
+            [
+                new MapExplorationRuntimeDefinition(
+                    currentMap,
+                    layout,
+                    walkability,
+                    areaDescriptions,
+                    zoneEvents),
+            ]);
         MapEventRequestCatalog eventRequests = new(
             context.EventRequests.Select(entry =>
                 new MapEventRequestDefinition(
@@ -429,11 +441,10 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         MapItemAcquisitionCatalog itemAcquisitions = new(
             context.ItemAcquisitions.Select(BuildItemAcquisitionDefinition));
         return new MapScenarioContextDefinition(
+            mapRuntimes,
             setupCatalog,
             new MapSetupId(context.VoidSetupId),
             context.SetFlags.Select(flag => new FlagId(flag)),
-            areaDescriptions,
-            zoneEvents,
             eventRequests,
             eventEffects,
             localTransitions,

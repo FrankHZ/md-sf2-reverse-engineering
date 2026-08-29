@@ -76,36 +76,42 @@ public sealed record MapScenarioDefinition
     public MapScenarioDefinition(
         string scenarioId,
         string displayName,
-        ExplorationMovementState startState,
+        MapId startMap,
+        MapPosition startPosition,
         ScenarioAdmissionFacts admissionFacts,
         MapScenarioContextDefinition mapContext)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
-        StartState = startState ?? throw new ArgumentNullException(nameof(startState));
+        startMap = startMap ?? throw new ArgumentNullException(nameof(startMap));
+        startPosition = startPosition ?? throw new ArgumentNullException(nameof(startPosition));
         AdmissionFacts = admissionFacts ?? throw new ArgumentNullException(nameof(admissionFacts));
         MapContext = mapContext ?? throw new ArgumentNullException(nameof(mapContext));
-        if (startState.Map != admissionFacts.CurrentMap ||
-            startState.PlayerPosition != admissionFacts.LogicalStartPosition)
+        StartState = mapContext.MapRuntimes
+            .GetRequired(startMap)
+            .CreateExplorationState(startPosition);
+        if (startMap != admissionFacts.CurrentMap ||
+            startPosition != admissionFacts.LogicalStartPosition)
         {
             throw new ArgumentException(
                 "The exploration start must equal the admitted logical map position.",
-                nameof(startState));
+                nameof(startPosition));
         }
 
         foreach (MapLocalTransitionDefinition transition in mapContext.LocalTransitions.Definitions)
         {
-            if (transition.SourceMap != startState.Map ||
-                transition.DestinationMap != startState.Map)
+            if (transition.SourceMap != transition.DestinationMap)
             {
                 throw new ArgumentException(
-                    $"Local transition '{transition.Transition}' must remain on the admitted scenario map.",
+                    $"Local transition '{transition.Transition}' must remain on one admitted map.",
                     nameof(mapContext));
             }
 
+            MapExplorationRuntimeDefinition runtime =
+                mapContext.MapRuntimes.GetRequired(transition.SourceMap);
             if (transition.SourcePosition == transition.DestinationPosition ||
-                !startState.Walkability.IsPassable(transition.SourcePosition) ||
-                !startState.Walkability.IsPassable(transition.DestinationPosition))
+                !runtime.Walkability.IsPassable(transition.SourcePosition) ||
+                !runtime.Walkability.IsPassable(transition.DestinationPosition))
             {
                 throw new ArgumentException(
                     $"Local transition '{transition.Transition}' requires distinct passable source and destination cells.",
@@ -113,17 +119,23 @@ public sealed record MapScenarioDefinition
             }
         }
 
-        HashSet<MapPosition> transitionPositions = mapContext.LocalTransitions.Definitions
+        HashSet<(MapId Map, MapPosition Position)> transitionPositions =
+            mapContext.LocalTransitions.Definitions
             .SelectMany(transition =>
-                new[] { transition.SourcePosition, transition.DestinationPosition })
+                new[]
+                {
+                    (transition.SourceMap, transition.SourcePosition),
+                    (transition.DestinationMap, transition.DestinationPosition),
+                })
             .ToHashSet();
         foreach (MapEntityDefinition entity in mapContext.EntityInteractions.Entities)
         {
-            if (entity.Map != startState.Map ||
-                !startState.Walkability.Contains(entity.Position) ||
-                startState.Walkability.IsPassable(entity.Position) ||
-                entity.Position == startState.PlayerPosition ||
-                transitionPositions.Contains(entity.Position))
+            MapExplorationRuntimeDefinition runtime =
+                mapContext.MapRuntimes.GetRequired(entity.Map);
+            if (!runtime.Walkability.Contains(entity.Position) ||
+                runtime.Walkability.IsPassable(entity.Position) ||
+                (entity.Map == StartState.Map && entity.Position == StartState.PlayerPosition) ||
+                transitionPositions.Contains((entity.Map, entity.Position)))
             {
                 throw new ArgumentException(
                     $"Entity '{entity.Entity}' requires one in-bounds synthetic solid cell that does not overlap admission or transition positions.",
@@ -133,9 +145,10 @@ public sealed record MapScenarioDefinition
 
         foreach (MapFieldSearchDefinition search in mapContext.FieldSearches.Definitions)
         {
-            if (search.Map != startState.Map ||
-                !startState.Walkability.Contains(search.Position) ||
-                !startState.Walkability.IsPassable(search.Position))
+            MapExplorationRuntimeDefinition runtime =
+                mapContext.MapRuntimes.GetRequired(search.Map);
+            if (!runtime.Walkability.Contains(search.Position) ||
+                !runtime.Walkability.IsPassable(search.Position))
             {
                 throw new ArgumentException(
                     $"Field-search context '{search.Context}' requires one in-bounds passable cell on the admitted scenario map.",
