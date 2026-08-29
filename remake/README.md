@@ -6,24 +6,31 @@ the continuous Map 3 through Battle 01 milestone ready.
 
 ## Current boundary
 
-The only production project is `Sf2.Remake.Domain`. Its first implemented behavior is a pure
-map-setup selector with an engine-native catalog admission boundary. The catalog maps opaque map IDs
-to already parsed routes, rejects duplicate map IDs, and delegates every known route to the ordered
-route selector. It consumes the accepted behavior categories from:
+The only production project is `Sf2.Remake.Domain`. Its implemented behavior is a pure map-setup
+selector with engine-native catalog and event-table admission boundaries. The catalog maps opaque map
+IDs to already parsed routes, rejects duplicate map IDs, and delegates every known route to the ordered
+route selector. Typed entity, zone, and item tables then select the first matching event record or their
+single required default without executing the opaque target. These boundaries consume the accepted
+behavior categories from:
 
 - `sf2-map-setup-static-v1`: default-before-flags, complete ordered scanning, overwrite-on-set,
   last-set-wins, missing-map result, and the bounded selection-case categories;
 - `sf2-map-setup-selection-runtime-v1`: the accepted selector observation boundary and bounded
-  case outcomes.
+  case outcomes;
+- `sf2-map-events-static-v1`: first-match/default entity, zone, and item selection shapes, wildcard
+  fields, event-flags transport, and item-index normalization;
+- `sf2-map-event-dispatch-runtime-v1`: the accepted nine-case event-selection observation boundary.
 
 Production code and ordinary unit tests do not load those fixture files. Tests use project-authored
-opaque IDs and synthetic routes. The selector does not contain original addresses, source symbols,
-pointer tables, the original route corpus, map content, ROM data, or private assets. Catalog IDs and
-entries are process-local Domain values, not a public content or save format.
+opaque IDs and synthetic routes and event tables. The selectors do not contain original sentinels,
+addresses, source symbols, pointer tables, the original route or event corpus, map content, ROM data,
+or private assets. Catalog IDs, event targets, and entries are process-local Domain values, not a public
+content or save format. How content loaders translate accepted source tables into these typed values is
+deferred to a later Application/Content boundary.
 
-Natural route reachability, actual flag values and lifetime, persistence, Map 3 admission,
-Battle 01 continuity, presentation, Godot integration, H4, and milestone acceptance remain Unknown or
-deferred at their existing owners.
+Natural route and event reachability, actual flag values and lifetime, event-target effects, inventory
+or story mutation, persistence, Map 3 admission, Battle 01 continuity, presentation, Godot integration,
+H4, and milestone acceptance remain Unknown or deferred at their existing owners.
 
 ## Toolchain and dependencies
 
