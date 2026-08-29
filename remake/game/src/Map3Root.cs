@@ -22,6 +22,7 @@ public sealed partial class Map3Root : Node2D
     private Label? _transitionStatus;
     private Label? _entityStatus;
     private Label? _entityInteractionStatus;
+    private Label? _dialogueStatus;
 
     public override void _Ready()
     {
@@ -97,6 +98,10 @@ public sealed partial class Map3Root : Node2D
         else if (Input.IsActionJustPressed("acknowledge_entity_interaction"))
         {
             ApplyEntityInteractionAcknowledgement();
+        }
+        else if (Input.IsActionJustPressed("advance_dialogue"))
+        {
+            ApplyDialogueAdvance();
         }
     }
 
@@ -294,13 +299,45 @@ public sealed partial class Map3Root : Node2D
                 interaction.CueSequence,
                 interaction.Entity,
                 interaction.Target));
-        if (result is GameSessionEntityInteractionAcknowledged)
+        if (result is GameSessionEntityInteractionAcknowledged acknowledged)
         {
-            ProjectSnapshot("Placeholder entity interaction acknowledged");
+            ProjectSnapshot(
+                $"Placeholder interaction acknowledged; dialogue {acknowledged.Dialogue.Dialogue} opened");
             return;
         }
 
         ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyDialogueAdvance()
+    {
+        if (_session?.Snapshot.Dialogue is not MapDialogueSnapshot
+            {
+                Status: MapDialogueStatus.Open,
+                CurrentLine: not null,
+            } dialogue)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new AdvanceDialogueCommand(
+                dialogue.Dialogue,
+                dialogue.CueSequence,
+                dialogue.CurrentLine.Line));
+        switch (result)
+        {
+            case GameSessionDialogueAdvanced advanced:
+                ProjectSnapshot(
+                    $"Placeholder dialogue advanced to line {advanced.Dialogue.CurrentLineIndex + 1}");
+                return;
+            case GameSessionDialogueClosed:
+                ProjectSnapshot("Placeholder dialogue closed");
+                return;
+            default:
+                ProjectRejection((GameSessionCommandRejected)result);
+                return;
+        }
     }
 
     private void ProjectRejection(GameSessionCommandRejected rejected)
@@ -321,7 +358,8 @@ public sealed partial class Map3Root : Node2D
             _effectStatus is null ||
             _transitionStatus is null ||
             _entityStatus is null ||
-            _entityInteractionStatus is null)
+            _entityInteractionStatus is null ||
+            _dialogueStatus is null)
         {
             return;
         }
@@ -333,7 +371,7 @@ public sealed partial class Map3Root : Node2D
             $"Tile ({snapshot.Exploration.PlayerPosition.X}, " +
             $"{snapshot.Exploration.PlayerPosition.Y})  " +
             $"Facing {snapshot.Facing}  Step {snapshot.SimulationStep}  {outcome}  |  " +
-            "WASD move / arrows turn / Enter / Z X / C V / F G";
+            "WASD move / arrows turn / Enter / Z X / C V / F G / H";
         _contextStatus.Text = snapshot.ContextSelection is null
             ? "Context not selected."
             : FormatContext(snapshot.ContextSelection);
@@ -350,6 +388,9 @@ public sealed partial class Map3Root : Node2D
         _entityInteractionStatus.Text = snapshot.EntityInteraction is null
             ? "Placeholder interaction: none."
             : FormatEntityInteraction(snapshot.EntityInteraction);
+        _dialogueStatus.Text = snapshot.Dialogue is null
+            ? "Placeholder dialogue: none."
+            : FormatDialogue(snapshot.Dialogue);
     }
 
     private void RunHeadlessSmoke()
@@ -520,13 +561,51 @@ public sealed partial class Map3Root : Node2D
             entityAcknowledged.Interaction.Status !=
                 MapEntityInteractionStatus.Acknowledged ||
             entityAcknowledged.Interaction.CueSequence != entityRequested.Cue.Sequence ||
-            entityAcknowledged.Snapshot.Exploration.PlayerPosition != new MapPosition(55, 4))
+            entityAcknowledged.Snapshot.Exploration.PlayerPosition != new MapPosition(55, 4) ||
+            entityAcknowledged.Dialogue.Status != MapDialogueStatus.Open ||
+            entityAcknowledged.Dialogue.CurrentLine?.Line.Value !=
+                "synthetic-map3-placeholder-guide-line-1" ||
+            entityAcknowledged.Cue.Text !=
+                "Hello from a project-authored placeholder.")
         {
-            FailStartup("The bounded placeholder entity interaction was not acknowledged.");
+            FailStartup("The bounded placeholder dialogue did not open from the acknowledged interaction.");
             return;
         }
 
-        ProjectSnapshot("Placeholder entity interaction acknowledged");
+        GameSessionDialogueAdvanced? dialogueAdvanced = _session.Apply(
+            new AdvanceDialogueCommand(
+                entityAcknowledged.Dialogue.Dialogue,
+                entityAcknowledged.Dialogue.CueSequence,
+                entityAcknowledged.Dialogue.CurrentLine!.Line)) as
+            GameSessionDialogueAdvanced;
+        if (dialogueAdvanced is null ||
+            dialogueAdvanced.Dialogue.Status != MapDialogueStatus.Open ||
+            dialogueAdvanced.Dialogue.CurrentLine?.Line.Value !=
+                "synthetic-map3-placeholder-guide-line-2" ||
+            dialogueAdvanced.Cue.Text !=
+                "This is synthetic text, not original game dialogue.")
+        {
+            FailStartup("The bounded placeholder dialogue did not advance to its second line.");
+            return;
+        }
+
+        GameSessionDialogueClosed? dialogueClosed = _session.Apply(
+            new AdvanceDialogueCommand(
+                dialogueAdvanced.Dialogue.Dialogue,
+                dialogueAdvanced.Dialogue.CueSequence,
+                dialogueAdvanced.Dialogue.CurrentLine!.Line)) as
+            GameSessionDialogueClosed;
+        if (dialogueClosed is null ||
+            dialogueClosed.Dialogue.Status != MapDialogueStatus.Closed ||
+            dialogueClosed.Dialogue.CurrentLine is not null ||
+            dialogueClosed.Cue.Cue.Value !=
+                "synthetic-map3-placeholder-guide-dialogue-closed")
+        {
+            FailStartup("The bounded placeholder dialogue did not close atomically.");
+            return;
+        }
+
+        ProjectSnapshot("Placeholder dialogue lifecycle closed");
         object receipt = new
         {
             status = "Pass",
@@ -584,7 +663,7 @@ public sealed partial class Map3Root : Node2D
 
         Label explanation = new()
         {
-            Text = "Project-authored selectors, cues, transitions, and placeholder entity interactions; targets are never interpreted.",
+            Text = "Project-authored selectors, transitions, entity interaction, and placeholder dialogue; targets are never interpreted.",
             Position = new Vector2(24, 55),
         };
         explanation.AddThemeFontSizeOverride("font_size", 16);
@@ -651,6 +730,15 @@ public sealed partial class Map3Root : Node2D
         };
         _entityInteractionStatus.AddThemeFontSizeOverride("font_size", 15);
         AddChild(_entityInteractionStatus);
+
+        _dialogueStatus = new Label
+        {
+            Text = "Placeholder dialogue: none.",
+            Position = new Vector2(24, 660),
+        };
+        _dialogueStatus.AddThemeFontSizeOverride("font_size", 15);
+        _dialogueStatus.AddThemeColorOverride("font_color", new Color("c6e5ff"));
+        AddChild(_dialogueStatus);
     }
 
     private static void RegisterInputMap()
@@ -670,6 +758,7 @@ public sealed partial class Map3Root : Node2D
         RegisterAction("turn_west", Key.Left);
         RegisterAction("request_entity_interaction", Key.F);
         RegisterAction("acknowledge_entity_interaction", Key.G);
+        RegisterAction("advance_dialogue", Key.H);
     }
 
     private static void RegisterAction(string action, Key physicalKey)
@@ -740,4 +829,12 @@ public sealed partial class Map3Root : Node2D
         $"Placeholder interaction {interaction.Request}: {interaction.Status}  " +
         $"Cue #{interaction.CueSequence}  Entity {interaction.Entity}  " +
         $"Target {interaction.Target} (uninterpreted)";
+
+    private static string FormatDialogue(MapDialogueSnapshot dialogue) =>
+        dialogue.Status == MapDialogueStatus.Open
+            ? $"Placeholder dialogue {dialogue.Dialogue}: line " +
+                $"{dialogue.CurrentLineIndex + 1}  {dialogue.CurrentLine!.Text}  " +
+                $"Cue #{dialogue.CueSequence}  [H advances]"
+            : $"Placeholder dialogue {dialogue.Dialogue}: closed  " +
+                $"Cue #{dialogue.CueSequence}";
 }

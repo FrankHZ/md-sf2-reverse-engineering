@@ -66,7 +66,18 @@ relocation clear stale acknowledged interaction state, while a pending acknowled
 other session command. Wrong and duplicate acknowledgements are zero-mutation, and a restart reconstructs
 the initial facing with no interaction state. Godot sends semantic turn/interact/acknowledge commands and
 projects only placeholder entity position, cue, target label, and lifecycle status. It does not interpret
-the target or claim original NPC identity, coordinates, facing, dialogue, story behavior, or reachability.
+the target or claim original NPC identity, coordinates, facing, story behavior, or reachability.
+
+The placeholder-dialogue vertical maps that one admitted interaction target to one unique synthetic
+dialogue with two stable line IDs, project-authored non-original line strings, distinct line cues, and
+one terminal close cue. The exact entity-interaction acknowledgement opens its first line atomically;
+Application then owns the current line/index and requires the exact dialogue/cue-sequence/current-line
+identity for each advance. The final advance closes the dialogue, wrong, stale, duplicate, and
+after-close commands are zero-mutation, and an open line excludes unrelated session commands. Movement,
+turning, context selection, and local relocation clear stale dialogue state, while restart begins with
+none. Godot sends only semantic acknowledge/advance commands and projects the typed snapshot plus these
+project-owned placeholder strings. It does not own sequencing or claim original dialogue IDs, speaker,
+text, timing, window, portrait, audio, story meaning, or natural reachability.
 
 The Domain's broader implemented behavior includes a pure map-setup selector with engine-native
 catalog and event-table admission boundaries. The catalog maps opaque map
@@ -100,6 +111,9 @@ The same raw-byte-locked package validates the synthetic initial semantic facing
 ID and occupied cell, explicit non-default interaction target, request and cue IDs, and closed
 entity-to-target cross-reference. Entity cells must be in bounds, non-passable, and disjoint from the
 admitted player and local-transition endpoint cells.
+It also validates a closed one-to-one interaction-target/dialogue mapping, one to three trimmed single-line
+placeholder strings of at most 120 characters, globally unique dialogue and line IDs, and globally unique
+line/close presentation cues that cannot collide with other admitted cues.
 General canonical/private import and original content remain deferred.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy

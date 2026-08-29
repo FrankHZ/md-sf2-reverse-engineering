@@ -17,7 +17,8 @@
     "public-synthetic-map3-event-request-lifecycle-v1",
     "public-synthetic-map3-state-effect-v1",
     "public-synthetic-map3-local-transition-v1",
-    "public-synthetic-map3-entity-interaction-v1"
+    "public-synthetic-map3-entity-interaction-v1",
+    "public-synthetic-map3-placeholder-dialogue-v1"
   ],
   "scenarioId": "map3-public-synthetic-smoke",
   "displayName": "Map 3 public-synthetic exploration smoke",
@@ -184,6 +185,26 @@
         "requestId": "synthetic-map3-placeholder-guide-request",
         "targetId": "synthetic-map3-placeholder-guide-target",
         "cueId": "synthetic-map3-placeholder-guide-cue"
+      }
+    ],
+    "dialogues": [
+      {
+        "kind": "specific",
+        "dialogueId": "synthetic-map3-placeholder-guide-dialogue",
+        "interactionTargetId": "synthetic-map3-placeholder-guide-target",
+        "lines": [
+          {
+            "lineId": "synthetic-map3-placeholder-guide-line-1",
+            "text": "Hello from a project-authored placeholder.",
+            "cueId": "synthetic-map3-placeholder-guide-line-1-presented"
+          },
+          {
+            "lineId": "synthetic-map3-placeholder-guide-line-2",
+            "text": "This is synthetic text, not original game dialogue.",
+            "cueId": "synthetic-map3-placeholder-guide-line-2-presented"
+          }
+        ],
+        "closeCueId": "synthetic-map3-placeholder-guide-dialogue-closed"
       }
     ]
   }
