@@ -1,0 +1,12 @@
+<Project Sdk="Godot.NET.Sdk/4.7.2">
+  <PropertyGroup>
+    <RootNamespace>Sf2.Remake.GodotAdapter</RootNamespace>
+    <AssemblyName>Sf2.Remake.Godot</AssemblyName>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\Sf2.Remake.Application\Sf2.Remake.Application.csproj" />
+    <ProjectReference Include="..\src\Sf2.Remake.Content\Sf2.Remake.Content.csproj" />
+    <ProjectReference Include="..\src\Sf2.Remake.Domain\Sf2.Remake.Domain.csproj" />
+  </ItemGroup>
+</Project>

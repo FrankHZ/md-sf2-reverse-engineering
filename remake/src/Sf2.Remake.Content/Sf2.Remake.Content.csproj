@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Sf2.Remake.Content</RootNamespace>
+    <AssemblyName>Sf2.Remake.Content</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sf2.Remake.Application\Sf2.Remake.Application.csproj" />
+    <ProjectReference Include="..\Sf2.Remake.Domain\Sf2.Remake.Domain.csproj" />
+  </ItemGroup>
+</Project>

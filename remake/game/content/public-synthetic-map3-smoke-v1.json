@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "packageId": "public-synthetic-map3-smoke-v1",
+  "profile": "public-synthetic",
+  "exactControlledAdmission": false,
+  "provenance": {
+    "kind": "project-authored-synthetic",
+    "source": "sf2-project-public-synthetic",
+    "redistributable": true
+  },
+  "evidenceOwnerIds": [
+    "sf2-map3-admitted-start-runtime-v1"
+  ],
+  "capabilities": [
+    "map3-synthetic-exploration-smoke"
+  ],
+  "scenarioId": "map3-public-synthetic-smoke",
+  "displayName": "Map 3 public-synthetic exploration smoke",
+  "admission": {
+    "currentMap": "map3",
+    "egressMap": "map3",
+    "logicalStartPosition": {
+      "x": 56,
+      "y": 3
+    },
+    "opaqueStartFacing": 3,
+    "setupIdentity": "ms_map3",
+    "initIdentity": "ms_map3_InitFunction",
+    "noProgramRequest": true,
+    "explorationReady": true
+  },
+  "layoutRecipe": {
+    "width": 64,
+    "height": 64,
+    "defaultWord": 0,
+    "cells": [
+      { "x": 54, "y": 1, "word": 1 },
+      { "x": 55, "y": 1, "word": 2 },
+      { "x": 56, "y": 1, "word": 1 },
+      { "x": 57, "y": 1, "word": 2 },
+      { "x": 58, "y": 1, "word": 1 },
+      { "x": 59, "y": 1, "word": 2 },
+      { "x": 54, "y": 2, "word": 2 },
+      { "x": 55, "y": 2, "word": 1 },
+      { "x": 56, "y": 2, "word": 2 },
+      { "x": 57, "y": 2, "word": 1 },
+      { "x": 58, "y": 2, "word": 2 },
+      { "x": 59, "y": 2, "word": 1 },
+      { "x": 54, "y": 3, "word": 1 },
+      { "x": 55, "y": 3, "word": 2 },
+      { "x": 56, "y": 3, "word": 1 },
+      { "x": 57, "y": 3, "word": 2 },
+      { "x": 58, "y": 3, "word": 1 },
+      { "x": 59, "y": 3, "word": 2 },
+      { "x": 54, "y": 4, "word": 2 },
+      { "x": 55, "y": 4, "word": 1 },
+      { "x": 56, "y": 4, "word": 2 },
+      { "x": 57, "y": 4, "word": 1 },
+      { "x": 58, "y": 4, "word": 2 },
+      { "x": 59, "y": 4, "word": 1 },
+      { "x": 54, "y": 5, "word": 1 },
+      { "x": 55, "y": 5, "word": 2 },
+      { "x": 56, "y": 5, "word": 1 },
+      { "x": 57, "y": 5, "word": 2 },
+      { "x": 58, "y": 5, "word": 1 },
+      { "x": 59, "y": 5, "word": 2 }
+    ]
+  },
+  "walkability": {
+    "width": 64,
+    "height": 64,
+    "defaultPassable": false,
+    "passableRectangles": [
+      { "x": 54, "y": 1, "width": 6, "height": 5 }
+    ],
+    "blockedCells": [
+      { "x": 56, "y": 2 }
+    ]
+  }
+}

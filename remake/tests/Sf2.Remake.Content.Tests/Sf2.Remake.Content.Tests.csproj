@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>Sf2.Remake.Content.Tests</RootNamespace>
+    <AssemblyName>Sf2.Remake.Content.Tests</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Sf2.Remake.Application\Sf2.Remake.Application.csproj" />
+    <ProjectReference Include="..\..\src\Sf2.Remake.Content\Sf2.Remake.Content.csproj" />
+    <ProjectReference Include="..\..\src\Sf2.Remake.Domain\Sf2.Remake.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\game\content\public-synthetic-map3-smoke-v1.json"
+          Link="content\public-synthetic-map3-smoke-v1.json"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
