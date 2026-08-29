@@ -41,6 +41,12 @@ part of the API. This reducer consumes the bounded copy chronology and seven-cas
 from `sf2-map-block-mutation-runtime-v1`, with command-shape provenance retained by
 `sf2-map-script-engine-static-v1`.
 
+The command-level block-mutation reducer composes that copy with an immutable logical two-channel view
+update state. `SetBlocks` requests channels 0 then 1 after a successful copy without clearing prior
+requests; `SetBlocksVar` performs the same copy without requesting either channel. Ordered update marks
+are compatibility output only: they do not claim render-queue acceptance, VDP/DMA work, or visible
+refresh completion. Invalid copies fail before any result exists, leaving all immutable inputs intact.
+
 Natural route, event, and area-description reachability; actual flag values and lifetime; target
 effects; decoded text; inventory or story mutation; persistence; Map 3 admission; Battle 01 continuity;
 presentation; Godot integration; H4; and milestone acceptance remain Unknown or deferred at their
