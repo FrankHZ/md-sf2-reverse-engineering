@@ -24,6 +24,9 @@ from sf2tool.h2.map_event_flag_lifecycle_state import (
     canonical_json_bytes,
     normalize_map_event_flag_lifecycle_state_later_owner_index,
 )
+from sf2tool.h2.map_event_flag_route_selection import (
+    _remove_map_event_flag_route_selection_later_owner_index_delta,
+)
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
@@ -409,7 +412,9 @@ def test_retained_owners_are_fresh_builds_and_hash_locked(
 
 def test_index_delta_is_exact_and_rejects_stale_or_extra_associations() -> None:
     current = load_json(INDEX)
-    lifecycle_current = _remove_map_event_cross_program_flag_state_later_owner_index_delta(current)
+    lifecycle_current = _remove_map_event_cross_program_flag_state_later_owner_index_delta(
+        _remove_map_event_flag_route_selection_later_owner_index_delta(current)
+    )
     predecessor = _remove_map_event_flag_lifecycle_state_later_owner_index_delta(lifecycle_current)
     assert lifecycle_module._sha(canonical_json_bytes(predecessor)) == _PREDECESSOR_INDEX_SHA256
     current_by_id = {row["id"]: row for row in lifecycle_current["records"]}

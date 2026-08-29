@@ -159,6 +159,20 @@ cross, and nine are cross-only. It is H2-only: reachability, entry state, branch
 producer/consumer order, intervening mutations, selection, persistence, callee effects, and
 dialogue/audio/presentation/story meaning remain one twelve-question **Unknown** queue.
 
+The `sf2-map-event-flag-route-selection-static-v1` rail retains that accepted candidate corpus and
+the accepted routing-setup/map-setup owners without re-owning their algorithms or goldens. Its
+192 source identities comprise the retained 91 cross-program identities, 96 matching event-record
+owner files (88 already retained and eight additional), 91 pointer-table owners,
+`data/maps/mapsetups.asm`, and `sf2mapsetupmacros.asm`. It source/H1/ROM guards the retained
+804 PCs/2,592 bytes plus 284 matching event records/1,150 bytes, 139 category-pointer entries/556
+bytes, and 94 `msMap`/`msFlag` rows/564 bytes: 1,321 distinct physical anchors/4,862 bytes with no
+cohort overlap. All 720 candidates divide by deterministic precedence into 20 same-event-table, 54
+same-selected-setup/different-event-table, 11 same-map/different-selector, and 635 cross-map-only
+rows. The 51 route maps, 91 selected pointer tables, 96 event tables, 195 program route contexts,
+and fifteen writer-to-`msFlag` selector relations are structural joins only. Natural selection,
+runtime flags and branch outcomes, execution/order, persistence, service effects, and story/presentation
+meaning remain the 14-key **Unknown** queue; this adds no H3 rail.
+
 ## Subsystem Boundary
 
 The current evidence is deep but narrow:

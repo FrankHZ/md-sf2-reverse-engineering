@@ -271,6 +271,10 @@ Data-side directory inventory and ROM parity:
   complete static direct-flag writer-to-distinct-reader program candidate corpus, including the
   retained same-program lifecycle join, immediate read consumers, contextual/physical anchor
   accounting, category-pair totals, and grouped runtime Unknowns.
+- [`map-event-flag-route-selection.md`](./research/map-event-flag-route-selection.md): the static
+  program-to-record, record-to-category-pointer, and pointer-to-map-selector topology for the
+  retained cross-program candidates, including precedence-classified route relationships and
+  grouped runtime Unknowns without evaluating selectors or asserting execution.
 - [`map-event-interaction-state.md`](./research/map-event-interaction-state.md): the bounded
   cross-owner source/H1/ROM state-flow relation for `EVENT_RELATIVE_POSITION` and `ENTITY_FACING`,
   including the two `d2` writers, eight reads, six predicates, S07 alias targets, and grouped runtime

@@ -19,6 +19,9 @@ from sf2tool.h2.map_event_direct_state import (
 from sf2tool.h2.map_event_flag_lifecycle_state import (
     _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
 )
+from sf2tool.h2.map_event_flag_route_selection import (
+    _remove_map_event_flag_route_selection_later_owner_index_delta,
+)
 from sf2tool.h2.map_event_scripted_transition_state import (
     _remove_map_event_scripted_transition_state_later_owner_index_delta,
 )
@@ -32,7 +35,9 @@ from sf2tool.jsonio import validate_json
 
 def _remove_cross_program_flag_lifecycle_deltas(index):
     return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
-        _remove_map_event_cross_program_flag_state_later_owner_index_delta(index)
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(
+            _remove_map_event_flag_route_selection_later_owner_index_delta(index)
+        )
     )
 
 
