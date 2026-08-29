@@ -13,7 +13,8 @@ public sealed class MapScenarioContextDefinition
         MapSetupId voidSetup,
         IEnumerable<FlagId> setFlags,
         MapAreaDescriptionSource areaDescriptions,
-        MapSetupEventTable<ZoneEventRecord> zoneEvents)
+        MapSetupEventTable<ZoneEventRecord> zoneEvents,
+        MapEventRequestCatalog eventRequests)
     {
         SetupCatalog = setupCatalog ?? throw new ArgumentNullException(nameof(setupCatalog));
         VoidSetup = voidSetup ?? throw new ArgumentNullException(nameof(voidSetup));
@@ -21,6 +22,7 @@ public sealed class MapScenarioContextDefinition
         AreaDescriptions = areaDescriptions ??
             throw new ArgumentNullException(nameof(areaDescriptions));
         ZoneEvents = zoneEvents ?? throw new ArgumentNullException(nameof(zoneEvents));
+        EventRequests = eventRequests ?? throw new ArgumentNullException(nameof(eventRequests));
 
         List<FlagId> copiedFlags = [];
         _setFlagLookup = [];
@@ -40,6 +42,25 @@ public sealed class MapScenarioContextDefinition
         }
 
         _setFlags = copiedFlags.AsReadOnly();
+
+        HashSet<EventTargetId> specificTargets = ZoneEvents.Records
+            .Where(record => !record.IsDefault)
+            .Select(record => record.Target)
+            .ToHashSet();
+        HashSet<EventTargetId> defaultTargets = ZoneEvents.Records
+            .Where(record => record.IsDefault)
+            .Select(record => record.Target)
+            .ToHashSet();
+        foreach (MapEventRequestDefinition definition in EventRequests.Definitions)
+        {
+            if (!specificTargets.Contains(definition.ZoneTarget) ||
+                defaultTargets.Contains(definition.ZoneTarget))
+            {
+                throw new ArgumentException(
+                    $"Event request '{definition.Request}' must reference one non-default zone target.",
+                    nameof(eventRequests));
+            }
+        }
     }
 
     public MapSetupCatalog SetupCatalog { get; }
@@ -51,6 +72,8 @@ public sealed class MapScenarioContextDefinition
     public MapAreaDescriptionSource AreaDescriptions { get; }
 
     public MapSetupEventTable<ZoneEventRecord> ZoneEvents { get; }
+
+    public MapEventRequestCatalog EventRequests { get; }
 
     public bool IsFlagSet(FlagId flag)
     {

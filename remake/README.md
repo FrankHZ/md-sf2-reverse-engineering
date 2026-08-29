@@ -10,7 +10,8 @@ The bounded `public-synthetic-map3-smoke-v1` vertical now composes the productio
 and Content assemblies through a thin Godot adapter. It admits only the exact tracked project-authored
 synthetic package, starts an Application `GameSession` in Map 3 exploration, applies one logical move,
 selects one bounded setup, area-description result, and opaque zone-event target through the accepted
-Domain selectors, and projects the resulting immutable snapshot in Godot with a persistent
+Domain selectors, admits a typed Application-owned request/cue for that selected synthetic target,
+requires an exact acknowledgement, and projects the resulting immutable snapshot in Godot with a persistent
 `PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY` label. The official Godot 4.7.2 .NET CLI gate performs a
 hash-locked import, headless source run, export, and headless exported-build run using only tracked
 redistribution-safe inputs.
@@ -21,6 +22,14 @@ bounded synthetic flag set, area-description source, and zone-event table. The r
 contains only the selected logical setup, logical text indexes or opaque function identity, and opaque
 zone target. Godot displays those values but does not execute a function or event target; moving clears
 the position-specific selection so stale adapter state cannot become gameplay state.
+
+The request vertical adds `RequestSelectedZoneEventCommand` and
+`AcknowledgeMapEventRequestCommand`. Application admits only package-declared request-to-specific-zone
+cross-references, owns the pending/acknowledged snapshot and monotonic cue sequence, and rejects other
+session commands while an acknowledgement is pending. Godot sends semantic commands and projects the
+result; it neither interprets the opaque target nor decides whether an acknowledgement is valid. This
+synthetic presentation request is not the original game's guarded `PROGRAM_REQUEST`; the admitted-start
+fact `NoProgramRequest` remains unchanged and no original program effect is claimed.
 
 The Domain's broader implemented behavior includes a pure map-setup selector with engine-native
 catalog and event-table admission boundaries. The catalog maps opaque map
@@ -47,7 +56,8 @@ original sentinels, addresses, relative offsets, source symbols, pointer tables,
 event corpus, map content, decoded text, ROM data, or private assets. Catalog IDs, event targets,
 function targets, and entries are process-local Domain values, not a public content or save format.
 The current Content adapter translates only the exact digest-locked project-authored synthetic package
-into those typed values. General canonical/private import and original content remain deferred.
+into those typed values and validates its event-request IDs, cue IDs, and specific-zone cross-references.
+General canonical/private import and original content remain deferred.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy
 reducer. The reducer clones the input, then performs forward word-by-word reads and writes on that clone,
