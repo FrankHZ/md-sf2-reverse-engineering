@@ -15,6 +15,7 @@ import pytest
 from sf2tool.remake_godot import (
     ArtifactSpec,
     ProcessReceipt,
+    _gate_environment,
     _parse_smoke_receipt,
     _require_clean_export_output,
     _scan_export,
@@ -86,6 +87,15 @@ def test_tracked_toolchain_manifest_locks_official_godot_dotnet_release() -> Non
         "templates/windows_release_x86_64.exe",
         "templates/windows_release_x86_64_console.exe",
     )
+
+
+def test_gate_environment_disables_persistent_dotnet_build_servers(tmp_path: Path) -> None:
+    environment = _gate_environment(tmp_path)
+
+    assert environment["DOTNET_CLI_USE_MSBUILD_SERVER"] == "false"
+    assert environment["MSBUILDUSESERVER"] == "0"
+    assert environment["MSBUILDDISABLENODEREUSE"] == "1"
+    assert environment["UseSharedCompilation"] == "false"
 
 
 def test_artifact_verification_is_exact_for_size_and_sha256(tmp_path: Path) -> None:
