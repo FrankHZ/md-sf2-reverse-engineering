@@ -18,7 +18,8 @@ public sealed class MapScenarioContextDefinition
         MapEventEffectCatalog eventEffects,
         MapLocalTransitionCatalog localTransitions,
         SemanticFacing initialFacing,
-        MapEntityInteractionCatalog entityInteractions)
+        MapEntityInteractionCatalog entityInteractions,
+        MapDialogueCatalog dialogues)
     {
         SetupCatalog = setupCatalog ?? throw new ArgumentNullException(nameof(setupCatalog));
         VoidSetup = voidSetup ?? throw new ArgumentNullException(nameof(voidSetup));
@@ -38,6 +39,7 @@ public sealed class MapScenarioContextDefinition
         InitialFacing = initialFacing;
         EntityInteractions = entityInteractions ??
             throw new ArgumentNullException(nameof(entityInteractions));
+        Dialogues = dialogues ?? throw new ArgumentNullException(nameof(dialogues));
 
         List<FlagId> copiedFlags = [];
         _initialSetFlagLookup = [];
@@ -204,6 +206,39 @@ public sealed class MapScenarioContextDefinition
                     nameof(entityInteractions));
             }
         }
+
+        HashSet<MapEntityInteractionTargetId> interactionTargets = EntityInteractions.Interactions
+            .Select(definition => definition.Target)
+            .ToHashSet();
+        HashSet<MapEntityInteractionTargetId> dialogueTargets = Dialogues.Definitions
+            .Select(definition => definition.InteractionTarget)
+            .ToHashSet();
+        if (!interactionTargets.SetEquals(dialogueTargets))
+        {
+            throw new ArgumentException(
+                "Every admitted entity-interaction target requires one exact dialogue definition, with no dangling dialogues.",
+                nameof(dialogues));
+        }
+
+        HashSet<PresentationCueId> occupiedCueIds = requestCueIds
+            .Concat(effectCueIds)
+            .Concat(transitionCueIds)
+            .Concat(EntityInteractions.Interactions.Select(definition => definition.Cue))
+            .ToHashSet();
+        foreach (MapDialogueDefinition dialogue in Dialogues.Definitions)
+        {
+            foreach (PresentationCueId cue in dialogue.Lines
+                         .Select(line => line.Cue)
+                         .Append(dialogue.CloseCue))
+            {
+                if (!occupiedCueIds.Add(cue))
+                {
+                    throw new ArgumentException(
+                        $"Dialogue '{dialogue.Dialogue}' cannot reuse another presentation cue ID.",
+                        nameof(dialogues));
+                }
+            }
+        }
     }
 
     public MapSetupCatalog SetupCatalog { get; }
@@ -225,6 +260,8 @@ public sealed class MapScenarioContextDefinition
     public SemanticFacing InitialFacing { get; }
 
     public MapEntityInteractionCatalog EntityInteractions { get; }
+
+    public MapDialogueCatalog Dialogues { get; }
 
     public bool IsInitiallySet(FlagId flag)
     {

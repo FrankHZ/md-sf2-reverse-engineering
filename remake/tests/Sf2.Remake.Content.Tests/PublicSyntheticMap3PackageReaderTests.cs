@@ -39,6 +39,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 PublicSyntheticMap3PackageReader.StateEffectCapability,
                 PublicSyntheticMap3PackageReader.LocalTransitionCapability,
                 PublicSyntheticMap3PackageReader.EntityInteractionCapability,
+                PublicSyntheticMap3PackageReader.DialogueCapability,
             ],
             accepted.Receipt.Capabilities);
         string trackedDigest = Convert.ToHexString(
@@ -77,6 +78,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         MapEntityDefinition entity = Assert.Single(context.EntityInteractions.Entities);
         MapEntityInteractionDefinition interaction = Assert.Single(
             context.EntityInteractions.Interactions);
+        MapDialogueDefinition dialogue = Assert.Single(context.Dialogues.Definitions);
 
         Assert.Equal("ms_map3", setup.Value);
         Assert.Equal(AreaDescriptionSelectionKind.Text, area.Kind);
@@ -117,6 +119,32 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         Assert.Equal("synthetic-map3-placeholder-guide-cue", interaction.Cue.Value);
         Assert.Same(entity, context.EntityInteractions.FindEntityAt(entity.Map, entity.Position));
         Assert.Same(interaction, context.EntityInteractions.FindByTarget(entity.InteractionTarget));
+        Assert.Equal("synthetic-map3-placeholder-guide-dialogue", dialogue.Dialogue.Value);
+        Assert.Equal(entity.InteractionTarget, dialogue.InteractionTarget);
+        Assert.Collection(
+            dialogue.Lines,
+            line =>
+            {
+                Assert.Equal("synthetic-map3-placeholder-guide-line-1", line.Line.Value);
+                Assert.Equal("Hello from a project-authored placeholder.", line.Text);
+                Assert.Equal(
+                    "synthetic-map3-placeholder-guide-line-1-presented",
+                    line.Cue.Value);
+            },
+            line =>
+            {
+                Assert.Equal("synthetic-map3-placeholder-guide-line-2", line.Line.Value);
+                Assert.Equal(
+                    "This is synthetic text, not original game dialogue.",
+                    line.Text);
+                Assert.Equal(
+                    "synthetic-map3-placeholder-guide-line-2-presented",
+                    line.Cue.Value);
+            });
+        Assert.Equal(
+            "synthetic-map3-placeholder-guide-dialogue-closed",
+            dialogue.CloseCue.Value);
+        Assert.Same(dialogue, context.Dialogues.FindByTarget(entity.InteractionTarget));
     }
 
     [Fact]
@@ -285,6 +313,36 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         "\"targetId\": \"synthetic-map3-placeholder-guide-target\"",
         "\"targetId\": \"missing-target\"")]
     public void EntityIdentityPoseOrCrossReferenceByteMutationFailsDigestAdmission(
+        string oldValue,
+        string newValue)
+    {
+        AssertDigestMismatch(
+            original => original.Replace(oldValue, newValue, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(
+        "\"kind\": \"specific\",\n        \"dialogueId\"",
+        "\"kind\": \"default\",\n        \"dialogueId\"")]
+    [InlineData(
+        "\"dialogueId\": \"synthetic-map3-placeholder-guide-dialogue\"",
+        "\"dialogueId\": \"default\"")]
+    [InlineData(
+        "\"interactionTargetId\": \"synthetic-map3-placeholder-guide-target\"",
+        "\"interactionTargetId\": \"missing-target\"")]
+    [InlineData(
+        "\"lineId\": \"synthetic-map3-placeholder-guide-line-2\"",
+        "\"lineId\": \"synthetic-map3-placeholder-guide-line-1\"")]
+    [InlineData(
+        "\"text\": \"Hello from a project-authored placeholder.\"",
+        "\"text\": \"\"")]
+    [InlineData(
+        "\"cueId\": \"synthetic-map3-placeholder-guide-line-2-presented\"",
+        "\"cueId\": \"synthetic-map3-placeholder-guide-line-1-presented\"")]
+    [InlineData(
+        "\"closeCueId\": \"synthetic-map3-placeholder-guide-dialogue-closed\"",
+        "\"closeCueId\": \"synthetic-map3-placeholder-guide-cue\"")]
+    public void DialogueIdentityTextCueOrCrossReferenceByteMutationFailsDigestAdmission(
         string oldValue,
         string newValue)
     {

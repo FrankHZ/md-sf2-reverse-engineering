@@ -540,7 +540,13 @@ public sealed class GameSessionTests
         Assert.Equal(MapEntityInteractionStatus.Acknowledged, acknowledged.Interaction.Status);
         Assert.Equal(2, acknowledged.Interaction.AcknowledgedAtStep);
         Assert.Equal(2, acknowledged.Snapshot.SimulationStep);
-        Assert.Equal(1, acknowledged.Snapshot.LastCueSequence);
+        Assert.Equal(2, acknowledged.Snapshot.LastCueSequence);
+        Assert.Equal(MapDialogueStatus.Open, acknowledged.Dialogue.Status);
+        Assert.Equal("placeholder-dialogue", acknowledged.Dialogue.Dialogue.Value);
+        Assert.Equal("placeholder-line-1", acknowledged.Dialogue.CurrentLine?.Line.Value);
+        Assert.Equal("Project-authored placeholder one.", acknowledged.Cue.Text);
+        Assert.Equal(MapDialogueCueKind.LinePresented, acknowledged.Cue.Kind);
+        Assert.Equal(2, acknowledged.Cue.Sequence);
 
         GameSessionCommandRejected duplicate = Assert.IsType<GameSessionCommandRejected>(
             started.Session.Apply(
@@ -550,7 +556,7 @@ public sealed class GameSessionTests
                     requested.Interaction.Entity,
                     requested.Interaction.Target)));
         Assert.Equal(
-            GameSessionCommandFailureCode.NoPendingAcknowledgement,
+            GameSessionCommandFailureCode.PendingAcknowledgement,
             duplicate.Diagnostic.Code);
         Assert.Same(acknowledged.Snapshot, started.Session.Snapshot);
     }
@@ -563,18 +569,21 @@ public sealed class GameSessionTests
         GameSessionEntityInteractionRequested request =
             Assert.IsType<GameSessionEntityInteractionRequested>(
                 first.Session.Apply(new RequestEntityInteractionCommand()));
-        Assert.IsType<GameSessionEntityInteractionAcknowledged>(
+        GameSessionEntityInteractionAcknowledged acknowledged =
+            Assert.IsType<GameSessionEntityInteractionAcknowledged>(
             first.Session.Apply(
                 new AcknowledgeEntityInteractionCommand(
                     request.Interaction.Request,
                     request.Cue.Sequence,
                     request.Interaction.Entity,
                     request.Interaction.Target)));
+        CloseDialogue(first.Session, acknowledged.Dialogue);
 
         GameSessionCommandApplied moved = Assert.IsType<GameSessionCommandApplied>(
             first.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
         Assert.Equal(SemanticFacing.East, moved.Snapshot.Facing);
         Assert.Null(moved.Snapshot.EntityInteraction);
+        Assert.Null(moved.Snapshot.Dialogue);
 
         GameSessionFacingChanged turned = Assert.IsType<GameSessionFacingChanged>(
             first.Session.Apply(new TurnExplorationCommand(SemanticFacing.North)));
@@ -599,17 +608,174 @@ public sealed class GameSessionTests
         GameSessionEntityInteractionRequested restartedRequest =
             Assert.IsType<GameSessionEntityInteractionRequested>(
                 restarted.Session.Apply(new RequestEntityInteractionCommand()));
-        Assert.IsType<GameSessionEntityInteractionAcknowledged>(
+        GameSessionEntityInteractionAcknowledged restartedAcknowledged =
+            Assert.IsType<GameSessionEntityInteractionAcknowledged>(
             restarted.Session.Apply(
                 new AcknowledgeEntityInteractionCommand(
                     restartedRequest.Interaction.Request,
                     restartedRequest.Cue.Sequence,
                     restartedRequest.Interaction.Entity,
                     restartedRequest.Interaction.Target)));
+        CloseDialogue(restarted.Session, restartedAcknowledged.Dialogue);
         GameSessionContextSelected selected = Assert.IsType<GameSessionContextSelected>(
             restarted.Session.Apply(
                 new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
         Assert.Null(selected.Snapshot.EntityInteraction);
+        Assert.Null(selected.Snapshot.Dialogue);
+    }
+
+    [Fact]
+    public void DialogueRequiresExactIdentityAndAdvancesToTerminalCloseExactlyOnce()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        GameSessionEntityInteractionRequested requested =
+            Assert.IsType<GameSessionEntityInteractionRequested>(
+                started.Session.Apply(new RequestEntityInteractionCommand()));
+        GameSessionEntityInteractionAcknowledged acknowledged =
+            Assert.IsType<GameSessionEntityInteractionAcknowledged>(
+                started.Session.Apply(
+                    new AcknowledgeEntityInteractionCommand(
+                        requested.Interaction.Request,
+                        requested.Cue.Sequence,
+                        requested.Interaction.Entity,
+                        requested.Interaction.Target)));
+        GameSessionSnapshot opened = acknowledged.Snapshot;
+
+        GameSessionCommandRejected blockedMove = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.PendingAcknowledgement,
+            blockedMove.Diagnostic.Code);
+        Assert.Same(opened, started.Session.Snapshot);
+
+        AdvanceDialogueCommand[] wrongCommands =
+        [
+            new(
+                new MapDialogueId("wrong-dialogue"),
+                acknowledged.Dialogue.CueSequence,
+                acknowledged.Dialogue.CurrentLine!.Line),
+            new(
+                acknowledged.Dialogue.Dialogue,
+                acknowledged.Dialogue.CueSequence + 1,
+                acknowledged.Dialogue.CurrentLine!.Line),
+            new(
+                acknowledged.Dialogue.Dialogue,
+                acknowledged.Dialogue.CueSequence,
+                new MapDialogueLineId("wrong-line")),
+        ];
+        foreach (AdvanceDialogueCommand command in wrongCommands)
+        {
+            GameSessionCommandRejected rejected = Assert.IsType<GameSessionCommandRejected>(
+                started.Session.Apply(command));
+            Assert.Equal(
+                GameSessionCommandFailureCode.DialogueIdentityMismatch,
+                rejected.Diagnostic.Code);
+            Assert.Same(opened, started.Session.Snapshot);
+        }
+
+        GameSessionDialogueAdvanced advanced = Assert.IsType<GameSessionDialogueAdvanced>(
+            started.Session.Apply(
+                new AdvanceDialogueCommand(
+                    acknowledged.Dialogue.Dialogue,
+                    acknowledged.Dialogue.CueSequence,
+                    acknowledged.Dialogue.CurrentLine!.Line)));
+        Assert.Equal(MapDialogueStatus.Open, advanced.Dialogue.Status);
+        Assert.Equal(1, advanced.Dialogue.CurrentLineIndex);
+        Assert.Equal("placeholder-line-2", advanced.Dialogue.CurrentLine?.Line.Value);
+        Assert.Equal("Project-authored placeholder two.", advanced.Cue.Text);
+        Assert.Equal(3, advanced.Cue.Sequence);
+
+        GameSessionCommandRejected stale = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(
+                new AdvanceDialogueCommand(
+                    acknowledged.Dialogue.Dialogue,
+                    acknowledged.Dialogue.CueSequence,
+                    acknowledged.Dialogue.CurrentLine!.Line)));
+        Assert.Equal(GameSessionCommandFailureCode.DialogueIdentityMismatch, stale.Diagnostic.Code);
+        Assert.Same(advanced.Snapshot, started.Session.Snapshot);
+
+        GameSessionDialogueClosed closed = Assert.IsType<GameSessionDialogueClosed>(
+            started.Session.Apply(
+                new AdvanceDialogueCommand(
+                    advanced.Dialogue.Dialogue,
+                    advanced.Dialogue.CueSequence,
+                    advanced.Dialogue.CurrentLine!.Line)));
+        Assert.Equal(MapDialogueStatus.Closed, closed.Dialogue.Status);
+        Assert.Equal(2, closed.Dialogue.CurrentLineIndex);
+        Assert.Null(closed.Dialogue.CurrentLine);
+        Assert.Equal("placeholder-dialogue-closed", closed.Cue.Cue.Value);
+        Assert.Equal(MapDialogueCueKind.Closed, closed.Cue.Kind);
+        Assert.False(closed.Cue.RequiresAcknowledgement);
+        Assert.Equal(4, closed.Cue.Sequence);
+
+        GameSessionCommandRejected afterClose = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(
+                new AdvanceDialogueCommand(
+                    closed.Dialogue.Dialogue,
+                    closed.Dialogue.CueSequence,
+                    new MapDialogueLineId("placeholder-line-2"))));
+        Assert.Equal(GameSessionCommandFailureCode.DialogueNotOpen, afterClose.Diagnostic.Code);
+        Assert.Same(closed.Snapshot, started.Session.Snapshot);
+    }
+
+    [Fact]
+    public void DialogueDefinitionsAreClosedAndSessionRestartIsIsolated()
+    {
+        MapDialogueLineDefinition line = DialogueLine("line-1", "Synthetic line.", "line-cue-1");
+        MapDialogueDefinition first = DialogueDefinition(
+            dialogue: "dialogue-1",
+            closeCue: "close-cue-1",
+            lines: [line]);
+
+        Assert.Throws<ArgumentException>(() => DialogueLine("line", "", "cue"));
+        Assert.Throws<ArgumentException>(() => DialogueLine("line", " padded ", "cue"));
+        Assert.Throws<ArgumentException>(() => DialogueLine("line", "first\nsecond", "cue"));
+        Assert.Throws<ArgumentException>(() => DialogueLine(
+            "line",
+            new string('x', MapDialogueLineDefinition.MaximumTextLength + 1),
+            "cue"));
+        Assert.Throws<ArgumentException>(() => DialogueDefinition(lines: []));
+        Assert.Throws<ArgumentException>(() => DialogueDefinition(lines: [line, line]));
+        Assert.Throws<ArgumentException>(() => DialogueDefinition(
+            closeCue: "line-cue-1",
+            lines: [line]));
+        Assert.Throws<ArgumentException>(() => new MapDialogueCatalog(
+            [first, DialogueDefinition(dialogue: "dialogue-1", target: "target-2")]));
+        Assert.Throws<ArgumentException>(() => new MapDialogueCatalog(
+            [first, DialogueDefinition(dialogue: "dialogue-2", target: "placeholder-target")]));
+        Assert.Throws<ArgumentException>(() => new MapDialogueCatalog(
+            [first, DialogueDefinition(
+                dialogue: "dialogue-2",
+                target: "target-2",
+                closeCue: "close-cue-2",
+                lines: [DialogueLine("line-1", "Other.", "line-cue-2")])]));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            dialogues: new MapDialogueCatalog(
+                [DialogueDefinition(target: "dangling-target")])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            dialogues: new MapDialogueCatalog(
+                [DialogueDefinition(closeCue: "placeholder-cue")])));
+
+        GameSessionStarted firstSession = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        GameSessionEntityInteractionRequested requested =
+            Assert.IsType<GameSessionEntityInteractionRequested>(
+                firstSession.Session.Apply(new RequestEntityInteractionCommand()));
+        Assert.IsType<GameSessionEntityInteractionAcknowledged>(
+            firstSession.Session.Apply(
+                new AcknowledgeEntityInteractionCommand(
+                    requested.Interaction.Request,
+                    requested.Cue.Sequence,
+                    requested.Interaction.Entity,
+                    requested.Interaction.Target)));
+        GameSessionStarted restarted = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        Assert.Null(restarted.Session.Snapshot.Dialogue);
+        Assert.Equal(0, restarted.Session.Snapshot.SimulationStep);
+        Assert.Equal(0, restarted.Session.Snapshot.LastCueSequence);
     }
 
     [Fact]
@@ -849,7 +1015,8 @@ public sealed class GameSessionTests
 
     private static IMapScenarioSource CreateAcceptedSource(
         MapLocalTransitionCatalog? localTransitions = null,
-        MapEntityInteractionCatalog? entityInteractions = null)
+        MapEntityInteractionCatalog? entityInteractions = null,
+        MapDialogueCatalog? dialogues = null)
     {
         MapId map = new("map3");
         MapPosition start = new(1, 1);
@@ -882,7 +1049,8 @@ public sealed class GameSessionTests
             CreateMapContext(
                 map,
                 localTransitions: localTransitions,
-                entityInteractions: entityInteractions));
+                entityInteractions: entityInteractions,
+                dialogues: dialogues));
         ScenarioAdmissionReceipt receipt = new(
             "synthetic-package",
             schemaVersion: 1,
@@ -915,7 +1083,8 @@ public sealed class GameSessionTests
         IEnumerable<FlagId>? initialSetFlags = null,
         bool includeEffect = true,
         MapLocalTransitionCatalog? localTransitions = null,
-        MapEntityInteractionCatalog? entityInteractions = null)
+        MapEntityInteractionCatalog? entityInteractions = null,
+        MapDialogueCatalog? dialogues = null)
     {
         MapSetupCatalog setupCatalog = new(
             [
@@ -974,7 +1143,8 @@ public sealed class GameSessionTests
             SemanticFacing.North,
             entityInteractions ?? new MapEntityInteractionCatalog(
                 [EntityDefinition()],
-                [InteractionDefinition()]));
+                [InteractionDefinition()]),
+            dialogues ?? new MapDialogueCatalog([DialogueDefinition()]));
     }
 
     private static MapEventRequestDefinition RequestDefinition(
@@ -1040,6 +1210,54 @@ public sealed class GameSessionTests
             new MapEntityInteractionRequestId(request),
             new MapEntityInteractionTargetId(target),
             new PresentationCueId(cue));
+
+    private static MapDialogueDefinition DialogueDefinition(
+        string dialogue = "placeholder-dialogue",
+        string target = "placeholder-target",
+        string closeCue = "placeholder-dialogue-closed",
+        IEnumerable<MapDialogueLineDefinition>? lines = null) =>
+        new(
+            new MapDialogueId(dialogue),
+            new MapEntityInteractionTargetId(target),
+            lines ??
+            [
+                DialogueLine("placeholder-line-1", "Project-authored placeholder one.", "placeholder-line-1-presented"),
+                DialogueLine("placeholder-line-2", "Project-authored placeholder two.", "placeholder-line-2-presented"),
+            ],
+            new PresentationCueId(closeCue));
+
+    private static MapDialogueLineDefinition DialogueLine(
+        string line,
+        string text,
+        string cue) =>
+        new(
+            new MapDialogueLineId(line),
+            text,
+            new PresentationCueId(cue));
+
+    private static MapDialogueSnapshot CloseDialogue(
+        GameSession session,
+        MapDialogueSnapshot opened)
+    {
+        MapDialogueSnapshot current = opened;
+        while (current.Status == MapDialogueStatus.Open)
+        {
+            GameSessionCommandResult result = session.Apply(
+                new AdvanceDialogueCommand(
+                    current.Dialogue,
+                    current.CueSequence,
+                    current.CurrentLine!.Line));
+            current = result switch
+            {
+                GameSessionDialogueAdvanced advanced => advanced.Dialogue,
+                GameSessionDialogueClosed closed => closed.Dialogue,
+                _ => throw new InvalidOperationException(
+                    "The admitted test dialogue did not advance deterministically."),
+            };
+        }
+
+        return current;
+    }
 
     private sealed record UnknownCommand : IGameSessionCommand;
 

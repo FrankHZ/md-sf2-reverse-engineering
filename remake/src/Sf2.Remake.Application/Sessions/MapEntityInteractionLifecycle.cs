@@ -227,11 +227,19 @@ public sealed record GameSessionEntityInteractionRequested(
 
 public sealed record GameSessionEntityInteractionAcknowledged(
     GameSessionSnapshot Snapshot,
-    MapEntityInteractionSnapshot Interaction) : GameSessionCommandResult
+    MapEntityInteractionSnapshot Interaction,
+    MapDialogueSnapshot Dialogue,
+    MapDialogueCue Cue) : GameSessionCommandResult
 {
     public GameSessionSnapshot Snapshot { get; } =
         Snapshot ?? throw new ArgumentNullException(nameof(Snapshot));
 
     public MapEntityInteractionSnapshot Interaction { get; } =
         Interaction ?? throw new ArgumentNullException(nameof(Interaction));
+
+    public MapDialogueSnapshot Dialogue { get; } =
+        Dialogue ?? throw new ArgumentNullException(nameof(Dialogue));
+
+    public MapDialogueCue Cue { get; } =
+        Cue ?? throw new ArgumentNullException(nameof(Cue));
 }

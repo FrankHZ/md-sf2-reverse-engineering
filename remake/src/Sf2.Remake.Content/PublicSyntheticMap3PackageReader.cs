@@ -19,9 +19,11 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         "public-synthetic-map3-local-transition-v1";
     public const string EntityInteractionCapability =
         "public-synthetic-map3-entity-interaction-v1";
+    public const string DialogueCapability =
+        "public-synthetic-map3-placeholder-dialogue-v1";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
     public const string ExpectedContentDigest =
-        "bf1c900e8658709738510ca483e41027e7e465378d67214ed99f62bcad6307bd";
+        "a3c1c6fd928d723fb9543d565732f6845401d4b0ddab8228a731ab2c73703045";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -228,6 +230,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     StateEffectCapability,
                     LocalTransitionCapability,
                     EntityInteractionCapability,
+                    DialogueCapability,
                 ],
                 StringComparer.Ordinal) ||
             !document.EvidenceOwnerIds.SequenceEqual([EvidenceOwner], StringComparer.Ordinal))
@@ -396,6 +399,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     new MapPosition(entry.Position.X, entry.Position.Y),
                     new MapEntityInteractionTargetId(entry.InteractionTargetId))),
             context.EntityInteractions.Select(BuildEntityInteractionDefinition));
+        MapDialogueCatalog dialogues = new(
+            context.Dialogues.Select(BuildDialogueDefinition));
         return new MapScenarioContextDefinition(
             setupCatalog,
             new MapSetupId(context.VoidSetupId),
@@ -406,7 +411,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             eventEffects,
             localTransitions,
             ParseSemanticFacing(initialSemanticFacing),
-            entityInteractions);
+            entityInteractions,
+            dialogues);
     }
 
     private static MapEntityInteractionDefinition BuildEntityInteractionDefinition(
@@ -422,6 +428,25 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             new MapEntityInteractionRequestId(entry.RequestId),
             new MapEntityInteractionTargetId(entry.TargetId),
             new PresentationCueId(entry.CueId));
+    }
+
+    private static MapDialogueDefinition BuildDialogueDefinition(DialogueDocument entry)
+    {
+        if (!string.Equals(entry.Kind, "specific", StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "Synthetic dialogues admit only explicit non-default interaction targets.");
+        }
+
+        return new MapDialogueDefinition(
+            new MapDialogueId(entry.DialogueId),
+            new MapEntityInteractionTargetId(entry.InteractionTargetId),
+            entry.Lines.Select(line =>
+                new MapDialogueLineDefinition(
+                    new MapDialogueLineId(line.LineId),
+                    line.Text,
+                    new PresentationCueId(line.CueId))),
+            new PresentationCueId(entry.CloseCueId));
     }
 
     private static SemanticFacing ParseSemanticFacing(string value) =>
@@ -633,6 +658,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required EntityDocument[] Entities { get; init; }
 
         public required EntityInteractionDocument[] EntityInteractions { get; init; }
+
+        public required DialogueDocument[] Dialogues { get; init; }
     }
 
     private sealed class SetupCatalogEntryDocument
@@ -757,6 +784,28 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required string RequestId { get; init; }
 
         public required string TargetId { get; init; }
+
+        public required string CueId { get; init; }
+    }
+
+    private sealed class DialogueDocument
+    {
+        public required string Kind { get; init; }
+
+        public required string DialogueId { get; init; }
+
+        public required string InteractionTargetId { get; init; }
+
+        public required DialogueLineDocument[] Lines { get; init; }
+
+        public required string CloseCueId { get; init; }
+    }
+
+    private sealed class DialogueLineDocument
+    {
+        public required string LineId { get; init; }
+
+        public required string Text { get; init; }
 
         public required string CueId { get; init; }
     }
