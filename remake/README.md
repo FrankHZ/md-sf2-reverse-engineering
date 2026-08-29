@@ -6,8 +6,16 @@ the continuous Map 3 through Battle 01 milestone ready.
 
 ## Current boundary
 
-The only production project is `Sf2.Remake.Domain`. Its implemented behavior is a pure map-setup
-selector with engine-native catalog and event-table admission boundaries. The catalog maps opaque map
+The bounded `public-synthetic-map3-smoke-v1` vertical now composes the production Domain, Application,
+and Content assemblies through a thin Godot adapter. It admits only the exact tracked project-authored
+synthetic package, starts an Application `GameSession` in Map 3 exploration, applies one logical move,
+and projects the resulting immutable snapshot in Godot with a persistent
+`PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY` label. The official Godot 4.7.2 .NET CLI gate performs a
+hash-locked import, headless source run, export, and headless exported-build run using only tracked
+redistribution-safe inputs.
+
+The Domain's broader implemented behavior includes a pure map-setup selector with engine-native
+catalog and event-table admission boundaries. The catalog maps opaque map
 IDs to already parsed routes, rejects duplicate map IDs, and delegates every known route to the ordered
 route selector. Typed entity, zone, and item tables then select the first matching event record or their
 single required default without executing the opaque target. Typed area-description sources similarly
@@ -61,10 +69,13 @@ restore an active snapshot; other cells are neutral. Typed outcomes describe onl
 Entity pixel-to-cell conversion, terminated source tables, and original dispatcher state stay outside
 the API.
 
-Natural route, event, and area-description reachability; actual flag values and lifetime; target
-effects; decoded text; inventory or story mutation; persistence; Map 3 admission; Battle 01 continuity;
-presentation; Godot integration; H4; and milestone acceptance remain Unknown or deferred at their
-existing owners. Flag, step, roof, collision, reload, VDP/DMA, script-cursor, and update-toggle effects
+Natural route, original-map fidelity, event and area-description reachability; actual flag values and
+lifetime; target effects; decoded text; inventory or story mutation; persistence; original/natural Map 3
+admission; Battle 01 continuity;
+complete Application/Content/Godot game layers; original presentation; H4; private-content admission;
+and milestone acceptance remain Unknown or deferred at their existing owners. The bounded synthetic
+Map 3 admission above is not evidence of the original natural route or a full-content implementation.
+Flag, step, roof, collision, reload, VDP/DMA, script-cursor, and update-toggle effects
 around working-layout mutation likewise remain outside these reducers. Roof-record matching, fade
 dispatch, entity-coordinate conversion, lifecycle persistence, and content-driven record construction
 remain deferred composition boundaries.
@@ -96,5 +107,6 @@ dotnet build Sf2.Remake.sln --configuration Release --no-restore
 dotnet test Sf2.Remake.sln --configuration Release --no-build --no-restore
 ```
 
-The repository Public workflow runs the same locked restore, build, and test sequence. This slice has
-no Godot, H3, H4, private-input, or emulator gate.
+The repository Public workflow runs the same locked restore, build, and test sequence and the official
+Godot 4.7.2 public-synthetic import/run/export gate. No H3, H4, private-input, original-fidelity, or
+emulator gate is implied by that public profile.
