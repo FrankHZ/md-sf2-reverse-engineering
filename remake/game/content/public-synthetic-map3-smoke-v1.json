@@ -15,7 +15,8 @@
     "map3-synthetic-exploration-smoke",
     "public-synthetic-map3-context-selection-v1",
     "public-synthetic-map3-event-request-lifecycle-v1",
-    "public-synthetic-map3-state-effect-v1"
+    "public-synthetic-map3-state-effect-v1",
+    "public-synthetic-map3-local-transition-v1"
   ],
   "scenarioId": "map3-public-synthetic-smoke",
   "displayName": "Map 3 public-synthetic exploration smoke",
@@ -118,6 +119,12 @@
         "targetId": "synthetic-map3-east-zone"
       },
       {
+        "kind": "specific",
+        "x": 58,
+        "y": 3,
+        "targetId": "synthetic-map3-local-transition-zone"
+      },
+      {
         "kind": "default",
         "targetId": "synthetic-no-zone"
       }
@@ -135,6 +142,26 @@
         "requestId": "synthetic-map3-east-zone-request",
         "flagId": "synthetic-map3-variant-enabled",
         "cueId": "synthetic-map3-variant-applied"
+      }
+    ],
+    "localTransitions": [
+      {
+        "requestId": "synthetic-map3-local-transition-request",
+        "transitionId": "synthetic-map3-local-transition",
+        "zoneTargetId": "synthetic-map3-local-transition-zone",
+        "sourceMapId": "map3",
+        "sourcePosition": {
+          "x": 58,
+          "y": 3
+        },
+        "sourceSetupId": "synthetic-map3-variant",
+        "destinationMapId": "map3",
+        "destinationPosition": {
+          "x": 55,
+          "y": 4
+        },
+        "destinationOrientationId": "synthetic-arrival-south",
+        "cueId": "synthetic-map3-local-transition-ready"
       }
     ]
   }

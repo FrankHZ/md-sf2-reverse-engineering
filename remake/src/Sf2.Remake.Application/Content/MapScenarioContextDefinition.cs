@@ -15,7 +15,8 @@ public sealed class MapScenarioContextDefinition
         MapAreaDescriptionSource areaDescriptions,
         MapSetupEventTable<ZoneEventRecord> zoneEvents,
         MapEventRequestCatalog eventRequests,
-        MapEventEffectCatalog eventEffects)
+        MapEventEffectCatalog eventEffects,
+        MapLocalTransitionCatalog localTransitions)
     {
         SetupCatalog = setupCatalog ?? throw new ArgumentNullException(nameof(setupCatalog));
         VoidSetup = voidSetup ?? throw new ArgumentNullException(nameof(voidSetup));
@@ -25,6 +26,8 @@ public sealed class MapScenarioContextDefinition
         ZoneEvents = zoneEvents ?? throw new ArgumentNullException(nameof(zoneEvents));
         EventRequests = eventRequests ?? throw new ArgumentNullException(nameof(eventRequests));
         EventEffects = eventEffects ?? throw new ArgumentNullException(nameof(eventEffects));
+        LocalTransitions = localTransitions ??
+            throw new ArgumentNullException(nameof(localTransitions));
 
         List<FlagId> copiedFlags = [];
         _initialSetFlagLookup = [];
@@ -108,6 +111,64 @@ public sealed class MapScenarioContextDefinition
                     nameof(eventEffects));
             }
         }
+
+        HashSet<PresentationCueId> effectCueIds = EventEffects.Definitions
+            .Select(definition => definition.Cue)
+            .ToHashSet();
+        HashSet<MapId> setupMaps = SetupCatalog.Entries
+            .Select(entry => entry.Map)
+            .ToHashSet();
+        foreach (MapLocalTransitionDefinition definition in LocalTransitions.Definitions)
+        {
+            List<ZoneEventRecord> sourceRecords = ZoneEvents.Records
+                .Where(record => !record.IsDefault && record.Target == definition.ZoneTarget)
+                .ToList();
+            if (sourceRecords.Count != 1 ||
+                sourceRecords[0].X.ExactValue is not byte sourceX ||
+                sourceRecords[0].Y.ExactValue is not byte sourceY ||
+                sourceX != definition.SourcePosition.X ||
+                sourceY != definition.SourcePosition.Y ||
+                defaultTargets.Contains(definition.ZoneTarget))
+            {
+                throw new ArgumentException(
+                    $"Local transition '{definition.Transition}' must reference one exact non-default source zone.",
+                    nameof(localTransitions));
+            }
+
+            if (EventRequests.FindByTarget(definition.ZoneTarget) is not null)
+            {
+                throw new ArgumentException(
+                    $"Local transition '{definition.Transition}' cannot reuse an event-effect target.",
+                    nameof(localTransitions));
+            }
+
+            if (!setupMaps.Contains(definition.SourceMap) ||
+                !setupMaps.Contains(definition.DestinationMap))
+            {
+                throw new ArgumentException(
+                    $"Local transition '{definition.Transition}' references an unadmitted map.",
+                    nameof(localTransitions));
+            }
+
+            MapSetupCatalogEntry sourceSetupEntry = SetupCatalog.Entries.Single(
+                entry => entry.Map == definition.SourceMap);
+            bool ownsSourceSetup = sourceSetupEntry.Route.DefaultSetup == definition.SourceSetup ||
+                sourceSetupEntry.Route.FlagAlternatives.Any(
+                    alternative => alternative.Setup == definition.SourceSetup);
+            if (!ownsSourceSetup)
+            {
+                throw new ArgumentException(
+                    $"Local transition '{definition.Transition}' references an unadmitted source setup.",
+                    nameof(localTransitions));
+            }
+
+            if (requestCueIds.Contains(definition.Cue) || effectCueIds.Contains(definition.Cue))
+            {
+                throw new ArgumentException(
+                    $"Local transition '{definition.Transition}' cannot reuse an event cue ID.",
+                    nameof(localTransitions));
+            }
+        }
     }
 
     public MapSetupCatalog SetupCatalog { get; }
@@ -123,6 +184,8 @@ public sealed class MapScenarioContextDefinition
     public MapEventRequestCatalog EventRequests { get; }
 
     public MapEventEffectCatalog EventEffects { get; }
+
+    public MapLocalTransitionCatalog LocalTransitions { get; }
 
     public bool IsInitiallySet(FlagId flag)
     {

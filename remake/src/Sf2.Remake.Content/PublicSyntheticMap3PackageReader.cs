@@ -15,9 +15,11 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         "public-synthetic-map3-event-request-lifecycle-v1";
     public const string StateEffectCapability =
         "public-synthetic-map3-state-effect-v1";
+    public const string LocalTransitionCapability =
+        "public-synthetic-map3-local-transition-v1";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
     public const string ExpectedContentDigest =
-        "2be8ee50709641085338480052b390f67d2a40739444b846ea0ae066d69c54c0";
+        "217eca715f379b2b8ef86247ab416394a0df8f6a6a8b242f433d615c59cb8b9e";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -215,7 +217,13 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         }
 
         if (!document.Capabilities.SequenceEqual(
-                [Capability, ContextCapability, EventRequestCapability, StateEffectCapability],
+                [
+                    Capability,
+                    ContextCapability,
+                    EventRequestCapability,
+                    StateEffectCapability,
+                    LocalTransitionCapability,
+                ],
                 StringComparer.Ordinal) ||
             !document.EvidenceOwnerIds.SequenceEqual([EvidenceOwner], StringComparer.Ordinal))
         {
@@ -358,6 +366,21 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     new MapEventRequestId(entry.RequestId),
                     new FlagId(entry.FlagId),
                     new PresentationCueId(entry.CueId))));
+        MapLocalTransitionCatalog localTransitions = new(
+            context.LocalTransitions.Select(entry =>
+                new MapLocalTransitionDefinition(
+                    new MapLocalTransitionRequestId(entry.RequestId),
+                    new MapLocalTransitionId(entry.TransitionId),
+                    new EventTargetId(entry.ZoneTargetId),
+                    new MapId(entry.SourceMapId),
+                    new MapPosition(entry.SourcePosition.X, entry.SourcePosition.Y),
+                    new MapSetupId(entry.SourceSetupId),
+                    new MapId(entry.DestinationMapId),
+                    new MapPosition(
+                        entry.DestinationPosition.X,
+                        entry.DestinationPosition.Y),
+                    new OpaqueMapOrientationId(entry.DestinationOrientationId),
+                    new PresentationCueId(entry.CueId))));
         return new MapScenarioContextDefinition(
             setupCatalog,
             new MapSetupId(context.VoidSetupId),
@@ -365,7 +388,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             areaDescriptions,
             zoneEvents,
             eventRequests,
-            eventEffects);
+            eventEffects,
+            localTransitions);
     }
 
     private static MapAreaDescriptionEntry BuildAreaDescriptionEntry(
@@ -557,6 +581,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required EventRequestDocument[] EventRequests { get; init; }
 
         public required EventEffectDocument[] EventEffects { get; init; }
+
+        public required LocalTransitionDocument[] LocalTransitions { get; init; }
     }
 
     private sealed class SetupCatalogEntryDocument
@@ -629,6 +655,29 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required string RequestId { get; init; }
 
         public required string FlagId { get; init; }
+
+        public required string CueId { get; init; }
+    }
+
+    private sealed class LocalTransitionDocument
+    {
+        public required string RequestId { get; init; }
+
+        public required string TransitionId { get; init; }
+
+        public required string ZoneTargetId { get; init; }
+
+        public required string SourceMapId { get; init; }
+
+        public required PositionDocument SourcePosition { get; init; }
+
+        public required string SourceSetupId { get; init; }
+
+        public required string DestinationMapId { get; init; }
+
+        public required PositionDocument DestinationPosition { get; init; }
+
+        public required string DestinationOrientationId { get; init; }
 
         public required string CueId { get; init; }
     }
