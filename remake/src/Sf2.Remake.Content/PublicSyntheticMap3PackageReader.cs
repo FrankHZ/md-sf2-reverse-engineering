@@ -13,9 +13,11 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
     public const string ContextCapability = "public-synthetic-map3-context-selection-v1";
     public const string EventRequestCapability =
         "public-synthetic-map3-event-request-lifecycle-v1";
+    public const string StateEffectCapability =
+        "public-synthetic-map3-state-effect-v1";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
     public const string ExpectedContentDigest =
-        "7adbcbef20221d4280f27cae3b0a360866b2a1328039fcf71b14dfff9d388c31";
+        "2be8ee50709641085338480052b390f67d2a40739444b846ea0ae066d69c54c0";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -213,7 +215,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         }
 
         if (!document.Capabilities.SequenceEqual(
-                [Capability, ContextCapability, EventRequestCapability],
+                [Capability, ContextCapability, EventRequestCapability, StateEffectCapability],
                 StringComparer.Ordinal) ||
             !document.EvidenceOwnerIds.SequenceEqual([EvidenceOwner], StringComparer.Ordinal))
         {
@@ -349,13 +351,21 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     new MapEventRequestId(entry.RequestId),
                     new EventTargetId(entry.ZoneTargetId),
                     new PresentationCueId(entry.CueId))));
+        MapEventEffectCatalog eventEffects = new(
+            context.EventEffects.Select(entry =>
+                new MapEventEffectDefinition(
+                    new MapEventEffectId(entry.EffectId),
+                    new MapEventRequestId(entry.RequestId),
+                    new FlagId(entry.FlagId),
+                    new PresentationCueId(entry.CueId))));
         return new MapScenarioContextDefinition(
             setupCatalog,
             new MapSetupId(context.VoidSetupId),
             context.SetFlags.Select(flag => new FlagId(flag)),
             areaDescriptions,
             zoneEvents,
-            eventRequests);
+            eventRequests,
+            eventEffects);
     }
 
     private static MapAreaDescriptionEntry BuildAreaDescriptionEntry(
@@ -545,6 +555,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required ZoneEventDocument[] ZoneEvents { get; init; }
 
         public required EventRequestDocument[] EventRequests { get; init; }
+
+        public required EventEffectDocument[] EventEffects { get; init; }
     }
 
     private sealed class SetupCatalogEntryDocument
@@ -606,6 +618,17 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required string RequestId { get; init; }
 
         public required string ZoneTargetId { get; init; }
+
+        public required string CueId { get; init; }
+    }
+
+    private sealed class EventEffectDocument
+    {
+        public required string EffectId { get; init; }
+
+        public required string RequestId { get; init; }
+
+        public required string FlagId { get; init; }
 
         public required string CueId { get; init; }
     }

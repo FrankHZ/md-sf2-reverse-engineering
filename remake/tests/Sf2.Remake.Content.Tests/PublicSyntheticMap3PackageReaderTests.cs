@@ -36,6 +36,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 PublicSyntheticMap3PackageReader.Capability,
                 PublicSyntheticMap3PackageReader.ContextCapability,
                 PublicSyntheticMap3PackageReader.EventRequestCapability,
+                PublicSyntheticMap3PackageReader.StateEffectCapability,
             ],
             accepted.Receipt.Capabilities);
         string trackedDigest = Convert.ToHexString(
@@ -54,7 +55,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         MapSetupId setup = context.SetupCatalog.Select(
             accepted.Scenario.StartState.Map,
             context.VoidSetup,
-            context.IsFlagSet);
+            context.IsInitiallySet);
         AreaDescriptionSelection area = MapAreaDescriptionSelector.Select(
             context.AreaDescriptions,
             new MapAreaDescriptionQuery(57, 3, AreaDescriptionAdmission.Ordinary));
@@ -65,6 +66,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             context.ZoneEvents,
             new ZoneEventQuery(56, 3));
         MapEventRequestDefinition? request = context.EventRequests.FindByTarget(zone.Target);
+        MapEventEffectDefinition? effect = context.EventEffects.FindByRequest(request!.Request);
 
         Assert.Equal("ms_map3", setup.Value);
         Assert.Equal(AreaDescriptionSelectionKind.Text, area.Kind);
@@ -75,6 +77,11 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         Assert.NotNull(request);
         Assert.Equal("synthetic-map3-east-zone-request", request.Request.Value);
         Assert.Equal("synthetic-map3-east-zone-selected", request.Cue.Value);
+        Assert.NotNull(effect);
+        Assert.Equal("synthetic-map3-east-zone-variant-effect", effect.Effect.Value);
+        Assert.Equal("synthetic-map3-variant-enabled", effect.Flag.Value);
+        Assert.Equal("synthetic-map3-variant-applied", effect.Cue.Value);
+        Assert.False(context.IsInitiallySet(effect.Flag));
     }
 
     [Fact]
@@ -186,6 +193,16 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             original => original.Replace(
                 "\"zoneTargetId\": \"synthetic-map3-east-zone\"",
                 "\"zoneTargetId\": \"synthetic-no-zone\"",
+            StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void OtherwiseValidEventEffectCrossReferenceMutationFailsDigestAdmission()
+    {
+        AssertDigestMismatch(
+            original => original.Replace(
+                "\"flagId\": \"synthetic-map3-variant-enabled\"",
+                "\"flagId\": \"synthetic-map3-missing-variant\"",
                 StringComparison.Ordinal));
     }
 

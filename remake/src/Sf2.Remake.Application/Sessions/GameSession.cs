@@ -17,9 +17,11 @@ public sealed record GameSessionSnapshot
         long simulationStep,
         ExplorationMovementState exploration,
         ScenarioAdmissionFacts admissionFacts,
+        PublicSyntheticFlagStateSnapshot syntheticFlags,
         ExplorationContextSelectionSnapshot? contextSelection,
         long lastCueSequence,
-        MapEventRequestSnapshot? eventRequest)
+        MapEventRequestSnapshot? eventRequest,
+        MapEventEffectSnapshot? lastEventEffect)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         if (!Enum.IsDefined(profile))
@@ -41,6 +43,16 @@ public sealed record GameSessionSnapshot
                 nameof(eventRequest));
         }
 
+        SyntheticFlags = syntheticFlags ?? throw new ArgumentNullException(nameof(syntheticFlags));
+        if (lastEventEffect is not null &&
+            (lastEventEffect.CueSequence > lastCueSequence ||
+             !SyntheticFlags.IsSet(lastEventEffect.Flag)))
+        {
+            throw new ArgumentException(
+                "The last event effect must reference an applied flag and admitted cue sequence.",
+                nameof(lastEventEffect));
+        }
+
         ScenarioId = scenarioId;
         Profile = profile;
         FlowStage = flowStage;
@@ -50,6 +62,7 @@ public sealed record GameSessionSnapshot
         ContextSelection = contextSelection;
         LastCueSequence = lastCueSequence;
         EventRequest = eventRequest;
+        LastEventEffect = lastEventEffect;
     }
 
     public string ScenarioId { get; }
@@ -64,11 +77,15 @@ public sealed record GameSessionSnapshot
 
     public ScenarioAdmissionFacts AdmissionFacts { get; }
 
+    public PublicSyntheticFlagStateSnapshot SyntheticFlags { get; }
+
     public ExplorationContextSelectionSnapshot? ContextSelection { get; }
 
     public long LastCueSequence { get; }
 
     public MapEventRequestSnapshot? EventRequest { get; }
+
+    public MapEventEffectSnapshot? LastEventEffect { get; }
 }
 
 public interface IGameSessionCommand;
@@ -97,6 +114,8 @@ public enum GameSessionCommandFailureCode
     PendingAcknowledgement,
     NoPendingAcknowledgement,
     AcknowledgementMismatch,
+    EventEffectNotAdmitted,
+    EventEffectAlreadyApplied,
 }
 
 public sealed record GameSessionCommandDiagnostic
@@ -245,9 +264,11 @@ public sealed class GameSession
             checked(Snapshot.SimulationStep + 1),
             transition.State,
             Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
             contextSelection: null,
             Snapshot.LastCueSequence,
-            Snapshot.EventRequest);
+            Snapshot.EventRequest,
+            Snapshot.LastEventEffect);
         return new GameSessionCommandApplied(Snapshot, transition.Outcome);
     }
 
@@ -269,7 +290,7 @@ public sealed class GameSession
         MapSetupId selectedSetup = _mapContext.SetupCatalog.Select(
             Snapshot.Exploration.Map,
             _mapContext.VoidSetup,
-            _mapContext.IsFlagSet);
+            Snapshot.SyntheticFlags.IsSet);
         AreaDescriptionSelection areaDescription = MapAreaDescriptionSelector.Select(
             _mapContext.AreaDescriptions,
             new MapAreaDescriptionQuery(x, y, command.AreaDescriptionAdmission));
@@ -288,9 +309,11 @@ public sealed class GameSession
             checked(Snapshot.SimulationStep + 1),
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
             selection,
             Snapshot.LastCueSequence,
-            Snapshot.EventRequest);
+            Snapshot.EventRequest,
+            Snapshot.LastEventEffect);
         return new GameSessionContextSelected(Snapshot, selection);
     }
 
@@ -326,10 +349,31 @@ public sealed class GameSession
                     $"Zone target '{selection.ZoneEvent.Target}' has no admitted event request."));
         }
 
+        MapEventEffectDefinition? effect = _mapContext.EventEffects.FindByRequest(
+            definition.Request);
+        if (effect is null)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.EventEffectNotAdmitted,
+                    $"Event request '{definition.Request}' has no admitted synthetic effect."));
+        }
+
+        if (Snapshot.SyntheticFlags.IsSet(effect.Flag))
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.EventEffectAlreadyApplied,
+                    $"Event effect '{effect.Effect}' has already been applied."));
+        }
+
         long requestedAtStep = checked(Snapshot.SimulationStep + 1);
         long cueSequence = checked(Snapshot.LastCueSequence + 1);
         MapEventRequestSnapshot request = MapEventRequestSnapshot.Pending(
             definition,
+            effect,
             selection.Position,
             requestedAtStep,
             cueSequence);
@@ -346,9 +390,11 @@ public sealed class GameSession
             requestedAtStep,
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
             Snapshot.ContextSelection,
             cueSequence,
-            request);
+            request,
+            Snapshot.LastEventEffect);
         return new GameSessionEventRequested(Snapshot, request, cue);
     }
 
@@ -365,17 +411,52 @@ public sealed class GameSession
                     "There is no pending map-event request to acknowledge."));
         }
 
-        if (pending.Request != command.Request || pending.CueSequence != command.CueSequence)
+        if (pending.Request != command.Request ||
+            pending.CueSequence != command.CueSequence ||
+            pending.ExpectedEffect != command.Effect)
         {
             return new GameSessionCommandRejected(
                 Snapshot,
                 new GameSessionCommandDiagnostic(
                     GameSessionCommandFailureCode.AcknowledgementMismatch,
-                    "The acknowledgement does not match the pending request and cue sequence."));
+                    "The acknowledgement does not match the pending request, cue sequence, and effect."));
+        }
+
+        MapEventEffectDefinition? definition = _mapContext.EventEffects.FindByRequest(
+            pending.Request);
+        if (definition is null || definition.Effect != pending.ExpectedEffect)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.EventEffectNotAdmitted,
+                    "The pending request has no exact admitted synthetic effect."));
+        }
+
+        if (Snapshot.SyntheticFlags.IsSet(definition.Flag))
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.EventEffectAlreadyApplied,
+                    $"Event effect '{definition.Effect}' has already been applied."));
         }
 
         long acknowledgedAtStep = checked(Snapshot.SimulationStep + 1);
         MapEventRequestSnapshot acknowledged = pending.Acknowledge(acknowledgedAtStep);
+        long effectCueSequence = checked(Snapshot.LastCueSequence + 1);
+        PublicSyntheticFlagStateSnapshot syntheticFlags =
+            Snapshot.SyntheticFlags.SetOnce(definition.Flag);
+        MapEventEffectSnapshot effect = new(
+            definition,
+            pending.CueSequence,
+            acknowledgedAtStep,
+            effectCueSequence);
+        MapEventEffectCue cue = new(
+            definition.Cue,
+            definition.Effect,
+            definition.Flag,
+            effectCueSequence);
         Snapshot = new GameSessionSnapshot(
             Snapshot.ScenarioId,
             Snapshot.Profile,
@@ -383,10 +464,16 @@ public sealed class GameSession
             acknowledgedAtStep,
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
-            Snapshot.ContextSelection,
-            Snapshot.LastCueSequence,
-            acknowledged);
-        return new GameSessionEventRequestAcknowledged(Snapshot, acknowledged);
+            syntheticFlags,
+            contextSelection: null,
+            effectCueSequence,
+            acknowledged,
+            effect);
+        return new GameSessionEventEffectApplied(
+            Snapshot,
+            acknowledged,
+            effect,
+            cue);
     }
 
     private static GameSessionStarted StartAccepted(MapScenarioAccepted accepted)
@@ -399,9 +486,12 @@ public sealed class GameSession
                 simulationStep: 0,
                 accepted.Scenario.StartState,
                 accepted.Scenario.AdmissionFacts,
+                new PublicSyntheticFlagStateSnapshot(
+                    accepted.Scenario.MapContext.InitialSetFlags),
                 contextSelection: null,
                 lastCueSequence: 0,
-                eventRequest: null),
+                eventRequest: null,
+                lastEventEffect: null),
             accepted.Scenario.MapContext);
         return new GameSessionStarted(
             session,

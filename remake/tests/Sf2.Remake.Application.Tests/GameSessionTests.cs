@@ -130,6 +130,7 @@ public sealed class GameSessionTests
         Assert.Equal(MapEventRequestStatus.Pending, requested.Request.Status);
         Assert.Equal(3, requested.Request.RequestedAtStep);
         Assert.Equal(1, requested.Request.CueSequence);
+        Assert.Equal("east-zone-variant-effect", requested.Request.ExpectedEffect.Value);
         Assert.Null(requested.Request.AcknowledgedAtStep);
         Assert.Equal("east-zone-selected", requested.Cue.Cue.Value);
         Assert.Equal(1, requested.Cue.Sequence);
@@ -149,7 +150,8 @@ public sealed class GameSessionTests
                 started.Session.Apply(
                     new AcknowledgeMapEventRequestCommand(
                         new MapEventRequestId("wrong-request"),
-                        requested.Cue.Sequence)));
+                        requested.Cue.Sequence,
+                        requested.Request.ExpectedEffect)));
         Assert.Equal(
             GameSessionCommandFailureCode.AcknowledgementMismatch,
             wrongAcknowledgement.Diagnostic.Code);
@@ -159,29 +161,55 @@ public sealed class GameSessionTests
             started.Session.Apply(
                 new AcknowledgeMapEventRequestCommand(
                     requested.Request.Request,
-                    requested.Cue.Sequence + 1)));
+                    requested.Cue.Sequence + 1,
+                    requested.Request.ExpectedEffect)));
         Assert.Equal(
             GameSessionCommandFailureCode.AcknowledgementMismatch,
             wrongSequence.Diagnostic.Code);
         Assert.Same(requested.Snapshot, started.Session.Snapshot);
 
-        GameSessionEventRequestAcknowledged acknowledged =
-            Assert.IsType<GameSessionEventRequestAcknowledged>(
+        GameSessionCommandRejected wrongEffect = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(
+                new AcknowledgeMapEventRequestCommand(
+                    requested.Request.Request,
+                    requested.Cue.Sequence,
+                    new MapEventEffectId("wrong-effect"))));
+        Assert.Equal(
+            GameSessionCommandFailureCode.AcknowledgementMismatch,
+            wrongEffect.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        GameSessionEventEffectApplied acknowledged =
+            Assert.IsType<GameSessionEventEffectApplied>(
                 started.Session.Apply(
                     new AcknowledgeMapEventRequestCommand(
                         requested.Request.Request,
-                        requested.Cue.Sequence)));
+                        requested.Cue.Sequence,
+                        requested.Request.ExpectedEffect)));
         Assert.Equal(MapEventRequestStatus.Acknowledged, acknowledged.Request.Status);
         Assert.Equal(4, acknowledged.Request.AcknowledgedAtStep);
         Assert.Equal(4, acknowledged.Snapshot.SimulationStep);
-        Assert.Equal(1, acknowledged.Snapshot.LastCueSequence);
+        Assert.Equal(2, acknowledged.Snapshot.LastCueSequence);
+        Assert.Null(acknowledged.Snapshot.ContextSelection);
+        Assert.Equal("east-zone-variant-effect", acknowledged.Effect.Effect.Value);
+        Assert.Equal("east-zone-request", acknowledged.Effect.Request.Value);
+        Assert.Equal("alternate-enabled", acknowledged.Effect.Flag.Value);
+        Assert.Equal(1, acknowledged.Effect.RequestCueSequence);
+        Assert.Equal(4, acknowledged.Effect.AppliedAtStep);
+        Assert.Equal(2, acknowledged.Effect.CueSequence);
+        Assert.Equal("variant-applied", acknowledged.Cue.Cue.Value);
+        Assert.Equal(2, acknowledged.Cue.Sequence);
+        Assert.False(acknowledged.Cue.RequiresAcknowledgement);
+        Assert.True(acknowledged.Snapshot.SyntheticFlags.IsSet(acknowledged.Effect.Flag));
+        Assert.Same(acknowledged.Effect, acknowledged.Snapshot.LastEventEffect);
 
         GameSessionCommandRejected duplicateAcknowledgement =
             Assert.IsType<GameSessionCommandRejected>(
                 started.Session.Apply(
                     new AcknowledgeMapEventRequestCommand(
                         requested.Request.Request,
-                        requested.Cue.Sequence)));
+                        requested.Cue.Sequence,
+                        requested.Request.ExpectedEffect)));
         Assert.Equal(
             GameSessionCommandFailureCode.NoPendingAcknowledgement,
             duplicateAcknowledgement.Diagnostic.Code);
@@ -189,23 +217,37 @@ public sealed class GameSessionTests
     }
 
     [Fact]
-    public void AcknowledgedContextCanIssueAnotherMonotonicCue()
+    public void AppliedEffectRequiresFreshContextAndSelectsVariantExactlyOnce()
     {
         GameSessionStarted started = StartAtEastContext();
-        GameSessionEventRequested first = Assert.IsType<GameSessionEventRequested>(
+        GameSessionEventRequested requested = Assert.IsType<GameSessionEventRequested>(
             started.Session.Apply(new RequestSelectedZoneEventCommand()));
-        Assert.IsType<GameSessionEventRequestAcknowledged>(
+        GameSessionEventEffectApplied applied = Assert.IsType<GameSessionEventEffectApplied>(
             started.Session.Apply(
                 new AcknowledgeMapEventRequestCommand(
-                    first.Request.Request,
-                    first.Cue.Sequence)));
+                    requested.Request.Request,
+                    requested.Cue.Sequence,
+                    requested.Request.ExpectedEffect)));
 
-        GameSessionEventRequested second = Assert.IsType<GameSessionEventRequested>(
+        GameSessionCommandRejected staleContext = Assert.IsType<GameSessionCommandRejected>(
             started.Session.Apply(new RequestSelectedZoneEventCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.ContextSelectionRequired,
+            staleContext.Diagnostic.Code);
+        Assert.Same(applied.Snapshot, started.Session.Snapshot);
 
-        Assert.Equal(2, second.Cue.Sequence);
-        Assert.Equal(2, second.Snapshot.LastCueSequence);
-        Assert.Equal(MapEventRequestStatus.Pending, second.Request.Status);
+        GameSessionContextSelected reselected = Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        Assert.Equal("alternate-setup", reselected.Selection.SelectedSetup.Value);
+
+        GameSessionCommandRejected duplicateEffect = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new RequestSelectedZoneEventCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.EventEffectAlreadyApplied,
+            duplicateEffect.Diagnostic.Code);
+        Assert.Same(reselected.Snapshot, started.Session.Snapshot);
+        Assert.Equal(2, started.Session.Snapshot.LastCueSequence);
     }
 
     [Fact]
@@ -229,6 +271,40 @@ public sealed class GameSessionTests
         Assert.Throws<ArgumentException>(() => CreateMapContext(
             new MapId("map3"),
             requestTarget: "no-zone"));
+
+        MapEventEffectDefinition effect = EffectDefinition(
+            "effect-1",
+            "east-zone-request",
+            "alternate-enabled",
+            "effect-cue-1");
+        Assert.Throws<ArgumentException>(() => new MapEventEffectCatalog(
+            [effect, EffectDefinition(
+                "effect-1", "request-2", "flag-2", "effect-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapEventEffectCatalog(
+            [effect, EffectDefinition(
+                "effect-2", "east-zone-request", "flag-2", "effect-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapEventEffectCatalog(
+            [effect, EffectDefinition(
+                "effect-2", "request-2", "alternate-enabled", "effect-cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapEventEffectCatalog(
+            [effect, EffectDefinition(
+                "effect-2", "request-2", "flag-2", "effect-cue-1")]));
+
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            effectRequest: "missing-request"));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            effectFlag: "missing-variant-flag"));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            initialSetFlags: [new FlagId("alternate-enabled")]));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            effectCue: "east-zone-selected"));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            includeEffect: false));
     }
 
     [Fact]
@@ -243,14 +319,31 @@ public sealed class GameSessionTests
         first.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East));
         first.Session.Apply(
             new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary));
-        first.Session.Apply(new RequestSelectedZoneEventCommand());
+        GameSessionEventRequested requested = Assert.IsType<GameSessionEventRequested>(
+            first.Session.Apply(new RequestSelectedZoneEventCommand()));
+        Assert.IsType<GameSessionEventEffectApplied>(
+            first.Session.Apply(
+                new AcknowledgeMapEventRequestCommand(
+                    requested.Request.Request,
+                    requested.Cue.Sequence,
+                    requested.Request.ExpectedEffect)));
 
         Assert.Equal(new MapPosition(2, 1), first.Session.Snapshot.Exploration.PlayerPosition);
-        Assert.Equal(MapEventRequestStatus.Pending, first.Session.Snapshot.EventRequest?.Status);
+        Assert.Equal(MapEventRequestStatus.Acknowledged, first.Session.Snapshot.EventRequest?.Status);
+        Assert.True(first.Session.Snapshot.SyntheticFlags.IsSet(
+            new FlagId("alternate-enabled")));
+        Assert.NotNull(first.Session.Snapshot.LastEventEffect);
         Assert.Equal(new MapPosition(1, 1), restarted.Session.Snapshot.Exploration.PlayerPosition);
         Assert.Equal(0, restarted.Session.Snapshot.SimulationStep);
         Assert.Equal(0, restarted.Session.Snapshot.LastCueSequence);
         Assert.Null(restarted.Session.Snapshot.EventRequest);
+        Assert.Empty(restarted.Session.Snapshot.SyntheticFlags.SetFlags);
+        Assert.Null(restarted.Session.Snapshot.LastEventEffect);
+
+        GameSessionContextSelected restartedSelection = Assert.IsType<GameSessionContextSelected>(
+            restarted.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        Assert.Equal("synthetic-setup", restartedSelection.Selection.SelectedSetup.Value);
     }
 
     [Fact]
@@ -341,7 +434,12 @@ public sealed class GameSessionTests
 
     private static MapScenarioContextDefinition CreateMapContext(
         MapId map,
-        string requestTarget = "east-zone")
+        string requestTarget = "east-zone",
+        string effectRequest = "east-zone-request",
+        string effectFlag = "alternate-enabled",
+        string effectCue = "variant-applied",
+        IEnumerable<FlagId>? initialSetFlags = null,
+        bool includeEffect = true)
     {
         MapSetupCatalog setupCatalog = new(
             [
@@ -376,13 +474,22 @@ public sealed class GameSessionTests
             ]);
         MapEventRequestCatalog eventRequests = new(
             [RequestDefinition("east-zone-request", requestTarget, "east-zone-selected")]);
+        MapEventEffectCatalog eventEffects = new(
+            includeEffect
+                ? [EffectDefinition(
+                    "east-zone-variant-effect",
+                    effectRequest,
+                    effectFlag,
+                    effectCue)]
+                : []);
         return new MapScenarioContextDefinition(
             setupCatalog,
             new MapSetupId("void-setup"),
-            setFlags: [],
+            initialSetFlags ?? [],
             descriptions,
             zoneEvents,
-            eventRequests);
+            eventRequests,
+            eventEffects);
     }
 
     private static MapEventRequestDefinition RequestDefinition(
@@ -392,6 +499,17 @@ public sealed class GameSessionTests
         new(
             new MapEventRequestId(request),
             new EventTargetId(target),
+            new PresentationCueId(cue));
+
+    private static MapEventEffectDefinition EffectDefinition(
+        string effect,
+        string request,
+        string flag,
+        string cue) =>
+        new(
+            new MapEventEffectId(effect),
+            new MapEventRequestId(request),
+            new FlagId(flag),
             new PresentationCueId(cue));
 
     private sealed record UnknownCommand : IGameSessionCommand;

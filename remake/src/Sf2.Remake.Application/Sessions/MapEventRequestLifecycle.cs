@@ -15,16 +15,20 @@ public sealed record AcknowledgeMapEventRequestCommand : IGameSessionCommand
 {
     public AcknowledgeMapEventRequestCommand(
         MapEventRequestId request,
-        long cueSequence)
+        long cueSequence,
+        MapEventEffectId effect)
     {
         Request = request ?? throw new ArgumentNullException(nameof(request));
         ArgumentOutOfRangeException.ThrowIfLessThan(cueSequence, 1);
         CueSequence = cueSequence;
+        Effect = effect ?? throw new ArgumentNullException(nameof(effect));
     }
 
     public MapEventRequestId Request { get; }
 
     public long CueSequence { get; }
+
+    public MapEventEffectId Effect { get; }
 }
 
 public sealed record MapEventRequestSnapshot
@@ -32,6 +36,7 @@ public sealed record MapEventRequestSnapshot
     private MapEventRequestSnapshot(
         MapEventRequestId request,
         EventTargetId target,
+        MapEventEffectId expectedEffect,
         MapPosition position,
         MapEventRequestStatus status,
         long requestedAtStep,
@@ -40,6 +45,8 @@ public sealed record MapEventRequestSnapshot
     {
         Request = request ?? throw new ArgumentNullException(nameof(request));
         Target = target ?? throw new ArgumentNullException(nameof(target));
+        ExpectedEffect = expectedEffect ??
+            throw new ArgumentNullException(nameof(expectedEffect));
         Position = position ?? throw new ArgumentNullException(nameof(position));
         if (!Enum.IsDefined(status))
         {
@@ -73,6 +80,8 @@ public sealed record MapEventRequestSnapshot
 
     public EventTargetId Target { get; }
 
+    public MapEventEffectId ExpectedEffect { get; }
+
     public MapPosition Position { get; }
 
     public MapEventRequestStatus Status { get; }
@@ -85,22 +94,36 @@ public sealed record MapEventRequestSnapshot
 
     internal static MapEventRequestSnapshot Pending(
         MapEventRequestDefinition definition,
+        MapEventEffectDefinition effect,
         MapPosition position,
         long requestedAtStep,
-        long cueSequence) =>
-        new(
+        long cueSequence)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(effect);
+        if (definition.Request != effect.Request)
+        {
+            throw new ArgumentException(
+                "The pending effect must belong to the admitted event request.",
+                nameof(effect));
+        }
+
+        return new MapEventRequestSnapshot(
             definition.Request,
             definition.ZoneTarget,
+            effect.Effect,
             position,
             MapEventRequestStatus.Pending,
             requestedAtStep,
             cueSequence,
             acknowledgedAtStep: null);
+    }
 
     internal MapEventRequestSnapshot Acknowledge(long acknowledgedAtStep) =>
         new(
             Request,
             Target,
+            ExpectedEffect,
             Position,
             MapEventRequestStatus.Acknowledged,
             RequestedAtStep,
@@ -151,15 +174,4 @@ public sealed record GameSessionEventRequested(
 
     public MapEventRequestCue Cue { get; } =
         Cue ?? throw new ArgumentNullException(nameof(Cue));
-}
-
-public sealed record GameSessionEventRequestAcknowledged(
-    GameSessionSnapshot Snapshot,
-    MapEventRequestSnapshot Request) : GameSessionCommandResult
-{
-    public GameSessionSnapshot Snapshot { get; } =
-        Snapshot ?? throw new ArgumentNullException(nameof(Snapshot));
-
-    public MapEventRequestSnapshot Request { get; } =
-        Request ?? throw new ArgumentNullException(nameof(Request));
 }
