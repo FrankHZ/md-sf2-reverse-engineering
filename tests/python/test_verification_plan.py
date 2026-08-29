@@ -20,6 +20,7 @@ from sf2tool.verification_plan import (
     H3_SHARED_ARTIFACT_PARTITIONS,
     PARTITIONS,
     PARTITIONS_BY_ID,
+    REMAKE_PARTITION_IDS,
     build_verification_plan,
     h2_artifact_commands,
     h3_artifact_commands,
@@ -137,6 +138,7 @@ def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
     assert len({partition.partition_id for partition in PARTITIONS}) == len(PARTITIONS)
     assert len(H2_PARTITION_IDS) == 6
     assert len(H3_PARTITION_IDS) == 5
+    assert REMAKE_PARTITION_IDS == ("remake-dotnet", "remake-godot")
 
 
 def test_existing_verify_parse_semantics_remain_available() -> None:
@@ -844,6 +846,70 @@ def test_docs_only_plan_keeps_only_always_run_public_core() -> None:
     assert _partition_ids(plan) == {"public-core"}
     assert plan["unclassifiedPaths"] == []
     assert _partition(plan, "public-core")["externalGates"] == ["GitHub Public / tracked-inputs"]
+
+
+def test_remake_domain_change_selects_dotnet_and_stable_godot_smoke() -> None:
+    plan = plan_paths(("remake/src/Sf2.Remake.Domain/Maps/MapExploration.cs",), root=ROOT)
+
+    assert _partition_ids(plan) == {"public-core", "remake-dotnet", "remake-godot"}
+    assert _partition(plan, "remake-dotnet")["layer"] == "remake"
+    assert _partition(plan, "remake-godot")["layer"] == "remake"
+    assert _partition(plan, "remake-godot")["resourceLock"] == "godot-remake-runtime"
+    assert _partition(plan, "remake-godot")["externalGates"] == [
+        "GitHub Public / remake-godot"
+    ]
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_remake_test_change_selects_dotnet_without_replaying_godot() -> None:
+    plan = plan_paths(
+        ("remake/tests/Sf2.Remake.Domain.Tests/Maps/MapExplorationTests.cs",),
+        root=ROOT,
+    )
+
+    assert _partition_ids(plan) == {"public-core", "remake-dotnet"}
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_remake_godot_runner_and_test_have_explicit_non_evidence_ownership() -> None:
+    runner = plan_paths(("src/sf2tool/remake_godot.py",), root=ROOT)
+    test = plan_paths(("tests/python/test_remake_godot.py",), root=ROOT)
+
+    assert _partition_ids(runner) == {"public-core", "tooling-python", "remake-godot"}
+    assert _partition_ids(test) == {"public-core", "tooling-python", "remake-godot"}
+    assert _partition(test, "tooling-python")["commands"] == [
+        "uv run pytest tests/python/test_remake_godot.py"
+    ]
+    assert runner["unclassifiedPaths"] == test["unclassifiedPaths"] == []
+
+
+def test_remake_architecture_test_selects_both_remake_partitions() -> None:
+    plan = plan_paths(("tests/python/test_remake_architecture.py",), root=ROOT)
+
+    assert _partition_ids(plan) == {
+        "public-core",
+        "tooling-python",
+        "remake-dotnet",
+        "remake-godot",
+    }
+    assert _partition(plan, "tooling-python")["commands"] == [
+        "uv run pytest tests/python/test_remake_architecture.py"
+    ]
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_remake_readme_is_public_core_only() -> None:
+    plan = plan_paths(("remake/README.md",), root=ROOT)
+
+    assert _partition_ids(plan) == {"public-core"}
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_remake_toolchain_lock_selects_both_non_evidence_partitions() -> None:
+    plan = plan_paths(("remake/toolchain.json",), root=ROOT)
+
+    assert _partition_ids(plan) == {"public-core", "remake-dotnet", "remake-godot"}
+    assert plan["unclassifiedPaths"] == []
 
 
 def test_aggregate_indexes_are_owned_by_the_always_run_public_core() -> None:

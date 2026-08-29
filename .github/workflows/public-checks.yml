@@ -50,6 +50,9 @@ jobs:
       - name: Run tracked-input harness tests
         run: uv run pytest tests/python/test_native_harness.py
 
+      - name: Verify remake gate and architecture ownership
+        run: uv run pytest tests/python/test_remake_architecture.py tests/python/test_remake_godot.py tests/python/test_verification_plan.py
+
       - name: Verify design-contract traceability
         run: uv run sf2 design-contracts test
 
@@ -64,3 +67,64 @@ jobs:
       - name: Test remake domain
         working-directory: remake
         run: dotnet test Sf2.Remake.sln --configuration Release --no-build --no-restore
+
+  remake-godot:
+    runs-on: windows-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          enable-cache: true
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            10.0.204
+            8.0.424
+
+      - name: Sync locked dependencies
+        run: uv sync --locked
+
+      - name: Download locked official Godot artifacts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $toolchainRoot = Join-Path $env:RUNNER_TEMP 'godot-4.7.2'
+          New-Item -ItemType Directory -Path $toolchainRoot | Out-Null
+          $artifacts = @(
+            @{
+              Name = 'Godot_v4.7.2-stable_mono_win64.zip'
+              Url = 'https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_mono_win64.zip'
+            },
+            @{
+              Name = 'Godot_v4.7.2-stable_mono_export_templates.tpz'
+              Url = 'https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_mono_export_templates.tpz'
+            }
+          )
+          foreach ($artifact in $artifacts) {
+            $outputPath = Join-Path $toolchainRoot $artifact.Name
+            $curlArgs = @('--fail', '--location', '--retry', '3', '--output', $outputPath, $artifact.Url)
+            & curl.exe @curlArgs
+            if ($LASTEXITCODE -ne 0) {
+              throw "curl.exe failed with exit code $LASTEXITCODE"
+            }
+          }
+
+      - name: Import, run, and export public-synthetic Map 3
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $toolchainRoot = Join-Path $env:RUNNER_TEMP 'godot-4.7.2'
+          $scratchParent = Join-Path $env:RUNNER_TEMP 'sf2-godot-gates'
+          uv run python -m sf2tool.remake_godot --toolchain-root $toolchainRoot --scratch-parent $scratchParent
