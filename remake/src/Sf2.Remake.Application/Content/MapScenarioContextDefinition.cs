@@ -16,7 +16,9 @@ public sealed class MapScenarioContextDefinition
         MapSetupEventTable<ZoneEventRecord> zoneEvents,
         MapEventRequestCatalog eventRequests,
         MapEventEffectCatalog eventEffects,
-        MapLocalTransitionCatalog localTransitions)
+        MapLocalTransitionCatalog localTransitions,
+        SemanticFacing initialFacing,
+        MapEntityInteractionCatalog entityInteractions)
     {
         SetupCatalog = setupCatalog ?? throw new ArgumentNullException(nameof(setupCatalog));
         VoidSetup = voidSetup ?? throw new ArgumentNullException(nameof(voidSetup));
@@ -28,6 +30,14 @@ public sealed class MapScenarioContextDefinition
         EventEffects = eventEffects ?? throw new ArgumentNullException(nameof(eventEffects));
         LocalTransitions = localTransitions ??
             throw new ArgumentNullException(nameof(localTransitions));
+        if (!Enum.IsDefined(initialFacing))
+        {
+            throw new ArgumentOutOfRangeException(nameof(initialFacing));
+        }
+
+        InitialFacing = initialFacing;
+        EntityInteractions = entityInteractions ??
+            throw new ArgumentNullException(nameof(entityInteractions));
 
         List<FlagId> copiedFlags = [];
         _initialSetFlagLookup = [];
@@ -169,6 +179,31 @@ public sealed class MapScenarioContextDefinition
                     nameof(localTransitions));
             }
         }
+
+        HashSet<PresentationCueId> transitionCueIds = LocalTransitions.Definitions
+            .Select(definition => definition.Cue)
+            .ToHashSet();
+        foreach (MapEntityInteractionDefinition definition in EntityInteractions.Interactions)
+        {
+            if (requestCueIds.Contains(definition.Cue) ||
+                effectCueIds.Contains(definition.Cue) ||
+                transitionCueIds.Contains(definition.Cue))
+            {
+                throw new ArgumentException(
+                    $"Entity interaction '{definition.Request}' cannot reuse another cue ID.",
+                    nameof(entityInteractions));
+            }
+        }
+
+        foreach (MapEntityDefinition entity in EntityInteractions.Entities)
+        {
+            if (!setupMaps.Contains(entity.Map))
+            {
+                throw new ArgumentException(
+                    $"Entity '{entity.Entity}' references an unadmitted map.",
+                    nameof(entityInteractions));
+            }
+        }
     }
 
     public MapSetupCatalog SetupCatalog { get; }
@@ -186,6 +221,10 @@ public sealed class MapScenarioContextDefinition
     public MapEventEffectCatalog EventEffects { get; }
 
     public MapLocalTransitionCatalog LocalTransitions { get; }
+
+    public SemanticFacing InitialFacing { get; }
+
+    public MapEntityInteractionCatalog EntityInteractions { get; }
 
     public bool IsInitiallySet(FlagId flag)
     {

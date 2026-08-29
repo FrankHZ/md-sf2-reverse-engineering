@@ -16,10 +16,12 @@
     "public-synthetic-map3-context-selection-v1",
     "public-synthetic-map3-event-request-lifecycle-v1",
     "public-synthetic-map3-state-effect-v1",
-    "public-synthetic-map3-local-transition-v1"
+    "public-synthetic-map3-local-transition-v1",
+    "public-synthetic-map3-entity-interaction-v1"
   ],
   "scenarioId": "map3-public-synthetic-smoke",
   "displayName": "Map 3 public-synthetic exploration smoke",
+  "initialSemanticFacing": "east",
   "admission": {
     "currentMap": "map3",
     "egressMap": "map3",
@@ -78,7 +80,8 @@
       { "x": 54, "y": 1, "width": 6, "height": 5 }
     ],
     "blockedCells": [
-      { "x": 56, "y": 2 }
+      { "x": 56, "y": 2 },
+      { "x": 55, "y": 3 }
     ]
   },
   "mapContext": {
@@ -162,6 +165,25 @@
         },
         "destinationOrientationId": "synthetic-arrival-south",
         "cueId": "synthetic-map3-local-transition-ready"
+      }
+    ],
+    "entities": [
+      {
+        "entityId": "synthetic-map3-placeholder-guide",
+        "mapId": "map3",
+        "position": {
+          "x": 55,
+          "y": 3
+        },
+        "interactionTargetId": "synthetic-map3-placeholder-guide-target"
+      }
+    ],
+    "entityInteractions": [
+      {
+        "kind": "specific",
+        "requestId": "synthetic-map3-placeholder-guide-request",
+        "targetId": "synthetic-map3-placeholder-guide-target",
+        "cueId": "synthetic-map3-placeholder-guide-cue"
       }
     ]
   }

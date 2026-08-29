@@ -17,9 +17,11 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         "public-synthetic-map3-state-effect-v1";
     public const string LocalTransitionCapability =
         "public-synthetic-map3-local-transition-v1";
+    public const string EntityInteractionCapability =
+        "public-synthetic-map3-entity-interaction-v1";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
     public const string ExpectedContentDigest =
-        "217eca715f379b2b8ef86247ab416394a0df8f6a6a8b242f433d615c59cb8b9e";
+        "bf1c900e8658709738510ca483e41027e7e465378d67214ed99f62bcad6307bd";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -127,7 +129,9 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
 
             WorkingMapLayout layout = BuildLayout(document.LayoutRecipe);
             SyntheticWalkabilityGrid walkability = BuildWalkability(document.Walkability);
-            MapScenarioContextDefinition mapContext = BuildMapContext(document.MapContext);
+            MapScenarioContextDefinition mapContext = BuildMapContext(
+                document.MapContext,
+                document.InitialSemanticFacing);
             MapPosition start = new(
                 document.Admission.LogicalStartPosition.X,
                 document.Admission.LogicalStartPosition.Y);
@@ -223,6 +227,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     EventRequestCapability,
                     StateEffectCapability,
                     LocalTransitionCapability,
+                    EntityInteractionCapability,
                 ],
                 StringComparer.Ordinal) ||
             !document.EvidenceOwnerIds.SequenceEqual([EvidenceOwner], StringComparer.Ordinal))
@@ -336,7 +341,9 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             cells);
     }
 
-    private static MapScenarioContextDefinition BuildMapContext(MapContextDocument context)
+    private static MapScenarioContextDefinition BuildMapContext(
+        MapContextDocument context,
+        string initialSemanticFacing)
     {
         MapSetupCatalog setupCatalog = new(
             context.SetupCatalog.Select(entry =>
@@ -381,6 +388,14 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                         entry.DestinationPosition.Y),
                     new OpaqueMapOrientationId(entry.DestinationOrientationId),
                     new PresentationCueId(entry.CueId))));
+        MapEntityInteractionCatalog entityInteractions = new(
+            context.Entities.Select(entry =>
+                new MapEntityDefinition(
+                    new MapEntityId(entry.EntityId),
+                    new MapId(entry.MapId),
+                    new MapPosition(entry.Position.X, entry.Position.Y),
+                    new MapEntityInteractionTargetId(entry.InteractionTargetId))),
+            context.EntityInteractions.Select(BuildEntityInteractionDefinition));
         return new MapScenarioContextDefinition(
             setupCatalog,
             new MapSetupId(context.VoidSetupId),
@@ -389,8 +404,37 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             zoneEvents,
             eventRequests,
             eventEffects,
-            localTransitions);
+            localTransitions,
+            ParseSemanticFacing(initialSemanticFacing),
+            entityInteractions);
     }
+
+    private static MapEntityInteractionDefinition BuildEntityInteractionDefinition(
+        EntityInteractionDocument entry)
+    {
+        if (!string.Equals(entry.Kind, "specific", StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "Synthetic entity interactions admit only explicit non-default targets.");
+        }
+
+        return new MapEntityInteractionDefinition(
+            new MapEntityInteractionRequestId(entry.RequestId),
+            new MapEntityInteractionTargetId(entry.TargetId),
+            new PresentationCueId(entry.CueId));
+    }
+
+    private static SemanticFacing ParseSemanticFacing(string value) =>
+        value switch
+        {
+            "north" => SemanticFacing.North,
+            "east" => SemanticFacing.East,
+            "south" => SemanticFacing.South,
+            "west" => SemanticFacing.West,
+            _ => throw new ArgumentException(
+                "The synthetic initial semantic facing is not recognized.",
+                nameof(value)),
+        };
 
     private static MapAreaDescriptionEntry BuildAreaDescriptionEntry(
         AreaDescriptionEntryDocument entry)
@@ -484,6 +528,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required string ScenarioId { get; init; }
 
         public required string DisplayName { get; init; }
+
+        public required string InitialSemanticFacing { get; init; }
 
         public required AdmissionDocument Admission { get; init; }
 
@@ -583,6 +629,10 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required EventEffectDocument[] EventEffects { get; init; }
 
         public required LocalTransitionDocument[] LocalTransitions { get; init; }
+
+        public required EntityDocument[] Entities { get; init; }
+
+        public required EntityInteractionDocument[] EntityInteractions { get; init; }
     }
 
     private sealed class SetupCatalogEntryDocument
@@ -687,5 +737,27 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required int X { get; init; }
 
         public required int Y { get; init; }
+    }
+
+    private sealed class EntityDocument
+    {
+        public required string EntityId { get; init; }
+
+        public required string MapId { get; init; }
+
+        public required PositionDocument Position { get; init; }
+
+        public required string InteractionTargetId { get; init; }
+    }
+
+    private sealed class EntityInteractionDocument
+    {
+        public required string Kind { get; init; }
+
+        public required string RequestId { get; init; }
+
+        public required string TargetId { get; init; }
+
+        public required string CueId { get; init; }
     }
 }

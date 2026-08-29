@@ -56,6 +56,18 @@ the admitted start without transition state. Godot sends only those semantic com
 snapshot, cue, orientation label, and relocation result. It does not interpret the zone target, execute
 original warp logic, or claim original coordinates, facing semantics, predicates, effects, or reachability.
 
+The entity-interaction vertical adds one project-authored placeholder entity on an admitted synthetic
+solid cell plus one exact entity-target/request/cue mapping. A separately declared semantic facing is
+Application state; it is initialized by public-synthetic content, updated by movement direction or a
+turn-in-place command, and is never inferred from the opaque original-facing admission fact. Application
+selects only an entity exactly one tile ahead, owns the single pending interaction, and requires an exact
+request/cue-sequence/entity/target acknowledgement. Movement, turning, context re-selection, and local
+relocation clear stale acknowledged interaction state, while a pending acknowledgement blocks every
+other session command. Wrong and duplicate acknowledgements are zero-mutation, and a restart reconstructs
+the initial facing with no interaction state. Godot sends semantic turn/interact/acknowledge commands and
+projects only placeholder entity position, cue, target label, and lifecycle status. It does not interpret
+the target or claim original NPC identity, coordinates, facing, dialogue, story behavior, or reachability.
+
 The Domain's broader implemented behavior includes a pure map-setup selector with engine-native
 catalog and event-table admission boundaries. The catalog maps opaque map
 IDs to already parsed routes, rejects duplicate map IDs, and delegates every known route to the ordered
@@ -84,6 +96,10 @@ The current Content adapter translates only the exact digest-locked project-auth
 into those typed values and validates its event-request IDs, cue IDs, and specific-zone cross-references.
 It also validates the bounded local-transition IDs, exact source-zone mapping, admitted same-map endpoints,
 passability, opaque orientation, and cue ownership.
+The same raw-byte-locked package validates the synthetic initial semantic facing, unique placeholder entity
+ID and occupied cell, explicit non-default interaction target, request and cue IDs, and closed
+entity-to-target cross-reference. Entity cells must be in bounds, non-passable, and disjoint from the
+admitted player and local-transition endpoint cells.
 General canonical/private import and original content remain deferred.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy
@@ -117,6 +133,7 @@ the API.
 Natural route, original-map fidelity, event and area-description reachability; original flag values and
 lifetime; target effects; decoded text; inventory or story mutation; persistence; original/natural Map 3
 admission; Battle 01 continuity;
+original entity identity, placement, facing, dialogue, interaction effects, or reachability;
 complete Application/Content/Godot game layers; original presentation; H4; private-content admission;
 and milestone acceptance remain Unknown or deferred at their existing owners. The bounded synthetic
 Map 3 admission above is not evidence of the original natural route or a full-content implementation.
