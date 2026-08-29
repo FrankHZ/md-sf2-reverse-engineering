@@ -54,13 +54,20 @@ successful activation or restoration requests logical update channel 0 without c
 The state uses typed copy/clear variants and an optional active snapshot instead of exposing original
 sentinel values, buffers, addresses, or dispatcher mechanics.
 
+The block-copy action reducer composes normalized 64-by-64 map cells, masked working-layout flags,
+ordered typed action records, and the lifecycle reducer. Fading skips the action; show cells select the
+first exact X/Y record and activate its copy or clear using the record's one-based position; hide cells
+restore an active snapshot; other cells are neutral. Typed outcomes describe only this Domain decision.
+Entity pixel-to-cell conversion, terminated source tables, and original dispatcher state stay outside
+the API.
+
 Natural route, event, and area-description reachability; actual flag values and lifetime; target
 effects; decoded text; inventory or story mutation; persistence; Map 3 admission; Battle 01 continuity;
 presentation; Godot integration; H4; and milestone acceptance remain Unknown or deferred at their
 existing owners. Flag, step, roof, collision, reload, VDP/DMA, script-cursor, and update-toggle effects
 around working-layout mutation likewise remain outside these reducers. Roof-record matching, fade
-dispatch, entity-coordinate conversion, lifecycle persistence, and table-driven activation remain
-deferred composition boundaries.
+dispatch, entity-coordinate conversion, lifecycle persistence, and content-driven record construction
+remain deferred composition boundaries.
 
 ## Toolchain and dependencies
 
