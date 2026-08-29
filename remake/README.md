@@ -47,11 +47,20 @@ requests; `SetBlocksVar` performs the same copy without requesting either channe
 are compatibility output only: they do not claim render-queue acceptance, VDP/DMA work, or visible
 refresh completion. Invalid copies fail before any result exists, leaving all immutable inputs intact.
 
+The block-copy lifecycle reducer snapshots an admitted destination rectangle before either a forward
+copy or an opaque-zero clear, retains the exact one-based matched-record ordinal while active, and can
+later restore only that saved rectangle. Active activation and inactive restoration are no-ops. Each
+successful activation or restoration requests logical update channel 0 without clearing channel 1.
+The state uses typed copy/clear variants and an optional active snapshot instead of exposing original
+sentinel values, buffers, addresses, or dispatcher mechanics.
+
 Natural route, event, and area-description reachability; actual flag values and lifetime; target
 effects; decoded text; inventory or story mutation; persistence; Map 3 admission; Battle 01 continuity;
 presentation; Godot integration; H4; and milestone acceptance remain Unknown or deferred at their
 existing owners. Flag, step, roof, collision, reload, VDP/DMA, script-cursor, and update-toggle effects
-around working-layout mutation likewise remain outside this reducer.
+around working-layout mutation likewise remain outside these reducers. Roof-record matching, fade
+dispatch, entity-coordinate conversion, lifecycle persistence, and table-driven activation remain
+deferred composition boundaries.
 
 ## Toolchain and dependencies
 
