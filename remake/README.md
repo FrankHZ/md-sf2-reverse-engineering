@@ -7,7 +7,9 @@ the continuous Map 3 through Battle 01 milestone ready.
 ## Current boundary
 
 The only production project is `Sf2.Remake.Domain`. Its first implemented behavior is a pure
-map-setup route selector. It consumes the accepted behavior categories from:
+map-setup selector with an engine-native catalog admission boundary. The catalog maps opaque map IDs
+to already parsed routes, rejects duplicate map IDs, and delegates every known route to the ordered
+route selector. It consumes the accepted behavior categories from:
 
 - `sf2-map-setup-static-v1`: default-before-flags, complete ordered scanning, overwrite-on-set,
   last-set-wins, missing-map result, and the bounded selection-case categories;
@@ -16,7 +18,8 @@ map-setup route selector. It consumes the accepted behavior categories from:
 
 Production code and ordinary unit tests do not load those fixture files. Tests use project-authored
 opaque IDs and synthetic routes. The selector does not contain original addresses, source symbols,
-pointer tables, map content, ROM data, or private assets.
+pointer tables, the original route corpus, map content, ROM data, or private assets. Catalog IDs and
+entries are process-local Domain values, not a public content or save format.
 
 Natural route reachability, actual flag values and lifetime, persistence, Map 3 admission,
 Battle 01 continuity, presentation, Godot integration, H4, and milestone acceptance remain Unknown or
