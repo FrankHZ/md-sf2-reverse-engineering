@@ -32,7 +32,8 @@ public sealed record GameSessionSnapshot
         MapEntityInteractionSnapshot? entityInteraction,
         MapDialogueSnapshot? dialogue,
         MapFieldSearchSnapshot? fieldSearch,
-        MapItemAcquisitionSnapshot? itemAcquisition)
+        MapItemAcquisitionSnapshot? itemAcquisition,
+        MapOutboundTransitionSnapshot? outboundTransition = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         if (!Enum.IsDefined(profile))
@@ -59,6 +60,14 @@ public sealed record GameSessionSnapshot
             throw new ArgumentException(
                 "The local-transition cue sequence cannot exceed the session cue sequence.",
                 nameof(localTransition));
+        }
+
+        if (outboundTransition is not null &&
+            outboundTransition.CueSequence > lastCueSequence)
+        {
+            throw new ArgumentException(
+                "The outbound-transition cue sequence cannot exceed the session cue sequence.",
+                nameof(outboundTransition));
         }
 
         if (!Enum.IsDefined(facing))
@@ -112,6 +121,7 @@ public sealed record GameSessionSnapshot
         int pendingAcknowledgements =
             (eventRequest?.Status == MapEventRequestStatus.Pending ? 1 : 0) +
             (localTransition?.Status == MapLocalTransitionStatus.Pending ? 1 : 0) +
+            (outboundTransition?.Status == MapOutboundTransitionStatus.Pending ? 1 : 0) +
             (entityInteraction?.Status == MapEntityInteractionStatus.Pending ? 1 : 0) +
             (fieldSearch?.Status == MapFieldSearchStatus.Pending ? 1 : 0) +
             (itemAcquisition?.Status == MapItemAcquisitionStatus.Pending ? 1 : 0);
@@ -177,6 +187,36 @@ public sealed record GameSessionSnapshot
                 nameof(lastEventEffect));
         }
 
+        if (outboundTransition?.Status == MapOutboundTransitionStatus.Pending &&
+            (exploration is null ||
+             contextSelection is null ||
+             outboundTransition.SourceMap != exploration.Map ||
+             outboundTransition.SourcePosition != exploration.PlayerPosition ||
+             outboundTransition.SourceMap != contextSelection.Map ||
+             outboundTransition.SourcePosition != contextSelection.Position ||
+             outboundTransition.SourceSetup != contextSelection.SelectedSetup ||
+             outboundTransition.Target != contextSelection.ZoneEvent.Target))
+        {
+            throw new ArgumentException(
+                "A pending outbound transition requires its exact live source context.",
+                nameof(outboundTransition));
+        }
+
+        if (outboundTransition?.Status == MapOutboundTransitionStatus.Acknowledged &&
+            (exploration is null ||
+             outboundTransition.DestinationMap != exploration.Map ||
+             outboundTransition.DestinationPosition != exploration.PlayerPosition ||
+             outboundTransition.DestinationFacing != facing ||
+             (contextSelection is not null &&
+              (outboundTransition.DestinationMap != contextSelection.Map ||
+               outboundTransition.DestinationPosition != contextSelection.Position ||
+               outboundTransition.DestinationSetup != contextSelection.SelectedSetup))))
+        {
+            throw new ArgumentException(
+                "An acknowledged outbound transition requires its exact live destination state.",
+                nameof(outboundTransition));
+        }
+
         ScenarioId = scenarioId;
         Profile = profile;
         FlowStage = flowStage;
@@ -211,6 +251,7 @@ public sealed record GameSessionSnapshot
         Dialogue = dialogue;
         FieldSearch = fieldSearch;
         ItemAcquisition = itemAcquisition;
+        OutboundTransition = outboundTransition;
     }
 
     public string ScenarioId { get; }
@@ -252,6 +293,8 @@ public sealed record GameSessionSnapshot
     public MapFieldSearchSnapshot? FieldSearch { get; }
 
     public MapItemAcquisitionSnapshot? ItemAcquisition { get; }
+
+    public MapOutboundTransitionSnapshot? OutboundTransition { get; }
 }
 
 public interface IGameSessionCommand;
@@ -291,6 +334,7 @@ public enum GameSessionCommandFailureCode
     FieldSearchAlreadyDiscovered,
     ItemAcquisitionNotAdmitted,
     ItemAlreadyAcquired,
+    OutboundTransitionNotAdmitted,
 }
 
 public sealed record GameSessionCommandDiagnostic
@@ -413,6 +457,16 @@ public sealed class GameSession
                     "The pending local-transition request must be acknowledged first."));
         }
 
+        if (Snapshot.OutboundTransition?.Status == MapOutboundTransitionStatus.Pending &&
+            command is not AcknowledgeMapOutboundTransitionCommand)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.PendingAcknowledgement,
+                    "The pending outbound-transition request must be acknowledged first."));
+        }
+
         if (Snapshot.EntityInteraction?.Status == MapEntityInteractionStatus.Pending &&
             command is not AcknowledgeEntityInteractionCommand)
         {
@@ -464,6 +518,9 @@ public sealed class GameSession
             RequestSelectedLocalTransitionCommand => ApplyLocalTransitionRequest(),
             AcknowledgeMapLocalTransitionCommand acknowledgeTransition =>
                 ApplyLocalTransitionAcknowledgement(acknowledgeTransition),
+            RequestSelectedOutboundTransitionCommand => ApplyOutboundTransitionRequest(),
+            AcknowledgeMapOutboundTransitionCommand acknowledgeOutboundTransition =>
+                ApplyOutboundTransitionAcknowledgement(acknowledgeOutboundTransition),
             RequestEntityInteractionCommand => ApplyEntityInteractionRequest(),
             AcknowledgeEntityInteractionCommand acknowledgeInteraction =>
                 ApplyEntityInteractionAcknowledgement(acknowledgeInteraction),
@@ -609,7 +666,8 @@ public sealed class GameSession
             entityInteraction: null,
             dialogue: null,
             fieldSearch: null,
-            itemAcquisition: null);
+            itemAcquisition: null,
+            outboundTransition: Snapshot.OutboundTransition);
         return new GameSessionContextSelected(Snapshot, selection);
     }
 
@@ -934,6 +992,180 @@ public sealed class GameSession
             fieldSearch: null,
             itemAcquisition: null);
         return new GameSessionLocalTransitionApplied(Snapshot, acknowledged);
+    }
+
+    private GameSessionCommandResult ApplyOutboundTransitionRequest()
+    {
+        if (Snapshot.FlowStage != GameFlowStage.Exploration)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.WrongFlowStage,
+                    "Outbound transitions are not admitted in this flow stage."));
+        }
+
+        ExplorationContextSelectionSnapshot? selection = Snapshot.ContextSelection;
+        if (selection is null ||
+            selection.Map != Snapshot.Exploration.Map ||
+            selection.Position != Snapshot.Exploration.PlayerPosition)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.ContextSelectionRequired,
+                    "A current exploration-context selection is required."));
+        }
+
+        MapOutboundTransitionDefinition? definition =
+            _mapContext.OutboundTransitions.FindByTarget(selection.ZoneEvent.Target);
+        if (definition is null ||
+            definition.SourceMap != Snapshot.Exploration.Map ||
+            definition.SourcePosition != Snapshot.Exploration.PlayerPosition ||
+            definition.SourceSetup != selection.SelectedSetup)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.OutboundTransitionNotAdmitted,
+                    $"Zone target '{selection.ZoneEvent.Target}' has no exact admitted outbound transition."));
+        }
+
+        long requestedAtStep = checked(Snapshot.SimulationStep + 1);
+        long cueSequence = checked(Snapshot.LastCueSequence + 1);
+        MapOutboundTransitionSnapshot transition = MapOutboundTransitionSnapshot.Pending(
+            definition,
+            requestedAtStep,
+            cueSequence);
+        MapOutboundTransitionCue cue = new(
+            definition.Cue,
+            definition.Request,
+            definition.Transition,
+            definition.ZoneTarget,
+            definition.SourceMap,
+            definition.SourcePosition,
+            definition.DestinationMap,
+            cueSequence);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            requestedAtStep,
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
+            Snapshot.Inventory,
+            Snapshot.ContextSelection,
+            cueSequence,
+            Snapshot.EventRequest,
+            Snapshot.LastEventEffect,
+            Snapshot.LocalTransition,
+            Snapshot.Facing,
+            Snapshot.Entities,
+            Snapshot.EntityInteraction,
+            Snapshot.Dialogue,
+            Snapshot.FieldSearch,
+            Snapshot.ItemAcquisition,
+            transition);
+        return new GameSessionOutboundTransitionRequested(Snapshot, transition, cue);
+    }
+
+    private GameSessionCommandResult ApplyOutboundTransitionAcknowledgement(
+        AcknowledgeMapOutboundTransitionCommand command)
+    {
+        MapOutboundTransitionSnapshot? pending = Snapshot.OutboundTransition;
+        if (pending?.Status != MapOutboundTransitionStatus.Pending)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.NoPendingAcknowledgement,
+                    "There is no pending outbound transition to acknowledge."));
+        }
+
+        if (pending.Request != command.Request ||
+            pending.CueSequence != command.CueSequence ||
+            pending.Transition != command.Transition)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.AcknowledgementMismatch,
+                    "The acknowledgement does not match the pending outbound request, cue sequence, and transition."));
+        }
+
+        MapOutboundTransitionDefinition? definition =
+            _mapContext.OutboundTransitions.FindByRequest(pending.Request);
+        ExplorationContextSelectionSnapshot? selection = Snapshot.ContextSelection;
+        if (definition is null ||
+            definition.Transition != pending.Transition ||
+            definition.ZoneTarget != pending.Target ||
+            definition.SourceMap != pending.SourceMap ||
+            definition.SourcePosition != pending.SourcePosition ||
+            definition.SourceSetup != pending.SourceSetup ||
+            definition.DestinationMap != pending.DestinationMap ||
+            definition.DestinationPosition != pending.DestinationPosition ||
+            definition.DestinationSetup != pending.DestinationSetup ||
+            definition.DestinationFacing != pending.DestinationFacing ||
+            definition.SourceMap != Snapshot.Exploration.Map ||
+            definition.SourcePosition != Snapshot.Exploration.PlayerPosition ||
+            selection is null ||
+            selection.Map != definition.SourceMap ||
+            selection.Position != definition.SourcePosition ||
+            selection.SelectedSetup != definition.SourceSetup ||
+            selection.ZoneEvent.Target != definition.ZoneTarget)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.OutboundTransitionNotAdmitted,
+                    "The pending request has no exact admitted outbound transition."));
+        }
+
+        MapSetupId selectedDestinationSetup = _mapContext.SetupCatalog.Select(
+            definition.DestinationMap,
+            _mapContext.VoidSetup,
+            Snapshot.SyntheticFlags.IsSet);
+        if (selectedDestinationSetup != definition.DestinationSetup)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.OutboundTransitionNotAdmitted,
+                    "The destination setup no longer matches the admitted outbound transition."));
+        }
+
+        long acknowledgedAtStep = checked(Snapshot.SimulationStep + 1);
+        ExplorationMovementState relocated = _mapContext.MapRuntimes
+            .GetRequired(definition.DestinationMap)
+            .CreateExplorationState(definition.DestinationPosition);
+        MapOutboundTransitionSnapshot acknowledged = pending.Acknowledge(
+            definition,
+            acknowledgedAtStep);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            acknowledgedAtStep,
+            relocated,
+            Snapshot.AdmissionFacts,
+            Snapshot.SyntheticFlags,
+            Snapshot.Discoveries,
+            Snapshot.Inventory,
+            contextSelection: null,
+            Snapshot.LastCueSequence,
+            eventRequest: null,
+            lastEventEffect: null,
+            localTransition: null,
+            definition.DestinationFacing,
+            _mapContext.EntityInteractions.Entities.Where(entity => entity.Map == relocated.Map),
+            entityInteraction: null,
+            dialogue: null,
+            fieldSearch: null,
+            itemAcquisition: null,
+            acknowledged);
+        return new GameSessionOutboundTransitionApplied(Snapshot, acknowledged);
     }
 
     private GameSessionCommandResult ApplyEntityInteractionRequest()

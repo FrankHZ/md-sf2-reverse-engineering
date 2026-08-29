@@ -597,6 +597,207 @@ public sealed class GameSessionTests
     }
 
     [Fact]
+    public void OutboundTransitionSwapsRuntimeAtomicallyAndRetainsSessionState()
+    {
+        IMapScenarioSource source = CreateOutboundAcceptedSource();
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(source, Request()));
+
+        GameSessionContextSelected searchContext = Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        Assert.Equal("no-zone", searchContext.Selection.ZoneEvent.Target.Value);
+        GameSessionFieldSearchRequested search = Assert.IsType<GameSessionFieldSearchRequested>(
+            started.Session.Apply(new RequestFieldSearchCommand()));
+        GameSessionFieldSearchDiscovered discovered =
+            Assert.IsType<GameSessionFieldSearchDiscovered>(
+                started.Session.Apply(
+                    new AcknowledgeFieldSearchCommand(
+                        search.Search.Request,
+                        search.Cue.Sequence,
+                        search.Search.Result)));
+        GameSessionItemAcquisitionRequested acquisition =
+            Assert.IsType<GameSessionItemAcquisitionRequested>(
+                started.Session.Apply(
+                    new RequestMapItemAcquisitionCommand(discovered.Receipt.Discovery)));
+        GameSessionItemAcquired acquired = Assert.IsType<GameSessionItemAcquired>(
+            started.Session.Apply(
+                new AcknowledgeMapItemAcquisitionCommand(
+                    acquisition.Acquisition.Request,
+                    acquisition.Cue.Sequence,
+                    acquisition.Acquisition.Result,
+                    acquisition.Acquisition.Item)));
+        Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.West)));
+        GameSessionContextSelected outboundContext =
+            Assert.IsType<GameSessionContextSelected>(
+                started.Session.Apply(
+                    new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        Assert.Equal("outbound-zone", outboundContext.Selection.ZoneEvent.Target.Value);
+
+        GameSessionOutboundTransitionRequested requested =
+            Assert.IsType<GameSessionOutboundTransitionRequested>(
+                started.Session.Apply(new RequestSelectedOutboundTransitionCommand()));
+
+        Assert.Equal(MapOutboundTransitionStatus.Pending, requested.Transition.Status);
+        Assert.Equal("outbound-request", requested.Transition.Request.Value);
+        Assert.Equal("outbound-transition", requested.Transition.Transition.Value);
+        Assert.Equal(new MapId("map3"), requested.Transition.SourceMap);
+        Assert.Equal(new MapPosition(0, 1), requested.Transition.SourcePosition);
+        Assert.Equal(new MapSetupId("synthetic-setup"), requested.Transition.SourceSetup);
+        Assert.Equal(new MapId("public-synthetic-outbound-shell"), requested.Transition.DestinationMap);
+        Assert.Equal(new MapPosition(1, 1), requested.Transition.DestinationPosition);
+        Assert.Equal(new MapSetupId("outbound-setup"), requested.Transition.DestinationSetup);
+        Assert.Equal(SemanticFacing.East, requested.Transition.DestinationFacing);
+        Assert.Equal("outbound-ready", requested.Cue.Cue.Value);
+        Assert.True(requested.Cue.RequiresAcknowledgement);
+
+        GameSessionCommandRejected blockedMove = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.Equal(GameSessionCommandFailureCode.PendingAcknowledgement, blockedMove.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        foreach (AcknowledgeMapOutboundTransitionCommand wrong in
+                 new AcknowledgeMapOutboundTransitionCommand[]
+                 {
+                     new(
+                         new MapOutboundTransitionRequestId("wrong-request"),
+                         requested.Cue.Sequence,
+                         requested.Transition.Transition),
+                     new(
+                         requested.Transition.Request,
+                         requested.Cue.Sequence + 1,
+                         requested.Transition.Transition),
+                     new(
+                         requested.Transition.Request,
+                         requested.Cue.Sequence,
+                         new MapOutboundTransitionId("wrong-transition")),
+                 })
+        {
+            GameSessionCommandRejected rejected = Assert.IsType<GameSessionCommandRejected>(
+                started.Session.Apply(wrong));
+            Assert.Equal(
+                GameSessionCommandFailureCode.AcknowledgementMismatch,
+                rejected.Diagnostic.Code);
+            Assert.Same(requested.Snapshot, started.Session.Snapshot);
+        }
+
+        GameSessionOutboundTransitionApplied applied =
+            Assert.IsType<GameSessionOutboundTransitionApplied>(
+                started.Session.Apply(
+                    new AcknowledgeMapOutboundTransitionCommand(
+                        requested.Transition.Request,
+                        requested.Cue.Sequence,
+                        requested.Transition.Transition)));
+
+        Assert.Equal(MapOutboundTransitionStatus.Acknowledged, applied.Transition.Status);
+        Assert.Equal(new MapId("public-synthetic-outbound-shell"), applied.Snapshot.Exploration.Map);
+        Assert.Equal(new MapPosition(1, 1), applied.Snapshot.Exploration.PlayerPosition);
+        Assert.Equal(SemanticFacing.East, applied.Snapshot.Facing);
+        Assert.Null(applied.Snapshot.ContextSelection);
+        Assert.Null(applied.Snapshot.EventRequest);
+        Assert.Null(applied.Snapshot.LastEventEffect);
+        Assert.Null(applied.Snapshot.LocalTransition);
+        Assert.Null(applied.Snapshot.EntityInteraction);
+        Assert.Null(applied.Snapshot.Dialogue);
+        Assert.Null(applied.Snapshot.FieldSearch);
+        Assert.Null(applied.Snapshot.ItemAcquisition);
+        Assert.Empty(applied.Snapshot.Entities);
+        Assert.True(applied.Snapshot.SyntheticFlags.IsSet(new FlagId("retained-flag")));
+        Assert.True(applied.Snapshot.Discoveries.IsDiscovered(discovered.Receipt.Discovery));
+        Assert.True(applied.Snapshot.Inventory.Contains(acquired.Receipt.Item));
+
+        GameSessionContextSelected destinationContext =
+            Assert.IsType<GameSessionContextSelected>(
+                started.Session.Apply(
+                    new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        Assert.Equal(applied.Transition.DestinationMap, destinationContext.Selection.Map);
+        Assert.Equal(applied.Transition.DestinationSetup, destinationContext.Selection.SelectedSetup);
+        Assert.Equal("outbound-no-zone", destinationContext.Selection.ZoneEvent.Target.Value);
+        Assert.Same(applied.Transition, destinationContext.Snapshot.OutboundTransition);
+
+        GameSessionCommandRejected duplicate = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(
+                new AcknowledgeMapOutboundTransitionCommand(
+                    requested.Transition.Request,
+                    requested.Cue.Sequence,
+                    requested.Transition.Transition)));
+        Assert.Equal(GameSessionCommandFailureCode.NoPendingAcknowledgement, duplicate.Diagnostic.Code);
+        Assert.Same(destinationContext.Snapshot, started.Session.Snapshot);
+
+        GameSessionStarted restarted = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(source, Request()));
+        Assert.Equal(new MapId("map3"), restarted.Session.Snapshot.Exploration.Map);
+        Assert.Equal(new MapPosition(1, 1), restarted.Session.Snapshot.Exploration.PlayerPosition);
+        Assert.Empty(restarted.Session.Snapshot.Discoveries.Discoveries);
+        Assert.Empty(restarted.Session.Snapshot.Inventory.Items);
+        Assert.Null(restarted.Session.Snapshot.OutboundTransition);
+    }
+
+    [Fact]
+    public void OutboundTransitionCatalogAndContextRejectInvalidIdentityAndCrossReferences()
+    {
+        MapOutboundTransitionDefinition definition = OutboundTransitionDefinition();
+        Assert.Throws<ArgumentException>(() => new MapOutboundTransitionCatalog(
+            [definition, definition]));
+        Assert.Throws<ArgumentException>(() => OutboundTransitionDefinition(
+            destinationMap: new MapId("map3")));
+
+        MapId map3 = new("map3");
+        MapId outboundMap = new("public-synthetic-outbound-shell");
+        MapScenarioContextDefinition seed = CreateMapContext(map3);
+        MapExplorationRuntimeDefinition map3Runtime = Assert.Single(seed.MapRuntimes.Definitions);
+        MapExplorationRuntimeDefinition outboundRuntime = new(
+            outboundMap,
+            map3Runtime.Layout,
+            map3Runtime.Walkability,
+            map3Runtime.AreaDescriptions,
+            new MapSetupEventTable<ZoneEventRecord>(
+                [ZoneEventRecord.Default(new EventTargetId("outbound-no-zone"))]));
+        MapExplorationRuntimeCatalog runtimes = new([map3Runtime, outboundRuntime]);
+        MapSetupCatalog setupCatalog = new(
+            [
+                new MapSetupCatalogEntry(
+                    map3,
+                    new MapSetupRoute(
+                        new MapSetupId("synthetic-setup"),
+                        [
+                            new MapSetupFlagVariant(
+                                new FlagId("alternate-enabled"),
+                                new MapSetupId("alternate-setup")),
+                        ])),
+                new MapSetupCatalogEntry(
+                    outboundMap,
+                    new MapSetupRoute(new MapSetupId("outbound-setup"), [])),
+            ]);
+
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            map3,
+            mapRuntimes: runtimes,
+            setupCatalog: setupCatalog,
+            outboundTransitions: new MapOutboundTransitionCatalog(
+                [OutboundTransitionDefinition(target: "no-zone")])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            map3,
+            mapRuntimes: runtimes,
+            setupCatalog: setupCatalog,
+            outboundTransitions: new MapOutboundTransitionCatalog(
+                [OutboundTransitionDefinition(source: new MapPosition(1, 1))])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            map3,
+            mapRuntimes: runtimes,
+            setupCatalog: setupCatalog,
+            outboundTransitions: new MapOutboundTransitionCatalog(
+                [OutboundTransitionDefinition(destinationSetup: "missing-setup")])));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            map3,
+            mapRuntimes: runtimes,
+            setupCatalog: setupCatalog,
+            outboundTransitions: new MapOutboundTransitionCatalog(
+                [OutboundTransitionDefinition(cue: "east-zone-selected")])));
+    }
+
+    [Fact]
     public void EntityInteractionSelectsOneTileAheadAndRequiresExactAcknowledgement()
     {
         GameSessionStarted started = Assert.IsType<GameSessionStarted>(
@@ -1645,6 +1846,73 @@ public sealed class GameSessionTests
         return new AcceptedSource(definition, receipt);
     }
 
+    private static IMapScenarioSource CreateOutboundAcceptedSource()
+    {
+        MapId map3 = new("map3");
+        MapId outboundMap = new("public-synthetic-outbound-shell");
+        MapPosition start = new(1, 1);
+        MapScenarioContextDefinition seed = CreateMapContext(map3);
+        MapExplorationRuntimeDefinition map3Runtime = Assert.Single(seed.MapRuntimes.Definitions);
+        MapExplorationRuntimeCatalog runtimes = new(
+            [
+                map3Runtime,
+                new MapExplorationRuntimeDefinition(
+                    outboundMap,
+                    map3Runtime.Layout,
+                    map3Runtime.Walkability,
+                    map3Runtime.AreaDescriptions,
+                    new MapSetupEventTable<ZoneEventRecord>(
+                        [ZoneEventRecord.Default(new EventTargetId("outbound-no-zone"))])),
+            ]);
+        MapSetupCatalog setupCatalog = new(
+            [
+                new MapSetupCatalogEntry(
+                    map3,
+                    new MapSetupRoute(
+                        new MapSetupId("synthetic-setup"),
+                        [
+                            new MapSetupFlagVariant(
+                                new FlagId("alternate-enabled"),
+                                new MapSetupId("alternate-setup")),
+                        ])),
+                new MapSetupCatalogEntry(
+                    outboundMap,
+                    new MapSetupRoute(new MapSetupId("outbound-setup"), [])),
+            ]);
+        MapScenarioContextDefinition context = CreateMapContext(
+            map3,
+            initialSetFlags: [new FlagId("retained-flag")],
+            mapRuntimes: runtimes,
+            setupCatalog: setupCatalog,
+            outboundTransitions: new MapOutboundTransitionCatalog(
+                [OutboundTransitionDefinition()]));
+        MapScenarioDefinition definition = new(
+            "synthetic-scenario",
+            "Synthetic scenario",
+            map3,
+            start,
+            new ScenarioAdmissionFacts(
+                map3,
+                map3,
+                start,
+                opaqueStartFacing: 3,
+                "synthetic-setup",
+                "synthetic-init",
+                noProgramRequest: true,
+                explorationReady: true),
+            context);
+        return new AcceptedSource(
+            definition,
+            new ScenarioAdmissionReceipt(
+                "synthetic-package",
+                schemaVersion: 1,
+                "digest",
+                ContentProfile.PublicSynthetic,
+                exactControlledAdmission: false,
+                ["evidence-owner"],
+                ["capability"]));
+    }
+
     private static GameSessionStarted StartAtEastContext()
     {
         GameSessionStarted started = Assert.IsType<GameSessionStarted>(
@@ -1671,7 +1939,8 @@ public sealed class GameSessionTests
         MapFieldSearchCatalog? fieldSearches = null,
         MapItemAcquisitionCatalog? itemAcquisitions = null,
         MapExplorationRuntimeCatalog? mapRuntimes = null,
-        MapSetupCatalog? setupCatalog = null)
+        MapSetupCatalog? setupCatalog = null,
+        MapOutboundTransitionCatalog? outboundTransitions = null)
     {
         MapSetupCatalog admittedSetupCatalog = setupCatalog ?? new(
             [
@@ -1706,6 +1975,10 @@ public sealed class GameSessionTests
                     EventFieldMatch.Exact(1),
                     EventFieldMatch.Exact(2),
                     new EventTargetId("local-transition-zone")),
+                ZoneEventRecord.Specific(
+                    EventFieldMatch.Exact(0),
+                    EventFieldMatch.Exact(1),
+                    new EventTargetId("outbound-zone")),
                 ZoneEventRecord.Default(new EventTargetId("no-zone")),
             ]);
         MapEventRequestCatalog eventRequests = new(
@@ -1749,7 +2022,8 @@ public sealed class GameSessionTests
             dialogues ?? new MapDialogueCatalog([DialogueDefinition()]),
             fieldSearches ?? new MapFieldSearchCatalog([FieldSearchDefinition()]),
             itemAcquisitions ?? new MapItemAcquisitionCatalog(
-                [ItemAcquisitionDefinition()]));
+                [ItemAcquisitionDefinition()]),
+            outboundTransitions);
     }
 
     private static MapEventRequestDefinition RequestDefinition(
@@ -1793,6 +2067,31 @@ public sealed class GameSessionTests
             destinationMap ?? new MapId("map3"),
             destination ?? new MapPosition(2, 2),
             new OpaqueMapOrientationId(orientation),
+            new PresentationCueId(cue));
+
+    private static MapOutboundTransitionDefinition OutboundTransitionDefinition(
+        string request = "outbound-request",
+        string transition = "outbound-transition",
+        string target = "outbound-zone",
+        MapId? sourceMap = null,
+        MapPosition? source = null,
+        string sourceSetup = "synthetic-setup",
+        MapId? destinationMap = null,
+        MapPosition? destination = null,
+        string destinationSetup = "outbound-setup",
+        SemanticFacing destinationFacing = SemanticFacing.East,
+        string cue = "outbound-ready") =>
+        new(
+            new MapOutboundTransitionRequestId(request),
+            new MapOutboundTransitionId(transition),
+            new EventTargetId(target),
+            sourceMap ?? new MapId("map3"),
+            source ?? new MapPosition(0, 1),
+            new MapSetupId(sourceSetup),
+            destinationMap ?? new MapId("public-synthetic-outbound-shell"),
+            destination ?? new MapPosition(1, 1),
+            new MapSetupId(destinationSetup),
+            destinationFacing,
             new PresentationCueId(cue));
 
     private static MapEntityDefinition EntityDefinition(

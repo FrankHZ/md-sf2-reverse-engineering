@@ -26,9 +26,11 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         "public-synthetic-map3-field-search-v1";
     public const string ItemAcquisitionCapability =
         "public-synthetic-map3-placeholder-item-acquisition-v1";
+    public const string OutboundTransitionCapability =
+        "public-synthetic-map3-outbound-cross-map-transition-v1";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
     public const string ExpectedContentDigest =
-        "a121961c1af9e2d9323d9907d6942464f991b324b5a7aac88dccf748b62b18c4";
+        "73c335147f85e1ac7ae8fc458036d3861d5832e652f01edd11398d06ee76c5c7";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -36,6 +38,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
     private const string ScenarioId = "map3-public-synthetic-smoke";
     private const string DisplayName = "Map 3 public-synthetic exploration smoke";
     private const string Map3 = "map3";
+    private const string OutboundShell = "public-synthetic-outbound-shell";
     private const string SetupIdentity = "ms_map3";
     private const string InitIdentity = "ms_map3_InitFunction";
 
@@ -139,6 +142,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             MapId currentMap = new(document.Admission.CurrentMap);
             MapScenarioContextDefinition mapContext = BuildMapContext(
                 document.MapContext,
+                document.OutboundShell,
                 document.InitialSemanticFacing,
                 currentMap,
                 layout,
@@ -238,6 +242,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     DialogueCapability,
                     FieldSearchCapability,
                     ItemAcquisitionCapability,
+                    OutboundTransitionCapability,
                 ],
                 StringComparer.Ordinal) ||
             !document.EvidenceOwnerIds.SequenceEqual([EvidenceOwner], StringComparer.Ordinal))
@@ -286,6 +291,19 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                 "The synthetic layout and walkability dimensions or defaults are invalid.");
         }
 
+        if (!string.Equals(document.OutboundShell.MapId, OutboundShell, StringComparison.Ordinal) ||
+            document.OutboundShell.LayoutRecipe.Width != WorkingMapLayout.ColumnCount ||
+            document.OutboundShell.LayoutRecipe.Height != WorkingMapLayout.RowCount ||
+            document.OutboundShell.Walkability.Width != WorkingMapLayout.ColumnCount ||
+            document.OutboundShell.Walkability.Height != WorkingMapLayout.RowCount ||
+            document.OutboundShell.Walkability.DefaultPassable)
+        {
+            return Diagnostic(
+                ScenarioAdmissionFailureCode.InvalidMap,
+                "outboundShell",
+                "The outbound shell must remain the exact bounded public-synthetic runtime.");
+        }
+
         if (document.MapContext.FieldSearches.Length != 1)
         {
             return Diagnostic(
@@ -300,6 +318,14 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                 ScenarioAdmissionFailureCode.InvalidDocument,
                 "mapContext.itemAcquisitions",
                 "The bounded public-synthetic package requires exactly one item-acquisition definition.");
+        }
+
+        if (document.MapContext.OutboundTransitions.Length != 1)
+        {
+            return Diagnostic(
+                ScenarioAdmissionFailureCode.InvalidDocument,
+                "mapContext.outboundTransitions",
+                "The bounded public-synthetic package requires exactly one outbound transition.");
         }
 
         return null;
@@ -369,6 +395,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
 
     private static MapScenarioContextDefinition BuildMapContext(
         MapContextDocument context,
+        OutboundShellDocument outboundShell,
         string initialSemanticFacing,
         MapId currentMap,
         WorkingMapLayout layout,
@@ -389,6 +416,9 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             context.AreaDescriptions.Entries.Select(BuildAreaDescriptionEntry));
         MapSetupEventTable<ZoneEventRecord> zoneEvents = new(
             context.ZoneEvents.Select(BuildZoneEventRecord));
+        WorkingMapLayout outboundLayout = BuildLayout(outboundShell.LayoutRecipe);
+        SyntheticWalkabilityGrid outboundWalkability =
+            BuildWalkability(outboundShell.Walkability);
         MapExplorationRuntimeCatalog mapRuntimes = new(
             [
                 new MapExplorationRuntimeDefinition(
@@ -397,6 +427,16 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     walkability,
                     areaDescriptions,
                     zoneEvents),
+                new MapExplorationRuntimeDefinition(
+                    new MapId(outboundShell.MapId),
+                    outboundLayout,
+                    outboundWalkability,
+                    MapAreaDescriptionSource.Table(
+                        outboundShell.AreaDescriptions.DescriptionTextBase,
+                        outboundShell.AreaDescriptions.Entries.Select(
+                            BuildAreaDescriptionEntry)),
+                    new MapSetupEventTable<ZoneEventRecord>(
+                        outboundShell.ZoneEvents.Select(BuildZoneEventRecord))),
             ]);
         MapEventRequestCatalog eventRequests = new(
             context.EventRequests.Select(entry =>
@@ -440,6 +480,22 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             context.FieldSearches.Select(BuildFieldSearchDefinition));
         MapItemAcquisitionCatalog itemAcquisitions = new(
             context.ItemAcquisitions.Select(BuildItemAcquisitionDefinition));
+        MapOutboundTransitionCatalog outboundTransitions = new(
+            context.OutboundTransitions.Select(entry =>
+                new MapOutboundTransitionDefinition(
+                    new MapOutboundTransitionRequestId(entry.RequestId),
+                    new MapOutboundTransitionId(entry.TransitionId),
+                    new EventTargetId(entry.ZoneTargetId),
+                    new MapId(entry.SourceMapId),
+                    new MapPosition(entry.SourcePosition.X, entry.SourcePosition.Y),
+                    new MapSetupId(entry.SourceSetupId),
+                    new MapId(entry.DestinationMapId),
+                    new MapPosition(
+                        entry.DestinationPosition.X,
+                        entry.DestinationPosition.Y),
+                    new MapSetupId(entry.DestinationSetupId),
+                    ParseSemanticFacing(entry.DestinationFacing),
+                    new PresentationCueId(entry.CueId))));
         return new MapScenarioContextDefinition(
             mapRuntimes,
             setupCatalog,
@@ -452,7 +508,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             entityInteractions,
             dialogues,
             fieldSearches,
-            itemAcquisitions);
+            itemAcquisitions,
+            outboundTransitions);
     }
 
     private static MapEntityInteractionDefinition BuildEntityInteractionDefinition(
@@ -537,7 +594,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             "south" => SemanticFacing.South,
             "west" => SemanticFacing.West,
             _ => throw new ArgumentException(
-                "The synthetic initial semantic facing is not recognized.",
+                "The synthetic semantic facing is not recognized.",
                 nameof(value)),
         };
 
@@ -643,6 +700,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required WalkabilityDocument Walkability { get; init; }
 
         public required MapContextDocument MapContext { get; init; }
+
+        public required OutboundShellDocument OutboundShell { get; init; }
     }
 
     private sealed class ProvenanceDocument
@@ -744,6 +803,21 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required FieldSearchDocument[] FieldSearches { get; init; }
 
         public required ItemAcquisitionDocument[] ItemAcquisitions { get; init; }
+
+        public required OutboundTransitionDocument[] OutboundTransitions { get; init; }
+    }
+
+    private sealed class OutboundShellDocument
+    {
+        public required string MapId { get; init; }
+
+        public required LayoutRecipeDocument LayoutRecipe { get; init; }
+
+        public required WalkabilityDocument Walkability { get; init; }
+
+        public required AreaDescriptionsDocument AreaDescriptions { get; init; }
+
+        public required ZoneEventDocument[] ZoneEvents { get; init; }
     }
 
     private sealed class SetupCatalogEntryDocument
@@ -839,6 +913,31 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required PositionDocument DestinationPosition { get; init; }
 
         public required string DestinationOrientationId { get; init; }
+
+        public required string CueId { get; init; }
+    }
+
+    private sealed class OutboundTransitionDocument
+    {
+        public required string RequestId { get; init; }
+
+        public required string TransitionId { get; init; }
+
+        public required string ZoneTargetId { get; init; }
+
+        public required string SourceMapId { get; init; }
+
+        public required PositionDocument SourcePosition { get; init; }
+
+        public required string SourceSetupId { get; init; }
+
+        public required string DestinationMapId { get; init; }
+
+        public required PositionDocument DestinationPosition { get; init; }
+
+        public required string DestinationSetupId { get; init; }
+
+        public required string DestinationFacing { get; init; }
 
         public required string CueId { get; init; }
     }
