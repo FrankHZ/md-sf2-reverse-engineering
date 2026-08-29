@@ -77,12 +77,14 @@ public sealed record MapScenarioDefinition
         string scenarioId,
         string displayName,
         ExplorationMovementState startState,
-        ScenarioAdmissionFacts admissionFacts)
+        ScenarioAdmissionFacts admissionFacts,
+        MapScenarioContextDefinition mapContext)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
         StartState = startState ?? throw new ArgumentNullException(nameof(startState));
         AdmissionFacts = admissionFacts ?? throw new ArgumentNullException(nameof(admissionFacts));
+        MapContext = mapContext ?? throw new ArgumentNullException(nameof(mapContext));
         if (startState.Map != admissionFacts.CurrentMap ||
             startState.PlayerPosition != admissionFacts.LogicalStartPosition)
         {
@@ -102,6 +104,8 @@ public sealed record MapScenarioDefinition
     public ExplorationMovementState StartState { get; }
 
     public ScenarioAdmissionFacts AdmissionFacts { get; }
+
+    public MapScenarioContextDefinition MapContext { get; }
 }
 
 public sealed class ScenarioAdmissionReceipt

@@ -32,12 +32,44 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             [PublicSyntheticMap3PackageReader.EvidenceOwner],
             accepted.Receipt.EvidenceOwnerIds);
         Assert.Equal(
-            [PublicSyntheticMap3PackageReader.Capability],
+            [
+                PublicSyntheticMap3PackageReader.Capability,
+                PublicSyntheticMap3PackageReader.ContextCapability,
+            ],
             accepted.Receipt.Capabilities);
         string trackedDigest = Convert.ToHexString(
             SHA256.HashData(File.ReadAllBytes(PackagePath()))).ToLowerInvariant();
         Assert.Equal(PublicSyntheticMap3PackageReader.ExpectedContentDigest, trackedDigest);
         Assert.Equal(trackedDigest, accepted.Receipt.ContentDigest);
+    }
+
+    [Fact]
+    public void TrackedPackageBuildsTypedSyntheticSetupAreaAndZoneSelectors()
+    {
+        PublicSyntheticMap3PackageReader reader = new(TrackedContentRoot);
+        MapScenarioAccepted accepted = AssertAccepted(reader.Admit(Request()));
+
+        MapScenarioContextDefinition context = accepted.Scenario.MapContext;
+        MapSetupId setup = context.SetupCatalog.Select(
+            accepted.Scenario.StartState.Map,
+            context.VoidSetup,
+            context.IsFlagSet);
+        AreaDescriptionSelection area = MapAreaDescriptionSelector.Select(
+            context.AreaDescriptions,
+            new MapAreaDescriptionQuery(57, 3, AreaDescriptionAdmission.Ordinary));
+        ZoneEventSelection zone = MapSetupEventSelector.Select(
+            context.ZoneEvents,
+            new ZoneEventQuery(57, 3));
+        ZoneEventSelection fallbackZone = MapSetupEventSelector.Select(
+            context.ZoneEvents,
+            new ZoneEventQuery(56, 3));
+
+        Assert.Equal("ms_map3", setup.Value);
+        Assert.Equal(AreaDescriptionSelectionKind.Text, area.Kind);
+        Assert.Equal(MapAreaDescriptionSelector.InvestigationTextIndexBase, area.InvestigationTextIndex);
+        Assert.Equal(1000, area.DescriptionTextIndex);
+        Assert.Equal("synthetic-map3-east-zone", zone.Target.Value);
+        Assert.Equal("synthetic-no-zone", fallbackZone.Target.Value);
     }
 
     [Fact]

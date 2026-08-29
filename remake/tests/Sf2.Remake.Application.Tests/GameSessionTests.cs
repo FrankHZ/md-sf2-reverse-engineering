@@ -39,6 +39,59 @@ public sealed class GameSessionTests
     }
 
     [Fact]
+    public void ContextCommandSelectsSetupAreaAndZoneAtCurrentSnapshotPosition()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        GameSessionCommandApplied moved = Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+
+        GameSessionContextSelected selected = Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+
+        Assert.Equal(moved.Snapshot.Exploration.PlayerPosition, selected.Selection.Position);
+        Assert.Equal("synthetic-setup", selected.Selection.SelectedSetup.Value);
+        Assert.Equal(AreaDescriptionSelectionKind.Text, selected.Selection.AreaDescription.Kind);
+        Assert.Equal(424, selected.Selection.AreaDescription.InvestigationTextIndex);
+        Assert.Equal(1002, selected.Selection.AreaDescription.DescriptionTextIndex);
+        Assert.Equal("east-zone", selected.Selection.ZoneEvent.Target.Value);
+        Assert.Equal(2, selected.Snapshot.SimulationStep);
+        Assert.Same(selected.Selection, selected.Snapshot.ContextSelection);
+    }
+
+    [Fact]
+    public void ContextCommandUsesDefaultZoneWithoutExecutingItsOpaqueTarget()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+
+        GameSessionContextSelected selected = Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+
+        Assert.Equal(AreaDescriptionSelectionKind.NoMatch, selected.Selection.AreaDescription.Kind);
+        Assert.Equal("no-zone", selected.Selection.ZoneEvent.Target.Value);
+        Assert.Equal(1, selected.Snapshot.SimulationStep);
+    }
+
+    [Fact]
+    public void MovementClearsAStaleContextSelection()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        GameSessionContextSelected selected = Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+
+        GameSessionCommandApplied moved = Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+
+        Assert.NotNull(selected.Snapshot.ContextSelection);
+        Assert.Null(moved.Snapshot.ContextSelection);
+    }
+
+    [Fact]
     public void RestartCreatesIndependentSessionFromImmutableDefinition()
     {
         IMapScenarioSource source = CreateAcceptedSource();
@@ -115,7 +168,8 @@ public sealed class GameSessionTests
             "synthetic-scenario",
             "Synthetic scenario",
             exploration,
-            facts);
+            facts,
+            CreateMapContext(map));
         ScenarioAdmissionReceipt receipt = new(
             "synthetic-package",
             schemaVersion: 1,
@@ -125,6 +179,47 @@ public sealed class GameSessionTests
             ["evidence-owner"],
             ["capability"]);
         return new AcceptedSource(definition, receipt);
+    }
+
+    private static MapScenarioContextDefinition CreateMapContext(MapId map)
+    {
+        MapSetupCatalog setupCatalog = new(
+            [
+                new MapSetupCatalogEntry(
+                    map,
+                    new MapSetupRoute(
+                        new MapSetupId("synthetic-setup"),
+                        [
+                            new MapSetupFlagVariant(
+                                new FlagId("alternate-enabled"),
+                                new MapSetupId("alternate-setup")),
+                        ])),
+            ]);
+        MapAreaDescriptionSource descriptions = MapAreaDescriptionSource.Table(
+            descriptionTextBase: 1000,
+            [
+                new MapAreaDescriptionEntry(
+                    x: 2,
+                    y: 1,
+                    AreaDescriptionCondition.Always,
+                    AreaDescriptionPayload.Text(
+                        investigationOffset: 1,
+                        descriptionOffset: 2)),
+            ]);
+        MapSetupEventTable<ZoneEventRecord> zoneEvents = new(
+            [
+                ZoneEventRecord.Specific(
+                    EventFieldMatch.Exact(2),
+                    EventFieldMatch.Exact(1),
+                    new EventTargetId("east-zone")),
+                ZoneEventRecord.Default(new EventTargetId("no-zone")),
+            ]);
+        return new MapScenarioContextDefinition(
+            setupCatalog,
+            new MapSetupId("void-setup"),
+            setFlags: [],
+            descriptions,
+            zoneEvents);
     }
 
     private sealed record UnknownCommand : IGameSessionCommand;

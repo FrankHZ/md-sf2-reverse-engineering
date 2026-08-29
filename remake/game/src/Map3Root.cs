@@ -16,6 +16,7 @@ public sealed partial class Map3Root : Node2D
     private ScenarioAdmissionReceipt? _admissionReceipt;
     private SyntheticMapViewport? _viewport;
     private Label? _status;
+    private Label? _contextStatus;
 
     public override void _Ready()
     {
@@ -47,6 +48,10 @@ public sealed partial class Map3Root : Node2D
         else if (Input.IsActionJustPressed("move_west"))
         {
             ApplyMove(ExplorationDirection.West);
+        }
+        else if (Input.IsActionJustPressed("select_context"))
+        {
+            ApplyContextSelection();
         }
     }
 
@@ -98,9 +103,31 @@ public sealed partial class Map3Root : Node2D
         }
     }
 
+    private void ApplyContextSelection()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary));
+        if (result is GameSessionContextSelected selected)
+        {
+            ProjectSnapshot("Context selected");
+            return;
+        }
+
+        GameSessionCommandRejected rejected = (GameSessionCommandRejected)result;
+        if (_status is not null)
+        {
+            _status.Text = rejected.Diagnostic.Message;
+        }
+    }
+
     private void ProjectSnapshot(string outcome)
     {
-        if (_session is null || _viewport is null || _status is null)
+        if (_session is null || _viewport is null || _status is null || _contextStatus is null)
         {
             return;
         }
@@ -111,7 +138,10 @@ public sealed partial class Map3Root : Node2D
             $"Map {snapshot.AdmissionFacts.CurrentMap}  " +
             $"Tile ({snapshot.Exploration.PlayerPosition.X}, " +
             $"{snapshot.Exploration.PlayerPosition.Y})  " +
-            $"Step {snapshot.SimulationStep}  {outcome}  |  WASD";
+            $"Step {snapshot.SimulationStep}  {outcome}  |  WASD + Enter";
+        _contextStatus.Text = snapshot.ContextSelection is null
+            ? "Context not selected."
+            : FormatContext(snapshot.ContextSelection);
     }
 
     private void RunHeadlessSmoke()
@@ -131,14 +161,28 @@ public sealed partial class Map3Root : Node2D
             return;
         }
 
-        ProjectSnapshot(applied.Outcome.ToString());
+        GameSessionContextSelected? selected = _session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)) as
+            GameSessionContextSelected;
+        if (selected is null ||
+            selected.Selection.Position != applied.Snapshot.Exploration.PlayerPosition ||
+            selected.Selection.SelectedSetup.Value != applied.Snapshot.AdmissionFacts.SetupIdentity ||
+            selected.Selection.AreaDescription.Kind != AreaDescriptionSelectionKind.Text ||
+            selected.Selection.ZoneEvent.Target.Value != "synthetic-map3-east-zone")
+        {
+            FailStartup("The bounded synthetic setup/area/event selection did not match.");
+            return;
+        }
+
+        ProjectSnapshot("Context selected");
         object receipt = new
         {
             status = "Pass",
             profile = "public-synthetic",
             scenarioId = applied.Snapshot.ScenarioId,
             exactControlledAdmission = _admissionReceipt.ExactControlledAdmission,
-            capability = _admissionReceipt.Capabilities.Single(),
+            capability = _admissionReceipt.Capabilities.Single(
+                capability => capability == PublicSyntheticMap3PackageReader.Capability),
             evidenceOwner = _admissionReceipt.EvidenceOwnerIds.Single(),
             mapId = applied.Snapshot.AdmissionFacts.CurrentMap.Value,
             opaqueStartFacing = applied.Snapshot.AdmissionFacts.OpaqueStartFacing,
@@ -188,7 +232,7 @@ public sealed partial class Map3Root : Node2D
 
         Label explanation = new()
         {
-            Text = "Project-authored grid and traversal only; original collision, art, events, and timing are unknown.",
+            Text = "Project-authored grid, traversal, and selector data; opaque targets are selected, never executed.",
             Position = new Vector2(24, 55),
         };
         explanation.AddThemeFontSizeOverride("font_size", 16);
@@ -207,6 +251,14 @@ public sealed partial class Map3Root : Node2D
         };
         _status.AddThemeFontSizeOverride("font_size", 18);
         AddChild(_status);
+
+        _contextStatus = new Label
+        {
+            Text = "Context not selected.",
+            Position = new Vector2(24, 500),
+        };
+        _contextStatus.AddThemeFontSizeOverride("font_size", 15);
+        AddChild(_contextStatus);
     }
 
     private static void RegisterInputMap()
@@ -215,6 +267,7 @@ public sealed partial class Map3Root : Node2D
         RegisterAction("move_east", Key.D);
         RegisterAction("move_south", Key.S);
         RegisterAction("move_west", Key.A);
+        RegisterAction("select_context", Key.Enter);
     }
 
     private static void RegisterAction(string action, Key physicalKey)
@@ -236,5 +289,21 @@ public sealed partial class Map3Root : Node2D
             {
                 PhysicalKeycode = physicalKey,
             });
+    }
+
+    private static string FormatContext(ExplorationContextSelectionSnapshot selection)
+    {
+        string area = selection.AreaDescription.Kind switch
+        {
+            AreaDescriptionSelectionKind.NoMatch => "none",
+            AreaDescriptionSelectionKind.Text =>
+                $"text {selection.AreaDescription.InvestigationTextIndex}/" +
+                $"{selection.AreaDescription.DescriptionTextIndex}",
+            AreaDescriptionSelectionKind.Function =>
+                $"opaque function {selection.AreaDescription.Function}",
+            _ => "unknown",
+        };
+        return $"Setup {selection.SelectedSetup}  Area {area}  " +
+            $"Zone {selection.ZoneEvent.Target} (selected only)";
     }
 }
