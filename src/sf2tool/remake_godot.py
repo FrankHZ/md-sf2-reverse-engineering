@@ -672,8 +672,9 @@ def run_bounded_process(
     arguments = tuple(str(item) for item in command)
     creationflags = 0
     if os.name == "nt":
-        creationflags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) | getattr(
-            subprocess, "CREATE_SUSPENDED", 0x00000004
+        creationflags = (
+            getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+            | getattr(subprocess, "CREATE_SUSPENDED", 0x00000004)
         )
     process = subprocess.Popen(
         arguments,
@@ -782,6 +783,26 @@ def _new_scratch(scratch_parent: Path) -> Path:
     scratch = parent / f"public-synthetic-{uuid.uuid4().hex}"
     scratch.mkdir()
     return scratch
+
+
+def _gate_environment(scratch: Path) -> dict[str, str]:
+    environment = dict(os.environ)
+    environment.update(
+        {
+            "APPDATA": str(scratch / "appdata"),
+            "LOCALAPPDATA": str(scratch / "localappdata"),
+            "DOTNET_CLI_HOME": str(scratch / "dotnet-home"),
+            "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+            "DOTNET_CLI_UI_LANGUAGE": "en-US",
+            "DOTNET_CLI_USE_MSBUILD_SERVER": "false",
+            "DOTNET_NOLOGO": "1",
+            "GODOT_SILENCE_ROOT_WARNING": "1",
+            "MSBUILDDISABLENODEREUSE": "1",
+            "MSBUILDUSESERVER": "0",
+            "UseSharedCompilation": "false",
+        }
+    )
+    return environment
 
 
 def _find_editor(editor_root: Path) -> Path:
@@ -958,18 +979,7 @@ def verify_remake_godot(
         export_root = scratch / "export"
         export_root.mkdir()
         export_path = export_root / "sf2-map3-public-synthetic.exe"
-        environment = dict(os.environ)
-        environment.update(
-            {
-                "APPDATA": str(scratch / "appdata"),
-                "LOCALAPPDATA": str(scratch / "localappdata"),
-                "DOTNET_CLI_HOME": str(scratch / "dotnet-home"),
-                "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
-                "DOTNET_CLI_UI_LANGUAGE": "en-US",
-                "DOTNET_NOLOGO": "1",
-                "GODOT_SILENCE_ROOT_WARNING": "1",
-            }
-        )
+        environment = _gate_environment(scratch)
         def run(step: str, arguments: Iterable[str | Path], timeout: int) -> ProcessReceipt:
             result = process_runner(
                 step,
@@ -993,7 +1003,13 @@ def verify_remake_godot(
         solution = workspace / "remake" / "Sf2.Remake.sln"
         run(
             "restore",
-            ["dotnet", "restore", solution, "--locked-mode"],
+            [
+                "dotnet",
+                "restore",
+                solution,
+                "--locked-mode",
+                "--disable-build-servers",
+            ],
             toolchain.timeouts.restore,
         )
         run(
@@ -1005,6 +1021,7 @@ def verify_remake_godot(
                 "--configuration",
                 "Debug",
                 "--no-restore",
+                "--disable-build-servers",
             ],
             toolchain.timeouts.build,
         )
