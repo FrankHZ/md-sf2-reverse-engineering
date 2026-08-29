@@ -20,14 +20,16 @@ project decisions belong in their owning tracked documents.
   [ADR 0008](./docs/decisions/0008-godot-csharp-cli-first-remake-tooling.md): Godot 4.7.2 .NET with
   C#, CLI-first gates, a plain-C# domain layer, a thin Godot adapter, and optional removable MCP
   tooling.
-- **Remake implementation:** not started. The accepted first playable milestone is one continuous
-  scenario from Map 3 through completion of Battle 01 under
-  [ADR 0009](./docs/decisions/0009-first-phase4-playable-slice.md). Its eventual acceptance retains
-  targeted Research/Design gap closure and a main-gate readiness report. Under
-  [ADR 0016](./docs/decisions/0016-remake-start-evidence-deferral.md), those natural-continuity and
-  H4 rows are not default prerequisites for a separately explicit user-authorized bounded start; they
-  remain deferred/conditional acceptance work. No distributable asset strategy or MCP implementation
-  has been selected.
+- **Remake implementation:** active within a bounded Phase 4 start explicitly authorized by the user
+  on 2026-08-28 under
+  [ADR 0016](./docs/decisions/0016-remake-start-evidence-deferral.md). The tracked [`remake/`](./remake/)
+  project currently contains a pure plain-C# Domain implementation and tests; Application, Content,
+  and Godot layers remain later owned slices. The accepted first playable milestone is still one
+  continuous scenario from Map 3 through completion of Battle 01 under
+  [ADR 0009](./docs/decisions/0009-first-phase4-playable-slice.md). Its Research/Design closures,
+  main-gate readiness, and H4 result remain incomplete eventual acceptance work, not default
+  prerequisites for the authorized bounded implementation. No distributable asset strategy or MCP
+  implementation has been selected.
 
 This README intentionally does **not** maintain fixture totals, address counts, coverage percentages,
 or per-subsystem corpus sizes. Those snapshots became stale as soon as another research slice merged.
@@ -156,11 +158,13 @@ tools/                  Repeatable inspection and emulator-support tools
 scripts/                Frozen compatibility layer for remaining legacy H1–H3 rails
 tests/fixtures/         Small redistributable metadata and behavioral expectations
 tests/python/           Project-owned unit and contract tests
+remake/                 Bounded Phase 4 implementation under the accepted runtime architecture
 local/                  Ignored ROMs, saves, traces, upstream checkouts, and generated output
 ```
 
-The planned `remake/` path does not exist yet. It will be created only after the relevant contracts
-and engine decision are accepted; the project does not create empty scaffolding for future phases.
+The tracked `remake/` path now exists for the explicitly authorized bounded Phase 4 implementation.
+It currently contains only concrete plain-C# Domain behavior and its tests; future Application,
+Content, Godot, and other paths are still added only when a concrete slice owns them.
 
 Research explains evidence. Evidence-bound design contracts express implementation-neutral behavior.
 Cross-subsystem design synthesis connects accepted owners. Decision records own project choices. A
@@ -286,9 +290,10 @@ contract. A future remake must use placeholders or properly licensed assets for 
    synthesis; upper-layer decisions remain future work.
 - **Phase 4 — Modern Engine Vertical Slice:** the Godot 4.7.2 .NET/C# baseline and first continuous
   Map 3-through-Battle 01-completion milestone are accepted as the eventual acceptance target;
-  Research/Design gap audits and main-gate readiness remain open for that target. A separate explicit
-  user authorization may start a bounded implementation slice under ADR 0016 — implementation has
-  not started.
+  Research/Design gap audits, main-gate readiness, and H4 remain open for that target. The user
+  explicitly authorized a bounded implementation start on 2026-08-28 under ADR 0016, and the current
+  `remake/` implementation is limited to the pure Domain layer. Those eventual acceptance gaps are not
+  default prerequisites for continuing the authorized bounded implementation.
 - **Phase 5 — Content and Productization:** licensed/placeholder assets, localization, accessibility,
    distribution, and release QA — not started.
 
