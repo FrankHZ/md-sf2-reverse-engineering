@@ -17,6 +17,7 @@ public sealed partial class Map3Root : Node2D
     private SyntheticMapViewport? _viewport;
     private Label? _status;
     private Label? _contextStatus;
+    private Label? _eventRequestStatus;
 
     public override void _Ready()
     {
@@ -52,6 +53,14 @@ public sealed partial class Map3Root : Node2D
         else if (Input.IsActionJustPressed("select_context"))
         {
             ApplyContextSelection();
+        }
+        else if (Input.IsActionJustPressed("request_event"))
+        {
+            ApplyEventRequest();
+        }
+        else if (Input.IsActionJustPressed("acknowledge_event"))
+        {
+            ApplyEventRequestAcknowledgement();
         }
     }
 
@@ -125,9 +134,56 @@ public sealed partial class Map3Root : Node2D
         }
     }
 
+    private void ApplyEventRequest()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(new RequestSelectedZoneEventCommand());
+        if (result is GameSessionEventRequested)
+        {
+            ProjectSnapshot("Event request pending");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyEventRequestAcknowledgement()
+    {
+        if (_session?.Snapshot.EventRequest is not MapEventRequestSnapshot request)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new AcknowledgeMapEventRequestCommand(request.Request, request.CueSequence));
+        if (result is GameSessionEventRequestAcknowledged)
+        {
+            ProjectSnapshot("Event request acknowledged");
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ProjectRejection(GameSessionCommandRejected rejected)
+    {
+        if (_status is not null)
+        {
+            _status.Text = rejected.Diagnostic.Message;
+        }
+    }
+
     private void ProjectSnapshot(string outcome)
     {
-        if (_session is null || _viewport is null || _status is null || _contextStatus is null)
+        if (_session is null ||
+            _viewport is null ||
+            _status is null ||
+            _contextStatus is null ||
+            _eventRequestStatus is null)
         {
             return;
         }
@@ -138,10 +194,13 @@ public sealed partial class Map3Root : Node2D
             $"Map {snapshot.AdmissionFacts.CurrentMap}  " +
             $"Tile ({snapshot.Exploration.PlayerPosition.X}, " +
             $"{snapshot.Exploration.PlayerPosition.Y})  " +
-            $"Step {snapshot.SimulationStep}  {outcome}  |  WASD + Enter";
+            $"Step {snapshot.SimulationStep}  {outcome}  |  WASD / Enter / Z / X";
         _contextStatus.Text = snapshot.ContextSelection is null
             ? "Context not selected."
             : FormatContext(snapshot.ContextSelection);
+        _eventRequestStatus.Text = snapshot.EventRequest is null
+            ? "Event request: none."
+            : FormatEventRequest(snapshot.EventRequest);
     }
 
     private void RunHeadlessSmoke()
@@ -174,7 +233,31 @@ public sealed partial class Map3Root : Node2D
             return;
         }
 
-        ProjectSnapshot("Context selected");
+        GameSessionEventRequested? requested = _session.Apply(
+            new RequestSelectedZoneEventCommand()) as GameSessionEventRequested;
+        if (requested is null ||
+            requested.Request.Status != MapEventRequestStatus.Pending ||
+            requested.Request.Target != selected.Selection.ZoneEvent.Target ||
+            requested.Cue.Cue.Value != "synthetic-map3-east-zone-selected" ||
+            !requested.Cue.RequiresAcknowledgement)
+        {
+            FailStartup("The bounded synthetic event request was not admitted.");
+            return;
+        }
+
+        GameSessionEventRequestAcknowledged? acknowledged = _session.Apply(
+            new AcknowledgeMapEventRequestCommand(
+                requested.Request.Request,
+                requested.Cue.Sequence)) as GameSessionEventRequestAcknowledged;
+        if (acknowledged is null ||
+            acknowledged.Request.Status != MapEventRequestStatus.Acknowledged ||
+            acknowledged.Request.CueSequence != requested.Cue.Sequence)
+        {
+            FailStartup("The bounded synthetic event request was not acknowledged.");
+            return;
+        }
+
+        ProjectSnapshot("Event request acknowledged");
         object receipt = new
         {
             status = "Pass",
@@ -232,7 +315,7 @@ public sealed partial class Map3Root : Node2D
 
         Label explanation = new()
         {
-            Text = "Project-authored grid, traversal, and selector data; opaque targets are selected, never executed.",
+            Text = "Project-authored selectors and request cues; opaque targets are never interpreted or executed.",
             Position = new Vector2(24, 55),
         };
         explanation.AddThemeFontSizeOverride("font_size", 16);
@@ -247,7 +330,7 @@ public sealed partial class Map3Root : Node2D
         _status = new Label
         {
             Text = "Admitting synthetic package...",
-            Position = new Vector2(24, 465),
+            Position = new Vector2(24, 450),
         };
         _status.AddThemeFontSizeOverride("font_size", 18);
         AddChild(_status);
@@ -255,10 +338,18 @@ public sealed partial class Map3Root : Node2D
         _contextStatus = new Label
         {
             Text = "Context not selected.",
-            Position = new Vector2(24, 500),
+            Position = new Vector2(24, 480),
         };
         _contextStatus.AddThemeFontSizeOverride("font_size", 15);
         AddChild(_contextStatus);
+
+        _eventRequestStatus = new Label
+        {
+            Text = "Event request: none.",
+            Position = new Vector2(24, 510),
+        };
+        _eventRequestStatus.AddThemeFontSizeOverride("font_size", 15);
+        AddChild(_eventRequestStatus);
     }
 
     private static void RegisterInputMap()
@@ -268,6 +359,8 @@ public sealed partial class Map3Root : Node2D
         RegisterAction("move_south", Key.S);
         RegisterAction("move_west", Key.A);
         RegisterAction("select_context", Key.Enter);
+        RegisterAction("request_event", Key.Z);
+        RegisterAction("acknowledge_event", Key.X);
     }
 
     private static void RegisterAction(string action, Key physicalKey)
@@ -306,4 +399,8 @@ public sealed partial class Map3Root : Node2D
         return $"Setup {selection.SelectedSetup}  Area {area}  " +
             $"Zone {selection.ZoneEvent.Target} (selected only)";
     }
+
+    private static string FormatEventRequest(MapEventRequestSnapshot request) =>
+        $"Event request {request.Request}: {request.Status}  " +
+        $"Cue #{request.CueSequence}  Target {request.Target} (opaque)";
 }

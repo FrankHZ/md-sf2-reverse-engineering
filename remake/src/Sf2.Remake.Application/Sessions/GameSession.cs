@@ -17,7 +17,9 @@ public sealed record GameSessionSnapshot
         long simulationStep,
         ExplorationMovementState exploration,
         ScenarioAdmissionFacts admissionFacts,
-        ExplorationContextSelectionSnapshot? contextSelection)
+        ExplorationContextSelectionSnapshot? contextSelection,
+        long lastCueSequence,
+        MapEventRequestSnapshot? eventRequest)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         if (!Enum.IsDefined(profile))
@@ -31,6 +33,14 @@ public sealed record GameSessionSnapshot
         }
 
         ArgumentOutOfRangeException.ThrowIfNegative(simulationStep);
+        ArgumentOutOfRangeException.ThrowIfNegative(lastCueSequence);
+        if (eventRequest is not null && eventRequest.CueSequence > lastCueSequence)
+        {
+            throw new ArgumentException(
+                "The event-request cue sequence cannot exceed the session cue sequence.",
+                nameof(eventRequest));
+        }
+
         ScenarioId = scenarioId;
         Profile = profile;
         FlowStage = flowStage;
@@ -38,6 +48,8 @@ public sealed record GameSessionSnapshot
         Exploration = exploration ?? throw new ArgumentNullException(nameof(exploration));
         AdmissionFacts = admissionFacts ?? throw new ArgumentNullException(nameof(admissionFacts));
         ContextSelection = contextSelection;
+        LastCueSequence = lastCueSequence;
+        EventRequest = eventRequest;
     }
 
     public string ScenarioId { get; }
@@ -53,6 +65,10 @@ public sealed record GameSessionSnapshot
     public ScenarioAdmissionFacts AdmissionFacts { get; }
 
     public ExplorationContextSelectionSnapshot? ContextSelection { get; }
+
+    public long LastCueSequence { get; }
+
+    public MapEventRequestSnapshot? EventRequest { get; }
 }
 
 public interface IGameSessionCommand;
@@ -76,6 +92,11 @@ public enum GameSessionCommandFailureCode
 {
     UnsupportedCommand,
     WrongFlowStage,
+    ContextSelectionRequired,
+    EventRequestNotAdmitted,
+    PendingAcknowledgement,
+    NoPendingAcknowledgement,
+    AcknowledgementMismatch,
 }
 
 public sealed record GameSessionCommandDiagnostic
@@ -178,10 +199,23 @@ public sealed class GameSession
     public GameSessionCommandResult Apply(IGameSessionCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
+        if (Snapshot.EventRequest?.Status == MapEventRequestStatus.Pending &&
+            command is not AcknowledgeMapEventRequestCommand)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.PendingAcknowledgement,
+                    "The pending map-event request must be acknowledged first."));
+        }
+
         return command switch
         {
             MoveExplorationCommand move => ApplyMove(move),
             SelectExplorationContextCommand selectContext => ApplyContextSelection(selectContext),
+            RequestSelectedZoneEventCommand => ApplyEventRequest(),
+            AcknowledgeMapEventRequestCommand acknowledge =>
+                ApplyEventRequestAcknowledgement(acknowledge),
             _ => new GameSessionCommandRejected(
                 Snapshot,
                 new GameSessionCommandDiagnostic(
@@ -211,7 +245,9 @@ public sealed class GameSession
             checked(Snapshot.SimulationStep + 1),
             transition.State,
             Snapshot.AdmissionFacts,
-            contextSelection: null);
+            contextSelection: null,
+            Snapshot.LastCueSequence,
+            Snapshot.EventRequest);
         return new GameSessionCommandApplied(Snapshot, transition.Outcome);
     }
 
@@ -252,8 +288,105 @@ public sealed class GameSession
             checked(Snapshot.SimulationStep + 1),
             Snapshot.Exploration,
             Snapshot.AdmissionFacts,
-            selection);
+            selection,
+            Snapshot.LastCueSequence,
+            Snapshot.EventRequest);
         return new GameSessionContextSelected(Snapshot, selection);
+    }
+
+    private GameSessionCommandResult ApplyEventRequest()
+    {
+        if (Snapshot.FlowStage != GameFlowStage.Exploration)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.WrongFlowStage,
+                    "Map-event requests are not admitted in this flow stage."));
+        }
+
+        ExplorationContextSelectionSnapshot? selection = Snapshot.ContextSelection;
+        if (selection is null)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.ContextSelectionRequired,
+                    "A current exploration-context selection is required."));
+        }
+
+        MapEventRequestDefinition? definition = _mapContext.EventRequests.FindByTarget(
+            selection.ZoneEvent.Target);
+        if (definition is null)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.EventRequestNotAdmitted,
+                    $"Zone target '{selection.ZoneEvent.Target}' has no admitted event request."));
+        }
+
+        long requestedAtStep = checked(Snapshot.SimulationStep + 1);
+        long cueSequence = checked(Snapshot.LastCueSequence + 1);
+        MapEventRequestSnapshot request = MapEventRequestSnapshot.Pending(
+            definition,
+            selection.Position,
+            requestedAtStep,
+            cueSequence);
+        MapEventRequestCue cue = new(
+            definition.Cue,
+            definition.Request,
+            definition.ZoneTarget,
+            selection.Position,
+            cueSequence);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            requestedAtStep,
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            Snapshot.ContextSelection,
+            cueSequence,
+            request);
+        return new GameSessionEventRequested(Snapshot, request, cue);
+    }
+
+    private GameSessionCommandResult ApplyEventRequestAcknowledgement(
+        AcknowledgeMapEventRequestCommand command)
+    {
+        MapEventRequestSnapshot? pending = Snapshot.EventRequest;
+        if (pending?.Status != MapEventRequestStatus.Pending)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.NoPendingAcknowledgement,
+                    "There is no pending map-event request to acknowledge."));
+        }
+
+        if (pending.Request != command.Request || pending.CueSequence != command.CueSequence)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.AcknowledgementMismatch,
+                    "The acknowledgement does not match the pending request and cue sequence."));
+        }
+
+        long acknowledgedAtStep = checked(Snapshot.SimulationStep + 1);
+        MapEventRequestSnapshot acknowledged = pending.Acknowledge(acknowledgedAtStep);
+        Snapshot = new GameSessionSnapshot(
+            Snapshot.ScenarioId,
+            Snapshot.Profile,
+            Snapshot.FlowStage,
+            acknowledgedAtStep,
+            Snapshot.Exploration,
+            Snapshot.AdmissionFacts,
+            Snapshot.ContextSelection,
+            Snapshot.LastCueSequence,
+            acknowledged);
+        return new GameSessionEventRequestAcknowledged(Snapshot, acknowledged);
     }
 
     private static GameSessionStarted StartAccepted(MapScenarioAccepted accepted)
@@ -266,7 +399,9 @@ public sealed class GameSession
                 simulationStep: 0,
                 accepted.Scenario.StartState,
                 accepted.Scenario.AdmissionFacts,
-                contextSelection: null),
+                contextSelection: null,
+                lastCueSequence: 0,
+                eventRequest: null),
             accepted.Scenario.MapContext);
         return new GameSessionStarted(
             session,

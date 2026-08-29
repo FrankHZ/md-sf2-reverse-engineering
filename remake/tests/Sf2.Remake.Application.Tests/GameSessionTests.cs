@@ -92,6 +92,146 @@ public sealed class GameSessionTests
     }
 
     [Fact]
+    public void EventRequestRequiresASelectedAndAdmittedZoneTarget()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        GameSessionSnapshot initial = started.Session.Snapshot;
+
+        GameSessionCommandRejected missingSelection = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new RequestSelectedZoneEventCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.ContextSelectionRequired,
+            missingSelection.Diagnostic.Code);
+        Assert.Same(initial, started.Session.Snapshot);
+
+        GameSessionContextSelected defaultSelection = Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        GameSessionCommandRejected defaultTarget = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new RequestSelectedZoneEventCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.EventRequestNotAdmitted,
+            defaultTarget.Diagnostic.Code);
+        Assert.Same(defaultSelection.Snapshot, started.Session.Snapshot);
+    }
+
+    [Fact]
+    public void EventRequestEmitsPendingCueAndRequiresExactAcknowledgement()
+    {
+        GameSessionStarted started = StartAtEastContext();
+
+        GameSessionEventRequested requested = Assert.IsType<GameSessionEventRequested>(
+            started.Session.Apply(new RequestSelectedZoneEventCommand()));
+
+        Assert.Equal("east-zone-request", requested.Request.Request.Value);
+        Assert.Equal("east-zone", requested.Request.Target.Value);
+        Assert.Equal(new MapPosition(2, 1), requested.Request.Position);
+        Assert.Equal(MapEventRequestStatus.Pending, requested.Request.Status);
+        Assert.Equal(3, requested.Request.RequestedAtStep);
+        Assert.Equal(1, requested.Request.CueSequence);
+        Assert.Null(requested.Request.AcknowledgedAtStep);
+        Assert.Equal("east-zone-selected", requested.Cue.Cue.Value);
+        Assert.Equal(1, requested.Cue.Sequence);
+        Assert.True(requested.Cue.RequiresAcknowledgement);
+        Assert.Equal(1, requested.Snapshot.LastCueSequence);
+        Assert.Same(requested.Request, requested.Snapshot.EventRequest);
+
+        GameSessionCommandRejected blockedMove = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.West)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.PendingAcknowledgement,
+            blockedMove.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        GameSessionCommandRejected wrongAcknowledgement =
+            Assert.IsType<GameSessionCommandRejected>(
+                started.Session.Apply(
+                    new AcknowledgeMapEventRequestCommand(
+                        new MapEventRequestId("wrong-request"),
+                        requested.Cue.Sequence)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.AcknowledgementMismatch,
+            wrongAcknowledgement.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        GameSessionCommandRejected wrongSequence = Assert.IsType<GameSessionCommandRejected>(
+            started.Session.Apply(
+                new AcknowledgeMapEventRequestCommand(
+                    requested.Request.Request,
+                    requested.Cue.Sequence + 1)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.AcknowledgementMismatch,
+            wrongSequence.Diagnostic.Code);
+        Assert.Same(requested.Snapshot, started.Session.Snapshot);
+
+        GameSessionEventRequestAcknowledged acknowledged =
+            Assert.IsType<GameSessionEventRequestAcknowledged>(
+                started.Session.Apply(
+                    new AcknowledgeMapEventRequestCommand(
+                        requested.Request.Request,
+                        requested.Cue.Sequence)));
+        Assert.Equal(MapEventRequestStatus.Acknowledged, acknowledged.Request.Status);
+        Assert.Equal(4, acknowledged.Request.AcknowledgedAtStep);
+        Assert.Equal(4, acknowledged.Snapshot.SimulationStep);
+        Assert.Equal(1, acknowledged.Snapshot.LastCueSequence);
+
+        GameSessionCommandRejected duplicateAcknowledgement =
+            Assert.IsType<GameSessionCommandRejected>(
+                started.Session.Apply(
+                    new AcknowledgeMapEventRequestCommand(
+                        requested.Request.Request,
+                        requested.Cue.Sequence)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.NoPendingAcknowledgement,
+            duplicateAcknowledgement.Diagnostic.Code);
+        Assert.Same(acknowledged.Snapshot, started.Session.Snapshot);
+    }
+
+    [Fact]
+    public void AcknowledgedContextCanIssueAnotherMonotonicCue()
+    {
+        GameSessionStarted started = StartAtEastContext();
+        GameSessionEventRequested first = Assert.IsType<GameSessionEventRequested>(
+            started.Session.Apply(new RequestSelectedZoneEventCommand()));
+        Assert.IsType<GameSessionEventRequestAcknowledged>(
+            started.Session.Apply(
+                new AcknowledgeMapEventRequestCommand(
+                    first.Request.Request,
+                    first.Cue.Sequence)));
+
+        GameSessionEventRequested second = Assert.IsType<GameSessionEventRequested>(
+            started.Session.Apply(new RequestSelectedZoneEventCommand()));
+
+        Assert.Equal(2, second.Cue.Sequence);
+        Assert.Equal(2, second.Snapshot.LastCueSequence);
+        Assert.Equal(MapEventRequestStatus.Pending, second.Request.Status);
+    }
+
+    [Fact]
+    public void EventRequestCatalogAndContextRejectDuplicateOrDanglingIdentities()
+    {
+        MapEventRequestDefinition first = RequestDefinition(
+            "request-1",
+            "east-zone",
+            "cue-1");
+
+        Assert.Throws<ArgumentException>(() => new MapEventRequestCatalog(
+            [first, RequestDefinition("request-1", "other-zone", "cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapEventRequestCatalog(
+            [first, RequestDefinition("request-2", "east-zone", "cue-2")]));
+        Assert.Throws<ArgumentException>(() => new MapEventRequestCatalog(
+            [first, RequestDefinition("request-2", "other-zone", "cue-1")]));
+
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            requestTarget: "missing-zone"));
+        Assert.Throws<ArgumentException>(() => CreateMapContext(
+            new MapId("map3"),
+            requestTarget: "no-zone"));
+    }
+
+    [Fact]
     public void RestartCreatesIndependentSessionFromImmutableDefinition()
     {
         IMapScenarioSource source = CreateAcceptedSource();
@@ -101,10 +241,16 @@ public sealed class GameSessionTests
             GameSession.Start(source, Request()));
 
         first.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East));
+        first.Session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary));
+        first.Session.Apply(new RequestSelectedZoneEventCommand());
 
         Assert.Equal(new MapPosition(2, 1), first.Session.Snapshot.Exploration.PlayerPosition);
+        Assert.Equal(MapEventRequestStatus.Pending, first.Session.Snapshot.EventRequest?.Status);
         Assert.Equal(new MapPosition(1, 1), restarted.Session.Snapshot.Exploration.PlayerPosition);
         Assert.Equal(0, restarted.Session.Snapshot.SimulationStep);
+        Assert.Equal(0, restarted.Session.Snapshot.LastCueSequence);
+        Assert.Null(restarted.Session.Snapshot.EventRequest);
     }
 
     [Fact]
@@ -181,7 +327,21 @@ public sealed class GameSessionTests
         return new AcceptedSource(definition, receipt);
     }
 
-    private static MapScenarioContextDefinition CreateMapContext(MapId map)
+    private static GameSessionStarted StartAtEastContext()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateAcceptedSource(), Request()));
+        Assert.IsType<GameSessionCommandApplied>(
+            started.Session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.IsType<GameSessionContextSelected>(
+            started.Session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        return started;
+    }
+
+    private static MapScenarioContextDefinition CreateMapContext(
+        MapId map,
+        string requestTarget = "east-zone")
     {
         MapSetupCatalog setupCatalog = new(
             [
@@ -214,13 +374,25 @@ public sealed class GameSessionTests
                     new EventTargetId("east-zone")),
                 ZoneEventRecord.Default(new EventTargetId("no-zone")),
             ]);
+        MapEventRequestCatalog eventRequests = new(
+            [RequestDefinition("east-zone-request", requestTarget, "east-zone-selected")]);
         return new MapScenarioContextDefinition(
             setupCatalog,
             new MapSetupId("void-setup"),
             setFlags: [],
             descriptions,
-            zoneEvents);
+            zoneEvents,
+            eventRequests);
     }
+
+    private static MapEventRequestDefinition RequestDefinition(
+        string request,
+        string target,
+        string cue) =>
+        new(
+            new MapEventRequestId(request),
+            new EventTargetId(target),
+            new PresentationCueId(cue));
 
     private sealed record UnknownCommand : IGameSessionCommand;
 

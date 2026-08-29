@@ -35,6 +35,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             [
                 PublicSyntheticMap3PackageReader.Capability,
                 PublicSyntheticMap3PackageReader.ContextCapability,
+                PublicSyntheticMap3PackageReader.EventRequestCapability,
             ],
             accepted.Receipt.Capabilities);
         string trackedDigest = Convert.ToHexString(
@@ -63,6 +64,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         ZoneEventSelection fallbackZone = MapSetupEventSelector.Select(
             context.ZoneEvents,
             new ZoneEventQuery(56, 3));
+        MapEventRequestDefinition? request = context.EventRequests.FindByTarget(zone.Target);
 
         Assert.Equal("ms_map3", setup.Value);
         Assert.Equal(AreaDescriptionSelectionKind.Text, area.Kind);
@@ -70,6 +72,9 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         Assert.Equal(1000, area.DescriptionTextIndex);
         Assert.Equal("synthetic-map3-east-zone", zone.Target.Value);
         Assert.Equal("synthetic-no-zone", fallbackZone.Target.Value);
+        Assert.NotNull(request);
+        Assert.Equal("synthetic-map3-east-zone-request", request.Request.Value);
+        Assert.Equal("synthetic-map3-east-zone-selected", request.Cue.Value);
     }
 
     [Fact]
@@ -171,6 +176,16 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             original => original.Replace(
                 "\"x\": 56, \"y\": 2",
                 "\"x\": 55, \"y\": 2",
+                StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void OtherwiseValidEventRequestCrossReferenceMutationFailsDigestAdmission()
+    {
+        AssertDigestMismatch(
+            original => original.Replace(
+                "\"zoneTargetId\": \"synthetic-map3-east-zone\"",
+                "\"zoneTargetId\": \"synthetic-no-zone\"",
                 StringComparison.Ordinal));
     }
 

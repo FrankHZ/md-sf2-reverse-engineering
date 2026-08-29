@@ -13,7 +13,8 @@
   ],
   "capabilities": [
     "map3-synthetic-exploration-smoke",
-    "public-synthetic-map3-context-selection-v1"
+    "public-synthetic-map3-context-selection-v1",
+    "public-synthetic-map3-event-request-lifecycle-v1"
   ],
   "scenarioId": "map3-public-synthetic-smoke",
   "displayName": "Map 3 public-synthetic exploration smoke",
@@ -118,6 +119,13 @@
       {
         "kind": "default",
         "targetId": "synthetic-no-zone"
+      }
+    ],
+    "eventRequests": [
+      {
+        "requestId": "synthetic-map3-east-zone-request",
+        "zoneTargetId": "synthetic-map3-east-zone",
+        "cueId": "synthetic-map3-east-zone-selected"
       }
     ]
   }
