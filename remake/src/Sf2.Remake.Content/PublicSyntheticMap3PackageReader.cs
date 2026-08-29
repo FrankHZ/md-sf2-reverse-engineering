@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Sf2.Remake.Application.Content;
+using Sf2.Remake.Domain.Items;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Content;
@@ -23,9 +24,11 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         "public-synthetic-map3-placeholder-dialogue-v1";
     public const string FieldSearchCapability =
         "public-synthetic-map3-field-search-v1";
+    public const string ItemAcquisitionCapability =
+        "public-synthetic-map3-placeholder-item-acquisition-v1";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
     public const string ExpectedContentDigest =
-        "2e9167f8390738c7be6b572a1e2705b8ab1ddc9defa519cb2d1e80509c0dcb00";
+        "a121961c1af9e2d9323d9907d6942464f991b324b5a7aac88dccf748b62b18c4";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -234,6 +237,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     EntityInteractionCapability,
                     DialogueCapability,
                     FieldSearchCapability,
+                    ItemAcquisitionCapability,
                 ],
                 StringComparer.Ordinal) ||
             !document.EvidenceOwnerIds.SequenceEqual([EvidenceOwner], StringComparer.Ordinal))
@@ -288,6 +292,14 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                 ScenarioAdmissionFailureCode.InvalidDocument,
                 "mapContext.fieldSearches",
                 "The bounded public-synthetic package requires exactly one field-search definition.");
+        }
+
+        if (document.MapContext.ItemAcquisitions.Length != 1)
+        {
+            return Diagnostic(
+                ScenarioAdmissionFailureCode.InvalidDocument,
+                "mapContext.itemAcquisitions",
+                "The bounded public-synthetic package requires exactly one item-acquisition definition.");
         }
 
         return null;
@@ -414,6 +426,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             context.Dialogues.Select(BuildDialogueDefinition));
         MapFieldSearchCatalog fieldSearches = new(
             context.FieldSearches.Select(BuildFieldSearchDefinition));
+        MapItemAcquisitionCatalog itemAcquisitions = new(
+            context.ItemAcquisitions.Select(BuildItemAcquisitionDefinition));
         return new MapScenarioContextDefinition(
             setupCatalog,
             new MapSetupId(context.VoidSetupId),
@@ -426,7 +440,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             ParseSemanticFacing(initialSemanticFacing),
             entityInteractions,
             dialogues,
-            fieldSearches);
+            fieldSearches,
+            itemAcquisitions);
     }
 
     private static MapEntityInteractionDefinition BuildEntityInteractionDefinition(
@@ -483,6 +498,24 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             new EventTargetId(entry.ZoneTargetId),
             new PresentationCueId(entry.RequestCueId),
             new PresentationCueId(entry.DiscoveryCueId));
+    }
+
+    private static MapItemAcquisitionDefinition BuildItemAcquisitionDefinition(
+        ItemAcquisitionDocument entry)
+    {
+        if (!string.Equals(entry.Kind, "specific", StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "Synthetic item acquisition admits only an explicit field-search discovery mapping.");
+        }
+
+        return new MapItemAcquisitionDefinition(
+            new MapDiscoveryId(entry.DiscoveryId),
+            new MapItemAcquisitionRequestId(entry.RequestId),
+            new MapItemAcquisitionResultId(entry.ResultId),
+            new ItemId(entry.ItemId),
+            new PresentationCueId(entry.RequestCueId),
+            new PresentationCueId(entry.AcquiredCueId));
     }
 
     private static SemanticFacing ParseSemanticFacing(string value) =>
@@ -698,6 +731,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required DialogueDocument[] Dialogues { get; init; }
 
         public required FieldSearchDocument[] FieldSearches { get; init; }
+
+        public required ItemAcquisitionDocument[] ItemAcquisitions { get; init; }
     }
 
     private sealed class SetupCatalogEntryDocument
@@ -871,5 +906,22 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required string RequestCueId { get; init; }
 
         public required string DiscoveryCueId { get; init; }
+    }
+
+    private sealed class ItemAcquisitionDocument
+    {
+        public required string Kind { get; init; }
+
+        public required string DiscoveryId { get; init; }
+
+        public required string RequestId { get; init; }
+
+        public required string ResultId { get; init; }
+
+        public required string ItemId { get; init; }
+
+        public required string RequestCueId { get; init; }
+
+        public required string AcquiredCueId { get; init; }
     }
 }
