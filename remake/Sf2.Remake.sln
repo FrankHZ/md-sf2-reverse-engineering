@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sf2.Remake.Domain", "src\Sf2.Remake.Domain\Sf2.Remake.Domain.csproj", "{6501E4A7-075F-45BB-AB9D-E6C0838A5296}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sf2.Remake.Domain.Tests", "tests\Sf2.Remake.Domain.Tests\Sf2.Remake.Domain.Tests.csproj", "{3A50F51E-8ECD-4F3C-9420-B4F28BD2BE74}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6501E4A7-075F-45BB-AB9D-E6C0838A5296}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6501E4A7-075F-45BB-AB9D-E6C0838A5296}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6501E4A7-075F-45BB-AB9D-E6C0838A5296}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6501E4A7-075F-45BB-AB9D-E6C0838A5296}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A50F51E-8ECD-4F3C-9420-B4F28BD2BE74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A50F51E-8ECD-4F3C-9420-B4F28BD2BE74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A50F51E-8ECD-4F3C-9420-B4F28BD2BE74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A50F51E-8ECD-4F3C-9420-B4F28BD2BE74}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -32,6 +32,15 @@ jobs:
         with:
           enable-cache: true
 
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            10.0.204
+            8.0.424
+          cache: true
+          cache-dependency-path: remake/**/packages.lock.json
+
       - name: Sync locked dependencies
         run: uv sync --locked
 
@@ -43,3 +52,15 @@ jobs:
 
       - name: Verify design-contract traceability
         run: uv run sf2 design-contracts test
+
+      - name: Restore remake dependencies
+        working-directory: remake
+        run: dotnet restore Sf2.Remake.sln --locked-mode
+
+      - name: Build remake domain
+        working-directory: remake
+        run: dotnet build Sf2.Remake.sln --configuration Release --no-restore
+
+      - name: Test remake domain
+        working-directory: remake
+        run: dotnet test Sf2.Remake.sln --configuration Release --no-build --no-restore
