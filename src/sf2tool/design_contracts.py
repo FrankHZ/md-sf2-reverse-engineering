@@ -377,6 +377,15 @@ CONTRACTS = {
         "tests/fixtures/h2/map-event-scripted-transition-state-static-v1.json": (
             "sf2-map-event-scripted-transition-state-static-v1"
         ),
+        "tests/fixtures/h2/map-event-flag-lifecycle-state-static-v1.json": (
+            "sf2-map-event-flag-lifecycle-state-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-cross-program-flag-state-static-v1.json": (
+            "sf2-map-event-cross-program-flag-state-static-v1"
+        ),
+        "tests/fixtures/h2/map-event-flag-route-selection-static-v1.json": (
+            "sf2-map-event-flag-route-selection-static-v1"
+        ),
         "tests/fixtures/h2/map-init-static-v1.json": "sf2-map-init-static-v1",
         "tests/fixtures/h3/map-setup-selection-v1.json": (
             "sf2-map-setup-selection-runtime-v1"

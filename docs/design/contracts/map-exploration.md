@@ -67,6 +67,12 @@ Evidence is executable through:
   `tests/fixtures/h2/map-event-tactical-base-quote-state-static-v1.json`;
 - `sf2-map-event-scripted-transition-state-static-v1` in
   `tests/fixtures/h2/map-event-scripted-transition-state-static-v1.json`;
+- `sf2-map-event-flag-lifecycle-state-static-v1` in
+  `tests/fixtures/h2/map-event-flag-lifecycle-state-static-v1.json`;
+- `sf2-map-event-cross-program-flag-state-static-v1` in
+  `tests/fixtures/h2/map-event-cross-program-flag-state-static-v1.json`;
+- `sf2-map-event-flag-route-selection-static-v1` in
+  `tests/fixtures/h2/map-event-flag-route-selection-static-v1.json`;
 - `sf2-map-init-static-v1` in
   `tests/fixtures/h2/map-init-static-v1.json`;
 - `sf2-map-script-engine-static-v1` in
@@ -102,7 +108,7 @@ Evidence is executable through:
 
 ### Static Map-Event Evidence Boundary
 
-The thirteen map-event H2 fixtures added above are field-closed static evidence owners. This
+The sixteen map-event H2 fixtures added above are field-closed static evidence owners. This
 contract consumes only the following source/H1/ROM shapes from them:
 
 | Fixture | Consumed static shape |
@@ -120,14 +126,25 @@ contract consumes only the following source/H1/ROM shapes from them:
 | `sf2-map-event-combatant-state-static-v1` | Caller-side combatant getter/setter order, selectors, and local predicate shape |
 | `sf2-map-event-tactical-base-quote-state-static-v1` | Static caller/callee branch and service shape plus numeric quote-line ID domain, without decoded text |
 | `sf2-map-event-scripted-transition-state-static-v1` | One bounded program stream's command/payload nesting, handler joins, pointer targets, and termination shape |
+| `sf2-map-event-flag-lifecycle-state-static-v1` | `sourceContext` provenance/denominators and `flagLifecycleState.selectionSummary`, `sourceFiles`, `programFlows`, `lifecycleRelations`, `flagTotals`, `intervalCoverage`, and `digests`, plus the top-level aggregate `summary` |
+| `sf2-map-event-cross-program-flag-state-static-v1` | `sourceContext` provenance/denominators and `crossProgramFlagState.programDomain`, reader/writer access sites and cohorts, `partitions`, `crossProgramCandidates`, `categoryPairTotals`, `physicalContextCoverage`, and `digests`, plus the top-level aggregate `summary` |
+| `sf2-map-event-flag-route-selection-static-v1` | `sourceContext` provenance/denominators and `flagRouteSelection.programRouteContexts`, `classifiedCandidates`, `topologyCategoryTotals`, `selectorWriterRelations`, `domainDenominators`, `physicalCoverage`, and `digests`, plus the top-level aggregate `summary` |
+
+For the three flag fixtures, `retainedOwners` integrity hashes and the service/dispatcher/table
+identity joins in `serviceDefinitions`, `dispatchEntries`, `sourceMacroDefinitions`, `categoryRoles`,
+`serviceJoin`, and `retainedIdentities` remain cross-owner joins only. They do not transfer generic
+flag-service, trap, dispatcher, selector-table, or map-setup data fidelity to this contract.
 
 These owners add traceability depth, not observed execution. They do not establish natural program
-reachability, the path or branch actually taken, entry/runtime values, callee success or effects,
-state lifetime or save/load persistence, dialogue or story meaning, input/audio/presentation/timing,
-map or battle completion, R4b/H4/8C parity, or any other unobserved runtime behavior. Source names,
-numeric text IDs, calls, writes, and branch labels remain structural identities. Complete source/H1/ROM
-material and private generated joins remain verification inputs; the public contract retains only the
-bounded structural records, counts, hashes, and provenance already exposed by the accepted fixtures.
+reachability; the path or branch actually taken; caller-entry or read-time flag values; mutation
+reachability or post-mutation values; producer/consumer or cross-program temporal order; intervening
+mutations; actual map-setup selector evaluation or the selected pointer table/event record; callee
+success or effects; state lifetime or save/load persistence; dialogue or story meaning;
+input/audio/presentation/timing; map or battle completion; R4b/H4/8C parity; or any other unobserved
+runtime behavior. Source names, numeric text IDs, calls, writes, and branch labels remain structural
+identities. Complete source/H1/ROM material and private generated joins remain verification inputs; the
+public contract retains only the bounded structural records, counts, hashes, and provenance already
+exposed by the accepted fixtures.
 
 The canonical-import fixture is the executable serialization of this contract. Its full generated payload stays
 private under `local/derived/`; only aggregate structure and provenance are tracked.

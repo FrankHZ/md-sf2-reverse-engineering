@@ -56,6 +56,12 @@
   `tests/fixtures/h2/map-event-tactical-base-quote-state-static-v1.json`；
 - `sf2-map-event-scripted-transition-state-static-v1`，位于
   `tests/fixtures/h2/map-event-scripted-transition-state-static-v1.json`；
+- `sf2-map-event-flag-lifecycle-state-static-v1`，位于
+  `tests/fixtures/h2/map-event-flag-lifecycle-state-static-v1.json`；
+- `sf2-map-event-cross-program-flag-state-static-v1`，位于
+  `tests/fixtures/h2/map-event-cross-program-flag-state-static-v1.json`；
+- `sf2-map-event-flag-route-selection-static-v1`，位于
+  `tests/fixtures/h2/map-event-flag-route-selection-static-v1.json`；
 - `sf2-map-init-static-v1`，位于
   `tests/fixtures/h2/map-init-static-v1.json`；
 - `sf2-map-script-engine-static-v1`，位于
@@ -91,7 +97,7 @@
 
 ### 静态地图事件证据边界
 
-以上新增的十三个 map-event H2 fixture 是字段闭合的静态证据所有者。本合同只消费其中
+以上新增的十六个 map-event H2 fixture 是字段闭合的静态证据所有者。本合同只消费其中
 以下源码/H1/ROM 形状：
 
 | Fixture | 消费的静态形状 |
@@ -109,13 +115,22 @@
 | `sf2-map-event-combatant-state-static-v1` | 调用方侧角色 getter/setter 顺序、选择器与局部谓词形状 |
 | `sf2-map-event-tactical-base-quote-state-static-v1` | 静态调用方/被调用方分支与服务形状，以及不含解码文本的数字引文行 ID 域 |
 | `sf2-map-event-scripted-transition-state-static-v1` | 一个有界程序流的命令/载荷嵌套、处理器连接、指针目标与终止形状 |
+| `sf2-map-event-flag-lifecycle-state-static-v1` | `sourceContext` 溯源/分母及 `flagLifecycleState.selectionSummary`、`sourceFiles`、`programFlows`、`lifecycleRelations`、`flagTotals`、`intervalCoverage`、`digests`，以及顶层聚合 `summary` |
+| `sf2-map-event-cross-program-flag-state-static-v1` | `sourceContext` 溯源/分母及 `crossProgramFlagState.programDomain`、读写访问点与 cohorts、`partitions`、`crossProgramCandidates`、`categoryPairTotals`、`physicalContextCoverage`、`digests`，以及顶层聚合 `summary` |
+| `sf2-map-event-flag-route-selection-static-v1` | `sourceContext` 溯源/分母及 `flagRouteSelection.programRouteContexts`、`classifiedCandidates`、`topologyCategoryTotals`、`selectorWriterRelations`、`domainDenominators`、`physicalCoverage`、`digests`，以及顶层聚合 `summary` |
 
-这些所有者增加的是可追踪深度，而不是已观察执行。它们不确立程序的自然可达性、实际采取的
-路径或分支、入口/运行时值、被调用方成功或效果、状态生命周期或存档/读档持久性、对话或剧情
-含义、输入/音频/呈现/时序、地图或战斗完成、R4b/H4/8C 一致性，或任何其他未观察的运行时
-行为。源码名称、数字文本 ID、调用、写入与分支标签仍是结构同一性。完整源码/H1/ROM 材料与
-私有生成连接仍是验证输入；公共合同只保留已接受 fixture 已公开的有界结构记录、计数、哈希与
-溯源。
+对于三个 flag fixture，`retainedOwners` 完整性哈希以及 `serviceDefinitions`、
+`dispatchEntries`、`sourceMacroDefinitions`、`categoryRoles`、`serviceJoin`、
+`retainedIdentities` 中的服务/分发器/表同一性连接仍只属于跨所有者连接。它们不会把通用 flag
+服务、trap、分发器、selector 表或 map-setup 数据保真所有权转移给本合同。
+
+这些所有者增加的是可追踪深度，而不是已观察执行。它们不确立程序的自然可达性；实际采取的
+路径或分支；调用方入口或读取时 flag 值；mutation 可达性或 mutation 后的值；生产者/使用方或
+跨程序时间顺序；中间 mutation；实际 map-setup selector 求值或选中的 pointer table/event
+record；被调用方成功或效果；状态生命周期或存档/读档持久性；对话或剧情含义；输入/音频/呈现/
+时序；地图或战斗完成；R4b/H4/8C 一致性；或任何其他未观察的运行时行为。源码名称、数字文本
+ID、调用、写入与分支标签仍是结构同一性。完整源码/H1/ROM 材料与私有生成连接仍是验证输入；
+公共合同只保留已接受 fixture 已公开的有界结构记录、计数、哈希与溯源。
 
 canonical-import fixture 是本合同的可执行序列化。其完整生成载荷在 `local/derived/` 下保持私有；只有聚合结构与溯源受追踪。
 
