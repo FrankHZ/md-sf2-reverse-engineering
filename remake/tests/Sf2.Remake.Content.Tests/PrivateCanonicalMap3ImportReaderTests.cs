@@ -42,10 +42,19 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.ControlledStepCopyCapability,
                 PrivateCanonicalMap3ImportReader.CurrentAreaDiagnosticCapability,
                 PrivateCanonicalMap3ImportReader.AreaSourceRecordAdmissionCapability,
+                PrivateCanonicalMap3ImportReader.BlocksetSourceAdmissionCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
         Assert.Equal(WorkingMapLayout.WordCount, accepted.Definition.WorkingLayout.Words.Count);
+        Assert.Equal("Map03s0_Blocks", accepted.Definition.BlockCatalog.ResourceId);
+        Assert.Equal(3, accepted.Definition.BlockCatalog.Records.Count);
+        Assert.Equal(
+            0,
+            accepted.Definition.BlockCatalog.Resolve(
+                accepted.Definition.WorkingLayout,
+                accepted.Definition.ControlledAdmission.Position)
+                .Identity.ZeroBasedBlockIndex);
         Assert.Equal(new MapPosition(56, 3), accepted.Definition.ControlledAdmission.Position);
         Assert.Equal(3, accepted.Definition.Traversal.ActiveAreas.Count);
         Assert.Equal("Map03s2_Areas", accepted.Definition.AreaCatalog.ResourceId);
@@ -209,6 +218,27 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     }
 
     [Fact]
+    public void BlocksetIdentityShapeWordRangeAndLayoutCrossReferenceFailClosed()
+    {
+        JsonObject wrongResource = SampleDocument();
+        ResourceArray(wrongResource, "blocksets")[0]!.AsObject()["id"] = "OtherBlocks";
+        Map(wrongResource, 3)["references"]!.AsObject()["blockset"] = "OtherBlocks";
+        AssertCode(Admit(wrongResource), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject wrongShape = SampleDocument();
+        BlockWords(wrongShape, 0).RemoveAt(0);
+        AssertCode(Admit(wrongShape), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject outOfRangeWord = SampleDocument();
+        BlockWords(outOfRangeWord, 0)[0] = 65536;
+        AssertCode(Admit(outOfRangeWord), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject danglingLayout = SampleDocument();
+        LayoutWords(danglingLayout)[0] = 3;
+        AssertCode(Admit(danglingLayout), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
     public void SchoolDoorCopyAndCurrentWordCollisionPolarityFailClosed()
     {
         JsonObject missingDoor = SampleDocument();
@@ -328,6 +358,20 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Contains(
             PrivateCanonicalMap3ImportReader.AreaSourceRecordAdmissionCapability,
             accepted.Receipt.Capabilities);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.BlocksetSourceAdmissionCapability,
+            accepted.Receipt.Capabilities);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedBlocksetResourceId,
+            accepted.Definition.BlockCatalog.ResourceId);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedBlockCount,
+            accepted.Definition.BlockCatalog.Records.Count);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedBlocksetProjectionDigest,
+            accepted.Definition.BlockCatalog.ProjectionDigest);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedBlocksetProjection(
+            accepted.Definition.BlockCatalog));
         Assert.Equal(3, accepted.Definition.Traversal.ActiveAreas.Count);
         Assert.Equal(
             2,
@@ -603,6 +647,10 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static JsonArray LayoutWords(JsonObject document) =>
         ResourceArray(document, "layouts")[0]!.AsObject()["words"]!.AsArray();
+
+    private static JsonArray BlockWords(JsonObject document, int zeroBasedBlockIndex) =>
+        ResourceArray(document, "blocksets")[0]!
+            .AsObject()["blocks"]!.AsArray()[zeroBasedBlockIndex]!.AsArray();
 
     private static JsonArray StepRecords(JsonObject document) =>
         ResourceArray(document, "stepEventTables")[0]!

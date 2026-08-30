@@ -28,6 +28,7 @@ public sealed class OriginalMapImportDefinitionTests
         OriginalMapImportDefinition definition = new(
             map,
             layout,
+            BlockCatalog(),
             areaCatalog,
             admission,
             unsupported);
@@ -59,6 +60,7 @@ public sealed class OriginalMapImportDefinitionTests
             () => new OriginalMapImportDefinition(
                 new MapId("other"),
                 new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
+                BlockCatalog(),
                 areaCatalog,
                 admission,
                 ["unknown"]));
@@ -66,6 +68,7 @@ public sealed class OriginalMapImportDefinitionTests
             () => new OriginalMapImportDefinition(
                 map,
                 new WorkingMapLayout(blockedWords),
+                BlockCatalog(),
                 areaCatalog,
                 admission,
                 ["unknown"]));
@@ -73,9 +76,87 @@ public sealed class OriginalMapImportDefinitionTests
             () => new OriginalMapImportDefinition(
                 map,
                 new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
+                BlockCatalog(),
                 areaCatalog,
                 admission,
                 []));
+
+        ushort[] missingBlockWords = new ushort[WorkingMapLayout.WordCount];
+        missingBlockWords[0] = 3;
+        Assert.Throws<ArgumentException>(
+            () => new OriginalMapImportDefinition(
+                map,
+                new WorkingMapLayout(missingBlockWords),
+                BlockCatalog(),
+                areaCatalog,
+                admission,
+                ["unknown"]));
+    }
+
+    [Fact]
+    public void BlockCatalogDerivesOneResourceAndDefensivelyOwnsOrderedOpaqueWords()
+    {
+        ushort[] words = Enumerable.Range(0, OriginalMapBlockDefinition.OpaqueWordCount)
+            .Select(value => checked((ushort)value))
+            .ToArray();
+        OriginalMapBlockDefinition original = new(
+            new OriginalMapBlockRecordIdentity("project-authored-blocks", 0),
+            words);
+        List<OriginalMapBlockDefinition> records =
+        [
+            original,
+            new(
+                new OriginalMapBlockRecordIdentity("project-authored-blocks", 1),
+                new ushort[OriginalMapBlockDefinition.OpaqueWordCount]),
+        ];
+
+        OriginalMapBlockCatalog catalog = new(records);
+        words[0] = ushort.MaxValue;
+        records.Clear();
+
+        Assert.Equal("project-authored-blocks", catalog.ResourceId);
+        Assert.Equal(2, catalog.Records.Count);
+        Assert.NotSame(original, catalog.Records[0]);
+        Assert.Equal((ushort)0, catalog.Records[0].OpaqueWords[0]);
+        Assert.Equal(0, catalog.Resolve(0).Identity.ZeroBasedBlockIndex);
+
+        ushort[] layoutWords = new ushort[WorkingMapLayout.WordCount];
+        layoutWords[(3 * WorkingMapLayout.ColumnCount) + 2] = 1;
+        Assert.Equal(
+            1,
+            catalog.Resolve(
+                new WorkingMapLayout(layoutWords),
+                new MapPosition(2, 3)).Identity.ZeroBasedBlockIndex);
+    }
+
+    [Fact]
+    public void BlockCatalogRejectsEmptyNullMixedNonContiguousAndMalformedRecords()
+    {
+        Assert.Throws<ArgumentException>(() => new OriginalMapBlockCatalog([]));
+        Assert.Throws<ArgumentException>(
+            () => new OriginalMapBlockCatalog([null!]));
+        Assert.Throws<ArgumentException>(
+            () => new OriginalMapBlockDefinition(
+                new OriginalMapBlockRecordIdentity("blocks", 0),
+                new ushort[OriginalMapBlockDefinition.OpaqueWordCount - 1]));
+        Assert.Throws<ArgumentException>(
+            () => new OriginalMapBlockCatalog(
+            [
+                Block("blocks", 0),
+                Block("other-blocks", 1),
+            ]));
+        Assert.Throws<ArgumentException>(
+            () => new OriginalMapBlockCatalog(
+            [
+                Block("blocks", 0),
+                Block("blocks", 0),
+            ]));
+        Assert.Throws<ArgumentException>(
+            () => new OriginalMapBlockCatalog(
+            [
+                Block("blocks", 0),
+                Block("blocks", 2),
+            ]));
     }
 
     [Fact]
@@ -191,6 +272,18 @@ public sealed class OriginalMapImportDefinitionTests
             new MapSetupId("ms_map3"),
             "ms_map3_InitFunction",
             noProgramRequest: true);
+
+    private static OriginalMapBlockCatalog BlockCatalog(int count = 3) =>
+        new(Enumerable.Range(0, count).Select(index => Block(
+            "project-authored-blocks",
+            index)));
+
+    private static OriginalMapBlockDefinition Block(
+        string resourceId,
+        int zeroBasedIndex) =>
+        new(
+            new OriginalMapBlockRecordIdentity(resourceId, zeroBasedIndex),
+            new ushort[OriginalMapBlockDefinition.OpaqueWordCount]);
 
     private static OriginalMapAreaCatalog AreaCatalog(
         params OriginalMapTraversalArea[] activeAreas) =>

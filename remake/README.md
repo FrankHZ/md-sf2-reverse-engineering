@@ -232,6 +232,20 @@ Godot status and receipts remain unchanged and project only the already-typed ar
 not parse the catalog, select areas, or apply layer origins, parallax, autoscroll, type, music, or
 presentation semantics.
 
+The fixed private admission now also retains the exact ordered `Map03s0_Blocks` projection as an
+immutable Application catalog: 447 zero-based records, each containing nine opaque `ushort` words.
+The catalog derives its sole resource identity from its first record, rejects mixed, duplicate,
+non-contiguous, empty, malformed, or out-of-range definitions, and defensively owns both records and
+words. Content constructs it only after the fixed-DDDA raw-byte check; Application separately admits
+the exact count and normalized big-endian projection identity before starting a session. Both the
+admitted source layout and every authoritative current working layout must resolve all low-ten-bit
+block indices through that catalog. The private session derives its current block from the current
+working layout and player position, so movement or the bounded diagnostic block copy cannot leave a
+cached competing block selection. Raw block words remain private in-memory data and are never emitted
+through receipts, status, logs, smoke output, local paths, tracked payloads, or Godot projection.
+This is a typed visual-resource prerequisite only: it assigns no tile-word bit meaning and does not
+admit tilesets, palettes, caching, rendering, camera, layers, animation, or final pixels.
+
 This one-shot command is an explicit private diagnostic policy, not evidence or implementation of a
 natural step trigger, `OpenDoor`, setup/init/program/flag effect, reach/order, or persistence. It does
 not reuse or relabel the `SetBlocks`/`SetBlocksVar` command reducer or the separate block-copy

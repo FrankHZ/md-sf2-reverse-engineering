@@ -21,6 +21,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.CurrentAreaDiagnosticCapability;
     public const string AreaSourceRecordAdmissionCapability =
         OriginalMapRuntimeAdmission.AreaSourceRecordAdmissionCapability;
+    public const string BlocksetSourceAdmissionCapability =
+        OriginalMapRuntimeAdmission.BlocksetSourceAdmissionCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -43,6 +45,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         ControlledStepCopyCapability,
         CurrentAreaDiagnosticCapability,
         AreaSourceRecordAdmissionCapability,
+        BlocksetSourceAdmissionCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -290,12 +293,12 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             resources,
             "blocksets",
             RequiredString(references, "blockset", "maps[3].references.blockset"));
-        int blockCount = ValidateBlockset(blockset);
+        OriginalMapBlockCatalog blockCatalog = ReadBlockset(blockset);
         JsonElement layoutResource = RequiredResource(
             resources,
             "layouts",
             RequiredString(references, "layout", "maps[3].references.layout"));
-        ushort[] words = ReadLayout(layoutResource, blockCount);
+        ushort[] words = ReadLayout(layoutResource, blockCatalog.Records.Count);
         WorkingMapLayout workingLayout = new(words);
 
         JsonElement areaTable = RequiredResource(
@@ -325,6 +328,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapImportDefinition definition = new(
             map,
             workingLayout,
+            blockCatalog,
             areaCatalog,
             controlledAdmission,
             controlledStepCopy,
@@ -534,9 +538,21 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         }
     }
 
-    private static int ValidateBlockset(JsonElement resource)
+    private static OriginalMapBlockCatalog ReadBlockset(JsonElement resource)
     {
         RequireExactProperties(resource, "map3.blockset", "id", "address", "blocks");
+        string resourceId = RequiredString(resource, "id", "map3.blockset.id");
+        if (!string.Equals(
+                resourceId,
+                OriginalMapRuntimeAdmission.AcceptedBlocksetResourceId,
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.blockset.id",
+                "Map 3 does not retain the accepted canonical blockset identity.");
+        }
+
         _ = RequiredNonNegativeInt(resource, "address", "map3.blockset.address");
         JsonElement blocks = RequiredProperty(resource, "blocks", "map3.blockset.blocks");
         RequireArray(blocks, "map3.blockset.blocks");
@@ -548,12 +564,12 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 "The canonical blockset must retain the three built-in blocks.");
         }
 
+        List<OriginalMapBlockDefinition> definitions = [];
         int blockIndex = 0;
         foreach (JsonElement block in blocks.EnumerateArray())
         {
             RequireArray(block, $"map3.blockset.blocks[{blockIndex}]");
-            if (block.GetArrayLength() != 9 ||
-                block.EnumerateArray().Any(word => !TryUshort(word, out _)))
+            if (block.GetArrayLength() != OriginalMapBlockDefinition.OpaqueWordCount)
             {
                 throw Admission(
                     OriginalMapImportFailureCode.InvalidMapProjection,
@@ -561,10 +577,28 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                     "Every canonical map block must retain exactly nine ushort tile words.");
             }
 
+            ushort[] opaqueWords = new ushort[OriginalMapBlockDefinition.OpaqueWordCount];
+            int wordIndex = 0;
+            foreach (JsonElement value in block.EnumerateArray())
+            {
+                if (!TryUshort(value, out ushort word))
+                {
+                    throw Admission(
+                        OriginalMapImportFailureCode.InvalidMapProjection,
+                        $"map3.blockset.blocks[{blockIndex}][{wordIndex}]",
+                        "Canonical block words must remain unsigned 16-bit values.");
+                }
+
+                opaqueWords[wordIndex++] = word;
+            }
+
+            definitions.Add(new OriginalMapBlockDefinition(
+                new OriginalMapBlockRecordIdentity(resourceId, blockIndex),
+                opaqueWords));
             blockIndex++;
         }
 
-        return blocks.GetArrayLength();
+        return new OriginalMapBlockCatalog(definitions);
     }
 
     private static ushort[] ReadLayout(JsonElement resource, int blockCount)

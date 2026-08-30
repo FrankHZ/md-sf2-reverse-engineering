@@ -29,6 +29,14 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.ControlledStartAreaRecordOrdinal,
             started.Session.PrivateOriginalMapSnapshot.CurrentAreaDefinition
                 .Identity.OneBasedRecordOrdinal);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedBlocksetResourceId,
+            started.Session.PrivateOriginalMapSnapshot.CurrentBlockDefinition
+                .Identity.ResourceId);
+        Assert.Equal(
+            0,
+            started.Session.PrivateOriginalMapSnapshot.CurrentBlockDefinition
+                .Identity.ZeroBasedBlockIndex);
         Assert.Equal(0, started.Session.PrivateOriginalMapSnapshot.SimulationStep);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastTraversal);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastLayoutMutation);
@@ -185,6 +193,38 @@ public sealed class OriginalMapGameSessionTests
         Assert.Same(
             restarted.PrivateOriginalMapSnapshot.Definition.AreaCatalog.Records[1],
             restarted.PrivateOriginalMapSnapshot.CurrentAreaDefinition);
+    }
+
+    [Fact]
+    public void CurrentBlockRecomputesFromAuthoritativeLayoutAndRejectsDanglingCurrentState()
+    {
+        ushort[] words = EmptyWords();
+        words[Index(56, 3)] = 1;
+        words[Index(57, 3)] = 2;
+        GameSession session = Start(Definition(words));
+
+        Assert.Equal(
+            1,
+            session.PrivateOriginalMapSnapshot.CurrentBlockDefinition
+                .Identity.ZeroBasedBlockIndex);
+
+        PrivateOriginalMapMoveApplied moved = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.Equal(
+            2,
+            moved.Snapshot.CurrentBlockDefinition.Identity.ZeroBasedBlockIndex);
+
+        ushort[] invalidWords = [.. moved.Snapshot.WorkingLayout.Words];
+        invalidWords[0] = OriginalMapRuntimeAdmission.AcceptedBlockCount;
+        Assert.Throws<ArgumentException>(() => new PrivateOriginalMapSessionSnapshot(
+            moved.Snapshot.Definition,
+            moved.Snapshot.Receipt,
+            new WorkingMapLayout(invalidWords),
+            moved.Snapshot.SimulationStep,
+            moved.Snapshot.PlayerPosition,
+            moved.Snapshot.LastTraversal,
+            moved.Snapshot.ControlledStepCopyApplied,
+            moved.Snapshot.LastLayoutMutation));
     }
 
     [Fact]
@@ -471,12 +511,14 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapImportDefinition missing = new(
             map,
             layout,
+            AcceptedBlockCatalog(),
             areaCatalog,
             controlled,
             ["natural-route-and-effects-unknown"]);
         OriginalMapImportDefinition wrongIdentity = new(
             map,
             layout,
+            AcceptedBlockCatalog(),
             areaCatalog,
             controlled,
             new OriginalMapStepCopyDefinition(
@@ -527,6 +569,47 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactOrderedBlocksetProjection()
+    {
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                blockCatalog: ProjectAuthoredBlockCatalog(
+                    "OtherBlocks",
+                    OriginalMapRuntimeAdmission.AcceptedBlockCount)),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                blockCatalog: ProjectAuthoredBlockCatalog(
+                    OriginalMapRuntimeAdmission.AcceptedBlocksetResourceId,
+                    OriginalMapRuntimeAdmission.AcceptedBlockCount - 1)),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                blockCatalog: ProjectAuthoredBlockCatalog(
+                    OriginalMapRuntimeAdmission.AcceptedBlocksetResourceId,
+                    OriginalMapRuntimeAdmission.AcceptedBlockCount + 1)),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                blockCatalog: ProjectAuthoredBlockCatalog(
+                    OriginalMapRuntimeAdmission.AcceptedBlocksetResourceId,
+                    OriginalMapRuntimeAdmission.AcceptedBlockCount,
+                    mutateFirstWord: true)),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedBlocksetProjection(
+            AcceptedBlockCatalog()));
+    }
+
+    [Fact]
     public void TypedSourceRejectionPassesThroughWithoutCreatingASession()
     {
         OriginalMapImportDiagnostic diagnostic = new(
@@ -563,7 +646,8 @@ public sealed class OriginalMapGameSessionTests
 
     private static OriginalMapImportDefinition Definition(
         ushort[] words,
-        OriginalMapAreaCatalog? areaCatalog = null)
+        OriginalMapAreaCatalog? areaCatalog = null,
+        OriginalMapBlockCatalog? blockCatalog = null)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -578,6 +662,7 @@ public sealed class OriginalMapGameSessionTests
         return new OriginalMapImportDefinition(
             map,
             new WorkingMapLayout(admittedWords),
+            blockCatalog ?? AcceptedBlockCatalog(),
             areaCatalog ?? AcceptedAreaCatalog(),
             new OriginalMapControlledAdmission(
                 map,
@@ -591,6 +676,36 @@ public sealed class OriginalMapGameSessionTests
             ControlledStepCopy(map),
             ["natural-route-and-effects-unknown"]);
     }
+
+    private static OriginalMapBlockCatalog AcceptedBlockCatalog() =>
+        new(
+            ProjectAuthoredBlockDefinitions(
+                OriginalMapRuntimeAdmission.AcceptedBlocksetResourceId,
+                OriginalMapRuntimeAdmission.AcceptedBlockCount),
+            OriginalMapRuntimeAdmission.AcceptedBlocksetProjectionDigest);
+
+    private static OriginalMapBlockCatalog ProjectAuthoredBlockCatalog(
+        string resourceId,
+        int count,
+        bool mutateFirstWord = false) =>
+        new(ProjectAuthoredBlockDefinitions(resourceId, count, mutateFirstWord));
+
+    private static IEnumerable<OriginalMapBlockDefinition> ProjectAuthoredBlockDefinitions(
+        string resourceId,
+        int count,
+        bool mutateFirstWord = false) =>
+        Enumerable.Range(0, count).Select(index =>
+        {
+            ushort[] words = new ushort[OriginalMapBlockDefinition.OpaqueWordCount];
+            if (index == 0 && mutateFirstWord)
+            {
+                words[0] = 1;
+            }
+
+            return new OriginalMapBlockDefinition(
+                new OriginalMapBlockRecordIdentity(resourceId, index),
+                words);
+        });
 
     private static OriginalMapTraversalArea[] AcceptedAreas() =>
     [

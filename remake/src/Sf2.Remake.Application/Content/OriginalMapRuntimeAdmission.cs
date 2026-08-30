@@ -21,6 +21,10 @@ public static class OriginalMapRuntimeAdmission
         "6BC4D0BF350242EA908A5ED00FFFDF68F6428E7A5189B23AE189CD24BC220446";
     public const string AcceptedCollisionProjectionDigest =
         "A9A7BACA8952DCC50CA90CD0985512C7F2393184FEA45F4E85E397422EAC9433";
+    public const string AcceptedBlocksetResourceId = "Map03s0_Blocks";
+    public const int AcceptedBlockCount = 447;
+    public const string AcceptedBlocksetProjectionDigest =
+        "90DC1053A67860A9C6C7F3EE16F3E77544D93FAB223961D38D719D62BE027159";
     public const string AcceptedAreaResourceId = "Map03s2_Areas";
     public const int AcceptedAreaRecordCount = 3;
     public const int ControlledStartAreaRecordOrdinal = 2;
@@ -57,6 +61,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-current-area-diagnostic-v1";
     public const string AreaSourceRecordAdmissionCapability =
         "private-local-map3-source-area-record-admission-v1";
+    public const string BlocksetSourceAdmissionCapability =
+        "private-local-map3-source-blockset-admission-v1";
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
@@ -68,6 +74,7 @@ public static class OriginalMapRuntimeAdmission
                 ControlledStepCopyCapability,
                 CurrentAreaDiagnosticCapability,
                 AreaSourceRecordAdmissionCapability,
+                BlocksetSourceAdmissionCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -102,6 +109,20 @@ public static class OriginalMapRuntimeAdmission
         HashSet<string> actual = new(evidenceOwners, StringComparer.Ordinal);
         return actual.Count == ReadOnlyRequiredEvidenceOwners.Count &&
             actual.SetEquals(ReadOnlyRequiredEvidenceOwners);
+    }
+
+    public static bool HasExactAcceptedBlocksetProjection(OriginalMapBlockCatalog catalog)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        return string.Equals(
+                catalog.ResourceId,
+                AcceptedBlocksetResourceId,
+                StringComparison.Ordinal) &&
+            catalog.Records.Count == AcceptedBlockCount &&
+            string.Equals(
+                catalog.ProjectionDigest,
+                AcceptedBlocksetProjectionDigest,
+                StringComparison.OrdinalIgnoreCase);
     }
 
     internal static bool IsExactControlledStepCopy(OriginalMapStepCopyDefinition? definition)
