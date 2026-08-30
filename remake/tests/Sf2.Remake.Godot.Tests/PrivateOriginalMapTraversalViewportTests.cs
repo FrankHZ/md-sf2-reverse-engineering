@@ -112,6 +112,50 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             Assert.Single(projection.Cells, cell => cell.IsPlayer).Category);
     }
 
+    [Fact]
+    public void ProjectAuthoredNearDoorSnapshotReprojectsTheAuthoritativeMutatedLayout()
+    {
+        ushort[] words = new ushort[WorkingMapLayout.WordCount];
+        words[Index(41, 13)] = OriginalMapTraversal.CollisionMask;
+        PrivateOriginalMapSessionSnapshot before = Snapshot(
+            words,
+            new MapPosition(41, 12),
+            new OriginalMapTraversalArea(0, 0, 63, 63));
+        OriginalMapStepCopyDefinition stepCopy = before.Definition.ControlledStepCopy!;
+        WorkingMapLayout mutated = before.WorkingLayout.ApplyBlockCopy(stepCopy.Copy);
+        PrivateOriginalMapLayoutMutationReceipt receipt = new(
+            stepCopy.Identity,
+            stepCopy.Trigger,
+            stepCopy.Copy,
+            PrivateOriginalMapCollisionCategory.BlockedByAcceptedCollisionClass,
+            PrivateOriginalMapCollisionCategory.ActiveNonBlocked,
+            simulationStep: 1);
+        PrivateOriginalMapSessionSnapshot after = new(
+            before.Definition,
+            before.Receipt,
+            mutated,
+            simulationStep: 1,
+            before.PlayerPosition,
+            lastTraversal: null,
+            controlledStepCopyApplied: true,
+            receipt);
+
+        PrivateOriginalMapTraversalViewProjection beforeProjection =
+            PrivateOriginalMapTraversalViewProjection.Create(before);
+        PrivateOriginalMapTraversalViewProjection afterProjection =
+            PrivateOriginalMapTraversalViewProjection.Create(after);
+        Assert.Equal(
+            PrivateOriginalMapTraversalCellCategory.BlockedByAcceptedCollisionClass,
+            Assert.Single(
+                beforeProjection.Cells,
+                cell => cell.MapX == 41 && cell.MapY == 13).Category);
+        Assert.Equal(
+            PrivateOriginalMapTraversalCellCategory.ActiveNonBlocked,
+            Assert.Single(
+                afterProjection.Cells,
+                cell => cell.MapX == 41 && cell.MapY == 13).Category);
+    }
+
     private static int Count(
         PrivateOriginalMapTraversalViewProjection projection,
         PrivateOriginalMapTraversalCellCategory category) =>
@@ -123,9 +167,10 @@ public sealed class PrivateOriginalMapTraversalViewportTests
         params OriginalMapTraversalArea[] activeAreas)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        WorkingMapLayout layout = new(words);
         OriginalMapImportDefinition definition = new(
             map,
-            new WorkingMapLayout(words),
+            layout,
             new OriginalMapTraversal(activeAreas),
             new OriginalMapControlledAdmission(
                 map,
@@ -134,6 +179,22 @@ public sealed class PrivateOriginalMapTraversalViewportTests
                 new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
                 OriginalMapRuntimeAdmission.SelectedInitIdentity,
                 noProgramRequest: true),
+            new OriginalMapStepCopyDefinition(
+                new OriginalMapStepCopyIdentity(
+                    ContentProfile.PrivateLocal,
+                    map,
+                    OriginalMapRuntimeAdmission.ControlledStepCopyResourceId,
+                    OriginalMapRuntimeAdmission.ControlledStepCopyRecordOrdinal),
+                new MapPosition(
+                    OriginalMapRuntimeAdmission.ControlledStepCopyTriggerX,
+                    OriginalMapRuntimeAdmission.ControlledStepCopyTriggerY),
+                new WorkingMapBlockCopy(
+                    OriginalMapRuntimeAdmission.ControlledStepCopySourceX,
+                    OriginalMapRuntimeAdmission.ControlledStepCopySourceY,
+                    OriginalMapRuntimeAdmission.ControlledStepCopyDestinationX,
+                    OriginalMapRuntimeAdmission.ControlledStepCopyDestinationY,
+                    OriginalMapRuntimeAdmission.ControlledStepCopyWidth,
+                    OriginalMapRuntimeAdmission.ControlledStepCopyHeight)),
             ["natural-route-and-presentation-unknown"]);
         OriginalMapImportReceipt receipt = new(
             OriginalMapRuntimeAdmission.PackageId,
@@ -152,9 +213,12 @@ public sealed class PrivateOriginalMapTraversalViewportTests
         return new PrivateOriginalMapSessionSnapshot(
             definition,
             receipt,
+            layout,
             simulationStep: 0,
             playerPosition,
-            lastTraversal: null);
+            lastTraversal: null,
+            controlledStepCopyApplied: false,
+            lastLayoutMutation: null);
     }
 
     private static int Index(int x, int y) =>

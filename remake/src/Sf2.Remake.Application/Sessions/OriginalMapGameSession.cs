@@ -8,26 +8,38 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public PrivateOriginalMapSessionSnapshot(
         OriginalMapImportDefinition definition,
         OriginalMapImportReceipt receipt,
+        WorkingMapLayout workingLayout,
         long simulationStep,
         MapPosition playerPosition,
-        OriginalMapTraversalResult? lastTraversal)
+        OriginalMapTraversalResult? lastTraversal,
+        bool controlledStepCopyApplied,
+        PrivateOriginalMapLayoutMutationReceipt? lastLayoutMutation)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
+        WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
         ArgumentOutOfRangeException.ThrowIfNegative(simulationStep);
         PlayerPosition = playerPosition ?? throw new ArgumentNullException(nameof(playerPosition));
         if (!definition.Traversal.IsWithinActiveArea(playerPosition) ||
-            OriginalMapTraversal.IsBlocked(definition.WorkingLayout, playerPosition))
+            OriginalMapTraversal.IsBlocked(workingLayout, playerPosition))
         {
             throw new ArgumentException(
                 "The private original-map session position must remain active and traversable.",
                 nameof(playerPosition));
         }
 
-        if ((simulationStep == 0) != (lastTraversal is null))
+        if (simulationStep == 0 &&
+            (lastTraversal is not null || lastLayoutMutation is not null || controlledStepCopyApplied))
         {
             throw new ArgumentException(
-                "Only the initial private original-map snapshot may omit a traversal result.",
+                "The initial private original-map snapshot cannot contain a completed operation.",
+                nameof(simulationStep));
+        }
+
+        if (simulationStep > 0 && (lastTraversal is null) == (lastLayoutMutation is null))
+        {
+            throw new ArgumentException(
+                "A non-initial private original-map snapshot must identify exactly one last operation.",
                 nameof(lastTraversal));
         }
 
@@ -38,8 +50,33 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 nameof(lastTraversal));
         }
 
+        if (lastLayoutMutation is not null &&
+            (!controlledStepCopyApplied || lastLayoutMutation.SimulationStep != simulationStep))
+        {
+            throw new ArgumentException(
+                "The layout-mutation receipt must identify the authoritative snapshot step.",
+                nameof(lastLayoutMutation));
+        }
+
+        if (controlledStepCopyApplied && definition.ControlledStepCopy is null)
+        {
+            throw new ArgumentException(
+                "An applied controlled step-copy requires its admitted definition.",
+                nameof(controlledStepCopyApplied));
+        }
+
+        if (lastLayoutMutation is not null &&
+            lastLayoutMutation.RecordIdentity != definition.ControlledStepCopy!.Identity)
+        {
+            throw new ArgumentException(
+                "The layout-mutation receipt must identify the admitted step-copy record.",
+                nameof(lastLayoutMutation));
+        }
+
         SimulationStep = simulationStep;
         LastTraversal = lastTraversal;
+        ControlledStepCopyApplied = controlledStepCopyApplied;
+        LastLayoutMutation = lastLayoutMutation;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -52,13 +89,17 @@ public sealed record PrivateOriginalMapSessionSnapshot
 
     public MapId Map => Definition.Map;
 
-    public WorkingMapLayout WorkingLayout => Definition.WorkingLayout;
+    public WorkingMapLayout WorkingLayout { get; }
 
     public MapPosition PlayerPosition { get; }
 
     public long SimulationStep { get; }
 
     public OriginalMapTraversalResult? LastTraversal { get; }
+
+    public bool ControlledStepCopyApplied { get; }
+
+    public PrivateOriginalMapLayoutMutationReceipt? LastLayoutMutation { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -136,17 +177,82 @@ public sealed partial class GameSession
         ArgumentNullException.ThrowIfNull(command);
         PrivateOriginalMapSessionSnapshot current = PrivateOriginalMapSnapshot;
         OriginalMapTraversalResult traversal = current.Definition.Traversal.TryMove(
-            current.Definition.WorkingLayout,
+            current.WorkingLayout,
             current.PlayerPosition,
             command.Direction);
         PrivateOriginalMapSessionSnapshot next = new(
             current.Definition,
             current.Receipt,
+            current.WorkingLayout,
             checked(current.SimulationStep + 1),
             traversal.Position,
-            traversal);
+            traversal,
+            current.ControlledStepCopyApplied,
+            lastLayoutMutation: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
+    }
+
+    public PrivateOriginalMapLayoutMutationResult ApplyPrivateOriginalMapLayoutMutation(
+        ApplyPrivateOriginalMapLayoutMutationCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        PrivateOriginalMapSessionSnapshot current = PrivateOriginalMapSnapshot;
+        OriginalMapStepCopyDefinition admitted =
+            current.Definition.ControlledStepCopy ?? throw new InvalidOperationException(
+                "The admitted private original-map definition has no controlled step-copy record.");
+
+        if (command.RecordIdentity != admitted.Identity)
+        {
+            return RejectLayoutMutation(
+                current,
+                PrivateOriginalMapLayoutMutationFailureCode.ReferenceMismatch,
+                "The command does not identify the admitted private Map 3 step-copy record.");
+        }
+
+        if (command.ExpectedSimulationStep != current.SimulationStep)
+        {
+            return RejectLayoutMutation(
+                current,
+                PrivateOriginalMapLayoutMutationFailureCode.StaleSimulationStep,
+                "The command targets a stale private original-map simulation step.");
+        }
+
+        if (current.ControlledStepCopyApplied)
+        {
+            return RejectLayoutMutation(
+                current,
+                PrivateOriginalMapLayoutMutationFailureCode.AlreadyApplied,
+                "The one-shot controlled step-copy diagnostic has already been applied.");
+        }
+
+        PrivateOriginalMapCollisionCategory before = ClassifyCollision(
+            current,
+            new MapPosition(admitted.Copy.DestinationX, admitted.Copy.DestinationY));
+        WorkingMapLayout nextLayout = current.WorkingLayout.ApplyBlockCopy(admitted.Copy);
+        PrivateOriginalMapCollisionCategory after = ClassifyCollision(
+            current.Definition.Traversal,
+            nextLayout,
+            new MapPosition(admitted.Copy.DestinationX, admitted.Copy.DestinationY));
+        long nextStep = checked(current.SimulationStep + 1);
+        PrivateOriginalMapLayoutMutationReceipt receipt = new(
+            admitted.Identity,
+            admitted.Trigger,
+            admitted.Copy,
+            before,
+            after,
+            nextStep);
+        PrivateOriginalMapSessionSnapshot next = new(
+            current.Definition,
+            current.Receipt,
+            nextLayout,
+            nextStep,
+            current.PlayerPosition,
+            lastTraversal: null,
+            controlledStepCopyApplied: true,
+            receipt);
+        _privateOriginalMapSnapshot = next;
+        return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
 
     private static PrivateOriginalMapGameSessionStartResult StartPrivateOriginalMapAccepted(
@@ -161,9 +267,12 @@ public sealed partial class GameSession
         PrivateOriginalMapSessionSnapshot snapshot = new(
             accepted.Definition,
             accepted.Receipt,
+            accepted.Definition.WorkingLayout,
             simulationStep: 0,
             accepted.Definition.ControlledAdmission.Position,
-            lastTraversal: null);
+            lastTraversal: null,
+            controlledStepCopyApplied: false,
+            lastLayoutMutation: null);
         GameSession session = new(snapshot);
         return new PrivateOriginalMapGameSessionStarted(session, accepted.Receipt);
     }
@@ -326,7 +435,52 @@ public sealed partial class GameSession
                 "The admitted definition does not retain the exact controlled Map 3 start projection.");
         }
 
+        if (!OriginalMapRuntimeAdmission.IsExactControlledStepCopy(
+                definition.ControlledStepCopy) ||
+            !OriginalMapTraversal.IsBlocked(
+                definition.WorkingLayout,
+                new MapPosition(
+                    OriginalMapRuntimeAdmission.ControlledStepCopyDestinationX,
+                    OriginalMapRuntimeAdmission.ControlledStepCopyDestinationY)) ||
+            OriginalMapTraversal.IsBlocked(
+                definition.WorkingLayout,
+                new MapPosition(
+                    OriginalMapRuntimeAdmission.ControlledStepCopySourceX,
+                    OriginalMapRuntimeAdmission.ControlledStepCopySourceY)))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.controlledStepCopy",
+                "The admitted definition does not retain the exact controlled Map 3 step-copy projection.");
+        }
+
         return null;
+    }
+
+    private static PrivateOriginalMapLayoutMutationRejected RejectLayoutMutation(
+        PrivateOriginalMapSessionSnapshot snapshot,
+        PrivateOriginalMapLayoutMutationFailureCode code,
+        string message) =>
+        new(snapshot, new PrivateOriginalMapLayoutMutationDiagnostic(code, message));
+
+    private static PrivateOriginalMapCollisionCategory ClassifyCollision(
+        PrivateOriginalMapSessionSnapshot snapshot,
+        MapPosition position) =>
+        ClassifyCollision(snapshot.Definition.Traversal, snapshot.WorkingLayout, position);
+
+    private static PrivateOriginalMapCollisionCategory ClassifyCollision(
+        OriginalMapTraversal traversal,
+        WorkingMapLayout layout,
+        MapPosition position)
+    {
+        if (!traversal.IsWithinActiveArea(position))
+        {
+            return PrivateOriginalMapCollisionCategory.OutsideAcceptedActiveArea;
+        }
+
+        return OriginalMapTraversal.IsBlocked(layout, position)
+            ? PrivateOriginalMapCollisionCategory.BlockedByAcceptedCollisionClass
+            : PrivateOriginalMapCollisionCategory.ActiveNonBlocked;
     }
 
     private static OriginalMapImportDiagnostic Diagnostic(

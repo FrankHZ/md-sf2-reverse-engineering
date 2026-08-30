@@ -207,9 +207,24 @@ interprets no collision rule in Godot. A sibling private traversal viewport now 
 and blocked-collision policies, then draws three project-authored diagnostic categories plus one player
 marker. It never exposes raw layout words or assigns meaning to their block index or remaining flags;
 the crop, colors, and marker are remake diagnostics rather than original camera or presentation facts.
-Natural flags and setup variants, block-copy lifecycle wiring, entity occupancy, warps,
-init/event effects, persistence, assets, presentation, H3/H4, and 8C remain explicitly unsupported or
-Unknown.
+The private import also promotes exactly the accepted `Map03s4_StepEvents` one-based record 6 as a
+typed controlled diagnostic: trigger/destination `(41,13)` receives the one-by-one current-layout copy
+from `(62,0)`. Application owns the current immutable working layout and admits one semantic command
+through `GameSession`, keyed only by that exact record identity and the expected simulation step.
+Success applies `WorkingMapLayout.ApplyBlockCopy` atomically, while wrong, stale, duplicate, profile,
+or map references leave the authoritative snapshot unchanged. The typed receipt exposes only the
+record identity, geometry, and before/after collision categories; it contains no raw layout word,
+private payload, or local path. Restart reconstructs the admitted source layout. Godot reprojects the
+new typed snapshot and emits a separate local diagnostic receipt. Because `(41,13)` is outside the
+real controlled start's player-centered 12-by-7 crop, this capability does not claim that the initial
+diagnostic pixels change. Near-door viewport coverage uses only project-authored test snapshots.
+
+This one-shot command is an explicit private diagnostic policy, not evidence or implementation of a
+natural step trigger, `OpenDoor`, setup/init/program/flag effect, reach/order, or persistence. It does
+not reuse or relabel the `SetBlocks`/`SetBlocksVar` command reducer or the separate block-copy
+lifecycle/action reducers. Natural flags and setup variants, block-copy lifecycle wiring, entity
+occupancy, warps, init/event effects, persistence, assets, presentation, H3/H4, and 8C remain
+explicitly unsupported or Unknown.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy
 reducer. The reducer clones the input, then performs forward word-by-word reads and writes on that clone,
@@ -252,7 +267,7 @@ Map 3 admission above is not evidence of the original natural route or a full-co
 The thin `PrivateLocal` runtime composition above now admits the fixed-digest, path-free canonical Map 3
 import for bounded semantic movement. Full original-fidelity runtime/product admission, including
 natural continuity, original rendering, assets, effects, and presentation, remains deferred. Flag,
-step, roof, reload, VDP/DMA,
+natural step, roof, reload, VDP/DMA,
 script-cursor, and update-toggle effects
 around working-layout mutation likewise remain outside these reducers. Roof-record matching, fade
 dispatch, entity-coordinate conversion, lifecycle persistence, and content-driven record construction

@@ -24,6 +24,11 @@ public sealed class OriginalMapGameSessionTests
             started.Session.PrivateOriginalMapSnapshot.PlayerPosition);
         Assert.Equal(0, started.Session.PrivateOriginalMapSnapshot.SimulationStep);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastTraversal);
+        Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastLayoutMutation);
+        Assert.False(started.Session.PrivateOriginalMapSnapshot.ControlledStepCopyApplied);
+        Assert.Same(
+            started.Session.PrivateOriginalMapSnapshot.Definition.WorkingLayout,
+            started.Session.PrivateOriginalMapSnapshot.WorkingLayout);
         Assert.Equal(OriginalMapRuntimeAdmission.AcceptedContentDigest,
             started.Receipt.ContentDigest);
         Assert.Throws<InvalidOperationException>(() => _ = started.Session.Snapshot);
@@ -127,6 +132,155 @@ public sealed class OriginalMapGameSessionTests
             restarted.Session.PrivateOriginalMapSnapshot.PlayerPosition);
         Assert.Equal(0, restarted.Session.PrivateOriginalMapSnapshot.SimulationStep);
         Assert.Null(restarted.Session.PrivateOriginalMapSnapshot.LastTraversal);
+    }
+
+    [Fact]
+    public void ExactControlledStepCopyMutatesOnlyTheAuthoritativeSessionLayout()
+    {
+        ushort[] words = EmptyWords();
+        words[Index(41, 13)] = OriginalMapTraversal.CollisionMask;
+        OriginalMapImportDefinition definition = Definition(
+            words,
+            new OriginalMapTraversalArea(0, 0, 63, 63));
+        GameSession session = Start(definition);
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+
+        PrivateOriginalMapLayoutMutationApplied applied =
+            Assert.IsType<PrivateOriginalMapLayoutMutationApplied>(
+                session.ApplyPrivateOriginalMapLayoutMutation(
+                    MutationCommand(before)));
+
+        Assert.Same(applied.Snapshot, session.PrivateOriginalMapSnapshot);
+        Assert.NotSame(definition.WorkingLayout, applied.Snapshot.WorkingLayout);
+        Assert.True(OriginalMapTraversal.IsBlocked(
+            definition.WorkingLayout,
+            new MapPosition(41, 13)));
+        Assert.False(OriginalMapTraversal.IsBlocked(
+            applied.Snapshot.WorkingLayout,
+            new MapPosition(41, 13)));
+        Assert.Equal(1, applied.Snapshot.SimulationStep);
+        Assert.True(applied.Snapshot.ControlledStepCopyApplied);
+        Assert.Null(applied.Snapshot.LastTraversal);
+        Assert.Same(applied.Receipt, applied.Snapshot.LastLayoutMutation);
+        Assert.Equal(
+            PrivateOriginalMapCollisionCategory.BlockedByAcceptedCollisionClass,
+            applied.Receipt.BeforeCollision);
+        Assert.Equal(
+            PrivateOriginalMapCollisionCategory.ActiveNonBlocked,
+            applied.Receipt.AfterCollision);
+        Assert.Equal((62, 0, 41, 13, 1, 1), Geometry(applied.Receipt.Copy));
+        Assert.DoesNotContain(
+            applied.Receipt.GetType().GetProperties(),
+            property => property.Name.Contains("Word", StringComparison.Ordinal) ||
+                property.Name.Contains("Path", StringComparison.Ordinal) ||
+                property.Name.Contains("Payload", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void WrongStaleAndDuplicateMutationCommandsAreZeroMutation()
+    {
+        ushort[] words = EmptyWords();
+        words[Index(41, 13)] = OriginalMapTraversal.CollisionMask;
+        GameSession session = Start(Definition(
+            words,
+            new OriginalMapTraversalArea(0, 0, 63, 63)));
+        PrivateOriginalMapSessionSnapshot initial = session.PrivateOriginalMapSnapshot;
+        OriginalMapStepCopyIdentity exact = initial.Definition.ControlledStepCopy!.Identity;
+
+        foreach (OriginalMapStepCopyIdentity wrong in new[]
+        {
+            new OriginalMapStepCopyIdentity(
+                ContentProfile.PublicSynthetic,
+                exact.Map,
+                exact.SourceResourceId,
+                exact.OneBasedRecordOrdinal),
+            new OriginalMapStepCopyIdentity(
+                ContentProfile.PrivateLocal,
+                new MapId("other-map"),
+                exact.SourceResourceId,
+                exact.OneBasedRecordOrdinal),
+            new OriginalMapStepCopyIdentity(
+                ContentProfile.PrivateLocal,
+                exact.Map,
+                "OtherStepEvents",
+                exact.OneBasedRecordOrdinal),
+            new OriginalMapStepCopyIdentity(
+                ContentProfile.PrivateLocal,
+                exact.Map,
+                exact.SourceResourceId,
+                exact.OneBasedRecordOrdinal - 1),
+        })
+        {
+            AssertRejectedMutation(
+                session,
+                new ApplyPrivateOriginalMapLayoutMutationCommand(wrong, 0),
+                initial,
+                PrivateOriginalMapLayoutMutationFailureCode.ReferenceMismatch);
+        }
+
+        AssertRejectedMutation(
+            session,
+            new ApplyPrivateOriginalMapLayoutMutationCommand(exact, 1),
+            initial,
+            PrivateOriginalMapLayoutMutationFailureCode.StaleSimulationStep);
+
+        PrivateOriginalMapLayoutMutationApplied applied =
+            Assert.IsType<PrivateOriginalMapLayoutMutationApplied>(
+                session.ApplyPrivateOriginalMapLayoutMutation(
+                    new ApplyPrivateOriginalMapLayoutMutationCommand(exact, 0)));
+        AssertRejectedMutation(
+            session,
+            new ApplyPrivateOriginalMapLayoutMutationCommand(exact, 1),
+            applied.Snapshot,
+            PrivateOriginalMapLayoutMutationFailureCode.AlreadyApplied);
+    }
+
+    [Fact]
+    public void MovementReadsMutatedLayoutAndRestartRestoresTheAdmittedLayout()
+    {
+        ushort[] words = EmptyWords();
+        words[Index(41, 13)] = OriginalMapTraversal.CollisionMask;
+        OriginalMapImportAccepted accepted = Accepted(Definition(
+            words,
+            new OriginalMapTraversalArea(0, 0, 63, 63)));
+        AcceptedSource source = new(accepted);
+        GameSession first = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+
+        for (int index = 0; index < 15; index++)
+        {
+            Assert.Equal(
+                OriginalMapTraversalOutcome.Moved,
+                first.ApplyPrivateOriginalMap(
+                    new MoveExplorationCommand(ExplorationDirection.West)).Traversal.Outcome);
+        }
+
+        for (int index = 0; index < 9; index++)
+        {
+            Assert.Equal(
+                OriginalMapTraversalOutcome.Moved,
+                first.ApplyPrivateOriginalMap(
+                    new MoveExplorationCommand(ExplorationDirection.South)).Traversal.Outcome);
+        }
+
+        Assert.Equal(new MapPosition(41, 12), first.PrivateOriginalMapSnapshot.PlayerPosition);
+        Assert.IsType<PrivateOriginalMapLayoutMutationApplied>(
+            first.ApplyPrivateOriginalMapLayoutMutation(
+                MutationCommand(first.PrivateOriginalMapSnapshot)));
+        PrivateOriginalMapMoveApplied entered = first.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.South));
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, entered.Traversal.Outcome);
+        Assert.Equal(new MapPosition(41, 13), entered.Snapshot.PlayerPosition);
+        Assert.True(entered.Snapshot.ControlledStepCopyApplied);
+        Assert.Null(entered.Snapshot.LastLayoutMutation);
+
+        GameSession restarted = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+        Assert.True(OriginalMapTraversal.IsBlocked(
+            restarted.PrivateOriginalMapSnapshot.WorkingLayout,
+            new MapPosition(41, 13)));
+        Assert.False(restarted.PrivateOriginalMapSnapshot.ControlledStepCopyApplied);
+        Assert.Equal(0, restarted.PrivateOriginalMapSnapshot.SimulationStep);
     }
 
     [Fact]
@@ -253,6 +407,53 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedSourceDefinitionMustRetainTheExactControlledStepCopy()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        WorkingMapLayout layout = new(EmptyWords());
+        OriginalMapTraversal traversal = new(
+            [new OriginalMapTraversalArea(55, 2, 58, 4)]);
+        OriginalMapControlledAdmission controlled = new(
+            map,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.StartX,
+                OriginalMapRuntimeAdmission.StartY),
+            OriginalMapRuntimeAdmission.OpaqueStartFacing,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            OriginalMapRuntimeAdmission.SelectedInitIdentity,
+            noProgramRequest: true);
+        OriginalMapImportDefinition missing = new(
+            map,
+            layout,
+            traversal,
+            controlled,
+            ["natural-route-and-effects-unknown"]);
+        OriginalMapImportDefinition wrongIdentity = new(
+            map,
+            layout,
+            traversal,
+            controlled,
+            new OriginalMapStepCopyDefinition(
+                new OriginalMapStepCopyIdentity(
+                    ContentProfile.PrivateLocal,
+                    map,
+                    "OtherStepEvents",
+                    OriginalMapRuntimeAdmission.ControlledStepCopyRecordOrdinal),
+                new MapPosition(41, 13),
+                new WorkingMapBlockCopy(62, 0, 41, 13, 1, 1)),
+            ["natural-route-and-effects-unknown"]);
+
+        AssertRejectedReceipt(
+            missing,
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            wrongIdentity,
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
     public void TypedSourceRejectionPassesThroughWithoutCreatingASession()
     {
         OriginalMapImportDiagnostic diagnostic = new(
@@ -292,9 +493,18 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapTraversalArea? activeArea = null)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        ushort[] admittedWords = [.. words];
+        admittedWords[Index(
+            OriginalMapRuntimeAdmission.ControlledStepCopyDestinationX,
+            OriginalMapRuntimeAdmission.ControlledStepCopyDestinationY)] |=
+            OriginalMapTraversal.CollisionMask;
+        admittedWords[Index(
+            OriginalMapRuntimeAdmission.ControlledStepCopySourceX,
+            OriginalMapRuntimeAdmission.ControlledStepCopySourceY)] &=
+            unchecked((ushort)~OriginalMapTraversal.CollisionMask);
         return new OriginalMapImportDefinition(
             map,
-            new WorkingMapLayout(words),
+            new WorkingMapLayout(admittedWords),
             new OriginalMapTraversal(
                 [activeArea ?? new OriginalMapTraversalArea(55, 2, 58, 4)]),
             new OriginalMapControlledAdmission(
@@ -306,8 +516,51 @@ public sealed class OriginalMapGameSessionTests
                 new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
                 OriginalMapRuntimeAdmission.SelectedInitIdentity,
                 noProgramRequest: true),
+            ControlledStepCopy(map),
             ["natural-route-and-effects-unknown"]);
     }
+
+    private static OriginalMapStepCopyDefinition ControlledStepCopy(MapId map) =>
+        new(
+            new OriginalMapStepCopyIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.ControlledStepCopyResourceId,
+                OriginalMapRuntimeAdmission.ControlledStepCopyRecordOrdinal),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.ControlledStepCopyTriggerX,
+                OriginalMapRuntimeAdmission.ControlledStepCopyTriggerY),
+            new WorkingMapBlockCopy(
+                OriginalMapRuntimeAdmission.ControlledStepCopySourceX,
+                OriginalMapRuntimeAdmission.ControlledStepCopySourceY,
+                OriginalMapRuntimeAdmission.ControlledStepCopyDestinationX,
+                OriginalMapRuntimeAdmission.ControlledStepCopyDestinationY,
+                OriginalMapRuntimeAdmission.ControlledStepCopyWidth,
+                OriginalMapRuntimeAdmission.ControlledStepCopyHeight));
+
+    private static ApplyPrivateOriginalMapLayoutMutationCommand MutationCommand(
+        PrivateOriginalMapSessionSnapshot snapshot) =>
+        new(
+            snapshot.Definition.ControlledStepCopy!.Identity,
+            snapshot.SimulationStep);
+
+    private static void AssertRejectedMutation(
+        GameSession session,
+        ApplyPrivateOriginalMapLayoutMutationCommand command,
+        PrivateOriginalMapSessionSnapshot expectedSnapshot,
+        PrivateOriginalMapLayoutMutationFailureCode expectedCode)
+    {
+        PrivateOriginalMapLayoutMutationRejected rejected =
+            Assert.IsType<PrivateOriginalMapLayoutMutationRejected>(
+                session.ApplyPrivateOriginalMapLayoutMutation(command));
+        Assert.Same(expectedSnapshot, rejected.Snapshot);
+        Assert.Same(expectedSnapshot, session.PrivateOriginalMapSnapshot);
+        Assert.Equal(expectedCode, rejected.Diagnostic.Code);
+    }
+
+    private static (int, int, int, int, int, int) Geometry(WorkingMapBlockCopy copy) =>
+        (copy.SourceX, copy.SourceY, copy.DestinationX, copy.DestinationY,
+            copy.Width, copy.Height);
 
     private static OriginalMapImportReceipt Receipt(
         string? contentDigest = null,
