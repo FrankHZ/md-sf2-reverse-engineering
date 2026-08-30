@@ -193,9 +193,18 @@ walkability grid. Application now admits that exact fixed-digest result into a s
 from the controlled position, retains the opaque original-facing/setup/init/no-request facts, and
 applies semantic movement only through `OriginalMapTraversal`, including blocked and directional-stair
 outcomes. It does not reuse the public-synthetic walkability, flags, context, event, or presentation
-state. This mode is not wired to Godot and is not a runnable original profile. Natural flags and setup
-variants, block-copy lifecycle wiring, entity occupancy, warps, init/event effects, persistence,
-assets, presentation, H3/H4, and 8C remain explicitly unsupported or Unknown.
+state. A thin Godot composition now requires an explicit `private-local` profile plus one fully
+qualified caller-selected ignored canonical-import path; merely finding or receiving a path never
+selects private execution. Missing, malformed, unreadable, or incompatible private input reports
+Unavailable and cannot fall back to the public session. The path remains only in the outer composition
+and Content reader and is never projected into Application state, receipts, status, smoke output, or
+logs. Godot sends semantic movement only through `ApplyPrivateOriginalMap` and projects typed map,
+position, outcome, and simulation-step facts beneath a persistent
+`PRIVATE LOCAL — NOT FULL ORIGINAL FIDELITY` disclosure. This is a local traversal shell, not a
+runnable full-original profile: it draws no imported map or original asset and interprets no collision
+rule in Godot. Natural flags and setup variants, block-copy lifecycle wiring, entity occupancy, warps,
+init/event effects, persistence, assets, presentation, H3/H4, and 8C remain explicitly unsupported or
+Unknown.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy
 reducer. The reducer clones the input, then performs forward word-by-word reads and writes on that clone,
@@ -231,11 +240,14 @@ admission; Battle 01 continuity;
 original entity identity, placement, facing, dialogue, interaction effects, or reachability;
 original field-search locations, predicates, targets, discoveries, items, or reachability;
 original outbound maps, Map 21 identity, layouts, coordinates, warp predicates, or natural reachability;
-complete Application/Content/Godot game layers; original presentation; H4; private-content admission;
+complete Application/Content/Godot game layers; original presentation; H4; full private-content and
+original-fidelity admission;
 and milestone acceptance remain Unknown or deferred at their existing owners. The bounded synthetic
 Map 3 admission above is not evidence of the original natural route or a full-content implementation.
-Private-profile runtime/product admission remains deferred even though the path-free canonical Map 3
-import and bounded current-layout traversal prerequisite now exist. Flag, step, roof, reload, VDP/DMA,
+The thin `PrivateLocal` runtime composition above now admits the fixed-digest, path-free canonical Map 3
+import for bounded semantic movement. Full original-fidelity runtime/product admission, including
+natural continuity, original rendering, assets, effects, and presentation, remains deferred. Flag,
+step, roof, reload, VDP/DMA,
 script-cursor, and update-toggle effects
 around working-layout mutation likewise remain outside these reducers. Roof-record matching, fade
 dispatch, entity-coordinate conversion, lifecycle persistence, and content-driven record construction

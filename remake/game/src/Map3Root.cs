@@ -29,9 +29,19 @@ public sealed partial class Map3Root : Node2D
 
     public override void _Ready()
     {
+        long readyStarted = System.Diagnostics.Stopwatch.GetTimestamp();
+        long selectionStarted = System.Diagnostics.Stopwatch.GetTimestamp();
+        Map3RuntimeProfileSelection selection =
+            Map3RuntimeProfileSelection.Parse(OS.GetCmdlineUserArgs());
+        TracePrivateStage(
+            selection.PrivateSmokeRequested,
+            "profile-selection",
+            selectionStarted);
+        _runtimeProfile = selection.RequestedProfile;
         RegisterInputMap();
-        BuildPresentation();
-        StartScenario();
+        BuildSelectedPresentation(selection);
+        StartScenario(selection);
+        TracePrivateStage(selection.PrivateSmokeRequested, "godot-ready", readyStarted);
     }
 
     public override void _Process(double delta)
@@ -39,6 +49,12 @@ public sealed partial class Map3Root : Node2D
         _ = delta;
         if (_session is null)
         {
+            return;
+        }
+
+        if (_runtimeProfile == Map3RuntimeProfile.PrivateLocal)
+        {
+            ProcessPrivateInput();
             return;
         }
 
@@ -132,8 +148,22 @@ public sealed partial class Map3Root : Node2D
         }
     }
 
-    private void StartScenario()
+    private void StartScenario(Map3RuntimeProfileSelection selection)
     {
+        if (!selection.IsAvailable)
+        {
+            FailProfileStartup(selection);
+            return;
+        }
+
+        if (selection.RequestedProfile == Map3RuntimeProfile.PrivateLocal)
+        {
+            StartPrivateScenario(
+                selection.CanonicalImportPath!,
+                selection.PrivateSmokeRequested);
+            return;
+        }
+
         byte[] packageBytes = Godot.FileAccess.GetFileAsBytes(
             "res://content/public-synthetic-map3-smoke-v1.json");
         PublicSyntheticMap3PackageReader source =
