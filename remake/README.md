@@ -257,6 +257,17 @@ not palette or tileset payloads: source/effective color words, compressed or dec
 placement, cache/load behavior, tile-word semantics, animation, camera/layers, CRAM/VInt/DMA timing,
 rendered pixels, and presentation remain private-input prerequisites, separate owners, or Unknown.
 
+A separate ignored/private-local Content port can now admit the corresponding base visual payloads
+under the fixed ROM, tileset-metadata, and palette-metadata roots. It validates the five selected
+compressed ROM slices transiently, discards those compressed bytes, and crosses into Application only
+with five ordered immutable 4,096-byte decoded buffers plus the defensively owned source/effective
+16-word palette forms. Application owns the closed request/result/diagnostic/receipt protocol and the
+immutable payload definition, but no session, snapshot, composition root, Godot node, PCK, or public
+package consumes it yet. This is `private-local-map3-base-visual-payload-admission-v1`, an unconsumed
+private prerequisite rather than rendering or original-fidelity evidence. Animation tileset 74,
+loading/VRAM/cache/replacement behavior, block/tile/layer composition, color-display conversion,
+timing, final pixels, and all original presentation semantics remain Unsupported or Unknown.
+
 This one-shot command is an explicit private diagnostic policy, not evidence or implementation of a
 natural step trigger, `OpenDoor`, setup/init/program/flag effect, reach/order, or persistence. It does
 not reuse or relabel the `SetBlocks`/`SetBlocksVar` command reducer or the separate block-copy
