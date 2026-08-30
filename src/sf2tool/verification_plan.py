@@ -150,6 +150,7 @@ H3_PROFILE_PARTITIONS = {
     "direct-function-seam": "h3-direct-seam",
     "witch-menu": "h3-witch",
     "sound-driver": "h3-sound",
+    "original-reference": "h3-original-reference",
 }
 
 H2_MODULE_ALIASES = {
@@ -183,8 +184,18 @@ H3_MODULE_COMMANDS: dict[str, tuple[str, ...]] = {
         for command, launch in COMMAND_LAUNCHES.items()
     ).items()
 }
-def _commands(prefix: str, commands: tuple[str, ...]) -> tuple[str, ...]:
-    return tuple(f"uv run sf2 {prefix} {command}" for command in commands)
+def _commands(
+    prefix: str, commands: tuple[str, ...], *, preflight_only: bool = False
+) -> tuple[str, ...]:
+    suffix = " --preflight-only" if preflight_only else ""
+    return tuple(f"uv run sf2 {prefix} {command}{suffix}" for command in commands)
+
+
+def _h3_command(command: str) -> str:
+    launch = COMMAND_LAUNCHES[command]
+    return _commands(
+        "h3", (command,), preflight_only=launch.profile == "original-reference"
+    )[0]
 
 
 PARTITIONS = (
@@ -251,6 +262,7 @@ PARTITIONS = (
                         if launch.profile == profile
                     )
                 ),
+                preflight_only=profile == "original-reference",
             ),
             parallel_safe=False,
             resource_lock="bizhawk-original-runtime",
@@ -542,7 +554,7 @@ def _select_h3_command(
 ) -> None:
     launch = COMMAND_LAUNCHES[command]
     partition_id = H3_PROFILE_PARTITIONS[launch.profile]
-    _selection_entry(selected, partition_id, reason, (f"uv run sf2 h3 {command}",))
+    _selection_entry(selected, partition_id, reason, (_h3_command(command),))
 
 
 def _select_all(

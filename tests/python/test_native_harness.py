@@ -220,6 +220,17 @@ def test_growth_refresh_has_a_dedicated_narrow_runtime_command() -> None:
     assert args.timeout_seconds == 60
 
 
+def test_original_reference_replay_capability_defaults_to_explicit_preflight() -> None:
+    args = build_parser().parse_args(
+        ["h3", "original-reference-replay-capability", "--preflight-only"]
+    )
+    assert args.h3_command == "original-reference-replay-capability"
+    assert args.preflight_only is True
+    assert args.run_class is None
+    assert args.launch_ordinal is None
+    assert args.timeout_seconds == 120
+
+
 def test_enemy_gold_has_a_dedicated_narrow_extraction_command() -> None:
     args = build_parser().parse_args(["h2", "enemy-gold"])
     assert args.h2_command == "enemy-gold"

@@ -218,6 +218,7 @@ def test_h3_bootstrap_registry_closes_every_registered_owner() -> None:
         "direct-function-seam": 13,
         "witch-menu": 6,
         "sound-driver": 1,
+        "original-reference": 1,
     }
     assert list(dispatches).count("service-menu-lifecycle") == 1
     assert Counter(bootstrap.H3_COMMAND_PROFILES.values()) == {
@@ -226,16 +227,17 @@ def test_h3_bootstrap_registry_closes_every_registered_owner() -> None:
         "direct-function-seam": 11,
         "witch-menu": 6,
         "sound-driver": 1,
+        "original-reference": 1,
     }
     assert Counter(launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()) == {
-        1: 69,
+        1: 70,
         2: 1,
         8: 1,
         16: 1,
         14: 1,
         27: 1,
     }
-    assert sum(launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()) == 136
+    assert sum(launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()) == 137
     assert Counter(bootstrap.LEGACY_LAUNCHER_PROFILES.values()) == {
         "battle01-intro-skip": 15,
     }
@@ -253,6 +255,9 @@ def test_h3_bootstrap_registry_closes_every_registered_owner() -> None:
         actual = _dispatch_observer_calls(
             launch.dispatch_module, launch.dispatch_function
         )
+        if launch.profile == "original-reference":
+            assert actual == []
+            continue
         assert set(actual) == set(launch.observers)
         actual_counts = Counter(actual)
         for observer_launch in launch.launches:
@@ -315,13 +320,15 @@ def test_legacy_battle01_launchers_reuse_the_accepted_observer() -> None:
 
 def test_shared_runner_injects_the_profile_and_waits_for_one_process() -> None:
     source = (ROOT / "src" / "sf2tool" / "h3" / "bizhawk.py").read_text(encoding="utf-8")
+    existing_runner = source[source.index("def run_observer(") :]
 
-    assert source.count("subprocess.Popen(") == 1
-    assert "runtime_bootstrap(observer_path)" in source
-    assert "bootstrapLibraryPath" in source
-    assert "validate_lua_syntax(BOOTSTRAP_LIBRARY, executable)" in source
-    assert "process.communicate(timeout=timeout_seconds)" in source
-    assert '"failure:observer-callback:" in status_tail' in source
+    assert source.count("subprocess.Popen(") == 2
+    assert existing_runner.count("subprocess.Popen(") == 1
+    assert "runtime_bootstrap(observer_path)" in existing_runner
+    assert "bootstrapLibraryPath" in existing_runner
+    assert "validate_lua_syntax(BOOTSTRAP_LIBRARY, executable)" in existing_runner
+    assert "process.communicate(timeout=timeout_seconds)" in existing_runner
+    assert '"failure:observer-callback:" in status_tail' in existing_runner
 
 
 def test_shared_runner_promotes_callback_failure_after_process_exit(
