@@ -10,35 +10,24 @@ namespace Sf2.Remake.Content;
 
 public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
 {
-    public const string PackageId = "sf2-canonical-map-import-v1";
-    public const string Capability = "private-canonical-map3-layout-import-v1";
-    public const string TraversalCapability = "original-map3-traversal-policy-v1";
+    public const string PackageId = OriginalMapRuntimeAdmission.PackageId;
+    public const string Capability = OriginalMapRuntimeAdmission.ImportCapability;
+    public const string TraversalCapability = OriginalMapRuntimeAdmission.TraversalCapability;
     public const string ControlledAdmissionCapability =
-        "controlled-map3-import-definition-v1";
+        OriginalMapRuntimeAdmission.ControlledAdmissionCapability;
 
     public const string CanonicalRepository =
-        "https://github.com/ShiningForceCentral/SF2DISASM.git";
-    public const string CanonicalCommit = "c834c652b6862bc5679fd7f69a38a7093206efc6";
+        OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
+    public const string CanonicalCommit = OriginalMapRuntimeAdmission.AcceptedUpstreamCommit;
     public const string CanonicalRomSha256 =
-        "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9";
+        OriginalMapRuntimeAdmission.AcceptedRomSha256;
 
     private const string AcceptedCanonicalContentDigest =
-        "DDDA4FA05455DDBA9CDAF85497CEE0C1C89C6E625721A8FEAD301044C892E508";
+        OriginalMapRuntimeAdmission.AcceptedContentDigest;
 
     private const string Map3SourceIdentity = "Map03";
-    private const string Map3SetupIdentity = "ms_map3";
-    private const string Map3InitIdentity = "ms_map3_InitFunction";
-
-    private static readonly string[] EvidenceOwners =
-    [
-        "sf2-map-content-static-v1",
-        "sf2-map-layout-decode-v1",
-        "sf2-canonical-map-import-v1",
-        "sf2-map-tileset-decode-v1",
-        "sf2-map-palette-static-v1",
-        "sf2-map3-castle-battle-unlock-static-v1",
-        "sf2-map3-admitted-start-runtime-v1",
-    ];
+    private const string Map3SetupIdentity = OriginalMapRuntimeAdmission.SelectedSetupId;
+    private const string Map3InitIdentity = OriginalMapRuntimeAdmission.SelectedInitIdentity;
 
     private static readonly string[] Capabilities =
     [
@@ -313,11 +302,13 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         ValidateSchoolDoorStep(stepTable, workingLayout);
         ValidateControlledSetup(references, resources);
 
-        MapId map = new("map3");
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
         OriginalMapControlledAdmission controlledAdmission = new(
             map,
-            new MapPosition(56, 3),
-            opaqueFacing: 3,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.StartX,
+                OriginalMapRuntimeAdmission.StartY),
+            OriginalMapRuntimeAdmission.OpaqueStartFacing,
             new MapSetupId(Map3SetupIdentity),
             Map3InitIdentity,
             noProgramRequest: true);
@@ -339,7 +330,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 romSha256,
                 repository,
                 commit),
-            EvidenceOwners,
+            OriginalMapRuntimeAdmission.RequiredEvidenceOwners,
             Capabilities);
         return new OriginalMapImportAccepted(definition, receipt);
     }
