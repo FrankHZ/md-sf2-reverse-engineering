@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2.example/schemas/core/original-reference-replay-capability.schema.json",
+  "title": "Original-reference replay transport capability",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "capabilityId", "toolchainContract", "movieRecipe", "launchContract", "passiveObserverPolicy", "receiptContract", "unknowns"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "capabilityId": {"const": "sf2-original-reference-replay-capability-v1"},
+    "toolchainContract": {"$ref": "#/definitions/toolchain"},
+    "movieRecipe": {"$ref": "#/definitions/recipe"},
+    "launchContract": {"$ref": "#/definitions/launch"},
+    "passiveObserverPolicy": {"$ref": "#/definitions/policy"},
+    "receiptContract": {"$ref": "#/definitions/receiptContract"},
+    "unknowns": {
+      "const": [
+        {
+          "label": "Unknown",
+          "question": "Whether a later scenario's caller-dependent completion state warrants a separate H3 evidence slice remains unclaimed by this transport capability."
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "toolchain": {
+      "type": "object", "additionalProperties": false,
+      "required": ["romSha256", "bizhawkRelease", "core", "archiveSha256", "archiveSizeBytes", "archiveMemberCount", "archiveMemberSetSha256", "executableSha256", "executableSizeBytes", "lua54Sha256", "lua54SizeBytes"],
+      "properties": {
+        "romSha256": {"const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"},
+        "bizhawkRelease": {"const": "2.11.1"},
+        "core": {"const": "Genesis Plus GX"},
+        "archiveSha256": {"const": "DD7CBD5E205B09C5BCE6AFABC4F8AA525ACC0BBEB9753B198A8DB3FE6A5E5717"},
+        "archiveSizeBytes": {"const": 97984101},
+        "archiveMemberCount": {"const": 477},
+        "archiveMemberSetSha256": {"const": "6A903AA1503B5BAECEF7199BA36591DEFB83FB8B38770A2D09CF2A86A4721BE1"},
+        "executableSha256": {"const": "F8CDB93551A544F680BF3876D9D8D72643859E7A44A23B04E1A25B92E48F80CD"},
+        "executableSizeBytes": {"const": 5376512},
+        "lua54Sha256": {"const": "4786E0DF4CAF120E3BEDF0B6DDA260525DF2187C66DED220A21A53ACE76B0501"},
+        "lua54SizeBytes": {"const": 505344}
+      }
+    },
+    "recipeRow": {
+      "type": "object", "additionalProperties": false,
+      "required": ["frame", "port1"],
+      "properties": {
+        "frame": {"type": "integer", "minimum": 0, "maximum": 31},
+        "port1": {"type": "array", "items": {"enum": ["Up", "Down", "Left", "Right", "A", "B", "C", "Start"]}, "uniqueItems": true}
+      }
+    },
+    "recipe": {
+      "type": "object", "additionalProperties": false,
+      "required": ["nonSemanticTransportRecipe", "startState", "buttonOrder", "inputLogKey", "warmUpRow", "semanticRowOffset", "rows", "headerLines", "syncSettings", "recipeSha256", "bk2Sha256", "inputLogSha256"],
+      "properties": {
+        "nonSemanticTransportRecipe": {"const": true},
+        "startState": {"const": "power-on"},
+        "buttonOrder": {"const": ["Up", "Down", "Left", "Right", "A", "B", "C", "Start"]},
+        "inputLogKey": {"const": "|.|UDLRABCS|"},
+        "warmUpRow": {"const": {"bk2Row": 0, "port1": []}},
+        "semanticRowOffset": {"const": 1},
+        "rows": {"const": [{"frame": 0, "port1": []}, {"frame": 1, "port1": []}, {"frame": 2, "port1": []}, {"frame": 3, "port1": []}, {"frame": 4, "port1": []}, {"frame": 5, "port1": []}, {"frame": 6, "port1": []}, {"frame": 7, "port1": []}, {"frame": 8, "port1": ["Right"]}, {"frame": 9, "port1": ["Right"]}, {"frame": 10, "port1": ["Right"]}, {"frame": 11, "port1": ["Right"]}, {"frame": 12, "port1": []}, {"frame": 13, "port1": []}, {"frame": 14, "port1": []}, {"frame": 15, "port1": []}, {"frame": 16, "port1": ["A"]}, {"frame": 17, "port1": ["A"]}, {"frame": 18, "port1": ["A"]}, {"frame": 19, "port1": ["A"]}, {"frame": 20, "port1": []}, {"frame": 21, "port1": []}, {"frame": 22, "port1": []}, {"frame": 23, "port1": []}, {"frame": 24, "port1": ["Start"]}, {"frame": 25, "port1": ["Start"]}, {"frame": 26, "port1": ["Start"]}, {"frame": 27, "port1": ["Start"]}, {"frame": 28, "port1": []}, {"frame": 29, "port1": []}, {"frame": 30, "port1": []}, {"frame": 31, "port1": []}]},
+        "headerLines": {"const": ["MovieVersion 1", "emuVersion 2.11.1", "Platform GEN", "GameName Shining Force II", "SHA1 22DEFC2E8E6C1DBB20421B906796538725B3D893", "Core Genesis Plus GX", "StartsFromSavestate False", "StartsFromSaveram False"]},
+        "syncSettings": {"type": "object", "additionalProperties": false, "required": ["Region"], "properties": {"Region": {"const": "Autodetect"}}},
+        "recipeSha256": {"const": "BAD3DE219DBDA1F2FB9A2DA7191351290575CAFA4FF03A00B75A289ADA2BD867"},
+        "bk2Sha256": {"const": "250F4086E1C1AD08BF64A7CB5C84787E4EE8DA41D83D53630F54DE7FB8085E64"},
+        "inputLogSha256": {"const": "003DDE951EDCB863AF1AE6EAA9AFA759E4722298D44AD190BFF9E85149C500A1"}
+      }
+    },
+    "launch": {
+      "type": "object", "additionalProperties": false,
+      "required": ["platform", "readOnlyMovie", "attachmentSchedule", "configProjection", "mutableSurfaces", "commandFlags", "resourceLock", "parallelSafe"],
+      "properties": {
+        "platform": {"const": "GEN"}, "readOnlyMovie": {"const": true}, "attachmentSchedule": {"const": {"warmUpBk2Row": 0, "observerInitialFrame": 1, "observerFirstPollFrame": 1, "firstSemanticBk2Row": 1, "lastSemanticBk2Row": 32, "terminalWriteFrame": 33}},
+        "configProjection": {"$ref": "#/definitions/configProjection"},
+        "mutableSurfaces": {"const": ["config.ini", "gamedb/gamedb_user.txt", "Genesis/SaveRAM", "Genesis/State", "Logs", "Movies", "AV", "Tools", "Lua", "Watch", "ExternalTools", "Temp", "MultiDisk", "ROM", "Genesis/Screenshots", "Genesis/Cheats"]},
+        "commandFlags": {"const": ["--chromeless", "--config=<fresh-config>", "--movie=<generated.bk2>", "--lua=<passive-observer.lua>", "<private-rom>"]},
+        "resourceLock": {"const": "bizhawk-original-runtime"}, "parallelSafe": {"const": false}
+      }
+    },
+    "policy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["observerSha256", "allowedApis", "forbiddenCapabilities"],
+      "properties": {
+        "observerSha256": {"const": "E59E827AD08BE43217A7E778E1D55919D239C3EDA53921C04F338A795B72BDCE"},
+        "allowedApis": {"const": ["movie.isloaded", "movie.getreadonly", "movie.startsfromsavestate", "movie.startsfromsaveram", "movie.length", "movie.mode", "movie.getheader", "movie.getinput", "movie.getinputasmnemonic", "event.oninputpoll", "event.onexit", "event.unregisterbyid", "emu.framecount", "emu.getsystemid", "emu.frameadvance", "joypad.get", "client.getversion", "client.exitCode", "os.getenv", "io.open"]},
+        "forbiddenCapabilities": {"const": ["adaptive-input", "bootstrap", "dynamic-call", "gameplay-mechanics", "memory-write", "movie-mutation", "rom-control", "savestate", "shell-process"]}
+      }
+    },
+    "configPath": {"type": "object", "additionalProperties": false, "required": ["system", "type", "path"], "properties": {"system": {"enum": ["Global_NULL", "GEN"]}, "type": {"enum": ["Base", "ROM", "Firmware", "Movies", "Movie backups", "A/V Dumps", "Tools", "Lua", "Watch (.wch)", "Debug Logs", "Macros", "Multi-Disk Bundles", "External Tools", "Temp Files", "Savestates", "Save RAM", "Screenshots", "Cheats"]}, "path": {"type": "string", "pattern": "^(\\.|\\./[A-Za-z0-9./ -]+)$"}}},
+    "configSettings": {"type": "object", "additionalProperties": false, "required": ["UseRecentForRoms", "StartPaused", "FirstBoot", "SingleInstanceMode", "AutoLoadLastSaveSlot", "AutoSaveLastSaveSlot", "AutosaveSaveRAM", "BackupSaveram", "UpdateAutoCheckEnabled", "RACheevosActive", "Movies", "SoundEnabled"], "properties": {"UseRecentForRoms": {"const": false}, "StartPaused": {"const": false}, "FirstBoot": {"const": false}, "SingleInstanceMode": {"const": false}, "AutoLoadLastSaveSlot": {"const": false}, "AutoSaveLastSaveSlot": {"const": false}, "AutosaveSaveRAM": {"const": false}, "BackupSaveram": {"const": false}, "UpdateAutoCheckEnabled": {"const": false}, "RACheevosActive": {"const": false}, "Movies": {"type": "object", "additionalProperties": false, "required": ["MovieEndAction", "EnableBackupMovies", "MoviesOnDisk", "PlaySoundOnMovieEnd"], "properties": {"MovieEndAction": {"const": 3}, "EnableBackupMovies": {"const": false}, "MoviesOnDisk": {"const": false}, "PlaySoundOnMovieEnd": {"const": false}}}, "SoundEnabled": {"const": false}}},
+    "configProjection": {"type": "object", "additionalProperties": false, "required": ["paths", "settings"], "properties": {"paths": {"const": [{"system": "Global_NULL", "type": "Base", "path": "."}, {"system": "Global_NULL", "type": "ROM", "path": "./ROM"}, {"system": "Global_NULL", "type": "Firmware", "path": "./Firmware"}, {"system": "Global_NULL", "type": "Movies", "path": "./Movies"}, {"system": "Global_NULL", "type": "Movie backups", "path": "./Movies/backup"}, {"system": "Global_NULL", "type": "A/V Dumps", "path": "./AV"}, {"system": "Global_NULL", "type": "Tools", "path": "./Tools"}, {"system": "Global_NULL", "type": "Lua", "path": "./Lua"}, {"system": "Global_NULL", "type": "Watch (.wch)", "path": "./Watch"}, {"system": "Global_NULL", "type": "Debug Logs", "path": "./Logs"}, {"system": "Global_NULL", "type": "Macros", "path": "./Movies/Macros"}, {"system": "Global_NULL", "type": "Multi-Disk Bundles", "path": "./MultiDisk"}, {"system": "Global_NULL", "type": "External Tools", "path": "./ExternalTools"}, {"system": "Global_NULL", "type": "Temp Files", "path": "./Temp"}, {"system": "GEN", "type": "Base", "path": "./Genesis"}, {"system": "GEN", "type": "ROM", "path": "./ROM"}, {"system": "GEN", "type": "Savestates", "path": "./State"}, {"system": "GEN", "type": "Save RAM", "path": "./SaveRAM"}, {"system": "GEN", "type": "Screenshots", "path": "./Screenshots"}, {"system": "GEN", "type": "Cheats", "path": "./Cheats"}]}, "settings": {"$ref": "#/definitions/configSettings"}}},
+    "receiptContract": {
+      "type": "object", "additionalProperties": false,
+      "required": ["privateOnly", "terminalStatuses", "retainedArtifact", "canonicalDigestExcludes", "globalOrdinalOne"],
+      "properties": {
+        "privateOnly": {"const": true}, "terminalStatuses": {"const": ["PASS", "FAIL", "UNAVAILABLE"]},
+        "retainedArtifact": {"const": "receipt.json"},
+        "canonicalDigestExcludes": {"const": ["absolutePath", "launchOrdinal", "pid", "wallClock"]},
+        "globalOrdinalOne": {"const": {"ordinal": 1, "candidateSha256": "9F8417BC1A515FEB5D9466DCC1BC489B981D97741E44518D572E6B0E63380BDF", "receiptSha256": "BDE38876750E51E59CF1D2897495EFFD8EE42955F7FE87C3F12A9DB853C14CA6"}}
+      }
+    },
+    "question": {
+      "type": "object", "additionalProperties": false, "required": ["label", "question"],
+      "properties": {"label": {"const": "Unknown"}, "question": {"type": "string", "minLength": 1}}
+    }
+  }
+}

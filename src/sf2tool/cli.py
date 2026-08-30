@@ -187,6 +187,7 @@ from sf2tool.h3.map_script_ui_primary import verify_map_script_ui_primary
 from sf2tool.h3.map_setup_selection import verify_map_setup_selection
 from sf2tool.h3.muddle_action_guard import verify_muddle_action_guard
 from sf2tool.h3.muddle_confusion import verify_muddle_confusion
+from sf2tool.h3.original_reference_replay import run_original_reference_replay
 from sf2tool.h3.random_services import verify_random_services
 from sf2tool.h3.rng import verify_rng
 from sf2tool.h3.service_menu_lifecycle import verify_service_menu_lifecycle
@@ -940,6 +941,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     h3_parser = commands.add_parser("h3", help="run a narrow emulator-backed fixture")
     h3_commands = h3_parser.add_subparsers(dest="h3_command", required=True)
+    h3_original_reference = h3_commands.add_parser(
+        "original-reference-replay-capability",
+        help="preflight the private, transport-only original-reference replay capability",
+    )
+    h3_original_reference.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
+    h3_original_reference.add_argument("--preflight-only", action="store_true")
+    h3_original_reference.add_argument(
+        "--run-class", choices=("diagnostic", "frozen-acceptance")
+    )
+    h3_original_reference.add_argument("--launch-ordinal", type=int, choices=(1, 2, 3))
+    h3_original_reference.add_argument("--timeout-seconds", type=int, default=120)
     h3_rng = h3_commands.add_parser("rng", help="verify base and debug-aware RNG behavior")
     h3_rng.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
     h3_rng.add_argument("--timeout-seconds", type=int, default=60)
@@ -2121,6 +2133,16 @@ def dispatch(args: argparse.Namespace) -> None:
                 args.rom_path,
                 args.upstream_path,
                 out_dir=args.out_dir,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "original-reference-replay-capability":
+        print_record(
+            run_original_reference_replay(
+                rom_path=args.rom_path,
+                preflight_only=args.preflight_only,
+                run_class=args.run_class,
+                launch_ordinal=args.launch_ordinal,
+                timeout_seconds=args.timeout_seconds,
             )
         )
     elif args.command == "h3" and args.h3_command == "rng":

@@ -87,6 +87,14 @@ PROFILES = {
             "Battle Test host."
         ),
     ),
+    "original-reference": BootstrapProfile(
+        name="original-reference",
+        battle01_compatible=False,
+        isolation_reason=(
+            "The transport-only replay capability starts from power-on with a frozen BK2 and "
+            "does not use any existing H3 bootstrap seam."
+        ),
+    ),
 }
 
 BATTLE01_OBSERVERS = (
@@ -174,6 +182,7 @@ WITCH_MENU_OBSERVERS = (
 )
 
 SOUND_DRIVER_OBSERVERS = ("tools/bizhawk/sound_timing_observer.lua",)
+ORIGINAL_REFERENCE_OBSERVERS = ("tools/bizhawk/original_reference_replay_observer.lua",)
 
 
 def _profiles(profile: str, paths: tuple[str, ...]) -> dict[str, str]:
@@ -186,6 +195,7 @@ OBSERVER_PROFILES = (
     | _profiles("direct-function-seam", DIRECT_FUNCTION_SEAM_OBSERVERS)
     | _profiles("witch-menu", WITCH_MENU_OBSERVERS)
     | _profiles("sound-driver", SOUND_DRIVER_OBSERVERS)
+    | _profiles("original-reference", ORIGINAL_REFERENCE_OBSERVERS)
 )
 
 def _launch(
@@ -559,6 +569,12 @@ COMMAND_LAUNCHES = {
         "sf2tool.h3.after_turn", "verify_after_turn_status_lifecycle", "battle01-intro-skip",
         _launch("tools/bizhawk/after_turn_status_lifecycle_observer.lua"),
     ),
+    "original-reference-replay-capability": _command(
+        "sf2tool.h3.original_reference_replay",
+        "run_original_reference_replay",
+        "original-reference",
+        _launch("tools/bizhawk/original_reference_replay_observer.lua"),
+    ),
 }
 
 BATTLE01_COMMANDS = tuple(
@@ -580,6 +596,10 @@ WITCH_MENU_COMMANDS = tuple(
 SOUND_DRIVER_COMMANDS = tuple(
     command for command, launch in COMMAND_LAUNCHES.items()
     if launch.profile == "sound-driver"
+)
+ORIGINAL_REFERENCE_COMMANDS = tuple(
+    command for command, launch in COMMAND_LAUNCHES.items()
+    if launch.profile == "original-reference"
 )
 H3_COMMAND_PROFILES = {
     command: launch.profile for command, launch in COMMAND_LAUNCHES.items()

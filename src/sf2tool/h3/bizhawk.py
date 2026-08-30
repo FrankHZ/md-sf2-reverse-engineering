@@ -3,6 +3,8 @@ from __future__ import annotations
 import ctypes
 import os
 import subprocess
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +15,40 @@ from sf2tool.rom import inspect_rom
 
 TOOLCHAIN_MANIFEST = repo_path("manifests/toolchain.json")
 DERIVED_ROOT = repo_path("local/derived/h3")
+
+
+@dataclass(frozen=True)
+class NativeProcessResult:
+    """Bounded result from one native BizHawk launch without interpretation."""
+
+    returncode: int | None
+    stdout: str
+    stderr: str
+    timed_out: bool
+    started: bool = True
+    process_terminated: bool = True
+    timeout_tree_killed: bool = False
+    pid: int | None = None
+    error: str | None = None
+
+
+def _terminate_process_tree(process: subprocess.Popen[str]) -> bool:
+    """Terminate the bounded native launch even when Windows taskkill is unavailable."""
+
+    tree_killed = False
+    if os.name == "nt":
+        try:
+            kill = subprocess.run(
+                ["taskkill.exe", "/PID", str(process.pid), "/T", "/F"],
+                check=False,
+                capture_output=True,
+            )
+            tree_killed = kill.returncode == 0
+        except OSError:
+            tree_killed = False
+    if process.poll() is None:
+        process.kill()
+    return tree_killed
 
 
 def _lua_literal(value: Any) -> str:
@@ -29,8 +65,7 @@ def _lua_literal(value: Any) -> str:
         return "{ " + ", ".join(_lua_literal(item) for item in value) + " }"
     if isinstance(value, dict):
         fields = ", ".join(
-            f"[{_lua_literal(str(key))}] = {_lua_literal(item)}"
-            for key, item in value.items()
+            f"[{_lua_literal(str(key))}] = {_lua_literal(item)}" for key, item in value.items()
         )
         return "{ " + fields + " }"
     raise TypeError(f"cannot serialize {type(value).__name__} as a Lua literal")
@@ -64,9 +99,7 @@ def validate_lua_syntax(script_path: Path, executable: Path) -> None:
     script_path = script_path.resolve(strict=True)
     lua_library_path = executable.resolve(strict=True).parent / "dll" / "lua54.dll"
     if not lua_library_path.is_file():
-        raise FileNotFoundError(
-            f"BizHawk Lua runtime is missing: {lua_library_path}"
-        )
+        raise FileNotFoundError(f"BizHawk Lua runtime is missing: {lua_library_path}")
 
     library = ctypes.CDLL(str(lua_library_path))
     library.luaL_newstate.argtypes = []
@@ -94,14 +127,10 @@ def validate_lua_syntax(script_path: Path, executable: Path) -> None:
     try:
         source = script_path.read_bytes()
         chunk_name = f"@{script_path.as_posix()}".encode()
-        status = library.luaL_loadbufferx(
-            state, source, len(source), chunk_name, b"t"
-        )
+        status = library.luaL_loadbufferx(state, source, len(source), chunk_name, b"t")
         if status != 0:
             message_length = ctypes.c_size_t()
-            message_pointer = library.lua_tolstring(
-                state, -1, ctypes.byref(message_length)
-            )
+            message_pointer = library.lua_tolstring(state, -1, ctypes.byref(message_length))
             message = (
                 ctypes.string_at(message_pointer, message_length.value).decode(
                     "utf-8", errors="replace"
@@ -112,6 +141,83 @@ def validate_lua_syntax(script_path: Path, executable: Path) -> None:
             raise ValueError(f"Lua syntax preflight failed: {message}")
     finally:
         library.lua_close(state)
+
+
+def run_native_bizhawk_process(
+    *,
+    command: list[str],
+    executable: Path,
+    environment: dict[str, str],
+    timeout_seconds: int,
+    on_started: Callable[[int], None] | None = None,
+) -> NativeProcessResult:
+    """Start a native BizHawk process with no shell and bound its diagnostics."""
+
+    process = subprocess.Popen(
+        command,
+        cwd=executable.parent,
+        env=environment,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    if on_started is not None:
+        try:
+            on_started(process.pid)
+        except Exception as error:
+            tree_killed = _terminate_process_tree(process)
+            stdout, stderr = process.communicate()
+            return NativeProcessResult(
+                process.returncode,
+                stdout,
+                stderr,
+                False,
+                started=True,
+                process_terminated=True,
+                timeout_tree_killed=tree_killed,
+                pid=process.pid,
+                error=f"on-started: {error}",
+            )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        tree_killed = _terminate_process_tree(process)
+        stdout, stderr = process.communicate()
+        return NativeProcessResult(
+            process.returncode,
+            stdout,
+            stderr,
+            True,
+            started=True,
+            process_terminated=True,
+            timeout_tree_killed=tree_killed,
+            pid=process.pid,
+        )
+    except OSError as error:
+        _terminate_process_tree(process)
+        stdout, stderr = process.communicate()
+        return NativeProcessResult(
+            process.returncode,
+            stdout,
+            stderr,
+            False,
+            started=True,
+            process_terminated=True,
+            pid=process.pid,
+            error=str(error),
+        )
+    return NativeProcessResult(
+        process.returncode,
+        stdout,
+        stderr,
+        False,
+        started=True,
+        process_terminated=True,
+        pid=process.pid,
+    )
 
 
 def run_observer(
@@ -169,9 +275,7 @@ def run_observer(
             process.kill()
         stdout, stderr = process.communicate()
         status = (
-            status_path.read_text(encoding="utf-8").strip()
-            if status_path.exists()
-            else "no status"
+            status_path.read_text(encoding="utf-8").strip() if status_path.exists() else "no status"
         )
         diagnostic = (stdout + "\n" + stderr).strip()[-4000:]
         raise RuntimeError(
