@@ -8,7 +8,11 @@ from typing import Any
 
 from sf2tool.jsonio import load_json
 from sf2tool.paths import repo_path
-from sf2tool.private_inputs import JDK_INPUT_IDENTITY, private_input_path
+from sf2tool.private_inputs import (
+    BIZHAWK_ARCHIVE_INPUT_IDENTITY,
+    JDK_INPUT_IDENTITY,
+    private_input_path,
+)
 
 DEFAULT_MANIFEST = repo_path("manifests/toolchain.json")
 JDK_TREE_DIGEST_ALGORITHM = (
@@ -152,6 +156,20 @@ def _resolve_java_path(manifest: dict[str, Any], java_path: Path | None) -> Path
     return resolved_java
 
 
+def _resolve_bizhawk_archive(contract: dict[str, Any]) -> Path:
+    if contract["sharedArchiveInputIdentity"] != BIZHAWK_ARCHIVE_INPUT_IDENTITY.as_posix():
+        raise ValueError(
+            "BizHawk shared archive identity does not match the registered identity"
+        )
+    fallback_archive = private_input_path(
+        BIZHAWK_ARCHIVE_INPUT_IDENTITY, environment={}
+    ).resolve()
+    declared_archive = repo_path(contract["localArchivePath"]).resolve()
+    if fallback_archive != declared_archive:
+        raise ValueError("BizHawk shared and repo-local archive layouts disagree")
+    return private_input_path(BIZHAWK_ARCHIVE_INPUT_IDENTITY)
+
+
 def verify_toolchain(
     upstream_path: Path,
     manifest_path: Path = DEFAULT_MANIFEST,
@@ -196,7 +214,7 @@ def verify_toolchain(
         )
 
     bizhawk = manifest["bizhawk"]
-    archive = repo_path(bizhawk["localArchivePath"])
+    archive = _resolve_bizhawk_archive(bizhawk)
     executable = repo_path(bizhawk["localExecutablePath"])
     _verify_file(
         archive,

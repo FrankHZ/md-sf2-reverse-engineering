@@ -11,6 +11,7 @@ from sf2tool.paths import repo_path
 SHARED_INPUT_ROOT_ENV = "SF2_SHARED_INPUT_ROOT"
 ROM_INPUT_IDENTITY = Path("roms/sf2-us.bin")
 JDK_INPUT_IDENTITY = Path("toolchains/jdk-17.0.19+10")
+BIZHAWK_ARCHIVE_INPUT_IDENTITY = Path("archives/BizHawk-2.11.1-win-x64.zip")
 
 
 @dataclass(frozen=True)
@@ -27,6 +28,10 @@ _PRIVATE_INPUTS = {
     JDK_INPUT_IDENTITY: _PrivateInputRegistration(
         fallback=Path("local/toolchains/jdk-17.0.19+10"),
         expected_kind="directory",
+    ),
+    BIZHAWK_ARCHIVE_INPUT_IDENTITY: _PrivateInputRegistration(
+        fallback=Path("local/toolchains/BizHawk-2.11.1-win-x64.zip"),
+        expected_kind="file",
     ),
 }
 
