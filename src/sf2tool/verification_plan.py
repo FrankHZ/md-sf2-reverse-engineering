@@ -812,6 +812,15 @@ def plan_paths(
             )
             continue
 
+        if normalized == "src/sf2tool/private_inputs.py":
+            _selection_entry(selected, "tooling-python", normalized)
+            _select_all(
+                selected,
+                EVIDENCE_PARTITION_IDS,
+                f"shared private CLI input: {normalized}",
+            )
+            continue
+
         if normalized == "src/sf2tool/verification_plan.py":
             _selection_entry(selected, "tooling-python", normalized)
             _selection_entry(selected, "remake-dotnet", normalized)

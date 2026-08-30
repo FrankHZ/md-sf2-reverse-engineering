@@ -884,6 +884,22 @@ def test_shared_cli_fans_out_to_every_evidence_partition() -> None:
     }
 
 
+def test_shared_private_input_resolver_fans_out_through_the_cli() -> None:
+    plan = plan_paths(("src/sf2tool/private_inputs.py",), root=ROOT)
+
+    assert _partition_ids(plan) == {
+        "public-core",
+        "tooling-python",
+        *EVIDENCE_PARTITION_IDS,
+    }
+    for partition_id in EVIDENCE_PARTITION_IDS:
+        assert (
+            "shared private CLI input: src/sf2tool/private_inputs.py"
+            in _partition(plan, partition_id)["reasons"]
+        )
+    assert plan["unclassifiedPaths"] == []
+
+
 def test_legacy_launcher_transitively_selects_h1_rebuild() -> None:
     plan = plan_paths(("src/sf2tool/legacy.py",), root=ROOT)
 
