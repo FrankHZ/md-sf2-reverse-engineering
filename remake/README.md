@@ -262,11 +262,21 @@ under the fixed ROM, tileset-metadata, and palette-metadata roots. It validates 
 compressed ROM slices transiently, discards those compressed bytes, and crosses into Application only
 with five ordered immutable 4,096-byte decoded buffers plus the defensively owned source/effective
 16-word palette forms. Application owns the closed request/result/diagnostic/receipt protocol and the
-immutable payload definition, but no session, snapshot, composition root, Godot node, PCK, or public
-package consumes it yet. This is `private-local-map3-base-visual-payload-admission-v1`, an unconsumed
-private prerequisite rather than rendering or original-fidelity evidence. Animation tileset 74,
-loading/VRAM/cache/replacement behavior, block/tile/layer composition, color-display conversion,
-timing, final pixels, and all original presentation semantics remain Unsupported or Unknown.
+immutable payload definition. The separate
+`private-local-map3-base-visual-runtime-admission-v1` Application start boundary now validates both
+request envelopes before reading either source, admits the canonical import before the visual source,
+closes their typed selection/provenance/receipt compatibility, and only then constructs the existing
+private `GameSession`. Its immutable visual binding remains outside gameplay snapshot state. Content,
+not Application, continues to authenticate the actual private bytes against the fixed roots; the
+binding does not add payload or per-resource digests and does not claim protection from an in-process
+port that fabricates bytes behind an otherwise exact typed result.
+
+No composition root, Godot node, PCK, public package, or renderer consumes that successful binding
+yet. The Content capability `private-local-map3-base-visual-payload-admission-v1` and its Application
+runtime binding are unconsumed pre-composition prerequisites, not a runnable visual profile,
+rendering, or original-fidelity evidence. Animation tileset 74, loading/VRAM/cache/replacement
+behavior, block/tile/layer composition, color-display conversion, timing, final pixels, and all
+original presentation semantics remain Unsupported or Unknown.
 
 This one-shot command is an explicit private diagnostic policy, not evidence or implementation of a
 natural step trigger, `OpenDoor`, setup/init/program/flag effect, reach/order, or persistence. It does
