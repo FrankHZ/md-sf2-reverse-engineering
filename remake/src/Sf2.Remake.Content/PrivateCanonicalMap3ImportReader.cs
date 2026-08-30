@@ -23,6 +23,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.AreaSourceRecordAdmissionCapability;
     public const string BlocksetSourceAdmissionCapability =
         OriginalMapRuntimeAdmission.BlocksetSourceAdmissionCapability;
+    public const string VisualReferenceAdmissionCapability =
+        OriginalMapRuntimeAdmission.VisualReferenceAdmissionCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -46,6 +48,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         CurrentAreaDiagnosticCapability,
         AreaSourceRecordAdmissionCapability,
         BlocksetSourceAdmissionCapability,
+        VisualReferenceAdmissionCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -284,6 +287,9 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             "runtimeQuestions");
 
         JsonElement map3 = SelectMap3(RequiredProperty(root, "maps", "maps"));
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        OriginalMapVisualResourceSelection visualResourceSelection =
+            ReadVisualResourceSelection(map3, map);
         Dictionary<string, Dictionary<string, JsonElement>> resources = IndexResources(
             RequiredProperty(root, "resources", "resources"));
         JsonElement references = RequiredProperty(map3, "references", "maps[3].references");
@@ -315,7 +321,6 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             ReadControlledSchoolDoorStep(stepTable, workingLayout);
         ValidateControlledSetup(references, resources);
 
-        MapId map = new(OriginalMapRuntimeAdmission.MapId);
         OriginalMapControlledAdmission controlledAdmission = new(
             map,
             new MapPosition(
@@ -330,6 +335,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             workingLayout,
             blockCatalog,
             areaCatalog,
+            visualResourceSelection,
             controlledAdmission,
             controlledStepCopy,
             UnsupportedCapabilities);
@@ -470,6 +476,48 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         }
 
         return map3.Value;
+    }
+
+    private static OriginalMapVisualResourceSelection ReadVisualResourceSelection(
+        JsonElement map3,
+        MapId map)
+    {
+        byte paletteIndex = RequiredByte(map3, "palette", "maps[3].palette");
+        JsonElement tilesets = RequiredProperty(map3, "tilesets", "maps[3].tilesets");
+        RequireArray(tilesets, "maps[3].tilesets");
+        if (tilesets.GetArrayLength() != OriginalMapVisualResourceSelection.TilesetSlotCount)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "maps[3].tilesets",
+                "Map 3 must retain exactly five ordered tileset references.");
+        }
+
+        byte[] slots = new byte[OriginalMapVisualResourceSelection.TilesetSlotCount];
+        int index = 0;
+        foreach (JsonElement slot in tilesets.EnumerateArray())
+        {
+            if (!TryByte(slot, out byte value))
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.InvalidMapProjection,
+                    $"maps[3].tilesets[{index}]",
+                    "Map 3 tileset references must remain byte-sized identities.");
+            }
+
+            slots[index++] = value;
+        }
+
+        OriginalMapVisualResourceSelection selection = new(map, paletteIndex, slots);
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(selection))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "maps[3].visualResourceSelection",
+                "Map 3 does not retain the accepted palette and ordered tileset reference projection.");
+        }
+
+        return selection;
     }
 
     private static Dictionary<string, Dictionary<string, JsonElement>> IndexResources(

@@ -194,6 +194,10 @@ public sealed class PrivateOriginalMapTraversalViewportTests
                     new ushort[OriginalMapBlockDefinition.OpaqueWordCount]),
             ]),
             areaCatalog,
+            new OriginalMapVisualResourceSelection(
+                map,
+                paletteIndex: 0,
+                [0, 37, 43, 53, 66]),
             new OriginalMapControlledAdmission(
                 map,
                 playerPosition,

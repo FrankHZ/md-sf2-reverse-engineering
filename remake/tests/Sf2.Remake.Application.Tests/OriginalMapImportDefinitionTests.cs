@@ -16,6 +16,7 @@ public sealed class OriginalMapImportDefinitionTests
         OriginalMapAreaCatalog areaCatalog = AreaCatalog(
             new OriginalMapTraversalArea(0, 0, 63, 63));
         WorkingMapLayout layout = new(new ushort[WorkingMapLayout.WordCount]);
+        OriginalMapVisualResourceSelection visualResourceSelection = VisualSelection(map);
         List<string> unsupported = ["natural-route", "presentation"];
         OriginalMapControlledAdmission admission = new(
             map,
@@ -30,12 +31,14 @@ public sealed class OriginalMapImportDefinitionTests
             layout,
             BlockCatalog(),
             areaCatalog,
+            visualResourceSelection,
             admission,
             unsupported);
         unsupported.Clear();
 
         Assert.Same(layout, definition.WorkingLayout);
         Assert.Same(areaCatalog, definition.AreaCatalog);
+        Assert.Same(visualResourceSelection, definition.VisualResourceSelection);
         Assert.Same(areaCatalog.Traversal, definition.Traversal);
         Assert.Equal(new MapPosition(56, 3), definition.ControlledAdmission.Position);
         Assert.Equal((byte)3, definition.ControlledAdmission.OpaqueFacing);
@@ -62,6 +65,7 @@ public sealed class OriginalMapImportDefinitionTests
                 new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
                 BlockCatalog(),
                 areaCatalog,
+                VisualSelection(map),
                 admission,
                 ["unknown"]));
         Assert.Throws<ArgumentException>(
@@ -70,6 +74,7 @@ public sealed class OriginalMapImportDefinitionTests
                 new WorkingMapLayout(blockedWords),
                 BlockCatalog(),
                 areaCatalog,
+                VisualSelection(map),
                 admission,
                 ["unknown"]));
         Assert.Throws<ArgumentException>(
@@ -78,6 +83,7 @@ public sealed class OriginalMapImportDefinitionTests
                 new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
                 BlockCatalog(),
                 areaCatalog,
+                VisualSelection(map),
                 admission,
                 []));
 
@@ -89,8 +95,37 @@ public sealed class OriginalMapImportDefinitionTests
                 new WorkingMapLayout(missingBlockWords),
                 BlockCatalog(),
                 areaCatalog,
+                VisualSelection(map),
                 admission,
                 ["unknown"]));
+    }
+
+    [Fact]
+    public void VisualResourceSelectionOwnsFiveOrderedSlotsAndComputesTheAcceptedProjection()
+    {
+        byte[] slots = [0, 37, 43, 53, 66];
+        OriginalMapVisualResourceSelection selection = new(
+            new MapId("map3"),
+            paletteIndex: 0,
+            slots);
+        slots[1] = byte.MaxValue;
+
+        Assert.Equal((byte)0, selection.PaletteIndex);
+        Assert.Equal(new byte[] { 0, 37, 43, 53, 66 }, selection.TilesetSlots);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedVisualReferenceProjectionDigest,
+            selection.ProjectionDigest);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(selection));
+        Assert.Throws<NotSupportedException>(
+            () => ((IList<byte>)selection.TilesetSlots).Add(1));
+        Assert.Throws<ArgumentException>(() => new OriginalMapVisualResourceSelection(
+            new MapId("map3"),
+            paletteIndex: 0,
+            [0, 37, 43, 53]));
+        Assert.Throws<ArgumentException>(() => new OriginalMapVisualResourceSelection(
+            new MapId("map3"),
+            paletteIndex: 0,
+            [0, 37, 43, 53, 66, 67]));
     }
 
     [Fact]
@@ -272,6 +307,9 @@ public sealed class OriginalMapImportDefinitionTests
             new MapSetupId("ms_map3"),
             "ms_map3_InitFunction",
             noProgramRequest: true);
+
+    private static OriginalMapVisualResourceSelection VisualSelection(MapId map) =>
+        new(map, paletteIndex: 0, [0, 37, 43, 53, 66]);
 
     private static OriginalMapBlockCatalog BlockCatalog(int count = 3) =>
         new(Enumerable.Range(0, count).Select(index => Block(

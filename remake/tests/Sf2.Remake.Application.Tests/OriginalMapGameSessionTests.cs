@@ -37,6 +37,10 @@ public sealed class OriginalMapGameSessionTests
             0,
             started.Session.PrivateOriginalMapSnapshot.CurrentBlockDefinition
                 .Identity.ZeroBasedBlockIndex);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedVisualReferenceProjectionDigest,
+            started.Session.PrivateOriginalMapSnapshot.Definition.VisualResourceSelection
+                .ProjectionDigest);
         Assert.Equal(0, started.Session.PrivateOriginalMapSnapshot.SimulationStep);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastTraversal);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastLayoutMutation);
@@ -513,6 +517,7 @@ public sealed class OriginalMapGameSessionTests
             layout,
             AcceptedBlockCatalog(),
             areaCatalog,
+            AcceptedVisualResourceSelection(map),
             controlled,
             ["natural-route-and-effects-unknown"]);
         OriginalMapImportDefinition wrongIdentity = new(
@@ -520,6 +525,7 @@ public sealed class OriginalMapGameSessionTests
             layout,
             AcceptedBlockCatalog(),
             areaCatalog,
+            AcceptedVisualResourceSelection(map),
             controlled,
             new OriginalMapStepCopyDefinition(
                 new OriginalMapStepCopyIdentity(
@@ -610,6 +616,42 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactVisualResourceSelectionProjection()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                visualResourceSelection: new OriginalMapVisualResourceSelection(
+                    map,
+                    paletteIndex: 1,
+                    [0, 37, 43, 53, 66])),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                visualResourceSelection: new OriginalMapVisualResourceSelection(
+                    map,
+                    paletteIndex: 0,
+                    [0, 37, 43, 53, 67])),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                visualResourceSelection: new OriginalMapVisualResourceSelection(
+                    map,
+                    paletteIndex: 0,
+                    [37, 0, 43, 53, 66])),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(
+            AcceptedVisualResourceSelection(map)));
+    }
+
+    [Fact]
     public void TypedSourceRejectionPassesThroughWithoutCreatingASession()
     {
         OriginalMapImportDiagnostic diagnostic = new(
@@ -647,7 +689,8 @@ public sealed class OriginalMapGameSessionTests
     private static OriginalMapImportDefinition Definition(
         ushort[] words,
         OriginalMapAreaCatalog? areaCatalog = null,
-        OriginalMapBlockCatalog? blockCatalog = null)
+        OriginalMapBlockCatalog? blockCatalog = null,
+        OriginalMapVisualResourceSelection? visualResourceSelection = null)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -664,6 +707,7 @@ public sealed class OriginalMapGameSessionTests
             new WorkingMapLayout(admittedWords),
             blockCatalog ?? AcceptedBlockCatalog(),
             areaCatalog ?? AcceptedAreaCatalog(),
+            visualResourceSelection ?? AcceptedVisualResourceSelection(map),
             new OriginalMapControlledAdmission(
                 map,
                 new MapPosition(
@@ -676,6 +720,9 @@ public sealed class OriginalMapGameSessionTests
             ControlledStepCopy(map),
             ["natural-route-and-effects-unknown"]);
     }
+
+    private static OriginalMapVisualResourceSelection AcceptedVisualResourceSelection(MapId map) =>
+        new(map, paletteIndex: 0, [0, 37, 43, 53, 66]);
 
     private static OriginalMapBlockCatalog AcceptedBlockCatalog() =>
         new(

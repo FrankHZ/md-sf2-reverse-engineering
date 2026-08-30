@@ -43,9 +43,17 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.CurrentAreaDiagnosticCapability,
                 PrivateCanonicalMap3ImportReader.AreaSourceRecordAdmissionCapability,
                 PrivateCanonicalMap3ImportReader.BlocksetSourceAdmissionCapability,
+                PrivateCanonicalMap3ImportReader.VisualReferenceAdmissionCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
+        Assert.Equal((byte)0, accepted.Definition.VisualResourceSelection.PaletteIndex);
+        Assert.Equal(
+            new byte[] { 0, 37, 43, 53, 66 },
+            accepted.Definition.VisualResourceSelection.TilesetSlots);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedVisualReferenceProjectionDigest,
+            accepted.Definition.VisualResourceSelection.ProjectionDigest);
         Assert.Equal(WorkingMapLayout.WordCount, accepted.Definition.WorkingLayout.Words.Count);
         Assert.Equal("Map03s0_Blocks", accepted.Definition.BlockCatalog.ResourceId);
         Assert.Equal(3, accepted.Definition.BlockCatalog.Records.Count);
@@ -173,6 +181,25 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         JsonObject wrongCommit = SampleDocument();
         wrongCommit["upstream"]!.AsObject()["commit"] = new string('0', 40);
         AssertCode(Admit(wrongCommit), OriginalMapImportFailureCode.ProvenanceMismatch);
+    }
+
+    [Fact]
+    public void Map3PaletteAndOrderedTilesetReferenceDriftFailsClosed()
+    {
+        JsonObject wrongPalette = SampleDocument();
+        Map(wrongPalette, 3)["palette"] = 1;
+        AssertCode(Admit(wrongPalette), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject wrongTileset = SampleDocument();
+        Map(wrongTileset, 3)["tilesets"]!.AsArray()[4] = 67;
+        AssertCode(Admit(wrongTileset), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject reorderedTilesets = SampleDocument();
+        JsonArray slots = Map(reorderedTilesets, 3)["tilesets"]!.AsArray();
+        JsonNode? first = slots[0]!.DeepClone();
+        slots[0] = slots[1]!.DeepClone();
+        slots[1] = first;
+        AssertCode(Admit(reorderedTilesets), OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
     [Fact]
@@ -361,6 +388,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Contains(
             PrivateCanonicalMap3ImportReader.BlocksetSourceAdmissionCapability,
             accepted.Receipt.Capabilities);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.VisualReferenceAdmissionCapability,
+            accepted.Receipt.Capabilities);
         Assert.Equal(
             OriginalMapRuntimeAdmission.AcceptedBlocksetResourceId,
             accepted.Definition.BlockCatalog.ResourceId);
@@ -372,6 +402,11 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             accepted.Definition.BlockCatalog.ProjectionDigest);
         Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedBlocksetProjection(
             accepted.Definition.BlockCatalog));
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(
+            accepted.Definition.VisualResourceSelection));
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedVisualReferenceProjectionDigest,
+            accepted.Definition.VisualResourceSelection.ProjectionDigest);
         Assert.Equal(3, accepted.Definition.Traversal.ActiveAreas.Count);
         Assert.Equal(
             2,
@@ -450,7 +485,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 id,
                 sourceSymbol = id == 3 ? "Map03" : $"Map{id:00}",
                 palette = 0,
-                tilesets = new[] { 0, 1, 2, 3, 4 },
+                tilesets = id == 3
+                    ? new[] { 0, 37, 43, 53, 66 }
+                    : new[] { 0, 1, 2, 3, 4 },
                 references = new
                 {
                     blockset = "Map03s0_Blocks",
