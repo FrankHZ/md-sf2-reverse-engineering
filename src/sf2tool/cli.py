@@ -220,6 +220,7 @@ from sf2tool.harness import verify
 from sf2tool.legacy import run_powershell
 from sf2tool.output import print_json, print_record
 from sf2tool.paths import repo_path
+from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
 from sf2tool.research_index import index_rows, index_summary, query_index, verify_index
 from sf2tool.rom import verify_rom
 from sf2tool.texture_extract import (
@@ -233,7 +234,6 @@ from sf2tool.texture_extract import (
 from sf2tool.verification_plan import PARTITIONS_BY_ID, build_verification_plan
 from sf2tool.zh_translation import generate_zh_translation, translation_rows, verify_zh_translation
 
-DEFAULT_ROM = repo_path("local/roms/sf2-us.bin")
 DEFAULT_UPSTREAM = repo_path("local/upstream/SF2DISASM")
 
 
@@ -241,9 +241,15 @@ def _path(value: str) -> Path:
     return Path(value)
 
 
+def _default_rom_path() -> Path:
+    return private_input_path(ROM_INPUT_IDENTITY)
+
+
 def _add_local_paths(parser: argparse.ArgumentParser, *, rom: bool = True) -> None:
     if rom:
-        parser.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
+        default_rom = _default_rom_path()
+        parser.add_argument("--rom-path", type=_path, default=default_rom)
+        parser.set_defaults(_default_rom_path=default_rom)
     parser.add_argument("--upstream-path", type=_path, default=DEFAULT_UPSTREAM)
 
 
@@ -277,7 +283,7 @@ def validate_verify_plan_args(args: argparse.Namespace) -> None:
             ("--skip-rebuild", args.skip_rebuild),
             ("--skip-extraction", args.skip_extraction),
             ("--skip-runtime", args.skip_runtime),
-            ("--rom-path", args.rom_path.resolve() != DEFAULT_ROM.resolve()),
+            ("--rom-path", args.rom_path.resolve() != args._default_rom_path.resolve()),
             ("--upstream-path", args.upstream_path.resolve() != DEFAULT_UPSTREAM.resolve()),
         )
         if selected
@@ -337,7 +343,7 @@ def build_parser() -> argparse.ArgumentParser:
     rom_parser = commands.add_parser("rom", help="inspect or verify the ROM baseline")
     rom_commands = rom_parser.add_subparsers(dest="rom_command", required=True)
     rom_verify = rom_commands.add_parser("verify")
-    rom_verify.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
+    rom_verify.add_argument("--rom-path", type=_path, default=_default_rom_path())
 
     index_parser = commands.add_parser("research-index", aliases=["index"])
     index_commands = index_parser.add_subparsers(dest="index_command", required=True)
@@ -946,7 +952,7 @@ def build_parser() -> argparse.ArgumentParser:
         "original-reference-replay-capability",
         help="preflight the private, transport-only original-reference replay capability",
     )
-    h3_original_reference.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
+    h3_original_reference.add_argument("--rom-path", type=_path, default=_default_rom_path())
     h3_original_reference.add_argument("--preflight-only", action="store_true")
     h3_original_reference.add_argument(
         "--run-class", choices=("diagnostic", "frozen-acceptance")
@@ -961,13 +967,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--preflight-only", action="store_true", required=True
     )
     h3_rng = h3_commands.add_parser("rng", help="verify base and debug-aware RNG behavior")
-    h3_rng.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
+    h3_rng.add_argument("--rom-path", type=_path, default=_default_rom_path())
     h3_rng.add_argument("--timeout-seconds", type=int, default=60)
     h3_random_services = h3_commands.add_parser(
         "random-services",
         help="verify one-launch random range/retry and seed-copy service boundaries",
     )
-    h3_random_services.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
+    h3_random_services.add_argument("--rom-path", type=_path, default=_default_rom_path())
     h3_random_services.add_argument("--timeout-seconds", type=int, default=180)
     h3_growth = h3_commands.add_parser(
         "growth", help="verify stat-gain and complete level-up behavior"

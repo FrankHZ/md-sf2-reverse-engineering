@@ -40,6 +40,8 @@ migrated into ADR 0001 during this audit. No continuing memory synchronization i
 - [`bounded-inspection-and-review.md`](./operations/bounded-inspection-and-review.md): existing
   reduced-output commands, exact handoff fields, findings-first review, and consolidated correction
   rounds for large artifacts and topic diffs.
+- [`local-private-inputs.md`](./operations/local-private-inputs.md): the opt-in shared immutable-ROM
+  resolver, worktree-local writable-state boundary, and serialized copy/verify/switch/delete route.
 - [`phase2-lane-runbook.md`](./operations/phase2-lane-runbook.md): normative ordinary Phase 2
   root/worker setup, slice contract, and acceptance procedure, plus event-routed correction,
   recovery, and escalation rules for active research/design lanes.
