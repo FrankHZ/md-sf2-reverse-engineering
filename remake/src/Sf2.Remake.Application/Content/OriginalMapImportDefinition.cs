@@ -130,6 +130,7 @@ public sealed class OriginalMapImportDefinition
         WorkingMapLayout workingLayout,
         OriginalMapBlockCatalog blockCatalog,
         OriginalMapAreaCatalog areaCatalog,
+        OriginalMapVisualResourceSelection visualResourceSelection,
         OriginalMapControlledAdmission controlledAdmission,
         IEnumerable<string> unsupportedCapabilities)
         : this(
@@ -137,6 +138,7 @@ public sealed class OriginalMapImportDefinition
             workingLayout,
             blockCatalog,
             areaCatalog,
+            visualResourceSelection,
             controlledAdmission,
             controlledStepCopy: null,
             unsupportedCapabilities)
@@ -148,6 +150,7 @@ public sealed class OriginalMapImportDefinition
         WorkingMapLayout workingLayout,
         OriginalMapBlockCatalog blockCatalog,
         OriginalMapAreaCatalog areaCatalog,
+        OriginalMapVisualResourceSelection visualResourceSelection,
         OriginalMapControlledAdmission controlledAdmission,
         OriginalMapStepCopyDefinition? controlledStepCopy,
         IEnumerable<string> unsupportedCapabilities)
@@ -156,9 +159,18 @@ public sealed class OriginalMapImportDefinition
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
         BlockCatalog = blockCatalog ?? throw new ArgumentNullException(nameof(blockCatalog));
         AreaCatalog = areaCatalog ?? throw new ArgumentNullException(nameof(areaCatalog));
+        VisualResourceSelection = visualResourceSelection ??
+            throw new ArgumentNullException(nameof(visualResourceSelection));
         ControlledAdmission = controlledAdmission ??
             throw new ArgumentNullException(nameof(controlledAdmission));
         ArgumentNullException.ThrowIfNull(unsupportedCapabilities);
+        if (visualResourceSelection.Map != map)
+        {
+            throw new ArgumentException(
+                "The visual-resource selection map must equal the imported map.",
+                nameof(visualResourceSelection));
+        }
+
         if (controlledAdmission.Map != map)
         {
             throw new ArgumentException(
@@ -216,6 +228,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapBlockCatalog BlockCatalog { get; }
 
     public OriginalMapAreaCatalog AreaCatalog { get; }
+
+    public OriginalMapVisualResourceSelection VisualResourceSelection { get; }
 
     public OriginalMapTraversal Traversal => AreaCatalog.Traversal;
 

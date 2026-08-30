@@ -431,6 +431,15 @@ public sealed partial class GameSession
                 "The admitted definition does not retain the exact ordered Map 3 blockset projection.");
         }
 
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(
+                definition.VisualResourceSelection))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.visualResourceSelection",
+                "The admitted definition does not retain the exact Map 3 palette and tileset reference projection.");
+        }
+
         OriginalMapControlledAdmission controlled = definition.ControlledAdmission;
         if (!string.Equals(
                 definition.Map.Value,

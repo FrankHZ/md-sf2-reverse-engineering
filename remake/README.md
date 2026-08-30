@@ -246,6 +246,17 @@ through receipts, status, logs, smoke output, local paths, tracked payloads, or 
 This is a typed visual-resource prerequisite only: it assigns no tile-word bit meaning and does not
 admit tilesets, palettes, caching, rendering, camera, layers, animation, or final pixels.
 
+The same fixed private import now retains the Map 3 source header's one palette reference and five
+ordered tileset-slot references as one immutable `OriginalMapVisualResourceSelection`. Its sole
+production constructor defensively owns exactly five byte-sized slots and computes the normalized
+six-byte `palette + ordered tilesets` projection digest; the Application admission boundary requires
+the exact accepted digest and capability before constructing a private session. The selection remains
+authoritative only through `OriginalMapImportDefinition` and is not duplicated in snapshot state or
+projected through Godot, receipts, status, logs, or smoke output. This admits reference identities,
+not palette or tileset payloads: source/effective color words, compressed or decoded graphics, slot
+placement, cache/load behavior, tile-word semantics, animation, camera/layers, CRAM/VInt/DMA timing,
+rendered pixels, and presentation remain private-input prerequisites, separate owners, or Unknown.
+
 This one-shot command is an explicit private diagnostic policy, not evidence or implementation of a
 natural step trigger, `OpenDoor`, setup/init/program/flag effect, reach/order, or persistence. It does
 not reuse or relabel the `SetBlocks`/`SetBlocksVar` command reducer or the separate block-copy

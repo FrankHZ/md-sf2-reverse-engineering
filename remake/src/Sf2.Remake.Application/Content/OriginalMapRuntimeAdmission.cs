@@ -25,6 +25,10 @@ public static class OriginalMapRuntimeAdmission
     public const int AcceptedBlockCount = 447;
     public const string AcceptedBlocksetProjectionDigest =
         "90DC1053A67860A9C6C7F3EE16F3E77544D93FAB223961D38D719D62BE027159";
+    public const int AcceptedVisualReferenceByteCount = 6;
+    public const int AcceptedTilesetSlotCount = 5;
+    public const string AcceptedVisualReferenceProjectionDigest =
+        "3082476EF0180C435C721C6DFD56E8CD58B5A16FB92914895AE88CE155596235";
     public const string AcceptedAreaResourceId = "Map03s2_Areas";
     public const int AcceptedAreaRecordCount = 3;
     public const int ControlledStartAreaRecordOrdinal = 2;
@@ -63,6 +67,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-source-area-record-admission-v1";
     public const string BlocksetSourceAdmissionCapability =
         "private-local-map3-source-blockset-admission-v1";
+    public const string VisualReferenceAdmissionCapability =
+        "private-local-map3-source-visual-reference-admission-v1";
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
@@ -75,6 +81,7 @@ public static class OriginalMapRuntimeAdmission
                 CurrentAreaDiagnosticCapability,
                 AreaSourceRecordAdmissionCapability,
                 BlocksetSourceAdmissionCapability,
+                VisualReferenceAdmissionCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -122,6 +129,20 @@ public static class OriginalMapRuntimeAdmission
             string.Equals(
                 catalog.ProjectionDigest,
                 AcceptedBlocksetProjectionDigest,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool HasExactAcceptedVisualResourceSelection(
+        OriginalMapVisualResourceSelection selection)
+    {
+        ArgumentNullException.ThrowIfNull(selection);
+        return string.Equals(selection.Map.Value, MapId, StringComparison.Ordinal) &&
+            selection.TilesetSlots.Count == AcceptedTilesetSlotCount &&
+            OriginalMapVisualResourceSelection.ProjectionByteCount ==
+                AcceptedVisualReferenceByteCount &&
+            string.Equals(
+                selection.ProjectionDigest,
+                AcceptedVisualReferenceProjectionDigest,
                 StringComparison.OrdinalIgnoreCase);
     }
 
