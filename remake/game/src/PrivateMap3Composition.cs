@@ -12,9 +12,14 @@ public sealed partial class Map3Root
     public const string PrivateBannerText =
         "PRIVATE LOCAL — NOT FULL ORIGINAL FIDELITY";
     public const string PrivateSmokeMarker = "SF2_MAP3_PRIVATE_LOCAL_SMOKE ";
+    public const string PrivateViewSmokeMarker =
+        "SF2_MAP3_PRIVATE_LOCAL_VIEW_SMOKE ";
+    public const string PrivateViewCapability =
+        "private-local-map3-traversal-diagnostic-view-v1";
     private const string PrivateStageMarker = "SF2_MAP3_PRIVATE_LOCAL_STAGE ";
 
     private Map3RuntimeProfile? _runtimeProfile;
+    private PrivateOriginalMapTraversalViewport? _privateTraversalViewport;
 
     private void BuildSelectedPresentation(Map3RuntimeProfileSelection selection)
     {
@@ -30,6 +35,8 @@ public sealed partial class Map3Root
 
     private void BuildPrivatePresentation(Map3RuntimeProfileSelection selection)
     {
+        bool privateAvailable = selection.IsAvailable &&
+            selection.RequestedProfile == Map3RuntimeProfile.PrivateLocal;
         string bannerText = selection.RequestedProfile == Map3RuntimeProfile.PrivateLocal
             ? PrivateBannerText
             : "PROFILE UNAVAILABLE — NO FALLBACK";
@@ -44,19 +51,28 @@ public sealed partial class Map3Root
 
         Label explanation = new()
         {
-            Text = "Ignored local canonical import; semantic movement only. " +
-                "Original presentation and effects remain unavailable.",
+            Text = "Project-authored traversal diagnostics from accepted Domain policy. " +
+                "Original presentation remains unavailable.",
             Position = new Vector2(24, 55),
         };
         explanation.AddThemeFontSizeOverride("font_size", 16);
         AddChild(explanation);
+
+        if (privateAvailable)
+        {
+            _privateTraversalViewport = new PrivateOriginalMapTraversalViewport
+            {
+                Position = new Vector2(24, 105),
+            };
+            AddChild(_privateTraversalViewport);
+        }
 
         _status = new Label
         {
             Text = selection.IsAvailable
                 ? "Admitting PrivateLocal canonical Map 3..."
                 : $"Unavailable: {selection.Diagnostic}",
-            Position = new Vector2(24, 105),
+            Position = new Vector2(24, privateAvailable ? 450 : 105),
         };
         _status.AddThemeFontSizeOverride("font_size", 18);
         AddChild(_status);
@@ -135,6 +151,7 @@ public sealed partial class Map3Root
         PrivateOriginalMapSessionSnapshot snapshot,
         string outcome)
     {
+        _privateTraversalViewport?.Project(snapshot);
         if (_status is null)
         {
             return;
@@ -193,6 +210,17 @@ public sealed partial class Map3Root
             return;
         }
 
+        PrivateOriginalMapTraversalViewProjection? projection =
+            _privateTraversalViewport?.Projection;
+        if (projection is null)
+        {
+            FailPrivateStartup(
+                "PrivateLocal traversal diagnostic view was not projected.",
+                runSmoke: true,
+                "private-local");
+            return;
+        }
+
         object receipt = new
         {
             status = "Pass",
@@ -216,6 +244,38 @@ public sealed partial class Map3Root
             banner = PrivateBannerText,
         };
         GD.Print(PrivateSmokeMarker + JsonSerializer.Serialize(receipt));
+        object viewReceipt = new
+        {
+            status = "Pass",
+            profile = "private-local",
+            capability = PrivateViewCapability,
+            mapId = projection.Map.Value,
+            crop = new
+            {
+                x = projection.OriginX,
+                y = projection.OriginY,
+                columns = PrivateOriginalMapTraversalViewProjection.ColumnCount,
+                rows = PrivateOriginalMapTraversalViewProjection.RowCount,
+            },
+            player = new
+            {
+                column = projection.PlayerColumn,
+                row = projection.PlayerRow,
+            },
+            categories = new
+            {
+                outsideAcceptedActiveArea = projection.Cells.Count(cell =>
+                    cell.Category ==
+                        PrivateOriginalMapTraversalCellCategory.OutsideAcceptedActiveArea),
+                activeNonBlocked = projection.Cells.Count(cell =>
+                    cell.Category ==
+                        PrivateOriginalMapTraversalCellCategory.ActiveNonBlocked),
+                blockedByAcceptedCollisionClass = projection.Cells.Count(cell =>
+                    cell.Category ==
+                        PrivateOriginalMapTraversalCellCategory.BlockedByAcceptedCollisionClass),
+            },
+        };
+        GD.Print(PrivateViewSmokeMarker + JsonSerializer.Serialize(viewReceipt));
         TracePrivateStage(enabled: true, "quit-scheduled", smokeStarted);
         GetTree().Quit(0);
     }
