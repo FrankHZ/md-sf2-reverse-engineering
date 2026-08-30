@@ -185,6 +185,14 @@ public sealed class PrivateOriginalMapTraversalViewportTests
         OriginalMapImportDefinition definition = new(
             map,
             layout,
+            new OriginalMapBlockCatalog(
+            [
+                new OriginalMapBlockDefinition(
+                    new OriginalMapBlockRecordIdentity(
+                        "project-authored-viewport-blocks",
+                        zeroBasedBlockIndex: 0),
+                    new ushort[OriginalMapBlockDefinition.OpaqueWordCount]),
+            ]),
             areaCatalog,
             new OriginalMapControlledAdmission(
                 map,
@@ -213,6 +221,9 @@ public sealed class PrivateOriginalMapTraversalViewportTests
         Assert.Same(areaCatalog, definition.AreaCatalog);
         Assert.Same(areaCatalog.Traversal, definition.Traversal);
         Assert.Equal(activeAreas.Length, definition.AreaCatalog.Records.Count);
+        Assert.Equal(
+            "project-authored-viewport-blocks",
+            definition.BlockCatalog.ResourceId);
         OriginalMapImportReceipt receipt = new(
             OriginalMapRuntimeAdmission.PackageId,
             OriginalMapRuntimeAdmission.SchemaVersion,

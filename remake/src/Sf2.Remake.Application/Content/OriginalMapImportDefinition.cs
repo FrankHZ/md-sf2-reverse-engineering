@@ -128,12 +128,14 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapImportDefinition(
         MapId map,
         WorkingMapLayout workingLayout,
+        OriginalMapBlockCatalog blockCatalog,
         OriginalMapAreaCatalog areaCatalog,
         OriginalMapControlledAdmission controlledAdmission,
         IEnumerable<string> unsupportedCapabilities)
         : this(
             map,
             workingLayout,
+            blockCatalog,
             areaCatalog,
             controlledAdmission,
             controlledStepCopy: null,
@@ -144,6 +146,7 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapImportDefinition(
         MapId map,
         WorkingMapLayout workingLayout,
+        OriginalMapBlockCatalog blockCatalog,
         OriginalMapAreaCatalog areaCatalog,
         OriginalMapControlledAdmission controlledAdmission,
         OriginalMapStepCopyDefinition? controlledStepCopy,
@@ -151,6 +154,7 @@ public sealed class OriginalMapImportDefinition
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
+        BlockCatalog = blockCatalog ?? throw new ArgumentNullException(nameof(blockCatalog));
         AreaCatalog = areaCatalog ?? throw new ArgumentNullException(nameof(areaCatalog));
         ControlledAdmission = controlledAdmission ??
             throw new ArgumentNullException(nameof(controlledAdmission));
@@ -168,6 +172,8 @@ public sealed class OriginalMapImportDefinition
                 "The controlled step-copy map must equal the imported map.",
                 nameof(controlledStepCopy));
         }
+
+        BlockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
 
         if (!areaCatalog.Traversal.IsWithinActiveArea(controlledAdmission.Position) ||
             OriginalMapTraversal.IsBlocked(workingLayout, controlledAdmission.Position))
@@ -206,6 +212,8 @@ public sealed class OriginalMapImportDefinition
     public MapId Map { get; }
 
     public WorkingMapLayout WorkingLayout { get; }
+
+    public OriginalMapBlockCatalog BlockCatalog { get; }
 
     public OriginalMapAreaCatalog AreaCatalog { get; }
 

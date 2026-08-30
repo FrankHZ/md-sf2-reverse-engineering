@@ -20,6 +20,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
         ArgumentOutOfRangeException.ThrowIfNegative(simulationStep);
         PlayerPosition = playerPosition ?? throw new ArgumentNullException(nameof(playerPosition));
+        definition.BlockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
         if (definition.Traversal.SelectActiveArea(playerPosition) is null ||
             OriginalMapTraversal.IsBlocked(workingLayout, playerPosition))
         {
@@ -100,6 +101,9 @@ public sealed record PrivateOriginalMapSessionSnapshot
 
     public OriginalMapAreaDefinition CurrentAreaDefinition =>
         Definition.AreaCatalog.Resolve(CurrentArea);
+
+    public OriginalMapBlockDefinition CurrentBlockDefinition =>
+        Definition.BlockCatalog.Resolve(WorkingLayout, PlayerPosition);
 
     public long SimulationStep { get; }
 
@@ -416,6 +420,15 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.MissingReference,
                 "receipt.capabilities",
                 "The admitted receipt does not contain the exact bounded runtime capability set.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedBlocksetProjection(
+                definition.BlockCatalog))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.blockCatalog",
+                "The admitted definition does not retain the exact ordered Map 3 blockset projection.");
         }
 
         OriginalMapControlledAdmission controlled = definition.ControlledAdmission;
