@@ -18,6 +18,7 @@ from sf2tool.verification_plan import (
     H3_PARTITION_IDS,
     H3_PROFILE_PARTITIONS,
     H3_SHARED_ARTIFACT_PARTITIONS,
+    ORIGINAL_REFERENCE_PREFLIGHT_COMMANDS,
     PARTITIONS,
     PARTITIONS_BY_ID,
     REMAKE_PARTITION_IDS,
@@ -121,7 +122,7 @@ def _expected_artifact_commands(
         expected.setdefault(partition_id, set()).add(f"uv run sf2 h2 {command}")
     for command in h3_owners.get(path, ()):
         partition_id = H3_PROFILE_PARTITIONS[COMMAND_LAUNCHES[command].profile]
-        suffix = " --preflight-only" if command == "original-reference-replay-capability" else ""
+        suffix = " --preflight-only" if command in ORIGINAL_REFERENCE_PREFLIGHT_COMMANDS else ""
         expected.setdefault(partition_id, set()).add(f"uv run sf2 h3 {command}{suffix}")
     for partition_id in (
         *H2_SHARED_ARTIFACT_PARTITIONS.get(path, ()),
@@ -135,7 +136,7 @@ def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
     assert set(H2_COMMAND_PARTITIONS) == _registered_commands("h2_commands")
     assert set(COMMAND_LAUNCHES) == _registered_commands("h3_commands")
     assert len(H2_COMMAND_PARTITIONS) == 95
-    assert len(COMMAND_LAUNCHES) == 75
+    assert len(COMMAND_LAUNCHES) == 76
     assert len({partition.partition_id for partition in PARTITIONS}) == len(PARTITIONS)
     assert len(H2_PARTITION_IDS) == 6
     assert len(H3_PARTITION_IDS) == 6
@@ -709,7 +710,7 @@ def test_map3_battle01_action_completion_artifacts_select_only_h2_without_h3() -
     assert plan["unclassifiedPaths"] == []
 
 
-def test_map3_battle01_turn_finalization_artifacts_select_only_h2_without_h3() -> None:
+def test_map3_battle01_turn_finalization_artifacts_select_h2_and_scenario_preflight() -> None:
     plan = plan_paths(
         (
             "src/sf2tool/h2/map3_battle01_turn_finalization.py",
@@ -718,15 +719,21 @@ def test_map3_battle01_turn_finalization_artifacts_select_only_h2_without_h3() -
         ),
         root=ROOT,
     )
-    assert _partition_ids(plan) == {"public-core", "h2-battle-logic"}
+    assert _partition_ids(plan) == {
+        "public-core",
+        "h2-battle-logic",
+        "h3-original-reference",
+    }
     assert _partition(plan, "h2-battle-logic")["commands"] == [
         "uv run sf2 h2 map3-battle01-turn-finalization"
     ]
-    assert not any(partition_id.startswith("h3-") for partition_id in _partition_ids(plan))
+    assert _partition(plan, "h3-original-reference")["commands"] == [
+        "uv run sf2 h3 original-reference-replay-scenario-api --preflight-only"
+    ]
     assert plan["unclassifiedPaths"] == []
 
 
-def test_map3_battle01_victory_return_artifacts_select_only_h2_without_h3() -> None:
+def test_map3_battle01_victory_return_artifacts_select_h2_and_scenario_preflight() -> None:
     plan = plan_paths(
         (
             "src/sf2tool/h2/map3_battle01_victory_return.py",
@@ -735,11 +742,17 @@ def test_map3_battle01_victory_return_artifacts_select_only_h2_without_h3() -> N
         ),
         root=ROOT,
     )
-    assert _partition_ids(plan) == {"public-core", "h2-battle-logic"}
+    assert _partition_ids(plan) == {
+        "public-core",
+        "h2-battle-logic",
+        "h3-original-reference",
+    }
     assert _partition(plan, "h2-battle-logic")["commands"] == [
         "uv run sf2 h2 map3-battle01-victory-return"
     ]
-    assert not any(partition_id.startswith("h3-") for partition_id in _partition_ids(plan))
+    assert _partition(plan, "h3-original-reference")["commands"] == [
+        "uv run sf2 h3 original-reference-replay-scenario-api --preflight-only"
+    ]
     assert plan["unclassifiedPaths"] == []
 
 
@@ -804,6 +817,36 @@ def test_original_reference_artifacts_select_only_the_preflight_partition() -> N
     ]
     assert partition["parallelSafe"] is False
     assert partition["resourceLock"] == "bizhawk-original-runtime"
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_original_reference_scenario_api_artifacts_select_only_public_preflight() -> None:
+    plan = plan_paths(
+        (
+            "src/sf2tool/h3/original_reference_scenario.py",
+            "tests/fixtures/core/original-reference-replay-scenario-api-v1.json",
+            "schemas/core/original-reference-replay-scenario-api.schema.json",
+            "schemas/core/original-reference-replay-scenario-receipt.schema.json",
+            "tools/bizhawk/original_reference_scenario_observer.lua",
+        ),
+        root=ROOT,
+    )
+
+    assert _partition_ids(plan) == {"public-core", "h3-original-reference"}
+    assert _partition(plan, "h3-original-reference")["commands"] == [
+        "uv run sf2 h3 original-reference-replay-scenario-api --preflight-only"
+    ]
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_original_reference_transport_selects_both_preflight_owners() -> None:
+    plan = plan_paths(("src/sf2tool/h3/original_reference_transport.py",), root=ROOT)
+
+    assert _partition_ids(plan) == {"public-core", "h3-original-reference"}
+    assert _partition(plan, "h3-original-reference")["commands"] == [
+        "uv run sf2 h3 original-reference-replay-capability --preflight-only",
+        "uv run sf2 h3 original-reference-replay-scenario-api --preflight-only",
+    ]
     assert plan["unclassifiedPaths"] == []
 
 

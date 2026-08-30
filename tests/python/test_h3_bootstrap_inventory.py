@@ -218,7 +218,7 @@ def test_h3_bootstrap_registry_closes_every_registered_owner() -> None:
         "direct-function-seam": 13,
         "witch-menu": 6,
         "sound-driver": 1,
-        "original-reference": 1,
+        "original-reference": 2,
     }
     assert list(dispatches).count("service-menu-lifecycle") == 1
     assert Counter(bootstrap.H3_COMMAND_PROFILES.values()) == {
@@ -227,9 +227,10 @@ def test_h3_bootstrap_registry_closes_every_registered_owner() -> None:
         "direct-function-seam": 11,
         "witch-menu": 6,
         "sound-driver": 1,
-        "original-reference": 1,
+        "original-reference": 2,
     }
     assert Counter(launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()) == {
+        0: 1,
         1: 70,
         2: 1,
         8: 1,

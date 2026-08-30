@@ -1,0 +1,269 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2.example/schemas/core/original-reference-replay-scenario-receipt.schema.json",
+  "title": "Original-reference replay scenario receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "scenarioApiId",
+    "mode",
+    "status",
+    "ProcessStarts",
+    "descriptor",
+    "scenario",
+    "transport",
+    "checkpoints",
+    "terminalObservation",
+    "candidateLineage",
+    "unknowns",
+    "observerStatus",
+    "failure"
+  ],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "scenarioApiId": {"const": "sf2-original-reference-replay-scenario-api-v1"},
+    "mode": {"enum": ["PREFLIGHT", "RUNTIME"]},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "ProcessStarts": {"type": "integer", "minimum": 0},
+    "descriptor": {"$ref": "#/definitions/descriptor"},
+    "scenario": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/scenario"}]},
+    "transport": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/transport"}]},
+    "checkpoints": {"type": "array", "items": {"$ref": "#/definitions/checkpoint"}},
+    "terminalObservation": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/terminal"}]},
+    "candidateLineage": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/lineage"}]},
+    "unknowns": {"type": "array", "items": {"$ref": "#/definitions/question"}},
+    "observerStatus": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/observerStatus"}]},
+    "failure": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/failure"}]}
+  },
+  "allOf": [
+    {
+      "if": {
+        "allOf": [
+          {"properties": {"mode": {"const": "PREFLIGHT"}}},
+          {"properties": {"status": {"const": "PASS"}}}
+        ]
+      },
+      "then": {
+        "properties": {
+          "ProcessStarts": {"const": 0},
+          "descriptor": {"allOf": [{"$ref": "#/definitions/descriptor"}, {"properties": {"status": {"const": "validated"}}}]},
+          "scenario": {"$ref": "#/definitions/scenario"},
+          "transport": {"$ref": "#/definitions/transport"},
+          "checkpoints": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/checkpoint"}},
+          "terminalObservation": {"$ref": "#/definitions/terminal"},
+          "candidateLineage": {"$ref": "#/definitions/lineage"},
+          "unknowns": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/question"}},
+          "observerStatus": {"const": null},
+          "failure": {"const": null}
+        }
+      }
+    },
+    {
+      "if": {
+        "allOf": [
+          {"properties": {"mode": {"const": "PREFLIGHT"}}},
+          {"properties": {"status": {"const": "FAIL"}}}
+        ]
+      },
+      "then": {
+        "properties": {
+          "ProcessStarts": {"const": 0},
+          "descriptor": {"allOf": [{"$ref": "#/definitions/descriptor"}, {"properties": {"status": {"const": "unavailable"}}}]},
+          "scenario": {"const": null},
+          "transport": {"const": null},
+          "checkpoints": {"const": []},
+          "terminalObservation": {"const": null},
+          "candidateLineage": {"const": null},
+          "unknowns": {"const": []},
+          "observerStatus": {"const": null},
+          "failure": {"$ref": "#/definitions/failure"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"mode": {"const": "RUNTIME"}}},
+      "then": {
+        "properties": {
+          "ProcessStarts": {"const": 1},
+          "descriptor": {"allOf": [{"$ref": "#/definitions/descriptor"}, {"properties": {"status": {"const": "validated"}}}]},
+          "scenario": {"$ref": "#/definitions/scenario"},
+          "transport": {"$ref": "#/definitions/transport"},
+          "checkpoints": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/checkpoint"}},
+          "terminalObservation": {"$ref": "#/definitions/terminal"},
+          "candidateLineage": {
+            "allOf": [
+              {"$ref": "#/definitions/lineage"},
+              {"properties": {"availability": {"const": "available-runtime"}}}
+            ]
+          },
+          "unknowns": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/question"}},
+          "observerStatus": {"$ref": "#/definitions/observerStatus"}
+        }
+      }
+    },
+    {
+      "if": {
+        "allOf": [
+          {"properties": {"mode": {"const": "RUNTIME"}}},
+          {"properties": {"status": {"const": "PASS"}}}
+        ]
+      },
+      "then": {
+        "properties": {
+          "observerStatus": {
+            "allOf": [
+              {"$ref": "#/definitions/observerStatus"},
+              {"properties": {"status": {"const": "PASS"}}}
+            ]
+          },
+          "failure": {"const": null}
+        }
+      }
+    },
+    {
+      "if": {
+        "allOf": [
+          {"properties": {"mode": {"const": "RUNTIME"}}},
+          {"properties": {"status": {"const": "FAIL"}}}
+        ]
+      },
+      "then": {
+        "properties": {
+          "observerStatus": {
+            "allOf": [
+              {"$ref": "#/definitions/observerStatus"},
+              {"properties": {"status": {"const": "FAIL"}}}
+            ]
+          },
+          "failure": {"$ref": "#/definitions/failure"}
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "identifier": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,95}$"},
+    "publicText": {"type": "string", "pattern": "^[^\\\\/]{1,500}$"},
+    "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "identity": {"type": "object", "additionalProperties": false, "required": ["sha256", "sizeBytes"], "properties": {"sha256": {"$ref": "#/definitions/sha256"}, "sizeBytes": {"type": "integer", "minimum": 1}}},
+    "descriptor": {"type": "object", "additionalProperties": false, "required": ["status", "identity"], "properties": {"status": {"enum": ["validated", "unavailable"]}, "identity": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/identity"}]}}, "allOf": [{"if": {"properties": {"status": {"const": "validated"}}}, "then": {"properties": {"identity": {"$ref": "#/definitions/identity"}}}}, {"if": {"properties": {"status": {"const": "unavailable"}}}, "then": {"properties": {"identity": {"const": null}}}}]},
+    "staticFixture": {"type": "object", "additionalProperties": false, "required": ["fixtureId", "sha256"], "properties": {"fixtureId": {"$ref": "#/definitions/identifier"}, "sha256": {"$ref": "#/definitions/sha256"}}},
+    "scenario": {"type": "object", "additionalProperties": false, "required": ["scenarioId", "caseId", "classification", "staticFixtures"], "properties": {"scenarioId": {"$ref": "#/definitions/identifier"}, "caseId": {"$ref": "#/definitions/identifier"}, "classification": {"const": "Unknown"}, "staticFixtures": {"type": "array", "minItems": 1, "maxItems": 64, "items": {"$ref": "#/definitions/staticFixture"}}}},
+    "inputArtifact": {"type": "object", "additionalProperties": false, "required": ["role", "artifactId", "sha256"], "properties": {"role": {"enum": ["movie", "input-log", "header", "sync-settings"]}, "artifactId": {"$ref": "#/definitions/identifier"}, "sha256": {"$ref": "#/definitions/sha256"}}},
+    "observer": {"type": "object", "additionalProperties": false, "required": ["observerId", "sha256"], "properties": {"observerId": {"$ref": "#/definitions/identifier"}, "sha256": {"$ref": "#/definitions/sha256"}}},
+    "transport": {"type": "object", "additionalProperties": false, "required": ["startState", "inputArtifacts", "observer"], "properties": {"startState": {"const": "power-on"}, "inputArtifacts": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/definitions/inputArtifact"}}, "observer": {"$ref": "#/definitions/observer"}}},
+    "checkpoint": {"type": "object", "additionalProperties": false, "required": ["role", "address", "staticFixtureId"], "properties": {"role": {"$ref": "#/definitions/identifier"}, "address": {"type": "string", "pattern": "^0x[0-9A-F]{1,6}$"}, "staticFixtureId": {"$ref": "#/definitions/identifier"}}},
+    "terminal": {"type": "object", "additionalProperties": false, "required": ["status", "callbacksRemaining", "cleanup", "consoleCheckRequired", "roleOrder"], "properties": {"status": {"const": "PASS"}, "callbacksRemaining": {"const": 0}, "cleanup": {"const": "protected-finalizer"}, "consoleCheckRequired": {"const": true}, "roleOrder": {"type": "array", "minItems": 1, "maxItems": 64, "items": {"$ref": "#/definitions/identifier"}}}},
+    "lineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ledgerId", "availability", "runClass", "launchOrdinal", "priorReceiptSha256"],
+      "properties": {
+        "ledgerId": {"$ref": "#/definitions/identifier"},
+        "availability": {"enum": ["not-accessed-preflight", "available-runtime"]},
+        "runClass": {
+          "anyOf": [
+            {"type": "null"},
+            {"enum": ["diagnostic", "frozen-acceptance"]}
+          ]
+        },
+        "launchOrdinal": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "integer", "minimum": 1, "maximum": 3}
+          ]
+        },
+        "priorReceiptSha256": {
+          "anyOf": [
+            {"type": "null"},
+            {"$ref": "#/definitions/sha256"}
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"availability": {"const": "not-accessed-preflight"}}},
+          "then": {
+            "properties": {
+              "runClass": {"const": null},
+              "launchOrdinal": {"const": null},
+              "priorReceiptSha256": {"const": null}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"availability": {"const": "available-runtime"}}},
+          "then": {
+            "properties": {
+              "runClass": {"enum": ["diagnostic", "frozen-acceptance"]},
+              "launchOrdinal": {"type": "integer", "minimum": 1, "maximum": 3}
+            }
+          }
+        },
+        {
+          "if": {
+            "allOf": [
+              {"properties": {"availability": {"const": "available-runtime"}}},
+              {"properties": {"launchOrdinal": {"const": 1}}}
+            ]
+          },
+          "then": {"properties": {"priorReceiptSha256": {"const": null}}}
+        },
+        {
+          "if": {
+            "allOf": [
+              {"properties": {"availability": {"const": "available-runtime"}}},
+              {"properties": {"launchOrdinal": {"enum": [2, 3]}}}
+            ]
+          },
+          "then": {"properties": {"priorReceiptSha256": {"$ref": "#/definitions/sha256"}}}
+        }
+      ]
+    },
+    "question": {"type": "object", "additionalProperties": false, "required": ["label", "group", "question"], "properties": {"label": {"const": "Unknown"}, "group": {"$ref": "#/definitions/identifier"}, "question": {"$ref": "#/definitions/publicText"}}},
+    "observerStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "phase", "code", "caseId", "currentRole", "callbacksRemaining", "cleanupResult", "observedRoles", "expected", "actual", "detail", "exitCode", "consoleCheckRequired"],
+      "properties": {
+        "status": {"enum": ["PASS", "FAIL"]},
+        "phase": {"enum": ["callback", "finalizer", "terminal"]},
+        "code": {"$ref": "#/definitions/identifier"},
+        "caseId": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/identifier"}]},
+        "currentRole": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/identifier"}]},
+        "callbacksRemaining": {"type": "integer", "minimum": 0},
+        "cleanupResult": {"enum": ["protected-cleanup-ok", "protected-cleanup-failed"]},
+        "observedRoles": {"type": "array", "maxItems": 64, "items": {"$ref": "#/definitions/identifier"}},
+        "expected": {"$ref": "#/definitions/publicText"},
+        "actual": {"$ref": "#/definitions/publicText"},
+        "detail": {"$ref": "#/definitions/publicText"},
+        "exitCode": {"enum": [0, 1]},
+        "consoleCheckRequired": {"const": true}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "PASS"}}},
+          "then": {
+            "properties": {
+              "phase": {"const": "terminal"},
+              "code": {"const": "pass"},
+              "callbacksRemaining": {"const": 0},
+              "cleanupResult": {"const": "protected-cleanup-ok"},
+              "exitCode": {"const": 0}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "FAIL"}}},
+          "then": {"properties": {"exitCode": {"const": 1}}}
+        },
+        {
+          "if": {"properties": {"code": {"const": "missing-configuration"}}},
+          "then": {"properties": {"caseId": {"const": null}}},
+          "else": {"properties": {"caseId": {"$ref": "#/definitions/identifier"}}}
+        }
+      ]
+    },
+    "failure": {"type": "object", "additionalProperties": false, "required": ["phase", "code", "expected", "actual"], "properties": {"phase": {"enum": ["preflight", "runtime"]}, "code": {"$ref": "#/definitions/identifier"}, "expected": {"$ref": "#/definitions/publicText"}, "actual": {"$ref": "#/definitions/publicText"}}}
+  }
+}

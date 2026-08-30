@@ -7,7 +7,6 @@ tracked fixture remains a public recipe rather than game-play evidence.
 
 from __future__ import annotations
 
-import hashlib
 import io
 import json
 import os
@@ -24,6 +23,17 @@ from sf2tool.h3.bizhawk import (
     TOOLCHAIN_MANIFEST,
     run_native_bizhawk_process,
     validate_lua_syntax,
+)
+from sf2tool.h3.original_reference_transport import (
+    TransportError,
+    canonical_utf8_lf_bytes,
+    validate_passive_lua_source,
+)
+from sf2tool.h3.original_reference_transport import (
+    canonical_json_bytes as _canonical_json,
+)
+from sf2tool.h3.original_reference_transport import (
+    sha256 as _sha256,
 )
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
@@ -92,16 +102,6 @@ class PrivateInputUnavailable(CapabilityError):
     """Only an absent ignored ROM or pinned local toolchain may be unavailable."""
 
 
-def _canonical_json(value: Any) -> bytes:
-    return (
-        json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
-    ).encode("utf-8")
-
-
-def _sha256(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest().upper()
-
-
 def _canonical_observer_transport_bytes(path: Path = OBSERVER_PATH) -> bytes:
     """Return the closed UTF-8/LF observer transport representation.
 
@@ -111,15 +111,10 @@ def _canonical_observer_transport_bytes(path: Path = OBSERVER_PATH) -> bytes:
     change through the declared digest.
     """
 
-    raw = path.resolve(strict=True).read_bytes()
     try:
-        text = raw.decode("utf-8")
-    except UnicodeDecodeError as error:
-        raise CapabilityError(f"passive observer is not UTF-8: {error}") from error
-    canonical = text.replace("\r\n", "\n")
-    if "\r" in canonical:
-        raise CapabilityError("passive observer has a non-CRLF carriage return")
-    return canonical.encode("utf-8")
+        return canonical_utf8_lf_bytes(path)
+    except TransportError as error:
+        raise CapabilityError(str(error)) from error
 
 
 def _bounded(value: str) -> str:
@@ -534,50 +529,26 @@ _FORBIDDEN_LUA_PATTERNS = (
 def validate_passive_observer(fixture: dict[str, Any], path: Path = OBSERVER_PATH) -> str:
     """Check canonical final bytes and deny aliases/dynamic calls before compilation."""
 
-    source = _canonical_observer_transport_bytes(path)
-    digest = _sha256(source)
     policy = fixture["passiveObserverPolicy"]
     if tuple(policy["allowedApis"]) != _ALLOWED_LUA_API_NAMES:
         raise CapabilityError("passive observer allowed API contract drift")
     if tuple(policy["forbiddenCapabilities"]) != _FORBIDDEN_CAPABILITIES:
         raise CapabilityError("passive observer forbidden capability contract drift")
-    if digest != policy["observerSha256"]:
-        raise CapabilityError(
-            f"passive observer hash drift: expected {policy['observerSha256']}, got {digest}"
+    allowed_names = _ALLOWED_LUA_API_NAMES + tuple(
+        f"{namespace}.{method}"
+        for namespace, methods in _ALLOWED_LUA_STANDARD_APIS.items()
+        for method in sorted(methods)
+    )
+    try:
+        return validate_passive_lua_source(
+            path=path,
+            expected_sha256=policy["observerSha256"],
+            allowed_api_names=allowed_names,
+            allowed_bare_calls=tuple(sorted(_ALLOWED_LUA_BARE_CALLS)),
+            forbidden_patterns=_FORBIDDEN_LUA_PATTERNS,
         )
-    text = source.decode("utf-8")
-    lowered = text.lower()
-    for pattern in _FORBIDDEN_LUA_PATTERNS:
-        if pattern.lower() in lowered:
-            raise CapabilityError(f"passive observer uses forbidden Lua surface: {pattern}")
-    if re.search(r"\b[A-Za-z_][A-Za-z0-9_]*\s*\[[^\]]*\]\s*\(", text):
-        raise CapabilityError("passive observer uses dynamic member access")
-    for namespace in _ALLOWED_LUA_APIS:
-        if re.search(
-            rf"\blocal\s+[A-Za-z_][A-Za-z0-9_]*\s*=\s*{namespace}\b(?!\s*\.)",
-            text,
-        ):
-            raise CapabilityError(f"passive observer aliases API namespace: {namespace}")
-    for match in re.finditer(r"\b([a-z_][a-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)", text):
-        namespace, method = match.groups()
-        if not text[match.end() :].lstrip().startswith("("):
-            continue
-        allowed_methods = _ALLOWED_LUA_APIS.get(namespace) or _ALLOWED_LUA_STANDARD_APIS.get(
-            namespace
-        )
-        if allowed_methods is None or method not in allowed_methods:
-            raise CapabilityError(f"passive observer uses unallowed API: {namespace}.{method}")
-    local_functions = set(re.findall(r"\blocal\s+function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", text))
-    for match in re.finditer(r"\b([A-Za-z_][A-Za-z0-9_]*)\s*\(", text):
-        name = match.group(1)
-        if match.start() > 0 and text[match.start() - 1] in {".", ":"}:
-            continue
-        if name in _LUA_KEYWORDS or name in local_functions or name in _ALLOWED_LUA_BARE_CALLS:
-            continue
-        raise CapabilityError(f"passive observer uses unallowed Lua call: {name}")
-    if re.search(r"\bload\s*\(", text):
-        raise CapabilityError("passive observer uses forbidden Lua surface: load")
-    return digest
+    except TransportError as error:
+        raise CapabilityError(str(error)) from error
 
 
 def _materialize_passive_observer(

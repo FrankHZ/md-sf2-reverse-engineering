@@ -1,0 +1,255 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2.example/schemas/core/original-reference-replay-scenario-api.schema.json",
+  "title": "Original-reference replay scenario API descriptor",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "scenarioApiId",
+    "scenarioId",
+    "caseId",
+    "classification",
+    "staticFixtures",
+    "checkpoints",
+    "inputArtifacts",
+    "startState",
+    "terminalObservation",
+    "timeoutSeconds",
+    "limits",
+    "candidateLineage",
+    "passiveObserverPolicy",
+    "unknowns"
+  ],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "scenarioApiId": {"const": "sf2-original-reference-replay-scenario-api-v1"},
+    "scenarioId": {"$ref": "#/definitions/identifier"},
+    "caseId": {"$ref": "#/definitions/identifier"},
+    "classification": {"const": "Unknown"},
+    "staticFixtures": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {"$ref": "#/definitions/staticFixture"}
+    },
+    "checkpoints": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {"$ref": "#/definitions/checkpoint"}
+    },
+    "inputArtifacts": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"$ref": "#/definitions/inputArtifact"}
+    },
+    "startState": {"const": "power-on"},
+    "terminalObservation": {"$ref": "#/definitions/terminalObservation"},
+    "timeoutSeconds": {"type": "integer", "minimum": 1, "maximum": 600},
+    "limits": {"$ref": "#/definitions/limits"},
+    "candidateLineage": {"$ref": "#/definitions/candidateLineage"},
+    "passiveObserverPolicy": {"$ref": "#/definitions/passiveObserverPolicy"},
+    "unknowns": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "items": {"$ref": "#/definitions/question"}
+    }
+  },
+  "definitions": {
+    "identifier": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,95}$"},
+    "publicText": {"type": "string", "pattern": "^[^\\\\/]{1,500}$"},
+    "sha256": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "address": {"type": "string", "pattern": "^0x[0-9A-F]{1,6}$"},
+    "staticFixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixtureId", "sha256"],
+      "properties": {
+        "fixtureId": {"$ref": "#/definitions/identifier"},
+        "sha256": {"$ref": "#/definitions/sha256"}
+      }
+    },
+    "checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "address", "staticFixtureId"],
+      "properties": {
+        "role": {"$ref": "#/definitions/identifier"},
+        "address": {"$ref": "#/definitions/address"},
+        "staticFixtureId": {"$ref": "#/definitions/identifier"}
+      }
+    },
+    "inputArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "artifactId", "sha256"],
+      "properties": {
+        "role": {"enum": ["movie", "input-log", "header", "sync-settings"]},
+        "artifactId": {"$ref": "#/definitions/identifier"},
+        "sha256": {"$ref": "#/definitions/sha256"}
+      }
+    },
+    "terminalObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "callbacksRemaining",
+        "cleanup",
+        "consoleCheckRequired",
+        "roleOrder"
+      ],
+      "properties": {
+        "status": {"const": "PASS"},
+        "callbacksRemaining": {"const": 0},
+        "cleanup": {"const": "protected-finalizer"},
+        "consoleCheckRequired": {"const": true},
+        "roleOrder": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 64,
+          "items": {"$ref": "#/definitions/identifier"}
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxCheckpoints", "maxTimeoutSeconds"],
+      "properties": {
+        "maxCheckpoints": {"type": "integer", "minimum": 1, "maximum": 64},
+        "maxTimeoutSeconds": {"type": "integer", "minimum": 1, "maximum": 600}
+      }
+    },
+    "candidateLineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ledgerId", "availability", "runClass", "launchOrdinal", "priorReceiptSha256"],
+      "properties": {
+        "ledgerId": {"$ref": "#/definitions/identifier"},
+        "availability": {"enum": ["not-accessed-preflight", "available-runtime"]},
+        "runClass": {
+          "anyOf": [
+            {"type": "null"},
+            {"enum": ["diagnostic", "frozen-acceptance"]}
+          ]
+        },
+        "launchOrdinal": {
+          "anyOf": [
+            {"type": "null"},
+            {"type": "integer", "minimum": 1, "maximum": 3}
+          ]
+        },
+        "priorReceiptSha256": {
+          "anyOf": [
+            {"type": "null"},
+            {"$ref": "#/definitions/sha256"}
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"availability": {"const": "not-accessed-preflight"}}},
+          "then": {
+            "properties": {
+              "runClass": {"const": null},
+              "launchOrdinal": {"const": null},
+              "priorReceiptSha256": {"const": null}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"availability": {"const": "available-runtime"}}},
+          "then": {
+            "properties": {
+              "runClass": {"enum": ["diagnostic", "frozen-acceptance"]},
+              "launchOrdinal": {"type": "integer", "minimum": 1, "maximum": 3}
+            }
+          }
+        },
+        {
+          "if": {
+            "allOf": [
+              {"properties": {"availability": {"const": "available-runtime"}}},
+              {"properties": {"launchOrdinal": {"const": 1}}}
+            ]
+          },
+          "then": {"properties": {"priorReceiptSha256": {"const": null}}}
+        },
+        {
+          "if": {
+            "allOf": [
+              {"properties": {"availability": {"const": "available-runtime"}}},
+              {"properties": {"launchOrdinal": {"enum": [2, 3]}}}
+            ]
+          },
+          "then": {"properties": {"priorReceiptSha256": {"$ref": "#/definitions/sha256"}}}
+        }
+      ]
+    },
+    "passiveObserverPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observerId",
+        "observerSha256",
+        "allowedApis",
+        "allowedBareCalls",
+        "forbiddenCapabilities"
+      ],
+      "properties": {
+        "observerId": {"$ref": "#/definitions/identifier"},
+        "observerSha256": {"$ref": "#/definitions/sha256"},
+        "allowedApis": {
+          "const": [
+            "os.getenv",
+            "io.open",
+            "event.onmemoryexecute",
+            "event.onexit",
+            "event.unregisterbyid",
+            "client.exitCode",
+            "string.byte",
+            "string.char",
+            "string.gsub",
+            "string.format",
+            "string.sub",
+            "table.concat"
+          ]
+        },
+        "allowedBareCalls": {
+          "const": ["ipairs", "pcall", "tostring"]
+        },
+        "forbiddenCapabilities": {
+          "const": [
+            "adaptive-input",
+            "controller-write",
+            "dynamic-call",
+            "dynamic-load",
+            "gameplay-mechanics",
+            "memory-write",
+            "movie-mutation",
+            "register-write",
+            "rom-control",
+            "savestate",
+            "shell-process",
+            "sram-write",
+            "state-write"
+          ]
+        }
+      }
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "group", "question"],
+      "properties": {
+        "label": {"const": "Unknown"},
+        "group": {"$ref": "#/definitions/identifier"},
+        "question": {"$ref": "#/definitions/publicText"}
+      }
+    }
+  }
+}

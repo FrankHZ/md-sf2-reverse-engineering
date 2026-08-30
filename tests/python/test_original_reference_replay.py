@@ -376,6 +376,72 @@ def test_preflight_is_materializer_only_and_candidate_closes_archive_and_templat
     }
 
 
+def test_legacy_preflight_identity_and_ledger_boundary_are_byte_semantic(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Freeze the accepted capability transport before shared-kernel extraction.
+
+    This intentionally uses no private archive, ROM, receipt, or ledger bytes.  The
+    synthetic fact set lets the test pin the complete legacy candidate and public
+    preflight receipt while proving that a preflight cannot read or write the
+    consumed private launch ledger.
+    """
+
+    fixture = deepcopy(load_capability_fixture())
+    movie = materialize_movie(fixture)
+    facts: dict[str, Any] = {
+        "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+        "archive": _identity("A") | {"sizeBytes": 123},
+        "archiveMemberSetSha256": "B" * 64,
+        "runner": _identity("C") | {"sizeBytes": 234},
+        "helper": _identity("D") | {"sizeBytes": 345},
+        "fixtureSha256": "C1818C7A03DC2A846709970E24FE41C88C5C3349A1AEFE1D592CBB63C611C365",
+        "observerSha256": "E59E827AD08BE43217A7E778E1D55919D239C3EDA53921C04F338A795B72BDCE",
+    }
+    expected_candidate = {
+        "candidateSha256": "CDE8AED2A9CFD716D0F315FC09F2BECC7B0B0D0FC938D0FC8315913374232700",
+        "romSha256": facts["romSha256"],
+        "archiveSha256": "A" * 64,
+        "archiveSizeBytes": 123,
+        "archiveMemberSetSha256": "B" * 64,
+        "runnerSha256": "C" * 64,
+        "helperSha256": "D" * 64,
+        "fixtureSha256": facts["fixtureSha256"],
+        "capabilitySchemaSha256": (
+            "99E8E508C5A1DF53BAA5C3167832E1D7707FCCF9204A92BA81072663C8E89F20"
+        ),
+        "receiptSchemaSha256": "C7C90811E4680512A7AEF31FA6E36C94FF5D38DD8A81C3383474D696D6FEBFE4",
+        "observerSha256": facts["observerSha256"],
+        "recipeSha256": "BAD3DE219DBDA1F2FB9A2DA7191351290575CAFA4FF03A00B75A289ADA2BD867",
+        "bk2Sha256": "250F4086E1C1AD08BF64A7CB5C84787E4EE8DA41D83D53630F54DE7FB8085E64",
+        "configTemplateSha256": "74C5447770E447491296E888AB78FAC55AA38832A4077F95BEC4D1C92FC5A096",
+    }
+
+    assert _sha256(replay.FIXTURE_PATH.read_bytes()) == facts["fixtureSha256"]
+    assert _candidate_identity(fixture, facts, movie) == expected_candidate
+    monkeypatch.setattr(replay, "load_capability_fixture", lambda: fixture)
+    monkeypatch.setattr(replay, "_preflight", lambda *_: (facts, movie))
+
+    def fail_if_ledger_is_touched(*_args: object, **_kwargs: object) -> None:
+        raise AssertionError("legacy preflight must not access the consumed private ledger")
+
+    monkeypatch.setattr(replay, "_load_ledger", fail_if_ledger_is_touched)
+    monkeypatch.setattr(replay, "_write_ledger", fail_if_ledger_is_touched)
+
+    assert run_original_reference_replay(
+        rom_path=tmp_path / "unread-private-rom.bin", preflight_only=True
+    ) == {
+        "Status": "PASS",
+        "Mode": "PREFLIGHT",
+        "CapabilityId": "sf2-original-reference-replay-capability-v1",
+        "RecipeSha256": movie.recipe_sha256,
+        "Bk2Sha256": movie.bk2_sha256,
+        "ObserverSha256": facts["observerSha256"],
+        "CandidateSha256": expected_candidate["candidateSha256"],
+        "ProcessStarts": 0,
+    }
+
+
 def test_contained_launch_never_executes_host_and_cleanup_retains_only_receipt(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
