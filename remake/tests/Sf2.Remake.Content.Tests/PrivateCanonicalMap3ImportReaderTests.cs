@@ -1,0 +1,485 @@
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Sf2.Remake.Application.Content;
+using Sf2.Remake.Content;
+using Sf2.Remake.Domain.Maps;
+using Xunit;
+
+namespace Sf2.Remake.Content.Tests;
+
+public sealed class PrivateCanonicalMap3ImportReaderTests
+{
+    private const string AcceptedCanonicalDigest =
+        "DDDA4FA05455DDBA9CDAF85497CEE0C1C89C6E625721A8FEAD301044C892E508";
+    private const string AcceptedDecodedLayoutDigest =
+        "6BC4D0BF350242EA908A5ED00FFFDF68F6428E7A5189B23AE189CD24BC220446";
+    private const string AcceptedCollisionDigest =
+        "A9A7BACA8952DCC50CA90CD0985512C7F2393184FEA45F4E85E397422EAC9433";
+
+    [Fact]
+    public void SyntheticCanonicalSampleAdmitsExactPrivateMap3Projection()
+    {
+        JsonObject document = SampleDocument();
+        byte[] bytes = DocumentBytes(document);
+        OriginalMapImportAccepted accepted = Assert.IsType<OriginalMapImportAccepted>(
+            PrivateCanonicalMap3ImportReader.AdmitSemanticDocumentForTests(bytes));
+
+        Assert.Equal(ContentProfile.PrivateLocal, accepted.Receipt.Profile);
+        Assert.Equal(Digest(bytes), accepted.Receipt.ContentDigest);
+        Assert.Equal(PrivateCanonicalMap3ImportReader.PackageId, accepted.Receipt.PackageId);
+        Assert.Equal(PrivateCanonicalMap3ImportReader.CanonicalRomSha256,
+            accepted.Receipt.Provenance.RomSha256);
+        Assert.Equal(PrivateCanonicalMap3ImportReader.CanonicalCommit,
+            accepted.Receipt.Provenance.UpstreamCommit);
+        Assert.Equal(
+            new[]
+            {
+                PrivateCanonicalMap3ImportReader.Capability,
+                PrivateCanonicalMap3ImportReader.TraversalCapability,
+                PrivateCanonicalMap3ImportReader.ControlledAdmissionCapability,
+            },
+            accepted.Receipt.Capabilities);
+        Assert.Equal(new MapId("map3"), accepted.Definition.Map);
+        Assert.Equal(WorkingMapLayout.WordCount, accepted.Definition.WorkingLayout.Words.Count);
+        Assert.Equal(new MapPosition(56, 3), accepted.Definition.ControlledAdmission.Position);
+        Assert.Equal("ms_map3", accepted.Definition.ControlledAdmission.SelectedSetup.Value);
+        Assert.Equal("ms_map3_InitFunction",
+            accepted.Definition.ControlledAdmission.SelectedInitIdentity);
+        Assert.True(accepted.Definition.ControlledAdmission.NoProgramRequest);
+        Assert.Contains("natural-flags-setup-variant-selection",
+            accepted.Definition.UnsupportedCapabilities);
+        Assert.Equal(
+            OriginalMapTraversal.CollisionMask,
+            accepted.Definition.WorkingLayout[41, 13] & OriginalMapTraversal.CollisionMask);
+        Assert.False(OriginalMapTraversal.IsBlocked(
+            accepted.Definition.WorkingLayout,
+            new MapPosition(62, 0)));
+    }
+
+    [Fact]
+    public void WrongPackageProfileAndRawDigestFailBeforeSemanticAdmission()
+    {
+        byte[] bytes = DocumentBytes(SampleDocument());
+
+        AssertCode(
+            AdmitProduction(bytes, new OriginalMapImportRequest(
+                "other-package",
+                ContentProfile.PrivateLocal,
+                Digest(bytes))),
+            OriginalMapImportFailureCode.PackageIdentityMismatch);
+        AssertCode(
+            AdmitProduction(bytes, new OriginalMapImportRequest(
+                PrivateCanonicalMap3ImportReader.PackageId,
+                ContentProfile.PublicSynthetic,
+                Digest(bytes))),
+            OriginalMapImportFailureCode.ProfileMismatch);
+        AssertCode(
+            AdmitProduction(bytes, new OriginalMapImportRequest(
+                PrivateCanonicalMap3ImportReader.PackageId,
+                ContentProfile.PrivateLocal,
+                new string('0', 64))),
+            OriginalMapImportFailureCode.ContentDigestMismatch);
+    }
+
+    [Fact]
+    public void RecomputedCallerDigestCannotAuthorizeStructurallyValidMutation()
+    {
+        byte[] bytes = DocumentBytes(SampleDocument());
+        byte[] whitespaceMutation = [.. bytes, (byte)' '];
+        AssertCode(
+            AdmitProduction(whitespaceMutation, Request(Digest(whitespaceMutation))),
+            OriginalMapImportFailureCode.ContentDigestMismatch);
+    }
+
+    [Fact]
+    public void ProductionSurfaceExposesOnlyThePathBoundReader()
+    {
+        Type readerType = typeof(PrivateCanonicalMap3ImportReader);
+        System.Reflection.ConstructorInfo constructor = Assert.Single(readerType.GetConstructors());
+        Assert.Equal(
+            new[] { typeof(string) },
+            constructor.GetParameters().Select(parameter => parameter.ParameterType));
+        Assert.DoesNotContain(
+            readerType.GetMethods(),
+            method => method.DeclaringType == readerType &&
+                method.IsStatic && method.ReturnType == readerType);
+    }
+
+    [Fact]
+    public void UnknownShapeAndProvenanceDriftFailClosed()
+    {
+        JsonObject unknownRoot = SampleDocument();
+        unknownRoot["unexpected"] = true;
+        AssertCode(Admit(unknownRoot), OriginalMapImportFailureCode.InvalidDocument);
+
+        JsonObject unknownMap = SampleDocument();
+        Map(unknownMap, 3)["unexpected"] = true;
+        AssertCode(Admit(unknownMap), OriginalMapImportFailureCode.InvalidDocument);
+
+        byte[] ordinaryBytes = DocumentBytes(SampleDocument());
+        const string idProperty = "\"id\": \"sf2-canonical-map-import-v1\"";
+        string ordinaryJson = Encoding.UTF8.GetString(ordinaryBytes);
+        int idOffset = ordinaryJson.IndexOf(idProperty, StringComparison.Ordinal);
+        Assert.True(idOffset >= 0);
+        int insertionOffset = ordinaryJson.IndexOf(',', idOffset) + 1;
+        Assert.True(insertionOffset > 0);
+        string duplicatePropertyJson = ordinaryJson.Insert(
+            insertionOffset,
+            "\n  " + idProperty + ",");
+        byte[] duplicatePropertyBytes = Encoding.UTF8.GetBytes(duplicatePropertyJson);
+        AssertCode(
+            PrivateCanonicalMap3ImportReader.AdmitSemanticDocumentForTests(
+                duplicatePropertyBytes),
+            OriginalMapImportFailureCode.DuplicateIdentity);
+
+        JsonObject wrongRom = SampleDocument();
+        wrongRom["romSha256"] = new string('0', 64);
+        AssertCode(Admit(wrongRom), OriginalMapImportFailureCode.ProvenanceMismatch);
+
+        JsonObject wrongCommit = SampleDocument();
+        wrongCommit["upstream"]!.AsObject()["commit"] = new string('0', 40);
+        AssertCode(Admit(wrongCommit), OriginalMapImportFailureCode.ProvenanceMismatch);
+    }
+
+    [Fact]
+    public void DuplicateMissingAndDanglingIdentitiesFailClosed()
+    {
+        JsonObject duplicateMap = SampleDocument();
+        Map(duplicateMap, 4)["id"] = 3;
+        AssertCode(Admit(duplicateMap), OriginalMapImportFailureCode.DuplicateIdentity);
+
+        JsonObject duplicateLayout = SampleDocument();
+        JsonArray layouts = ResourceArray(duplicateLayout, "layouts");
+        layouts.Add(layouts[0]!.DeepClone());
+        AssertCode(Admit(duplicateLayout), OriginalMapImportFailureCode.DuplicateIdentity);
+
+        JsonObject missingLayout = SampleDocument();
+        ResourceArray(missingLayout, "layouts").Clear();
+        AssertCode(Admit(missingLayout), OriginalMapImportFailureCode.MissingReference);
+
+        JsonObject danglingSetup = SampleDocument();
+        Map(danglingSetup, 3)["references"]!.AsObject()["setupRoute"] = "missing-route";
+        AssertCode(Admit(danglingSetup), OriginalMapImportFailureCode.MissingReference);
+    }
+
+    [Fact]
+    public void LayoutRangeBlockReferenceAndControlledSetupDriftFailClosed()
+    {
+        JsonObject wrongLength = SampleDocument();
+        LayoutWords(wrongLength).RemoveAt(0);
+        AssertCode(Admit(wrongLength), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject outOfRangeWord = SampleDocument();
+        LayoutWords(outOfRangeWord)[0] = 65536;
+        AssertCode(Admit(outOfRangeWord), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject missingBlock = SampleDocument();
+        LayoutWords(missingBlock)[0] = 3;
+        AssertCode(Admit(missingBlock), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject wrongDefault = SampleDocument();
+        ResourceArray(wrongDefault, "setupRoutes")[0]!.AsObject()["defaultSetup"] =
+            "ms_map3_variant_a";
+        AssertCode(Admit(wrongDefault), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void SchoolDoorCopyAndCurrentWordCollisionPolarityFailClosed()
+    {
+        JsonObject missingDoor = SampleDocument();
+        ResourceArray(missingDoor, "stepEventTables")[0]!
+            .AsObject()["records"]!.AsArray().Clear();
+        AssertCode(Admit(missingDoor), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject passableDestination = SampleDocument();
+        LayoutWords(passableDestination)[Index(41, 13)] = 0;
+        AssertCode(Admit(passableDestination), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject blockedSource = SampleDocument();
+        LayoutWords(blockedSource)[Index(62, 0)] = OriginalMapTraversal.CollisionMask;
+        AssertCode(Admit(blockedSource), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void MissingPrivatePathReturnsOnlyAPathFreeTypedDiagnostic()
+    {
+        string missing = Path.Combine(
+            Path.GetTempPath(),
+            "sf2-private-map-import-does-not-exist",
+            "canonical-map-import.json");
+        OriginalMapImportRejected rejected = Assert.IsType<OriginalMapImportRejected>(
+            new PrivateCanonicalMap3ImportReader(missing).Admit(
+                new OriginalMapImportRequest(
+                    PrivateCanonicalMap3ImportReader.PackageId,
+                    ContentProfile.PrivateLocal,
+                    new string('0', 64))));
+
+        Assert.Equal(OriginalMapImportFailureCode.PackageUnavailable, rejected.Diagnostic.Code);
+        Assert.DoesNotContain(missing, rejected.Diagnostic.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput()
+    {
+        string? path = Environment.GetEnvironmentVariable("SF2_PRIVATE_CANONICAL_MAP_IMPORT");
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        OriginalMapImportAccepted accepted = Assert.IsType<OriginalMapImportAccepted>(
+            new PrivateCanonicalMap3ImportReader(path).Admit(
+                new OriginalMapImportRequest(
+                    PrivateCanonicalMap3ImportReader.PackageId,
+                    ContentProfile.PrivateLocal,
+                    AcceptedCanonicalDigest)));
+
+        Assert.Equal(AcceptedCanonicalDigest, accepted.Receipt.ContentDigest);
+        Assert.Equal(AcceptedDecodedLayoutDigest, accepted.Receipt.DecodedLayoutDigest);
+        Assert.Equal(AcceptedCollisionDigest, accepted.Receipt.CollisionProjectionDigest);
+        ushort collisionClass = (ushort)(
+            accepted.Definition.WorkingLayout[41, 13] & OriginalMapTraversal.CollisionMask);
+        Assert.Equal(OriginalMapTraversal.CollisionMask, collisionClass);
+        Assert.False(OriginalMapTraversal.IsBlocked(
+            accepted.Definition.WorkingLayout,
+            new MapPosition(62, 0)));
+    }
+
+    private static OriginalMapImportResult Admit(JsonObject document)
+    {
+        byte[] bytes = DocumentBytes(document);
+        return PrivateCanonicalMap3ImportReader.AdmitSemanticDocumentForTests(bytes);
+    }
+
+    private static OriginalMapImportRequest Request(string expectedDigest) =>
+        new(
+            PrivateCanonicalMap3ImportReader.PackageId,
+            ContentProfile.PrivateLocal,
+            expectedDigest);
+
+    private static OriginalMapImportResult AdmitProduction(
+        byte[] bytes,
+        OriginalMapImportRequest request)
+    {
+        string path = Path.Combine(
+            Path.GetTempPath(),
+            $"sf2-private-map3-import-{Guid.NewGuid():N}.json");
+        try
+        {
+            File.WriteAllBytes(path, bytes);
+            return new PrivateCanonicalMap3ImportReader(path).Admit(request);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    private static void AssertCode(
+        OriginalMapImportResult result,
+        OriginalMapImportFailureCode expected)
+    {
+        OriginalMapImportRejected rejected = Assert.IsType<OriginalMapImportRejected>(result);
+        Assert.Equal(expected, rejected.Diagnostic.Code);
+    }
+
+    private static byte[] DocumentBytes(JsonObject document) =>
+        Encoding.UTF8.GetBytes(
+            document.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + "\n");
+
+    private static string Digest(byte[] bytes) =>
+        Convert.ToHexString(SHA256.HashData(bytes));
+
+    private static JsonObject SampleDocument()
+    {
+        int[] layoutWords = new int[WorkingMapLayout.WordCount];
+        layoutWords[Index(41, 13)] = OriginalMapTraversal.CollisionMask;
+        object[] maps = Enumerable.Range(0, 79)
+            .Select(id => (object)new
+            {
+                id,
+                sourceSymbol = id == 3 ? "Map03" : $"Map{id:00}",
+                palette = 0,
+                tilesets = new[] { 0, 1, 2, 3, 4 },
+                references = new
+                {
+                    blockset = "Map03s0_Blocks",
+                    layout = "Map03s1_Layout",
+                    areaTable = "Map03s2_Areas",
+                    flagEventTable = "Map03s3_FlagEvents",
+                    stepEventTable = "Map03s4_StepEvents",
+                    roofEventTable = "Map03s5_RoofEvents",
+                    warpEventTable = "Map03s6_WarpEvents",
+                    chestItemTable = "Map03s7_ChestItems",
+                    otherItemTable = "Map03s8_OtherItems",
+                    animationTable = "Map03s9_Animations",
+                    setupRoute = "MapSetupRoute03",
+                },
+            })
+            .ToArray();
+        object setupReferences = new
+        {
+            entities = "ms_map3_Entities",
+            entityEvents = "ms_map3_EntityEvents",
+            zoneEvents = "ms_map3_ZoneEvents",
+            areaDescriptions = "ms_map3_AreaDescriptions",
+            itemEvents = "ms_map3_Section5",
+            initFunction = "ms_map3_InitFunction",
+        };
+        JsonNode? node = JsonSerializer.SerializeToNode(new
+        {
+            schemaVersion = 1,
+            id = PrivateCanonicalMap3ImportReader.PackageId,
+            upstream = new
+            {
+                repository = PrivateCanonicalMap3ImportReader.CanonicalRepository,
+                commit = PrivateCanonicalMap3ImportReader.CanonicalCommit,
+            },
+            romSha256 = PrivateCanonicalMap3ImportReader.CanonicalRomSha256,
+            geometry = new
+            {
+                layoutWidth = 64,
+                layoutHeight = 64,
+                blockWidthTiles = 3,
+                blockHeightTiles = 3,
+                rawWordBits = 16,
+                layoutBlockIndexMask = OriginalMapTraversal.LayoutBlockIndexMask,
+                layoutFlagsMask = OriginalMapTraversal.LayoutFlagsMask,
+            },
+            table = new { },
+            summary = new { },
+            resourceCounts = new { },
+            recordCounts = new { },
+            setupFacts = new { },
+            referenceFacts = new { },
+            maps,
+            resources = new
+            {
+                blocksets = new object[]
+                {
+                    new
+                    {
+                        id = "Map03s0_Blocks",
+                        address = 1,
+                        blocks = Enumerable.Range(0, 3).Select(_ => new int[9]).ToArray(),
+                    },
+                },
+                layouts = new object[]
+                {
+                    new
+                    {
+                        id = "Map03s1_Layout",
+                        address = 2,
+                        width = 64,
+                        height = 64,
+                        words = layoutWords,
+                    },
+                },
+                areaTables = new object[]
+                {
+                    new
+                    {
+                        id = "Map03s2_Areas",
+                        address = 3,
+                        sourceKind = "areas",
+                        records = new object[]
+                        {
+                            new
+                            {
+                                mainLayerStart = Point(0, 0),
+                                mainLayerEnd = Point(63, 63),
+                                secondLayerForegroundStart = Point(0, 0),
+                                secondLayerBackgroundStart = Point(0, 0),
+                                mainLayerParallax = Point(0, 0),
+                                secondLayerParallax = Point(0, 0),
+                                mainLayerAutoscroll = Point(0, 0),
+                                secondLayerAutoscroll = Point(0, 0),
+                                mainLayerType = 0,
+                                defaultMusic = 0,
+                            },
+                        },
+                    },
+                },
+                flagEventTables = Resource("Map03s3_FlagEvents"),
+                stepEventTables = new object[]
+                {
+                    new
+                    {
+                        id = "Map03s4_StepEvents",
+                        address = 4,
+                        sourceKind = "stepEvents",
+                        records = new object[]
+                        {
+                            new
+                            {
+                                trigger = Point(41, 13),
+                                source = Point(62, 0),
+                                size = new { width = 1, height = 1 },
+                                destination = Point(41, 13),
+                            },
+                        },
+                    },
+                },
+                roofEventTables = Resource("Map03s5_RoofEvents"),
+                warpEventTables = Resource("Map03s6_WarpEvents"),
+                itemTables = new object[]
+                {
+                    new { id = "Map03s7_ChestItems" },
+                    new { id = "Map03s8_OtherItems" },
+                },
+                animationTables = Resource("Map03s9_Animations"),
+                setupRoutes = new object[]
+                {
+                    new
+                    {
+                        id = "MapSetupRoute03",
+                        map = 3,
+                        defaultSetup = "ms_map3",
+                        flagVariants = new object[]
+                        {
+                            new { flag = 1, setup = "ms_map3_variant_a" },
+                            new { flag = 2, setup = "ms_map3_variant_b" },
+                            new { flag = 3, setup = "ms_map3_variant_c" },
+                        },
+                    },
+                },
+                setupDefinitions = new object[]
+                {
+                    new { id = "ms_map3", address = 5, references = setupReferences },
+                    new { id = "ms_map3_variant_a" },
+                    new { id = "ms_map3_variant_b" },
+                    new { id = "ms_map3_variant_c" },
+                },
+                entityLists = Resource("ms_map3_Entities"),
+                entityEventHandlers = Resource("ms_map3_EntityEvents"),
+                zoneEventHandlers = Resource("ms_map3_ZoneEvents"),
+                itemEventHandlers = Resource("ms_map3_Section5"),
+                areaDescriptionHandlers = Resource("ms_map3_AreaDescriptions"),
+                initFunctions = Resource("ms_map3_InitFunction"),
+                standaloneScriptPrograms = Array.Empty<object>(),
+                initSourcePrograms = Array.Empty<object>(),
+            },
+            runtimeQuestions = new[] { "unsupported-natural-runtime" },
+        });
+        return node!.AsObject();
+    }
+
+    private static object[] Resource(string id) => [new { id }];
+
+    private static object Point(int x, int y) => new { x, y };
+
+    private static JsonObject Map(JsonObject document, int mapId) =>
+        document["maps"]!.AsArray()
+            .Select(node => node!.AsObject())
+            .Single(map => map["id"]!.GetValue<int>() == mapId);
+
+    private static JsonArray ResourceArray(JsonObject document, string name) =>
+        document["resources"]!.AsObject()[name]!.AsArray();
+
+    private static JsonArray LayoutWords(JsonObject document) =>
+        ResourceArray(document, "layouts")[0]!.AsObject()["words"]!.AsArray();
+
+    private static int Index(int x, int y) => (y * WorkingMapLayout.ColumnCount) + x;
+}
