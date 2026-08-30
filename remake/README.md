@@ -201,8 +201,13 @@ and Content reader and is never projected into Application state, receipts, stat
 logs. Godot sends semantic movement only through `ApplyPrivateOriginalMap` and projects typed map,
 position, outcome, and simulation-step facts beneath a persistent
 `PRIVATE LOCAL — NOT FULL ORIGINAL FIDELITY` disclosure. This is a local traversal shell, not a
-runnable full-original profile: it draws no imported map or original asset and interprets no collision
-rule in Godot. Natural flags and setup variants, block-copy lifecycle wiring, entity occupancy, warps,
+runnable full-original profile: it renders no imported block, tile, palette, or original asset and
+interprets no collision rule in Godot. A sibling private traversal viewport now projects an immutable
+12-by-7 crop from each typed private session snapshot. It calls only the accepted Domain active-area
+and blocked-collision policies, then draws three project-authored diagnostic categories plus one player
+marker. It never exposes raw layout words or assigns meaning to their block index or remaining flags;
+the crop, colors, and marker are remake diagnostics rather than original camera or presentation facts.
+Natural flags and setup variants, block-copy lifecycle wiring, entity occupancy, warps,
 init/event effects, persistence, assets, presentation, H3/H4, and 8C remain explicitly unsupported or
 Unknown.
 
