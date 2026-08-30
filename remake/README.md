@@ -173,7 +173,25 @@ identities, and cue reuse before a session starts.
 The same closed package admits exactly one outbound transition and one second synthetic runtime. Their map,
 setup, zone, endpoint, facing, request, transition, and cue references are validated against the exact runtime
 and setup catalogs before a session starts.
-General canonical/private import and original content remain deferred.
+
+A separate `PrivateCanonicalMap3ImportReader` now admits the caller's ignored canonical map-import
+bytes only under `PrivateLocal`, after both their raw SHA-256 and the caller-supplied expected digest
+match the fixed accepted canonical import SHA-256. The caller digest is an additional pin against that
+accepted trust root, not the authority for choosing it. It fail-closes the canonical provenance and
+shape, projects the exact 64-by-64 Map 3 layout,
+checks every opaque layout word against its referenced blockset, retains the controlled
+Map 3/(56,3)/facing-3/`ms_map3`/`ms_map3_InitFunction`/no-program-request boundary, and returns a
+path-free immutable definition and receipt. The original layout, block, tileset, palette, and other
+private payloads remain ignored or in memory; none is copied into Git, a PCK, or the public package.
+
+`OriginalMapTraversal` is the corresponding bounded Domain policy over the current working layout.
+It reads the current source and destination words for every request, applies the accepted `0xC000`
+collision class and directional `0x8000`/`0x4000` stair mapping within the imported active-area
+bounds, and therefore observes a later immutable block-copy result without caching a synthetic
+walkability grid. This import/traversal slice is not connected to `MapExplorationRuntimeCatalog`,
+`GameSession`, or Godot and is not a runnable original profile. Natural flags and setup variants,
+entity occupancy, warps, init/event effects, persistence, assets, presentation, H3/H4, and 8C remain
+explicitly unsupported or Unknown.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy
 reducer. The reducer clones the input, then performs forward word-by-word reads and writes on that clone,
@@ -212,7 +230,9 @@ original outbound maps, Map 21 identity, layouts, coordinates, warp predicates, 
 complete Application/Content/Godot game layers; original presentation; H4; private-content admission;
 and milestone acceptance remain Unknown or deferred at their existing owners. The bounded synthetic
 Map 3 admission above is not evidence of the original natural route or a full-content implementation.
-Flag, step, roof, collision, reload, VDP/DMA, script-cursor, and update-toggle effects
+Private-profile runtime/product admission remains deferred even though the path-free canonical Map 3
+import and bounded current-layout traversal prerequisite now exist. Flag, step, roof, reload, VDP/DMA,
+script-cursor, and update-toggle effects
 around working-layout mutation likewise remain outside these reducers. Roof-record matching, fade
 dispatch, entity-coordinate conversion, lifecycle persistence, and content-driven record construction
 remain deferred composition boundaries.
