@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Content;
 
@@ -26,10 +27,23 @@ public static class OriginalMapRuntimeAdmission
     public const string SelectedSetupId = "ms_map3";
     public const string SelectedInitIdentity = "ms_map3_InitFunction";
 
+    public const string ControlledStepCopyResourceId = "Map03s4_StepEvents";
+    public const int ControlledStepCopyRecordOrdinal = 6;
+    public const int ControlledStepCopyTriggerX = 41;
+    public const int ControlledStepCopyTriggerY = 13;
+    public const int ControlledStepCopySourceX = 62;
+    public const int ControlledStepCopySourceY = 0;
+    public const int ControlledStepCopyDestinationX = 41;
+    public const int ControlledStepCopyDestinationY = 13;
+    public const int ControlledStepCopyWidth = 1;
+    public const int ControlledStepCopyHeight = 1;
+
     public const string ImportCapability = "private-canonical-map3-layout-import-v1";
     public const string TraversalCapability = "original-map3-traversal-policy-v1";
     public const string ControlledAdmissionCapability =
         "controlled-map3-import-definition-v1";
+    public const string ControlledStepCopyCapability =
+        "private-local-map3-controlled-step-copy-diagnostic-v1";
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
@@ -38,6 +52,7 @@ public static class OriginalMapRuntimeAdmission
                 ImportCapability,
                 TraversalCapability,
                 ControlledAdmissionCapability,
+                ControlledStepCopyCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -72,5 +87,32 @@ public static class OriginalMapRuntimeAdmission
         HashSet<string> actual = new(evidenceOwners, StringComparer.Ordinal);
         return actual.Count == ReadOnlyRequiredEvidenceOwners.Count &&
             actual.SetEquals(ReadOnlyRequiredEvidenceOwners);
+    }
+
+    internal static bool IsExactControlledStepCopy(OriginalMapStepCopyDefinition? definition)
+    {
+        if (definition is null)
+        {
+            return false;
+        }
+
+        OriginalMapStepCopyIdentity identity = definition.Identity;
+        WorkingMapBlockCopy copy = definition.Copy;
+        return identity.Profile == ContentProfile.PrivateLocal &&
+            string.Equals(identity.Map.Value, MapId, StringComparison.Ordinal) &&
+            string.Equals(
+                identity.SourceResourceId,
+                ControlledStepCopyResourceId,
+                StringComparison.Ordinal) &&
+            identity.OneBasedRecordOrdinal == ControlledStepCopyRecordOrdinal &&
+            definition.Trigger == new MapPosition(
+                ControlledStepCopyTriggerX,
+                ControlledStepCopyTriggerY) &&
+            copy.SourceX == ControlledStepCopySourceX &&
+            copy.SourceY == ControlledStepCopySourceY &&
+            copy.DestinationX == ControlledStepCopyDestinationX &&
+            copy.DestinationY == ControlledStepCopyDestinationY &&
+            copy.Width == ControlledStepCopyWidth &&
+            copy.Height == ControlledStepCopyHeight;
     }
 }

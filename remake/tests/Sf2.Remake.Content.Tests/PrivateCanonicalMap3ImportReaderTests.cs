@@ -39,6 +39,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.Capability,
                 PrivateCanonicalMap3ImportReader.TraversalCapability,
                 PrivateCanonicalMap3ImportReader.ControlledAdmissionCapability,
+                PrivateCanonicalMap3ImportReader.ControlledStepCopyCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -56,6 +57,15 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.False(OriginalMapTraversal.IsBlocked(
             accepted.Definition.WorkingLayout,
             new MapPosition(62, 0)));
+        OriginalMapStepCopyDefinition stepCopy =
+            Assert.IsType<OriginalMapStepCopyDefinition>(
+                accepted.Definition.ControlledStepCopy);
+        Assert.Equal(ContentProfile.PrivateLocal, stepCopy.Identity.Profile);
+        Assert.Equal(new MapId("map3"), stepCopy.Identity.Map);
+        Assert.Equal("Map03s4_StepEvents", stepCopy.Identity.SourceResourceId);
+        Assert.Equal(6, stepCopy.Identity.OneBasedRecordOrdinal);
+        Assert.Equal(new MapPosition(41, 13), stepCopy.Trigger);
+        Assert.Equal((62, 0, 41, 13, 1, 1), Geometry(stepCopy.Copy));
     }
 
     [Fact]
@@ -200,6 +210,27 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         JsonObject blockedSource = SampleDocument();
         LayoutWords(blockedSource)[Index(62, 0)] = OriginalMapTraversal.CollisionMask;
         AssertCode(Admit(blockedSource), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject wrongResource = SampleDocument();
+        ResourceArray(wrongResource, "stepEventTables")[0]!.AsObject()["id"] =
+            "OtherStepEvents";
+        Map(wrongResource, 3)["references"]!.AsObject()["stepEventTable"] =
+            "OtherStepEvents";
+        AssertCode(Admit(wrongResource), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject wrongOrdinal = SampleDocument();
+        StepRecords(wrongOrdinal).RemoveAt(0);
+        AssertCode(Admit(wrongOrdinal), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject duplicateDoor = SampleDocument();
+        JsonArray duplicateRecords = StepRecords(duplicateDoor);
+        duplicateRecords.Add(duplicateRecords[5]!.DeepClone());
+        AssertCode(Admit(duplicateDoor), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject wrongGeometry = SampleDocument();
+        StepRecords(wrongGeometry)[5]!.AsObject()["destination"] =
+            JsonSerializer.SerializeToNode(Point(42, 13));
+        AssertCode(Admit(wrongGeometry), OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
     [Fact]
@@ -245,6 +276,11 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.False(OriginalMapTraversal.IsBlocked(
             accepted.Definition.WorkingLayout,
             new MapPosition(62, 0)));
+        OriginalMapStepCopyDefinition stepCopy =
+            Assert.IsType<OriginalMapStepCopyDefinition>(
+                accepted.Definition.ControlledStepCopy);
+        Assert.Equal(6, stepCopy.Identity.OneBasedRecordOrdinal);
+        Assert.Equal((62, 0, 41, 13, 1, 1), Geometry(stepCopy.Copy));
     }
 
     private static OriginalMapImportResult Admit(JsonObject document)
@@ -410,16 +446,22 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         id = "Map03s4_StepEvents",
                         address = 4,
                         sourceKind = "stepEvents",
-                        records = new object[]
-                        {
-                            new
+                        records = Enumerable.Range(0, 5)
+                            .Select(index => new
+                            {
+                                trigger = Point(index, 60),
+                                source = Point(index, 61),
+                                size = new { width = 1, height = 1 },
+                                destination = Point(index, 62),
+                            })
+                            .Append(new
                             {
                                 trigger = Point(41, 13),
                                 source = Point(62, 0),
                                 size = new { width = 1, height = 1 },
                                 destination = Point(41, 13),
-                            },
-                        },
+                            })
+                            .ToArray(),
                     },
                 },
                 roofEventTables = Resource("Map03s5_RoofEvents"),
@@ -480,6 +522,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static JsonArray LayoutWords(JsonObject document) =>
         ResourceArray(document, "layouts")[0]!.AsObject()["words"]!.AsArray();
+
+    private static JsonArray StepRecords(JsonObject document) =>
+        ResourceArray(document, "stepEventTables")[0]!
+            .AsObject()["records"]!.AsArray();
+
+    private static (int, int, int, int, int, int) Geometry(WorkingMapBlockCopy copy) =>
+        (copy.SourceX, copy.SourceY, copy.DestinationX, copy.DestinationY,
+            copy.Width, copy.Height);
 
     private static int Index(int x, int y) => (y * WorkingMapLayout.ColumnCount) + x;
 }

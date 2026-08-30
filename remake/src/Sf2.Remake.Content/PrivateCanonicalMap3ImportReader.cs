@@ -15,6 +15,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
     public const string TraversalCapability = OriginalMapRuntimeAdmission.TraversalCapability;
     public const string ControlledAdmissionCapability =
         OriginalMapRuntimeAdmission.ControlledAdmissionCapability;
+    public const string ControlledStepCopyCapability =
+        OriginalMapRuntimeAdmission.ControlledStepCopyCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -34,6 +36,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         Capability,
         TraversalCapability,
         ControlledAdmissionCapability,
+        ControlledStepCopyCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -299,7 +302,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             resources,
             "stepEventTables",
             RequiredString(references, "stepEventTable", "maps[3].references.stepEventTable"));
-        ValidateSchoolDoorStep(stepTable, workingLayout);
+        OriginalMapStepCopyDefinition controlledStepCopy =
+            ReadControlledSchoolDoorStep(stepTable, workingLayout);
         ValidateControlledSetup(references, resources);
 
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
@@ -317,6 +321,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             workingLayout,
             traversal,
             controlledAdmission,
+            controlledStepCopy,
             UnsupportedCapabilities);
         OriginalMapImportReceipt receipt = new(
             PackageId,
@@ -699,11 +704,23 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         return areas;
     }
 
-    private static void ValidateSchoolDoorStep(
+    private static OriginalMapStepCopyDefinition ReadControlledSchoolDoorStep(
         JsonElement resource,
         WorkingMapLayout workingLayout)
     {
         RequireExactProperties(resource, "map3.stepEvents", "id", "address", "sourceKind", "records");
+        string resourceId = RequiredString(resource, "id", "map3.stepEvents.id");
+        if (!string.Equals(
+                resourceId,
+                OriginalMapRuntimeAdmission.ControlledStepCopyResourceId,
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.stepEvents.id",
+                "The selected Map 3 step resource has the wrong identity.");
+        }
+
         _ = RequiredNonNegativeInt(resource, "address", "map3.stepEvents.address");
         if (!string.Equals(
                 RequiredString(resource, "sourceKind", "map3.stepEvents.sourceKind"),
@@ -718,6 +735,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
 
         JsonElement records = RequiredProperty(resource, "records", "map3.stepEvents.records");
         RequireArray(records, "map3.stepEvents.records");
+        OriginalMapStepCopyDefinition? selected = null;
         int matchingDoorRecords = 0;
         int index = 0;
         foreach (JsonElement record in records.EnumerateArray())
@@ -740,30 +758,70 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 RequiredProperty(record, "destination", field + ".destination"),
                 field + ".destination",
                 byteSized: true);
-            if (triggerX == 41 &&
-                triggerY == 13 &&
-                sourceX == 62 &&
-                sourceY == 0 &&
-                width == 1 &&
-                height == 1 &&
-                destinationX == 41 &&
-                destinationY == 13)
+            bool isExactDoor =
+                triggerX == OriginalMapRuntimeAdmission.ControlledStepCopyTriggerX &&
+                triggerY == OriginalMapRuntimeAdmission.ControlledStepCopyTriggerY &&
+                sourceX == OriginalMapRuntimeAdmission.ControlledStepCopySourceX &&
+                sourceY == OriginalMapRuntimeAdmission.ControlledStepCopySourceY &&
+                width == OriginalMapRuntimeAdmission.ControlledStepCopyWidth &&
+                height == OriginalMapRuntimeAdmission.ControlledStepCopyHeight &&
+                destinationX == OriginalMapRuntimeAdmission.ControlledStepCopyDestinationX &&
+                destinationY == OriginalMapRuntimeAdmission.ControlledStepCopyDestinationY;
+            if (isExactDoor)
             {
                 matchingDoorRecords++;
+            }
+
+            int oneBasedOrdinal = index + 1;
+            if (oneBasedOrdinal == OriginalMapRuntimeAdmission.ControlledStepCopyRecordOrdinal)
+            {
+                if (!isExactDoor)
+                {
+                    throw Admission(
+                        OriginalMapImportFailureCode.InvalidMapProjection,
+                        field,
+                        "The admitted Map 3 controlled step-copy record drifted.");
+                }
+
+                selected = new OriginalMapStepCopyDefinition(
+                    new OriginalMapStepCopyIdentity(
+                        ContentProfile.PrivateLocal,
+                        new MapId(OriginalMapRuntimeAdmission.MapId),
+                        resourceId,
+                        oneBasedOrdinal),
+                    new MapPosition(triggerX, triggerY),
+                    new WorkingMapBlockCopy(
+                        sourceX,
+                        sourceY,
+                        destinationX,
+                        destinationY,
+                        width,
+                        height));
             }
 
             index++;
         }
 
-        if (matchingDoorRecords != 1 ||
-            !OriginalMapTraversal.IsBlocked(workingLayout, new MapPosition(41, 13)) ||
-            OriginalMapTraversal.IsBlocked(workingLayout, new MapPosition(62, 0)))
+        if (selected is null ||
+            matchingDoorRecords != 1 ||
+            !OriginalMapTraversal.IsBlocked(
+                workingLayout,
+                new MapPosition(
+                    OriginalMapRuntimeAdmission.ControlledStepCopyDestinationX,
+                    OriginalMapRuntimeAdmission.ControlledStepCopyDestinationY)) ||
+            OriginalMapTraversal.IsBlocked(
+                workingLayout,
+                new MapPosition(
+                    OriginalMapRuntimeAdmission.ControlledStepCopySourceX,
+                    OriginalMapRuntimeAdmission.ControlledStepCopySourceY)))
         {
             throw Admission(
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "map3.stepEvents.schoolDoor",
                 "The canonical Map 3 school-door copy or collision polarity drifted.");
         }
+
+        return selected;
     }
 
     private static void ValidateControlledSetup(

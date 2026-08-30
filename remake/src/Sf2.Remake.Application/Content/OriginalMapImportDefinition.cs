@@ -72,6 +72,55 @@ public sealed record OriginalMapControlledAdmission
     public bool NoProgramRequest { get; }
 }
 
+public sealed record OriginalMapStepCopyIdentity
+{
+    public OriginalMapStepCopyIdentity(
+        ContentProfile profile,
+        MapId map,
+        string sourceResourceId,
+        int oneBasedRecordOrdinal)
+    {
+        if (!Enum.IsDefined(profile))
+        {
+            throw new ArgumentOutOfRangeException(nameof(profile));
+        }
+
+        Map = map ?? throw new ArgumentNullException(nameof(map));
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceResourceId);
+        ArgumentOutOfRangeException.ThrowIfLessThan(oneBasedRecordOrdinal, 1);
+        Profile = profile;
+        SourceResourceId = sourceResourceId;
+        OneBasedRecordOrdinal = oneBasedRecordOrdinal;
+    }
+
+    public ContentProfile Profile { get; }
+
+    public MapId Map { get; }
+
+    public string SourceResourceId { get; }
+
+    public int OneBasedRecordOrdinal { get; }
+}
+
+public sealed record OriginalMapStepCopyDefinition
+{
+    public OriginalMapStepCopyDefinition(
+        OriginalMapStepCopyIdentity identity,
+        MapPosition trigger,
+        WorkingMapBlockCopy copy)
+    {
+        Identity = identity ?? throw new ArgumentNullException(nameof(identity));
+        Trigger = trigger ?? throw new ArgumentNullException(nameof(trigger));
+        Copy = copy ?? throw new ArgumentNullException(nameof(copy));
+    }
+
+    public OriginalMapStepCopyIdentity Identity { get; }
+
+    public MapPosition Trigger { get; }
+
+    public WorkingMapBlockCopy Copy { get; }
+}
+
 public sealed class OriginalMapImportDefinition
 {
     private readonly ReadOnlyCollection<string> _unsupportedCapabilities;
@@ -81,6 +130,23 @@ public sealed class OriginalMapImportDefinition
         WorkingMapLayout workingLayout,
         OriginalMapTraversal traversal,
         OriginalMapControlledAdmission controlledAdmission,
+        IEnumerable<string> unsupportedCapabilities)
+        : this(
+            map,
+            workingLayout,
+            traversal,
+            controlledAdmission,
+            controlledStepCopy: null,
+            unsupportedCapabilities)
+    {
+    }
+
+    public OriginalMapImportDefinition(
+        MapId map,
+        WorkingMapLayout workingLayout,
+        OriginalMapTraversal traversal,
+        OriginalMapControlledAdmission controlledAdmission,
+        OriginalMapStepCopyDefinition? controlledStepCopy,
         IEnumerable<string> unsupportedCapabilities)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
@@ -94,6 +160,13 @@ public sealed class OriginalMapImportDefinition
             throw new ArgumentException(
                 "The controlled admission map must equal the imported map.",
                 nameof(controlledAdmission));
+        }
+
+        if (controlledStepCopy is not null && controlledStepCopy.Identity.Map != map)
+        {
+            throw new ArgumentException(
+                "The controlled step-copy map must equal the imported map.",
+                nameof(controlledStepCopy));
         }
 
         if (!traversal.IsWithinActiveArea(controlledAdmission.Position) ||
@@ -127,6 +200,7 @@ public sealed class OriginalMapImportDefinition
         }
 
         _unsupportedCapabilities = copiedUnsupported.AsReadOnly();
+        ControlledStepCopy = controlledStepCopy;
     }
 
     public MapId Map { get; }
@@ -136,6 +210,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapTraversal Traversal { get; }
 
     public OriginalMapControlledAdmission ControlledAdmission { get; }
+
+    public OriginalMapStepCopyDefinition? ControlledStepCopy { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

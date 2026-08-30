@@ -14,6 +14,8 @@ public sealed partial class Map3Root
     public const string PrivateSmokeMarker = "SF2_MAP3_PRIVATE_LOCAL_SMOKE ";
     public const string PrivateViewSmokeMarker =
         "SF2_MAP3_PRIVATE_LOCAL_VIEW_SMOKE ";
+    public const string PrivateStepCopySmokeMarker =
+        "SF2_MAP3_PRIVATE_LOCAL_STEP_COPY_SMOKE ";
     public const string PrivateViewCapability =
         "private-local-map3-traversal-diagnostic-view-v1";
     private const string PrivateStageMarker = "SF2_MAP3_PRIVATE_LOCAL_STAGE ";
@@ -276,8 +278,84 @@ public sealed partial class Map3Root
             },
         };
         GD.Print(PrivateViewSmokeMarker + JsonSerializer.Serialize(viewReceipt));
+        if (!RunPrivateStepCopyDiagnostic())
+        {
+            return;
+        }
+
         TracePrivateStage(enabled: true, "quit-scheduled", smokeStarted);
         GetTree().Quit(0);
+    }
+
+    private bool RunPrivateStepCopyDiagnostic()
+    {
+        if (_session is null)
+        {
+            FailPrivateStartup(
+                "PrivateLocal session was not admitted for the controlled step-copy diagnostic.",
+                runSmoke: true,
+                "private-local");
+            return false;
+        }
+
+        PrivateOriginalMapSessionSnapshot current = _session.PrivateOriginalMapSnapshot;
+        OriginalMapStepCopyDefinition? admitted = current.Definition.ControlledStepCopy;
+        if (admitted is null)
+        {
+            FailPrivateStartup(
+                "The admitted private definition has no controlled step-copy record.",
+                runSmoke: true,
+                "private-local");
+            return false;
+        }
+
+        PrivateOriginalMapLayoutMutationResult result =
+            _session.ApplyPrivateOriginalMapLayoutMutation(
+                new ApplyPrivateOriginalMapLayoutMutationCommand(
+                    admitted.Identity,
+                    current.SimulationStep));
+        if (result is not PrivateOriginalMapLayoutMutationApplied applied)
+        {
+            PrivateOriginalMapLayoutMutationRejected rejected =
+                (PrivateOriginalMapLayoutMutationRejected)result;
+            FailPrivateStartup(
+                $"Controlled step-copy diagnostic rejected ({rejected.Diagnostic.Code}).",
+                runSmoke: true,
+                "private-local");
+            return false;
+        }
+
+        ProjectPrivateSnapshot(applied.Snapshot, "Controlled step-copy diagnostic applied");
+        WorkingMapBlockCopy copy = applied.Receipt.Copy;
+        object receipt = new
+        {
+            status = "Pass",
+            profile = "private-local",
+            capability = OriginalMapRuntimeAdmission.ControlledStepCopyCapability,
+            mapId = applied.Receipt.RecordIdentity.Map.Value,
+            sourceResourceId = applied.Receipt.RecordIdentity.SourceResourceId,
+            recordOrdinal = applied.Receipt.RecordIdentity.OneBasedRecordOrdinal,
+            trigger = new
+            {
+                x = applied.Receipt.Trigger.X,
+                y = applied.Receipt.Trigger.Y,
+            },
+            copy = new
+            {
+                sourceX = copy.SourceX,
+                sourceY = copy.SourceY,
+                destinationX = copy.DestinationX,
+                destinationY = copy.DestinationY,
+                width = copy.Width,
+                height = copy.Height,
+            },
+            beforeCollision = applied.Receipt.BeforeCollision.ToString(),
+            afterCollision = applied.Receipt.AfterCollision.ToString(),
+            simulationStep = applied.Receipt.SimulationStep,
+            disclosure = PrivateBannerText,
+        };
+        GD.Print(PrivateStepCopySmokeMarker + JsonSerializer.Serialize(receipt));
+        return true;
     }
 
     private void FailProfileStartup(Map3RuntimeProfileSelection selection)
