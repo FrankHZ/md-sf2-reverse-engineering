@@ -219,13 +219,18 @@ new typed snapshot and emits a separate local diagnostic receipt. Because `(41,1
 real controlled start's player-centered 12-by-7 crop, this capability does not claim that the initial
 diagnostic pixels change. Near-door viewport coverage uses only project-authored test snapshots.
 
-The same fixed private admission retains the exact ordered `Map03s2_Areas` bounds projection as a
-three-record, path-free traversal definition. Domain selects the first matching admitted record or
-no record; Application derives the current one-based area ordinal only from the authoritative
-traversal plus player position after admission, movement, blocking, layout mutation, and restart.
-Content fail-closes resource, count, order, bounds, or projection-digest drift after the fixed raw
-digest check. Godot only projects that typed result and appends a separate local diagnostic receipt;
-it does not select areas or promote layer origins, parallax, autoscroll, type, music, or presentation.
+The same fixed private admission retains the exact ordered `Map03s2_Areas` source projection as an
+immutable three-record Application catalog. Each record preserves its source resource/ordinal,
+main-layer bounds, second-layer origins, both parallax and autoscroll pairs, opaque layer-type byte,
+and opaque default-music byte in the accepted 30-byte logical shape. The catalog is the sole area
+authority: it derives the Domain traversal from those ordered bounds and resolves the current source
+record from the Domain-selected ordinal. The full three-record projection is admitted only at the
+fixed 91-byte digest boundary; Content fail-closes resource, count, order, bounds, any other source
+field, or projection-digest drift after the fixed raw digest check. Application exposes the current
+immutable source record after admission, movement, blocking, layout mutation, and restart. Existing
+Godot status and receipts remain unchanged and project only the already-typed area ordinal; Godot does
+not parse the catalog, select areas, or apply layer origins, parallax, autoscroll, type, music, or
+presentation semantics.
 
 This one-shot command is an explicit private diagnostic policy, not evidence or implementation of a
 natural step trigger, `OpenDoor`, setup/init/program/flag effect, reach/order, or persistence. It does

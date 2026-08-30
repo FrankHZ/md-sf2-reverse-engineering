@@ -13,8 +13,8 @@ public sealed class OriginalMapImportDefinitionTests
     public void DefinitionOwnsAControlledPrivateImportWithoutRuntimeWiring()
     {
         MapId map = new("map3");
-        OriginalMapTraversal traversal = new(
-            [new OriginalMapTraversalArea(0, 0, 63, 63)]);
+        OriginalMapAreaCatalog areaCatalog = AreaCatalog(
+            new OriginalMapTraversalArea(0, 0, 63, 63));
         WorkingMapLayout layout = new(new ushort[WorkingMapLayout.WordCount]);
         List<string> unsupported = ["natural-route", "presentation"];
         OriginalMapControlledAdmission admission = new(
@@ -28,13 +28,14 @@ public sealed class OriginalMapImportDefinitionTests
         OriginalMapImportDefinition definition = new(
             map,
             layout,
-            traversal,
+            areaCatalog,
             admission,
             unsupported);
         unsupported.Clear();
 
         Assert.Same(layout, definition.WorkingLayout);
-        Assert.Same(traversal, definition.Traversal);
+        Assert.Same(areaCatalog, definition.AreaCatalog);
+        Assert.Same(areaCatalog.Traversal, definition.Traversal);
         Assert.Equal(new MapPosition(56, 3), definition.ControlledAdmission.Position);
         Assert.Equal((byte)3, definition.ControlledAdmission.OpaqueFacing);
         Assert.Equal("ms_map3", definition.ControlledAdmission.SelectedSetup.Value);
@@ -47,8 +48,8 @@ public sealed class OriginalMapImportDefinitionTests
     public void DefinitionRejectsMapMismatchBlockedStartAndOpenCapabilityBoundary()
     {
         MapId map = new("map3");
-        OriginalMapTraversal traversal = new(
-            [new OriginalMapTraversalArea(0, 0, 63, 63)]);
+        OriginalMapAreaCatalog areaCatalog = AreaCatalog(
+            new OriginalMapTraversalArea(0, 0, 63, 63));
         OriginalMapControlledAdmission admission = Admission(map);
         ushort[] blockedWords = new ushort[WorkingMapLayout.WordCount];
         blockedWords[(3 * WorkingMapLayout.ColumnCount) + 56] =
@@ -58,23 +59,59 @@ public sealed class OriginalMapImportDefinitionTests
             () => new OriginalMapImportDefinition(
                 new MapId("other"),
                 new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
-                traversal,
+                areaCatalog,
                 admission,
                 ["unknown"]));
         Assert.Throws<ArgumentException>(
             () => new OriginalMapImportDefinition(
                 map,
                 new WorkingMapLayout(blockedWords),
-                traversal,
+                areaCatalog,
                 admission,
                 ["unknown"]));
         Assert.Throws<ArgumentException>(
             () => new OriginalMapImportDefinition(
                 map,
                 new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
-                traversal,
+                areaCatalog,
                 admission,
                 []));
+    }
+
+    [Fact]
+    public void AreaCatalogOwnsOneOrderedSourceAndDerivesTheOnlyTraversal()
+    {
+        List<OriginalMapAreaDefinition> records =
+        [
+            AreaDefinition(1, new OriginalMapTraversalArea(0, 0, 31, 31)),
+            AreaDefinition(2, new OriginalMapTraversalArea(32, 0, 63, 31)),
+        ];
+        OriginalMapAreaCatalog catalog = new(records);
+        records.Clear();
+
+        Assert.Equal("project-authored-area-table", catalog.ResourceId);
+        Assert.Equal(2, catalog.Records.Count);
+        Assert.Equal(
+            catalog.Records[1],
+            catalog.Resolve(new OriginalMapTraversalAreaSelection(
+                2,
+                catalog.Traversal.ActiveAreas[1])));
+        Assert.Throws<ArgumentException>(() => new OriginalMapAreaCatalog(
+        [
+            AreaDefinition(2, new OriginalMapTraversalArea(0, 0, 31, 31)),
+        ]));
+        Assert.Throws<ArgumentException>(() => new OriginalMapAreaCatalog(
+        [
+            AreaDefinition(1, new OriginalMapTraversalArea(0, 0, 31, 31)),
+            AreaDefinition(
+                2,
+                new OriginalMapTraversalArea(32, 0, 63, 31),
+                "other-area-table"),
+        ]));
+        Assert.Throws<ArgumentException>(() => catalog.Resolve(
+            new OriginalMapTraversalAreaSelection(
+                2,
+                new OriginalMapTraversalArea(32, 1, 63, 31))));
     }
 
     [Fact]
@@ -154,4 +191,24 @@ public sealed class OriginalMapImportDefinitionTests
             new MapSetupId("ms_map3"),
             "ms_map3_InitFunction",
             noProgramRequest: true);
+
+    private static OriginalMapAreaCatalog AreaCatalog(
+        params OriginalMapTraversalArea[] activeAreas) =>
+        new(activeAreas.Select((area, index) => AreaDefinition(index + 1, area)));
+
+    private static OriginalMapAreaDefinition AreaDefinition(
+        int oneBasedRecordOrdinal,
+        OriginalMapTraversalArea area,
+        string resourceId = "project-authored-area-table") =>
+        new(
+            new OriginalMapAreaRecordIdentity(resourceId, oneBasedRecordOrdinal),
+            area,
+            new OriginalMapAreaWordPair(0, 0),
+            new OriginalMapAreaWordPair(0, 0),
+            new OriginalMapAreaWordPair(256, 256),
+            new OriginalMapAreaWordPair(256, 256),
+            new OriginalMapAreaBytePair(0, 0),
+            new OriginalMapAreaBytePair(0, 0),
+            mainLayerType: 0,
+            defaultMusic: 0);
 }

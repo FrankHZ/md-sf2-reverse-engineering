@@ -98,6 +98,9 @@ public sealed record PrivateOriginalMapSessionSnapshot
         throw new InvalidOperationException(
             "The authoritative private original-map position has no admitted active area.");
 
+    public OriginalMapAreaDefinition CurrentAreaDefinition =>
+        Definition.AreaCatalog.Resolve(CurrentArea);
+
     public long SimulationStep { get; }
 
     public OriginalMapTraversalResult? LastTraversal { get; }
@@ -441,13 +444,15 @@ public sealed partial class GameSession
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedAreaProjection(definition.Traversal) ||
+            !OriginalMapRuntimeAdmission.HasExactAcceptedAreaSourceProjection(
+                definition.AreaCatalog) ||
             definition.Traversal.SelectActiveArea(controlled.Position)?.OneBasedRecordOrdinal !=
                 OriginalMapRuntimeAdmission.ControlledStartAreaRecordOrdinal)
         {
             return Diagnostic(
                 OriginalMapImportFailureCode.InvalidMapProjection,
-                "definition.traversalAreas",
-                "The admitted definition does not retain the exact ordered Map 3 area projection.");
+                "definition.areaCatalog",
+                "The admitted definition does not retain the exact ordered Map 3 area source projection.");
         }
 
         if (!OriginalMapRuntimeAdmission.IsExactControlledStepCopy(

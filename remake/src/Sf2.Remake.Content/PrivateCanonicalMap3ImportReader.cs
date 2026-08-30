@@ -19,6 +19,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.ControlledStepCopyCapability;
     public const string CurrentAreaDiagnosticCapability =
         OriginalMapRuntimeAdmission.CurrentAreaDiagnosticCapability;
+    public const string AreaSourceRecordAdmissionCapability =
+        OriginalMapRuntimeAdmission.AreaSourceRecordAdmissionCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -40,6 +42,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         ControlledAdmissionCapability,
         ControlledStepCopyCapability,
         CurrentAreaDiagnosticCapability,
+        AreaSourceRecordAdmissionCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -299,7 +302,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             resources,
             "areaTables",
             RequiredString(references, "areaTable", "maps[3].references.areaTable"));
-        OriginalMapTraversal traversal = ReadActiveAreas(areaTable);
+        OriginalMapAreaCatalog areaCatalog = ReadActiveAreas(areaTable);
 
         JsonElement stepTable = RequiredResource(
             resources,
@@ -322,7 +325,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapImportDefinition definition = new(
             map,
             workingLayout,
-            traversal,
+            areaCatalog,
             controlledAdmission,
             controlledStepCopy,
             UnsupportedCapabilities);
@@ -613,11 +616,12 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         return words;
     }
 
-    private static OriginalMapTraversal ReadActiveAreas(JsonElement resource)
+    private static OriginalMapAreaCatalog ReadActiveAreas(JsonElement resource)
     {
         RequireExactProperties(resource, "map3.areaTable", "id", "address", "sourceKind", "records");
+        string resourceId = RequiredString(resource, "id", "map3.areaTable.id");
         if (!string.Equals(
-                RequiredString(resource, "id", "map3.areaTable.id"),
+                resourceId,
                 OriginalMapRuntimeAdmission.AcceptedAreaResourceId,
                 StringComparison.Ordinal))
         {
@@ -641,7 +645,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
 
         JsonElement records = RequiredProperty(resource, "records", "map3.areaTable.records");
         RequireArray(records, "map3.areaTable.records");
-        List<OriginalMapTraversalArea> areas = [];
+        List<OriginalMapAreaDefinition> areas = [];
         int index = 0;
         foreach (JsonElement record in records.EnumerateArray())
         {
@@ -668,30 +672,56 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 RequiredProperty(record, "mainLayerEnd", field + ".mainLayerEnd"),
                 field + ".mainLayerEnd",
                 byteSized: false);
-            foreach (string pointName in new[]
-                     {
-                         "secondLayerForegroundStart",
-                         "secondLayerBackgroundStart",
-                         "mainLayerParallax",
-                         "secondLayerParallax",
-                     })
-            {
-                _ = ReadPoint(
-                    RequiredProperty(record, pointName, field + "." + pointName),
-                    field + "." + pointName,
-                    byteSized: false);
-            }
-
-            foreach (string pointName in new[] { "mainLayerAutoscroll", "secondLayerAutoscroll" })
-            {
-                _ = ReadPoint(
-                    RequiredProperty(record, pointName, field + "." + pointName),
-                    field + "." + pointName,
-                    byteSized: true);
-            }
-
-            _ = RequiredByte(record, "mainLayerType", field + ".mainLayerType");
-            _ = RequiredByte(record, "defaultMusic", field + ".defaultMusic");
+            (int secondForegroundX, int secondForegroundY) = ReadPoint(
+                RequiredProperty(
+                    record,
+                    "secondLayerForegroundStart",
+                    field + ".secondLayerForegroundStart"),
+                field + ".secondLayerForegroundStart",
+                byteSized: false);
+            (int secondBackgroundX, int secondBackgroundY) = ReadPoint(
+                RequiredProperty(
+                    record,
+                    "secondLayerBackgroundStart",
+                    field + ".secondLayerBackgroundStart"),
+                field + ".secondLayerBackgroundStart",
+                byteSized: false);
+            (int mainParallaxX, int mainParallaxY) = ReadPoint(
+                RequiredProperty(
+                    record,
+                    "mainLayerParallax",
+                    field + ".mainLayerParallax"),
+                field + ".mainLayerParallax",
+                byteSized: false);
+            (int secondParallaxX, int secondParallaxY) = ReadPoint(
+                RequiredProperty(
+                    record,
+                    "secondLayerParallax",
+                    field + ".secondLayerParallax"),
+                field + ".secondLayerParallax",
+                byteSized: false);
+            (int mainAutoscrollX, int mainAutoscrollY) = ReadPoint(
+                RequiredProperty(
+                    record,
+                    "mainLayerAutoscroll",
+                    field + ".mainLayerAutoscroll"),
+                field + ".mainLayerAutoscroll",
+                byteSized: true);
+            (int secondAutoscrollX, int secondAutoscrollY) = ReadPoint(
+                RequiredProperty(
+                    record,
+                    "secondLayerAutoscroll",
+                    field + ".secondLayerAutoscroll"),
+                field + ".secondLayerAutoscroll",
+                byteSized: true);
+            byte mainLayerType = RequiredByte(
+                record,
+                "mainLayerType",
+                field + ".mainLayerType");
+            byte defaultMusic = RequiredByte(
+                record,
+                "defaultMusic",
+                field + ".defaultMusic");
             if (minimumX >= WorkingMapLayout.ColumnCount ||
                 minimumY >= WorkingMapLayout.RowCount ||
                 maximumX >= WorkingMapLayout.ColumnCount ||
@@ -703,7 +733,29 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                     "Map 3 active-area bounds must fit the 64x64 working layout.");
             }
 
-            areas.Add(new OriginalMapTraversalArea(minimumX, minimumY, maximumX, maximumY));
+            areas.Add(new OriginalMapAreaDefinition(
+                new OriginalMapAreaRecordIdentity(resourceId, index + 1),
+                new OriginalMapTraversalArea(minimumX, minimumY, maximumX, maximumY),
+                new OriginalMapAreaWordPair(
+                    checked((ushort)secondForegroundX),
+                    checked((ushort)secondForegroundY)),
+                new OriginalMapAreaWordPair(
+                    checked((ushort)secondBackgroundX),
+                    checked((ushort)secondBackgroundY)),
+                new OriginalMapAreaWordPair(
+                    checked((ushort)mainParallaxX),
+                    checked((ushort)mainParallaxY)),
+                new OriginalMapAreaWordPair(
+                    checked((ushort)secondParallaxX),
+                    checked((ushort)secondParallaxY)),
+                new OriginalMapAreaBytePair(
+                    checked((byte)mainAutoscrollX),
+                    checked((byte)mainAutoscrollY)),
+                new OriginalMapAreaBytePair(
+                    checked((byte)secondAutoscrollX),
+                    checked((byte)secondAutoscrollY)),
+                mainLayerType,
+                defaultMusic));
             index++;
         }
 
@@ -715,16 +767,17 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 "Map 3 requires the exact accepted ordered area-record count.");
         }
 
-        OriginalMapTraversal traversal = new(areas);
-        if (!OriginalMapRuntimeAdmission.HasExactAcceptedAreaProjection(traversal))
+        OriginalMapAreaCatalog catalog = new(areas);
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedAreaProjection(catalog.Traversal) ||
+            !OriginalMapRuntimeAdmission.HasExactAcceptedAreaSourceProjection(catalog))
         {
             throw Admission(
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "map3.areaTable.records",
-                "The selected Map 3 area resource does not retain the accepted ordered bounds projection.");
+                "The selected Map 3 area resource does not retain the accepted ordered full-record projection.");
         }
 
-        return traversal;
+        return catalog;
     }
 
     private static OriginalMapStepCopyDefinition ReadControlledSchoolDoorStep(

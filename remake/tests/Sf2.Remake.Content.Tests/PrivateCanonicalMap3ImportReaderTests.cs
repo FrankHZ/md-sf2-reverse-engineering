@@ -41,12 +41,19 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.ControlledAdmissionCapability,
                 PrivateCanonicalMap3ImportReader.ControlledStepCopyCapability,
                 PrivateCanonicalMap3ImportReader.CurrentAreaDiagnosticCapability,
+                PrivateCanonicalMap3ImportReader.AreaSourceRecordAdmissionCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
         Assert.Equal(WorkingMapLayout.WordCount, accepted.Definition.WorkingLayout.Words.Count);
         Assert.Equal(new MapPosition(56, 3), accepted.Definition.ControlledAdmission.Position);
         Assert.Equal(3, accepted.Definition.Traversal.ActiveAreas.Count);
+        Assert.Equal("Map03s2_Areas", accepted.Definition.AreaCatalog.ResourceId);
+        Assert.Equal(3, accepted.Definition.AreaCatalog.Records.Count);
+        Assert.Equal(
+            new OriginalMapAreaWordPair(256, 256),
+            accepted.Definition.AreaCatalog.Records[1].MainLayerParallax);
+        Assert.Equal((byte)8, accepted.Definition.AreaCatalog.Records[1].DefaultMusic);
         Assert.Equal(
             2,
             accepted.Definition.Traversal.SelectActiveArea(
@@ -240,7 +247,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     }
 
     [Fact]
-    public void AreaResourceIdentityCountOrderAndBoundsFailClosed()
+    public void AreaResourceIdentityCountOrderBoundsAndFullSourceRecordFailClosed()
     {
         JsonObject wrongResource = SampleDocument();
         ResourceArray(wrongResource, "areaTables")[0]!.AsObject()["id"] = "OtherAreas";
@@ -267,6 +274,15 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         AreaRecords(outOfBounds)[2]!.AsObject()["mainLayerEnd"] =
             JsonSerializer.SerializeToNode(Point(64, 19));
         AssertCode(Admit(outOfBounds), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject changedParallax = SampleDocument();
+        AreaRecords(changedParallax)[1]!.AsObject()["mainLayerParallax"] =
+            JsonSerializer.SerializeToNode(Point(255, 256));
+        AssertCode(Admit(changedParallax), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject changedOpaqueMusic = SampleDocument();
+        AreaRecords(changedOpaqueMusic)[1]!.AsObject()["defaultMusic"] = 9;
+        AssertCode(Admit(changedOpaqueMusic), OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
     [Fact]
@@ -309,11 +325,19 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Contains(
             PrivateCanonicalMap3ImportReader.CurrentAreaDiagnosticCapability,
             accepted.Receipt.Capabilities);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.AreaSourceRecordAdmissionCapability,
+            accepted.Receipt.Capabilities);
         Assert.Equal(3, accepted.Definition.Traversal.ActiveAreas.Count);
         Assert.Equal(
             2,
             accepted.Definition.Traversal.SelectActiveArea(
                 accepted.Definition.ControlledAdmission.Position)!.OneBasedRecordOrdinal);
+        Assert.Equal(
+            "B60D96CC0359E390A8C26FDA9CE3313023ACB4774902CD99E12CB798041EB225",
+            OriginalMapRuntimeAdmission.AcceptedAreaSourceProjectionDigest);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedAreaSourceProjection(
+            accepted.Definition.AreaCatalog));
         ushort collisionClass = (ushort)(
             accepted.Definition.WorkingLayout[41, 13] & OriginalMapTraversal.CollisionMask);
         Assert.Equal(OriginalMapTraversal.CollisionMask, collisionClass);
@@ -466,7 +490,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         sourceKind = "areas",
                         records = new[]
                         {
-                            AreaRecord(0, 0, 50, 31),
+                            AreaRecord(0, 0, 50, 31, secondForegroundY: 32),
                             AreaRecord(51, 0, 61, 9),
                             AreaRecord(51, 10, 61, 19),
                         },
@@ -546,19 +570,24 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static object Point(int x, int y) => new { x, y };
 
-    private static object AreaRecord(int minimumX, int minimumY, int maximumX, int maximumY) =>
+    private static object AreaRecord(
+        int minimumX,
+        int minimumY,
+        int maximumX,
+        int maximumY,
+        int secondForegroundY = 0) =>
         new
         {
             mainLayerStart = Point(minimumX, minimumY),
             mainLayerEnd = Point(maximumX, maximumY),
-            secondLayerForegroundStart = Point(0, 0),
+            secondLayerForegroundStart = Point(0, secondForegroundY),
             secondLayerBackgroundStart = Point(0, 0),
-            mainLayerParallax = Point(0, 0),
-            secondLayerParallax = Point(0, 0),
+            mainLayerParallax = Point(256, 256),
+            secondLayerParallax = Point(256, 256),
             mainLayerAutoscroll = Point(0, 0),
             secondLayerAutoscroll = Point(0, 0),
             mainLayerType = 0,
-            defaultMusic = 0,
+            defaultMusic = 8,
         };
 
     private static JsonObject Map(JsonObject document, int mapId) =>

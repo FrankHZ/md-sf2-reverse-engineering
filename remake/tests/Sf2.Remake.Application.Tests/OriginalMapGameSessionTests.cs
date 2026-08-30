@@ -25,6 +25,10 @@ public sealed class OriginalMapGameSessionTests
         Assert.Equal(
             OriginalMapRuntimeAdmission.ControlledStartAreaRecordOrdinal,
             started.Session.PrivateOriginalMapSnapshot.CurrentArea.OneBasedRecordOrdinal);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.ControlledStartAreaRecordOrdinal,
+            started.Session.PrivateOriginalMapSnapshot.CurrentAreaDefinition
+                .Identity.OneBasedRecordOrdinal);
         Assert.Equal(0, started.Session.PrivateOriginalMapSnapshot.SimulationStep);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastTraversal);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastLayoutMutation);
@@ -145,6 +149,9 @@ public sealed class OriginalMapGameSessionTests
             GameSession.StartPrivateOriginalMap(source, Request())).Session;
 
         Assert.Equal(2, session.PrivateOriginalMapSnapshot.CurrentArea.OneBasedRecordOrdinal);
+        Assert.Same(
+            session.PrivateOriginalMapSnapshot.Definition.AreaCatalog.Records[1],
+            session.PrivateOriginalMapSnapshot.CurrentAreaDefinition);
         for (int index = 0; index < 6; index++)
         {
             Assert.Equal(
@@ -156,22 +163,28 @@ public sealed class OriginalMapGameSessionTests
         PrivateOriginalMapSessionSnapshot crossed = session.PrivateOriginalMapSnapshot;
         Assert.Equal(new MapPosition(50, 3), crossed.PlayerPosition);
         Assert.Equal(1, crossed.CurrentArea.OneBasedRecordOrdinal);
+        Assert.Same(crossed.Definition.AreaCatalog.Records[0], crossed.CurrentAreaDefinition);
 
         PrivateOriginalMapMoveApplied blocked = session.ApplyPrivateOriginalMap(
             new MoveExplorationCommand(ExplorationDirection.West));
         Assert.Equal(OriginalMapTraversalOutcome.BlockedByCollision, blocked.Traversal.Outcome);
         Assert.Equal(1, blocked.Snapshot.CurrentArea.OneBasedRecordOrdinal);
+        Assert.Same(crossed.CurrentAreaDefinition, blocked.Snapshot.CurrentAreaDefinition);
 
         PrivateOriginalMapLayoutMutationApplied mutated =
             Assert.IsType<PrivateOriginalMapLayoutMutationApplied>(
                 session.ApplyPrivateOriginalMapLayoutMutation(MutationCommand(blocked.Snapshot)));
         Assert.Equal(1, mutated.Snapshot.CurrentArea.OneBasedRecordOrdinal);
+        Assert.Same(crossed.CurrentAreaDefinition, mutated.Snapshot.CurrentAreaDefinition);
         Assert.Equal(blocked.Snapshot.PlayerPosition, mutated.Snapshot.PlayerPosition);
 
         GameSession restarted = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
             GameSession.StartPrivateOriginalMap(source, Request())).Session;
         Assert.Equal(new MapPosition(56, 3), restarted.PrivateOriginalMapSnapshot.PlayerPosition);
         Assert.Equal(2, restarted.PrivateOriginalMapSnapshot.CurrentArea.OneBasedRecordOrdinal);
+        Assert.Same(
+            restarted.PrivateOriginalMapSnapshot.Definition.AreaCatalog.Records[1],
+            restarted.PrivateOriginalMapSnapshot.CurrentAreaDefinition);
     }
 
     [Fact]
@@ -445,7 +458,7 @@ public sealed class OriginalMapGameSessionTests
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         WorkingMapLayout layout = new(EmptyWords());
-        OriginalMapTraversal traversal = AcceptedTraversal();
+        OriginalMapAreaCatalog areaCatalog = AcceptedAreaCatalog();
         OriginalMapControlledAdmission controlled = new(
             map,
             new MapPosition(
@@ -458,13 +471,13 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapImportDefinition missing = new(
             map,
             layout,
-            traversal,
+            areaCatalog,
             controlled,
             ["natural-route-and-effects-unknown"]);
         OriginalMapImportDefinition wrongIdentity = new(
             map,
             layout,
-            traversal,
+            areaCatalog,
             controlled,
             new OriginalMapStepCopyDefinition(
                 new OriginalMapStepCopyIdentity(
@@ -493,13 +506,22 @@ public sealed class OriginalMapGameSessionTests
         changedBounds[0] = new OriginalMapTraversalArea(0, 0, 49, 31);
         OriginalMapTraversalArea[] reordered = AcceptedAreas();
         (reordered[0], reordered[1]) = (reordered[1], reordered[0]);
+        OriginalMapAreaDefinition[] changedSourceRecords = AcceptedAreaDefinitions();
+        changedSourceRecords[1] = AcceptedAreaDefinition(
+            oneBasedRecordOrdinal: 2,
+            area: changedSourceRecords[1].MainLayerBounds,
+            defaultMusic: 9);
 
         AssertRejectedReceipt(
-            Definition(EmptyWords(), changedBounds),
+            Definition(EmptyWords(), AcceptedAreaCatalog(changedBounds)),
             Receipt(),
             OriginalMapImportFailureCode.InvalidMapProjection);
         AssertRejectedReceipt(
-            Definition(EmptyWords(), reordered),
+            Definition(EmptyWords(), AcceptedAreaCatalog(reordered)),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), new OriginalMapAreaCatalog(changedSourceRecords)),
             Receipt(),
             OriginalMapImportFailureCode.InvalidMapProjection);
     }
@@ -541,7 +563,7 @@ public sealed class OriginalMapGameSessionTests
 
     private static OriginalMapImportDefinition Definition(
         ushort[] words,
-        IEnumerable<OriginalMapTraversalArea>? activeAreas = null)
+        OriginalMapAreaCatalog? areaCatalog = null)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -556,7 +578,7 @@ public sealed class OriginalMapGameSessionTests
         return new OriginalMapImportDefinition(
             map,
             new WorkingMapLayout(admittedWords),
-            new OriginalMapTraversal(activeAreas ?? AcceptedAreas()),
+            areaCatalog ?? AcceptedAreaCatalog(),
             new OriginalMapControlledAdmission(
                 map,
                 new MapPosition(
@@ -570,14 +592,40 @@ public sealed class OriginalMapGameSessionTests
             ["natural-route-and-effects-unknown"]);
     }
 
-    private static OriginalMapTraversal AcceptedTraversal() => new(AcceptedAreas());
-
     private static OriginalMapTraversalArea[] AcceptedAreas() =>
     [
         new OriginalMapTraversalArea(0, 0, 50, 31),
         new OriginalMapTraversalArea(51, 0, 61, 9),
         new OriginalMapTraversalArea(51, 10, 61, 19),
     ];
+
+    private static OriginalMapAreaCatalog AcceptedAreaCatalog(
+        IEnumerable<OriginalMapTraversalArea>? activeAreas = null) =>
+        new((activeAreas ?? AcceptedAreas()).Select(
+            (area, index) => AcceptedAreaDefinition(index + 1, area)));
+
+    private static OriginalMapAreaDefinition[] AcceptedAreaDefinitions() =>
+        AcceptedAreas()
+            .Select((area, index) => AcceptedAreaDefinition(index + 1, area))
+            .ToArray();
+
+    private static OriginalMapAreaDefinition AcceptedAreaDefinition(
+        int oneBasedRecordOrdinal,
+        OriginalMapTraversalArea area,
+        byte defaultMusic = 8) =>
+        new(
+            new OriginalMapAreaRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedAreaResourceId,
+                oneBasedRecordOrdinal),
+            area,
+            new OriginalMapAreaWordPair(0, oneBasedRecordOrdinal == 1 ? (ushort)32 : (ushort)0),
+            new OriginalMapAreaWordPair(0, 0),
+            new OriginalMapAreaWordPair(256, 256),
+            new OriginalMapAreaWordPair(256, 256),
+            new OriginalMapAreaBytePair(0, 0),
+            new OriginalMapAreaBytePair(0, 0),
+            mainLayerType: 0,
+            defaultMusic);
 
     private static OriginalMapStepCopyDefinition ControlledStepCopy(MapId map) =>
         new(
