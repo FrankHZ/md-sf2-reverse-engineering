@@ -17,6 +17,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.ControlledAdmissionCapability;
     public const string ControlledStepCopyCapability =
         OriginalMapRuntimeAdmission.ControlledStepCopyCapability;
+    public const string CurrentAreaDiagnosticCapability =
+        OriginalMapRuntimeAdmission.CurrentAreaDiagnosticCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -37,6 +39,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         TraversalCapability,
         ControlledAdmissionCapability,
         ControlledStepCopyCapability,
+        CurrentAreaDiagnosticCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -296,7 +299,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             resources,
             "areaTables",
             RequiredString(references, "areaTable", "maps[3].references.areaTable"));
-        OriginalMapTraversal traversal = new(ReadActiveAreas(areaTable));
+        OriginalMapTraversal traversal = ReadActiveAreas(areaTable);
 
         JsonElement stepTable = RequiredResource(
             resources,
@@ -610,9 +613,20 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         return words;
     }
 
-    private static IReadOnlyList<OriginalMapTraversalArea> ReadActiveAreas(JsonElement resource)
+    private static OriginalMapTraversal ReadActiveAreas(JsonElement resource)
     {
         RequireExactProperties(resource, "map3.areaTable", "id", "address", "sourceKind", "records");
+        if (!string.Equals(
+                RequiredString(resource, "id", "map3.areaTable.id"),
+                OriginalMapRuntimeAdmission.AcceptedAreaResourceId,
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.areaTable.id",
+                "The selected Map 3 area resource does not retain the accepted identity.");
+        }
+
         _ = RequiredNonNegativeInt(resource, "address", "map3.areaTable.address");
         if (!string.Equals(
                 RequiredString(resource, "sourceKind", "map3.areaTable.sourceKind"),
@@ -693,15 +707,24 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             index++;
         }
 
-        if (areas.Count == 0)
+        if (areas.Count != OriginalMapRuntimeAdmission.AcceptedAreaRecordCount)
         {
             throw Admission(
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "map3.areaTable.records",
-                "Map 3 requires at least one exact active area.");
+                "Map 3 requires the exact accepted ordered area-record count.");
         }
 
-        return areas;
+        OriginalMapTraversal traversal = new(areas);
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedAreaProjection(traversal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.areaTable.records",
+                "The selected Map 3 area resource does not retain the accepted ordered bounds projection.");
+        }
+
+        return traversal;
     }
 
     private static OriginalMapStepCopyDefinition ReadControlledSchoolDoorStep(

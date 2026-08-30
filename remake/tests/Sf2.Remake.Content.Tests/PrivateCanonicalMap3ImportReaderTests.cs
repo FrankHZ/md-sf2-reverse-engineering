@@ -40,11 +40,17 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.TraversalCapability,
                 PrivateCanonicalMap3ImportReader.ControlledAdmissionCapability,
                 PrivateCanonicalMap3ImportReader.ControlledStepCopyCapability,
+                PrivateCanonicalMap3ImportReader.CurrentAreaDiagnosticCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
         Assert.Equal(WorkingMapLayout.WordCount, accepted.Definition.WorkingLayout.Words.Count);
         Assert.Equal(new MapPosition(56, 3), accepted.Definition.ControlledAdmission.Position);
+        Assert.Equal(3, accepted.Definition.Traversal.ActiveAreas.Count);
+        Assert.Equal(
+            2,
+            accepted.Definition.Traversal.SelectActiveArea(
+                accepted.Definition.ControlledAdmission.Position)!.OneBasedRecordOrdinal);
         Assert.Equal("ms_map3", accepted.Definition.ControlledAdmission.SelectedSetup.Value);
         Assert.Equal("ms_map3_InitFunction",
             accepted.Definition.ControlledAdmission.SelectedInitIdentity);
@@ -234,6 +240,36 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     }
 
     [Fact]
+    public void AreaResourceIdentityCountOrderAndBoundsFailClosed()
+    {
+        JsonObject wrongResource = SampleDocument();
+        ResourceArray(wrongResource, "areaTables")[0]!.AsObject()["id"] = "OtherAreas";
+        Map(wrongResource, 3)["references"]!.AsObject()["areaTable"] = "OtherAreas";
+        AssertCode(Admit(wrongResource), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject wrongCount = SampleDocument();
+        AreaRecords(wrongCount).RemoveAt(2);
+        AssertCode(Admit(wrongCount), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject reordered = SampleDocument();
+        JsonArray reorderedRecords = AreaRecords(reordered);
+        JsonNode first = reorderedRecords[0]!.DeepClone();
+        reorderedRecords[0] = reorderedRecords[1]!.DeepClone();
+        reorderedRecords[1] = first;
+        AssertCode(Admit(reordered), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject changedBounds = SampleDocument();
+        AreaRecords(changedBounds)[0]!.AsObject()["mainLayerEnd"] =
+            JsonSerializer.SerializeToNode(Point(49, 31));
+        AssertCode(Admit(changedBounds), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject outOfBounds = SampleDocument();
+        AreaRecords(outOfBounds)[2]!.AsObject()["mainLayerEnd"] =
+            JsonSerializer.SerializeToNode(Point(64, 19));
+        AssertCode(Admit(outOfBounds), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
     public void MissingPrivatePathReturnsOnlyAPathFreeTypedDiagnostic()
     {
         string missing = Path.Combine(
@@ -270,6 +306,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(AcceptedCanonicalDigest, accepted.Receipt.ContentDigest);
         Assert.Equal(AcceptedDecodedLayoutDigest, accepted.Receipt.DecodedLayoutDigest);
         Assert.Equal(AcceptedCollisionDigest, accepted.Receipt.CollisionProjectionDigest);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.CurrentAreaDiagnosticCapability,
+            accepted.Receipt.Capabilities);
+        Assert.Equal(3, accepted.Definition.Traversal.ActiveAreas.Count);
+        Assert.Equal(
+            2,
+            accepted.Definition.Traversal.SelectActiveArea(
+                accepted.Definition.ControlledAdmission.Position)!.OneBasedRecordOrdinal);
         ushort collisionClass = (ushort)(
             accepted.Definition.WorkingLayout[41, 13] & OriginalMapTraversal.CollisionMask);
         Assert.Equal(OriginalMapTraversal.CollisionMask, collisionClass);
@@ -420,21 +464,11 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         id = "Map03s2_Areas",
                         address = 3,
                         sourceKind = "areas",
-                        records = new object[]
+                        records = new[]
                         {
-                            new
-                            {
-                                mainLayerStart = Point(0, 0),
-                                mainLayerEnd = Point(63, 63),
-                                secondLayerForegroundStart = Point(0, 0),
-                                secondLayerBackgroundStart = Point(0, 0),
-                                mainLayerParallax = Point(0, 0),
-                                secondLayerParallax = Point(0, 0),
-                                mainLayerAutoscroll = Point(0, 0),
-                                secondLayerAutoscroll = Point(0, 0),
-                                mainLayerType = 0,
-                                defaultMusic = 0,
-                            },
+                            AreaRecord(0, 0, 50, 31),
+                            AreaRecord(51, 0, 61, 9),
+                            AreaRecord(51, 10, 61, 19),
                         },
                     },
                 },
@@ -512,6 +546,21 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static object Point(int x, int y) => new { x, y };
 
+    private static object AreaRecord(int minimumX, int minimumY, int maximumX, int maximumY) =>
+        new
+        {
+            mainLayerStart = Point(minimumX, minimumY),
+            mainLayerEnd = Point(maximumX, maximumY),
+            secondLayerForegroundStart = Point(0, 0),
+            secondLayerBackgroundStart = Point(0, 0),
+            mainLayerParallax = Point(0, 0),
+            secondLayerParallax = Point(0, 0),
+            mainLayerAutoscroll = Point(0, 0),
+            secondLayerAutoscroll = Point(0, 0),
+            mainLayerType = 0,
+            defaultMusic = 0,
+        };
+
     private static JsonObject Map(JsonObject document, int mapId) =>
         document["maps"]!.AsArray()
             .Select(node => node!.AsObject())
@@ -519,6 +568,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static JsonArray ResourceArray(JsonObject document, string name) =>
         document["resources"]!.AsObject()[name]!.AsArray();
+
+    private static JsonArray AreaRecords(JsonObject document) =>
+        ResourceArray(document, "areaTables")[0]!.AsObject()["records"]!.AsArray();
 
     private static JsonArray LayoutWords(JsonObject document) =>
         ResourceArray(document, "layouts")[0]!.AsObject()["words"]!.AsArray();

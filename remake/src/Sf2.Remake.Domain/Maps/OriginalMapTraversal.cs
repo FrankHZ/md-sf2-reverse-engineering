@@ -47,6 +47,26 @@ public sealed record OriginalMapTraversalArea
     }
 }
 
+public sealed record OriginalMapTraversalAreaSelection
+{
+    public OriginalMapTraversalAreaSelection(
+        int oneBasedRecordOrdinal,
+        OriginalMapTraversalArea area)
+    {
+        if (oneBasedRecordOrdinal <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(oneBasedRecordOrdinal));
+        }
+
+        OneBasedRecordOrdinal = oneBasedRecordOrdinal;
+        Area = area ?? throw new ArgumentNullException(nameof(area));
+    }
+
+    public int OneBasedRecordOrdinal { get; }
+
+    public OriginalMapTraversalArea Area { get; }
+}
+
 public enum OriginalMapTraversalOutcome
 {
     Moved,
@@ -155,8 +175,22 @@ public sealed class OriginalMapTraversal
 
     public bool IsWithinActiveArea(MapPosition position)
     {
+        return SelectActiveArea(position) is not null;
+    }
+
+    public OriginalMapTraversalAreaSelection? SelectActiveArea(MapPosition position)
+    {
         ArgumentNullException.ThrowIfNull(position);
-        return _activeAreas.Any(area => area.Contains(position));
+        for (int index = 0; index < _activeAreas.Count; index++)
+        {
+            OriginalMapTraversalArea area = _activeAreas[index];
+            if (area.Contains(position))
+            {
+                return new OriginalMapTraversalAreaSelection(index + 1, area);
+            }
+        }
+
+        return null;
     }
 
     public static bool IsBlocked(WorkingMapLayout layout, MapPosition position)

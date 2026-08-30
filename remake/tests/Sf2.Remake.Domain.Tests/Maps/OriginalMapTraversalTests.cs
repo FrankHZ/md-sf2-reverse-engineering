@@ -51,6 +51,28 @@ public sealed class OriginalMapTraversalTests
         Assert.Equal(new MapPosition(0, 0), result.Position);
     }
 
+    [Fact]
+    public void ActiveAreaSelectionUsesFirstAdmittedRecordOrderOrReturnsNull()
+    {
+        OriginalMapTraversalArea first = new(0, 0, 10, 10);
+        OriginalMapTraversalArea second = new(5, 5, 15, 15);
+        OriginalMapTraversal traversal = Traversal(first, second);
+
+        OriginalMapTraversalAreaSelection overlap =
+            Assert.IsType<OriginalMapTraversalAreaSelection>(
+                traversal.SelectActiveArea(new MapPosition(7, 7)));
+        OriginalMapTraversalAreaSelection secondOnly =
+            Assert.IsType<OriginalMapTraversalAreaSelection>(
+                traversal.SelectActiveArea(new MapPosition(12, 12)));
+
+        Assert.Equal(1, overlap.OneBasedRecordOrdinal);
+        Assert.Same(first, overlap.Area);
+        Assert.Equal(2, secondOnly.OneBasedRecordOrdinal);
+        Assert.Same(second, secondOnly.Area);
+        Assert.Null(traversal.SelectActiveArea(new MapPosition(20, 20)));
+        Assert.False(traversal.IsWithinActiveArea(new MapPosition(20, 20)));
+    }
+
     [Theory]
     [InlineData(0x8000, ExplorationDirection.East, 11, 9)]
     [InlineData(0x8000, ExplorationDirection.West, 9, 11)]

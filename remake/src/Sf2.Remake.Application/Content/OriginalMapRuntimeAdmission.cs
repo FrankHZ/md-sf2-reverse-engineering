@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Security.Cryptography;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.Application.Content;
@@ -19,6 +20,11 @@ public static class OriginalMapRuntimeAdmission
         "6BC4D0BF350242EA908A5ED00FFFDF68F6428E7A5189B23AE189CD24BC220446";
     public const string AcceptedCollisionProjectionDigest =
         "A9A7BACA8952DCC50CA90CD0985512C7F2393184FEA45F4E85E397422EAC9433";
+    public const string AcceptedAreaResourceId = "Map03s2_Areas";
+    public const int AcceptedAreaRecordCount = 3;
+    public const int ControlledStartAreaRecordOrdinal = 2;
+    public const string AcceptedAreaProjectionDigest =
+        "A9C712C1E02FB4A03CA60E68FF3AEFE6CC71A9E07A986E0CEB46C9CD9C81A2A6";
 
     public const string MapId = "map3";
     public const int StartX = 56;
@@ -44,6 +50,8 @@ public static class OriginalMapRuntimeAdmission
         "controlled-map3-import-definition-v1";
     public const string ControlledStepCopyCapability =
         "private-local-map3-controlled-step-copy-diagnostic-v1";
+    public const string CurrentAreaDiagnosticCapability =
+        "private-local-map3-current-area-diagnostic-v1";
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
@@ -53,6 +61,7 @@ public static class OriginalMapRuntimeAdmission
                 TraversalCapability,
                 ControlledAdmissionCapability,
                 ControlledStepCopyCapability,
+                CurrentAreaDiagnosticCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -114,5 +123,31 @@ public static class OriginalMapRuntimeAdmission
             copy.DestinationY == ControlledStepCopyDestinationY &&
             copy.Width == ControlledStepCopyWidth &&
             copy.Height == ControlledStepCopyHeight;
+    }
+
+    public static bool HasExactAcceptedAreaProjection(OriginalMapTraversal traversal)
+    {
+        ArgumentNullException.ThrowIfNull(traversal);
+        if (traversal.ActiveAreas.Count != AcceptedAreaRecordCount)
+        {
+            return false;
+        }
+
+        Span<byte> projection = stackalloc byte[1 + (AcceptedAreaRecordCount * 4)];
+        projection[0] = AcceptedAreaRecordCount;
+        for (int index = 0; index < traversal.ActiveAreas.Count; index++)
+        {
+            OriginalMapTraversalArea area = traversal.ActiveAreas[index];
+            int offset = 1 + (index * 4);
+            projection[offset] = checked((byte)area.MinimumX);
+            projection[offset + 1] = checked((byte)area.MinimumY);
+            projection[offset + 2] = checked((byte)area.MaximumX);
+            projection[offset + 3] = checked((byte)area.MaximumY);
+        }
+
+        return string.Equals(
+            Convert.ToHexString(SHA256.HashData(projection)),
+            AcceptedAreaProjectionDigest,
+            StringComparison.OrdinalIgnoreCase);
     }
 }
