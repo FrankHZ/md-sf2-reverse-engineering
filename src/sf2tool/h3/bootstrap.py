@@ -91,8 +91,8 @@ PROFILES = {
         name="original-reference",
         battle01_compatible=False,
         isolation_reason=(
-            "The transport-only replay capability starts from power-on with a frozen BK2 and "
-            "does not use any existing H3 bootstrap seam."
+            "Original-reference transport and scenario-API preflight use declared power-on "
+            "contracts and do not use an existing H3 bootstrap seam."
         ),
     ),
 }
@@ -182,7 +182,10 @@ WITCH_MENU_OBSERVERS = (
 )
 
 SOUND_DRIVER_OBSERVERS = ("tools/bizhawk/sound_timing_observer.lua",)
-ORIGINAL_REFERENCE_OBSERVERS = ("tools/bizhawk/original_reference_replay_observer.lua",)
+ORIGINAL_REFERENCE_OBSERVERS = (
+    "tools/bizhawk/original_reference_replay_observer.lua",
+    "tools/bizhawk/original_reference_scenario_observer.lua",
+)
 
 
 def _profiles(profile: str, paths: tuple[str, ...]) -> dict[str, str]:
@@ -574,6 +577,12 @@ COMMAND_LAUNCHES = {
         "run_original_reference_replay",
         "original-reference",
         _launch("tools/bizhawk/original_reference_replay_observer.lua"),
+    ),
+    "original-reference-replay-scenario-api": _command(
+        "sf2tool.h3.original_reference_scenario",
+        "run_original_reference_scenario",
+        "original-reference",
+        _launch("tools/bizhawk/original_reference_scenario_observer.lua", 0),
     ),
 }
 

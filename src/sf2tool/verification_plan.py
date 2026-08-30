@@ -152,6 +152,12 @@ H3_PROFILE_PARTITIONS = {
     "sound-driver": "h3-sound",
     "original-reference": "h3-original-reference",
 }
+ORIGINAL_REFERENCE_PREFLIGHT_COMMANDS = frozenset(
+    {
+        "original-reference-replay-capability",
+        "original-reference-replay-scenario-api",
+    }
+)
 
 H2_MODULE_ALIASES = {
     "common-maps": "maps",
@@ -184,6 +190,11 @@ H3_MODULE_COMMANDS: dict[str, tuple[str, ...]] = {
         for command, launch in COMMAND_LAUNCHES.items()
     ).items()
 }
+H3_MODULE_COMMANDS["original_reference_transport"] = tuple(
+    sorted(ORIGINAL_REFERENCE_PREFLIGHT_COMMANDS)
+)
+
+
 def _commands(
     prefix: str, commands: tuple[str, ...], *, preflight_only: bool = False
 ) -> tuple[str, ...]:
@@ -192,9 +203,8 @@ def _commands(
 
 
 def _h3_command(command: str) -> str:
-    launch = COMMAND_LAUNCHES[command]
     return _commands(
-        "h3", (command,), preflight_only=launch.profile == "original-reference"
+        "h3", (command,), preflight_only=command in ORIGINAL_REFERENCE_PREFLIGHT_COMMANDS
     )[0]
 
 
@@ -262,7 +272,11 @@ PARTITIONS = (
                         if launch.profile == profile
                     )
                 ),
-                preflight_only=profile == "original-reference",
+                preflight_only=all(
+                    command in ORIGINAL_REFERENCE_PREFLIGHT_COMMANDS
+                    for command, launch in COMMAND_LAUNCHES.items()
+                    if launch.profile == profile
+                ),
             ),
             parallel_safe=False,
             resource_lock="bizhawk-original-runtime",

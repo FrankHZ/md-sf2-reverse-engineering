@@ -93,6 +93,19 @@ verification planner emits that preflight form for this partition.
   Console clean state. This capability makes no route, map, zone, battle, victory, endpoint, capture,
   R4b, or H4 claim.
 
+## Scenario API compatibility
+
+The reusable transport kernel preserves this capability's public fixture identity, candidate identity,
+preflight receipt, canonical UTF-8/LF observer transport, global ordinal-1 lineage, and consumed
+private-ledger boundary byte-semantically. `tests/python/test_original_reference_replay.py` freezes
+those properties with synthetic public inputs and does not create, read, or mutate the private ledger.
+
+`original-reference-replay-scenario-api` is a separate data-only protocol facade. Its required
+preflight validates only tracked descriptor identities, source-backed static fixture identities, and a
+passive observer policy; it does not read this capability's candidate, receipt, or ledger and cannot
+create a scenario ledger. It adds no counter, research-index registration, R2b observation, natural
+continuity fact, or H4 result.
+
 ## Reproduction
 
 Run `uv run sf2 h3 original-reference-replay-capability --preflight-only`. The focused public test

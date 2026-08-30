@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "scenarioApiId": "sf2-original-reference-replay-scenario-api-v1",
+  "scenarioId": "generic-protocol-sample",
+  "caseId": "generic-protocol-preflight",
+  "classification": "Unknown",
+  "staticFixtures": [
+    {
+      "fixtureId": "sf2-map3-battle01-turn-finalization-static-v1",
+      "sha256": "4688D88BB52580BCC326DC264F8A86DF4350C0A17912DB4942FFB920001319FD"
+    },
+    {
+      "fixtureId": "sf2-map3-battle01-victory-return-static-v1",
+      "sha256": "3378FEC1EFDFB4FCD0B35AC10E9F5C494F63216B32613D1E41412D61CFDAA1CE"
+    }
+  ],
+  "checkpoints": [
+    {
+      "role": "turn-finalization-resume",
+      "address": "0x24106",
+      "staticFixtureId": "sf2-map3-battle01-turn-finalization-static-v1"
+    },
+    {
+      "role": "victory-entry",
+      "address": "0x23CBA",
+      "staticFixtureId": "sf2-map3-battle01-victory-return-static-v1"
+    },
+    {
+      "role": "declared-terminal",
+      "address": "0x23CBA",
+      "staticFixtureId": "sf2-map3-battle01-victory-return-static-v1"
+    }
+  ],
+  "inputArtifacts": [
+    {
+      "role": "movie",
+      "artifactId": "generic-protocol-bk2",
+      "sha256": "F36B268F300FF30FE4EB59E4ABF8947E3293FE55A8E4ECB8704DC80B9680EF19"
+    },
+    {
+      "role": "input-log",
+      "artifactId": "generic-protocol-input-log",
+      "sha256": "0D06BCD9CC9BCB0E9D7AF9037BF0C40CE25A42BE0B433D8430A470F778EEBD77"
+    },
+    {
+      "role": "header",
+      "artifactId": "generic-protocol-header",
+      "sha256": "6AA931653A7AC4C7D27C7064EDFA38EE20441EE58477EC438E7FA4AE4BE5C519"
+    },
+    {
+      "role": "sync-settings",
+      "artifactId": "generic-protocol-sync-settings",
+      "sha256": "7BC4FB51B0CA45F20567DF0E095D8FA5F38DDEB2EF6275445637BE771F7870C6"
+    }
+  ],
+  "startState": "power-on",
+  "terminalObservation": {
+    "status": "PASS",
+    "callbacksRemaining": 0,
+    "cleanup": "protected-finalizer",
+    "consoleCheckRequired": true,
+    "roleOrder": [
+      "turn-finalization-resume",
+      "victory-entry",
+      "declared-terminal"
+    ]
+  },
+  "timeoutSeconds": 120,
+  "limits": {
+    "maxCheckpoints": 3,
+    "maxTimeoutSeconds": 120
+  },
+  "candidateLineage": {
+    "ledgerId": "deferred-private-scenario-ledger-v1",
+    "availability": "not-accessed-preflight",
+    "runClass": null,
+    "launchOrdinal": null,
+    "priorReceiptSha256": null
+  },
+  "passiveObserverPolicy": {
+    "observerId": "original-reference-scenario-observer-v1",
+    "observerSha256": "BA35D6F0DEC2DB79856CA1A71998E831BF13DD15120192791A9AEAB9504EDF85",
+    "allowedApis": [
+      "os.getenv",
+      "io.open",
+      "event.onmemoryexecute",
+      "event.onexit",
+      "event.unregisterbyid",
+      "client.exitCode",
+      "string.byte",
+      "string.char",
+      "string.gsub",
+      "string.format",
+      "string.sub",
+      "table.concat"
+    ],
+    "allowedBareCalls": ["ipairs", "pcall", "tostring"],
+    "forbiddenCapabilities": [
+      "adaptive-input",
+      "controller-write",
+      "dynamic-call",
+      "dynamic-load",
+      "gameplay-mechanics",
+      "memory-write",
+      "movie-mutation",
+      "register-write",
+      "rom-control",
+      "savestate",
+      "shell-process",
+      "sram-write",
+      "state-write"
+    ]
+  },
+  "unknowns": [
+    {
+      "label": "Unknown",
+      "group": "original-reference-scenario-api-runtime-callback-and-console",
+      "question": "A separately admitted private scenario must observe checkpoint reachability, callback cadence, finalizer cleanup, and Lua Console state; this public preflight makes no runtime claim."
+    },
+    {
+      "label": "Unknown",
+      "group": "original-reference-scenario-api-scenario-evidence",
+      "question": "No natural continuity, victory, endpoint, R2b observation, private capture, or H4 result is established by the generic protocol sample."
+    }
+  ]
+}

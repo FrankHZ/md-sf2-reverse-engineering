@@ -188,6 +188,7 @@ from sf2tool.h3.map_setup_selection import verify_map_setup_selection
 from sf2tool.h3.muddle_action_guard import verify_muddle_action_guard
 from sf2tool.h3.muddle_confusion import verify_muddle_confusion
 from sf2tool.h3.original_reference_replay import run_original_reference_replay
+from sf2tool.h3.original_reference_scenario import run_original_reference_scenario
 from sf2tool.h3.random_services import verify_random_services
 from sf2tool.h3.rng import verify_rng
 from sf2tool.h3.service_menu_lifecycle import verify_service_menu_lifecycle
@@ -952,6 +953,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     h3_original_reference.add_argument("--launch-ordinal", type=int, choices=(1, 2, 3))
     h3_original_reference.add_argument("--timeout-seconds", type=int, default=120)
+    h3_original_reference_scenario = h3_commands.add_parser(
+        "original-reference-replay-scenario-api",
+        help="validate the public, data-only original-reference scenario API preflight",
+    )
+    h3_original_reference_scenario.add_argument(
+        "--preflight-only", action="store_true", required=True
+    )
     h3_rng = h3_commands.add_parser("rng", help="verify base and debug-aware RNG behavior")
     h3_rng.add_argument("--rom-path", type=_path, default=DEFAULT_ROM)
     h3_rng.add_argument("--timeout-seconds", type=int, default=60)
@@ -2145,6 +2153,8 @@ def dispatch(args: argparse.Namespace) -> None:
                 timeout_seconds=args.timeout_seconds,
             )
         )
+    elif args.command == "h3" and args.h3_command == "original-reference-replay-scenario-api":
+        print_record(run_original_reference_scenario(preflight_only=args.preflight_only))
     elif args.command == "h3" and args.h3_command == "rng":
         print_record(verify_rng(args.rom_path, timeout_seconds=args.timeout_seconds))
     elif args.command == "h3" and args.h3_command == "random-services":

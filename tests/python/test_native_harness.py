@@ -231,6 +231,17 @@ def test_original_reference_replay_capability_defaults_to_explicit_preflight() -
     assert args.timeout_seconds == 120
 
 
+def test_original_reference_scenario_api_requires_its_public_preflight() -> None:
+    args = build_parser().parse_args(
+        ["h3", "original-reference-replay-scenario-api", "--preflight-only"]
+    )
+
+    assert args.h3_command == "original-reference-replay-scenario-api"
+    assert args.preflight_only is True
+    assert not hasattr(args, "rom_path")
+    assert not hasattr(args, "timeout_seconds")
+
+
 def test_enemy_gold_has_a_dedicated_narrow_extraction_command() -> None:
     args = build_parser().parse_args(["h2", "enemy-gold"])
     assert args.h2_command == "enemy-gold"

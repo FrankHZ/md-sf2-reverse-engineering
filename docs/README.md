@@ -246,6 +246,9 @@ Data-side directory inventory and ROM parity:
   transport-only original-runtime replay capability, deterministic power-on BK2 materializer,
   passive observer, typed private receipt, containment/cleanup, and preflight-only planner boundary;
   it adds no R4b scenario evidence or H4 claim.
+- [original-reference-replay-scenario-api.md](./research/original-reference-replay-scenario-api.md):
+  a public data-only original-reference scenario descriptor and passive-observer preflight contract;
+  it starts no process and adds no scenario observation, ledger, counter, index entry, or H4 claim.
 - [`map-data-inventory.md`](./research/map-data-inventory.md): the complete 1,390-file map ASM build
   graph, 727 internal H1 bindings, 662 include-site-only bodies, 64+66 setup-selection rows, ROM
   parity of the 126 six-pointer setup tables, 125 entity-list sources/980 physical records with suffix
