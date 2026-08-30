@@ -20,7 +20,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
         ArgumentOutOfRangeException.ThrowIfNegative(simulationStep);
         PlayerPosition = playerPosition ?? throw new ArgumentNullException(nameof(playerPosition));
-        if (!definition.Traversal.IsWithinActiveArea(playerPosition) ||
+        if (definition.Traversal.SelectActiveArea(playerPosition) is null ||
             OriginalMapTraversal.IsBlocked(workingLayout, playerPosition))
         {
             throw new ArgumentException(
@@ -92,6 +92,11 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public WorkingMapLayout WorkingLayout { get; }
 
     public MapPosition PlayerPosition { get; }
+
+    public OriginalMapTraversalAreaSelection CurrentArea =>
+        Definition.Traversal.SelectActiveArea(PlayerPosition) ??
+        throw new InvalidOperationException(
+            "The authoritative private original-map position has no admitted active area.");
 
     public long SimulationStep { get; }
 
@@ -433,6 +438,16 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.controlledAdmission",
                 "The admitted definition does not retain the exact controlled Map 3 start projection.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedAreaProjection(definition.Traversal) ||
+            definition.Traversal.SelectActiveArea(controlled.Position)?.OneBasedRecordOrdinal !=
+                OriginalMapRuntimeAdmission.ControlledStartAreaRecordOrdinal)
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.traversalAreas",
+                "The admitted definition does not retain the exact ordered Map 3 area projection.");
         }
 
         if (!OriginalMapRuntimeAdmission.IsExactControlledStepCopy(

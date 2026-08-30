@@ -219,6 +219,14 @@ new typed snapshot and emits a separate local diagnostic receipt. Because `(41,1
 real controlled start's player-centered 12-by-7 crop, this capability does not claim that the initial
 diagnostic pixels change. Near-door viewport coverage uses only project-authored test snapshots.
 
+The same fixed private admission retains the exact ordered `Map03s2_Areas` bounds projection as a
+three-record, path-free traversal definition. Domain selects the first matching admitted record or
+no record; Application derives the current one-based area ordinal only from the authoritative
+traversal plus player position after admission, movement, blocking, layout mutation, and restart.
+Content fail-closes resource, count, order, bounds, or projection-digest drift after the fixed raw
+digest check. Godot only projects that typed result and appends a separate local diagnostic receipt;
+it does not select areas or promote layer origins, parallax, autoscroll, type, music, or presentation.
+
 This one-shot command is an explicit private diagnostic policy, not evidence or implementation of a
 natural step trigger, `OpenDoor`, setup/init/program/flag effect, reach/order, or persistence. It does
 not reuse or relabel the `SetBlocks`/`SetBlocksVar` command reducer or the separate block-copy

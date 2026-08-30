@@ -16,6 +16,8 @@ public sealed partial class Map3Root
         "SF2_MAP3_PRIVATE_LOCAL_VIEW_SMOKE ";
     public const string PrivateStepCopySmokeMarker =
         "SF2_MAP3_PRIVATE_LOCAL_STEP_COPY_SMOKE ";
+    public const string PrivateAreaSmokeMarker =
+        "SF2_MAP3_PRIVATE_LOCAL_AREA_SMOKE ";
     public const string PrivateViewCapability =
         "private-local-map3-traversal-diagnostic-view-v1";
     private const string PrivateStageMarker = "SF2_MAP3_PRIVATE_LOCAL_STAGE ";
@@ -161,7 +163,8 @@ public sealed partial class Map3Root
 
         _status.Text =
             $"Map {snapshot.Map}  Tile ({snapshot.PlayerPosition.X}, " +
-            $"{snapshot.PlayerPosition.Y})  Step {snapshot.SimulationStep}  {outcome}  |  " +
+            $"{snapshot.PlayerPosition.Y})  Area {snapshot.CurrentArea.OneBasedRecordOrdinal}  " +
+            $"Step {snapshot.SimulationStep}  {outcome}  |  " +
             "WASD semantic movement";
     }
 
@@ -283,6 +286,8 @@ public sealed partial class Map3Root
             return;
         }
 
+        RunPrivateAreaDiagnostic();
+
         TracePrivateStage(enabled: true, "quit-scheduled", smokeStarted);
         GetTree().Quit(0);
     }
@@ -356,6 +361,29 @@ public sealed partial class Map3Root
         };
         GD.Print(PrivateStepCopySmokeMarker + JsonSerializer.Serialize(receipt));
         return true;
+    }
+
+    private void RunPrivateAreaDiagnostic()
+    {
+        if (_session is null)
+        {
+            throw new InvalidOperationException(
+                "PrivateLocal session was not admitted for the current-area diagnostic.");
+        }
+
+        PrivateOriginalMapSessionSnapshot snapshot = _session.PrivateOriginalMapSnapshot;
+        OriginalMapTraversalAreaSelection selection = snapshot.CurrentArea;
+        object receipt = new
+        {
+            status = "Pass",
+            profile = "private-local",
+            capability = OriginalMapRuntimeAdmission.CurrentAreaDiagnosticCapability,
+            mapId = snapshot.Map.Value,
+            oneBasedRecordOrdinal = selection.OneBasedRecordOrdinal,
+            simulationStep = snapshot.SimulationStep,
+            disclosure = PrivateBannerText,
+        };
+        GD.Print(PrivateAreaSmokeMarker + JsonSerializer.Serialize(receipt));
     }
 
     private void FailProfileStartup(Map3RuntimeProfileSelection selection)
