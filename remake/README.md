@@ -188,10 +188,14 @@ private payloads remain ignored or in memory; none is copied into Git, a PCK, or
 It reads the current source and destination words for every request, applies the accepted `0xC000`
 collision class and directional `0x8000`/`0x4000` stair mapping within the imported active-area
 bounds, and therefore observes a later immutable block-copy result without caching a synthetic
-walkability grid. This import/traversal slice is not connected to `MapExplorationRuntimeCatalog`,
-`GameSession`, or Godot and is not a runnable original profile. Natural flags and setup variants,
-entity occupancy, warps, init/event effects, persistence, assets, presentation, H3/H4, and 8C remain
-explicitly unsupported or Unknown.
+walkability grid. Application now admits that exact fixed-digest result into a separate
+`PrivateLocal` Map 3 exploration mode on the sole `GameSession` mutation facade. The session starts
+from the controlled position, retains the opaque original-facing/setup/init/no-request facts, and
+applies semantic movement only through `OriginalMapTraversal`, including blocked and directional-stair
+outcomes. It does not reuse the public-synthetic walkability, flags, context, event, or presentation
+state. This mode is not wired to Godot and is not a runnable original profile. Natural flags and setup
+variants, block-copy lifecycle wiring, entity occupancy, warps, init/event effects, persistence,
+assets, presentation, H3/H4, and 8C remain explicitly unsupported or Unknown.
 
 The Domain also owns an immutable 64-by-64 working-layout state and its ordered rectangular block-copy
 reducer. The reducer clones the input, then performs forward word-by-word reads and writes on that clone,

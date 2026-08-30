@@ -405,9 +405,10 @@ public sealed record GameSessionStartRejected(
         Diagnostic ?? throw new ArgumentNullException(nameof(Diagnostic));
 }
 
-public sealed class GameSession
+public sealed partial class GameSession
 {
     private readonly MapScenarioContextDefinition _mapContext;
+    private GameSessionSnapshot? _snapshot;
 
     private GameSession(
         GameSessionSnapshot snapshot,
@@ -417,7 +418,12 @@ public sealed class GameSession
         _mapContext = mapContext;
     }
 
-    public GameSessionSnapshot Snapshot { get; private set; }
+    public GameSessionSnapshot Snapshot
+    {
+        get => _snapshot ?? throw new InvalidOperationException(
+            "This GameSession does not own a public-synthetic scenario snapshot.");
+        private set => _snapshot = value ?? throw new ArgumentNullException(nameof(value));
+    }
 
     public static GameSessionStartResult Start(
         IMapScenarioSource source,
@@ -437,6 +443,12 @@ public sealed class GameSession
     public GameSessionCommandResult Apply(IGameSessionCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
+        if (_privateOriginalMapSnapshot is not null)
+        {
+            throw new InvalidOperationException(
+                "Private original-map sessions accept commands only through ApplyPrivateOriginalMap.");
+        }
+
         if (Snapshot.EventRequest?.Status == MapEventRequestStatus.Pending &&
             command is not AcknowledgeMapEventRequestCommand)
         {
