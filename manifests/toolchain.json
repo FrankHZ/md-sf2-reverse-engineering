@@ -44,6 +44,14 @@
     "archiveSizeBytes": 190807860,
     "archiveSha256": "B5B235C48ADF6A081874B812C630B9F4B5F637B7A5ED18B9174D08A41EC4C235",
     "localJavaPath": "local/toolchains/jdk-17.0.19+10/jdk-17.0.19+10/bin/java.exe",
+    "sharedInputIdentity": "toolchains/jdk-17.0.19+10",
+    "sharedJavaRelativePath": "jdk-17.0.19+10/bin/java.exe",
+    "extractedFileCount": 492,
+    "extractedSizeBytes": 317525612,
+    "extractedTreeDigestAlgorithm": "posix-relative-ordinal-path-tab-size-tab-uppercase-sha256-lf-v1",
+    "extractedTreeSha256": "6437CD09380EF13FA9BFE553D16F0EED34D796037649C95DF6C72758CD90DDAE",
+    "javaExecutableSizeBytes": 50344,
+    "javaExecutableSha256": "B3AFE83E1AB067DA4C56F1A7B2BA4C14EC832D694333F35B2B45178E9AC596EF",
     "purpose": "SF2DISASM Java editors and future source builds; the vanilla ROM rebuild itself does not require Java"
   },
   "bizhawk": {

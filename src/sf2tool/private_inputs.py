@@ -2,15 +2,32 @@ from __future__ import annotations
 
 import os
 from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
+from typing import Literal
 
 from sf2tool.paths import repo_path
 
 SHARED_INPUT_ROOT_ENV = "SF2_SHARED_INPUT_ROOT"
 ROM_INPUT_IDENTITY = Path("roms/sf2-us.bin")
+JDK_INPUT_IDENTITY = Path("toolchains/jdk-17.0.19+10")
 
-_REPO_LOCAL_FALLBACKS = {
-    ROM_INPUT_IDENTITY: Path("local/roms/sf2-us.bin"),
+
+@dataclass(frozen=True)
+class _PrivateInputRegistration:
+    fallback: Path
+    expected_kind: Literal["file", "directory"]
+
+
+_PRIVATE_INPUTS = {
+    ROM_INPUT_IDENTITY: _PrivateInputRegistration(
+        fallback=Path("local/roms/sf2-us.bin"),
+        expected_kind="file",
+    ),
+    JDK_INPUT_IDENTITY: _PrivateInputRegistration(
+        fallback=Path("local/toolchains/jdk-17.0.19+10"),
+        expected_kind="directory",
+    ),
 }
 
 
@@ -28,7 +45,7 @@ def _input_identity(value: str | Path) -> Path:
         raise ValueError(f"private input identity contains an unsafe segment: {raw}")
 
     identity = Path(*segments)
-    if identity not in _REPO_LOCAL_FALLBACKS:
+    if identity not in _PRIVATE_INPUTS:
         raise ValueError(f"private input identity is not registered: {raw}")
     return identity
 
@@ -45,10 +62,11 @@ def private_input_path(
     """Resolve one registered immutable input without creating or reading it."""
 
     normalized = _input_identity(identity)
+    registration = _PRIVATE_INPUTS[normalized]
     values = os.environ if environment is None else environment
     configured = values.get(SHARED_INPUT_ROOT_ENV)
     if configured is None:
-        return repo_path(_REPO_LOCAL_FALLBACKS[normalized])
+        return repo_path(registration.fallback)
     if not configured.strip():
         raise ValueError(f"{SHARED_INPUT_ROOT_ENV} must not be empty")
 
@@ -64,4 +82,10 @@ def private_input_path(
     resolved_candidate = _resolve_existing(lexical_candidate)
     if not resolved_candidate.is_relative_to(resolved_root):
         raise ValueError("private input resolves outside SF2_SHARED_INPUT_ROOT")
+    if registration.expected_kind == "file" and not resolved_candidate.is_file():
+        raise ValueError(f"registered private input must be a file: {normalized.as_posix()}")
+    if registration.expected_kind == "directory" and not resolved_candidate.is_dir():
+        raise ValueError(
+            f"registered private input must be a directory: {normalized.as_posix()}"
+        )
     return resolved_candidate

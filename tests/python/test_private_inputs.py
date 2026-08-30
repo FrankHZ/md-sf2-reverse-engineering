@@ -8,6 +8,7 @@ import sf2tool.private_inputs as private_inputs
 from sf2tool.cli import build_parser, validate_verify_plan_args
 from sf2tool.paths import repo_path
 from sf2tool.private_inputs import (
+    JDK_INPUT_IDENTITY,
     ROM_INPUT_IDENTITY,
     SHARED_INPUT_ROOT_ENV,
     private_input_path,
@@ -21,9 +22,18 @@ def _shared_rom(root: Path) -> Path:
     return rom
 
 
+def _shared_jdk(root: Path) -> Path:
+    jdk = root / JDK_INPUT_IDENTITY
+    jdk.mkdir(parents=True)
+    return jdk
+
+
 def test_unset_root_keeps_the_repo_local_fallback() -> None:
     assert private_input_path(ROM_INPUT_IDENTITY, environment={}) == repo_path(
         "local/roms/sf2-us.bin"
+    )
+    assert private_input_path(JDK_INPUT_IDENTITY, environment={}) == repo_path(
+        "local/toolchains/jdk-17.0.19+10"
     )
 
 
@@ -34,6 +44,19 @@ def test_configured_root_resolves_the_registered_rom_without_reading_it(tmp_path
     assert (
         private_input_path(
             ROM_INPUT_IDENTITY,
+            environment={SHARED_INPUT_ROOT_ENV: str(root.resolve())},
+        )
+        == expected
+    )
+
+
+def test_configured_root_resolves_the_registered_jdk_directory(tmp_path: Path) -> None:
+    root = tmp_path / "shared"
+    expected = _shared_jdk(root).resolve()
+
+    assert (
+        private_input_path(
+            JDK_INPUT_IDENTITY,
             environment={SHARED_INPUT_ROOT_ENV: str(root.resolve())},
         )
         == expected
@@ -84,6 +107,39 @@ def test_missing_shared_input_is_not_created(tmp_path: Path) -> None:
         )
 
     assert tuple(root.rglob("*")) == before
+
+
+def test_missing_shared_jdk_directory_is_not_created(tmp_path: Path) -> None:
+    root = tmp_path / "shared"
+    root.mkdir()
+
+    with pytest.raises(FileNotFoundError):
+        private_input_path(
+            JDK_INPUT_IDENTITY,
+            environment={SHARED_INPUT_ROOT_ENV: str(root.resolve())},
+        )
+
+    assert tuple(root.rglob("*")) == ()
+
+
+def test_registered_input_types_are_enforced(tmp_path: Path) -> None:
+    file_root = tmp_path / "file-root"
+    (file_root / ROM_INPUT_IDENTITY).mkdir(parents=True)
+    with pytest.raises(ValueError, match="must be a file"):
+        private_input_path(
+            ROM_INPUT_IDENTITY,
+            environment={SHARED_INPUT_ROOT_ENV: str(file_root.resolve())},
+        )
+
+    directory_root = tmp_path / "directory-root"
+    jdk = directory_root / JDK_INPUT_IDENTITY
+    jdk.parent.mkdir(parents=True)
+    jdk.write_bytes(b"synthetic-not-a-directory")
+    with pytest.raises(ValueError, match="must be a directory"):
+        private_input_path(
+            JDK_INPUT_IDENTITY,
+            environment={SHARED_INPUT_ROOT_ENV: str(directory_root.resolve())},
+        )
 
 
 def test_post_resolution_reparse_escape_is_rejected(
