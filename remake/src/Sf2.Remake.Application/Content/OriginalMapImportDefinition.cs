@@ -128,13 +128,13 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapImportDefinition(
         MapId map,
         WorkingMapLayout workingLayout,
-        OriginalMapTraversal traversal,
+        OriginalMapAreaCatalog areaCatalog,
         OriginalMapControlledAdmission controlledAdmission,
         IEnumerable<string> unsupportedCapabilities)
         : this(
             map,
             workingLayout,
-            traversal,
+            areaCatalog,
             controlledAdmission,
             controlledStepCopy: null,
             unsupportedCapabilities)
@@ -144,14 +144,14 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapImportDefinition(
         MapId map,
         WorkingMapLayout workingLayout,
-        OriginalMapTraversal traversal,
+        OriginalMapAreaCatalog areaCatalog,
         OriginalMapControlledAdmission controlledAdmission,
         OriginalMapStepCopyDefinition? controlledStepCopy,
         IEnumerable<string> unsupportedCapabilities)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
-        Traversal = traversal ?? throw new ArgumentNullException(nameof(traversal));
+        AreaCatalog = areaCatalog ?? throw new ArgumentNullException(nameof(areaCatalog));
         ControlledAdmission = controlledAdmission ??
             throw new ArgumentNullException(nameof(controlledAdmission));
         ArgumentNullException.ThrowIfNull(unsupportedCapabilities);
@@ -169,7 +169,7 @@ public sealed class OriginalMapImportDefinition
                 nameof(controlledStepCopy));
         }
 
-        if (!traversal.IsWithinActiveArea(controlledAdmission.Position) ||
+        if (!areaCatalog.Traversal.IsWithinActiveArea(controlledAdmission.Position) ||
             OriginalMapTraversal.IsBlocked(workingLayout, controlledAdmission.Position))
         {
             throw new ArgumentException(
@@ -207,7 +207,9 @@ public sealed class OriginalMapImportDefinition
 
     public WorkingMapLayout WorkingLayout { get; }
 
-    public OriginalMapTraversal Traversal { get; }
+    public OriginalMapAreaCatalog AreaCatalog { get; }
+
+    public OriginalMapTraversal Traversal => AreaCatalog.Traversal;
 
     public OriginalMapControlledAdmission ControlledAdmission { get; }
 

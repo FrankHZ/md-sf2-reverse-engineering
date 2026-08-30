@@ -168,10 +168,24 @@ public sealed class PrivateOriginalMapTraversalViewportTests
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         WorkingMapLayout layout = new(words);
+        OriginalMapAreaCatalog areaCatalog = new(activeAreas.Select(
+            (area, index) => new OriginalMapAreaDefinition(
+                new OriginalMapAreaRecordIdentity(
+                    "project-authored-viewport-area-table",
+                    index + 1),
+                area,
+                new OriginalMapAreaWordPair(0, 0),
+                new OriginalMapAreaWordPair(0, 0),
+                new OriginalMapAreaWordPair(256, 256),
+                new OriginalMapAreaWordPair(256, 256),
+                new OriginalMapAreaBytePair(0, 0),
+                new OriginalMapAreaBytePair(0, 0),
+                mainLayerType: 0,
+                defaultMusic: 0)));
         OriginalMapImportDefinition definition = new(
             map,
             layout,
-            new OriginalMapTraversal(activeAreas),
+            areaCatalog,
             new OriginalMapControlledAdmission(
                 map,
                 playerPosition,
@@ -196,6 +210,9 @@ public sealed class PrivateOriginalMapTraversalViewportTests
                     OriginalMapRuntimeAdmission.ControlledStepCopyWidth,
                     OriginalMapRuntimeAdmission.ControlledStepCopyHeight)),
             ["natural-route-and-presentation-unknown"]);
+        Assert.Same(areaCatalog, definition.AreaCatalog);
+        Assert.Same(areaCatalog.Traversal, definition.Traversal);
+        Assert.Equal(activeAreas.Length, definition.AreaCatalog.Records.Count);
         OriginalMapImportReceipt receipt = new(
             OriginalMapRuntimeAdmission.PackageId,
             OriginalMapRuntimeAdmission.SchemaVersion,

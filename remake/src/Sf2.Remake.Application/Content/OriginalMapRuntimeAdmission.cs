@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 using Sf2.Remake.Domain.Maps;
@@ -25,6 +26,8 @@ public static class OriginalMapRuntimeAdmission
     public const int ControlledStartAreaRecordOrdinal = 2;
     public const string AcceptedAreaProjectionDigest =
         "A9C712C1E02FB4A03CA60E68FF3AEFE6CC71A9E07A986E0CEB46C9CD9C81A2A6";
+    public const string AcceptedAreaSourceProjectionDigest =
+        "B60D96CC0359E390A8C26FDA9CE3313023ACB4774902CD99E12CB798041EB225";
 
     public const string MapId = "map3";
     public const int StartX = 56;
@@ -52,6 +55,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-controlled-step-copy-diagnostic-v1";
     public const string CurrentAreaDiagnosticCapability =
         "private-local-map3-current-area-diagnostic-v1";
+    public const string AreaSourceRecordAdmissionCapability =
+        "private-local-map3-source-area-record-admission-v1";
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
@@ -62,6 +67,7 @@ public static class OriginalMapRuntimeAdmission
                 ControlledAdmissionCapability,
                 ControlledStepCopyCapability,
                 CurrentAreaDiagnosticCapability,
+                AreaSourceRecordAdmissionCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -149,5 +155,59 @@ public static class OriginalMapRuntimeAdmission
             Convert.ToHexString(SHA256.HashData(projection)),
             AcceptedAreaProjectionDigest,
             StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool HasExactAcceptedAreaSourceProjection(OriginalMapAreaCatalog catalog)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        if (!string.Equals(
+                catalog.ResourceId,
+                AcceptedAreaResourceId,
+                StringComparison.Ordinal) ||
+            catalog.Records.Count != AcceptedAreaRecordCount)
+        {
+            return false;
+        }
+
+        Span<byte> projection = stackalloc byte[1 + (AcceptedAreaRecordCount * 30)];
+        projection[0] = AcceptedAreaRecordCount;
+        int offset = 1;
+        foreach (OriginalMapAreaDefinition record in catalog.Records)
+        {
+            WriteWord(projection, ref offset, checked((ushort)record.MainLayerBounds.MinimumX));
+            WriteWord(projection, ref offset, checked((ushort)record.MainLayerBounds.MinimumY));
+            WriteWord(projection, ref offset, checked((ushort)record.MainLayerBounds.MaximumX));
+            WriteWord(projection, ref offset, checked((ushort)record.MainLayerBounds.MaximumY));
+            WritePair(projection, ref offset, record.SecondLayerForegroundStart);
+            WritePair(projection, ref offset, record.SecondLayerBackgroundStart);
+            WritePair(projection, ref offset, record.MainLayerParallax);
+            WritePair(projection, ref offset, record.SecondLayerParallax);
+            projection[offset++] = record.MainLayerAutoscroll.X;
+            projection[offset++] = record.MainLayerAutoscroll.Y;
+            projection[offset++] = record.SecondLayerAutoscroll.X;
+            projection[offset++] = record.SecondLayerAutoscroll.Y;
+            projection[offset++] = record.MainLayerType;
+            projection[offset++] = record.DefaultMusic;
+        }
+
+        return string.Equals(
+            Convert.ToHexString(SHA256.HashData(projection)),
+            AcceptedAreaSourceProjectionDigest,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void WritePair(
+        Span<byte> destination,
+        ref int offset,
+        OriginalMapAreaWordPair pair)
+    {
+        WriteWord(destination, ref offset, pair.X);
+        WriteWord(destination, ref offset, pair.Y);
+    }
+
+    private static void WriteWord(Span<byte> destination, ref int offset, ushort value)
+    {
+        BinaryPrimitives.WriteUInt16BigEndian(destination[offset..], value);
+        offset += sizeof(ushort);
     }
 }
