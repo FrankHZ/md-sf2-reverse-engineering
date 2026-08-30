@@ -7,8 +7,13 @@ from pathlib import Path
 
 import pytest
 
+import sf2tool.private_inputs as private_inputs
 import sf2tool.toolchain as toolchain
-from sf2tool.private_inputs import JDK_INPUT_IDENTITY, SHARED_INPUT_ROOT_ENV
+from sf2tool.private_inputs import (
+    BIZHAWK_ARCHIVE_INPUT_IDENTITY,
+    JDK_INPUT_IDENTITY,
+    SHARED_INPUT_ROOT_ENV,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -42,6 +47,27 @@ def _contract(root: Path) -> dict[str, object]:
     }
 
 
+def _write_bizhawk_archive(shared_root: Path) -> Path:
+    archive = shared_root / BIZHAWK_ARCHIVE_INPUT_IDENTITY
+    archive.parent.mkdir(parents=True)
+    archive.write_bytes(b"synthetic-bizhawk-archive")
+    return archive
+
+
+def _use_synthetic_repo(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> Path:
+    root = tmp_path / "repo"
+    root.mkdir()
+
+    def synthetic_repo_path(relative: str | Path) -> Path:
+        return root / relative
+
+    monkeypatch.setattr(private_inputs, "repo_path", synthetic_repo_path)
+    monkeypatch.setattr(toolchain, "repo_path", synthetic_repo_path)
+    return root
+
+
 def test_tracked_manifest_pins_the_audited_shared_jdk_tree() -> None:
     manifest = json.loads((ROOT / "manifests" / "toolchain.json").read_text(encoding="utf-8"))
     java = manifest["java"]
@@ -57,6 +83,22 @@ def test_tracked_manifest_pins_the_audited_shared_jdk_tree() -> None:
     assert java["javaExecutableSizeBytes"] == 50_344
     assert java["javaExecutableSha256"] == (
         "B3AFE83E1AB067DA4C56F1A7B2BA4C14EC832D694333F35B2B45178E9AC596EF"
+    )
+
+
+def test_tracked_manifest_registers_the_audited_shared_bizhawk_archive() -> None:
+    manifest = json.loads((ROOT / "manifests" / "toolchain.json").read_text(encoding="utf-8"))
+    bizhawk = manifest["bizhawk"]
+
+    assert bizhawk["sharedArchiveInputIdentity"] == (
+        "archives/BizHawk-2.11.1-win-x64.zip"
+    )
+    assert bizhawk["localArchivePath"] == (
+        "local/toolchains/BizHawk-2.11.1-win-x64.zip"
+    )
+    assert bizhawk["archiveSizeBytes"] == 97_984_101
+    assert bizhawk["archiveSha256"] == (
+        "DD7CBD5E205B09C5BCE6AFABC4F8AA525ACC0BBEB9753B198A8DB3FE6A5E5717"
     )
 
 
@@ -159,3 +201,107 @@ def test_jdk_verifier_rejects_unknown_digest_algorithm(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="unsupported JDK tree digest algorithm"):
         toolchain._verify_jdk_directory(root, contract)
+
+
+def test_bizhawk_archive_uses_the_shared_input_without_a_local_archive(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    repo = _use_synthetic_repo(monkeypatch, tmp_path)
+    shared = tmp_path / "shared"
+    expected = _write_bizhawk_archive(shared).resolve()
+    contract = json.loads(
+        (ROOT / "manifests" / "toolchain.json").read_text(encoding="utf-8")
+    )["bizhawk"]
+    monkeypatch.setenv(SHARED_INPUT_ROOT_ENV, str(shared.resolve()))
+
+    assert not (repo / contract["localArchivePath"]).exists()
+    assert toolchain._resolve_bizhawk_archive(contract) == expected
+
+
+def test_bizhawk_archive_keeps_the_repo_local_fallback_when_unset(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    repo = _use_synthetic_repo(monkeypatch, tmp_path)
+    contract = json.loads(
+        (ROOT / "manifests" / "toolchain.json").read_text(encoding="utf-8")
+    )["bizhawk"]
+    monkeypatch.delenv(SHARED_INPUT_ROOT_ENV, raising=False)
+
+    assert toolchain._resolve_bizhawk_archive(contract) == repo / contract["localArchivePath"]
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    (
+        ("sharedArchiveInputIdentity", "archives/other.zip", "registered identity"),
+        ("localArchivePath", "local/toolchains/other.zip", "layouts disagree"),
+    ),
+)
+def test_bizhawk_archive_rejects_manifest_identity_and_layout_drift(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    field: str,
+    value: str,
+    message: str,
+) -> None:
+    shared = tmp_path / "shared"
+    _write_bizhawk_archive(shared)
+    contract = deepcopy(
+        json.loads((ROOT / "manifests" / "toolchain.json").read_text(encoding="utf-8"))[
+            "bizhawk"
+        ]
+    )
+    contract[field] = value
+    monkeypatch.setenv(SHARED_INPUT_ROOT_ENV, str(shared.resolve()))
+
+    with pytest.raises(ValueError, match=message):
+        toolchain._resolve_bizhawk_archive(contract)
+
+
+def test_verify_toolchain_uses_shared_archive_and_repo_local_executable_independently(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    repo = _use_synthetic_repo(monkeypatch, tmp_path)
+    manifest = json.loads((ROOT / "manifests" / "toolchain.json").read_text(encoding="utf-8"))
+    manifest_path = tmp_path / "toolchain.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    upstream = tmp_path / "upstream"
+    upstream.mkdir()
+    java = tmp_path / "java.exe"
+    java.write_bytes(b"synthetic-java")
+    shared = tmp_path / "shared"
+    archive = _write_bizhawk_archive(shared).resolve()
+    monkeypatch.setenv(SHARED_INPUT_ROOT_ENV, str(shared.resolve()))
+    verified: list[tuple[Path, str]] = []
+
+    def fake_run(arguments: list[str | Path], *, cwd: Path | None = None) -> str:
+        command = [str(argument) for argument in arguments]
+        if command[:4] == ["git", "remote", "get-url", "origin"]:
+            return manifest["sf2disasm"]["repository"]
+        if command[:3] == ["git", "rev-parse", "HEAD"]:
+            return manifest["sf2disasm"]["commit"]
+        if command[:3] == ["git", "status", "--porcelain"]:
+            return ""
+        if command == [str(java.resolve()), "-version"]:
+            return 'openjdk version "17.0.19"'
+        raise AssertionError(f"unexpected command: {command}, cwd={cwd}")
+
+    def capture_file(
+        path: Path, *, size: int, sha256: str, owner: str
+    ) -> None:
+        del size, sha256
+        verified.append((path.resolve(), owner))
+
+    monkeypatch.setattr(toolchain, "_run", fake_run)
+    monkeypatch.setattr(toolchain, "_verify_file", capture_file)
+
+    result = toolchain.verify_toolchain(upstream, manifest_path, java)
+
+    assert (archive, "BizHawk archive") in verified
+    assert (
+        (repo / manifest["bizhawk"]["localExecutablePath"]).resolve(),
+        "BizHawk executable",
+    ) in verified
+    assert result["BizHawkPath"] == str(
+        repo / manifest["bizhawk"]["localExecutablePath"]
+    )

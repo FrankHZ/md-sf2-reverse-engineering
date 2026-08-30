@@ -62,6 +62,7 @@
     "archiveUrl": "https://github.com/TASEmulators/BizHawk/releases/download/2.11.1/BizHawk-2.11.1-win-x64.zip",
     "archiveSizeBytes": 97984101,
     "archiveSha256": "DD7CBD5E205B09C5BCE6AFABC4F8AA525ACC0BBEB9753B198A8DB3FE6A5E5717",
+    "sharedArchiveInputIdentity": "archives/BizHawk-2.11.1-win-x64.zip",
     "localArchivePath": "local/toolchains/BizHawk-2.11.1-win-x64.zip",
     "localExecutablePath": "local/toolchains/BizHawk-2.11.1-win-x64/EmuHawk.exe",
     "executableSizeBytes": 5376512,
