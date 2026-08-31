@@ -15,8 +15,6 @@ public sealed partial class Map3Root : Node2D
     private GameSession? _session;
     private ScenarioAdmissionReceipt? _admissionReceipt;
     private Map3Presenter? _presenter;
-    // The untouched private/unavailable presentation in PrivateMap3Composition owns this field.
-    private Label? _status;
     private Map3InputAdapter? _inputAdapter;
 
     public override void _Ready()
