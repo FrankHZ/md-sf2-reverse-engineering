@@ -26,6 +26,7 @@ public sealed partial class Map3Root : Node2D
     private Label? _fieldSearchStatus;
     private Label? _itemAcquisitionStatus;
     private Label? _outboundTransitionStatus;
+    private Map3InputAdapter? _inputAdapter;
 
     public override void _Ready()
     {
@@ -38,7 +39,8 @@ public sealed partial class Map3Root : Node2D
             "profile-selection",
             selectionStarted);
         _runtimeProfile = selection.RequestedProfile;
-        RegisterInputMap();
+        _inputAdapter = Map3InputAdapter.CreateGodot(CreatePublicSyntheticInputActions());
+        _inputAdapter.EnsureActionsRegistered();
         BuildSelectedPresentation(selection);
         StartScenario(selection);
         TracePrivateStage(selection.PrivateSmokeRequested, "godot-ready", readyStarted);
@@ -58,95 +60,27 @@ public sealed partial class Map3Root : Node2D
             return;
         }
 
-        if (Input.IsActionJustPressed("move_north"))
-        {
-            ApplyMove(ExplorationDirection.North);
-        }
-        else if (Input.IsActionJustPressed("move_east"))
-        {
-            ApplyMove(ExplorationDirection.East);
-        }
-        else if (Input.IsActionJustPressed("move_south"))
-        {
-            ApplyMove(ExplorationDirection.South);
-        }
-        else if (Input.IsActionJustPressed("move_west"))
-        {
-            ApplyMove(ExplorationDirection.West);
-        }
-        else if (Input.IsActionJustPressed("select_context"))
-        {
-            ApplyContextSelection();
-        }
-        else if (Input.IsActionJustPressed("request_event"))
-        {
-            ApplyEventRequest();
-        }
-        else if (Input.IsActionJustPressed("acknowledge_event"))
-        {
-            ApplyEventRequestAcknowledgement();
-        }
-        else if (Input.IsActionJustPressed("request_transition"))
-        {
-            ApplyLocalTransitionRequest();
-        }
-        else if (Input.IsActionJustPressed("acknowledge_transition"))
-        {
-            ApplyLocalTransitionAcknowledgement();
-        }
-        else if (Input.IsActionJustPressed("turn_north"))
-        {
-            ApplyTurn(SemanticFacing.North);
-        }
-        else if (Input.IsActionJustPressed("turn_east"))
-        {
-            ApplyTurn(SemanticFacing.East);
-        }
-        else if (Input.IsActionJustPressed("turn_south"))
-        {
-            ApplyTurn(SemanticFacing.South);
-        }
-        else if (Input.IsActionJustPressed("turn_west"))
-        {
-            ApplyTurn(SemanticFacing.West);
-        }
-        else if (Input.IsActionJustPressed("request_entity_interaction"))
-        {
-            ApplyEntityInteractionRequest();
-        }
-        else if (Input.IsActionJustPressed("acknowledge_entity_interaction"))
-        {
-            ApplyEntityInteractionAcknowledgement();
-        }
-        else if (Input.IsActionJustPressed("advance_dialogue"))
-        {
-            ApplyDialogueAdvance();
-        }
-        else if (Input.IsActionJustPressed("request_field_search"))
-        {
-            ApplyFieldSearchRequest();
-        }
-        else if (Input.IsActionJustPressed("acknowledge_field_search"))
-        {
-            ApplyFieldSearchAcknowledgement();
-        }
-        else if (Input.IsActionJustPressed("request_item_acquisition"))
-        {
-            ApplyItemAcquisitionRequest();
-        }
-        else if (Input.IsActionJustPressed("acknowledge_item_acquisition"))
-        {
-            ApplyItemAcquisitionAcknowledgement();
-        }
-        else if (Input.IsActionJustPressed("request_outbound_transition"))
-        {
-            ApplyOutboundTransitionRequest();
-        }
-        else if (Input.IsActionJustPressed("acknowledge_outbound_transition"))
-        {
-            ApplyOutboundTransitionAcknowledgement();
-        }
+        _inputAdapter?.PollPublicSynthetic();
     }
+
+    private Map3InputActions CreatePublicSyntheticInputActions() =>
+        new(
+            ApplyMove,
+            ApplyContextSelection,
+            ApplyEventRequest,
+            ApplyEventRequestAcknowledgement,
+            ApplyLocalTransitionRequest,
+            ApplyLocalTransitionAcknowledgement,
+            ApplyTurn,
+            ApplyEntityInteractionRequest,
+            ApplyEntityInteractionAcknowledgement,
+            ApplyDialogueAdvance,
+            ApplyFieldSearchRequest,
+            ApplyFieldSearchAcknowledgement,
+            ApplyItemAcquisitionRequest,
+            ApplyItemAcquisitionAcknowledgement,
+            ApplyOutboundTransitionRequest,
+            ApplyOutboundTransitionAcknowledgement);
 
     private void StartScenario(Map3RuntimeProfileSelection selection)
     {
@@ -1149,53 +1083,6 @@ public sealed partial class Map3Root : Node2D
         _outboundTransitionStatus.AddThemeFontSizeOverride("font_size", 15);
         _outboundTransitionStatus.AddThemeColorOverride("font_color", new Color("d8c6ff"));
         AddChild(_outboundTransitionStatus);
-    }
-
-    private static void RegisterInputMap()
-    {
-        RegisterAction("move_north", Key.W);
-        RegisterAction("move_east", Key.D);
-        RegisterAction("move_south", Key.S);
-        RegisterAction("move_west", Key.A);
-        RegisterAction("select_context", Key.Enter);
-        RegisterAction("request_event", Key.Z);
-        RegisterAction("acknowledge_event", Key.X);
-        RegisterAction("request_transition", Key.C);
-        RegisterAction("acknowledge_transition", Key.V);
-        RegisterAction("turn_north", Key.Up);
-        RegisterAction("turn_east", Key.Right);
-        RegisterAction("turn_south", Key.Down);
-        RegisterAction("turn_west", Key.Left);
-        RegisterAction("request_entity_interaction", Key.F);
-        RegisterAction("acknowledge_entity_interaction", Key.G);
-        RegisterAction("advance_dialogue", Key.H);
-        RegisterAction("request_field_search", Key.Q);
-        RegisterAction("acknowledge_field_search", Key.E);
-        RegisterAction("request_item_acquisition", Key.R);
-        RegisterAction("acknowledge_item_acquisition", Key.T);
-        RegisterAction("request_outbound_transition", Key.Y);
-        RegisterAction("acknowledge_outbound_transition", Key.U);
-    }
-
-    private static void RegisterAction(string action, Key physicalKey)
-    {
-        if (!InputMap.HasAction(action))
-        {
-            InputMap.AddAction(action);
-        }
-
-        if (InputMap.ActionGetEvents(action).OfType<InputEventKey>().Any(
-            input => input.PhysicalKeycode == physicalKey))
-        {
-            return;
-        }
-
-        InputMap.ActionAddEvent(
-            action,
-            new InputEventKey
-            {
-                PhysicalKeycode = physicalKey,
-            });
     }
 
     private static string FormatContext(ExplorationContextSelectionSnapshot selection)

@@ -50,8 +50,10 @@ package reader and two private-local readers for canonical map import and base v
 
 Two areas currently concentrate more responsibility than the target shape:
 
-- `Map3Root` and its private partial own profile dispatch, composition, input polling, command calls,
-  projection, UI formatting, and smoke orchestration.
+- `Map3Root` and its private partial own profile dispatch, composition, private input polling, command
+  calls, projection, UI formatting, and smoke orchestration. Public-synthetic action registration and
+  polling delegate to the internal `Map3InputAdapter`; it calls only root-supplied semantic actions and
+  owns no session or gameplay state.
 - `GameSession` and its partials own command routing, pending gates, lifecycle handlers, broad snapshot
   construction, private admission, and projection-facing result types.
 
@@ -67,7 +69,8 @@ These are accepted implementation facts, not a claim that their planned refactor
 `Map3Root` should converge on profile selection, dependency construction, lifecycle, and wiring.
 Internal replaceable collaborators may own:
 
-- `Map3InputAdapter`: `InputMap` actions to semantic Application commands;
+- `Map3InputAdapter`: public-synthetic `InputMap` actions to semantic Application commands
+  (**implemented**; private-local polling remains in the existing partial);
 - `Map3Presenter`: authoritative snapshot or bounded view model to nodes and labels;
 - public-synthetic and private-local composition builders returning one runtime handle; and
 - `Map3SmokeDriver`: deterministic command scripts and stable observation serialization.
@@ -116,8 +119,9 @@ extends an existing bounded inspector or observation unless it has an independen
 
 Future refactors are serialized and behavior-preserving:
 
-1. extract Godot input, presentation, composition, and smoke responsibilities while preserving profile
-   selection, commands, marker bytes, and observations;
+1. continue extracting Godot presentation, composition, private input, and smoke responsibilities;
+   public-synthetic input is already delegated, with profile selection, commands, marker bytes, and
+   observations preserved;
 2. extract Application dispatch, pending gates, and snapshot projection behind `GameSession`; and
 3. split a Content reader internally only when an owning change requires it.
 
