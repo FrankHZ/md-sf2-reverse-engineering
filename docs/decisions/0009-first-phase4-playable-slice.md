@@ -49,10 +49,49 @@ of the following are complete:
 The two audits are independently owned even where their inventories overlap. Neither may treat the
 other lane's unmerged findings as accepted project evidence.
 
+## Accepted-Evidence Refresh (2026-08-30)
+
+This refresh records later accepted evidence without changing the 2026-08-14 decision or declaring
+the eventual milestone ready. The accepted runtime owners now close three bounded prefixes:
+
+- `sf2-map3-admitted-start-runtime-v1` closes the controlled Map 3 start through the first
+  `WaitForEvent`;
+- `sf2-map3-battle01-natural-route-runtime-v1` closes the natural opening only through
+  `cs_5149A` entry-before-body, with `FieldMenu` **NotReached**; and
+- `sf2-map3-messenger-acceptance-runtime-v1` closes the accepted messenger continuation only through
+  its follower-ready `WaitForEvent`, again with `FieldMenu` **NotReached**.
+
+The accepted static chain now continues through
+`sf2-map3-castle-battle-unlock-static-v1`,
+`sf2-map3-battle01-admission-static-v1`,
+`sf2-map3-battle01-turn-control-static-v1`,
+`sf2-map3-battle01-action-effect-static-v1`,
+`sf2-map3-battle01-action-completion-static-v1`,
+`sf2-map3-battle01-turn-finalization-static-v1`, and
+`sf2-map3-battle01-victory-return-static-v1`. These fixtures close source/H1/ROM topology and local
+state/control/caller/content shapes only. They do not prove natural R2a-to-R2b-to-R2c continuity,
+caller order or admission reach, a naturally initialized encounter, reached player/AI/action/result
+branches, action replay or next-turn dispatch, multi-round play, victory-program execution, return to
+exploration, or a stable endpoint.
+
+[ADR 0014](./0014-static-first-runtime-evidence-after-map3-battle01.md) and
+[ADR 0016](./0016-remake-start-evidence-deferral.md) keep those caller-dependent facts
+**Unknown/Deferred** unless a concrete implementation or acceptance ambiguity passes the immediate
+runtime-evidence gate. [ADR 0015](./0015-original-reference-replay-and-h4-boundary.md) keeps the failed
+R2b and original-reference candidates non-evidence. None of this accepted static coverage turns
+natural continuity, private-reference provenance, complete 8C observation, or continuous H4 into a
+closed milestone gate.
+
+The user separately authorized the first bounded Phase 4 implementation slice on 2026-08-28, as
+recorded in [`remake/README.md`](../../remake/README.md). That action satisfies this ADR's historical
+implementation-start gate only. It does not make the continuous milestone ready, close any evidence
+gap above, or report milestone acceptance.
+
 ## Required Audit Outputs, Not Decisions Here
 
-The audits must make the following scenario details explicit before implementation, without this ADR
-preselecting their answers:
+The audits must make the following scenario details explicit before eventual continuous-milestone
+acceptance, without this ADR preselecting their answers. Under ADR 0016, this list is not a default
+prerequisite for every separately authorized bounded implementation slice:
 
 - the detailed Map 3 route, starting state, required transitions, and handoff into Battle 01;
 - required story, dialogue, event, exploration, menu, UI, and presentation behavior;
@@ -73,6 +112,7 @@ Phase 4 implementation a bounded first milestone. It deliberately makes battle c
 entry, the eventual acceptance stopping condition. ADR 0016 controls whether deferred natural-
 continuity evidence is a default prerequisite for a separately authorized implementation start.
 
-This decision does **not** create `remake/`, install Godot, run an MCP bakeoff, choose assets, begin the
-Research or Design audits, or authorize implementation. Those remain separate owned slices under the
-eventual milestone acceptance gate and the separate explicit user start decision.
+At adoption, this decision did **not** create `remake/`, install Godot, run an MCP bakeoff, choose
+assets, begin the Research or Design audits, or authorize implementation. Later accepted decisions
+and explicit user actions may authorize bounded implementation slices under ADR 0016 without changing
+this milestone extent or reporting its eventual acceptance gate complete.

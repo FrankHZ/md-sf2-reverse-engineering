@@ -644,10 +644,10 @@
       "source": "docs/design/synthesis/map3-battle01-readiness.md",
       "status": "translated",
       "mirror": "docs/design/zh-CN/synthesis/map3-battle01-readiness.md",
-      "sourceSha256": "02231d27cf8a3fdb0b4bb640be4392bfe20ed312534a90a1c02f8644fedf2f60",
-      "mirrorSha256": "77bf393662238edb177b6d61a3c361cf07446dfae623c53883188a9fce253574",
+      "sourceSha256": "5938a2b99b56c018538fec6e07cd393391125b50f720d531059216c4cc0f8989",
+      "mirrorSha256": "f2c4f09a9243ab723c75173df8af5fc4be5b89cd20a5b53b07a2abeb5d58761b",
       "glossarySha256": "3bb810fae582abeb250fc641b0acda6d14fffdf8e2d95f2e470d8a1f10b293d8",
-      "translatedDate": "2026-08-20"
+      "translatedDate": "2026-08-30"
     },
     {
       "source": "docs/design/synthesis/phase4-bootstrap-plan.md",
