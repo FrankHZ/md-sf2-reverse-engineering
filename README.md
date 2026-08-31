@@ -23,9 +23,11 @@ project decisions belong in their owning tracked documents.
 - **Remake implementation:** active within a bounded Phase 4 start explicitly authorized by the user
   on 2026-08-28 under
   [ADR 0016](./docs/decisions/0016-remake-start-evidence-deferral.md). The tracked [`remake/`](./remake/)
-  project currently contains a pure plain-C# Domain implementation and tests; Application, Content,
-  and Godot layers remain later owned slices. The accepted first playable milestone is still one
-  continuous scenario from Map 3 through completion of Battle 01 under
+  project now contains plain-C# Domain and Application assemblies, validated public/private Content
+  adapters, and a thin Godot host. Its current public-synthetic and private-local Map 3 capabilities
+  and retained Unknowns are summarized by the [remake capability owner](./remake/docs/capability-status.md).
+  The accepted first playable milestone is still one continuous scenario from Map 3 through
+  completion of Battle 01 under
   [ADR 0009](./docs/decisions/0009-first-phase4-playable-slice.md). Its Research/Design closures,
   main-gate readiness, and H4 result remain incomplete eventual acceptance work, not default
   prerequisites for the authorized bounded implementation. No distributable asset strategy or MCP
@@ -50,7 +52,8 @@ Use the executable sources of truth instead:
 
 For any new task:
 
-1. Apply [`AGENTS.md`](./AGENTS.md) once; if the client already injected it, do not reread it.
+1. Apply the stable repository rules and owner links in [`AGENTS.md`](./AGENTS.md) once; if the client
+   already injected it, do not reread it or copy its routed details into a task handoff.
 2. Inspect the exact Git identity, status, active worktrees, and recent commits at runtime.
 3. Use [`docs/operations/agent-resume.md`](./docs/operations/agent-resume.md) to find the closest
    owner, then read only that owner and the decisions or checklists required by the task.
@@ -163,8 +166,9 @@ local/                  Ignored ROMs, saves, traces, upstream checkouts, and gen
 ```
 
 The tracked `remake/` path now exists for the explicitly authorized bounded Phase 4 implementation.
-It currently contains only concrete plain-C# Domain behavior and its tests; future Application,
-Content, Godot, and other paths are still added only when a concrete slice owns them.
+It currently contains concrete Domain, Application, Content, and thin Godot layers. Its architecture,
+runtime profiles and trust boundaries, capability status, and verification workflow are owned under
+[`remake/docs/`](./remake/docs/); new paths are still added only when a concrete slice owns them.
 
 Research explains evidence. Evidence-bound design contracts express implementation-neutral behavior.
 Cross-subsystem design synthesis connects accepted owners. Decision records own project choices. A
@@ -291,9 +295,10 @@ contract. A future remake must use placeholders or properly licensed assets for 
 - **Phase 4 — Modern Engine Vertical Slice:** the Godot 4.7.2 .NET/C# baseline and first continuous
   Map 3-through-Battle 01-completion milestone are accepted as the eventual acceptance target;
   Research/Design gap audits, main-gate readiness, and H4 remain open for that target. The user
-  explicitly authorized a bounded implementation start on 2026-08-28 under ADR 0016, and the current
-  `remake/` implementation is limited to the pure Domain layer. Those eventual acceptance gaps are not
-  default prerequisites for continuing the authorized bounded implementation.
+  explicitly authorized a bounded implementation start on 2026-08-28 under ADR 0016. The current
+  `remake/` includes bounded public-synthetic and private-local Map 3 runtime capabilities across the
+  four accepted layers, without claiming the eventual milestone, original presentation, or H4. Those
+  eventual acceptance gaps are not default prerequisites for continuing an authorized bounded slice.
 - **Phase 5 — Content and Productization:** licensed/placeholder assets, localization, accessibility,
    distribution, and release QA — not started.
 
