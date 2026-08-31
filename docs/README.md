@@ -898,6 +898,10 @@ is created only when a real disagreement appears and the choice constrains later
   controls the distinction between the eventual continuous milestone acceptance target and a separate
   user-authorized bounded implementation start; it routes deferred runtime questions through the
   immediate static-first H3 gate without changing evidence labels or stop-losses.
+- [`0017-heavy-boundaries-light-internals.md`](./decisions/0017-heavy-boundaries-light-internals.md):
+  refines the accepted remake architecture so trust, authoritative mutation, versioned ports, and stable
+  observations retain heavy typing while same-process presentation and orchestration default to direct,
+  internal implementation.
 
 ## Evidence Vocabulary
 
