@@ -186,8 +186,105 @@ def test_public_synthetic_presentation_is_an_internal_godot_adapter() -> None:
         assert presenter_source.count(f'new Color("{color}")') == 1
 
     assert "BuildPresentation();" in private_source
-    assert "_status = new Label" in private_source
-    assert "Map3Presenter" not in private_source
+    assert "Map3PresentationProjection" not in private_source
+    assert "_presenter" not in private_source
+
+
+def test_private_diagnostic_presentation_is_an_internal_godot_adapter() -> None:
+    root_source = (REMAKE / "game/src/Map3Root.cs").read_text(encoding="utf-8")
+    private_source = (REMAKE / "game/src/PrivateMap3Composition.cs").read_text(
+        encoding="utf-8"
+    )
+    presenter_source = (REMAKE / "game/src/PrivateMap3Presenter.cs").read_text(
+        encoding="utf-8"
+    )
+
+    assert "private Label? _status;" not in root_source
+    assert "private PrivateMap3Presenter? _privatePresenter;" in private_source
+    assert "_privatePresenter = PrivateMap3Presenter.Attach(this, plan);" in private_source
+    assert "PrivateMap3PresentationPlan.PrivateLocalAvailable()" in private_source
+    assert "PrivateMap3PresentationPlan.PrivateLocalUnavailable(" in private_source
+    assert "PrivateMap3PresentationPlan.ProfileUnavailable(" in private_source
+    assert "_privatePresenter?.Project(" in private_source
+    assert "_privatePresenter?.ProjectStatus(message);" in private_source
+    assert "_privatePresenter?.Projection" in private_source
+    assert "new Label" not in private_source
+    assert "new PrivateOriginalMapTraversalViewport" not in private_source
+    assert "_status" not in private_source
+    assert "_privateTraversalViewport" not in private_source
+
+    assert "internal sealed record PrivateMap3PresentationPlan" in presenter_source
+    assert "internal sealed class PrivateMap3Presenter" in presenter_source
+    assert presenter_source.count("internal sealed record ") == 1
+    assert "internal static PrivateMap3PresentationPlan PrivateLocalAvailable()" in (
+        presenter_source
+    )
+    assert "internal static PrivateMap3PresentationPlan PrivateLocalUnavailable(" in (
+        presenter_source
+    )
+    assert "internal static PrivateMap3PresentationPlan ProfileUnavailable(" in (
+        presenter_source
+    )
+    assert "internal PrivateOriginalMapTraversalViewProjection? Projection" in (
+        presenter_source
+    )
+    assert "_viewport?.Project(snapshot);" in presenter_source
+    assert "PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome)" in (
+        presenter_source
+    )
+    assert "public " not in presenter_source
+
+    for forbidden in (
+        ".Apply(",
+        "Map3RuntimeProfileSelection",
+        "runtime-profile",
+        "CanonicalImportPath",
+        "PrivateCanonicalMap3ImportReader",
+        "ContentProfile",
+        "JsonSerializer",
+        "SmokeMarker",
+        "SF2_MAP3_",
+        "Stopwatch",
+        "Input.",
+        "InputMap.",
+        "FileAccess",
+        "GD.Print",
+        "GetTree().Quit",
+    ):
+        assert forbidden not in presenter_source
+
+    child_order = (
+        "parent.AddChild(banner);",
+        "parent.AddChild(explanation);",
+        "parent.AddChild(viewport);",
+        "parent.AddChild(status);",
+    )
+    offsets = [presenter_source.index(token) for token in child_order]
+    assert offsets == sorted(offsets)
+    for position in (
+        "new Vector2(24, 18)",
+        "new Vector2(24, 55)",
+        "new Vector2(24, 105)",
+        "new Vector2(24, plan.StatusY)",
+    ):
+        assert presenter_source.count(position) == 1
+    assert presenter_source.count('new Color("ff8f70")') == 1
+    assert "StatusY: 450" in presenter_source
+    assert "StatusY: 105" in presenter_source
+
+    for retained in (
+        "Input.IsActionJustPressed",
+        "PrivateCanonicalMap3ImportReader",
+        "GameSession.StartPrivateOriginalMap",
+        "JsonSerializer.Serialize",
+        "SF2_MAP3_PRIVATE_LOCAL_SMOKE",
+        "SF2_MAP3_PRIVATE_LOCAL_VIEW_SMOKE",
+        "SF2_MAP3_PRIVATE_LOCAL_STEP_COPY_SMOKE",
+        "SF2_MAP3_PRIVATE_LOCAL_AREA_SMOKE",
+        "TracePrivateStage",
+        "GetTree().Quit",
+    ):
+        assert retained in private_source
 
 
 def test_inner_assemblies_do_not_acquire_outer_or_nondeterministic_apis() -> None:

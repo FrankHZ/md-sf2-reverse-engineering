@@ -23,7 +23,7 @@ public sealed partial class Map3Root
     private const string PrivateStageMarker = "SF2_MAP3_PRIVATE_LOCAL_STAGE ";
 
     private Map3RuntimeProfile? _runtimeProfile;
-    private PrivateOriginalMapTraversalViewport? _privateTraversalViewport;
+    private PrivateMap3Presenter? _privatePresenter;
 
     private void BuildSelectedPresentation(Map3RuntimeProfileSelection selection)
     {
@@ -34,52 +34,23 @@ public sealed partial class Map3Root
             return;
         }
 
-        BuildPrivatePresentation(selection);
-    }
-
-    private void BuildPrivatePresentation(Map3RuntimeProfileSelection selection)
-    {
-        bool privateAvailable = selection.IsAvailable &&
-            selection.RequestedProfile == Map3RuntimeProfile.PrivateLocal;
-        string bannerText = selection.RequestedProfile == Map3RuntimeProfile.PrivateLocal
-            ? PrivateBannerText
-            : "PROFILE UNAVAILABLE — NO FALLBACK";
-        Label banner = new()
+        PrivateMap3PresentationPlan plan;
+        if (selection.IsAvailable)
         {
-            Text = bannerText,
-            Position = new Vector2(24, 18),
-        };
-        banner.AddThemeFontSizeOverride("font_size", 24);
-        banner.AddThemeColorOverride("font_color", new Color("ff8f70"));
-        AddChild(banner);
-
-        Label explanation = new()
+            plan = PrivateMap3PresentationPlan.PrivateLocalAvailable();
+        }
+        else if (selection.RequestedProfile == Map3RuntimeProfile.PrivateLocal)
         {
-            Text = "Project-authored traversal diagnostics from accepted Domain policy. " +
-                "Original presentation remains unavailable.",
-            Position = new Vector2(24, 55),
-        };
-        explanation.AddThemeFontSizeOverride("font_size", 16);
-        AddChild(explanation);
-
-        if (privateAvailable)
+            plan = PrivateMap3PresentationPlan.PrivateLocalUnavailable(
+                selection.Diagnostic ?? "Runtime profile is unavailable.");
+        }
+        else
         {
-            _privateTraversalViewport = new PrivateOriginalMapTraversalViewport
-            {
-                Position = new Vector2(24, 105),
-            };
-            AddChild(_privateTraversalViewport);
+            plan = PrivateMap3PresentationPlan.ProfileUnavailable(
+                selection.Diagnostic ?? "Runtime profile is unavailable.");
         }
 
-        _status = new Label
-        {
-            Text = selection.IsAvailable
-                ? "Admitting PrivateLocal canonical Map 3..."
-                : $"Unavailable: {selection.Diagnostic}",
-            Position = new Vector2(24, privateAvailable ? 450 : 105),
-        };
-        _status.AddThemeFontSizeOverride("font_size", 18);
-        AddChild(_status);
+        _privatePresenter = PrivateMap3Presenter.Attach(this, plan);
     }
 
     private void StartPrivateScenario(string canonicalImportPath, bool runSmoke)
@@ -108,7 +79,7 @@ public sealed partial class Map3Root
         }
 
         _session = started.Session;
-        ProjectPrivateSnapshot(started.Session.PrivateOriginalMapSnapshot, "Ready");
+        _privatePresenter?.Project(started.Session.PrivateOriginalMapSnapshot, "Ready");
         if (runSmoke)
         {
             Callable.From(RunPrivateHeadlessSmoke).CallDeferred();
@@ -148,24 +119,7 @@ public sealed partial class Map3Root
 
         PrivateOriginalMapMoveApplied applied = _session.ApplyPrivateOriginalMap(
             new MoveExplorationCommand(direction));
-        ProjectPrivateSnapshot(applied.Snapshot, applied.Traversal.Outcome.ToString());
-    }
-
-    private void ProjectPrivateSnapshot(
-        PrivateOriginalMapSessionSnapshot snapshot,
-        string outcome)
-    {
-        _privateTraversalViewport?.Project(snapshot);
-        if (_status is null)
-        {
-            return;
-        }
-
-        _status.Text =
-            $"Map {snapshot.Map}  Tile ({snapshot.PlayerPosition.X}, " +
-            $"{snapshot.PlayerPosition.Y})  Area {snapshot.CurrentArea.OneBasedRecordOrdinal}  " +
-            $"Step {snapshot.SimulationStep}  {outcome}  |  " +
-            "WASD semantic movement";
+        _privatePresenter?.Project(applied.Snapshot, applied.Traversal.Outcome.ToString());
     }
 
     private void RunPrivateHeadlessSmoke()
@@ -197,7 +151,9 @@ public sealed partial class Map3Root
         {
             PrivateOriginalMapMoveApplied applied = _session.ApplyPrivateOriginalMap(
                 new MoveExplorationCommand(direction));
-            ProjectPrivateSnapshot(applied.Snapshot, applied.Traversal.Outcome.ToString());
+            _privatePresenter?.Project(
+                applied.Snapshot,
+                applied.Traversal.Outcome.ToString());
             if (applied.Traversal.Outcome == OriginalMapTraversalOutcome.Moved)
             {
                 moved = applied;
@@ -216,7 +172,7 @@ public sealed partial class Map3Root
         }
 
         PrivateOriginalMapTraversalViewProjection? projection =
-            _privateTraversalViewport?.Projection;
+            _privatePresenter?.Projection;
         if (projection is null)
         {
             FailPrivateStartup(
@@ -330,7 +286,9 @@ public sealed partial class Map3Root
             return false;
         }
 
-        ProjectPrivateSnapshot(applied.Snapshot, "Controlled step-copy diagnostic applied");
+        _privatePresenter?.Project(
+            applied.Snapshot,
+            "Controlled step-copy diagnostic applied");
         WorkingMapBlockCopy copy = applied.Receipt.Copy;
         object receipt = new
         {
@@ -401,10 +359,7 @@ public sealed partial class Map3Root
     private void FailPrivateStartup(string message, bool runSmoke, string profile)
     {
         GD.PrintErr(message);
-        if (_status is not null)
-        {
-            _status.Text = $"Unavailable: {message}";
-        }
+        _privatePresenter?.ProjectStatus(message);
 
         if (runSmoke)
         {
