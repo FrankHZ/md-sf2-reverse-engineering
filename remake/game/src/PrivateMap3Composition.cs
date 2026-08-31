@@ -90,26 +90,6 @@ public sealed partial class Map3Root
         }
     }
 
-    private void ProcessPrivateInput()
-    {
-        if (Input.IsActionJustPressed("move_north"))
-        {
-            ApplyPrivateMove(ExplorationDirection.North);
-        }
-        else if (Input.IsActionJustPressed("move_east"))
-        {
-            ApplyPrivateMove(ExplorationDirection.East);
-        }
-        else if (Input.IsActionJustPressed("move_south"))
-        {
-            ApplyPrivateMove(ExplorationDirection.South);
-        }
-        else if (Input.IsActionJustPressed("move_west"))
-        {
-            ApplyPrivateMove(ExplorationDirection.West);
-        }
-    }
-
     private void ApplyPrivateMove(ExplorationDirection direction)
     {
         if (_session is null)

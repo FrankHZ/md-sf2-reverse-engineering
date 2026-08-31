@@ -66,7 +66,7 @@ def test_godot_project_and_lock_pin_accepted_4_7_2_dotnet_boundary() -> None:
     assert dependencies["GodotSharpEditor"]["resolved"] == "4.7.2"
 
 
-def test_public_synthetic_input_polling_is_an_internal_godot_adapter() -> None:
+def test_public_and_private_input_polling_share_one_internal_godot_adapter() -> None:
     root_source = (REMAKE / "game/src/Map3Root.cs").read_text(encoding="utf-8")
     adapter_source = (REMAKE / "game/src/Map3InputAdapter.cs").read_text(
         encoding="utf-8"
@@ -77,6 +77,7 @@ def test_public_synthetic_input_polling_is_an_internal_godot_adapter() -> None:
 
     assert "Map3InputAdapter.CreateGodot" in root_source
     assert "PollPublicSynthetic" in root_source
+    assert "PollPrivateOriginalMapMovement" in root_source
     assert "Input.IsActionJustPressed" not in root_source
     assert "InputMap." not in root_source
     assert "RegisterInputMap" not in root_source
@@ -86,6 +87,9 @@ def test_public_synthetic_input_polling_is_an_internal_godot_adapter() -> None:
     assert "internal sealed record Map3InputBinding" in adapter_source
     assert "Map3InputIntent" not in adapter_source
     assert "internal void PollPublicSynthetic()" in adapter_source
+    assert "internal ExplorationDirection? PollPrivateOriginalMapMovement()" in (
+        adapter_source
+    )
     assert "public " not in adapter_source
     assert adapter_source.count("static actions =>") == 22
     for forbidden in (
@@ -97,8 +101,11 @@ def test_public_synthetic_input_polling_is_an_internal_godot_adapter() -> None:
     ):
         assert forbidden not in adapter_source
 
-    assert 'Input.IsActionJustPressed("move_north")' in private_source
-    assert "ProcessPrivateInput();" in root_source
+    assert "Input.IsActionJustPressed" not in private_source
+    assert "ProcessPrivateInput" not in private_source
+    assert "ProcessPrivateInput" not in root_source
+    assert "ApplyPrivateMove(privateMovement);" in root_source
+    assert "_session.ApplyPrivateOriginalMap(" in private_source
 
 
 def test_public_synthetic_presentation_is_an_internal_godot_adapter() -> None:
@@ -273,7 +280,6 @@ def test_private_diagnostic_presentation_is_an_internal_godot_adapter() -> None:
     assert "StatusY: 105" in presenter_source
 
     for retained in (
-        "Input.IsActionJustPressed",
         "PrivateCanonicalMap3ImportReader",
         "GameSession.StartPrivateOriginalMap",
         "JsonSerializer.Serialize",
@@ -285,6 +291,8 @@ def test_private_diagnostic_presentation_is_an_internal_godot_adapter() -> None:
         "GetTree().Quit",
     ):
         assert retained in private_source
+
+    assert "Input.IsActionJustPressed" not in private_source
 
 
 def test_inner_assemblies_do_not_acquire_outer_or_nondeterministic_apis() -> None:

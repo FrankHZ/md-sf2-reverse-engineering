@@ -26,7 +26,8 @@ internal sealed record Map3InputActions(
 internal sealed record Map3InputBinding(
     string ActionName,
     Key PhysicalKey,
-    Action<Map3InputActions> Dispatch);
+    Action<Map3InputActions> Dispatch,
+    ExplorationDirection? PrivateMovementDirection = null);
 
 internal sealed class Map3InputAdapter
 {
@@ -37,19 +38,23 @@ internal sealed class Map3InputAdapter
                 new(
                     "move_north",
                     Key.W,
-                    static actions => actions.Move(ExplorationDirection.North)),
+                    static actions => actions.Move(ExplorationDirection.North),
+                    ExplorationDirection.North),
                 new(
                     "move_east",
                     Key.D,
-                    static actions => actions.Move(ExplorationDirection.East)),
+                    static actions => actions.Move(ExplorationDirection.East),
+                    ExplorationDirection.East),
                 new(
                     "move_south",
                     Key.S,
-                    static actions => actions.Move(ExplorationDirection.South)),
+                    static actions => actions.Move(ExplorationDirection.South),
+                    ExplorationDirection.South),
                 new(
                     "move_west",
                     Key.A,
-                    static actions => actions.Move(ExplorationDirection.West)),
+                    static actions => actions.Move(ExplorationDirection.West),
+                    ExplorationDirection.West),
                 new(
                     "select_context",
                     Key.Enter,
@@ -162,6 +167,24 @@ internal sealed class Map3InputAdapter
             binding.Dispatch(_actions);
             return;
         }
+    }
+
+    internal ExplorationDirection? PollPrivateOriginalMapMovement()
+    {
+        foreach (Map3InputBinding binding in BindingList)
+        {
+            if (binding.PrivateMovementDirection is not ExplorationDirection direction)
+            {
+                continue;
+            }
+
+            if (_isActionJustPressed(binding.ActionName))
+            {
+                return direction;
+            }
+        }
+
+        return null;
     }
 
     private static void RegisterAction(string action, Key physicalKey)
