@@ -14,18 +14,9 @@ public sealed partial class Map3Root : Node2D
 
     private GameSession? _session;
     private ScenarioAdmissionReceipt? _admissionReceipt;
-    private SyntheticMapViewport? _viewport;
+    private Map3Presenter? _presenter;
+    // The untouched private/unavailable presentation in PrivateMap3Composition owns this field.
     private Label? _status;
-    private Label? _contextStatus;
-    private Label? _eventRequestStatus;
-    private Label? _effectStatus;
-    private Label? _transitionStatus;
-    private Label? _entityStatus;
-    private Label? _entityInteractionStatus;
-    private Label? _dialogueStatus;
-    private Label? _fieldSearchStatus;
-    private Label? _itemAcquisitionStatus;
-    private Label? _outboundTransitionStatus;
     private Map3InputAdapter? _inputAdapter;
 
     public override void _Ready()
@@ -138,10 +129,7 @@ public sealed partial class Map3Root : Node2D
         }
 
         GameSessionCommandRejected rejected = (GameSessionCommandRejected)result;
-        if (_status is not null)
-        {
-            _status.Text = rejected.Diagnostic.Message;
-        }
+        ProjectRejection(rejected);
     }
 
     private void ApplyContextSelection()
@@ -160,10 +148,7 @@ public sealed partial class Map3Root : Node2D
         }
 
         GameSessionCommandRejected rejected = (GameSessionCommandRejected)result;
-        if (_status is not null)
-        {
-            _status.Text = rejected.Diagnostic.Message;
-        }
+        ProjectRejection(rejected);
     }
 
     private void ApplyEventRequest()
@@ -459,63 +444,17 @@ public sealed partial class Map3Root : Node2D
 
     private void ProjectRejection(GameSessionCommandRejected rejected)
     {
-        if (_status is not null)
-        {
-            _status.Text = rejected.Diagnostic.Message;
-        }
+        _presenter?.ProjectStatus(rejected.Diagnostic.Message);
     }
 
     private void ProjectSnapshot(string outcome)
     {
-        if (_session is null ||
-            _viewport is null ||
-            _status is null ||
-            _contextStatus is null ||
-            _eventRequestStatus is null ||
-            _effectStatus is null ||
-            _transitionStatus is null ||
-            _entityStatus is null ||
-            _entityInteractionStatus is null ||
-            _dialogueStatus is null ||
-            _fieldSearchStatus is null ||
-            _itemAcquisitionStatus is null ||
-            _outboundTransitionStatus is null)
+        if (_session is null)
         {
             return;
         }
 
-        GameSessionSnapshot snapshot = _session.Snapshot;
-        _viewport.Project(snapshot);
-        _status.Text =
-            $"Map {snapshot.Exploration.Map}  " +
-            $"Tile ({snapshot.Exploration.PlayerPosition.X}, " +
-            $"{snapshot.Exploration.PlayerPosition.Y})  " +
-            $"Facing {snapshot.Facing}  Step {snapshot.SimulationStep}  {outcome}  |  " +
-            "WASD move / arrows turn / Enter / Z X / C V / F G / H / Q E / R T / Y U";
-        _contextStatus.Text = snapshot.ContextSelection is null
-            ? "Context not selected."
-            : FormatContext(snapshot.ContextSelection);
-        _eventRequestStatus.Text = snapshot.EventRequest is null
-            ? "Event request: none."
-            : FormatEventRequest(snapshot.EventRequest);
-        _effectStatus.Text = snapshot.LastEventEffect is null
-            ? "Synthetic effect: none."
-            : FormatEffect(snapshot);
-        _transitionStatus.Text = snapshot.LocalTransition is null
-            ? "Local transition: none."
-            : FormatLocalTransition(snapshot.LocalTransition);
-        _entityStatus.Text = FormatEntities(snapshot.Entities);
-        _entityInteractionStatus.Text = snapshot.EntityInteraction is null
-            ? "Placeholder interaction: none."
-            : FormatEntityInteraction(snapshot.EntityInteraction);
-        _dialogueStatus.Text = snapshot.Dialogue is null
-            ? "Placeholder dialogue: none."
-            : FormatDialogue(snapshot.Dialogue);
-        _fieldSearchStatus.Text = FormatFieldSearch(snapshot);
-        _itemAcquisitionStatus.Text = FormatItemAcquisition(snapshot);
-        _outboundTransitionStatus.Text = snapshot.OutboundTransition is null
-            ? "Outbound transition: none."
-            : FormatOutboundTransition(snapshot.OutboundTransition);
+        _presenter?.Project(_session.Snapshot, outcome);
     }
 
     private void RunHeadlessSmoke()
@@ -955,10 +894,7 @@ public sealed partial class Map3Root : Node2D
     private void FailStartup(string message)
     {
         GD.PushError(message);
-        if (_status is not null)
-        {
-            _status.Text = message;
-        }
+        _presenter?.ProjectStatus(message);
 
         if (OS.GetCmdlineUserArgs().Contains("--map3-smoke", StringComparer.Ordinal))
         {
@@ -969,207 +905,6 @@ public sealed partial class Map3Root : Node2D
 
     private void BuildPresentation()
     {
-        Label banner = new()
-        {
-            Text = BannerText,
-            Position = new Vector2(24, 18),
-        };
-        banner.AddThemeFontSizeOverride("font_size", 24);
-        banner.AddThemeColorOverride("font_color", new Color("ffbd59"));
-        AddChild(banner);
-
-        Label explanation = new()
-        {
-            Text = "Project-authored selectors, placeholder state, and outbound shell; targets are never interpreted.",
-            Position = new Vector2(24, 55),
-        };
-        explanation.AddThemeFontSizeOverride("font_size", 16);
-        AddChild(explanation);
-
-        _viewport = new SyntheticMapViewport
-        {
-            Position = new Vector2(24, 105),
-        };
-        AddChild(_viewport);
-
-        _status = new Label
-        {
-            Text = "Admitting synthetic package...",
-            Position = new Vector2(24, 450),
-        };
-        _status.AddThemeFontSizeOverride("font_size", 18);
-        AddChild(_status);
-
-        _contextStatus = new Label
-        {
-            Text = "Context not selected.",
-            Position = new Vector2(24, 480),
-        };
-        _contextStatus.AddThemeFontSizeOverride("font_size", 15);
-        AddChild(_contextStatus);
-
-        _eventRequestStatus = new Label
-        {
-            Text = "Event request: none.",
-            Position = new Vector2(24, 510),
-        };
-        _eventRequestStatus.AddThemeFontSizeOverride("font_size", 15);
-        AddChild(_eventRequestStatus);
-
-        _effectStatus = new Label
-        {
-            Text = "Synthetic effect: none.",
-            Position = new Vector2(24, 540),
-        };
-        _effectStatus.AddThemeFontSizeOverride("font_size", 15);
-        AddChild(_effectStatus);
-
-        _transitionStatus = new Label
-        {
-            Text = "Local transition: none.",
-            Position = new Vector2(24, 570),
-        };
-        _transitionStatus.AddThemeFontSizeOverride("font_size", 15);
-        AddChild(_transitionStatus);
-
-        _entityStatus = new Label
-        {
-            Text = "Placeholder entities: none.",
-            Position = new Vector2(24, 600),
-        };
-        _entityStatus.AddThemeFontSizeOverride("font_size", 15);
-        AddChild(_entityStatus);
-
-        _entityInteractionStatus = new Label
-        {
-            Text = "Placeholder interaction: none.",
-            Position = new Vector2(24, 630),
-        };
-        _entityInteractionStatus.AddThemeFontSizeOverride("font_size", 15);
-        AddChild(_entityInteractionStatus);
-
-        _dialogueStatus = new Label
-        {
-            Text = "Placeholder dialogue: none.",
-            Position = new Vector2(24, 660),
-        };
-        _dialogueStatus.AddThemeFontSizeOverride("font_size", 15);
-        _dialogueStatus.AddThemeColorOverride("font_color", new Color("c6e5ff"));
-        AddChild(_dialogueStatus);
-
-        _fieldSearchStatus = new Label
-        {
-            Text = "Synthetic field search: none.",
-            Position = new Vector2(24, 690),
-        };
-        _fieldSearchStatus.AddThemeFontSizeOverride("font_size", 15);
-        _fieldSearchStatus.AddThemeColorOverride("font_color", new Color("b8f2c2"));
-        AddChild(_fieldSearchStatus);
-
-        _itemAcquisitionStatus = new Label
-        {
-            Text = "Placeholder inventory: empty.",
-            Position = new Vector2(24, 720),
-        };
-        _itemAcquisitionStatus.AddThemeFontSizeOverride("font_size", 15);
-        _itemAcquisitionStatus.AddThemeColorOverride("font_color", new Color("ffe2a8"));
-        AddChild(_itemAcquisitionStatus);
-
-        _outboundTransitionStatus = new Label
-        {
-            Text = "Outbound transition: none.",
-            Position = new Vector2(24, 750),
-        };
-        _outboundTransitionStatus.AddThemeFontSizeOverride("font_size", 15);
-        _outboundTransitionStatus.AddThemeColorOverride("font_color", new Color("d8c6ff"));
-        AddChild(_outboundTransitionStatus);
+        _presenter = Map3Presenter.Attach(this);
     }
-
-    private static string FormatContext(ExplorationContextSelectionSnapshot selection)
-    {
-        string area = selection.AreaDescription.Kind switch
-        {
-            AreaDescriptionSelectionKind.NoMatch => "none",
-            AreaDescriptionSelectionKind.Text =>
-                $"text {selection.AreaDescription.InvestigationTextIndex}/" +
-                $"{selection.AreaDescription.DescriptionTextIndex}",
-            AreaDescriptionSelectionKind.Function =>
-                $"opaque function {selection.AreaDescription.Function}",
-            _ => "unknown",
-        };
-        return $"Setup {selection.SelectedSetup}  Area {area}  " +
-            $"Zone {selection.ZoneEvent.Target} (selected only)";
-    }
-
-    private static string FormatEventRequest(MapEventRequestSnapshot request) =>
-        $"Event request {request.Request}: {request.Status}  " +
-        $"Cue #{request.CueSequence}  Effect {request.ExpectedEffect}  " +
-        $"Target {request.Target} (opaque)";
-
-    private static string FormatEffect(GameSessionSnapshot snapshot)
-    {
-        MapEventEffectSnapshot effect = snapshot.LastEventEffect!;
-        string setFlags = string.Join(", ", snapshot.SyntheticFlags.SetFlags);
-        return $"Synthetic effect {effect.Effect}: applied once at step " +
-            $"{effect.AppliedAtStep}; flag {effect.Flag}; setup flags [{setFlags}]";
-    }
-
-    private static string FormatLocalTransition(MapLocalTransitionSnapshot transition) =>
-        $"Local transition {transition.Transition}: {transition.Status}  " +
-        $"Cue #{transition.CueSequence}  ({transition.SourcePosition.X}, " +
-        $"{transition.SourcePosition.Y}) -> ({transition.DestinationPosition.X}, " +
-        $"{transition.DestinationPosition.Y})  Orientation {transition.DestinationOrientation}";
-
-    private static string FormatEntities(IReadOnlyList<MapEntityDefinition> entities) =>
-        entities.Count == 0
-            ? "Placeholder entities: none."
-            : "Placeholder entities: " + string.Join(
-                ", ",
-                entities.Select(entity =>
-                    $"{entity.Entity}@({entity.Position.X},{entity.Position.Y})"));
-
-    private static string FormatEntityInteraction(MapEntityInteractionSnapshot interaction) =>
-        $"Placeholder interaction {interaction.Request}: {interaction.Status}  " +
-        $"Cue #{interaction.CueSequence}  Entity {interaction.Entity}  " +
-        $"Target {interaction.Target} (uninterpreted)";
-
-    private static string FormatDialogue(MapDialogueSnapshot dialogue) =>
-        dialogue.Status == MapDialogueStatus.Open
-            ? $"Placeholder dialogue {dialogue.Dialogue}: line " +
-                $"{dialogue.CurrentLineIndex + 1}  {dialogue.CurrentLine!.Text}  " +
-                $"Cue #{dialogue.CueSequence}  [H advances]"
-            : $"Placeholder dialogue {dialogue.Dialogue}: closed  " +
-                $"Cue #{dialogue.CueSequence}";
-
-    private static string FormatFieldSearch(GameSessionSnapshot snapshot)
-    {
-        string discoveries = snapshot.Discoveries.Discoveries.Count == 0
-            ? "none"
-            : string.Join(", ", snapshot.Discoveries.Discoveries);
-        return snapshot.FieldSearch is null
-            ? $"Synthetic field search: none. Discoveries [{discoveries}]  [Q search / E ack]"
-            : $"Synthetic field search {snapshot.FieldSearch.Context}: " +
-                $"{snapshot.FieldSearch.Status}  Result {snapshot.FieldSearch.Result}  " +
-                $"Discovery {snapshot.FieldSearch.Discovery}  Discoveries [{discoveries}]";
-    }
-
-    private static string FormatItemAcquisition(GameSessionSnapshot snapshot)
-    {
-        string items = snapshot.Inventory.Items.Count == 0
-            ? "empty"
-            : string.Join(", ", snapshot.Inventory.Items);
-        return snapshot.ItemAcquisition is null
-            ? $"Placeholder inventory [{items}]  [R acquire / T ack]"
-            : $"Placeholder item acquisition {snapshot.ItemAcquisition.Request}: " +
-                $"{snapshot.ItemAcquisition.Status}  Result {snapshot.ItemAcquisition.Result}  " +
-                $"Item {snapshot.ItemAcquisition.Item}  Inventory [{items}]";
-    }
-
-    private static string FormatOutboundTransition(MapOutboundTransitionSnapshot transition) =>
-        $"Outbound transition {transition.Transition}: {transition.Status}  " +
-        $"Cue #{transition.CueSequence}  {transition.SourceMap}" +
-        $"@({transition.SourcePosition.X},{transition.SourcePosition.Y}) -> " +
-        $"{transition.DestinationMap}" +
-        $"@({transition.DestinationPosition.X},{transition.DestinationPosition.Y})  " +
-        $"Facing {transition.DestinationFacing}";
 }
