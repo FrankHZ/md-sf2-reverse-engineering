@@ -101,6 +101,95 @@ def test_public_synthetic_input_polling_is_an_internal_godot_adapter() -> None:
     assert "ProcessPrivateInput();" in root_source
 
 
+def test_public_synthetic_presentation_is_an_internal_godot_adapter() -> None:
+    root_source = (REMAKE / "game/src/Map3Root.cs").read_text(encoding="utf-8")
+    presenter_source = (REMAKE / "game/src/Map3Presenter.cs").read_text(
+        encoding="utf-8"
+    )
+    private_source = (REMAKE / "game/src/PrivateMap3Composition.cs").read_text(
+        encoding="utf-8"
+    )
+
+    assert "private Map3Presenter? _presenter;" in root_source
+    assert "_presenter = Map3Presenter.Attach(this);" in root_source
+    assert "_presenter?.Project(_session.Snapshot, outcome);" in root_source
+    assert "_presenter?.ProjectStatus" in root_source
+    assert "new Label" not in root_source
+    assert "new SyntheticMapViewport" not in root_source
+    assert "_status.Text" not in root_source
+    for formatter in (
+        "FormatContext",
+        "FormatEventRequest",
+        "FormatEffect",
+        "FormatLocalTransition",
+        "FormatEntities",
+        "FormatEntityInteraction",
+        "FormatDialogue",
+        "FormatFieldSearch",
+        "FormatItemAcquisition",
+        "FormatOutboundTransition",
+    ):
+        assert formatter not in root_source
+
+    assert "internal sealed class Map3Presenter" in presenter_source
+    assert "internal sealed record Map3PresentationProjection" in presenter_source
+    assert "Map3PresentationProjection.Create(snapshot, outcome)" in presenter_source
+    assert "public " not in presenter_source
+    for forbidden in (
+        ".Apply(",
+        "PublicSyntheticMap3PackageReader",
+        "PrivateCanonicalMap3ImportReader",
+        "Map3RuntimeProfileSelection",
+        "JsonSerializer",
+        "SmokeMarker",
+        "SF2_MAP3_",
+        "GetTree().Quit",
+    ):
+        assert forbidden not in presenter_source
+
+    child_order = (
+        "parent.AddChild(banner);",
+        "parent.AddChild(explanation);",
+        "parent.AddChild(viewport);",
+        "parent.AddChild(status);",
+        "parent.AddChild(contextStatus);",
+        "parent.AddChild(eventRequestStatus);",
+        "parent.AddChild(effectStatus);",
+        "parent.AddChild(transitionStatus);",
+        "parent.AddChild(entityStatus);",
+        "parent.AddChild(entityInteractionStatus);",
+        "parent.AddChild(dialogueStatus);",
+        "parent.AddChild(fieldSearchStatus);",
+        "parent.AddChild(itemAcquisitionStatus);",
+        "parent.AddChild(outboundTransitionStatus);",
+    )
+    offsets = [presenter_source.index(token) for token in child_order]
+    assert offsets == sorted(offsets)
+    for position in (
+        "new Vector2(24, 18)",
+        "new Vector2(24, 55)",
+        "new Vector2(24, 105)",
+        "new Vector2(24, 450)",
+        "new Vector2(24, 480)",
+        "new Vector2(24, 510)",
+        "new Vector2(24, 540)",
+        "new Vector2(24, 570)",
+        "new Vector2(24, 600)",
+        "new Vector2(24, 630)",
+        "new Vector2(24, 660)",
+        "new Vector2(24, 690)",
+        "new Vector2(24, 720)",
+        "new Vector2(24, 750)",
+    ):
+        assert presenter_source.count(position) == 1
+    for color in ("ffbd59", "c6e5ff", "b8f2c2", "ffe2a8", "d8c6ff"):
+        assert presenter_source.count(f'new Color("{color}")') == 1
+
+    assert "BuildPresentation();" in private_source
+    assert "_status = new Label" in private_source
+    assert "Map3Presenter" not in private_source
+
+
 def test_inner_assemblies_do_not_acquire_outer_or_nondeterministic_apis() -> None:
     forbidden = {
         "Sf2.Remake.Domain": (
