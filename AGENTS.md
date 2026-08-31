@@ -1,334 +1,170 @@
 # Agent Guide
 
-## Mission
+## Mission and Source of Truth
 
-This repository studies the US Mega Drive/Genesis release of **Shining Force II**,
-documents its systems and data, and uses that evidence to build an independently
-maintained remake in a modern engine.
+This repository reverse engineers the US Mega Drive/Genesis release of **Shining Force II**, turns
+original behavior into reproducible evidence and implementation-neutral contracts, and uses those
+contracts to build an independently maintained remake.
 
-This is an engineering and preservation project, not a collection of ad-hoc ROM
-experiments. Every useful discovery should become one or more of:
+Tracked repository owners and exact Git objects are the durable source of truth. Chats, handoffs,
+ignored reports, and external agent memory are coordination state, not project evidence. Record every
+durable finding, decision, reproduction command, unresolved question, and acceptance boundary in its
+owning tracked document or executable contract.
 
-- a cited research note;
-- a machine-readable data contract;
-- a deterministic extractor or verifier;
-- a behavioral fixture;
-- an implementation-neutral design rule.
+Research describes the original. Design contracts express accepted behavior without choosing an
+engine. Remake code consumes those contracts and must not become evidence for claims about the
+original game.
 
-## Read First
+## Start and Route
 
-1. If the client already injected the applicable `AGENTS.md`, do not spend a tool call rereading it.
-   Otherwise read it once before acting.
-2. Inspect the real workspace and derive the exact Git identity, status, active worktrees, and recent
-   commits at runtime before assuming a branch, slice, tool, directory, or generated artifact exists.
-3. Read [`docs/operations/agent-resume.md`](./docs/operations/agent-resume.md), then the closest owning
-   topic document and any decision or checklist named by the task. Read the complete root `README.md`,
-   `docs/README.md`, or `docs/research/source-coverage.md` only when the task changes or audits their
-   global scope, routing, counters, or frontier.
-4. Keep changes within the current phase. Do not jump into engine code while the relevant original
-   behavior and data contract are still undefined.
+1. Apply this file once. If the client already injected it, do not reread it.
+2. Derive the live commit, tree, status, worktrees, branches, and recent history from Git before
+   assuming any lane, artifact, counter, or directory exists.
+3. Read the compact [agent resume route](./docs/operations/agent-resume.md), then the closest owning
+   document and only the decisions or checklists required by the task.
+4. Read the complete root README, documentation index, or source-coverage ledger only when changing
+   or auditing their global scope, routing, counters, or frontier.
+5. Reproduce a claim from its named command and fixture instead of copying an old progress summary.
 
-External agent memory is not a project dependency or source of truth. The compact resume route points
-to the durable owners; it does not duplicate their counters or findings. The repository must contain
-every durable decision, current frontier, evidence counter, reproduction command, and unresolved
-question needed to continue. Do not leave an important project fact only in a chat summary, local
-agent memory, or an ignored generated report.
+Use these durable routes rather than duplicating their details here:
 
-External agent memory is disabled for this repository. Do not consult or update a personal/global
-memory store for routine work. If the user explicitly requests a one-time migration audit, copy only
-still-valid, project-specific facts into their owning tracked documents; do not make the memory store
-a continuing synchronization target.
+| Concern | Owner |
+| --- | --- |
+| Project entry, stable status, and layout | [README](./README.md) and [documentation index](./docs/README.md) |
+| Fresh-task routing | [Agent Resume Route](./docs/operations/agent-resume.md) |
+| Ordinary Phase 2 lane mechanics | [Phase 2 Lane Runbook](./docs/operations/phase2-lane-runbook.md) and [ADR 0004](./docs/decisions/0004-single-terra-worker-with-root-acceptance.md) |
+| Research coverage and cadence | [Source Coverage](./docs/research/source-coverage.md), [ADR 0003](./docs/decisions/0003-static-first-batched-runtime-research.md), and [ADR 0014](./docs/decisions/0014-static-first-runtime-evidence-after-map3-battle01.md) |
+| Verification selection | [ADR 0012](./docs/decisions/0012-dependency-aware-partitioned-verification.md) |
+| Local private inputs | [Local Private Inputs](./docs/operations/local-private-inputs.md) |
+| Remake implementation | [Remake README](./remake/README.md) and its linked architecture, profile, capability, and verification owners |
+| Bounded implementation start | [ADR 0016](./docs/decisions/0016-remake-start-evidence-deferral.md) |
 
-## Parallel Worktree and Topic-Branch Contract
+An ordinary Phase 2 handoff uses the complete slice contract defined by ADR 0004; its Worker
+Acceptance Checklist is the normative detailed acceptance profile.
+For H3, callback exceptions must reach the status/exit contract. New schema placement follows
+[`schemas/README.md`](./schemas/README.md).
 
-`main` is the integration branch, not an ordinary agent worktree. New research, design synthesis,
-tooling, and governance slices use short-lived topic branches created from an up-to-date `origin/main`
-and an isolated Git worktree. Use the `codex/research-*`, `codex/design-*`, `codex/tooling-*`, or
-`codex/repo-*` prefix that matches the lane. A worktree may be reused after a branch is merged, but do
-not turn a topic branch into a permanent parallel source of truth.
+## Git, Ownership, and Integration
 
-Do not run parallel writers in one worktree. Parallel work is allowed across isolated worktrees only
-when each slice declares its owning files, shared-file needs, acceptance commands, and dependencies.
-The default capacity is one active Phase 2 research lane and one active design-synthesis lane. Starting
-multiple research write lanes requires explicitly disjoint parser, fixture, schema, manifest, index, and
-documentation ownership; superficial subsystem separation is insufficient when the branches still edit
-the same aggregate contract.
+`main` is the serialized integration branch, not an ordinary write worktree. Start a new slice from
+current accepted `origin/main` in an isolated worktree and a short-lived topic branch whose prefix
+matches the lane: `codex/research-*`, `codex/design-*`, `codex/tooling-*`, `codex/remake-*`, or
+`codex/repo-*`.
 
-Topic branches consume accepted `main` state. A branch that must consume an unmerged branch declares a
-stacked dependency and merge order; otherwise do not cite or promote unmerged findings as repository
-facts. Files that commonly require an explicit single owner include `README.md`, `docs/README.md`,
-`docs/research/source-coverage.md`, `manifests/research-index.json`, `src/sf2tool/cli.py`,
-`src/sf2tool/design_contracts.py`, shared schemas/fixtures, and this file.
+Before editing, declare the exact owned paths, shared-path needs, dependencies, semantic boundary,
+and acceptance commands. Check all live worktrees and open topics for competing ownership. One path
+has one active writer; never run parallel writers in one worktree. Serialize shared registries,
+indexes, routing documents, schemas, fixtures, and aggregate tests.
 
-Integration is serialized. Before a branch is accepted, update it onto current `main`, resolve semantic
-conflicts with the owning lane, rerun its lane gates plus `uv run sf2 verify`, scan the tracked/private
-boundary, stage exact paths, and review the cached diff. Commit and push the accepted topic branch, then
-merge it through the integration queue. An unmerged branch or remote worktree is visible collaboration
-state, not the durable project source of truth.
+Consume accepted `main` only. If a slice truly depends on unmerged work, declare the stacked
+dependency and merge order. Never cite an unmerged conclusion as a repository fact or silently copy
+another topic's code.
 
-Gate invalidation is path- and dependency-based, not commit-SHA-based. Record the topic head/tree that
-passed `uv run sf2 verify --full` and inspect every later `main` delta before discarding that result. A
-`main` advance limited to accepted, non-registered Layer B design-synthesis documents plus their
-`docs/README.md` index entries does not invalidate an already passing research full gate. After rebasing
-that research branch, rerun its owning narrow command plus the normal `uv run sf2 verify`; do not restart
-the full profile solely because those design-only paths changed. Rerun the full profile when the topic's
-full-tested diff changes, conflict resolution changes semantics, or the upstream delta reaches code,
-tests, schemas, fixtures, manifests, harness/toolchain configuration, evidence-bound contracts, or any
-other input owned by the full profile. When the delta is not clearly within the design-only exception,
-treat the previous full result as invalid.
+Keep ignored writable state isolated per worktree. A specifically registered immutable private input
+may be resolved read-only as described by the local-private-input owner, but writable emulator state,
+derived assets, exports, traces, reports, and scratch remain local to their owning worktree.
 
-Keep ignored runtime scratch isolated per worktree. Private immutable inputs may be copied and
-hash-verified per worktree or exposed through narrowly scoped read-only paths, but do not share an entire
-`local/` root when concurrent tools could write derived ROMs, traces, emulator state, or reports into it.
+Before handoff, update onto current `origin/main`, resolve ownership conflicts semantically, run the
+selected gates, stage only the declared paths, inspect the cached diff and private boundary, commit,
+push, and leave a Draft PR for independent integration. An unmerged branch is collaboration state,
+not a second source of truth. Remove only an accepted topic's own worktree and refs after explicit
+merge-cleanup authorization.
 
-## Root/Worker Orchestration Contract
+## Evidence and Provenance
 
-For an ordinary Phase 2 research slice, read and apply the complete
-[`docs/operations/phase2-lane-runbook.md`](./docs/operations/phase2-lane-runbook.md) before delegating.
-That runbook is normative when this trigger applies; its route is not permission to skip it.
-For an active research or design lane that reaches a correction, recovery, or possible blocker, read
-the runbook's corresponding sections before pausing or escalating.
+Use exactly these evidence labels:
 
-The non-negotiable boundary is one bounded Terra worker in the isolated topic worktree, with the root
-scoping and independently accepting the work rather than implementing it. Corrections return to the
-same worker, any replacement is serial after the prior worker is confirmed stopped, and safe in-scope
-work continues through gates and Draft PR handoff. Ask the user only for a material direction or
-authorization boundary, or when the runbook's operational blocker definition is actually met.
+- **Confirmed:** reproduced by a project-owned command/test or directly supported by named source,
+  ROM, and runtime observations appropriate to the claim.
+- **Inferred:** strongly supported but not independently reproduced at the required boundary.
+- **Unknown:** an explicit open question; never fill it with a convenient assumption.
 
-Every delegation uses the complete slice contract defined by ADR 0004; its Worker Acceptance
-Checklist is the normative detailed acceptance profile. For H3 work, callback exceptions must reach the status/exit contract
-and acceptance includes a clean Lua Console. `uv run sf2 verify --full`
-remains exceptional: A design-synthesis branch or a design-only advance of `main` never triggers it.
+For non-trivial original-game claims, retain enough provenance to reproduce the result: private input
+identity, pinned upstream repository and commit, source symbol or ROM/RAM address, tool version,
+command, fixture, and observed result as applicable. Preserve disagreements and design a focused test
+instead of selecting the convenient source.
 
-When more documents exist, use these ownership boundaries:
+Static source shape proves structure, not natural reach, caller state, timing, presentation, or
+hardware behavior. A bounded H3 observation proves only its named seam. Apply the static-first and
+three-part runtime-admission rules in ADRs 0003, 0014, and 0016; an Unknown register is not an
+automatic emulator-work queue.
 
-- `docs/research/`: source-backed reverse-engineering findings.
-- `docs/design/contracts/`: evidence-bound, implementation-neutral subsystem contracts reconstructed
-  from accepted research.
-- `docs/design/synthesis/`: cross-subsystem or player-facing design explanations that consume
-  accepted evidence.
-- `docs/design/`: shared design governance and localization roots for both categories.
-- `docs/decisions/`: durable architecture and tool decisions.
-- `schemas/`: canonical extracted-data contracts; follow `schemas/README.md` for the frozen legacy root
-  and the `core/`, `h2/`, and `h3/` layout used by new contracts.
-- `src/sf2tool/`: maintained Python CLI, extractors, verifiers, and harness code.
-- `tools/`: repeatable inspection, extraction, conversion, and validation code.
-- `tests/python/`: project-owned Python unit and contract tests.
-- `tests/fixtures/`: small redistributable metadata and behavioral expectations.
-- `remake/`: modern-engine implementation after its contracts are accepted.
+Do not claim strict clean-room development when implementers have inspected disassembly. Preserve the
+practical boundary: research owns provenance and behavior; remake code consumes accepted contracts
+and uses project-authored, properly licensed, or explicitly local private content.
 
-Evidence-bound subsystem documents in `docs/design/contracts/` remain part of their research slice when
-accepted findings change. Cross-subsystem or player-facing documents in `docs/design/synthesis/` use
-the design-synthesis lane and may explain only accepted evidence from `main`; that lane does not edit
-`docs/research/`, schemas,
-fixtures, manifests, extractors, or evidence-bound design contracts unless a separate research slice and
-merge dependency explicitly assigns those files. Shared indexes and registries receive one branch owner
-per change.
+## Baseline and Private Boundary
 
-Do not create empty scaffolding for these paths. Add a directory when a concrete
-slice owns content in it.
+The original baseline is the USA retail ROM identified by tracked manifests and the root README, plus
+the pinned `ShiningForceCentral/SF2DISASM` `master` revision. Never rely on a floating default branch,
+substitute a community feature branch for the original, or modify the only canonical private input to
+match a tool's filename convention. Copy required inputs into ignored scratch and verify their exact
+identity before use.
 
-## Evidence Rules
+ROMs, patches, rebuilt ROMs, SRAM, save states, traces, movies, memory dumps, extracted game content,
+downloaded executables, ignored upstream checkouts, and generated exports are private or generated by
+default. Do not commit, upload, attach, redistribute, or leak their absolute paths. Public fixtures
+contain only the minimum redistributable facts needed to express a contract. Public remake builds use
+project-authored or properly licensed assets; a successful local/private gate grants no distribution
+right.
 
-Label reverse-engineering statements as one of:
+Third-party source or binaries require pinned provenance and an explicit compatible license before
+vendoring. A public repository is not itself permission to copy or relicense its contents.
 
-- **Confirmed**: reproduced by a script/test, or directly supported by named
-  disassembly locations and observed runtime behavior.
-- **Inferred**: the evidence is strong but not yet reproduced independently.
-- **Unknown**: an explicit open question, never silently filled with an assumption.
+## Verification Rules
 
-For each non-trivial finding, record enough provenance to reproduce it: ROM hash,
-upstream repository and commit, branch, file/symbol or ROM address, tool version,
-command, and observed result as applicable. Prefer stable source links over forum
-paraphrases. When sources disagree, keep the disagreement visible and design a
-test instead of choosing the convenient answer.
+`uv` owns the Python environment and lock. Use `uv sync --locked`; do not create a parallel
+requirements workflow or install project dependencies into the system interpreter.
 
-Never claim strict clean-room development if the implementer has inspected the
-disassembly. The practical boundary here is provenance plus separation: research
-describes behavior and contracts; remake code should consume those contracts and
-use project-owned or properly licensed assets.
+The normal public commit gate is:
 
-## ROM, Patch, and Copyright Boundary
+```powershell
+uv run sf2 verify
+```
 
-The user-provided ROM and any user-provided patches are local research inputs.
-Treat all of the following as private/generated by default:
+Pair it with the narrow test or H2/H3/remake command that owns the changed slice. On a clean committed
+head, use `uv run sf2 verify plan --base origin/main --head HEAD` to obtain the dependency-aware gate
+selection. The planner is authoritative for selected partitions; an unclassified path causes visible,
+conservative fanout rather than permission to skip a gate.
 
-- ROM images, patched or rebuilt ROMs;
-- SRAM, save states, traces, emulator movies, and memory dumps;
-- extracted dialogue, graphics, maps, music, sound effects, and other game assets;
-- downloaded executable tools;
-- pre-patched downloads.
+`uv run sf2 verify --full` is exceptional. Run it only for a phase milestone, release/merge readiness,
+shared harness or legacy-rail semantics, an upstream change that invalidates the full profile, or an
+explicit full-parity request. It is not the default for ordinary research, design, documentation, or
+bounded remake work. Follow ADR 0012 and the owning runbook for exact invalidation rules.
 
-Do not commit, upload, attach, or redistribute them. Before initializing Git, add
-ignore rules covering at least `*.bin`, `*.gen`, `*.smd`, `*.ips`, `*.bps`,
-`*.ups`, `*.xdelta*`, save-state formats, and the local work directory. Mega Drive
-ROMs sometimes use `.md`, but never add a global `*.md` rule because it would also
-hide Markdown documentation; keep those ROMs under the ignored local work root.
-Inspect staged files before every commit.
+Gate invalidation is path- and dependency-based, not commit-SHA-based. A `main` advance limited to
+accepted, non-registered Layer B design-synthesis documents does not invalidate an already passing
+research full gate; after rebase, run the owning narrow command plus the normal `uv run sf2 verify`.
+A design-synthesis branch or a design-only advance of `main` never triggers it.
 
-A patch file may be tracked only after its redistribution terms and absence of
-copyrighted payload have been reviewed. Do not download a pre-patched ROM. When a
-patch is needed for comparative research, prefer the patch-only artifact, record
-its source and expected base hash, and keep it local unless its license allows
-redistribution.
+Never weaken a golden, schema, fixture, digest, or accepted comparison merely to make a change pass.
+First determine whether evidence, extraction, documentation, or implementation is wrong, then update
+the owning surface with preserved failure history.
 
-Third-party source may be vendored only with a compatible explicit license,
-provenance, and pinned revision. A public GitHub repository is not by itself
-permission to copy or relicense its contents. When licensing is missing or
-unclear, link to it and use a pinned local checkout rather than copying it here.
-This guidance is project hygiene, not legal advice.
-
-## Upstream Baselines
-
-The primary community reference is
-[`ShiningForceCentral/SF2DISASM`](https://github.com/ShiningForceCentral/SF2DISASM).
-Use its branches deliberately:
-
-- `master`: original-game documentation and the bit-perfect reconstruction
-  baseline.
-- `build/standard`: a maintained combination of community features and fixes;
-  useful as comparative research, not as the original baseline.
-
-The repository's default branch may not be `master`. Always record and pin the
-exact commit instead of relying on a floating default branch. Do not modify the
-only local ROM to satisfy an upstream filename convention; copy it into an ignored
-workspace and name that copy `sf2.bin`.
-
-Review tool source and license before use. Prefer source builds or well-known
-package sources over opaque binaries. Download only the minimum needed for the
-active slice.
-
-## Python and Harness Contract
-
-Python 3.12+ is the maintained tooling language and `uv` owns dependency resolution, locking, and
-execution. Bootstrap with `uv sync --locked`; never install project dependencies into the system
-interpreter or maintain a parallel requirements file. Run Ruff and pytest through `uv run`.
-
-The root verification entry point is `uv run sf2 verify`. Keep it non-interactive, deterministic,
-and safe to rerun. It currently implements design-contract
-traceability, input/toolchain provenance, original rebuild, source/ROM static parity, ally-growth,
-promotion/enemy/enemy-gold/enemy-drop, Battle 01 scene extraction, and the complete battle-AI source
-inventory/action-filter/attack-priority contracts, the complete Stack-compressed battle-terrain,
-battle-background, battle-sprite, weapon/ground, and portrait corpora, the complete 208-table
-battle-sprite animation sequence corpus, the complete Basic-compressed
-map-sprite corpus, the complete Stack-compressed special-sprite corpus/routing boundary, plus
-the complete special-screen Stack-compressed tile corpus/transfer boundaries, plus
-the complete witch-menu choice palette, bubble-animation table, and timer-phase corpus, plus
-the complete uncompressed special-screen palette/layout presentation corpus, plus
-the complete base/diamond-menu/yes-no Stack-compressed UI corpus and seven-icon uncompressed main-menu payload, plus
-the complete 163-entry icon storage corpus and menu copy/highlight boundaries, plus
-the complete assembled UI/window layout, spell-pointer, border, and direct-asset corpus, plus
-the complete variable-width font, ASCII-map, pointer, and loader corpus, plus
-the complete 255-entry context-Huffman offset table, 86 reachable trees, and 1,536 leaf-code corpus, plus
-the complete 17-bank, 4,267-string static Huffman decode corpus, plus
-the complete nine-range shop/debug-shop/chest/break/mithril/Caravan/field-item/weapon-graphics corpus, plus
-the complete 166-row enemy map-sprite table and normal-vs-NPC-tail reachability boundary, plus
-the complete original built map-sprite assignment domains and reserved-ID exclusion audit, plus
-the complete two-bank/37-song Z80 music source/range/pointer/ROM, 29-macro command corpus, and
-39-header/five-parser/shared-loop/ten-slot channel-role/64-command bank-selection static driver
-contract and the 84-entry YM/64-entry PSG frequency tables with complete note/shift CFG audit, plus
-the 17-entry DAC load table with complete music sample-call audit, plus
-the complete YM/PSG instrument-index and level-call domain, plus
-the complete map-script dispatcher/macro/handler/source-use inventory, plus
-the complete shared battle player-input/cursor function inventory and static menu/item/chest contract, plus
-the complete shared/distributed entity-action command/control-flow/reference corpus,
-80-slot dispatcher/macro/handler access/state/flow and parameter-ABI inventory, and the nine-phase
-`UpdateEntityData` movement core plus its destination/sprite/map-offset helper boundary, plus
-the complete 119-row map-sprite/portrait/speech-SFX dialogue-property table and consumer contract, plus
-the complete four-stream unused-cloud payload and two-palette unused-base corpus, plus
-the complete spell/invocation/status/transition battle-effect graphics corpus, plus
-the complete 115-stream map-tileset corpus and map/animation usage boundary, plus
-the complete 16-entry map-palette corpus, 79-map usage table, and effective color-zero boundary, plus
-the complete direct named Basic/Stack/compressed-DMA consumer inventory, plus
-BizHawk base/debug-aware RNG,
-stat-gain/complete level-up/stat-clamp/enemy-curse boundaries, battle-EXP level-up, kill-EXP level differences,
-final EXP halving/randomization/minimum, EXP-command clamp/threshold, gold cap/carry, enemy-item-drop behavior,
-   turn-order, region-activation, physical-attack-chain, dodge, follow-up-validation, and grouped
-   map-animation VInt/DMA/VRAM behavior, the four-command Z80 music/live-channel-state matrix,
-   and the 13-case/20-tick entity movement/action matrix fixtures, plus the ten-case map setup
-   selector and six-case map init dispatch runtime matrices;
-extend the same entry
-point as later rails become available:
-
-1. **Input identity**: size, hashes, console header, product code, region, and ROM
-   checksum.
-2. **Original rebuild**: split and assemble with a pinned `SF2DISASM master`, then
-   byte-compare the result with the input ROM.
-3. **Extraction determinism**: validate schemas and prove identical canonical
-   output from repeated runs.
-4. **Behavioral replay**: run scripted scenarios in a pinned emulator and compare
-   small state facts, traces, or hashes rather than committing captured assets.
-5. **Remake parity**: run the same implementation-neutral fixtures against remake
-   systems and report intentional deviations separately.
-
-Use `uv run sf2 verify` as the normal commit gate. It owns a full Ruff scan, the shared critical
-`tests/python/test_native_harness.py` suite, design-contract traceability, the research index, ROM
-identity, and toolchain provenance; it is not broad Python regression. Pair it with only the narrow
-H2/H3 command that owns the changed slice (for example, `uv run sf2 h2 map-setup` or
-`uv run sf2 h3 battle-exp`). Run the complete Python suite explicitly with `uv run pytest`. Do not
-run the 10+ minute `uv run sf2 verify --full` after every ordinary commit. That full profile runs the
-complete Python suite followed by H1/H2/H3 and is reserved for phase milestones, release/merge
-readiness, changes to shared harness orchestration or legacy rails, and explicit full-parity requests.
-
-Phase 2 research is static-first and subsystem-batched. Inventory the complete source scope, parse
-stable tables and control-flow rules, and record caller-dependent unknowns in a runtime-question
-queue. That queue is a deferred ambiguity register, not automatic authorization to create H3 work.
-The scenario-specific runtime observations used to close ADR 0009's continuous Map 3-through-Battle
-01 milestone are a bounded exception. Until that scenario evidence closure, new scenario H3 is
-limited to its serialized closure sequence. Optional and later full-game coverage defaults to
-complete H2 static corpora; do not add per-NPC, per-dialogue, per-area, per-item, or equivalent
-per-record H3.
-
-After the ADR 0009 scenario evidence and contract gaps are accepted on `main`, add a new H3 fixture
-only when a caller-dependent semantic cannot be resolved statically, would materially affect an
-accepted implementation-neutral contract or acceptance behavior, and cannot be covered by an
-existing batched scenario or semantic rail. The proposed slice must state why reuse is insufficient
-before ownership is granted. Static source/ROM shape and canonical map imports may be confirmed by
-deterministic parsers; unobserved caller-dependent meaning remains Inferred or Unknown. When runtime
-work passes this gate, group related questions into one generated case table and the fewest practical
-BizHawk launches. Do not add a one-case emulator fixture without a concrete isolation reason. The
-detailed cadence and coverage denominator are owned by `docs/research/source-coverage.md`, ADR 0003,
-and ADR 0014.
-
-Do not weaken a golden expectation merely to make a change pass. First decide
-whether the original evidence, extractor, fixture, or remake behavior is wrong.
-If docs and executable evidence diverge, investigate the mismatch and update the
-owning document in the same change.
-
-Every tool should support a read-only or output-directory workflow. Never patch
-the canonical input in place. Generated outputs go under an ignored local work
-root and must be reproducible from documented inputs.
-
-The remaining scripts under `scripts/*.ps1` are a temporary, frozen compatibility surface for the
-already-proven H1-H3 rails. Python invokes them only through `sf2tool.legacy`; do not add new
-PowerShell scripts or grow the aggregate PowerShell line budget. Migrate a complete rail to
-`src/sf2tool/`, verify parity, then delete its old script. Do not build new logic in the adapter.
+Tools must treat canonical inputs as read-only and write reproducible output only to an explicit
+ignored destination. Do not overwrite, normalize, or mutate source evidence as a side effect of
+verification. Keep private/generated artifacts out of Git and public CI.
 
 ## Change Discipline
 
-- Make narrow, reviewable changes with one clear owner and acceptance test.
-- Search for an existing parser, schema, note, or fixture before adding another.
-- Keep generic Mega Drive facts separate from SF2-specific claims.
-- Prefer structured output plus a thin renderer over one-off reports.
-- Record meaningful tool and engine choices in `docs/decisions/` before coupling
-  the project to them.
-- Keep original fidelity facts separate from remake design choices. A deliberate
-  modernization is not evidence about the original game.
-- Use placeholder or properly licensed assets for distributable remake builds.
-- Do not report a subsystem as documented until its unknowns and verification
-  coverage are explicit.
+- Make one narrow, reviewable change with one clear owner and acceptance boundary.
+- Search for an existing owner, parser, schema, fixture, port, or reducer before creating another.
+- Do not add empty scaffolding, speculative abstractions, or duplicate state authorities.
+- Keep original-fidelity facts separate from remake design and intentional deviations.
+- Do not report a subsystem complete while its unsupported capabilities and Unknowns are hidden.
+- Route ordinary Phase 2 delegation, correction, recovery, and blockers through the complete Phase 2
+  lane runbook instead of recreating its mechanics here.
+- Keep the legacy `scripts/*.ps1` compatibility surface frozen; new maintained logic belongs in
+  `src/sf2tool/` unless an accepted owner says otherwise.
 
-On Windows, maintained Python code must launch native tools with `subprocess` argument lists and no
-shell. The frozen PowerShell layer retains the repository's existing native-command rules until
-each rail is migrated. Keep text files UTF-8 and pass paths directly instead of piping non-ASCII
-JSON between runtimes.
+On Windows, prefer PowerShell-native filesystem operations and pass native executable arguments as
+separate values; keep paths literal, validated, and UTF-8-safe.
 
 ## Definition of Done
 
-A slice is done when its outputs are reproducible, provenance is recorded,
-relevant docs and contracts agree, generated/private artifacts remain untracked,
-the topic branch is updated onto current `main`, and `uv run sf2 verify` plus the owning narrow
-verification command pass. A design-synthesis-only slice uses `uv run sf2 design-contracts test` and
-the public tracked-input gate before the final integration `uv run sf2 verify`. If
-verification cannot run, report the exact missing dependency or evidence instead
-of substituting confidence.
+A slice is done only when its exact diff matches declared ownership, relevant docs and executable
+contracts agree, provenance and Unknowns are explicit, outputs are reproducible, private/generated
+artifacts remain untracked, the committed planner and proportional owning gates pass, normal public
+verification is honestly reported, the worktree is clean, and a Draft PR is frozen for independent
+review. If a required gate cannot run, report the exact dependency or boundary; do not substitute
+confidence, broaden authority, or claim success.
