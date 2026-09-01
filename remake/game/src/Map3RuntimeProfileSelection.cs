@@ -13,22 +13,33 @@ internal enum Map3RuntimeProfile
 internal sealed record Map3RuntimeProfileSelection
 {
     private const string ProfileOption = "--runtime-profile";
-    private const string ProfilePrefix = ProfileOption + "=";
     private const string ImportOption = "--canonical-map-import";
-    private const string ImportPrefix = ImportOption + "=";
+    private const string RomOption = "--original-rom";
+    private const string TilesetMetadataOption = "--map-tileset-metadata";
+    private const string PaletteMetadataOption = "--map-palette-metadata";
+
     internal const string PrivateSmokeOption = "--private-map3-smoke";
+    internal const string PrivateBaseViewOption = "--private-map3-base-view";
 
     private Map3RuntimeProfileSelection(
         Map3RuntimeProfile? requestedProfile,
         bool isAvailable,
         string? canonicalImportPath,
         bool privateSmokeRequested,
+        bool privateBaseViewRequested,
+        string? originalRomPath,
+        string? tilesetMetadataPath,
+        string? paletteMetadataPath,
         string? diagnostic)
     {
         RequestedProfile = requestedProfile;
         IsAvailable = isAvailable;
         CanonicalImportPath = canonicalImportPath;
         PrivateSmokeRequested = privateSmokeRequested;
+        PrivateBaseViewRequested = privateBaseViewRequested;
+        OriginalRomPath = originalRomPath;
+        TilesetMetadataPath = tilesetMetadataPath;
+        PaletteMetadataPath = paletteMetadataPath;
         Diagnostic = diagnostic;
     }
 
@@ -40,18 +51,22 @@ internal sealed record Map3RuntimeProfileSelection
 
     internal bool PrivateSmokeRequested { get; }
 
+    internal bool PrivateBaseViewRequested { get; }
+
+    internal string? OriginalRomPath { get; }
+
+    internal string? TilesetMetadataPath { get; }
+
+    internal string? PaletteMetadataPath { get; }
+
     internal string? Diagnostic { get; }
 
     internal static Map3RuntimeProfileSelection Parse(IEnumerable<string> arguments)
     {
         ArgumentNullException.ThrowIfNull(arguments);
-        string? profileValue = null;
-        string? importPath = null;
-        bool profileSeen = false;
-        bool importSeen = false;
-        bool malformedProfile = false;
-        bool malformedImport = false;
+        Dictionary<string, string> values = new(StringComparer.Ordinal);
         bool privateSmokeRequested = false;
+        bool privateBaseViewRequested = false;
 
         foreach (string argument in arguments)
         {
@@ -59,56 +74,59 @@ internal sealed record Map3RuntimeProfileSelection
             if (string.Equals(argument, PrivateSmokeOption, StringComparison.Ordinal))
             {
                 privateSmokeRequested = true;
+                continue;
             }
-            else if (string.Equals(argument, ProfileOption, StringComparison.Ordinal))
+
+            if (string.Equals(argument, PrivateBaseViewOption, StringComparison.Ordinal))
             {
-                malformedProfile = true;
-                profileSeen = true;
-            }
-            else if (argument.StartsWith(ProfilePrefix, StringComparison.Ordinal))
-            {
-                if (profileSeen)
+                if (privateBaseViewRequested)
                 {
                     return Unavailable(
-                        ParseKnownProfile(profileValue),
+                        ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
                         privateSmokeRequested,
-                        "The runtime profile option must appear exactly once.");
+                        "The private base-view option must appear at most once.");
                 }
 
-                profileSeen = true;
-                profileValue = argument[ProfilePrefix.Length..];
+                privateBaseViewRequested = true;
+                continue;
             }
-            else if (string.Equals(argument, ImportOption, StringComparison.Ordinal))
-            {
-                malformedImport = true;
-                importSeen = true;
-            }
-            else if (argument.StartsWith(ImportPrefix, StringComparison.Ordinal))
-            {
-                if (importSeen)
-                {
-                    return Unavailable(
-                        ParseKnownProfile(profileValue),
-                        privateSmokeRequested,
-                        "The canonical import option must appear exactly once.");
-                }
 
-                importSeen = true;
-                importPath = argument[ImportPrefix.Length..];
+            string? option = ValueOption(argument);
+            if (option is null)
+            {
+                continue;
+            }
+
+            if (string.Equals(argument, option, StringComparison.Ordinal) ||
+                !argument.StartsWith(option + "=", StringComparison.Ordinal))
+            {
+                return Unavailable(
+                    ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
+                    privateSmokeRequested,
+                    "Runtime profile options require explicit non-empty values.");
+            }
+
+            if (!values.TryAdd(option, argument[(option.Length + 1)..]))
+            {
+                return Unavailable(
+                    ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
+                    privateSmokeRequested,
+                    $"The {OptionLabel(option)} option must appear exactly once.");
             }
         }
 
-        if (malformedProfile || malformedImport)
-        {
-            return Unavailable(
-                ParseKnownProfile(profileValue),
-                privateSmokeRequested,
-                "Runtime profile options require explicit non-empty values.");
-        }
+        values.TryGetValue(ProfileOption, out string? profileValue);
+        Map3RuntimeProfile? profile = ParseKnownProfile(profileValue);
+        bool hasPrivateInputs = values.ContainsKey(ImportOption) ||
+            values.ContainsKey(RomOption) ||
+            values.ContainsKey(TilesetMetadataOption) ||
+            values.ContainsKey(PaletteMetadataOption) ||
+            privateBaseViewRequested ||
+            privateSmokeRequested;
 
-        if (!profileSeen)
+        if (!values.ContainsKey(ProfileOption))
         {
-            return importSeen || privateSmokeRequested
+            return hasPrivateInputs
                 ? Unavailable(
                     null,
                     privateSmokeRequested,
@@ -116,7 +134,6 @@ internal sealed record Map3RuntimeProfileSelection
                 : Available(Map3RuntimeProfile.PublicSynthetic, null, false);
         }
 
-        Map3RuntimeProfile? profile = ParseKnownProfile(profileValue);
         if (profile is null)
         {
             return Unavailable(
@@ -127,7 +144,7 @@ internal sealed record Map3RuntimeProfileSelection
 
         if (profile == Map3RuntimeProfile.PublicSynthetic)
         {
-            return importSeen || privateSmokeRequested
+            return hasPrivateInputs
                 ? Unavailable(
                     profile,
                     privateSmokeRequested,
@@ -135,7 +152,9 @@ internal sealed record Map3RuntimeProfileSelection
                 : Available(profile.Value, null, false);
         }
 
-        if (!importSeen || string.IsNullOrWhiteSpace(importPath))
+        if (!TryNormalizeRequiredPath(
+                values.GetValueOrDefault(ImportOption),
+                out string? canonicalImportPath))
         {
             return Unavailable(
                 profile,
@@ -143,28 +162,95 @@ internal sealed record Map3RuntimeProfileSelection
                 "PrivateLocal requires one fully qualified ignored canonical import path.");
         }
 
-        try
+        bool hasAnyVisualPath = values.ContainsKey(RomOption) ||
+            values.ContainsKey(TilesetMetadataOption) ||
+            values.ContainsKey(PaletteMetadataOption);
+        if (!privateBaseViewRequested)
         {
-            if (!Path.IsPathFullyQualified(importPath))
-            {
-                return Unavailable(
+            return hasAnyVisualPath
+                ? Unavailable(
                     profile,
                     privateSmokeRequested,
-                    "PrivateLocal requires one fully qualified ignored canonical import path.");
-            }
-
-            return Available(
-                profile.Value,
-                Path.GetFullPath(importPath),
-                privateSmokeRequested);
+                    "Private visual inputs require explicit private Map 3 base-view selection.")
+                : Available(profile.Value, canonicalImportPath, privateSmokeRequested);
         }
-        catch (Exception error) when (
-            error is ArgumentException or NotSupportedException or PathTooLongException)
+
+        if (!TryNormalizeRequiredPath(
+                values.GetValueOrDefault(RomOption),
+                out string? originalRomPath) ||
+            !TryNormalizeRequiredPath(
+                values.GetValueOrDefault(TilesetMetadataOption),
+                out string? tilesetMetadataPath) ||
+            !TryNormalizeRequiredPath(
+                values.GetValueOrDefault(PaletteMetadataOption),
+                out string? paletteMetadataPath))
         {
             return Unavailable(
                 profile,
                 privateSmokeRequested,
-                "PrivateLocal canonical import path syntax is invalid.");
+                "Private Map 3 base view requires fully qualified ignored ROM, tileset-metadata, and palette-metadata paths.");
+        }
+
+        return new Map3RuntimeProfileSelection(
+            profile,
+            isAvailable: true,
+            canonicalImportPath,
+            privateSmokeRequested,
+            privateBaseViewRequested: true,
+            originalRomPath,
+            tilesetMetadataPath,
+            paletteMetadataPath,
+            diagnostic: null);
+    }
+
+    private static string? ValueOption(string argument)
+    {
+        foreach (string option in new[]
+        {
+            ProfileOption,
+            ImportOption,
+            RomOption,
+            TilesetMetadataOption,
+            PaletteMetadataOption,
+        })
+        {
+            if (string.Equals(argument, option, StringComparison.Ordinal) ||
+                argument.StartsWith(option + "=", StringComparison.Ordinal))
+            {
+                return option;
+            }
+        }
+
+        return null;
+    }
+
+    private static string OptionLabel(string option) => option switch
+    {
+        ProfileOption => "runtime profile",
+        ImportOption => "canonical import",
+        RomOption => "original ROM",
+        TilesetMetadataOption => "map tileset metadata",
+        PaletteMetadataOption => "map palette metadata",
+        _ => "runtime",
+    };
+
+    private static bool TryNormalizeRequiredPath(string? value, out string? normalized)
+    {
+        normalized = null;
+        if (string.IsNullOrWhiteSpace(value) || !Path.IsPathFullyQualified(value))
+        {
+            return false;
+        }
+
+        try
+        {
+            normalized = Path.GetFullPath(value);
+            return true;
+        }
+        catch (Exception error) when (
+            error is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return false;
         }
     }
 
@@ -172,13 +258,31 @@ internal sealed record Map3RuntimeProfileSelection
         Map3RuntimeProfile profile,
         string? canonicalImportPath,
         bool privateSmokeRequested) =>
-        new(profile, true, canonicalImportPath, privateSmokeRequested, null);
+        new(
+            profile,
+            true,
+            canonicalImportPath,
+            privateSmokeRequested,
+            privateBaseViewRequested: false,
+            originalRomPath: null,
+            tilesetMetadataPath: null,
+            paletteMetadataPath: null,
+            diagnostic: null);
 
     private static Map3RuntimeProfileSelection Unavailable(
         Map3RuntimeProfile? profile,
         bool privateSmokeRequested,
         string diagnostic) =>
-        new(profile, false, null, privateSmokeRequested, diagnostic);
+        new(
+            profile,
+            false,
+            canonicalImportPath: null,
+            privateSmokeRequested,
+            privateBaseViewRequested: false,
+            originalRomPath: null,
+            tilesetMetadataPath: null,
+            paletteMetadataPath: null,
+            diagnostic);
 
     private static Map3RuntimeProfile? ParseKnownProfile(string? value) => value switch
     {

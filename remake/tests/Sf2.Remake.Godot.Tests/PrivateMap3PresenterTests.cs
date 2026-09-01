@@ -23,7 +23,26 @@ public sealed class PrivateMap3PresenterTests
             "Admitting PrivateLocal canonical Map 3...",
             plan.InitialStatus);
         Assert.True(plan.IncludeTraversalViewport);
+        Assert.True(plan.ShowTraversalViewport);
+        Assert.False(plan.IncludeBaseVisualViewport);
         Assert.Equal(450, plan.StatusY);
+    }
+
+    [Fact]
+    public void BaseVisualPlanKeepsDiagnosticsForSmokeButShowsOnlyTheProjectAuthoredView()
+    {
+        PrivateMap3PresentationPlan plan =
+            PrivateMap3PresentationPlan.PrivateLocalWithBaseVisual();
+
+        Assert.Equal(Map3Root.PrivateBannerText, plan.BannerText);
+        Assert.Equal(
+            "Project-authored base composition from admitted private Map 3 data. " +
+                "Not full original fidelity.",
+            plan.ExplanationText);
+        Assert.True(plan.IncludeTraversalViewport);
+        Assert.False(plan.ShowTraversalViewport);
+        Assert.True(plan.IncludeBaseVisualViewport);
+        Assert.Equal(310, plan.StatusY);
     }
 
     [Fact]
@@ -48,6 +67,8 @@ public sealed class PrivateMap3PresenterTests
                 "Unavailable: Project-authored unavailable diagnostic.",
                 plan.InitialStatus);
             Assert.False(plan.IncludeTraversalViewport);
+            Assert.False(plan.ShowTraversalViewport);
+            Assert.False(plan.IncludeBaseVisualViewport);
             Assert.Equal(105, plan.StatusY);
         }
     }
