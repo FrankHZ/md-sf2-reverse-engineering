@@ -9,7 +9,7 @@ making engine code an evidence owner.
 Phase 4 implementation is active through bounded Map 3 slices. The current runtime supports a
 tracked public-synthetic exploration shell, one project-authored 3-by-2 tactical micro-battle with
 completion, an atomic once-only synthetic world-state effect, exploration return, and a separate
-private-local traversal shell. The micro-battle proves only the synthetic Exploration -> Battle ->
+private-local traversal shell with an opt-in project-authored Map 3 base view. The micro-battle proves only the synthetic Exploration -> Battle ->
 Completed -> project-authored completion state -> Exploration product topology. It is not Battle 01,
 an original after-battle program, or the accepted continuous Map 3-through-Battle 01 milestone, which
 remains **NOT READY**.
@@ -27,7 +27,7 @@ Current capabilities and retained Unknowns are summarized in
 | Profile | Input boundary | Current purpose |
 | --- | --- | --- |
 | `public-synthetic` | tracked, project-authored content only | default interactive shell, logic tests, local Godot gate, and redistribution-safe export smoke |
-| `private-local` | explicit caller-selected ignored inputs with fixed admission checks | bounded original Map 3 traversal and local diagnostic prerequisites; not a full-original runtime |
+| `private-local` | explicit caller-selected ignored inputs with fixed admission checks | bounded original Map 3 traversal, local diagnostics, and an optional project-authored base view; not a full-original runtime |
 
 Private execution is never inferred from a file's presence and never silently falls back while
 reporting private success. See [Runtime Profiles and Trust](./docs/runtime-profiles-and-trust.md).

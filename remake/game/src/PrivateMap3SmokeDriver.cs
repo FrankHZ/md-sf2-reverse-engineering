@@ -57,6 +57,25 @@ internal static class PrivateMap3SmokeDriver
             return;
         }
 
+        if (presenter.ExpectsBaseProjection)
+        {
+            PrivateOriginalMapBaseViewProjection? baseProjection =
+                presenter.BaseProjection;
+            if (baseProjection is null ||
+                baseProjection.Map != moved.Snapshot.Map ||
+                baseProjection.PlayerColumn !=
+                    moved.Snapshot.PlayerPosition.X - baseProjection.OriginX ||
+                baseProjection.PlayerRow !=
+                    moved.Snapshot.PlayerPosition.Y - baseProjection.OriginY)
+            {
+                Fail(
+                    sceneTree,
+                    presenter,
+                    "PrivateLocal project-authored base view was not projected from the current snapshot.");
+                return;
+            }
+        }
+
         object receipt = new
         {
             status = "Pass",

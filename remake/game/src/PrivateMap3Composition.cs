@@ -24,6 +24,7 @@ public sealed partial class Map3Root
 
     private Map3RuntimeProfile? _runtimeProfile;
     private PrivateMap3Presenter? _privatePresenter;
+    private PrivateOriginalMapVisualRuntimeBinding? _privateVisualBinding;
 
     private void BuildSelectedPresentation(Map3RuntimeProfileSelection selection)
     {
@@ -37,7 +38,9 @@ public sealed partial class Map3Root
         PrivateMap3PresentationPlan plan;
         if (selection.IsAvailable)
         {
-            plan = PrivateMap3PresentationPlan.PrivateLocalAvailable();
+            plan = selection.PrivateBaseViewRequested
+                ? PrivateMap3PresentationPlan.PrivateLocalWithBaseVisual()
+                : PrivateMap3PresentationPlan.PrivateLocalAvailable();
         }
         else if (selection.RequestedProfile == Map3RuntimeProfile.PrivateLocal)
         {
@@ -53,12 +56,20 @@ public sealed partial class Map3Root
         _privatePresenter = PrivateMap3Presenter.Attach(this, plan);
     }
 
-    private void StartPrivateScenario(string canonicalImportPath, bool runSmoke)
+    private void StartPrivateScenario(Map3RuntimeProfileSelection selection)
     {
+        bool runSmoke = selection.PrivateSmokeRequested;
+        string canonicalImportPath = selection.CanonicalImportPath!;
         long sessionStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         IOriginalMapImportSource source = new TimedOriginalMapImportSource(
             new PrivateCanonicalMap3ImportReader(canonicalImportPath),
             runSmoke);
+        if (selection.PrivateBaseViewRequested)
+        {
+            StartPrivateVisualScenario(selection, source, runSmoke, sessionStarted);
+            return;
+        }
+
         PrivateOriginalMapGameSessionStartResult result =
             GameSession.StartPrivateOriginalMap(
                 source,
@@ -83,6 +94,74 @@ public sealed partial class Map3Root
         if (runSmoke)
         {
             PrivateMap3Presenter presenter = _privatePresenter!;
+            Callable.From(() => RunPrivateHeadlessSmoke(
+                started.Session,
+                presenter)).CallDeferred();
+            TracePrivateStage(
+                enabled: true,
+                "deferred-smoke-scheduled",
+                System.Diagnostics.Stopwatch.GetTimestamp());
+        }
+    }
+
+    private void StartPrivateVisualScenario(
+        Map3RuntimeProfileSelection selection,
+        IOriginalMapImportSource importSource,
+        bool runSmoke,
+        long sessionStarted)
+    {
+        OriginalMapVisualResourceSelection visualSelection = new(
+            new MapId(OriginalMapRuntimeAdmission.MapId),
+            paletteIndex: 0,
+            [0, 37, 43, 53, 66]);
+        IOriginalMapVisualPayloadSource visualSource =
+            new PrivateOriginalMap3VisualPayloadReader(
+                selection.OriginalRomPath!,
+                selection.TilesetMetadataPath!,
+                selection.PaletteMetadataPath!);
+        PrivateOriginalMapVisualGameSessionStartResult result =
+            GameSession.StartPrivateOriginalMapWithVisualPayload(
+                importSource,
+                new OriginalMapImportRequest(
+                    OriginalMapRuntimeAdmission.PackageId,
+                    ContentProfile.PrivateLocal,
+                    OriginalMapRuntimeAdmission.AcceptedContentDigest),
+                visualSource,
+                new OriginalMapVisualPayloadRequest(
+                    OriginalMapVisualPayloadAdmission.PackageId,
+                    ContentProfile.PrivateLocal,
+                    visualSelection,
+                    OriginalMapVisualPayloadAdmission.AcceptedRomSha256,
+                    OriginalMapVisualPayloadAdmission.AcceptedTilesetMetadataDigest,
+                    OriginalMapVisualPayloadAdmission.AcceptedPaletteMetadataDigest));
+        TracePrivateStage(runSmoke, "game-session-start", sessionStarted);
+        if (result is not PrivateOriginalMapVisualGameSessionStarted started)
+        {
+            string code = result switch
+            {
+                PrivateOriginalMapVisualGameSessionImportRejected rejected =>
+                    rejected.Diagnostic.Code.ToString(),
+                PrivateOriginalMapVisualGameSessionPayloadRejected rejected =>
+                    rejected.Diagnostic.Code.ToString(),
+                PrivateOriginalMapVisualGameSessionBindingRejected rejected =>
+                    rejected.Diagnostic.Code.ToString(),
+                _ => throw new InvalidOperationException(
+                    "Unknown private visual runtime admission result."),
+            };
+            FailPrivateStartup(
+                $"PrivateLocal base view unavailable ({code}).",
+                runSmoke,
+                "private-local");
+            return;
+        }
+
+        _session = started.Session;
+        _privateVisualBinding = started.Binding;
+        PrivateMap3Presenter presenter = _privatePresenter!;
+        presenter.BindVisualDefinition(_privateVisualBinding.Definition);
+        presenter.Project(started.Session.PrivateOriginalMapSnapshot, "Ready");
+        if (runSmoke)
+        {
             Callable.From(() => RunPrivateHeadlessSmoke(
                 started.Session,
                 presenter)).CallDeferred();

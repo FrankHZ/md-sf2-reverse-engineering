@@ -11,7 +11,7 @@ make Godot an evidence owner.
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
 | `public-synthetic` | default, or explicit public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
-| `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path | caller-owned local inputs admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal and unconsumed visual prerequisites; **not full original fidelity** |
+| `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path | caller-owned local inputs admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal and optional project-authored base composition; **not full original fidelity** |
 
 The runtime always displays the appropriate disclosure:
 
@@ -44,6 +44,18 @@ PrivateLocal is selected only when both user arguments are present with explicit
 The profile is never inferred from a discovered file, environment default, or prior run. The caller's
 path remains at the outer Godot composition and Content-reader boundary. It does not cross into Domain,
 Application snapshots, receipts, status text, smoke output, or committed configuration.
+
+The optional base view is independently explicit and requires all three additional ignored inputs:
+
+```text
+--private-map3-base-view
+--original-rom=<fully-qualified-ignored-path>
+--map-tileset-metadata=<fully-qualified-ignored-path>
+--map-palette-metadata=<fully-qualified-ignored-path>
+```
+
+Supplying any visual path without the opt-in, omitting one input, or using a relative path makes the
+requested profile unavailable. The traversal-only private profile remains valid without these options.
 
 Missing, relative, unreadable, malformed, or incompatible input makes PrivateLocal **Unavailable**.
 The host does not silently start PublicSynthetic while describing the result as private. Unknown profile
@@ -86,15 +98,17 @@ inputs are registered centrally.
 
 ## Fidelity Boundary
 
-PrivateLocal currently provides semantic traversal plus project-authored diagnostics. The base visual
-payload can be admitted and bound in Application, but no Godot composition or renderer consumes that
-binding.
+PrivateLocal provides semantic traversal, project-authored diagnostics, and an optional Godot base
+view. The view consumes the accepted visual runtime binding and reprojects after movement or admitted
+working-layout mutation. Its 12-by-7 player-centered crop, empty-pixel background, Mega Drive channel
+expansion, and Godot image/marker presentation are explicit project-authored choices. They are not an
+original screenshot or a fidelity backend.
 
 The profile therefore does not claim:
 
 - natural Map 3 route, setup/init/event effects, Battle 01 continuity, or story state;
-- original camera, layers, block/tile composition, animation, text, entities, dialogue, UI, audio, or
-  final pixels;
+- original camera, second-layer/overlay/priority composition, animation, text, entities, dialogue, UI,
+  audio, or final pixels;
 - VRAM, CRAM, VInt, DMA, timing, or other 8C hardware observations;
 - save/load, persistence, or complete private-content support; or
 - H4 or milestone acceptance.

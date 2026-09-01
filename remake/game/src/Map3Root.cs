@@ -96,9 +96,7 @@ public sealed partial class Map3Root : Node2D
 
         if (selection.RequestedProfile == Map3RuntimeProfile.PrivateLocal)
         {
-            StartPrivateScenario(
-                selection.CanonicalImportPath!,
-                selection.PrivateSmokeRequested);
+            StartPrivateScenario(selection);
             return;
         }
 
