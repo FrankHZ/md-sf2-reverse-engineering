@@ -45,7 +45,13 @@ public sealed partial class Map3Root : Node2D
 
         if (_runtimeProfile == Map3RuntimeProfile.PrivateLocal)
         {
-            ProcessPrivateInput();
+            ExplorationDirection? direction =
+                _inputAdapter?.PollPrivateOriginalMapMovement();
+            if (direction is ExplorationDirection privateMovement)
+            {
+                ApplyPrivateMove(privateMovement);
+            }
+
             return;
         }
 

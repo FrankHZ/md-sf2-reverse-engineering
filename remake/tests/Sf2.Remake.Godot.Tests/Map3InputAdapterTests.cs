@@ -48,6 +48,20 @@ public sealed class Map3InputAdapterTests
         Assert.Equal(
             expected.Length,
             expected.Select(binding => binding.PhysicalKey).Distinct().Count());
+        Assert.Equal(
+            new[]
+            {
+                ExplorationDirection.North,
+                ExplorationDirection.East,
+                ExplorationDirection.South,
+                ExplorationDirection.West,
+            },
+            Map3InputAdapter.Bindings
+                .Select(binding => binding.PrivateMovementDirection)
+                .OfType<ExplorationDirection>());
+        Assert.All(
+            Map3InputAdapter.Bindings.Skip(4),
+            binding => Assert.Null(binding.PrivateMovementDirection));
     }
 
     [Fact]
@@ -97,6 +111,64 @@ public sealed class Map3InputAdapterTests
         Assert.Equal([ExplorationDirection.North], probe.Moves);
         Assert.Empty(probe.Turns);
         Assert.Equal(["move_north"], inputProbes);
+    }
+
+    [Theory]
+    [InlineData("move_north", ExplorationDirection.North)]
+    [InlineData("move_east", ExplorationDirection.East)]
+    [InlineData("move_south", ExplorationDirection.South)]
+    [InlineData("move_west", ExplorationDirection.West)]
+    public void PrivateMovementPollingReturnsTheExactSemanticDirectionWithoutDispatch(
+        string pressedAction,
+        ExplorationDirection expectedDirection)
+    {
+        ActionProbe probe = new();
+        Map3InputAdapter adapter = new(
+            CreateRecordingActions(probe),
+            action => action == pressedAction);
+
+        ExplorationDirection? direction = adapter.PollPrivateOriginalMapMovement();
+
+        Assert.Equal(expectedDirection, direction);
+        Assert.Equal(0, probe.TotalCalls);
+    }
+
+    [Fact]
+    public void PrivateMovementPollingPreservesNorthEastSouthWestPriority()
+    {
+        ActionProbe probe = new();
+        List<string> inputProbes = [];
+        Map3InputAdapter adapter = new(
+            CreateRecordingActions(probe),
+            action =>
+            {
+                inputProbes.Add(action);
+                return true;
+            });
+
+        ExplorationDirection? direction = adapter.PollPrivateOriginalMapMovement();
+
+        Assert.Equal(ExplorationDirection.North, direction);
+        Assert.Equal(["move_north"], inputProbes);
+        Assert.Equal(0, probe.TotalCalls);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("select_context")]
+    [InlineData("request_event")]
+    public void PrivateMovementPollingReturnsNullForNoneOrPublicOnlyInput(
+        string? pressedAction)
+    {
+        ActionProbe probe = new();
+        Map3InputAdapter adapter = new(
+            CreateRecordingActions(probe),
+            action => action == pressedAction);
+
+        ExplorationDirection? direction = adapter.PollPrivateOriginalMapMovement();
+
+        Assert.Null(direction);
+        Assert.Equal(0, probe.TotalCalls);
     }
 
     private static Map3InputActions CreateRecordingActions(ActionProbe probe) =>
