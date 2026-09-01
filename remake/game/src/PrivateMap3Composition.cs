@@ -3,6 +3,7 @@ using Godot;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Content;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter;
@@ -25,6 +26,7 @@ public sealed partial class Map3Root
     private Map3RuntimeProfile? _runtimeProfile;
     private PrivateMap3Presenter? _privatePresenter;
     private PrivateOriginalMapVisualRuntimeBinding? _privateVisualBinding;
+    private bool _privateBattleBridgeEnabled;
 
     private void BuildSelectedPresentation(Map3RuntimeProfileSelection selection)
     {
@@ -54,6 +56,10 @@ public sealed partial class Map3Root
         }
 
         _privatePresenter = PrivateMap3Presenter.Attach(this, plan);
+        if (selection.IsAvailable && selection.PrivateBaseViewRequested)
+        {
+            _battlePresenter = PublicSyntheticBattlePresenter.Attach(this);
+        }
     }
 
     private void StartPrivateScenario(Map3RuntimeProfileSelection selection)
@@ -155,8 +161,23 @@ public sealed partial class Map3Root
             return;
         }
 
+        PrivateOriginalMapBattleBridgeBindingResult bridgeBinding =
+            BindPrivateBattleBridge(started);
+        if (bridgeBinding is not PrivateOriginalMapBattleBridgeBound)
+        {
+            PrivateOriginalMapBattleBridgeBindingRejected rejected =
+                (PrivateOriginalMapBattleBridgeBindingRejected)bridgeBinding;
+            FailPrivateStartup(
+                $"PrivateLocal battle bridge unavailable ({rejected.Diagnostic.Code}).",
+                runSmoke,
+                "private-local");
+            return;
+        }
+
         _session = started.Session;
         _privateVisualBinding = started.Binding;
+        _privateBattleBridgeEnabled = true;
+        _inputAdapter = Map3InputAdapter.CreateGodot(CreatePrivateBattleBridgeInputActions());
         PrivateMap3Presenter presenter = _privatePresenter!;
         presenter.BindVisualDefinition(_privateVisualBinding.Definition);
         presenter.Project(started.Session.PrivateOriginalMapSnapshot, "Ready");
@@ -182,6 +203,196 @@ public sealed partial class Map3Root
         PrivateOriginalMapMoveApplied applied = _session.ApplyPrivateOriginalMap(
             new MoveExplorationCommand(direction));
         _privatePresenter?.Project(applied.Snapshot, applied.Traversal.Outcome.ToString());
+        if (_privateBattleBridgeEnabled)
+        {
+            _battlePresenter?.Project(
+                _session.PrivateOriginalMapBattleBridge,
+                "Private Map 3 traversal resumed");
+        }
+    }
+
+    private Map3InputActions CreatePrivateBattleBridgeInputActions() =>
+        new(
+            ApplyPrivateMoveWhenAvailable,
+            static () => { },
+            static () => { },
+            static () => { },
+            static () => { },
+            static () => { },
+            static _ => { },
+            static () => { },
+            static () => { },
+            static () => { },
+            static () => { },
+            static () => { },
+            static () => { },
+            static () => { },
+            static () => { },
+            static () => { },
+            ApplyPrivateBattleBridgeRequest,
+            ApplyPrivateBattleBridgeEntryAcknowledgement,
+            ApplyPrivateBattleBridgeCursorMove,
+            ApplyPrivateBattleBridgeSelectionConfirmation,
+            ApplyPrivateBattleBridgeSelectionCancellation,
+            ApplyPrivateBattleBridgeCompletionAcknowledgement);
+
+    private PrivateOriginalMapBattleBridgeBindingResult BindPrivateBattleBridge(
+        PrivateOriginalMapVisualGameSessionStarted started)
+    {
+        byte[] packageBytes = Godot.FileAccess.GetFileAsBytes(
+            "res://content/public-synthetic-map3-smoke-v1.json");
+        PublicSyntheticMap3PackageReader source =
+            PublicSyntheticMap3PackageReader.FromDocumentBytes(packageBytes);
+        MapScenarioAdmissionResult result = source.Admit(
+            new MapScenarioRequest(
+                PublicSyntheticMap3PackageReader.PackageId,
+                ContentProfile.PublicSynthetic));
+        if (result is not MapScenarioAccepted accepted ||
+            accepted.Scenario.MapContext.PublicSyntheticBattles.Definitions.Count != 1)
+        {
+            string message = result is MapScenarioRejected rejected
+                ? $"Tracked battle package rejected ({rejected.Diagnostic.Code})."
+                : "Tracked battle package did not expose one tactical definition.";
+            return new PrivateOriginalMapBattleBridgeBindingRejected(
+                new PrivateOriginalMapBattleBridgeDiagnostic(
+                    PrivateOriginalMapBattleBridgeFailureCode.BattleDefinitionUnavailable,
+                    message));
+        }
+
+        return started.Session.BindPrivateOriginalMapBattleBridge(
+            started.Binding,
+            accepted.Scenario.MapContext.PublicSyntheticBattles.Definitions[0]);
+    }
+
+    private void ApplyPrivateMoveWhenAvailable(ExplorationDirection direction)
+    {
+        if (_session?.PrivateOriginalMapBattleBridge?.IsBusy == true)
+        {
+            return;
+        }
+
+        ApplyPrivateMove(direction);
+    }
+
+    private void ApplyPrivateBattleBridgeRequest()
+    {
+        if (_session?.PrivateOriginalMapBattleBridge is not
+            PrivateOriginalMapBattleBridgeSnapshot bridge)
+        {
+            return;
+        }
+
+        ProjectPrivateBattleResult(
+            _session.ApplyPrivateOriginalMapBattleBridge(
+                new RequestPrivateOriginalMapBattleBridgeCommand(
+                    bridge.Definition.Bridge,
+                    _session.PrivateOriginalMapSnapshot.SimulationStep)),
+            "Project-authored private battle bridge requested");
+    }
+
+    private void ApplyPrivateBattleBridgeEntryAcknowledgement()
+    {
+        if (_session?.PrivateOriginalMapBattleBridge is not
+            PrivateOriginalMapBattleBridgeSnapshot
+            {
+                Status: PrivateOriginalMapBattleBridgeStatus.Pending,
+            } bridge)
+        {
+            return;
+        }
+
+        ProjectPrivateBattleResult(
+            _session.ApplyPrivateOriginalMapBattleBridge(
+                new AcknowledgePublicSyntheticBattleEntryCommand(
+                    bridge.Definition.Request,
+                    bridge.Definition.Rules.Battle,
+                    bridge.LastCueSequence)),
+            "Project-authored tactical battle admitted");
+    }
+
+    private void ApplyPrivateBattleBridgeCursorMove(TacticalDirection direction)
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        ProjectPrivateBattleResult(
+            _session.ApplyPrivateOriginalMapBattleBridge(
+                new MovePublicSyntheticBattleCursorCommand(direction)),
+            "Project-authored tactical cursor moved");
+    }
+
+    private void ApplyPrivateBattleBridgeSelectionConfirmation()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        ProjectPrivateBattleResult(
+            _session.ApplyPrivateOriginalMapBattleBridge(
+                new ConfirmPublicSyntheticBattleSelectionCommand()),
+            "Project-authored tactical selection confirmed");
+    }
+
+    private void ApplyPrivateBattleBridgeSelectionCancellation()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        ProjectPrivateBattleResult(
+            _session.ApplyPrivateOriginalMapBattleBridge(
+                new CancelPublicSyntheticBattleSelectionCommand()),
+            "Project-authored tactical selection cancelled");
+    }
+
+    private void ApplyPrivateBattleBridgeCompletionAcknowledgement()
+    {
+        if (_session?.PrivateOriginalMapBattleBridge is not
+            PrivateOriginalMapBattleBridgeSnapshot
+            {
+                Status: PrivateOriginalMapBattleBridgeStatus.Completed,
+                Completion: not null,
+            } bridge)
+        {
+            return;
+        }
+
+        ProjectPrivateBattleResult(
+            _session.ApplyPrivateOriginalMapBattleBridge(
+                new AcknowledgePublicSyntheticBattleCompletionCommand(
+                    bridge.Completion.Battle,
+                    bridge.Completion.CueSequence)),
+            "Project-authored battle complete; private Map 3 restored");
+    }
+
+    private void ProjectPrivateBattleResult(
+        GameSessionCommandResult result,
+        string outcome)
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        if (result is PrivateOriginalMapBattleBridgeRejected rejected)
+        {
+            _privatePresenter?.ProjectStatus(rejected.Diagnostic.Message);
+            _battlePresenter?.Project(rejected.Bridge, rejected.Diagnostic.Message, result);
+            return;
+        }
+
+        _battlePresenter?.Project(
+            _session.PrivateOriginalMapBattleBridge,
+            outcome,
+            result);
+        if (result is PrivateOriginalMapBattleBridgeReturned returned)
+        {
+            _privatePresenter?.Project(returned.Snapshot, outcome);
+        }
     }
 
     private void RunPrivateHeadlessSmoke(
@@ -193,7 +404,18 @@ public sealed partial class Map3Root
             enabled: true,
             "deferred-smoke-entered",
             smokeStarted);
-        PrivateMap3SmokeDriver.Run(GetTree(), session, presenter, smokeStarted);
+        if (_battlePresenter is null)
+        {
+            PrivateMap3SmokeDriver.Run(GetTree(), session, presenter, smokeStarted);
+            return;
+        }
+
+        PrivateMap3SmokeDriver.Run(
+            GetTree(),
+            session,
+            presenter,
+            _battlePresenter,
+            smokeStarted);
     }
 
     private void FailProfileStartup(Map3RuntimeProfileSelection selection)

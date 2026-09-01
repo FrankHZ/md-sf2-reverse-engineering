@@ -187,6 +187,12 @@ public sealed partial class GameSession
         MoveExplorationCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
+        if (IsPrivateOriginalMapBattleBridgeBusy)
+        {
+            throw new InvalidOperationException(
+                "Private original-map movement is unavailable while the project-authored battle bridge is busy.");
+        }
+
         PrivateOriginalMapSessionSnapshot current = PrivateOriginalMapSnapshot;
         OriginalMapTraversalResult traversal = current.Definition.Traversal.TryMove(
             current.WorkingLayout,
@@ -209,6 +215,12 @@ public sealed partial class GameSession
         ApplyPrivateOriginalMapLayoutMutationCommand command)
     {
         ArgumentNullException.ThrowIfNull(command);
+        if (IsPrivateOriginalMapBattleBridgeBusy)
+        {
+            throw new InvalidOperationException(
+                "Private original-map layout mutation is unavailable while the project-authored battle bridge is busy.");
+        }
+
         PrivateOriginalMapSessionSnapshot current = PrivateOriginalMapSnapshot;
         OriginalMapStepCopyDefinition admitted =
             current.Definition.ControlledStepCopy ?? throw new InvalidOperationException(

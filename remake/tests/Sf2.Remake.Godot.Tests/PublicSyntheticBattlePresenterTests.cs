@@ -1,3 +1,4 @@
+using System.Reflection;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Content;
@@ -120,6 +121,29 @@ public sealed class PublicSyntheticBattlePresenterTests
         Assert.Empty(laterProjection.Cells);
     }
 
+    [Fact]
+    public void PrivateBridgeProjectsTheSharedBattleWithoutPublicWorldState()
+    {
+        PrivateOriginalMapBattleBridgeSnapshot bridge = ActivePrivateBridge();
+
+        PublicSyntheticBattlePresentationProjection projection =
+            PublicSyntheticBattlePresentationProjection.Create(
+                bridge,
+                "Explicit private-local bridge admitted");
+
+        Assert.True(projection.Visible);
+        Assert.Contains("PROJECT-AUTHORED PUBLIC-SYNTHETIC", projection.Title);
+        Assert.Contains("project-authored-tactical-battle", projection.Status);
+        Assert.Contains("MoveSelection", projection.Status);
+        Assert.Equal(6, projection.Cells.Count);
+        Assert.Single(projection.Cells, cell => cell.HasActor);
+        Assert.Single(projection.Cells, cell => cell.HasEnemy);
+        Assert.Single(projection.Cells, cell => cell.HasCursor);
+        Assert.DoesNotContain("effect", projection.Status, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("flag", projection.Status, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("return", projection.Status, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static GameSession StartActiveBattle()
     {
         (GameSession session, _) = StartSession();
@@ -174,6 +198,125 @@ public sealed class PublicSyntheticBattlePresenterTests
                 requested.Battle.Definition.Rules.Battle,
                 requested.Cue.Sequence)));
         return session;
+    }
+
+    private static PrivateOriginalMapBattleBridgeSnapshot ActivePrivateBridge()
+    {
+        PublicSyntheticBattleDefinition battle = new(
+            new PublicSyntheticBattleRequestId("project-authored-battle-request"),
+            new TacticalBattleRules(
+                new TacticalBattleId("project-authored-tactical-battle"),
+                new TacticalBattleGrid(3, 2, Enumerable.Repeat(true, 6)),
+                new TacticalCombatantId("project-authored-actor"),
+                new TacticalPosition(0, 1),
+                new TacticalCombatantId("project-authored-enemy"),
+                new TacticalPosition(2, 1),
+                actorMoveRange: 1,
+                actorAttackRange: 1,
+                enemyMaxHitPoints: 1,
+                actorDamage: 1),
+            new MapId("public-source-must-not-leak"),
+            new MapPosition(2, 1),
+            new MapSetupId("public-source-setup-must-not-leak"),
+            new EventTargetId("public-source-zone-must-not-leak"),
+            new MapId("public-return-must-not-leak"),
+            new MapPosition(1, 1),
+            new MapSetupId("public-return-setup-must-not-leak"),
+            SemanticFacing.East,
+            new MapEventEffectId("public-effect-must-not-leak"),
+            new FlagId("public-flag-must-not-leak"),
+            new PresentationCueId("battle-requested"),
+            new PresentationCueId("battle-admitted"),
+            new PresentationCueId("battle-moved"),
+            new PresentationCueId("battle-attacked"),
+            new PresentationCueId("battle-completed"),
+            new PresentationCueId("battle-returned"));
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        MapPosition position = new(56, 3);
+        PrivateOriginalMapBattleBridgeDefinition definition =
+            Assert.IsType<PrivateOriginalMapBattleBridgeDefinition>(Activator.CreateInstance(
+                typeof(PrivateOriginalMapBattleBridgeDefinition),
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                binder: null,
+                [map, position, battle],
+                culture: null));
+        PrivateOriginalMapBattleBridgeSnapshot pending =
+            Assert.IsType<PrivateOriginalMapBattleBridgeSnapshot>(
+                typeof(PrivateOriginalMapBattleBridgeSnapshot)
+                    .GetMethod("Pending", BindingFlags.Static | BindingFlags.NonPublic)!
+                    .Invoke(null, [definition, PrivateSnapshot(map, position)]));
+        object pendingLifecycle = typeof(PrivateOriginalMapBattleBridgeSnapshot)
+            .GetProperty("Lifecycle", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(pending)!;
+        object activeLifecycle = pendingLifecycle.GetType()
+            .GetMethod("Admit", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(pendingLifecycle, [2L, 2L])!;
+        return Assert.IsType<PrivateOriginalMapBattleBridgeSnapshot>(
+            typeof(PrivateOriginalMapBattleBridgeSnapshot)
+                .GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .Invoke(pending, [activeLifecycle, 2L]));
+    }
+
+    private static PrivateOriginalMapSessionSnapshot PrivateSnapshot(
+        MapId map,
+        MapPosition position)
+    {
+        WorkingMapLayout layout = new(new ushort[WorkingMapLayout.WordCount]);
+        OriginalMapImportDefinition definition = new(
+            map,
+            layout,
+            new OriginalMapBlockCatalog(
+            [
+                new OriginalMapBlockDefinition(
+                    new OriginalMapBlockRecordIdentity("project-authored-blocks", 0),
+                    new ushort[OriginalMapBlockDefinition.OpaqueWordCount]),
+            ]),
+            new OriginalMapAreaCatalog(
+            [
+                new OriginalMapAreaDefinition(
+                    new OriginalMapAreaRecordIdentity("project-authored-areas", 1),
+                    new OriginalMapTraversalArea(0, 0, 63, 63),
+                    new OriginalMapAreaWordPair(0, 0),
+                    new OriginalMapAreaWordPair(0, 0),
+                    new OriginalMapAreaWordPair(256, 256),
+                    new OriginalMapAreaWordPair(256, 256),
+                    new OriginalMapAreaBytePair(0, 0),
+                    new OriginalMapAreaBytePair(0, 0),
+                    mainLayerType: 0,
+                    defaultMusic: 0),
+            ]),
+            new OriginalMapVisualResourceSelection(map, 0, [0, 37, 43, 53, 66]),
+            new OriginalMapControlledAdmission(
+                map,
+                position,
+                OriginalMapRuntimeAdmission.OpaqueStartFacing,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.SelectedInitIdentity,
+                noProgramRequest: true),
+            ["original-battle-route-unknown"]);
+        OriginalMapImportReceipt receipt = new(
+            OriginalMapRuntimeAdmission.PackageId,
+            OriginalMapRuntimeAdmission.SchemaVersion,
+            OriginalMapRuntimeAdmission.AcceptedContentDigest,
+            OriginalMapRuntimeAdmission.AcceptedDecodedLayoutDigest,
+            OriginalMapRuntimeAdmission.AcceptedCollisionProjectionDigest,
+            ContentProfile.PrivateLocal,
+            new OriginalMapImportProvenance(
+                OriginalMapRuntimeAdmission.PackageId,
+                OriginalMapRuntimeAdmission.AcceptedRomSha256,
+                OriginalMapRuntimeAdmission.AcceptedUpstreamRepository,
+                OriginalMapRuntimeAdmission.AcceptedUpstreamCommit),
+            OriginalMapRuntimeAdmission.RequiredEvidenceOwners,
+            OriginalMapRuntimeAdmission.RequiredCapabilities);
+        return new PrivateOriginalMapSessionSnapshot(
+            definition,
+            receipt,
+            layout,
+            simulationStep: 0,
+            position,
+            lastTraversal: null,
+            controlledStepCopyApplied: false,
+            lastLayoutMutation: null);
     }
 
     private static (GameSession Session, ScenarioAdmissionReceipt Receipt) StartSession()

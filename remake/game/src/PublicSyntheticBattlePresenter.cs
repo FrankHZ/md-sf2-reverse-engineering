@@ -52,27 +52,11 @@ internal sealed record PublicSyntheticBattlePresentationProjection
         PublicSyntheticBattleLifecycleSnapshot? lifecycle = snapshot.PublicSyntheticBattle;
         if (lifecycle?.BattleState is TacticalBattleState battleState)
         {
-            List<PublicSyntheticBattleCellProjection> cells = [];
-            for (int y = 0; y < battleState.Rules.Grid.Height; y++)
-            {
-                for (int x = 0; x < battleState.Rules.Grid.Width; x++)
-                {
-                    TacticalPosition position = new(x, y);
-                    cells.Add(new PublicSyntheticBattleCellProjection(
-                        position,
-                        position == battleState.ActorPosition,
-                        position == battleState.EnemyPosition && battleState.EnemyHitPoints > 0,
-                        position == battleState.CursorPosition));
-                }
-            }
-
-            return new PublicSyntheticBattlePresentationProjection(
-                visible: true,
-                "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
-                $"{lifecycle.Definition.Rules.Battle}  {battleState.Phase}  " +
-                    $"Enemy HP {battleState.EnemyHitPoints}  {outcome}",
-                FormatCue(result, lifecycle.LastCueSequence),
-                cells);
+            return Active(
+                battleState,
+                lifecycle.Definition.Rules.Battle,
+                outcome,
+                FormatCue(result, lifecycle.LastCueSequence));
         }
 
         if (result is GameSessionPublicSyntheticBattleReturned returned)
@@ -96,6 +80,69 @@ internal sealed record PublicSyntheticBattlePresentationProjection
             []);
     }
 
+    internal static PublicSyntheticBattlePresentationProjection Create(
+        PrivateOriginalMapBattleBridgeSnapshot? bridge,
+        string outcome,
+        GameSessionCommandResult? result = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(outcome);
+        if (bridge?.BattleState is TacticalBattleState battleState)
+        {
+            return Active(
+                battleState,
+                bridge.Definition.Rules.Battle,
+                outcome,
+                FormatCue(result, bridge.LastCueSequence));
+        }
+
+        if (result is PrivateOriginalMapBattleBridgeReturned returned)
+        {
+            return new PublicSyntheticBattlePresentationProjection(
+                visible: true,
+                "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
+                $"{returned.Completion.Battle} completed; returned to the same " +
+                    $"private {returned.Snapshot.Map} traversal state.",
+                $"Cue #{returned.Cue.Sequence} {returned.Cue.Cue}",
+                []);
+        }
+
+        return new PublicSyntheticBattlePresentationProjection(
+            visible: false,
+            "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
+            "No private battle bridge is active.",
+            "Battle cue: none.",
+            []);
+    }
+
+    private static PublicSyntheticBattlePresentationProjection Active(
+        TacticalBattleState battleState,
+        TacticalBattleId battle,
+        string outcome,
+        string cueStatus)
+    {
+        List<PublicSyntheticBattleCellProjection> cells = [];
+        for (int y = 0; y < battleState.Rules.Grid.Height; y++)
+        {
+            for (int x = 0; x < battleState.Rules.Grid.Width; x++)
+            {
+                TacticalPosition position = new(x, y);
+                cells.Add(new PublicSyntheticBattleCellProjection(
+                    position,
+                    position == battleState.ActorPosition,
+                    position == battleState.EnemyPosition && battleState.EnemyHitPoints > 0,
+                    position == battleState.CursorPosition));
+            }
+        }
+
+        return new PublicSyntheticBattlePresentationProjection(
+            visible: true,
+            "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
+            $"{battle}  {battleState.Phase}  " +
+                $"Enemy HP {battleState.EnemyHitPoints}  {outcome}",
+            cueStatus,
+            cells);
+    }
+
     private static string FormatCue(GameSessionCommandResult? result, long lastCueSequence) =>
         result switch
         {
@@ -104,6 +151,15 @@ internal sealed record PublicSyntheticBattlePresentationProjection
             GameSessionPublicSyntheticBattleAdmitted admitted =>
                 $"Cue #{admitted.Cue.Sequence} {admitted.Cue.Cue}",
             GameSessionPublicSyntheticBattleSelectionConfirmed confirmed
+                when confirmed.Cues.Count > 0 =>
+                "Cues " + string.Join(
+                    ", ",
+                    confirmed.Cues.Select(cue => $"#{cue.Sequence} {cue.Cue}")),
+            PrivateOriginalMapBattleBridgeRequested requested =>
+                $"Cue #{requested.Cue.Sequence} {requested.Cue.Cue}",
+            PrivateOriginalMapBattleBridgeAdmitted admitted =>
+                $"Cue #{admitted.Cue.Sequence} {admitted.Cue.Cue}",
+            PrivateOriginalMapBattleBridgeSelectionConfirmed confirmed
                 when confirmed.Cues.Count > 0 =>
                 "Cues " + string.Join(
                     ", ",
@@ -197,6 +253,21 @@ internal sealed class PublicSyntheticBattlePresenter
     {
         PublicSyntheticBattlePresentationProjection projection =
             PublicSyntheticBattlePresentationProjection.Create(snapshot, outcome, result);
+        Project(projection);
+    }
+
+    internal void Project(
+        PrivateOriginalMapBattleBridgeSnapshot? bridge,
+        string outcome,
+        GameSessionCommandResult? result = null)
+    {
+        PublicSyntheticBattlePresentationProjection projection =
+            PublicSyntheticBattlePresentationProjection.Create(bridge, outcome, result);
+        Project(projection);
+    }
+
+    private void Project(PublicSyntheticBattlePresentationProjection projection)
+    {
         _panel.Visible = projection.Visible;
         _title.Text = projection.Title;
         _status.Text = projection.Status;

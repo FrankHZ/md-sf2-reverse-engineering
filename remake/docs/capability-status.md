@@ -28,6 +28,7 @@ Status terms:
 | Private base visual payload | sibling private Content port and immutable Application definition | **Admitted prerequisite** | decoded base buffers and palette forms remain local/in-memory; animation and final composition unsupported |
 | Private visual runtime binding | Application cross-port compatibility and existing private session construction | **Implemented and consumed locally** | Godot consumes the binding only under explicit private base-view opt-in; no payload enters PCK, status, or smoke |
 | Private project-authored Map 3 base view | Godot-only main-layer composition over the authoritative private session and admitted visual binding | **Implemented** | 12-by-7 clamped crop, project-authored background/color display and player marker; no original camera, overlay, animation, or final-pixel claim |
+| Private-local project-authored battle bridge | Application-owned manual bridge at the controlled start and the existing thin Godot tactical projection | **Implemented** | reuses the synthetic battle definition/reducer and returns to the exact same private traversal snapshot; no natural admission, Battle 01, public world effect, original after-program, or fidelity claim |
 | Original visual presentation | no current product owner | **Unsupported** | block/tile/layer composition, camera, color display, animation, UI, text, assets, audio, timing, and final pixels |
 | Continuous Map 3-through-Battle 01 milestone | Research, design contracts, future Application/Domain/Godot work | **Unknown / NOT READY** | natural route, battle admission/playthrough/victory, endpoint, private presentation, and complete acceptance remain open |
 | Save/load and persistence | future milestone and save-system owner | **Unsupported / deferred** | no player-facing save, checkpoint, suspend, migration, or persistence adapter |
@@ -54,6 +55,7 @@ alone is not a reason to reopen those boundaries.
 
 The next engineering frontier is product capability behind `GameSession`, with internal Application or
 Content decomposition only when an owning behavior change makes it necessary. The implemented
-public-synthetic battle micro-loop establishes one executable flow seam; mapping it to original Battle
-01 admission, state, actions, victory, after-program, return, and endpoint remains evidence-bound and
-**Unknown / NOT READY**. See [Architecture](./architecture.md).
+public-synthetic battle micro-loop and explicit private-local bridge establish executable flow seams;
+mapping either seam to original Battle 01 admission, state, actions, victory, after-program, return,
+and endpoint remains evidence-bound and **Unknown / NOT READY**. See
+[Architecture](./architecture.md).
