@@ -17,7 +17,10 @@ public enum PublicSyntheticBattleCueKind
     BattleAdmitted,
     MoveConfirmed,
     AttackCompleted,
+    EnemyResponded,
     BattleCompleted,
+    BattleDefeated,
+    BattleRestarted,
     ReturnedToExploration,
 }
 
@@ -176,6 +179,19 @@ public sealed record PublicSyntheticBattleLifecycleSnapshot
             completed ? changedAtStep : null,
             cueSequence);
     }
+
+    internal PublicSyntheticBattleLifecycleSnapshot Restart(
+        long restartedAtStep,
+        long cueSequence) =>
+        new(
+            Definition,
+            PublicSyntheticBattleLifecycleStatus.Active,
+            RequestedAtStep,
+            EntryCueSequence,
+            Definition.Rules.CreateInitialState(),
+            restartedAtStep,
+            completedAtStep: null,
+            cueSequence);
 }
 
 public sealed record RequestSelectedPublicSyntheticBattleCommand : IGameSessionCommand;
@@ -313,6 +329,7 @@ public sealed record GameSessionPublicSyntheticBattleSelectionConfirmed :
     public GameSessionPublicSyntheticBattleSelectionConfirmed(
         GameSessionSnapshot snapshot,
         TacticalSelectionOutcome outcome,
+        TacticalEnemyResponse? enemyResponse,
         IEnumerable<PublicSyntheticBattleCue> cues,
         PublicSyntheticBattleCompletionReceipt? completion)
     {
@@ -331,10 +348,21 @@ public sealed record GameSessionPublicSyntheticBattleSelectionConfirmed :
                 nameof(cues)));
         }
 
-        bool completed = outcome == TacticalSelectionOutcome.BattleCompleted;
-        if (completed != (completion is not null) ||
-            (completed && copiedCues.Count != 2) ||
-            (!completed && copiedCues.Count != 1))
+        bool victory = outcome == TacticalSelectionOutcome.BattleCompleted;
+        bool responseRequired = outcome is
+            TacticalSelectionOutcome.AttackConfirmed or
+            TacticalSelectionOutcome.BattleDefeated;
+        int expectedCueCount = outcome switch
+        {
+            TacticalSelectionOutcome.MoveConfirmed => 1,
+            TacticalSelectionOutcome.AttackConfirmed or
+            TacticalSelectionOutcome.BattleCompleted or
+            TacticalSelectionOutcome.BattleDefeated => 2,
+            _ => throw new ArgumentOutOfRangeException(nameof(outcome)),
+        };
+        if (victory != (completion is not null) ||
+            responseRequired != (enemyResponse is not null) ||
+            copiedCues.Count != expectedCueCount)
         {
             throw new ArgumentException(
                 "Public-synthetic battle selection outcome, cues, and completion must agree.",
@@ -342,6 +370,7 @@ public sealed record GameSessionPublicSyntheticBattleSelectionConfirmed :
         }
 
         Outcome = outcome;
+        EnemyResponse = enemyResponse;
         Cues = copiedCues.AsReadOnly();
         Completion = completion;
     }
@@ -349,6 +378,8 @@ public sealed record GameSessionPublicSyntheticBattleSelectionConfirmed :
     public GameSessionSnapshot Snapshot { get; }
 
     public TacticalSelectionOutcome Outcome { get; }
+
+    public TacticalEnemyResponse? EnemyResponse { get; }
 
     public IReadOnlyList<PublicSyntheticBattleCue> Cues { get; }
 
@@ -363,6 +394,11 @@ public sealed record GameSessionPublicSyntheticBattleReturned(
     GameSessionSnapshot Snapshot,
     PublicSyntheticBattleCompletionReceipt Completion,
     PublicSyntheticBattleWorldEffectReceipt WorldEffect,
+    PublicSyntheticBattleCue Cue) : GameSessionCommandResult;
+
+public sealed record GameSessionPublicSyntheticBattleRestarted(
+    GameSessionSnapshot Snapshot,
+    PublicSyntheticBattleLifecycleSnapshot Battle,
     PublicSyntheticBattleCue Cue) : GameSessionCommandResult;
 
 public sealed partial class GameSession
@@ -562,13 +598,35 @@ public sealed partial class GameSession
         }
         else if (confirmed.Outcome == TacticalSelectionOutcome.AttackConfirmed)
         {
-            lastCueSequence = firstCueSequence;
+            lastCueSequence = checked(firstCueSequence + 1);
             cues.Add(new PublicSyntheticBattleCue(
                 lifecycle.Definition.AttackCue,
                 PublicSyntheticBattleCueKind.AttackCompleted,
                 lifecycle.Definition.Request,
                 lifecycle.Definition.Rules.Battle,
                 firstCueSequence));
+            cues.Add(new PublicSyntheticBattleCue(
+                lifecycle.Definition.EnemyResponseCue,
+                PublicSyntheticBattleCueKind.EnemyResponded,
+                lifecycle.Definition.Request,
+                lifecycle.Definition.Rules.Battle,
+                lastCueSequence));
+        }
+        else if (confirmed.Outcome == TacticalSelectionOutcome.BattleDefeated)
+        {
+            lastCueSequence = checked(firstCueSequence + 1);
+            cues.Add(new PublicSyntheticBattleCue(
+                lifecycle.Definition.AttackCue,
+                PublicSyntheticBattleCueKind.AttackCompleted,
+                lifecycle.Definition.Request,
+                lifecycle.Definition.Rules.Battle,
+                firstCueSequence));
+            cues.Add(new PublicSyntheticBattleCue(
+                lifecycle.Definition.DefeatedCue,
+                PublicSyntheticBattleCueKind.BattleDefeated,
+                lifecycle.Definition.Request,
+                lifecycle.Definition.Rules.Battle,
+                lastCueSequence));
         }
         else
         {
@@ -611,6 +669,7 @@ public sealed partial class GameSession
         return new GameSessionPublicSyntheticBattleSelectionConfirmed(
             Snapshot,
             confirmed.Outcome,
+            confirmed.EnemyResponse,
             cues.AsReadOnly(),
             completion);
     }
@@ -675,6 +734,41 @@ public sealed partial class GameSession
             return RejectBattle(
                 GameSessionCommandFailureCode.AcknowledgementMismatch,
                 "The public-synthetic battle completion acknowledgement does not match.");
+        }
+
+        if (lifecycle.BattleState.Outcome == TacticalBattleOutcome.Defeat)
+        {
+            long restartedAtStep = checked(Snapshot.SimulationStep + 1);
+            long restartCueSequence = checked(Snapshot.LastCueSequence + 1);
+            PublicSyntheticBattleLifecycleSnapshot restarted = lifecycle.Restart(
+                restartedAtStep,
+                restartCueSequence);
+            Snapshot = BattleSnapshot(
+                GameFlowStage.Battle,
+                restartedAtStep,
+                Snapshot.Exploration,
+                contextSelection: null,
+                restartCueSequence,
+                restarted,
+                Snapshot.Facing,
+                Snapshot.Entities,
+                clearExplorationLifecycles: true);
+            PublicSyntheticBattleCue restartCue = new(
+                lifecycle.Definition.RestartedCue,
+                PublicSyntheticBattleCueKind.BattleRestarted,
+                lifecycle.Definition.Request,
+                lifecycle.Definition.Rules.Battle,
+                restartCueSequence);
+            return new GameSessionPublicSyntheticBattleRestarted(
+                Snapshot,
+                restarted,
+                restartCue);
+        }
+
+        if (lifecycle.BattleState.Outcome != TacticalBattleOutcome.Victory)
+        {
+            throw new InvalidOperationException(
+                "A completed tactical battle must expose victory or defeat.");
         }
 
         if (Snapshot.SyntheticFlags.IsSet(lifecycle.Definition.CompletionFlag))

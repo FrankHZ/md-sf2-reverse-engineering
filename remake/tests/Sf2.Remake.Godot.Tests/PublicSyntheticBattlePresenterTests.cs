@@ -52,6 +52,9 @@ public sealed class PublicSyntheticBattlePresenterTests
         Assert.Contains("PROJECT-AUTHORED PUBLIC-SYNTHETIC", projection.Title);
         Assert.Contains("public-synthetic-map3-tactical-battle", projection.Status);
         Assert.Contains("MoveSelection", projection.Status);
+        Assert.Contains("Actor HP 2", projection.Status);
+        Assert.Contains("Enemy HP 3", projection.Status);
+        Assert.Contains("Outcome InProgress", projection.Status);
         Assert.Equal(6, projection.Cells.Count);
         PublicSyntheticBattleCellProjection actor = Assert.Single(
             projection.Cells,
@@ -68,18 +71,68 @@ public sealed class PublicSyntheticBattlePresenterTests
     }
 
     [Fact]
-    public void CompletionAndReturnProjectOnlyTypedResultWithoutCachedBattleState()
+    public void EnemyResponseDefeatAndRetryProjectOnlyTypedState()
     {
         GameSession session = StartActiveBattle();
-        Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
-            new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)));
-        Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
-            new ConfirmPublicSyntheticBattleSelectionCommand()));
-        Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
-            new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)));
-        GameSessionPublicSyntheticBattleSelectionConfirmed completed =
-            Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
-                new ConfirmPublicSyntheticBattleSelectionCommand()));
+        GameSessionPublicSyntheticBattleSelectionConfirmed exchange = ApplyBattleAttack(
+            session,
+            move: [TacticalDirection.East],
+            target: [TacticalDirection.East]);
+        PublicSyntheticBattlePresentationProjection exchangeProjection =
+            PublicSyntheticBattlePresentationProjection.Create(
+                exchange.Snapshot,
+                "exchange",
+                exchange);
+        Assert.Contains("Actor HP 1", exchangeProjection.Status);
+        Assert.Contains("Enemy HP 2", exchangeProjection.Status);
+        Assert.Contains("Enemy Attacked", exchangeProjection.CueStatus);
+
+        GameSessionPublicSyntheticBattleSelectionConfirmed defeated = ApplyBattleAttack(
+            session,
+            move: [],
+            target: [TacticalDirection.East]);
+        PublicSyntheticBattlePresentationProjection defeatedProjection =
+            PublicSyntheticBattlePresentationProjection.Create(
+                defeated.Snapshot,
+                "defeated",
+                defeated);
+        Assert.Contains("Outcome Defeat", defeatedProjection.Status);
+        Assert.Contains("Actor HP 0", defeatedProjection.Status);
+        Assert.Contains("public-synthetic-map3-battle-defeated", defeatedProjection.CueStatus);
+        Assert.Contains("Enemy ActorDefeated", defeatedProjection.CueStatus);
+
+        GameSessionPublicSyntheticBattleRestarted restarted = Assert.IsType<
+            GameSessionPublicSyntheticBattleRestarted>(session.Apply(
+            new AcknowledgePublicSyntheticBattleCompletionCommand(
+                defeated.Snapshot.PublicSyntheticBattle!.Definition.Rules.Battle,
+                defeated.Snapshot.LastCueSequence)));
+        PublicSyntheticBattlePresentationProjection restartedProjection =
+            PublicSyntheticBattlePresentationProjection.Create(
+                restarted.Snapshot,
+                "restarted",
+                restarted);
+        Assert.Contains("Actor HP 2", restartedProjection.Status);
+        Assert.Contains("Enemy HP 3", restartedProjection.Status);
+        Assert.Contains("Outcome InProgress", restartedProjection.Status);
+        Assert.Contains("public-synthetic-map3-battle-restarted", restartedProjection.CueStatus);
+    }
+
+    [Fact]
+    public void StrategicVictoryAndReturnProjectOnlyTypedResultWithoutCachedBattleState()
+    {
+        GameSession session = StartActiveBattle();
+        ApplyBattleAttack(
+            session,
+            move: [],
+            target: [TacticalDirection.East, TacticalDirection.East]);
+        ApplyBattleAttack(
+            session,
+            move: [TacticalDirection.North],
+            target: [TacticalDirection.East, TacticalDirection.South]);
+        GameSessionPublicSyntheticBattleSelectionConfirmed completed = ApplyBattleAttack(
+            session,
+            move: [TacticalDirection.South],
+            target: [TacticalDirection.East, TacticalDirection.North]);
 
         PublicSyntheticBattlePresentationProjection completedProjection =
             PublicSyntheticBattlePresentationProjection.Create(
@@ -87,6 +140,7 @@ public sealed class PublicSyntheticBattlePresenterTests
                 "completed",
                 completed);
         Assert.Contains("Completed", completedProjection.Status);
+        Assert.Contains("Outcome Victory", completedProjection.Status);
         Assert.Contains("public-synthetic-map3-battle-attack-completed", completedProjection.CueStatus);
         Assert.Contains("public-synthetic-map3-battle-completed", completedProjection.CueStatus);
 
@@ -200,6 +254,35 @@ public sealed class PublicSyntheticBattlePresenterTests
         return session;
     }
 
+    private static GameSessionPublicSyntheticBattleSelectionConfirmed ApplyBattleAttack(
+        GameSession session,
+        IEnumerable<TacticalDirection> move,
+        IEnumerable<TacticalDirection> target)
+    {
+        foreach (TacticalDirection direction in move)
+        {
+            GameSessionPublicSyntheticBattleCursorMoved moved = Assert.IsType<
+                GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
+                new MovePublicSyntheticBattleCursorCommand(direction)));
+            Assert.Equal(TacticalCursorMoveOutcome.Moved, moved.Outcome);
+        }
+
+        Assert.Equal(
+            TacticalSelectionOutcome.MoveConfirmed,
+            Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
+                new ConfirmPublicSyntheticBattleSelectionCommand())).Outcome);
+        foreach (TacticalDirection direction in target)
+        {
+            GameSessionPublicSyntheticBattleCursorMoved moved = Assert.IsType<
+                GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
+                new MovePublicSyntheticBattleCursorCommand(direction)));
+            Assert.Equal(TacticalCursorMoveOutcome.Moved, moved.Outcome);
+        }
+
+        return Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
+            new ConfirmPublicSyntheticBattleSelectionCommand()));
+    }
+
     private static PrivateOriginalMapBattleBridgeSnapshot ActivePrivateBridge()
     {
         PublicSyntheticBattleDefinition battle = new(
@@ -212,9 +295,13 @@ public sealed class PublicSyntheticBattlePresenterTests
                 new TacticalCombatantId("project-authored-enemy"),
                 new TacticalPosition(2, 1),
                 actorMoveRange: 1,
-                actorAttackRange: 1,
-                enemyMaxHitPoints: 1,
-                actorDamage: 1),
+                actorAttackRange: 2,
+                actorMaxHitPoints: 2,
+                actorDamage: 1,
+                enemyMoveRange: 1,
+                enemyAttackRange: 1,
+                enemyMaxHitPoints: 3,
+                enemyDamage: 1),
             new MapId("public-source-must-not-leak"),
             new MapPosition(2, 1),
             new MapSetupId("public-source-setup-must-not-leak"),
@@ -229,7 +316,10 @@ public sealed class PublicSyntheticBattlePresenterTests
             new PresentationCueId("battle-admitted"),
             new PresentationCueId("battle-moved"),
             new PresentationCueId("battle-attacked"),
+            new PresentationCueId("battle-enemy-response"),
             new PresentationCueId("battle-completed"),
+            new PresentationCueId("battle-defeated"),
+            new PresentationCueId("battle-restarted"),
             new PresentationCueId("battle-returned"));
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         MapPosition position = new(56, 3);

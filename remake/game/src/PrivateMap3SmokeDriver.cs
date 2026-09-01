@@ -207,20 +207,59 @@ internal static class PrivateMap3SmokeDriver
             session.ApplyPrivateOriginalMapBattleBridge(
                 new CancelPublicSyntheticBattleSelectionCommand()) is not
                     PrivateOriginalMapBattleBridgeSelectionCancelled
-                { Outcome: TacticalCancelOutcome.ReturnedToMoveSelection } ||
-            !MoveBattleCursor(session) ||
-            session.ApplyPrivateOriginalMapBattleBridge(
-                new ConfirmPublicSyntheticBattleSelectionCommand()) is not
-                    PrivateOriginalMapBattleBridgeSelectionConfirmed
-                { Outcome: TacticalSelectionOutcome.MoveConfirmed } ||
-            !MoveBattleCursor(session) ||
-            session.ApplyPrivateOriginalMapBattleBridge(
-                new ConfirmPublicSyntheticBattleSelectionCommand()) is not
-                    PrivateOriginalMapBattleBridgeSelectionConfirmed
-                {
-                    Outcome: TacticalSelectionOutcome.BattleCompleted,
-                    Completion: not null,
-                } completed)
+                { Outcome: TacticalCancelOutcome.ReturnedToMoveSelection })
+        {
+            Fail(sceneTree, presenter, "PrivateLocal tactical bridge cancel path failed.");
+            return false;
+        }
+
+        PrivateOriginalMapBattleBridgeSelectionConfirmed? exchange = ApplyBattleAttack(
+            session,
+            [TacticalDirection.East],
+            [TacticalDirection.East]);
+        PrivateOriginalMapBattleBridgeSelectionConfirmed? defeated = exchange is null
+            ? null
+            : ApplyBattleAttack(session, [], [TacticalDirection.East]);
+        PrivateOriginalMapBattleBridgeRestarted? restarted = defeated is null
+            ? null
+            : session.ApplyPrivateOriginalMapBattleBridge(
+                new AcknowledgePublicSyntheticBattleCompletionCommand(
+                    defeated.Bridge.Definition.Rules.Battle,
+                    defeated.Bridge.LastCueSequence)) as
+                PrivateOriginalMapBattleBridgeRestarted;
+        if (exchange?.EnemyResponse?.Kind != TacticalEnemyResponseKind.Attacked ||
+            defeated?.Outcome != TacticalSelectionOutcome.BattleDefeated ||
+            defeated.EnemyResponse?.Kind != TacticalEnemyResponseKind.ActorDefeated ||
+            defeated.Completion is not null ||
+            restarted?.Bridge.BattleState?.Outcome != TacticalBattleOutcome.InProgress ||
+            !ReferenceEquals(before, restarted.Snapshot) ||
+            !ReferenceEquals(before, session.PrivateOriginalMapSnapshot))
+        {
+            Fail(sceneTree, presenter, "PrivateLocal tactical bridge defeat/retry failed.");
+            return false;
+        }
+
+        PrivateOriginalMapBattleBridgeSelectionConfirmed? firstRanged = ApplyBattleAttack(
+            session,
+            [],
+            [TacticalDirection.East, TacticalDirection.East]);
+        PrivateOriginalMapBattleBridgeSelectionConfirmed? secondRanged = firstRanged is null
+            ? null
+            : ApplyBattleAttack(
+                session,
+                [TacticalDirection.North],
+                [TacticalDirection.East, TacticalDirection.South]);
+        PrivateOriginalMapBattleBridgeSelectionConfirmed? completed = secondRanged is null
+            ? null
+            : ApplyBattleAttack(
+                session,
+                [TacticalDirection.South],
+                [TacticalDirection.East, TacticalDirection.North]);
+        if (firstRanged?.EnemyResponse?.Kind != TacticalEnemyResponseKind.Moved ||
+            secondRanged?.EnemyResponse?.Kind != TacticalEnemyResponseKind.Moved ||
+            completed?.Outcome != TacticalSelectionOutcome.BattleCompleted ||
+            completed.Completion is null ||
+            completed.Bridge.BattleState?.Outcome != TacticalBattleOutcome.Victory)
         {
             Fail(sceneTree, presenter, "PrivateLocal tactical bridge did not complete.");
             return false;
@@ -259,6 +298,46 @@ internal static class PrivateMap3SmokeDriver
             new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)) is
                 PrivateOriginalMapBattleBridgeCursorMoved
         { Outcome: TacticalCursorMoveOutcome.Moved };
+
+    private static PrivateOriginalMapBattleBridgeSelectionConfirmed? ApplyBattleAttack(
+        GameSession session,
+        IEnumerable<TacticalDirection> move,
+        IEnumerable<TacticalDirection> target)
+    {
+        foreach (TacticalDirection direction in move)
+        {
+            if (session.ApplyPrivateOriginalMapBattleBridge(
+                    new MovePublicSyntheticBattleCursorCommand(direction)) is not
+                PrivateOriginalMapBattleBridgeCursorMoved
+                    { Outcome: TacticalCursorMoveOutcome.Moved })
+            {
+                return null;
+            }
+        }
+
+        if (session.ApplyPrivateOriginalMapBattleBridge(
+                new ConfirmPublicSyntheticBattleSelectionCommand()) is not
+            PrivateOriginalMapBattleBridgeSelectionConfirmed
+                { Outcome: TacticalSelectionOutcome.MoveConfirmed })
+        {
+            return null;
+        }
+
+        foreach (TacticalDirection direction in target)
+        {
+            if (session.ApplyPrivateOriginalMapBattleBridge(
+                    new MovePublicSyntheticBattleCursorCommand(direction)) is not
+                PrivateOriginalMapBattleBridgeCursorMoved
+                    { Outcome: TacticalCursorMoveOutcome.Moved })
+            {
+                return null;
+            }
+        }
+
+        return session.ApplyPrivateOriginalMapBattleBridge(
+            new ConfirmPublicSyntheticBattleSelectionCommand()) as
+            PrivateOriginalMapBattleBridgeSelectionConfirmed;
+    }
 
     private static bool RunStepCopyDiagnostic(
         SceneTree sceneTree,

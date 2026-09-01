@@ -138,7 +138,9 @@ internal sealed record PublicSyntheticBattlePresentationProjection
             visible: true,
             "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
             $"{battle}  {battleState.Phase}  " +
-                $"Enemy HP {battleState.EnemyHitPoints}  {outcome}",
+                $"Actor HP {battleState.ActorHitPoints}  " +
+                $"Enemy HP {battleState.EnemyHitPoints}  " +
+                $"Outcome {battleState.Outcome}  {outcome}",
             cueStatus,
             cells);
     }
@@ -152,20 +154,36 @@ internal sealed record PublicSyntheticBattlePresentationProjection
                 $"Cue #{admitted.Cue.Sequence} {admitted.Cue.Cue}",
             GameSessionPublicSyntheticBattleSelectionConfirmed confirmed
                 when confirmed.Cues.Count > 0 =>
-                "Cues " + string.Join(
-                    ", ",
-                    confirmed.Cues.Select(cue => $"#{cue.Sequence} {cue.Cue}")),
+                FormatConfirmation(confirmed.Cues, confirmed.EnemyResponse),
+            GameSessionPublicSyntheticBattleRestarted restarted =>
+                $"Cue #{restarted.Cue.Sequence} {restarted.Cue.Cue}",
             PrivateOriginalMapBattleBridgeRequested requested =>
                 $"Cue #{requested.Cue.Sequence} {requested.Cue.Cue}",
             PrivateOriginalMapBattleBridgeAdmitted admitted =>
                 $"Cue #{admitted.Cue.Sequence} {admitted.Cue.Cue}",
             PrivateOriginalMapBattleBridgeSelectionConfirmed confirmed
                 when confirmed.Cues.Count > 0 =>
-                "Cues " + string.Join(
-                    ", ",
-                    confirmed.Cues.Select(cue => $"#{cue.Sequence} {cue.Cue}")),
+                FormatConfirmation(confirmed.Cues, confirmed.EnemyResponse),
+            PrivateOriginalMapBattleBridgeRestarted restarted =>
+                $"Cue #{restarted.Cue.Sequence} {restarted.Cue.Cue}",
             _ => $"Last battle cue sequence #{lastCueSequence}",
         };
+
+    private static string FormatConfirmation(
+        IReadOnlyList<PublicSyntheticBattleCue> cues,
+        TacticalEnemyResponse? enemyResponse)
+    {
+        string cueText = "Cues " + string.Join(
+            ", ",
+            cues.Select(cue => $"#{cue.Sequence} {cue.Cue}"));
+        return enemyResponse is null
+            ? cueText
+            : cueText + $" · Enemy {enemyResponse.Kind} " +
+                $"({enemyResponse.EnemyPositionBefore.X},{enemyResponse.EnemyPositionBefore.Y})" +
+                $"→({enemyResponse.EnemyPositionAfter.X},{enemyResponse.EnemyPositionAfter.Y}); " +
+                $"Actor HP {enemyResponse.ActorHitPointsBefore}" +
+                $"→{enemyResponse.ActorHitPointsAfter}";
+    }
 }
 
 internal sealed class PublicSyntheticBattlePresenter
@@ -213,7 +231,7 @@ internal sealed class PublicSyntheticBattlePresenter
         Label status = LabelAt(panel, new Vector2(18, 48), 15, Colors.White);
         Label cueStatus = LabelAt(panel, new Vector2(18, 78), 14, new Color("c6e5ff"));
         Label controls = LabelAt(panel, new Vector2(18, 310), 14, new Color("b8f2c2"));
-        controls.Text = "B/N enter · IJKL cursor · Space confirm · Backspace cancel · M return";
+        controls.Text = "B/N enter · IJKL cursor · Space confirm · Backspace cancel · M return/retry";
 
         List<ColorRect> cells = [];
         List<Label> cellLabels = [];

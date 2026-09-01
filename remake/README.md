@@ -7,13 +7,14 @@ making engine code an evidence owner.
 ## Current Status
 
 Phase 4 implementation is active through bounded Map 3 slices. The current runtime supports a
-tracked public-synthetic exploration shell, one project-authored 3-by-2 tactical micro-battle with
-completion, an atomic once-only synthetic world-state effect, exploration return, and a separate
-private-local traversal shell with an opt-in project-authored Map 3 base view. That private base view
-can explicitly enter the same project-authored tactical reducer at the controlled start and return to
-the exact same private traversal snapshot without applying the public synthetic world effect. This
-manual bridge is not natural battle admission, Battle 01, an original after-battle program, or the
-accepted continuous Map 3-through-Battle 01 milestone, which remains **NOT READY**.
+tracked public-synthetic exploration shell, one project-authored 3-by-2 tactical micro-battle with a
+deterministic enemy response, typed victory/defeat, same-definition retry, an atomic once-only
+synthetic victory effect, and exploration return. A separate private-local traversal shell with an
+opt-in project-authored Map 3 base view can explicitly enter the same tactical reducer at the
+controlled start; defeat/retry and victory preserve the exact private traversal snapshot and never
+apply the public synthetic world effect. This manual bridge is not natural battle admission, Battle
+01, an original after-battle program, or the accepted continuous Map 3-through-Battle 01 milestone,
+which remains **NOT READY**.
 
 The two persistent runtime disclosures are part of the product boundary:
 
@@ -76,12 +77,14 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
 - Godot maps input to semantic commands and projects authoritative observations; it does not own
   gameplay rules.
 - The public-synthetic tactical micro-battle is deterministic project-authored content. Its actor,
-  enemy, grid, hit points, damage, completion flag/effect/setup, cues, and return state make no claim
-  about the original game. Completion state is applied once by `GameSession`; it prevents synthetic
-  re-entry and remains isolated from restart.
+  enemy, grid, movement/attack ranges, hit points, damage, fixed north/east/south/west enemy movement
+  tie-break, victory/defeat, retry, completion flag/effect/setup, cues, and return state make no claim
+  about the original game. Only victory applies completion state once through `GameSession`; defeat
+  applies no world effect and exact acknowledgement restarts the same definition.
 - The private-local battle bridge reuses only that tactical definition, commands, cues, and Domain
-  reducer. It pauses private traversal while active, returns to the same private snapshot, and does
-  not import the public completion flag, effect, setup, facing, or return-map state.
+  reducer. It pauses private traversal while active, preserves the same private snapshot through
+  defeat/retry and victory, and does not import the public completion flag, effect, setup, facing, or
+  return-map state.
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
   ignored and local. None is committed, uploaded, or embedded in the public package.
 - Public-synthetic import/export success grants no right to distribute original content.

@@ -315,6 +315,7 @@ public sealed record PrivateOriginalMapBattleBridgeSelectionConfirmed : GameSess
         PrivateOriginalMapSessionSnapshot snapshot,
         PrivateOriginalMapBattleBridgeSnapshot bridge,
         TacticalSelectionOutcome outcome,
+        TacticalEnemyResponse? enemyResponse,
         IEnumerable<PublicSyntheticBattleCue> cues,
         PublicSyntheticBattleCompletionReceipt? completion)
     {
@@ -332,9 +333,21 @@ public sealed record PrivateOriginalMapBattleBridgeSelectionConfirmed : GameSess
             throw new ArgumentException("Private battle bridge cues cannot contain null values.", nameof(cues));
         }
 
-        bool completed = outcome == TacticalSelectionOutcome.BattleCompleted;
-        if (completed != (completion is not null) ||
-            (completed ? copied.Length != 2 : copied.Length != 1))
+        bool victory = outcome == TacticalSelectionOutcome.BattleCompleted;
+        bool responseRequired = outcome is
+            TacticalSelectionOutcome.AttackConfirmed or
+            TacticalSelectionOutcome.BattleDefeated;
+        int expectedCueCount = outcome switch
+        {
+            TacticalSelectionOutcome.MoveConfirmed => 1,
+            TacticalSelectionOutcome.AttackConfirmed or
+            TacticalSelectionOutcome.BattleCompleted or
+            TacticalSelectionOutcome.BattleDefeated => 2,
+            _ => throw new ArgumentOutOfRangeException(nameof(outcome)),
+        };
+        if (victory != (completion is not null) ||
+            responseRequired != (enemyResponse is not null) ||
+            copied.Length != expectedCueCount)
         {
             throw new ArgumentException(
                 "Private battle bridge outcome, cues, and completion must agree.",
@@ -342,6 +355,7 @@ public sealed record PrivateOriginalMapBattleBridgeSelectionConfirmed : GameSess
         }
 
         Outcome = outcome;
+        EnemyResponse = enemyResponse;
         Cues = Array.AsReadOnly(copied);
         Completion = completion;
     }
@@ -351,6 +365,8 @@ public sealed record PrivateOriginalMapBattleBridgeSelectionConfirmed : GameSess
     public PrivateOriginalMapBattleBridgeSnapshot Bridge { get; }
 
     public TacticalSelectionOutcome Outcome { get; }
+
+    public TacticalEnemyResponse? EnemyResponse { get; }
 
     public IReadOnlyList<PublicSyntheticBattleCue> Cues { get; }
 
@@ -366,6 +382,11 @@ public sealed record PrivateOriginalMapBattleBridgeReturned(
     PrivateOriginalMapSessionSnapshot Snapshot,
     PrivateOriginalMapBattleBridgeSnapshot Bridge,
     PublicSyntheticBattleCompletionReceipt Completion,
+    PublicSyntheticBattleCue Cue) : GameSessionCommandResult;
+
+public sealed record PrivateOriginalMapBattleBridgeRestarted(
+    PrivateOriginalMapSessionSnapshot Snapshot,
+    PrivateOriginalMapBattleBridgeSnapshot Bridge,
     PublicSyntheticBattleCue Cue) : GameSessionCommandResult;
 
 public sealed record PrivateOriginalMapBattleBridgeRejected(
@@ -657,12 +678,31 @@ public sealed partial class GameSession
         }
         else if (confirmed.Outcome == TacticalSelectionOutcome.AttackConfirmed)
         {
-            lastCueSequence = firstCueSequence;
+            lastCueSequence = checked(firstCueSequence + 1);
             cues.Add(Cue(
                 bridge,
                 bridge.Definition.Source.AttackCue,
                 PublicSyntheticBattleCueKind.AttackCompleted,
                 firstCueSequence));
+            cues.Add(Cue(
+                bridge,
+                bridge.Definition.Source.EnemyResponseCue,
+                PublicSyntheticBattleCueKind.EnemyResponded,
+                lastCueSequence));
+        }
+        else if (confirmed.Outcome == TacticalSelectionOutcome.BattleDefeated)
+        {
+            lastCueSequence = checked(firstCueSequence + 1);
+            cues.Add(Cue(
+                bridge,
+                bridge.Definition.Source.AttackCue,
+                PublicSyntheticBattleCueKind.AttackCompleted,
+                firstCueSequence));
+            cues.Add(Cue(
+                bridge,
+                bridge.Definition.Source.DefeatedCue,
+                PublicSyntheticBattleCueKind.BattleDefeated,
+                lastCueSequence));
         }
         else
         {
@@ -696,6 +736,7 @@ public sealed partial class GameSession
             current,
             updated,
             confirmed.Outcome,
+            confirmed.EnemyResponse,
             cues,
             completion);
     }
@@ -762,6 +803,32 @@ public sealed partial class GameSession
                 bridge,
                 PrivateOriginalMapBattleBridgeFailureCode.AcknowledgementMismatch,
                 "The private bridge completion acknowledgement does not match.");
+        }
+
+        if (lifecycle.BattleState?.Outcome == TacticalBattleOutcome.Defeat)
+        {
+            long restartOperationSequence = checked(bridge.OperationSequence + 1);
+            long restartCueSequence = checked(bridge.LastCueSequence + 1);
+            PrivateOriginalMapBattleBridgeSnapshot restarted = bridge.Update(
+                lifecycle.Restart(restartOperationSequence, restartCueSequence),
+                restartOperationSequence);
+            _privateOriginalMapBattleBridge = restarted;
+            PublicSyntheticBattleCue restartCue = Cue(
+                bridge,
+                bridge.Definition.Source.RestartedCue,
+                PublicSyntheticBattleCueKind.BattleRestarted,
+                restartCueSequence);
+            return new PrivateOriginalMapBattleBridgeRestarted(
+                bridge.ReturnSnapshot ?? throw new InvalidOperationException(
+                    "The private battle bridge lost its return snapshot."),
+                restarted,
+                restartCue);
+        }
+
+        if (lifecycle.BattleState?.Outcome != TacticalBattleOutcome.Victory)
+        {
+            throw new InvalidOperationException(
+                "A completed private bridge battle must expose victory or defeat.");
         }
 
         PrivateOriginalMapSessionSnapshot returnSnapshot =

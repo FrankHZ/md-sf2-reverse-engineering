@@ -355,7 +355,6 @@ public sealed partial class Map3Root
             PrivateOriginalMapBattleBridgeSnapshot
             {
                 Status: PrivateOriginalMapBattleBridgeStatus.Completed,
-                Completion: not null,
             } bridge)
         {
             return;
@@ -364,9 +363,11 @@ public sealed partial class Map3Root
         ProjectPrivateBattleResult(
             _session.ApplyPrivateOriginalMapBattleBridge(
                 new AcknowledgePublicSyntheticBattleCompletionCommand(
-                    bridge.Completion.Battle,
-                    bridge.Completion.CueSequence)),
-            "Project-authored battle complete; private Map 3 restored");
+                    bridge.Definition.Rules.Battle,
+                    bridge.LastCueSequence)),
+            bridge.BattleState?.Outcome == TacticalBattleOutcome.Defeat
+                ? "Project-authored battle defeated; retry started"
+                : "Project-authored battle complete; private Map 3 restored");
     }
 
     private void ProjectPrivateBattleResult(

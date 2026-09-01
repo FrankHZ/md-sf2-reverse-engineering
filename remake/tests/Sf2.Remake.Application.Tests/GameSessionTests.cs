@@ -93,36 +93,101 @@ public sealed class GameSessionTests
         Assert.Equal(GameSessionCommandFailureCode.WrongFlowStage, explorationRejected.Diagnostic.Code);
         Assert.Same(active, session.Snapshot);
 
-        Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
-            new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)));
-        GameSessionPublicSyntheticBattleSelectionConfirmed moveConfirmed =
-            Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
-                new ConfirmPublicSyntheticBattleSelectionCommand()));
-        Assert.Equal(TacticalSelectionOutcome.MoveConfirmed, moveConfirmed.Outcome);
-        Assert.Single(moveConfirmed.Cues);
-        Assert.Equal(TacticalBattlePhase.TargetSelection,
-            moveConfirmed.Snapshot.PublicSyntheticBattle!.BattleState!.Phase);
-        Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
-            new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)));
-        Assert.IsType<GameSessionPublicSyntheticBattleSelectionCancelled>(session.Apply(
-            new CancelPublicSyntheticBattleSelectionCommand()));
-        Assert.Equal(new TacticalPosition(0, 1),
-            session.Snapshot.PublicSyntheticBattle!.BattleState!.ActorPosition);
+        GameSessionPublicSyntheticBattleSelectionConfirmed firstExchange =
+            ApplyBattleAttack(
+                session,
+                move: [TacticalDirection.East],
+                target: [TacticalDirection.East]);
+        Assert.Equal(TacticalSelectionOutcome.AttackConfirmed, firstExchange.Outcome);
+        Assert.Equal(TacticalEnemyResponseKind.Attacked, firstExchange.EnemyResponse!.Kind);
+        Assert.Equal(1,
+            firstExchange.Snapshot.PublicSyntheticBattle!.BattleState!.ActorHitPoints);
+        Assert.Equal(2, firstExchange.Cues.Count);
+        Assert.Null(firstExchange.Completion);
 
-        Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
-            new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)));
-        Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
-            new ConfirmPublicSyntheticBattleSelectionCommand()));
-        Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
-            new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)));
+        GameSessionPublicSyntheticBattleSelectionConfirmed defeated =
+            ApplyBattleAttack(
+                session,
+                move: [],
+                target: [TacticalDirection.East]);
+        Assert.Equal(TacticalSelectionOutcome.BattleDefeated, defeated.Outcome);
+        Assert.Equal(TacticalEnemyResponseKind.ActorDefeated, defeated.EnemyResponse!.Kind);
+        Assert.Equal(TacticalBattleOutcome.Defeat,
+            defeated.Snapshot.PublicSyntheticBattle!.BattleState!.Outcome);
+        Assert.Null(defeated.Completion);
+        Assert.Equal(PublicSyntheticBattleLifecycleStatus.Completed,
+            defeated.Snapshot.PublicSyntheticBattle.Status);
+        Assert.False(defeated.Snapshot.SyntheticFlags.IsSet(
+            new FlagId("public-synthetic-map3-battle-completed")));
+        Assert.True(defeated.Snapshot.Discoveries.IsDiscovered(discovered.Receipt.Discovery));
+        Assert.True(defeated.Snapshot.Inventory.Contains(itemAcquired.Receipt.Item));
+
+        GameSessionSnapshot defeatedSnapshot = session.Snapshot;
+        GameSessionCommandRejected wrongRestart = Assert.IsType<GameSessionCommandRejected>(
+            session.Apply(new AcknowledgePublicSyntheticBattleCompletionCommand(
+                new TacticalBattleId("public-synthetic-wrong-battle"),
+                defeatedSnapshot.LastCueSequence)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.AcknowledgementMismatch,
+            wrongRestart.Diagnostic.Code);
+        Assert.Same(defeatedSnapshot, session.Snapshot);
+
+        GameSessionPublicSyntheticBattleRestarted restartedBattle =
+            Assert.IsType<GameSessionPublicSyntheticBattleRestarted>(session.Apply(
+                new AcknowledgePublicSyntheticBattleCompletionCommand(
+                    defeatedSnapshot.PublicSyntheticBattle!.Definition.Rules.Battle,
+                    defeatedSnapshot.LastCueSequence)));
+        Assert.Equal(GameFlowStage.Battle, restartedBattle.Snapshot.FlowStage);
+        Assert.Equal(PublicSyntheticBattleLifecycleStatus.Active, restartedBattle.Battle.Status);
+        Assert.Equal(TacticalBattleOutcome.InProgress,
+            restartedBattle.Battle.BattleState!.Outcome);
+        Assert.Equal(2, restartedBattle.Battle.BattleState.ActorHitPoints);
+        Assert.Equal(3, restartedBattle.Battle.BattleState.EnemyHitPoints);
+        Assert.Equal("public-synthetic-map3-battle-restarted", restartedBattle.Cue.Cue.Value);
+        Assert.False(restartedBattle.Snapshot.SyntheticFlags.IsSet(
+            new FlagId("public-synthetic-map3-battle-completed")));
+        Assert.True(restartedBattle.Snapshot.Discoveries.IsDiscovered(discovered.Receipt.Discovery));
+        Assert.True(restartedBattle.Snapshot.Inventory.Contains(itemAcquired.Receipt.Item));
+
+        GameSessionSnapshot restartedSnapshot = session.Snapshot;
+        GameSessionCommandRejected staleRestart = Assert.IsType<GameSessionCommandRejected>(
+            session.Apply(new AcknowledgePublicSyntheticBattleCompletionCommand(
+                defeatedSnapshot.PublicSyntheticBattle.Definition.Rules.Battle,
+                defeatedSnapshot.LastCueSequence)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.PublicSyntheticBattleNotCompleted,
+            staleRestart.Diagnostic.Code);
+        Assert.Same(restartedSnapshot, session.Snapshot);
+
+        GameSessionPublicSyntheticBattleSelectionConfirmed firstRangedAttack =
+            ApplyBattleAttack(
+                session,
+                move: [],
+                target: [TacticalDirection.East, TacticalDirection.East]);
+        Assert.Equal(TacticalEnemyResponseKind.Moved, firstRangedAttack.EnemyResponse!.Kind);
+        Assert.Equal(new TacticalPosition(1, 1),
+            firstRangedAttack.Snapshot.PublicSyntheticBattle!.BattleState!.EnemyPosition);
+        GameSessionPublicSyntheticBattleSelectionConfirmed secondRangedAttack =
+            ApplyBattleAttack(
+                session,
+                move: [TacticalDirection.North],
+                target: [TacticalDirection.East, TacticalDirection.South]);
+        Assert.Equal(TacticalEnemyResponseKind.Moved, secondRangedAttack.EnemyResponse!.Kind);
+        Assert.Equal(new TacticalPosition(1, 0),
+            secondRangedAttack.Snapshot.PublicSyntheticBattle!.BattleState!.EnemyPosition);
         GameSessionPublicSyntheticBattleSelectionConfirmed completed =
-            Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
-                new ConfirmPublicSyntheticBattleSelectionCommand()));
+            ApplyBattleAttack(
+                session,
+                move: [TacticalDirection.South],
+                target: [TacticalDirection.East, TacticalDirection.North]);
         Assert.Equal(TacticalSelectionOutcome.BattleCompleted, completed.Outcome);
+        Assert.Null(completed.EnemyResponse);
         Assert.Equal(2, completed.Cues.Count);
         Assert.NotNull(completed.Completion);
+        Assert.Equal(TacticalBattleOutcome.Victory,
+            completed.Snapshot.PublicSyntheticBattle!.BattleState!.Outcome);
         Assert.Equal(PublicSyntheticBattleLifecycleStatus.Completed,
-            completed.Snapshot.PublicSyntheticBattle!.Status);
+            completed.Snapshot.PublicSyntheticBattle.Status);
 
         GameSessionSnapshot completedSnapshot = session.Snapshot;
         GameSessionCommandRejected wrongReturn = Assert.IsType<GameSessionCommandRejected>(
@@ -2317,6 +2382,36 @@ public sealed class GameSessionTests
             destinationFacing,
             new PresentationCueId(cue));
 
+    private static GameSessionPublicSyntheticBattleSelectionConfirmed ApplyBattleAttack(
+        GameSession session,
+        IEnumerable<TacticalDirection> move,
+        IEnumerable<TacticalDirection> target)
+    {
+        foreach (TacticalDirection direction in move)
+        {
+            GameSessionPublicSyntheticBattleCursorMoved moved =
+                Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
+                    new MovePublicSyntheticBattleCursorCommand(direction)));
+            Assert.Equal(TacticalCursorMoveOutcome.Moved, moved.Outcome);
+        }
+
+        GameSessionPublicSyntheticBattleSelectionConfirmed moveConfirmed =
+            Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
+                new ConfirmPublicSyntheticBattleSelectionCommand()));
+        Assert.Equal(TacticalSelectionOutcome.MoveConfirmed, moveConfirmed.Outcome);
+        Assert.Single(moveConfirmed.Cues);
+        foreach (TacticalDirection direction in target)
+        {
+            GameSessionPublicSyntheticBattleCursorMoved moved =
+                Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
+                    new MovePublicSyntheticBattleCursorCommand(direction)));
+            Assert.Equal(TacticalCursorMoveOutcome.Moved, moved.Outcome);
+        }
+
+        return Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
+            new ConfirmPublicSyntheticBattleSelectionCommand()));
+    }
+
     private static PublicSyntheticBattleDefinition BattleDefinition() =>
         new(
             new PublicSyntheticBattleRequestId(
@@ -2329,9 +2424,13 @@ public sealed class GameSessionTests
                 new TacticalCombatantId("public-synthetic-map3-placeholder-enemy"),
                 new TacticalPosition(2, 1),
                 actorMoveRange: 1,
-                actorAttackRange: 1,
-                enemyMaxHitPoints: 1,
-                actorDamage: 1),
+                actorAttackRange: 2,
+                actorMaxHitPoints: 2,
+                actorDamage: 1,
+                enemyMoveRange: 1,
+                enemyAttackRange: 1,
+                enemyMaxHitPoints: 3,
+                enemyDamage: 1),
             new MapId("public-synthetic-outbound-shell"),
             new MapPosition(2, 1),
             new MapSetupId("outbound-setup"),
@@ -2347,7 +2446,10 @@ public sealed class GameSessionTests
             new PresentationCueId("public-synthetic-map3-battle-admitted"),
             new PresentationCueId("public-synthetic-map3-battle-move-confirmed"),
             new PresentationCueId("public-synthetic-map3-battle-attack-completed"),
+            new PresentationCueId("public-synthetic-map3-battle-enemy-response"),
             new PresentationCueId("public-synthetic-map3-battle-completed"),
+            new PresentationCueId("public-synthetic-map3-battle-defeated"),
+            new PresentationCueId("public-synthetic-map3-battle-restarted"),
             new PresentationCueId("public-synthetic-map3-battle-returned"));
 
     private static MapEntityDefinition EntityDefinition(

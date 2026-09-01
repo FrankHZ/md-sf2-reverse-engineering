@@ -23,6 +23,7 @@
     "public-synthetic-map3-placeholder-item-acquisition-v1",
     "public-synthetic-map3-outbound-cross-map-transition-v1",
     "public-synthetic-map3-tactical-battle-completion-v1",
+    "project-authored-tactical-battle-depth-v1",
     "public-synthetic-map3-battle-completion-world-state-v1"
   ],
   "scenarioId": "map3-public-synthetic-smoke",
@@ -314,14 +315,21 @@
           "y": 1
         },
         "actorMoveRange": 1,
-        "actorAttackRange": 1,
-        "enemyMaxHitPoints": 1,
+        "actorAttackRange": 2,
+        "actorMaxHitPoints": 2,
         "actorDamage": 1,
+        "enemyMoveRange": 1,
+        "enemyAttackRange": 1,
+        "enemyMaxHitPoints": 3,
+        "enemyDamage": 1,
         "requestCueId": "public-synthetic-map3-battle-entry-pending",
         "admittedCueId": "public-synthetic-map3-battle-admitted",
         "moveCueId": "public-synthetic-map3-battle-move-confirmed",
         "attackCueId": "public-synthetic-map3-battle-attack-completed",
+        "enemyResponseCueId": "public-synthetic-map3-battle-enemy-response",
         "completedCueId": "public-synthetic-map3-battle-completed",
+        "defeatedCueId": "public-synthetic-map3-battle-defeated",
+        "restartedCueId": "public-synthetic-map3-battle-restarted",
         "returnedCueId": "public-synthetic-map3-battle-returned"
       }
     ]

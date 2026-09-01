@@ -581,6 +581,12 @@ public sealed partial class Map3Root : Node2D
             return;
         }
 
+        if (result is GameSessionPublicSyntheticBattleRestarted)
+        {
+            ProjectSnapshot("Public-synthetic battle defeated; retry started", result);
+            return;
+        }
+
         ProjectRejection((GameSessionCommandRejected)result);
     }
 
