@@ -1008,6 +1008,31 @@ def test_remake_godot_runner_and_test_have_explicit_non_evidence_ownership() -> 
     assert runner["unclassifiedPaths"] == test["unclassifiedPaths"] == []
 
 
+def test_remake_asset_preflight_runner_and_test_select_tooling_and_dotnet() -> None:
+    runner = plan_paths(("src/sf2tool/remake_assets.py",), root=ROOT)
+    test = plan_paths(("tests/python/test_remake_assets.py",), root=ROOT)
+
+    assert _partition_ids(runner) == {
+        "public-core",
+        "tooling-python",
+        "remake-dotnet",
+    }
+    assert _partition_ids(test) == {
+        "public-core",
+        "tooling-python",
+        "remake-dotnet",
+    }
+    assert _partition(runner, "tooling-python")["commands"] == [
+        "uv run pytest tests/python/test_remake_assets.py"
+    ]
+    assert _partition(test, "tooling-python")["commands"] == [
+        "uv run pytest tests/python/test_remake_assets.py"
+    ]
+    assert "remake-godot" not in _partition_ids(runner)
+    assert "remake-godot" not in _partition_ids(test)
+    assert runner["unclassifiedPaths"] == test["unclassifiedPaths"] == []
+
+
 def test_remake_architecture_test_selects_both_remake_partitions() -> None:
     plan = plan_paths(("tests/python/test_remake_architecture.py",), root=ROOT)
 
