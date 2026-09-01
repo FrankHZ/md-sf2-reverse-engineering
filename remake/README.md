@@ -34,6 +34,43 @@ Current capabilities and retained Unknowns are summarized in
 Private execution is never inferred from a file's presence and never silently falls back while
 reporting private success. See [Runtime Profiles and Trust](./docs/runtime-profiles-and-trust.md).
 
+## Local Presentation Asset Preflight
+
+The local-only `md-sf2-remake-assets` checkout remains a separate product-art repository. Before a
+checkout or exported pack can be offered to the accepted Content reader, the repository-owned
+preflight verifies an explicitly pinned commit, tree, and manifest digest, a clean local-only Git
+state, the closed manifest, and every referenced runtime payload:
+
+```powershell
+uv run python -m sf2tool.remake_assets checkout `
+  --asset-root <fully-qualified-asset-checkout> `
+  --expected-commit <40-lowercase-hex> `
+  --expected-tree <40-lowercase-hex> `
+  --expected-manifest-sha256 <64-uppercase-hex>
+
+uv run python -m sf2tool.remake_assets export `
+  --asset-root <fully-qualified-asset-checkout> `
+  --expected-commit <40-lowercase-hex> `
+  --expected-tree <40-lowercase-hex> `
+  --expected-manifest-sha256 <64-uppercase-hex> `
+  --destination <fully-qualified-new-export-directory>
+```
+
+The path-free descriptor carries the exact asset commit, tree, manifest digest, capability, and
+bounded pack totals required by outer composition. Export writes only the manifest and its referenced
+`runtime/` payloads to a fresh sibling staging directory, verifies the copy, writes the descriptor
+last, and atomically promotes it without modifying the source checkout or overwriting an earlier
+export. It never copies `.git`, `source/`, `masters/`, ignored caches, previews, or Godot import state.
+
+This is transport and checkout preflight, not asset generation or product admission by itself. The
+asset repository currently has no product manifest or product assets. The exact SVG rasterizer,
+generator policy, first HUD master, reviewed 2x/4x derivatives, Godot catalog, and runtime consumer
+remain later slices. The separate `md-sf2-gfx-remake` repository remains non-authoritative R&D.
+Because the product asset repository intentionally has no remote, an exact local commit proves
+identity but does not provide off-machine recovery; source/master backup remains a separate local
+operational responsibility. Rollback selects a prior reachable local commit or an immutable prior
+export and never rewrites or overwrites accepted history.
+
 ## Build and Test
 
 Run the locked .NET workflow from this directory:

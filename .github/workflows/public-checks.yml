@@ -50,8 +50,8 @@ jobs:
       - name: Run tracked-input harness tests
         run: uv run pytest tests/python/test_native_harness.py
 
-      - name: Verify remake architecture and planner ownership
-        run: uv run pytest tests/python/test_remake_architecture.py tests/python/test_verification_plan.py
+      - name: Verify remake architecture, planner, and asset preflight
+        run: uv run pytest tests/python/test_remake_architecture.py tests/python/test_verification_plan.py tests/python/test_remake_assets.py
 
       - name: Verify design-contract traceability
         run: uv run sf2 design-contracts test

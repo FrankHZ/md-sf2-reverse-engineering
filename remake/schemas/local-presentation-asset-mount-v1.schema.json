@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://md-sf2.local/schemas/local-presentation-asset-mount-v1.schema.json",
+  "title": "Local Presentation Asset Mount Descriptor v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "descriptorId",
+    "packageId",
+    "repositoryId",
+    "profile",
+    "packCapability",
+    "preflightCapability",
+    "mountKind",
+    "assetRepositoryCommit",
+    "assetRepositoryTree",
+    "manifestSha256",
+    "assetCount",
+    "bucketCount",
+    "bucketScales",
+    "totalPayloadBytes",
+    "contentSetSha256",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "descriptorId": { "const": "sf2-local-presentation-asset-mount-v1" },
+    "packageId": { "const": "sf2-local-presentation-asset-pack-v1" },
+    "repositoryId": { "const": "md-sf2-remake-assets" },
+    "profile": { "const": "private-local" },
+    "packCapability": {
+      "const": "private-local-presentation-asset-pack-admission-v1"
+    },
+    "preflightCapability": {
+      "const": "private-local-presentation-asset-checkout-export-preflight-v1"
+    },
+    "mountKind": { "enum": ["checkout", "exported-pack"] },
+    "assetRepositoryCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "assetRepositoryTree": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "manifestSha256": {
+      "type": "string",
+      "pattern": "^[0-9A-F]{64}$"
+    },
+    "assetCount": { "type": "integer", "minimum": 1, "maximum": 4096 },
+    "bucketCount": { "type": "integer", "minimum": 2, "maximum": 8192 },
+    "bucketScales": {
+      "type": "array",
+      "prefixItems": [{ "const": 2 }, { "const": 4 }],
+      "items": false,
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "totalPayloadBytes": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 2199023255552
+    },
+    "contentSetSha256": {
+      "type": "string",
+      "pattern": "^[0-9A-F]{64}$"
+    },
+    "status": { "const": "Pass" }
+  }
+}

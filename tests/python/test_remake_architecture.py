@@ -534,7 +534,8 @@ def test_public_workflow_is_one_lightweight_tracked_input_job() -> None:
         "uv run pytest tests/python/test_native_harness.py",
         (
             "uv run pytest tests/python/test_remake_architecture.py "
-            "tests/python/test_verification_plan.py"
+            "tests/python/test_verification_plan.py "
+            "tests/python/test_remake_assets.py"
         ),
         "uv run sf2 design-contracts test",
         "dotnet restore Sf2.Remake.sln --locked-mode",
@@ -709,3 +710,73 @@ def test_local_presentation_asset_pack_schema_and_reader_close_private_mount() -
         if Path(path).suffix.lower() in product_media_extensions
         and not path.startswith(("remake/tests/", "tests/fixtures/"))
     ] == []
+
+
+def test_presentation_asset_preflight_is_path_free_local_only_and_atomic() -> None:
+    schema_path = REMAKE / "schemas/local-presentation-asset-mount-v1.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    assert schema["additionalProperties"] is False
+    assert set(schema["properties"]) == {
+        "schemaVersion",
+        "descriptorId",
+        "packageId",
+        "repositoryId",
+        "profile",
+        "packCapability",
+        "preflightCapability",
+        "mountKind",
+        "assetRepositoryCommit",
+        "assetRepositoryTree",
+        "manifestSha256",
+        "assetCount",
+        "bucketCount",
+        "bucketScales",
+        "totalPayloadBytes",
+        "contentSetSha256",
+        "status",
+    }
+    serialized_schema = json.dumps(schema, sort_keys=True)
+    for forbidden in (
+        '"assetRoot"',
+        '"branch"',
+        '"destination"',
+        '"runtimePath"',
+        '"sourcePath"',
+        '"masterPath"',
+        '"payload"',
+    ):
+        assert forbidden not in serialized_schema
+
+    source = (ROOT / "src/sf2tool/remake_assets.py").read_text(encoding="utf-8")
+    for required in (
+        '"status", "--porcelain=v2", "-z"',
+        '"ls-files", "--stage", "-z"',
+        '"ls-files", "-z", "--", "manifests", "runtime"',
+        '"remote",',
+        '"config", "--local", "--get", "core.hooksPath"',
+        "shell=False",
+        "timeout=timeout",
+        "os.path.normcase(os.path.realpath(source_path))",
+        "_is_within(destination, asset_root)",
+        '"ExportStagingFailed"',
+        '"ExportCleanupFailed"',
+        "os.rename(temp, export_root)",
+        "(temp / DESCRIPTOR_FILE_NAME).write_bytes(descriptor_bytes)",
+    ):
+        assert required in source
+    assert source.index("(temp / DESCRIPTOR_FILE_NAME).write_bytes(descriptor_bytes)") < (
+        source.index("os.rename(temp, export_root)")
+    )
+    for forbidden in (
+        "Invoke-Expression",
+        "shell=True",
+        "md-sf2-gfx-remake",
+        "PIL",
+        "Godot",
+        "source.copy",
+        "masters.copy",
+        "git fetch",
+        "git gc",
+        "git push",
+    ):
+        assert forbidden not in source

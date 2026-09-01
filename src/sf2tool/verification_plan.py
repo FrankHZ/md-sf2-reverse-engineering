@@ -680,6 +680,26 @@ def plan_paths(
                 _selection_entry(selected, "remake-godot", normalized)
             continue
 
+        if normalized == "src/sf2tool/remake_assets.py":
+            _selection_entry(
+                selected,
+                "tooling-python",
+                normalized,
+                ("uv run pytest tests/python/test_remake_assets.py",),
+            )
+            _selection_entry(selected, "remake-dotnet", normalized)
+            continue
+
+        if normalized == "tests/python/test_remake_assets.py":
+            _selection_entry(
+                selected,
+                "tooling-python",
+                normalized,
+                (f"uv run pytest {normalized}",),
+            )
+            _selection_entry(selected, "remake-dotnet", normalized)
+            continue
+
         if normalized == "src/sf2tool/remake_godot.py":
             _selection_entry(selected, "tooling-python", normalized)
             _selection_entry(selected, "remake-godot", normalized)
