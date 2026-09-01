@@ -487,21 +487,57 @@ internal static class PublicSyntheticMap3SmokeDriver
             return;
         }
 
-        if (session.Apply(new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)) is not
-                GameSessionPublicSyntheticBattleCursorMoved
-            { Outcome: TacticalCursorMoveOutcome.Moved } ||
-            session.Apply(new ConfirmPublicSyntheticBattleSelectionCommand()) is not
-                GameSessionPublicSyntheticBattleSelectionConfirmed
-            { Outcome: TacticalSelectionOutcome.MoveConfirmed } ||
-            session.Apply(new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)) is not
-                GameSessionPublicSyntheticBattleCursorMoved
-            { Outcome: TacticalCursorMoveOutcome.Moved } ||
-            session.Apply(new ConfirmPublicSyntheticBattleSelectionCommand()) is not
-                GameSessionPublicSyntheticBattleSelectionConfirmed
-            {
-                Outcome: TacticalSelectionOutcome.BattleCompleted,
-                Completion: not null,
-            } battleCompleted)
+        GameSessionPublicSyntheticBattleSelectionConfirmed? exchange = ApplyBattleAttack(
+            session,
+            [TacticalDirection.East],
+            [TacticalDirection.East]);
+        GameSessionPublicSyntheticBattleSelectionConfirmed? defeated = exchange is null
+            ? null
+            : ApplyBattleAttack(
+                session,
+                [],
+                [TacticalDirection.East]);
+        GameSessionPublicSyntheticBattleRestarted? restarted = defeated is null
+            ? null
+            : session.Apply(new AcknowledgePublicSyntheticBattleCompletionCommand(
+                defeated.Snapshot.PublicSyntheticBattle!.Definition.Rules.Battle,
+                defeated.Snapshot.LastCueSequence)) as
+                GameSessionPublicSyntheticBattleRestarted;
+        if (exchange?.Outcome != TacticalSelectionOutcome.AttackConfirmed ||
+            exchange.EnemyResponse?.Kind != TacticalEnemyResponseKind.Attacked ||
+            defeated?.Outcome != TacticalSelectionOutcome.BattleDefeated ||
+            defeated.EnemyResponse?.Kind != TacticalEnemyResponseKind.ActorDefeated ||
+            defeated.Completion is not null ||
+            restarted?.Battle.BattleState?.ActorHitPoints != 2 ||
+            restarted.Battle.BattleState.EnemyHitPoints != 3 ||
+            restarted.Battle.BattleState.Outcome != TacticalBattleOutcome.InProgress)
+        {
+            FailBattle(sceneTree, presenter, "The public-synthetic defeat and retry path failed.");
+            return;
+        }
+
+        GameSessionPublicSyntheticBattleSelectionConfirmed? firstRanged = ApplyBattleAttack(
+            session,
+            [],
+            [TacticalDirection.East, TacticalDirection.East]);
+        GameSessionPublicSyntheticBattleSelectionConfirmed? secondRanged = firstRanged is null
+            ? null
+            : ApplyBattleAttack(
+                session,
+                [TacticalDirection.North],
+                [TacticalDirection.East, TacticalDirection.South]);
+        GameSessionPublicSyntheticBattleSelectionConfirmed? battleCompleted = secondRanged is null
+            ? null
+            : ApplyBattleAttack(
+                session,
+                [TacticalDirection.South],
+                [TacticalDirection.East, TacticalDirection.North]);
+        if (firstRanged?.EnemyResponse?.Kind != TacticalEnemyResponseKind.Moved ||
+            secondRanged?.EnemyResponse?.Kind != TacticalEnemyResponseKind.Moved ||
+            battleCompleted?.Outcome != TacticalSelectionOutcome.BattleCompleted ||
+            battleCompleted.Completion is null ||
+            battleCompleted.Snapshot.PublicSyntheticBattle?.BattleState?.Outcome !=
+                TacticalBattleOutcome.Victory)
         {
             FailBattle(sceneTree, presenter, "The public-synthetic tactical battle did not complete.");
             return;
@@ -637,6 +673,42 @@ internal static class PublicSyntheticMap3SmokeDriver
         presenter.ProjectStatus(message);
         GD.Print(Map3Root.SmokeMarker + JsonSerializer.Serialize(new { status = "Fail", message }));
         sceneTree.Quit(1);
+    }
+
+    private static GameSessionPublicSyntheticBattleSelectionConfirmed? ApplyBattleAttack(
+        GameSession session,
+        IEnumerable<TacticalDirection> move,
+        IEnumerable<TacticalDirection> target)
+    {
+        foreach (TacticalDirection direction in move)
+        {
+            if (session.Apply(new MovePublicSyntheticBattleCursorCommand(direction)) is not
+                GameSessionPublicSyntheticBattleCursorMoved
+                { Outcome: TacticalCursorMoveOutcome.Moved })
+            {
+                return null;
+            }
+        }
+
+        if (session.Apply(new ConfirmPublicSyntheticBattleSelectionCommand()) is not
+            GameSessionPublicSyntheticBattleSelectionConfirmed
+            { Outcome: TacticalSelectionOutcome.MoveConfirmed })
+        {
+            return null;
+        }
+
+        foreach (TacticalDirection direction in target)
+        {
+            if (session.Apply(new MovePublicSyntheticBattleCursorCommand(direction)) is not
+                GameSessionPublicSyntheticBattleCursorMoved
+                { Outcome: TacticalCursorMoveOutcome.Moved })
+            {
+                return null;
+            }
+        }
+
+        return session.Apply(new ConfirmPublicSyntheticBattleSelectionCommand()) as
+            GameSessionPublicSyntheticBattleSelectionConfirmed;
     }
 
     private static void FailBattle(

@@ -101,7 +101,7 @@ public sealed class PrivateOriginalMapBattleBridgeTests
     }
 
     [Fact]
-    public void BattleCompletesOnceAndReturnsTheSameTraversalSnapshotBeforeMovementResumes()
+    public void DefeatRetriesAndVictoryReturnsTheSameTraversalSnapshotBeforeMovementResumes()
     {
         PrivateOriginalMapVisualGameSessionStarted started = Start();
         GameSession session = started.Session;
@@ -123,19 +123,85 @@ public sealed class PrivateOriginalMapBattleBridgeTests
                     requested.Cue.Sequence)));
         Assert.Equal(TacticalBattlePhase.MoveSelection, admitted.Bridge.BattleState?.Phase);
 
-        AssertMove(session, TacticalDirection.East);
-        AssertSelection(session, TacticalSelectionOutcome.MoveConfirmed);
-        AssertMove(session, TacticalDirection.East);
-        Assert.IsType<PrivateOriginalMapBattleBridgeSelectionCancelled>(
-            session.ApplyPrivateOriginalMapBattleBridge(
-                new CancelPublicSyntheticBattleSelectionCommand()));
-        AssertMove(session, TacticalDirection.East);
-        AssertSelection(session, TacticalSelectionOutcome.MoveConfirmed);
-        AssertMove(session, TacticalDirection.East);
-        PrivateOriginalMapBattleBridgeSelectionConfirmed completed = AssertSelection(
+        PrivateOriginalMapBattleBridgeSelectionConfirmed firstExchange = ApplyAttack(
             session,
-            TacticalSelectionOutcome.BattleCompleted);
+            move: [TacticalDirection.East],
+            target: [TacticalDirection.East]);
+        Assert.Equal(TacticalSelectionOutcome.AttackConfirmed, firstExchange.Outcome);
+        Assert.Equal(TacticalEnemyResponseKind.Attacked, firstExchange.EnemyResponse!.Kind);
+        Assert.Same(before, firstExchange.Snapshot);
+        Assert.Same(before.WorkingLayout, firstExchange.Snapshot.WorkingLayout);
+
+        PrivateOriginalMapBattleBridgeSelectionConfirmed defeated = ApplyAttack(
+            session,
+            move: [],
+            target: [TacticalDirection.East]);
+        Assert.Equal(TacticalSelectionOutcome.BattleDefeated, defeated.Outcome);
+        Assert.Equal(TacticalEnemyResponseKind.ActorDefeated, defeated.EnemyResponse!.Kind);
+        Assert.Null(defeated.Completion);
+        Assert.Equal(TacticalBattleOutcome.Defeat, defeated.Bridge.BattleState!.Outcome);
+        Assert.Equal(PrivateOriginalMapBattleBridgeStatus.Completed, defeated.Bridge.Status);
+        Assert.Same(before, session.PrivateOriginalMapSnapshot);
+        Assert.Same(before.WorkingLayout, session.PrivateOriginalMapSnapshot.WorkingLayout);
+        Assert.Throws<InvalidOperationException>(() => session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.Throws<InvalidOperationException>(() =>
+            session.ApplyPrivateOriginalMapLayoutMutation(MutationCommand(before)));
+
+        AssertRejected(
+            session,
+            new AcknowledgePublicSyntheticBattleCompletionCommand(
+                defeated.Bridge.Definition.Rules.Battle,
+                defeated.Bridge.LastCueSequence + 1),
+            PrivateOriginalMapBattleBridgeFailureCode.AcknowledgementMismatch,
+            before,
+            defeated.Bridge);
+        PrivateOriginalMapBattleBridgeRestarted retry = Assert.IsType<
+            PrivateOriginalMapBattleBridgeRestarted>(
+            session.ApplyPrivateOriginalMapBattleBridge(
+                new AcknowledgePublicSyntheticBattleCompletionCommand(
+                    defeated.Bridge.Definition.Rules.Battle,
+                    defeated.Bridge.LastCueSequence)));
+        Assert.Equal(PrivateOriginalMapBattleBridgeStatus.Active, retry.Bridge.Status);
+        Assert.Equal(TacticalBattleOutcome.InProgress, retry.Bridge.BattleState!.Outcome);
+        Assert.Equal(2, retry.Bridge.BattleState.ActorHitPoints);
+        Assert.Equal(3, retry.Bridge.BattleState.EnemyHitPoints);
+        Assert.Equal("battle-restarted", retry.Cue.Cue.Value);
+        Assert.Same(before, retry.Snapshot);
+        Assert.Same(before, session.PrivateOriginalMapSnapshot);
+        Assert.Same(before.WorkingLayout, retry.Snapshot.WorkingLayout);
+
+        AssertRejected(
+            session,
+            new AcknowledgePublicSyntheticBattleCompletionCommand(
+                defeated.Bridge.Definition.Rules.Battle,
+                defeated.Bridge.LastCueSequence),
+            PrivateOriginalMapBattleBridgeFailureCode.BattleNotCompleted,
+            before,
+            retry.Bridge);
+
+        PrivateOriginalMapBattleBridgeSelectionConfirmed firstRangedAttack = ApplyAttack(
+            session,
+            move: [],
+            target: [TacticalDirection.East, TacticalDirection.East]);
+        Assert.Equal(TacticalEnemyResponseKind.Moved, firstRangedAttack.EnemyResponse!.Kind);
+        Assert.Equal(new TacticalPosition(1, 1),
+            firstRangedAttack.Bridge.BattleState!.EnemyPosition);
+        PrivateOriginalMapBattleBridgeSelectionConfirmed secondRangedAttack = ApplyAttack(
+            session,
+            move: [TacticalDirection.North],
+            target: [TacticalDirection.East, TacticalDirection.South]);
+        Assert.Equal(TacticalEnemyResponseKind.Moved, secondRangedAttack.EnemyResponse!.Kind);
+        Assert.Equal(new TacticalPosition(1, 0),
+            secondRangedAttack.Bridge.BattleState!.EnemyPosition);
+        PrivateOriginalMapBattleBridgeSelectionConfirmed completed = ApplyAttack(
+            session,
+            move: [TacticalDirection.South],
+            target: [TacticalDirection.East, TacticalDirection.North]);
+        Assert.Equal(TacticalSelectionOutcome.BattleCompleted, completed.Outcome);
         Assert.NotNull(completed.Completion);
+        Assert.Null(completed.EnemyResponse);
+        Assert.Equal(TacticalBattleOutcome.Victory, completed.Bridge.BattleState!.Outcome);
         Assert.Equal(PrivateOriginalMapBattleBridgeStatus.Completed, completed.Bridge.Status);
         Assert.Same(before, session.PrivateOriginalMapSnapshot);
 
@@ -243,6 +309,27 @@ public sealed class PrivateOriginalMapBattleBridgeTests
         return selected;
     }
 
+    private static PrivateOriginalMapBattleBridgeSelectionConfirmed ApplyAttack(
+        GameSession session,
+        IEnumerable<TacticalDirection> move,
+        IEnumerable<TacticalDirection> target)
+    {
+        foreach (TacticalDirection direction in move)
+        {
+            AssertMove(session, direction);
+        }
+
+        AssertSelection(session, TacticalSelectionOutcome.MoveConfirmed);
+        foreach (TacticalDirection direction in target)
+        {
+            AssertMove(session, direction);
+        }
+
+        return Assert.IsType<PrivateOriginalMapBattleBridgeSelectionConfirmed>(
+            session.ApplyPrivateOriginalMapBattleBridge(
+                new ConfirmPublicSyntheticBattleSelectionCommand()));
+    }
+
     private static void AssertRejected(
         GameSession session,
         IGameSessionCommand command,
@@ -292,9 +379,13 @@ public sealed class PrivateOriginalMapBattleBridgeTests
                 new TacticalCombatantId("project-authored-enemy"),
                 new TacticalPosition(2, 1),
                 actorMoveRange: 1,
-                actorAttackRange: 1,
-                enemyMaxHitPoints: 1,
-                actorDamage: 1),
+                actorAttackRange: 2,
+                actorMaxHitPoints: 2,
+                actorDamage: 1,
+                enemyMoveRange: 1,
+                enemyAttackRange: 1,
+                enemyMaxHitPoints: 3,
+                enemyDamage: 1),
             new MapId("public-source-must-not-leak"),
             new MapPosition(2, 1),
             new MapSetupId("public-source-setup-must-not-leak"),
@@ -309,7 +400,10 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             new PresentationCueId("battle-admitted"),
             new PresentationCueId("battle-moved"),
             new PresentationCueId("battle-attacked"),
+            new PresentationCueId("battle-enemy-response"),
             new PresentationCueId("battle-completed"),
+            new PresentationCueId("battle-defeated"),
+            new PresentationCueId("battle-restarted"),
             new PresentationCueId("battle-returned"));
 
     private static OriginalMapImportDefinition ImportDefinition()

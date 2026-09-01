@@ -116,8 +116,12 @@ public sealed record TacticalBattleRules
         TacticalPosition enemyStart,
         int actorMoveRange,
         int actorAttackRange,
+        int actorMaxHitPoints,
+        int actorDamage,
+        int enemyMoveRange,
+        int enemyAttackRange,
         int enemyMaxHitPoints,
-        int actorDamage)
+        int enemyDamage)
     {
         Battle = battle ?? throw new ArgumentNullException(nameof(battle));
         Grid = grid ?? throw new ArgumentNullException(nameof(grid));
@@ -127,8 +131,18 @@ public sealed record TacticalBattleRules
         EnemyStart = enemyStart ?? throw new ArgumentNullException(nameof(enemyStart));
         ArgumentOutOfRangeException.ThrowIfLessThan(actorMoveRange, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(actorAttackRange, 1);
-        ArgumentOutOfRangeException.ThrowIfLessThan(enemyMaxHitPoints, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(actorMaxHitPoints, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(actorDamage, 1);
+        if (enemyMoveRange != 1)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(enemyMoveRange),
+                "The bounded project-authored enemy response moves at most one cell.");
+        }
+
+        ArgumentOutOfRangeException.ThrowIfLessThan(enemyAttackRange, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(enemyMaxHitPoints, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(enemyDamage, 1);
         if (actor == enemy)
         {
             throw new ArgumentException(
@@ -147,8 +161,12 @@ public sealed record TacticalBattleRules
 
         ActorMoveRange = actorMoveRange;
         ActorAttackRange = actorAttackRange;
-        EnemyMaxHitPoints = enemyMaxHitPoints;
+        ActorMaxHitPoints = actorMaxHitPoints;
         ActorDamage = actorDamage;
+        EnemyMoveRange = enemyMoveRange;
+        EnemyAttackRange = enemyAttackRange;
+        EnemyMaxHitPoints = enemyMaxHitPoints;
+        EnemyDamage = enemyDamage;
     }
 
     public TacticalBattleId Battle { get; }
@@ -167,9 +185,17 @@ public sealed record TacticalBattleRules
 
     public int ActorAttackRange { get; }
 
-    public int EnemyMaxHitPoints { get; }
+    public int ActorMaxHitPoints { get; }
 
     public int ActorDamage { get; }
+
+    public int EnemyMoveRange { get; }
+
+    public int EnemyAttackRange { get; }
+
+    public int EnemyMaxHitPoints { get; }
+
+    public int EnemyDamage { get; }
 
     public TacticalBattleState CreateInitialState() => new(
         this,
@@ -178,7 +204,9 @@ public sealed record TacticalBattleRules
         EnemyStart,
         ActorStart,
         ActorStart,
-        EnemyMaxHitPoints);
+        ActorMaxHitPoints,
+        EnemyMaxHitPoints,
+        TacticalBattleOutcome.InProgress);
 }
 
 public enum TacticalBattlePhase
@@ -186,6 +214,13 @@ public enum TacticalBattlePhase
     MoveSelection,
     TargetSelection,
     Completed,
+}
+
+public enum TacticalBattleOutcome
+{
+    InProgress,
+    Victory,
+    Defeat,
 }
 
 public sealed record TacticalBattleState
@@ -197,7 +232,9 @@ public sealed record TacticalBattleState
         TacticalPosition enemyPosition,
         TacticalPosition cursorPosition,
         TacticalPosition turnOrigin,
-        int enemyHitPoints)
+        int actorHitPoints,
+        int enemyHitPoints,
+        TacticalBattleOutcome outcome)
     {
         Rules = rules ?? throw new ArgumentNullException(nameof(rules));
         if (!Enum.IsDefined(phase))
@@ -209,20 +246,36 @@ public sealed record TacticalBattleState
         EnemyPosition = enemyPosition ?? throw new ArgumentNullException(nameof(enemyPosition));
         CursorPosition = cursorPosition ?? throw new ArgumentNullException(nameof(cursorPosition));
         TurnOrigin = turnOrigin ?? throw new ArgumentNullException(nameof(turnOrigin));
+        if (!Enum.IsDefined(outcome))
+        {
+            throw new ArgumentOutOfRangeException(nameof(outcome));
+        }
+
         if (!rules.Grid.IsPassable(actorPosition) ||
             !rules.Grid.IsPassable(enemyPosition) ||
             !rules.Grid.IsPassable(cursorPosition) ||
             !rules.Grid.IsPassable(turnOrigin) ||
             actorPosition == enemyPosition ||
+            actorHitPoints < 0 ||
+            actorHitPoints > rules.ActorMaxHitPoints ||
             enemyHitPoints < 0 ||
             enemyHitPoints > rules.EnemyMaxHitPoints ||
-            (phase == TacticalBattlePhase.Completed) != (enemyHitPoints == 0))
+            (outcome == TacticalBattleOutcome.InProgress) !=
+                (phase != TacticalBattlePhase.Completed) ||
+            (outcome == TacticalBattleOutcome.Victory) !=
+                (phase == TacticalBattlePhase.Completed &&
+                 enemyHitPoints == 0 && actorHitPoints > 0) ||
+            (outcome == TacticalBattleOutcome.Defeat) !=
+                (phase == TacticalBattlePhase.Completed &&
+                 actorHitPoints == 0 && enemyHitPoints > 0))
         {
             throw new ArgumentException("Tactical battle state is inconsistent with its rules.");
         }
 
         Phase = phase;
+        ActorHitPoints = actorHitPoints;
         EnemyHitPoints = enemyHitPoints;
+        Outcome = outcome;
     }
 
     public TacticalBattleRules Rules { get; }
@@ -237,7 +290,11 @@ public sealed record TacticalBattleState
 
     public TacticalPosition TurnOrigin { get; }
 
+    public int ActorHitPoints { get; }
+
     public int EnemyHitPoints { get; }
+
+    public TacticalBattleOutcome Outcome { get; }
 }
 
 public enum TacticalCursorMoveOutcome
@@ -262,16 +319,119 @@ public enum TacticalSelectionOutcome
     MoveConfirmed,
     AttackConfirmed,
     BattleCompleted,
+    BattleDefeated,
     InvalidSelection,
     BattleAlreadyCompleted,
 }
 
-public sealed record TacticalSelectionResult(
-    TacticalBattleState State,
-    TacticalSelectionOutcome Outcome)
+public enum TacticalEnemyResponseKind
 {
-    public TacticalBattleState State { get; } =
-        State ?? throw new ArgumentNullException(nameof(State));
+    Moved,
+    Attacked,
+    ActorDefeated,
+    Blocked,
+}
+
+public sealed record TacticalEnemyResponse
+{
+    public TacticalEnemyResponse(
+        TacticalEnemyResponseKind kind,
+        TacticalPosition enemyPositionBefore,
+        TacticalPosition enemyPositionAfter,
+        int actorHitPointsBefore,
+        int actorHitPointsAfter)
+    {
+        if (!Enum.IsDefined(kind))
+        {
+            throw new ArgumentOutOfRangeException(nameof(kind));
+        }
+
+        EnemyPositionBefore = enemyPositionBefore ??
+            throw new ArgumentNullException(nameof(enemyPositionBefore));
+        EnemyPositionAfter = enemyPositionAfter ??
+            throw new ArgumentNullException(nameof(enemyPositionAfter));
+        ArgumentOutOfRangeException.ThrowIfNegative(actorHitPointsBefore);
+        ArgumentOutOfRangeException.ThrowIfNegative(actorHitPointsAfter);
+        if (actorHitPointsAfter > actorHitPointsBefore)
+        {
+            throw new ArgumentException(
+                "A deterministic enemy response cannot increase actor hit points.",
+                nameof(actorHitPointsAfter));
+        }
+
+        bool consistent = kind switch
+        {
+            TacticalEnemyResponseKind.Moved =>
+                enemyPositionBefore != enemyPositionAfter &&
+                actorHitPointsBefore == actorHitPointsAfter,
+            TacticalEnemyResponseKind.Blocked =>
+                enemyPositionBefore == enemyPositionAfter &&
+                actorHitPointsBefore == actorHitPointsAfter,
+            TacticalEnemyResponseKind.Attacked =>
+                enemyPositionBefore == enemyPositionAfter &&
+                actorHitPointsBefore > actorHitPointsAfter &&
+                actorHitPointsAfter > 0,
+            TacticalEnemyResponseKind.ActorDefeated =>
+                enemyPositionBefore == enemyPositionAfter &&
+                actorHitPointsBefore > 0 &&
+                actorHitPointsAfter == 0,
+            _ => false,
+        };
+        if (!consistent)
+        {
+            throw new ArgumentException(
+                "The enemy response identity, movement, and hit-point change must agree.",
+                nameof(kind));
+        }
+
+        Kind = kind;
+        ActorHitPointsBefore = actorHitPointsBefore;
+        ActorHitPointsAfter = actorHitPointsAfter;
+    }
+
+    public TacticalEnemyResponseKind Kind { get; }
+
+    public TacticalPosition EnemyPositionBefore { get; }
+
+    public TacticalPosition EnemyPositionAfter { get; }
+
+    public int ActorHitPointsBefore { get; }
+
+    public int ActorHitPointsAfter { get; }
+}
+
+public sealed record TacticalSelectionResult
+{
+    public TacticalSelectionResult(
+        TacticalBattleState state,
+        TacticalSelectionOutcome outcome,
+        TacticalEnemyResponse? enemyResponse = null)
+    {
+        State = state ?? throw new ArgumentNullException(nameof(state));
+        if (!Enum.IsDefined(outcome))
+        {
+            throw new ArgumentOutOfRangeException(nameof(outcome));
+        }
+
+        bool responseRequired = outcome is
+            TacticalSelectionOutcome.AttackConfirmed or
+            TacticalSelectionOutcome.BattleDefeated;
+        if (responseRequired != (enemyResponse is not null))
+        {
+            throw new ArgumentException(
+                "Only a non-victorious player attack carries one enemy response.",
+                nameof(enemyResponse));
+        }
+
+        Outcome = outcome;
+        EnemyResponse = enemyResponse;
+    }
+
+    public TacticalBattleState State { get; }
+
+    public TacticalSelectionOutcome Outcome { get; }
+
+    public TacticalEnemyResponse? EnemyResponse { get; }
 }
 
 public enum TacticalCancelOutcome
@@ -290,6 +450,14 @@ public sealed record TacticalCancelResult(
 
 public static class TacticalBattleReducer
 {
+    private static readonly (int X, int Y)[] EnemyStepOrder =
+    [
+        (0, -1),
+        (1, 0),
+        (0, 1),
+        (-1, 0),
+    ];
+
     public static TacticalCursorMoveResult MoveCursor(
         TacticalBattleState state,
         TacticalDirection direction)
@@ -361,7 +529,9 @@ public static class TacticalBattleReducer
                 state.EnemyPosition,
                 destination,
                 state.TurnOrigin,
-                state.EnemyHitPoints),
+                state.ActorHitPoints,
+                state.EnemyHitPoints,
+                state.Outcome),
             TacticalCursorMoveOutcome.Moved);
     }
 
@@ -392,7 +562,9 @@ public static class TacticalBattleReducer
                     state.EnemyPosition,
                     state.CursorPosition,
                     state.TurnOrigin,
-                    state.EnemyHitPoints),
+                    state.ActorHitPoints,
+                    state.EnemyHitPoints,
+                    state.Outcome),
                 TacticalSelectionOutcome.MoveConfirmed);
         }
 
@@ -407,21 +579,23 @@ public static class TacticalBattleReducer
         int remainingHitPoints = Math.Max(
             state.EnemyHitPoints - state.Rules.ActorDamage,
             0);
-        TacticalBattlePhase phase = remainingHitPoints == 0
-            ? TacticalBattlePhase.Completed
-            : TacticalBattlePhase.TargetSelection;
-        return new TacticalSelectionResult(
-            new TacticalBattleState(
-                state.Rules,
-                phase,
-                state.ActorPosition,
-                state.EnemyPosition,
-                state.CursorPosition,
-                state.TurnOrigin,
-                remainingHitPoints),
-            remainingHitPoints == 0
-                ? TacticalSelectionOutcome.BattleCompleted
-                : TacticalSelectionOutcome.AttackConfirmed);
+        if (remainingHitPoints == 0)
+        {
+            return new TacticalSelectionResult(
+                new TacticalBattleState(
+                    state.Rules,
+                    TacticalBattlePhase.Completed,
+                    state.ActorPosition,
+                    state.EnemyPosition,
+                    state.CursorPosition,
+                    state.TurnOrigin,
+                    state.ActorHitPoints,
+                    remainingHitPoints,
+                    TacticalBattleOutcome.Victory),
+                TacticalSelectionOutcome.BattleCompleted);
+        }
+
+        return ApplyEnemyResponse(state, remainingHitPoints);
     }
 
     public static TacticalCancelResult Cancel(TacticalBattleState state)
@@ -440,8 +614,104 @@ public static class TacticalBattleReducer
                 state.EnemyPosition,
                 state.TurnOrigin,
                 state.TurnOrigin,
-                state.EnemyHitPoints),
+                state.ActorHitPoints,
+                state.EnemyHitPoints,
+                state.Outcome),
             TacticalCancelOutcome.ReturnedToMoveSelection);
+    }
+
+    private static TacticalSelectionResult ApplyEnemyResponse(
+        TacticalBattleState state,
+        int enemyHitPoints)
+    {
+        TacticalPosition enemyBefore = state.EnemyPosition;
+        if (Manhattan(enemyBefore, state.ActorPosition) <= state.Rules.EnemyAttackRange)
+        {
+            int actorHitPoints = Math.Max(
+                state.ActorHitPoints - state.Rules.EnemyDamage,
+                0);
+            bool defeated = actorHitPoints == 0;
+            TacticalBattleState attacked = new(
+                state.Rules,
+                defeated ? TacticalBattlePhase.Completed : TacticalBattlePhase.MoveSelection,
+                state.ActorPosition,
+                enemyBefore,
+                state.ActorPosition,
+                state.ActorPosition,
+                actorHitPoints,
+                enemyHitPoints,
+                defeated ? TacticalBattleOutcome.Defeat : TacticalBattleOutcome.InProgress);
+            TacticalEnemyResponse response = new(
+                defeated
+                    ? TacticalEnemyResponseKind.ActorDefeated
+                    : TacticalEnemyResponseKind.Attacked,
+                enemyBefore,
+                enemyBefore,
+                state.ActorHitPoints,
+                actorHitPoints);
+            return new TacticalSelectionResult(
+                attacked,
+                defeated
+                    ? TacticalSelectionOutcome.BattleDefeated
+                    : TacticalSelectionOutcome.AttackConfirmed,
+                response);
+        }
+
+        TacticalPosition enemyAfter = SelectEnemyStep(state);
+        TacticalEnemyResponseKind kind = enemyAfter == enemyBefore
+            ? TacticalEnemyResponseKind.Blocked
+            : TacticalEnemyResponseKind.Moved;
+        TacticalBattleState moved = new(
+            state.Rules,
+            TacticalBattlePhase.MoveSelection,
+            state.ActorPosition,
+            enemyAfter,
+            state.ActorPosition,
+            state.ActorPosition,
+            state.ActorHitPoints,
+            enemyHitPoints,
+            TacticalBattleOutcome.InProgress);
+        return new TacticalSelectionResult(
+            moved,
+            TacticalSelectionOutcome.AttackConfirmed,
+            new TacticalEnemyResponse(
+                kind,
+                enemyBefore,
+                enemyAfter,
+                state.ActorHitPoints,
+                state.ActorHitPoints));
+    }
+
+    private static TacticalPosition SelectEnemyStep(TacticalBattleState state)
+    {
+        TacticalPosition current = state.EnemyPosition;
+        TacticalPosition selected = current;
+        int selectedDistance = Manhattan(current, state.ActorPosition);
+        foreach ((int deltaX, int deltaY) in EnemyStepOrder)
+        {
+            int x = current.X + deltaX;
+            int y = current.Y + deltaY;
+            if (x < 0 || y < 0)
+            {
+                continue;
+            }
+
+            TacticalPosition candidate = new(x, y);
+            if (!state.Rules.Grid.IsPassable(candidate) ||
+                candidate == state.ActorPosition)
+            {
+                continue;
+            }
+
+            int distance = Manhattan(candidate, state.ActorPosition);
+            if (distance < selectedDistance)
+            {
+                selected = candidate;
+                selectedDistance = distance;
+            }
+        }
+
+        return selected;
     }
 
     private static int Manhattan(TacticalPosition left, TacticalPosition right) =>

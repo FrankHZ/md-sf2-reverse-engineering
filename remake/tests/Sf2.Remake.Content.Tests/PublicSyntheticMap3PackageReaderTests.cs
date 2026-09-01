@@ -47,6 +47,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 PublicSyntheticMap3PackageReader.ItemAcquisitionCapability,
                 PublicSyntheticMap3PackageReader.OutboundTransitionCapability,
                 PublicSyntheticMap3PackageReader.TacticalBattleCapability,
+                PublicSyntheticMap3PackageReader.TacticalBattleDepthCapability,
                 PublicSyntheticMap3PackageReader.BattleCompletionWorldStateCapability,
             ],
             accepted.Receipt.Capabilities);
@@ -257,9 +258,18 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         Assert.Equal(new TacticalPosition(0, 1), battle.Rules.ActorStart);
         Assert.Equal(new TacticalPosition(2, 1), battle.Rules.EnemyStart);
         Assert.Equal(1, battle.Rules.ActorMoveRange);
-        Assert.Equal(1, battle.Rules.ActorAttackRange);
-        Assert.Equal(1, battle.Rules.EnemyMaxHitPoints);
+        Assert.Equal(2, battle.Rules.ActorAttackRange);
+        Assert.Equal(2, battle.Rules.ActorMaxHitPoints);
         Assert.Equal(1, battle.Rules.ActorDamage);
+        Assert.Equal(1, battle.Rules.EnemyMoveRange);
+        Assert.Equal(1, battle.Rules.EnemyAttackRange);
+        Assert.Equal(3, battle.Rules.EnemyMaxHitPoints);
+        Assert.Equal(1, battle.Rules.EnemyDamage);
+        Assert.Equal(
+            "public-synthetic-map3-battle-enemy-response",
+            battle.EnemyResponseCue.Value);
+        Assert.Equal("public-synthetic-map3-battle-defeated", battle.DefeatedCue.Value);
+        Assert.Equal("public-synthetic-map3-battle-restarted", battle.RestartedCue.Value);
         Assert.Equal(
             "public-synthetic-map3-battle-completion-world-effect",
             battle.CompletionEffect.Value);
@@ -286,12 +296,16 @@ public sealed class PublicSyntheticMap3PackageReaderTests
 
     [Theory]
     [InlineData("public-synthetic-map3-tactical-battle-completion-v1", "public-synthetic-changed-capability")]
+    [InlineData("project-authored-tactical-battle-depth-v1", "project-authored-changed-depth")]
     [InlineData("public-synthetic-map3-battle-completion-world-state-v1", "public-synthetic-changed-world-state")]
     [InlineData("public-synthetic-map3-tactical-battle", "public-synthetic-changed-battle")]
     [InlineData("public-synthetic-map3-battle-entry-request", "public-synthetic-changed-request")]
     [InlineData("public-synthetic-outbound-shell-battle-zone", "public-synthetic-changed-zone")]
     [InlineData("public-synthetic-map3-player-unit", "public-synthetic-changed-actor")]
     [InlineData("public-synthetic-map3-placeholder-enemy", "public-synthetic-changed-enemy")]
+    [InlineData("public-synthetic-map3-battle-enemy-response", "public-synthetic-changed-response")]
+    [InlineData("public-synthetic-map3-battle-defeated", "public-synthetic-changed-defeat")]
+    [InlineData("public-synthetic-map3-battle-restarted", "public-synthetic-changed-restart")]
     [InlineData("public-synthetic-map3-battle-completed", "public-synthetic-changed-cue")]
     [InlineData("public-synthetic-map3-battle-completion-world-effect", "public-synthetic-changed-effect")]
     public void TacticalBattleIdentityMutationFailsRawDigestAdmission(
@@ -319,8 +333,35 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         "\"actorMoveRange\": 1",
         "\"actorMoveRange\": 0")]
     [InlineData(
+        "\"actorAttackRange\": 2",
+        "\"actorAttackRange\": 1")]
+    [InlineData(
+        "\"actorMaxHitPoints\": 2",
+        "\"actorMaxHitPoints\": 1")]
+    [InlineData(
+        "\"enemyMoveRange\": 1",
+        "\"enemyMoveRange\": 2")]
+    [InlineData(
+        "\"enemyAttackRange\": 1",
+        "\"enemyAttackRange\": 2")]
+    [InlineData(
+        "\"enemyMaxHitPoints\": 3",
+        "\"enemyMaxHitPoints\": 2")]
+    [InlineData(
+        "\"enemyDamage\": 1",
+        "\"enemyDamage\": 2")]
+    [InlineData(
+        "\"enemyResponseCueId\": \"public-synthetic-map3-battle-enemy-response\"",
+        "\"enemyResponseCueId\": \"public-synthetic-map3-battle-attack-completed\"")]
+    [InlineData(
         "\"completedCueId\": \"public-synthetic-map3-battle-completed\"",
         "\"completedCueId\": \"public-synthetic-map3-battle-attack-completed\"")]
+    [InlineData(
+        "\"defeatedCueId\": \"public-synthetic-map3-battle-defeated\"",
+        "\"defeatedCueId\": \"public-synthetic-map3-battle-completed\"")]
+    [InlineData(
+        "\"restartedCueId\": \"public-synthetic-map3-battle-restarted\"",
+        "\"restartedCueId\": \"public-synthetic-map3-battle-defeated\"")]
     [InlineData(
         "\"battleId\": \"public-synthetic-map3-tactical-battle\"",
         "\"battleId\": \"default\"")]
@@ -378,9 +419,11 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         string original = File.ReadAllText(PackagePath(), System.Text.Encoding.UTF8);
         string reorderedCapabilities = original.Replace(
             "    \"public-synthetic-map3-tactical-battle-completion-v1\",\n" +
+            "    \"project-authored-tactical-battle-depth-v1\",\n" +
             "    \"public-synthetic-map3-battle-completion-world-state-v1\"",
-            "    \"public-synthetic-map3-battle-completion-world-state-v1\",\n" +
-            "    \"public-synthetic-map3-tactical-battle-completion-v1\"",
+            "    \"project-authored-tactical-battle-depth-v1\",\n" +
+            "    \"public-synthetic-map3-tactical-battle-completion-v1\",\n" +
+            "    \"public-synthetic-map3-battle-completion-world-state-v1\"",
             StringComparison.Ordinal);
         Assert.NotEqual(original, reorderedCapabilities);
         MapScenarioRejected capabilityRejected = Assert.IsType<MapScenarioRejected>(

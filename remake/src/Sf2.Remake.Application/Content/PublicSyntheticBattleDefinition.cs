@@ -36,7 +36,10 @@ public sealed record PublicSyntheticBattleDefinition
         PresentationCueId admittedCue,
         PresentationCueId moveCue,
         PresentationCueId attackCue,
+        PresentationCueId enemyResponseCue,
         PresentationCueId completedCue,
+        PresentationCueId defeatedCue,
+        PresentationCueId restartedCue,
         PresentationCueId returnedCue)
     {
         Request = request ?? throw new ArgumentNullException(nameof(request));
@@ -65,13 +68,16 @@ public sealed record PublicSyntheticBattleDefinition
             admittedCue ?? throw new ArgumentNullException(nameof(admittedCue)),
             moveCue ?? throw new ArgumentNullException(nameof(moveCue)),
             attackCue ?? throw new ArgumentNullException(nameof(attackCue)),
+            enemyResponseCue ?? throw new ArgumentNullException(nameof(enemyResponseCue)),
             completedCue ?? throw new ArgumentNullException(nameof(completedCue)),
+            defeatedCue ?? throw new ArgumentNullException(nameof(defeatedCue)),
+            restartedCue ?? throw new ArgumentNullException(nameof(restartedCue)),
             returnedCue ?? throw new ArgumentNullException(nameof(returnedCue)),
         ];
         if (cues.Distinct().Count() != cues.Length)
         {
             throw new ArgumentException(
-                "A public-synthetic battle requires six distinct presentation cues.",
+                "A public-synthetic battle requires nine distinct presentation cues.",
                 nameof(requestCue));
         }
 
@@ -80,8 +86,11 @@ public sealed record PublicSyntheticBattleDefinition
         AdmittedCue = cues[1];
         MoveCue = cues[2];
         AttackCue = cues[3];
-        CompletedCue = cues[4];
-        ReturnedCue = cues[5];
+        EnemyResponseCue = cues[4];
+        CompletedCue = cues[5];
+        DefeatedCue = cues[6];
+        RestartedCue = cues[7];
+        ReturnedCue = cues[8];
     }
 
     public PublicSyntheticBattleRequestId Request { get; }
@@ -116,12 +125,28 @@ public sealed record PublicSyntheticBattleDefinition
 
     public PresentationCueId AttackCue { get; }
 
+    public PresentationCueId EnemyResponseCue { get; }
+
     public PresentationCueId CompletedCue { get; }
+
+    public PresentationCueId DefeatedCue { get; }
+
+    public PresentationCueId RestartedCue { get; }
 
     public PresentationCueId ReturnedCue { get; }
 
     public IReadOnlyList<PresentationCueId> Cues =>
-        [RequestCue, AdmittedCue, MoveCue, AttackCue, CompletedCue, ReturnedCue];
+        [
+            RequestCue,
+            AdmittedCue,
+            MoveCue,
+            AttackCue,
+            EnemyResponseCue,
+            CompletedCue,
+            DefeatedCue,
+            RestartedCue,
+            ReturnedCue,
+        ];
 }
 
 public sealed class PublicSyntheticBattleCatalog

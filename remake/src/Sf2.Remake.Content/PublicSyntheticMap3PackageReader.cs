@@ -31,11 +31,13 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         "public-synthetic-map3-outbound-cross-map-transition-v1";
     public const string TacticalBattleCapability =
         "public-synthetic-map3-tactical-battle-completion-v1";
+    public const string TacticalBattleDepthCapability =
+        "project-authored-tactical-battle-depth-v1";
     public const string BattleCompletionWorldStateCapability =
         "public-synthetic-map3-battle-completion-world-state-v1";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
     public const string ExpectedContentDigest =
-        "66489af560d23fc745db9aa6af0f1f334107d695e4263cbe07ec6b3b7dbb6fec";
+        "79db2e4a1f6186164c3224c1ccc7b5e6b8f6a36f8b2750b50af347b8b71e8131";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -265,6 +267,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     ItemAcquisitionCapability,
                     OutboundTransitionCapability,
                     TacticalBattleCapability,
+                    TacticalBattleDepthCapability,
                     BattleCompletionWorldStateCapability,
                 ],
                 StringComparer.Ordinal) ||
@@ -399,7 +402,10 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             battle.AdmittedCueId,
             battle.MoveCueId,
             battle.AttackCueId,
+            battle.EnemyResponseCueId,
             battle.CompletedCueId,
+            battle.DefeatedCueId,
+            battle.RestartedCueId,
             battle.ReturnedCueId,
         ];
         if (battleIds.Any(value =>
@@ -426,8 +432,10 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             battle.Grid.PassableCells.Any(passable => !passable) ||
             battle.ActorStart.X != 0 || battle.ActorStart.Y != 1 ||
             battle.EnemyStart.X != 2 || battle.EnemyStart.Y != 1 ||
-            battle.ActorMoveRange != 1 || battle.ActorAttackRange != 1 ||
-            battle.EnemyMaxHitPoints != 1 || battle.ActorDamage != 1)
+            battle.ActorMoveRange != 1 || battle.ActorAttackRange != 2 ||
+            battle.ActorMaxHitPoints != 2 || battle.ActorDamage != 1 ||
+            battle.EnemyMoveRange != 1 || battle.EnemyAttackRange != 1 ||
+            battle.EnemyMaxHitPoints != 3 || battle.EnemyDamage != 1)
         {
             return Diagnostic(
                 ScenarioAdmissionFailureCode.InvalidMap,
@@ -619,8 +627,12 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                         new TacticalPosition(entry.EnemyStart.X, entry.EnemyStart.Y),
                         entry.ActorMoveRange,
                         entry.ActorAttackRange,
+                        entry.ActorMaxHitPoints,
+                        entry.ActorDamage,
+                        entry.EnemyMoveRange,
+                        entry.EnemyAttackRange,
                         entry.EnemyMaxHitPoints,
-                        entry.ActorDamage),
+                        entry.EnemyDamage),
                     new MapId(entry.SourceMapId),
                     new MapPosition(entry.SourcePosition.X, entry.SourcePosition.Y),
                     new MapSetupId(entry.SourceSetupId),
@@ -635,7 +647,10 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     new PresentationCueId(entry.AdmittedCueId),
                     new PresentationCueId(entry.MoveCueId),
                     new PresentationCueId(entry.AttackCueId),
+                    new PresentationCueId(entry.EnemyResponseCueId),
                     new PresentationCueId(entry.CompletedCueId),
+                    new PresentationCueId(entry.DefeatedCueId),
+                    new PresentationCueId(entry.RestartedCueId),
                     new PresentationCueId(entry.ReturnedCueId))));
         return new MapScenarioContextDefinition(
             mapRuntimes,
@@ -1126,9 +1141,17 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
 
         public required int ActorAttackRange { get; init; }
 
-        public required int EnemyMaxHitPoints { get; init; }
+        public required int ActorMaxHitPoints { get; init; }
 
         public required int ActorDamage { get; init; }
+
+        public required int EnemyMoveRange { get; init; }
+
+        public required int EnemyAttackRange { get; init; }
+
+        public required int EnemyMaxHitPoints { get; init; }
+
+        public required int EnemyDamage { get; init; }
 
         public required string RequestCueId { get; init; }
 
@@ -1138,7 +1161,13 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
 
         public required string AttackCueId { get; init; }
 
+        public required string EnemyResponseCueId { get; init; }
+
         public required string CompletedCueId { get; init; }
+
+        public required string DefeatedCueId { get; init; }
+
+        public required string RestartedCueId { get; init; }
 
         public required string ReturnedCueId { get; init; }
     }
