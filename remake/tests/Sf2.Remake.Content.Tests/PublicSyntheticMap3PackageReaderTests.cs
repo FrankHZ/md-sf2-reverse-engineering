@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
+using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Content;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Items;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -44,6 +46,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 PublicSyntheticMap3PackageReader.FieldSearchCapability,
                 PublicSyntheticMap3PackageReader.ItemAcquisitionCapability,
                 PublicSyntheticMap3PackageReader.OutboundTransitionCapability,
+                PublicSyntheticMap3PackageReader.TacticalBattleCapability,
             ],
             accepted.Receipt.Capabilities);
         string trackedDigest = Convert.ToHexString(
@@ -240,6 +243,138 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             outboundRuntime.ZoneEvents,
             new ZoneEventQuery(1, 1));
         Assert.Equal("synthetic-outbound-shell-no-zone", outboundFallback.Target.Value);
+        ZoneEventSelection battleZone = MapSetupEventSelector.Select(
+            outboundRuntime.ZoneEvents,
+            new ZoneEventQuery(2, 1));
+        PublicSyntheticBattleDefinition battle = Assert.Single(
+            context.PublicSyntheticBattles.Definitions);
+        Assert.Equal("public-synthetic-outbound-shell-battle-zone", battleZone.Target.Value);
+        Assert.Equal(battle.SourceZoneTarget, battleZone.Target);
+        Assert.Equal("public-synthetic-map3-tactical-battle", battle.Rules.Battle.Value);
+        Assert.Equal(3, battle.Rules.Grid.Width);
+        Assert.Equal(2, battle.Rules.Grid.Height);
+        Assert.Equal(new TacticalPosition(0, 1), battle.Rules.ActorStart);
+        Assert.Equal(new TacticalPosition(2, 1), battle.Rules.EnemyStart);
+        Assert.Equal(1, battle.Rules.ActorMoveRange);
+        Assert.Equal(1, battle.Rules.ActorAttackRange);
+        Assert.Equal(1, battle.Rules.EnemyMaxHitPoints);
+        Assert.Equal(1, battle.Rules.ActorDamage);
+        Assert.Same(battle, context.PublicSyntheticBattles.FindByTarget(battleZone.Target));
+    }
+
+    [Theory]
+    [InlineData("public-synthetic-map3-tactical-battle-completion-v1", "public-synthetic-changed-capability")]
+    [InlineData("public-synthetic-map3-tactical-battle", "public-synthetic-changed-battle")]
+    [InlineData("public-synthetic-map3-battle-entry-request", "public-synthetic-changed-request")]
+    [InlineData("public-synthetic-outbound-shell-battle-zone", "public-synthetic-changed-zone")]
+    [InlineData("public-synthetic-map3-player-unit", "public-synthetic-changed-actor")]
+    [InlineData("public-synthetic-map3-placeholder-enemy", "public-synthetic-changed-enemy")]
+    [InlineData("public-synthetic-map3-battle-completed", "public-synthetic-changed-cue")]
+    public void TacticalBattleIdentityMutationFailsRawDigestAdmission(
+        string oldValue,
+        string newValue)
+    {
+        AssertDigestMismatch(original =>
+            original.Replace(oldValue, newValue, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(
+        "\"requestId\": \"public-synthetic-map3-battle-entry-request\"",
+        "\"unknownField\": true,\n        \"requestId\": \"public-synthetic-map3-battle-entry-request\"")]
+    [InlineData(
+        "\"sourceZoneTargetId\": \"public-synthetic-outbound-shell-battle-zone\"",
+        "\"sourceZoneTargetId\": \"synthetic-outbound-shell-no-zone\"")]
+    [InlineData(
+        "\"width\": 3,\n          \"height\": 2",
+        "\"width\": 2,\n          \"height\": 2")]
+    [InlineData(
+        "\"x\": 2,\n          \"y\": 1\n        },\n        \"actorMoveRange\"",
+        "\"x\": 0,\n          \"y\": 1\n        },\n        \"actorMoveRange\"")]
+    [InlineData(
+        "\"actorMoveRange\": 1",
+        "\"actorMoveRange\": 0")]
+    [InlineData(
+        "\"completedCueId\": \"public-synthetic-map3-battle-completed\"",
+        "\"completedCueId\": \"public-synthetic-map3-battle-attack-completed\"")]
+    [InlineData(
+        "\"battleId\": \"public-synthetic-map3-tactical-battle\"",
+        "\"battleId\": \"default\"")]
+    public void TacticalBattleSemanticShapeAndCrossReferencesFailClosed(
+        string oldValue,
+        string newValue)
+    {
+        string original = File.ReadAllText(PackagePath(), System.Text.Encoding.UTF8);
+        string modified = original.Replace(oldValue, newValue, StringComparison.Ordinal);
+        Assert.NotEqual(original, modified);
+
+        MapScenarioRejected rejected = Assert.IsType<MapScenarioRejected>(
+            PublicSyntheticMap3PackageReader.AdmitSemanticallyForTests(
+                System.Text.Encoding.UTF8.GetBytes(modified)));
+
+        Assert.NotEqual(ScenarioAdmissionFailureCode.ContentDigestMismatch, rejected.Diagnostic.Code);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    public void TacticalBattleMissingOrDuplicateDefinitionFailsSemanticAdmission(int count)
+    {
+        JsonObject document = Assert.IsType<JsonObject>(JsonNode.Parse(
+            File.ReadAllText(PackagePath(), System.Text.Encoding.UTF8)));
+        JsonArray battles = Assert.IsType<JsonArray>(
+            document["mapContext"]!["publicSyntheticBattles"]);
+        JsonNode original = battles[0]!.DeepClone();
+        battles.Clear();
+        for (int index = 0; index < count; index++)
+        {
+            battles.Add(original.DeepClone());
+        }
+
+        MapScenarioRejected rejected = Assert.IsType<MapScenarioRejected>(
+            PublicSyntheticMap3PackageReader.AdmitSemanticallyForTests(
+                System.Text.Encoding.UTF8.GetBytes(document.ToJsonString())));
+
+        Assert.Equal(ScenarioAdmissionFailureCode.InvalidDocument, rejected.Diagnostic.Code);
+        Assert.Equal("mapContext.publicSyntheticBattles", rejected.Diagnostic.Field);
+    }
+
+    [Fact]
+    public void TacticalBattleZoneAndCapabilityOrderingFailSemanticAdmission()
+    {
+        string original = File.ReadAllText(PackagePath(), System.Text.Encoding.UTF8);
+        string reorderedCapabilities = original.Replace(
+            "    \"public-synthetic-map3-outbound-cross-map-transition-v1\",\n" +
+            "    \"public-synthetic-map3-tactical-battle-completion-v1\"",
+            "    \"public-synthetic-map3-tactical-battle-completion-v1\",\n" +
+            "    \"public-synthetic-map3-outbound-cross-map-transition-v1\"",
+            StringComparison.Ordinal);
+        Assert.NotEqual(original, reorderedCapabilities);
+        MapScenarioRejected capabilityRejected = Assert.IsType<MapScenarioRejected>(
+            PublicSyntheticMap3PackageReader.AdmitSemanticallyForTests(
+                System.Text.Encoding.UTF8.GetBytes(reorderedCapabilities)));
+        Assert.Equal("capabilities", capabilityRejected.Diagnostic.Field);
+
+        JsonObject document = Assert.IsType<JsonObject>(JsonNode.Parse(original));
+        JsonArray zones = Assert.IsType<JsonArray>(document["outboundShell"]!["zoneEvents"]);
+        JsonNode first = zones[0]!.DeepClone();
+        JsonNode second = zones[1]!.DeepClone();
+        zones.Clear();
+        zones.Add(second);
+        zones.Add(first);
+        MapScenarioRejected zoneRejected = Assert.IsType<MapScenarioRejected>(
+            PublicSyntheticMap3PackageReader.AdmitSemanticallyForTests(
+                System.Text.Encoding.UTF8.GetBytes(document.ToJsonString())));
+        Assert.Equal(ScenarioAdmissionFailureCode.InvalidMap, zoneRejected.Diagnostic.Code);
+    }
+
+    [Fact]
+    public void SemanticTestSeamIsNotPartOfThePublicReaderSurface()
+    {
+        Assert.Null(typeof(PublicSyntheticMap3PackageReader).GetMethod(
+            "AdmitSemanticallyForTests",
+            System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.Static));
     }
 
     [Theory]

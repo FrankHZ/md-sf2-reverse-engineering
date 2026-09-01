@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Sf2.Remake.Application.Content;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Items;
 using Sf2.Remake.Domain.Maps;
 
@@ -28,9 +29,11 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         "public-synthetic-map3-placeholder-item-acquisition-v1";
     public const string OutboundTransitionCapability =
         "public-synthetic-map3-outbound-cross-map-transition-v1";
+    public const string TacticalBattleCapability =
+        "public-synthetic-map3-tactical-battle-completion-v1";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
     public const string ExpectedContentDigest =
-        "73c335147f85e1ac7ae8fc458036d3861d5832e652f01edd11398d06ee76c5c7";
+        "5bab05c3bb20c16f1bc3392db2ceb173bfa2cc3b4bebef2b7b40bf8f25f80ec8";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -119,6 +122,22 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                 "The public-synthetic package bytes do not match the tracked package identity.");
         }
 
+        return AdmitDocument(documentBytes, contentDigest);
+    }
+
+    internal static MapScenarioAdmissionResult AdmitSemanticallyForTests(
+        IEnumerable<byte> documentBytes)
+    {
+        ArgumentNullException.ThrowIfNull(documentBytes);
+        byte[] copied = [.. documentBytes];
+        string digest = Convert.ToHexString(SHA256.HashData(copied)).ToLowerInvariant();
+        return AdmitDocument(copied, digest);
+    }
+
+    private static MapScenarioAdmissionResult AdmitDocument(
+        byte[] documentBytes,
+        string contentDigest)
+    {
         try
         {
             PublicSyntheticMap3Document? document =
@@ -243,6 +262,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     FieldSearchCapability,
                     ItemAcquisitionCapability,
                     OutboundTransitionCapability,
+                    TacticalBattleCapability,
                 ],
                 StringComparer.Ordinal) ||
             !document.EvidenceOwnerIds.SequenceEqual([EvidenceOwner], StringComparer.Ordinal))
@@ -326,6 +346,82 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                 ScenarioAdmissionFailureCode.InvalidDocument,
                 "mapContext.outboundTransitions",
                 "The bounded public-synthetic package requires exactly one outbound transition.");
+        }
+
+        if (document.MapContext.PublicSyntheticBattles.Length != 1)
+        {
+            return Diagnostic(
+                ScenarioAdmissionFailureCode.InvalidDocument,
+                "mapContext.publicSyntheticBattles",
+                "The bounded package requires exactly one public-synthetic tactical battle.");
+        }
+
+        if (document.OutboundShell.ZoneEvents.Length != 2 ||
+            !string.Equals(
+                document.OutboundShell.ZoneEvents[0].Kind,
+                "specific",
+                StringComparison.Ordinal) ||
+            document.OutboundShell.ZoneEvents[0].X != 2 ||
+            document.OutboundShell.ZoneEvents[0].Y != 1 ||
+            !string.Equals(
+                document.OutboundShell.ZoneEvents[0].TargetId,
+                "public-synthetic-outbound-shell-battle-zone",
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                document.OutboundShell.ZoneEvents[1].Kind,
+                "default",
+                StringComparison.Ordinal) ||
+            document.OutboundShell.ZoneEvents[1].X is not null ||
+            document.OutboundShell.ZoneEvents[1].Y is not null ||
+            !string.Equals(
+                document.OutboundShell.ZoneEvents[1].TargetId,
+                "synthetic-outbound-shell-no-zone",
+                StringComparison.Ordinal))
+        {
+            return Diagnostic(
+                ScenarioAdmissionFailureCode.InvalidMap,
+                "outboundShell.zoneEvents",
+                "The public-synthetic battle source zone and fallback order must remain exact.");
+        }
+
+        PublicSyntheticBattleDocument battle = document.MapContext.PublicSyntheticBattles[0];
+        string[] battleIds =
+        [
+            battle.RequestId,
+            battle.BattleId,
+            battle.ActorId,
+            battle.EnemyId,
+            battle.SourceZoneTargetId,
+            battle.RequestCueId,
+            battle.AdmittedCueId,
+            battle.MoveCueId,
+            battle.AttackCueId,
+            battle.CompletedCueId,
+            battle.ReturnedCueId,
+        ];
+        if (battleIds.Any(value =>
+                !value.StartsWith("public-synthetic-", StringComparison.Ordinal)) ||
+            battleIds.Distinct(StringComparer.Ordinal).Count() != battleIds.Length ||
+            !string.Equals(battle.BattleId, "public-synthetic-map3-tactical-battle", StringComparison.Ordinal) ||
+            !string.Equals(battle.SourceMapId, OutboundShell, StringComparison.Ordinal) ||
+            battle.SourcePosition.X != 2 || battle.SourcePosition.Y != 1 ||
+            !string.Equals(battle.SourceSetupId, "public-synthetic-outbound-shell-setup", StringComparison.Ordinal) ||
+            !string.Equals(battle.ReturnMapId, OutboundShell, StringComparison.Ordinal) ||
+            battle.ReturnPosition.X != 1 || battle.ReturnPosition.Y != 1 ||
+            !string.Equals(battle.ReturnSetupId, "public-synthetic-outbound-shell-setup", StringComparison.Ordinal) ||
+            !string.Equals(battle.ReturnFacing, "east", StringComparison.Ordinal) ||
+            battle.Grid.Width != 3 || battle.Grid.Height != 2 ||
+            battle.Grid.PassableCells.Length != 6 ||
+            battle.Grid.PassableCells.Any(passable => !passable) ||
+            battle.ActorStart.X != 0 || battle.ActorStart.Y != 1 ||
+            battle.EnemyStart.X != 2 || battle.EnemyStart.Y != 1 ||
+            battle.ActorMoveRange != 1 || battle.ActorAttackRange != 1 ||
+            battle.EnemyMaxHitPoints != 1 || battle.ActorDamage != 1)
+        {
+            return Diagnostic(
+                ScenarioAdmissionFailureCode.InvalidMap,
+                "mapContext.publicSyntheticBattles",
+                "The public-synthetic tactical battle definition is not the admitted bounded micro-loop.");
         }
 
         return null;
@@ -496,6 +592,38 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     new MapSetupId(entry.DestinationSetupId),
                     ParseSemanticFacing(entry.DestinationFacing),
                     new PresentationCueId(entry.CueId))));
+        PublicSyntheticBattleCatalog publicSyntheticBattles = new(
+            context.PublicSyntheticBattles.Select(entry =>
+                new PublicSyntheticBattleDefinition(
+                    new PublicSyntheticBattleRequestId(entry.RequestId),
+                    new TacticalBattleRules(
+                        new TacticalBattleId(entry.BattleId),
+                        new TacticalBattleGrid(
+                            entry.Grid.Width,
+                            entry.Grid.Height,
+                            entry.Grid.PassableCells),
+                        new TacticalCombatantId(entry.ActorId),
+                        new TacticalPosition(entry.ActorStart.X, entry.ActorStart.Y),
+                        new TacticalCombatantId(entry.EnemyId),
+                        new TacticalPosition(entry.EnemyStart.X, entry.EnemyStart.Y),
+                        entry.ActorMoveRange,
+                        entry.ActorAttackRange,
+                        entry.EnemyMaxHitPoints,
+                        entry.ActorDamage),
+                    new MapId(entry.SourceMapId),
+                    new MapPosition(entry.SourcePosition.X, entry.SourcePosition.Y),
+                    new MapSetupId(entry.SourceSetupId),
+                    new EventTargetId(entry.SourceZoneTargetId),
+                    new MapId(entry.ReturnMapId),
+                    new MapPosition(entry.ReturnPosition.X, entry.ReturnPosition.Y),
+                    new MapSetupId(entry.ReturnSetupId),
+                    ParseSemanticFacing(entry.ReturnFacing),
+                    new PresentationCueId(entry.RequestCueId),
+                    new PresentationCueId(entry.AdmittedCueId),
+                    new PresentationCueId(entry.MoveCueId),
+                    new PresentationCueId(entry.AttackCueId),
+                    new PresentationCueId(entry.CompletedCueId),
+                    new PresentationCueId(entry.ReturnedCueId))));
         return new MapScenarioContextDefinition(
             mapRuntimes,
             setupCatalog,
@@ -509,7 +637,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             dialogues,
             fieldSearches,
             itemAcquisitions,
-            outboundTransitions);
+            outboundTransitions,
+            publicSyntheticBattles);
     }
 
     private static MapEntityInteractionDefinition BuildEntityInteractionDefinition(
@@ -805,6 +934,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required ItemAcquisitionDocument[] ItemAcquisitions { get; init; }
 
         public required OutboundTransitionDocument[] OutboundTransitions { get; init; }
+
+        public required PublicSyntheticBattleDocument[] PublicSyntheticBattles { get; init; }
     }
 
     private sealed class OutboundShellDocument
@@ -940,6 +1071,68 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required string DestinationFacing { get; init; }
 
         public required string CueId { get; init; }
+    }
+
+    private sealed class PublicSyntheticBattleDocument
+    {
+        public required string RequestId { get; init; }
+
+        public required string BattleId { get; init; }
+
+        public required string SourceMapId { get; init; }
+
+        public required PositionDocument SourcePosition { get; init; }
+
+        public required string SourceSetupId { get; init; }
+
+        public required string SourceZoneTargetId { get; init; }
+
+        public required string ReturnMapId { get; init; }
+
+        public required PositionDocument ReturnPosition { get; init; }
+
+        public required string ReturnSetupId { get; init; }
+
+        public required string ReturnFacing { get; init; }
+
+        public required TacticalGridDocument Grid { get; init; }
+
+        public required string ActorId { get; init; }
+
+        public required PositionDocument ActorStart { get; init; }
+
+        public required string EnemyId { get; init; }
+
+        public required PositionDocument EnemyStart { get; init; }
+
+        public required int ActorMoveRange { get; init; }
+
+        public required int ActorAttackRange { get; init; }
+
+        public required int EnemyMaxHitPoints { get; init; }
+
+        public required int ActorDamage { get; init; }
+
+        public required string RequestCueId { get; init; }
+
+        public required string AdmittedCueId { get; init; }
+
+        public required string MoveCueId { get; init; }
+
+        public required string AttackCueId { get; init; }
+
+        public required string CompletedCueId { get; init; }
+
+        public required string ReturnedCueId { get; init; }
+    }
+
+    private sealed class TacticalGridDocument
+    {
+        public required int Width { get; init; }
+
+        public required int Height { get; init; }
+
+        public required bool[] PassableCells { get; init; }
     }
 
     private sealed class PositionDocument

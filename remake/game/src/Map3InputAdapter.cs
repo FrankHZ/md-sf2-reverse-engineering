@@ -1,6 +1,7 @@
 using Godot;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter;
@@ -21,7 +22,13 @@ internal sealed record Map3InputActions(
     Action RequestItemAcquisition,
     Action AcknowledgeItemAcquisition,
     Action RequestOutboundTransition,
-    Action AcknowledgeOutboundTransition);
+    Action AcknowledgeOutboundTransition,
+    Action RequestPublicSyntheticBattle,
+    Action AcknowledgePublicSyntheticBattle,
+    Action<TacticalDirection> MovePublicSyntheticBattleCursor,
+    Action ConfirmPublicSyntheticBattleSelection,
+    Action CancelPublicSyntheticBattleSelection,
+    Action AcknowledgePublicSyntheticBattleCompletion);
 
 internal sealed record Map3InputBinding(
     string ActionName,
@@ -127,6 +134,46 @@ internal sealed class Map3InputAdapter
                     "acknowledge_outbound_transition",
                     Key.U,
                     static actions => actions.AcknowledgeOutboundTransition()),
+                new(
+                    "public_synthetic_battle_request",
+                    Key.B,
+                    static actions => actions.RequestPublicSyntheticBattle()),
+                new(
+                    "public_synthetic_battle_acknowledge_entry",
+                    Key.N,
+                    static actions => actions.AcknowledgePublicSyntheticBattle()),
+                new(
+                    "public_synthetic_battle_cursor_north",
+                    Key.I,
+                    static actions => actions.MovePublicSyntheticBattleCursor(
+                        TacticalDirection.North)),
+                new(
+                    "public_synthetic_battle_cursor_east",
+                    Key.L,
+                    static actions => actions.MovePublicSyntheticBattleCursor(
+                        TacticalDirection.East)),
+                new(
+                    "public_synthetic_battle_cursor_south",
+                    Key.K,
+                    static actions => actions.MovePublicSyntheticBattleCursor(
+                        TacticalDirection.South)),
+                new(
+                    "public_synthetic_battle_cursor_west",
+                    Key.J,
+                    static actions => actions.MovePublicSyntheticBattleCursor(
+                        TacticalDirection.West)),
+                new(
+                    "public_synthetic_battle_confirm",
+                    Key.Space,
+                    static actions => actions.ConfirmPublicSyntheticBattleSelection()),
+                new(
+                    "public_synthetic_battle_cancel",
+                    Key.Backspace,
+                    static actions => actions.CancelPublicSyntheticBattleSelection()),
+                new(
+                    "public_synthetic_battle_acknowledge_completion",
+                    Key.M,
+                    static actions => actions.AcknowledgePublicSyntheticBattleCompletion()),
             });
 
     private readonly Map3InputActions _actions;

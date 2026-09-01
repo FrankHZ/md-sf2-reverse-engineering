@@ -21,7 +21,8 @@
     "public-synthetic-map3-placeholder-dialogue-v1",
     "public-synthetic-map3-field-search-v1",
     "public-synthetic-map3-placeholder-item-acquisition-v1",
-    "public-synthetic-map3-outbound-cross-map-transition-v1"
+    "public-synthetic-map3-outbound-cross-map-transition-v1",
+    "public-synthetic-map3-tactical-battle-completion-v1"
   ],
   "scenarioId": "map3-public-synthetic-smoke",
   "displayName": "Map 3 public-synthetic exploration smoke",
@@ -270,6 +271,51 @@
         "destinationFacing": "east",
         "cueId": "synthetic-map3-outbound-transition-ready"
       }
+    ],
+    "publicSyntheticBattles": [
+      {
+        "requestId": "public-synthetic-map3-battle-entry-request",
+        "battleId": "public-synthetic-map3-tactical-battle",
+        "sourceMapId": "public-synthetic-outbound-shell",
+        "sourcePosition": {
+          "x": 2,
+          "y": 1
+        },
+        "sourceSetupId": "public-synthetic-outbound-shell-setup",
+        "sourceZoneTargetId": "public-synthetic-outbound-shell-battle-zone",
+        "returnMapId": "public-synthetic-outbound-shell",
+        "returnPosition": {
+          "x": 1,
+          "y": 1
+        },
+        "returnSetupId": "public-synthetic-outbound-shell-setup",
+        "returnFacing": "east",
+        "grid": {
+          "width": 3,
+          "height": 2,
+          "passableCells": [true, true, true, true, true, true]
+        },
+        "actorId": "public-synthetic-map3-player-unit",
+        "actorStart": {
+          "x": 0,
+          "y": 1
+        },
+        "enemyId": "public-synthetic-map3-placeholder-enemy",
+        "enemyStart": {
+          "x": 2,
+          "y": 1
+        },
+        "actorMoveRange": 1,
+        "actorAttackRange": 1,
+        "enemyMaxHitPoints": 1,
+        "actorDamage": 1,
+        "requestCueId": "public-synthetic-map3-battle-entry-pending",
+        "admittedCueId": "public-synthetic-map3-battle-admitted",
+        "moveCueId": "public-synthetic-map3-battle-move-confirmed",
+        "attackCueId": "public-synthetic-map3-battle-attack-completed",
+        "completedCueId": "public-synthetic-map3-battle-completed",
+        "returnedCueId": "public-synthetic-map3-battle-returned"
+      }
     ]
   },
   "outboundShell": {
@@ -310,6 +356,12 @@
       ]
     },
     "zoneEvents": [
+      {
+        "kind": "specific",
+        "x": 2,
+        "y": 1,
+        "targetId": "public-synthetic-outbound-shell-battle-zone"
+      },
       {
         "kind": "default",
         "targetId": "synthetic-outbound-shell-no-zone"

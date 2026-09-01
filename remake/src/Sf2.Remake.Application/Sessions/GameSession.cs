@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Sf2.Remake.Application.Content;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Items;
 using Sf2.Remake.Domain.Maps;
 
@@ -8,6 +9,7 @@ namespace Sf2.Remake.Application.Sessions;
 public enum GameFlowStage
 {
     Exploration,
+    Battle,
 }
 
 public sealed record GameSessionSnapshot
@@ -33,7 +35,8 @@ public sealed record GameSessionSnapshot
         MapDialogueSnapshot? dialogue,
         MapFieldSearchSnapshot? fieldSearch,
         MapItemAcquisitionSnapshot? itemAcquisition,
-        MapOutboundTransitionSnapshot? outboundTransition = null)
+        MapOutboundTransitionSnapshot? outboundTransition = null,
+        PublicSyntheticBattleLifecycleSnapshot? publicSyntheticBattle = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scenarioId);
         if (!Enum.IsDefined(profile))
@@ -68,6 +71,14 @@ public sealed record GameSessionSnapshot
             throw new ArgumentException(
                 "The outbound-transition cue sequence cannot exceed the session cue sequence.",
                 nameof(outboundTransition));
+        }
+
+        if (publicSyntheticBattle is not null &&
+            publicSyntheticBattle.LastCueSequence > lastCueSequence)
+        {
+            throw new ArgumentException(
+                "The public-synthetic battle cue sequence cannot exceed the session cue sequence.",
+                nameof(publicSyntheticBattle));
         }
 
         if (!Enum.IsDefined(facing))
@@ -122,6 +133,8 @@ public sealed record GameSessionSnapshot
             (eventRequest?.Status == MapEventRequestStatus.Pending ? 1 : 0) +
             (localTransition?.Status == MapLocalTransitionStatus.Pending ? 1 : 0) +
             (outboundTransition?.Status == MapOutboundTransitionStatus.Pending ? 1 : 0) +
+            (publicSyntheticBattle?.Status ==
+                PublicSyntheticBattleLifecycleStatus.Pending ? 1 : 0) +
             (entityInteraction?.Status == MapEntityInteractionStatus.Pending ? 1 : 0) +
             (fieldSearch?.Status == MapFieldSearchStatus.Pending ? 1 : 0) +
             (itemAcquisition?.Status == MapItemAcquisitionStatus.Pending ? 1 : 0);
@@ -217,6 +230,37 @@ public sealed record GameSessionSnapshot
                 nameof(outboundTransition));
         }
 
+        bool battleStageOwnsActiveState =
+            flowStage == GameFlowStage.Battle &&
+            publicSyntheticBattle?.Status is
+                PublicSyntheticBattleLifecycleStatus.Active or
+                PublicSyntheticBattleLifecycleStatus.Completed;
+        bool explorationStageOwnsNoActiveState =
+            flowStage == GameFlowStage.Exploration &&
+            publicSyntheticBattle?.Status is not
+                PublicSyntheticBattleLifecycleStatus.Active and not
+                PublicSyntheticBattleLifecycleStatus.Completed;
+        if (!battleStageOwnsActiveState && !explorationStageOwnsNoActiveState)
+        {
+            throw new ArgumentException(
+                "The GameSession flow stage and public-synthetic battle lifecycle must agree.",
+                nameof(publicSyntheticBattle));
+        }
+
+        if (publicSyntheticBattle?.Status == PublicSyntheticBattleLifecycleStatus.Pending &&
+            (contextSelection is null ||
+             publicSyntheticBattle.Definition.SourceMap != exploration.Map ||
+             publicSyntheticBattle.Definition.SourcePosition != exploration.PlayerPosition ||
+             publicSyntheticBattle.Definition.SourceMap != contextSelection.Map ||
+             publicSyntheticBattle.Definition.SourcePosition != contextSelection.Position ||
+             publicSyntheticBattle.Definition.SourceSetup != contextSelection.SelectedSetup ||
+             publicSyntheticBattle.Definition.SourceZoneTarget != contextSelection.ZoneEvent.Target))
+        {
+            throw new ArgumentException(
+                "A pending public-synthetic battle requires its exact live exploration context.",
+                nameof(publicSyntheticBattle));
+        }
+
         ScenarioId = scenarioId;
         Profile = profile;
         FlowStage = flowStage;
@@ -252,6 +296,7 @@ public sealed record GameSessionSnapshot
         FieldSearch = fieldSearch;
         ItemAcquisition = itemAcquisition;
         OutboundTransition = outboundTransition;
+        PublicSyntheticBattle = publicSyntheticBattle;
     }
 
     public string ScenarioId { get; }
@@ -295,6 +340,8 @@ public sealed record GameSessionSnapshot
     public MapItemAcquisitionSnapshot? ItemAcquisition { get; }
 
     public MapOutboundTransitionSnapshot? OutboundTransition { get; }
+
+    public PublicSyntheticBattleLifecycleSnapshot? PublicSyntheticBattle { get; }
 }
 
 public interface IGameSessionCommand;
@@ -335,6 +382,10 @@ public enum GameSessionCommandFailureCode
     ItemAcquisitionNotAdmitted,
     ItemAlreadyAcquired,
     OutboundTransitionNotAdmitted,
+    PublicSyntheticBattleNotAdmitted,
+    PublicSyntheticBattleNotActive,
+    PublicSyntheticBattleNotCompleted,
+    PublicSyntheticBattleInvalidSelection,
 }
 
 public sealed record GameSessionCommandDiagnostic
@@ -479,6 +530,30 @@ public sealed partial class GameSession
                     "The pending outbound-transition request must be acknowledged first."));
         }
 
+        if (Snapshot.PublicSyntheticBattle?.Status ==
+                PublicSyntheticBattleLifecycleStatus.Pending &&
+            command is not AcknowledgePublicSyntheticBattleEntryCommand)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.PendingAcknowledgement,
+                    "The pending public-synthetic battle entry must be acknowledged first."));
+        }
+
+        if (Snapshot.FlowStage == GameFlowStage.Battle &&
+            command is not MovePublicSyntheticBattleCursorCommand and not
+                ConfirmPublicSyntheticBattleSelectionCommand and not
+                CancelPublicSyntheticBattleSelectionCommand and not
+                AcknowledgePublicSyntheticBattleCompletionCommand)
+        {
+            return new GameSessionCommandRejected(
+                Snapshot,
+                new GameSessionCommandDiagnostic(
+                    GameSessionCommandFailureCode.WrongFlowStage,
+                    "Exploration commands are not admitted during a public-synthetic battle."));
+        }
+
         if (Snapshot.EntityInteraction?.Status == MapEntityInteractionStatus.Pending &&
             command is not AcknowledgeEntityInteractionCommand)
         {
@@ -544,6 +619,19 @@ public sealed partial class GameSession
                 ApplyItemAcquisitionRequest(requestItem),
             AcknowledgeMapItemAcquisitionCommand acknowledgeItem =>
                 ApplyItemAcquisitionAcknowledgement(acknowledgeItem),
+            RequestSelectedPublicSyntheticBattleCommand =>
+                ApplyPublicSyntheticBattleRequest(),
+            AcknowledgePublicSyntheticBattleEntryCommand acknowledgeBattle =>
+                ApplyPublicSyntheticBattleEntryAcknowledgement(acknowledgeBattle),
+            MovePublicSyntheticBattleCursorCommand moveBattleCursor =>
+                ApplyPublicSyntheticBattleCursorMove(moveBattleCursor),
+            ConfirmPublicSyntheticBattleSelectionCommand =>
+                ApplyPublicSyntheticBattleSelectionConfirmation(),
+            CancelPublicSyntheticBattleSelectionCommand =>
+                ApplyPublicSyntheticBattleSelectionCancellation(),
+            AcknowledgePublicSyntheticBattleCompletionCommand acknowledgeBattleCompletion =>
+                ApplyPublicSyntheticBattleCompletionAcknowledgement(
+                    acknowledgeBattleCompletion),
             _ => new GameSessionCommandRejected(
                 Snapshot,
                 new GameSessionCommandDiagnostic(

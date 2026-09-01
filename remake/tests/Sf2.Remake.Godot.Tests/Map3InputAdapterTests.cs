@@ -1,6 +1,7 @@
 using Godot;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.GodotAdapter;
 using Xunit;
@@ -36,6 +37,15 @@ public sealed class Map3InputAdapterTests
             ("acknowledge_item_acquisition", Key.T),
             ("request_outbound_transition", Key.Y),
             ("acknowledge_outbound_transition", Key.U),
+            ("public_synthetic_battle_request", Key.B),
+            ("public_synthetic_battle_acknowledge_entry", Key.N),
+            ("public_synthetic_battle_cursor_north", Key.I),
+            ("public_synthetic_battle_cursor_east", Key.L),
+            ("public_synthetic_battle_cursor_south", Key.K),
+            ("public_synthetic_battle_cursor_west", Key.J),
+            ("public_synthetic_battle_confirm", Key.Space),
+            ("public_synthetic_battle_cancel", Key.Backspace),
+            ("public_synthetic_battle_acknowledge_completion", Key.M),
         ];
 
         Assert.Equal(
@@ -188,7 +198,13 @@ public sealed class Map3InputAdapterTests
             () => probe.Record(ref probe.RequestItemAcquisition),
             () => probe.Record(ref probe.AcknowledgeItemAcquisition),
             () => probe.Record(ref probe.RequestOutboundTransition),
-            () => probe.Record(ref probe.AcknowledgeOutboundTransition));
+            () => probe.Record(ref probe.AcknowledgeOutboundTransition),
+            () => probe.Record(ref probe.RequestPublicSyntheticBattle),
+            () => probe.Record(ref probe.AcknowledgePublicSyntheticBattle),
+            direction => probe.RecordBattleCursor(direction),
+            () => probe.Record(ref probe.ConfirmPublicSyntheticBattle),
+            () => probe.Record(ref probe.CancelPublicSyntheticBattle),
+            () => probe.Record(ref probe.AcknowledgePublicSyntheticBattleCompletion));
 
     private static void AssertExpectedCallback(string actionName, ActionProbe probe)
     {
@@ -260,6 +276,33 @@ public sealed class Map3InputAdapterTests
             case "acknowledge_outbound_transition":
                 Assert.Equal(1, probe.AcknowledgeOutboundTransition);
                 break;
+            case "public_synthetic_battle_request":
+                Assert.Equal(1, probe.RequestPublicSyntheticBattle);
+                break;
+            case "public_synthetic_battle_acknowledge_entry":
+                Assert.Equal(1, probe.AcknowledgePublicSyntheticBattle);
+                break;
+            case "public_synthetic_battle_cursor_north":
+                Assert.Equal([TacticalDirection.North], probe.BattleCursorMoves);
+                break;
+            case "public_synthetic_battle_cursor_east":
+                Assert.Equal([TacticalDirection.East], probe.BattleCursorMoves);
+                break;
+            case "public_synthetic_battle_cursor_south":
+                Assert.Equal([TacticalDirection.South], probe.BattleCursorMoves);
+                break;
+            case "public_synthetic_battle_cursor_west":
+                Assert.Equal([TacticalDirection.West], probe.BattleCursorMoves);
+                break;
+            case "public_synthetic_battle_confirm":
+                Assert.Equal(1, probe.ConfirmPublicSyntheticBattle);
+                break;
+            case "public_synthetic_battle_cancel":
+                Assert.Equal(1, probe.CancelPublicSyntheticBattle);
+                break;
+            case "public_synthetic_battle_acknowledge_completion":
+                Assert.Equal(1, probe.AcknowledgePublicSyntheticBattleCompletion);
+                break;
             default:
                 throw new Xunit.Sdk.XunitException($"Unexpected binding {actionName}");
         }
@@ -272,6 +315,8 @@ public sealed class Map3InputAdapterTests
         internal List<ExplorationDirection> Moves { get; } = [];
 
         internal List<SemanticFacing> Turns { get; } = [];
+
+        internal List<TacticalDirection> BattleCursorMoves { get; } = [];
 
         internal int SelectContext;
         internal int RequestEvent;
@@ -287,6 +332,11 @@ public sealed class Map3InputAdapterTests
         internal int AcknowledgeItemAcquisition;
         internal int RequestOutboundTransition;
         internal int AcknowledgeOutboundTransition;
+        internal int RequestPublicSyntheticBattle;
+        internal int AcknowledgePublicSyntheticBattle;
+        internal int ConfirmPublicSyntheticBattle;
+        internal int CancelPublicSyntheticBattle;
+        internal int AcknowledgePublicSyntheticBattleCompletion;
 
         internal void Record(ref int counter)
         {
@@ -303,6 +353,12 @@ public sealed class Map3InputAdapterTests
         internal void RecordTurn(SemanticFacing facing)
         {
             Turns.Add(facing);
+            TotalCalls++;
+        }
+
+        internal void RecordBattleCursor(TacticalDirection direction)
+        {
+            BattleCursorMoves.Add(direction);
             TotalCalls++;
         }
     }
