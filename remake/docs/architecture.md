@@ -50,12 +50,15 @@ package reader and two private-local readers for canonical map import and base v
 
 Two areas currently concentrate more responsibility than the target shape:
 
-- `Map3Root` and its private partial own profile dispatch, composition, command calls, and private
-  smoke orchestration. Public-synthetic action registration and polling plus private-local movement polling
-  delegate to the internal `Map3InputAdapter`; public-synthetic node ownership, formatting, and
-  snapshot projection delegate to the internal `Map3Presenter`; private-local and unavailable
+- `Map3Root` and its private partial own profile dispatch, composition, interactive command calls,
+  private smoke scheduling, and private stage tracing. Public-synthetic action registration and polling
+  plus private-local movement polling delegate to the internal `Map3InputAdapter`; public-synthetic
+  node ownership, formatting, and snapshot projection delegate to the internal `Map3Presenter`;
+  private-local and unavailable
   diagnostic node ownership, formatting, and typed viewport projection delegate to the internal
-  `PrivateMap3Presenter`. None of these collaborators owns session or gameplay state.
+  `PrivateMap3Presenter`; deterministic public and private smoke commands, marker serialization, and
+  smoke-only quit delegate to their internal drivers. None of these collaborators owns session or
+  gameplay state.
 - `GameSession` and its partials own command routing, pending gates, lifecycle handlers, broad snapshot
   construction, private admission, and projection-facing result types.
 
@@ -80,7 +83,8 @@ Internal replaceable collaborators may own:
   smoke only reads its current projection);
 - `PublicSyntheticMap3SmokeDriver`: the deterministic public command script, stable observation
   serialization, smoke-only failure projection, and quit (**implemented**); and
-- a private-local smoke driver with the same narrow observation role (**not implemented**).
+- `PrivateMap3SmokeDriver`: the deterministic private command script, four stable observation markers,
+  smoke-only failure projection, and quit over an already-started session (**implemented**).
 
 Profile selection and composition intentionally remain in `Map3Root`. Public startup consumes tracked
 Godot bytes and the public typed admission result, while private startup alone owns the local path,
@@ -130,12 +134,11 @@ extends an existing bounded inspector or observation unless it has an independen
 
 ## Refactor Sequence
 
-Future refactors are serialized and behavior-preserving:
+Future refactors remain serialized and behavior-preserving:
 
-1. finish only the remaining private smoke responsibility; public-synthetic and private-local input,
-   public and private diagnostic presentation, and public smoke are already delegated, while
-   composition remains intentionally direct and profile selection, commands, marker bytes, and
-   observations stay preserved;
+1. treat the current Godot host cluster as complete: public-synthetic and private-local input,
+   presentation, and smoke are delegated, while composition remains intentionally direct and profile
+   selection, interactive commands, marker bytes, stage tracing, and observations stay preserved;
 2. extract Application dispatch, pending gates, and snapshot projection behind `GameSession`; and
 3. split a Content reader internally only when an owning change requires it.
 
