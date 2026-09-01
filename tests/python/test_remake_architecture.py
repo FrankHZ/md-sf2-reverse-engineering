@@ -343,13 +343,24 @@ def test_public_synthetic_presentation_is_an_internal_godot_adapter() -> None:
     )
     offsets = [presenter_source.index(token) for token in child_order]
     assert offsets == sorted(offsets)
-    for position in (
-        "new Vector2(24, 18)",
-        "new Vector2(24, 55)",
-        "new Vector2(24, 105)",
-        "new Vector2(24, 450)",
-        "new Vector2(24, 480)",
-        "new Vector2(24, 510)",
+    for layout_contract in (
+        "internal static readonly Vector2 CanvasSize = new(960, 540);",
+        "internal static readonly Rect2 MapBounds = new(16, 84, 576, 336);",
+        "internal static readonly Rect2 ActionDeckBounds = new(608, 82, 336, 444);",
+        "Position = MapBounds.Position",
+        "Position = ActionDeckBounds.Position",
+        "AutowrapMode = TextServer.AutowrapMode.WordSmart",
+        "ClipText = true",
+    ):
+        assert layout_contract in presenter_source
+    for projection_field in (
+        "string ControlGuide",
+        "string MapLegend",
+        "_controls.Text = projection.ControlGuide;",
+        "_mapLegend.Text = projection.MapLegend;",
+    ):
+        assert projection_field in presenter_source
+    for obsolete_off_canvas_position in (
         "new Vector2(24, 540)",
         "new Vector2(24, 570)",
         "new Vector2(24, 600)",
@@ -359,9 +370,9 @@ def test_public_synthetic_presentation_is_an_internal_godot_adapter() -> None:
         "new Vector2(24, 720)",
         "new Vector2(24, 750)",
     ):
-        assert presenter_source.count(position) == 1
+        assert obsolete_off_canvas_position not in presenter_source
     for color in ("ffbd59", "c6e5ff", "b8f2c2", "ffe2a8", "d8c6ff"):
-        assert presenter_source.count(f'new Color("{color}")') == 1
+        assert f'new Color("{color}")' in presenter_source
 
     assert "BuildPresentation();" in private_source
     assert "Map3PresentationProjection" not in private_source

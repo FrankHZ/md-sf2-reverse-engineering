@@ -52,6 +52,14 @@ public sealed class PublicSyntheticBattlePresenterTests
         Assert.Contains("PROJECT-AUTHORED PUBLIC-SYNTHETIC", projection.Title);
         Assert.Contains("public-synthetic-map3-tactical-battle", projection.Status);
         Assert.Contains("MoveSelection", projection.Status);
+        Assert.Equal(
+            "MOVE · I/J/K/L cursor · Space confirm destination",
+            projection.Instruction);
+        Assert.Equal("A actor · E enemy · ▣ cursor · · open cell", projection.Legend);
+        Assert.Equal(2, projection.ActorHitPoints);
+        Assert.Equal(2, projection.ActorMaxHitPoints);
+        Assert.Equal(3, projection.EnemyHitPoints);
+        Assert.Equal(3, projection.EnemyMaxHitPoints);
         Assert.Contains("Actor HP 2", projection.Status);
         Assert.Contains("Enemy HP 3", projection.Status);
         Assert.Contains("Outcome InProgress", projection.Status);
@@ -68,6 +76,29 @@ public sealed class PublicSyntheticBattlePresenterTests
         Assert.Equal(new TacticalPosition(0, 1), actor.Position);
         Assert.Equal(new TacticalPosition(2, 1), enemy.Position);
         Assert.Same(actor, cursor);
+    }
+
+    [Fact]
+    public void BattlePanelFitsTheFixedCanvasAndNamesEveryPhaseAction()
+    {
+        Assert.True(
+            PublicSyntheticBattlePresenter.PanelBounds.End.X <=
+            PublicSyntheticBattlePresenter.CanvasSize.X);
+        Assert.True(
+            PublicSyntheticBattlePresenter.PanelBounds.End.Y <=
+            PublicSyntheticBattlePresenter.CanvasSize.Y);
+
+        GameSession session = StartActiveBattle();
+        PublicSyntheticBattlePresentationProjection move =
+            PublicSyntheticBattlePresentationProjection.Create(session.Snapshot, "ready");
+        Assert.StartsWith("MOVE", move.Instruction);
+
+        Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
+            new ConfirmPublicSyntheticBattleSelectionCommand()));
+        PublicSyntheticBattlePresentationProjection target =
+            PublicSyntheticBattlePresentationProjection.Create(session.Snapshot, "targeting");
+        Assert.StartsWith("TARGET", target.Instruction);
+        Assert.Contains("Backspace cancel", target.Instruction);
     }
 
     [Fact]
@@ -97,6 +128,7 @@ public sealed class PublicSyntheticBattlePresenterTests
                 "defeated",
                 defeated);
         Assert.Contains("Outcome Defeat", defeatedProjection.Status);
+        Assert.Equal("DEFEAT · M retry battle", defeatedProjection.Instruction);
         Assert.Contains("Actor HP 0", defeatedProjection.Status);
         Assert.Contains("public-synthetic-map3-battle-defeated", defeatedProjection.CueStatus);
         Assert.Contains("Enemy ActorDefeated", defeatedProjection.CueStatus);
@@ -114,6 +146,7 @@ public sealed class PublicSyntheticBattlePresenterTests
         Assert.Contains("Actor HP 2", restartedProjection.Status);
         Assert.Contains("Enemy HP 3", restartedProjection.Status);
         Assert.Contains("Outcome InProgress", restartedProjection.Status);
+        Assert.StartsWith("MOVE", restartedProjection.Instruction);
         Assert.Contains("public-synthetic-map3-battle-restarted", restartedProjection.CueStatus);
     }
 
@@ -141,6 +174,7 @@ public sealed class PublicSyntheticBattlePresenterTests
                 completed);
         Assert.Contains("Completed", completedProjection.Status);
         Assert.Contains("Outcome Victory", completedProjection.Status);
+        Assert.Equal("VICTORY · M return to exploration", completedProjection.Instruction);
         Assert.Contains("public-synthetic-map3-battle-attack-completed", completedProjection.CueStatus);
         Assert.Contains("public-synthetic-map3-battle-completed", completedProjection.CueStatus);
 
@@ -158,6 +192,7 @@ public sealed class PublicSyntheticBattlePresenterTests
         Assert.Null(returned.Snapshot.PublicSyntheticBattle);
         Assert.True(returnedProjection.Visible);
         Assert.Empty(returnedProjection.Cells);
+        Assert.Equal("RETURNED · exploration resumed", returnedProjection.Instruction);
         Assert.Contains("completed; returned", returnedProjection.Status);
         Assert.Contains(
             "public-synthetic-map3-battle-completion-world-effect",

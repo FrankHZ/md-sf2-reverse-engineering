@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Domain.Maps;
 
@@ -6,9 +7,12 @@ namespace Sf2.Remake.GodotAdapter;
 
 public sealed partial class SyntheticMapViewport : Node2D
 {
-    private const int TileSize = 48;
-    private const int VisibleColumns = 12;
-    private const int VisibleRows = 7;
+    internal const int TileSize = 48;
+    internal const int VisibleColumns = 12;
+    internal const int VisibleRows = 7;
+    internal static readonly Vector2 CanvasSize = new(
+        VisibleColumns * TileSize,
+        VisibleRows * TileSize);
 
     private GameSessionSnapshot? _snapshot;
 
@@ -55,13 +59,74 @@ public sealed partial class SyntheticMapViewport : Node2D
                     new Vector2(TileSize - 2, TileSize - 2));
                 DrawRect(tile, fill);
 
+                if (!passable)
+                {
+                    DrawLine(
+                        tile.Position + new Vector2(10, 10),
+                        tile.End - new Vector2(10, 10),
+                        new Color("9aa8bd"),
+                        2);
+                    DrawLine(
+                        new Vector2(tile.End.X - 10, tile.Position.Y + 10),
+                        new Vector2(tile.Position.X + 10, tile.End.Y - 10),
+                        new Color("9aa8bd"),
+                        2);
+                }
+
+                MapEntityDefinition? entity = _snapshot.Entities.SingleOrDefault(
+                    candidate => candidate.Position.X == mapX && candidate.Position.Y == mapY);
+                if (entity is not null)
+                {
+                    DrawEntityGlyph(tile.GetCenter());
+                }
+
                 if (mapX == playerX && mapY == playerY)
                 {
-                    Rect2 player = tile.Grow(-10);
-                    DrawRect(player, new Color("ffd166"));
-                    DrawCircle(player.GetCenter(), 7, new Color("7a4f00"));
+                    DrawPlayerGlyph(tile.GetCenter(), _snapshot.Facing);
                 }
             }
         }
+
+        DrawRect(new Rect2(Vector2.Zero, CanvasSize), new Color("9aa8bd"), filled: false, width: 2);
+    }
+
+    internal static Vector2 FacingVector(SemanticFacing facing) => facing switch
+    {
+        SemanticFacing.North => Vector2.Up,
+        SemanticFacing.East => Vector2.Right,
+        SemanticFacing.South => Vector2.Down,
+        SemanticFacing.West => Vector2.Left,
+        _ => Vector2.Zero,
+    };
+
+    private void DrawPlayerGlyph(Vector2 center, SemanticFacing facing)
+    {
+        Vector2 direction = FacingVector(facing);
+        Vector2 side = new(-direction.Y, direction.X);
+        Vector2 tip = center + (direction * 16);
+        Vector2 tail = center - (direction * 11);
+        Vector2[] arrow =
+        [
+            tip,
+            tail + (side * 10),
+            tail - (side * 10),
+        ];
+        DrawColoredPolygon(arrow, new Color("ffd166"));
+        DrawPolyline([tip, tail + (side * 10), tail - (side * 10), tip], new Color("4a3000"), 3);
+        DrawCircle(center, 4, new Color("4a3000"));
+    }
+
+    private void DrawEntityGlyph(Vector2 center)
+    {
+        Vector2[] diamond =
+        [
+            center + new Vector2(0, -14),
+            center + new Vector2(14, 0),
+            center + new Vector2(0, 14),
+            center + new Vector2(-14, 0),
+            center + new Vector2(0, -14),
+        ];
+        DrawPolyline(diamond, new Color("f2f5ff"), 3);
+        DrawCircle(center, 5, new Color("f2f5ff"));
     }
 }
