@@ -175,6 +175,88 @@ def test_public_synthetic_smoke_is_an_internal_godot_driver() -> None:
     assert "SF2_MAP3_PRIVATE_LOCAL_SMOKE" in private_source
 
 
+def test_private_local_smoke_is_an_internal_godot_driver() -> None:
+    private_source = (REMAKE / "game/src/PrivateMap3Composition.cs").read_text(
+        encoding="utf-8"
+    )
+    driver_source = (REMAKE / "game/src/PrivateMap3SmokeDriver.cs").read_text(
+        encoding="utf-8"
+    )
+
+    for retained in (
+        "Map3RuntimeProfileSelection",
+        "canonicalImportPath",
+        "PrivateCanonicalMap3ImportReader",
+        "GameSession.StartPrivateOriginalMap",
+        "TimedOriginalMapImportSource",
+        "Callable.From(() => RunPrivateHeadlessSmoke(",
+        "TracePrivateStage(",
+        "private void ApplyPrivateMove(ExplorationDirection direction)",
+        "PrivateMap3SmokeDriver.Run(GetTree(), session, presenter, smokeStarted);",
+    ):
+        assert retained in private_source
+
+    for moved in (
+        "No bounded semantic movement was admitted from the controlled start.",
+        "The admitted private definition has no controlled step-copy record.",
+        "Controlled step-copy diagnostic applied",
+    ):
+        assert moved not in private_source
+        assert moved in driver_source
+
+    assert "internal static class PrivateMap3SmokeDriver" in driver_source
+    for dependency in (
+        "SceneTree sceneTree",
+        "GameSession session",
+        "PrivateMap3Presenter presenter",
+        "long smokeStarted",
+    ):
+        assert dependency in driver_source
+    for retained in (
+        "session.ApplyPrivateOriginalMap(",
+        "session.ApplyPrivateOriginalMapLayoutMutation(",
+        "presenter.Project(",
+        "presenter.ProjectStatus(message);",
+        "presenter.Projection",
+        "JsonSerializer.Serialize",
+        "Map3Root.TracePrivateStage(",
+        "sceneTree.Quit(0);",
+        "sceneTree.Quit(1);",
+    ):
+        assert retained in driver_source
+    assert "public " not in driver_source
+
+    marker_order = (
+        "Map3Root.PrivateSmokeMarker",
+        "Map3Root.PrivateViewSmokeMarker",
+        "Map3Root.PrivateStepCopySmokeMarker",
+        "Map3Root.PrivateAreaSmokeMarker",
+    )
+    offsets = [driver_source.index(marker) for marker in marker_order]
+    assert offsets == sorted(offsets)
+
+    for forbidden in (
+        "Map3Root owner",
+        "Map3RuntimeProfileSelection",
+        "OS.GetCmdlineUserArgs",
+        "FileAccess",
+        "PrivateCanonicalMap3ImportReader",
+        "canonicalImportPath",
+        "IOriginalMapImportSource",
+        "TimedOriginalMapImportSource",
+        "StartPrivateScenario",
+        "GameSession.StartPrivateOriginalMap",
+        "private static void TracePrivateStage",
+        "PrivateStageMarker",
+        "ApplyPrivateMove",
+        "Action<",
+        "Func<",
+        "interface ",
+        " event ",
+    ):
+        assert forbidden not in driver_source
+
+
 def test_public_synthetic_presentation_is_an_internal_godot_adapter() -> None:
     root_source = (REMAKE / "game/src/Map3Root.cs").read_text(encoding="utf-8")
     presenter_source = (REMAKE / "game/src/Map3Presenter.cs").read_text(
@@ -272,6 +354,9 @@ def test_private_diagnostic_presentation_is_an_internal_godot_adapter() -> None:
     presenter_source = (REMAKE / "game/src/PrivateMap3Presenter.cs").read_text(
         encoding="utf-8"
     )
+    driver_source = (REMAKE / "game/src/PrivateMap3SmokeDriver.cs").read_text(
+        encoding="utf-8"
+    )
 
     assert "private Label? _status;" not in root_source
     assert "private PrivateMap3Presenter? _privatePresenter;" in private_source
@@ -281,7 +366,8 @@ def test_private_diagnostic_presentation_is_an_internal_godot_adapter() -> None:
     assert "PrivateMap3PresentationPlan.ProfileUnavailable(" in private_source
     assert "_privatePresenter?.Project(" in private_source
     assert "_privatePresenter?.ProjectStatus(message);" in private_source
-    assert "_privatePresenter?.Projection" in private_source
+    assert "_privatePresenter?.Projection" not in private_source
+    assert "presenter.Projection" in driver_source
     assert "new Label" not in private_source
     assert "new PrivateOriginalMapTraversalViewport" not in private_source
     assert "_status" not in private_source

@@ -82,7 +82,10 @@ public sealed partial class Map3Root
         _privatePresenter?.Project(started.Session.PrivateOriginalMapSnapshot, "Ready");
         if (runSmoke)
         {
-            Callable.From(RunPrivateHeadlessSmoke).CallDeferred();
+            PrivateMap3Presenter presenter = _privatePresenter!;
+            Callable.From(() => RunPrivateHeadlessSmoke(
+                started.Session,
+                presenter)).CallDeferred();
             TracePrivateStage(
                 enabled: true,
                 "deferred-smoke-scheduled",
@@ -102,226 +105,16 @@ public sealed partial class Map3Root
         _privatePresenter?.Project(applied.Snapshot, applied.Traversal.Outcome.ToString());
     }
 
-    private void RunPrivateHeadlessSmoke()
+    private void RunPrivateHeadlessSmoke(
+        GameSession session,
+        PrivateMap3Presenter presenter)
     {
         long smokeStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         TracePrivateStage(
             enabled: true,
             "deferred-smoke-entered",
             smokeStarted);
-        if (_session is null)
-        {
-            FailPrivateStartup(
-                "PrivateLocal session was not admitted.",
-                runSmoke: true,
-                "private-local");
-            return;
-        }
-
-        PrivateOriginalMapSessionSnapshot before = _session.PrivateOriginalMapSnapshot;
-        PrivateOriginalMapMoveApplied? moved = null;
-        ExplorationDirection movedDirection = ExplorationDirection.East;
-        foreach (ExplorationDirection direction in new[]
-        {
-            ExplorationDirection.East,
-            ExplorationDirection.South,
-            ExplorationDirection.West,
-            ExplorationDirection.North,
-        })
-        {
-            PrivateOriginalMapMoveApplied applied = _session.ApplyPrivateOriginalMap(
-                new MoveExplorationCommand(direction));
-            _privatePresenter?.Project(
-                applied.Snapshot,
-                applied.Traversal.Outcome.ToString());
-            if (applied.Traversal.Outcome == OriginalMapTraversalOutcome.Moved)
-            {
-                moved = applied;
-                movedDirection = direction;
-                break;
-            }
-        }
-
-        if (moved is null)
-        {
-            FailPrivateStartup(
-                "No bounded semantic movement was admitted from the controlled start.",
-                runSmoke: true,
-                "private-local");
-            return;
-        }
-
-        PrivateOriginalMapTraversalViewProjection? projection =
-            _privatePresenter?.Projection;
-        if (projection is null)
-        {
-            FailPrivateStartup(
-                "PrivateLocal traversal diagnostic view was not projected.",
-                runSmoke: true,
-                "private-local");
-            return;
-        }
-
-        object receipt = new
-        {
-            status = "Pass",
-            profile = "private-local",
-            packageId = OriginalMapRuntimeAdmission.PackageId,
-            capability = OriginalMapRuntimeAdmission.TraversalCapability,
-            mapId = moved.Snapshot.Map.Value,
-            before = new
-            {
-                x = before.PlayerPosition.X,
-                y = before.PlayerPosition.Y,
-            },
-            after = new
-            {
-                x = moved.Snapshot.PlayerPosition.X,
-                y = moved.Snapshot.PlayerPosition.Y,
-            },
-            direction = movedDirection.ToString(),
-            outcome = moved.Traversal.Outcome.ToString(),
-            simulationStep = moved.Snapshot.SimulationStep,
-            banner = PrivateBannerText,
-        };
-        GD.Print(PrivateSmokeMarker + JsonSerializer.Serialize(receipt));
-        object viewReceipt = new
-        {
-            status = "Pass",
-            profile = "private-local",
-            capability = PrivateViewCapability,
-            mapId = projection.Map.Value,
-            crop = new
-            {
-                x = projection.OriginX,
-                y = projection.OriginY,
-                columns = PrivateOriginalMapTraversalViewProjection.ColumnCount,
-                rows = PrivateOriginalMapTraversalViewProjection.RowCount,
-            },
-            player = new
-            {
-                column = projection.PlayerColumn,
-                row = projection.PlayerRow,
-            },
-            categories = new
-            {
-                outsideAcceptedActiveArea = projection.Cells.Count(cell =>
-                    cell.Category ==
-                        PrivateOriginalMapTraversalCellCategory.OutsideAcceptedActiveArea),
-                activeNonBlocked = projection.Cells.Count(cell =>
-                    cell.Category ==
-                        PrivateOriginalMapTraversalCellCategory.ActiveNonBlocked),
-                blockedByAcceptedCollisionClass = projection.Cells.Count(cell =>
-                    cell.Category ==
-                        PrivateOriginalMapTraversalCellCategory.BlockedByAcceptedCollisionClass),
-            },
-        };
-        GD.Print(PrivateViewSmokeMarker + JsonSerializer.Serialize(viewReceipt));
-        if (!RunPrivateStepCopyDiagnostic())
-        {
-            return;
-        }
-
-        RunPrivateAreaDiagnostic();
-
-        TracePrivateStage(enabled: true, "quit-scheduled", smokeStarted);
-        GetTree().Quit(0);
-    }
-
-    private bool RunPrivateStepCopyDiagnostic()
-    {
-        if (_session is null)
-        {
-            FailPrivateStartup(
-                "PrivateLocal session was not admitted for the controlled step-copy diagnostic.",
-                runSmoke: true,
-                "private-local");
-            return false;
-        }
-
-        PrivateOriginalMapSessionSnapshot current = _session.PrivateOriginalMapSnapshot;
-        OriginalMapStepCopyDefinition? admitted = current.Definition.ControlledStepCopy;
-        if (admitted is null)
-        {
-            FailPrivateStartup(
-                "The admitted private definition has no controlled step-copy record.",
-                runSmoke: true,
-                "private-local");
-            return false;
-        }
-
-        PrivateOriginalMapLayoutMutationResult result =
-            _session.ApplyPrivateOriginalMapLayoutMutation(
-                new ApplyPrivateOriginalMapLayoutMutationCommand(
-                    admitted.Identity,
-                    current.SimulationStep));
-        if (result is not PrivateOriginalMapLayoutMutationApplied applied)
-        {
-            PrivateOriginalMapLayoutMutationRejected rejected =
-                (PrivateOriginalMapLayoutMutationRejected)result;
-            FailPrivateStartup(
-                $"Controlled step-copy diagnostic rejected ({rejected.Diagnostic.Code}).",
-                runSmoke: true,
-                "private-local");
-            return false;
-        }
-
-        _privatePresenter?.Project(
-            applied.Snapshot,
-            "Controlled step-copy diagnostic applied");
-        WorkingMapBlockCopy copy = applied.Receipt.Copy;
-        object receipt = new
-        {
-            status = "Pass",
-            profile = "private-local",
-            capability = OriginalMapRuntimeAdmission.ControlledStepCopyCapability,
-            mapId = applied.Receipt.RecordIdentity.Map.Value,
-            sourceResourceId = applied.Receipt.RecordIdentity.SourceResourceId,
-            recordOrdinal = applied.Receipt.RecordIdentity.OneBasedRecordOrdinal,
-            trigger = new
-            {
-                x = applied.Receipt.Trigger.X,
-                y = applied.Receipt.Trigger.Y,
-            },
-            copy = new
-            {
-                sourceX = copy.SourceX,
-                sourceY = copy.SourceY,
-                destinationX = copy.DestinationX,
-                destinationY = copy.DestinationY,
-                width = copy.Width,
-                height = copy.Height,
-            },
-            beforeCollision = applied.Receipt.BeforeCollision.ToString(),
-            afterCollision = applied.Receipt.AfterCollision.ToString(),
-            simulationStep = applied.Receipt.SimulationStep,
-            disclosure = PrivateBannerText,
-        };
-        GD.Print(PrivateStepCopySmokeMarker + JsonSerializer.Serialize(receipt));
-        return true;
-    }
-
-    private void RunPrivateAreaDiagnostic()
-    {
-        if (_session is null)
-        {
-            throw new InvalidOperationException(
-                "PrivateLocal session was not admitted for the current-area diagnostic.");
-        }
-
-        PrivateOriginalMapSessionSnapshot snapshot = _session.PrivateOriginalMapSnapshot;
-        OriginalMapTraversalAreaSelection selection = snapshot.CurrentArea;
-        object receipt = new
-        {
-            status = "Pass",
-            profile = "private-local",
-            capability = OriginalMapRuntimeAdmission.CurrentAreaDiagnosticCapability,
-            mapId = snapshot.Map.Value,
-            oneBasedRecordOrdinal = selection.OneBasedRecordOrdinal,
-            simulationStep = snapshot.SimulationStep,
-            disclosure = PrivateBannerText,
-        };
-        GD.Print(PrivateAreaSmokeMarker + JsonSerializer.Serialize(receipt));
+        PrivateMap3SmokeDriver.Run(GetTree(), session, presenter, smokeStarted);
     }
 
     private void FailProfileStartup(Map3RuntimeProfileSelection selection)
@@ -353,7 +146,7 @@ public sealed partial class Map3Root
         }
     }
 
-    private static void TracePrivateStage(bool enabled, string stage, long started)
+    internal static void TracePrivateStage(bool enabled, string stage, long started)
     {
         if (!enabled)
         {
