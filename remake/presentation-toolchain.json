@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "releaseRepository": "https://github.com/linebender/resvg",
+  "releaseTag": "v0.47.0",
+  "generatorId": "resvg-cli",
+  "generatorVersion": "0.47.0",
+  "versionOutput": "0.47.0",
+  "archive": {
+    "fileName": "resvg-win64.zip",
+    "url": "https://github.com/linebender/resvg/releases/download/v0.47.0/resvg-win64.zip",
+    "sha256": "5684E59CEAA53CE720B49EFB441B0918AE99D04E8CE3F6F753664524592D67F1",
+    "size": 1440934,
+    "member": "resvg.exe",
+    "maximumMemberBytes": 16777216
+  },
+  "policy": {
+    "policyId": "private-local-hud-svg-resvg-rgba8-v1",
+    "scales": [2, 4],
+    "shapeRendering": "geometricPrecision",
+    "textRendering": "geometricPrecision",
+    "imageRendering": "optimizeQuality",
+    "filter": "linear",
+    "mipmaps": false,
+    "repeat": false,
+    "colorSpace": "srgb",
+    "alphaMode": "straight"
+  },
+  "limits": {
+    "maximumMasterBytes": 1048576,
+    "maximumLogicalDimension": 4096,
+    "maximumPngBytes": 268435456,
+    "maximumSvgElements": 4096,
+    "maximumSvgDepth": 32,
+    "versionSeconds": 30,
+    "rasterizeSeconds": 60,
+    "terminationSeconds": 15,
+    "reapSeconds": 15
+  }
+}

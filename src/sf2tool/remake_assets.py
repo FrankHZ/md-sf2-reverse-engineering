@@ -67,6 +67,12 @@ class CheckoutIdentity:
 
 
 @dataclass(frozen=True)
+class ValidatedAssetCheckout:
+    root: Path
+    identity: CheckoutIdentity
+
+
+@dataclass(frozen=True)
 class RuntimePayload:
     relative_path: PurePosixPath
     source_path: Path
@@ -282,6 +288,8 @@ def _validate_checkout_identity(
     *,
     expected_commit: str,
     expected_tree: str,
+    allowed_untracked_path: PurePosixPath | None,
+    required_ignored_path: PurePosixPath | None,
     runner: NativeRunner,
 ) -> CheckoutIdentity:
     git_directory = asset_root / ".git"
@@ -354,12 +362,82 @@ def _validate_checkout_identity(
         ("status", "--porcelain=v2", "-z", "--untracked-files=all", "--ignored=no"),
         runner=runner,
     )
-    if status:
+    expected_status = b""
+    if allowed_untracked_path is not None:
+        allowed = allowed_untracked_path.as_posix()
+        if (
+            allowed_untracked_path.is_absolute()
+            or not allowed_untracked_path.parts
+            or any(part in {"", ".", ".."} for part in allowed_untracked_path.parts)
+            or "\\" in allowed
+            or "\0" in allowed
+            or "\n" in allowed
+            or "\r" in allowed
+        ):
+            raise _reject(
+                "InvalidRequest",
+                "allowedUntrackedPath",
+                "The allowed untracked asset path is not canonical.",
+            )
+        try:
+            expected_status = b"? " + allowed.encode("utf-8") + b"\0"
+        except UnicodeEncodeError as error:
+            raise _reject(
+                "InvalidRequest",
+                "allowedUntrackedPath",
+                "The allowed untracked asset path is not canonical UTF-8.",
+            ) from error
+        allowed_path = asset_root.joinpath(*allowed_untracked_path.parts)
+        _require_no_reparse_chain(allowed_path, "repository")
+        if not allowed_path.is_file():
+            raise _reject(
+                "RepositoryStateMismatch",
+                "repository",
+                "The explicitly allowed untracked asset is unavailable.",
+            )
+    if status != expected_status:
         raise _reject(
             "RepositoryStateMismatch",
             "repository",
             "The asset repository has tracked or nonignored untracked changes.",
         )
+
+    if required_ignored_path is not None:
+        ignored = required_ignored_path.as_posix()
+        if (
+            required_ignored_path.is_absolute()
+            or not required_ignored_path.parts
+            or any(part in {"", ".", ".."} for part in required_ignored_path.parts)
+            or "\\" in ignored
+            or "\0" in ignored
+            or "\n" in ignored
+            or "\r" in ignored
+        ):
+            raise _reject(
+                "InvalidRequest",
+                "requiredIgnoredPath",
+                "The required ignored asset path is not canonical.",
+            )
+        try:
+            ignored_bytes = ignored.encode("utf-8") + b"\n"
+        except UnicodeEncodeError as error:
+            raise _reject(
+                "InvalidRequest",
+                "requiredIgnoredPath",
+                "The required ignored asset path is not canonical UTF-8.",
+            ) from error
+        ignored_output = _git(
+            asset_root,
+            ("check-ignore", "--no-index", "--", ignored),
+            runner=runner,
+            allowed_exit_codes=(0, 1),
+        )
+        if ignored_output != ignored_bytes:
+            raise _reject(
+                "RepositoryStateMismatch",
+                "repository",
+                "The candidate output boundary is not ignored by the asset repository.",
+            )
 
     hooks_path = _git(
         asset_root,
@@ -401,6 +479,31 @@ def _validate_checkout_identity(
             "The local-only rejecting pre-push hook drifted.",
         )
     return CheckoutIdentity(commit, tree)
+
+
+def validate_asset_checkout_identity(
+    asset_root: str,
+    *,
+    expected_commit: str,
+    expected_tree: str,
+    allowed_untracked_path: PurePosixPath | None = None,
+    required_ignored_path: PurePosixPath | None = None,
+    runner: NativeRunner = _run_native,
+) -> ValidatedAssetCheckout:
+    """Validate one exact local-only asset checkout without reading its product manifest."""
+
+    expected_commit = _require_canonical_git_id(expected_commit, "expectedCommit")
+    expected_tree = _require_canonical_git_id(expected_tree, "expectedTree")
+    root = _require_fully_qualified_directory(asset_root, "assetRoot")
+    identity = _validate_checkout_identity(
+        root,
+        expected_commit=expected_commit,
+        expected_tree=expected_tree,
+        allowed_untracked_path=allowed_untracked_path,
+        required_ignored_path=required_ignored_path,
+        runner=runner,
+    )
+    return ValidatedAssetCheckout(root, identity)
 
 
 def _tracked_asset_paths(asset_root: Path, runner: NativeRunner) -> set[str]:
@@ -612,27 +715,24 @@ def inspect_asset_checkout(
 ) -> PackInspection:
     """Validate one exact clean local asset checkout without changing it."""
 
-    expected_commit = _require_canonical_git_id(expected_commit, "expectedCommit")
-    expected_tree = _require_canonical_git_id(expected_tree, "expectedTree")
     expected_manifest_sha256 = _require_sha256(
         expected_manifest_sha256,
         "expectedManifestSha256",
     )
-    root = _require_fully_qualified_directory(asset_root, "assetRoot")
-    identity = _validate_checkout_identity(
-        root,
+    checkout = validate_asset_checkout_identity(
+        asset_root,
         expected_commit=expected_commit,
         expected_tree=expected_tree,
         runner=runner,
     )
     manifest_bytes, asset_count, payloads, content_set_sha256 = _inspect_manifest(
-        root,
+        checkout.root,
         expected_manifest_sha256=expected_manifest_sha256,
         runner=runner,
     )
     return PackInspection(
-        root,
-        identity,
+        checkout.root,
+        checkout.identity,
         manifest_bytes,
         expected_manifest_sha256,
         asset_count,

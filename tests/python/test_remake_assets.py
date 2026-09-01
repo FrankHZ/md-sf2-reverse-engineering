@@ -4,15 +4,19 @@ import hashlib
 import json
 import os
 import shutil
+import struct
 import subprocess
+import zipfile
+import zlib
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 import pytest
 from jsonschema import Draft202012Validator
 
-from sf2tool import remake_assets
+from sf2tool import remake_asset_build, remake_assets
+from sf2tool.remake_godot import ProcessReceipt
 
 HOOK_BYTES = (
     b"#!/bin/sh\n"
@@ -681,3 +685,523 @@ def test_cli_rejection_never_prints_local_or_dirty_path(
     assert str(repository.root) not in captured.err
     assert dirty_name not in captured.err
     assert json.loads(captured.err)["diagnostic"]["code"] == "RepositoryStateMismatch"
+
+
+HUD_MASTER = (
+    b'<svg xmlns="http://www.w3.org/2000/svg" id="hud-root" width="8" height="6" '
+    b'viewBox="0 0 8 6">'
+    b'<rect id="panel" x="0" y="0" width="8" height="6" fill="#123456"/>'
+    b"</svg>\n"
+)
+
+
+@dataclass
+class CandidateRepository:
+    root: Path
+
+    @classmethod
+    def create(cls, root: Path, master: bytes = HUD_MASTER) -> CandidateRepository:
+        root.mkdir(parents=True)
+        _run(root, "init", "--initial-branch=main")
+        _run(root, "config", "user.name", "Project Authored Test")
+        _run(root, "config", "user.email", "project-authored@example.invalid")
+        _run(root, "config", "core.hooksPath", ".githooks")
+        (root / ".githooks").mkdir()
+        (root / ".githooks" / "pre-push").write_bytes(HOOK_BYTES)
+        (root / ".gitattributes").write_text(
+            "* text=auto\n.githooks/* text eol=lf\n*.svg text eol=lf\n*.png binary\n",
+            encoding="utf-8",
+        )
+        (root / ".gitignore").write_text("cache/\nscratch/\n", encoding="utf-8")
+        (root / "README.md").write_text("# Project Authored Candidate Repo\n", encoding="utf-8")
+        for directory in ("manifests", "masters/ui", "runtime", "source"):
+            target = root.joinpath(*directory.split("/"))
+            target.mkdir(parents=True)
+            (target / ".gitkeep").write_text("", encoding="utf-8")
+        _run(root, "add", "--all")
+        _run(root, "commit", "--message", "bootstrap project-authored candidate repo")
+        (root / "masters" / "ui" / "panel.svg").write_bytes(master)
+        return cls(root)
+
+    def pins(self) -> tuple[str, str]:
+        return (
+            _run(self.root, "rev-parse", "--verify", "HEAD^{commit}").decode().strip(),
+            _run(self.root, "rev-parse", "HEAD^{tree}").decode().strip(),
+        )
+
+
+def _png(width: int, height: int, marker: bytes = b"") -> bytes:
+    def chunk(kind: bytes, payload: bytes) -> bytes:
+        checksum = zlib.crc32(kind + payload) & 0xFFFFFFFF
+        return struct.pack(">I", len(payload)) + kind + payload + struct.pack(">I", checksum)
+
+    rows = b"".join(b"\0" + bytes([20, 40, 60, 255]) * width for _ in range(height))
+    chunks = [
+        chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 6, 0, 0, 0)),
+        chunk(b"IDAT", zlib.compress(rows)),
+    ]
+    if marker:
+        chunks.append(chunk(b"tEXt", b"marker\0" + marker))
+    chunks.append(chunk(b"IEND", b""))
+    return remake_asset_build.PNG_SIGNATURE + b"".join(chunks)
+
+
+def _test_toolchain(
+    root: Path,
+    *,
+    case_alias_member: bool = False,
+) -> tuple[Path, Path]:
+    root.mkdir(parents=True, exist_ok=True)
+    archive = root / "resvg-win64.zip"
+    with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as output:
+        output.writestr("resvg.exe", b"project-authored-test-resvg")
+        if case_alias_member:
+            output.writestr("RESVG.EXE", b"case-alias")
+        output.writestr("LICENSE", b"project-authored test license")
+    archive_bytes = archive.read_bytes()
+    document = json.loads(
+        (remake_asset_build.DEFAULT_TOOLCHAIN_MANIFEST).read_text(encoding="utf-8")
+    )
+    document["archive"]["size"] = len(archive_bytes)
+    document["archive"]["sha256"] = _digest(archive_bytes)
+    manifest = root / "presentation-toolchain.json"
+    manifest.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+    return manifest, archive
+
+
+def _fake_resvg_runner(mode: str = "pass") -> Any:
+    calls: dict[str, int] = {}
+
+    def runner(
+        step: str,
+        command: tuple[str, ...],
+        **_kwargs: Any,
+    ) -> ProcessReceipt:
+        calls[step] = calls.get(step, 0) + 1
+        cleanup = "survivor" if mode == "cleanup" else "clean"
+        if step == "version":
+            version = "9.9.9\n" if mode == "version" else "0.47.0\n"
+            return ProcessReceipt(step, command, 0, False, cleanup, version, "")
+        scale = int(step.removeprefix("rasterize-").removesuffix("x"))
+        width = 8 * scale
+        height = 6 * scale
+        if mode == "dimensions":
+            width += 1
+        marker = b""
+        if mode == "nondeterministic" and calls[step] == 2:
+            marker = b"different"
+        payload = _png(width, height, marker)
+        if mode == "crc":
+            payload = payload[:-1] + bytes([payload[-1] ^ 1])
+        Path(command[-1]).write_bytes(payload)
+        return ProcessReceipt(step, command, 0, False, cleanup, "", "")
+
+    return runner
+
+
+def _build_candidate(
+    repository: CandidateRepository,
+    archive: Path,
+    runner: Any,
+) -> dict[str, object]:
+    commit, tree = repository.pins()
+    return remake_asset_build.build_hud_svg_candidate(
+        asset_root=str(repository.root),
+        expected_commit=commit,
+        expected_tree=tree,
+        asset_id="hud.panel",
+        expected_master_sha256=_digest(
+            (repository.root / "masters" / "ui" / "panel.svg").read_bytes()
+        ),
+        resvg_archive=str(archive),
+        candidate_name="panel-candidate",
+        process_runner=runner,
+    )
+
+
+def test_checkout_identity_allows_only_one_exact_untracked_master(tmp_path: Path) -> None:
+    repository = CandidateRepository.create(tmp_path / "candidate-repository")
+    commit, tree = repository.pins()
+    master = PurePosixPath("masters/ui/panel.svg")
+
+    checkout = remake_assets.validate_asset_checkout_identity(
+        str(repository.root),
+        expected_commit=commit,
+        expected_tree=tree,
+        allowed_untracked_path=master,
+        required_ignored_path=PurePosixPath("cache/panel-candidate"),
+    )
+
+    assert checkout.identity == remake_assets.CheckoutIdentity(commit, tree)
+    assert checkout.root == repository.root
+    with pytest.raises(remake_assets.AssetPreflightError) as default_rejected:
+        remake_assets.validate_asset_checkout_identity(
+            str(repository.root),
+            expected_commit=commit,
+            expected_tree=tree,
+        )
+    _assert_code(default_rejected, "RepositoryStateMismatch")
+
+    (repository.root / "extra-private.txt").write_text("extra\n", encoding="utf-8")
+    with pytest.raises(remake_assets.AssetPreflightError) as extra_rejected:
+        remake_assets.validate_asset_checkout_identity(
+            str(repository.root),
+            expected_commit=commit,
+            expected_tree=tree,
+            allowed_untracked_path=master,
+        )
+    _assert_code(extra_rejected, "RepositoryStateMismatch")
+
+
+@pytest.mark.parametrize("mutation", ("staged", "tracked-modified", "ignored", "renamed"))
+def test_allowed_untracked_master_rejects_every_other_porcelain_shape(
+    tmp_path: Path,
+    mutation: str,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / mutation)
+    commit, tree = repository.pins()
+    master = repository.root / "masters" / "ui" / "panel.svg"
+    if mutation == "staged":
+        _run(repository.root, "add", "--", "masters/ui/panel.svg")
+    elif mutation == "tracked-modified":
+        (repository.root / "README.md").write_text("changed\n", encoding="utf-8")
+    elif mutation == "ignored":
+        (repository.root / ".gitignore").write_text(
+            "cache/\nscratch/\nmasters/ui/panel.svg\n", encoding="utf-8"
+        )
+        master.unlink()
+        _run(repository.root, "add", "--", ".gitignore")
+        _run(repository.root, "commit", "--message", "ignore candidate master")
+        commit, tree = repository.pins()
+        master.write_bytes(HUD_MASTER)
+    else:
+        _run(repository.root, "add", "--", "masters/ui/panel.svg")
+        _run(repository.root, "mv", "masters/ui/panel.svg", "masters/ui/panel-copy.svg")
+
+    with pytest.raises(remake_assets.AssetPreflightError) as rejected:
+        remake_assets.validate_asset_checkout_identity(
+            str(repository.root),
+            expected_commit=commit,
+            expected_tree=tree,
+            allowed_untracked_path=PurePosixPath("masters/ui/panel.svg"),
+        )
+    _assert_code(rejected, "RepositoryStateMismatch")
+
+
+def test_hud_svg_candidate_build_is_deterministic_ignored_and_path_free(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "candidate-repository")
+    toolchain, archive = _test_toolchain(tmp_path)
+    monkeypatch.setattr(remake_asset_build, "DEFAULT_TOOLCHAIN_MANIFEST", toolchain)
+    before = (*repository.pins(), _run(repository.root, "status", "--porcelain=v2", "-z"))
+
+    receipt = _build_candidate(repository, archive, _fake_resvg_runner())
+
+    candidate = repository.root / "cache" / "panel-candidate"
+    assert sorted(
+        path.relative_to(candidate).as_posix() for path in candidate.rglob("*") if path.is_file()
+    ) == [
+        "manifests/presentation-assets-v1.json",
+        "runtime/ui/panel@2x.png",
+        "runtime/ui/panel@4x.png",
+    ]
+    manifest = json.loads(
+        (candidate / "manifests" / "presentation-assets-v1.json").read_text(encoding="utf-8")
+    )
+    assert manifest["assets"][0]["assetId"] == "hud.panel"
+    assert [bucket["scale"] for bucket in manifest["assets"][0]["buckets"]] == [2, 4]
+    assert receipt["status"] == "Pass"
+    assert receipt["cleanupStatus"] == "clean"
+    encoded = json.dumps(receipt, sort_keys=True)
+    for forbidden in (
+        str(repository.root),
+        str(archive),
+        "masters/",
+        "runtime/",
+        "panel.svg",
+        "candidate.png",
+    ):
+        assert forbidden not in encoded
+    assert repository.pins() == before[:2]
+    assert _run(repository.root, "status", "--porcelain=v2", "-z") == before[2]
+    assert not list((repository.root / "cache").glob(".sf2-hud-svg-build-*"))
+
+
+@pytest.mark.parametrize(
+    ("replacement", "code"),
+    (
+        (
+            b'<svg xmlns="http://www.w3.org/2000/svg" id="root" width="8" height="6" '
+            b'viewBox="0 0 8 6"><text id="text">NO</text></svg>',
+            "InvalidSvg",
+        ),
+        (
+            b'<svg xmlns="http://www.w3.org/2000/svg" id="root" width="8" height="6" '
+            b'viewBox="0 0 8 6"><image id="image" '
+            b'href="data:image/png;base64,AA"/></svg>',
+            "InvalidSvg",
+        ),
+        (
+            b'<!DOCTYPE svg><svg xmlns="http://www.w3.org/2000/svg" id="root" '
+            b'width="8" height="6" viewBox="0 0 8 6"/>',
+            "InvalidSvg",
+        ),
+        (
+            b'<svg xmlns="http://www.w3.org/2000/svg" id="root" width="8" '
+            b'height="6" viewBox="0 0 9 6"/>',
+            "InvalidSvg",
+        ),
+        (
+            b'<svg xmlns="http://www.w3.org/2000/svg" id="same" width="8" height="6" '
+            b'viewBox="0 0 8 6"><rect id="same" width="8" height="6"/></svg>',
+            "InvalidSvg",
+        ),
+        (
+            b'<svg xmlns="http://www.w3.org/2000/svg" id="root" width="8" height="6" '
+            b'viewBox="0 0 8 6"><rect id="outer" width="8" height="6" fill="#123456">'
+            b'<rect id="inner" width="4" height="3" fill="#654321"/></rect></svg>',
+            "InvalidSvg",
+        ),
+    ),
+)
+def test_hud_svg_closed_subset_rejects_unsafe_or_ambiguous_masters(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    replacement: bytes,
+    code: str,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "candidate-repository", replacement)
+    toolchain, archive = _test_toolchain(tmp_path)
+    monkeypatch.setattr(remake_asset_build, "DEFAULT_TOOLCHAIN_MANIFEST", toolchain)
+
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        _build_candidate(repository, archive, _fake_resvg_runner())
+
+    assert rejected.value.code == code
+    assert not (repository.root / "cache" / "panel-candidate").exists()
+
+
+@pytest.mark.parametrize(
+    "leaf",
+    (
+        b'<rect id="panel" width="8" height="6"/>',
+        b'<rect id="panel" width="8" height="6" fill="none" stroke="none"/>',
+        b'<line id="panel" x1="0" y1="0" x2="8" y2="6" fill="#123456"/>',
+    ),
+)
+def test_hud_svg_rejects_leaf_without_effective_visible_paint(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    leaf: bytes,
+) -> None:
+    master = (
+        b'<svg xmlns="http://www.w3.org/2000/svg" id="root" width="8" height="6" '
+        b'viewBox="0 0 8 6">' + leaf + b"</svg>"
+    )
+    repository = CandidateRepository.create(tmp_path / "candidate-repository", master)
+    toolchain, archive = _test_toolchain(tmp_path)
+    monkeypatch.setattr(remake_asset_build, "DEFAULT_TOOLCHAIN_MANIFEST", toolchain)
+
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        _build_candidate(repository, archive, _fake_resvg_runner())
+
+    assert rejected.value.code == "InvalidSvg"
+    assert not (repository.root / "cache" / "panel-candidate").exists()
+
+
+def test_hud_svg_accepts_explicit_paint_inherited_from_group(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    master = (
+        b'<svg xmlns="http://www.w3.org/2000/svg" id="root" width="8" height="6" '
+        b'viewBox="0 0 8 6"><g id="chrome" fill="#123456">'
+        b'<rect id="panel" width="8" height="6"/></g></svg>'
+    )
+    repository = CandidateRepository.create(tmp_path / "candidate-repository", master)
+    toolchain, archive = _test_toolchain(tmp_path)
+    monkeypatch.setattr(remake_asset_build, "DEFAULT_TOOLCHAIN_MANIFEST", toolchain)
+
+    receipt = _build_candidate(repository, archive, _fake_resvg_runner())
+
+    assert receipt["status"] == "Pass"
+    assert (repository.root / "cache" / "panel-candidate").is_dir()
+
+
+@pytest.mark.parametrize(
+    ("mode", "code"),
+    (
+        ("version", "ToolchainVersionMismatch"),
+        ("cleanup", "GeneratorCleanupFailed"),
+        ("dimensions", "GeneratorOutputInvalid"),
+        ("crc", "GeneratorOutputInvalid"),
+        ("nondeterministic", "NonDeterministicOutput"),
+    ),
+)
+def test_generator_process_and_png_failures_are_typed_and_atomic(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mode: str,
+    code: str,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "candidate-repository")
+    toolchain, archive = _test_toolchain(tmp_path)
+    monkeypatch.setattr(remake_asset_build, "DEFAULT_TOOLCHAIN_MANIFEST", toolchain)
+    unrelated = repository.root / "cache" / "unrelated"
+    unrelated.mkdir(parents=True)
+    (unrelated / "keep.txt").write_text("keep\n", encoding="utf-8")
+
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        _build_candidate(repository, archive, _fake_resvg_runner(mode))
+
+    assert rejected.value.code == code
+    assert str(repository.root) not in rejected.value.message
+    assert str(archive) not in rejected.value.message
+    assert not (repository.root / "cache" / "panel-candidate").exists()
+    assert (unrelated / "keep.txt").read_text(encoding="utf-8") == "keep\n"
+    assert not list((repository.root / "cache").glob(".sf2-hud-svg-build-*"))
+
+
+def test_archive_digest_precedes_zip_parse_and_case_alias_members_reject(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "digest-repository")
+    toolchain, archive = _test_toolchain(tmp_path / "digest-tool")
+    monkeypatch.setattr(remake_asset_build, "DEFAULT_TOOLCHAIN_MANIFEST", toolchain)
+    archive.write_bytes(b"not a zip and no longer the pinned digest")
+
+    with pytest.raises(remake_asset_build.AssetBuildError) as digest_rejected:
+        _build_candidate(repository, archive, _fake_resvg_runner())
+    assert digest_rejected.value.code == "ToolchainDigestMismatch"
+
+    alias_root = tmp_path / "alias-tool"
+    alias_root.mkdir()
+    alias_toolchain, alias_archive = _test_toolchain(alias_root, case_alias_member=True)
+    alias_repository = CandidateRepository.create(tmp_path / "alias-repository")
+    monkeypatch.setattr(remake_asset_build, "DEFAULT_TOOLCHAIN_MANIFEST", alias_toolchain)
+    with pytest.raises(remake_asset_build.AssetBuildError) as alias_rejected:
+        _build_candidate(alias_repository, alias_archive, _fake_resvg_runner())
+    assert alias_rejected.value.code == "InvalidToolchain"
+
+
+def test_post_promotion_failure_rolls_back_candidate(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "candidate-repository")
+    toolchain, archive = _test_toolchain(tmp_path)
+    monkeypatch.setattr(remake_asset_build, "DEFAULT_TOOLCHAIN_MANIFEST", toolchain)
+    original_rmdir = Path.rmdir
+
+    def fail_staging_rmdir(path: Path) -> None:
+        if path.name.startswith(remake_asset_build._STAGING_PREFIX):
+            raise OSError(f"injected staging failure at {path}")
+        original_rmdir(path)
+
+    monkeypatch.setattr(Path, "rmdir", fail_staging_rmdir)
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        _build_candidate(repository, archive, _fake_resvg_runner())
+
+    assert rejected.value.code == "CandidateWriteFailed"
+    assert str(repository.root) not in rejected.value.message
+    assert not (repository.root / "cache" / "panel-candidate").exists()
+    assert not list((repository.root / "cache").glob(".sf2-hud-svg-build-*"))
+
+
+def test_candidate_cleanup_failure_is_typed_path_free_and_exact_owned(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "candidate-repository")
+    toolchain, archive = _test_toolchain(tmp_path)
+    monkeypatch.setattr(remake_asset_build, "DEFAULT_TOOLCHAIN_MANIFEST", toolchain)
+    unrelated = repository.root / "cache" / "unrelated"
+    unrelated.mkdir(parents=True)
+    (unrelated / "keep.txt").write_text("keep\n", encoding="utf-8")
+    original_rmtree = shutil.rmtree
+
+    def fail_owned_cleanup(path: str | os.PathLike[str], *_args: Any, **_kwargs: Any) -> None:
+        candidate = Path(path)
+        if candidate.name.startswith(remake_asset_build._STAGING_PREFIX):
+            raise OSError(f"injected cleanup failure at {candidate}")
+        original_rmtree(path)
+
+    monkeypatch.setattr(remake_asset_build.shutil, "rmtree", fail_owned_cleanup)
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        _build_candidate(repository, archive, _fake_resvg_runner("version"))
+
+    assert rejected.value.code == "CleanupFailed"
+    assert str(repository.root) not in rejected.value.message
+    assert (unrelated / "keep.txt").read_text(encoding="utf-8") == "keep\n"
+    residue = list((repository.root / "cache").glob(".sf2-hud-svg-build-*"))
+    assert len(residue) == 1
+    original_rmtree(residue[0])
+
+
+def test_generator_launch_failure_and_cli_diagnostic_are_path_free(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "candidate-repository")
+    toolchain, archive = _test_toolchain(tmp_path)
+    monkeypatch.setattr(remake_asset_build, "DEFAULT_TOOLCHAIN_MANIFEST", toolchain)
+
+    def fail_launch(*_args: Any, **_kwargs: Any) -> ProcessReceipt:
+        raise OSError(f"injected launch failure at {repository.root}")
+
+    commit, tree = repository.pins()
+    exit_code = remake_asset_build.main(
+        [
+            "hud-svg-candidate",
+            "--asset-root",
+            str(repository.root),
+            "--expected-commit",
+            commit,
+            "--expected-tree",
+            tree,
+            "--asset-id",
+            "hud.panel",
+            "--expected-master-sha256",
+            _digest(HUD_MASTER),
+            "--resvg-archive",
+            str(archive),
+            "--candidate-name",
+            "panel-candidate",
+        ]
+    )
+    captured = capsys.readouterr()
+    # The CLI uses the production runner; exercise the injectable launch mapping separately.
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        _build_candidate(repository, archive, fail_launch)
+    assert rejected.value.code == "GeneratorLaunchFailed"
+    assert str(repository.root) not in rejected.value.message
+    assert exit_code == 2
+    assert captured.out == ""
+    assert str(repository.root) not in captured.err
+    assert str(archive) not in captured.err
+    assert json.loads(captured.err)["diagnostic"]["code"] in {
+        "GeneratorLaunchFailed",
+        "GeneratorFailed",
+    }
+
+
+def test_official_resvg_candidate_build_opt_in(tmp_path: Path) -> None:
+    archive_value = os.environ.get("SF2_RESVG_ARCHIVE")
+    if not archive_value:
+        pytest.skip("set SF2_RESVG_ARCHIVE to the pinned ignored resvg-win64.zip")
+    repository = CandidateRepository.create(tmp_path / "official-candidate-repository")
+
+    receipt = _build_candidate(
+        repository,
+        Path(archive_value),
+        remake_asset_build.run_bounded_process,
+    )
+
+    assert receipt["status"] == "Pass"
+    assert receipt["generatorVersion"] == "0.47.0"
+    assert receipt["cleanupStatus"] == "clean"
+    assert not list((repository.root / "cache").glob(".sf2-hud-svg-build-*"))

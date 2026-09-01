@@ -780,3 +780,65 @@ def test_presentation_asset_preflight_is_path_free_local_only_and_atomic() -> No
         "git push",
     ):
         assert forbidden not in source
+
+
+def test_hud_svg_candidate_builder_pins_resvg_and_stays_tooling_only() -> None:
+    toolchain = json.loads(
+        (REMAKE / "presentation-toolchain.json").read_text(encoding="utf-8")
+    )
+    assert set(toolchain) == {
+        "schemaVersion",
+        "releaseRepository",
+        "releaseTag",
+        "generatorId",
+        "generatorVersion",
+        "versionOutput",
+        "archive",
+        "policy",
+        "limits",
+    }
+    assert toolchain["schemaVersion"] == 1
+    assert toolchain["releaseRepository"] == "https://github.com/linebender/resvg"
+    assert toolchain["releaseTag"] == "v0.47.0"
+    assert toolchain["generatorId"] == "resvg-cli"
+    assert toolchain["generatorVersion"] == "0.47.0"
+    assert toolchain["versionOutput"] == "0.47.0"
+    assert toolchain["archive"] == {
+        "fileName": "resvg-win64.zip",
+        "url": "https://github.com/linebender/resvg/releases/download/v0.47.0/resvg-win64.zip",
+        "sha256": "5684E59CEAA53CE720B49EFB441B0918AE99D04E8CE3F6F753664524592D67F1",
+        "size": 1440934,
+        "member": "resvg.exe",
+        "maximumMemberBytes": 16777216,
+    }
+    assert toolchain["policy"]["scales"] == [2, 4]
+    assert toolchain["policy"]["filter"] == "linear"
+    assert toolchain["policy"]["mipmaps"] is False
+    assert toolchain["policy"]["repeat"] is False
+    assert toolchain["policy"]["colorSpace"] == "srgb"
+    assert toolchain["policy"]["alphaMode"] == "straight"
+
+    source = (ROOT / "src/sf2tool/remake_asset_build.py").read_text(encoding="utf-8")
+    for required in (
+        "validate_asset_checkout_identity",
+        "allowed_untracked_path=master_relative",
+        "required_ignored_path=candidate_relative",
+        "run_bounded_process",
+        "--skip-system-fonts",
+        "_validate_png",
+        "zlib.crc32",
+        "MANIFEST_RELATIVE_PATH",
+        "NonDeterministicOutput",
+    ):
+        assert required in source
+    for forbidden in (
+        "extractall(",
+        "urlopen(",
+        "requests.",
+        "receipt.as_dict()",
+        '"stdout"',
+        '"stderr"',
+        "using Godot",
+        "SF2_MAP3_",
+    ):
+        assert forbidden not in source
