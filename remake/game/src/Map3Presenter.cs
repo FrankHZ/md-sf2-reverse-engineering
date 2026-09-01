@@ -7,6 +7,8 @@ namespace Sf2.Remake.GodotAdapter;
 
 internal sealed record Map3PresentationProjection(
     string Status,
+    string ControlGuide,
+    string MapLegend,
     string ContextStatus,
     string EventRequestStatus,
     string EffectStatus,
@@ -25,36 +27,50 @@ internal sealed record Map3PresentationProjection(
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(outcome);
         return new Map3PresentationProjection(
-            $"Map {snapshot.Exploration.Map}  " +
-                $"Tile ({snapshot.Exploration.PlayerPosition.X}, " +
-                $"{snapshot.Exploration.PlayerPosition.Y})  " +
-                $"Facing {snapshot.Facing}  Step {snapshot.SimulationStep}  {outcome}  |  " +
-                "WASD move / arrows turn / Enter / Z X / C V / F G / H / Q E / R T / Y U",
+            $"MAP {snapshot.Exploration.Map} · " +
+                $"TILE {snapshot.Exploration.PlayerPosition.X}," +
+                $"{snapshot.Exploration.PlayerPosition.Y} · " +
+                $"FACE {FacingGlyph(snapshot.Facing)} {snapshot.Facing} · " +
+                $"STEP {snapshot.SimulationStep}\n{outcome}",
+            "MOVE W/A/S/D · TURN ↑/←/↓/→\n" +
+                "CONTEXT Enter · EVENT Z / ACK X · LOCAL C / ACK V\n" +
+                "INTERACT F / ACK G · DIALOGUE H\n" +
+                "SEARCH Q / ACK E · ACQUIRE R / ACK T · OUTBOUND Y / ACK U",
+            "MAP SYMBOLS  ▲ player facing · ◆ placeholder entity · × blocked",
             snapshot.ContextSelection is null
-                ? "Context not selected."
+                ? "CONTEXT  Enter\nNot selected"
                 : FormatContext(snapshot.ContextSelection),
             snapshot.EventRequest is null
-                ? "Event request: none."
+                ? "EVENT  Z / ACK X\nNo request"
                 : FormatEventRequest(snapshot.EventRequest),
             snapshot.LastEventEffect is null
-                ? "Synthetic effect: none."
+                ? "EFFECT\nNone applied"
                 : FormatEffect(snapshot),
             snapshot.LocalTransition is null
-                ? "Local transition: none."
+                ? "LOCAL  C / ACK V\nNo transition"
                 : FormatLocalTransition(snapshot.LocalTransition),
             FormatEntities(snapshot.Entities),
             snapshot.EntityInteraction is null
-                ? "Placeholder interaction: none."
+                ? "INTERACT  F / ACK G\nNo request"
                 : FormatEntityInteraction(snapshot.EntityInteraction),
             snapshot.Dialogue is null
-                ? "Placeholder dialogue: none."
+                ? "DIALOGUE  H\nClosed"
                 : FormatDialogue(snapshot.Dialogue),
             FormatFieldSearch(snapshot),
             FormatItemAcquisition(snapshot),
             snapshot.OutboundTransition is null
-                ? "Outbound transition: none."
+                ? "OUTBOUND  Y / ACK U\nNo transition"
                 : FormatOutboundTransition(snapshot.OutboundTransition));
     }
+
+    private static string FacingGlyph(SemanticFacing facing) => facing switch
+    {
+        SemanticFacing.North => "↑",
+        SemanticFacing.East => "→",
+        SemanticFacing.South => "↓",
+        SemanticFacing.West => "←",
+        _ => "?",
+    };
 
     private static string FormatContext(ExplorationContextSelectionSnapshot selection)
     {
@@ -68,60 +84,52 @@ internal sealed record Map3PresentationProjection(
                 $"opaque function {selection.AreaDescription.Function}",
             _ => "unknown",
         };
-        return $"Setup {selection.SelectedSetup}  Area {area}  " +
-            $"Zone {selection.ZoneEvent.Target} (selected only)";
+        return $"CONTEXT  Enter\nSetup {selection.SelectedSetup}\n" +
+            $"Area {area} · Zone selected";
     }
 
     private static string FormatEventRequest(MapEventRequestSnapshot request) =>
-        $"Event request {request.Request}: {request.Status}  " +
-        $"Cue #{request.CueSequence}  Effect {request.ExpectedEffect}  " +
-        $"Target {request.Target} (opaque)";
+        $"EVENT  Z / ACK X\n{request.Status} · Cue #{request.CueSequence}\n" +
+        $"{request.Request}";
 
     private static string FormatEffect(GameSessionSnapshot snapshot)
     {
         MapEventEffectSnapshot effect = snapshot.LastEventEffect!;
-        string setFlags = string.Join(", ", snapshot.SyntheticFlags.SetFlags);
-        return $"Synthetic effect {effect.Effect}: applied once at step " +
-            $"{effect.AppliedAtStep}; flag {effect.Flag}; setup flags [{setFlags}]";
+        return $"EFFECT\nApplied once · step {effect.AppliedAtStep}\n" +
+            $"Flag {effect.Flag}";
     }
 
     private static string FormatLocalTransition(MapLocalTransitionSnapshot transition) =>
-        $"Local transition {transition.Transition}: {transition.Status}  " +
-        $"Cue #{transition.CueSequence}  ({transition.SourcePosition.X}, " +
-        $"{transition.SourcePosition.Y}) -> ({transition.DestinationPosition.X}, " +
-        $"{transition.DestinationPosition.Y})  Orientation {transition.DestinationOrientation}";
+        $"LOCAL  C / ACK V\n{transition.Status} · Cue #{transition.CueSequence}\n" +
+        $"{transition.SourcePosition.X},{transition.SourcePosition.Y} → " +
+        $"{transition.DestinationPosition.X},{transition.DestinationPosition.Y}";
 
     private static string FormatEntities(IReadOnlyList<MapEntityDefinition> entities) =>
         entities.Count == 0
-            ? "Placeholder entities: none."
-            : "Placeholder entities: " + string.Join(
+            ? "ENTITIES\nNone on current map"
+            : $"ENTITIES\n◆ {entities.Count} current-map\n" + string.Join(
                 ", ",
                 entities.Select(entity =>
                     $"{entity.Entity}@({entity.Position.X},{entity.Position.Y})"));
 
     private static string FormatEntityInteraction(MapEntityInteractionSnapshot interaction) =>
-        $"Placeholder interaction {interaction.Request}: {interaction.Status}  " +
-        $"Cue #{interaction.CueSequence}  Entity {interaction.Entity}  " +
-        $"Target {interaction.Target} (uninterpreted)";
+        $"INTERACT  F / ACK G\n{interaction.Status} · Cue #{interaction.CueSequence}\n" +
+        $"Entity {interaction.Entity}";
 
     private static string FormatDialogue(MapDialogueSnapshot dialogue) =>
         dialogue.Status == MapDialogueStatus.Open
-            ? $"Placeholder dialogue {dialogue.Dialogue}: line " +
-                $"{dialogue.CurrentLineIndex + 1}  {dialogue.CurrentLine!.Text}  " +
-                $"Cue #{dialogue.CueSequence}  [H advances]"
-            : $"Placeholder dialogue {dialogue.Dialogue}: closed  " +
-                $"Cue #{dialogue.CueSequence}";
+            ? $"DIALOGUE  H\nLine {dialogue.CurrentLineIndex + 1} · " +
+                $"Cue #{dialogue.CueSequence}\n{dialogue.CurrentLine!.Text}"
+            : $"DIALOGUE  H\nClosed · Cue #{dialogue.CueSequence}\n" +
+                $"{dialogue.Dialogue}";
 
     private static string FormatFieldSearch(GameSessionSnapshot snapshot)
     {
-        string discoveries = snapshot.Discoveries.Discoveries.Count == 0
-            ? "none"
-            : string.Join(", ", snapshot.Discoveries.Discoveries);
+        int discoveries = snapshot.Discoveries.Discoveries.Count;
         return snapshot.FieldSearch is null
-            ? $"Synthetic field search: none. Discoveries [{discoveries}]  [Q search / E ack]"
-            : $"Synthetic field search {snapshot.FieldSearch.Context}: " +
-                $"{snapshot.FieldSearch.Status}  Result {snapshot.FieldSearch.Result}  " +
-                $"Discovery {snapshot.FieldSearch.Discovery}  Discoveries [{discoveries}]";
+            ? $"SEARCH  Q / ACK E\nNo request · discovered {discoveries}"
+            : $"SEARCH  Q / ACK E\n{snapshot.FieldSearch.Status} · " +
+                $"{snapshot.FieldSearch.Result}\nDiscovered {discoveries}";
     }
 
     private static string FormatItemAcquisition(GameSessionSnapshot snapshot)
@@ -130,25 +138,27 @@ internal sealed record Map3PresentationProjection(
             ? "empty"
             : string.Join(", ", snapshot.Inventory.Items);
         return snapshot.ItemAcquisition is null
-            ? $"Placeholder inventory [{items}]  [R acquire / T ack]"
-            : $"Placeholder item acquisition {snapshot.ItemAcquisition.Request}: " +
-                $"{snapshot.ItemAcquisition.Status}  Result {snapshot.ItemAcquisition.Result}  " +
-                $"Item {snapshot.ItemAcquisition.Item}  Inventory [{items}]";
+            ? $"ACQUIRE  R / ACK T\nInventory: {items}"
+            : $"ACQUIRE  R / ACK T\n{snapshot.ItemAcquisition.Status} · " +
+                $"{snapshot.ItemAcquisition.Result}\nInventory: {items}";
     }
 
     private static string FormatOutboundTransition(MapOutboundTransitionSnapshot transition) =>
-        $"Outbound transition {transition.Transition}: {transition.Status}  " +
-        $"Cue #{transition.CueSequence}  {transition.SourceMap}" +
-        $"@({transition.SourcePosition.X},{transition.SourcePosition.Y}) -> " +
-        $"{transition.DestinationMap}" +
-        $"@({transition.DestinationPosition.X},{transition.DestinationPosition.Y})  " +
-        $"Facing {transition.DestinationFacing}";
+        $"OUTBOUND  Y / ACK U\n{transition.Status} · Cue #{transition.CueSequence}\n" +
+        $"→ {transition.DestinationMap}@" +
+        $"{transition.DestinationPosition.X},{transition.DestinationPosition.Y}";
 }
 
 internal sealed class Map3Presenter
 {
+    internal static readonly Vector2 CanvasSize = new(960, 540);
+    internal static readonly Rect2 MapBounds = new(16, 84, 576, 336);
+    internal static readonly Rect2 ActionDeckBounds = new(608, 82, 336, 444);
+
     private readonly SyntheticMapViewport _viewport;
     private readonly Label _status;
+    private readonly Label _controls;
+    private readonly Label _mapLegend;
     private readonly Label _contextStatus;
     private readonly Label _eventRequestStatus;
     private readonly Label _effectStatus;
@@ -163,6 +173,8 @@ internal sealed class Map3Presenter
     private Map3Presenter(
         SyntheticMapViewport viewport,
         Label status,
+        Label controls,
+        Label mapLegend,
         Label contextStatus,
         Label eventRequestStatus,
         Label effectStatus,
@@ -176,6 +188,8 @@ internal sealed class Map3Presenter
     {
         _viewport = viewport;
         _status = status;
+        _controls = controls;
+        _mapLegend = mapLegend;
         _contextStatus = contextStatus;
         _eventRequestStatus = eventRequestStatus;
         _effectStatus = effectStatus;
@@ -194,121 +208,140 @@ internal sealed class Map3Presenter
         Label banner = new()
         {
             Text = Map3Root.BannerText,
-            Position = new Vector2(24, 18),
+            Position = new Vector2(16, 12),
         };
-        banner.AddThemeFontSizeOverride("font_size", 24);
+        banner.AddThemeFontSizeOverride("font_size", 22);
         banner.AddThemeColorOverride("font_color", new Color("ffbd59"));
         parent.AddChild(banner);
 
         Label explanation = new()
         {
-            Text = "Project-authored selectors, placeholder state, and outbound shell; targets are never interpreted.",
-            Position = new Vector2(24, 55),
+            Text = "Project-authored playable shell · semantic commands · targets never interpreted",
+            Position = new Vector2(16, 46),
         };
-        explanation.AddThemeFontSizeOverride("font_size", 16);
+        explanation.AddThemeFontSizeOverride("font_size", 14);
         parent.AddChild(explanation);
 
         SyntheticMapViewport viewport = new()
         {
-            Position = new Vector2(24, 105),
+            Position = MapBounds.Position,
         };
         parent.AddChild(viewport);
 
-        Label status = new()
+        Control deck = new()
         {
-            Text = "Admitting synthetic package...",
-            Position = new Vector2(24, 450),
+            Position = ActionDeckBounds.Position,
+            Size = ActionDeckBounds.Size,
         };
-        status.AddThemeFontSizeOverride("font_size", 18);
+        parent.AddChild(deck);
+        ColorRect deckBackground = new()
+        {
+            Color = new Color("101827ef"),
+            Size = deck.Size,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        deck.AddChild(deckBackground);
+
+        Label deckTitle = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(12, 8),
+            new Vector2(312, 24),
+            15,
+            new Color("ffbd59"));
+        deckTitle.Text = "EXPLORATION / ACTIONS";
+        parent.AddChild(deckTitle);
+
+        Label status = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(12, 32),
+            new Vector2(312, 46),
+            13,
+            Colors.White);
+        status.Text = "Admitting synthetic package...";
         parent.AddChild(status);
+        Label controls = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(12, 80),
+            new Vector2(312, 68),
+            10,
+            new Color("b8f2c2"));
+        controls.Text = "Waiting for controls...";
+        parent.AddChild(controls);
+        Label mapLegend = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(12, 150),
+            new Vector2(312, 24),
+            10,
+            new Color("ffe2a8"));
+        mapLegend.Text = "Waiting for map symbols...";
+        parent.AddChild(mapLegend);
 
-        Label contextStatus = new()
-        {
-            Text = "Context not selected.",
-            Position = new Vector2(24, 480),
-        };
-        contextStatus.AddThemeFontSizeOverride("font_size", 15);
+        const float leftX = 12;
+        const float rightX = 172;
+        const float columnWidth = 152;
+        Label contextStatus = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(leftX, 178),
+            new Vector2(columnWidth, 48),
+            10,
+            Colors.White);
         parent.AddChild(contextStatus);
-
-        Label eventRequestStatus = new()
-        {
-            Text = "Event request: none.",
-            Position = new Vector2(24, 510),
-        };
-        eventRequestStatus.AddThemeFontSizeOverride("font_size", 15);
+        Label eventRequestStatus = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(leftX, 226),
+            new Vector2(columnWidth, 48),
+            10,
+            Colors.White);
         parent.AddChild(eventRequestStatus);
-
-        Label effectStatus = new()
-        {
-            Text = "Synthetic effect: none.",
-            Position = new Vector2(24, 540),
-        };
-        effectStatus.AddThemeFontSizeOverride("font_size", 15);
+        Label effectStatus = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(leftX, 274),
+            new Vector2(columnWidth, 48),
+            10,
+            new Color("ffdda1"));
         parent.AddChild(effectStatus);
-
-        Label transitionStatus = new()
-        {
-            Text = "Local transition: none.",
-            Position = new Vector2(24, 570),
-        };
-        transitionStatus.AddThemeFontSizeOverride("font_size", 15);
+        Label transitionStatus = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(leftX, 322),
+            new Vector2(columnWidth, 48),
+            10,
+            new Color("d8c6ff"));
         parent.AddChild(transitionStatus);
 
-        Label entityStatus = new()
-        {
-            Text = "Placeholder entities: none.",
-            Position = new Vector2(24, 600),
-        };
-        entityStatus.AddThemeFontSizeOverride("font_size", 15);
+        Label entityStatus = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(rightX, 178),
+            new Vector2(columnWidth, 48),
+            10,
+            Colors.White);
         parent.AddChild(entityStatus);
-
-        Label entityInteractionStatus = new()
-        {
-            Text = "Placeholder interaction: none.",
-            Position = new Vector2(24, 630),
-        };
-        entityInteractionStatus.AddThemeFontSizeOverride("font_size", 15);
+        Label entityInteractionStatus = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(rightX, 226),
+            new Vector2(columnWidth, 48),
+            10,
+            Colors.White);
         parent.AddChild(entityInteractionStatus);
-
-        Label dialogueStatus = new()
-        {
-            Text = "Placeholder dialogue: none.",
-            Position = new Vector2(24, 660),
-        };
-        dialogueStatus.AddThemeFontSizeOverride("font_size", 15);
-        dialogueStatus.AddThemeColorOverride("font_color", new Color("c6e5ff"));
+        Label dialogueStatus = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(rightX, 274),
+            new Vector2(columnWidth, 58),
+            10,
+            new Color("c6e5ff"));
         parent.AddChild(dialogueStatus);
-
-        Label fieldSearchStatus = new()
-        {
-            Text = "Synthetic field search: none.",
-            Position = new Vector2(24, 690),
-        };
-        fieldSearchStatus.AddThemeFontSizeOverride("font_size", 15);
-        fieldSearchStatus.AddThemeColorOverride("font_color", new Color("b8f2c2"));
+        Label fieldSearchStatus = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(rightX, 332),
+            new Vector2(columnWidth, 48),
+            10,
+            new Color("b8f2c2"));
         parent.AddChild(fieldSearchStatus);
-
-        Label itemAcquisitionStatus = new()
-        {
-            Text = "Placeholder inventory: empty.",
-            Position = new Vector2(24, 720),
-        };
-        itemAcquisitionStatus.AddThemeFontSizeOverride("font_size", 15);
-        itemAcquisitionStatus.AddThemeColorOverride("font_color", new Color("ffe2a8"));
+        Label itemAcquisitionStatus = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(rightX, 380),
+            new Vector2(columnWidth, 52),
+            10,
+            new Color("ffe2a8"));
         parent.AddChild(itemAcquisitionStatus);
-
-        Label outboundTransitionStatus = new()
-        {
-            Text = "Outbound transition: none.",
-            Position = new Vector2(24, 750),
-        };
-        outboundTransitionStatus.AddThemeFontSizeOverride("font_size", 15);
-        outboundTransitionStatus.AddThemeColorOverride("font_color", new Color("d8c6ff"));
+        Label outboundTransitionStatus = DeckLabel(
+            ActionDeckBounds.Position + new Vector2(leftX, 370),
+            new Vector2(columnWidth, 62),
+            10,
+            new Color("d8c6ff"));
         parent.AddChild(outboundTransitionStatus);
 
         return new Map3Presenter(
             viewport,
             status,
+            controls,
+            mapLegend,
             contextStatus,
             eventRequestStatus,
             effectStatus,
@@ -321,12 +354,33 @@ internal sealed class Map3Presenter
             outboundTransitionStatus);
     }
 
+    private static Label DeckLabel(
+        Vector2 position,
+        Vector2 size,
+        int fontSize,
+        Color color)
+    {
+        Label label = new()
+        {
+            Position = position,
+            Size = size,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            ClipText = true,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        label.AddThemeFontSizeOverride("font_size", fontSize);
+        label.AddThemeColorOverride("font_color", color);
+        return label;
+    }
+
     internal void Project(GameSessionSnapshot snapshot, string outcome)
     {
         Map3PresentationProjection projection =
             Map3PresentationProjection.Create(snapshot, outcome);
         _viewport.Project(snapshot);
         _status.Text = projection.Status;
+        _controls.Text = projection.ControlGuide;
+        _mapLegend.Text = projection.MapLegend;
         _contextStatus.Text = projection.ContextStatus;
         _eventRequestStatus.Text = projection.EventRequestStatus;
         _effectStatus.Text = projection.EffectStatus;

@@ -17,7 +17,7 @@ Status terms:
 
 | Capability | Owner and surface | Status | Retained boundary |
 | --- | --- | --- | --- |
-| Public-synthetic Map 3 admission and exploration | Content package, Domain movement, Application `GameSession`, Godot viewport | **Implemented** | synthetic layout and walkability only; no original collision, route, or coordinates claim |
+| Public-synthetic Map 3 admission and exploration | Content package, Domain movement, Application `GameSession`, Godot viewport and action/status deck | **Implemented** | synthetic layout and walkability plus project-authored oriented/entity/blocked glyphs only; no original collision, route, coordinates, or presentation claim |
 | Public-synthetic context and interaction stack | setup/area/zone selection plus event/effect, local transition, entity/dialogue, search/discovery, and item-acquisition lifecycles | **Implemented** | project-authored identities, text, flags, items, cues, and effects; no original meaning or natural reach |
 | Public-synthetic outbound map transition | Application transition lifecycle and exact runtime catalog lookup | **Implemented** | destination is a tiny synthetic shell, not original Map 21 or an original warp |
 | Public-synthetic tactical battle depth | pure Domain 3-by-2 loop, deterministic single enemy response, typed victory/defeat and same-definition retry, Content definition, Application `GameSession` lifecycle, once-only victory world state, and thin Godot projection | **Implemented** | project-authored actor/enemy/grid/ranges/HP/damage/tie-break/flag/effect/setup/cues only; not Battle 01, original AI/combat/damage/RNG/rewards/after-program, natural admission, or fidelity |
@@ -33,6 +33,13 @@ Status terms:
 | Continuous Map 3-through-Battle 01 milestone | Research, design contracts, future Application/Domain/Godot work | **Unknown / NOT READY** | natural route, battle admission/playthrough/victory, endpoint, private presentation, and complete acceptance remain open |
 | Save/load and persistence | future milestone and save-system owner | **Unsupported / deferred** | no player-facing save, checkpoint, suspend, migration, or persistence adapter |
 | Complete H4 and 8C reference parity | future layered observation owners | **Unknown** | exact reached frame, palette, audio, hardware chronology, capture conditions, and accepted tolerances remain open |
+
+The playable presentation baseline fits the exploration action/status deck and the shared tactical
+battle panel inside the fixed 960-by-540 host canvas. Controls are named beside the typed state they
+affect; map and battle actors use color-independent glyphs and legends; battle HP, phase-specific next
+actions, cues, victory, defeat, retry, and return are projected from immutable session snapshots or typed
+command results. These are project-authored readability choices, not original UI, graphics, camera,
+timing, or fidelity evidence.
 
 ## Stable Compatibility Surfaces
 

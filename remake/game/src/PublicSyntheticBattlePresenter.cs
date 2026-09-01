@@ -16,18 +16,32 @@ internal sealed record PublicSyntheticBattlePresentationProjection
     private PublicSyntheticBattlePresentationProjection(
         bool visible,
         string title,
+        string instruction,
         string status,
         string cueStatus,
+        string legend,
+        int actorHitPoints,
+        int actorMaxHitPoints,
+        int enemyHitPoints,
+        int enemyMaxHitPoints,
         IEnumerable<PublicSyntheticBattleCellProjection> cells)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(title);
+        ArgumentException.ThrowIfNullOrWhiteSpace(instruction);
         ArgumentException.ThrowIfNullOrWhiteSpace(status);
         ArgumentException.ThrowIfNullOrWhiteSpace(cueStatus);
+        ArgumentException.ThrowIfNullOrWhiteSpace(legend);
         ArgumentNullException.ThrowIfNull(cells);
         Visible = visible;
         Title = title;
+        Instruction = instruction;
         Status = status;
         CueStatus = cueStatus;
+        Legend = legend;
+        ActorHitPoints = actorHitPoints;
+        ActorMaxHitPoints = actorMaxHitPoints;
+        EnemyHitPoints = enemyHitPoints;
+        EnemyMaxHitPoints = enemyMaxHitPoints;
         Cells = new ReadOnlyCollection<PublicSyntheticBattleCellProjection>(
             [.. cells]);
     }
@@ -36,9 +50,21 @@ internal sealed record PublicSyntheticBattlePresentationProjection
 
     internal string Title { get; }
 
+    internal string Instruction { get; }
+
     internal string Status { get; }
 
     internal string CueStatus { get; }
+
+    internal string Legend { get; }
+
+    internal int ActorHitPoints { get; }
+
+    internal int ActorMaxHitPoints { get; }
+
+    internal int EnemyHitPoints { get; }
+
+    internal int EnemyMaxHitPoints { get; }
 
     internal IReadOnlyList<PublicSyntheticBattleCellProjection> Cells { get; }
 
@@ -64,19 +90,31 @@ internal sealed record PublicSyntheticBattlePresentationProjection
             return new PublicSyntheticBattlePresentationProjection(
                 visible: true,
                 "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
+                "RETURNED · exploration resumed",
                 $"{returned.Completion.Battle} completed; returned to " +
                     $"{returned.Snapshot.Exploration.Map} exploration; " +
                     $"applied {returned.WorldEffect.Effect} / " +
                     $"{returned.WorldEffect.Flag}.",
                 $"Cue #{returned.Cue.Sequence} {returned.Cue.Cue}",
+                "A actor · E enemy · ▣ cursor",
+                0,
+                0,
+                0,
+                0,
                 []);
         }
 
         return new PublicSyntheticBattlePresentationProjection(
             visible: false,
             "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
+            "B request battle · N acknowledge entry",
             "No public-synthetic battle is active.",
             "Battle cue: none.",
+            "A actor · E enemy · ▣ cursor",
+            0,
+            0,
+            0,
+            0,
             []);
     }
 
@@ -100,17 +138,29 @@ internal sealed record PublicSyntheticBattlePresentationProjection
             return new PublicSyntheticBattlePresentationProjection(
                 visible: true,
                 "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
+                "RETURNED · private traversal resumed",
                 $"{returned.Completion.Battle} completed; returned to the same " +
                     $"private {returned.Snapshot.Map} traversal state.",
                 $"Cue #{returned.Cue.Sequence} {returned.Cue.Cue}",
+                "A actor · E enemy · ▣ cursor",
+                0,
+                0,
+                0,
+                0,
                 []);
         }
 
         return new PublicSyntheticBattlePresentationProjection(
             visible: false,
             "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
+            "B request battle · N acknowledge entry",
             "No private battle bridge is active.",
             "Battle cue: none.",
+            "A actor · E enemy · ▣ cursor",
+            0,
+            0,
+            0,
+            0,
             []);
     }
 
@@ -137,13 +187,32 @@ internal sealed record PublicSyntheticBattlePresentationProjection
         return new PublicSyntheticBattlePresentationProjection(
             visible: true,
             "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
+            InstructionFor(battleState),
             $"{battle}  {battleState.Phase}  " +
-                $"Actor HP {battleState.ActorHitPoints}  " +
-                $"Enemy HP {battleState.EnemyHitPoints}  " +
+                $"Actor HP {battleState.ActorHitPoints}/{battleState.Rules.ActorMaxHitPoints}  " +
+                $"Enemy HP {battleState.EnemyHitPoints}/{battleState.Rules.EnemyMaxHitPoints}  " +
                 $"Outcome {battleState.Outcome}  {outcome}",
             cueStatus,
+            "A actor · E enemy · ▣ cursor · · open cell",
+            battleState.ActorHitPoints,
+            battleState.Rules.ActorMaxHitPoints,
+            battleState.EnemyHitPoints,
+            battleState.Rules.EnemyMaxHitPoints,
             cells);
     }
+
+    private static string InstructionFor(TacticalBattleState state) => state.Phase switch
+    {
+        TacticalBattlePhase.MoveSelection =>
+            "MOVE · I/J/K/L cursor · Space confirm destination",
+        TacticalBattlePhase.TargetSelection =>
+            "TARGET · I/J/K/L cursor · Space attack · Backspace cancel",
+        TacticalBattlePhase.Completed when state.Outcome == TacticalBattleOutcome.Victory =>
+            "VICTORY · M return to exploration",
+        TacticalBattlePhase.Completed when state.Outcome == TacticalBattleOutcome.Defeat =>
+            "DEFEAT · M retry battle",
+        _ => "Battle state unavailable",
+    };
 
     private static string FormatCue(GameSessionCommandResult? result, long lastCueSequence) =>
         result switch
@@ -188,25 +257,46 @@ internal sealed record PublicSyntheticBattlePresentationProjection
 
 internal sealed class PublicSyntheticBattlePresenter
 {
+    internal static readonly Vector2 CanvasSize = new(960, 540);
+    internal static readonly Rect2 PanelBounds = new(600, 82, 340, 442);
+
     private readonly Control _panel;
     private readonly Label _title;
+    private readonly Label _instruction;
     private readonly Label _status;
     private readonly Label _cueStatus;
+    private readonly Label _legend;
+    private readonly Label _actorHealthLabel;
+    private readonly ColorRect _actorHealthFill;
+    private readonly Label _enemyHealthLabel;
+    private readonly ColorRect _enemyHealthFill;
     private readonly IReadOnlyList<ColorRect> _cells;
     private readonly IReadOnlyList<Label> _cellLabels;
 
     private PublicSyntheticBattlePresenter(
         Control panel,
         Label title,
+        Label instruction,
         Label status,
         Label cueStatus,
+        Label legend,
+        Label actorHealthLabel,
+        ColorRect actorHealthFill,
+        Label enemyHealthLabel,
+        ColorRect enemyHealthFill,
         IReadOnlyList<ColorRect> cells,
         IReadOnlyList<Label> cellLabels)
     {
         _panel = panel;
         _title = title;
+        _instruction = instruction;
         _status = status;
         _cueStatus = cueStatus;
+        _legend = legend;
+        _actorHealthLabel = actorHealthLabel;
+        _actorHealthFill = actorHealthFill;
+        _enemyHealthLabel = enemyHealthLabel;
+        _enemyHealthFill = enemyHealthFill;
         _cells = cells;
         _cellLabels = cellLabels;
     }
@@ -216,8 +306,8 @@ internal sealed class PublicSyntheticBattlePresenter
         ArgumentNullException.ThrowIfNull(parent);
         Control panel = new()
         {
-            Position = new Vector2(540, 95),
-            Size = new Vector2(700, 360),
+            Position = PanelBounds.Position,
+            Size = PanelBounds.Size,
             Visible = false,
         };
         parent.AddChild(panel);
@@ -227,11 +317,26 @@ internal sealed class PublicSyntheticBattlePresenter
             Size = panel.Size,
         };
         panel.AddChild(background);
-        Label title = LabelAt(panel, new Vector2(18, 14), 18, new Color("ffbd59"));
-        Label status = LabelAt(panel, new Vector2(18, 48), 15, Colors.White);
-        Label cueStatus = LabelAt(panel, new Vector2(18, 78), 14, new Color("c6e5ff"));
-        Label controls = LabelAt(panel, new Vector2(18, 310), 14, new Color("b8f2c2"));
-        controls.Text = "B/N enter · IJKL cursor · Space confirm · Backspace cancel · M return/retry";
+        Label title = LabelAt(
+            panel, new Vector2(14, 10), new Vector2(312, 42), 16, new Color("ffbd59"));
+        Label instruction = LabelAt(
+            panel, new Vector2(14, 54), new Vector2(312, 42), 13, new Color("b8f2c2"));
+        Label status = LabelAt(
+            panel, new Vector2(14, 98), new Vector2(312, 58), 11, Colors.White);
+        Label cueStatus = LabelAt(
+            panel, new Vector2(14, 158), new Vector2(312, 48), 10, new Color("c6e5ff"));
+
+        Label actorHealthLabel = LabelAt(
+            panel, new Vector2(14, 208), new Vector2(148, 20), 11, new Color("75c7ff"));
+        ColorRect actorHealthTrack = HealthTrack(panel, new Vector2(14, 230));
+        ColorRect actorHealthFill = HealthFill(actorHealthTrack, new Color("75c7ff"));
+        Label enemyHealthLabel = LabelAt(
+            panel, new Vector2(176, 208), new Vector2(150, 20), 11, new Color("ff7d7d"));
+        ColorRect enemyHealthTrack = HealthTrack(panel, new Vector2(176, 230));
+        ColorRect enemyHealthFill = HealthFill(enemyHealthTrack, new Color("ff7d7d"));
+
+        Label legend = LabelAt(
+            panel, new Vector2(224, 264), new Vector2(102, 92), 11, new Color("ffe2a8"));
 
         List<ColorRect> cells = [];
         List<Label> cellLabels = [];
@@ -241,15 +346,16 @@ internal sealed class PublicSyntheticBattlePresenter
             int y = index / 3;
             ColorRect cell = new()
             {
-                Position = new Vector2(18 + (x * 72), 120 + (y * 72)),
-                Size = new Vector2(62, 62),
+                Position = new Vector2(14 + (x * 66), 264 + (y * 66)),
+                Size = new Vector2(58, 58),
                 Color = new Color("31415f"),
             };
             panel.AddChild(cell);
             Label marker = LabelAt(
                 panel,
-                cell.Position + new Vector2(20, 14),
-                22,
+                cell.Position + new Vector2(16, 12),
+                new Vector2(30, 32),
+                20,
                 Colors.White);
             cells.Add(cell);
             cellLabels.Add(marker);
@@ -258,8 +364,14 @@ internal sealed class PublicSyntheticBattlePresenter
         return new PublicSyntheticBattlePresenter(
             panel,
             title,
+            instruction,
             status,
             cueStatus,
+            legend,
+            actorHealthLabel,
+            actorHealthFill,
+            enemyHealthLabel,
+            enemyHealthFill,
             cells.AsReadOnly(),
             cellLabels.AsReadOnly());
     }
@@ -288,8 +400,18 @@ internal sealed class PublicSyntheticBattlePresenter
     {
         _panel.Visible = projection.Visible;
         _title.Text = projection.Title;
+        _instruction.Text = projection.Instruction;
         _status.Text = projection.Status;
         _cueStatus.Text = projection.CueStatus;
+        _legend.Text = projection.Legend;
+        _actorHealthLabel.Text = projection.ActorMaxHitPoints == 0
+            ? "ACTOR HP —"
+            : $"ACTOR HP {projection.ActorHitPoints}/{projection.ActorMaxHitPoints}";
+        _enemyHealthLabel.Text = projection.EnemyMaxHitPoints == 0
+            ? "ENEMY HP —"
+            : $"ENEMY HP {projection.EnemyHitPoints}/{projection.EnemyMaxHitPoints}";
+        SetHealthFill(_actorHealthFill, projection.ActorHitPoints, projection.ActorMaxHitPoints);
+        SetHealthFill(_enemyHealthFill, projection.EnemyHitPoints, projection.EnemyMaxHitPoints);
         for (int index = 0; index < _cells.Count; index++)
         {
             PublicSyntheticBattleCellProjection? cell =
@@ -304,7 +426,10 @@ internal sealed class PublicSyntheticBattlePresenter
             _cells[index].Color = cell.HasCursor
                 ? new Color("b58b2a")
                 : new Color("31415f");
-            _cellLabels[index].Text = cell.HasActor ? "A" : cell.HasEnemy ? "E" : "·";
+            string occupant = cell.HasActor ? "A" : cell.HasEnemy ? "E" : string.Empty;
+            _cellLabels[index].Text = cell.HasCursor
+                ? $"▣{occupant}"
+                : occupant.Length == 0 ? "·" : occupant;
             _cellLabels[index].AddThemeColorOverride(
                 "font_color",
                 cell.HasActor
@@ -318,16 +443,52 @@ internal sealed class PublicSyntheticBattlePresenter
     private static Label LabelAt(
         Node parent,
         Vector2 position,
+        Vector2 size,
         int fontSize,
         Color color)
     {
         Label label = new()
         {
             Position = position,
+            Size = size,
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            ClipText = true,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
         };
         label.AddThemeFontSizeOverride("font_size", fontSize);
         label.AddThemeColorOverride("font_color", color);
         parent.AddChild(label);
         return label;
+    }
+
+    private static ColorRect HealthTrack(Node parent, Vector2 position)
+    {
+        ColorRect track = new()
+        {
+            Position = position,
+            Size = new Vector2(148, 12),
+            Color = new Color("374159"),
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        parent.AddChild(track);
+        return track;
+    }
+
+    private static ColorRect HealthFill(ColorRect track, Color color)
+    {
+        ColorRect fill = new()
+        {
+            Size = track.Size,
+            Color = color,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        track.AddChild(fill);
+        return fill;
+    }
+
+    private static void SetHealthFill(ColorRect fill, int hitPoints, int maximum)
+    {
+        float ratio = maximum == 0 ? 0 : (float)hitPoints / maximum;
+        fill.Size = new Vector2(148 * ratio, 12);
     }
 }
