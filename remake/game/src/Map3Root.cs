@@ -48,6 +48,12 @@ public sealed partial class Map3Root : Node2D
 
         if (_runtimeProfile == Map3RuntimeProfile.PrivateLocal)
         {
+            if (_privateBattleBridgeEnabled)
+            {
+                _inputAdapter?.PollPublicSynthetic();
+                return;
+            }
+
             ExplorationDirection? direction =
                 _inputAdapter?.PollPrivateOriginalMapMovement();
             if (direction is ExplorationDirection privateMovement)

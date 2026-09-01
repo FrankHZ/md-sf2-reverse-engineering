@@ -11,7 +11,7 @@ make Godot an evidence owner.
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
 | `public-synthetic` | default, or explicit public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
-| `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path | caller-owned local inputs admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal and optional project-authored base composition; **not full original fidelity** |
+| `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path | caller-owned local inputs admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition, and explicit synthetic battle bridge; **not full original fidelity** |
 
 The runtime always displays the appropriate disclosure:
 
@@ -57,6 +57,13 @@ The optional base view is independently explicit and requires all three addition
 Supplying any visual path without the opt-in, omitting one input, or using a relative path makes the
 requested profile unavailable. The traversal-only private profile remains valid without these options.
 
+When the base view is admitted, a manual semantic input at the controlled start may request the
+project-authored tactical micro-battle from the tracked public-synthetic package. This does not infer
+an original battle from the private input. Application pauses private traversal while the bridge is
+pending or active, owns the tactical lifecycle, and returns to the exact same private traversal
+snapshot. Public-synthetic completion flags, effects, setup, facing, and return-map state do not cross
+the bridge.
+
 Missing, relative, unreadable, malformed, or incompatible input makes PrivateLocal **Unavailable**.
 The host does not silently start PublicSynthetic while describing the result as private. Unknown profile
 names, duplicate options, split options without explicit values, and private-only smoke flags under the
@@ -100,9 +107,11 @@ inputs are registered centrally.
 
 PrivateLocal provides semantic traversal, project-authored diagnostics, and an optional Godot base
 view. The view consumes the accepted visual runtime binding and reprojects after movement or admitted
-working-layout mutation. Its 12-by-7 player-centered crop, empty-pixel background, Mega Drive channel
-expansion, and Godot image/marker presentation are explicit project-authored choices. They are not an
-original screenshot or a fidelity backend.
+working-layout mutation. It may also present the explicitly requested project-authored tactical bridge
+without changing ownership of either traversal or battle rules. Its 12-by-7 player-centered crop,
+empty-pixel background, Mega Drive channel expansion, Godot image/marker presentation, and manual
+battle trigger are explicit project-authored choices. They are not an original screenshot or a
+fidelity backend.
 
 The profile therefore does not claim:
 

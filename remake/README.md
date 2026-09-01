@@ -9,10 +9,11 @@ making engine code an evidence owner.
 Phase 4 implementation is active through bounded Map 3 slices. The current runtime supports a
 tracked public-synthetic exploration shell, one project-authored 3-by-2 tactical micro-battle with
 completion, an atomic once-only synthetic world-state effect, exploration return, and a separate
-private-local traversal shell with an opt-in project-authored Map 3 base view. The micro-battle proves only the synthetic Exploration -> Battle ->
-Completed -> project-authored completion state -> Exploration product topology. It is not Battle 01,
-an original after-battle program, or the accepted continuous Map 3-through-Battle 01 milestone, which
-remains **NOT READY**.
+private-local traversal shell with an opt-in project-authored Map 3 base view. That private base view
+can explicitly enter the same project-authored tactical reducer at the controlled start and return to
+the exact same private traversal snapshot without applying the public synthetic world effect. This
+manual bridge is not natural battle admission, Battle 01, an original after-battle program, or the
+accepted continuous Map 3-through-Battle 01 milestone, which remains **NOT READY**.
 
 The two persistent runtime disclosures are part of the product boundary:
 
@@ -27,7 +28,7 @@ Current capabilities and retained Unknowns are summarized in
 | Profile | Input boundary | Current purpose |
 | --- | --- | --- |
 | `public-synthetic` | tracked, project-authored content only | default interactive shell, logic tests, local Godot gate, and redistribution-safe export smoke |
-| `private-local` | explicit caller-selected ignored inputs with fixed admission checks | bounded original Map 3 traversal, local diagnostics, and an optional project-authored base view; not a full-original runtime |
+| `private-local` | explicit caller-selected ignored inputs with fixed admission checks | bounded original Map 3 traversal, local diagnostics, an optional project-authored base view, and a manual project-authored battle bridge; not a full-original runtime |
 
 Private execution is never inferred from a file's presence and never silently falls back while
 reporting private success. See [Runtime Profiles and Trust](./docs/runtime-profiles-and-trust.md).
@@ -78,6 +79,9 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
   enemy, grid, hit points, damage, completion flag/effect/setup, cues, and return state make no claim
   about the original game. Completion state is applied once by `GameSession`; it prevents synthetic
   re-entry and remains isolated from restart.
+- The private-local battle bridge reuses only that tactical definition, commands, cues, and Domain
+  reducer. It pauses private traversal while active, returns to the same private snapshot, and does
+  not import the public completion flag, effect, setup, facing, or return-map state.
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
   ignored and local. None is committed, uploaded, or embedded in the public package.
 - Public-synthetic import/export success grants no right to distribute original content.

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Godot;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter;
@@ -12,8 +13,22 @@ internal static class PrivateMap3SmokeDriver
         SceneTree sceneTree,
         GameSession session,
         PrivateMap3Presenter presenter,
+        long smokeStarted) =>
+        Run(sceneTree, session, presenter, battlePresenter: null, smokeStarted);
+
+    internal static void Run(
+        SceneTree sceneTree,
+        GameSession session,
+        PrivateMap3Presenter presenter,
+        PublicSyntheticBattlePresenter? battlePresenter,
         long smokeStarted)
     {
+        if (session.PrivateOriginalMapBattleBridge is not null &&
+            !RunBattleBridge(sceneTree, session, presenter, battlePresenter))
+        {
+            return;
+        }
+
         PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
         PrivateOriginalMapMoveApplied? moved = null;
         ExplorationDirection movedDirection = ExplorationDirection.East;
@@ -141,6 +156,109 @@ internal static class PrivateMap3SmokeDriver
         Map3Root.TracePrivateStage(enabled: true, "quit-scheduled", smokeStarted);
         sceneTree.Quit(0);
     }
+
+    private static bool RunBattleBridge(
+        SceneTree sceneTree,
+        GameSession session,
+        PrivateMap3Presenter presenter,
+        PublicSyntheticBattlePresenter? battlePresenter)
+    {
+        PrivateOriginalMapBattleBridgeSnapshot ready =
+            session.PrivateOriginalMapBattleBridge!;
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+        if (battlePresenter is null || !presenter.ExpectsBaseProjection ||
+            ready.Status != PrivateOriginalMapBattleBridgeStatus.Ready)
+        {
+            Fail(
+                sceneTree,
+                presenter,
+                "PrivateLocal battle bridge presentation was not ready.");
+            return false;
+        }
+
+        PrivateOriginalMapBattleBridgeRequested? requested =
+            session.ApplyPrivateOriginalMapBattleBridge(
+                new RequestPrivateOriginalMapBattleBridgeCommand(
+                    ready.Definition.Bridge,
+                    before.SimulationStep)) as PrivateOriginalMapBattleBridgeRequested;
+        PrivateOriginalMapBattleBridgeAdmitted? admitted = requested is null
+            ? null
+            : session.ApplyPrivateOriginalMapBattleBridge(
+                new AcknowledgePublicSyntheticBattleEntryCommand(
+                    requested.Bridge.Definition.Request,
+                    requested.Bridge.Definition.Rules.Battle,
+                    requested.Cue.Sequence)) as PrivateOriginalMapBattleBridgeAdmitted;
+        if (admitted?.Bridge.BattleState?.Phase != TacticalBattlePhase.MoveSelection)
+        {
+            Fail(sceneTree, presenter, "PrivateLocal battle bridge was not admitted.");
+            return false;
+        }
+
+        battlePresenter.Project(
+            admitted.Bridge,
+            "Project-authored tactical battle admitted",
+            admitted);
+        if (!MoveBattleCursor(session) ||
+            session.ApplyPrivateOriginalMapBattleBridge(
+                new ConfirmPublicSyntheticBattleSelectionCommand()) is not
+                    PrivateOriginalMapBattleBridgeSelectionConfirmed
+                { Outcome: TacticalSelectionOutcome.MoveConfirmed } ||
+            !MoveBattleCursor(session) ||
+            session.ApplyPrivateOriginalMapBattleBridge(
+                new CancelPublicSyntheticBattleSelectionCommand()) is not
+                    PrivateOriginalMapBattleBridgeSelectionCancelled
+                { Outcome: TacticalCancelOutcome.ReturnedToMoveSelection } ||
+            !MoveBattleCursor(session) ||
+            session.ApplyPrivateOriginalMapBattleBridge(
+                new ConfirmPublicSyntheticBattleSelectionCommand()) is not
+                    PrivateOriginalMapBattleBridgeSelectionConfirmed
+                { Outcome: TacticalSelectionOutcome.MoveConfirmed } ||
+            !MoveBattleCursor(session) ||
+            session.ApplyPrivateOriginalMapBattleBridge(
+                new ConfirmPublicSyntheticBattleSelectionCommand()) is not
+                    PrivateOriginalMapBattleBridgeSelectionConfirmed
+                {
+                    Outcome: TacticalSelectionOutcome.BattleCompleted,
+                    Completion: not null,
+                } completed)
+        {
+            Fail(sceneTree, presenter, "PrivateLocal tactical bridge did not complete.");
+            return false;
+        }
+
+        PrivateOriginalMapBattleBridgeReturned? returned =
+            session.ApplyPrivateOriginalMapBattleBridge(
+                new AcknowledgePublicSyntheticBattleCompletionCommand(
+                    completed.Completion.Battle,
+                    completed.Completion.CueSequence)) as
+                PrivateOriginalMapBattleBridgeReturned;
+        if (returned is null ||
+            returned.Bridge.Status != PrivateOriginalMapBattleBridgeStatus.Returned ||
+            !ReferenceEquals(before, returned.Snapshot) ||
+            !ReferenceEquals(before, session.PrivateOriginalMapSnapshot) ||
+            returned.Snapshot.SimulationStep != before.SimulationStep ||
+            !ReferenceEquals(returned.Snapshot.WorkingLayout, before.WorkingLayout))
+        {
+            Fail(
+                sceneTree,
+                presenter,
+                "PrivateLocal battle bridge did not restore the same traversal state.");
+            return false;
+        }
+
+        battlePresenter.Project(
+            returned.Bridge,
+            "Project-authored battle complete; private Map 3 restored",
+            returned);
+        presenter.Project(returned.Snapshot, "Battle bridge returned");
+        return true;
+    }
+
+    private static bool MoveBattleCursor(GameSession session) =>
+        session.ApplyPrivateOriginalMapBattleBridge(
+            new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)) is
+                PrivateOriginalMapBattleBridgeCursorMoved
+        { Outcome: TacticalCursorMoveOutcome.Moved };
 
     private static bool RunStepCopyDiagnostic(
         SceneTree sceneTree,
