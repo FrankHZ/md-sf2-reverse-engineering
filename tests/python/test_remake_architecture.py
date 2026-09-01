@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import xml.etree.ElementTree as element_tree
 from pathlib import Path
 
@@ -562,3 +563,149 @@ def test_public_workflow_is_one_lightweight_tracked_input_job() -> None:
     )
     for fragment in forbidden_fragments:
         assert fragment not in workflow
+
+
+def test_local_presentation_asset_pack_schema_and_reader_close_private_mount() -> None:
+    schema_path = REMAKE / "schemas/local-presentation-asset-pack-v1.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+
+    def assert_closed_objects(value: object) -> None:
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                assert value.get("additionalProperties") is False
+            for child in value.values():
+                assert_closed_objects(child)
+        elif isinstance(value, list):
+            for child in value:
+                assert_closed_objects(child)
+
+    assert_closed_objects(schema)
+    properties = schema["properties"]
+    assert properties["schemaVersion"] == {"const": 1}
+    assert properties["packageId"] == {
+        "const": "sf2-local-presentation-asset-pack-v1"
+    }
+    assert properties["repositoryId"] == {"const": "md-sf2-remake-assets"}
+    assert properties["profile"] == {"const": "private-local"}
+    assert properties["logicalPresentation"]["properties"] == {
+        "width": {"const": 960},
+        "height": {"const": 540},
+    }
+    buckets = schema["$defs"]["rasterAsset"]["properties"]["buckets"]
+    assert buckets["minItems"] == buckets["maxItems"] == 2
+    assert [
+        item["allOf"][1]["properties"]["scale"]["const"]
+        for item in buckets["prefixItems"]
+    ] == [2, 4]
+    assert schema["$defs"]["bucket"]["properties"]["mediaType"] == {
+        "const": "image/png"
+    }
+    semantic_id_pattern = "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+    assert schema["$defs"]["source"]["properties"]["assetId"]["pattern"] == (
+        semantic_id_pattern
+    )
+    assert schema["$defs"]["rasterAsset"]["properties"]["assetId"][
+        "pattern"
+    ] == semantic_id_pattern
+    assert schema["$defs"]["bucket"]["properties"]["byteLength"][
+        "maximum"
+    ] == 256 * 1024 * 1024
+    assert schema["$defs"]["bucket"]["properties"]["filter"] == {
+        "enum": ["nearest", "linear"]
+    }
+    assert schema["$defs"]["bucket"]["properties"]["colorSpace"] == {
+        "const": "srgb"
+    }
+    assert schema["$defs"]["bucket"]["properties"]["alphaMode"] == {
+        "const": "straight"
+    }
+
+    reader_source = (
+        REMAKE / "src/Sf2.Remake.Content/LocalPresentationAssetPackReader.cs"
+    ).read_text(encoding="utf-8")
+    assert reader_source.count("public LocalPresentationAssetPackReader(") == 1
+    assert "string assetRoot," in reader_source
+    assert "string mountedAssetRepositoryCommit)" in reader_source
+    assert "File.ReadAllBytes" not in reader_source
+    assert reader_source.index("stream.Length != expectedLength") < reader_source.index(
+        "SHA256.HashData(stream)"
+    )
+    assert "LocalPresentationAssetPackAdmission.IsCanonicalSemanticId(assetId)" in (
+        reader_source
+    )
+    assert "LocalPresentationAssetPackAdmission.IsCanonicalSemanticId(sourceAssetId)" in (
+        reader_source
+    )
+
+    admission_source = (
+        REMAKE
+        / "src/Sf2.Remake.Application/Content/LocalPresentationAssetPackAdmission.cs"
+    ).read_text(encoding="utf-8")
+    assert "public const int MaximumManifestBytes = 4 * 1024 * 1024;" in (
+        admission_source
+    )
+    assert "public const long MaximumRasterPayloadBytes = 256L * 1024 * 1024;" in (
+        admission_source
+    )
+    assert "public static bool IsCanonicalSemanticId(string? value)" in admission_source
+    for forbidden in (
+        "using Godot",
+        "System.Diagnostics",
+        "Process.Start",
+        '"git"',
+        '".git"',
+        "FromDocumentBytes",
+        "FromBytes",
+    ):
+        assert forbidden not in reader_source
+
+    definition_source = (
+        REMAKE
+        / "src/Sf2.Remake.Application/Content/LocalPresentationAssetPackDefinition.cs"
+    ).read_text(encoding="utf-8")
+    for forbidden in (
+        "System.IO",
+        "System.Text.Json",
+        "using Godot",
+        "RuntimePath",
+        "PayloadBytes",
+        "FilePath",
+    ):
+        assert forbidden not in definition_source
+
+    tracked = subprocess.run(
+        ["git", "-C", str(ROOT), "ls-files"],
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout.splitlines()
+    product_media_extensions = {
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+        ".svg",
+        ".bmp",
+        ".gif",
+        ".ase",
+        ".aseprite",
+        ".psd",
+        ".kra",
+        ".ogg",
+        ".wav",
+        ".mp3",
+        ".flac",
+        ".mp4",
+        ".webm",
+        ".ttf",
+        ".otf",
+        ".woff",
+        ".woff2",
+    }
+    assert [
+        path
+        for path in tracked
+        if Path(path).suffix.lower() in product_media_extensions
+        and not path.startswith(("remake/tests/", "tests/fixtures/"))
+    ] == []

@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://md-sf2.local/schemas/local-presentation-asset-pack-v1.schema.json",
+  "title": "Local Presentation Asset Pack v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "packageId",
+    "repositoryId",
+    "profile",
+    "capabilities",
+    "logicalPresentation",
+    "assets"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "packageId": { "const": "sf2-local-presentation-asset-pack-v1" },
+    "repositoryId": { "const": "md-sf2-remake-assets" },
+    "profile": { "const": "private-local" },
+    "capabilities": {
+      "type": "array",
+      "prefixItems": [
+        { "const": "private-local-presentation-asset-pack-admission-v1" }
+      ],
+      "items": false,
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "logicalPresentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "const": 960 },
+        "height": { "const": 540 }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4096,
+      "items": { "$ref": "#/$defs/rasterAsset" }
+    }
+  },
+  "$defs": {
+    "logicalSize": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1, "maximum": 536870911 },
+        "height": { "type": "integer", "minimum": 1, "maximum": 536870911 }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assetId", "sha256"],
+      "properties": {
+        "assetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+        },
+        "sha256": { "type": "string", "pattern": "^[0-9A-Fa-f]{64}$" }
+      }
+    },
+    "derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policyId",
+        "generatorId",
+        "generatorVersion",
+        "generatorArtifactSha256"
+      ],
+      "properties": {
+        "policyId": { "type": "string", "minLength": 1 },
+        "generatorId": { "type": "string", "minLength": 1 },
+        "generatorVersion": { "type": "string", "minLength": 1 },
+        "generatorArtifactSha256": {
+          "type": "string",
+          "pattern": "^[0-9A-Fa-f]{64}$"
+        }
+      }
+    },
+    "bucket": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scale",
+        "runtimePath",
+        "width",
+        "height",
+        "byteLength",
+        "sha256",
+        "mediaType",
+        "filter",
+        "mipmaps",
+        "repeat",
+        "colorSpace",
+        "alphaMode"
+      ],
+      "properties": {
+        "scale": { "enum": [2, 4] },
+        "runtimePath": {
+          "type": "string",
+          "pattern": "^runtime/[A-Za-z0-9][A-Za-z0-9._@-]*(?:/[A-Za-z0-9][A-Za-z0-9._@-]*)*$"
+        },
+        "width": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "height": { "type": "integer", "minimum": 1, "maximum": 2147483647 },
+        "byteLength": { "type": "integer", "minimum": 1, "maximum": 268435456 },
+        "sha256": { "type": "string", "pattern": "^[0-9A-Fa-f]{64}$" },
+        "mediaType": { "const": "image/png" },
+        "filter": { "enum": ["nearest", "linear"] },
+        "mipmaps": { "type": "boolean" },
+        "repeat": { "type": "boolean" },
+        "colorSpace": { "const": "srgb" },
+        "alphaMode": { "const": "straight" }
+      }
+    },
+    "rasterAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assetId", "kind", "logicalSize", "source", "derivation", "buckets"],
+      "properties": {
+        "assetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+        },
+        "kind": { "const": "raster-image" },
+        "logicalSize": { "$ref": "#/$defs/logicalSize" },
+        "source": { "$ref": "#/$defs/source" },
+        "derivation": { "$ref": "#/$defs/derivation" },
+        "buckets": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "allOf": [
+                { "$ref": "#/$defs/bucket" },
+                { "properties": { "scale": { "const": 2 } } }
+              ]
+            },
+            {
+              "allOf": [
+                { "$ref": "#/$defs/bucket" },
+                { "properties": { "scale": { "const": 4 } } }
+              ]
+            }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    }
+  }
+}
