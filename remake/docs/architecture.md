@@ -50,8 +50,8 @@ package reader and two private-local readers for canonical map import and base v
 
 Two areas currently concentrate more responsibility than the target shape:
 
-- `Map3Root` and its private partial own profile dispatch, composition, command calls, and smoke
-  orchestration. Public-synthetic action registration and polling plus private-local movement polling
+- `Map3Root` and its private partial own profile dispatch, composition, command calls, and private
+  smoke orchestration. Public-synthetic action registration and polling plus private-local movement polling
   delegate to the internal `Map3InputAdapter`; public-synthetic node ownership, formatting, and
   snapshot projection delegate to the internal `Map3Presenter`; private-local and unavailable
   diagnostic node ownership, formatting, and typed viewport projection delegate to the internal
@@ -78,8 +78,15 @@ Internal replaceable collaborators may own:
 - `PrivateMap3Presenter`: display-only private-local/unavailable plans plus authoritative private
   snapshot to diagnostic nodes, status, and the existing typed traversal viewport (**implemented**;
   smoke only reads its current projection);
-- public-synthetic and private-local composition builders returning one runtime handle; and
-- `Map3SmokeDriver`: deterministic command scripts and stable observation serialization.
+- `PublicSyntheticMap3SmokeDriver`: the deterministic public command script, stable observation
+  serialization, smoke-only failure projection, and quit (**implemented**); and
+- a private-local smoke driver with the same narrow observation role (**not implemented**).
+
+Profile selection and composition intentionally remain in `Map3Root`. Public startup consumes tracked
+Godot bytes and the public typed admission result, while private startup alone owns the local path,
+timed source wrapper, and private typed admission result. Unifying those seams would require a profile
+discriminant, optional receipt, callback, or new cross-profile result protocol without removing a real
+authority. Their direct typed branches are the bounded composition root, not incomplete delegation.
 
 Presentation helpers may directly construct nodes, choose project-authored diagnostic colors, and
 format labels. They remain disposable adapter state and never become another gameplay authority.
@@ -125,9 +132,10 @@ extends an existing bounded inspector or observation unless it has an independen
 
 Future refactors are serialized and behavior-preserving:
 
-1. continue extracting composition and smoke responsibilities; public-synthetic and private-local
-   input plus public and private diagnostic presentation are already delegated, with profile selection,
-   commands, marker bytes, and observations preserved;
+1. finish only the remaining private smoke responsibility; public-synthetic and private-local input,
+   public and private diagnostic presentation, and public smoke are already delegated, while
+   composition remains intentionally direct and profile selection, commands, marker bytes, and
+   observations stay preserved;
 2. extract Application dispatch, pending gates, and snapshot projection behind `GameSession`; and
 3. split a Content reader internally only when an owning change requires it.
 

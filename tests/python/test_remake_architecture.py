@@ -108,6 +108,73 @@ def test_public_and_private_input_polling_share_one_internal_godot_adapter() -> 
     assert "_session.ApplyPrivateOriginalMap(" in private_source
 
 
+def test_public_synthetic_smoke_is_an_internal_godot_driver() -> None:
+    root_source = (REMAKE / "game/src/Map3Root.cs").read_text(encoding="utf-8")
+    driver_source = (
+        REMAKE / "game/src/PublicSyntheticMap3SmokeDriver.cs"
+    ).read_text(encoding="utf-8")
+    private_source = (REMAKE / "game/src/PrivateMap3Composition.cs").read_text(
+        encoding="utf-8"
+    )
+
+    assert "_admissionReceipt" not in root_source
+    assert "RunHeadlessSmoke" not in root_source
+    assert "PublicSyntheticMap3SmokeDriver.Run(" in root_source
+    assert "SceneTree sceneTree = GetTree();" in root_source
+    assert "GameSession.Start(" in root_source
+    assert "PublicSyntheticMap3PackageReader.FromDocumentBytes" in root_source
+    assert "Godot.FileAccess.GetFileAsBytes" in root_source
+    assert "private void FailStartup(string message)" in root_source
+    assert "private void ProjectSnapshot(string outcome)" in root_source
+
+    for moved in (
+        "The bounded synthetic movement command did not move.",
+        '"synthetic-map3-east-zone-selected"',
+        "Public-synthetic outbound shell admitted",
+    ):
+        assert moved not in root_source
+        assert moved in driver_source
+
+    assert "internal static class PublicSyntheticMap3SmokeDriver" in driver_source
+    for dependency in (
+        "SceneTree sceneTree",
+        "GameSession session",
+        "ScenarioAdmissionReceipt admissionReceipt",
+        "Map3Presenter presenter",
+    ):
+        assert dependency in driver_source
+    for retained in (
+        "session.Apply(",
+        "presenter.Project(session.Snapshot,",
+        "presenter.ProjectStatus(message);",
+        "JsonSerializer.Serialize",
+        "Map3Root.SmokeMarker",
+        "Map3Root.BannerText",
+        "sceneTree.Quit(0);",
+        "sceneTree.Quit(1);",
+    ):
+        assert retained in driver_source
+    assert "public " not in driver_source
+
+    for forbidden in (
+        "Map3Root owner",
+        "Map3RuntimeProfileSelection",
+        "OS.GetCmdlineUserArgs",
+        "FileAccess",
+        "PrivateCanonicalMap3ImportReader",
+        "PrivateSmokeMarker",
+        "SF2_MAP3_PRIVATE",
+        "CanonicalImportPath",
+        "Action<",
+        "Func<",
+        "interface ",
+    ):
+        assert forbidden not in driver_source
+
+    assert "RunPrivateHeadlessSmoke" in private_source
+    assert "SF2_MAP3_PRIVATE_LOCAL_SMOKE" in private_source
+
+
 def test_public_synthetic_presentation_is_an_internal_godot_adapter() -> None:
     root_source = (REMAKE / "game/src/Map3Root.cs").read_text(encoding="utf-8")
     presenter_source = (REMAKE / "game/src/Map3Presenter.cs").read_text(
