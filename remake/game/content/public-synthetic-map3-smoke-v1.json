@@ -22,7 +22,8 @@
     "public-synthetic-map3-field-search-v1",
     "public-synthetic-map3-placeholder-item-acquisition-v1",
     "public-synthetic-map3-outbound-cross-map-transition-v1",
-    "public-synthetic-map3-tactical-battle-completion-v1"
+    "public-synthetic-map3-tactical-battle-completion-v1",
+    "public-synthetic-map3-battle-completion-world-state-v1"
   ],
   "scenarioId": "map3-public-synthetic-smoke",
   "displayName": "Map 3 public-synthetic exploration smoke",
@@ -106,7 +107,12 @@
       {
         "mapId": "public-synthetic-outbound-shell",
         "defaultSetupId": "public-synthetic-outbound-shell-setup",
-        "flagAlternatives": []
+        "flagAlternatives": [
+          {
+            "flagId": "public-synthetic-map3-battle-completed",
+            "setupId": "public-synthetic-outbound-shell-completed-setup"
+          }
+        ]
       }
     ],
     "areaDescriptions": {
@@ -288,8 +294,10 @@
           "x": 1,
           "y": 1
         },
-        "returnSetupId": "public-synthetic-outbound-shell-setup",
+        "returnSetupId": "public-synthetic-outbound-shell-completed-setup",
         "returnFacing": "east",
+        "completionEffectId": "public-synthetic-map3-battle-completion-world-effect",
+        "completionFlagId": "public-synthetic-map3-battle-completed",
         "grid": {
           "width": 3,
           "height": 2,

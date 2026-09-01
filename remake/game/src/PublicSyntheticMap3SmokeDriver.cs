@@ -519,10 +519,52 @@ internal static class PublicSyntheticMap3SmokeDriver
             battleReturned.Snapshot.Exploration.PlayerPosition != new MapPosition(1, 1) ||
             !battleReturned.Snapshot.SyntheticFlags.IsSet(
                 new FlagId("synthetic-map3-variant-enabled")) ||
+            !battleReturned.Snapshot.SyntheticFlags.IsSet(
+                battleReturned.WorldEffect.Flag) ||
+            battleReturned.WorldEffect.Effect.Value !=
+                "public-synthetic-map3-battle-completion-world-effect" ||
+            battleReturned.WorldEffect.Flag.Value !=
+                "public-synthetic-map3-battle-completed" ||
+            battleReturned.WorldEffect.AppliedAtStep !=
+                battleReturned.Snapshot.SimulationStep ||
+            battleReturned.WorldEffect.CueSequence != battleReturned.Cue.Sequence ||
             !battleReturned.Snapshot.Discoveries.IsDiscovered(itemAcquired.Receipt.Discovery) ||
             !battleReturned.Snapshot.Inventory.Contains(itemAcquired.Receipt.Item))
         {
             FailBattle(sceneTree, presenter, "The public-synthetic battle return was not atomic.");
+            return;
+        }
+
+        GameSessionContextSelected? postBattleContext = session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)) as
+            GameSessionContextSelected;
+        if (postBattleContext?.Selection.SelectedSetup.Value !=
+            "public-synthetic-outbound-shell-completed-setup" ||
+            session.Apply(new MoveExplorationCommand(ExplorationDirection.East)) is not
+                GameSessionCommandApplied { Outcome: ExplorationMovementOutcome.Moved } ||
+            session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)) is not
+                GameSessionContextSelected)
+        {
+            FailBattle(
+                sceneTree,
+                presenter,
+                "The public-synthetic completion state did not select its return setup.");
+            return;
+        }
+
+        GameSessionSnapshot completedWorldState = session.Snapshot;
+        GameSessionCommandRejected? repeatBattle = session.Apply(
+            new RequestSelectedPublicSyntheticBattleCommand()) as GameSessionCommandRejected;
+        if (repeatBattle?.Diagnostic.Code !=
+                GameSessionCommandFailureCode.PublicSyntheticBattleAlreadyCompleted ||
+            !ReferenceEquals(repeatBattle.Snapshot, completedWorldState) ||
+            !ReferenceEquals(session.Snapshot, completedWorldState))
+        {
+            FailBattle(
+                sceneTree,
+                presenter,
+                "The public-synthetic completed battle was admitted again.");
             return;
         }
 

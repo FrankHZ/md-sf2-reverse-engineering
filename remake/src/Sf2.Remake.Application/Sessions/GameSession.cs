@@ -383,6 +383,7 @@ public enum GameSessionCommandFailureCode
     ItemAlreadyAcquired,
     OutboundTransitionNotAdmitted,
     PublicSyntheticBattleNotAdmitted,
+    PublicSyntheticBattleAlreadyCompleted,
     PublicSyntheticBattleNotActive,
     PublicSyntheticBattleNotCompleted,
     PublicSyntheticBattleInvalidSelection,

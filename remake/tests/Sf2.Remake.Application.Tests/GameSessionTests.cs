@@ -144,6 +144,17 @@ public sealed class GameSessionTests
         Assert.Equal(SemanticFacing.East, returned.Snapshot.Facing);
         Assert.Null(returned.Snapshot.PublicSyntheticBattle);
         Assert.True(returned.Snapshot.SyntheticFlags.IsSet(new FlagId("retained-flag")));
+        Assert.True(returned.Snapshot.SyntheticFlags.IsSet(
+            new FlagId("public-synthetic-map3-battle-completed")));
+        Assert.Equal(
+            "public-synthetic-map3-battle-completion-world-effect",
+            returned.WorldEffect.Effect.Value);
+        Assert.Equal(
+            "public-synthetic-map3-battle-completed",
+            returned.WorldEffect.Flag.Value);
+        Assert.Equal(returned.Completion.Battle, returned.WorldEffect.Battle);
+        Assert.Equal(returned.Snapshot.SimulationStep, returned.WorldEffect.AppliedAtStep);
+        Assert.Equal(returned.Cue.Sequence, returned.WorldEffect.CueSequence);
         Assert.True(returned.Snapshot.Discoveries.IsDiscovered(discovered.Receipt.Discovery));
         Assert.True(returned.Snapshot.Inventory.Contains(itemAcquired.Receipt.Item));
 
@@ -157,12 +168,34 @@ public sealed class GameSessionTests
             duplicateReturn.Diagnostic.Code);
         Assert.Same(returnedSnapshot, session.Snapshot);
 
+        GameSessionContextSelected postBattleContext =
+            Assert.IsType<GameSessionContextSelected>(session.Apply(
+                new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        Assert.Equal(
+            "outbound-completed-setup",
+            postBattleContext.Selection.SelectedSetup.Value);
+        Assert.IsType<GameSessionCommandApplied>(session.Apply(
+            new MoveExplorationCommand(ExplorationDirection.East)));
+        Assert.IsType<GameSessionContextSelected>(session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        GameSessionSnapshot completedWorldState = session.Snapshot;
+        GameSessionCommandRejected repeatBattle =
+            Assert.IsType<GameSessionCommandRejected>(
+                session.Apply(new RequestSelectedPublicSyntheticBattleCommand()));
+        Assert.Equal(
+            GameSessionCommandFailureCode.PublicSyntheticBattleAlreadyCompleted,
+            repeatBattle.Diagnostic.Code);
+        Assert.Same(completedWorldState, repeatBattle.Snapshot);
+        Assert.Same(completedWorldState, session.Snapshot);
+
         GameSessionStarted restarted = Assert.IsType<GameSessionStarted>(
             GameSession.Start(CreateBattleAcceptedSource(), Request()));
         Assert.Equal(GameFlowStage.Exploration, restarted.Session.Snapshot.FlowStage);
         Assert.Null(restarted.Session.Snapshot.PublicSyntheticBattle);
         Assert.Empty(restarted.Session.Snapshot.Discoveries.Discoveries);
         Assert.Empty(restarted.Session.Snapshot.Inventory.Items);
+        Assert.False(restarted.Session.Snapshot.SyntheticFlags.IsSet(
+            new FlagId("public-synthetic-map3-battle-completed")));
     }
 
     [Fact]
@@ -925,7 +958,13 @@ public sealed class GameSessionTests
                         ])),
                 new MapSetupCatalogEntry(
                     outboundMap,
-                    new MapSetupRoute(new MapSetupId("outbound-setup"), [])),
+                    new MapSetupRoute(
+                        new MapSetupId("outbound-setup"),
+                        [
+                            new MapSetupFlagVariant(
+                                new FlagId("public-synthetic-map3-battle-completed"),
+                                new MapSetupId("outbound-completed-setup")),
+                        ])),
             ]);
 
         Assert.Throws<ArgumentException>(() => CreateMapContext(
@@ -2044,7 +2083,16 @@ public sealed class GameSessionTests
                         ])),
                 new MapSetupCatalogEntry(
                     outboundMap,
-                    new MapSetupRoute(new MapSetupId("outbound-setup"), [])),
+                    new MapSetupRoute(
+                        new MapSetupId("outbound-setup"),
+                        includeBattle
+                            ?
+                            [
+                                new MapSetupFlagVariant(
+                                    new FlagId("public-synthetic-map3-battle-completed"),
+                                    new MapSetupId("outbound-completed-setup")),
+                            ]
+                            : [])),
             ]);
         MapScenarioContextDefinition context = CreateMapContext(
             map3,
@@ -2290,8 +2338,11 @@ public sealed class GameSessionTests
             new EventTargetId("public-synthetic-outbound-shell-battle-zone"),
             new MapId("public-synthetic-outbound-shell"),
             new MapPosition(1, 1),
-            new MapSetupId("outbound-setup"),
+            new MapSetupId("outbound-completed-setup"),
             SemanticFacing.East,
+            new MapEventEffectId(
+                "public-synthetic-map3-battle-completion-world-effect"),
+            new FlagId("public-synthetic-map3-battle-completed"),
             new PresentationCueId("public-synthetic-map3-battle-entry-pending"),
             new PresentationCueId("public-synthetic-map3-battle-admitted"),
             new PresentationCueId("public-synthetic-map3-battle-move-confirmed"),

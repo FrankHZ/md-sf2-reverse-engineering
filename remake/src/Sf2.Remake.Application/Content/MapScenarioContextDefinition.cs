@@ -149,6 +149,12 @@ public sealed class MapScenarioContextDefinition
         HashSet<PresentationCueId> effectCueIds = EventEffects.Definitions
             .Select(definition => definition.Cue)
             .ToHashSet();
+        HashSet<MapEventEffectId> eventEffectIds = EventEffects.Definitions
+            .Select(definition => definition.Effect)
+            .ToHashSet();
+        HashSet<FlagId> eventEffectFlags = EventEffects.Definitions
+            .Select(definition => definition.Flag)
+            .ToHashSet();
         foreach (MapLocalTransitionDefinition definition in LocalTransitions.Definitions)
         {
             if (definition.SourceMap != definition.DestinationMap)
@@ -399,6 +405,8 @@ public sealed class MapScenarioContextDefinition
             .Concat(localTransitionTargets)
             .Concat(OutboundTransitions.Definitions.Select(definition => definition.ZoneTarget))
             .ToHashSet();
+        HashSet<MapEventEffectId> battleCompletionEffects = [];
+        HashSet<FlagId> battleCompletionFlags = [];
         foreach (PublicSyntheticBattleDefinition battle in PublicSyntheticBattles.Definitions)
         {
             MapExplorationRuntimeDefinition sourceRuntime =
@@ -412,6 +420,15 @@ public sealed class MapScenarioContextDefinition
                 entry => entry.Map == battle.SourceMap);
             MapSetupCatalogEntry returnSetupEntry = SetupCatalog.Entries.Single(
                 entry => entry.Map == battle.ReturnMap);
+            MapSetupId selectedSourceSetup = SetupCatalog.Select(
+                battle.SourceMap,
+                VoidSetup,
+                _initialSetFlagLookup.Contains);
+            MapSetupId selectedReturnSetup = SetupCatalog.Select(
+                battle.ReturnMap,
+                VoidSetup,
+                flag => _initialSetFlagLookup.Contains(flag) ||
+                    flag == battle.CompletionFlag);
             if (sourceRecords.Count != 1 ||
                 sourceRecords[0].X.ExactValue is not byte sourceX ||
                 sourceRecords[0].Y.ExactValue is not byte sourceY ||
@@ -421,6 +438,15 @@ public sealed class MapScenarioContextDefinition
                 !occupiedTargets.Add(battle.SourceZoneTarget) ||
                 !OwnsSetup(sourceSetupEntry, battle.SourceSetup) ||
                 !OwnsSetup(returnSetupEntry, battle.ReturnSetup) ||
+                selectedSourceSetup != battle.SourceSetup ||
+                selectedReturnSetup != battle.ReturnSetup ||
+                battle.SourceSetup == battle.ReturnSetup ||
+                _initialSetFlagLookup.Contains(battle.CompletionFlag) ||
+                !setupVariantFlags.Contains(battle.CompletionFlag) ||
+                eventEffectIds.Contains(battle.CompletionEffect) ||
+                eventEffectFlags.Contains(battle.CompletionFlag) ||
+                !battleCompletionEffects.Add(battle.CompletionEffect) ||
+                !battleCompletionFlags.Add(battle.CompletionFlag) ||
                 !sourceRuntime.Walkability.IsPassable(battle.SourcePosition) ||
                 !returnRuntime.Walkability.IsPassable(battle.ReturnPosition))
             {

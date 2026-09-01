@@ -30,6 +30,8 @@ public sealed record PublicSyntheticBattleDefinition
         MapPosition returnPosition,
         MapSetupId returnSetup,
         SemanticFacing returnFacing,
+        MapEventEffectId completionEffect,
+        FlagId completionFlag,
         PresentationCueId requestCue,
         PresentationCueId admittedCue,
         PresentationCueId moveCue,
@@ -51,6 +53,11 @@ public sealed record PublicSyntheticBattleDefinition
         {
             throw new ArgumentOutOfRangeException(nameof(returnFacing));
         }
+
+        CompletionEffect = completionEffect ??
+            throw new ArgumentNullException(nameof(completionEffect));
+        CompletionFlag = completionFlag ??
+            throw new ArgumentNullException(nameof(completionFlag));
 
         PresentationCueId[] cues =
         [
@@ -96,6 +103,10 @@ public sealed record PublicSyntheticBattleDefinition
     public MapSetupId ReturnSetup { get; }
 
     public SemanticFacing ReturnFacing { get; }
+
+    public MapEventEffectId CompletionEffect { get; }
+
+    public FlagId CompletionFlag { get; }
 
     public PresentationCueId RequestCue { get; }
 
