@@ -202,10 +202,19 @@ the matching manifest change. Runtime verifies the asset commit, manifest, and s
 loading it. A caller-recomputed output digest cannot convert an incompatible source or policy into an
 accepted runtime entry.
 
-The exact rasterizer/upscaler executable and artifact lock remain a separate bounded implementation
-decision. The local `md-sf2-gfx-remake` experiments are useful R&D for comparing nearest, edge-aware,
-xBRZ, and color-ramp treatments, but they do not select the product policy. In particular, 3x is not a
-runtime tier and no single upscaler becomes a global default from those experiments.
+HUD SVG candidate derivation uses the official Linebender `resvg` 0.47.0 Windows release archive,
+locked by URL, byte length, SHA-256, the exact unique `resvg.exe` member, and exact version output in
+`remake/presentation-toolchain.json`. The builder supplies no system fonts, accepts only the closed
+static project subset below, uses explicit geometric/image rendering hints, and requires two
+independent runs to produce byte-identical 2x and 4x RGBA8 noninterlaced PNGs with valid chunk CRCs.
+It writes only a fresh direct child under ignored `cache/` and generates the existing
+`manifests/presentation-assets-v1.json` shape inside that candidate. It does not promote or commit.
+
+The local `md-sf2-gfx-remake` experiments remain useful R&D for comparing nearest, edge-aware, xBRZ,
+and color-ramp treatments, but they do not select product art or a general raster upscaler. In
+particular, 3x is not a runtime tier and no single upscaler becomes a global default from those
+experiments. Its current ignored window SVG is not accepted input because it contains semantic text
+and an embedded raster payload forbidden by the source contract.
 
 ## SVG HUD Source
 
@@ -306,8 +315,10 @@ them. It does not create one class per panel, icon, texture family, or scale buc
 
 Migration order is intentionally incremental:
 
-1. accept this architecture and close the local manifest/generator/toolchain contract;
-2. admit one asset-repository HUD SVG and its reviewed 2x/4x runtime derivatives through the catalog;
+1. accept this architecture and close the local manifest, preflight, and HUD SVG candidate-generator
+   toolchain contract;
+2. accept one actual asset-repository HUD SVG, review its candidate 2x/4x derivatives, and promote the
+   exact master/runtime/manifest transaction before any catalog consumption;
 3. replace procedural HUD chrome while keeping the existing presenters and snapshot tests;
 4. mount one bounded local world/character family and validate bucket switching;
 5. expand asset families only after their source, derivation, cache, and failure rules are closed;
@@ -323,7 +334,8 @@ gameplay authority into a scene, resource, filename, or animation callback.
 | --- | --- |
 | fixed by this proposal | 960-by-540 logical grid; simulation/presentation separation; explicit asset-repository root/exported pack; local-Git source/master/runtime/manifest history; ignored reproducible cache and scratch; fail-closed mount; no synthetic product fallback |
 | fixed after acceptance | 4x new-raster authoring; original raster as local master; deterministic 2x/4x buckets; one resident bucket; safe-frame/aspect/accessibility model; thin Godot catalog migration |
-| separate implementation decision | exact manifest/schema paths, generator/rasterizer executable and artifact lock, first asset-family IDs, Godot import resources, cache location and lifecycle |
+| implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
+| separate implementation decision | first reviewed HUD master and asset ID; promotion/commit transaction; Godot import resources and catalog; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original camera/layer/priority/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
 
 The local asset repository bootstrap exists, but acceptance of this document does not import a product

@@ -672,6 +672,15 @@ def plan_paths(
 
     for path in changed_paths:
         normalized = path.replace("\\", "/")
+        if normalized == "remake/presentation-toolchain.json":
+            _selection_entry(
+                selected,
+                "tooling-python",
+                normalized,
+                ("uv run pytest tests/python/test_remake_assets.py",),
+            )
+            continue
+
         if normalized.startswith("remake/"):
             if normalized.endswith(".md"):
                 continue
@@ -688,6 +697,15 @@ def plan_paths(
                 ("uv run pytest tests/python/test_remake_assets.py",),
             )
             _selection_entry(selected, "remake-dotnet", normalized)
+            continue
+
+        if normalized == "src/sf2tool/remake_asset_build.py":
+            _selection_entry(
+                selected,
+                "tooling-python",
+                normalized,
+                ("uv run pytest tests/python/test_remake_assets.py",),
+            )
             continue
 
         if normalized == "tests/python/test_remake_assets.py":

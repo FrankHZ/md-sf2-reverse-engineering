@@ -988,6 +988,8 @@ def test_every_tracked_remake_path_has_closed_partition_ownership() -> None:
         plan = plan_paths((path,), root=ROOT)
         if path.endswith(".md"):
             expected = {"public-core"}
+        elif path == "remake/presentation-toolchain.json":
+            expected = {"public-core", "tooling-python"}
         elif path.startswith("remake/tests/"):
             expected = {"public-core", "remake-dotnet"}
         else:
@@ -1031,6 +1033,18 @@ def test_remake_asset_preflight_runner_and_test_select_tooling_and_dotnet() -> N
     assert "remake-godot" not in _partition_ids(runner)
     assert "remake-godot" not in _partition_ids(test)
     assert runner["unclassifiedPaths"] == test["unclassifiedPaths"] == []
+
+
+def test_remake_asset_builder_and_toolchain_select_tooling_only() -> None:
+    runner = plan_paths(("src/sf2tool/remake_asset_build.py",), root=ROOT)
+    toolchain = plan_paths(("remake/presentation-toolchain.json",), root=ROOT)
+
+    for plan in (runner, toolchain):
+        assert _partition_ids(plan) == {"public-core", "tooling-python"}
+        assert _partition(plan, "tooling-python")["commands"] == [
+            "uv run pytest tests/python/test_remake_assets.py"
+        ]
+        assert plan["unclassifiedPaths"] == []
 
 
 def test_remake_architecture_test_selects_both_remake_partitions() -> None:

@@ -62,10 +62,30 @@ bounded pack totals required by outer composition. Export writes only the manife
 last, and atomically promotes it without modifying the source checkout or overwriting an earlier
 export. It never copies `.git`, `source/`, `masters/`, ignored caches, previews, or Godot import state.
 
-This is transport and checkout preflight, not asset generation or product admission by itself. The
-asset repository currently has no product manifest or product assets. The exact SVG rasterizer,
-generator policy, first HUD master, reviewed 2x/4x derivatives, Godot catalog, and runtime consumer
-remain later slices. The separate `md-sf2-gfx-remake` repository remains non-authoritative R&D.
+This is transport and checkout preflight, not asset generation or product admission by itself. A
+separate candidate builder now closes the first deterministic HUD SVG derivation boundary:
+
+```powershell
+uv run python -m sf2tool.remake_asset_build hud-svg-candidate `
+  --asset-root <fully-qualified-asset-checkout> `
+  --expected-commit <40-lowercase-hex> `
+  --expected-tree <40-lowercase-hex> `
+  --asset-id hud.<name> `
+  --expected-master-sha256 <64-uppercase-hex> `
+  --resvg-archive <fully-qualified-resvg-win64.zip> `
+  --candidate-name <fresh-cache-child>
+```
+
+The builder admits exactly one nonignored untracked `masters/ui/<name>.svg` over an otherwise exact
+local-only checkout, verifies the pinned resvg archive and executable version, renders deterministic
+2x/4x RGBA8 PNGs twice, validates the existing pack schema, and atomically publishes only a fresh
+direct child under ignored `cache/`. It never stages, promotes, commits, or prints a local path.
+
+The real asset repository still has no accepted product master, product manifest, or runtime asset.
+No candidate has been promoted. The first HUD identity and visual design, reviewed derivatives, local
+asset commit, Godot catalog, and runtime consumer remain later slices. The separate
+`md-sf2-gfx-remake` repository remains non-authoritative R&D; its ignored experimental SVG contains
+forbidden text and an embedded raster and is not an admitted product master.
 Because the product asset repository intentionally has no remote, an exact local commit proves
 identity but does not provide off-machine recovery; source/master backup remains a separate local
 operational responsibility. Rollback selects a prior reachable local commit or an immutable prior
