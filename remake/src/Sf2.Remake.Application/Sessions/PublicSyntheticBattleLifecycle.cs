@@ -264,6 +264,35 @@ public sealed record PublicSyntheticBattleCompletionReceipt
     public long CueSequence { get; }
 }
 
+public sealed record PublicSyntheticBattleWorldEffectReceipt
+{
+    public PublicSyntheticBattleWorldEffectReceipt(
+        TacticalBattleId battle,
+        MapEventEffectId effect,
+        FlagId flag,
+        long appliedAtStep,
+        long cueSequence)
+    {
+        Battle = battle ?? throw new ArgumentNullException(nameof(battle));
+        Effect = effect ?? throw new ArgumentNullException(nameof(effect));
+        Flag = flag ?? throw new ArgumentNullException(nameof(flag));
+        ArgumentOutOfRangeException.ThrowIfLessThan(appliedAtStep, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(cueSequence, 1);
+        AppliedAtStep = appliedAtStep;
+        CueSequence = cueSequence;
+    }
+
+    public TacticalBattleId Battle { get; }
+
+    public MapEventEffectId Effect { get; }
+
+    public FlagId Flag { get; }
+
+    public long AppliedAtStep { get; }
+
+    public long CueSequence { get; }
+}
+
 public sealed record GameSessionPublicSyntheticBattleRequested(
     GameSessionSnapshot Snapshot,
     PublicSyntheticBattleLifecycleSnapshot Battle,
@@ -333,6 +362,7 @@ public sealed record GameSessionPublicSyntheticBattleSelectionCancelled(
 public sealed record GameSessionPublicSyntheticBattleReturned(
     GameSessionSnapshot Snapshot,
     PublicSyntheticBattleCompletionReceipt Completion,
+    PublicSyntheticBattleWorldEffectReceipt WorldEffect,
     PublicSyntheticBattleCue Cue) : GameSessionCommandResult;
 
 public sealed partial class GameSession
@@ -358,8 +388,21 @@ public sealed partial class GameSession
 
         PublicSyntheticBattleDefinition? definition =
             _mapContext.PublicSyntheticBattles.FindByTarget(selection.ZoneEvent.Target);
-        if (definition is null ||
-            definition.SourceMap != Snapshot.Exploration.Map ||
+        if (definition is null)
+        {
+            return RejectBattle(
+                GameSessionCommandFailureCode.PublicSyntheticBattleNotAdmitted,
+                "The selected exploration context does not admit a public-synthetic battle.");
+        }
+
+        if (Snapshot.SyntheticFlags.IsSet(definition.CompletionFlag))
+        {
+            return RejectBattle(
+                GameSessionCommandFailureCode.PublicSyntheticBattleAlreadyCompleted,
+                "The public-synthetic battle completion state is already applied.");
+        }
+
+        if (definition.SourceMap != Snapshot.Exploration.Map ||
             definition.SourcePosition != Snapshot.Exploration.PlayerPosition ||
             definition.SourceSetup != selection.SelectedSetup ||
             definition.SourceZoneTarget != selection.ZoneEvent.Target)
@@ -634,6 +677,26 @@ public sealed partial class GameSession
                 "The public-synthetic battle completion acknowledgement does not match.");
         }
 
+        if (Snapshot.SyntheticFlags.IsSet(lifecycle.Definition.CompletionFlag))
+        {
+            return RejectBattle(
+                GameSessionCommandFailureCode.PublicSyntheticBattleAlreadyCompleted,
+                "The public-synthetic battle completion state is already applied.");
+        }
+
+        PublicSyntheticFlagStateSnapshot returnedFlags =
+            Snapshot.SyntheticFlags.SetOnce(lifecycle.Definition.CompletionFlag);
+        MapSetupId selectedReturnSetup = _mapContext.SetupCatalog.Select(
+            lifecycle.Definition.ReturnMap,
+            _mapContext.VoidSetup,
+            returnedFlags.IsSet);
+        if (selectedReturnSetup != lifecycle.Definition.ReturnSetup)
+        {
+            return RejectBattle(
+                GameSessionCommandFailureCode.PublicSyntheticBattleNotAdmitted,
+                "The public-synthetic completion state does not select the admitted return setup.");
+        }
+
         PublicSyntheticBattleCompletionReceipt completion = new(
             lifecycle.Definition.Rules.Battle,
             lifecycle.Definition.Rules.Actor,
@@ -655,14 +718,25 @@ public sealed partial class GameSession
             lifecycle.Definition.ReturnFacing,
             _mapContext.EntityInteractions.Entities.Where(
                 entity => entity.Map == lifecycle.Definition.ReturnMap),
-            clearExplorationLifecycles: true);
+            clearExplorationLifecycles: true,
+            syntheticFlags: returnedFlags);
         PublicSyntheticBattleCue cue = new(
             lifecycle.Definition.ReturnedCue,
             PublicSyntheticBattleCueKind.ReturnedToExploration,
             lifecycle.Definition.Request,
             lifecycle.Definition.Rules.Battle,
             cueSequence);
-        return new GameSessionPublicSyntheticBattleReturned(Snapshot, completion, cue);
+        PublicSyntheticBattleWorldEffectReceipt worldEffect = new(
+            lifecycle.Definition.Rules.Battle,
+            lifecycle.Definition.CompletionEffect,
+            lifecycle.Definition.CompletionFlag,
+            returnedAtStep,
+            cueSequence);
+        return new GameSessionPublicSyntheticBattleReturned(
+            Snapshot,
+            completion,
+            worldEffect,
+            cue);
     }
 
     private GameSessionSnapshot BattleSnapshot(
@@ -674,7 +748,8 @@ public sealed partial class GameSession
         PublicSyntheticBattleLifecycleSnapshot? publicSyntheticBattle,
         SemanticFacing facing,
         IEnumerable<MapEntityDefinition> entities,
-        bool clearExplorationLifecycles) =>
+        bool clearExplorationLifecycles,
+        PublicSyntheticFlagStateSnapshot? syntheticFlags = null) =>
         new(
             Snapshot.ScenarioId,
             Snapshot.Profile,
@@ -682,7 +757,7 @@ public sealed partial class GameSession
             simulationStep,
             exploration,
             Snapshot.AdmissionFacts,
-            Snapshot.SyntheticFlags,
+            syntheticFlags ?? Snapshot.SyntheticFlags,
             Snapshot.Discoveries,
             Snapshot.Inventory,
             contextSelection,

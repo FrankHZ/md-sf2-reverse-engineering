@@ -81,7 +81,9 @@ internal sealed record PublicSyntheticBattlePresentationProjection
                 visible: true,
                 "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
                 $"{returned.Completion.Battle} completed; returned to " +
-                    $"{returned.Snapshot.Exploration.Map} exploration.",
+                    $"{returned.Snapshot.Exploration.Map} exploration; " +
+                    $"applied {returned.WorldEffect.Effect} / " +
+                    $"{returned.WorldEffect.Flag}.",
                 $"Cue #{returned.Cue.Sequence} {returned.Cue.Cue}",
                 []);
         }

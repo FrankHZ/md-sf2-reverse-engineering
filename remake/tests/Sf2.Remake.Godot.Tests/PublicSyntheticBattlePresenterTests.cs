@@ -104,6 +104,12 @@ public sealed class PublicSyntheticBattlePresenterTests
         Assert.True(returnedProjection.Visible);
         Assert.Empty(returnedProjection.Cells);
         Assert.Contains("completed; returned", returnedProjection.Status);
+        Assert.Contains(
+            "public-synthetic-map3-battle-completion-world-effect",
+            returnedProjection.Status);
+        Assert.Contains(
+            "public-synthetic-map3-battle-completed",
+            returnedProjection.Status);
         Assert.Contains("public-synthetic-map3-battle-returned", returnedProjection.CueStatus);
 
         PublicSyntheticBattlePresentationProjection laterProjection =

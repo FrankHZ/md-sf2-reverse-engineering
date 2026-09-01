@@ -20,7 +20,7 @@ Status terms:
 | Public-synthetic Map 3 admission and exploration | Content package, Domain movement, Application `GameSession`, Godot viewport | **Implemented** | synthetic layout and walkability only; no original collision, route, or coordinates claim |
 | Public-synthetic context and interaction stack | setup/area/zone selection plus event/effect, local transition, entity/dialogue, search/discovery, and item-acquisition lifecycles | **Implemented** | project-authored identities, text, flags, items, cues, and effects; no original meaning or natural reach |
 | Public-synthetic outbound map transition | Application transition lifecycle and exact runtime catalog lookup | **Implemented** | destination is a tiny synthetic shell, not original Map 21 or an original warp |
-| Public-synthetic tactical battle completion | pure Domain 3-by-2 micro-loop, Content definition, Application `GameSession` lifecycle, and thin Godot projection | **Implemented** | project-authored actor/enemy/grid/damage/cues only; not Battle 01, original combat, natural admission, AI, rewards, or fidelity |
+| Public-synthetic tactical battle completion | pure Domain 3-by-2 micro-loop, Content definition, Application `GameSession` lifecycle, once-only completion world state, and thin Godot projection | **Implemented** | project-authored actor/enemy/grid/damage/flag/effect/setup/cues only; not Battle 01, original combat or after-program, natural admission, AI, rewards, or fidelity |
 | Public-synthetic Godot and export smoke | thin Godot host and maintained local official-engine gate | **Implemented** | stable synthetic receipt only; no online Godot job and no release authorization |
 | Private canonical Map 3 admission and traversal | private Content import, Application private session, Domain `OriginalMapTraversal` | **Implemented** | controlled start and semantic movement only; no natural setup/init/event or presentation claim |
 | Private traversal diagnostics | typed viewport, controlled one-shot working-layout copy, current area, current block catalog | **Implemented** | project-authored diagnostic display; no natural trigger, OpenDoor, camera, layer, or visible-original claim |
@@ -54,5 +54,5 @@ alone is not a reason to reopen those boundaries.
 The next engineering frontier is product capability behind `GameSession`, with internal Application or
 Content decomposition only when an owning behavior change makes it necessary. The implemented
 public-synthetic battle micro-loop establishes one executable flow seam; mapping it to original Battle
-01 admission, state, actions, victory, return, and endpoint remains evidence-bound and **Unknown / NOT
-READY**. See [Architecture](./architecture.md).
+01 admission, state, actions, victory, after-program, return, and endpoint remains evidence-bound and
+**Unknown / NOT READY**. See [Architecture](./architecture.md).

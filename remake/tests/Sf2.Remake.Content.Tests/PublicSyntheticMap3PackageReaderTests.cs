@@ -47,6 +47,7 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 PublicSyntheticMap3PackageReader.ItemAcquisitionCapability,
                 PublicSyntheticMap3PackageReader.OutboundTransitionCapability,
                 PublicSyntheticMap3PackageReader.TacticalBattleCapability,
+                PublicSyntheticMap3PackageReader.BattleCompletionWorldStateCapability,
             ],
             accepted.Receipt.Capabilities);
         string trackedDigest = Convert.ToHexString(
@@ -259,17 +260,40 @@ public sealed class PublicSyntheticMap3PackageReaderTests
         Assert.Equal(1, battle.Rules.ActorAttackRange);
         Assert.Equal(1, battle.Rules.EnemyMaxHitPoints);
         Assert.Equal(1, battle.Rules.ActorDamage);
+        Assert.Equal(
+            "public-synthetic-map3-battle-completion-world-effect",
+            battle.CompletionEffect.Value);
+        Assert.Equal(
+            "public-synthetic-map3-battle-completed",
+            battle.CompletionFlag.Value);
+        Assert.Equal(
+            "public-synthetic-outbound-shell-completed-setup",
+            battle.ReturnSetup.Value);
+        Assert.Equal(
+            battle.SourceSetup,
+            context.SetupCatalog.Select(
+                battle.SourceMap,
+                context.VoidSetup,
+                context.IsInitiallySet));
+        Assert.Equal(
+            battle.ReturnSetup,
+            context.SetupCatalog.Select(
+                battle.ReturnMap,
+                context.VoidSetup,
+                flag => context.IsInitiallySet(flag) || flag == battle.CompletionFlag));
         Assert.Same(battle, context.PublicSyntheticBattles.FindByTarget(battleZone.Target));
     }
 
     [Theory]
     [InlineData("public-synthetic-map3-tactical-battle-completion-v1", "public-synthetic-changed-capability")]
+    [InlineData("public-synthetic-map3-battle-completion-world-state-v1", "public-synthetic-changed-world-state")]
     [InlineData("public-synthetic-map3-tactical-battle", "public-synthetic-changed-battle")]
     [InlineData("public-synthetic-map3-battle-entry-request", "public-synthetic-changed-request")]
     [InlineData("public-synthetic-outbound-shell-battle-zone", "public-synthetic-changed-zone")]
     [InlineData("public-synthetic-map3-player-unit", "public-synthetic-changed-actor")]
     [InlineData("public-synthetic-map3-placeholder-enemy", "public-synthetic-changed-enemy")]
     [InlineData("public-synthetic-map3-battle-completed", "public-synthetic-changed-cue")]
+    [InlineData("public-synthetic-map3-battle-completion-world-effect", "public-synthetic-changed-effect")]
     public void TacticalBattleIdentityMutationFailsRawDigestAdmission(
         string oldValue,
         string newValue)
@@ -300,6 +324,15 @@ public sealed class PublicSyntheticMap3PackageReaderTests
     [InlineData(
         "\"battleId\": \"public-synthetic-map3-tactical-battle\"",
         "\"battleId\": \"default\"")]
+    [InlineData(
+        "\"completionEffectId\": \"public-synthetic-map3-battle-completion-world-effect\"",
+        "\"completionEffectId\": \"synthetic-map3-east-zone-variant-effect\"")]
+    [InlineData(
+        "\"completionFlagId\": \"public-synthetic-map3-battle-completed\"",
+        "\"completionFlagId\": \"synthetic-map3-variant-enabled\"")]
+    [InlineData(
+        "\"returnSetupId\": \"public-synthetic-outbound-shell-completed-setup\"",
+        "\"returnSetupId\": \"public-synthetic-outbound-shell-setup\"")]
     public void TacticalBattleSemanticShapeAndCrossReferencesFailClosed(
         string oldValue,
         string newValue)
@@ -344,10 +377,10 @@ public sealed class PublicSyntheticMap3PackageReaderTests
     {
         string original = File.ReadAllText(PackagePath(), System.Text.Encoding.UTF8);
         string reorderedCapabilities = original.Replace(
-            "    \"public-synthetic-map3-outbound-cross-map-transition-v1\",\n" +
-            "    \"public-synthetic-map3-tactical-battle-completion-v1\"",
             "    \"public-synthetic-map3-tactical-battle-completion-v1\",\n" +
-            "    \"public-synthetic-map3-outbound-cross-map-transition-v1\"",
+            "    \"public-synthetic-map3-battle-completion-world-state-v1\"",
+            "    \"public-synthetic-map3-battle-completion-world-state-v1\",\n" +
+            "    \"public-synthetic-map3-tactical-battle-completion-v1\"",
             StringComparison.Ordinal);
         Assert.NotEqual(original, reorderedCapabilities);
         MapScenarioRejected capabilityRejected = Assert.IsType<MapScenarioRejected>(
@@ -366,6 +399,31 @@ public sealed class PublicSyntheticMap3PackageReaderTests
             PublicSyntheticMap3PackageReader.AdmitSemanticallyForTests(
                 System.Text.Encoding.UTF8.GetBytes(document.ToJsonString())));
         Assert.Equal(ScenarioAdmissionFailureCode.InvalidMap, zoneRejected.Diagnostic.Code);
+    }
+
+    [Theory]
+    [InlineData(
+        "\"setFlags\": []",
+        "\"setFlags\": [\"public-synthetic-map3-battle-completed\"]")]
+    [InlineData(
+        "\"flagId\": \"public-synthetic-map3-battle-completed\"",
+        "\"flagId\": \"public-synthetic-map3-unowned-completion\"")]
+    [InlineData(
+        "\"setupId\": \"public-synthetic-outbound-shell-completed-setup\"",
+        "\"setupId\": \"public-synthetic-outbound-shell-setup\"")]
+    public void BattleCompletionFlagAndSetupCrossReferencesFailSemanticAdmission(
+        string oldValue,
+        string newValue)
+    {
+        string original = File.ReadAllText(PackagePath(), System.Text.Encoding.UTF8);
+        string modified = original.Replace(oldValue, newValue, StringComparison.Ordinal);
+        Assert.NotEqual(original, modified);
+
+        MapScenarioRejected rejected = Assert.IsType<MapScenarioRejected>(
+            PublicSyntheticMap3PackageReader.AdmitSemanticallyForTests(
+                System.Text.Encoding.UTF8.GetBytes(modified)));
+
+        Assert.NotEqual(ScenarioAdmissionFailureCode.ContentDigestMismatch, rejected.Diagnostic.Code);
     }
 
     [Fact]

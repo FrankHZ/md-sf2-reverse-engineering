@@ -31,9 +31,11 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         "public-synthetic-map3-outbound-cross-map-transition-v1";
     public const string TacticalBattleCapability =
         "public-synthetic-map3-tactical-battle-completion-v1";
+    public const string BattleCompletionWorldStateCapability =
+        "public-synthetic-map3-battle-completion-world-state-v1";
     public const string EvidenceOwner = "sf2-map3-admitted-start-runtime-v1";
     public const string ExpectedContentDigest =
-        "5bab05c3bb20c16f1bc3392db2ceb173bfa2cc3b4bebef2b7b40bf8f25f80ec8";
+        "66489af560d23fc745db9aa6af0f1f334107d695e4263cbe07ec6b3b7dbb6fec";
 
     private const string Profile = "public-synthetic";
     private const string ProvenanceKind = "project-authored-synthetic";
@@ -263,6 +265,7 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     ItemAcquisitionCapability,
                     OutboundTransitionCapability,
                     TacticalBattleCapability,
+                    BattleCompletionWorldStateCapability,
                 ],
                 StringComparer.Ordinal) ||
             !document.EvidenceOwnerIds.SequenceEqual([EvidenceOwner], StringComparer.Ordinal))
@@ -408,8 +411,16 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
             !string.Equals(battle.SourceSetupId, "public-synthetic-outbound-shell-setup", StringComparison.Ordinal) ||
             !string.Equals(battle.ReturnMapId, OutboundShell, StringComparison.Ordinal) ||
             battle.ReturnPosition.X != 1 || battle.ReturnPosition.Y != 1 ||
-            !string.Equals(battle.ReturnSetupId, "public-synthetic-outbound-shell-setup", StringComparison.Ordinal) ||
+            !string.Equals(battle.ReturnSetupId, "public-synthetic-outbound-shell-completed-setup", StringComparison.Ordinal) ||
             !string.Equals(battle.ReturnFacing, "east", StringComparison.Ordinal) ||
+            !string.Equals(
+                battle.CompletionEffectId,
+                "public-synthetic-map3-battle-completion-world-effect",
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                battle.CompletionFlagId,
+                "public-synthetic-map3-battle-completed",
+                StringComparison.Ordinal) ||
             battle.Grid.Width != 3 || battle.Grid.Height != 2 ||
             battle.Grid.PassableCells.Length != 6 ||
             battle.Grid.PassableCells.Any(passable => !passable) ||
@@ -618,6 +629,8 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
                     new MapPosition(entry.ReturnPosition.X, entry.ReturnPosition.Y),
                     new MapSetupId(entry.ReturnSetupId),
                     ParseSemanticFacing(entry.ReturnFacing),
+                    new MapEventEffectId(entry.CompletionEffectId),
+                    new FlagId(entry.CompletionFlagId),
                     new PresentationCueId(entry.RequestCueId),
                     new PresentationCueId(entry.AdmittedCueId),
                     new PresentationCueId(entry.MoveCueId),
@@ -1094,6 +1107,10 @@ public sealed class PublicSyntheticMap3PackageReader : IMapScenarioSource
         public required string ReturnSetupId { get; init; }
 
         public required string ReturnFacing { get; init; }
+
+        public required string CompletionEffectId { get; init; }
+
+        public required string CompletionFlagId { get; init; }
 
         public required TacticalGridDocument Grid { get; init; }
 

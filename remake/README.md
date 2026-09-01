@@ -8,9 +8,10 @@ making engine code an evidence owner.
 
 Phase 4 implementation is active through bounded Map 3 slices. The current runtime supports a
 tracked public-synthetic exploration shell, one project-authored 3-by-2 tactical micro-battle with
-completion and exploration return, and a separate private-local traversal shell. The micro-battle
-proves only the synthetic Exploration -> Battle -> Completed -> Exploration product topology. It is
-not Battle 01 and does not complete the accepted continuous Map 3-through-Battle 01 milestone, which
+completion, an atomic once-only synthetic world-state effect, exploration return, and a separate
+private-local traversal shell. The micro-battle proves only the synthetic Exploration -> Battle ->
+Completed -> project-authored completion state -> Exploration product topology. It is not Battle 01,
+an original after-battle program, or the accepted continuous Map 3-through-Battle 01 milestone, which
 remains **NOT READY**.
 
 The two persistent runtime disclosures are part of the product boundary:
@@ -74,7 +75,9 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
 - Godot maps input to semantic commands and projects authoritative observations; it does not own
   gameplay rules.
 - The public-synthetic tactical micro-battle is deterministic project-authored content. Its actor,
-  enemy, grid, hit points, damage, cues, and return state make no claim about the original game.
+  enemy, grid, hit points, damage, completion flag/effect/setup, cues, and return state make no claim
+  about the original game. Completion state is applied once by `GameSession`; it prevents synthetic
+  re-entry and remains isolated from restart.
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
   ignored and local. None is committed, uploaded, or embedded in the public package.
 - Public-synthetic import/export success grants no right to distribute original content.
