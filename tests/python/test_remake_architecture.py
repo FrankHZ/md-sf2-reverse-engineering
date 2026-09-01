@@ -91,9 +91,14 @@ def test_public_and_private_input_polling_share_one_internal_godot_adapter() -> 
         adapter_source
     )
     assert "public " not in adapter_source
-    assert adapter_source.count("static actions =>") == 22
+    # Exact action names, keys, and ordering remain owned by Map3InputAdapterTests.
+    # This characterization closes only the internal dispatch count and authority boundary.
+    assert adapter_source.count("static actions =>") == 31
     for forbidden in (
         "GameSession",
+        "GameFlowStage",
+        "TacticalBattleReducer",
+        "TacticalBattleState",
         "PublicSyntheticMap3PackageReader",
         "PrivateCanonicalMap3ImportReader",
         "SmokeMarker",
@@ -113,6 +118,9 @@ def test_public_synthetic_smoke_is_an_internal_godot_driver() -> None:
     driver_source = (
         REMAKE / "game/src/PublicSyntheticMap3SmokeDriver.cs"
     ).read_text(encoding="utf-8")
+    battle_presenter_source = (
+        REMAKE / "game/src/PublicSyntheticBattlePresenter.cs"
+    ).read_text(encoding="utf-8")
     private_source = (REMAKE / "game/src/PrivateMap3Composition.cs").read_text(
         encoding="utf-8"
     )
@@ -125,7 +133,17 @@ def test_public_synthetic_smoke_is_an_internal_godot_driver() -> None:
     assert "PublicSyntheticMap3PackageReader.FromDocumentBytes" in root_source
     assert "Godot.FileAccess.GetFileAsBytes" in root_source
     assert "private void FailStartup(string message)" in root_source
-    assert "private void ProjectSnapshot(string outcome)" in root_source
+    assert "private void ProjectSnapshot(" in root_source
+    assert "string outcome," in root_source
+    assert "GameSessionCommandResult? result = null" in root_source
+    assert "_battlePresenter?.Project(_session.Snapshot, outcome, result);" in root_source
+    assert "TacticalBattleState" not in root_source
+    assert "PublicSyntheticBattleLifecycleSnapshot?" not in root_source
+    assert "GameSessionSnapshot snapshot" in battle_presenter_source
+    assert "GameSessionCommandResult? result = null" in battle_presenter_source
+    assert "private readonly GameSessionSnapshot" not in battle_presenter_source
+    assert "private GameSessionSnapshot" not in battle_presenter_source
+    assert "TacticalBattleState?" not in battle_presenter_source
 
     for moved in (
         "The bounded synthetic movement command did not move.",
@@ -141,6 +159,7 @@ def test_public_synthetic_smoke_is_an_internal_godot_driver() -> None:
         "GameSession session",
         "ScenarioAdmissionReceipt admissionReceipt",
         "Map3Presenter presenter",
+        "PublicSyntheticBattlePresenter battlePresenter",
     ):
         assert dependency in driver_source
     for retained in (
@@ -155,6 +174,9 @@ def test_public_synthetic_smoke_is_an_internal_godot_driver() -> None:
     ):
         assert retained in driver_source
     assert "public " not in driver_source
+    assert driver_source.index("Map3Root.SmokeMarker + legacyReceipt") < driver_source.index(
+        "Map3Root.PublicSyntheticBattleSmokeMarker"
+    )
 
     for forbidden in (
         "Map3Root owner",

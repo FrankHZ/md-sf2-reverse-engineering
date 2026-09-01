@@ -1,5 +1,6 @@
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Items;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -8,6 +9,162 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class GameSessionTests
 {
+    [Fact]
+    public void PublicSyntheticBattleCompletesAndReturnsThroughSoleSessionFacade()
+    {
+        GameSessionStarted started = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateBattleAcceptedSource(), Request()));
+        GameSession session = started.Session;
+
+        Assert.IsType<GameSessionContextSelected>(session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        GameSessionFieldSearchRequested searchRequested =
+            Assert.IsType<GameSessionFieldSearchRequested>(
+                session.Apply(new RequestFieldSearchCommand()));
+        GameSessionFieldSearchDiscovered discovered =
+            Assert.IsType<GameSessionFieldSearchDiscovered>(session.Apply(
+                new AcknowledgeFieldSearchCommand(
+                    searchRequested.Search.Request,
+                    searchRequested.Search.RequestCueSequence,
+                    searchRequested.Search.Result)));
+        GameSessionItemAcquisitionRequested itemRequested =
+            Assert.IsType<GameSessionItemAcquisitionRequested>(session.Apply(
+                new RequestMapItemAcquisitionCommand(discovered.Receipt.Discovery)));
+        GameSessionItemAcquired itemAcquired = Assert.IsType<GameSessionItemAcquired>(
+            session.Apply(new AcknowledgeMapItemAcquisitionCommand(
+                itemRequested.Acquisition.Request,
+                itemRequested.Acquisition.RequestCueSequence,
+                itemRequested.Acquisition.Result,
+                itemRequested.Acquisition.Item)));
+
+        Assert.IsType<GameSessionCommandApplied>(session.Apply(
+            new MoveExplorationCommand(ExplorationDirection.West)));
+        Assert.IsType<GameSessionContextSelected>(session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)));
+        GameSessionOutboundTransitionRequested outboundRequested =
+            Assert.IsType<GameSessionOutboundTransitionRequested>(
+                session.Apply(new RequestSelectedOutboundTransitionCommand()));
+        Assert.IsType<GameSessionOutboundTransitionApplied>(session.Apply(
+            new AcknowledgeMapOutboundTransitionCommand(
+                outboundRequested.Transition.Request,
+                outboundRequested.Cue.Sequence,
+                outboundRequested.Transition.Transition)));
+        Assert.IsType<GameSessionCommandApplied>(session.Apply(
+            new MoveExplorationCommand(ExplorationDirection.East)));
+        GameSessionContextSelected battleContext = Assert.IsType<GameSessionContextSelected>(
+            session.Apply(new SelectExplorationContextCommand(
+                AreaDescriptionAdmission.Ordinary)));
+        Assert.Equal(
+            "public-synthetic-outbound-shell-battle-zone",
+            battleContext.Selection.ZoneEvent.Target.Value);
+
+        GameSessionPublicSyntheticBattleRequested requested =
+            Assert.IsType<GameSessionPublicSyntheticBattleRequested>(
+                session.Apply(new RequestSelectedPublicSyntheticBattleCommand()));
+        GameSessionSnapshot pending = requested.Snapshot;
+        Assert.Equal(PublicSyntheticBattleLifecycleStatus.Pending, requested.Battle.Status);
+        Assert.Equal("public-synthetic-map3-battle-entry-pending", requested.Cue.Cue.Value);
+        Assert.True(requested.Cue.Sequence > 0);
+
+        GameSessionCommandRejected wrongEntry = Assert.IsType<GameSessionCommandRejected>(
+            session.Apply(new AcknowledgePublicSyntheticBattleEntryCommand(
+                requested.Battle.Definition.Request,
+                requested.Battle.Definition.Rules.Battle,
+                requested.Cue.Sequence + 1)));
+        Assert.Equal(GameSessionCommandFailureCode.AcknowledgementMismatch, wrongEntry.Diagnostic.Code);
+        Assert.Same(pending, session.Snapshot);
+
+        GameSessionPublicSyntheticBattleAdmitted admitted =
+            Assert.IsType<GameSessionPublicSyntheticBattleAdmitted>(session.Apply(
+                new AcknowledgePublicSyntheticBattleEntryCommand(
+                    requested.Battle.Definition.Request,
+                    requested.Battle.Definition.Rules.Battle,
+                    requested.Cue.Sequence)));
+        Assert.Equal(GameFlowStage.Battle, admitted.Snapshot.FlowStage);
+        Assert.Equal(TacticalBattlePhase.MoveSelection, admitted.Battle.BattleState!.Phase);
+        Assert.Null(admitted.Snapshot.ContextSelection);
+        Assert.Null(admitted.Snapshot.OutboundTransition);
+        Assert.Null(admitted.Snapshot.FieldSearch);
+        Assert.Null(admitted.Snapshot.ItemAcquisition);
+
+        GameSessionSnapshot active = session.Snapshot;
+        GameSessionCommandRejected explorationRejected = Assert.IsType<GameSessionCommandRejected>(
+            session.Apply(new MoveExplorationCommand(ExplorationDirection.West)));
+        Assert.Equal(GameSessionCommandFailureCode.WrongFlowStage, explorationRejected.Diagnostic.Code);
+        Assert.Same(active, session.Snapshot);
+
+        Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
+            new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)));
+        GameSessionPublicSyntheticBattleSelectionConfirmed moveConfirmed =
+            Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
+                new ConfirmPublicSyntheticBattleSelectionCommand()));
+        Assert.Equal(TacticalSelectionOutcome.MoveConfirmed, moveConfirmed.Outcome);
+        Assert.Single(moveConfirmed.Cues);
+        Assert.Equal(TacticalBattlePhase.TargetSelection,
+            moveConfirmed.Snapshot.PublicSyntheticBattle!.BattleState!.Phase);
+        Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
+            new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)));
+        Assert.IsType<GameSessionPublicSyntheticBattleSelectionCancelled>(session.Apply(
+            new CancelPublicSyntheticBattleSelectionCommand()));
+        Assert.Equal(new TacticalPosition(0, 1),
+            session.Snapshot.PublicSyntheticBattle!.BattleState!.ActorPosition);
+
+        Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
+            new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)));
+        Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
+            new ConfirmPublicSyntheticBattleSelectionCommand()));
+        Assert.IsType<GameSessionPublicSyntheticBattleCursorMoved>(session.Apply(
+            new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)));
+        GameSessionPublicSyntheticBattleSelectionConfirmed completed =
+            Assert.IsType<GameSessionPublicSyntheticBattleSelectionConfirmed>(session.Apply(
+                new ConfirmPublicSyntheticBattleSelectionCommand()));
+        Assert.Equal(TacticalSelectionOutcome.BattleCompleted, completed.Outcome);
+        Assert.Equal(2, completed.Cues.Count);
+        Assert.NotNull(completed.Completion);
+        Assert.Equal(PublicSyntheticBattleLifecycleStatus.Completed,
+            completed.Snapshot.PublicSyntheticBattle!.Status);
+
+        GameSessionSnapshot completedSnapshot = session.Snapshot;
+        GameSessionCommandRejected wrongReturn = Assert.IsType<GameSessionCommandRejected>(
+            session.Apply(new AcknowledgePublicSyntheticBattleCompletionCommand(
+                new TacticalBattleId("public-synthetic-wrong-battle"),
+                completed.Completion!.CueSequence)));
+        Assert.Equal(GameSessionCommandFailureCode.AcknowledgementMismatch, wrongReturn.Diagnostic.Code);
+        Assert.Same(completedSnapshot, session.Snapshot);
+
+        GameSessionPublicSyntheticBattleReturned returned =
+            Assert.IsType<GameSessionPublicSyntheticBattleReturned>(session.Apply(
+                new AcknowledgePublicSyntheticBattleCompletionCommand(
+                    completed.Completion.Battle,
+                    completed.Completion.CueSequence)));
+        Assert.Equal(GameFlowStage.Exploration, returned.Snapshot.FlowStage);
+        Assert.Equal(new MapId("public-synthetic-outbound-shell"),
+            returned.Snapshot.Exploration.Map);
+        Assert.Equal(new MapPosition(1, 1), returned.Snapshot.Exploration.PlayerPosition);
+        Assert.Equal(SemanticFacing.East, returned.Snapshot.Facing);
+        Assert.Null(returned.Snapshot.PublicSyntheticBattle);
+        Assert.True(returned.Snapshot.SyntheticFlags.IsSet(new FlagId("retained-flag")));
+        Assert.True(returned.Snapshot.Discoveries.IsDiscovered(discovered.Receipt.Discovery));
+        Assert.True(returned.Snapshot.Inventory.Contains(itemAcquired.Receipt.Item));
+
+        GameSessionSnapshot returnedSnapshot = session.Snapshot;
+        GameSessionCommandRejected duplicateReturn = Assert.IsType<GameSessionCommandRejected>(
+            session.Apply(new AcknowledgePublicSyntheticBattleCompletionCommand(
+                completed.Completion.Battle,
+                completed.Completion.CueSequence)));
+        Assert.Equal(
+            GameSessionCommandFailureCode.PublicSyntheticBattleNotCompleted,
+            duplicateReturn.Diagnostic.Code);
+        Assert.Same(returnedSnapshot, session.Snapshot);
+
+        GameSessionStarted restarted = Assert.IsType<GameSessionStarted>(
+            GameSession.Start(CreateBattleAcceptedSource(), Request()));
+        Assert.Equal(GameFlowStage.Exploration, restarted.Session.Snapshot.FlowStage);
+        Assert.Null(restarted.Session.Snapshot.PublicSyntheticBattle);
+        Assert.Empty(restarted.Session.Snapshot.Discoveries.Discoveries);
+        Assert.Empty(restarted.Session.Snapshot.Inventory.Items);
+    }
+
     [Fact]
     public void StartAndMoveProduceDeterministicExplorationSnapshot()
     {
@@ -1846,7 +2003,7 @@ public sealed class GameSessionTests
         return new AcceptedSource(definition, receipt);
     }
 
-    private static IMapScenarioSource CreateOutboundAcceptedSource()
+    private static IMapScenarioSource CreateOutboundAcceptedSource(bool includeBattle = false)
     {
         MapId map3 = new("map3");
         MapId outboundMap = new("public-synthetic-outbound-shell");
@@ -1862,7 +2019,17 @@ public sealed class GameSessionTests
                     map3Runtime.Walkability,
                     map3Runtime.AreaDescriptions,
                     new MapSetupEventTable<ZoneEventRecord>(
-                        [ZoneEventRecord.Default(new EventTargetId("outbound-no-zone"))])),
+                        includeBattle
+                            ?
+                            [
+                                ZoneEventRecord.Specific(
+                                    EventFieldMatch.Exact(2),
+                                    EventFieldMatch.Exact(1),
+                                    new EventTargetId(
+                                        "public-synthetic-outbound-shell-battle-zone")),
+                                ZoneEventRecord.Default(new EventTargetId("outbound-no-zone")),
+                            ]
+                            : [ZoneEventRecord.Default(new EventTargetId("outbound-no-zone"))])),
             ]);
         MapSetupCatalog setupCatalog = new(
             [
@@ -1885,7 +2052,10 @@ public sealed class GameSessionTests
             mapRuntimes: runtimes,
             setupCatalog: setupCatalog,
             outboundTransitions: new MapOutboundTransitionCatalog(
-                [OutboundTransitionDefinition()]));
+                [OutboundTransitionDefinition()]),
+            publicSyntheticBattles: includeBattle
+                ? new PublicSyntheticBattleCatalog([BattleDefinition()])
+                : null);
         MapScenarioDefinition definition = new(
             "synthetic-scenario",
             "Synthetic scenario",
@@ -1912,6 +2082,9 @@ public sealed class GameSessionTests
                 ["evidence-owner"],
                 ["capability"]));
     }
+
+    private static IMapScenarioSource CreateBattleAcceptedSource() =>
+        CreateOutboundAcceptedSource(includeBattle: true);
 
     private static GameSessionStarted StartAtEastContext()
     {
@@ -1940,7 +2113,8 @@ public sealed class GameSessionTests
         MapItemAcquisitionCatalog? itemAcquisitions = null,
         MapExplorationRuntimeCatalog? mapRuntimes = null,
         MapSetupCatalog? setupCatalog = null,
-        MapOutboundTransitionCatalog? outboundTransitions = null)
+        MapOutboundTransitionCatalog? outboundTransitions = null,
+        PublicSyntheticBattleCatalog? publicSyntheticBattles = null)
     {
         MapSetupCatalog admittedSetupCatalog = setupCatalog ?? new(
             [
@@ -2023,7 +2197,8 @@ public sealed class GameSessionTests
             fieldSearches ?? new MapFieldSearchCatalog([FieldSearchDefinition()]),
             itemAcquisitions ?? new MapItemAcquisitionCatalog(
                 [ItemAcquisitionDefinition()]),
-            outboundTransitions);
+            outboundTransitions,
+            publicSyntheticBattles);
     }
 
     private static MapEventRequestDefinition RequestDefinition(
@@ -2093,6 +2268,36 @@ public sealed class GameSessionTests
             new MapSetupId(destinationSetup),
             destinationFacing,
             new PresentationCueId(cue));
+
+    private static PublicSyntheticBattleDefinition BattleDefinition() =>
+        new(
+            new PublicSyntheticBattleRequestId(
+                "public-synthetic-map3-battle-entry-request"),
+            new TacticalBattleRules(
+                new TacticalBattleId("public-synthetic-map3-tactical-battle"),
+                new TacticalBattleGrid(3, 2, [true, true, true, true, true, true]),
+                new TacticalCombatantId("public-synthetic-map3-player-unit"),
+                new TacticalPosition(0, 1),
+                new TacticalCombatantId("public-synthetic-map3-placeholder-enemy"),
+                new TacticalPosition(2, 1),
+                actorMoveRange: 1,
+                actorAttackRange: 1,
+                enemyMaxHitPoints: 1,
+                actorDamage: 1),
+            new MapId("public-synthetic-outbound-shell"),
+            new MapPosition(2, 1),
+            new MapSetupId("outbound-setup"),
+            new EventTargetId("public-synthetic-outbound-shell-battle-zone"),
+            new MapId("public-synthetic-outbound-shell"),
+            new MapPosition(1, 1),
+            new MapSetupId("outbound-setup"),
+            SemanticFacing.East,
+            new PresentationCueId("public-synthetic-map3-battle-entry-pending"),
+            new PresentationCueId("public-synthetic-map3-battle-admitted"),
+            new PresentationCueId("public-synthetic-map3-battle-move-confirmed"),
+            new PresentationCueId("public-synthetic-map3-battle-attack-completed"),
+            new PresentationCueId("public-synthetic-map3-battle-completed"),
+            new PresentationCueId("public-synthetic-map3-battle-returned"));
 
     private static MapEntityDefinition EntityDefinition(
         string entity = "placeholder-entity",

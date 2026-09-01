@@ -21,7 +21,8 @@ public sealed class MapScenarioContextDefinition
         MapDialogueCatalog dialogues,
         MapFieldSearchCatalog fieldSearches,
         MapItemAcquisitionCatalog itemAcquisitions,
-        MapOutboundTransitionCatalog? outboundTransitions = null)
+        MapOutboundTransitionCatalog? outboundTransitions = null,
+        PublicSyntheticBattleCatalog? publicSyntheticBattles = null)
     {
         MapRuntimes = mapRuntimes ?? throw new ArgumentNullException(nameof(mapRuntimes));
         SetupCatalog = setupCatalog ?? throw new ArgumentNullException(nameof(setupCatalog));
@@ -44,6 +45,8 @@ public sealed class MapScenarioContextDefinition
         ItemAcquisitions = itemAcquisitions ??
             throw new ArgumentNullException(nameof(itemAcquisitions));
         OutboundTransitions = outboundTransitions ?? new MapOutboundTransitionCatalog([]);
+        PublicSyntheticBattles = publicSyntheticBattles ??
+            new PublicSyntheticBattleCatalog([]);
 
         List<FlagId> copiedFlags = [];
         _initialSetFlagLookup = [];
@@ -390,6 +393,52 @@ public sealed class MapScenarioContextDefinition
                     nameof(itemAcquisitions));
             }
         }
+
+        HashSet<EventTargetId> occupiedTargets = EventRequests.Definitions
+            .Select(definition => definition.ZoneTarget)
+            .Concat(localTransitionTargets)
+            .Concat(OutboundTransitions.Definitions.Select(definition => definition.ZoneTarget))
+            .ToHashSet();
+        foreach (PublicSyntheticBattleDefinition battle in PublicSyntheticBattles.Definitions)
+        {
+            MapExplorationRuntimeDefinition sourceRuntime =
+                MapRuntimes.GetRequired(battle.SourceMap);
+            MapExplorationRuntimeDefinition returnRuntime =
+                MapRuntimes.GetRequired(battle.ReturnMap);
+            List<ZoneEventRecord> sourceRecords = sourceRuntime.ZoneEvents.Records
+                .Where(record => !record.IsDefault && record.Target == battle.SourceZoneTarget)
+                .ToList();
+            MapSetupCatalogEntry sourceSetupEntry = SetupCatalog.Entries.Single(
+                entry => entry.Map == battle.SourceMap);
+            MapSetupCatalogEntry returnSetupEntry = SetupCatalog.Entries.Single(
+                entry => entry.Map == battle.ReturnMap);
+            if (sourceRecords.Count != 1 ||
+                sourceRecords[0].X.ExactValue is not byte sourceX ||
+                sourceRecords[0].Y.ExactValue is not byte sourceY ||
+                sourceX != battle.SourcePosition.X ||
+                sourceY != battle.SourcePosition.Y ||
+                defaultTargets.Contains(battle.SourceZoneTarget) ||
+                !occupiedTargets.Add(battle.SourceZoneTarget) ||
+                !OwnsSetup(sourceSetupEntry, battle.SourceSetup) ||
+                !OwnsSetup(returnSetupEntry, battle.ReturnSetup) ||
+                !sourceRuntime.Walkability.IsPassable(battle.SourcePosition) ||
+                !returnRuntime.Walkability.IsPassable(battle.ReturnPosition))
+            {
+                throw new ArgumentException(
+                    $"Public-synthetic battle '{battle.Rules.Battle}' requires exact admitted source and return state.",
+                    nameof(publicSyntheticBattles));
+            }
+
+            foreach (PresentationCueId cue in battle.Cues)
+            {
+                if (!occupiedCueIds.Add(cue))
+                {
+                    throw new ArgumentException(
+                        $"Public-synthetic battle '{battle.Rules.Battle}' cannot reuse a presentation cue ID.",
+                        nameof(publicSyntheticBattles));
+                }
+            }
+        }
     }
 
     public MapExplorationRuntimeCatalog MapRuntimes { get; }
@@ -417,6 +466,8 @@ public sealed class MapScenarioContextDefinition
     public MapItemAcquisitionCatalog ItemAcquisitions { get; }
 
     public MapOutboundTransitionCatalog OutboundTransitions { get; }
+
+    public PublicSyntheticBattleCatalog PublicSyntheticBattles { get; }
 
     public bool IsInitiallySet(FlagId flag)
     {

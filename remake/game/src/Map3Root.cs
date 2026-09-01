@@ -3,6 +3,7 @@ using Godot;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Content;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter;
@@ -11,9 +12,12 @@ public sealed partial class Map3Root : Node2D
 {
     public const string BannerText = "PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY";
     public const string SmokeMarker = "SF2_MAP3_SMOKE ";
+    public const string PublicSyntheticBattleSmokeMarker =
+        "SF2_MAP3_PUBLIC_SYNTHETIC_BATTLE_SMOKE ";
 
     private GameSession? _session;
     private Map3Presenter? _presenter;
+    private PublicSyntheticBattlePresenter? _battlePresenter;
     private Map3InputAdapter? _inputAdapter;
 
     public override void _Ready()
@@ -74,7 +78,13 @@ public sealed partial class Map3Root : Node2D
             ApplyItemAcquisitionRequest,
             ApplyItemAcquisitionAcknowledgement,
             ApplyOutboundTransitionRequest,
-            ApplyOutboundTransitionAcknowledgement);
+            ApplyOutboundTransitionAcknowledgement,
+            ApplyPublicSyntheticBattleRequest,
+            ApplyPublicSyntheticBattleEntryAcknowledgement,
+            ApplyPublicSyntheticBattleCursorMove,
+            ApplyPublicSyntheticBattleSelectionConfirmation,
+            ApplyPublicSyntheticBattleSelectionCancellation,
+            ApplyPublicSyntheticBattleCompletionAcknowledgement);
 
     private void StartScenario(Map3RuntimeProfileSelection selection)
     {
@@ -114,11 +124,13 @@ public sealed partial class Map3Root : Node2D
         {
             SceneTree sceneTree = GetTree();
             Map3Presenter presenter = _presenter!;
+            PublicSyntheticBattlePresenter battlePresenter = _battlePresenter!;
             Callable.From(() => PublicSyntheticMap3SmokeDriver.Run(
                 sceneTree,
                 started.Session,
                 started.Receipt,
-                presenter)).CallDeferred();
+                presenter,
+                battlePresenter)).CallDeferred();
         }
     }
 
@@ -450,12 +462,133 @@ public sealed partial class Map3Root : Node2D
         ProjectRejection((GameSessionCommandRejected)result);
     }
 
+    private void ApplyPublicSyntheticBattleRequest()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new RequestSelectedPublicSyntheticBattleCommand());
+        if (result is GameSessionPublicSyntheticBattleRequested)
+        {
+            ProjectSnapshot("Public-synthetic battle entry pending", result);
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyPublicSyntheticBattleEntryAcknowledgement()
+    {
+        if (_session?.Snapshot.PublicSyntheticBattle is not
+            PublicSyntheticBattleLifecycleSnapshot battle)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new AcknowledgePublicSyntheticBattleEntryCommand(
+                battle.Definition.Request,
+                battle.Definition.Rules.Battle,
+                battle.EntryCueSequence));
+        if (result is GameSessionPublicSyntheticBattleAdmitted)
+        {
+            ProjectSnapshot("Project-authored tactical battle admitted", result);
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyPublicSyntheticBattleCursorMove(TacticalDirection direction)
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new MovePublicSyntheticBattleCursorCommand(direction));
+        if (result is GameSessionPublicSyntheticBattleCursorMoved moved)
+        {
+            ProjectSnapshot($"Tactical cursor {moved.Outcome}", result);
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyPublicSyntheticBattleSelectionConfirmation()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new ConfirmPublicSyntheticBattleSelectionCommand());
+        if (result is GameSessionPublicSyntheticBattleSelectionConfirmed confirmed)
+        {
+            ProjectSnapshot($"Tactical selection {confirmed.Outcome}", result);
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyPublicSyntheticBattleSelectionCancellation()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new CancelPublicSyntheticBattleSelectionCommand());
+        if (result is GameSessionPublicSyntheticBattleSelectionCancelled cancelled)
+        {
+            ProjectSnapshot($"Tactical selection {cancelled.Outcome}", result);
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
+    private void ApplyPublicSyntheticBattleCompletionAcknowledgement()
+    {
+        if (_session?.Snapshot.PublicSyntheticBattle is not
+            PublicSyntheticBattleLifecycleSnapshot
+            {
+                Status: PublicSyntheticBattleLifecycleStatus.Completed,
+            } battle)
+        {
+            return;
+        }
+
+        GameSessionCommandResult result = _session.Apply(
+            new AcknowledgePublicSyntheticBattleCompletionCommand(
+                battle.Definition.Rules.Battle,
+                battle.LastCueSequence));
+        if (result is GameSessionPublicSyntheticBattleReturned)
+        {
+            ProjectSnapshot("Public-synthetic battle completed; exploration restored", result);
+            return;
+        }
+
+        ProjectRejection((GameSessionCommandRejected)result);
+    }
+
     private void ProjectRejection(GameSessionCommandRejected rejected)
     {
         _presenter?.ProjectStatus(rejected.Diagnostic.Message);
+        ProjectSnapshot(rejected.Diagnostic.Message, rejected);
     }
 
-    private void ProjectSnapshot(string outcome)
+    private void ProjectSnapshot(
+        string outcome,
+        GameSessionCommandResult? result = null)
     {
         if (_session is null)
         {
@@ -463,6 +596,7 @@ public sealed partial class Map3Root : Node2D
         }
 
         _presenter?.Project(_session.Snapshot, outcome);
+        _battlePresenter?.Project(_session.Snapshot, outcome, result);
     }
 
     private void FailStartup(string message)
@@ -480,5 +614,6 @@ public sealed partial class Map3Root : Node2D
     private void BuildPresentation()
     {
         _presenter = Map3Presenter.Attach(this);
+        _battlePresenter = PublicSyntheticBattlePresenter.Attach(this);
     }
 }

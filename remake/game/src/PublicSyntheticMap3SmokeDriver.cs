@@ -3,6 +3,7 @@ using Godot;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Content;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter;
@@ -13,7 +14,8 @@ internal static class PublicSyntheticMap3SmokeDriver
         SceneTree sceneTree,
         GameSession session,
         ScenarioAdmissionReceipt admissionReceipt,
-        Map3Presenter presenter)
+        Map3Presenter presenter,
+        PublicSyntheticBattlePresenter battlePresenter)
     {
         GameSessionSnapshot before = session.Snapshot;
         GameSessionCommandApplied? applied = session.Apply(
@@ -418,6 +420,144 @@ internal static class PublicSyntheticMap3SmokeDriver
         }
 
         presenter.Project(session.Snapshot, "Public-synthetic outbound shell admitted");
+        string legacyReceipt = CreateLegacyReceipt(
+            before,
+            applied,
+            admissionReceipt);
+        GD.Print(Map3Root.SmokeMarker + legacyReceipt);
+
+        GameSessionCommandApplied? battleSourceMove = session.Apply(
+            new MoveExplorationCommand(ExplorationDirection.East)) as
+            GameSessionCommandApplied;
+        GameSessionContextSelected? battleSourceContext = session.Apply(
+            new SelectExplorationContextCommand(AreaDescriptionAdmission.Ordinary)) as
+            GameSessionContextSelected;
+        if (battleSourceMove?.Outcome != ExplorationMovementOutcome.Moved ||
+            battleSourceMove.Snapshot.Exploration.PlayerPosition != new MapPosition(2, 1) ||
+            battleSourceContext?.Selection.ZoneEvent.Target.Value !=
+                "public-synthetic-outbound-shell-battle-zone")
+        {
+            FailBattle(sceneTree, presenter, "The public-synthetic battle source context did not match.");
+            return;
+        }
+
+        GameSessionPublicSyntheticBattleRequested? battleRequested = session.Apply(
+            new RequestSelectedPublicSyntheticBattleCommand()) as
+            GameSessionPublicSyntheticBattleRequested;
+        if (battleRequested?.Battle.Status !=
+                PublicSyntheticBattleLifecycleStatus.Pending ||
+            battleRequested.Cue.Cue.Value !=
+                "public-synthetic-map3-battle-entry-pending")
+        {
+            FailBattle(sceneTree, presenter, "The public-synthetic battle request was not admitted.");
+            return;
+        }
+
+        GameSessionPublicSyntheticBattleAdmitted? battleAdmitted = session.Apply(
+            new AcknowledgePublicSyntheticBattleEntryCommand(
+                battleRequested.Battle.Definition.Request,
+                battleRequested.Battle.Definition.Rules.Battle,
+                battleRequested.Cue.Sequence)) as
+            GameSessionPublicSyntheticBattleAdmitted;
+        if (battleAdmitted?.Snapshot.FlowStage != GameFlowStage.Battle ||
+            battleAdmitted.Battle.BattleState?.Phase != TacticalBattlePhase.MoveSelection)
+        {
+            FailBattle(sceneTree, presenter, "The public-synthetic battle did not become active.");
+            return;
+        }
+
+        battlePresenter.Project(
+            battleAdmitted.Snapshot,
+            "Project-authored tactical battle admitted",
+            battleAdmitted);
+        if (session.Apply(new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)) is not
+                GameSessionPublicSyntheticBattleCursorMoved
+            { Outcome: TacticalCursorMoveOutcome.Moved } ||
+            session.Apply(new ConfirmPublicSyntheticBattleSelectionCommand()) is not
+                GameSessionPublicSyntheticBattleSelectionConfirmed
+            { Outcome: TacticalSelectionOutcome.MoveConfirmed } ||
+            session.Apply(new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)) is not
+                GameSessionPublicSyntheticBattleCursorMoved
+            { Outcome: TacticalCursorMoveOutcome.Moved } ||
+            session.Apply(new CancelPublicSyntheticBattleSelectionCommand()) is not
+                GameSessionPublicSyntheticBattleSelectionCancelled
+            { Outcome: TacticalCancelOutcome.ReturnedToMoveSelection })
+        {
+            FailBattle(sceneTree, presenter, "The public-synthetic tactical cancel path failed.");
+            return;
+        }
+
+        if (session.Apply(new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)) is not
+                GameSessionPublicSyntheticBattleCursorMoved
+            { Outcome: TacticalCursorMoveOutcome.Moved } ||
+            session.Apply(new ConfirmPublicSyntheticBattleSelectionCommand()) is not
+                GameSessionPublicSyntheticBattleSelectionConfirmed
+            { Outcome: TacticalSelectionOutcome.MoveConfirmed } ||
+            session.Apply(new MovePublicSyntheticBattleCursorCommand(TacticalDirection.East)) is not
+                GameSessionPublicSyntheticBattleCursorMoved
+            { Outcome: TacticalCursorMoveOutcome.Moved } ||
+            session.Apply(new ConfirmPublicSyntheticBattleSelectionCommand()) is not
+                GameSessionPublicSyntheticBattleSelectionConfirmed
+            {
+                Outcome: TacticalSelectionOutcome.BattleCompleted,
+                Completion: not null,
+            } battleCompleted)
+        {
+            FailBattle(sceneTree, presenter, "The public-synthetic tactical battle did not complete.");
+            return;
+        }
+
+        GameSessionPublicSyntheticBattleReturned? battleReturned = session.Apply(
+            new AcknowledgePublicSyntheticBattleCompletionCommand(
+                battleCompleted.Completion.Battle,
+                battleCompleted.Completion.CueSequence)) as
+            GameSessionPublicSyntheticBattleReturned;
+        if (battleReturned?.Snapshot.FlowStage != GameFlowStage.Exploration ||
+            battleReturned.Snapshot.PublicSyntheticBattle is not null ||
+            battleReturned.Snapshot.Exploration.Map.Value !=
+                "public-synthetic-outbound-shell" ||
+            battleReturned.Snapshot.Exploration.PlayerPosition != new MapPosition(1, 1) ||
+            !battleReturned.Snapshot.SyntheticFlags.IsSet(
+                new FlagId("synthetic-map3-variant-enabled")) ||
+            !battleReturned.Snapshot.Discoveries.IsDiscovered(itemAcquired.Receipt.Discovery) ||
+            !battleReturned.Snapshot.Inventory.Contains(itemAcquired.Receipt.Item))
+        {
+            FailBattle(sceneTree, presenter, "The public-synthetic battle return was not atomic.");
+            return;
+        }
+
+        battlePresenter.Project(
+            battleReturned.Snapshot,
+            "Public-synthetic battle completed; exploration restored",
+            battleReturned);
+        object battleSmokeReceipt = new
+        {
+            status = "Pass",
+            profile = "public-synthetic",
+            capability = admissionReceipt.Capabilities.Single(
+                capability => capability ==
+                    PublicSyntheticMap3PackageReader.TacticalBattleCapability),
+            battleId = battleReturned.Completion.Battle.Value,
+            actorId = battleReturned.Completion.Actor.Value,
+            defeatedEnemyId = battleReturned.Completion.DefeatedEnemy.Value,
+            returnedFlow = battleReturned.Snapshot.FlowStage.ToString(),
+            returnedMapId = battleReturned.Snapshot.Exploration.Map.Value,
+            banner = Map3Root.BannerText,
+        };
+        GD.Print(
+            Map3Root.PublicSyntheticBattleSmokeMarker +
+            JsonSerializer.Serialize(battleSmokeReceipt));
+        sceneTree.Quit(0);
+    }
+
+    internal static string CreateLegacyReceipt(
+        GameSessionSnapshot before,
+        GameSessionCommandApplied applied,
+        ScenarioAdmissionReceipt admissionReceipt)
+    {
+        ArgumentNullException.ThrowIfNull(before);
+        ArgumentNullException.ThrowIfNull(applied);
+        ArgumentNullException.ThrowIfNull(admissionReceipt);
         object smokeReceipt = new
         {
             status = "Pass",
@@ -443,8 +583,7 @@ internal static class PublicSyntheticMap3SmokeDriver
             simulationStep = applied.Snapshot.SimulationStep,
             banner = Map3Root.BannerText,
         };
-        GD.Print(Map3Root.SmokeMarker + JsonSerializer.Serialize(smokeReceipt));
-        sceneTree.Quit(0);
+        return JsonSerializer.Serialize(smokeReceipt);
     }
 
     private static void Fail(
@@ -455,6 +594,19 @@ internal static class PublicSyntheticMap3SmokeDriver
         GD.PushError(message);
         presenter.ProjectStatus(message);
         GD.Print(Map3Root.SmokeMarker + JsonSerializer.Serialize(new { status = "Fail", message }));
+        sceneTree.Quit(1);
+    }
+
+    private static void FailBattle(
+        SceneTree sceneTree,
+        Map3Presenter presenter,
+        string message)
+    {
+        GD.PushError(message);
+        presenter.ProjectStatus(message);
+        GD.Print(
+            Map3Root.PublicSyntheticBattleSmokeMarker +
+            JsonSerializer.Serialize(new { status = "Fail", message }));
         sceneTree.Quit(1);
     }
 }
