@@ -11,7 +11,7 @@ make Godot an evidence owner.
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
 | `public-synthetic` | default, or explicit public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
-| `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path; optional features require their own complete explicit value sets | caller-owned local inputs admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame preview; **not full original fidelity** |
+| `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path; optional features require their own complete explicit value sets | caller-owned local inputs admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
 
 The runtime always displays the appropriate disclosure:
 
@@ -62,7 +62,9 @@ project-authored tactical micro-battle from the tracked public-synthetic package
 an original battle from the private input. Application pauses private traversal while the bridge is
 pending or active, owns the tactical lifecycle, and returns to the exact same private traversal
 snapshot. Public-synthetic completion flags, effects, setup, facing, and return-map state do not cross
-the bridge.
+the bridge. While entry is Pending, the exact acknowledgement admits the tactical loop; an exact
+one-shot decline instead enters a terminal non-busy bridge state and resumes movement without changing
+the authoritative private map snapshot.
 
 Missing, relative, unreadable, malformed, or incompatible input makes PrivateLocal **Unavailable**.
 The host does not silently start PublicSynthetic while describing the result as private. Unknown profile
@@ -122,12 +124,17 @@ Unavailable. Canonical Map 3 import and the complete local presentation pack bot
 existing private session constructor is called. Godot then resolves only
 `hud.yes-no-window-frame` and the accepted scale. The same Content reader reopens the fixed manifest,
 resolves and rechecks the selected contained PNG, and returns a defensive byte copy for the
-project-authored top-right chrome preview. The absolute root and runtime path stay in outer composition
+project-authored top-right HUD consumer. The absolute root and runtime path stay in outer composition
 and Content; they do not enter Application, the Godot catalog, snapshots, receipts, status, smoke, or
 logs.
 
-The preview has no Yes/No command, text, icon, focus, selection, window-layout, Theme, or original UI
-meaning. Existing private and public smoke receipt bytes and ordering remain unchanged.
+Without the private base-view battle bridge this remains a chrome-only preview. With the bridge,
+Godot shows project-authored diagnostic `ENTER [N]` and `STAY [BACKSPACE]` labels only while the typed
+bridge is Pending. `N` sends the existing exact acknowledgement; `Backspace` sends the exact decline
+only while Pending and retains its tactical-cancel meaning only while Active. The labels use Godot's
+built-in diagnostic font and do not establish an admitted product font, input-glyph, Theme, original
+Yes/No text, focus model, window system, or original UI meaning. Existing private and public smoke
+receipt bytes and ordering remain unchanged.
 
 The profile therefore does not claim:
 

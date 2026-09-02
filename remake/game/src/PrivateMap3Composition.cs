@@ -8,6 +8,13 @@ using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter;
 
+internal enum PrivateBattleBridgeBackAction
+{
+    None,
+    DeclineEntry,
+    CancelTacticalSelection,
+}
+
 public sealed partial class Map3Root
 {
     public const string PrivateBannerText =
@@ -112,7 +119,10 @@ public sealed partial class Map3Root
             return;
         }
 
-        if (!TryAttachPrivateHudPreview(hudPreview, runSmoke))
+        if (!TryAttachPrivateHudPreview(
+                hudPreview,
+                battleEntryChoiceEnabled: false,
+                runSmoke))
         {
             return;
         }
@@ -195,7 +205,10 @@ public sealed partial class Map3Root
             return;
         }
 
-        if (!TryAttachPrivateHudPreview(hudPreview, runSmoke))
+        if (!TryAttachPrivateHudPreview(
+                hudPreview,
+                battleEntryChoiceEnabled: true,
+                runSmoke))
         {
             return;
         }
@@ -204,6 +217,8 @@ public sealed partial class Map3Root
         _privateVisualBinding = started.Binding;
         _privateBattleBridgeEnabled = true;
         _inputAdapter = Map3InputAdapter.CreateGodot(CreatePrivateBattleBridgeInputActions());
+        _privateHudPreview?.ProjectBattleEntryChoice(
+            started.Session.PrivateOriginalMapBattleBridge);
         PrivateMap3Presenter presenter = _privatePresenter!;
         presenter.BindVisualDefinition(_privateVisualBinding.Definition);
         presenter.Project(started.Session.PrivateOriginalMapSnapshot, "Ready");
@@ -285,6 +300,7 @@ public sealed partial class Map3Root
 
     private bool TryAttachPrivateHudPreview(
         PrivateLocalPresentationRasterMount? mount,
+        bool battleEntryChoiceEnabled,
         bool runSmoke)
     {
         if (mount is null)
@@ -295,6 +311,7 @@ public sealed partial class Map3Root
         _privateHudPreview = PrivateLocalHudPreview.TryAttach(
             this,
             mount,
+            battleEntryChoiceEnabled,
             out PrivateLocalPresentationAssetMountDiagnostic? diagnostic);
         if (_privateHudPreview is not null)
         {
@@ -463,7 +480,27 @@ public sealed partial class Map3Root
 
     private void ApplyPrivateBattleBridgeSelectionCancellation()
     {
-        if (_session is null)
+        if (_session?.PrivateOriginalMapBattleBridge is not
+            PrivateOriginalMapBattleBridgeSnapshot bridge)
+        {
+            return;
+        }
+
+        PrivateBattleBridgeBackAction action = RoutePrivateBattleBridgeBackAction(
+            bridge.Status);
+        if (action == PrivateBattleBridgeBackAction.DeclineEntry)
+        {
+            ProjectPrivateBattleResult(
+                _session.ApplyPrivateOriginalMapBattleBridge(
+                    new DeclinePrivateOriginalMapBattleBridgeEntryCommand(
+                        bridge.Definition.Bridge,
+                        bridge.Definition.Request,
+                        bridge.LastCueSequence)),
+                "Project-authored tactical battle entry declined");
+            return;
+        }
+
+        if (action != PrivateBattleBridgeBackAction.CancelTacticalSelection)
         {
             return;
         }
@@ -473,6 +510,17 @@ public sealed partial class Map3Root
                 new CancelPublicSyntheticBattleSelectionCommand()),
             "Project-authored tactical selection cancelled");
     }
+
+    internal static PrivateBattleBridgeBackAction RoutePrivateBattleBridgeBackAction(
+        PrivateOriginalMapBattleBridgeStatus status) =>
+        status switch
+        {
+            PrivateOriginalMapBattleBridgeStatus.Pending =>
+                PrivateBattleBridgeBackAction.DeclineEntry,
+            PrivateOriginalMapBattleBridgeStatus.Active =>
+                PrivateBattleBridgeBackAction.CancelTacticalSelection,
+            _ => PrivateBattleBridgeBackAction.None,
+        };
 
     private void ApplyPrivateBattleBridgeCompletionAcknowledgement()
     {
@@ -515,6 +563,8 @@ public sealed partial class Map3Root
             _session.PrivateOriginalMapBattleBridge,
             outcome,
             result);
+        _privateHudPreview?.ProjectBattleEntryChoice(
+            _session.PrivateOriginalMapBattleBridge);
         if (result is PrivateOriginalMapBattleBridgeReturned returned)
         {
             _privatePresenter?.Project(returned.Snapshot, outcome);

@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content;
+using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Content;
 using Sf2.Remake.GodotAdapter;
 using Xunit;
@@ -89,6 +90,48 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         Assert.Equal(137, mounted.Asset.CopyPngBytes()[0]);
         Assert.Equal(new global::Godot.Vector2(800, 27), PrivateLocalHudPreview.PreviewPosition);
         Assert.Equal(new global::Godot.Vector2(112, 24), PrivateLocalHudPreview.PreviewSize);
+    }
+
+    [Fact]
+    public void BattleEntryChoiceProjectionIsPendingOnlyAndChromeFallbackStaysVisible()
+    {
+        Assert.True(PrivateLocalHudPreview.IsInitiallyVisible(
+            battleEntryChoiceEnabled: false));
+        Assert.False(PrivateLocalHudPreview.IsInitiallyVisible(
+            battleEntryChoiceEnabled: true));
+        Assert.Equal("ENTER [N]", PrivateLocalHudPreview.EnterLabel);
+        Assert.Equal("STAY", PrivateLocalHudPreview.StayActionLabel);
+        Assert.Equal("[BACKSPACE]", PrivateLocalHudPreview.StayKeyLabel);
+        Assert.Equal("STAY [BACKSPACE]", PrivateLocalHudPreview.StayLabel);
+        Assert.Equal(6, PrivateLocalHudPreview.ChoiceFontSize);
+
+        foreach (PrivateOriginalMapBattleBridgeStatus status in
+                 Enum.GetValues<PrivateOriginalMapBattleBridgeStatus>())
+        {
+            Assert.Equal(
+                status == PrivateOriginalMapBattleBridgeStatus.Pending,
+                PrivateLocalHudPreview.IsBattleEntryChoiceVisible(status));
+        }
+
+        Assert.False(PrivateLocalHudPreview.IsBattleEntryChoiceVisible(status: null));
+    }
+
+    [Fact]
+    public void ExistingBackActionRoutesOnlyPendingDeclineAndActiveTacticalCancel()
+    {
+        foreach (PrivateOriginalMapBattleBridgeStatus status in
+                 Enum.GetValues<PrivateOriginalMapBattleBridgeStatus>())
+        {
+            PrivateBattleBridgeBackAction expected = status switch
+            {
+                PrivateOriginalMapBattleBridgeStatus.Pending =>
+                    PrivateBattleBridgeBackAction.DeclineEntry,
+                PrivateOriginalMapBattleBridgeStatus.Active =>
+                    PrivateBattleBridgeBackAction.CancelTacticalSelection,
+                _ => PrivateBattleBridgeBackAction.None,
+            };
+            Assert.Equal(expected, Map3Root.RoutePrivateBattleBridgeBackAction(status));
+        }
     }
 
     [Fact]

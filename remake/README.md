@@ -12,9 +12,10 @@ deterministic enemy response, typed victory/defeat, same-definition retry, an at
 synthetic victory effect, and exploration return. A separate private-local traversal shell with an
 opt-in project-authored Map 3 base view can explicitly enter the same tactical reducer at the
 controlled start; defeat/retry and victory preserve the exact private traversal snapshot and never
-apply the public synthetic world effect. This manual bridge is not natural battle admission, Battle
-01, an original after-battle program, or the accepted continuous Map 3-through-Battle 01 milestone,
-which remains **NOT READY**.
+apply the public synthetic world effect. Its optional local HUD panel can acknowledge entry or decline
+the one-shot project-authored request before movement resumes. This manual bridge is not natural
+battle admission, Battle 01, an original after-battle program, or the accepted continuous Map
+3-through-Battle 01 milestone, which remains **NOT READY**.
 
 The two persistent runtime disclosures are part of the product boundary:
 
@@ -91,14 +92,19 @@ reader to reopen the fixed manifest, resolve and recheck the contained path/leng
 defensive byte copy before Godot decodes it. No runtime path crosses into Application or Godot. Partial
 values, an implicit mount, or a failed private mount never fall back while reporting private success.
 
-The current preview uses the limiting physical dimension of the centered 16:9 frame at 100% UI scale;
+The current consumer uses the limiting physical dimension of the centered 16:9 frame at 100% UI scale;
 user-selectable UI scaling remains deferred rather than being guessed by this slice.
 
-This preview is chrome only. It is not a Yes/No menu, has no text, icon, input, selection, Theme, or
-gameplay semantics, and creates no new stable smoke marker. The separate `md-sf2-gfx-remake`
-repository remains non-authoritative R&D: its measurements informed the product-authored frame, but
-its ignored experimental SVG contains forbidden text and an embedded raster and is not an admitted
-product master or runtime input.
+Without the optional base-view battle bridge, the explicit mount remains the existing chrome-only
+diagnostic preview. With that bridge, Godot projects its typed Pending state as a bounded ENTER/STAY
+panel: `N` sends the exact existing entry acknowledgement and `Backspace` sends an exact one-shot
+decline through `GameSession`. Decline is terminal for that session's bridge, restores movement, and
+does not mutate the private map snapshot. The built-in-font labels are project-authored diagnostic
+copy, not an admitted product font, original Yes/No text, an icon, a Theme, or original UI behavior.
+This adds no stable smoke marker. The separate `md-sf2-gfx-remake` repository remains
+non-authoritative R&D: its measurements informed the product-authored frame, but its ignored
+experimental SVG contains forbidden text and an embedded raster and is not an admitted product master
+or runtime input.
 Because the product asset repository intentionally has no remote, an exact local commit proves
 identity but does not provide off-machine recovery; source/master backup remains a separate local
 operational responsibility. Rollback selects a prior reachable local commit or an immutable prior
@@ -154,7 +160,8 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
 - The private-local battle bridge reuses only that tactical definition, commands, cues, and Domain
   reducer. It pauses private traversal while active, preserves the same private snapshot through
   defeat/retry and victory, and does not import the public completion flag, effect, setup, facing, or
-  return-map state.
+  return-map state. Its project-authored pending choice either acknowledges entry or records a
+  one-shot terminal decline without changing that snapshot.
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
   ignored and local. None is committed, uploaded, or embedded in the public package.
 - Public-synthetic import/export success grants no right to distribute original content.

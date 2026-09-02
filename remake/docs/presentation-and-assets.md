@@ -20,9 +20,10 @@ model, and preserves the thin-Godot direction in
 or complete fidelity.
 
 The currently implemented `private-local` profile remains the bounded traversal/base-view capability
-described by [Capability Status](./capability-status.md). It may now mount the first reviewed local HUD
-frame only through an explicit diagnostic preview request. That narrow consumer does not reclassify
-the profile as complete product presentation.
+described by [Capability Status](./capability-status.md). It may mount the first reviewed local HUD
+frame only through an explicit request. The frame remains a chrome-only diagnostic without the
+project-authored battle bridge; with that bridge, it projects one typed pending ENTER/STAY choice.
+That narrow consumer does not reclassify the profile as complete product presentation.
 
 ## Decision Summary
 
@@ -328,9 +329,9 @@ Migration order is intentionally incremental:
    toolchain contract;
 2. accept one actual asset-repository HUD SVG, review its candidate 2x/4x derivatives, and promote the
    exact master/runtime/manifest transaction before any catalog consumption;
-3. mount the first reviewed frame through one path-free Godot catalog, one Content-owned semantic
-   payload lookup, and a bounded diagnostic preview,
-   then replace procedural HUD chrome only when a real semantic panel owns that migration;
+3. mount the first reviewed frame through one path-free Godot catalog and one Content-owned semantic
+   payload lookup, retain its bounded chrome fallback, and let the project-authored private battle
+   entry choice own its first semantic panel migration;
 4. mount one bounded local world/character family and validate bucket switching;
 5. expand asset families only after their source, derivation, cache, and failure rules are closed;
 6. close music and sound-effect format/loop/streaming contracts separately.
@@ -346,10 +347,11 @@ gameplay authority into a scene, resource, filename, or animation callback.
 | fixed by this proposal | 960-by-540 logical grid; simulation/presentation separation; explicit asset-repository root/exported pack; local-Git source/master/runtime/manifest history; ignored reproducible cache and scratch; fail-closed mount; no synthetic product fallback |
 | fixed after acceptance | 4x new-raster authoring; original raster as local master; deterministic 2x/4x buckets; one resident bucket; safe-frame/aspect/accessibility model; thin Godot catalog migration |
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
-| implemented bounded consumer | first reviewed `hud.yes-no-window-frame` master/runtime/manifest transaction; explicit PrivateLocal mount; exact semantic lookup; 2x/4x selection; Content-owned contained payload recheck; one path-free top-right chrome-only Godot preview |
-| separate implementation decision | semantic Yes/No behavior; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
+| implemented bounded consumer | first reviewed `hud.yes-no-window-frame` master/runtime/manifest transaction; explicit PrivateLocal mount; exact semantic lookup; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; one typed project-authored pending ENTER/STAY battle-entry panel |
+| separate implementation decision | original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original camera/layer/priority/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
 
-The local asset repository and first bounded HUD consumer now exist, but this document still does not
-authorize a product batch, PCK inclusion, presenter-wide migration, Yes/No interaction, or a general
-Theme. Those changes require separately owned, reviewable implementation slices.
+The local asset repository and first bounded semantic HUD consumer now exist, but this document still
+does not authorize a product batch, PCK inclusion, presenter-wide migration, original Yes/No
+interaction, admitted product font/input glyphs, or a general Theme. Those changes require separately
+owned, reviewable implementation slices.
