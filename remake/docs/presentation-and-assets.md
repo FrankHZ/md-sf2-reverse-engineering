@@ -20,8 +20,9 @@ model, and preserves the thin-Godot direction in
 or complete fidelity.
 
 The currently implemented `private-local` profile remains the bounded traversal/base-view capability
-described by [Capability Status](./capability-status.md). This proposal does not reclassify it as a
-complete product presentation or make a local asset pack runnable before its consuming slice exists.
+described by [Capability Status](./capability-status.md). It may now mount the first reviewed local HUD
+frame only through an explicit diagnostic preview request. That narrow consumer does not reclassify
+the profile as complete product presentation.
 
 ## Decision Summary
 
@@ -148,11 +149,13 @@ records the exact asset-repository commit it consumed; it never records the mach
 The product consumes either an explicit checkout root of `md-sf2-remake-assets` or a pack exported from
 one exact asset commit through the existing `private-local` outer profile boundary. Presence of a file
 or directory never selects the profile implicitly. The composition root receives the fully qualified
-local mount and gives a path-owning Content/Godot adapter only the inputs required to validate and load
-it. The admitted descriptor and build receipt carry the asset commit identity; no branch name or
-working-tree state substitutes for it.
+local mount and gives only the Content reader the inputs required to validate and load it. The Godot
+catalog receives that reader plus path-free semantic selection metadata; it never receives or resolves
+a resource path. The admitted descriptor and build receipt carry the asset commit identity; no branch
+name or working-tree state substitutes for it.
 
-The future pack contract must provide stable semantic asset IDs and closed records for at least:
+The implemented v1 pack contract provides stable semantic asset IDs and closed raster records. Future
+families must extend that ownership for at least:
 
 - map/world raster sources and their layer or animation grouping;
 - character, portrait, icon, and effect animation sources;
@@ -160,10 +163,11 @@ The future pack contract must provide stable semantic asset IDs and closed recor
 - font faces required by the configured theme; and
 - reviewed 2x/4x runtime entries and their derivation identities.
 
-Absolute paths stay in the outer composition and local loader. Domain, Application, snapshots,
+Absolute paths stay in the outer composition and Content loader. Domain, Application, Godot catalog,
+snapshots,
 receipts, status, smoke markers, exceptions, and ordinary logs carry only semantic IDs, capabilities,
-and path-free diagnostics. Godot maps presentation tokens from authoritative snapshots to admitted
-local resources; it does not place resource paths or bytes into gameplay state.
+and path-free diagnostics. Godot selects presentation tokens from authoritative snapshots and asks
+Content for a defensive byte copy; it does not place resource paths or bytes into gameplay state.
 
 Product-profile admission is fail-closed:
 
@@ -215,6 +219,11 @@ and color-ramp treatments, but they do not select product art or a general raste
 particular, 3x is not a runtime tier and no single upscaler becomes a global default from those
 experiments. Its current ignored window SVG is not accepted input because it contains semantic text
 and an embedded raster payload forbidden by the source contract.
+
+The first accepted product master is instead a deliberately reduced, project-authored frame that
+retains the measured 112-by-24 geometry, five-layer border, and translucent blue fill while removing
+the R&D text and embedded original icon. The R&D repository is lineage and comparison material, not a
+runtime dependency or authority.
 
 ## SVG HUD Source
 
@@ -309,9 +318,9 @@ receipts remain unchanged until a separately accepted compatibility migration.
 ## Godot Ownership and Migration
 
 The current `Map3Presenter`, `SyntheticMapViewport`, `PublicSyntheticBattlePresenter`, and private
-presenters remain thin projections of typed session state. The migration introduces at most one
-Godot-only presentation asset catalog and one shared Theme owner when an implementation slice needs
-them. It does not create one class per panel, icon, texture family, or scale bucket.
+presenters remain thin projections of typed session state. The migration now has one Godot-only
+presentation asset catalog; no shared Theme owner exists yet. It does not create one class per panel,
+icon, texture family, or scale bucket.
 
 Migration order is intentionally incremental:
 
@@ -319,7 +328,9 @@ Migration order is intentionally incremental:
    toolchain contract;
 2. accept one actual asset-repository HUD SVG, review its candidate 2x/4x derivatives, and promote the
    exact master/runtime/manifest transaction before any catalog consumption;
-3. replace procedural HUD chrome while keeping the existing presenters and snapshot tests;
+3. mount the first reviewed frame through one path-free Godot catalog, one Content-owned semantic
+   payload lookup, and a bounded diagnostic preview,
+   then replace procedural HUD chrome only when a real semantic panel owns that migration;
 4. mount one bounded local world/character family and validate bucket switching;
 5. expand asset families only after their source, derivation, cache, and failure rules are closed;
 6. close music and sound-effect format/loop/streaming contracts separately.
@@ -335,9 +346,10 @@ gameplay authority into a scene, resource, filename, or animation callback.
 | fixed by this proposal | 960-by-540 logical grid; simulation/presentation separation; explicit asset-repository root/exported pack; local-Git source/master/runtime/manifest history; ignored reproducible cache and scratch; fail-closed mount; no synthetic product fallback |
 | fixed after acceptance | 4x new-raster authoring; original raster as local master; deterministic 2x/4x buckets; one resident bucket; safe-frame/aspect/accessibility model; thin Godot catalog migration |
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
-| separate implementation decision | first reviewed HUD master and asset ID; promotion/commit transaction; Godot import resources and catalog; cache retention/review lifecycle beyond one fresh candidate |
+| implemented bounded consumer | first reviewed `hud.yes-no-window-frame` master/runtime/manifest transaction; explicit PrivateLocal mount; exact semantic lookup; 2x/4x selection; Content-owned contained payload recheck; one path-free top-right chrome-only Godot preview |
+| separate implementation decision | semantic Yes/No behavior; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original camera/layer/priority/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
 
-The local asset repository bootstrap exists, but acceptance of this document does not import a product
-batch, export a pack, change `project.godot`, migrate a presenter, or run an engine gate. Those changes
-require separately owned, reviewable implementation slices.
+The local asset repository and first bounded HUD consumer now exist, but this document still does not
+authorize a product batch, PCK inclusion, presenter-wide migration, Yes/No interaction, or a general
+Theme. Those changes require separately owned, reviewable implementation slices.

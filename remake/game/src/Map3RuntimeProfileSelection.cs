@@ -17,9 +17,14 @@ internal sealed record Map3RuntimeProfileSelection
     private const string RomOption = "--original-rom";
     private const string TilesetMetadataOption = "--map-tileset-metadata";
     private const string PaletteMetadataOption = "--map-palette-metadata";
+    private const string PresentationAssetRootOption = "--presentation-asset-root";
+    private const string PresentationAssetCommitOption = "--presentation-asset-commit";
+    private const string PresentationManifestDigestOption =
+        "--presentation-manifest-sha256";
 
     internal const string PrivateSmokeOption = "--private-map3-smoke";
     internal const string PrivateBaseViewOption = "--private-map3-base-view";
+    internal const string PrivateHudPreviewOption = "--private-hud-preview";
 
     private Map3RuntimeProfileSelection(
         Map3RuntimeProfile? requestedProfile,
@@ -30,6 +35,10 @@ internal sealed record Map3RuntimeProfileSelection
         string? originalRomPath,
         string? tilesetMetadataPath,
         string? paletteMetadataPath,
+        bool privateHudPreviewRequested,
+        string? presentationAssetRoot,
+        string? presentationAssetCommit,
+        string? presentationManifestDigest,
         string? diagnostic)
     {
         RequestedProfile = requestedProfile;
@@ -40,6 +49,10 @@ internal sealed record Map3RuntimeProfileSelection
         OriginalRomPath = originalRomPath;
         TilesetMetadataPath = tilesetMetadataPath;
         PaletteMetadataPath = paletteMetadataPath;
+        PrivateHudPreviewRequested = privateHudPreviewRequested;
+        PresentationAssetRoot = presentationAssetRoot;
+        PresentationAssetCommit = presentationAssetCommit;
+        PresentationManifestDigest = presentationManifestDigest;
         Diagnostic = diagnostic;
     }
 
@@ -59,6 +72,14 @@ internal sealed record Map3RuntimeProfileSelection
 
     internal string? PaletteMetadataPath { get; }
 
+    internal bool PrivateHudPreviewRequested { get; }
+
+    internal string? PresentationAssetRoot { get; }
+
+    internal string? PresentationAssetCommit { get; }
+
+    internal string? PresentationManifestDigest { get; }
+
     internal string? Diagnostic { get; }
 
     internal static Map3RuntimeProfileSelection Parse(IEnumerable<string> arguments)
@@ -67,6 +88,7 @@ internal sealed record Map3RuntimeProfileSelection
         Dictionary<string, string> values = new(StringComparer.Ordinal);
         bool privateSmokeRequested = false;
         bool privateBaseViewRequested = false;
+        bool privateHudPreviewRequested = false;
 
         foreach (string argument in arguments)
         {
@@ -84,10 +106,26 @@ internal sealed record Map3RuntimeProfileSelection
                     return Unavailable(
                         ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
                         privateSmokeRequested,
+                        privateHudPreviewRequested,
                         "The private base-view option must appear at most once.");
                 }
 
                 privateBaseViewRequested = true;
+                continue;
+            }
+
+            if (string.Equals(argument, PrivateHudPreviewOption, StringComparison.Ordinal))
+            {
+                if (privateHudPreviewRequested)
+                {
+                    return Unavailable(
+                        ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
+                        privateSmokeRequested,
+                        privateHudPreviewRequested,
+                        "The private HUD preview option must appear at most once.");
+                }
+
+                privateHudPreviewRequested = true;
                 continue;
             }
 
@@ -103,6 +141,7 @@ internal sealed record Map3RuntimeProfileSelection
                 return Unavailable(
                     ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
                     privateSmokeRequested,
+                    privateHudPreviewRequested,
                     "Runtime profile options require explicit non-empty values.");
             }
 
@@ -111,6 +150,7 @@ internal sealed record Map3RuntimeProfileSelection
                 return Unavailable(
                     ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
                     privateSmokeRequested,
+                    privateHudPreviewRequested,
                     $"The {OptionLabel(option)} option must appear exactly once.");
             }
         }
@@ -121,7 +161,11 @@ internal sealed record Map3RuntimeProfileSelection
             values.ContainsKey(RomOption) ||
             values.ContainsKey(TilesetMetadataOption) ||
             values.ContainsKey(PaletteMetadataOption) ||
+            values.ContainsKey(PresentationAssetRootOption) ||
+            values.ContainsKey(PresentationAssetCommitOption) ||
+            values.ContainsKey(PresentationManifestDigestOption) ||
             privateBaseViewRequested ||
+            privateHudPreviewRequested ||
             privateSmokeRequested;
 
         if (!values.ContainsKey(ProfileOption))
@@ -130,6 +174,7 @@ internal sealed record Map3RuntimeProfileSelection
                 ? Unavailable(
                     null,
                     privateSmokeRequested,
+                    privateHudPreviewRequested,
                     "Private runtime options require an explicit PrivateLocal profile selection.")
                 : Available(Map3RuntimeProfile.PublicSynthetic, null, false);
         }
@@ -139,6 +184,7 @@ internal sealed record Map3RuntimeProfileSelection
             return Unavailable(
                 null,
                 privateSmokeRequested,
+                privateHudPreviewRequested,
                 "The requested runtime profile is unknown.");
         }
 
@@ -148,6 +194,7 @@ internal sealed record Map3RuntimeProfileSelection
                 ? Unavailable(
                     profile,
                     privateSmokeRequested,
+                    privateHudPreviewRequested,
                     "PublicSynthetic cannot consume private runtime options.")
                 : Available(profile.Value, null, false);
         }
@@ -159,7 +206,41 @@ internal sealed record Map3RuntimeProfileSelection
             return Unavailable(
                 profile,
                 privateSmokeRequested,
+                privateHudPreviewRequested,
                 "PrivateLocal requires one fully qualified ignored canonical import path.");
+        }
+
+        bool hasAnyPresentationValue = values.ContainsKey(PresentationAssetRootOption) ||
+            values.ContainsKey(PresentationAssetCommitOption) ||
+            values.ContainsKey(PresentationManifestDigestOption);
+        string? presentationAssetRoot = null;
+        string? presentationAssetCommit = null;
+        string? presentationManifestDigest = null;
+        if (!privateHudPreviewRequested && hasAnyPresentationValue)
+        {
+            return Unavailable(
+                profile,
+                privateSmokeRequested,
+                privateHudPreviewRequested,
+                "Private presentation asset values require explicit private HUD preview selection.");
+        }
+
+        if (privateHudPreviewRequested &&
+            (!TryNormalizeRequiredPath(
+                values.GetValueOrDefault(PresentationAssetRootOption),
+                out presentationAssetRoot) ||
+             !TryCanonicalCommit(
+                values.GetValueOrDefault(PresentationAssetCommitOption),
+                out presentationAssetCommit) ||
+             !TryCanonicalSha256(
+                values.GetValueOrDefault(PresentationManifestDigestOption),
+                out presentationManifestDigest)))
+        {
+            return Unavailable(
+                profile,
+                privateSmokeRequested,
+                privateHudPreviewRequested,
+                "Private HUD preview requires one fully qualified asset root, canonical commit, and canonical manifest digest.");
         }
 
         bool hasAnyVisualPath = values.ContainsKey(RomOption) ||
@@ -171,8 +252,16 @@ internal sealed record Map3RuntimeProfileSelection
                 ? Unavailable(
                     profile,
                     privateSmokeRequested,
+                    privateHudPreviewRequested,
                     "Private visual inputs require explicit private Map 3 base-view selection.")
-                : Available(profile.Value, canonicalImportPath, privateSmokeRequested);
+                : Available(
+                    profile.Value,
+                    canonicalImportPath,
+                    privateSmokeRequested,
+                    privateHudPreviewRequested,
+                    presentationAssetRoot,
+                    presentationAssetCommit,
+                    presentationManifestDigest);
         }
 
         if (!TryNormalizeRequiredPath(
@@ -188,6 +277,7 @@ internal sealed record Map3RuntimeProfileSelection
             return Unavailable(
                 profile,
                 privateSmokeRequested,
+                privateHudPreviewRequested,
                 "Private Map 3 base view requires fully qualified ignored ROM, tileset-metadata, and palette-metadata paths.");
         }
 
@@ -200,6 +290,10 @@ internal sealed record Map3RuntimeProfileSelection
             originalRomPath,
             tilesetMetadataPath,
             paletteMetadataPath,
+            privateHudPreviewRequested,
+            presentationAssetRoot,
+            presentationAssetCommit,
+            presentationManifestDigest,
             diagnostic: null);
     }
 
@@ -212,6 +306,9 @@ internal sealed record Map3RuntimeProfileSelection
             RomOption,
             TilesetMetadataOption,
             PaletteMetadataOption,
+            PresentationAssetRootOption,
+            PresentationAssetCommitOption,
+            PresentationManifestDigestOption,
         })
         {
             if (string.Equals(argument, option, StringComparison.Ordinal) ||
@@ -231,6 +328,9 @@ internal sealed record Map3RuntimeProfileSelection
         RomOption => "original ROM",
         TilesetMetadataOption => "map tileset metadata",
         PaletteMetadataOption => "map palette metadata",
+        PresentationAssetRootOption => "presentation asset root",
+        PresentationAssetCommitOption => "presentation asset commit",
+        PresentationManifestDigestOption => "presentation manifest digest",
         _ => "runtime",
     };
 
@@ -257,7 +357,11 @@ internal sealed record Map3RuntimeProfileSelection
     private static Map3RuntimeProfileSelection Available(
         Map3RuntimeProfile profile,
         string? canonicalImportPath,
-        bool privateSmokeRequested) =>
+        bool privateSmokeRequested,
+        bool privateHudPreviewRequested = false,
+        string? presentationAssetRoot = null,
+        string? presentationAssetCommit = null,
+        string? presentationManifestDigest = null) =>
         new(
             profile,
             true,
@@ -267,11 +371,16 @@ internal sealed record Map3RuntimeProfileSelection
             originalRomPath: null,
             tilesetMetadataPath: null,
             paletteMetadataPath: null,
+            privateHudPreviewRequested,
+            presentationAssetRoot,
+            presentationAssetCommit,
+            presentationManifestDigest,
             diagnostic: null);
 
     private static Map3RuntimeProfileSelection Unavailable(
         Map3RuntimeProfile? profile,
         bool privateSmokeRequested,
+        bool privateHudPreviewRequested,
         string diagnostic) =>
         new(
             profile,
@@ -282,7 +391,41 @@ internal sealed record Map3RuntimeProfileSelection
             originalRomPath: null,
             tilesetMetadataPath: null,
             paletteMetadataPath: null,
+            privateHudPreviewRequested,
+            presentationAssetRoot: null,
+            presentationAssetCommit: null,
+            presentationManifestDigest: null,
             diagnostic);
+
+    private static bool TryCanonicalCommit(string? value, out string? canonical)
+    {
+        canonical = null;
+        if (value is null || value.Length != 40 ||
+            value.Any(character =>
+                character is not (>= '0' and <= '9') and
+                not (>= 'a' and <= 'f')))
+        {
+            return false;
+        }
+
+        canonical = value;
+        return true;
+    }
+
+    private static bool TryCanonicalSha256(string? value, out string? canonical)
+    {
+        canonical = null;
+        if (value is null || value.Length != 64 ||
+            value.Any(character =>
+                character is not (>= '0' and <= '9') and
+                not (>= 'A' and <= 'F')))
+        {
+            return false;
+        }
+
+        canonical = value;
+        return true;
+    }
 
     private static Map3RuntimeProfile? ParseKnownProfile(string? value) => value switch
     {

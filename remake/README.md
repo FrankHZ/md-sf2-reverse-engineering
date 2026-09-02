@@ -81,11 +81,24 @@ local-only checkout, verifies the pinned resvg archive and executable version, r
 2x/4x RGBA8 PNGs twice, validates the existing pack schema, and atomically publishes only a fresh
 direct child under ignored `cache/`. It never stages, promotes, commits, or prints a local path.
 
-The real asset repository still has no accepted product master, product manifest, or runtime asset.
-No candidate has been promoted. The first HUD identity and visual design, reviewed derivatives, local
-asset commit, Godot catalog, and runtime consumer remain later slices. The separate
-`md-sf2-gfx-remake` repository remains non-authoritative R&D; its ignored experimental SVG contains
-forbidden text and an embedded raster and is not an admitted product master.
+The first reviewed local transaction now owns `hud.yes-no-window-frame`: a project-authored 112-by-24
+SVG master plus deterministic 2x/4x runtime PNGs and one closed manifest. An explicit PrivateLocal
+launch may opt into a bounded top-right diagnostic preview by supplying `--private-hud-preview`
+together with a fully qualified asset root, its exact lowercase commit, and its exact uppercase
+manifest SHA-256. The Content reader admits the complete pack before `GameSession` starts; the thin
+Godot catalog resolves only the semantic asset ID and accepted 2x/4x bucket. It asks the same Content
+reader to reopen the fixed manifest, resolve and recheck the contained path/length/digest, and return a
+defensive byte copy before Godot decodes it. No runtime path crosses into Application or Godot. Partial
+values, an implicit mount, or a failed private mount never fall back while reporting private success.
+
+The current preview uses the limiting physical dimension of the centered 16:9 frame at 100% UI scale;
+user-selectable UI scaling remains deferred rather than being guessed by this slice.
+
+This preview is chrome only. It is not a Yes/No menu, has no text, icon, input, selection, Theme, or
+gameplay semantics, and creates no new stable smoke marker. The separate `md-sf2-gfx-remake`
+repository remains non-authoritative R&D: its measurements informed the product-authored frame, but
+its ignored experimental SVG contains forbidden text and an embedded raster and is not an admitted
+product master or runtime input.
 Because the product asset repository intentionally has no remote, an exact local commit proves
 identity but does not provide off-machine recovery; source/master backup remains a separate local
 operational responsibility. Rollback selects a prior reachable local commit or an immutable prior

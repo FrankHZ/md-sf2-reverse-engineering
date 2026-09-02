@@ -31,6 +31,11 @@ public sealed class LocalPresentationAssetPackDefinitionTests
         Assert.Equal("ui.action-confirm", definition.Assets[0].AssetId);
         Assert.Equal(new[] { 2, 4 }, definition.Assets[0].Buckets.Select(item => item.Scale));
         Assert.Equal(new[] { 16, 32 }, definition.Assets[0].Buckets.Select(item => item.Width));
+        Assert.All(definition.Assets[0].Buckets, item =>
+        {
+            Assert.Equal(16, item.ByteLength);
+            Assert.Equal(Digest, item.Sha256);
+        });
         Assert.Equal("image/png", definition.Assets[0].Buckets[0].MediaType);
         Assert.Throws<NotSupportedException>(() =>
             ((IList<LocalPresentationRasterAssetDefinition>)definition.Assets).Add(first));
@@ -67,21 +72,45 @@ public sealed class LocalPresentationAssetPackDefinitionTests
                 new[]
                 {
                     new LocalPresentationRasterBucket(
-                        2, 15, 12, "image/png", "nearest", false, false, "srgb", "straight"),
+                        2, 15, 12, 16, Digest,
+                        "image/png", "nearest", false, false, "srgb", "straight"),
                     exact[1],
                 }));
         Assert.Throws<ArgumentException>(() => new LocalPresentationRasterBucket(
-            2, 16, 12, "image/jpeg", "nearest", false, false, "srgb", "straight"));
+            2, 16, 12, 16, Digest,
+            "image/jpeg", "nearest", false, false, "srgb", "straight"));
         Assert.Throws<ArgumentException>(() => new LocalPresentationRasterBucket(
-            2, 16, 12, "image/png", "bilinear", false, false, "srgb", "straight"));
+            2, 16, 12, 16, Digest,
+            "image/png", "bilinear", false, false, "srgb", "straight"));
         Assert.Throws<ArgumentException>(() => new LocalPresentationRasterBucket(
-            2, 16, 12, "image/png", "nearest", false, false, "linear", "straight"));
+            2, 16, 12, 16, Digest,
+            "image/png", "nearest", false, false, "linear", "straight"));
         Assert.Throws<ArgumentException>(() => new LocalPresentationRasterBucket(
-            2, 16, 12, "image/png", "nearest", false, false, "srgb", "premultiplied"));
+            2, 16, 12, 16, Digest,
+            "image/png", "nearest", false, false, "srgb", "premultiplied"));
         Assert.Throws<ArgumentOutOfRangeException>(() => new LocalPresentationRasterBucket(
-            3, 24, 18, "image/png", "nearest", false, false, "srgb", "straight"));
+            3, 24, 18, 16, Digest,
+            "image/png", "nearest", false, false, "srgb", "straight"));
         _ = new LocalPresentationRasterBucket(
-            2, 16, 12, "image/png", "linear", false, false, "srgb", "straight");
+            2, 16, 12, 16, Digest,
+            "image/png", "linear", false, false, "srgb", "straight");
+    }
+
+    [Fact]
+    public void RasterBucketRejectsPayloadIdentityDriftAndNormalizesDigest()
+    {
+        LocalPresentationRasterBucket bucket = new(
+            2, 16, 12, 16,
+            Digest.ToLowerInvariant(), "image/png", "nearest", false, false,
+            "srgb", "straight");
+
+        Assert.Equal(Digest, bucket.Sha256);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new LocalPresentationRasterBucket(
+            2, 16, 12, 0, Digest,
+            "image/png", "nearest", false, false, "srgb", "straight"));
+        Assert.Throws<ArgumentException>(() => new LocalPresentationRasterBucket(
+            2, 16, 12, 16, "not-a-digest",
+            "image/png", "nearest", false, false, "srgb", "straight"));
     }
 
     [Theory]
@@ -159,6 +188,13 @@ public sealed class LocalPresentationAssetPackDefinitionTests
                 Assert.DoesNotContain("File", property.Name, StringComparison.Ordinal);
             });
         Assert.DoesNotContain(
+            typeof(LocalPresentationRasterBucket).GetConstructors()
+                .SelectMany(constructor => constructor.GetParameters()),
+            parameter =>
+                parameter.Name!.Contains("Path", StringComparison.OrdinalIgnoreCase) ||
+                parameter.Name.Contains("Resource", StringComparison.OrdinalIgnoreCase) ||
+                parameter.Name.Contains("File", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(
             typeof(LocalPresentationAssetPackDefinition).Assembly.GetReferencedAssemblies(),
             assembly => assembly.Name == "Sf2.Remake.Content" ||
                 assembly.Name == "GodotSharp" ||
@@ -216,6 +252,8 @@ public sealed class LocalPresentationAssetPackDefinitionTests
             2,
             checked(width * 2),
             checked(height * 2),
+            16,
+            Digest,
             "image/png",
             "nearest",
             false,
@@ -226,6 +264,8 @@ public sealed class LocalPresentationAssetPackDefinitionTests
             4,
             checked(width * 4),
             checked(height * 4),
+            16,
+            Digest,
             "image/png",
             "nearest",
             false,
