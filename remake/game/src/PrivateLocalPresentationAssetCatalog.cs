@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using Godot;
 using Sf2.Remake.Application.Content;
+using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Content;
 
 namespace Sf2.Remake.GodotAdapter;
@@ -242,18 +243,32 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         new(new PrivateLocalPresentationAssetMountDiagnostic(code, message));
 }
 
-internal sealed partial class PrivateLocalHudPreview : TextureRect
+internal sealed partial class PrivateLocalHudPreview : Control
 {
+    internal const string EnterLabel = "ENTER [N]";
+    internal const string StayActionLabel = "STAY";
+    internal const string StayKeyLabel = "[BACKSPACE]";
+    internal const string StayLabel = StayActionLabel + " " + StayKeyLabel;
+    internal const int ChoiceFontSize = 6;
     internal static readonly Vector2 PreviewPosition = new(800, 27);
     internal static readonly Vector2 PreviewSize = new(
         PrivateLocalPresentationAssetCatalog.PreviewLogicalWidth,
         PrivateLocalPresentationAssetCatalog.PreviewLogicalHeight);
 
     private ImageTexture? _ownedTexture;
+    private readonly bool _battleEntryChoiceEnabled;
+
+    private PrivateLocalHudPreview(bool battleEntryChoiceEnabled)
+    {
+        _battleEntryChoiceEnabled = battleEntryChoiceEnabled;
+    }
+
+    internal bool BattleEntryChoiceEnabled => _battleEntryChoiceEnabled;
 
     internal static PrivateLocalHudPreview? TryAttach(
         Node parent,
         PrivateLocalPresentationRasterMount mount,
+        bool battleEntryChoiceEnabled,
         out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
     {
         ArgumentNullException.ThrowIfNull(parent);
@@ -274,13 +289,26 @@ internal sealed partial class PrivateLocalHudPreview : TextureRect
 
         ImageTexture texture = ImageTexture.CreateFromImage(image);
         image.Dispose();
-        PrivateLocalHudPreview preview = new()
+        PrivateLocalHudPreview preview = new(battleEntryChoiceEnabled)
         {
-            Name = "PrivateLocalHudYesNoWindowFramePreview",
+            Name = battleEntryChoiceEnabled
+                ? "PrivateLocalBattleEntryChoicePanel"
+                : "PrivateLocalHudYesNoWindowFramePreview",
             Position = PreviewPosition,
             Size = PreviewSize,
-            ExpandMode = ExpandModeEnum.IgnoreSize,
-            StretchMode = StretchModeEnum.Scale,
+            MouseFilter = MouseFilterEnum.Ignore,
+            ZIndex = 500,
+            Visible = IsInitiallyVisible(battleEntryChoiceEnabled),
+            ClipContents = true,
+        };
+        preview._ownedTexture = texture;
+        TextureRect frame = new()
+        {
+            Name = "Frame",
+            Position = Vector2.Zero,
+            Size = PreviewSize,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.Scale,
             MouseFilter = MouseFilterEnum.Ignore,
             TextureFilter = string.Equals(
                 mount.Bucket.Filter,
@@ -288,11 +316,78 @@ internal sealed partial class PrivateLocalHudPreview : TextureRect
                 StringComparison.Ordinal)
                 ? CanvasItem.TextureFilterEnum.Nearest
                 : CanvasItem.TextureFilterEnum.Linear,
-            ZIndex = 500,
             Texture = texture,
         };
-        preview._ownedTexture = texture;
+        preview.AddChild(frame);
+        if (battleEntryChoiceEnabled)
+        {
+            preview.AddChoiceLabel(
+                "Enter",
+                EnterLabel,
+                x: 4,
+                y: 4,
+                width: 40,
+                height: 16);
+            preview.AddChoiceLabel(
+                "Stay",
+                StayActionLabel,
+                x: 44,
+                y: 0,
+                width: 64,
+                height: 10);
+            preview.AddChoiceLabel(
+                "StayKey",
+                StayKeyLabel,
+                x: 44,
+                y: 6,
+                width: 64,
+                height: 10);
+        }
+
         parent.AddChild(preview);
         return preview;
+    }
+
+    internal void ProjectBattleEntryChoice(
+        PrivateOriginalMapBattleBridgeSnapshot? bridge)
+    {
+        if (!_battleEntryChoiceEnabled)
+        {
+            return;
+        }
+
+        Visible = IsBattleEntryChoiceVisible(bridge?.Status);
+    }
+
+    internal static bool IsBattleEntryChoiceVisible(
+        PrivateOriginalMapBattleBridgeStatus? status) =>
+        status == PrivateOriginalMapBattleBridgeStatus.Pending;
+
+    internal static bool IsInitiallyVisible(bool battleEntryChoiceEnabled) =>
+        !battleEntryChoiceEnabled;
+
+    private void AddChoiceLabel(
+        string name,
+        string text,
+        float x,
+        float y,
+        float width,
+        float height)
+    {
+        Label label = new()
+        {
+            Name = name,
+            Text = text,
+            Position = new Vector2(x, y),
+            Size = new Vector2(width, height),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            MouseFilter = MouseFilterEnum.Ignore,
+        };
+        label.AddThemeFontSizeOverride("font_size", ChoiceFontSize);
+        label.AddThemeColorOverride("font_color", Colors.White);
+        label.AddThemeColorOverride("font_outline_color", Colors.Black);
+        label.AddThemeConstantOverride("outline_size", 1);
+        AddChild(label);
     }
 }

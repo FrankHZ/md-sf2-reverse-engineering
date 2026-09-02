@@ -101,6 +101,110 @@ public sealed class PrivateOriginalMapBattleBridgeTests
     }
 
     [Fact]
+    public void PendingEntryCanBeDeclinedExactlyOnceBeforeMovementResumes()
+    {
+        PrivateOriginalMapVisualGameSessionStarted started = Start();
+        GameSession session = started.Session;
+        PrivateOriginalMapBattleBridgeSnapshot ready = Bind(started);
+        PrivateOriginalMapSessionSnapshot traversal = session.PrivateOriginalMapSnapshot;
+        PrivateOriginalMapBattleBridgeRequested requested = Assert.IsType<
+            PrivateOriginalMapBattleBridgeRequested>(
+            session.ApplyPrivateOriginalMapBattleBridge(
+                new RequestPrivateOriginalMapBattleBridgeCommand(
+                    ready.Definition.Bridge,
+                    traversal.SimulationStep)));
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new DeclinePrivateOriginalMapBattleBridgeEntryCommand(
+                requested.Bridge.Definition.Bridge,
+                requested.Bridge.Definition.Request,
+                0));
+        AssertRejected(
+            session,
+            new DeclinePrivateOriginalMapBattleBridgeEntryCommand(
+                new PrivateOriginalMapBattleBridgeId("wrong-bridge"),
+                requested.Bridge.Definition.Request,
+                requested.Cue.Sequence),
+            PrivateOriginalMapBattleBridgeFailureCode.AcknowledgementMismatch,
+            traversal,
+            requested.Bridge);
+        AssertRejected(
+            session,
+            new DeclinePrivateOriginalMapBattleBridgeEntryCommand(
+                requested.Bridge.Definition.Bridge,
+                new PublicSyntheticBattleRequestId("wrong-request"),
+                requested.Cue.Sequence),
+            PrivateOriginalMapBattleBridgeFailureCode.AcknowledgementMismatch,
+            traversal,
+            requested.Bridge);
+        AssertRejected(
+            session,
+            new DeclinePrivateOriginalMapBattleBridgeEntryCommand(
+                requested.Bridge.Definition.Bridge,
+                requested.Bridge.Definition.Request,
+                requested.Cue.Sequence + 1),
+            PrivateOriginalMapBattleBridgeFailureCode.AcknowledgementMismatch,
+            traversal,
+            requested.Bridge);
+
+        PrivateOriginalMapBattleBridgeDeclined declined = Assert.IsType<
+            PrivateOriginalMapBattleBridgeDeclined>(
+            session.ApplyPrivateOriginalMapBattleBridge(
+                new DeclinePrivateOriginalMapBattleBridgeEntryCommand(
+                    requested.Bridge.Definition.Bridge,
+                    requested.Bridge.Definition.Request,
+                    requested.Cue.Sequence)));
+
+        Assert.Same(traversal, declined.Snapshot);
+        Assert.Same(traversal, session.PrivateOriginalMapSnapshot);
+        Assert.Equal(PrivateOriginalMapBattleBridgeStatus.Declined, declined.Bridge.Status);
+        Assert.Equal(2, declined.Bridge.OperationSequence);
+        Assert.Equal(requested.Cue.Sequence, declined.Bridge.LastCueSequence);
+        Assert.False(declined.Bridge.IsBusy);
+        Assert.Null(declined.Bridge.BattleState);
+        Assert.Null(declined.Bridge.Completion);
+        Assert.Null(declined.Bridge.Lifecycle);
+        Assert.Null(declined.Bridge.ReturnSnapshot);
+        Assert.Throws<InvalidOperationException>(() => declined.Bridge.Decline());
+
+        AssertRejected(
+            session,
+            new DeclinePrivateOriginalMapBattleBridgeEntryCommand(
+                declined.Bridge.Definition.Bridge,
+                declined.Bridge.Definition.Request,
+                declined.Bridge.LastCueSequence),
+            PrivateOriginalMapBattleBridgeFailureCode.WrongState,
+            traversal,
+            declined.Bridge);
+        AssertRejected(
+            session,
+            new AcknowledgePublicSyntheticBattleEntryCommand(
+                declined.Bridge.Definition.Request,
+                declined.Bridge.Definition.Rules.Battle,
+                declined.Bridge.LastCueSequence),
+            PrivateOriginalMapBattleBridgeFailureCode.WrongState,
+            traversal,
+            declined.Bridge);
+        AssertRejected(
+            session,
+            new RequestPrivateOriginalMapBattleBridgeCommand(
+                declined.Bridge.Definition.Bridge,
+                traversal.SimulationStep),
+            PrivateOriginalMapBattleBridgeFailureCode.WrongState,
+            traversal,
+            declined.Bridge);
+
+        PrivateOriginalMapMoveApplied moved = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, moved.Traversal.Outcome);
+        Assert.Equal(traversal.SimulationStep + 1, moved.Snapshot.SimulationStep);
+        Assert.Same(declined.Bridge, session.PrivateOriginalMapBattleBridge);
+
+        PrivateOriginalMapVisualGameSessionStarted restarted = Start();
+        Assert.Null(restarted.Session.PrivateOriginalMapBattleBridge);
+    }
+
+    [Fact]
     public void DefeatRetriesAndVictoryReturnsTheSameTraversalSnapshotBeforeMovementResumes()
     {
         PrivateOriginalMapVisualGameSessionStarted started = Start();

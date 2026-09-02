@@ -27,6 +27,7 @@ public enum PrivateOriginalMapBattleBridgeStatus
 {
     Ready,
     Pending,
+    Declined,
     Active,
     Completed,
     Returned,
@@ -88,6 +89,14 @@ public sealed class PrivateOriginalMapBattleBridgeSnapshot
              lifecycle is not null || completion is not null))
         {
             throw new ArgumentException("A ready private battle bridge cannot retain runtime state.");
+        }
+
+        if (status == PrivateOriginalMapBattleBridgeStatus.Declined &&
+            (operationSequence != 2 || lastCueSequence != 1 ||
+             returnSnapshot is not null || lifecycle is not null || completion is not null))
+        {
+            throw new ArgumentException(
+                "A declined private battle bridge retains only its terminal operation and entry-cue identities.");
         }
 
         bool lifecycleStatus = status is
@@ -196,6 +205,24 @@ public sealed class PrivateOriginalMapBattleBridgeSnapshot
             lifecycle,
             completion: null);
 
+    internal PrivateOriginalMapBattleBridgeSnapshot Decline()
+    {
+        if (Status != PrivateOriginalMapBattleBridgeStatus.Pending)
+        {
+            throw new InvalidOperationException(
+                "Only one pending private battle bridge can be declined.");
+        }
+
+        return new(
+            Definition,
+            PrivateOriginalMapBattleBridgeStatus.Declined,
+            checked(OperationSequence + 1),
+            LastCueSequence,
+            returnSnapshot: null,
+            lifecycle: null,
+            completion: null);
+    }
+
     internal PrivateOriginalMapBattleBridgeSnapshot Return(
         PublicSyntheticBattleCompletionReceipt completion,
         long operationSequence,
@@ -294,6 +321,26 @@ public sealed record RequestPrivateOriginalMapBattleBridgeCommand : IGameSession
     public long ExpectedTraversalStep { get; }
 }
 
+public sealed record DeclinePrivateOriginalMapBattleBridgeEntryCommand : IGameSessionCommand
+{
+    public DeclinePrivateOriginalMapBattleBridgeEntryCommand(
+        PrivateOriginalMapBattleBridgeId bridge,
+        PublicSyntheticBattleRequestId request,
+        long entryCueSequence)
+    {
+        Bridge = bridge ?? throw new ArgumentNullException(nameof(bridge));
+        Request = request ?? throw new ArgumentNullException(nameof(request));
+        ArgumentOutOfRangeException.ThrowIfLessThan(entryCueSequence, 1);
+        EntryCueSequence = entryCueSequence;
+    }
+
+    public PrivateOriginalMapBattleBridgeId Bridge { get; }
+
+    public PublicSyntheticBattleRequestId Request { get; }
+
+    public long EntryCueSequence { get; }
+}
+
 public sealed record PrivateOriginalMapBattleBridgeRequested(
     PrivateOriginalMapSessionSnapshot Snapshot,
     PrivateOriginalMapBattleBridgeSnapshot Bridge,
@@ -303,6 +350,10 @@ public sealed record PrivateOriginalMapBattleBridgeAdmitted(
     PrivateOriginalMapSessionSnapshot Snapshot,
     PrivateOriginalMapBattleBridgeSnapshot Bridge,
     PublicSyntheticBattleCue Cue) : GameSessionCommandResult;
+
+public sealed record PrivateOriginalMapBattleBridgeDeclined(
+    PrivateOriginalMapSessionSnapshot Snapshot,
+    PrivateOriginalMapBattleBridgeSnapshot Bridge) : GameSessionCommandResult;
 
 public sealed record PrivateOriginalMapBattleBridgeCursorMoved(
     PrivateOriginalMapSessionSnapshot Snapshot,
@@ -462,7 +513,8 @@ public sealed partial class GameSession
         }
 
         if (bridge.Status == PrivateOriginalMapBattleBridgeStatus.Pending &&
-            command is not AcknowledgePublicSyntheticBattleEntryCommand)
+            command is not AcknowledgePublicSyntheticBattleEntryCommand and not
+                DeclinePrivateOriginalMapBattleBridgeEntryCommand)
         {
             return RejectBridge(
                 current,
@@ -492,6 +544,8 @@ public sealed partial class GameSession
                 ApplyPrivateBattleBridgeRequest(current, bridge, request),
             AcknowledgePublicSyntheticBattleEntryCommand acknowledge =>
                 ApplyPrivateBattleBridgeEntryAcknowledgement(current, bridge, acknowledge),
+            DeclinePrivateOriginalMapBattleBridgeEntryCommand decline =>
+                ApplyPrivateBattleBridgeEntryDecline(current, bridge, decline),
             MovePublicSyntheticBattleCursorCommand move =>
                 ApplyPrivateBattleBridgeCursorMove(current, bridge, move),
             ConfirmPublicSyntheticBattleSelectionCommand =>
@@ -596,6 +650,37 @@ public sealed partial class GameSession
             bridge.Definition.Rules.Battle,
             cueSequence);
         return new PrivateOriginalMapBattleBridgeAdmitted(current, admitted, cue);
+    }
+
+    private GameSessionCommandResult ApplyPrivateBattleBridgeEntryDecline(
+        PrivateOriginalMapSessionSnapshot current,
+        PrivateOriginalMapBattleBridgeSnapshot bridge,
+        DeclinePrivateOriginalMapBattleBridgeEntryCommand command)
+    {
+        PublicSyntheticBattleLifecycleSnapshot? pending = bridge.Lifecycle;
+        if (bridge.Status != PrivateOriginalMapBattleBridgeStatus.Pending || pending is null)
+        {
+            return RejectBridge(
+                current,
+                bridge,
+                PrivateOriginalMapBattleBridgeFailureCode.WrongState,
+                "No private battle bridge entry is pending.");
+        }
+
+        if (command.Bridge != bridge.Definition.Bridge ||
+            command.Request != bridge.Definition.Request ||
+            command.EntryCueSequence != pending.EntryCueSequence)
+        {
+            return RejectBridge(
+                current,
+                bridge,
+                PrivateOriginalMapBattleBridgeFailureCode.AcknowledgementMismatch,
+                "The private battle bridge entry decline does not match.");
+        }
+
+        PrivateOriginalMapBattleBridgeSnapshot declined = bridge.Decline();
+        _privateOriginalMapBattleBridge = declined;
+        return new PrivateOriginalMapBattleBridgeDeclined(current, declined);
     }
 
     private GameSessionCommandResult ApplyPrivateBattleBridgeCursorMove(
