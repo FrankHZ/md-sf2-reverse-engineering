@@ -431,6 +431,11 @@ Godot owns resource loading, Theme application, viewport projection, and disposa
 Application owns semantic presentation/audio cues. Domain owns game rules. No asset migration may move
 gameplay authority into a scene, resource, filename, or animation callback.
 
+The shared public-synthetic/private-bridge tactical panel keeps its existing fixed 960-by-540 layout.
+Its project-authored title is an exact two-line label with automatic wrapping disabled, so the Godot
+fallback font cannot turn the title into a clipped third line. This is a bounded readability fix, not
+an admitted product font, Theme, original battle title, or presentation-fidelity claim.
+
 ## Fixed, Deferred, and Unknown
 
 | Status | Boundary |

@@ -49,7 +49,7 @@ public sealed class PublicSyntheticBattlePresenterTests
                 "Project-authored tactical battle admitted");
 
         Assert.True(projection.Visible);
-        Assert.Contains("PROJECT-AUTHORED PUBLIC-SYNTHETIC", projection.Title);
+        Assert.Equal(PublicSyntheticBattlePresenter.TitleText, projection.Title);
         Assert.Contains("public-synthetic-map3-tactical-battle", projection.Status);
         Assert.Contains("MoveSelection", projection.Status);
         Assert.Equal(
@@ -174,6 +174,40 @@ public sealed class PublicSyntheticBattlePresenterTests
     }
 
     [Fact]
+    public void SharedBattleTitleUsesTwoExplicitLinesWithoutAutomaticWrapping()
+    {
+        Assert.Equal(
+            "PROJECT-AUTHORED\nSYNTHETIC TACTICAL BATTLE",
+            PublicSyntheticBattlePresenter.TitleText);
+        Assert.Equal(
+            ["PROJECT-AUTHORED", "SYNTHETIC TACTICAL BATTLE"],
+            PublicSyntheticBattlePresenter.TitleText.Split('\n'));
+        Assert.DoesNotContain(
+            PublicSyntheticBattlePresenter.TitleText.Split('\n'),
+            string.IsNullOrWhiteSpace);
+        Assert.Equal(16, PublicSyntheticBattlePresenter.TitleFontSize);
+        Assert.Equal(
+            global::Godot.TextServer.AutowrapMode.Off,
+            PublicSyntheticBattlePresenter.TitleAutowrapMode);
+        Assert.True(PublicSyntheticBattlePresenter.TitleClipText);
+        Assert.Equal(
+            global::Godot.VerticalAlignment.Center,
+            PublicSyntheticBattlePresenter.TitleVerticalAlignment);
+
+        (GameSession inactive, _) = StartSession();
+        Assert.Equal(
+            PublicSyntheticBattlePresenter.TitleText,
+            PublicSyntheticBattlePresentationProjection.Create(
+                inactive.Snapshot,
+                "inactive").Title);
+        Assert.Equal(
+            PublicSyntheticBattlePresenter.TitleText,
+            PublicSyntheticBattlePresentationProjection.Create(
+                (PrivateOriginalMapBattleBridgeSnapshot?)null,
+                "inactive").Title);
+    }
+
+    [Fact]
     public void EnemyResponseDefeatAndRetryProjectOnlyTypedState()
     {
         GameSession session = StartActiveBattle();
@@ -263,6 +297,7 @@ public sealed class PublicSyntheticBattlePresenterTests
 
         Assert.Null(returned.Snapshot.PublicSyntheticBattle);
         Assert.True(returnedProjection.Visible);
+        Assert.Equal(PublicSyntheticBattlePresenter.TitleText, returnedProjection.Title);
         Assert.Empty(returnedProjection.Cells);
         Assert.Equal("RETURNED · exploration resumed", returnedProjection.Instruction);
         Assert.Contains("completed; returned", returnedProjection.Status);
@@ -293,7 +328,7 @@ public sealed class PublicSyntheticBattlePresenterTests
                 "Explicit private-local bridge admitted");
 
         Assert.True(projection.Visible);
-        Assert.Contains("PROJECT-AUTHORED PUBLIC-SYNTHETIC", projection.Title);
+        Assert.Equal(PublicSyntheticBattlePresenter.TitleText, projection.Title);
         Assert.Contains("project-authored-tactical-battle", projection.Status);
         Assert.Contains("MoveSelection", projection.Status);
         Assert.Equal(6, projection.Cells.Count);
