@@ -33,6 +33,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         int originY,
         int playerColumn,
         int playerRow,
+        int rasterScale,
         IEnumerable<byte> rgbaBytes)
     {
         Map = map;
@@ -40,6 +41,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         OriginY = originY;
         PlayerColumn = playerColumn;
         PlayerRow = playerRow;
+        RasterScale = rasterScale;
         _rgbaBytes = Array.AsReadOnly(rgbaBytes.ToArray());
     }
 
@@ -52,6 +54,12 @@ internal sealed record PrivateOriginalMapBaseViewProjection
     internal int PlayerColumn { get; }
 
     internal int PlayerRow { get; }
+
+    internal int RasterScale { get; }
+
+    internal int RasterPixelWidth => checked(PixelWidth * RasterScale);
+
+    internal int RasterPixelHeight => checked(PixelHeight * RasterScale);
 
     internal IReadOnlyList<byte> RgbaBytes => _rgbaBytes;
 
@@ -73,7 +81,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         return CreateCore(
             snapshot,
             visualDefinition.Selection,
-            (slot, localTile, row, column) =>
+            rasterScale: 1,
+            (slot, localTile, row, column, _, _) =>
                 ResolvePayloadPixel(visualDefinition, slot, localTile, row, column));
     }
 
@@ -103,20 +112,73 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         return CreateCore(
             snapshot,
             selection,
-            (slot, localTile, row, column) => ResolveAtlasPixel(
+            scale,
+            (slot, localTile, row, column, subpixelRow, subpixelColumn) =>
+                ResolveAtlasPixel(
                 atlasRgbaBytes,
                 scale,
                 atlasWidth,
                 slot,
                 localTile,
                 row,
-                column));
+                column,
+                subpixelRow,
+                subpixelColumn));
+    }
+
+    internal static bool IsExactNearestReplication(
+        PrivateOriginalMapBaseViewProjection logical,
+        PrivateOriginalMapBaseViewProjection physical)
+    {
+        ArgumentNullException.ThrowIfNull(logical);
+        ArgumentNullException.ThrowIfNull(physical);
+        if (logical.RasterScale != 1 ||
+            !LocalPresentationAssetPackAdmission.BucketScales.Contains(physical.RasterScale) ||
+            logical.Map != physical.Map ||
+            logical.OriginX != physical.OriginX ||
+            logical.OriginY != physical.OriginY ||
+            logical.PlayerColumn != physical.PlayerColumn ||
+            logical.PlayerRow != physical.PlayerRow ||
+            physical.RasterPixelWidth != checked(PixelWidth * physical.RasterScale) ||
+            physical.RasterPixelHeight != checked(PixelHeight * physical.RasterScale))
+        {
+            return false;
+        }
+
+        int scale = physical.RasterScale;
+        for (int logicalY = 0; logicalY < PixelHeight; logicalY++)
+        {
+            for (int logicalX = 0; logicalX < PixelWidth; logicalX++)
+            {
+                int logicalOffset = ((logicalY * PixelWidth) + logicalX) * 4;
+                for (int subpixelY = 0; subpixelY < scale; subpixelY++)
+                {
+                    for (int subpixelX = 0; subpixelX < scale; subpixelX++)
+                    {
+                        int physicalOffset = ((((logicalY * scale) + subpixelY) *
+                            physical.RasterPixelWidth) +
+                            (logicalX * scale) + subpixelX) * 4;
+                        for (int channel = 0; channel < 4; channel++)
+                        {
+                            if (logical.RgbaBytes[logicalOffset + channel] !=
+                                physical.RgbaBytes[physicalOffset + channel])
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     private static PrivateOriginalMapBaseViewProjection CreateCore(
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapVisualResourceSelection selection,
-        Func<int, int, int, int, SourcePixel> resolvePixel)
+        int rasterScale,
+        Func<int, int, int, int, int, int, SourcePixel> resolvePixel)
     {
         if (!SameSelection(snapshot.Definition.VisualResourceSelection, selection))
         {
@@ -133,7 +195,9 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             snapshot.PlayerPosition.Y - (RowCount / 2),
             0,
             WorkingMapLayout.RowCount - RowCount);
-        byte[] pixels = new byte[PixelWidth * PixelHeight * 4];
+        int rasterPixelWidth = checked(PixelWidth * rasterScale);
+        int rasterPixelHeight = checked(PixelHeight * rasterScale);
+        byte[] pixels = new byte[checked(rasterPixelWidth * rasterPixelHeight * 4)];
         FillBackground(pixels);
 
         for (int blockRow = 0; blockRow < RowCount; blockRow++)
@@ -148,6 +212,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                     blockColumn,
                     blockRow,
                     block,
+                    rasterScale,
+                    rasterPixelWidth,
                     resolvePixel);
             }
         }
@@ -158,6 +224,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             originY,
             snapshot.PlayerPosition.X - originX,
             snapshot.PlayerPosition.Y - originY,
+            rasterScale,
             pixels);
     }
 
@@ -166,7 +233,9 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         int blockColumn,
         int blockRow,
         OriginalMapBlockDefinition block,
-        Func<int, int, int, int, SourcePixel> resolvePixel)
+        int rasterScale,
+        int rasterPixelWidth,
+        Func<int, int, int, int, int, int, SourcePixel> resolvePixel)
     {
         for (int tileRow = 0; tileRow < BlockTileSide; tileRow++)
         {
@@ -191,31 +260,49 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                 {
                     for (int pixelColumn = 0; pixelColumn < TilePixelSize; pixelColumn++)
                     {
-                        int sourceRow = (word & VerticalFlip) != 0
-                            ? (TilePixelSize - 1) - pixelRow
-                            : pixelRow;
-                        int sourceColumn = (word & HorizontalMirror) != 0
-                            ? (TilePixelSize - 1) - pixelColumn
-                            : pixelColumn;
-                        SourcePixel source = resolvePixel(
-                            slot,
-                            localTile,
-                            sourceRow,
-                            sourceColumn);
-                        if (source.Alpha == 0)
+                        for (int subpixelRow = 0; subpixelRow < rasterScale; subpixelRow++)
                         {
-                            continue;
-                        }
+                            for (int subpixelColumn = 0;
+                                subpixelColumn < rasterScale;
+                                subpixelColumn++)
+                            {
+                                int destinationTilePixelY =
+                                    (pixelRow * rasterScale) + subpixelRow;
+                                int destinationTilePixelX =
+                                    (pixelColumn * rasterScale) + subpixelColumn;
+                                int sourceTilePixelY = (word & VerticalFlip) != 0
+                                    ? (TilePixelSize * rasterScale) - 1 -
+                                        destinationTilePixelY
+                                    : destinationTilePixelY;
+                                int sourceTilePixelX = (word & HorizontalMirror) != 0
+                                    ? (TilePixelSize * rasterScale) - 1 -
+                                        destinationTilePixelX
+                                    : destinationTilePixelX;
+                                SourcePixel source = resolvePixel(
+                                    slot,
+                                    localTile,
+                                    sourceTilePixelY / rasterScale,
+                                    sourceTilePixelX / rasterScale,
+                                    sourceTilePixelY % rasterScale,
+                                    sourceTilePixelX % rasterScale);
+                                if (source.Alpha == 0)
+                                {
+                                    continue;
+                                }
 
-                        int pixelX = (blockColumn * BlockPixelSize) +
-                            (tileColumn * TilePixelSize) + pixelColumn;
-                        int pixelY = (blockRow * BlockPixelSize) +
-                            (tileRow * TilePixelSize) + pixelRow;
-                        int destination = ((pixelY * PixelWidth) + pixelX) * 4;
-                        pixels[destination] = source.Red;
-                        pixels[destination + 1] = source.Green;
-                        pixels[destination + 2] = source.Blue;
-                        pixels[destination + 3] = source.Alpha;
+                                int pixelX = (blockColumn * BlockPixelSize * rasterScale) +
+                                    (tileColumn * TilePixelSize * rasterScale) +
+                                    destinationTilePixelX;
+                                int pixelY = (blockRow * BlockPixelSize * rasterScale) +
+                                    (tileRow * TilePixelSize * rasterScale) +
+                                    destinationTilePixelY;
+                                int destination = ((pixelY * rasterPixelWidth) + pixelX) * 4;
+                                pixels[destination] = source.Red;
+                                pixels[destination + 1] = source.Green;
+                                pixels[destination + 2] = source.Blue;
+                                pixels[destination + 3] = source.Alpha;
+                            }
+                        }
                     }
                 }
             }
@@ -255,11 +342,14 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         int slot,
         int localTile,
         int row,
-        int column)
+        int column,
+        int subpixelRow,
+        int subpixelColumn)
     {
         int logicalX = ((localTile % 16) * TilePixelSize) + column;
         int logicalY = (slot * 64) + ((localTile / 16) * TilePixelSize) + row;
-        int offset = checked((((logicalY * scale) * atlasWidth) + (logicalX * scale)) * 4);
+        int offset = checked(((((logicalY * scale) + subpixelRow) * atlasWidth) +
+            (logicalX * scale) + subpixelColumn) * 4);
         return new SourcePixel(
             atlasRgbaBytes[offset],
             atlasRgbaBytes[offset + 1],
@@ -296,6 +386,12 @@ internal sealed record PrivateOriginalMapBaseViewProjection
 public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 {
     private static readonly Color PlayerColor = new("ffd166");
+
+    internal static readonly Rect2 LogicalTextureRect = new(
+        Vector2.Zero,
+        new Vector2(
+            PrivateOriginalMapBaseViewProjection.PixelWidth,
+            PrivateOriginalMapBaseViewProjection.PixelHeight));
 
     public PrivateOriginalMapBaseViewport()
     {
@@ -393,11 +489,13 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                 visualDefinition.Selection,
                 rgbaBytes,
                 mount.Bucket.Scale);
-        if (!payloadProjection.RgbaBytes.SequenceEqual(atlasProjection.RgbaBytes))
+        if (!PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
+                payloadProjection,
+                atlasProjection))
         {
             diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
                 PrivateLocalPresentationAssetMountFailureCode.PayloadMismatch,
-                "The admitted private Map 3 base atlas is not pixel-equivalent to the typed visual payload.");
+                "The admitted private Map 3 base atlas is not an exact nearest replication of the typed visual payload.");
             return false;
         }
 
@@ -420,12 +518,13 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                 _atlasRgbaBytes,
                 _atlasScale);
         Image image = Image.CreateFromData(
-            PrivateOriginalMapBaseViewProjection.PixelWidth,
-            PrivateOriginalMapBaseViewProjection.PixelHeight,
+            _projection.RasterPixelWidth,
+            _projection.RasterPixelHeight,
             useMipmaps: false,
             Image.Format.Rgba8,
             _projection.RgbaBytes.ToArray());
         _texture = ImageTexture.CreateFromImage(image);
+        image.Dispose();
         QueueRedraw();
     }
 
@@ -436,7 +535,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
             return;
         }
 
-        DrawTexture(_texture, Vector2.Zero);
+        DrawTextureRect(_texture, LogicalTextureRect, tile: false);
         Rect2 player = new(
             new Vector2(
                 (_projection.PlayerColumn *

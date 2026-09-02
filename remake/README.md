@@ -16,6 +16,8 @@ apply the public synthetic world effect. Its optional local HUD panel can acknow
 the one-shot project-authored request before movement resumes. A separate explicit base-atlas option
 can replace only that view's transient decoded-tile sampling with the reviewed local 2x/4x nearest
 atlas while retaining the same Application snapshot, block/tile selection, crop, and player marker.
+The selected bucket remains a full 576-by-336 or 1152-by-672 physical raster mapped into the fixed
+288-by-168 logical crop; Godot does not collapse it to a one-pixel-per-logical-unit intermediate.
 This manual bridge and diagnostic atlas are not natural
 battle admission, Battle 01, an original after-battle program, or the accepted continuous Map
 3-through-Battle 01 milestone, which remains **NOT READY**.
@@ -155,8 +157,13 @@ visible and authoritative state remains outside Godot. Missing or drifting frame
 the requested private mount closed. Atlas-only selection does not imply either HUD consumer, and
 HUD-only behavior is unchanged. The atlas consumer uses only the selected runtime PNG, validates its
 Godot-decoded RGBA8 shape, and samples nearest pixels through the existing authoritative block/tile,
-slot, and flip projection. Its additive local-only marker is emitted last only when explicitly
-selected; the four earlier private markers and the public marker remain byte-stable. The separate
+slot, and flip projection. Every selected bucket texel survives into a physical ImageTexture, full
+physical tile axes are flipped together, and `DrawTextureRect` maps that raster back to the unchanged
+logical crop before the logical player marker is drawn. Current startup admission still requires
+every scale-squared atlas sample to exactly repeat the typed 1x payload; experimental edge-aware,
+xBRZ, and color-ramp variants therefore remain rejected pending separate asset and policy review.
+Its additive local-only marker is emitted last only when explicitly selected; the marker payload,
+the four earlier private markers, and the public marker remain byte-stable. The separate
 `md-sf2-gfx-remake` repository remains
 non-authoritative R&D: its measurements informed the product-authored frame, but its ignored
 experimental SVG contains forbidden text and an embedded raster and is not an admitted product master

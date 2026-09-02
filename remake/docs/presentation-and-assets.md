@@ -237,8 +237,13 @@ The separately reviewed local transaction at commit
 assets under manifest SHA-256
 `262C2F8A9A17CC843392F8818841F018C45B538610AEC41C75D38A018E829D78`. Its explicit PrivateLocal
 consumer mounts only one selected 2x or 4x runtime PNG after Content rechecks the closed pack. Godot
-validates decoded RGBA8 dimensions and samples nearest pixels through the already authoritative
-working-layout/block/tile/slot/flip projection. It never reads the private source bundle or master,
+validates decoded RGBA8 dimensions and projects every physical bucket texel through the already
+authoritative working-layout/block/tile/slot/flip selection. A 2x bucket becomes a 576-by-336
+ImageTexture and a 4x bucket becomes a 1152-by-672 ImageTexture; `DrawTextureRect` maps either onto the
+same 288-by-168 logical crop, and the player marker remains a later logical overlay. Horizontal and
+vertical flips reverse the complete physical tile axes, including subpixel coordinates. Startup
+binding still proves that every scale-squared sample exactly repeats the typed 1x payload, so this
+transport closure does not admit a non-nearest derivative. It never reads the private source bundle or master,
 does not embed the asset root in Application/state/receipts, and does not place private data in a PCK.
 This is a diagnostic substitution for transient decoded-tile sampling, not original rendering.
 
@@ -378,7 +383,7 @@ gameplay authority into a scene, resource, filename, or animation callback.
 | fixed after acceptance | 4x new-raster authoring; original raster as local master; deterministic 2x/4x buckets; one resident bucket; safe-frame/aspect/accessibility model; thin Godot catalog migration |
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
 | implemented world-family tooling prerequisite | fixed private Map 3 ROM/metadata roots; exact palette/slot selection; five-segment 128-by-320 source-crisp atlas; deterministic nearest 2x/4x ignored candidate; no implicit promotion or update |
-| implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD and base-view-plus-atlas opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; atlas-only nearest sampling through the authoritative project-authored crop; no source/master runtime input, PCK, or fidelity claim |
+| implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD and base-view-plus-atlas opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop with exact-nearest startup parity; no source/master runtime input, PCK, or fidelity claim |
 | separate implementation decision | original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original camera/layer/priority/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
 
