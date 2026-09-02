@@ -32,6 +32,7 @@ internal sealed record Map3RuntimeProfileSelection
     internal const string PrivateSmokeOption = "--private-map3-smoke";
     internal const string PrivateBaseViewOption = "--private-map3-base-view";
     internal const string PrivateBaseAtlasOption = "--private-map3-base-atlas";
+    internal const string PrivateStaticOverlayOption = "--private-map3-static-overlay";
     internal const string PrivateHudPreviewOption = "--private-hud-preview";
 
     private Map3RuntimeProfileSelection(
@@ -41,6 +42,7 @@ internal sealed record Map3RuntimeProfileSelection
         bool privateSmokeRequested,
         bool privateBaseViewRequested,
         bool privateBaseAtlasRequested,
+        bool privateStaticOverlayRequested,
         string? originalRomPath,
         string? tilesetMetadataPath,
         string? paletteMetadataPath,
@@ -57,6 +59,7 @@ internal sealed record Map3RuntimeProfileSelection
         PrivateSmokeRequested = privateSmokeRequested;
         PrivateBaseViewRequested = privateBaseViewRequested;
         PrivateBaseAtlasRequested = privateBaseAtlasRequested;
+        PrivateStaticOverlayRequested = privateStaticOverlayRequested;
         OriginalRomPath = originalRomPath;
         TilesetMetadataPath = tilesetMetadataPath;
         PaletteMetadataPath = paletteMetadataPath;
@@ -79,6 +82,8 @@ internal sealed record Map3RuntimeProfileSelection
     internal bool PrivateBaseViewRequested { get; }
 
     internal bool PrivateBaseAtlasRequested { get; }
+
+    internal bool PrivateStaticOverlayRequested { get; }
 
     internal string? OriginalRomPath { get; }
 
@@ -105,6 +110,7 @@ internal sealed record Map3RuntimeProfileSelection
         bool privateSmokeRequested = false;
         bool privateBaseViewRequested = false;
         bool privateBaseAtlasRequested = false;
+        bool privateStaticOverlayRequested = false;
         bool privateHudPreviewRequested = false;
 
         foreach (string argument in arguments)
@@ -144,6 +150,23 @@ internal sealed record Map3RuntimeProfileSelection
                 }
 
                 privateBaseAtlasRequested = true;
+                continue;
+            }
+
+            if (string.Equals(argument, PrivateStaticOverlayOption, StringComparison.Ordinal))
+            {
+                if (privateStaticOverlayRequested)
+                {
+                    return Unavailable(
+                        ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
+                        privateSmokeRequested,
+                        privateHudPreviewRequested,
+                        "The private static-overlay option must appear at most once.",
+                        privateBaseAtlasRequested,
+                        privateStaticOverlayRequested: true);
+                }
+
+                privateStaticOverlayRequested = true;
                 continue;
             }
 
@@ -200,6 +223,7 @@ internal sealed record Map3RuntimeProfileSelection
             values.ContainsKey(WorldTreatmentOption) ||
             privateBaseViewRequested ||
             privateBaseAtlasRequested ||
+            privateStaticOverlayRequested ||
             privateHudPreviewRequested ||
             privateSmokeRequested;
 
@@ -253,6 +277,17 @@ internal sealed record Map3RuntimeProfileSelection
                 privateHudPreviewRequested,
                 "Private Map 3 base-atlas presentation requires explicit private base-view selection.",
                 privateBaseAtlasRequested: true);
+        }
+
+        if (privateStaticOverlayRequested && !privateBaseViewRequested)
+        {
+            return Unavailable(
+                profile,
+                privateSmokeRequested,
+                privateHudPreviewRequested,
+                "Private Map 3 static-overlay diagnostics require explicit private base-view selection.",
+                privateBaseAtlasRequested,
+                privateStaticOverlayRequested: true);
         }
 
         PrivateMap3WorldTreatment worldTreatment = PrivateMap3WorldTreatment.ExactNearest;
@@ -362,6 +397,7 @@ internal sealed record Map3RuntimeProfileSelection
             privateSmokeRequested,
             privateBaseViewRequested: true,
             privateBaseAtlasRequested,
+            privateStaticOverlayRequested,
             originalRomPath,
             tilesetMetadataPath,
             paletteMetadataPath,
@@ -448,6 +484,7 @@ internal sealed record Map3RuntimeProfileSelection
             privateSmokeRequested,
             privateBaseViewRequested: false,
             privateBaseAtlasRequested,
+            privateStaticOverlayRequested: false,
             originalRomPath: null,
             tilesetMetadataPath: null,
             paletteMetadataPath: null,
@@ -463,7 +500,8 @@ internal sealed record Map3RuntimeProfileSelection
         bool privateSmokeRequested,
         bool privateHudPreviewRequested,
         string diagnostic,
-        bool privateBaseAtlasRequested = false) =>
+        bool privateBaseAtlasRequested = false,
+        bool privateStaticOverlayRequested = false) =>
         new(
             profile,
             false,
@@ -471,6 +509,7 @@ internal sealed record Map3RuntimeProfileSelection
             privateSmokeRequested,
             privateBaseViewRequested: false,
             privateBaseAtlasRequested,
+            privateStaticOverlayRequested,
             originalRomPath: null,
             tilesetMetadataPath: null,
             paletteMetadataPath: null,

@@ -261,6 +261,23 @@ is still drawn into the same logical rectangle before the separate player and HU
 bounded base-layer treatment does not admit or describe original layer-2 transparency, camera,
 animation, colorimetry, final pixels, H4, or 8C fidelity.
 
+The separately selected `--private-map3-static-overlay` mode is a project-authored **STATIC OVERLAY
+DIAGNOSTIC**, not a gameplay camera or original layer-2 renderer. It requires the explicit private
+base view and derives the sole non-zero layer offset from the already admitted typed Map 3 area
+catalog. The preview anchors at that area's admitted main-layer minimum, reads both passes from the
+latest authoritative working layout, and draws the offset pass over the main pass. Palette index zero
+retains the main pass; every non-zero palette index replaces it. No player or entity marker is drawn in
+the preview.
+
+Both passes deliberately use the already admitted Map 3 palette as a diagnostic policy. That choice
+does not establish the original exploration-mode background palette source. The tile priority bit does
+not change source pixels in this preview, and the mode makes no claim about priority relative to
+players, entities, or sprites. It does not execute roof/setup/init copies, move or fabricate session
+state, or imply that the controlled admitted start naturally reaches the previewed area. Exact-nearest
+2x/4x atlas projection remains a transport check; `edge-scale2x`, when also selected, runs only after
+the complete main-plus-overlay logical crop has been composed. Original camera, parallax, autoscroll,
+layer switching, animation, timing, hardware output, and final pixels remain **Unknown**.
+
 The local `md-sf2-gfx-remake` experiments remain useful R&D for comparing nearest, edge-aware, xBRZ,
 and color-ramp treatments, but they do not select product art or a general raster upscaler. In
 particular, 3x is not a runtime tier and no single upscaler becomes a global default from those
@@ -397,9 +414,9 @@ gameplay authority into a scene, resource, filename, or animation callback.
 | fixed after acceptance | 4x new-raster authoring; original raster as local master; deterministic 2x/4x buckets; one resident bucket; safe-frame/aspect/accessibility model; thin Godot catalog migration |
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
 | implemented world-family tooling prerequisite | fixed private Map 3 ROM/metadata roots; exact palette/slot selection; five-segment 128-by-320 source-crisp atlas; deterministic nearest 2x/4x ignored candidate; no implicit promotion or update |
-| implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD and base-view-plus-atlas opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop with exact-nearest startup parity; no source/master runtime input, PCK, or fidelity claim |
+| implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop with exact-nearest startup parity; the static overlay is a no-player diagnostic using the admitted map palette by explicit policy; no source/master runtime input, PCK, or fidelity claim |
 | separate implementation decision | original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
-| Unknown | original camera/layer/priority/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
+| Unknown | original background-layer palette source; camera/layer/priority-with-sprites/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
 
 The local asset repository and three bounded semantic consumers now exist, but this document still does
 not authorize a product batch, PCK inclusion, presenter-wide migration, original Yes/No/cursor
