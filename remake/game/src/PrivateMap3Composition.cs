@@ -26,6 +26,7 @@ public sealed partial class Map3Root
     private Map3RuntimeProfile? _runtimeProfile;
     private PrivateMap3Presenter? _privatePresenter;
     private PrivateOriginalMapVisualRuntimeBinding? _privateVisualBinding;
+    private PrivateLocalHudPreview? _privateHudPreview;
     private bool _privateBattleBridgeEnabled;
 
     private void BuildSelectedPresentation(Map3RuntimeProfileSelection selection)
@@ -67,22 +68,38 @@ public sealed partial class Map3Root
         bool runSmoke = selection.PrivateSmokeRequested;
         string canonicalImportPath = selection.CanonicalImportPath!;
         long sessionStarted = System.Diagnostics.Stopwatch.GetTimestamp();
+        OriginalMapImportRequest importRequest = new(
+            OriginalMapRuntimeAdmission.PackageId,
+            ContentProfile.PrivateLocal,
+            OriginalMapRuntimeAdmission.AcceptedContentDigest);
         IOriginalMapImportSource source = new TimedOriginalMapImportSource(
             new PrivateCanonicalMap3ImportReader(canonicalImportPath),
             runSmoke);
+        PrivateLocalPresentationRasterMount? hudPreview = null;
+        if (selection.PrivateHudPreviewRequested &&
+            !TryPreparePrivateHudPreview(
+                selection,
+                importRequest,
+                ref source,
+                out hudPreview))
+        {
+            return;
+        }
+
         if (selection.PrivateBaseViewRequested)
         {
-            StartPrivateVisualScenario(selection, source, runSmoke, sessionStarted);
+            StartPrivateVisualScenario(
+                selection,
+                source,
+                importRequest,
+                hudPreview,
+                runSmoke,
+                sessionStarted);
             return;
         }
 
         PrivateOriginalMapGameSessionStartResult result =
-            GameSession.StartPrivateOriginalMap(
-                source,
-                new OriginalMapImportRequest(
-                    OriginalMapRuntimeAdmission.PackageId,
-                    ContentProfile.PrivateLocal,
-                    OriginalMapRuntimeAdmission.AcceptedContentDigest));
+            GameSession.StartPrivateOriginalMap(source, importRequest);
         TracePrivateStage(runSmoke, "game-session-start", sessionStarted);
         if (result is not PrivateOriginalMapGameSessionStarted started)
         {
@@ -92,6 +109,11 @@ public sealed partial class Map3Root
                 $"PrivateLocal unavailable ({rejected.Diagnostic.Code}).",
                 runSmoke,
                 "private-local");
+            return;
+        }
+
+        if (!TryAttachPrivateHudPreview(hudPreview, runSmoke))
+        {
             return;
         }
 
@@ -113,6 +135,8 @@ public sealed partial class Map3Root
     private void StartPrivateVisualScenario(
         Map3RuntimeProfileSelection selection,
         IOriginalMapImportSource importSource,
+        OriginalMapImportRequest importRequest,
+        PrivateLocalPresentationRasterMount? hudPreview,
         bool runSmoke,
         long sessionStarted)
     {
@@ -128,10 +152,7 @@ public sealed partial class Map3Root
         PrivateOriginalMapVisualGameSessionStartResult result =
             GameSession.StartPrivateOriginalMapWithVisualPayload(
                 importSource,
-                new OriginalMapImportRequest(
-                    OriginalMapRuntimeAdmission.PackageId,
-                    ContentProfile.PrivateLocal,
-                    OriginalMapRuntimeAdmission.AcceptedContentDigest),
+                importRequest,
                 visualSource,
                 new OriginalMapVisualPayloadRequest(
                     OriginalMapVisualPayloadAdmission.PackageId,
@@ -174,6 +195,11 @@ public sealed partial class Map3Root
             return;
         }
 
+        if (!TryAttachPrivateHudPreview(hudPreview, runSmoke))
+        {
+            return;
+        }
+
         _session = started.Session;
         _privateVisualBinding = started.Binding;
         _privateBattleBridgeEnabled = true;
@@ -191,6 +217,105 @@ public sealed partial class Map3Root
                 "deferred-smoke-scheduled",
                 System.Diagnostics.Stopwatch.GetTimestamp());
         }
+    }
+
+    private bool TryPreparePrivateHudPreview(
+        Map3RuntimeProfileSelection selection,
+        OriginalMapImportRequest importRequest,
+        ref IOriginalMapImportSource importSource,
+        out PrivateLocalPresentationRasterMount? mount)
+    {
+        mount = null;
+        OriginalMapImportResult importResult = importSource.Admit(importRequest);
+        if (importResult is not OriginalMapImportAccepted importAccepted)
+        {
+            string code = importResult is OriginalMapImportRejected rejected
+                ? rejected.Diagnostic.Code.ToString()
+                : "UnknownResult";
+            FailPrivateStartup(
+                $"PrivateLocal canonical import unavailable ({code}).",
+                selection.PrivateSmokeRequested,
+                "private-local");
+            return false;
+        }
+
+        LocalPresentationAssetPackReader packReader = new(
+            selection.PresentationAssetRoot!,
+            selection.PresentationAssetCommit!);
+        LocalPresentationAssetPackRequest packRequest = new(
+            LocalPresentationAssetPackAdmission.PackageId,
+            ContentProfile.PrivateLocal,
+            LocalPresentationAssetPackAdmission.RepositoryId,
+            selection.PresentationAssetCommit!,
+            selection.PresentationManifestDigest!);
+        LocalPresentationAssetPackResult packResult = packReader.Admit(packRequest);
+        if (packResult is not LocalPresentationAssetPackAccepted acceptedPack)
+        {
+            LocalPresentationAssetPackRejected rejected =
+                (LocalPresentationAssetPackRejected)packResult;
+            FailPrivateStartup(
+                $"PrivateLocal HUD preview unavailable ({rejected.Diagnostic.Code}).",
+                selection.PrivateSmokeRequested,
+                "private-local");
+            return false;
+        }
+
+        PrivateLocalPresentationAssetMountResult mountResult =
+            new PrivateLocalPresentationAssetCatalog(packReader).MountPreview(
+                packRequest,
+                acceptedPack,
+                EffectivePhysicalScale());
+        if (mountResult is not PrivateLocalPresentationAssetMounted mounted)
+        {
+            PrivateLocalPresentationAssetMountRejected rejected =
+                (PrivateLocalPresentationAssetMountRejected)mountResult;
+            FailPrivateStartup(
+                $"PrivateLocal HUD preview unavailable ({rejected.Diagnostic.Code}).",
+                selection.PrivateSmokeRequested,
+                "private-local");
+            return false;
+        }
+
+        importSource = new PreadmittedOriginalMapImportSource(
+            importRequest,
+            importAccepted);
+        mount = mounted.Asset;
+        return true;
+    }
+
+    private bool TryAttachPrivateHudPreview(
+        PrivateLocalPresentationRasterMount? mount,
+        bool runSmoke)
+    {
+        if (mount is null)
+        {
+            return true;
+        }
+
+        _privateHudPreview = PrivateLocalHudPreview.TryAttach(
+            this,
+            mount,
+            out PrivateLocalPresentationAssetMountDiagnostic? diagnostic);
+        if (_privateHudPreview is not null)
+        {
+            return true;
+        }
+
+        FailPrivateStartup(
+            $"PrivateLocal HUD preview unavailable ({diagnostic!.Code}).",
+            runSmoke,
+            "private-local");
+        return false;
+    }
+
+    private static double EffectivePhysicalScale()
+    {
+        Vector2I window = DisplayServer.WindowGetSize();
+        return window.X > 0 && window.Y > 0
+            ? PrivateLocalPresentationAssetCatalog.EffectivePhysicalScale(
+                window.X,
+                window.Y)
+            : 1;
     }
 
     private void ApplyPrivateMove(ExplorationDirection direction)
@@ -482,6 +607,42 @@ public sealed partial class Map3Root
             OriginalMapImportResult result = _inner.Admit(request);
             TracePrivateStage(_trace, "fixed-digest-read-parse-admission", started);
             return result;
+        }
+    }
+
+    private sealed class PreadmittedOriginalMapImportSource : IOriginalMapImportSource
+    {
+        private readonly OriginalMapImportRequest _expectedRequest;
+        private readonly OriginalMapImportAccepted _accepted;
+        private bool _consumed;
+
+        public PreadmittedOriginalMapImportSource(
+            OriginalMapImportRequest expectedRequest,
+            OriginalMapImportAccepted accepted)
+        {
+            _expectedRequest = expectedRequest;
+            _accepted = accepted;
+        }
+
+        public OriginalMapImportResult Admit(OriginalMapImportRequest request)
+        {
+            if (_consumed ||
+                !string.Equals(
+                    request.PackageId,
+                    _expectedRequest.PackageId,
+                    StringComparison.Ordinal) ||
+                request.Profile != _expectedRequest.Profile ||
+                !string.Equals(
+                    request.ExpectedContentDigest,
+                    _expectedRequest.ExpectedContentDigest,
+                    StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(
+                    "The pre-admitted private canonical import can be consumed exactly once by its accepted request.");
+            }
+
+            _consumed = true;
+            return _accepted;
         }
     }
 }

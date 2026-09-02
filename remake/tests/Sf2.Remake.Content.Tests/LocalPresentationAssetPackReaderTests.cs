@@ -25,6 +25,20 @@ public sealed class LocalPresentationAssetPackReaderTests
         Assert.Equal(960, accepted.Definition.LogicalPresentation.Width);
         Assert.Equal(new[] { 2, 4 }, accepted.Definition.Assets[0].Buckets.Select(item => item.Scale));
         Assert.Equal(new[] { 16, 32 }, accepted.Definition.Assets[0].Buckets.Select(item => item.Width));
+        Assert.Equal(
+            new long[]
+            {
+                TemporaryAssetPack.TwoXBytes.Length,
+                TemporaryAssetPack.FourXBytes.Length,
+            },
+            accepted.Definition.Assets[0].Buckets.Select(item => item.ByteLength));
+        Assert.Equal(
+            new[]
+            {
+                Digest(TemporaryAssetPack.TwoXBytes),
+                Digest(TemporaryAssetPack.FourXBytes),
+            },
+            accepted.Definition.Assets[0].Buckets.Select(item => item.Sha256));
         Assert.Equal("image/png", accepted.Definition.Assets[0].Buckets[0].MediaType);
         Assert.Equal(Commit, accepted.Receipt.MountedAssetRepositoryCommit);
         Assert.Equal(package.ManifestDigest, accepted.Receipt.ManifestDigest);
@@ -34,6 +48,105 @@ public sealed class LocalPresentationAssetPackReaderTests
             accepted.Receipt.GetType().GetProperties(),
             property => property.Name.Contains("Path", StringComparison.Ordinal) ||
                 property.Name.Contains("Payload", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void SemanticRasterLookupRevalidatesThePackAndReturnsADefensiveCopy()
+    {
+        using TemporaryAssetPack package = new();
+        LocalPresentationAssetPackRequest request = package.Request();
+        LocalPresentationAssetPackAccepted accepted =
+            Assert.IsType<LocalPresentationAssetPackAccepted>(package.Reader.Admit(request));
+
+        LocalPresentationRasterPayloadAccepted payload =
+            Assert.IsType<LocalPresentationRasterPayloadAccepted>(
+                package.Reader.ReadRaster(request, accepted, "ui.action-confirm", 2));
+        byte[] first = payload.CopyBytes();
+        first[0] ^= 0xFF;
+
+        Assert.Equal("ui.action-confirm", payload.AssetId);
+        Assert.Equal(2, payload.Scale);
+        Assert.Equal(TemporaryAssetPack.TwoXBytes, payload.CopyBytes());
+    }
+
+    [Fact]
+    public void SemanticRasterLookupRejectsMissingSelectionAndPostAdmissionDrift()
+    {
+        using TemporaryAssetPack package = new();
+        LocalPresentationAssetPackRequest request = package.Request();
+        LocalPresentationAssetPackAccepted accepted =
+            Assert.IsType<LocalPresentationAssetPackAccepted>(package.Reader.Admit(request));
+
+        AssertPayloadCode(
+            package.Reader.ReadRaster(request, accepted, "ui.missing", 2),
+            LocalPresentationAssetPackFailureCode.InvalidBucket);
+
+        package.WritePayload("runtime/ui/action-confirm@2x.png", "mutated"u8.ToArray());
+        AssertPayloadCode(
+            package.Reader.ReadRaster(request, accepted, "ui.action-confirm", 2),
+            LocalPresentationAssetPackFailureCode.PayloadMismatch);
+
+        package.WritePayload(
+            "runtime/ui/action-confirm@2x.png",
+            TemporaryAssetPack.TwoXBytes);
+        package.Buckets[0]!["runtimePath"] = "runtime/ui/redirected@2x.png";
+        package.WriteManifest();
+        AssertPayloadCode(
+            package.Reader.ReadRaster(request, accepted, "ui.action-confirm", 2),
+            LocalPresentationAssetPackFailureCode.ContentDigestMismatch);
+
+        using TemporaryAssetPack duplicate = new();
+        LocalPresentationAssetPackAccepted duplicateBaseline =
+            Assert.IsType<LocalPresentationAssetPackAccepted>(
+                duplicate.Reader.Admit(duplicate.Request()));
+        duplicate.Assets.Add(duplicate.Asset.DeepClone());
+        duplicate.WriteManifest();
+        AssertPayloadCode(
+            duplicate.Reader.ReadRaster(
+                duplicate.Request(),
+                duplicateBaseline,
+                "ui.action-confirm",
+                2),
+            LocalPresentationAssetPackFailureCode.DuplicateIdentity);
+    }
+
+    [Fact]
+    public void FakeApplicationAdmissionCannotRedirectSemanticPayloadSelection()
+    {
+        using TemporaryAssetPack package = new();
+        LocalPresentationAssetPackRequest request = package.Request();
+        LocalPresentationAssetPackAccepted accepted =
+            Assert.IsType<LocalPresentationAssetPackAccepted>(package.Reader.Admit(request));
+        LocalPresentationRasterAssetDefinition current = accepted.Definition.Assets[0];
+        LocalPresentationRasterBucket[] drifted =
+        [
+            new(
+                2,
+                current.Buckets[0].Width,
+                current.Buckets[0].Height,
+                current.Buckets[0].ByteLength,
+                new string('A', 64),
+                current.Buckets[0].MediaType,
+                current.Buckets[0].Filter,
+                current.Buckets[0].Mipmaps,
+                current.Buckets[0].Repeat,
+                current.Buckets[0].ColorSpace,
+                current.Buckets[0].AlphaMode),
+            current.Buckets[1],
+        ];
+        LocalPresentationAssetPackAccepted fake = new(
+            new LocalPresentationAssetPackDefinition(
+                accepted.Definition.RepositoryId,
+                accepted.Definition.LogicalPresentation,
+                [new LocalPresentationRasterAssetDefinition(
+                    current.AssetId,
+                    current.LogicalSize,
+                    drifted)]),
+            accepted.Receipt);
+
+        AssertPayloadCode(
+            package.Reader.ReadRaster(request, fake, "ui.action-confirm", 2),
+            LocalPresentationAssetPackFailureCode.PayloadMismatch);
     }
 
     [Fact]
@@ -365,14 +478,29 @@ public sealed class LocalPresentationAssetPackReaderTests
     }
 
     [Fact]
-    public void PublicSurfaceHasOnlyRootAndMountedCommitConstructorAndNoByteFactory()
+    public void PublicSurfaceHasOnlyRootAndMountedCommitConstructorAndNoStaticBypass()
     {
         Type readerType = typeof(LocalPresentationAssetPackReader);
         System.Reflection.ConstructorInfo constructor = Assert.Single(readerType.GetConstructors());
+        System.Reflection.MethodInfo lookup = Assert.Single(
+            readerType.GetMethods(),
+            method =>
+                method.DeclaringType == readerType &&
+                method.Name == nameof(LocalPresentationAssetPackReader.ReadRaster));
 
         Assert.Equal(
             new[] { typeof(string), typeof(string) },
             constructor.GetParameters().Select(parameter => parameter.ParameterType));
+        Assert.False(lookup.IsStatic);
+        Assert.Equal(
+            new[]
+            {
+                typeof(LocalPresentationAssetPackRequest),
+                typeof(LocalPresentationAssetPackAccepted),
+                typeof(string),
+                typeof(int),
+            },
+            lookup.GetParameters().Select(parameter => parameter.ParameterType));
         Assert.DoesNotContain(
             readerType.GetMethods(),
             method => method.DeclaringType == readerType && method.IsStatic && method.IsPublic);
@@ -393,6 +521,13 @@ public sealed class LocalPresentationAssetPackReaderTests
         LocalPresentationAssetPackResult result,
         LocalPresentationAssetPackFailureCode code) =>
         Assert.Equal(code, Assert.IsType<LocalPresentationAssetPackRejected>(result).Diagnostic.Code);
+
+    private static void AssertPayloadCode(
+        LocalPresentationRasterPayloadResult result,
+        LocalPresentationAssetPackFailureCode code) =>
+        Assert.Equal(
+            code,
+            Assert.IsType<LocalPresentationRasterPayloadRejected>(result).Diagnostic.Code);
 
     private static void ReplaceBucketIdentity(JsonObject asset, int index, byte[] bytes)
     {

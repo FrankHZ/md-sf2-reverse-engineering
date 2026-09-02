@@ -11,7 +11,7 @@ make Godot an evidence owner.
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
 | `public-synthetic` | default, or explicit public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
-| `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path | caller-owned local inputs admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition, and explicit synthetic battle bridge; **not full original fidelity** |
+| `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path; optional features require their own complete explicit value sets | caller-owned local inputs admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame preview; **not full original fidelity** |
 
 The runtime always displays the appropriate disclosure:
 
@@ -112,6 +112,22 @@ without changing ownership of either traversal or battle rules. Its 12-by-7 play
 empty-pixel background, Mega Drive channel expansion, Godot image/marker presentation, and manual
 battle trigger are explicit project-authored choices. They are not an original screenshot or a
 fidelity backend.
+
+The optional `--private-hud-preview` shape requires all three of
+`--presentation-asset-root=<fully-qualified>`,
+`--presentation-asset-commit=<40-lowercase-hex>`, and
+`--presentation-manifest-sha256=<64-uppercase-hex>`. Supplying any of those values without the flag,
+omitting one, using them under PublicSynthetic, or relying on a checkout's mere presence is
+Unavailable. Canonical Map 3 import and the complete local presentation pack both admit before the
+existing private session constructor is called. Godot then resolves only
+`hud.yes-no-window-frame` and the accepted scale. The same Content reader reopens the fixed manifest,
+resolves and rechecks the selected contained PNG, and returns a defensive byte copy for the
+project-authored top-right chrome preview. The absolute root and runtime path stay in outer composition
+and Content; they do not enter Application, the Godot catalog, snapshots, receipts, status, smoke, or
+logs.
+
+The preview has no Yes/No command, text, icon, focus, selection, window-layout, Theme, or original UI
+meaning. Existing private and public smoke receipt bytes and ordering remain unchanged.
 
 The profile therefore does not claim:
 

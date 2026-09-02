@@ -78,6 +78,8 @@ public sealed record LocalPresentationRasterBucket
         int scale,
         int width,
         int height,
+        long byteLength,
+        string sha256,
         string mediaType,
         string filter,
         bool mipmaps,
@@ -92,6 +94,8 @@ public sealed record LocalPresentationRasterBucket
 
         ArgumentOutOfRangeException.ThrowIfLessThan(width, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(height, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(byteLength, 1);
+        OriginalMapImportRequest.ValidateSha256(sha256, nameof(sha256));
         if (!string.Equals(
                 mediaType,
                 LocalPresentationAssetPackAdmission.RasterMediaType,
@@ -132,6 +136,8 @@ public sealed record LocalPresentationRasterBucket
         Scale = scale;
         Width = width;
         Height = height;
+        ByteLength = byteLength;
+        Sha256 = sha256.ToUpperInvariant();
         MediaType = mediaType;
         Filter = filter;
         Mipmaps = mipmaps;
@@ -145,6 +151,10 @@ public sealed record LocalPresentationRasterBucket
     public int Width { get; }
 
     public int Height { get; }
+
+    public long ByteLength { get; }
+
+    public string Sha256 { get; }
 
     public string MediaType { get; }
 
@@ -187,7 +197,7 @@ public sealed class LocalPresentationRasterAssetDefinition
                 copied.Select(bucket => bucket.Scale)))
         {
             throw new ArgumentException(
-                "A local presentation raster asset requires the exact ordered 2x and 4x buckets.",
+                "A local presentation raster asset requires exact ordered 2x and 4x semantic buckets.",
                 nameof(buckets));
         }
 

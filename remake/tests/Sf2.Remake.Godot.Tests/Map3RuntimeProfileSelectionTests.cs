@@ -5,6 +5,10 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class Map3RuntimeProfileSelectionTests
 {
+    private const string AssetCommit = "d221cf3e89e90e647467415fc58edc38faad04f8";
+    private const string ManifestDigest =
+        "308C9E2617D0591E6B535F8BB6A9C6EC959A6B873F2495FB8B36CE7C99336897";
+
     [Fact]
     public void EmptyArgumentsKeepThePublicSyntheticDefault()
     {
@@ -18,6 +22,10 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.Null(selection.OriginalRomPath);
         Assert.Null(selection.TilesetMetadataPath);
         Assert.Null(selection.PaletteMetadataPath);
+        Assert.False(selection.PrivateHudPreviewRequested);
+        Assert.Null(selection.PresentationAssetRoot);
+        Assert.Null(selection.PresentationAssetCommit);
+        Assert.Null(selection.PresentationManifestDigest);
     }
 
     [Fact]
@@ -50,6 +58,93 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.True(selection.PrivateSmokeRequested);
         Assert.False(selection.PrivateBaseViewRequested);
         Assert.Null(selection.Diagnostic);
+    }
+
+    [Fact]
+    public void ExplicitPrivateHudPreviewRequiresAndNormalizesTheExactValueShape()
+    {
+        string canonical = Absolute("canonical-map-import.json");
+        string assetRoot = Absolute("presentation-assets");
+        Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
+            [
+                "--runtime-profile=private-local",
+                $"--canonical-map-import={canonical}",
+                Map3RuntimeProfileSelection.PrivateHudPreviewOption,
+                $"--presentation-asset-root={assetRoot}",
+                $"--presentation-asset-commit={AssetCommit}",
+                $"--presentation-manifest-sha256={ManifestDigest}",
+            ]);
+
+        Assert.True(selection.IsAvailable);
+        Assert.Equal(Map3RuntimeProfile.PrivateLocal, selection.RequestedProfile);
+        Assert.True(selection.PrivateHudPreviewRequested);
+        Assert.Equal(assetRoot, selection.PresentationAssetRoot);
+        Assert.Equal(AssetCommit, selection.PresentationAssetCommit);
+        Assert.Equal(ManifestDigest, selection.PresentationManifestDigest);
+        Assert.Null(selection.Diagnostic);
+    }
+
+    [Theory]
+    [InlineData("flag-only")]
+    [InlineData("values-without-flag")]
+    [InlineData("relative-root")]
+    [InlineData("uppercase-commit")]
+    [InlineData("lowercase-digest")]
+    [InlineData("duplicate-flag")]
+    public void PartialAmbiguousOrNonCanonicalHudPreviewSelectionIsUnavailable(string mutation)
+    {
+        string canonical = Absolute("canonical-map-import.json");
+        string assetRoot = Absolute("presentation-assets");
+        List<string> arguments =
+        [
+            "--runtime-profile=private-local",
+            $"--canonical-map-import={canonical}",
+        ];
+        if (mutation != "values-without-flag")
+        {
+            arguments.Add(Map3RuntimeProfileSelection.PrivateHudPreviewOption);
+        }
+
+        if (mutation != "flag-only")
+        {
+            arguments.Add($"--presentation-asset-root={(mutation == "relative-root" ? "relative-assets" : assetRoot)}");
+            arguments.Add($"--presentation-asset-commit={(mutation == "uppercase-commit" ? AssetCommit.ToUpperInvariant() : AssetCommit)}");
+            arguments.Add($"--presentation-manifest-sha256={(mutation == "lowercase-digest" ? ManifestDigest.ToLowerInvariant() : ManifestDigest)}");
+        }
+
+        if (mutation == "duplicate-flag")
+        {
+            arguments.Add(Map3RuntimeProfileSelection.PrivateHudPreviewOption);
+        }
+
+        Map3RuntimeProfileSelection selection =
+            Map3RuntimeProfileSelection.Parse(arguments);
+
+        Assert.False(selection.IsAvailable);
+        Assert.Equal(Map3RuntimeProfile.PrivateLocal, selection.RequestedProfile);
+        Assert.Null(selection.PresentationAssetRoot);
+        Assert.Null(selection.PresentationAssetCommit);
+        Assert.Null(selection.PresentationManifestDigest);
+        Assert.DoesNotContain(assetRoot, selection.Diagnostic, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PublicProfileCannotConsumeACompletePrivateHudPreviewRequest()
+    {
+        string assetRoot = Absolute("presentation-assets");
+        Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
+            [
+                "--runtime-profile=public-synthetic",
+                Map3RuntimeProfileSelection.PrivateHudPreviewOption,
+                $"--presentation-asset-root={assetRoot}",
+                $"--presentation-asset-commit={AssetCommit}",
+                $"--presentation-manifest-sha256={ManifestDigest}",
+            ]);
+
+        Assert.False(selection.IsAvailable);
+        Assert.Equal(Map3RuntimeProfile.PublicSynthetic, selection.RequestedProfile);
+        Assert.Null(selection.PresentationAssetRoot);
+        Assert.DoesNotContain(assetRoot, selection.Diagnostic, StringComparison.Ordinal);
     }
 
     [Fact]

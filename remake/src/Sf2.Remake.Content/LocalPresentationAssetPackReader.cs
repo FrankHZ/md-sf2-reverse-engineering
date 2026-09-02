@@ -4,6 +4,39 @@ using Sf2.Remake.Application.Content;
 
 namespace Sf2.Remake.Content;
 
+public abstract record LocalPresentationRasterPayloadResult;
+
+public sealed record LocalPresentationRasterPayloadAccepted : LocalPresentationRasterPayloadResult
+{
+    private readonly byte[] _bytes;
+
+    internal LocalPresentationRasterPayloadAccepted(
+        string assetId,
+        int scale,
+        byte[] bytes)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(assetId);
+        ArgumentNullException.ThrowIfNull(bytes);
+        AssetId = assetId;
+        Scale = scale;
+        _bytes = [.. bytes];
+    }
+
+    public string AssetId { get; }
+
+    public int Scale { get; }
+
+    public byte[] CopyBytes() => [.. _bytes];
+}
+
+public sealed record LocalPresentationRasterPayloadRejected(
+    LocalPresentationAssetPackDiagnostic Diagnostic) :
+    LocalPresentationRasterPayloadResult
+{
+    public LocalPresentationAssetPackDiagnostic Diagnostic { get; } =
+        Diagnostic ?? throw new ArgumentNullException(nameof(Diagnostic));
+}
+
 public sealed class LocalPresentationAssetPackReader : ILocalPresentationAssetPackSource
 {
     private const string ManifestRelativePath = "manifests/presentation-assets-v1.json";
@@ -22,8 +55,108 @@ public sealed class LocalPresentationAssetPackReader : ILocalPresentationAssetPa
             : null;
     }
 
-    public LocalPresentationAssetPackResult Admit(LocalPresentationAssetPackRequest request)
+    public LocalPresentationAssetPackResult Admit(LocalPresentationAssetPackRequest request) =>
+        AdmitCore(request, out _);
+
+    public LocalPresentationRasterPayloadResult ReadRaster(
+        LocalPresentationAssetPackRequest request,
+        LocalPresentationAssetPackAccepted accepted,
+        string assetId,
+        int scale)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(accepted);
+        if (!LocalPresentationAssetPackAdmission.IsCanonicalSemanticId(assetId))
+        {
+            return RejectPayload(
+                LocalPresentationAssetPackFailureCode.InvalidBucket,
+                "assetId",
+                "The requested local presentation raster identity is invalid.");
+        }
+
+        if (!LocalPresentationAssetPackAdmission.BucketScales.Contains(scale))
+        {
+            return RejectPayload(
+                LocalPresentationAssetPackFailureCode.InvalidBucket,
+                "scale",
+                "The requested local presentation raster scale is unsupported.");
+        }
+
+        LocalPresentationAssetPackResult revalidated = AdmitCore(
+            request,
+            out ParsedManifest? parsed);
+        if (revalidated is not LocalPresentationAssetPackAccepted current)
+        {
+            return new LocalPresentationRasterPayloadRejected(
+                ((LocalPresentationAssetPackRejected)revalidated).Diagnostic);
+        }
+
+        if (!AcceptedResultsEqual(accepted, current))
+        {
+            return RejectPayload(
+                LocalPresentationAssetPackFailureCode.PayloadMismatch,
+                "acceptedResult",
+                "The supplied local presentation admission result drifted from the revalidated pack.");
+        }
+
+        ParsedAsset[] assets =
+        [
+            .. parsed!.Assets.Where(candidate => string.Equals(
+                candidate.AssetId,
+                assetId,
+                StringComparison.Ordinal)),
+        ];
+        if (assets.Length != 1)
+        {
+            return RejectPayload(
+                LocalPresentationAssetPackFailureCode.InvalidBucket,
+                "assetId",
+                "The requested local presentation raster is unavailable.");
+        }
+
+        ParsedBucket[] buckets =
+        [
+            .. assets[0].Buckets.Where(candidate => candidate.Scale == scale),
+        ];
+        if (buckets.Length != 1)
+        {
+            return RejectPayload(
+                LocalPresentationAssetPackFailureCode.MissingBucket,
+                "scale",
+                "The requested local presentation raster bucket is unavailable.");
+        }
+
+        ParsedBucket bucket = buckets[0];
+        if (!TryResolveContainedPath(
+                _assetRoot!,
+                bucket.RuntimePath,
+                out string? payloadPath,
+                out LocalPresentationAssetPackResult? pathFailure))
+        {
+            return new LocalPresentationRasterPayloadRejected(
+                ((LocalPresentationAssetPackRejected)pathFailure!).Diagnostic);
+        }
+
+        if (!TryReadPayloadBytes(
+                payloadPath!,
+                bucket.ByteLength,
+                bucket.Sha256,
+                "runtimePayload",
+                out byte[]? bytes,
+                out LocalPresentationAssetPackResult? readFailure))
+        {
+            return new LocalPresentationRasterPayloadRejected(
+                ((LocalPresentationAssetPackRejected)readFailure!).Diagnostic);
+        }
+
+        return new LocalPresentationRasterPayloadAccepted(assetId, scale, bytes!);
+    }
+
+    private LocalPresentationAssetPackResult AdmitCore(
+        LocalPresentationAssetPackRequest request,
+        out ParsedManifest? validatedManifest)
+    {
+        validatedManifest = null;
         ArgumentNullException.ThrowIfNull(request);
         if (!string.Equals(
                 request.PackageId,
@@ -170,6 +303,8 @@ public sealed class LocalPresentationAssetPackReader : ILocalPresentationAssetPa
                         bucket.Scale,
                         bucket.Width,
                         bucket.Height,
+                        bucket.ByteLength,
+                        bucket.Sha256,
                         bucket.MediaType,
                         bucket.Filter,
                         bucket.Mipmaps,
@@ -201,6 +336,7 @@ public sealed class LocalPresentationAssetPackReader : ILocalPresentationAssetPa
                 definitions.Count,
                 definitions.Count * LocalPresentationAssetPackAdmission.BucketScales.Count,
                 LocalPresentationAssetPackAdmission.BucketScales);
+            validatedManifest = parsed;
             return new LocalPresentationAssetPackAccepted(definition, receipt);
         }
         catch (JsonException)
@@ -815,6 +951,140 @@ public sealed class LocalPresentationAssetPackReader : ILocalPresentationAssetPa
         }
     }
 
+    private static bool TryReadPayloadBytes(
+        string path,
+        long expectedLength,
+        string expectedDigest,
+        string field,
+        out byte[]? bytes,
+        out LocalPresentationAssetPackResult? failure)
+    {
+        bytes = null;
+        failure = null;
+        try
+        {
+            using FileStream stream = new(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 81920,
+                FileOptions.SequentialScan);
+            if (stream.Length > LocalPresentationAssetPackAdmission.MaximumRasterPayloadBytes ||
+                stream.Length != expectedLength)
+            {
+                failure = Reject(
+                    LocalPresentationAssetPackFailureCode.PayloadMismatch,
+                    field,
+                    "A local presentation runtime payload length drifted.");
+                return false;
+            }
+
+            bytes = new byte[checked((int)stream.Length)];
+            stream.ReadExactly(bytes);
+            if (!string.Equals(
+                    Convert.ToHexString(SHA256.HashData(bytes)),
+                    expectedDigest,
+                    StringComparison.Ordinal))
+            {
+                bytes = null;
+                failure = Reject(
+                    LocalPresentationAssetPackFailureCode.PayloadMismatch,
+                    field,
+                    "A local presentation runtime payload digest drifted.");
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception error) when (
+            error is IOException or UnauthorizedAccessException or NotSupportedException or
+                OverflowException)
+        {
+            bytes = null;
+            failure = Reject(
+                LocalPresentationAssetPackFailureCode.PackageUnavailable,
+                field,
+                $"A required local presentation input is unavailable: {error.GetType().Name}.");
+            return false;
+        }
+    }
+
+    private static bool AcceptedResultsEqual(
+        LocalPresentationAssetPackAccepted left,
+        LocalPresentationAssetPackAccepted right)
+    {
+        LocalPresentationAssetPackReceipt leftReceipt = left.Receipt;
+        LocalPresentationAssetPackReceipt rightReceipt = right.Receipt;
+        if (!string.Equals(leftReceipt.PackageId, rightReceipt.PackageId, StringComparison.Ordinal) ||
+            leftReceipt.SchemaVersion != rightReceipt.SchemaVersion ||
+            leftReceipt.Profile != rightReceipt.Profile ||
+            !string.Equals(leftReceipt.Capability, rightReceipt.Capability, StringComparison.Ordinal) ||
+            !string.Equals(leftReceipt.RepositoryId, rightReceipt.RepositoryId, StringComparison.Ordinal) ||
+            !string.Equals(
+                leftReceipt.MountedAssetRepositoryCommit,
+                rightReceipt.MountedAssetRepositoryCommit,
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                leftReceipt.ManifestDigest,
+                rightReceipt.ManifestDigest,
+                StringComparison.Ordinal) ||
+            leftReceipt.AssetCount != rightReceipt.AssetCount ||
+            leftReceipt.BucketCount != rightReceipt.BucketCount ||
+            !leftReceipt.BucketScales.SequenceEqual(rightReceipt.BucketScales))
+        {
+            return false;
+        }
+
+        LocalPresentationAssetPackDefinition leftDefinition = left.Definition;
+        LocalPresentationAssetPackDefinition rightDefinition = right.Definition;
+        if (!string.Equals(
+                leftDefinition.RepositoryId,
+                rightDefinition.RepositoryId,
+                StringComparison.Ordinal) ||
+            leftDefinition.LogicalPresentation != rightDefinition.LogicalPresentation ||
+            leftDefinition.Assets.Count != rightDefinition.Assets.Count)
+        {
+            return false;
+        }
+
+        for (int assetIndex = 0; assetIndex < leftDefinition.Assets.Count; assetIndex++)
+        {
+            LocalPresentationRasterAssetDefinition leftAsset =
+                leftDefinition.Assets[assetIndex];
+            LocalPresentationRasterAssetDefinition rightAsset =
+                rightDefinition.Assets[assetIndex];
+            if (!string.Equals(leftAsset.AssetId, rightAsset.AssetId, StringComparison.Ordinal) ||
+                leftAsset.LogicalSize != rightAsset.LogicalSize ||
+                leftAsset.Buckets.Count != rightAsset.Buckets.Count)
+            {
+                return false;
+            }
+
+            for (int bucketIndex = 0; bucketIndex < leftAsset.Buckets.Count; bucketIndex++)
+            {
+                LocalPresentationRasterBucket leftBucket = leftAsset.Buckets[bucketIndex];
+                LocalPresentationRasterBucket rightBucket = rightAsset.Buckets[bucketIndex];
+                if (leftBucket.Scale != rightBucket.Scale ||
+                    leftBucket.Width != rightBucket.Width ||
+                    leftBucket.Height != rightBucket.Height ||
+                    leftBucket.ByteLength != rightBucket.ByteLength ||
+                    !string.Equals(leftBucket.Sha256, rightBucket.Sha256, StringComparison.Ordinal) ||
+                    !string.Equals(leftBucket.MediaType, rightBucket.MediaType, StringComparison.Ordinal) ||
+                    !string.Equals(leftBucket.Filter, rightBucket.Filter, StringComparison.Ordinal) ||
+                    leftBucket.Mipmaps != rightBucket.Mipmaps ||
+                    leftBucket.Repeat != rightBucket.Repeat ||
+                    !string.Equals(leftBucket.ColorSpace, rightBucket.ColorSpace, StringComparison.Ordinal) ||
+                    !string.Equals(leftBucket.AlphaMode, rightBucket.AlphaMode, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     private static string? ResolveFullyQualifiedPath(string? path)
     {
         if (string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path))
@@ -843,6 +1113,12 @@ public sealed class LocalPresentationAssetPackReader : ILocalPresentationAssetPa
         Convert.ToHexString(SHA256.HashData(bytes));
 
     private static LocalPresentationAssetPackRejected Reject(
+        LocalPresentationAssetPackFailureCode code,
+        string field,
+        string message) =>
+        new(new LocalPresentationAssetPackDiagnostic(code, field, message));
+
+    private static LocalPresentationRasterPayloadRejected RejectPayload(
         LocalPresentationAssetPackFailureCode code,
         string field,
         string message) =>
