@@ -26,6 +26,13 @@ public sealed class PrivateOriginalMapBaseViewportTests
         Assert.False(PrivateOriginalMapBaseViewport.IsRequiredTextureSampling(
             global::Godot.CanvasItem.TextureFilterEnum.Nearest,
             global::Godot.CanvasItem.TextureRepeatEnum.Enabled));
+        Assert.Equal(
+            new global::Godot.Rect2(
+                global::Godot.Vector2.Zero,
+                new global::Godot.Vector2(
+                    PrivateOriginalMapBaseViewProjection.PixelWidth,
+                    PrivateOriginalMapBaseViewProjection.PixelHeight)),
+            PrivateOriginalMapBaseViewport.LogicalTextureRect);
     }
 
     [Fact]
@@ -47,9 +54,11 @@ public sealed class PrivateOriginalMapBaseViewportTests
         Assert.Equal(0, projection.OriginY);
         Assert.Equal(6, projection.PlayerColumn);
         Assert.Equal(3, projection.PlayerRow);
+        Assert.Equal(1, projection.RasterScale);
+        Assert.Equal(288, projection.RasterPixelWidth);
+        Assert.Equal(168, projection.RasterPixelHeight);
         Assert.Equal(
-            PrivateOriginalMapBaseViewProjection.PixelWidth *
-                PrivateOriginalMapBaseViewProjection.PixelHeight * 4,
+            projection.RasterPixelWidth * projection.RasterPixelHeight * 4,
             projection.RgbaBytes.Count);
         Assert.Equal(new byte[] { 255, 0, 0, 255 }, Pixel(projection, 0, 0));
         Assert.Throws<NotSupportedException>(() =>
@@ -167,11 +176,86 @@ public sealed class PrivateOriginalMapBaseViewportTests
                 atlas,
                 scale);
 
-        Assert.Equal(payloadBefore.RgbaBytes, atlasBefore.RgbaBytes);
-        Assert.Equal(payloadAfter.RgbaBytes, atlasAfter.RgbaBytes);
-        Assert.NotEqual(payloadBefore.RgbaBytes, payloadAfter.RgbaBytes);
+        Assert.Equal(scale, atlasBefore.RasterScale);
+        Assert.Equal(PrivateOriginalMapBaseViewProjection.PixelWidth * scale,
+            atlasBefore.RasterPixelWidth);
+        Assert.Equal(PrivateOriginalMapBaseViewProjection.PixelHeight * scale,
+            atlasBefore.RasterPixelHeight);
+        Assert.Equal(
+            atlasBefore.RasterPixelWidth * atlasBefore.RasterPixelHeight * 4,
+            atlasBefore.RgbaBytes.Count);
+        Assert.True(PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
+            payloadBefore,
+            atlasBefore));
+        Assert.True(PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
+            payloadAfter,
+            atlasAfter));
+        Assert.NotEqual(atlasBefore.RgbaBytes, atlasAfter.RgbaBytes);
         atlas[0] ^= 0xFF;
-        Assert.Equal(payloadBefore.RgbaBytes, atlasBefore.RgbaBytes);
+        Assert.True(PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
+            payloadBefore,
+            atlasBefore));
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    public void PhysicalAtlasProjectionPreservesSubpixelsAndFlipsTheCompleteTileAxis(int scale)
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[] block = new ushort[9];
+        block[0] = 0x0100;
+        block[1] = 0x1900;
+        PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+            [block],
+            new ushort[WorkingMapLayout.WordCount]);
+        byte[] atlas = BuildDetailedAtlas(scale);
+
+        PrivateOriginalMapBaseViewProjection projection =
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                snapshot,
+                visual.Selection,
+                atlas,
+                scale);
+
+        Assert.Equal(new byte[] { 0, 0, 0, 255 }, Pixel(projection, 0, 0));
+        Assert.Equal(
+            new byte[] { (byte)((8 * scale) - 1), (byte)((8 * scale) - 1), 0, 255 },
+            Pixel(projection, 8 * scale, 0));
+        Assert.Equal(
+            new byte[] { 0, 1, 0, 255 },
+            Pixel(projection, 0, 1));
+        Assert.Equal(
+            new byte[] { (byte)((8 * scale) - 1), (byte)((8 * scale) - 2), 0, 255 },
+            Pixel(projection, 8 * scale, 1));
+        atlas[0] = 0xFF;
+        Assert.Equal(new byte[] { 0, 0, 0, 255 }, Pixel(projection, 0, 0));
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    public void ExactNearestBindingRejectsOnePhysicalSubpixelDrift(int scale)
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+            [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+            new ushort[WorkingMapLayout.WordCount]);
+        byte[] atlas = BuildNearestAtlas(visual, scale);
+        atlas[0] ^= 0x01;
+
+        PrivateOriginalMapBaseViewProjection logical =
+            PrivateOriginalMapBaseViewProjection.Create(snapshot, visual);
+        PrivateOriginalMapBaseViewProjection physical =
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                snapshot,
+                visual.Selection,
+                atlas,
+                scale);
+
+        Assert.False(PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
+            logical,
+            physical));
     }
 
     [Fact]
@@ -271,6 +355,26 @@ public sealed class PrivateOriginalMapBaseViewportTests
                         }
                     }
                 }
+            }
+        }
+
+        return rgba;
+    }
+
+    private static byte[] BuildDetailedAtlas(int scale)
+    {
+        int logicalWidth = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalWidth;
+        int logicalHeight = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalHeight;
+        int width = logicalWidth * scale;
+        byte[] rgba = new byte[checked(width * logicalHeight * scale * 4)];
+        for (int y = 0; y < 8 * scale; y++)
+        {
+            for (int x = 0; x < 8 * scale; x++)
+            {
+                int offset = ((y * width) + x) * 4;
+                rgba[offset] = (byte)x;
+                rgba[offset + 1] = (byte)y;
+                rgba[offset + 3] = 255;
             }
         }
 
@@ -380,7 +484,7 @@ public sealed class PrivateOriginalMapBaseViewportTests
         int x,
         int y)
     {
-        int offset = ((y * PrivateOriginalMapBaseViewProjection.PixelWidth) + x) * 4;
+        int offset = ((y * projection.RasterPixelWidth) + x) * 4;
         return projection.RgbaBytes.Skip(offset).Take(4).ToArray();
     }
 }

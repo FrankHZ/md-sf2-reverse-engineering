@@ -168,13 +168,25 @@ internal static class PrivateMap3SmokeDriver
         PrivateMap3Presenter presenter)
     {
         PrivateOriginalMapBaseViewProjection? projection = presenter.BaseProjection;
-        string? expectedBucketDigest = presenter.BaseAtlasScale switch
+        int? mountedScale = presenter.BaseAtlasScale;
+        string? expectedBucketDigest = mountedScale switch
         {
             2 => PrivateLocalPresentationAssetCatalog.Map3BaseAtlas2xDigest,
             4 => PrivateLocalPresentationAssetCatalog.Map3BaseAtlas4xDigest,
             _ => null,
         };
         if (projection is null ||
+            mountedScale is not int scale ||
+            projection.RasterScale != scale ||
+            projection.RasterPixelWidth != checked(
+                PrivateOriginalMapBaseViewProjection.PixelWidth * scale) ||
+            projection.RasterPixelHeight != checked(
+                PrivateOriginalMapBaseViewProjection.PixelHeight * scale) ||
+            PrivateOriginalMapBaseViewport.LogicalTextureRect != new Rect2(
+                Vector2.Zero,
+                new Vector2(
+                    PrivateOriginalMapBaseViewProjection.PixelWidth,
+                    PrivateOriginalMapBaseViewProjection.PixelHeight)) ||
             !presenter.UsesRequiredBaseAtlasSampling ||
             !string.Equals(
                 presenter.BaseAtlasAssetId,
