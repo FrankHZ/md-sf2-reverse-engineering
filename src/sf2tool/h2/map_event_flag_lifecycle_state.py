@@ -42,9 +42,6 @@ from sf2tool.h2.map_event_predicate_results import (
 from sf2tool.h2.map_event_predicate_results import (
     build_map_event_predicate_results_contract,
 )
-from sf2tool.h2.map_event_scripted_transition_state import (
-    normalize_map_event_scripted_transition_state_later_owner_index,
-)
 from sf2tool.h2.map_events import _canonical_bytes as _map_events_canonical_bytes
 from sf2tool.h2.map_events import build_map_events_contract
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
@@ -1000,7 +997,9 @@ def _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
 def normalize_map_event_flag_lifecycle_state_later_owner_index(
     index: dict[str, Any],
 ) -> dict[str, Any]:
-    """Strictly remove this latest owner before earlier index reconstruction."""
-    return normalize_map_event_scripted_transition_state_later_owner_index(
-        _remove_map_event_flag_lifecycle_state_later_owner_index_delta(index)
+    """Strictly normalize the current index through this owner's predecessor."""
+    from sf2tool.research_index import normalize_current_index_to_owner_predecessor
+
+    return normalize_current_index_to_owner_predecessor(
+        index, owner_id=ID
     )

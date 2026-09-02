@@ -8,44 +8,18 @@ import pytest
 import sf2tool.h2.map_event_combatant_state as combatant_state_module
 from sf2tool.h2.map_event_combatant_state import (
     FIXTURE,
+    ID,
     SCHEMA,
     _remove_map_event_combatant_state_later_owner_index_delta,
     _validate_order,
     build_map_event_combatant_state_contract,
-    normalize_map_event_combatant_state_later_owner_index,
-)
-from sf2tool.h2.map_event_cross_program_flag_state import (
-    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_lifecycle_state import (
-    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_route_selection import (
-    _remove_map_event_flag_route_selection_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_item_transactions import (
-    normalize_map_event_item_transactions_later_owner_index,
-)
-from sf2tool.h2.map_event_random_battle_state import (
-    _remove_map_event_random_battle_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_scripted_transition_state import (
-    _remove_map_event_scripted_transition_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_tactical_base_quote_state import (
-    _remove_map_event_tactical_base_quote_state_later_owner_index_delta,
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
-
-
-def _remove_cross_program_flag_lifecycle_deltas(index):
-    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
-        _remove_map_event_cross_program_flag_state_later_owner_index_delta(
-            _remove_map_event_flag_route_selection_later_owner_index_delta(index)
-        )
-    )
-
+from sf2tool.research_index import (
+    _normalize_current_index_to_owner_state,
+    normalize_current_index_to_owner_predecessor,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 ROM = ROOT / "local/roms/sf2-us.bin"
@@ -176,15 +150,8 @@ def _record(index: dict[str, object], record_id: str) -> dict[str, object]:
 
 
 def test_strict_later_owner_normalizer_reconstructs_only_the_exact_delta() -> None:
-    index = _remove_map_event_random_battle_state_later_owner_index_delta(
-        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
-            _remove_map_event_scripted_transition_state_later_owner_index_delta(
-                _remove_cross_program_flag_lifecycle_deltas(
-                    load_json(INDEX)
-                )
-            )
-        )
-    )
+    raw_index = load_json(INDEX)
+    index = _normalize_current_index_to_owner_state(raw_index, owner_id=ID)
     predecessor = _remove_map_event_combatant_state_later_owner_index_delta(index)
     assert len(index["records"]) - len(predecessor["records"]) == 1
     assert "stats.combatant-getters" not in {record["id"] for record in predecessor["records"]}
@@ -202,9 +169,7 @@ def test_strict_later_owner_normalizer_reconstructs_only_the_exact_delta() -> No
         )
         == 12
     )
-    assert normalize_map_event_combatant_state_later_owner_index(index) == (
-        normalize_map_event_item_transactions_later_owner_index(predecessor)
-    )
+    assert normalize_current_index_to_owner_predecessor(raw_index, owner_id=ID) == predecessor
 
     def map20(value: dict[str, object]) -> dict[str, object]:
         return _record(value, "map.data.ms-map20-flag501-zoneevents")

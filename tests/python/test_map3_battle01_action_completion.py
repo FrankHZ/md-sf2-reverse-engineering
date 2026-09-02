@@ -6,37 +6,13 @@ from pathlib import Path
 import pytest
 
 from sf2tool.h2 import map3_battle01_action_completion as completion
-from sf2tool.h2.map_event_cross_program_flag_state import (
-    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_lifecycle_state import (
-    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_route_selection import (
-    _remove_map_event_flag_route_selection_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_scripted_transition_state import (
-    _remove_map_event_scripted_transition_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_tactical_base_quote_state import (
-    normalize_map_event_tactical_base_quote_state_later_owner_index as _normalize_later_owner_index,
-)
 from sf2tool.jsonio import load_json, validate_json
+from sf2tool.research_index import normalize_current_index_to_owner_predecessor
 
 
 def normalize_later_owner_index(index):
-    return _normalize_later_owner_index(
-        _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_cross_program_flag_lifecycle_deltas(index)
-        )
-    )
-
-
-def _remove_cross_program_flag_lifecycle_deltas(index):
-    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
-        _remove_map_event_cross_program_flag_state_later_owner_index_delta(
-            _remove_map_event_flag_route_selection_later_owner_index_delta(index)
-        )
+    return normalize_current_index_to_owner_predecessor(
+        index, owner_id="sf2-map-event-interaction-state-static-v1"
     )
 
 

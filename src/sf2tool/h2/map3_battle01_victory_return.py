@@ -18,12 +18,12 @@ from sf2tool.h2.map3_battle01_turn_finalization import (
 from sf2tool.h2.map3_battle01_turn_finalization import (
     build_map3_battle01_turn_finalization_static,
 )
-from sf2tool.h2.map_event_flag_route_selection import (
-    normalize_map_event_flag_route_selection_later_owner_index,
-)
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
-from sf2tool.research_index import listing_symbol_addresses
+from sf2tool.research_index import (
+    listing_symbol_addresses,
+    normalize_current_index_to_owner_predecessor,
+)
 from sf2tool.rom import inspect_rom
 
 ID = "sf2-map3-battle01-victory-return-static-v1"
@@ -32,6 +32,7 @@ SCHEMA = repo_path("schemas/h2/map3-battle01-victory-return-static-fixture.schem
 ROM_MANIFEST = repo_path("manifests/roms/sf2-us.json")
 TOOLCHAIN = repo_path("manifests/toolchain.json")
 RESEARCH_INDEX = repo_path("manifests/research-index.json")
+_INTERACTION_OWNER_ID = "sf2-map-event-interaction-state-static-v1"
 
 _LISTING = Path("build/sf2build-h1.lst")
 _H1_BINARY = Path("build/sf2build-h1.bin")
@@ -1127,7 +1128,9 @@ def _normalize_request_consumption_later_owner_index(index: dict[str, Any]) -> d
     _remove_request_consumption_later_owner_index_delta(
         deepcopy(index), require_document_terminal=False
     )
-    normalized = normalize_map_event_flag_route_selection_later_owner_index(index)
+    normalized = normalize_current_index_to_owner_predecessor(
+        index, owner_id=_INTERACTION_OWNER_ID
+    )
     return _remove_request_consumption_later_owner_index_delta(
         normalized, require_document_terminal=True
     )

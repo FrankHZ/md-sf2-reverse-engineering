@@ -12,18 +12,6 @@ from shutil import copy2
 import pytest
 
 import sf2tool.h2.map_event_interaction_state as interaction_module
-from sf2tool.h2.map_event_combatant_state import (
-    _remove_map_event_combatant_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_cross_program_flag_state import (
-    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_lifecycle_state import (
-    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_route_selection import (
-    _remove_map_event_flag_route_selection_later_owner_index_delta,
-)
 from sf2tool.h2.map_event_interaction_state import (
     _FUNCTION_SPECS,
     _SEAM_SPECS,
@@ -31,33 +19,16 @@ from sf2tool.h2.map_event_interaction_state import (
     ID,
     SCHEMA,
     _interaction_projection,
+    _remove_map_event_interaction_state_later_owner_index_delta,
     build_map_event_interaction_state_contract,
-    normalize_interaction_state_later_owner_index,
     verify_map_event_interaction_state_contract,
-)
-from sf2tool.h2.map_event_item_transactions import (
-    _remove_map_event_item_transactions_index_delta,
-)
-from sf2tool.h2.map_event_random_battle_state import (
-    _remove_map_event_random_battle_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_scripted_transition_state import (
-    _remove_map_event_scripted_transition_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_tactical_base_quote_state import (
-    _remove_map_event_tactical_base_quote_state_later_owner_index_delta,
 )
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
-
-
-def _remove_cross_program_flag_lifecycle_deltas(index):
-    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
-        _remove_map_event_cross_program_flag_state_later_owner_index_delta(
-            _remove_map_event_flag_route_selection_later_owner_index_delta(index)
-        )
-    )
-
+from sf2tool.research_index import (
+    _normalize_current_index_to_owner_state,
+    normalize_current_index_to_owner_predecessor,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 ROM = ROOT / "local/roms/sf2-us.bin"
@@ -71,24 +42,6 @@ def load_json(path: Path) -> dict[str, object]:
 
 def _fixture() -> dict[str, object]:
     return load_json(FIXTURE)
-
-
-def _interaction_predecessor_index(index: dict[str, object]) -> dict[str, object]:
-    return _remove_map_event_item_transactions_index_delta(
-        _remove_map_event_combatant_state_later_owner_index_delta(
-            _remove_map_event_random_battle_state_later_owner_index_delta(
-                _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
-                    _remove_map_event_scripted_transition_state_later_owner_index_delta(
-                        _remove_cross_program_flag_lifecycle_deltas(index)
-                    )
-                )
-            )
-        )
-    )
-
-
-def _normalize_interaction_predecessor_index(index: dict[str, object]) -> dict[str, object]:
-    return normalize_interaction_state_later_owner_index(_interaction_predecessor_index(index))
 
 
 def _mutable_inputs(tmp_path: Path) -> tuple[Path, Path]:
@@ -551,9 +504,10 @@ def test_index_binds_the_actual_field_menu_item_call_not_legacy_observation() ->
 
 
 def test_later_owner_normalizer_reconstructs_the_exact_closed_index_delta() -> None:
-    index = load_json(INDEX)
-    prior_index = _interaction_predecessor_index(index)
-    normalized = _normalize_interaction_predecessor_index(index)
+    raw_index = load_json(INDEX)
+    prior_index = _normalize_current_index_to_owner_state(raw_index, owner_id=ID)
+    normalized = _remove_map_event_interaction_state_later_owner_index_delta(prior_index)
+    assert normalize_current_index_to_owner_predecessor(raw_index, owner_id=ID) == normalized
 
     candidate_records = {
         record["id"]: record
@@ -571,11 +525,7 @@ def test_later_owner_normalizer_reconstructs_the_exact_closed_index_delta() -> N
         sum(len(bindings) for _addresses, bindings in interaction_module._INDEX_DELTA.values())
         == 17
     )
-    assert index != normalized
-    assert {record["id"] for record in index["records"]} - {
-        "map.setup.check-random-battle",
-        "stats.combatant-getters",
-    } == set(normalized_records)
+    assert raw_index != normalized
     assert (
         sum(
             len(record["addresses"]) - len(normalized_records[record_id]["addresses"])

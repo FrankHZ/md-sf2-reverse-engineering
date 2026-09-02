@@ -11,7 +11,6 @@ from typing import Any
 
 from sf2tool.h2.map_event_combatant_state import (
     canonical_json_bytes,
-    normalize_map_event_combatant_state_later_owner_index,
 )
 from sf2tool.h2.map_event_direct_handoff import _h1_instruction_rows, _normalise_statement
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
@@ -774,7 +773,9 @@ def _remove_map_event_random_battle_state_later_owner_index_delta(
 def normalize_map_event_random_battle_state_later_owner_index(
     index: dict[str, Any],
 ) -> dict[str, Any]:
-    """Strictly remove this exact later-owner delta then delegate to predecessors."""
-    return normalize_map_event_combatant_state_later_owner_index(
-        _remove_map_event_random_battle_state_later_owner_index_delta(index)
+    """Strictly normalize the current index through this owner's predecessor."""
+    from sf2tool.research_index import normalize_current_index_to_owner_predecessor
+
+    return normalize_current_index_to_owner_predecessor(
+        index, owner_id=ID
     )

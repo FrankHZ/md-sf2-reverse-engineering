@@ -9,15 +9,6 @@ from shutil import copy2
 import pytest
 
 import sf2tool.h2.map_event_scripted_transition_state as transition_module
-from sf2tool.h2.map_event_cross_program_flag_state import (
-    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_lifecycle_state import (
-    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_route_selection import (
-    _remove_map_event_flag_route_selection_later_owner_index_delta,
-)
 from sf2tool.h2.map_event_scripted_transition_state import (
     _PREDECESSOR_INDEX_SHA256,
     FIXTURE,
@@ -29,20 +20,14 @@ from sf2tool.h2.map_event_scripted_transition_state import (
     _validate_order,
     build_map_event_scripted_transition_state_contract,
     canonical_json_bytes,
-    normalize_map_event_scripted_transition_state_later_owner_index,
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
-
-
-def _remove_cross_program_flag_lifecycle_deltas(index):
-    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
-        _remove_map_event_cross_program_flag_state_later_owner_index_delta(
-            _remove_map_event_flag_route_selection_later_owner_index_delta(index)
-        )
-    )
-
+from sf2tool.research_index import (
+    _normalize_current_index_to_owner_state,
+    normalize_current_index_to_owner_predecessor,
+)
 
 ROM = repo_path("local/roms/sf2-us.bin")
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
@@ -238,9 +223,8 @@ def test_id_and_fixture_path_are_stable() -> None:
 
 
 def test_latest_index_normalizer_removes_only_this_exact_delta() -> None:
-    current = _remove_cross_program_flag_lifecycle_deltas(
-        load_json(RESEARCH_INDEX)
-    )
+    raw_index = load_json(RESEARCH_INDEX)
+    current = _normalize_current_index_to_owner_state(raw_index, owner_id=ID)
     predecessor = _remove_map_event_scripted_transition_state_later_owner_index_delta(current)
     assert transition_module._sha(canonical_json_bytes(predecessor)) == _PREDECESSOR_INDEX_SHA256
     current_records = {row["id"]: row for row in current["records"]}
@@ -269,4 +253,4 @@ def test_latest_index_normalizer_removes_only_this_exact_delta() -> None:
         "map.script-screen-presentation.set-quake",
         "map.script-screen-presentation.flash-white",
     }
-    assert normalize_map_event_scripted_transition_state_later_owner_index(current)
+    assert normalize_current_index_to_owner_predecessor(raw_index, owner_id=ID) == predecessor

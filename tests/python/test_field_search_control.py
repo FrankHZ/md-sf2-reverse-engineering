@@ -10,33 +10,10 @@ from typing import Any
 import pytest
 
 import sf2tool.h2.field_search_control as field_search
-from sf2tool.h2.map_event_cross_program_flag_state import (
-    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_lifecycle_state import (
-    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_route_selection import (
-    _remove_map_event_flag_route_selection_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_scripted_transition_state import (
-    _remove_map_event_scripted_transition_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_tactical_base_quote_state import (
-    normalize_map_event_tactical_base_quote_state_later_owner_index as _normalize_later_owner_index,
-)
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
 from sf2tool.paths import repo_path
-
-
-def _remove_cross_program_flag_lifecycle_deltas(index):
-    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
-        _remove_map_event_cross_program_flag_state_later_owner_index_delta(
-            _remove_map_event_flag_route_selection_later_owner_index_delta(index)
-        )
-    )
-
+from sf2tool.research_index import normalize_current_index_to_owner_predecessor
 
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
 ROM = repo_path("local/roms/sf2-us.bin")
@@ -61,10 +38,8 @@ _REQUEST_STATE_DOCUMENT = "docs/research/map-event-request-state.md"
 
 
 def normalize_later_owner_index(index):
-    return _normalize_later_owner_index(
-        _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_cross_program_flag_lifecycle_deltas(index)
-        )
+    return normalize_current_index_to_owner_predecessor(
+        index, owner_id="sf2-map-event-interaction-state-static-v1"
     )
 
 

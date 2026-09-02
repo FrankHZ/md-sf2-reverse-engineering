@@ -1277,9 +1277,9 @@ def _remove_map_event_item_transactions_index_delta(index: dict[str, Any]) -> di
 def normalize_map_event_item_transactions_later_owner_index(
     index: dict[str, Any],
 ) -> dict[str, Any]:
-    """Strictly remove this later-owner delta, then normalize the accepted predecessor."""
-    from sf2tool.h2.map_event_interaction_state import normalize_interaction_state_later_owner_index
+    """Strictly normalize the current index through this owner's predecessor."""
+    from sf2tool.research_index import normalize_current_index_to_owner_predecessor
 
-    return normalize_interaction_state_later_owner_index(
-        _remove_map_event_item_transactions_index_delta(index)
+    return normalize_current_index_to_owner_predecessor(
+        index, owner_id=ID
     )
