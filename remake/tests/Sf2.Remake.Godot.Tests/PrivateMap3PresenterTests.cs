@@ -46,6 +46,24 @@ public sealed class PrivateMap3PresenterTests
     }
 
     [Fact]
+    public void PrivateStatusWrapsInsideTheLeftColumnBeforeTheBattlePanel()
+    {
+        float rightEdge = PrivateMap3Presenter.StatusX +
+            PrivateMap3Presenter.StatusSize.X;
+
+        Assert.Equal(24, PrivateMap3Presenter.StatusX);
+        Assert.Equal(new global::Godot.Vector2(552, 96), PrivateMap3Presenter.StatusSize);
+        Assert.True(
+            rightEdge < PublicSyntheticBattlePresenter.PanelBounds.Position.X);
+        Assert.Equal(
+            24,
+            PublicSyntheticBattlePresenter.PanelBounds.Position.X - rightEdge);
+        Assert.Equal(
+            global::Godot.TextServer.AutowrapMode.WordSmart,
+            PrivateMap3Presenter.StatusAutowrapMode);
+    }
+
+    [Fact]
     public void UnavailablePlansPreserveTheirExactDisclosureWithoutCreatingAViewport()
     {
         PrivateMap3PresentationPlan privatePlan =
@@ -71,6 +89,39 @@ public sealed class PrivateMap3PresenterTests
             Assert.False(plan.IncludeBaseVisualViewport);
             Assert.Equal(105, plan.StatusY);
         }
+    }
+
+    [Fact]
+    public void BaseAtlasConsumerIsAnExplicitBoundedPresenterSurface()
+    {
+        System.Reflection.MethodInfo? bind = typeof(PrivateMap3Presenter).GetMethod(
+            "TryBindBaseAtlas",
+            System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic);
+
+        Assert.NotNull(bind);
+        Assert.Equal(typeof(bool), bind.ReturnType);
+        Assert.Equal(
+            new[]
+            {
+                typeof(PrivateLocalPresentationRasterMount),
+                typeof(PrivateOriginalMapSessionSnapshot),
+                typeof(PrivateLocalPresentationAssetMountDiagnostic).MakeByRefType(),
+            },
+            bind.GetParameters().Select(parameter => parameter.ParameterType));
+        Assert.Equal(
+            "SF2_MAP3_PRIVATE_LOCAL_BASE_ATLAS_SMOKE ",
+            Map3Root.PrivateBaseAtlasSmokeMarker);
+        Assert.Equal(
+            "private-local-map3-base-atlas-diagnostic-consumer-v1",
+            Map3Root.PrivateBaseAtlasCapability);
+        Assert.DoesNotContain(
+            typeof(PrivateMap3Presenter).GetProperties(
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic),
+            property => property.Name.Contains("Path", StringComparison.OrdinalIgnoreCase) ||
+                property.Name.Contains("Root", StringComparison.OrdinalIgnoreCase) ||
+                property.Name.Contains("Pixel", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

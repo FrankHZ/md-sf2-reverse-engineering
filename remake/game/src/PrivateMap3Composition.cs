@@ -26,8 +26,12 @@ public sealed partial class Map3Root
         "SF2_MAP3_PRIVATE_LOCAL_STEP_COPY_SMOKE ";
     public const string PrivateAreaSmokeMarker =
         "SF2_MAP3_PRIVATE_LOCAL_AREA_SMOKE ";
+    public const string PrivateBaseAtlasSmokeMarker =
+        "SF2_MAP3_PRIVATE_LOCAL_BASE_ATLAS_SMOKE ";
     public const string PrivateViewCapability =
         "private-local-map3-traversal-diagnostic-view-v1";
+    public const string PrivateBaseAtlasCapability =
+        "private-local-map3-base-atlas-diagnostic-consumer-v1";
     private const string PrivateStageMarker = "SF2_MAP3_PRIVATE_LOCAL_STAGE ";
 
     private Map3RuntimeProfile? _runtimeProfile;
@@ -84,13 +88,15 @@ public sealed partial class Map3Root
             runSmoke);
         PrivateLocalPresentationRasterMount? hudPreview = null;
         PrivateLocalPresentationRasterMount? tacticalCursor = null;
-        if (selection.PrivateHudPreviewRequested &&
+        PrivateLocalPresentationRasterMount? baseAtlas = null;
+        if ((selection.PrivateHudPreviewRequested || selection.PrivateBaseAtlasRequested) &&
             !TryPreparePrivatePresentationAssets(
                 selection,
                 importRequest,
                 ref source,
                 out hudPreview,
-                out tacticalCursor))
+                out tacticalCursor,
+                out baseAtlas))
         {
             return;
         }
@@ -103,6 +109,7 @@ public sealed partial class Map3Root
                 importRequest,
                 hudPreview,
                 tacticalCursor,
+                baseAtlas,
                 runSmoke,
                 sessionStarted);
             return;
@@ -151,6 +158,7 @@ public sealed partial class Map3Root
         OriginalMapImportRequest importRequest,
         PrivateLocalPresentationRasterMount? hudPreview,
         PrivateLocalPresentationRasterMount? tacticalCursor,
+        PrivateLocalPresentationRasterMount? baseAtlas,
         bool runSmoke,
         long sessionStarted)
     {
@@ -230,6 +238,19 @@ public sealed partial class Map3Root
             started.Session.PrivateOriginalMapBattleBridge);
         PrivateMap3Presenter presenter = _privatePresenter!;
         presenter.BindVisualDefinition(_privateVisualBinding.Definition);
+        if (baseAtlas is not null &&
+            !presenter.TryBindBaseAtlas(
+                baseAtlas,
+                started.Session.PrivateOriginalMapSnapshot,
+                out PrivateLocalPresentationAssetMountDiagnostic? atlasDiagnostic))
+        {
+            FailPrivateStartup(
+                $"PrivateLocal Map 3 base atlas unavailable ({atlasDiagnostic!.Code}).",
+                runSmoke,
+                "private-local");
+            return;
+        }
+
         presenter.Project(started.Session.PrivateOriginalMapSnapshot, "Ready");
         if (runSmoke)
         {
@@ -248,10 +269,12 @@ public sealed partial class Map3Root
         OriginalMapImportRequest importRequest,
         ref IOriginalMapImportSource importSource,
         out PrivateLocalPresentationRasterMount? hudPreview,
-        out PrivateLocalPresentationRasterMount? tacticalCursor)
+        out PrivateLocalPresentationRasterMount? tacticalCursor,
+        out PrivateLocalPresentationRasterMount? baseAtlas)
     {
         hudPreview = null;
         tacticalCursor = null;
+        baseAtlas = null;
         OriginalMapImportResult importResult = importSource.Admit(importRequest);
         if (importResult is not OriginalMapImportAccepted importAccepted)
         {
@@ -280,54 +303,80 @@ public sealed partial class Map3Root
             LocalPresentationAssetPackRejected rejected =
                 (LocalPresentationAssetPackRejected)packResult;
             FailPrivateStartup(
-                $"PrivateLocal HUD preview unavailable ({rejected.Diagnostic.Code}).",
+                $"PrivateLocal presentation unavailable ({rejected.Diagnostic.Code}).",
                 selection.PrivateSmokeRequested,
                 "private-local");
             return false;
         }
 
         PrivateLocalPresentationAssetCatalog catalog = new(packReader);
-        PrivateLocalPresentationAssetMountResult previewResult =
-            catalog.MountPreview(
-                packRequest,
-                acceptedPack,
-                EffectivePhysicalScale());
-        if (previewResult is not PrivateLocalPresentationAssetMounted mountedPreview)
+        double effectivePhysicalScale = EffectivePhysicalScale();
+        if (selection.PrivateHudPreviewRequested)
         {
-            PrivateLocalPresentationAssetMountRejected rejected =
-                (PrivateLocalPresentationAssetMountRejected)previewResult;
-            FailPrivateStartup(
-                $"PrivateLocal HUD preview unavailable ({rejected.Diagnostic.Code}).",
-                selection.PrivateSmokeRequested,
-                "private-local");
-            return false;
-        }
-
-        if (selection.PrivateBaseViewRequested)
-        {
-            PrivateLocalPresentationAssetMountResult cursorResult =
-                catalog.MountTacticalCursor(
+            PrivateLocalPresentationAssetMountResult previewResult =
+                catalog.MountPreview(
                     packRequest,
                     acceptedPack,
-                    EffectivePhysicalScale());
-            if (cursorResult is not PrivateLocalPresentationAssetMounted mountedCursor)
+                    effectivePhysicalScale);
+            if (previewResult is not PrivateLocalPresentationAssetMounted mountedPreview)
             {
                 PrivateLocalPresentationAssetMountRejected rejected =
-                    (PrivateLocalPresentationAssetMountRejected)cursorResult;
+                    (PrivateLocalPresentationAssetMountRejected)previewResult;
                 FailPrivateStartup(
-                    $"PrivateLocal tactical cursor unavailable ({rejected.Diagnostic.Code}).",
+                    $"PrivateLocal HUD preview unavailable ({rejected.Diagnostic.Code}).",
                     selection.PrivateSmokeRequested,
                     "private-local");
                 return false;
             }
 
-            tacticalCursor = mountedCursor.Asset;
+            if (selection.PrivateBaseViewRequested)
+            {
+                PrivateLocalPresentationAssetMountResult cursorResult =
+                    catalog.MountTacticalCursor(
+                        packRequest,
+                        acceptedPack,
+                        effectivePhysicalScale);
+                if (cursorResult is not PrivateLocalPresentationAssetMounted mountedCursor)
+                {
+                    PrivateLocalPresentationAssetMountRejected rejected =
+                        (PrivateLocalPresentationAssetMountRejected)cursorResult;
+                    FailPrivateStartup(
+                        $"PrivateLocal tactical cursor unavailable ({rejected.Diagnostic.Code}).",
+                        selection.PrivateSmokeRequested,
+                        "private-local");
+                    return false;
+                }
+
+                tacticalCursor = mountedCursor.Asset;
+            }
+
+            hudPreview = mountedPreview.Asset;
+        }
+
+        if (selection.PrivateBaseAtlasRequested)
+        {
+            PrivateLocalPresentationAssetMountResult atlasResult =
+                catalog.MountMap3BaseAtlas(
+                    packRequest,
+                    acceptedPack,
+                    effectivePhysicalScale);
+            if (atlasResult is not PrivateLocalPresentationAssetMounted mountedAtlas)
+            {
+                PrivateLocalPresentationAssetMountRejected rejected =
+                    (PrivateLocalPresentationAssetMountRejected)atlasResult;
+                FailPrivateStartup(
+                    $"PrivateLocal Map 3 base atlas unavailable ({rejected.Diagnostic.Code}).",
+                    selection.PrivateSmokeRequested,
+                    "private-local");
+                return false;
+            }
+
+            baseAtlas = mountedAtlas.Asset;
         }
 
         importSource = new PreadmittedOriginalMapImportSource(
             importRequest,
             importAccepted);
-        hudPreview = mountedPreview.Asset;
         return true;
     }
 

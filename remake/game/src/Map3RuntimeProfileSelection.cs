@@ -24,6 +24,7 @@ internal sealed record Map3RuntimeProfileSelection
 
     internal const string PrivateSmokeOption = "--private-map3-smoke";
     internal const string PrivateBaseViewOption = "--private-map3-base-view";
+    internal const string PrivateBaseAtlasOption = "--private-map3-base-atlas";
     internal const string PrivateHudPreviewOption = "--private-hud-preview";
 
     private Map3RuntimeProfileSelection(
@@ -32,6 +33,7 @@ internal sealed record Map3RuntimeProfileSelection
         string? canonicalImportPath,
         bool privateSmokeRequested,
         bool privateBaseViewRequested,
+        bool privateBaseAtlasRequested,
         string? originalRomPath,
         string? tilesetMetadataPath,
         string? paletteMetadataPath,
@@ -46,6 +48,7 @@ internal sealed record Map3RuntimeProfileSelection
         CanonicalImportPath = canonicalImportPath;
         PrivateSmokeRequested = privateSmokeRequested;
         PrivateBaseViewRequested = privateBaseViewRequested;
+        PrivateBaseAtlasRequested = privateBaseAtlasRequested;
         OriginalRomPath = originalRomPath;
         TilesetMetadataPath = tilesetMetadataPath;
         PaletteMetadataPath = paletteMetadataPath;
@@ -65,6 +68,8 @@ internal sealed record Map3RuntimeProfileSelection
     internal bool PrivateSmokeRequested { get; }
 
     internal bool PrivateBaseViewRequested { get; }
+
+    internal bool PrivateBaseAtlasRequested { get; }
 
     internal string? OriginalRomPath { get; }
 
@@ -88,6 +93,7 @@ internal sealed record Map3RuntimeProfileSelection
         Dictionary<string, string> values = new(StringComparer.Ordinal);
         bool privateSmokeRequested = false;
         bool privateBaseViewRequested = false;
+        bool privateBaseAtlasRequested = false;
         bool privateHudPreviewRequested = false;
 
         foreach (string argument in arguments)
@@ -111,6 +117,22 @@ internal sealed record Map3RuntimeProfileSelection
                 }
 
                 privateBaseViewRequested = true;
+                continue;
+            }
+
+            if (string.Equals(argument, PrivateBaseAtlasOption, StringComparison.Ordinal))
+            {
+                if (privateBaseAtlasRequested)
+                {
+                    return Unavailable(
+                        ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
+                        privateSmokeRequested,
+                        privateHudPreviewRequested,
+                        "The private base-atlas option must appear at most once.",
+                        privateBaseAtlasRequested: true);
+                }
+
+                privateBaseAtlasRequested = true;
                 continue;
             }
 
@@ -165,6 +187,7 @@ internal sealed record Map3RuntimeProfileSelection
             values.ContainsKey(PresentationAssetCommitOption) ||
             values.ContainsKey(PresentationManifestDigestOption) ||
             privateBaseViewRequested ||
+            privateBaseAtlasRequested ||
             privateHudPreviewRequested ||
             privateSmokeRequested;
 
@@ -210,22 +233,33 @@ internal sealed record Map3RuntimeProfileSelection
                 "PrivateLocal requires one fully qualified ignored canonical import path.");
         }
 
-        bool hasAnyPresentationValue = values.ContainsKey(PresentationAssetRootOption) ||
-            values.ContainsKey(PresentationAssetCommitOption) ||
-            values.ContainsKey(PresentationManifestDigestOption);
-        string? presentationAssetRoot = null;
-        string? presentationAssetCommit = null;
-        string? presentationManifestDigest = null;
-        if (!privateHudPreviewRequested && hasAnyPresentationValue)
+        if (privateBaseAtlasRequested && !privateBaseViewRequested)
         {
             return Unavailable(
                 profile,
                 privateSmokeRequested,
                 privateHudPreviewRequested,
-                "Private presentation asset values require explicit private HUD preview selection.");
+                "Private Map 3 base-atlas presentation requires explicit private base-view selection.",
+                privateBaseAtlasRequested: true);
         }
 
-        if (privateHudPreviewRequested &&
+        bool hasAnyPresentationValue = values.ContainsKey(PresentationAssetRootOption) ||
+            values.ContainsKey(PresentationAssetCommitOption) ||
+            values.ContainsKey(PresentationManifestDigestOption);
+        bool presentationRequested = privateHudPreviewRequested || privateBaseAtlasRequested;
+        string? presentationAssetRoot = null;
+        string? presentationAssetCommit = null;
+        string? presentationManifestDigest = null;
+        if (!presentationRequested && hasAnyPresentationValue)
+        {
+            return Unavailable(
+                profile,
+                privateSmokeRequested,
+                privateHudPreviewRequested,
+                "Private presentation asset values require explicit HUD preview or Map 3 base-atlas selection.");
+        }
+
+        if (presentationRequested &&
             (!TryNormalizeRequiredPath(
                 values.GetValueOrDefault(PresentationAssetRootOption),
                 out presentationAssetRoot) ||
@@ -240,7 +274,8 @@ internal sealed record Map3RuntimeProfileSelection
                 profile,
                 privateSmokeRequested,
                 privateHudPreviewRequested,
-                "Private HUD preview requires one fully qualified asset root, canonical commit, and canonical manifest digest.");
+                "Private presentation requires one fully qualified asset root, canonical commit, and canonical manifest digest.",
+                privateBaseAtlasRequested);
         }
 
         bool hasAnyVisualPath = values.ContainsKey(RomOption) ||
@@ -259,6 +294,7 @@ internal sealed record Map3RuntimeProfileSelection
                     canonicalImportPath,
                     privateSmokeRequested,
                     privateHudPreviewRequested,
+                    privateBaseAtlasRequested,
                     presentationAssetRoot,
                     presentationAssetCommit,
                     presentationManifestDigest);
@@ -287,6 +323,7 @@ internal sealed record Map3RuntimeProfileSelection
             canonicalImportPath,
             privateSmokeRequested,
             privateBaseViewRequested: true,
+            privateBaseAtlasRequested,
             originalRomPath,
             tilesetMetadataPath,
             paletteMetadataPath,
@@ -359,6 +396,7 @@ internal sealed record Map3RuntimeProfileSelection
         string? canonicalImportPath,
         bool privateSmokeRequested,
         bool privateHudPreviewRequested = false,
+        bool privateBaseAtlasRequested = false,
         string? presentationAssetRoot = null,
         string? presentationAssetCommit = null,
         string? presentationManifestDigest = null) =>
@@ -368,6 +406,7 @@ internal sealed record Map3RuntimeProfileSelection
             canonicalImportPath,
             privateSmokeRequested,
             privateBaseViewRequested: false,
+            privateBaseAtlasRequested,
             originalRomPath: null,
             tilesetMetadataPath: null,
             paletteMetadataPath: null,
@@ -381,13 +420,15 @@ internal sealed record Map3RuntimeProfileSelection
         Map3RuntimeProfile? profile,
         bool privateSmokeRequested,
         bool privateHudPreviewRequested,
-        string diagnostic) =>
+        string diagnostic,
+        bool privateBaseAtlasRequested = false) =>
         new(
             profile,
             false,
             canonicalImportPath: null,
             privateSmokeRequested,
             privateBaseViewRequested: false,
+            privateBaseAtlasRequested,
             originalRomPath: null,
             tilesetMetadataPath: null,
             paletteMetadataPath: null,

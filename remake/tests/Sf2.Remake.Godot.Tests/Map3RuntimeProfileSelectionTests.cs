@@ -8,6 +8,10 @@ public sealed class Map3RuntimeProfileSelectionTests
     private const string AssetCommit = "d221cf3e89e90e647467415fc58edc38faad04f8";
     private const string ManifestDigest =
         "308C9E2617D0591E6B535F8BB6A9C6EC959A6B873F2495FB8B36CE7C99336897";
+    private const string AtlasAssetCommit =
+        "6cf2973698e3a90735a2e3eb03bd85c50a47e4e3";
+    private const string AtlasManifestDigest =
+        "262C2F8A9A17CC843392F8818841F018C45B538610AEC41C75D38A018E829D78";
 
     [Fact]
     public void EmptyArgumentsKeepThePublicSyntheticDefault()
@@ -19,6 +23,7 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.Null(selection.CanonicalImportPath);
         Assert.False(selection.PrivateSmokeRequested);
         Assert.False(selection.PrivateBaseViewRequested);
+        Assert.False(selection.PrivateBaseAtlasRequested);
         Assert.Null(selection.OriginalRomPath);
         Assert.Null(selection.TilesetMetadataPath);
         Assert.Null(selection.PaletteMetadataPath);
@@ -57,6 +62,7 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.Equal(path, selection.CanonicalImportPath);
         Assert.True(selection.PrivateSmokeRequested);
         Assert.False(selection.PrivateBaseViewRequested);
+        Assert.False(selection.PrivateBaseAtlasRequested);
         Assert.Null(selection.Diagnostic);
     }
 
@@ -78,6 +84,7 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.True(selection.IsAvailable);
         Assert.Equal(Map3RuntimeProfile.PrivateLocal, selection.RequestedProfile);
         Assert.True(selection.PrivateHudPreviewRequested);
+        Assert.False(selection.PrivateBaseAtlasRequested);
         Assert.Equal(assetRoot, selection.PresentationAssetRoot);
         Assert.Equal(AssetCommit, selection.PresentationAssetCommit);
         Assert.Equal(ManifestDigest, selection.PresentationManifestDigest);
@@ -170,11 +177,112 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.Equal(Map3RuntimeProfile.PrivateLocal, selection.RequestedProfile);
         Assert.Equal(canonical, selection.CanonicalImportPath);
         Assert.True(selection.PrivateBaseViewRequested);
+        Assert.False(selection.PrivateBaseAtlasRequested);
         Assert.Equal(rom, selection.OriginalRomPath);
         Assert.Equal(tilesets, selection.TilesetMetadataPath);
         Assert.Equal(palettes, selection.PaletteMetadataPath);
         Assert.True(selection.PrivateSmokeRequested);
         Assert.Null(selection.Diagnostic);
+    }
+
+    [Fact]
+    public void ExplicitPrivateBaseAtlasRequiresBaseViewAndCompletePresentationPins()
+    {
+        string canonical = Absolute("canonical-map-import.json");
+        string rom = Absolute("sf2.bin");
+        string tilesets = Absolute("map-tilesets.json");
+        string palettes = Absolute("map-palettes.json");
+        string assetRoot = Absolute("presentation-assets");
+
+        Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
+            [
+                "--runtime-profile=private-local",
+                $"--canonical-map-import={canonical}",
+                Map3RuntimeProfileSelection.PrivateBaseViewOption,
+                Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
+                $"--original-rom={rom}",
+                $"--map-tileset-metadata={tilesets}",
+                $"--map-palette-metadata={palettes}",
+                $"--presentation-asset-root={assetRoot}",
+                $"--presentation-asset-commit={AtlasAssetCommit}",
+                $"--presentation-manifest-sha256={AtlasManifestDigest}",
+            ]);
+
+        Assert.True(selection.IsAvailable);
+        Assert.True(selection.PrivateBaseViewRequested);
+        Assert.True(selection.PrivateBaseAtlasRequested);
+        Assert.False(selection.PrivateHudPreviewRequested);
+        Assert.Equal(assetRoot, selection.PresentationAssetRoot);
+        Assert.Equal(AtlasAssetCommit, selection.PresentationAssetCommit);
+        Assert.Equal(AtlasManifestDigest, selection.PresentationManifestDigest);
+    }
+
+    [Fact]
+    public void HudAndBaseAtlasMayShareOneCompletePresentationSelection()
+    {
+        string canonical = Absolute("canonical-map-import.json");
+        string rom = Absolute("sf2.bin");
+        string tilesets = Absolute("map-tilesets.json");
+        string palettes = Absolute("map-palettes.json");
+        string assetRoot = Absolute("presentation-assets");
+
+        Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
+            [
+                "--runtime-profile=private-local",
+                $"--canonical-map-import={canonical}",
+                Map3RuntimeProfileSelection.PrivateBaseViewOption,
+                Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
+                Map3RuntimeProfileSelection.PrivateHudPreviewOption,
+                $"--original-rom={rom}",
+                $"--map-tileset-metadata={tilesets}",
+                $"--map-palette-metadata={palettes}",
+                $"--presentation-asset-root={assetRoot}",
+                $"--presentation-asset-commit={AtlasAssetCommit}",
+                $"--presentation-manifest-sha256={AtlasManifestDigest}",
+            ]);
+
+        Assert.True(selection.IsAvailable);
+        Assert.True(selection.PrivateBaseAtlasRequested);
+        Assert.True(selection.PrivateHudPreviewRequested);
+        Assert.Equal(assetRoot, selection.PresentationAssetRoot);
+    }
+
+    [Theory]
+    [InlineData("missing-base-view")]
+    [InlineData("missing-pins")]
+    [InlineData("duplicate-atlas")]
+    public void IncompleteOrDuplicateBaseAtlasSelectionIsUnavailableAndPathFree(string mutation)
+    {
+        string canonical = Absolute("canonical-map-import.json");
+        string assetRoot = Absolute("presentation-assets");
+        List<string> arguments =
+        [
+            "--runtime-profile=private-local",
+            $"--canonical-map-import={canonical}",
+            Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
+        ];
+        if (mutation != "missing-base-view")
+        {
+            arguments.Add(Map3RuntimeProfileSelection.PrivateBaseViewOption);
+        }
+
+        if (mutation != "missing-pins")
+        {
+            arguments.Add($"--presentation-asset-root={assetRoot}");
+            arguments.Add($"--presentation-asset-commit={AtlasAssetCommit}");
+            arguments.Add($"--presentation-manifest-sha256={AtlasManifestDigest}");
+        }
+
+        if (mutation == "duplicate-atlas")
+        {
+            arguments.Add(Map3RuntimeProfileSelection.PrivateBaseAtlasOption);
+        }
+
+        Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(arguments);
+
+        Assert.False(selection.IsAvailable);
+        Assert.Null(selection.PresentationAssetRoot);
+        Assert.DoesNotContain(assetRoot, selection.Diagnostic, StringComparison.Ordinal);
     }
 
     [Theory]

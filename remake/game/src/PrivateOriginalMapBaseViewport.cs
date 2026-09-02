@@ -25,6 +25,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
 
     private readonly ReadOnlyCollection<byte> _rgbaBytes;
 
+    private readonly record struct SourcePixel(byte Red, byte Green, byte Blue, byte Alpha);
+
     private PrivateOriginalMapBaseViewProjection(
         MapId map,
         int originX,
@@ -68,6 +70,61 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                 nameof(visualDefinition));
         }
 
+        return CreateCore(
+            snapshot,
+            visualDefinition.Selection,
+            (slot, localTile, row, column) =>
+                ResolvePayloadPixel(visualDefinition, slot, localTile, row, column));
+    }
+
+    internal static PrivateOriginalMapBaseViewProjection CreateFromAtlas(
+        PrivateOriginalMapSessionSnapshot snapshot,
+        OriginalMapVisualResourceSelection selection,
+        IReadOnlyList<byte> atlasRgbaBytes,
+        int scale)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(selection);
+        ArgumentNullException.ThrowIfNull(atlasRgbaBytes);
+        if (!LocalPresentationAssetPackAdmission.BucketScales.Contains(scale))
+        {
+            throw new ArgumentOutOfRangeException(nameof(scale));
+        }
+
+        int atlasWidth = checked(PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalWidth * scale);
+        int atlasHeight = checked(PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalHeight * scale);
+        if (atlasRgbaBytes.Count != checked(atlasWidth * atlasHeight * 4))
+        {
+            throw new ArgumentException(
+                "The private Map 3 base-atlas RGBA payload shape drifted.",
+                nameof(atlasRgbaBytes));
+        }
+
+        return CreateCore(
+            snapshot,
+            selection,
+            (slot, localTile, row, column) => ResolveAtlasPixel(
+                atlasRgbaBytes,
+                scale,
+                atlasWidth,
+                slot,
+                localTile,
+                row,
+                column));
+    }
+
+    private static PrivateOriginalMapBaseViewProjection CreateCore(
+        PrivateOriginalMapSessionSnapshot snapshot,
+        OriginalMapVisualResourceSelection selection,
+        Func<int, int, int, int, SourcePixel> resolvePixel)
+    {
+        if (!SameSelection(snapshot.Definition.VisualResourceSelection, selection))
+        {
+            throw new ArgumentException(
+                "The private map snapshot and visual payload must retain the same admitted selection.",
+                nameof(selection));
+        }
+
         int originX = Math.Clamp(
             snapshot.PlayerPosition.X - (ColumnCount / 2),
             0,
@@ -91,7 +148,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                     blockColumn,
                     blockRow,
                     block,
-                    visualDefinition);
+                    resolvePixel);
             }
         }
 
@@ -109,7 +166,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         int blockColumn,
         int blockRow,
         OriginalMapBlockDefinition block,
-        OriginalMapVisualPayloadDefinition visualDefinition)
+        Func<int, int, int, int, SourcePixel> resolvePixel)
     {
         for (int tileRow = 0; tileRow < BlockTileSide; tileRow++)
         {
@@ -125,13 +182,11 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                 int selectedIndex = tileNumber - TileIndexOffset;
                 int slot = selectedIndex / TilesPerSlot;
                 int localTile = selectedIndex % TilesPerSlot;
-                if (slot >= visualDefinition.Tilesets.Count)
+                if (slot >= OriginalMapVisualResourceSelection.TilesetSlotCount)
                 {
                     continue;
                 }
 
-                IReadOnlyList<byte> decoded = visualDefinition.Tilesets[slot].DecodedBytes;
-                int tileByteOffset = localTile * TileBytes;
                 for (int pixelRow = 0; pixelRow < TilePixelSize; pixelRow++)
                 {
                     for (int pixelColumn = 0; pixelColumn < TilePixelSize; pixelColumn++)
@@ -142,30 +197,74 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                         int sourceColumn = (word & HorizontalMirror) != 0
                             ? (TilePixelSize - 1) - pixelColumn
                             : pixelColumn;
-                        byte packed = decoded[
-                            tileByteOffset + (sourceRow * 4) + (sourceColumn / 2)];
-                        int paletteIndex = sourceColumn % 2 == 0
-                            ? (packed >> 4) & 0x0F
-                            : packed & 0x0F;
-                        if (paletteIndex == 0)
+                        SourcePixel source = resolvePixel(
+                            slot,
+                            localTile,
+                            sourceRow,
+                            sourceColumn);
+                        if (source.Alpha == 0)
                         {
                             continue;
                         }
 
-                        ushort colorWord = visualDefinition.Palette.EffectiveWords[paletteIndex];
                         int pixelX = (blockColumn * BlockPixelSize) +
                             (tileColumn * TilePixelSize) + pixelColumn;
                         int pixelY = (blockRow * BlockPixelSize) +
                             (tileRow * TilePixelSize) + pixelRow;
                         int destination = ((pixelY * PixelWidth) + pixelX) * 4;
-                        pixels[destination] = ExpandChannel((colorWord & 0x000E) >> 1);
-                        pixels[destination + 1] = ExpandChannel((colorWord & 0x00E0) >> 5);
-                        pixels[destination + 2] = ExpandChannel((colorWord & 0x0E00) >> 9);
-                        pixels[destination + 3] = byte.MaxValue;
+                        pixels[destination] = source.Red;
+                        pixels[destination + 1] = source.Green;
+                        pixels[destination + 2] = source.Blue;
+                        pixels[destination + 3] = source.Alpha;
                     }
                 }
             }
         }
+    }
+
+    private static SourcePixel ResolvePayloadPixel(
+        OriginalMapVisualPayloadDefinition visualDefinition,
+        int slot,
+        int localTile,
+        int row,
+        int column)
+    {
+        IReadOnlyList<byte> decoded = visualDefinition.Tilesets[slot].DecodedBytes;
+        int tileByteOffset = localTile * TileBytes;
+        byte packed = decoded[tileByteOffset + (row * 4) + (column / 2)];
+        int paletteIndex = column % 2 == 0
+            ? (packed >> 4) & 0x0F
+            : packed & 0x0F;
+        if (paletteIndex == 0)
+        {
+            return default;
+        }
+
+        ushort colorWord = visualDefinition.Palette.EffectiveWords[paletteIndex];
+        return new SourcePixel(
+            ExpandChannel((colorWord & 0x000E) >> 1),
+            ExpandChannel((colorWord & 0x00E0) >> 5),
+            ExpandChannel((colorWord & 0x0E00) >> 9),
+            byte.MaxValue);
+    }
+
+    private static SourcePixel ResolveAtlasPixel(
+        IReadOnlyList<byte> atlasRgbaBytes,
+        int scale,
+        int atlasWidth,
+        int slot,
+        int localTile,
+        int row,
+        int column)
+    {
+        int logicalX = ((localTile % 16) * TilePixelSize) + column;
+        int logicalY = (slot * 64) + ((localTile / 16) * TilePixelSize) + row;
+        int offset = checked((((logicalY * scale) * atlasWidth) + (logicalX * scale)) * 4);
+        return new SourcePixel(
+            atlasRgbaBytes[offset],
+            atlasRgbaBytes[offset + 1],
+            atlasRgbaBytes[offset + 2],
+            atlasRgbaBytes[offset + 3]);
     }
 
     private static byte ExpandChannel(int value) =>
@@ -198,16 +297,128 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 {
     private static readonly Color PlayerColor = new("ffd166");
 
+    public PrivateOriginalMapBaseViewport()
+    {
+        TextureFilter = RequiredTextureFilter;
+        TextureRepeat = RequiredTextureRepeat;
+    }
+
+    internal static TextureFilterEnum RequiredTextureFilter =>
+        TextureFilterEnum.Nearest;
+
+    internal static TextureRepeatEnum RequiredTextureRepeat =>
+        TextureRepeatEnum.Disabled;
+
     private ImageTexture? _texture;
     private PrivateOriginalMapBaseViewProjection? _projection;
+    private byte[]? _atlasRgbaBytes;
+    private int _atlasScale;
+    private string? _atlasAssetId;
+    private string? _atlasBucketDigest;
 
     internal PrivateOriginalMapBaseViewProjection? Projection => _projection;
+
+    internal bool UsesLocalAtlas => _atlasRgbaBytes is not null;
+
+    internal bool UsesRequiredTextureSampling => IsRequiredTextureSampling(
+        TextureFilter,
+        TextureRepeat);
+
+    internal string? AtlasAssetId => _atlasAssetId;
+
+    internal int? AtlasScale => UsesLocalAtlas ? _atlasScale : null;
+
+    internal string? AtlasBucketDigest => _atlasBucketDigest;
+
+    internal static bool IsRequiredTextureSampling(
+        TextureFilterEnum filter,
+        TextureRepeatEnum repeat) =>
+        filter == RequiredTextureFilter && repeat == RequiredTextureRepeat;
+
+    internal bool TryBindLocalAtlas(
+        PrivateLocalPresentationRasterMount mount,
+        PrivateOriginalMapSessionSnapshot snapshot,
+        OriginalMapVisualPayloadDefinition visualDefinition,
+        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
+    {
+        ArgumentNullException.ThrowIfNull(mount);
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(visualDefinition);
+        diagnostic = null;
+        if (!PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(
+                mount.Definition,
+                mount.Bucket) ||
+            mount.Bucket.Width != checked(
+                PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalWidth *
+                mount.Bucket.Scale) ||
+            mount.Bucket.Height != checked(
+                PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalHeight *
+                mount.Bucket.Scale))
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The private Map 3 base-atlas mount is incompatible with the viewport.");
+            return false;
+        }
+
+        Image image = new();
+        Error error = image.LoadPngFromBuffer(mount.CopyPngBytes());
+        if (error != Error.Ok ||
+            image.GetWidth() != mount.Bucket.Width ||
+            image.GetHeight() != mount.Bucket.Height ||
+            image.GetFormat() != Image.Format.Rgba8)
+        {
+            image.Dispose();
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.TextureRejected,
+                "Godot rejected the admitted private Map 3 base-atlas texture.");
+            return false;
+        }
+
+        byte[] rgbaBytes = image.GetData();
+        image.Dispose();
+        if (rgbaBytes.Length != checked(mount.Bucket.Width * mount.Bucket.Height * 4))
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.TextureRejected,
+                "Godot returned an incompatible private Map 3 base-atlas pixel shape.");
+            return false;
+        }
+
+        PrivateOriginalMapBaseViewProjection payloadProjection =
+            PrivateOriginalMapBaseViewProjection.Create(snapshot, visualDefinition);
+        PrivateOriginalMapBaseViewProjection atlasProjection =
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                snapshot,
+                visualDefinition.Selection,
+                rgbaBytes,
+                mount.Bucket.Scale);
+        if (!payloadProjection.RgbaBytes.SequenceEqual(atlasProjection.RgbaBytes))
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.PayloadMismatch,
+                "The admitted private Map 3 base atlas is not pixel-equivalent to the typed visual payload.");
+            return false;
+        }
+
+        _atlasRgbaBytes = [.. rgbaBytes];
+        _atlasScale = mount.Bucket.Scale;
+        _atlasAssetId = mount.Definition.AssetId;
+        _atlasBucketDigest = mount.Bucket.Sha256;
+        return true;
+    }
 
     public void Project(
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapVisualPayloadDefinition visualDefinition)
     {
-        _projection = PrivateOriginalMapBaseViewProjection.Create(snapshot, visualDefinition);
+        _projection = _atlasRgbaBytes is null
+            ? PrivateOriginalMapBaseViewProjection.Create(snapshot, visualDefinition)
+            : PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                snapshot,
+                visualDefinition.Selection,
+                _atlasRgbaBytes,
+                _atlasScale);
         Image image = Image.CreateFromData(
             PrivateOriginalMapBaseViewProjection.PixelWidth,
             PrivateOriginalMapBaseViewProjection.PixelHeight,
