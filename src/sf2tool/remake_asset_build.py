@@ -1,4 +1,4 @@
-"""Deterministic local HUD SVG candidate builder for the private presentation pack."""
+"""Deterministic ignored candidate builders for the private presentation pack."""
 
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ from pathlib import Path, PurePosixPath
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
 
+from sf2tool.compression import StackDecodeResult, decode_stack_compressed
 from sf2tool.paths import repo_path
 from sf2tool.remake_assets import (
     MANIFEST_RELATIVE_PATH,
@@ -35,12 +36,128 @@ from sf2tool.remake_assets import (
     validate_asset_checkout_identity,
 )
 from sf2tool.remake_godot import ProcessReceipt, run_bounded_process
+from sf2tool.texture_extract import (
+    TILE_BYTES_4BPP,
+    decode_md_4bpp_tile,
+    md_palette_color,
+    render_tileset_sheet,
+    write_png_rgba,
+)
 
 DEFAULT_TOOLCHAIN_MANIFEST = repo_path("remake/presentation-toolchain.json")
 BUILD_CAPABILITY = "private-local-presentation-hud-svg-candidate-build-v1"
+WORLD_BUILD_CAPABILITY = "private-local-map3-base-tileset-atlas-candidate-build-v1"
+WORLD_ASSET_ID = "world.map3.base-tileset-atlas"
+WORLD_SOURCE_ASSET_ID = "source.world.map3.base-visual-selection"
+WORLD_POLICY_ID = "private-local-map3-base-nearest-rgba8-v1"
+WORLD_GENERATOR_ID = "sf2tool-remake-asset-build"
+WORLD_GENERATOR_VERSION = "1"
+WORLD_GENERATOR_FINGERPRINT_VERSION = "sf2-remake-generator-fingerprint-v1"
+WORLD_GENERATOR_COMPONENTS = (
+    "src/sf2tool/remake_asset_build.py",
+    "src/sf2tool/compression.py",
+    "src/sf2tool/texture_extract.py",
+)
+WORLD_SOURCE_FILE = "source/world/map3/base-visual-selection-v1.bin"
+WORLD_MASTER_FILE = "masters/world/map3/base-tileset-atlas.png"
+WORLD_RUNTIME_TEMPLATE = "runtime/world/map3/base-tileset-atlas@{scale}x.png"
+WORLD_SOURCE_MAGIC = b"SF2-MAP3-BASE-VISUAL-SELECTION-V1\x00"
+ACCEPTED_ROM_SHA256 = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+ACCEPTED_ROM_SIZE = 2_097_152
+ACCEPTED_TILESET_METADATA_SHA256 = (
+    "2EA6AB3485CAE4F92F31647C05233F0E1C07E81CCB02806706A51F9F0C1E087F"
+)
+ACCEPTED_TILESET_METADATA_SIZE = 102_965
+ACCEPTED_PALETTE_METADATA_SHA256 = (
+    "4F977B4B3EB8E731D2ABB6664F36030487DC186D267E66E9C2DAF3CB211007AB"
+)
+ACCEPTED_PALETTE_METADATA_SIZE = 20_554
+ACCEPTED_UPSTREAM_REPOSITORY = "https://github.com/ShiningForceCentral/SF2DISASM.git"
+ACCEPTED_UPSTREAM_COMMIT = "c834c652b6862bc5679fd7f69a38a7093206efc6"
+ACCEPTED_TILESET_METADATA_ID = "sf2-map-tileset-decode-v1"
+ACCEPTED_PALETTE_METADATA_ID = "sf2-map-palette-static-v1"
+ACCEPTED_MAP_INDEX = 3
+ACCEPTED_PALETTE_INDEX = 0
+ACCEPTED_TILESET_SLOTS = (0, 37, 43, 53, 66)
+WORLD_SCALES = (2, 4)
+WORLD_TILESET_COUNT = 5
+WORLD_DECODED_BYTES_PER_TILESET = 4_096
+WORLD_TILES_PER_TILESET = 128
+WORLD_TILE_GRID_COLUMNS = 16
+WORLD_TILE_GRID_ROWS = 8
+WORLD_TILE_PIXEL_SIZE = 8
+WORLD_SHEET_WIDTH = WORLD_TILE_GRID_COLUMNS * WORLD_TILE_PIXEL_SIZE
+WORLD_SHEET_HEIGHT = WORLD_TILE_GRID_ROWS * WORLD_TILE_PIXEL_SIZE
+WORLD_ATLAS_WIDTH = WORLD_SHEET_WIDTH
+WORLD_ATLAS_HEIGHT = WORLD_SHEET_HEIGHT * WORLD_TILESET_COUNT
+WORLD_PALETTE_WORD_COUNT = 16
+WORLD_PALETTE_BYTES = WORLD_PALETTE_WORD_COUNT * 2
+WORLD_PALETTE_MASK = 0x0EEE
+WORLD_MAXIMUM_PNG_BYTES = 32 * 1024 * 1024
+_TILESET_ROOT_FIELDS = {
+    "schemaVersion",
+    "id",
+    "upstream",
+    "romSha256",
+    "function",
+    "table",
+    "summary",
+    "unusedTilesetIndices",
+    "animationTileCountDistribution",
+    "tilesets",
+    "maps",
+    "animations",
+    "runtimeQuestions",
+}
+_TILESET_FIELDS = {
+    "index",
+    "symbol",
+    "sourcePath",
+    "sourceAddress",
+    "compressedBytes",
+    "decodedBytes",
+    "sourceSha256",
+    "decodedSha256",
+    "inputBitsConsumed",
+    "trailingBits",
+    "commandGroupCount",
+    "literalWordCount",
+    "copyCommandCount",
+    "copiedWordCount",
+    "maximumCopyOffsetWords",
+    "maximumCopyLengthWords",
+}
+_TILESET_MAP_FIELDS = {"mapIndex", "sourcePath", "mapAddress", "paletteIndex", "tilesetSlots"}
+_PALETTE_ROOT_FIELDS = {
+    "schemaVersion",
+    "id",
+    "upstream",
+    "romSha256",
+    "function",
+    "table",
+    "summary",
+    "usageCounts",
+    "palettes",
+    "maps",
+    "runtimeQuestions",
+}
+_PALETTE_FIELDS = {
+    "index",
+    "symbol",
+    "sourcePath",
+    "sourceAddress",
+    "byteCount",
+    "colorCount",
+    "sourceFirstColor",
+    "effectiveFirstColor",
+    "sourceSha256",
+    "effectiveSha256",
+}
+_PALETTE_MAP_FIELDS = {"mapIndex", "sourcePath", "mapAddress", "paletteIndex"}
 SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 _STAGING_PREFIX = ".sf2-hud-svg-build-"
+_WORLD_STAGING_PREFIX = ".sf2-map3-world-atlas-build-"
 _ASSET_ID_PATTERN = re.compile(r"^hud\.([a-z0-9]+(?:-[a-z0-9]+)*)$")
 _CANDIDATE_NAME_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$")
 _ELEMENT_ID_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9._-]{0,127}$")
@@ -189,6 +306,39 @@ class PngIdentity:
     sha256: str
 
 
+@dataclass(frozen=True)
+class WorldTilesetRecord:
+    index: int
+    source_address: int
+    compressed_bytes: int
+    source_sha256: str
+    decoded_sha256: str
+    input_bits_consumed: int
+    trailing_bits: int
+    command_group_count: int
+    literal_word_count: int
+    copy_command_count: int
+    copied_word_count: int
+    maximum_copy_offset_words: int
+    maximum_copy_length_words: int
+
+
+@dataclass(frozen=True)
+class WorldPaletteRecord:
+    index: int
+    source_address: int
+    source_first_color: int
+    source_sha256: str
+    effective_sha256: str
+
+
+@dataclass(frozen=True)
+class WorldAtlasSource:
+    source_bundle: bytes
+    rgba_pixels: tuple[int, ...]
+    selected_slots: tuple[int, ...]
+
+
 ProcessRunner = Callable[..., ProcessReceipt]
 
 
@@ -227,10 +377,478 @@ def _sha256(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest().upper()
 
 
+def _composite_generator_fingerprint(records: Mapping[str, bytes]) -> str:
+    if not records:
+        raise _reject(
+            "GeneratorIdentityInvalid",
+            "generator",
+            "The generator implementation identity is empty.",
+        )
+    digest = hashlib.sha256()
+    magic = WORLD_GENERATOR_FINGERPRINT_VERSION.encode("ascii")
+    digest.update(len(magic).to_bytes(4, "big"))
+    digest.update(magic)
+    digest.update(len(records).to_bytes(4, "big"))
+    for name in sorted(records):
+        relative = PurePosixPath(name)
+        value = records[name]
+        if (
+            not name
+            or relative.is_absolute()
+            or ".." in relative.parts
+            or relative.as_posix() != name
+            or not isinstance(value, bytes)
+        ):
+            raise _reject(
+                "GeneratorIdentityInvalid",
+                "generator",
+                "A generator implementation identity record is invalid.",
+            )
+        encoded_name = name.encode("utf-8")
+        digest.update(len(encoded_name).to_bytes(4, "big"))
+        digest.update(encoded_name)
+        digest.update(len(value).to_bytes(8, "big"))
+        digest.update(value)
+    return digest.hexdigest().upper()
+
+
+def _world_generator_artifact_sha256() -> str:
+    source_root = Path(__file__).resolve().parents[2]
+    implementation_version = sys.implementation.version
+    records: dict[str, bytes] = {
+        "runtime/python-implementation": sys.implementation.name.encode("ascii"),
+        "runtime/python-version": (
+            f"{implementation_version.major}.{implementation_version.minor}."
+            f"{implementation_version.micro}-{implementation_version.releaselevel}-"
+            f"{implementation_version.serial}"
+        ).encode("ascii"),
+        "runtime/zlib-compile-version": zlib.ZLIB_VERSION.encode("ascii"),
+        "runtime/zlib-runtime-version": zlib.ZLIB_RUNTIME_VERSION.encode("ascii"),
+    }
+    try:
+        for relative in WORLD_GENERATOR_COMPONENTS:
+            records[relative] = source_root.joinpath(*PurePosixPath(relative).parts).read_bytes()
+    except OSError as error:
+        raise _reject(
+            "GeneratorUnavailable",
+            "generator",
+            "A generator implementation component is unavailable.",
+        ) from error
+    return _composite_generator_fingerprint(records)
+
+
 def _require_sha256(value: str, field: str) -> str:
     if len(value) != 64 or any(character not in "0123456789ABCDEF" for character in value):
         raise _reject("InvalidRequest", field, "The expected SHA-256 is not canonical.")
     return value
+
+
+def _read_fixed_private_input(
+    path_value: str,
+    caller_pin: str,
+    fixed_digest: str,
+    fixed_size: int,
+    field: str,
+) -> bytes:
+    caller_pin = _require_sha256(caller_pin, f"expected{field[0].upper()}{field[1:]}Sha256")
+    if not path_value or not os.path.isabs(path_value):
+        raise _reject("InvalidRequest", field, "A private candidate input path must be absolute.")
+    path = Path(os.path.abspath(path_value))
+    _require_no_reparse_chain(path, field)
+    try:
+        if not path.is_file() or path.stat().st_size != fixed_size:
+            raise _reject(
+                "ContentDigestMismatch",
+                field,
+                "A private candidate input does not match its accepted fixed identity.",
+            )
+        data = path.read_bytes()
+    except AssetBuildError:
+        raise
+    except OSError as error:
+        raise _reject(
+            "PackageUnavailable",
+            field,
+            "A required private candidate input is unavailable.",
+        ) from error
+    actual = _sha256(data)
+    if caller_pin != fixed_digest or actual != fixed_digest:
+        raise _reject(
+            "ContentDigestMismatch",
+            field,
+            "The private input bytes and caller pin must both match the accepted fixed identity.",
+        )
+    return data
+
+
+def _metadata_object(value: object, fields: set[str], field: str) -> Mapping[str, object]:
+    if not isinstance(value, Mapping) or set(value) != fields:
+        raise _reject(
+            "InvalidMetadata",
+            field,
+            "Private visual metadata has an unknown or missing field.",
+        )
+    return value
+
+
+def _metadata_array(value: object, count: int, field: str) -> list[object]:
+    if not isinstance(value, list) or len(value) != count:
+        raise _reject(
+            "InvalidMetadata",
+            field,
+            "Private visual metadata has an invalid ordered record count.",
+        )
+    return value
+
+
+def _metadata_int(value: object, field: str, *, minimum: int = 0) -> int:
+    if not isinstance(value, int) or isinstance(value, bool) or value < minimum:
+        raise _reject("InvalidMetadata", field, "A private visual metadata integer is invalid.")
+    return value
+
+
+def _metadata_string(value: object, field: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise _reject("InvalidMetadata", field, "A private visual metadata string is invalid.")
+    return value
+
+
+def _metadata_sha256(value: object, field: str) -> str:
+    string = _metadata_string(value, field)
+    if len(string) != 64 or any(character not in "0123456789ABCDEF" for character in string):
+        raise _reject("InvalidMetadata", field, "A private visual metadata digest is invalid.")
+    return string
+
+
+def _require_metadata_provenance(
+    root: Mapping[str, object],
+    expected_id: str,
+    field: str,
+) -> None:
+    upstream = _metadata_object(
+        root.get("upstream"),
+        {"repository", "commit"},
+        f"{field}.upstream",
+    )
+    if (
+        root.get("schemaVersion") != 1
+        or root.get("id") != expected_id
+        or root.get("romSha256") != ACCEPTED_ROM_SHA256
+        or upstream.get("repository") != ACCEPTED_UPSTREAM_REPOSITORY
+        or upstream.get("commit") != ACCEPTED_UPSTREAM_COMMIT
+    ):
+        raise _reject(
+            "ProvenanceMismatch",
+            field,
+            "Private visual metadata provenance does not match the accepted contract.",
+        )
+
+
+def _parse_json_bytes(data: bytes, field: str) -> Mapping[str, object]:
+    def closed_pairs(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        result: dict[str, object] = {}
+        for key, value in pairs:
+            if key in result:
+                raise _reject(
+                    "InvalidMetadata",
+                    field,
+                    "Private visual metadata contains a duplicate field.",
+                )
+            result[key] = value
+        return result
+
+    try:
+        document = json.loads(data, object_pairs_hook=closed_pairs)
+    except AssetBuildError:
+        raise
+    except (json.JSONDecodeError, UnicodeDecodeError) as error:
+        raise _reject(
+            "InvalidMetadata",
+            field,
+            "A fixed private metadata document is not valid JSON.",
+        ) from error
+    if not isinstance(document, Mapping):
+        raise _reject("InvalidMetadata", field, "Private visual metadata must be an object.")
+    return document
+
+
+def _parse_world_tileset_metadata(
+    document: Mapping[str, object],
+    rom_length: int,
+) -> tuple[WorldTilesetRecord, ...]:
+    root = _metadata_object(document, _TILESET_ROOT_FIELDS, "tilesetMetadata")
+    _require_metadata_provenance(root, ACCEPTED_TILESET_METADATA_ID, "tilesetMetadata")
+    rows = _metadata_array(root.get("tilesets"), 115, "tilesetMetadata.tilesets")
+    selected: dict[int, WorldTilesetRecord] = {}
+    symbols: set[str] = set()
+    for ordinal, raw in enumerate(rows):
+        field = f"tilesetMetadata.tilesets[{ordinal}]"
+        row = _metadata_object(raw, _TILESET_FIELDS, field)
+        index = _metadata_int(row.get("index"), f"{field}.index")
+        symbol = _metadata_string(row.get("symbol"), f"{field}.symbol")
+        _metadata_string(row.get("sourcePath"), f"{field}.sourcePath")
+        if index != ordinal or symbol in symbols:
+            raise _reject(
+                "InvalidMetadata",
+                field,
+                "Tileset records must retain unique contiguous source identities.",
+            )
+        symbols.add(symbol)
+        source_address = _metadata_int(row.get("sourceAddress"), f"{field}.sourceAddress")
+        compressed_bytes = _metadata_int(
+            row.get("compressedBytes"),
+            f"{field}.compressedBytes",
+            minimum=1,
+        )
+        if source_address + compressed_bytes > rom_length:
+            raise _reject("InvalidMetadata", field, "A selected source range exceeds the ROM.")
+        if row.get("decodedBytes") != WORLD_DECODED_BYTES_PER_TILESET:
+            raise _reject("InvalidMetadata", field, "A tileset decoded-size identity drifted.")
+        input_bits = _metadata_int(
+            row.get("inputBitsConsumed"),
+            f"{field}.inputBitsConsumed",
+            minimum=1,
+        )
+        trailing_bits = _metadata_int(row.get("trailingBits"), f"{field}.trailingBits")
+        if input_bits > compressed_bytes * 8 or trailing_bits != compressed_bytes * 8 - input_bits:
+            raise _reject("InvalidMetadata", field, "A tileset Stack boundary drifted.")
+        record = WorldTilesetRecord(
+            index,
+            source_address,
+            compressed_bytes,
+            _metadata_sha256(row.get("sourceSha256"), f"{field}.sourceSha256"),
+            _metadata_sha256(row.get("decodedSha256"), f"{field}.decodedSha256"),
+            input_bits,
+            trailing_bits,
+            _metadata_int(row.get("commandGroupCount"), f"{field}.commandGroupCount"),
+            _metadata_int(row.get("literalWordCount"), f"{field}.literalWordCount"),
+            _metadata_int(row.get("copyCommandCount"), f"{field}.copyCommandCount"),
+            _metadata_int(row.get("copiedWordCount"), f"{field}.copiedWordCount"),
+            _metadata_int(row.get("maximumCopyOffsetWords"), f"{field}.maximumCopyOffsetWords"),
+            _metadata_int(row.get("maximumCopyLengthWords"), f"{field}.maximumCopyLengthWords"),
+        )
+        if index in ACCEPTED_TILESET_SLOTS:
+            selected[index] = record
+
+    maps = _metadata_array(root.get("maps"), 79, "tilesetMetadata.maps")
+    for ordinal, raw in enumerate(maps):
+        field = f"tilesetMetadata.maps[{ordinal}]"
+        row = _metadata_object(raw, _TILESET_MAP_FIELDS, field)
+        if _metadata_int(row.get("mapIndex"), f"{field}.mapIndex") != ordinal:
+            raise _reject("InvalidSelection", field, "Map references must remain ordered.")
+        _metadata_string(row.get("sourcePath"), f"{field}.sourcePath")
+        _metadata_int(row.get("mapAddress"), f"{field}.mapAddress")
+        palette = _metadata_int(row.get("paletteIndex"), f"{field}.paletteIndex")
+        slots = _metadata_array(row.get("tilesetSlots"), 5, f"{field}.tilesetSlots")
+        parsed_slots = tuple(_metadata_int(value, f"{field}.tilesetSlots") for value in slots)
+        if any(value != 255 and value >= 115 for value in parsed_slots):
+            raise _reject("InvalidSelection", field, "A map tileset slot is out of range.")
+        if ordinal == ACCEPTED_MAP_INDEX and (
+            palette != ACCEPTED_PALETTE_INDEX or parsed_slots != ACCEPTED_TILESET_SLOTS
+        ):
+            raise _reject("InvalidSelection", field, "The accepted Map 3 selection drifted.")
+
+    if set(selected) != set(ACCEPTED_TILESET_SLOTS):
+        raise _reject(
+            "InvalidSelection",
+            "tilesetMetadata.tilesets",
+            "The accepted Map 3 tileset selection is incomplete.",
+        )
+    return tuple(selected[index] for index in ACCEPTED_TILESET_SLOTS)
+
+
+def _parse_world_palette_metadata(
+    document: Mapping[str, object],
+    rom_length: int,
+) -> WorldPaletteRecord:
+    root = _metadata_object(document, _PALETTE_ROOT_FIELDS, "paletteMetadata")
+    _require_metadata_provenance(root, ACCEPTED_PALETTE_METADATA_ID, "paletteMetadata")
+    rows = _metadata_array(root.get("palettes"), 16, "paletteMetadata.palettes")
+    selected: WorldPaletteRecord | None = None
+    symbols: set[str] = set()
+    for ordinal, raw in enumerate(rows):
+        field = f"paletteMetadata.palettes[{ordinal}]"
+        row = _metadata_object(raw, _PALETTE_FIELDS, field)
+        index = _metadata_int(row.get("index"), f"{field}.index")
+        symbol = _metadata_string(row.get("symbol"), f"{field}.symbol")
+        _metadata_string(row.get("sourcePath"), f"{field}.sourcePath")
+        if index != ordinal or symbol in symbols:
+            raise _reject(
+                "InvalidMetadata",
+                field,
+                "Palette records must retain unique contiguous source identities.",
+            )
+        symbols.add(symbol)
+        source_address = _metadata_int(row.get("sourceAddress"), f"{field}.sourceAddress")
+        if (
+            row.get("byteCount") != WORLD_PALETTE_BYTES
+            or row.get("colorCount") != WORLD_PALETTE_WORD_COUNT
+            or source_address + WORLD_PALETTE_BYTES > rom_length
+        ):
+            raise _reject("InvalidMetadata", field, "A palette shape or source range drifted.")
+        source_first = _metadata_int(row.get("sourceFirstColor"), f"{field}.sourceFirstColor")
+        if source_first > WORLD_PALETTE_MASK or row.get("effectiveFirstColor") != 0:
+            raise _reject("InvalidMetadata", field, "A palette first-color identity drifted.")
+        record = WorldPaletteRecord(
+            index,
+            source_address,
+            source_first,
+            _metadata_sha256(row.get("sourceSha256"), f"{field}.sourceSha256"),
+            _metadata_sha256(row.get("effectiveSha256"), f"{field}.effectiveSha256"),
+        )
+        if index == ACCEPTED_PALETTE_INDEX:
+            selected = record
+
+    maps = _metadata_array(root.get("maps"), 79, "paletteMetadata.maps")
+    for ordinal, raw in enumerate(maps):
+        field = f"paletteMetadata.maps[{ordinal}]"
+        row = _metadata_object(raw, _PALETTE_MAP_FIELDS, field)
+        if _metadata_int(row.get("mapIndex"), f"{field}.mapIndex") != ordinal:
+            raise _reject("InvalidSelection", field, "Palette map references must remain ordered.")
+        _metadata_string(row.get("sourcePath"), f"{field}.sourcePath")
+        _metadata_int(row.get("mapAddress"), f"{field}.mapAddress")
+        palette = _metadata_int(row.get("paletteIndex"), f"{field}.paletteIndex")
+        if palette > 15 or (ordinal == ACCEPTED_MAP_INDEX and palette != ACCEPTED_PALETTE_INDEX):
+            raise _reject(
+                "InvalidSelection",
+                field,
+                "The accepted Map 3 palette selection drifted.",
+            )
+    if selected is None:
+        raise _reject(
+            "InvalidSelection",
+            "paletteMetadata.palettes",
+            "The accepted Map 3 palette is missing.",
+        )
+    return selected
+
+
+def _matches_stack_record(decoded: StackDecodeResult, record: WorldTilesetRecord) -> bool:
+    return (
+        decoded.input_bits_consumed == record.input_bits_consumed
+        and record.trailing_bits == record.compressed_bytes * 8 - decoded.input_bits_consumed
+        and decoded.command_group_count == record.command_group_count
+        and decoded.literal_word_count == record.literal_word_count
+        and decoded.copy_command_count == record.copy_command_count
+        and decoded.copied_word_count == record.copied_word_count
+        and decoded.maximum_copy_offset_words == record.maximum_copy_offset_words
+        and decoded.maximum_copy_length_words == record.maximum_copy_length_words
+    )
+
+
+def _build_world_atlas_source(
+    rom: bytes,
+    tileset_document: Mapping[str, object],
+    palette_document: Mapping[str, object],
+) -> WorldAtlasSource:
+    tileset_records = _parse_world_tileset_metadata(tileset_document, len(rom))
+    palette_record = _parse_world_palette_metadata(palette_document, len(rom))
+    palette_source = rom[
+        palette_record.source_address : palette_record.source_address + WORLD_PALETTE_BYTES
+    ]
+    if _sha256(palette_source) != palette_record.source_sha256:
+        raise _reject(
+            "SourcePayloadMismatch",
+            "palettePayload",
+            "The selected palette source identity drifted.",
+        )
+    source_words = [
+        int.from_bytes(palette_source[offset : offset + 2], "big")
+        for offset in range(0, WORLD_PALETTE_BYTES, 2)
+    ]
+    if source_words[0] != palette_record.source_first_color or any(
+        word & ~WORLD_PALETTE_MASK for word in source_words
+    ):
+        raise _reject(
+            "PalettePayloadMismatch",
+            "palettePayload",
+            "The selected palette word projection drifted.",
+        )
+    effective_palette_bytes = b"\x00\x00" + palette_source[2:]
+    if _sha256(effective_palette_bytes) != palette_record.effective_sha256:
+        raise _reject(
+            "PalettePayloadMismatch",
+            "palettePayload",
+            "The accepted palette-zero transform drifted.",
+        )
+    effective_words = [
+        int.from_bytes(effective_palette_bytes[offset : offset + 2], "big")
+        for offset in range(0, WORLD_PALETTE_BYTES, 2)
+    ]
+    palette = [md_palette_color(word) for word in effective_words]
+
+    decoded_buffers: list[bytes] = []
+    atlas_pixels: list[int] = []
+    for record in tileset_records:
+        compressed = rom[record.source_address : record.source_address + record.compressed_bytes]
+        if _sha256(compressed) != record.source_sha256:
+            raise _reject(
+                "SourcePayloadMismatch",
+                "tilesetPayload",
+                "A selected compressed tileset identity drifted.",
+            )
+        try:
+            decoded = decode_stack_compressed(
+                compressed,
+                expected_output_bytes=WORLD_DECODED_BYTES_PER_TILESET,
+            )
+        except ValueError as error:
+            raise _reject(
+                "DecodeFailure",
+                "tilesetPayload",
+                "A selected tileset failed bounded Stack decoding.",
+            ) from error
+        if not _matches_stack_record(decoded, record):
+            raise _reject(
+                "DecodeFailure",
+                "tilesetPayload",
+                "A selected tileset Stack-consumption identity drifted.",
+            )
+        if _sha256(decoded.output) != record.decoded_sha256:
+            raise _reject(
+                "DecodedPayloadMismatch",
+                "tilesetPayload",
+                "A selected decoded tileset identity drifted.",
+            )
+        tiles = [
+            decode_md_4bpp_tile(decoded.output[offset : offset + TILE_BYTES_4BPP])
+            for offset in range(0, WORLD_DECODED_BYTES_PER_TILESET, TILE_BYTES_4BPP)
+        ]
+        atlas_pixels.extend(render_tileset_sheet(tiles, palette))
+        decoded_buffers.append(decoded.output)
+
+    if len(atlas_pixels) != WORLD_ATLAS_WIDTH * WORLD_ATLAS_HEIGHT * 4:
+        raise _reject("GeneratorOutputInvalid", "atlas", "The world atlas geometry drifted.")
+    source_bundle = b"".join(
+        (
+            WORLD_SOURCE_MAGIC,
+            bytes((ACCEPTED_MAP_INDEX, ACCEPTED_PALETTE_INDEX, *ACCEPTED_TILESET_SLOTS)),
+            effective_palette_bytes,
+            *decoded_buffers,
+        )
+    )
+    return WorldAtlasSource(source_bundle, tuple(atlas_pixels), ACCEPTED_TILESET_SLOTS)
+
+
+def _scale_rgba_nearest(
+    pixels: tuple[int, ...],
+    width: int,
+    height: int,
+    scale: int,
+) -> list[int]:
+    if scale not in WORLD_SCALES or len(pixels) != width * height * 4:
+        raise _reject("GeneratorOutputInvalid", "atlas", "The nearest-neighbor input is invalid.")
+    output: list[int] = []
+    for row in range(height):
+        expanded_row: list[int] = []
+        for column in range(width):
+            offset = (row * width + column) * 4
+            pixel = pixels[offset : offset + 4]
+            for _ in range(scale):
+                expanded_row.extend(pixel)
+        for _ in range(scale):
+            output.extend(expanded_row)
+    return output
 
 
 def load_toolchain_manifest(path: Path | None = None) -> PresentationToolchain:
@@ -854,14 +1472,10 @@ def _write_candidate(
     return _sha256(manifest_bytes), manifest_bytes
 
 
-def _cleanup_owned(path: Path, parent: Path) -> None:
+def _cleanup_owned(path: Path, parent: Path, prefix: str = _STAGING_PREFIX) -> None:
     if not os.path.lexists(path):
         return
-    if (
-        path.parent != parent
-        or not path.name.startswith(_STAGING_PREFIX)
-        or _is_reparse_point(path)
-    ):
+    if path.parent != parent or not path.name.startswith(prefix) or _is_reparse_point(path):
         raise _reject(
             "CleanupRejected", "candidate", "The owned candidate staging identity drifted."
         )
@@ -1114,6 +1728,396 @@ def build_hud_svg_candidate(
     return receipt
 
 
+def _require_world_candidate_name(candidate_name: str) -> PurePosixPath:
+    if not _CANDIDATE_NAME_PATTERN.fullmatch(candidate_name):
+        raise _reject("InvalidRequest", "candidate", "The world candidate identity is invalid.")
+    normalized = os.path.normcase(candidate_name).rstrip(" .")
+    if normalized != os.path.normcase(candidate_name) or normalized in _WINDOWS_RESERVED:
+        raise _reject(
+            "InvalidRequest",
+            "candidate",
+            "A Windows-ambiguous world candidate identity was rejected.",
+        )
+    return PurePosixPath("cache", candidate_name)
+
+
+def _world_manifest(
+    source: WorldAtlasSource,
+    generator_artifact_sha256: str,
+    buckets: tuple[PngIdentity, PngIdentity],
+) -> dict[str, object]:
+    bucket_records = []
+    for scale, identity in zip(WORLD_SCALES, buckets, strict=True):
+        bucket_records.append(
+            {
+                "scale": scale,
+                "runtimePath": WORLD_RUNTIME_TEMPLATE.format(scale=scale),
+                "width": identity.width,
+                "height": identity.height,
+                "byteLength": identity.byte_length,
+                "sha256": identity.sha256,
+                "mediaType": "image/png",
+                "filter": "nearest",
+                "mipmaps": False,
+                "repeat": False,
+                "colorSpace": "srgb",
+                "alphaMode": "straight",
+            }
+        )
+    return {
+        "schemaVersion": 1,
+        "packageId": PACKAGE_ID,
+        "repositoryId": REPOSITORY_ID,
+        "profile": PROFILE,
+        "capabilities": [PACK_CAPABILITY],
+        "logicalPresentation": {"width": 960, "height": 540},
+        "assets": [
+            {
+                "assetId": WORLD_ASSET_ID,
+                "kind": "raster-image",
+                "logicalSize": {"width": WORLD_ATLAS_WIDTH, "height": WORLD_ATLAS_HEIGHT},
+                "source": {
+                    "assetId": WORLD_SOURCE_ASSET_ID,
+                    "sha256": _sha256(source.source_bundle),
+                },
+                "derivation": {
+                    "policyId": WORLD_POLICY_ID,
+                    "generatorId": WORLD_GENERATOR_ID,
+                    "generatorVersion": WORLD_GENERATOR_VERSION,
+                    "generatorArtifactSha256": generator_artifact_sha256,
+                },
+                "buckets": bucket_records,
+            }
+        ],
+    }
+
+
+def _write_world_candidate(
+    destination: Path,
+    source: WorldAtlasSource,
+    master: Path,
+    outputs: Mapping[int, Path],
+    manifest: Mapping[str, object],
+) -> tuple[str, bytes]:
+    candidate = destination / "candidate"
+    try:
+        candidate.mkdir()
+        source_target = candidate.joinpath(*PurePosixPath(WORLD_SOURCE_FILE).parts)
+        source_target.parent.mkdir(parents=True)
+        source_target.write_bytes(source.source_bundle)
+        master_target = candidate.joinpath(*PurePosixPath(WORLD_MASTER_FILE).parts)
+        master_target.parent.mkdir(parents=True)
+        shutil.copyfile(master, master_target)
+        for scale, output in outputs.items():
+            runtime_target = candidate.joinpath(
+                *PurePosixPath(WORLD_RUNTIME_TEMPLATE.format(scale=scale)).parts
+            )
+            runtime_target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(output, runtime_target)
+        manifest_path = candidate.joinpath(*MANIFEST_RELATIVE_PATH.parts)
+        manifest_path.parent.mkdir(parents=True)
+        manifest_bytes = (
+            json.dumps(manifest, indent=2, ensure_ascii=True, sort_keys=True) + "\n"
+        ).encode("utf-8")
+        manifest_path.write_bytes(manifest_bytes)
+        try:
+            schema = json.loads(PACK_SCHEMA.read_text(encoding="utf-8"))
+            Draft202012Validator.check_schema(schema)
+            Draft202012Validator(schema).validate(json.loads(manifest_bytes))
+        except (OSError, json.JSONDecodeError, SchemaError, ValidationError) as error:
+            raise _reject(
+                "CandidateManifestInvalid",
+                "manifest",
+                "The generated world candidate manifest failed its tracked closed schema.",
+            ) from error
+    except AssetBuildError:
+        raise
+    except OSError as error:
+        raise _reject(
+            "CandidateWriteFailed",
+            "candidate",
+            "The world candidate pack could not be written.",
+        ) from error
+    return _sha256(manifest_bytes), manifest_bytes
+
+
+def build_map3_base_atlas_candidate(
+    *,
+    asset_root: str,
+    expected_commit: str,
+    expected_tree: str,
+    rom_path: str,
+    expected_rom_sha256: str,
+    tileset_metadata_path: str,
+    expected_tileset_metadata_sha256: str,
+    palette_metadata_path: str,
+    expected_palette_metadata_sha256: str,
+    candidate_name: str,
+) -> dict[str, object]:
+    """Build one ignored private Map 3 atlas candidate without changing tracked assets."""
+
+    candidate_relative = _require_world_candidate_name(candidate_name)
+    try:
+        checkout = validate_asset_checkout_identity(
+            asset_root,
+            expected_commit=expected_commit,
+            expected_tree=expected_tree,
+            required_ignored_path=candidate_relative,
+        )
+    except AssetPreflightError as error:
+        raise _reject(error.code, error.field, error.message) from error
+    rom = _read_fixed_private_input(
+        rom_path,
+        expected_rom_sha256,
+        ACCEPTED_ROM_SHA256,
+        ACCEPTED_ROM_SIZE,
+        "rom",
+    )
+    tileset_metadata = _read_fixed_private_input(
+        tileset_metadata_path,
+        expected_tileset_metadata_sha256,
+        ACCEPTED_TILESET_METADATA_SHA256,
+        ACCEPTED_TILESET_METADATA_SIZE,
+        "tilesetMetadata",
+    )
+    palette_metadata = _read_fixed_private_input(
+        palette_metadata_path,
+        expected_palette_metadata_sha256,
+        ACCEPTED_PALETTE_METADATA_SHA256,
+        ACCEPTED_PALETTE_METADATA_SIZE,
+        "paletteMetadata",
+    )
+    source = _build_world_atlas_source(
+        rom,
+        _parse_json_bytes(tileset_metadata, "tilesetMetadata"),
+        _parse_json_bytes(palette_metadata, "paletteMetadata"),
+    )
+    generator_artifact_sha256 = _world_generator_artifact_sha256()
+
+    cache = checkout.root / "cache"
+    _require_no_reparse_chain(cache, "candidate")
+    created_cache = False
+    if not cache.exists():
+        try:
+            cache.mkdir()
+            created_cache = True
+        except OSError as error:
+            raise _reject(
+                "CandidateWriteFailed", "candidate", "The ignored cache is unavailable."
+            ) from error
+    if not cache.is_dir():
+        raise _reject("PathRejected", "candidate", "The ignored cache boundary is invalid.")
+    destination = cache / candidate_name
+    _require_no_reparse_chain(destination, "candidate")
+    if os.path.lexists(destination):
+        raise _reject("CandidateExists", "candidate", "The candidate destination must be fresh.")
+    staging = cache / f"{_WORLD_STAGING_PREFIX}{uuid.uuid4().hex}.tmp"
+    if os.path.lexists(staging):
+        raise _reject("CandidateExists", "candidate", "The owned staging identity already exists.")
+
+    published = False
+    receipt: dict[str, object] | None = None
+    try:
+        staging.mkdir()
+        run_outputs: list[tuple[Path, dict[int, Path], PngIdentity, tuple[PngIdentity, ...]]] = []
+        for run_name in ("run-a", "run-b"):
+            run = staging / run_name
+            run.mkdir()
+            master = run / "master.png"
+            write_png_rgba(
+                master,
+                WORLD_ATLAS_WIDTH,
+                WORLD_ATLAS_HEIGHT,
+                list(source.rgba_pixels),
+            )
+            master_identity = _validate_png(
+                master,
+                WORLD_ATLAS_WIDTH,
+                WORLD_ATLAS_HEIGHT,
+                WORLD_MAXIMUM_PNG_BYTES,
+            )
+            outputs: dict[int, Path] = {}
+            identities: list[PngIdentity] = []
+            for scale in WORLD_SCALES:
+                output = run / f"atlas-{scale}x.png"
+                write_png_rgba(
+                    output,
+                    WORLD_ATLAS_WIDTH * scale,
+                    WORLD_ATLAS_HEIGHT * scale,
+                    _scale_rgba_nearest(
+                        source.rgba_pixels,
+                        WORLD_ATLAS_WIDTH,
+                        WORLD_ATLAS_HEIGHT,
+                        scale,
+                    ),
+                )
+                outputs[scale] = output
+                identities.append(
+                    _validate_png(
+                        output,
+                        WORLD_ATLAS_WIDTH * scale,
+                        WORLD_ATLAS_HEIGHT * scale,
+                        WORLD_MAXIMUM_PNG_BYTES,
+                    )
+                )
+            run_outputs.append((master, outputs, master_identity, tuple(identities)))
+
+        first_master, first_outputs, master_identity, bucket_identities = run_outputs[0]
+        second_master, second_outputs, second_master_identity, second_bucket_identities = (
+            run_outputs[1]
+        )
+        if (
+            master_identity != second_master_identity
+            or first_master.read_bytes() != second_master.read_bytes()
+            or bucket_identities != second_bucket_identities
+            or any(
+                first_outputs[scale].read_bytes() != second_outputs[scale].read_bytes()
+                for scale in WORLD_SCALES
+            )
+        ):
+            raise _reject(
+                "NonDeterministicOutput",
+                "atlas",
+                "The Map 3 atlas derivation did not produce byte-identical outputs.",
+            )
+        manifest = _world_manifest(
+            source,
+            generator_artifact_sha256,
+            (bucket_identities[0], bucket_identities[1]),
+        )
+        manifest_sha256, _manifest_bytes = _write_world_candidate(
+            staging,
+            source,
+            first_master,
+            first_outputs,
+            manifest,
+        )
+        try:
+            repeated = validate_asset_checkout_identity(
+                asset_root,
+                expected_commit=expected_commit,
+                expected_tree=expected_tree,
+                required_ignored_path=candidate_relative,
+            )
+        except AssetPreflightError as error:
+            raise _reject(error.code, error.field, error.message) from error
+        if repeated.identity != checkout.identity:
+            raise _reject(
+                "RepositoryStateMismatch",
+                "assetRepository",
+                "The local asset repository identity changed during candidate construction.",
+            )
+        for child in tuple(staging.iterdir()):
+            if child.name != "candidate":
+                shutil.rmtree(child)
+        os.rename(staging / "candidate", destination)
+        published = True
+        staging.rmdir()
+        try:
+            final_checkout = validate_asset_checkout_identity(
+                asset_root,
+                expected_commit=expected_commit,
+                expected_tree=expected_tree,
+                required_ignored_path=candidate_relative,
+            )
+        except AssetPreflightError as error:
+            raise _reject(error.code, error.field, error.message) from error
+        if final_checkout.identity != checkout.identity:
+            raise _reject(
+                "RepositoryStateMismatch",
+                "assetRepository",
+                "The local asset repository identity changed at candidate publication.",
+            )
+        receipt = {
+            "schemaVersion": 1,
+            "capability": WORLD_BUILD_CAPABILITY,
+            "status": "Pass",
+            "assetRepositoryCommit": checkout.identity.commit,
+            "assetRepositoryTree": checkout.identity.tree,
+            "assetId": WORLD_ASSET_ID,
+            "sourceAssetId": WORLD_SOURCE_ASSET_ID,
+            "sourceBundleByteLength": len(source.source_bundle),
+            "sourceBundleSha256": _sha256(source.source_bundle),
+            "masterSha256": master_identity.sha256,
+            "generatorId": WORLD_GENERATOR_ID,
+            "generatorVersion": WORLD_GENERATOR_VERSION,
+            "generatorArtifactSha256": generator_artifact_sha256,
+            "policyId": WORLD_POLICY_ID,
+            "acceptedTilesetSlots": list(source.selected_slots),
+            "segmentCount": WORLD_TILESET_COUNT,
+            "segmentSize": {"width": WORLD_SHEET_WIDTH, "height": WORLD_SHEET_HEIGHT},
+            "tileGrid": {
+                "columns": WORLD_TILE_GRID_COLUMNS,
+                "rows": WORLD_TILE_GRID_ROWS,
+                "tileWidth": WORLD_TILE_PIXEL_SIZE,
+                "tileHeight": WORLD_TILE_PIXEL_SIZE,
+                "tilesPerSegment": WORLD_TILES_PER_TILESET,
+            },
+            "atlasSize": {"width": WORLD_ATLAS_WIDTH, "height": WORLD_ATLAS_HEIGHT},
+            "palettePolicy": {
+                "channelExpansion": "v<<5|v<<2|v>>1",
+                "transparentIndex": 0,
+                "colorSpace": "srgb",
+                "alphaMode": "straight",
+                "parityClaim": "project-authored-review-candidate-only",
+            },
+            "buckets": [
+                {
+                    "scale": scale,
+                    "width": identity.width,
+                    "height": identity.height,
+                    "byteLength": identity.byte_length,
+                    "sha256": identity.sha256,
+                    "filter": "nearest",
+                    "mipmaps": False,
+                    "repeat": False,
+                }
+                for scale, identity in zip(WORLD_SCALES, bucket_identities, strict=True)
+            ],
+            "manifestSha256": manifest_sha256,
+            "cleanupStatus": "clean",
+        }
+    except AssetBuildError:
+        raise
+    except OSError as error:
+        raise _reject(
+            "CandidateWriteFailed", "candidate", "The world candidate build failed."
+        ) from error
+    finally:
+        cleanup_error: AssetBuildError | None = None
+        if published and receipt is None and os.path.lexists(destination):
+            try:
+                shutil.rmtree(destination)
+                published = False
+            except OSError as error:
+                cleanup_error = _reject(
+                    "CleanupFailed",
+                    "candidate",
+                    "A failed world candidate publication could not be rolled back.",
+                )
+                cleanup_error.__cause__ = error
+        if os.path.lexists(staging):
+            try:
+                _cleanup_owned(staging, cache, _WORLD_STAGING_PREFIX)
+            except AssetBuildError as error:
+                if cleanup_error is None:
+                    cleanup_error = error
+        if cleanup_error is not None and published and os.path.lexists(destination):
+            try:
+                shutil.rmtree(destination)
+                published = False
+            except OSError:
+                pass
+        if created_cache and not published:
+            with suppress(OSError):
+                cache.rmdir()
+        if cleanup_error is not None:
+            raise cleanup_error
+    if receipt is None or not published:
+        raise _reject("CandidateWriteFailed", "candidate", "The world candidate did not publish.")
+    return receipt
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Build one deterministic ignored local HUD SVG presentation candidate."
@@ -1127,21 +2131,46 @@ def _parser() -> argparse.ArgumentParser:
     candidate.add_argument("--expected-master-sha256", required=True)
     candidate.add_argument("--resvg-archive", required=True)
     candidate.add_argument("--candidate-name", required=True)
+    world = subparsers.add_parser("map3-base-atlas-candidate")
+    world.add_argument("--asset-root", required=True)
+    world.add_argument("--expected-commit", required=True)
+    world.add_argument("--expected-tree", required=True)
+    world.add_argument("--rom", required=True)
+    world.add_argument("--expected-rom-sha256", required=True)
+    world.add_argument("--tileset-metadata", required=True)
+    world.add_argument("--expected-tileset-metadata-sha256", required=True)
+    world.add_argument("--palette-metadata", required=True)
+    world.add_argument("--expected-palette-metadata-sha256", required=True)
+    world.add_argument("--candidate-name", required=True)
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     arguments = _parser().parse_args(argv)
     try:
-        receipt = build_hud_svg_candidate(
-            asset_root=arguments.asset_root,
-            expected_commit=arguments.expected_commit,
-            expected_tree=arguments.expected_tree,
-            asset_id=arguments.asset_id,
-            expected_master_sha256=arguments.expected_master_sha256,
-            resvg_archive=arguments.resvg_archive,
-            candidate_name=arguments.candidate_name,
-        )
+        if arguments.command == "hud-svg-candidate":
+            receipt = build_hud_svg_candidate(
+                asset_root=arguments.asset_root,
+                expected_commit=arguments.expected_commit,
+                expected_tree=arguments.expected_tree,
+                asset_id=arguments.asset_id,
+                expected_master_sha256=arguments.expected_master_sha256,
+                resvg_archive=arguments.resvg_archive,
+                candidate_name=arguments.candidate_name,
+            )
+        else:
+            receipt = build_map3_base_atlas_candidate(
+                asset_root=arguments.asset_root,
+                expected_commit=arguments.expected_commit,
+                expected_tree=arguments.expected_tree,
+                rom_path=arguments.rom,
+                expected_rom_sha256=arguments.expected_rom_sha256,
+                tileset_metadata_path=arguments.tileset_metadata,
+                expected_tileset_metadata_sha256=arguments.expected_tileset_metadata_sha256,
+                palette_metadata_path=arguments.palette_metadata,
+                expected_palette_metadata_sha256=arguments.expected_palette_metadata_sha256,
+                candidate_name=arguments.candidate_name,
+            )
     except AssetBuildError as error:
         print(json.dumps({"status": "Rejected", "diagnostic": error.as_dict()}), file=sys.stderr)
         return 2

@@ -8,6 +8,7 @@ import struct
 import subprocess
 import zipfile
 import zlib
+from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
@@ -16,6 +17,7 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from sf2tool import remake_asset_build, remake_assets
+from sf2tool.compression import StackDecodeResult
 from sf2tool.remake_godot import ProcessReceipt
 
 HOOK_BYTES = (
@@ -929,6 +931,244 @@ def test_hud_svg_candidate_build_is_deterministic_ignored_and_path_free(
     assert not list((repository.root / "cache").glob(".sf2-hud-svg-build-*"))
 
 
+def _world_inputs() -> tuple[
+    bytes,
+    dict[str, Any],
+    dict[str, Any],
+    dict[bytes, StackDecodeResult],
+]:
+    rom = bytearray(256)
+    palette_words = [2, *(((index % 8) << 1) for index in range(1, 16))]
+    palette_source = b"".join(word.to_bytes(2, "big") for word in palette_words)
+    rom[: len(palette_source)] = palette_source
+    effective_palette = b"\0\0" + palette_source[2:]
+    rom[63] = 0xEE
+    decodes: dict[bytes, StackDecodeResult] = {}
+    selected_rows: dict[int, dict[str, Any]] = {}
+    for position, index in enumerate(remake_asset_build.ACCEPTED_TILESET_SLOTS):
+        compressed = bytes([0xA0 + position])
+        address = 64 + position
+        rom[address] = compressed[0]
+        decoded_bytes = bytes([0x10 + position * 0x11]) * 4096
+        decoded = StackDecodeResult(
+            output=decoded_bytes,
+            input_bits_consumed=1,
+            command_group_count=1,
+            literal_word_count=0,
+            copy_command_count=0,
+            copied_word_count=0,
+            maximum_copy_offset_words=0,
+            maximum_copy_length_words=0,
+            history_index_counts=(0,) * 16,
+        )
+        decodes[compressed] = decoded
+        selected_rows[index] = {
+            "sourceAddress": address,
+            "compressedBytes": 1,
+            "sourceSha256": _digest(compressed),
+            "decodedSha256": _digest(decoded_bytes),
+        }
+
+    rom_bytes = bytes(rom)
+    common_provenance = {
+        "repository": remake_asset_build.ACCEPTED_UPSTREAM_REPOSITORY,
+        "commit": remake_asset_build.ACCEPTED_UPSTREAM_COMMIT,
+    }
+    tilesets = []
+    for index in range(115):
+        selected = selected_rows.get(index)
+        tilesets.append(
+            {
+                "index": index,
+                "symbol": f"MapTileset{index:03}",
+                "sourcePath": f"project-authored/tileset-{index:03}.bin",
+                "sourceAddress": selected["sourceAddress"] if selected else 63,
+                "compressedBytes": selected["compressedBytes"] if selected else 1,
+                "decodedBytes": 4096,
+                "sourceSha256": (
+                    selected["sourceSha256"] if selected else _digest(bytes([rom[63]]))
+                ),
+                "decodedSha256": (selected["decodedSha256"] if selected else _digest(bytes(4096))),
+                "inputBitsConsumed": 1,
+                "trailingBits": 7,
+                "commandGroupCount": 1,
+                "literalWordCount": 0,
+                "copyCommandCount": 0,
+                "copiedWordCount": 0,
+                "maximumCopyOffsetWords": 0,
+                "maximumCopyLengthWords": 0,
+            }
+        )
+    tileset_maps = [
+        {
+            "mapIndex": index,
+            "sourcePath": f"project-authored/map-{index:02}.asm",
+            "mapAddress": index,
+            "paletteIndex": 0,
+            "tilesetSlots": (
+                list(remake_asset_build.ACCEPTED_TILESET_SLOTS)
+                if index == remake_asset_build.ACCEPTED_MAP_INDEX
+                else [255, 255, 255, 255, 255]
+            ),
+        }
+        for index in range(79)
+    ]
+    tileset_document = {
+        "schemaVersion": 1,
+        "id": remake_asset_build.ACCEPTED_TILESET_METADATA_ID,
+        "upstream": common_provenance,
+        "romSha256": _digest(rom_bytes),
+        "function": {},
+        "table": {},
+        "summary": {},
+        "unusedTilesetIndices": [29],
+        "animationTileCountDistribution": {},
+        "tilesets": tilesets,
+        "maps": tileset_maps,
+        "animations": [],
+        "runtimeQuestions": ["project-authored"],
+    }
+    palettes = [
+        {
+            "index": index,
+            "symbol": f"MapPalette{index:02}",
+            "sourcePath": f"project-authored/palette-{index:02}.bin",
+            "sourceAddress": 0,
+            "byteCount": 32,
+            "colorCount": 16,
+            "sourceFirstColor": 2,
+            "effectiveFirstColor": 0,
+            "sourceSha256": _digest(palette_source),
+            "effectiveSha256": _digest(effective_palette),
+        }
+        for index in range(16)
+    ]
+    palette_document = {
+        "schemaVersion": 1,
+        "id": remake_asset_build.ACCEPTED_PALETTE_METADATA_ID,
+        "upstream": common_provenance,
+        "romSha256": _digest(rom_bytes),
+        "function": {},
+        "table": {},
+        "summary": {},
+        "usageCounts": {},
+        "palettes": palettes,
+        "maps": [
+            {
+                "mapIndex": index,
+                "sourcePath": f"project-authored/map-{index:02}.asm",
+                "mapAddress": index,
+                "paletteIndex": 0,
+            }
+            for index in range(79)
+        ],
+        "runtimeQuestions": ["project-authored"],
+    }
+    return rom_bytes, tileset_document, palette_document, decodes
+
+
+def _fake_world_decoder(decodes: dict[bytes, StackDecodeResult]) -> Any:
+    def decode(data: bytes, *, expected_output_bytes: int | None = None) -> StackDecodeResult:
+        assert expected_output_bytes == 4096
+        return decodes[data]
+
+    return decode
+
+
+def _write_world_inputs(
+    root: Path,
+    inputs: tuple[bytes, dict[str, Any], dict[str, Any], dict[bytes, StackDecodeResult]],
+) -> tuple[Path, Path, Path]:
+    rom, tilesets, palettes, _decodes = inputs
+    root.mkdir()
+    rom_path = root / "rom.bin"
+    tileset_path = root / "tilesets.json"
+    palette_path = root / "palettes.json"
+    rom_path.write_bytes(rom)
+    tileset_path.write_text(json.dumps(tilesets, separators=(",", ":")), encoding="utf-8")
+    palette_path.write_text(json.dumps(palettes, separators=(",", ":")), encoding="utf-8")
+    return rom_path, tileset_path, palette_path
+
+
+def _pin_world_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+    rom_path: Path,
+    tileset_path: Path,
+    palette_path: Path,
+) -> None:
+    monkeypatch.setattr(remake_asset_build, "ACCEPTED_ROM_SHA256", _digest(rom_path.read_bytes()))
+    monkeypatch.setattr(remake_asset_build, "ACCEPTED_ROM_SIZE", rom_path.stat().st_size)
+    monkeypatch.setattr(
+        remake_asset_build,
+        "ACCEPTED_TILESET_METADATA_SHA256",
+        _digest(tileset_path.read_bytes()),
+    )
+    monkeypatch.setattr(
+        remake_asset_build,
+        "ACCEPTED_TILESET_METADATA_SIZE",
+        tileset_path.stat().st_size,
+    )
+    monkeypatch.setattr(
+        remake_asset_build,
+        "ACCEPTED_PALETTE_METADATA_SHA256",
+        _digest(palette_path.read_bytes()),
+    )
+    monkeypatch.setattr(
+        remake_asset_build,
+        "ACCEPTED_PALETTE_METADATA_SIZE",
+        palette_path.stat().st_size,
+    )
+
+
+def _build_world_candidate(
+    repository: CandidateRepository,
+    rom_path: Path,
+    tileset_path: Path,
+    palette_path: Path,
+) -> dict[str, object]:
+    commit, tree = repository.pins()
+    return remake_asset_build.build_map3_base_atlas_candidate(
+        asset_root=str(repository.root),
+        expected_commit=commit,
+        expected_tree=tree,
+        rom_path=str(rom_path),
+        expected_rom_sha256=_digest(rom_path.read_bytes()),
+        tileset_metadata_path=str(tileset_path),
+        expected_tileset_metadata_sha256=_digest(tileset_path.read_bytes()),
+        palette_metadata_path=str(palette_path),
+        expected_palette_metadata_sha256=_digest(palette_path.read_bytes()),
+        candidate_name="map3-world-candidate",
+    )
+
+
+def _read_rgba_png(path: Path) -> tuple[int, int, bytes]:
+    data = path.read_bytes()
+    assert data.startswith(remake_asset_build.PNG_SIGNATURE)
+    offset = len(remake_asset_build.PNG_SIGNATURE)
+    width = height = 0
+    payloads = []
+    while offset < len(data):
+        length = struct.unpack(">I", data[offset : offset + 4])[0]
+        kind = data[offset + 4 : offset + 8]
+        payload = data[offset + 8 : offset + 8 + length]
+        offset += 12 + length
+        if kind == b"IHDR":
+            width, height = struct.unpack(">II", payload[:8])
+        elif kind == b"IDAT":
+            payloads.append(payload)
+        elif kind == b"IEND":
+            break
+    rows = zlib.decompress(b"".join(payloads))
+    stride = width * 4
+    assert len(rows) == height * (stride + 1)
+    rgba = bytearray()
+    for row in range(height):
+        start = row * (stride + 1)
+        assert rows[start] == 0
+        rgba.extend(rows[start + 1 : start + 1 + stride])
+    return width, height, bytes(rgba)
+
+
 @pytest.mark.parametrize(
     ("replacement", "code"),
     (
@@ -1205,3 +1445,210 @@ def test_official_resvg_candidate_build_opt_in(tmp_path: Path) -> None:
     assert receipt["generatorVersion"] == "0.47.0"
     assert receipt["cleanupStatus"] == "clean"
     assert not list((repository.root / "cache").glob(".sf2-hud-svg-build-*"))
+
+
+def test_map3_world_atlas_candidate_is_exact_deterministic_and_ignored(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+    inputs = _world_inputs()
+    rom_path, tileset_path, palette_path = _write_world_inputs(tmp_path / "inputs", inputs)
+    _pin_world_inputs(monkeypatch, rom_path, tileset_path, palette_path)
+    monkeypatch.setattr(
+        remake_asset_build,
+        "decode_stack_compressed",
+        _fake_world_decoder(inputs[3]),
+    )
+    before = (*repository.pins(), _run(repository.root, "status", "--porcelain=v2", "-z"))
+
+    receipt = _build_world_candidate(repository, rom_path, tileset_path, palette_path)
+
+    candidate = repository.root / "cache" / "map3-world-candidate"
+    assert sorted(
+        path.relative_to(candidate).as_posix() for path in candidate.rglob("*") if path.is_file()
+    ) == [
+        "manifests/presentation-assets-v1.json",
+        "masters/world/map3/base-tileset-atlas.png",
+        "runtime/world/map3/base-tileset-atlas@2x.png",
+        "runtime/world/map3/base-tileset-atlas@4x.png",
+        "source/world/map3/base-visual-selection-v1.bin",
+    ]
+    manifest = json.loads(
+        (candidate / "manifests" / "presentation-assets-v1.json").read_text(encoding="utf-8")
+    )
+    asset = manifest["assets"][0]
+    assert asset["assetId"] == "world.map3.base-tileset-atlas"
+    assert asset["logicalSize"] == {"width": 128, "height": 320}
+    assert [bucket["scale"] for bucket in asset["buckets"]] == [2, 4]
+    assert all(bucket["filter"] == "nearest" for bucket in asset["buckets"])
+    assert receipt["acceptedTilesetSlots"] == [0, 37, 43, 53, 66]
+    assert receipt["segmentCount"] == 5
+    assert receipt["segmentSize"] == {"width": 128, "height": 64}
+    assert receipt["tileGrid"] == {
+        "columns": 16,
+        "rows": 8,
+        "tileWidth": 8,
+        "tileHeight": 8,
+        "tilesPerSegment": 128,
+    }
+    assert receipt["atlasSize"] == {"width": 128, "height": 320}
+    assert receipt["palettePolicy"] == {
+        "channelExpansion": "v<<5|v<<2|v>>1",
+        "transparentIndex": 0,
+        "colorSpace": "srgb",
+        "alphaMode": "straight",
+        "parityClaim": "project-authored-review-candidate-only",
+    }
+    master_width, master_height, master_pixels = _read_rgba_png(
+        candidate / "masters" / "world" / "map3" / "base-tileset-atlas.png"
+    )
+    assert (master_width, master_height) == (128, 320)
+    assert master_pixels[:8] == bytes([36, 0, 0, 255, 0, 0, 0, 0])
+    assert master_pixels[64 * 128 * 4 : 64 * 128 * 4 + 4] == bytes([73, 0, 0, 255])
+    two_width, two_height, two_pixels = _read_rgba_png(
+        candidate / "runtime" / "world" / "map3" / "base-tileset-atlas@2x.png"
+    )
+    assert (two_width, two_height) == (256, 640)
+    assert two_pixels[:16] == bytes([36, 0, 0, 255]) * 2 + bytes([0, 0, 0, 0]) * 2
+    assert two_pixels[: 256 * 4] == two_pixels[256 * 4 : 512 * 4]
+    encoded = json.dumps(receipt, sort_keys=True)
+    for forbidden in (str(repository.root), str(rom_path), str(tileset_path), str(palette_path)):
+        assert forbidden not in encoded
+    assert repository.pins() == before[:2]
+    assert _run(repository.root, "status", "--porcelain=v2", "-z") == before[2]
+    assert not list((repository.root / "cache").glob(".sf2-map3-world-atlas-build-*"))
+
+
+@pytest.mark.parametrize(
+    ("mutation", "code"),
+    (
+        ("unknown-root", "InvalidMetadata"),
+        ("selection-order", "InvalidSelection"),
+        ("source-hash", "SourcePayloadMismatch"),
+        ("decoded-hash", "DecodedPayloadMismatch"),
+        ("palette-mask", "PalettePayloadMismatch"),
+    ),
+)
+def test_map3_world_atlas_semantics_fail_closed(
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: str,
+    code: str,
+) -> None:
+    rom, tilesets, palettes, decodes = _world_inputs()
+    tilesets = deepcopy(tilesets)
+    palettes = deepcopy(palettes)
+    rom_bytes = bytearray(rom)
+    if mutation == "unknown-root":
+        tilesets["unknown"] = True
+    elif mutation == "selection-order":
+        tilesets["maps"][3]["tilesetSlots"][0:2] = [37, 0]
+    elif mutation == "source-hash":
+        tilesets["tilesets"][0]["sourceSha256"] = "0" * 64
+    elif mutation == "decoded-hash":
+        tilesets["tilesets"][0]["decodedSha256"] = "0" * 64
+    else:
+        rom_bytes[0:2] = b"\xff\xff"
+        source = bytes(rom_bytes[:32])
+        palettes["palettes"][0]["sourceSha256"] = _digest(source)
+    semantic_rom_digest = _digest(bytes(rom_bytes))
+    tilesets["romSha256"] = semantic_rom_digest
+    palettes["romSha256"] = semantic_rom_digest
+    monkeypatch.setattr(remake_asset_build, "ACCEPTED_ROM_SHA256", semantic_rom_digest)
+    monkeypatch.setattr(remake_asset_build, "decode_stack_compressed", _fake_world_decoder(decodes))
+
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        remake_asset_build._build_world_atlas_source(bytes(rom_bytes), tilesets, palettes)
+
+    assert rejected.value.code == code
+
+
+def test_map3_world_fixed_roots_precede_parse_and_reject_relative_paths(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+    inputs = _world_inputs()
+    rom_path, tileset_path, palette_path = _write_world_inputs(tmp_path / "inputs", inputs)
+    _pin_world_inputs(monkeypatch, rom_path, tileset_path, palette_path)
+    monkeypatch.setattr(
+        remake_asset_build,
+        "decode_stack_compressed",
+        _fake_world_decoder(inputs[3]),
+    )
+    baseline_digest = remake_asset_build.ACCEPTED_TILESET_METADATA_SHA256
+    mutated = bytearray(tileset_path.read_bytes())
+    marker = mutated.index(b'"tilesets"')
+    mutated[marker + 9] = ord("x")
+    tileset_path.write_bytes(mutated)
+
+    with pytest.raises(remake_asset_build.AssetBuildError) as digest_rejected:
+        _build_world_candidate(repository, rom_path, tileset_path, palette_path)
+    assert digest_rejected.value.code == "ContentDigestMismatch"
+    assert _digest(mutated) != baseline_digest
+    assert not (repository.root / "cache" / "map3-world-candidate").exists()
+
+    commit, tree = repository.pins()
+    with pytest.raises(remake_asset_build.AssetBuildError) as relative_rejected:
+        remake_asset_build.build_map3_base_atlas_candidate(
+            asset_root=str(repository.root),
+            expected_commit=commit,
+            expected_tree=tree,
+            rom_path="relative/rom.bin",
+            expected_rom_sha256=_digest(rom_path.read_bytes()),
+            tileset_metadata_path=str(tileset_path),
+            expected_tileset_metadata_sha256=_digest(tileset_path.read_bytes()),
+            palette_metadata_path=str(palette_path),
+            expected_palette_metadata_sha256=_digest(palette_path.read_bytes()),
+            candidate_name="map3-world-candidate",
+        )
+    assert relative_rejected.value.code == "InvalidRequest"
+    assert str(tmp_path) not in relative_rejected.value.message
+
+
+def test_map3_world_generator_fingerprint_is_canonical_and_dependency_complete() -> None:
+    records = {
+        "src/sf2tool/remake_asset_build.py": b"entrypoint",
+        "src/sf2tool/compression.py": b"stack",
+        "src/sf2tool/texture_extract.py": b"texture",
+        "runtime/python-implementation": b"cpython",
+        "runtime/python-version": b"3.13.7-final-0",
+        "runtime/zlib-compile-version": b"1.3.1",
+        "runtime/zlib-runtime-version": b"1.3.1",
+    }
+    expected = remake_asset_build._composite_generator_fingerprint(records)
+
+    assert expected == remake_asset_build._composite_generator_fingerprint(
+        dict(reversed(tuple(records.items())))
+    )
+    for name in records:
+        mutated = dict(records)
+        mutated[name] += b"-drift"
+        assert remake_asset_build._composite_generator_fingerprint(mutated) != expected
+
+
+def test_exact_private_map3_world_candidate_opt_in(tmp_path: Path) -> None:
+    values = {
+        "rom": os.environ.get("SF2_PRIVATE_ROM"),
+        "tilesets": os.environ.get("SF2_PRIVATE_MAP_TILESET_METADATA"),
+        "palettes": os.environ.get("SF2_PRIVATE_MAP_PALETTE_METADATA"),
+    }
+    if any(not value for value in values.values()):
+        pytest.skip("set the three accepted SF2 private visual input variables")
+    repository = CandidateRepository.create(tmp_path / "exact-asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+
+    receipt = _build_world_candidate(
+        repository,
+        Path(values["rom"] or ""),
+        Path(values["tilesets"] or ""),
+        Path(values["palettes"] or ""),
+    )
+
+    assert receipt["status"] == "Pass"
+    assert receipt["capability"] == remake_asset_build.WORLD_BUILD_CAPABILITY
+    assert receipt["acceptedTilesetSlots"] == [0, 37, 43, 53, 66]
+    assert receipt["atlasSize"] == {"width": 128, "height": 320}
+    assert receipt["cleanupStatus"] == "clean"

@@ -64,7 +64,7 @@ last, and atomically promotes it without modifying the source checkout or overwr
 export. It never copies `.git`, `source/`, `masters/`, ignored caches, previews, or Godot import state.
 
 This is transport and checkout preflight, not asset generation or product admission by itself. A
-separate candidate builder now closes the first deterministic HUD SVG derivation boundary:
+separate candidate builder closes the deterministic HUD SVG derivation boundary:
 
 ```powershell
 uv run python -m sf2tool.remake_asset_build hud-svg-candidate `
@@ -81,6 +81,37 @@ The builder admits exactly one nonignored untracked `masters/ui/<name>.svg` over
 local-only checkout, verifies the pinned resvg archive and executable version, renders deterministic
 2x/4x RGBA8 PNGs twice, validates the existing pack schema, and atomically publishes only a fresh
 direct child under ignored `cache/`. It never stages, promotes, commits, or prints a local path.
+
+The same tooling host also closes the first private Map 3 world-family candidate boundary without
+turning the candidate into an accepted asset transaction:
+
+```powershell
+uv run python -m sf2tool.remake_asset_build map3-base-atlas-candidate `
+  --asset-root <fully-qualified-asset-checkout> `
+  --expected-commit <40-lowercase-hex> `
+  --expected-tree <40-lowercase-hex> `
+  --rom <fully-qualified-accepted-rom> `
+  --expected-rom-sha256 <accepted-uppercase-sha256> `
+  --tileset-metadata <fully-qualified-accepted-tileset-metadata> `
+  --expected-tileset-metadata-sha256 <accepted-uppercase-sha256> `
+  --palette-metadata <fully-qualified-accepted-palette-metadata> `
+  --expected-palette-metadata-sha256 <accepted-uppercase-sha256> `
+  --candidate-name <fresh-cache-child>
+```
+
+Actual bytes and caller pins must both match the fixed accepted ROM and metadata roots before either
+metadata document is parsed. The builder derives the accepted Map 3 palette and ordered five-slot
+selection, decodes only those five 4,096-byte buffers, and emits one ignored private source bundle,
+one 128-by-320 master atlas, nearest-neighbor 2x/4x buckets, and a single-asset candidate manifest.
+Each of the five vertical 128-by-64 segments is exactly 128 8-by-8 tiles on a 16-by-8 grid. Palette
+index zero is transparent; the existing deterministic Mega Drive three-bit channel expansion maps
+the other colors to straight-alpha sRGB RGBA8. That mapping is a project-authored review/runtime
+candidate policy, not hardware, display, colorimetric, final-pixel, or original-fidelity parity.
+
+The result remains under ignored `cache/`; it does not stage, promote, commit, export, mount, enter a
+PCK, or authorize public redistribution. A later local asset-repository transaction must separately
+review and version the source/master/runtime/manifest set before any Godot consumer may request
+`world.map3.base-tileset-atlas`.
 
 The reviewed local asset history now owns `hud.yes-no-window-frame` and
 `hud.tactical-selection-cursor`: project-authored SVG masters plus deterministic 2x/4x runtime PNGs
