@@ -58,7 +58,8 @@ public sealed partial class Map3Root
         {
             plan = selection.PrivateBaseViewRequested
                 ? PrivateMap3PresentationPlan.PrivateLocalWithBaseVisual(
-                    selection.WorldTreatment)
+                    selection.WorldTreatment,
+                    selection.PrivateStaticOverlayRequested)
                 : PrivateMap3PresentationPlan.PrivateLocalAvailable();
         }
         else if (selection.RequestedProfile == Map3RuntimeProfile.PrivateLocal)

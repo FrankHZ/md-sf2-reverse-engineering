@@ -12,6 +12,7 @@ internal sealed record PrivateMap3PresentationPlan(
     bool ShowTraversalViewport,
     bool IncludeBaseVisualViewport,
     PrivateMap3WorldTreatment WorldTreatment,
+    bool StaticOverlayDiagnostic,
     float StatusY)
 {
     private const string DiagnosticExplanation =
@@ -22,6 +23,10 @@ internal sealed record PrivateMap3PresentationPlan(
         "Project-authored base composition from admitted private Map 3 data. " +
         "Not full original fidelity.";
 
+    private const string StaticOverlayExplanation =
+        "Project-authored STATIC OVERLAY DIAGNOSTIC using the admitted map palette. " +
+        "Not gameplay or original layer-2 fidelity.";
+
     internal static PrivateMap3PresentationPlan PrivateLocalAvailable() =>
         new(
             Map3Root.PrivateBannerText,
@@ -31,18 +36,21 @@ internal sealed record PrivateMap3PresentationPlan(
             ShowTraversalViewport: true,
             IncludeBaseVisualViewport: false,
             PrivateMap3WorldTreatment.ExactNearest,
+            StaticOverlayDiagnostic: false,
             StatusY: 450);
 
     internal static PrivateMap3PresentationPlan PrivateLocalWithBaseVisual(
-        PrivateMap3WorldTreatment worldTreatment = PrivateMap3WorldTreatment.ExactNearest) =>
+        PrivateMap3WorldTreatment worldTreatment = PrivateMap3WorldTreatment.ExactNearest,
+        bool staticOverlayDiagnostic = false) =>
         new(
             Map3Root.PrivateBannerText,
-            BaseVisualExplanation,
+            staticOverlayDiagnostic ? StaticOverlayExplanation : BaseVisualExplanation,
             "Admitting PrivateLocal canonical Map 3...",
             IncludeTraversalViewport: true,
             ShowTraversalViewport: false,
             IncludeBaseVisualViewport: true,
             worldTreatment,
+            staticOverlayDiagnostic,
             StatusY: 310);
 
     internal static PrivateMap3PresentationPlan PrivateLocalUnavailable(
@@ -66,6 +74,7 @@ internal sealed record PrivateMap3PresentationPlan(
             ShowTraversalViewport: false,
             IncludeBaseVisualViewport: false,
             PrivateMap3WorldTreatment.ExactNearest,
+            StaticOverlayDiagnostic: false,
             StatusY: 105);
     }
 
@@ -99,18 +108,21 @@ internal sealed class PrivateMap3Presenter
     private readonly PrivateOriginalMapTraversalViewport? _viewport;
     private readonly Label _status;
     private readonly PrivateMap3WorldTreatment _requestedWorldTreatment;
+    private readonly bool _staticOverlayDiagnostic;
     private OriginalMapVisualPayloadDefinition? _visualDefinition;
 
     private PrivateMap3Presenter(
         PrivateOriginalMapBaseViewport? baseViewport,
         PrivateOriginalMapTraversalViewport? viewport,
         Label status,
-        PrivateMap3WorldTreatment requestedWorldTreatment)
+        PrivateMap3WorldTreatment requestedWorldTreatment,
+        bool staticOverlayDiagnostic)
     {
         _baseViewport = baseViewport;
         _viewport = viewport;
         _status = status;
         _requestedWorldTreatment = requestedWorldTreatment;
+        _staticOverlayDiagnostic = staticOverlayDiagnostic;
     }
 
     internal PrivateOriginalMapTraversalViewProjection? Projection =>
@@ -196,7 +208,8 @@ internal sealed class PrivateMap3Presenter
             baseViewport,
             viewport,
             status,
-            plan.WorldTreatment);
+            plan.WorldTreatment,
+            plan.StaticOverlayDiagnostic);
     }
 
     internal void BindVisualDefinition(OriginalMapVisualPayloadDefinition definition)
@@ -239,6 +252,7 @@ internal sealed class PrivateMap3Presenter
             snapshot,
             _visualDefinition,
             _requestedWorldTreatment,
+            _staticOverlayDiagnostic,
             out diagnostic);
     }
 
@@ -249,7 +263,7 @@ internal sealed class PrivateMap3Presenter
         _viewport?.Project(snapshot);
         if (_baseViewport is not null && _visualDefinition is not null)
         {
-            _baseViewport.Project(snapshot, _visualDefinition);
+            _baseViewport.Project(snapshot, _visualDefinition, _staticOverlayDiagnostic);
         }
 
         _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome);

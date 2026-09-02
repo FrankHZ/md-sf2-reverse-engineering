@@ -34,6 +34,10 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         int playerColumn,
         int playerRow,
         int rasterScale,
+        bool staticOverlayDiagnostic,
+        int? overlayAreaRecordOrdinal,
+        int overlayDeltaX,
+        int overlayDeltaY,
         IEnumerable<byte> rgbaBytes)
     {
         Map = map;
@@ -42,6 +46,10 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         PlayerColumn = playerColumn;
         PlayerRow = playerRow;
         RasterScale = rasterScale;
+        StaticOverlayDiagnostic = staticOverlayDiagnostic;
+        OverlayAreaRecordOrdinal = overlayAreaRecordOrdinal;
+        OverlayDeltaX = overlayDeltaX;
+        OverlayDeltaY = overlayDeltaY;
         _rgbaBytes = Array.AsReadOnly(rgbaBytes.ToArray());
     }
 
@@ -57,6 +65,16 @@ internal sealed record PrivateOriginalMapBaseViewProjection
 
     internal int RasterScale { get; }
 
+    internal bool StaticOverlayDiagnostic { get; }
+
+    internal bool ShowsPlayerMarker => !StaticOverlayDiagnostic;
+
+    internal int? OverlayAreaRecordOrdinal { get; }
+
+    internal int OverlayDeltaX { get; }
+
+    internal int OverlayDeltaY { get; }
+
     internal int RasterPixelWidth => checked(PixelWidth * RasterScale);
 
     internal int RasterPixelHeight => checked(PixelHeight * RasterScale);
@@ -65,7 +83,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
 
     internal static PrivateOriginalMapBaseViewProjection Create(
         PrivateOriginalMapSessionSnapshot snapshot,
-        OriginalMapVisualPayloadDefinition visualDefinition)
+        OriginalMapVisualPayloadDefinition visualDefinition,
+        bool staticOverlayDiagnostic = false)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(visualDefinition);
@@ -82,6 +101,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             snapshot,
             visualDefinition.Selection,
             rasterScale: 1,
+            staticOverlayDiagnostic,
             (slot, localTile, row, column, _, _) =>
                 ResolvePayloadPixel(visualDefinition, slot, localTile, row, column));
     }
@@ -90,7 +110,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapVisualResourceSelection selection,
         IReadOnlyList<byte> atlasRgbaBytes,
-        int scale)
+        int scale,
+        bool staticOverlayDiagnostic = false)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(selection);
@@ -113,6 +134,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             snapshot,
             selection,
             scale,
+            staticOverlayDiagnostic,
             (slot, localTile, row, column, subpixelRow, subpixelColumn) =>
                 ResolveAtlasPixel(
                 atlasRgbaBytes,
@@ -139,6 +161,10 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             logical.OriginY != physical.OriginY ||
             logical.PlayerColumn != physical.PlayerColumn ||
             logical.PlayerRow != physical.PlayerRow ||
+            logical.StaticOverlayDiagnostic != physical.StaticOverlayDiagnostic ||
+            logical.OverlayAreaRecordOrdinal != physical.OverlayAreaRecordOrdinal ||
+            logical.OverlayDeltaX != physical.OverlayDeltaX ||
+            logical.OverlayDeltaY != physical.OverlayDeltaY ||
             physical.RasterPixelWidth != checked(PixelWidth * physical.RasterScale) ||
             physical.RasterPixelHeight != checked(PixelHeight * physical.RasterScale))
         {
@@ -202,6 +228,10 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             logical.PlayerColumn,
             logical.PlayerRow,
             outputScale,
+            logical.StaticOverlayDiagnostic,
+            logical.OverlayAreaRecordOrdinal,
+            logical.OverlayDeltaX,
+            logical.OverlayDeltaY,
             output);
     }
 
@@ -335,6 +365,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapVisualResourceSelection selection,
         int rasterScale,
+        bool staticOverlayDiagnostic,
         Func<int, int, int, int, int, int, SourcePixel> resolvePixel)
     {
         if (!SameSelection(snapshot.Definition.VisualResourceSelection, selection))
@@ -344,26 +375,115 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                 nameof(selection));
         }
 
-        int originX = Math.Clamp(
-            snapshot.PlayerPosition.X - (ColumnCount / 2),
-            0,
-            WorkingMapLayout.ColumnCount - ColumnCount);
-        int originY = Math.Clamp(
-            snapshot.PlayerPosition.Y - (RowCount / 2),
-            0,
-            WorkingMapLayout.RowCount - RowCount);
+        OriginalMapAreaDefinition? overlayArea = null;
+        int overlayDeltaX = 0;
+        int overlayDeltaY = 0;
+        int originX;
+        int originY;
+        if (staticOverlayDiagnostic)
+        {
+            OriginalMapAreaDefinition[] candidates = snapshot.Definition.AreaCatalog.Records
+                .Where(record =>
+                    record.SecondLayerForegroundStart != record.SecondLayerBackgroundStart)
+                .Take(2)
+                .ToArray();
+            if (candidates.Length != 1)
+            {
+                throw new ArgumentException(
+                    "A static overlay diagnostic requires exactly one admitted non-zero layer offset.",
+                    nameof(snapshot));
+            }
+
+            overlayArea = candidates[0];
+            overlayDeltaX = checked(
+                (int)overlayArea.SecondLayerForegroundStart.X -
+                overlayArea.SecondLayerBackgroundStart.X);
+            overlayDeltaY = checked(
+                (int)overlayArea.SecondLayerForegroundStart.Y -
+                overlayArea.SecondLayerBackgroundStart.Y);
+            originX = overlayArea.MainLayerBounds.MinimumX;
+            originY = overlayArea.MainLayerBounds.MinimumY;
+            if (originX + ColumnCount - 1 > overlayArea.MainLayerBounds.MaximumX ||
+                originY + RowCount - 1 > overlayArea.MainLayerBounds.MaximumY ||
+                !IsWithinLayoutRegion(originX, originY) ||
+                !IsWithinLayoutRegion(
+                    checked(originX + overlayDeltaX),
+                    checked(originY + overlayDeltaY)))
+            {
+                throw new ArgumentException(
+                    "The admitted static overlay crop exceeds its area or working-layout bounds.",
+                    nameof(snapshot));
+            }
+        }
+        else
+        {
+            originX = Math.Clamp(
+                snapshot.PlayerPosition.X - (ColumnCount / 2),
+                0,
+                WorkingMapLayout.ColumnCount - ColumnCount);
+            originY = Math.Clamp(
+                snapshot.PlayerPosition.Y - (RowCount / 2),
+                0,
+                WorkingMapLayout.RowCount - RowCount);
+        }
+
         int rasterPixelWidth = checked(PixelWidth * rasterScale);
         int rasterPixelHeight = checked(PixelHeight * rasterScale);
         byte[] pixels = new byte[checked(rasterPixelWidth * rasterPixelHeight * 4)];
         FillBackground(pixels);
 
+        RenderLayoutRegion(
+            pixels,
+            snapshot,
+            originX,
+            originY,
+            rasterScale,
+            rasterPixelWidth,
+            resolvePixel);
+        if (overlayArea is not null)
+        {
+            RenderLayoutRegion(
+                pixels,
+                snapshot,
+                checked(originX + overlayDeltaX),
+                checked(originY + overlayDeltaY),
+                rasterScale,
+                rasterPixelWidth,
+                resolvePixel);
+        }
+
+        return new PrivateOriginalMapBaseViewProjection(
+            snapshot.Map,
+            originX,
+            originY,
+            snapshot.PlayerPosition.X - originX,
+            snapshot.PlayerPosition.Y - originY,
+            rasterScale,
+            staticOverlayDiagnostic,
+            overlayArea?.Identity.OneBasedRecordOrdinal,
+            overlayDeltaX,
+            overlayDeltaY,
+            pixels);
+    }
+
+    private static void RenderLayoutRegion(
+        byte[] pixels,
+        PrivateOriginalMapSessionSnapshot snapshot,
+        int sourceOriginX,
+        int sourceOriginY,
+        int rasterScale,
+        int rasterPixelWidth,
+        Func<int, int, int, int, int, int, SourcePixel> resolvePixel)
+    {
         for (int blockRow = 0; blockRow < RowCount; blockRow++)
         {
             for (int blockColumn = 0; blockColumn < ColumnCount; blockColumn++)
             {
                 OriginalMapBlockDefinition block = snapshot.Definition.BlockCatalog.Resolve(
                     snapshot.WorkingLayout,
-                    new MapPosition(originX + blockColumn, originY + blockRow));
+                    new MapPosition(
+                        sourceOriginX + blockColumn,
+                        sourceOriginY + blockRow));
                 RenderBlock(
                     pixels,
                     blockColumn,
@@ -374,16 +494,13 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                     resolvePixel);
             }
         }
-
-        return new PrivateOriginalMapBaseViewProjection(
-            snapshot.Map,
-            originX,
-            originY,
-            snapshot.PlayerPosition.X - originX,
-            snapshot.PlayerPosition.Y - originY,
-            rasterScale,
-            pixels);
     }
+
+    private static bool IsWithinLayoutRegion(int originX, int originY) =>
+        originX >= 0 &&
+        originY >= 0 &&
+        originX + ColumnCount <= WorkingMapLayout.ColumnCount &&
+        originY + RowCount <= WorkingMapLayout.RowCount;
 
     private static void RenderBlock(
         byte[] pixels,
@@ -597,6 +714,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapVisualPayloadDefinition visualDefinition,
         PrivateMap3WorldTreatment worldTreatment,
+        bool staticOverlayDiagnostic,
         out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
     {
         ArgumentNullException.ThrowIfNull(mount);
@@ -650,13 +768,17 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
 
         PrivateOriginalMapBaseViewProjection payloadProjection =
-            PrivateOriginalMapBaseViewProjection.Create(snapshot, visualDefinition);
+            PrivateOriginalMapBaseViewProjection.Create(
+                snapshot,
+                visualDefinition,
+                staticOverlayDiagnostic);
         PrivateOriginalMapBaseViewProjection atlasProjection =
             PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
                 snapshot,
                 visualDefinition.Selection,
                 rgbaBytes,
-                mount.Bucket.Scale);
+                mount.Bucket.Scale,
+                staticOverlayDiagnostic);
         if (!PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
                 payloadProjection,
                 atlasProjection))
@@ -677,10 +799,14 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 
     public void Project(
         PrivateOriginalMapSessionSnapshot snapshot,
-        OriginalMapVisualPayloadDefinition visualDefinition)
+        OriginalMapVisualPayloadDefinition visualDefinition,
+        bool staticOverlayDiagnostic = false)
     {
         _projection = _atlasRgbaBytes is null
-            ? PrivateOriginalMapBaseViewProjection.Create(snapshot, visualDefinition)
+            ? PrivateOriginalMapBaseViewProjection.Create(
+                snapshot,
+                visualDefinition,
+                staticOverlayDiagnostic)
             : _worldTreatment switch
             {
                 PrivateMap3WorldTreatment.ExactNearest =>
@@ -688,12 +814,14 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                         snapshot,
                         visualDefinition.Selection,
                         _atlasRgbaBytes,
-                        _atlasScale),
+                        _atlasScale,
+                        staticOverlayDiagnostic),
                 PrivateMap3WorldTreatment.EdgeScale2x =>
                     PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
                         PrivateOriginalMapBaseViewProjection.Create(
                             snapshot,
-                            visualDefinition),
+                            visualDefinition,
+                            staticOverlayDiagnostic),
                         _atlasScale),
                 _ => throw new InvalidOperationException(
                     "The admitted private Map 3 world treatment is unknown."),
@@ -717,13 +845,16 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
 
         DrawTextureRect(_texture, LogicalTextureRect, tile: false);
-        Rect2 player = new(
-            new Vector2(
-                (_projection.PlayerColumn *
-                    PrivateOriginalMapBaseViewProjection.BlockPixelSize) + 6,
-                (_projection.PlayerRow *
-                    PrivateOriginalMapBaseViewProjection.BlockPixelSize) + 6),
-            new Vector2(12, 12));
-        DrawRect(player, PlayerColor);
+        if (_projection.ShowsPlayerMarker)
+        {
+            Rect2 player = new(
+                new Vector2(
+                    (_projection.PlayerColumn *
+                        PrivateOriginalMapBaseViewProjection.BlockPixelSize) + 6,
+                    (_projection.PlayerRow *
+                        PrivateOriginalMapBaseViewProjection.BlockPixelSize) + 6),
+                new Vector2(12, 12));
+            DrawRect(player, PlayerColor);
+        }
     }
 }

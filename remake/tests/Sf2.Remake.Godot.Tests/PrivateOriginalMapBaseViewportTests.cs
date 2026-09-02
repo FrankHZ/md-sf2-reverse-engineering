@@ -131,6 +131,179 @@ public sealed class PrivateOriginalMapBaseViewportTests
     }
 
     [Fact]
+    public void StaticOverlayDiagnosticComposesTheUniqueAreaAndRetainsTransparentHoles()
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[] overlayBlock = new ushort[9];
+        overlayBlock[0] = 0x0101;
+        overlayBlock[1] = 0x0103;
+        ushort[][] blocks =
+        [
+            Enumerable.Repeat((ushort)0x0100, 9).ToArray(),
+            overlayBlock,
+            new ushort[9],
+        ];
+        PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+            blocks,
+            StaticOverlayLayout(firstOverlayBlock: 1),
+            areaDefinitions: StaticOverlayAreas());
+
+        PrivateOriginalMapBaseViewProjection projection =
+            PrivateOriginalMapBaseViewProjection.Create(
+                snapshot,
+                visual,
+                staticOverlayDiagnostic: true);
+
+        Assert.True(projection.StaticOverlayDiagnostic);
+        Assert.False(projection.ShowsPlayerMarker);
+        Assert.Equal(1, projection.OverlayAreaRecordOrdinal);
+        Assert.Equal(0, projection.OverlayDeltaX);
+        Assert.Equal(32, projection.OverlayDeltaY);
+        Assert.Equal(0, projection.OriginX);
+        Assert.Equal(0, projection.OriginY);
+        Assert.Equal(new byte[] { 0, 255, 0, 255 }, Pixel(projection, 0, 0));
+        Assert.Equal(new byte[] { 0, 0, 0, 255 }, Pixel(projection, 8, 0));
+        Assert.Equal(new byte[] { 255, 0, 0, 255 }, Pixel(projection, 16, 0));
+    }
+
+    [Fact]
+    public void StaticOverlayDiagnosticIgnoresTilePriorityForPixelsAndReadsLatestLayout()
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[] withoutPriority = new ushort[9];
+        withoutPriority[0] = 0x0101;
+        ushort[] withPriority = [.. withoutPriority];
+        withPriority[0] = 0x8101;
+        ushort[][] blocks =
+        [
+            Enumerable.Repeat((ushort)0x0100, 9).ToArray(),
+            withoutPriority,
+            withPriority,
+            new ushort[9],
+        ];
+        PrivateOriginalMapBaseViewProjection plain =
+            PrivateOriginalMapBaseViewProjection.Create(
+                Snapshot(
+                    blocks,
+                    StaticOverlayLayout(firstOverlayBlock: 1, transparentOverlayBlock: 3),
+                    areaDefinitions: StaticOverlayAreas()),
+                visual,
+                staticOverlayDiagnostic: true);
+        PrivateOriginalMapBaseViewProjection priority =
+            PrivateOriginalMapBaseViewProjection.Create(
+                Snapshot(
+                    blocks,
+                    StaticOverlayLayout(firstOverlayBlock: 2, transparentOverlayBlock: 3),
+                    areaDefinitions: StaticOverlayAreas()),
+                visual,
+                staticOverlayDiagnostic: true);
+        PrivateOriginalMapBaseViewProjection cleared =
+            PrivateOriginalMapBaseViewProjection.Create(
+                Snapshot(
+                    blocks,
+                    StaticOverlayLayout(firstOverlayBlock: 3, transparentOverlayBlock: 3),
+                    areaDefinitions: StaticOverlayAreas()),
+                visual,
+                staticOverlayDiagnostic: true);
+
+        Assert.Equal(plain.RgbaBytes, priority.RgbaBytes);
+        Assert.Equal(new byte[] { 0, 255, 0, 255 }, Pixel(priority, 0, 0));
+        Assert.Equal(new byte[] { 255, 0, 0, 255 }, Pixel(cleared, 0, 0));
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    public void StaticOverlayDiagnosticRetainsAtlasPixelsAndTreatsTheComposedCrop(int scale)
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[] overlayBlock = new ushort[9];
+        overlayBlock[0] = 0x0101;
+        ushort[][] blocks =
+        [
+            Enumerable.Repeat((ushort)0x0100, 9).ToArray(),
+            overlayBlock,
+            new ushort[9],
+        ];
+        PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+            blocks,
+            StaticOverlayLayout(firstOverlayBlock: 1),
+            areaDefinitions: StaticOverlayAreas());
+        PrivateOriginalMapBaseViewProjection logical =
+            PrivateOriginalMapBaseViewProjection.Create(
+                snapshot,
+                visual,
+                staticOverlayDiagnostic: true);
+        PrivateOriginalMapBaseViewProjection physical =
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                snapshot,
+                visual.Selection,
+                BuildNearestAtlas(visual, scale),
+                scale,
+                staticOverlayDiagnostic: true);
+        PrivateOriginalMapBaseViewProjection treated =
+            PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(logical, scale);
+        PrivateOriginalMapBaseViewProjection mainOnly =
+            PrivateOriginalMapBaseViewProjection.Create(snapshot, visual);
+
+        Assert.True(PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
+            logical,
+            physical));
+        Assert.True(treated.StaticOverlayDiagnostic);
+        Assert.Equal(logical.OverlayAreaRecordOrdinal, treated.OverlayAreaRecordOrdinal);
+        Assert.NotEqual(mainOnly.RgbaBytes, logical.RgbaBytes);
+        Assert.NotEqual(
+            PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(mainOnly, scale).RgbaBytes,
+            treated.RgbaBytes);
+    }
+
+    [Fact]
+    public void StaticOverlayDiagnosticFailsClosedOnAmbiguousOrOutOfBoundsAreas()
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[][] blocks =
+        [
+            Enumerable.Repeat((ushort)0x0100, 9).ToArray(),
+        ];
+        OriginalMapAreaDefinition[] ambiguous =
+        [
+            .. StaticOverlayAreas(),
+            Area(
+                ordinal: 3,
+                bounds: new OriginalMapTraversalArea(51, 10, 61, 19),
+                foreground: new OriginalMapAreaWordPair(1, 0)),
+        ];
+        OriginalMapAreaDefinition[] outOfBounds =
+        [
+            Area(
+                ordinal: 1,
+                bounds: new OriginalMapTraversalArea(0, 57, 11, 63),
+                foreground: new OriginalMapAreaWordPair(0, 1)),
+            Area(
+                ordinal: 2,
+                bounds: new OriginalMapTraversalArea(51, 0, 61, 9),
+                foreground: new OriginalMapAreaWordPair(0, 0)),
+        ];
+
+        Assert.Equal(
+            "snapshot",
+            Assert.Throws<ArgumentException>(() =>
+                PrivateOriginalMapBaseViewProjection.Create(
+                    Snapshot(blocks, new ushort[WorkingMapLayout.WordCount],
+                        areaDefinitions: ambiguous),
+                    visual,
+                    staticOverlayDiagnostic: true)).ParamName);
+        Assert.Equal(
+            "snapshot",
+            Assert.Throws<ArgumentException>(() =>
+                PrivateOriginalMapBaseViewProjection.Create(
+                    Snapshot(blocks, new ushort[WorkingMapLayout.WordCount],
+                        areaDefinitions: outOfBounds),
+                    visual,
+                    staticOverlayDiagnostic: true)).ParamName);
+    }
+
+    [Fact]
     public void SnapshotAndPayloadSelectionMismatchFailsBeforeRendering()
     {
         OriginalMapVisualPayloadDefinition visual = VisualDefinition();
@@ -438,6 +611,7 @@ public sealed class PrivateOriginalMapBaseViewportTests
         FillTile(decoded[0], localTile: 0, packedPixels: 0x11);
         FillTile(decoded[0], localTile: 1, packedPixels: 0x22);
         decoded[0][2 * 32] = 0x30;
+        FillTile(decoded[0], localTile: 3, packedPixels: 0x44);
         FillTile(decoded[1], localTile: 0, packedPixels: 0x23);
         FillTile(decoded[2], localTile: 0, packedPixels: 0x31);
         FillTile(decoded[3], localTile: 0, packedPixels: 0x12);
@@ -544,7 +718,8 @@ public sealed class PrivateOriginalMapBaseViewportTests
     private static PrivateOriginalMapSessionSnapshot Snapshot(
         IEnumerable<ushort[]> blockWords,
         ushort[] layoutWords,
-        byte paletteIndex = 0)
+        byte paletteIndex = 0,
+        IEnumerable<OriginalMapAreaDefinition>? areaDefinitions = null)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         WorkingMapLayout definitionLayout = new(new ushort[WorkingMapLayout.WordCount]);
@@ -555,21 +730,12 @@ public sealed class PrivateOriginalMapBaseViewportTests
                         "project-authored-base-view-blocks",
                         index),
                     words)));
-        OriginalMapAreaCatalog areaCatalog = new(
+        OriginalMapAreaCatalog areaCatalog = new(areaDefinitions ??
         [
-            new OriginalMapAreaDefinition(
-                new OriginalMapAreaRecordIdentity(
-                    "project-authored-base-view-areas",
-                    oneBasedRecordOrdinal: 1),
-                new OriginalMapTraversalArea(0, 0, 63, 63),
-                new OriginalMapAreaWordPair(0, 0),
-                new OriginalMapAreaWordPair(0, 0),
-                new OriginalMapAreaWordPair(256, 256),
-                new OriginalMapAreaWordPair(256, 256),
-                new OriginalMapAreaBytePair(0, 0),
-                new OriginalMapAreaBytePair(0, 0),
-                mainLayerType: 0,
-                defaultMusic: 0),
+            Area(
+                ordinal: 1,
+                bounds: new OriginalMapTraversalArea(0, 0, 63, 63),
+                foreground: new OriginalMapAreaWordPair(0, 0)),
         ]);
         OriginalMapImportDefinition definition = new(
             map,
@@ -609,6 +775,54 @@ public sealed class PrivateOriginalMapBaseViewportTests
             lastTraversal: null,
             controlledStepCopyApplied: false,
             lastLayoutMutation: null);
+    }
+
+    private static OriginalMapAreaDefinition[] StaticOverlayAreas() =>
+    [
+        Area(
+            ordinal: 1,
+            bounds: new OriginalMapTraversalArea(0, 0, 50, 31),
+            foreground: new OriginalMapAreaWordPair(0, 32)),
+        Area(
+            ordinal: 2,
+            bounds: new OriginalMapTraversalArea(51, 0, 61, 9),
+            foreground: new OriginalMapAreaWordPair(0, 0)),
+    ];
+
+    private static OriginalMapAreaDefinition Area(
+        int ordinal,
+        OriginalMapTraversalArea bounds,
+        OriginalMapAreaWordPair foreground) =>
+        new(
+            new OriginalMapAreaRecordIdentity(
+                "project-authored-base-view-areas",
+                ordinal),
+            bounds,
+            foreground,
+            new OriginalMapAreaWordPair(0, 0),
+            new OriginalMapAreaWordPair(256, 256),
+            new OriginalMapAreaWordPair(256, 256),
+            new OriginalMapAreaBytePair(0, 0),
+            new OriginalMapAreaBytePair(0, 0),
+            mainLayerType: 0,
+            defaultMusic: 0);
+
+    private static ushort[] StaticOverlayLayout(
+        int firstOverlayBlock,
+        int transparentOverlayBlock = 2)
+    {
+        ushort[] words = new ushort[WorkingMapLayout.WordCount];
+        for (int y = 32; y < 32 + PrivateOriginalMapBaseViewProjection.RowCount; y++)
+        {
+            for (int x = 0; x < PrivateOriginalMapBaseViewProjection.ColumnCount; x++)
+            {
+                words[(y * WorkingMapLayout.ColumnCount) + x] =
+                    checked((ushort)transparentOverlayBlock);
+            }
+        }
+
+        words[32 * WorkingMapLayout.ColumnCount] = checked((ushort)firstOverlayBlock);
+        return words;
     }
 
     private static OriginalMapVisualResourceSelection Selection(byte paletteIndex) =>
