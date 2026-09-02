@@ -153,8 +153,66 @@ internal static class PrivateMap3SmokeDriver
 
         RunAreaDiagnostic(session);
 
+        if (presenter.UsesLocalBaseAtlas &&
+            !RunBaseAtlasDiagnostic(sceneTree, presenter))
+        {
+            return;
+        }
+
         Map3Root.TracePrivateStage(enabled: true, "quit-scheduled", smokeStarted);
         sceneTree.Quit(0);
+    }
+
+    private static bool RunBaseAtlasDiagnostic(
+        SceneTree sceneTree,
+        PrivateMap3Presenter presenter)
+    {
+        PrivateOriginalMapBaseViewProjection? projection = presenter.BaseProjection;
+        string? expectedBucketDigest = presenter.BaseAtlasScale switch
+        {
+            2 => PrivateLocalPresentationAssetCatalog.Map3BaseAtlas2xDigest,
+            4 => PrivateLocalPresentationAssetCatalog.Map3BaseAtlas4xDigest,
+            _ => null,
+        };
+        if (projection is null ||
+            !presenter.UsesRequiredBaseAtlasSampling ||
+            !string.Equals(
+                presenter.BaseAtlasAssetId,
+                PrivateLocalPresentationAssetCatalog.Map3BaseAtlasAssetId,
+                StringComparison.Ordinal) ||
+            expectedBucketDigest is null ||
+            !string.Equals(
+                presenter.BaseAtlasBucketDigest,
+                expectedBucketDigest,
+                StringComparison.Ordinal))
+        {
+            Fail(
+                sceneTree,
+                presenter,
+                "PrivateLocal Map 3 base-atlas projection was not bound exactly.");
+            return false;
+        }
+
+        object receipt = new
+        {
+            status = "Pass",
+            profile = "private-local",
+            capability = Map3Root.PrivateBaseAtlasCapability,
+            assetId = presenter.BaseAtlasAssetId,
+            scale = presenter.BaseAtlasScale,
+            bucketSha256 = presenter.BaseAtlasBucketDigest,
+            mapId = projection.Map.Value,
+            crop = new
+            {
+                x = projection.OriginX,
+                y = projection.OriginY,
+                columns = PrivateOriginalMapBaseViewProjection.ColumnCount,
+                rows = PrivateOriginalMapBaseViewProjection.RowCount,
+            },
+            banner = Map3Root.PrivateBannerText,
+        };
+        GD.Print(Map3Root.PrivateBaseAtlasSmokeMarker + JsonSerializer.Serialize(receipt));
+        return true;
     }
 
     private static bool RunBattleBridge(

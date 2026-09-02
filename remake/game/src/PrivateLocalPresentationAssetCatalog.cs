@@ -57,6 +57,17 @@ internal sealed class PrivateLocalPresentationAssetCatalog
     internal const string TacticalCursorAssetId = "hud.tactical-selection-cursor";
     internal const int TacticalCursorLogicalWidth = 58;
     internal const int TacticalCursorLogicalHeight = 58;
+    internal const string Map3BaseAtlasAssetId = "world.map3.base-tileset-atlas";
+    internal const int Map3BaseAtlasLogicalWidth = 128;
+    internal const int Map3BaseAtlasLogicalHeight = 320;
+    internal const string Map3BaseAtlasAssetRepositoryCommit =
+        "6cf2973698e3a90735a2e3eb03bd85c50a47e4e3";
+    internal const string Map3BaseAtlasManifestDigest =
+        "262C2F8A9A17CC843392F8818841F018C45B538610AEC41C75D38A018E829D78";
+    internal const string Map3BaseAtlas2xDigest =
+        "E974F59E15E493C29D871574299A46079EBA195BB4CC0B10FF37C2F310682A0A";
+    internal const string Map3BaseAtlas4xDigest =
+        "04947DE8A163C22699177794E18531E8A8983A2E070D29D346E1A25B8AED6867";
 
     private static readonly byte[] PngSignature =
         [137, 80, 78, 71, 13, 10, 26, 10];
@@ -93,6 +104,76 @@ internal sealed class PrivateLocalPresentationAssetCatalog
             TacticalCursorLogicalWidth,
             TacticalCursorLogicalHeight,
             "private tactical selection cursor");
+
+    internal PrivateLocalPresentationAssetMountResult MountMap3BaseAtlas(
+        LocalPresentationAssetPackRequest request,
+        LocalPresentationAssetPackAccepted accepted,
+        double effectivePhysicalScale)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(accepted);
+        if (!string.Equals(
+                request.ExpectedAssetRepositoryCommit,
+                Map3BaseAtlasAssetRepositoryCommit,
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                request.ExpectedManifestDigest,
+                Map3BaseAtlasManifestDigest,
+                StringComparison.Ordinal))
+        {
+            return Reject(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The Map 3 base-atlas mount requires the exact accepted local asset transaction.");
+        }
+
+        PrivateLocalPresentationAssetMountResult result = MountRaster(
+            request,
+            accepted,
+            effectivePhysicalScale,
+            Map3BaseAtlasAssetId,
+            Map3BaseAtlasLogicalWidth,
+            Map3BaseAtlasLogicalHeight,
+            "private Map 3 base atlas");
+        if (result is not PrivateLocalPresentationAssetMounted mounted)
+        {
+            return result;
+        }
+
+        LocalPresentationRasterBucket bucket = mounted.Asset.Bucket;
+        if (!IsExactMap3BaseAtlasBinding(mounted.Asset.Definition, bucket))
+        {
+            return Reject(
+                PrivateLocalPresentationAssetMountFailureCode.PayloadMismatch,
+                "The Map 3 base-atlas bucket identity or nearest-sampling policy drifted.");
+        }
+
+        return mounted;
+    }
+
+    internal static bool IsExactMap3BaseAtlasBinding(
+        LocalPresentationRasterAssetDefinition definition,
+        LocalPresentationRasterBucket bucket)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(bucket);
+        string? expectedDigest = bucket.Scale switch
+        {
+            2 => Map3BaseAtlas2xDigest,
+            4 => Map3BaseAtlas4xDigest,
+            _ => null,
+        };
+        return string.Equals(
+                definition.AssetId,
+                Map3BaseAtlasAssetId,
+                StringComparison.Ordinal) &&
+            definition.LogicalSize.Width == Map3BaseAtlasLogicalWidth &&
+            definition.LogicalSize.Height == Map3BaseAtlasLogicalHeight &&
+            expectedDigest is not null &&
+            string.Equals(bucket.Sha256, expectedDigest, StringComparison.Ordinal) &&
+            string.Equals(bucket.Filter, "nearest", StringComparison.Ordinal) &&
+            !bucket.Mipmaps &&
+            !bucket.Repeat;
+    }
 
     private PrivateLocalPresentationAssetMountResult MountRaster(
         LocalPresentationAssetPackRequest request,

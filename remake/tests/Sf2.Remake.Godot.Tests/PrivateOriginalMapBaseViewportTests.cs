@@ -9,6 +9,26 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateOriginalMapBaseViewportTests
 {
     [Fact]
+    public void ViewportEnforcesNearestSamplingWithoutTextureRepeat()
+    {
+        Assert.Equal(
+            global::Godot.CanvasItem.TextureFilterEnum.Nearest,
+            PrivateOriginalMapBaseViewport.RequiredTextureFilter);
+        Assert.Equal(
+            global::Godot.CanvasItem.TextureRepeatEnum.Disabled,
+            PrivateOriginalMapBaseViewport.RequiredTextureRepeat);
+        Assert.True(PrivateOriginalMapBaseViewport.IsRequiredTextureSampling(
+            global::Godot.CanvasItem.TextureFilterEnum.Nearest,
+            global::Godot.CanvasItem.TextureRepeatEnum.Disabled));
+        Assert.False(PrivateOriginalMapBaseViewport.IsRequiredTextureSampling(
+            global::Godot.CanvasItem.TextureFilterEnum.Linear,
+            global::Godot.CanvasItem.TextureRepeatEnum.Disabled));
+        Assert.False(PrivateOriginalMapBaseViewport.IsRequiredTextureSampling(
+            global::Godot.CanvasItem.TextureFilterEnum.Nearest,
+            global::Godot.CanvasItem.TextureRepeatEnum.Enabled));
+    }
+
+    [Fact]
     public void ProjectAuthoredBaseCompositionRendersTheAcceptedCropAndOwnsItsPixels()
     {
         OriginalMapVisualPayloadDefinition visual = VisualDefinition();
@@ -103,6 +123,86 @@ public sealed class PrivateOriginalMapBaseViewportTests
         Assert.Equal("visualDefinition", error.ParamName);
     }
 
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    public void NearestAtlasProjectionIsPixelEquivalentAcrossSlotsFlipsAndMutation(int scale)
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[] firstBlock =
+        [
+            0x0100,
+            0x0980,
+            0x1200,
+            0x0280,
+            0x0300,
+            0x0101,
+            0x0180,
+            0x0200,
+            0x0280,
+        ];
+        ushort[] secondBlock = Enumerable.Repeat((ushort)0x0300, 9).ToArray();
+        ushort[][] blocks = [firstBlock, secondBlock];
+        ushort[] beforeWords = new ushort[WorkingMapLayout.WordCount];
+        ushort[] afterWords = [.. beforeWords];
+        afterWords[(3 * WorkingMapLayout.ColumnCount) + 56] = 1;
+        PrivateOriginalMapSessionSnapshot before = Snapshot(blocks, beforeWords);
+        PrivateOriginalMapSessionSnapshot after = Snapshot(blocks, afterWords);
+        byte[] atlas = BuildNearestAtlas(visual, scale);
+
+        PrivateOriginalMapBaseViewProjection payloadBefore =
+            PrivateOriginalMapBaseViewProjection.Create(before, visual);
+        PrivateOriginalMapBaseViewProjection atlasBefore =
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                before,
+                visual.Selection,
+                atlas,
+                scale);
+        PrivateOriginalMapBaseViewProjection payloadAfter =
+            PrivateOriginalMapBaseViewProjection.Create(after, visual);
+        PrivateOriginalMapBaseViewProjection atlasAfter =
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                after,
+                visual.Selection,
+                atlas,
+                scale);
+
+        Assert.Equal(payloadBefore.RgbaBytes, atlasBefore.RgbaBytes);
+        Assert.Equal(payloadAfter.RgbaBytes, atlasAfter.RgbaBytes);
+        Assert.NotEqual(payloadBefore.RgbaBytes, payloadAfter.RgbaBytes);
+        atlas[0] ^= 0xFF;
+        Assert.Equal(payloadBefore.RgbaBytes, atlasBefore.RgbaBytes);
+    }
+
+    [Fact]
+    public void AtlasProjectionRejectsUnsupportedShapeScaleOrSelection()
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+            [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+            new ushort[WorkingMapLayout.WordCount]);
+        byte[] exact = BuildNearestAtlas(visual, scale: 2);
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                snapshot,
+                visual.Selection,
+                exact,
+                scale: 1));
+        Assert.Throws<ArgumentException>(() =>
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                snapshot,
+                visual.Selection,
+                exact[..^1],
+                scale: 2));
+        Assert.Throws<ArgumentException>(() =>
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                snapshot,
+                Selection(paletteIndex: 1),
+                exact,
+                scale: 2));
+    }
+
     private static OriginalMapVisualPayloadDefinition VisualDefinition()
     {
         OriginalMapVisualResourceSelection selection = Selection(paletteIndex: 0);
@@ -116,6 +216,10 @@ public sealed class PrivateOriginalMapBaseViewportTests
         FillTile(decoded[0], localTile: 0, packedPixels: 0x11);
         FillTile(decoded[0], localTile: 1, packedPixels: 0x22);
         decoded[0][2 * 32] = 0x30;
+        FillTile(decoded[1], localTile: 0, packedPixels: 0x23);
+        FillTile(decoded[2], localTile: 0, packedPixels: 0x31);
+        FillTile(decoded[3], localTile: 0, packedPixels: 0x12);
+        FillTile(decoded[4], localTile: 0, packedPixels: 0x33);
 
         return new OriginalMapVisualPayloadDefinition(
             selection,
@@ -131,6 +235,69 @@ public sealed class PrivateOriginalMapBaseViewportTests
     {
         Array.Fill(decoded, packedPixels, localTile * 32, 32);
     }
+
+    private static byte[] BuildNearestAtlas(
+        OriginalMapVisualPayloadDefinition visual,
+        int scale)
+    {
+        int logicalWidth = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalWidth;
+        int logicalHeight = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalHeight;
+        int width = logicalWidth * scale;
+        byte[] rgba = new byte[checked(width * logicalHeight * scale * 4)];
+        for (int slot = 0; slot < visual.Tilesets.Count; slot++)
+        {
+            IReadOnlyList<byte> decoded = visual.Tilesets[slot].DecodedBytes;
+            for (int localTile = 0; localTile < 128; localTile++)
+            {
+                for (int row = 0; row < 8; row++)
+                {
+                    for (int column = 0; column < 8; column++)
+                    {
+                        byte packed = decoded[(localTile * 32) + (row * 4) + (column / 2)];
+                        int paletteIndex = column % 2 == 0
+                            ? (packed >> 4) & 0x0F
+                            : packed & 0x0F;
+                        byte[] pixel = PalettePixel(visual, paletteIndex);
+                        int logicalX = ((localTile % 16) * 8) + column;
+                        int logicalY = (slot * 64) + ((localTile / 16) * 8) + row;
+                        for (int y = 0; y < scale; y++)
+                        {
+                            for (int x = 0; x < scale; x++)
+                            {
+                                int offset = ((((logicalY * scale) + y) * width) +
+                                    (logicalX * scale) + x) * 4;
+                                pixel.CopyTo(rgba, offset);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return rgba;
+    }
+
+    private static byte[] PalettePixel(
+        OriginalMapVisualPayloadDefinition visual,
+        int paletteIndex)
+    {
+        if (paletteIndex == 0)
+        {
+            return [0, 0, 0, 0];
+        }
+
+        ushort word = visual.Palette.EffectiveWords[paletteIndex];
+        return
+        [
+            ExpandChannel((word & 0x000E) >> 1),
+            ExpandChannel((word & 0x00E0) >> 5),
+            ExpandChannel((word & 0x0E00) >> 9),
+            255,
+        ];
+    }
+
+    private static byte ExpandChannel(int value) =>
+        checked((byte)((value << 5) | (value << 2) | (value >> 1)));
 
     private static PrivateOriginalMapSessionSnapshot Snapshot(
         IEnumerable<ushort[]> blockWords,

@@ -82,6 +82,14 @@ internal sealed class PrivateMap3Presenter
 {
     private static readonly Vector2 ViewportPosition = new Vector2(24, 105);
 
+    internal const float StatusX = 24;
+    internal const float StatusRightGap = 24;
+    internal static readonly Vector2 StatusSize = new(
+        PublicSyntheticBattlePresenter.PanelBounds.Position.X - StatusX - StatusRightGap,
+        96);
+    internal const TextServer.AutowrapMode StatusAutowrapMode =
+        TextServer.AutowrapMode.WordSmart;
+
     private readonly PrivateOriginalMapBaseViewport? _baseViewport;
     private readonly PrivateOriginalMapTraversalViewport? _viewport;
     private readonly Label _status;
@@ -104,6 +112,17 @@ internal sealed class PrivateMap3Presenter
         _baseViewport?.Projection;
 
     internal bool ExpectsBaseProjection => _baseViewport is not null;
+
+    internal bool UsesLocalBaseAtlas => _baseViewport?.UsesLocalAtlas == true;
+
+    internal bool UsesRequiredBaseAtlasSampling =>
+        _baseViewport?.UsesRequiredTextureSampling == true;
+
+    internal string? BaseAtlasAssetId => _baseViewport?.AtlasAssetId;
+
+    internal int? BaseAtlasScale => _baseViewport?.AtlasScale;
+
+    internal string? BaseAtlasBucketDigest => _baseViewport?.AtlasBucketDigest;
 
     internal static PrivateMap3Presenter Attach(
         Node2D parent,
@@ -154,6 +173,10 @@ internal sealed class PrivateMap3Presenter
         {
             Text = plan.InitialStatus,
             Position = new Vector2(24, plan.StatusY),
+            Size = StatusSize,
+            AutowrapMode = StatusAutowrapMode,
+            ClipText = true,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
         };
         status.AddThemeFontSizeOverride("font_size", 18);
         parent.AddChild(status);
@@ -171,6 +194,36 @@ internal sealed class PrivateMap3Presenter
         }
 
         _visualDefinition = definition;
+    }
+
+    internal bool TryBindBaseAtlas(
+        PrivateLocalPresentationRasterMount mount,
+        PrivateOriginalMapSessionSnapshot snapshot,
+        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
+    {
+        ArgumentNullException.ThrowIfNull(mount);
+        ArgumentNullException.ThrowIfNull(snapshot);
+        if (_baseViewport is null)
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The private presentation plan did not request a base visual viewport.");
+            return false;
+        }
+
+        if (_visualDefinition is null)
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The private visual definition must be bound before the base atlas.");
+            return false;
+        }
+
+        return _baseViewport.TryBindLocalAtlas(
+            mount,
+            snapshot,
+            _visualDefinition,
+            out diagnostic);
     }
 
     internal void Project(

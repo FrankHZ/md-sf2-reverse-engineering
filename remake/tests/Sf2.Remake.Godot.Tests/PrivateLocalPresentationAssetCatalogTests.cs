@@ -117,6 +117,102 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
     }
 
     [Fact]
+    public void Map3BaseAtlasBindingRequiresExactIdentityDimensionsBucketsAndNearestPolicy()
+    {
+        LocalPresentationRasterAssetDefinition exact = AtlasDefinition();
+        Assert.All(
+            exact.Buckets,
+            bucket => Assert.True(
+                PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(exact, bucket)));
+
+        LocalPresentationRasterAssetDefinition wrongAsset = AtlasDefinition(assetId: "world.map3.other");
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(
+            wrongAsset,
+            wrongAsset.Buckets[0]));
+        LocalPresentationRasterAssetDefinition wrongSize = AtlasDefinition(width: 127);
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(
+            wrongSize,
+            wrongSize.Buckets[0]));
+        LocalPresentationRasterAssetDefinition wrongDigest = AtlasDefinition(
+            twoXDigest: new string('A', 64));
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(
+            wrongDigest,
+            wrongDigest.Buckets[0]));
+        LocalPresentationRasterAssetDefinition wrongFilter = AtlasDefinition(filter: "linear");
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(
+            wrongFilter,
+            wrongFilter.Buckets[0]));
+        LocalPresentationRasterAssetDefinition mipmapped = AtlasDefinition(mipmaps: true);
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(
+            mipmapped,
+            mipmapped.Buckets[0]));
+    }
+
+    [Fact]
+    public void GenericPresentationPackCannotSelfAuthorizeTheFixedMap3BaseAtlasTransaction()
+    {
+        using TemporaryPreviewPack package = new();
+
+        AssertCode(
+            package.Catalog.MountMap3BaseAtlas(
+                package.Request,
+                package.Accepted,
+                effectivePhysicalScale: 1),
+            PrivateLocalPresentationAssetMountFailureCode.InvalidBinding);
+        AssertCode(
+            package.Catalog.MountMap3BaseAtlas(
+                package.RequestWith(
+                    commit: PrivateLocalPresentationAssetCatalog.Map3BaseAtlasAssetRepositoryCommit,
+                    manifestDigest: PrivateLocalPresentationAssetCatalog.Map3BaseAtlasManifestDigest),
+                package.Accepted,
+                effectivePhysicalScale: 1),
+            PrivateLocalPresentationAssetMountFailureCode.InvalidBinding);
+    }
+
+    [Fact]
+    public void ExactLocalMap3BaseAtlasMountCanBeCheckedWithoutBecomingATestInput()
+    {
+        string? root = Environment.GetEnvironmentVariable(
+            "SF2_PRIVATE_PRESENTATION_ASSET_ROOT");
+        if (string.IsNullOrWhiteSpace(root))
+        {
+            return;
+        }
+
+        LocalPresentationAssetPackReader reader = new(
+            root,
+            PrivateLocalPresentationAssetCatalog.Map3BaseAtlasAssetRepositoryCommit);
+        LocalPresentationAssetPackRequest request = new(
+            LocalPresentationAssetPackAdmission.PackageId,
+            ContentProfile.PrivateLocal,
+            LocalPresentationAssetPackAdmission.RepositoryId,
+            PrivateLocalPresentationAssetCatalog.Map3BaseAtlasAssetRepositoryCommit,
+            PrivateLocalPresentationAssetCatalog.Map3BaseAtlasManifestDigest);
+        LocalPresentationAssetPackAccepted accepted =
+            Assert.IsType<LocalPresentationAssetPackAccepted>(reader.Admit(request));
+        PrivateLocalPresentationAssetCatalog catalog = new(reader);
+
+        PrivateLocalPresentationAssetMounted twoX =
+            Assert.IsType<PrivateLocalPresentationAssetMounted>(
+                catalog.MountMap3BaseAtlas(request, accepted, 1));
+        PrivateLocalPresentationAssetMounted fourX =
+            Assert.IsType<PrivateLocalPresentationAssetMounted>(
+                catalog.MountMap3BaseAtlas(request, accepted, 3));
+        byte[] copied = twoX.Asset.CopyPngBytes();
+        copied[0] = 0;
+
+        Assert.Equal(2, twoX.Asset.Bucket.Scale);
+        Assert.Equal(
+            PrivateLocalPresentationAssetCatalog.Map3BaseAtlas2xDigest,
+            twoX.Asset.Bucket.Sha256);
+        Assert.Equal(4, fourX.Asset.Bucket.Scale);
+        Assert.Equal(
+            PrivateLocalPresentationAssetCatalog.Map3BaseAtlas4xDigest,
+            fourX.Asset.Bucket.Sha256);
+        Assert.Equal(137, twoX.Asset.CopyPngBytes()[0]);
+    }
+
+    [Fact]
     public void TacticalCursorMissingShapeDriftOrPayloadDriftRejectsFailClosed()
     {
         using TemporaryPreviewPack package = new();
@@ -286,6 +382,44 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         Assert.Equal(
             code,
             Assert.IsType<PrivateLocalPresentationAssetMountRejected>(result).Diagnostic.Code);
+
+    private static LocalPresentationRasterAssetDefinition AtlasDefinition(
+        string assetId = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasAssetId,
+        int width = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalWidth,
+        int height = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalHeight,
+        string twoXDigest = PrivateLocalPresentationAssetCatalog.Map3BaseAtlas2xDigest,
+        string fourXDigest = PrivateLocalPresentationAssetCatalog.Map3BaseAtlas4xDigest,
+        string filter = "nearest",
+        bool mipmaps = false) =>
+        new(
+            assetId,
+            new LocalPresentationLogicalSize(width, height),
+            [
+                new LocalPresentationRasterBucket(
+                    2,
+                    checked(width * 2),
+                    checked(height * 2),
+                    100,
+                    twoXDigest,
+                    "image/png",
+                    filter,
+                    mipmaps,
+                    repeat: false,
+                    colorSpace: "srgb",
+                    alphaMode: "straight"),
+                new LocalPresentationRasterBucket(
+                    4,
+                    checked(width * 4),
+                    checked(height * 4),
+                    200,
+                    fourXDigest,
+                    "image/png",
+                    filter,
+                    mipmaps,
+                    repeat: false,
+                    colorSpace: "srgb",
+                    alphaMode: "straight"),
+            ]);
 
     private sealed class TemporaryPreviewPack : IDisposable
     {

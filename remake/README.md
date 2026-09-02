@@ -13,7 +13,10 @@ synthetic victory effect, and exploration return. A separate private-local trave
 opt-in project-authored Map 3 base view can explicitly enter the same tactical reducer at the
 controlled start; defeat/retry and victory preserve the exact private traversal snapshot and never
 apply the public synthetic world effect. Its optional local HUD panel can acknowledge entry or decline
-the one-shot project-authored request before movement resumes. This manual bridge is not natural
+the one-shot project-authored request before movement resumes. A separate explicit base-atlas option
+can replace only that view's transient decoded-tile sampling with the reviewed local 2x/4x nearest
+atlas while retaining the same Application snapshot, block/tile selection, crop, and player marker.
+This manual bridge and diagnostic atlas are not natural
 battle admission, Battle 01, an original after-battle program, or the accepted continuous Map
 3-through-Battle 01 milestone, which remains **NOT READY**.
 
@@ -108,24 +111,34 @@ index zero is transparent; the existing deterministic Mega Drive three-bit chann
 the other colors to straight-alpha sRGB RGBA8. That mapping is a project-authored review/runtime
 candidate policy, not hardware, display, colorimetric, final-pixel, or original-fidelity parity.
 
-The result remains under ignored `cache/`; it does not stage, promote, commit, export, mount, enter a
-PCK, or authorize public redistribution. A later local asset-repository transaction must separately
-review and version the source/master/runtime/manifest set before any Godot consumer may request
-`world.map3.base-tileset-atlas`.
+The builder result remains under ignored `cache/`; it does not stage, promote, commit, export, mount,
+enter a PCK, or authorize public redistribution. Promotion remains a separate reviewed local
+asset-repository transaction.
 
-The reviewed local asset history now owns `hud.yes-no-window-frame` and
-`hud.tactical-selection-cursor`: project-authored SVG masters plus deterministic 2x/4x runtime PNGs
-and one closed manifest. The current two-asset checkpoint is local commit
-`ddf964c17f5c359e0a0eddafa702dbc211c559fe` with manifest SHA-256
-`39624F3D0A91C04DBC03CCD3F7253D94BFD4D9174EA13E898CA9A55730A60610`. An explicit PrivateLocal
-launch may opt into the bounded presentation mount by supplying `--private-hud-preview`
-together with a fully qualified asset root, its exact lowercase commit, and its exact uppercase
-manifest SHA-256. The Content reader admits the complete pack before `GameSession` starts; the thin
-Godot catalog resolves only the required semantic asset IDs and accepted 2x/4x buckets. It asks the
-same Content reader to reopen the fixed manifest, resolve and recheck each contained
+The reviewed local asset history now owns `hud.yes-no-window-frame`,
+`hud.tactical-selection-cursor`, and `world.map3.base-tileset-atlas`. The current three-asset
+checkpoint is local commit `6cf2973698e3a90735a2e3eb03bd85c50a47e4e3`, tree
+`1873d97157250fcb282ffbc89c290a3e032d5bd9`, with manifest SHA-256
+`262C2F8A9A17CC843392F8818841F018C45B538610AEC41C75D38A018E829D78`. Its atlas runtime buckets are
+the reviewed nearest 2x/4x outputs; source and master material remain review/provenance inputs, not
+runtime files.
+
+An explicit PrivateLocal launch may opt into HUD assets with `--private-hud-preview`, or into the
+atlas diagnostic with both `--private-map3-base-view` and `--private-map3-base-atlas`. Either asset
+selection requires one fully qualified asset root, the exact lowercase mounted commit string, and the
+exact uppercase manifest SHA-256. Atlas selection also requires the existing private ROM and metadata
+inputs because the authoritative typed visual binding remains required. The Content reader admits the
+complete pack before `GameSession` starts; HUD plus atlas share that one admission. The thin Godot
+catalog resolves only requested semantic IDs and accepted 2x/4x buckets. It asks the same Content
+reader to reopen the fixed manifest, resolve and recheck each contained
 path/length/digest, and return a defensive byte copy before Godot decodes it. No runtime path crosses
 into Application or Godot. Partial
 values, an implicit mount, or a failed private mount never fall back while reporting private success.
+
+The runtime reader does not inspect a Git checkout or infer its current `HEAD`; it matches the
+caller-supplied mounted commit string and the fixed manifest/payload identities. The repository-owned
+local preflight above separately proves the actual asset checkout's commit, tree, clean state, lack of
+remotes, and manifest before launch or export.
 
 The current consumer uses the limiting physical dimension of the centered 16:9 frame at 100% UI scale;
 user-selectable UI scaling remains deferred rather than being guessed by this slice.
@@ -139,7 +152,11 @@ copy, not an admitted product font, original Yes/No text, an icon, a Theme, or o
 While the bridge is Active, the verified transparent cursor raster is an additive overlay positioned
 only from the existing typed `HasCursor` cell; the gold cell highlight and `▣`/occupant fallback remain
 visible and authoritative state remains outside Godot. Missing or drifting frame/cursor payloads fail
-the requested private mount closed. This adds no stable smoke marker. The separate
+the requested private mount closed. Atlas-only selection does not imply either HUD consumer, and
+HUD-only behavior is unchanged. The atlas consumer uses only the selected runtime PNG, validates its
+Godot-decoded RGBA8 shape, and samples nearest pixels through the existing authoritative block/tile,
+slot, and flip projection. Its additive local-only marker is emitted last only when explicitly
+selected; the four earlier private markers and the public marker remain byte-stable. The separate
 `md-sf2-gfx-remake` repository remains
 non-authoritative R&D: its measurements informed the product-authored frame, but its ignored
 experimental SVG contains forbidden text and an embedded raster and is not an admitted product master
