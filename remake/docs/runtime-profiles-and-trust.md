@@ -122,19 +122,24 @@ The optional `--private-hud-preview` shape requires all three of
 omitting one, using them under PublicSynthetic, or relying on a checkout's mere presence is
 Unavailable. Canonical Map 3 import and the complete local presentation pack both admit before the
 existing private session constructor is called. Godot then resolves only
-`hud.yes-no-window-frame` and the accepted scale. The same Content reader reopens the fixed manifest,
-resolves and rechecks the selected contained PNG, and returns a defensive byte copy for the
-project-authored top-right HUD consumer. The absolute root and runtime path stay in outer composition
-and Content; they do not enter Application, the Godot catalog, snapshots, receipts, status, smoke, or
-logs.
+`hud.yes-no-window-frame` for the bounded preview and, when the base-view battle bridge is also
+requested, `hud.tactical-selection-cursor`, at the same accepted scale. The same Content reader
+reopens the fixed manifest, resolves and rechecks each selected contained PNG, and returns defensive
+byte copies for the thin Godot consumers. Either required asset failing identity, shape, bucket, or
+payload validation rejects the requested private mount. The absolute root and runtime paths stay in
+outer composition and Content; they do not enter Application, the Godot catalog, snapshots, receipts,
+status, smoke, or logs.
 
 Without the private base-view battle bridge this remains a chrome-only preview. With the bridge,
 Godot shows project-authored diagnostic `ENTER [N]` and `STAY [BACKSPACE]` labels only while the typed
 bridge is Pending. `N` sends the existing exact acknowledgement; `Backspace` sends the exact decline
 only while Pending and retains its tactical-cancel meaning only while Active. The labels use Godot's
 built-in diagnostic font and do not establish an admitted product font, input-glyph, Theme, original
-Yes/No text, focus model, window system, or original UI meaning. Existing private and public smoke
-receipt bytes and ordering remain unchanged.
+Yes/No text, focus model, window system, or original UI meaning. While the bridge is Active, one
+transparent project-authored cursor texture follows only the typed `HasCursor` cell. It is additive:
+the existing gold cell highlight and `▣`/occupant glyph remain visible, public-synthetic stays
+asset-free, and Godot gains no tactical rule ownership. Existing private and public smoke receipt bytes
+and ordering remain unchanged.
 
 The profile therefore does not claim:
 

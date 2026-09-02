@@ -81,12 +81,32 @@ public sealed class PublicSyntheticBattlePresenterTests
     [Fact]
     public void BattlePanelFitsTheFixedCanvasAndNamesEveryPhaseAction()
     {
+        Assert.Equal(
+            new global::Godot.Vector2(
+                PrivateLocalPresentationAssetCatalog.TacticalCursorLogicalWidth,
+                PrivateLocalPresentationAssetCatalog.TacticalCursorLogicalHeight),
+            PublicSyntheticBattlePresenter.TacticalCellSize);
         Assert.True(
             PublicSyntheticBattlePresenter.PanelBounds.End.X <=
             PublicSyntheticBattlePresenter.CanvasSize.X);
         Assert.True(
             PublicSyntheticBattlePresenter.PanelBounds.End.Y <=
             PublicSyntheticBattlePresenter.CanvasSize.Y);
+        Assert.Equal(
+            new global::Godot.Vector2(8, 12),
+            PublicSyntheticBattlePresenter.TacticalCellLabelOffset);
+        Assert.Equal(
+            new global::Godot.Vector2(42, 32),
+            PublicSyntheticBattlePresenter.TacticalCellLabelSize);
+        Assert.True(
+            PublicSyntheticBattlePresenter.TacticalCellLabelOffset.X >= 0 &&
+            PublicSyntheticBattlePresenter.TacticalCellLabelOffset.Y >= 0 &&
+            PublicSyntheticBattlePresenter.TacticalCellLabelOffset.X +
+                PublicSyntheticBattlePresenter.TacticalCellLabelSize.X <=
+                PublicSyntheticBattlePresenter.TacticalCellSize.X &&
+            PublicSyntheticBattlePresenter.TacticalCellLabelOffset.Y +
+                PublicSyntheticBattlePresenter.TacticalCellLabelSize.Y <=
+                PublicSyntheticBattlePresenter.TacticalCellSize.Y);
 
         GameSession session = StartActiveBattle();
         PublicSyntheticBattlePresentationProjection move =

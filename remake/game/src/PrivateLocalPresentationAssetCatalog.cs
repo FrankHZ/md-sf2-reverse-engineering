@@ -54,6 +54,9 @@ internal sealed class PrivateLocalPresentationAssetCatalog
     internal const string PreviewAssetId = "hud.yes-no-window-frame";
     internal const int PreviewLogicalWidth = 112;
     internal const int PreviewLogicalHeight = 24;
+    internal const string TacticalCursorAssetId = "hud.tactical-selection-cursor";
+    internal const int TacticalCursorLogicalWidth = 58;
+    internal const int TacticalCursorLogicalHeight = 58;
 
     private static readonly byte[] PngSignature =
         [137, 80, 78, 71, 13, 10, 26, 10];
@@ -68,7 +71,37 @@ internal sealed class PrivateLocalPresentationAssetCatalog
     internal PrivateLocalPresentationAssetMountResult MountPreview(
         LocalPresentationAssetPackRequest request,
         LocalPresentationAssetPackAccepted accepted,
-        double effectivePhysicalScale)
+        double effectivePhysicalScale) =>
+        MountRaster(
+            request,
+            accepted,
+            effectivePhysicalScale,
+            PreviewAssetId,
+            PreviewLogicalWidth,
+            PreviewLogicalHeight,
+            "private HUD preview");
+
+    internal PrivateLocalPresentationAssetMountResult MountTacticalCursor(
+        LocalPresentationAssetPackRequest request,
+        LocalPresentationAssetPackAccepted accepted,
+        double effectivePhysicalScale) =>
+        MountRaster(
+            request,
+            accepted,
+            effectivePhysicalScale,
+            TacticalCursorAssetId,
+            TacticalCursorLogicalWidth,
+            TacticalCursorLogicalHeight,
+            "private tactical selection cursor");
+
+    private PrivateLocalPresentationAssetMountResult MountRaster(
+        LocalPresentationAssetPackRequest request,
+        LocalPresentationAssetPackAccepted accepted,
+        double effectivePhysicalScale,
+        string assetId,
+        int logicalWidth,
+        int logicalHeight,
+        string assetDescription)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(accepted);
@@ -121,16 +154,16 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         [
             .. accepted.Definition.Assets.Where(asset => string.Equals(
                 asset.AssetId,
-                PreviewAssetId,
+                assetId,
                 StringComparison.Ordinal)),
         ];
         if (matches.Length != 1 ||
-            matches[0].LogicalSize.Width != PreviewLogicalWidth ||
-            matches[0].LogicalSize.Height != PreviewLogicalHeight)
+            matches[0].LogicalSize.Width != logicalWidth ||
+            matches[0].LogicalSize.Height != logicalHeight)
         {
             return Reject(
                 PrivateLocalPresentationAssetMountFailureCode.AssetUnavailable,
-                "The exact private HUD preview asset is unavailable.");
+                $"The exact {assetDescription} asset is unavailable.");
         }
 
         int scale = SelectBucketScale(effectivePhysicalScale);
@@ -140,14 +173,14 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         {
             return Reject(
                 PrivateLocalPresentationAssetMountFailureCode.AssetUnavailable,
-                "The required private HUD preview bucket is unavailable.");
+                $"The required {assetDescription} bucket is unavailable.");
         }
 
         LocalPresentationRasterBucket selected = buckets[0];
         LocalPresentationRasterPayloadResult payloadResult = _reader.ReadRaster(
             request,
             accepted,
-            PreviewAssetId,
+            assetId,
             scale);
         if (payloadResult is not LocalPresentationRasterPayloadAccepted payload)
         {
@@ -169,7 +202,7 @@ internal sealed class PrivateLocalPresentationAssetCatalog
                 "The Content-owned local presentation payload lookup was rejected.");
         }
 
-        if (!string.Equals(payload.AssetId, PreviewAssetId, StringComparison.Ordinal) ||
+        if (!string.Equals(payload.AssetId, assetId, StringComparison.Ordinal) ||
             payload.Scale != scale)
         {
             return Reject(
@@ -184,7 +217,7 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         {
             return Reject(
                 PrivateLocalPresentationAssetMountFailureCode.TextureRejected,
-                "The private HUD preview payload is not the admitted PNG shape.");
+                $"The {assetDescription} payload is not the admitted PNG shape.");
         }
 
         return new PrivateLocalPresentationAssetMounted(

@@ -83,12 +83,14 @@ public sealed partial class Map3Root
             new PrivateCanonicalMap3ImportReader(canonicalImportPath),
             runSmoke);
         PrivateLocalPresentationRasterMount? hudPreview = null;
+        PrivateLocalPresentationRasterMount? tacticalCursor = null;
         if (selection.PrivateHudPreviewRequested &&
-            !TryPreparePrivateHudPreview(
+            !TryPreparePrivatePresentationAssets(
                 selection,
                 importRequest,
                 ref source,
-                out hudPreview))
+                out hudPreview,
+                out tacticalCursor))
         {
             return;
         }
@@ -100,6 +102,7 @@ public sealed partial class Map3Root
                 source,
                 importRequest,
                 hudPreview,
+                tacticalCursor,
                 runSmoke,
                 sessionStarted);
             return;
@@ -147,6 +150,7 @@ public sealed partial class Map3Root
         IOriginalMapImportSource importSource,
         OriginalMapImportRequest importRequest,
         PrivateLocalPresentationRasterMount? hudPreview,
+        PrivateLocalPresentationRasterMount? tacticalCursor,
         bool runSmoke,
         long sessionStarted)
     {
@@ -213,6 +217,11 @@ public sealed partial class Map3Root
             return;
         }
 
+        if (!TryAttachPrivateTacticalCursor(tacticalCursor, runSmoke))
+        {
+            return;
+        }
+
         _session = started.Session;
         _privateVisualBinding = started.Binding;
         _privateBattleBridgeEnabled = true;
@@ -234,13 +243,15 @@ public sealed partial class Map3Root
         }
     }
 
-    private bool TryPreparePrivateHudPreview(
+    private bool TryPreparePrivatePresentationAssets(
         Map3RuntimeProfileSelection selection,
         OriginalMapImportRequest importRequest,
         ref IOriginalMapImportSource importSource,
-        out PrivateLocalPresentationRasterMount? mount)
+        out PrivateLocalPresentationRasterMount? hudPreview,
+        out PrivateLocalPresentationRasterMount? tacticalCursor)
     {
-        mount = null;
+        hudPreview = null;
+        tacticalCursor = null;
         OriginalMapImportResult importResult = importSource.Admit(importRequest);
         if (importResult is not OriginalMapImportAccepted importAccepted)
         {
@@ -275,15 +286,16 @@ public sealed partial class Map3Root
             return false;
         }
 
-        PrivateLocalPresentationAssetMountResult mountResult =
-            new PrivateLocalPresentationAssetCatalog(packReader).MountPreview(
+        PrivateLocalPresentationAssetCatalog catalog = new(packReader);
+        PrivateLocalPresentationAssetMountResult previewResult =
+            catalog.MountPreview(
                 packRequest,
                 acceptedPack,
                 EffectivePhysicalScale());
-        if (mountResult is not PrivateLocalPresentationAssetMounted mounted)
+        if (previewResult is not PrivateLocalPresentationAssetMounted mountedPreview)
         {
             PrivateLocalPresentationAssetMountRejected rejected =
-                (PrivateLocalPresentationAssetMountRejected)mountResult;
+                (PrivateLocalPresentationAssetMountRejected)previewResult;
             FailPrivateStartup(
                 $"PrivateLocal HUD preview unavailable ({rejected.Diagnostic.Code}).",
                 selection.PrivateSmokeRequested,
@@ -291,10 +303,31 @@ public sealed partial class Map3Root
             return false;
         }
 
+        if (selection.PrivateBaseViewRequested)
+        {
+            PrivateLocalPresentationAssetMountResult cursorResult =
+                catalog.MountTacticalCursor(
+                    packRequest,
+                    acceptedPack,
+                    EffectivePhysicalScale());
+            if (cursorResult is not PrivateLocalPresentationAssetMounted mountedCursor)
+            {
+                PrivateLocalPresentationAssetMountRejected rejected =
+                    (PrivateLocalPresentationAssetMountRejected)cursorResult;
+                FailPrivateStartup(
+                    $"PrivateLocal tactical cursor unavailable ({rejected.Diagnostic.Code}).",
+                    selection.PrivateSmokeRequested,
+                    "private-local");
+                return false;
+            }
+
+            tacticalCursor = mountedCursor.Asset;
+        }
+
         importSource = new PreadmittedOriginalMapImportSource(
             importRequest,
             importAccepted);
-        mount = mounted.Asset;
+        hudPreview = mountedPreview.Asset;
         return true;
     }
 
@@ -320,6 +353,29 @@ public sealed partial class Map3Root
 
         FailPrivateStartup(
             $"PrivateLocal HUD preview unavailable ({diagnostic!.Code}).",
+            runSmoke,
+            "private-local");
+        return false;
+    }
+
+    private bool TryAttachPrivateTacticalCursor(
+        PrivateLocalPresentationRasterMount? mount,
+        bool runSmoke)
+    {
+        if (mount is null)
+        {
+            return true;
+        }
+
+        PrivateLocalPresentationAssetMountDiagnostic? diagnostic = null;
+        if (_battlePresenter is not null &&
+            _battlePresenter.TryAttachPrivateTacticalCursor(mount, out diagnostic))
+        {
+            return true;
+        }
+
+        FailPrivateStartup(
+            $"PrivateLocal tactical cursor unavailable ({diagnostic?.Code ?? PrivateLocalPresentationAssetMountFailureCode.InvalidBinding}).",
             runSmoke,
             "private-local");
         return false;
