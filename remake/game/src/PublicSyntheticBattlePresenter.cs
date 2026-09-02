@@ -15,7 +15,6 @@ internal sealed record PublicSyntheticBattlePresentationProjection
 {
     private PublicSyntheticBattlePresentationProjection(
         bool visible,
-        string title,
         string instruction,
         string status,
         string cueStatus,
@@ -26,14 +25,13 @@ internal sealed record PublicSyntheticBattlePresentationProjection
         int enemyMaxHitPoints,
         IEnumerable<PublicSyntheticBattleCellProjection> cells)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(title);
         ArgumentException.ThrowIfNullOrWhiteSpace(instruction);
         ArgumentException.ThrowIfNullOrWhiteSpace(status);
         ArgumentException.ThrowIfNullOrWhiteSpace(cueStatus);
         ArgumentException.ThrowIfNullOrWhiteSpace(legend);
         ArgumentNullException.ThrowIfNull(cells);
         Visible = visible;
-        Title = title;
+        Title = PublicSyntheticBattlePresenter.TitleText;
         Instruction = instruction;
         Status = status;
         CueStatus = cueStatus;
@@ -89,7 +87,6 @@ internal sealed record PublicSyntheticBattlePresentationProjection
         {
             return new PublicSyntheticBattlePresentationProjection(
                 visible: true,
-                "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
                 "RETURNED · exploration resumed",
                 $"{returned.Completion.Battle} completed; returned to " +
                     $"{returned.Snapshot.Exploration.Map} exploration; " +
@@ -106,7 +103,6 @@ internal sealed record PublicSyntheticBattlePresentationProjection
 
         return new PublicSyntheticBattlePresentationProjection(
             visible: false,
-            "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
             "B request battle · N acknowledge entry",
             "No public-synthetic battle is active.",
             "Battle cue: none.",
@@ -137,7 +133,6 @@ internal sealed record PublicSyntheticBattlePresentationProjection
         {
             return new PublicSyntheticBattlePresentationProjection(
                 visible: true,
-                "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
                 "RETURNED · private traversal resumed",
                 $"{returned.Completion.Battle} completed; returned to the same " +
                     $"private {returned.Snapshot.Map} traversal state.",
@@ -152,7 +147,6 @@ internal sealed record PublicSyntheticBattlePresentationProjection
 
         return new PublicSyntheticBattlePresentationProjection(
             visible: false,
-            "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
             "B request battle · N acknowledge entry",
             "No private battle bridge is active.",
             "Battle cue: none.",
@@ -186,7 +180,6 @@ internal sealed record PublicSyntheticBattlePresentationProjection
 
         return new PublicSyntheticBattlePresentationProjection(
             visible: true,
-            "PROJECT-AUTHORED PUBLIC-SYNTHETIC TACTICAL MICRO-BATTLE",
             InstructionFor(battleState),
             $"{battle}  {battleState.Phase}  " +
                 $"Actor HP {battleState.ActorHitPoints}/{battleState.Rules.ActorMaxHitPoints}  " +
@@ -257,6 +250,14 @@ internal sealed record PublicSyntheticBattlePresentationProjection
 
 internal sealed class PublicSyntheticBattlePresenter
 {
+    internal const string TitleText = "PROJECT-AUTHORED\nSYNTHETIC TACTICAL BATTLE";
+    internal const string TitleNodeName = "PublicSyntheticBattleTitle";
+    internal const int TitleFontSize = 16;
+    internal const TextServer.AutowrapMode TitleAutowrapMode =
+        TextServer.AutowrapMode.Off;
+    internal const bool TitleClipText = true;
+    internal const VerticalAlignment TitleVerticalAlignment = VerticalAlignment.Center;
+
     internal static readonly Vector2 CanvasSize = new(960, 540);
     internal static readonly Rect2 PanelBounds = new(600, 82, 340, 442);
     internal static readonly Rect2 TitleBounds = new(14, 10, 312, 64);
@@ -334,7 +335,15 @@ internal sealed class PublicSyntheticBattlePresenter
         };
         panel.AddChild(background);
         Label title = LabelAt(
-            panel, TitleBounds.Position, TitleBounds.Size, 16, new Color("ffbd59"));
+            panel,
+            TitleBounds.Position,
+            TitleBounds.Size,
+            TitleFontSize,
+            new Color("ffbd59"));
+        title.Name = TitleNodeName;
+        title.AutowrapMode = TitleAutowrapMode;
+        title.ClipText = TitleClipText;
+        title.VerticalAlignment = TitleVerticalAlignment;
         Label instruction = LabelAt(
             panel, InstructionBounds.Position, InstructionBounds.Size, 13, new Color("b8f2c2"));
         Label status = LabelAt(
