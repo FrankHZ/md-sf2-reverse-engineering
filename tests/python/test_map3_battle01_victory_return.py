@@ -9,10 +9,15 @@ from jsonschema import Draft7Validator
 
 from sf2tool.h2 import map3_battle01_victory_return as victory_return
 from sf2tool.h2.map_event_cross_program_flag_state import (
-    normalize_map_event_cross_program_flag_state_later_owner_index,
+    ID as CROSS_PROGRAM_OWNER_ID,
 )
-from sf2tool.h2.map_event_flag_route_selection import (
-    _remove_map_event_flag_route_selection_later_owner_index_delta,
+from sf2tool.h2.map_event_cross_program_flag_state import (
+    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
+)
+from sf2tool.h2.map_event_interaction_state import ID as INTERACTION_OWNER_ID
+from sf2tool.research_index import (
+    _normalize_current_index_to_owner_state,
+    normalize_current_index_to_owner_predecessor,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -235,11 +240,11 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
             if item["fixtureId"] == cross_program_fixture_id
         )
 
-    after_route_selection = _remove_map_event_flag_route_selection_later_owner_index_delta(
-        original
+    cross_program_state = _normalize_current_index_to_owner_state(
+        original, owner_id=CROSS_PROGRAM_OWNER_ID
     )
     for record_id, fixture_field in cross_program_bindings.items():
-        record = record_for(after_route_selection, record_id)
+        record = record_for(cross_program_state, record_id)
         assert cross_program_evidence(record) == {
             "level": "H2",
             "fixture": "tests/fixtures/h2/map-event-cross-program-flag-state-static-v1.json",
@@ -250,9 +255,14 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
         assert record["documents"].count(cross_program_document) == 1
         assert record["documents"][-1] == cross_program_document
 
-    after_cross_program = normalize_map_event_cross_program_flag_state_later_owner_index(
-        after_route_selection
+    after_cross_program = (
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(
+            cross_program_state
+        )
     )
+    assert normalize_current_index_to_owner_predecessor(
+        original, owner_id=CROSS_PROGRAM_OWNER_ID
+    ) == after_cross_program
     assert all(
         evidence["fixtureId"] != cross_program_fixture_id
         for record in after_cross_program["records"]
@@ -263,10 +273,13 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
         for record in after_cross_program["records"]
     )
     normalized = _normalize_later_owner_index(index)
+    request_state = normalize_current_index_to_owner_predecessor(
+        original, owner_id=INTERACTION_OWNER_ID
+    )
     assert index == original
     assert normalized != index
     assert normalized == victory_return._remove_request_consumption_later_owner_index_delta(
-        after_cross_program, require_document_terminal=True
+        copy.deepcopy(request_state), require_document_terminal=True
     )
     assert len(victory_return._owner_evidence(normalized)) == 11
     assert all(
@@ -287,39 +300,45 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
             if item["fixtureId"] == "sf2-map-event-request-consumption-static-v1"
         )
 
-    malformed = copy.deepcopy(original)
+    malformed = copy.deepcopy(cross_program_state)
     cross_program_evidence(record_for(malformed, "map.setup.entity-event"))["verifier"] = "wrong"
     with pytest.raises(ValueError, match="cross-program flag state index delta drift"):
-        _normalize_later_owner_index(malformed)
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(malformed)
 
-    malformed = copy.deepcopy(original)
+    malformed = copy.deepcopy(cross_program_state)
     record_for(malformed, "map.setup.zone-event")["evidence"].remove(
         cross_program_evidence(record_for(malformed, "map.setup.zone-event"))
     )
     with pytest.raises(ValueError, match="cross-program flag state index delta drift"):
-        _normalize_later_owner_index(malformed)
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(malformed)
 
-    malformed = copy.deepcopy(original)
+    malformed = copy.deepcopy(cross_program_state)
     record_for(malformed, "map.setup.item-event")["evidence"].append(
-        copy.deepcopy(cross_program_evidence(record_for(original, "map.setup.item-event")))
+        copy.deepcopy(
+            cross_program_evidence(record_for(cross_program_state, "map.setup.item-event"))
+        )
     )
     with pytest.raises(ValueError, match="cross-program flag state index delta drift"):
-        _normalize_later_owner_index(malformed)
+        _remove_map_event_cross_program_flag_state_later_owner_index_delta(malformed)
 
-    malformed = copy.deepcopy(original)
+    malformed = copy.deepcopy(request_state)
     request_evidence(record_for(malformed, "menus.shop-actions"))["verifier"] = "wrong"
     with pytest.raises(ValueError, match="request-consumption evidence drift"):
-        _normalize_later_owner_index(malformed)
+        victory_return._remove_request_consumption_later_owner_index_delta(
+            malformed, require_document_terminal=True
+        )
 
-    malformed = copy.deepcopy(original)
+    malformed = copy.deepcopy(request_state)
     documents = record_for(malformed, "menus.field-main")["documents"]
     documents[documents.index(victory_return._REQUEST_CONSUMPTION_DOCUMENT)] = (
         "docs/research/wrong.md"
     )
     with pytest.raises(ValueError, match="request-consumption document drift"):
-        _normalize_later_owner_index(malformed)
+        victory_return._remove_request_consumption_later_owner_index_delta(
+            malformed, require_document_terminal=True
+        )
 
-    malformed = copy.deepcopy(original)
+    malformed = copy.deepcopy(request_state)
     address = next(
         item
         for item in record_for(malformed, "menus.shop-actions")["addresses"]
@@ -327,21 +346,27 @@ def test_request_consumption_later_owner_normalizer_is_deep_and_exact() -> None:
     )
     address["value"] += 1
     with pytest.raises(ValueError, match="request-consumption address drift"):
-        _normalize_later_owner_index(malformed)
+        victory_return._remove_request_consumption_later_owner_index_delta(
+            malformed, require_document_terminal=True
+        )
 
-    malformed = copy.deepcopy(original)
+    malformed = copy.deepcopy(request_state)
     addresses = record_for(malformed, "menus.shop-actions")["addresses"]
     address = next(item for item in addresses if item["id"] == "get-shop-inventory-address")
     addresses.append(copy.deepcopy(address))
     with pytest.raises(ValueError, match="request-consumption address set drift"):
-        _normalize_later_owner_index(malformed)
+        victory_return._remove_request_consumption_later_owner_index_delta(
+            malformed, require_document_terminal=True
+        )
 
-    malformed = copy.deepcopy(original)
+    malformed = copy.deepcopy(request_state)
     record_for(malformed, "battle.control.outcomes")["evidence"].append(
-        copy.deepcopy(request_evidence(record_for(original, "menus.shop-actions")))
+        copy.deepcopy(request_evidence(record_for(request_state, "menus.shop-actions")))
     )
     with pytest.raises(ValueError, match="request-consumption owner-record drift"):
-        _normalize_later_owner_index(malformed)
+        victory_return._remove_request_consumption_later_owner_index_delta(
+            malformed, require_document_terminal=True
+        )
 
 
 def test_index_contract_rejects_binding_address_document_and_accepted_base_drift() -> None:

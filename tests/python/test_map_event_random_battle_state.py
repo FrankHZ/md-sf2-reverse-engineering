@@ -11,41 +11,20 @@ import pytest
 
 import sf2tool.h2.map_event_random_battle_state as random_battle_module
 from sf2tool.h2.map_event_combatant_state import canonical_json_bytes
-from sf2tool.h2.map_event_cross_program_flag_state import (
-    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_lifecycle_state import (
-    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_route_selection import (
-    _remove_map_event_flag_route_selection_later_owner_index_delta,
-)
 from sf2tool.h2.map_event_random_battle_state import (
     FIXTURE,
     ID,
     SCHEMA,
     _remove_map_event_random_battle_state_later_owner_index_delta,
     build_map_event_random_battle_state_contract,
-    normalize_map_event_random_battle_state_later_owner_index,
-)
-from sf2tool.h2.map_event_scripted_transition_state import (
-    _remove_map_event_scripted_transition_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_tactical_base_quote_state import (
-    _remove_map_event_tactical_base_quote_state_later_owner_index_delta,
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
-
-
-def _remove_cross_program_flag_lifecycle_deltas(index):
-    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
-        _remove_map_event_cross_program_flag_state_later_owner_index_delta(
-            _remove_map_event_flag_route_selection_later_owner_index_delta(index)
-        )
-    )
-
+from sf2tool.research_index import (
+    _normalize_current_index_to_owner_state,
+    normalize_current_index_to_owner_predecessor,
+)
 
 ROM = repo_path("local/roms/sf2-us.bin")
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
@@ -257,11 +236,8 @@ def test_schema_rejects_unknown_root_and_nested_fields() -> None:
 
 
 def test_later_owner_index_delta_is_exact() -> None:
-    index = _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
-        _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_cross_program_flag_lifecycle_deltas(load_json(_INDEX))
-        )
-    )
+    raw_index = load_json(_INDEX)
+    index = _normalize_current_index_to_owner_state(raw_index, owner_id=ID)
     predecessor = _remove_map_event_random_battle_state_later_owner_index_delta(index)
     assert hashlib.sha256(canonical_json_bytes(predecessor)).hexdigest().upper() == (
         random_battle_module._PREDECESSOR_INDEX_SHA256
@@ -299,6 +275,7 @@ def test_later_owner_index_delta_is_exact() -> None:
         for binding in _fixture_evidence(record).get("bindings", [])
     }
     assert actual_bindings == set(_BINDING_DELTA)
+    assert normalize_current_index_to_owner_predecessor(raw_index, owner_id=ID) == predecessor
 
 
 @pytest.mark.parametrize("record_id,address_id,space,kind,value", _ADDRESS_DELTA)
@@ -311,13 +288,7 @@ def test_later_owner_normalizer_rejects_each_address_delta_mutation(
     value: int,
     mutation: str,
 ) -> None:
-    altered = deepcopy(
-        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
-            _remove_map_event_scripted_transition_state_later_owner_index_delta(
-                _remove_cross_program_flag_lifecycle_deltas(load_json(_INDEX))
-            )
-        )
-    )
+    altered = _normalize_current_index_to_owner_state(load_json(_INDEX), owner_id=ID)
     record = _record(altered, record_id)
     address = next(
         row
@@ -333,7 +304,7 @@ def test_later_owner_normalizer_rejects_each_address_delta_mutation(
     else:
         address["value"] += 2
     with pytest.raises(ValueError):
-        normalize_map_event_random_battle_state_later_owner_index(altered)
+        _remove_map_event_random_battle_state_later_owner_index_delta(altered)
 
 
 @pytest.mark.parametrize("record_id,address_id,fixture_field", _BINDING_DELTA)
@@ -344,13 +315,7 @@ def test_later_owner_normalizer_rejects_each_binding_delta_mutation(
     fixture_field: str,
     mutation: str,
 ) -> None:
-    altered = deepcopy(
-        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
-            _remove_map_event_scripted_transition_state_later_owner_index_delta(
-                _remove_cross_program_flag_lifecycle_deltas(load_json(_INDEX))
-            )
-        )
-    )
+    altered = _normalize_current_index_to_owner_state(load_json(_INDEX), owner_id=ID)
     bindings = _fixture_evidence(_record(altered, record_id))["bindings"]
     binding = next(
         row
@@ -369,25 +334,21 @@ def test_later_owner_normalizer_rejects_each_binding_delta_mutation(
     else:
         binding["fixtureField"] = "eventRandomBattleState.unexpected"
     with pytest.raises(ValueError):
-        normalize_map_event_random_battle_state_later_owner_index(altered)
+        _remove_map_event_random_battle_state_later_owner_index_delta(altered)
 
 
 def test_later_owner_normalizer_rejects_missing_exact_delta() -> None:
-    index = _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
-        _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_cross_program_flag_lifecycle_deltas(load_json(_INDEX))
-        )
-    )
+    index = _normalize_current_index_to_owner_state(load_json(_INDEX), owner_id=ID)
     altered = deepcopy(index)
     record = next(row for row in altered["records"] if row["id"] == "stats.flags")
     record["documents"].remove(_DOCUMENT)
     with pytest.raises(ValueError, match="record fields drift"):
-        normalize_map_event_random_battle_state_later_owner_index(altered)
+        _remove_map_event_random_battle_state_later_owner_index_delta(altered)
     owner_mutation = deepcopy(index)
     owner = next(row for row in owner_mutation["records"] if row["id"] == _OWNER_ID)
     owner["addresses"][0]["value"] += 2
     with pytest.raises(ValueError, match="new index record drift"):
-        normalize_map_event_random_battle_state_later_owner_index(owner_mutation)
+        _remove_map_event_random_battle_state_later_owner_index_delta(owner_mutation)
 
 
 def test_public_ids_are_stable() -> None:

@@ -170,7 +170,9 @@ def canonical_json_bytes(value: dict[str, Any]) -> bytes:
     )
 
 
-def normalize_interaction_state_later_owner_index(index: dict[str, Any]) -> dict[str, Any]:
+def _remove_map_event_interaction_state_later_owner_index_delta(
+    index: dict[str, Any],
+) -> dict[str, Any]:
     """Remove only this accepted slice's exact index delta for legacy-owner tests."""
     normalized = json.loads(json.dumps(index))
     seen: set[str] = set()
@@ -210,6 +212,13 @@ def normalize_interaction_state_later_owner_index(index: dict[str, Any]) -> dict
     if seen != set(_INDEX_DELTA):
         raise ValueError("interaction-state later-owner coverage drift")
     return normalized
+
+
+def normalize_interaction_state_later_owner_index(index: dict[str, Any]) -> dict[str, Any]:
+    """Strictly normalize the current index through this owner's predecessor."""
+    from sf2tool.research_index import normalize_current_index_to_owner_predecessor
+
+    return normalize_current_index_to_owner_predecessor(index, owner_id=ID)
 
 
 def _normalise(statement: str) -> str:

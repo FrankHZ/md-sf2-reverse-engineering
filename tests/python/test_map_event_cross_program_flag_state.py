@@ -22,14 +22,14 @@ from sf2tool.h2.map_event_cross_program_flag_state import (
     _sha,
     _validate_order,
     canonical_json_bytes,
-    normalize_map_event_cross_program_flag_state_later_owner_index,
-)
-from sf2tool.h2.map_event_flag_route_selection import (
-    _remove_map_event_flag_route_selection_later_owner_index_delta,
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
+from sf2tool.research_index import (
+    _normalize_current_index_to_owner_state,
+    normalize_current_index_to_owner_predecessor,
+)
 
 ROM = repo_path("local/roms/sf2-us.bin")
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
@@ -305,7 +305,7 @@ def test_retained_owners_are_hash_locked_before_projection(
 
 def test_index_delta_is_exact_and_chains_predecessor_normalization() -> None:
     current = load_json(RESEARCH_INDEX)
-    cross_current = _remove_map_event_flag_route_selection_later_owner_index_delta(current)
+    cross_current = _normalize_current_index_to_owner_state(current, owner_id=ID)
     predecessor = _remove_map_event_cross_program_flag_state_later_owner_index_delta(cross_current)
     assert _sha(canonical_json_bytes(predecessor)) == _PREDECESSOR_INDEX_SHA256
     current_by_id = {row["id"]: row for row in cross_current["records"]}
@@ -321,7 +321,7 @@ def test_index_delta_is_exact_and_chains_predecessor_normalization() -> None:
         "map.setup.item-event",
         "tech.interrupts.trap-flags",
     }
-    assert normalize_map_event_cross_program_flag_state_later_owner_index(cross_current)
+    assert normalize_current_index_to_owner_predecessor(current, owner_id=ID) == predecessor
 
     stale = deepcopy(cross_current)
     next(row for row in stale["records"] if row["id"] == "map.setup.entity-event")[

@@ -1,6 +1,13 @@
 from __future__ import annotations
 
+import hashlib
+import importlib
+import inspect
+import json
 import re
+from collections.abc import Callable
+from copy import deepcopy
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +19,254 @@ INDEX_PATH = repo_path("manifests/research-index.json")
 SCHEMA_PATH = repo_path("schemas/research-index.schema.json")
 TOOLCHAIN_PATH = repo_path("manifests/toolchain.json")
 H3_FIXTURE_ROOT = repo_path("tests/fixtures/h3")
+
+
+@dataclass(frozen=True, slots=True)
+class LaterOwnerStep:
+    """One exact research-index state transition, newest owner first."""
+
+    owner_id: str
+    predecessor_owner_id: str | None
+    remover: str
+    state_sha256: str
+    predecessor_sha256: str
+
+
+_LATER_OWNER_STEPS = (
+    LaterOwnerStep(
+        owner_id="sf2-map-event-flag-route-selection-static-v1",
+        predecessor_owner_id="sf2-map-event-cross-program-flag-state-static-v1",
+        remover=(
+            "sf2tool.h2.map_event_flag_route_selection:"
+            "_remove_map_event_flag_route_selection_later_owner_index_delta"
+        ),
+        state_sha256="70A2A46145FA182EB371D216B54D1F0CF28E24B2555E0194C52B18E88BAD4C0A",
+        predecessor_sha256=(
+            "4F729D50C06D63484565A0DABF15A98F3B092896C7FAF9455DAB884A537DD3FE"
+        ),
+    ),
+    LaterOwnerStep(
+        owner_id="sf2-map-event-cross-program-flag-state-static-v1",
+        predecessor_owner_id="sf2-map-event-flag-lifecycle-state-static-v1",
+        remover=(
+            "sf2tool.h2.map_event_cross_program_flag_state:"
+            "_remove_map_event_cross_program_flag_state_later_owner_index_delta"
+        ),
+        state_sha256="4F729D50C06D63484565A0DABF15A98F3B092896C7FAF9455DAB884A537DD3FE",
+        predecessor_sha256=(
+            "4D526EB33ED5A76D9D69D54E62FC6AB4B412603A16641928566A68200C7C656A"
+        ),
+    ),
+    LaterOwnerStep(
+        owner_id="sf2-map-event-flag-lifecycle-state-static-v1",
+        predecessor_owner_id="sf2-map-event-scripted-transition-state-static-v1",
+        remover=(
+            "sf2tool.h2.map_event_flag_lifecycle_state:"
+            "_remove_map_event_flag_lifecycle_state_later_owner_index_delta"
+        ),
+        state_sha256="4D526EB33ED5A76D9D69D54E62FC6AB4B412603A16641928566A68200C7C656A",
+        predecessor_sha256=(
+            "4241E190B1C52409862AD53412DCCC1F1E8BA3A9868725EC77631851854C6CB1"
+        ),
+    ),
+    LaterOwnerStep(
+        owner_id="sf2-map-event-scripted-transition-state-static-v1",
+        predecessor_owner_id="sf2-map-event-tactical-base-quote-state-static-v1",
+        remover=(
+            "sf2tool.h2.map_event_scripted_transition_state:"
+            "_remove_map_event_scripted_transition_state_later_owner_index_delta"
+        ),
+        state_sha256="4241E190B1C52409862AD53412DCCC1F1E8BA3A9868725EC77631851854C6CB1",
+        predecessor_sha256=(
+            "9A08422491985FF3277A11A1F2BFE2277D3D379FF12681EF835F44AF70CB671D"
+        ),
+    ),
+    LaterOwnerStep(
+        owner_id="sf2-map-event-tactical-base-quote-state-static-v1",
+        predecessor_owner_id="sf2-map-event-random-battle-state-static-v1",
+        remover=(
+            "sf2tool.h2.map_event_tactical_base_quote_state:"
+            "_remove_map_event_tactical_base_quote_state_later_owner_index_delta"
+        ),
+        state_sha256="9A08422491985FF3277A11A1F2BFE2277D3D379FF12681EF835F44AF70CB671D",
+        predecessor_sha256=(
+            "C905CB82A2C310AAAC8A4B40BA7D14BC5750BB4EE9D59AABBF5E68069042630B"
+        ),
+    ),
+    LaterOwnerStep(
+        owner_id="sf2-map-event-random-battle-state-static-v1",
+        predecessor_owner_id="sf2-map-event-combatant-state-static-v1",
+        remover=(
+            "sf2tool.h2.map_event_random_battle_state:"
+            "_remove_map_event_random_battle_state_later_owner_index_delta"
+        ),
+        state_sha256="C905CB82A2C310AAAC8A4B40BA7D14BC5750BB4EE9D59AABBF5E68069042630B",
+        predecessor_sha256=(
+            "9848602E14474EFD9C16FD8E846E14937D09B93F6447E806DEDAE9BE0A17E94A"
+        ),
+    ),
+    LaterOwnerStep(
+        owner_id="sf2-map-event-combatant-state-static-v1",
+        predecessor_owner_id="sf2-map-event-item-transactions-static-v1",
+        remover=(
+            "sf2tool.h2.map_event_combatant_state:"
+            "_remove_map_event_combatant_state_later_owner_index_delta"
+        ),
+        state_sha256="9848602E14474EFD9C16FD8E846E14937D09B93F6447E806DEDAE9BE0A17E94A",
+        predecessor_sha256=(
+            "E987286D1D27BA96DE1A5CF0F3F3179C38CCF19048095865DA4934E4C956ECA7"
+        ),
+    ),
+    LaterOwnerStep(
+        owner_id="sf2-map-event-item-transactions-static-v1",
+        predecessor_owner_id="sf2-map-event-interaction-state-static-v1",
+        remover=(
+            "sf2tool.h2.map_event_item_transactions:"
+            "_remove_map_event_item_transactions_index_delta"
+        ),
+        state_sha256="E987286D1D27BA96DE1A5CF0F3F3179C38CCF19048095865DA4934E4C956ECA7",
+        predecessor_sha256=(
+            "09E54BB6001CFAB23FE3DD034807B4F76EC961931ACEA97F4177F30F96BDE360"
+        ),
+    ),
+    LaterOwnerStep(
+        owner_id="sf2-map-event-interaction-state-static-v1",
+        predecessor_owner_id=None,
+        remover=(
+            "sf2tool.h2.map_event_interaction_state:"
+            "_remove_map_event_interaction_state_later_owner_index_delta"
+        ),
+        state_sha256="09E54BB6001CFAB23FE3DD034807B4F76EC961931ACEA97F4177F30F96BDE360",
+        predecessor_sha256=(
+            "E8B95158841944757D09EFA4AE63B58E451659475A2C6A0E991E32331ED8B787"
+        ),
+    ),
+)
+
+_LaterOwnerRemover = Callable[[dict[str, Any]], dict[str, Any]]
+_LaterOwnerResolver = Callable[[LaterOwnerStep], _LaterOwnerRemover]
+
+
+def _canonical_index_sha256(index: dict[str, Any]) -> str:
+    payload = json.dumps(
+        index, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8") + b"\n"
+    return hashlib.sha256(payload).hexdigest().upper()
+
+
+def _validate_later_owner_steps(
+    steps: tuple[LaterOwnerStep, ...],
+) -> dict[str, LaterOwnerStep]:
+    if not steps or any(not isinstance(step, LaterOwnerStep) for step in steps):
+        raise ValueError("research-index later-owner registry shape drift")
+    owners = [step.owner_id for step in steps]
+    removers = [step.remover for step in steps]
+    if len(owners) != len(set(owners)):
+        raise ValueError("duplicate research-index later-owner ID")
+    if len(removers) != len(set(removers)):
+        raise ValueError("duplicate research-index later-owner remover")
+    by_id = {step.owner_id: step for step in steps}
+    digest_pattern = re.compile(r"[0-9A-F]{64}")
+    for step in steps:
+        module_name, separator, attribute = step.remover.partition(":")
+        if (
+            not step.owner_id
+            or not separator
+            or not module_name
+            or not attribute
+            or digest_pattern.fullmatch(step.state_sha256) is None
+            or digest_pattern.fullmatch(step.predecessor_sha256) is None
+        ):
+            raise ValueError("research-index later-owner registry entry drift")
+        if step.predecessor_owner_id is not None and step.predecessor_owner_id not in by_id:
+            raise ValueError("missing research-index later-owner predecessor")
+
+    referenced = {
+        step.predecessor_owner_id
+        for step in steps
+        if step.predecessor_owner_id is not None
+    }
+    heads = set(owners) - referenced
+    terminals = [step for step in steps if step.predecessor_owner_id is None]
+    if len(heads) != 1 or len(terminals) != 1:
+        raise ValueError("research-index later-owner registry is not one closed chain")
+
+    ordered: list[str] = []
+    current_id: str | None = next(iter(heads))
+    while current_id is not None:
+        if current_id in ordered:
+            raise ValueError("research-index later-owner registry cycle")
+        ordered.append(current_id)
+        current_id = by_id[current_id].predecessor_owner_id
+    if len(ordered) != len(steps):
+        raise ValueError("research-index later-owner registry is disconnected")
+    if ordered != owners:
+        raise ValueError("research-index later-owner registry order drift")
+    for current, predecessor in zip(steps, steps[1:], strict=False):
+        if (
+            current.predecessor_owner_id != predecessor.owner_id
+            or current.predecessor_sha256 != predecessor.state_sha256
+        ):
+            raise ValueError("research-index later-owner registry continuity drift")
+    return by_id
+
+
+def _resolve_later_owner_remover(step: LaterOwnerStep) -> _LaterOwnerRemover:
+    module_name, _separator, attribute = step.remover.partition(":")
+    module = importlib.import_module(module_name)
+    if getattr(module, "ID", None) != step.owner_id:
+        raise ValueError("research-index later-owner module identity drift")
+    remover = getattr(module, attribute, None)
+    if not callable(remover):
+        raise ValueError("research-index later-owner remover is unavailable")
+    try:
+        inspect.signature(remover).bind({})
+    except TypeError as exc:
+        raise ValueError("research-index later-owner remover signature drift") from exc
+    return remover
+
+
+def _normalize_current_index(
+    index: dict[str, Any],
+    *,
+    owner_id: str,
+    include_owner: bool,
+    steps: tuple[LaterOwnerStep, ...] = _LATER_OWNER_STEPS,
+    resolver: _LaterOwnerResolver = _resolve_later_owner_remover,
+) -> dict[str, Any]:
+    owners = _validate_later_owner_steps(steps)
+    if owner_id not in owners:
+        raise ValueError(f"unknown research-index later owner: {owner_id}")
+    normalized = deepcopy(index)
+    if _canonical_index_sha256(normalized) != steps[0].state_sha256:
+        raise ValueError("research-index later-owner head state drift")
+    for step in steps:
+        if step.owner_id == owner_id and not include_owner:
+            return normalized
+        remover = resolver(step)
+        predecessor = remover(normalized)
+        if not isinstance(predecessor, dict) or predecessor is normalized:
+            raise ValueError("research-index later-owner remover result drift")
+        if _canonical_index_sha256(predecessor) != step.predecessor_sha256:
+            raise ValueError("research-index later-owner predecessor state drift")
+        normalized = predecessor
+        if step.owner_id == owner_id:
+            return normalized
+    raise AssertionError("validated research-index later-owner target was not reached")
+
+
+def _normalize_current_index_to_owner_state(
+    index: dict[str, Any], *, owner_id: str
+) -> dict[str, Any]:
+    """Return the exact registered state in which ``owner_id`` is still present."""
+    return _normalize_current_index(index, owner_id=owner_id, include_owner=False)
+
+
+def normalize_current_index_to_owner_predecessor(
+    index: dict[str, Any], *, owner_id: str
+) -> dict[str, Any]:
+    """Strictly normalize the current index through one target owner's predecessor."""
+    return _normalize_current_index(index, owner_id=owner_id, include_owner=True)
 
 
 def listing_symbol_addresses(listing: str) -> dict[str, int]:

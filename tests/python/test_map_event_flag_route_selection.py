@@ -21,10 +21,13 @@ from sf2tool.h2.map_event_flag_route_selection import (
     _remove_map_event_flag_route_selection_later_owner_index_delta,
     _validate_order,
     build_map_event_flag_route_selection_contract,
-    normalize_map_event_flag_route_selection_later_owner_index,
 )
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
+from sf2tool.research_index import (
+    _normalize_current_index_to_owner_state,
+    normalize_current_index_to_owner_predecessor,
+)
 
 ROM = repo_path("local/roms/sf2-us.bin")
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
@@ -206,7 +209,8 @@ def test_retained_owner_receipts_and_index_delta_are_exact(
     with pytest.raises(ValueError, match="retained owner identity/hash"):
         route_module._load_owners(ROM, UPSTREAM)
 
-    current = load_json(RESEARCH_INDEX)
+    raw_index = load_json(RESEARCH_INDEX)
+    current = _normalize_current_index_to_owner_state(raw_index, owner_id=ID)
     predecessor = _remove_map_event_flag_route_selection_later_owner_index_delta(current)
     assert _sha(canonical_json_bytes(predecessor)) == (
         "4F729D50C06D63484565A0DABF15A98F3B092896C7FAF9455DAB884A537DD3FE"
@@ -251,7 +255,7 @@ def test_retained_owner_receipts_and_index_delta_are_exact(
         - sum(len(row["documents"]) for row in predecessor["records"])
         == 6
     )
-    assert normalize_map_event_flag_route_selection_later_owner_index(current)
+    assert normalize_current_index_to_owner_predecessor(raw_index, owner_id=ID) == predecessor
 
     for mutate in (
         lambda value: next(row for row in value["records"] if row["id"] == "map.setup.selector")[

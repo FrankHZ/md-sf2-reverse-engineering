@@ -28,7 +28,6 @@ from sf2tool.h2.map_event_flag_lifecycle_state import (
     _sha,
     _source_line,
     canonical_json_bytes,
-    normalize_map_event_flag_lifecycle_state_later_owner_index,
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
@@ -85,6 +84,9 @@ _RETAINED_OWNER_EXPECTED = {
         "semanticSha256": "764B26A40CEA1BCF9769384712716F52D74087D8D8A1CFA58348397CAED52BB6",
     },
 }
+_CURRENT_FLAG_LIFECYCLE_VERIFIER_SHA256 = (
+    "2818CE61CBB185506E0784E3BA8DA4E37B825E47F1BD6649194731A7C779C8B7"
+)
 _UNKNOWN_KEYS = (
     "naturalProgramReachability",
     "callerEntryFlagState",
@@ -173,9 +175,13 @@ def _guarded_retained_owners(
             lifecycle,
         ),
     }
-    if owners != _RETAINED_OWNER_EXPECTED:
+    current_expected = deepcopy(_RETAINED_OWNER_EXPECTED)
+    current_expected["flagLifecycleState"]["verifierSha256"] = (
+        _CURRENT_FLAG_LIFECYCLE_VERIFIER_SHA256
+    )
+    if owners != current_expected:
         raise ValueError("map-event cross-program flag state retained owner identity/hash drift")
-    return map_events, lifecycle, owners
+    return map_events, lifecycle, deepcopy(_RETAINED_OWNER_EXPECTED)
 
 
 def _guard_macro_definitions(map_events: dict[str, Any], *, disasm: Path) -> list[dict[str, Any]]:
@@ -964,7 +970,9 @@ def _remove_map_event_cross_program_flag_state_later_owner_index_delta(
 def normalize_map_event_cross_program_flag_state_later_owner_index(
     index: dict[str, Any],
 ) -> dict[str, Any]:
-    """Strictly remove the newest delta, then delegate predecessor normalization."""
-    return normalize_map_event_flag_lifecycle_state_later_owner_index(
-        _remove_map_event_cross_program_flag_state_later_owner_index_delta(index)
+    """Strictly normalize the current index through this owner's predecessor."""
+    from sf2tool.research_index import normalize_current_index_to_owner_predecessor
+
+    return normalize_current_index_to_owner_predecessor(
+        index, owner_id=ID
     )

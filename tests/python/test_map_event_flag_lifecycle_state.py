@@ -10,9 +10,6 @@ from shutil import copy2
 import pytest
 
 import sf2tool.h2.map_event_flag_lifecycle_state as lifecycle_module
-from sf2tool.h2.map_event_cross_program_flag_state import (
-    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
-)
 from sf2tool.h2.map_event_flag_lifecycle_state import (
     _PREDECESSOR_INDEX_SHA256,
     FIXTURE,
@@ -22,14 +19,14 @@ from sf2tool.h2.map_event_flag_lifecycle_state import (
     _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
     _validate_order,
     canonical_json_bytes,
-    normalize_map_event_flag_lifecycle_state_later_owner_index,
-)
-from sf2tool.h2.map_event_flag_route_selection import (
-    _remove_map_event_flag_route_selection_later_owner_index_delta,
 )
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
+from sf2tool.research_index import (
+    _normalize_current_index_to_owner_state,
+    normalize_current_index_to_owner_predecessor,
+)
 
 ROM = repo_path("local/roms/sf2-us.bin")
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
@@ -412,9 +409,7 @@ def test_retained_owners_are_fresh_builds_and_hash_locked(
 
 def test_index_delta_is_exact_and_rejects_stale_or_extra_associations() -> None:
     current = load_json(INDEX)
-    lifecycle_current = _remove_map_event_cross_program_flag_state_later_owner_index_delta(
-        _remove_map_event_flag_route_selection_later_owner_index_delta(current)
-    )
+    lifecycle_current = _normalize_current_index_to_owner_state(current, owner_id=ID)
     predecessor = _remove_map_event_flag_lifecycle_state_later_owner_index_delta(lifecycle_current)
     assert lifecycle_module._sha(canonical_json_bytes(predecessor)) == _PREDECESSOR_INDEX_SHA256
     current_by_id = {row["id"]: row for row in lifecycle_current["records"]}
@@ -473,7 +468,7 @@ def test_index_delta_is_exact_and_rejects_stale_or_extra_associations() -> None:
     assert current_totals["bindings"] == 3071
     assert current_totals["documents"] == 61
     assert current_totals["designContracts"] == 68
-    assert normalize_map_event_flag_lifecycle_state_later_owner_index(lifecycle_current)
+    assert normalize_current_index_to_owner_predecessor(current, owner_id=ID) == predecessor
 
     stale = deepcopy(lifecycle_current)
     next(record for record in stale["records"] if record["id"] == "map.setup.entity-event")[

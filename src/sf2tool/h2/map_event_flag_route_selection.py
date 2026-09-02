@@ -23,7 +23,6 @@ from sf2tool.h2.map_event_cross_program_flag_state import (
     _sha,
     build_map_event_cross_program_flag_state_contract,
     canonical_json_bytes,
-    normalize_map_event_cross_program_flag_state_later_owner_index,
 )
 from sf2tool.h2.map_setup import build_map_setup_contract
 from sf2tool.jsonio import load_json, validate_json
@@ -94,6 +93,9 @@ _RETAINED_OWNER_EXPECTED = {
         "semanticSha256": "FFB017B16236158BF7A5A8306CCF7DCBE66600EEBA7A77AD2D29240B1CF5F405",
     },
 }
+_CURRENT_CROSS_PROGRAM_VERIFIER_SHA256 = (
+    "D026A4B21AEAFF8EE6349810900EB1DC0B400A8A6017AF3DF0C24A6E9C34A066"
+)
 
 
 def _receipt(path: Path, verifier_path: str, value: dict[str, Any]) -> dict[str, str]:
@@ -188,9 +190,13 @@ def _load_owners(
         "routingSetup": _receipt(ROUTING_FIXTURE, "src/sf2tool/h2/map_events.py", routing_envelope),
         "mapSetup": _receipt(MAP_SETUP_FIXTURE, "src/sf2tool/h2/map_setup.py", map_setup),
     }
-    if owners != _RETAINED_OWNER_EXPECTED:
+    current_expected = deepcopy(_RETAINED_OWNER_EXPECTED)
+    current_expected["crossProgramFlagState"]["verifierSha256"] = (
+        _CURRENT_CROSS_PROGRAM_VERIFIER_SHA256
+    )
+    if owners != current_expected:
         raise ValueError("map-event flag route selection retained owner identity/hash drift")
-    return cross, routing, map_setup, owners
+    return cross, routing, map_setup, deepcopy(_RETAINED_OWNER_EXPECTED)
 
 
 def _selector_rows(
@@ -811,6 +817,8 @@ def _remove_map_event_flag_route_selection_later_owner_index_delta(
 def normalize_map_event_flag_route_selection_later_owner_index(
     index: dict[str, Any],
 ) -> dict[str, Any]:
-    return normalize_map_event_cross_program_flag_state_later_owner_index(
-        _remove_map_event_flag_route_selection_later_owner_index_delta(index)
+    from sf2tool.research_index import normalize_current_index_to_owner_predecessor
+
+    return normalize_current_index_to_owner_predecessor(
+        index, owner_id=ID
     )

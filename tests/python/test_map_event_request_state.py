@@ -15,16 +15,7 @@ import pytest
 
 import sf2tool.h2.map_event_request_state as request_state_module
 from sf2tool.cli import build_parser
-from sf2tool.h2.map_event_cross_program_flag_state import (
-    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
-)
 from sf2tool.h2.map_event_direct_state import FIXTURE as DIRECT_STATE_FIXTURE
-from sf2tool.h2.map_event_flag_lifecycle_state import (
-    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_route_selection import (
-    _remove_map_event_flag_route_selection_later_owner_index_delta,
-)
 from sf2tool.h2.map_event_request_state import (
     FIXTURE,
     ID,
@@ -34,24 +25,9 @@ from sf2tool.h2.map_event_request_state import (
     _selected_programs,
     _selected_write_rows,
 )
-from sf2tool.h2.map_event_scripted_transition_state import (
-    _remove_map_event_scripted_transition_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_tactical_base_quote_state import (
-    normalize_map_event_tactical_base_quote_state_later_owner_index as _normalize_later_owner_index,
-)
 from sf2tool.jsonio import load_json as _load_json
 from sf2tool.jsonio import validate_json
-from sf2tool.research_index import verify_index
-
-
-def _remove_cross_program_flag_lifecycle_deltas(index):
-    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
-        _remove_map_event_cross_program_flag_state_later_owner_index_delta(
-            _remove_map_event_flag_route_selection_later_owner_index_delta(index)
-        )
-    )
-
+from sf2tool.research_index import normalize_current_index_to_owner_predecessor, verify_index
 
 ROOT = Path(__file__).resolve().parents[2]
 INDEX = ROOT / "manifests/research-index.json"
@@ -64,10 +40,8 @@ VERIFIER = "src/sf2tool/h2/map_event_request_state.py"
 
 
 def normalize_later_owner_index(index):
-    return _normalize_later_owner_index(
-        _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_cross_program_flag_lifecycle_deltas(index)
-        )
+    return normalize_current_index_to_owner_predecessor(
+        index, owner_id="sf2-map-event-interaction-state-static-v1"
     )
 
 

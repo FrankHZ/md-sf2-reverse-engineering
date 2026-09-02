@@ -11,18 +11,6 @@ import pytest
 
 import sf2tool.h2.map_event_tactical_base_quote_state as tactical_module
 from sf2tool.h2.map_event_combatant_state import canonical_json_bytes
-from sf2tool.h2.map_event_cross_program_flag_state import (
-    _remove_map_event_cross_program_flag_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_lifecycle_state import (
-    _remove_map_event_flag_lifecycle_state_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_flag_route_selection import (
-    _remove_map_event_flag_route_selection_later_owner_index_delta,
-)
-from sf2tool.h2.map_event_scripted_transition_state import (
-    _remove_map_event_scripted_transition_state_later_owner_index_delta,
-)
 from sf2tool.h2.map_event_tactical_base_quote_state import (
     _PREDECESSOR_INDEX_SHA256,
     FIXTURE,
@@ -31,21 +19,13 @@ from sf2tool.h2.map_event_tactical_base_quote_state import (
     _remove_map_event_tactical_base_quote_state_later_owner_index_delta,
     build_map_event_tactical_base_quote_state_contract,
 )
-from sf2tool.h2.map_event_tactical_base_quote_state import (
-    normalize_map_event_tactical_base_quote_state_later_owner_index as _normalize_later_owner_index,
-)
 from sf2tool.h2.map_events_fixture import load_map_events_fixture
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
-
-
-def _remove_cross_program_flag_lifecycle_deltas(index):
-    return _remove_map_event_flag_lifecycle_state_later_owner_index_delta(
-        _remove_map_event_cross_program_flag_state_later_owner_index_delta(
-            _remove_map_event_flag_route_selection_later_owner_index_delta(index)
-        )
-    )
-
+from sf2tool.research_index import (
+    _normalize_current_index_to_owner_state,
+    normalize_current_index_to_owner_predecessor,
+)
 
 ROM = repo_path("local/roms/sf2-us.bin")
 UPSTREAM = repo_path("local/upstream/SF2DISASM")
@@ -64,12 +44,6 @@ _CHANGED_IDS = {
 }
 
 
-def normalize_later_owner_index(index):
-    return _normalize_later_owner_index(
-        _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_cross_program_flag_lifecycle_deltas(index)
-        )
-    )
 _ADDRESS_DELTA = (
     ("tech.interfaces.jump-s03b", "open-name-under-portrait", 65708),
     ("tech.interfaces.jump-s03b", "close-name-under-portrait", 65712),
@@ -469,9 +443,7 @@ def _totals(index: dict[str, object]) -> dict[str, int]:
 
 def test_later_owner_index_delta_is_exact_and_delegates() -> None:
     current = load_json(INDEX)
-    tactical_current = _remove_map_event_scripted_transition_state_later_owner_index_delta(
-        _remove_cross_program_flag_lifecycle_deltas(current)
-    )
+    tactical_current = _normalize_current_index_to_owner_state(current, owner_id=ID)
     predecessor = _remove_map_event_tactical_base_quote_state_later_owner_index_delta(
         tactical_current
     )
@@ -496,7 +468,7 @@ def test_later_owner_index_delta_is_exact_and_delegates() -> None:
         "documents": 9,
         "designContracts": 0,
     }
-    assert normalize_later_owner_index(current)
+    assert normalize_current_index_to_owner_predecessor(current, owner_id=ID) == predecessor
 
 
 @pytest.mark.parametrize("record_id,address_id,value", _ADDRESS_DELTA)
@@ -504,7 +476,7 @@ def test_later_owner_index_delta_is_exact_and_delegates() -> None:
 def test_later_owner_normalizer_rejects_every_address_delta_mutation(
     record_id: str, address_id: str, value: int, mutation: str
 ) -> None:
-    altered = deepcopy(load_json(INDEX))
+    altered = _normalize_current_index_to_owner_state(load_json(INDEX), owner_id=ID)
     addresses = _record(altered, record_id)["addresses"]
     address = next(row for row in addresses if row["id"] == address_id and row["value"] == value)
     if mutation == "missing":
@@ -513,8 +485,8 @@ def test_later_owner_normalizer_rejects_every_address_delta_mutation(
         addresses.append({"id": "unexpected", "space": "rom", "kind": "observation", "value": 0})
     else:
         address["value"] += 2
-    with pytest.raises(ValueError):
-        normalize_later_owner_index(altered)
+    with pytest.raises(ValueError, match="address|predecessor"):
+        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(altered)
 
 
 @pytest.mark.parametrize("record_id,address_id,fixture_field", _BINDING_DELTA)
@@ -522,7 +494,7 @@ def test_later_owner_normalizer_rejects_every_address_delta_mutation(
 def test_later_owner_normalizer_rejects_every_binding_delta_mutation(
     record_id: str, address_id: str, fixture_field: str, mutation: str
 ) -> None:
-    altered = deepcopy(load_json(INDEX))
+    altered = _normalize_current_index_to_owner_state(load_json(INDEX), owner_id=ID)
     evidence = next(
         row for row in _record(altered, record_id)["evidence"] if row.get("fixtureId") == ID
     )
@@ -539,22 +511,16 @@ def test_later_owner_normalizer_rejects_every_binding_delta_mutation(
         )
     else:
         binding["fixtureField"] = "tacticalBaseQuoteState.unexpected"
-    with pytest.raises(ValueError):
-        normalize_later_owner_index(altered)
+    with pytest.raises(ValueError, match="record fields"):
+        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(altered)
 
 
 def test_later_owner_normalizer_rejects_document_and_unrelated_drift() -> None:
-    altered = _remove_map_event_scripted_transition_state_later_owner_index_delta(
-        _remove_cross_program_flag_lifecycle_deltas(load_json(INDEX))
-    )
+    altered = _normalize_current_index_to_owner_state(load_json(INDEX), owner_id=ID)
     _record(altered, "stats.flags")["documents"].remove(DOCUMENT)
     with pytest.raises(ValueError, match="record fields drift"):
-        _normalize_later_owner_index(altered)
-    unrelated = deepcopy(
-        _remove_map_event_scripted_transition_state_later_owner_index_delta(
-            _remove_cross_program_flag_lifecycle_deltas(load_json(INDEX))
-        )
-    )
+        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(altered)
+    unrelated = _normalize_current_index_to_owner_state(load_json(INDEX), owner_id=ID)
     _record(unrelated, "stats.flags")["symbol"] = "Unexpected"
     with pytest.raises(ValueError, match="predecessor index drift"):
-        _normalize_later_owner_index(unrelated)
+        _remove_map_event_tactical_base_quote_state_later_owner_index_delta(unrelated)
