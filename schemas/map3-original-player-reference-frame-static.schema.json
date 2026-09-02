@@ -1,0 +1,642 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2.example/schemas/map3-original-player-reference-frame-static.schema.json",
+  "title": "Map 3 original player reference-frame static contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "upstream",
+    "romSha256",
+    "summary",
+    "static"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "sf2-map3-original-player-reference-frame-static-v1"
+    },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "commit"
+      ],
+      "properties": {
+        "repository": {
+          "const": "https://github.com/ShiningForceCentral/SF2DISASM.git"
+        },
+        "commit": {
+          "const": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+        }
+      }
+    },
+    "romSha256": {
+      "const": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "existingIndexRecordObjects",
+        "newIndexRecordObjects",
+        "newIndexAddressObjects",
+        "newH2Bindings",
+        "newDocumentAppends",
+        "decodedBytes",
+        "decodedHalves",
+        "paletteWords",
+        "unknowns"
+      ],
+      "properties": {
+        "existingIndexRecordObjects": {
+          "const": 10
+        },
+        "newIndexRecordObjects": {
+          "const": 0
+        },
+        "newIndexAddressObjects": {
+          "const": 3
+        },
+        "newH2Bindings": {
+          "const": 12
+        },
+        "newDocumentAppends": {
+          "const": 10
+        },
+        "decodedBytes": {
+          "const": 576
+        },
+        "decodedHalves": {
+          "const": 2
+        },
+        "paletteWords": {
+          "const": 16
+        },
+        "unknowns": {
+          "const": 6
+        }
+      }
+    },
+    "static": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "indexBindings",
+        "controlledPlayer",
+        "directionSelection",
+        "selectedPayload",
+        "framePolicy",
+        "palettePolicy",
+        "retainedOwners",
+        "consumerBoundary",
+        "unknowns"
+      ],
+      "properties": {
+        "indexBindings": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "initializeMapEntities",
+            "declareNewEntity",
+            "getAllyMapsprite",
+            "allyMapspriteTable",
+            "mapspritePointerTable",
+            "selectedMapsprite",
+            "loadBasicCompressedData",
+            "vintUpdateSprites",
+            "initializeDisplay",
+            "paletteBase",
+            "dmaEntityMapsprite",
+            "loadEntityMapsprites"
+          ],
+          "properties": {
+            "initializeMapEntities": { "const": 278732 },
+            "declareNewEntity": { "const": 280010 },
+            "getAllyMapsprite": { "const": 281030 },
+            "allyMapspriteTable": { "const": 281182 },
+            "mapspritePointerTable": { "const": 819200 },
+            "selectedMapsprite": { "const": 822782 },
+            "loadBasicCompressedData": { "const": 6788 },
+            "vintUpdateSprites": { "const": 19560 },
+            "initializeDisplay": { "const": 12322 },
+            "paletteBase": { "const": 12446 },
+            "dmaEntityMapsprite": { "const": 24970 },
+            "loadEntityMapsprites": { "const": 24612 }
+          }
+        },
+        "controlledPlayer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceFunction",
+            "controlledEntityIndex",
+            "allyIndex",
+            "selectionBasis",
+            "selectionNotEntityRowOrder",
+            "allyTable",
+            "allyRowValue",
+            "classSymbol",
+            "classValue",
+            "classTransform",
+            "regularMapSpriteId",
+            "storageFunction",
+            "storedField",
+            "controlledFacing",
+            "controlledDirection"
+          ],
+          "properties": {
+            "sourceFunction": {
+              "const": "InitializeMapEntities"
+            },
+            "controlledEntityIndex": {
+              "const": 0
+            },
+            "allyIndex": {
+              "const": 0
+            },
+            "selectionBasis": {
+              "const": "explicit-ally-zero"
+            },
+            "selectionNotEntityRowOrder": {
+              "const": true
+            },
+            "allyTable": {
+              "const": "table_AllyMapsprites"
+            },
+            "allyRowValue": {
+              "const": 1
+            },
+            "classSymbol": {
+              "const": "CLASS_SDMN"
+            },
+            "classValue": {
+              "const": 0
+            },
+            "classTransform": {
+              "const": "subtract-one"
+            },
+            "regularMapSpriteId": {
+              "const": 0
+            },
+            "storageFunction": {
+              "const": "DeclareNewEntity"
+            },
+            "storedField": {
+              "const": "ENTITYDEF_OFFSET_MAPSPRITE"
+            },
+            "controlledFacing": {
+              "const": 3
+            },
+            "controlledDirection": {
+              "const": "DOWN"
+            }
+          }
+        },
+        "directionSelection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "enumOrder",
+            "rules",
+            "selectedFacing",
+            "selectedDirection",
+            "selectedSlot",
+            "selectedSymbol"
+          ],
+          "properties": {
+            "enumOrder": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "additionalItems": false,
+              "items": [
+                {
+                  "const": "RIGHT"
+                },
+                {
+                  "const": "UP"
+                },
+                {
+                  "const": "LEFT"
+                },
+                {
+                  "const": "DOWN"
+                }
+              ]
+            },
+            "rules": {
+              "type": "array",
+              "minItems": 4,
+              "maxItems": 4,
+              "additionalItems": false,
+              "items": [
+                {
+                  "$ref": "#/$defs/upRule"
+                },
+                {
+                  "$ref": "#/$defs/leftRule"
+                },
+                {
+                  "$ref": "#/$defs/rightRule"
+                },
+                {
+                  "$ref": "#/$defs/downRule"
+                }
+              ]
+            },
+            "selectedFacing": {
+              "const": 3
+            },
+            "selectedDirection": {
+              "const": "DOWN"
+            },
+            "selectedSlot": {
+              "const": 2
+            },
+            "selectedSymbol": {
+              "const": "Mapsprite000_2"
+            }
+          }
+        },
+        "selectedPayload": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "pointerTable",
+            "sourceSlot",
+            "symbol",
+            "codec",
+            "sourceH1RomParity",
+            "decodedBytes",
+            "halfCount",
+            "halfBytes",
+            "framePixels",
+            "frameTiles",
+            "tileBytes",
+            "bitsPerPixel",
+            "tileOrder"
+          ],
+          "properties": {
+            "pointerTable": {
+              "const": "pt_Mapsprites"
+            },
+            "sourceSlot": {
+              "const": 2
+            },
+            "symbol": {
+              "const": "Mapsprite000_2"
+            },
+            "codec": {
+              "const": "Basic"
+            },
+            "sourceH1RomParity": {
+              "const": true
+            },
+            "decodedBytes": {
+              "const": 576
+            },
+            "halfCount": {
+              "const": 2
+            },
+            "halfBytes": {
+              "const": 288
+            },
+            "framePixels": {
+              "$ref": "#/$defs/pair24"
+            },
+            "frameTiles": {
+              "$ref": "#/$defs/pair3"
+            },
+            "tileBytes": {
+              "const": 32
+            },
+            "bitsPerPixel": {
+              "const": 4
+            },
+            "tileOrder": {
+              "const": "column-major"
+            }
+          }
+        },
+        "framePolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "label",
+            "selectedHalf",
+            "classification",
+            "sourceRoots",
+            "observedStandingOrIdleFrame",
+            "observedVisibleAtFirstWaitForEvent"
+          ],
+          "properties": {
+            "label": {
+              "const": "initial-reference-frame"
+            },
+            "selectedHalf": {
+              "const": 0
+            },
+            "classification": {
+              "const": "project-import-policy"
+            },
+            "sourceRoots": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "additionalItems": false,
+              "items": [
+                {
+                  "const": "DeclareNewEntity-animation-counter-initialization"
+                },
+                {
+                  "const": "VInt_UpdateSprites-first-frame-branch"
+                }
+              ]
+            },
+            "observedStandingOrIdleFrame": {
+              "const": false
+            },
+            "observedVisibleAtFirstWaitForEvent": {
+              "const": false
+            }
+          }
+        },
+        "palettePolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceSymbol",
+            "destination",
+            "sourceH1RomParity",
+            "encodedBytes",
+            "wordCount",
+            "wordEndian",
+            "wordMask",
+            "transparentIndex",
+            "pixelNibbleOrder",
+            "tileOrder",
+            "rightFacingTransform",
+            "rgbExpansionPolicy"
+          ],
+          "properties": {
+            "sourceSymbol": {
+              "const": "palette_Base"
+            },
+            "destination": {
+              "const": "palette3"
+            },
+            "sourceH1RomParity": {
+              "const": true
+            },
+            "encodedBytes": {
+              "const": 32
+            },
+            "wordCount": {
+              "const": 16
+            },
+            "wordEndian": {
+              "const": "big"
+            },
+            "wordMask": {
+              "const": "0x0EEE"
+            },
+            "transparentIndex": {
+              "const": 0
+            },
+            "pixelNibbleOrder": {
+              "const": "high-nibble-left"
+            },
+            "tileOrder": {
+              "const": "column-major"
+            },
+            "rightFacingTransform": {
+              "const": "horizontal-mirror"
+            },
+            "rgbExpansionPolicy": {
+              "const": "project-inferred-rendering-policy"
+            }
+          }
+        },
+        "retainedOwners": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "additionalItems": false,
+          "items": [
+            {
+              "const": "sf2-map-entities-static-v1"
+            },
+            {
+              "const": "sf2-map-sprite-assignments-static-v1"
+            },
+            {
+              "const": "sf2-map-sprite-decode-v1"
+            },
+            {
+              "const": "sf2-tech-graphics-static-v1"
+            }
+          ]
+        },
+        "consumerBoundary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "applicationDtoOrApi",
+            "futureConsumerRequirementsOnly"
+          ],
+          "properties": {
+            "applicationDtoOrApi": {
+              "const": "out-of-scope"
+            },
+            "futureConsumerRequirementsOnly": {
+              "const": true
+            }
+          }
+        },
+        "unknowns": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "admissionAnimCounter",
+            "admissionVisibleFrame",
+            "livePalette3AtAdmission",
+            "originalRenderedColorParity",
+            "movementFacingTiming",
+            "dmaCacheCompletion"
+          ],
+          "properties": {
+            "admissionAnimCounter": {
+              "const": "Unknown"
+            },
+            "admissionVisibleFrame": {
+              "const": "Unknown"
+            },
+            "livePalette3AtAdmission": {
+              "const": "Unknown"
+            },
+            "originalRenderedColorParity": {
+              "const": "Unknown"
+            },
+            "movementFacingTiming": {
+              "const": "Unknown"
+            },
+            "dmaCacheCompletion": {
+              "const": "Unknown"
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "pair24": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "additionalItems": false,
+      "items": [
+        {
+          "const": 24
+        },
+        {
+          "const": 24
+        }
+      ]
+    },
+    "pair3": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "additionalItems": false,
+      "items": [
+        {
+          "const": 3
+        },
+        {
+          "const": 3
+        }
+      ]
+    },
+    "upRule": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/rule"
+        },
+        {
+          "properties": {
+            "direction": {
+              "const": "UP"
+            },
+            "facing": {
+              "const": 1
+            },
+            "sourceSlot": {
+              "const": 0
+            },
+            "horizontalMirror": {
+              "const": false
+            }
+          }
+        }
+      ]
+    },
+    "leftRule": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/rule"
+        },
+        {
+          "properties": {
+            "direction": {
+              "const": "LEFT"
+            },
+            "facing": {
+              "const": 2
+            },
+            "sourceSlot": {
+              "const": 1
+            },
+            "horizontalMirror": {
+              "const": false
+            }
+          }
+        }
+      ]
+    },
+    "rightRule": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/rule"
+        },
+        {
+          "properties": {
+            "direction": {
+              "const": "RIGHT"
+            },
+            "facing": {
+              "const": 0
+            },
+            "sourceSlot": {
+              "const": 1
+            },
+            "horizontalMirror": {
+              "const": true
+            }
+          }
+        }
+      ]
+    },
+    "downRule": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/rule"
+        },
+        {
+          "properties": {
+            "direction": {
+              "const": "DOWN"
+            },
+            "facing": {
+              "const": 3
+            },
+            "sourceSlot": {
+              "const": 2
+            },
+            "horizontalMirror": {
+              "const": false
+            }
+          }
+        }
+      ]
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "direction",
+        "facing",
+        "sourceSlot",
+        "horizontalMirror"
+      ],
+      "properties": {
+        "direction": {
+          "type": "string"
+        },
+        "facing": {
+          "type": "integer"
+        },
+        "sourceSlot": {
+          "type": "integer"
+        },
+        "horizontalMirror": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

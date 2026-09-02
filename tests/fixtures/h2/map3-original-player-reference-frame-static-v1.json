@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map3-original-player-reference-frame-static-v1",
+  "upstream": {
+    "repository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+  },
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "summary": {
+    "existingIndexRecordObjects": 10,
+    "newIndexRecordObjects": 0,
+    "newIndexAddressObjects": 3,
+    "newH2Bindings": 12,
+    "newDocumentAppends": 10,
+    "decodedBytes": 576,
+    "decodedHalves": 2,
+    "paletteWords": 16,
+    "unknowns": 6
+  },
+  "static": {
+    "indexBindings": {
+      "initializeMapEntities": 278732,
+      "declareNewEntity": 280010,
+      "getAllyMapsprite": 281030,
+      "allyMapspriteTable": 281182,
+      "mapspritePointerTable": 819200,
+      "selectedMapsprite": 822782,
+      "loadBasicCompressedData": 6788,
+      "vintUpdateSprites": 19560,
+      "initializeDisplay": 12322,
+      "paletteBase": 12446,
+      "dmaEntityMapsprite": 24970,
+      "loadEntityMapsprites": 24612
+    },
+    "controlledPlayer": {
+      "sourceFunction": "InitializeMapEntities",
+      "controlledEntityIndex": 0,
+      "allyIndex": 0,
+      "selectionBasis": "explicit-ally-zero",
+      "selectionNotEntityRowOrder": true,
+      "allyTable": "table_AllyMapsprites",
+      "allyRowValue": 1,
+      "classSymbol": "CLASS_SDMN",
+      "classValue": 0,
+      "classTransform": "subtract-one",
+      "regularMapSpriteId": 0,
+      "storageFunction": "DeclareNewEntity",
+      "storedField": "ENTITYDEF_OFFSET_MAPSPRITE",
+      "controlledFacing": 3,
+      "controlledDirection": "DOWN"
+    },
+    "directionSelection": {
+      "enumOrder": [
+        "RIGHT",
+        "UP",
+        "LEFT",
+        "DOWN"
+      ],
+      "rules": [
+        {
+          "direction": "UP",
+          "facing": 1,
+          "sourceSlot": 0,
+          "horizontalMirror": false
+        },
+        {
+          "direction": "LEFT",
+          "facing": 2,
+          "sourceSlot": 1,
+          "horizontalMirror": false
+        },
+        {
+          "direction": "RIGHT",
+          "facing": 0,
+          "sourceSlot": 1,
+          "horizontalMirror": true
+        },
+        {
+          "direction": "DOWN",
+          "facing": 3,
+          "sourceSlot": 2,
+          "horizontalMirror": false
+        }
+      ],
+      "selectedFacing": 3,
+      "selectedDirection": "DOWN",
+      "selectedSlot": 2,
+      "selectedSymbol": "Mapsprite000_2"
+    },
+    "selectedPayload": {
+      "pointerTable": "pt_Mapsprites",
+      "sourceSlot": 2,
+      "symbol": "Mapsprite000_2",
+      "codec": "Basic",
+      "sourceH1RomParity": true,
+      "decodedBytes": 576,
+      "halfCount": 2,
+      "halfBytes": 288,
+      "framePixels": [
+        24,
+        24
+      ],
+      "frameTiles": [
+        3,
+        3
+      ],
+      "tileBytes": 32,
+      "bitsPerPixel": 4,
+      "tileOrder": "column-major"
+    },
+    "framePolicy": {
+      "label": "initial-reference-frame",
+      "selectedHalf": 0,
+      "classification": "project-import-policy",
+      "sourceRoots": [
+        "DeclareNewEntity-animation-counter-initialization",
+        "VInt_UpdateSprites-first-frame-branch"
+      ],
+      "observedStandingOrIdleFrame": false,
+      "observedVisibleAtFirstWaitForEvent": false
+    },
+    "palettePolicy": {
+      "sourceSymbol": "palette_Base",
+      "destination": "palette3",
+      "sourceH1RomParity": true,
+      "encodedBytes": 32,
+      "wordCount": 16,
+      "wordEndian": "big",
+      "wordMask": "0x0EEE",
+      "transparentIndex": 0,
+      "pixelNibbleOrder": "high-nibble-left",
+      "tileOrder": "column-major",
+      "rightFacingTransform": "horizontal-mirror",
+      "rgbExpansionPolicy": "project-inferred-rendering-policy"
+    },
+    "retainedOwners": [
+      "sf2-map-entities-static-v1",
+      "sf2-map-sprite-assignments-static-v1",
+      "sf2-map-sprite-decode-v1",
+      "sf2-tech-graphics-static-v1"
+    ],
+    "consumerBoundary": {
+      "applicationDtoOrApi": "out-of-scope",
+      "futureConsumerRequirementsOnly": true
+    },
+    "unknowns": {
+      "admissionAnimCounter": "Unknown",
+      "admissionVisibleFrame": "Unknown",
+      "livePalette3AtAdmission": "Unknown",
+      "originalRenderedColorParity": "Unknown",
+      "movementFacingTiming": "Unknown",
+      "dmaCacheCompletion": "Unknown"
+    }
+  }
+}

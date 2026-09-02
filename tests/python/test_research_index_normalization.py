@@ -18,7 +18,7 @@ from sf2tool.jsonio import load_json
 ROOT = Path(__file__).resolve().parents[2]
 INDEX = ROOT / "manifests/research-index.json"
 
-_OWNER_IDS = (
+_HISTORICAL_OWNER_IDS = (
     "sf2-map-event-flag-route-selection-static-v1",
     "sf2-map-event-cross-program-flag-state-static-v1",
     "sf2-map-event-flag-lifecycle-state-static-v1",
@@ -98,7 +98,10 @@ _COMPATIBILITY_WRAPPERS = (
 def test_registry_is_frozen_and_each_transition_is_exact_and_deep() -> None:
     steps = research_index._LATER_OWNER_STEPS
     assert isinstance(steps, tuple)
-    assert tuple(step.owner_id for step in steps) == _OWNER_IDS
+    assert (
+        tuple(step.owner_id for step in steps)[-len(_HISTORICAL_OWNER_IDS) :]
+        == _HISTORICAL_OWNER_IDS
+    )
     assert research_index._validate_later_owner_steps(steps) == {
         step.owner_id: step for step in steps
     }
@@ -199,7 +202,8 @@ def test_unknown_target_and_noncanonical_head_fail_before_any_remover() -> None:
     altered["records"][0]["documents"].append("docs/research/unexpected.md")
     with pytest.raises(ValueError, match="head state drift"):
         research_index.normalize_current_index_to_owner_predecessor(
-            altered, owner_id=_OWNER_IDS[-1]
+            altered,
+            owner_id=_HISTORICAL_OWNER_IDS[-1],
         )
 
 
@@ -238,12 +242,12 @@ def test_compatibility_wrappers_delegate_once_without_recursion(
 
     monkeypatch.setattr(research_index, "normalize_current_index_to_owner_predecessor", fake)
     for (module_name, wrapper_name), owner_id in zip(
-        _COMPATIBILITY_WRAPPERS, _OWNER_IDS, strict=True
+        _COMPATIBILITY_WRAPPERS, _HISTORICAL_OWNER_IDS, strict=True
     ):
         wrapper = getattr(importlib.import_module(module_name), wrapper_name)
         assert wrapper(sentinel_input) is sentinel_output
         assert calls[-1] == (sentinel_input, owner_id)
-    assert len(calls) == len(_OWNER_IDS)
+    assert len(calls) == len(_HISTORICAL_OWNER_IDS)
 
 
 def test_all_historical_consumer_tests_use_the_central_api_without_owner_chains() -> None:
@@ -280,7 +284,7 @@ def test_one_synthetic_future_step_preserves_every_historical_target() -> None:
 
     future_step = research_index.LaterOwnerStep(
         owner_id=future_owner,
-        predecessor_owner_id=_OWNER_IDS[0],
+        predecessor_owner_id=research_index._LATER_OWNER_STEPS[0].owner_id,
         remover="synthetic.future:remove_synthetic",
         state_sha256=research_index._canonical_index_sha256(synthetic),
         predecessor_sha256=research_index._canonical_index_sha256(current),
@@ -295,7 +299,8 @@ def test_one_synthetic_future_step_preserves_every_historical_target() -> None:
         return research_index._resolve_later_owner_remover(step)
 
     assert research_index._validate_later_owner_steps(steps)
-    for owner_id in _OWNER_IDS:
+    owner_ids = tuple(step.owner_id for step in research_index._LATER_OWNER_STEPS)
+    for owner_id in owner_ids:
         expected = research_index.normalize_current_index_to_owner_predecessor(
             current, owner_id=owner_id
         )
@@ -307,7 +312,7 @@ def test_one_synthetic_future_step_preserves_every_historical_target() -> None:
             resolver=resolver,
         )
         assert actual == expected
-    assert calls.count(future_owner) == len(_OWNER_IDS)
+    assert calls.count(future_owner) == len(owner_ids)
 
 
 @pytest.mark.parametrize(

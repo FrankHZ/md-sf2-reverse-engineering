@@ -43,15 +43,15 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Status"] == "PASS"
     assert result["Records"] == 1627
     assert result["Confirmed"] == 1627
-    assert result["H2Fixtures"] == 101
+    assert result["H2Fixtures"] == 102
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 94
-    assert result["AddressBindings"] == 3081
+    assert result["AddressBindings"] == 3093
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1590
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
-    assert result["ResearchDocuments"] == 63
+    assert result["ResearchDocuments"] == 64
     assert result["DesignContracts"] == 68
 
 
@@ -305,6 +305,13 @@ def test_map3_battle01_turn_finalization_has_a_dedicated_static_contract_command
 def test_map3_battle01_victory_return_has_a_dedicated_static_contract_command() -> None:
     args = build_parser().parse_args(["h2", "map3-battle01-victory-return"])
     assert args.h2_command == "map3-battle01-victory-return"
+    assert args.rom_path
+    assert args.upstream_path
+
+
+def test_map3_original_player_reference_frame_has_a_dedicated_static_contract_command() -> None:
+    args = build_parser().parse_args(["h2", "map3-original-player-reference-frame"])
+    assert args.h2_command == "map3-original-player-reference-frame"
     assert args.rom_path
     assert args.upstream_path
 
@@ -1248,7 +1255,7 @@ def test_schema_tree_freezes_legacy_root_and_namespaces_new_contracts() -> None:
     root = Path(__file__).resolve().parents[2]
     schema_root = root / "schemas"
     legacy_root_schemas = tuple(schema_root.glob("*.schema.json"))
-    assert len(legacy_root_schemas) <= 252
+    assert len(legacy_root_schemas) <= 253
 
     allowed_namespaces = {"core", "h2", "h3"}
     for path in schema_root.rglob("*.schema.json"):

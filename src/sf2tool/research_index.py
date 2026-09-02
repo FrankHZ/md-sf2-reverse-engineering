@@ -34,6 +34,18 @@ class LaterOwnerStep:
 
 _LATER_OWNER_STEPS = (
     LaterOwnerStep(
+        owner_id="sf2-map3-original-player-reference-frame-static-v1",
+        predecessor_owner_id="sf2-map-event-flag-route-selection-static-v1",
+        remover=(
+            "sf2tool.h2.map3_original_player_reference_frame:"
+            "_remove_map3_original_player_reference_frame_later_owner_index_delta"
+        ),
+        state_sha256="862D9A6CD7CF860034EF5544D43C68FB4970E295BE590EB69AE99045993295B5",
+        predecessor_sha256=(
+            "70A2A46145FA182EB371D216B54D1F0CF28E24B2555E0194C52B18E88BAD4C0A"
+        ),
+    ),
+    LaterOwnerStep(
         owner_id="sf2-map-event-flag-route-selection-static-v1",
         predecessor_owner_id="sf2-map-event-cross-program-flag-state-static-v1",
         remover=(
