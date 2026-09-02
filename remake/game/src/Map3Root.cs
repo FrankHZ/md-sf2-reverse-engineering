@@ -10,6 +10,17 @@ namespace Sf2.Remake.GodotAdapter;
 
 public sealed partial class Map3Root : Node2D
 {
+    internal static readonly Vector2I MinimumProductClientSize = new(960, 540);
+    internal static readonly Vector2I ProjectFallbackClientSize = new(960, 540);
+
+    private static readonly Vector2I[] AdaptiveWindowedClientSizeLadder =
+    [
+        new(1920, 1080),
+        new(1600, 900),
+        new(1280, 720),
+        new(960, 540),
+    ];
+
     public const string BannerText = "PUBLIC SYNTHETIC — NOT ORIGINAL FIDELITY";
     public const string SmokeMarker = "SF2_MAP3_SMOKE ";
     public const string PublicSyntheticBattleSmokeMarker =
@@ -34,8 +45,331 @@ public sealed partial class Map3Root : Node2D
         _inputAdapter = Map3InputAdapter.CreateGodot(CreatePublicSyntheticInputActions());
         _inputAdapter.EnsureActionsRegistered();
         BuildSelectedPresentation(selection);
+        if (!TryBeginPrivateProductDisplayPolicy(
+                selection,
+                readyStarted,
+                out bool displayCompletionDeferred,
+                out string? displayDiagnostic))
+        {
+            FailPrivateStartup(
+                displayDiagnostic!,
+                selection.PrivateSmokeRequested,
+                "private-local");
+            return;
+        }
+
+        if (displayCompletionDeferred)
+        {
+            return;
+        }
+
         StartScenario(selection);
         TracePrivateStage(selection.PrivateSmokeRequested, "godot-ready", readyStarted);
+    }
+
+    private bool TryBeginPrivateProductDisplayPolicy(
+        Map3RuntimeProfileSelection selection,
+        long readyStarted,
+        out bool completionDeferred,
+        out string? diagnostic)
+    {
+        completionDeferred = false;
+        diagnostic = null;
+        if (!selection.IsAvailable ||
+            selection.RequestedProfile != Map3RuntimeProfile.PrivateLocal)
+        {
+            return true;
+        }
+
+        Window root = GetWindow();
+        bool headless = string.Equals(
+            DisplayServer.GetName(),
+            "headless",
+            StringComparison.Ordinal);
+        Vector2I clientSize = SelectObservedClientSize(
+            headless,
+            root.ContentScaleSize,
+            DisplayServer.WindowGetSize());
+        if (headless)
+        {
+            return ValidatePrivateProductClientSize(clientSize, out diagnostic);
+        }
+
+        string[] processArguments = System.Environment.GetCommandLineArgs();
+        if (ShouldPreservePhysicalStartupTarget(root.Mode, clientSize, processArguments))
+        {
+            if (!ValidatePrivateProductClientSize(clientSize, out diagnostic))
+            {
+                return false;
+            }
+
+            root.MinSize = MinimumProductClientSize;
+            return true;
+        }
+
+        Rect2I usableRect = DisplayServer.ScreenGetUsableRect(root.CurrentScreen);
+        Vector2I decoratedSize = DisplayServer.WindowGetSizeWithDecorations();
+        Vector2I clientOrigin = DisplayServer.WindowGetPosition();
+        Vector2I decoratedOrigin = DisplayServer.WindowGetPositionWithDecorations();
+        (Vector2I ClientOriginInset, Vector2I OppositeInset) decorationInsets =
+            DecorationInsets(
+                clientSize,
+                decoratedSize,
+                clientOrigin,
+                decoratedOrigin);
+        Vector2I decorationDelta = new(
+            checked(decorationInsets.ClientOriginInset.X + decorationInsets.OppositeInset.X),
+            checked(decorationInsets.ClientOriginInset.Y + decorationInsets.OppositeInset.Y));
+        Vector2I? selected = SelectAdaptiveWindowedClientSize(
+            usableRect.Size,
+            decorationDelta);
+        if (selected is not Vector2I target)
+        {
+            diagnostic =
+                "PrivateLocal display unavailable (no supported windowed client fits the usable screen).";
+            return false;
+        }
+
+        root.Size = target;
+        completionDeferred = true;
+        Callable.From(() => CompleteAdaptivePrivateProductDisplaySize(
+            selection,
+            readyStarted,
+            target,
+            usableRect,
+            decorationInsets.ClientOriginInset)).CallDeferred();
+        return true;
+    }
+
+    private void CompleteAdaptivePrivateProductDisplaySize(
+        Map3RuntimeProfileSelection selection,
+        long readyStarted,
+        Vector2I target,
+        Rect2I usableRect,
+        Vector2I clientOriginInset)
+    {
+        Window root = GetWindow();
+        Vector2I finalClientSize = DisplayServer.WindowGetSize();
+        if (root.Size != target || finalClientSize != target)
+        {
+            FailPrivateStartup(
+                "PrivateLocal display unavailable (the selected client size was not established).",
+                selection.PrivateSmokeRequested,
+                "private-local");
+            return;
+        }
+
+        if (!ValidatePrivateProductClientSize(
+                finalClientSize,
+                out string? displayDiagnostic))
+        {
+            FailPrivateStartup(
+                displayDiagnostic!,
+                selection.PrivateSmokeRequested,
+                "private-local");
+            return;
+        }
+
+        Vector2I finalDecoratedSize = DisplayServer.WindowGetSizeWithDecorations();
+        if (!CanFitDecoratedWindow(usableRect.Size, finalDecoratedSize))
+        {
+            FailPrivateStartup(
+                "PrivateLocal display unavailable (the actual decorated window does not fit the usable screen).",
+                selection.PrivateSmokeRequested,
+                "private-local");
+            return;
+        }
+
+        Vector2I desiredDecoratedOrigin = CenterDecoratedWindow(
+            usableRect,
+            finalDecoratedSize);
+        DisplayServer.WindowSetPosition(desiredDecoratedOrigin + clientOriginInset);
+        Callable.From(() => CompleteAdaptivePrivateProductDisplayPosition(
+            selection,
+            readyStarted,
+            target,
+            usableRect,
+            clientOriginInset)).CallDeferred();
+    }
+
+    private void CompleteAdaptivePrivateProductDisplayPosition(
+        Map3RuntimeProfileSelection selection,
+        long readyStarted,
+        Vector2I target,
+        Rect2I usableRect,
+        Vector2I clientOriginInset)
+    {
+        Window root = GetWindow();
+        Vector2I finalClientSize = DisplayServer.WindowGetSize();
+        Vector2I finalDecoratedSize = DisplayServer.WindowGetSizeWithDecorations();
+        Vector2I finalClientOrigin = DisplayServer.WindowGetPosition();
+        Vector2I finalDecoratedOrigin = DisplayServer.WindowGetPositionWithDecorations();
+        if (root.Size != target || finalClientSize != target ||
+            !CanFitDecoratedWindow(usableRect.Size, finalDecoratedSize))
+        {
+            FailPrivateStartup(
+                "PrivateLocal display unavailable (the final window geometry drifted).",
+                selection.PrivateSmokeRequested,
+                "private-local");
+            return;
+        }
+
+        Vector2I expectedDecoratedOrigin = CenterDecoratedWindow(
+            usableRect,
+            finalDecoratedSize);
+        if (finalDecoratedOrigin != expectedDecoratedOrigin ||
+            finalClientOrigin != expectedDecoratedOrigin + clientOriginInset ||
+            !IsDecoratedFrameInside(
+                usableRect,
+                finalDecoratedOrigin,
+                finalDecoratedSize))
+        {
+            FailPrivateStartup(
+                "PrivateLocal display unavailable (the window manager did not establish the centered usable frame).",
+                selection.PrivateSmokeRequested,
+                "private-local");
+            return;
+        }
+
+        root.MinSize = MinimumProductClientSize;
+        StartScenario(selection);
+        TracePrivateStage(selection.PrivateSmokeRequested, "godot-ready", readyStarted);
+    }
+
+    internal static bool HasExplicitPhysicalStartupArgument(
+        IReadOnlyList<string> processArguments)
+    {
+        ArgumentNullException.ThrowIfNull(processArguments);
+        for (int index = 0; index < processArguments.Count; index++)
+        {
+            string? argument = processArguments[index];
+            if (string.Equals(argument, "--", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (string.Equals(argument, "--resolution", StringComparison.Ordinal) ||
+                argument.StartsWith("--resolution=", StringComparison.Ordinal) ||
+                string.Equals(argument, "--fullscreen", StringComparison.Ordinal) ||
+                string.Equals(argument, "--maximized", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    internal static bool ShouldPreservePhysicalStartupTarget(
+        Window.ModeEnum mode,
+        Vector2I currentClientSize,
+        IReadOnlyList<string> processArguments) =>
+        mode != Window.ModeEnum.Windowed ||
+        currentClientSize != ProjectFallbackClientSize ||
+        HasExplicitPhysicalStartupArgument(processArguments);
+
+    internal static Vector2I SelectObservedClientSize(
+        bool headless,
+        Vector2I virtualContentSize,
+        Vector2I displayServerSize) =>
+        headless ? virtualContentSize : displayServerSize;
+
+    internal static (Vector2I ClientOriginInset, Vector2I OppositeInset) DecorationInsets(
+        Vector2I clientSize,
+        Vector2I decoratedSize,
+        Vector2I clientOrigin,
+        Vector2I decoratedOrigin)
+    {
+        Vector2I total = new(
+            Math.Max(0, decoratedSize.X - clientSize.X),
+            Math.Max(0, decoratedSize.Y - clientSize.Y));
+        Vector2I clientOriginInset = new(
+            Math.Clamp(clientOrigin.X - decoratedOrigin.X, 0, total.X),
+            Math.Clamp(clientOrigin.Y - decoratedOrigin.Y, 0, total.Y));
+        return (
+            clientOriginInset,
+            new Vector2I(
+                total.X - clientOriginInset.X,
+                total.Y - clientOriginInset.Y));
+    }
+
+    internal static bool CanFitDecoratedWindow(
+        Vector2I usableSize,
+        Vector2I decoratedSize) =>
+        usableSize.X > 0 && usableSize.Y > 0 &&
+        decoratedSize.X > 0 && decoratedSize.Y > 0 &&
+        decoratedSize.X <= usableSize.X && decoratedSize.Y <= usableSize.Y;
+
+    internal static Vector2I? SelectAdaptiveWindowedClientSize(
+        Vector2I usableSize,
+        Vector2I decorationDelta)
+    {
+        if (usableSize.X <= 0 || usableSize.Y <= 0 ||
+            decorationDelta.X < 0 || decorationDelta.Y < 0)
+        {
+            return null;
+        }
+
+        foreach (Vector2I candidate in AdaptiveWindowedClientSizeLadder)
+        {
+            long decoratedWidth = (long)candidate.X + decorationDelta.X;
+            long decoratedHeight = (long)candidate.Y + decorationDelta.Y;
+            if (decoratedWidth <= usableSize.X && decoratedHeight <= usableSize.Y)
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    internal static Vector2I CenterDecoratedWindow(
+        Rect2I usableRect,
+        Vector2I decoratedSize)
+    {
+        if (!CanFitDecoratedWindow(usableRect.Size, decoratedSize))
+        {
+            throw new ArgumentOutOfRangeException(nameof(decoratedSize));
+        }
+
+        return new Vector2I(
+            usableRect.Position.X + ((usableRect.Size.X - decoratedSize.X) / 2),
+            usableRect.Position.Y + ((usableRect.Size.Y - decoratedSize.Y) / 2));
+    }
+
+    internal static bool IsDecoratedFrameInside(
+        Rect2I usableRect,
+        Vector2I decoratedOrigin,
+        Vector2I decoratedSize)
+    {
+        if (!CanFitDecoratedWindow(usableRect.Size, decoratedSize))
+        {
+            return false;
+        }
+
+        long right = (long)decoratedOrigin.X + decoratedSize.X;
+        long bottom = (long)decoratedOrigin.Y + decoratedSize.Y;
+        long usableRight = (long)usableRect.Position.X + usableRect.Size.X;
+        long usableBottom = (long)usableRect.Position.Y + usableRect.Size.Y;
+        return decoratedOrigin.X >= usableRect.Position.X &&
+            decoratedOrigin.Y >= usableRect.Position.Y &&
+            right <= usableRight && bottom <= usableBottom;
+    }
+
+    internal static bool ValidatePrivateProductClientSize(
+        Vector2I clientSize,
+        out string? diagnostic)
+    {
+        if (clientSize.X >= MinimumProductClientSize.X &&
+            clientSize.Y >= MinimumProductClientSize.Y)
+        {
+            diagnostic = null;
+            return true;
+        }
+
+        diagnostic =
+            "PrivateLocal display unavailable (client area is below the 960-by-540 product minimum).";
+        return false;
     }
 
     public override void _Process(double delta)

@@ -74,6 +74,30 @@ rectangle is the intersection of that design inset and the platform-reported saf
 text, commands, meters, focus indicators, and acknowledgements remain inside it. Layout verification
 must cover at least 16:9, 16:10, 21:9, and 4:3.
 
+### Product startup window policy
+
+The current product policy applies only to an available explicit `PrivateLocal` profile. The project
+keeps a 960-by-540 physical fallback for PublicSynthetic, headless verification, and small displays,
+while enabling HiDPI, resizable windows, `canvas_items`, and centered `keep` aspect behavior. A real
+window that still has that unmodified fallback at startup measures its actual client area, decorated
+window, and current usable screen. It selects the first decorated target that fits from this fixed
+client ladder: 1920 by 1080, 1600 by 900, 1280 by 720, then 960 by 540. The selected client is centered,
+and the root window receives a runtime minimum of 960 by 540. This avoids requesting a decorated
+1920-by-1080 window that cannot fit a normal 1080p usable desktop.
+
+An engine-selected fullscreen or maximized mode, an explicit command-line resolution, or another
+already established non-default client size is preserved. A PrivateLocal client below 960 by 540, or
+a desktop on which no minimum decorated tier fits, fails that profile without falling back to
+PublicSynthetic. Headless verification validates the 960-by-540 virtual content surface and does not
+pretend its minimized 64-by-64 root is a desktop client, query a screen, or position a window. Real
+window sizes are Godot client/backbuffer pixels; Windows DPI is not applied a second time.
+
+The policy is startup-only. Presentation assets are admitted after the final client is established,
+and the existing limiting-dimension rule selects one resident bucket for that session. A later resize
+continues to scale or letterbox the fixed logical canvas with the startup bucket. Changing buckets
+requires restart until a separate implementation closes stable-size detection, atomic multi-asset
+replacement, old-mount retention on failure, and fullscreen/monitor/DPI transitions.
+
 ## Master and Runtime Buckets
 
 ### Source authority
@@ -109,7 +133,8 @@ smallest available bucket that is not below it:
 Generation first writes candidate buckets under ignored `cache/`. After review, accepted 2x and 4x
 outputs are promoted together with their manifest update into the local asset repository's tracked
 `runtime/` history. Only the selected accepted bucket is resident. A stable display or user-setting
-change may replace the bucket; a per-frame or animation-driven bucket switch is forbidden.
+change may replace the bucket only at a later startup. The current runtime does not hot-swap after a
+resize; a per-frame or animation-driven bucket switch is forbidden.
 
 This two-bucket policy is preferable to 2x-only because 2x cannot remain crisp at 4K/high DPI. It is
 preferable to 4x-only because 1080p and lower-end systems need not carry permanent 4x memory and
@@ -412,10 +437,11 @@ gameplay authority into a scene, resource, filename, or animation callback.
 | --- | --- |
 | fixed by this proposal | 960-by-540 logical grid; simulation/presentation separation; explicit asset-repository root/exported pack; local-Git source/master/runtime/manifest history; ignored reproducible cache and scratch; fail-closed mount; no synthetic product fallback |
 | fixed after acceptance | 4x new-raster authoring; original raster as local master; deterministic 2x/4x buckets; one resident bucket; safe-frame/aspect/accessibility model; thin Godot catalog migration |
+| implemented product display policy | PrivateLocal adaptive windowed startup up to a fitting 1920-by-1080 client; runtime 960-by-540 minimum; explicit physical target preservation; HiDPI without double counting; centered `keep` frame; one startup-resident 2x/4x bucket; restart required for bucket reselection |
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
 | implemented world-family tooling prerequisite | fixed private Map 3 ROM/metadata roots; exact palette/slot selection; five-segment 128-by-320 source-crisp atlas; deterministic nearest 2x/4x ignored candidate; no implicit promotion or update |
 | implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop with exact-nearest startup parity; the static overlay is a no-player diagnostic using the admitted map palette by explicit policy; no source/master runtime input, PCK, or fidelity claim |
-| separate implementation decision | original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
+| separate implementation decision | live resize bucket remount and fullscreen/monitor transition UX; platform safe-area integration; original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original background-layer palette source; camera/layer/priority-with-sprites/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
 
 The local asset repository and three bounded semantic consumers now exist, but this document still does

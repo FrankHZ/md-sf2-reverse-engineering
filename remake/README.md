@@ -137,6 +137,17 @@ path/length/digest, and return a defensive byte copy before Godot decodes it. No
 into Application or Godot. Partial
 values, an implicit mount, or a failed private mount never fall back while reporting private success.
 
+The explicit PrivateLocal product profile now applies one adaptive windowed startup policy before any
+presentation payload is selected. The logical canvas and project fallback remain 960 by 540. On a real
+desktop, an unmodified fallback window chooses the largest client tier from 1920 by 1080, 1600 by 900,
+1280 by 720, and 960 by 540 whose measured decorations also fit the current usable screen, then centers
+that window and sets the runtime minimum to 960 by 540. Fullscreen, maximized, command-line resolution,
+and other already established non-default physical targets remain unchanged. HiDPI is enabled, but the
+final Godot client size is used directly and is never multiplied by the Windows DPI scale again. The
+selected 2x or 4x asset bucket remains resident until restart; resizing during a session scales or
+letterboxes the unchanged logical canvas and does not reread private content or hot-swap a bucket.
+PublicSynthetic startup and both stable smoke receipts remain unchanged.
+
 The runtime reader does not inspect a Git checkout or infer its current `HEAD`; it matches the
 caller-supplied mounted commit string and the fixed manifest/payload identities. The repository-owned
 local preflight above separately proves the actual asset checkout's commit, tree, clean state, lack of
