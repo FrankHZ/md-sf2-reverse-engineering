@@ -259,7 +259,18 @@ internal sealed class PublicSyntheticBattlePresenter
 {
     internal static readonly Vector2 CanvasSize = new(960, 540);
     internal static readonly Rect2 PanelBounds = new(600, 82, 340, 442);
+    internal static readonly Rect2 TitleBounds = new(14, 10, 312, 64);
+    internal static readonly Rect2 InstructionBounds = new(14, 76, 312, 42);
+    internal static readonly Rect2 StatusBounds = new(14, 120, 312, 58);
+    internal static readonly Rect2 CueStatusBounds = new(14, 180, 312, 48);
+    internal static readonly Rect2 ActorHealthLabelBounds = new(14, 230, 148, 20);
+    internal static readonly Rect2 EnemyHealthLabelBounds = new(176, 230, 150, 20);
+    internal static readonly Rect2 ActorHealthTrackBounds = new(14, 252, 148, 12);
+    internal static readonly Rect2 EnemyHealthTrackBounds = new(176, 252, 148, 12);
+    internal static readonly Rect2 TacticalGridBounds = new(14, 286, 190, 124);
+    internal static readonly Rect2 LegendBounds = new(224, 286, 102, 92);
     internal static readonly Vector2 TacticalCellSize = new(58, 58);
+    internal static readonly Vector2 TacticalCellStride = new(66, 66);
     internal static readonly Vector2 TacticalCellLabelOffset = new(8, 12);
     internal static readonly Vector2 TacticalCellLabelSize = new(42, 32);
 
@@ -323,25 +334,33 @@ internal sealed class PublicSyntheticBattlePresenter
         };
         panel.AddChild(background);
         Label title = LabelAt(
-            panel, new Vector2(14, 10), new Vector2(312, 42), 16, new Color("ffbd59"));
+            panel, TitleBounds.Position, TitleBounds.Size, 16, new Color("ffbd59"));
         Label instruction = LabelAt(
-            panel, new Vector2(14, 54), new Vector2(312, 42), 13, new Color("b8f2c2"));
+            panel, InstructionBounds.Position, InstructionBounds.Size, 13, new Color("b8f2c2"));
         Label status = LabelAt(
-            panel, new Vector2(14, 98), new Vector2(312, 58), 11, Colors.White);
+            panel, StatusBounds.Position, StatusBounds.Size, 11, Colors.White);
         Label cueStatus = LabelAt(
-            panel, new Vector2(14, 158), new Vector2(312, 48), 10, new Color("c6e5ff"));
+            panel, CueStatusBounds.Position, CueStatusBounds.Size, 10, new Color("c6e5ff"));
 
         Label actorHealthLabel = LabelAt(
-            panel, new Vector2(14, 208), new Vector2(148, 20), 11, new Color("75c7ff"));
-        ColorRect actorHealthTrack = HealthTrack(panel, new Vector2(14, 230));
+            panel,
+            ActorHealthLabelBounds.Position,
+            ActorHealthLabelBounds.Size,
+            11,
+            new Color("75c7ff"));
+        ColorRect actorHealthTrack = HealthTrack(panel, ActorHealthTrackBounds);
         ColorRect actorHealthFill = HealthFill(actorHealthTrack, new Color("75c7ff"));
         Label enemyHealthLabel = LabelAt(
-            panel, new Vector2(176, 208), new Vector2(150, 20), 11, new Color("ff7d7d"));
-        ColorRect enemyHealthTrack = HealthTrack(panel, new Vector2(176, 230));
+            panel,
+            EnemyHealthLabelBounds.Position,
+            EnemyHealthLabelBounds.Size,
+            11,
+            new Color("ff7d7d"));
+        ColorRect enemyHealthTrack = HealthTrack(panel, EnemyHealthTrackBounds);
         ColorRect enemyHealthFill = HealthFill(enemyHealthTrack, new Color("ff7d7d"));
 
         Label legend = LabelAt(
-            panel, new Vector2(224, 264), new Vector2(102, 92), 11, new Color("ffe2a8"));
+            panel, LegendBounds.Position, LegendBounds.Size, 11, new Color("ffe2a8"));
 
         List<ColorRect> cells = [];
         List<Label> cellLabels = [];
@@ -351,7 +370,8 @@ internal sealed class PublicSyntheticBattlePresenter
             int y = index / 3;
             ColorRect cell = new()
             {
-                Position = new Vector2(14 + (x * 66), 264 + (y * 66)),
+                Position = TacticalGridBounds.Position +
+                    new Vector2(x * TacticalCellStride.X, y * TacticalCellStride.Y),
                 Size = TacticalCellSize,
                 Color = new Color("31415f"),
             };
@@ -543,12 +563,12 @@ internal sealed class PublicSyntheticBattlePresenter
         return label;
     }
 
-    private static ColorRect HealthTrack(Node parent, Vector2 position)
+    private static ColorRect HealthTrack(Node parent, Rect2 bounds)
     {
         ColorRect track = new()
         {
-            Position = position,
-            Size = new Vector2(148, 12),
+            Position = bounds.Position,
+            Size = bounds.Size,
             Color = new Color("374159"),
             MouseFilter = Control.MouseFilterEnum.Ignore,
         };
