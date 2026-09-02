@@ -81,6 +81,58 @@ public sealed class PublicSyntheticBattlePresenterTests
     [Fact]
     public void BattlePanelFitsTheFixedCanvasAndNamesEveryPhaseAction()
     {
+        global::Godot.Rect2 localPanel = new(
+            global::Godot.Vector2.Zero,
+            PublicSyntheticBattlePresenter.PanelBounds.Size);
+        global::Godot.Rect2[] fixedLayout =
+        [
+            PublicSyntheticBattlePresenter.TitleBounds,
+            PublicSyntheticBattlePresenter.InstructionBounds,
+            PublicSyntheticBattlePresenter.StatusBounds,
+            PublicSyntheticBattlePresenter.CueStatusBounds,
+            PublicSyntheticBattlePresenter.ActorHealthLabelBounds,
+            PublicSyntheticBattlePresenter.EnemyHealthLabelBounds,
+            PublicSyntheticBattlePresenter.ActorHealthTrackBounds,
+            PublicSyntheticBattlePresenter.EnemyHealthTrackBounds,
+            PublicSyntheticBattlePresenter.TacticalGridBounds,
+            PublicSyntheticBattlePresenter.LegendBounds,
+        ];
+
+        Assert.Equal(
+            new global::Godot.Rect2(14, 10, 312, 64),
+            PublicSyntheticBattlePresenter.TitleBounds);
+        Assert.All(fixedLayout, bounds => AssertRectWithin(bounds, localPanel));
+        Assert.True(
+            PublicSyntheticBattlePresenter.TitleBounds.End.Y <=
+            PublicSyntheticBattlePresenter.InstructionBounds.Position.Y);
+        Assert.True(
+            PublicSyntheticBattlePresenter.InstructionBounds.End.Y <=
+            PublicSyntheticBattlePresenter.StatusBounds.Position.Y);
+        Assert.True(
+            PublicSyntheticBattlePresenter.StatusBounds.End.Y <=
+            PublicSyntheticBattlePresenter.CueStatusBounds.Position.Y);
+        Assert.True(
+            PublicSyntheticBattlePresenter.CueStatusBounds.End.Y <=
+            PublicSyntheticBattlePresenter.ActorHealthLabelBounds.Position.Y);
+        Assert.True(
+            PublicSyntheticBattlePresenter.ActorHealthLabelBounds.End.Y <=
+            PublicSyntheticBattlePresenter.ActorHealthTrackBounds.Position.Y);
+        Assert.True(
+            PublicSyntheticBattlePresenter.EnemyHealthLabelBounds.End.Y <=
+            PublicSyntheticBattlePresenter.EnemyHealthTrackBounds.Position.Y);
+        Assert.True(
+            PublicSyntheticBattlePresenter.ActorHealthTrackBounds.End.Y <=
+            PublicSyntheticBattlePresenter.TacticalGridBounds.Position.Y);
+        Assert.True(
+            PublicSyntheticBattlePresenter.EnemyHealthTrackBounds.End.Y <=
+            PublicSyntheticBattlePresenter.TacticalGridBounds.Position.Y);
+        Assert.Equal(
+            new global::Godot.Vector2(66, 66),
+            PublicSyntheticBattlePresenter.TacticalCellStride);
+        Assert.Equal(410, PublicSyntheticBattlePresenter.TacticalGridBounds.End.Y);
+        Assert.Equal(
+            32,
+            localPanel.End.Y - PublicSyntheticBattlePresenter.TacticalGridBounds.End.Y);
         Assert.Equal(
             new global::Godot.Vector2(
                 PrivateLocalPresentationAssetCatalog.TacticalCursorLogicalWidth,
@@ -251,6 +303,16 @@ public sealed class PublicSyntheticBattlePresenterTests
         Assert.DoesNotContain("effect", projection.Status, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("flag", projection.Status, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("return", projection.Status, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void AssertRectWithin(
+        global::Godot.Rect2 bounds,
+        global::Godot.Rect2 container)
+    {
+        Assert.True(bounds.Position.X >= container.Position.X);
+        Assert.True(bounds.Position.Y >= container.Position.Y);
+        Assert.True(bounds.End.X <= container.End.X);
+        Assert.True(bounds.End.Y <= container.End.Y);
     }
 
     private static GameSession StartActiveBattle()
