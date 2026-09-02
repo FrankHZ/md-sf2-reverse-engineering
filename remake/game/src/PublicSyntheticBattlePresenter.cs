@@ -259,6 +259,9 @@ internal sealed class PublicSyntheticBattlePresenter
 {
     internal static readonly Vector2 CanvasSize = new(960, 540);
     internal static readonly Rect2 PanelBounds = new(600, 82, 340, 442);
+    internal static readonly Vector2 TacticalCellSize = new(58, 58);
+    internal static readonly Vector2 TacticalCellLabelOffset = new(8, 12);
+    internal static readonly Vector2 TacticalCellLabelSize = new(42, 32);
 
     private readonly Control _panel;
     private readonly Label _title;
@@ -272,6 +275,8 @@ internal sealed class PublicSyntheticBattlePresenter
     private readonly ColorRect _enemyHealthFill;
     private readonly IReadOnlyList<ColorRect> _cells;
     private readonly IReadOnlyList<Label> _cellLabels;
+    private ImageTexture? _privateTacticalCursorTexture;
+    private TextureRect? _privateTacticalCursorOverlay;
 
     private PublicSyntheticBattlePresenter(
         Control panel,
@@ -347,16 +352,17 @@ internal sealed class PublicSyntheticBattlePresenter
             ColorRect cell = new()
             {
                 Position = new Vector2(14 + (x * 66), 264 + (y * 66)),
-                Size = new Vector2(58, 58),
+                Size = TacticalCellSize,
                 Color = new Color("31415f"),
             };
             panel.AddChild(cell);
             Label marker = LabelAt(
                 panel,
-                cell.Position + new Vector2(16, 12),
-                new Vector2(30, 32),
+                cell.Position + TacticalCellLabelOffset,
+                TacticalCellLabelSize,
                 20,
                 Colors.White);
+            marker.HorizontalAlignment = HorizontalAlignment.Center;
             cells.Add(cell);
             cellLabels.Add(marker);
         }
@@ -374,6 +380,72 @@ internal sealed class PublicSyntheticBattlePresenter
             enemyHealthFill,
             cells.AsReadOnly(),
             cellLabels.AsReadOnly());
+    }
+
+    internal bool TryAttachPrivateTacticalCursor(
+        PrivateLocalPresentationRasterMount mount,
+        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
+    {
+        ArgumentNullException.ThrowIfNull(mount);
+        diagnostic = null;
+        if (_privateTacticalCursorOverlay is not null ||
+            !string.Equals(
+                mount.Definition.AssetId,
+                PrivateLocalPresentationAssetCatalog.TacticalCursorAssetId,
+                StringComparison.Ordinal) ||
+            mount.Definition.LogicalSize.Width !=
+                PrivateLocalPresentationAssetCatalog.TacticalCursorLogicalWidth ||
+            mount.Definition.LogicalSize.Height !=
+                PrivateLocalPresentationAssetCatalog.TacticalCursorLogicalHeight ||
+            mount.Bucket.Width != checked(
+                PrivateLocalPresentationAssetCatalog.TacticalCursorLogicalWidth *
+                mount.Bucket.Scale) ||
+            mount.Bucket.Height != checked(
+                PrivateLocalPresentationAssetCatalog.TacticalCursorLogicalHeight *
+                mount.Bucket.Scale))
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The admitted private tactical cursor binding is incompatible with the battle grid.");
+            return false;
+        }
+
+        Image image = new();
+        Error error = image.LoadPngFromBuffer(mount.CopyPngBytes());
+        if (error != Error.Ok ||
+            image.GetWidth() != mount.Bucket.Width ||
+            image.GetHeight() != mount.Bucket.Height)
+        {
+            image.Dispose();
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.TextureRejected,
+                "Godot rejected the admitted private tactical cursor texture.");
+            return false;
+        }
+
+        ImageTexture texture = ImageTexture.CreateFromImage(image);
+        image.Dispose();
+        TextureRect overlay = new()
+        {
+            Name = "PrivateLocalTacticalSelectionCursor",
+            Size = TacticalCellSize,
+            ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
+            StretchMode = TextureRect.StretchModeEnum.Scale,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+            TextureFilter = string.Equals(
+                mount.Bucket.Filter,
+                "nearest",
+                StringComparison.Ordinal)
+                ? CanvasItem.TextureFilterEnum.Nearest
+                : CanvasItem.TextureFilterEnum.Linear,
+            Texture = texture,
+            ZIndex = 1,
+            Visible = false,
+        };
+        _panel.AddChild(overlay);
+        _privateTacticalCursorTexture = texture;
+        _privateTacticalCursorOverlay = overlay;
+        return true;
     }
 
     internal void Project(
@@ -412,6 +484,11 @@ internal sealed class PublicSyntheticBattlePresenter
             : $"ENEMY HP {projection.EnemyHitPoints}/{projection.EnemyMaxHitPoints}";
         SetHealthFill(_actorHealthFill, projection.ActorHitPoints, projection.ActorMaxHitPoints);
         SetHealthFill(_enemyHealthFill, projection.EnemyHitPoints, projection.EnemyMaxHitPoints);
+        if (_privateTacticalCursorOverlay is not null)
+        {
+            _privateTacticalCursorOverlay.Visible = false;
+        }
+
         for (int index = 0; index < _cells.Count; index++)
         {
             PublicSyntheticBattleCellProjection? cell =
@@ -437,6 +514,11 @@ internal sealed class PublicSyntheticBattlePresenter
                     : cell.HasEnemy
                         ? new Color("ff7d7d")
                         : Colors.White);
+            if (cell.HasCursor && _privateTacticalCursorOverlay is not null)
+            {
+                _privateTacticalCursorOverlay.Position = _cells[index].Position;
+                _privateTacticalCursorOverlay.Visible = true;
+            }
         }
     }
 

@@ -93,6 +93,54 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
     }
 
     [Fact]
+    public void ExactPackMountsVerifiedTacticalCursorAndOwnsItsCopy()
+    {
+        using TemporaryPreviewPack package = new();
+
+        PrivateLocalPresentationAssetMounted mounted =
+            Assert.IsType<PrivateLocalPresentationAssetMounted>(
+                package.Catalog.MountTacticalCursor(
+                    package.Request,
+                    package.Accepted,
+                    effectivePhysicalScale: 1));
+        byte[] first = mounted.Asset.CopyPngBytes();
+        first[0] = 0;
+
+        Assert.Equal(PrivateLocalPresentationAssetCatalog.TacticalCursorAssetId,
+            mounted.Asset.Definition.AssetId);
+        Assert.Equal(2, mounted.Asset.Bucket.Scale);
+        Assert.Equal(116, mounted.Asset.Bucket.Width);
+        Assert.Equal(116, mounted.Asset.Bucket.Height);
+        Assert.Equal(PrivateLocalPresentationAssetCatalog.TacticalCursorLogicalWidth,
+            mounted.Asset.Definition.LogicalSize.Width);
+        Assert.Equal(137, mounted.Asset.CopyPngBytes()[0]);
+    }
+
+    [Fact]
+    public void TacticalCursorMissingShapeDriftOrPayloadDriftRejectsFailClosed()
+    {
+        using TemporaryPreviewPack package = new();
+
+        AssertCode(
+            package.Catalog.MountTacticalCursor(
+                package.Request,
+                package.AcceptedWithoutTacticalCursor(),
+                1),
+            PrivateLocalPresentationAssetMountFailureCode.AssetUnavailable);
+        AssertCode(
+            package.Catalog.MountTacticalCursor(
+                package.Request,
+                package.AcceptedWithTacticalCursorLogicalSize(width: 57, height: 58),
+                1),
+            PrivateLocalPresentationAssetMountFailureCode.AssetUnavailable);
+
+        File.WriteAllBytes(package.CursorTwoXPath, "mutated"u8.ToArray());
+        AssertCode(
+            package.Catalog.MountTacticalCursor(package.Request, package.Accepted, 1),
+            PrivateLocalPresentationAssetMountFailureCode.PayloadMismatch);
+    }
+
+    [Fact]
     public void BattleEntryChoiceProjectionIsPendingOnlyAndChromeFallbackStaysVisible()
     {
         Assert.True(PrivateLocalHudPreview.IsInitiallyVisible(
@@ -145,10 +193,19 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
                     package.Request,
                     package.Accepted,
                     effectivePhysicalScale: 3));
+        PrivateLocalPresentationAssetMounted cursor =
+            Assert.IsType<PrivateLocalPresentationAssetMounted>(
+                package.Catalog.MountTacticalCursor(
+                    package.Request,
+                    package.Accepted,
+                    effectivePhysicalScale: 3));
 
         Assert.Equal(4, mounted.Asset.Bucket.Scale);
         Assert.Equal(448, mounted.Asset.Bucket.Width);
         Assert.Equal(96, mounted.Asset.Bucket.Height);
+        Assert.Equal(4, cursor.Asset.Bucket.Scale);
+        Assert.Equal(232, cursor.Asset.Bucket.Width);
+        Assert.Equal(232, cursor.Asset.Bucket.Height);
     }
 
     [Fact]
@@ -234,6 +291,8 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
     {
         private readonly byte[] _twoX = Png(224, 48, 0x24, 0x49, 0x92);
         private readonly byte[] _fourX = Png(448, 96, 0x92, 0x49, 0x00);
+        private readonly byte[] _cursorTwoX = Png(116, 116, 0xEA, 0xF8, 0xFF);
+        private readonly byte[] _cursorFourX = Png(232, 232, 0x11, 0x18, 0x27);
 
         public TemporaryPreviewPack()
         {
@@ -246,9 +305,21 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
                 "runtime",
                 "ui",
                 "yes-no-window-frame@4x.png");
+            CursorTwoXPath = Path.Combine(
+                Root,
+                "runtime",
+                "ui",
+                "tactical-selection-cursor@2x.png");
+            string cursorFourXPath = Path.Combine(
+                Root,
+                "runtime",
+                "ui",
+                "tactical-selection-cursor@4x.png");
             Directory.CreateDirectory(Path.GetDirectoryName(TwoXPath)!);
             File.WriteAllBytes(TwoXPath, _twoX);
             File.WriteAllBytes(fourXPath, _fourX);
+            File.WriteAllBytes(CursorTwoXPath, _cursorTwoX);
+            File.WriteAllBytes(cursorFourXPath, _cursorFourX);
             string manifestPath = Path.Combine(
                 Root,
                 "manifests",
@@ -267,6 +338,8 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         public string Root { get; }
 
         public string TwoXPath { get; }
+
+        public string CursorTwoXPath { get; }
 
         public string ManifestDigest { get; }
 
@@ -290,6 +363,46 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
                     Accepted.Definition.RepositoryId,
                     Accepted.Definition.LogicalPresentation,
                     [asset]),
+                Accepted.Receipt);
+        }
+
+        public LocalPresentationAssetPackAccepted AcceptedWithoutTacticalCursor() =>
+            new(
+                new LocalPresentationAssetPackDefinition(
+                    Accepted.Definition.RepositoryId,
+                    Accepted.Definition.LogicalPresentation,
+                    [Accepted.Definition.Assets[0]]),
+                Accepted.Receipt);
+
+        public LocalPresentationAssetPackAccepted AcceptedWithTacticalCursorLogicalSize(
+            int width,
+            int height)
+        {
+            LocalPresentationRasterAssetDefinition admitted = Accepted.Definition.Assets[1];
+            LocalPresentationRasterBucket[] buckets =
+            [
+                .. admitted.Buckets.Select(bucket => new LocalPresentationRasterBucket(
+                    bucket.Scale,
+                    checked(width * bucket.Scale),
+                    checked(height * bucket.Scale),
+                    bucket.ByteLength,
+                    bucket.Sha256,
+                    bucket.MediaType,
+                    bucket.Filter,
+                    bucket.Mipmaps,
+                    bucket.Repeat,
+                    bucket.ColorSpace,
+                    bucket.AlphaMode)),
+            ];
+            LocalPresentationRasterAssetDefinition cursor = new(
+                admitted.AssetId,
+                new LocalPresentationLogicalSize(width, height),
+                buckets);
+            return new LocalPresentationAssetPackAccepted(
+                new LocalPresentationAssetPackDefinition(
+                    Accepted.Definition.RepositoryId,
+                    Accepted.Definition.LogicalPresentation,
+                    [Accepted.Definition.Assets[0], cursor]),
                 Accepted.Receipt);
         }
 
@@ -347,6 +460,45 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
                         {
                             Bucket(2, "runtime/ui/yes-no-window-frame@2x.png", 224, 48, _twoX),
                             Bucket(4, "runtime/ui/yes-no-window-frame@4x.png", 448, 96, _fourX),
+                        },
+                    },
+                    new JsonObject
+                    {
+                        ["assetId"] = PrivateLocalPresentationAssetCatalog.TacticalCursorAssetId,
+                        ["kind"] = "raster-image",
+                        ["logicalSize"] = new JsonObject
+                        {
+                            ["width"] = 58,
+                            ["height"] = 58,
+                        },
+                        ["source"] = new JsonObject
+                        {
+                            ["assetId"] = "source.hud.tactical-selection-cursor",
+                            ["sha256"] = Convert.ToHexString(SHA256.HashData(
+                                "project-authored-cursor-source"u8.ToArray())),
+                        },
+                        ["derivation"] = new JsonObject
+                        {
+                            ["policyId"] = "project-authored-nearest-v1",
+                            ["generatorId"] = "project-authored-test-generator",
+                            ["generatorVersion"] = "1",
+                            ["generatorArtifactSha256"] = Convert.ToHexString(
+                                SHA256.HashData("generator"u8.ToArray())),
+                        },
+                        ["buckets"] = new JsonArray
+                        {
+                            Bucket(
+                                2,
+                                "runtime/ui/tactical-selection-cursor@2x.png",
+                                116,
+                                116,
+                                _cursorTwoX),
+                            Bucket(
+                                4,
+                                "runtime/ui/tactical-selection-cursor@4x.png",
+                                232,
+                                232,
+                                _cursorFourX),
                         },
                     },
                 },

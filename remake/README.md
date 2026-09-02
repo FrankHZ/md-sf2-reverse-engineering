@@ -82,14 +82,18 @@ local-only checkout, verifies the pinned resvg archive and executable version, r
 2x/4x RGBA8 PNGs twice, validates the existing pack schema, and atomically publishes only a fresh
 direct child under ignored `cache/`. It never stages, promotes, commits, or prints a local path.
 
-The first reviewed local transaction now owns `hud.yes-no-window-frame`: a project-authored 112-by-24
-SVG master plus deterministic 2x/4x runtime PNGs and one closed manifest. An explicit PrivateLocal
-launch may opt into a bounded top-right diagnostic preview by supplying `--private-hud-preview`
+The reviewed local asset history now owns `hud.yes-no-window-frame` and
+`hud.tactical-selection-cursor`: project-authored SVG masters plus deterministic 2x/4x runtime PNGs
+and one closed manifest. The current two-asset checkpoint is local commit
+`ddf964c17f5c359e0a0eddafa702dbc211c559fe` with manifest SHA-256
+`39624F3D0A91C04DBC03CCD3F7253D94BFD4D9174EA13E898CA9A55730A60610`. An explicit PrivateLocal
+launch may opt into the bounded presentation mount by supplying `--private-hud-preview`
 together with a fully qualified asset root, its exact lowercase commit, and its exact uppercase
 manifest SHA-256. The Content reader admits the complete pack before `GameSession` starts; the thin
-Godot catalog resolves only the semantic asset ID and accepted 2x/4x bucket. It asks the same Content
-reader to reopen the fixed manifest, resolve and recheck the contained path/length/digest, and return a
-defensive byte copy before Godot decodes it. No runtime path crosses into Application or Godot. Partial
+Godot catalog resolves only the required semantic asset IDs and accepted 2x/4x buckets. It asks the
+same Content reader to reopen the fixed manifest, resolve and recheck each contained
+path/length/digest, and return a defensive byte copy before Godot decodes it. No runtime path crosses
+into Application or Godot. Partial
 values, an implicit mount, or a failed private mount never fall back while reporting private success.
 
 The current consumer uses the limiting physical dimension of the centered 16:9 frame at 100% UI scale;
@@ -101,7 +105,11 @@ panel: `N` sends the exact existing entry acknowledgement and `Backspace` sends 
 decline through `GameSession`. Decline is terminal for that session's bridge, restores movement, and
 does not mutate the private map snapshot. The built-in-font labels are project-authored diagnostic
 copy, not an admitted product font, original Yes/No text, an icon, a Theme, or original UI behavior.
-This adds no stable smoke marker. The separate `md-sf2-gfx-remake` repository remains
+While the bridge is Active, the verified transparent cursor raster is an additive overlay positioned
+only from the existing typed `HasCursor` cell; the gold cell highlight and `▣`/occupant fallback remain
+visible and authoritative state remains outside Godot. Missing or drifting frame/cursor payloads fail
+the requested private mount closed. This adds no stable smoke marker. The separate
+`md-sf2-gfx-remake` repository remains
 non-authoritative R&D: its measurements informed the product-authored frame, but its ignored
 experimental SVG contains forbidden text and an embedded raster and is not an admitted product master
 or runtime input.
