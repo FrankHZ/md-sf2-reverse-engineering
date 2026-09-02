@@ -28,10 +28,14 @@ public sealed partial class Map3Root
         "SF2_MAP3_PRIVATE_LOCAL_AREA_SMOKE ";
     public const string PrivateBaseAtlasSmokeMarker =
         "SF2_MAP3_PRIVATE_LOCAL_BASE_ATLAS_SMOKE ";
+    public const string PrivateWorldTreatmentSmokeMarker =
+        "SF2_MAP3_PRIVATE_LOCAL_WORLD_TREATMENT_SMOKE ";
     public const string PrivateViewCapability =
         "private-local-map3-traversal-diagnostic-view-v1";
     public const string PrivateBaseAtlasCapability =
         "private-local-map3-base-atlas-diagnostic-consumer-v1";
+    public const string PrivateWorldTreatmentCapability =
+        "private-local-map3-edge-scale2x-world-treatment-v1";
     private const string PrivateStageMarker = "SF2_MAP3_PRIVATE_LOCAL_STAGE ";
 
     private Map3RuntimeProfile? _runtimeProfile;
@@ -53,7 +57,8 @@ public sealed partial class Map3Root
         if (selection.IsAvailable)
         {
             plan = selection.PrivateBaseViewRequested
-                ? PrivateMap3PresentationPlan.PrivateLocalWithBaseVisual()
+                ? PrivateMap3PresentationPlan.PrivateLocalWithBaseVisual(
+                    selection.WorldTreatment)
                 : PrivateMap3PresentationPlan.PrivateLocalAvailable();
         }
         else if (selection.RequestedProfile == Map3RuntimeProfile.PrivateLocal)

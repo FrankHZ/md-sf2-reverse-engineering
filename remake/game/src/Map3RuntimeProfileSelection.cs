@@ -10,6 +10,12 @@ internal enum Map3RuntimeProfile
     PrivateLocal,
 }
 
+internal enum PrivateMap3WorldTreatment
+{
+    ExactNearest,
+    EdgeScale2x,
+}
+
 internal sealed record Map3RuntimeProfileSelection
 {
     private const string ProfileOption = "--runtime-profile";
@@ -21,6 +27,7 @@ internal sealed record Map3RuntimeProfileSelection
     private const string PresentationAssetCommitOption = "--presentation-asset-commit";
     private const string PresentationManifestDigestOption =
         "--presentation-manifest-sha256";
+    internal const string WorldTreatmentOption = "--private-map3-world-treatment";
 
     internal const string PrivateSmokeOption = "--private-map3-smoke";
     internal const string PrivateBaseViewOption = "--private-map3-base-view";
@@ -41,6 +48,7 @@ internal sealed record Map3RuntimeProfileSelection
         string? presentationAssetRoot,
         string? presentationAssetCommit,
         string? presentationManifestDigest,
+        PrivateMap3WorldTreatment worldTreatment,
         string? diagnostic)
     {
         RequestedProfile = requestedProfile;
@@ -56,6 +64,7 @@ internal sealed record Map3RuntimeProfileSelection
         PresentationAssetRoot = presentationAssetRoot;
         PresentationAssetCommit = presentationAssetCommit;
         PresentationManifestDigest = presentationManifestDigest;
+        WorldTreatment = worldTreatment;
         Diagnostic = diagnostic;
     }
 
@@ -84,6 +93,8 @@ internal sealed record Map3RuntimeProfileSelection
     internal string? PresentationAssetCommit { get; }
 
     internal string? PresentationManifestDigest { get; }
+
+    internal PrivateMap3WorldTreatment WorldTreatment { get; }
 
     internal string? Diagnostic { get; }
 
@@ -186,6 +197,7 @@ internal sealed record Map3RuntimeProfileSelection
             values.ContainsKey(PresentationAssetRootOption) ||
             values.ContainsKey(PresentationAssetCommitOption) ||
             values.ContainsKey(PresentationManifestDigestOption) ||
+            values.ContainsKey(WorldTreatmentOption) ||
             privateBaseViewRequested ||
             privateBaseAtlasRequested ||
             privateHudPreviewRequested ||
@@ -241,6 +253,32 @@ internal sealed record Map3RuntimeProfileSelection
                 privateHudPreviewRequested,
                 "Private Map 3 base-atlas presentation requires explicit private base-view selection.",
                 privateBaseAtlasRequested: true);
+        }
+
+        PrivateMap3WorldTreatment worldTreatment = PrivateMap3WorldTreatment.ExactNearest;
+        if (values.TryGetValue(WorldTreatmentOption, out string? worldTreatmentValue))
+        {
+            if (!string.Equals(worldTreatmentValue, "edge-scale2x", StringComparison.Ordinal))
+            {
+                return Unavailable(
+                    profile,
+                    privateSmokeRequested,
+                    privateHudPreviewRequested,
+                    "The private Map 3 world treatment is unknown.",
+                    privateBaseAtlasRequested);
+            }
+
+            if (!privateBaseViewRequested || !privateBaseAtlasRequested)
+            {
+                return Unavailable(
+                    profile,
+                    privateSmokeRequested,
+                    privateHudPreviewRequested,
+                    "The edge-scale2x world treatment requires explicit private base-view and base-atlas selection.",
+                    privateBaseAtlasRequested);
+            }
+
+            worldTreatment = PrivateMap3WorldTreatment.EdgeScale2x;
         }
 
         bool hasAnyPresentationValue = values.ContainsKey(PresentationAssetRootOption) ||
@@ -331,6 +369,7 @@ internal sealed record Map3RuntimeProfileSelection
             presentationAssetRoot,
             presentationAssetCommit,
             presentationManifestDigest,
+            worldTreatment,
             diagnostic: null);
     }
 
@@ -346,6 +385,7 @@ internal sealed record Map3RuntimeProfileSelection
             PresentationAssetRootOption,
             PresentationAssetCommitOption,
             PresentationManifestDigestOption,
+            WorldTreatmentOption,
         })
         {
             if (string.Equals(argument, option, StringComparison.Ordinal) ||
@@ -368,6 +408,7 @@ internal sealed record Map3RuntimeProfileSelection
         PresentationAssetRootOption => "presentation asset root",
         PresentationAssetCommitOption => "presentation asset commit",
         PresentationManifestDigestOption => "presentation manifest digest",
+        WorldTreatmentOption => "private Map 3 world treatment",
         _ => "runtime",
     };
 
@@ -414,6 +455,7 @@ internal sealed record Map3RuntimeProfileSelection
             presentationAssetRoot,
             presentationAssetCommit,
             presentationManifestDigest,
+            PrivateMap3WorldTreatment.ExactNearest,
             diagnostic: null);
 
     private static Map3RuntimeProfileSelection Unavailable(
@@ -436,6 +478,7 @@ internal sealed record Map3RuntimeProfileSelection
             presentationAssetRoot: null,
             presentationAssetCommit: null,
             presentationManifestDigest: null,
+            PrivateMap3WorldTreatment.ExactNearest,
             diagnostic);
 
     private static bool TryCanonicalCommit(string? value, out string? canonical)

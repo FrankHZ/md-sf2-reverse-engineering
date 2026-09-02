@@ -247,6 +247,20 @@ transport closure does not admit a non-nearest derivative. It never reads the pr
 does not embed the asset root in Application/state/receipts, and does not place private data in a PCK.
 This is a diagnostic substitution for transient decoded-tile sampling, not original rendering.
 
+The optional named `edge-scale2x` world treatment is an explicit 9A presentation deviation layered
+after that exact admission. It is accepted only with the explicit private base-view and base-atlas
+selection; exact-nearest remains the default. Godot first requires the selected atlas bucket to be an
+exact nearest replication of the typed payload, then the adapter composes the current 288-by-168
+logical base-world crop from the authoritative working layout, block selection, tile slots, and flips.
+Standard Scale2x rules compare exact RGBA neighbors across the complete composed crop, with clamped
+crop edges, and copy only colors already present. The 2x bucket receives that 576-by-336 result. The
+4x bucket deterministically nearest-doubles each accepted Scale2x output pixel, rather than making a
+second edge decision. Reprojection repeats the composition and treatment after movement or working-
+layout mutation, so atlas-cell boundaries cannot become seams or stale context. The resulting texture
+is still drawn into the same logical rectangle before the separate player and HUD overlays. This
+bounded base-layer treatment does not admit or describe original layer-2 transparency, camera,
+animation, colorimetry, final pixels, H4, or 8C fidelity.
+
 The local `md-sf2-gfx-remake` experiments remain useful R&D for comparing nearest, edge-aware, xBRZ,
 and color-ramp treatments, but they do not select product art or a general raster upscaler. In
 particular, 3x is not a runtime tier and no single upscaler becomes a global default from those

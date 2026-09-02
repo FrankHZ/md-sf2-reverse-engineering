@@ -31,6 +31,7 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.Null(selection.PresentationAssetRoot);
         Assert.Null(selection.PresentationAssetCommit);
         Assert.Null(selection.PresentationManifestDigest);
+        Assert.Equal(PrivateMap3WorldTreatment.ExactNearest, selection.WorldTreatment);
     }
 
     [Fact]
@@ -215,6 +216,70 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.Equal(assetRoot, selection.PresentationAssetRoot);
         Assert.Equal(AtlasAssetCommit, selection.PresentationAssetCommit);
         Assert.Equal(AtlasManifestDigest, selection.PresentationManifestDigest);
+        Assert.Equal(PrivateMap3WorldTreatment.ExactNearest, selection.WorldTreatment);
+    }
+
+    [Fact]
+    public void EdgeScale2xRequiresAndRetainsTheCompleteExplicitPrivateSelection()
+    {
+        Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
+            CompleteEdgeArguments());
+
+        Assert.True(selection.IsAvailable);
+        Assert.Equal(Map3RuntimeProfile.PrivateLocal, selection.RequestedProfile);
+        Assert.True(selection.PrivateBaseViewRequested);
+        Assert.True(selection.PrivateBaseAtlasRequested);
+        Assert.Equal(PrivateMap3WorldTreatment.EdgeScale2x, selection.WorldTreatment);
+        Assert.Null(selection.Diagnostic);
+    }
+
+    [Theory]
+    [InlineData("unknown")]
+    [InlineData("duplicate")]
+    [InlineData("missing-base-view")]
+    [InlineData("missing-base-atlas")]
+    [InlineData("public-profile")]
+    [InlineData("missing-profile")]
+    public void EdgeScale2xFailsClosedWhenItsExplicitSelectionIsIncompleteOrAmbiguous(
+        string mutation)
+    {
+        List<string> arguments = CompleteEdgeArguments();
+        string edge = $"{Map3RuntimeProfileSelection.WorldTreatmentOption}=edge-scale2x";
+        switch (mutation)
+        {
+            case "unknown":
+                arguments[arguments.IndexOf(edge)] =
+                    $"{Map3RuntimeProfileSelection.WorldTreatmentOption}=xbrz";
+                break;
+            case "duplicate":
+                arguments.Add(edge);
+                break;
+            case "missing-base-view":
+                arguments.Remove(Map3RuntimeProfileSelection.PrivateBaseViewOption);
+                break;
+            case "missing-base-atlas":
+                arguments.Remove(Map3RuntimeProfileSelection.PrivateBaseAtlasOption);
+                break;
+            case "public-profile":
+                arguments[0] = "--runtime-profile=public-synthetic";
+                break;
+            case "missing-profile":
+                arguments.RemoveAt(0);
+                break;
+            default:
+                throw new InvalidOperationException("Unknown test mutation.");
+        }
+
+        Map3RuntimeProfileSelection selection =
+            Map3RuntimeProfileSelection.Parse(arguments);
+
+        Assert.False(selection.IsAvailable);
+        Assert.Equal(PrivateMap3WorldTreatment.ExactNearest, selection.WorldTreatment);
+        Assert.Null(selection.PresentationAssetRoot);
+        Assert.DoesNotContain(
+            Absolute("presentation-assets"),
+            selection.Diagnostic,
+            StringComparison.Ordinal);
     }
 
     [Fact]
@@ -406,4 +471,19 @@ public sealed class Map3RuntimeProfileSelectionTests
 
     private static string Absolute(string fileName) =>
         Path.GetFullPath(Path.Combine(Path.GetTempPath(), "sf2-private-map3", fileName));
+
+    private static List<string> CompleteEdgeArguments() =>
+    [
+        "--runtime-profile=private-local",
+        $"--canonical-map-import={Absolute("canonical-map-import.json")}",
+        Map3RuntimeProfileSelection.PrivateBaseViewOption,
+        Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
+        $"--original-rom={Absolute("sf2.bin")}",
+        $"--map-tileset-metadata={Absolute("map-tilesets.json")}",
+        $"--map-palette-metadata={Absolute("map-palettes.json")}",
+        $"--presentation-asset-root={Absolute("presentation-assets")}",
+        $"--presentation-asset-commit={AtlasAssetCommit}",
+        $"--presentation-manifest-sha256={AtlasManifestDigest}",
+        $"{Map3RuntimeProfileSelection.WorldTreatmentOption}=edge-scale2x",
+    ];
 }

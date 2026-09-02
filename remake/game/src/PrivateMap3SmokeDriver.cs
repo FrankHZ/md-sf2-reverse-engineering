@@ -159,6 +159,12 @@ internal static class PrivateMap3SmokeDriver
             return;
         }
 
+        if (presenter.WorldTreatment == PrivateMap3WorldTreatment.EdgeScale2x &&
+            !RunWorldTreatmentDiagnostic(sceneTree, presenter))
+        {
+            return;
+        }
+
         Map3Root.TracePrivateStage(enabled: true, "quit-scheduled", smokeStarted);
         sceneTree.Quit(0);
     }
@@ -224,6 +230,50 @@ internal static class PrivateMap3SmokeDriver
             banner = Map3Root.PrivateBannerText,
         };
         GD.Print(Map3Root.PrivateBaseAtlasSmokeMarker + JsonSerializer.Serialize(receipt));
+        return true;
+    }
+
+    private static bool RunWorldTreatmentDiagnostic(
+        SceneTree sceneTree,
+        PrivateMap3Presenter presenter)
+    {
+        PrivateOriginalMapBaseViewProjection? projection = presenter.BaseProjection;
+        if (projection is null ||
+            presenter.WorldTreatment != PrivateMap3WorldTreatment.EdgeScale2x ||
+            presenter.BaseAtlasScale is not int scale ||
+            projection.RasterScale != scale ||
+            projection.RasterPixelWidth != checked(
+                PrivateOriginalMapBaseViewProjection.PixelWidth * scale) ||
+            projection.RasterPixelHeight != checked(
+                PrivateOriginalMapBaseViewProjection.PixelHeight * scale))
+        {
+            Fail(
+                sceneTree,
+                presenter,
+                "PrivateLocal Map 3 edge-scale2x world treatment was not projected exactly.");
+            return false;
+        }
+
+        object receipt = new
+        {
+            status = "Pass",
+            profile = "private-local",
+            capability = Map3Root.PrivateWorldTreatmentCapability,
+            treatment = "edge-scale2x",
+            scale,
+            mapId = projection.Map.Value,
+            crop = new
+            {
+                x = projection.OriginX,
+                y = projection.OriginY,
+                columns = PrivateOriginalMapBaseViewProjection.ColumnCount,
+                rows = PrivateOriginalMapBaseViewProjection.RowCount,
+            },
+            banner = Map3Root.PrivateBannerText,
+        };
+        GD.Print(
+            Map3Root.PrivateWorldTreatmentSmokeMarker +
+            JsonSerializer.Serialize(receipt));
         return true;
     }
 
