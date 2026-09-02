@@ -174,6 +174,163 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         return true;
     }
 
+    internal static PrivateOriginalMapBaseViewProjection CreateEdgeScale2x(
+        PrivateOriginalMapBaseViewProjection logical,
+        int outputScale)
+    {
+        ArgumentNullException.ThrowIfNull(logical);
+        if (logical.RasterScale != 1)
+        {
+            throw new ArgumentException(
+                "Edge-scale2x requires the canonical logical projection.",
+                nameof(logical));
+        }
+
+        if (!LocalPresentationAssetPackAdmission.BucketScales.Contains(outputScale))
+        {
+            throw new ArgumentOutOfRangeException(nameof(outputScale));
+        }
+
+        byte[] edge2x = ApplyEdgeScale2x(logical.RgbaBytes, PixelWidth, PixelHeight);
+        byte[] output = outputScale == 2
+            ? edge2x
+            : ReplicateNearest(edge2x, PixelWidth * 2, PixelHeight * 2, factor: 2);
+        return new PrivateOriginalMapBaseViewProjection(
+            logical.Map,
+            logical.OriginX,
+            logical.OriginY,
+            logical.PlayerColumn,
+            logical.PlayerRow,
+            outputScale,
+            output);
+    }
+
+    internal static byte[] ApplyEdgeScale2x(
+        IReadOnlyList<byte> rgbaBytes,
+        int width,
+        int height)
+    {
+        ArgumentNullException.ThrowIfNull(rgbaBytes);
+        if (width <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(width));
+        }
+
+        if (height <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(height));
+        }
+
+        if (rgbaBytes.Count != checked(width * height * 4))
+        {
+            throw new ArgumentException(
+                "The edge-scale2x source RGBA shape drifted.",
+                nameof(rgbaBytes));
+        }
+
+        int outputWidth = checked(width * 2);
+        byte[] output = new byte[checked(outputWidth * height * 2 * 4)];
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                SourcePixel center = ReadPixel(rgbaBytes, width, x, y);
+                SourcePixel above = y == 0
+                    ? center
+                    : ReadPixel(rgbaBytes, width, x, y - 1);
+                SourcePixel left = x == 0
+                    ? center
+                    : ReadPixel(rgbaBytes, width, x - 1, y);
+                SourcePixel right = x == width - 1
+                    ? center
+                    : ReadPixel(rgbaBytes, width, x + 1, y);
+                SourcePixel below = y == height - 1
+                    ? center
+                    : ReadPixel(rgbaBytes, width, x, y + 1);
+
+                SourcePixel topLeft = left == above && left != below && above != right
+                    ? left
+                    : center;
+                SourcePixel topRight = above == right && above != left && right != below
+                    ? right
+                    : center;
+                SourcePixel bottomLeft = left == below && left != above && below != right
+                    ? left
+                    : center;
+                SourcePixel bottomRight = below == right && left != below && above != right
+                    ? right
+                    : center;
+                int outputX = x * 2;
+                int outputY = y * 2;
+                WritePixel(output, outputWidth, outputX, outputY, topLeft);
+                WritePixel(output, outputWidth, outputX + 1, outputY, topRight);
+                WritePixel(output, outputWidth, outputX, outputY + 1, bottomLeft);
+                WritePixel(output, outputWidth, outputX + 1, outputY + 1, bottomRight);
+            }
+        }
+
+        return output;
+    }
+
+    private static byte[] ReplicateNearest(
+        IReadOnlyList<byte> source,
+        int sourceWidth,
+        int sourceHeight,
+        int factor)
+    {
+        int outputWidth = checked(sourceWidth * factor);
+        byte[] output = new byte[checked(outputWidth * sourceHeight * factor * 4)];
+        for (int sourceY = 0; sourceY < sourceHeight; sourceY++)
+        {
+            for (int sourceX = 0; sourceX < sourceWidth; sourceX++)
+            {
+                SourcePixel pixel = ReadPixel(source, sourceWidth, sourceX, sourceY);
+                for (int y = 0; y < factor; y++)
+                {
+                    for (int x = 0; x < factor; x++)
+                    {
+                        WritePixel(
+                            output,
+                            outputWidth,
+                            (sourceX * factor) + x,
+                            (sourceY * factor) + y,
+                            pixel);
+                    }
+                }
+            }
+        }
+
+        return output;
+    }
+
+    private static SourcePixel ReadPixel(
+        IReadOnlyList<byte> rgbaBytes,
+        int width,
+        int x,
+        int y)
+    {
+        int offset = ((y * width) + x) * 4;
+        return new SourcePixel(
+            rgbaBytes[offset],
+            rgbaBytes[offset + 1],
+            rgbaBytes[offset + 2],
+            rgbaBytes[offset + 3]);
+    }
+
+    private static void WritePixel(
+        byte[] rgbaBytes,
+        int width,
+        int x,
+        int y,
+        SourcePixel pixel)
+    {
+        int offset = ((y * width) + x) * 4;
+        rgbaBytes[offset] = pixel.Red;
+        rgbaBytes[offset + 1] = pixel.Green;
+        rgbaBytes[offset + 2] = pixel.Blue;
+        rgbaBytes[offset + 3] = pixel.Alpha;
+    }
+
     private static PrivateOriginalMapBaseViewProjection CreateCore(
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapVisualResourceSelection selection,
@@ -411,6 +568,8 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     private int _atlasScale;
     private string? _atlasAssetId;
     private string? _atlasBucketDigest;
+    private PrivateMap3WorldTreatment _worldTreatment =
+        PrivateMap3WorldTreatment.ExactNearest;
 
     internal PrivateOriginalMapBaseViewProjection? Projection => _projection;
 
@@ -426,6 +585,8 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 
     internal string? AtlasBucketDigest => _atlasBucketDigest;
 
+    internal PrivateMap3WorldTreatment WorldTreatment => _worldTreatment;
+
     internal static bool IsRequiredTextureSampling(
         TextureFilterEnum filter,
         TextureRepeatEnum repeat) =>
@@ -435,11 +596,18 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         PrivateLocalPresentationRasterMount mount,
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapVisualPayloadDefinition visualDefinition,
+        PrivateMap3WorldTreatment worldTreatment,
         out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
     {
         ArgumentNullException.ThrowIfNull(mount);
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(visualDefinition);
+        if (worldTreatment is not PrivateMap3WorldTreatment.ExactNearest and
+            not PrivateMap3WorldTreatment.EdgeScale2x)
+        {
+            throw new ArgumentOutOfRangeException(nameof(worldTreatment));
+        }
+
         diagnostic = null;
         if (!PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(
                 mount.Definition,
@@ -503,6 +671,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         _atlasScale = mount.Bucket.Scale;
         _atlasAssetId = mount.Definition.AssetId;
         _atlasBucketDigest = mount.Bucket.Sha256;
+        _worldTreatment = worldTreatment;
         return true;
     }
 
@@ -512,11 +681,23 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     {
         _projection = _atlasRgbaBytes is null
             ? PrivateOriginalMapBaseViewProjection.Create(snapshot, visualDefinition)
-            : PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
-                snapshot,
-                visualDefinition.Selection,
-                _atlasRgbaBytes,
-                _atlasScale);
+            : _worldTreatment switch
+            {
+                PrivateMap3WorldTreatment.ExactNearest =>
+                    PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                        snapshot,
+                        visualDefinition.Selection,
+                        _atlasRgbaBytes,
+                        _atlasScale),
+                PrivateMap3WorldTreatment.EdgeScale2x =>
+                    PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
+                        PrivateOriginalMapBaseViewProjection.Create(
+                            snapshot,
+                            visualDefinition),
+                        _atlasScale),
+                _ => throw new InvalidOperationException(
+                    "The admitted private Map 3 world treatment is unknown."),
+            };
         Image image = Image.CreateFromData(
             _projection.RasterPixelWidth,
             _projection.RasterPixelHeight,

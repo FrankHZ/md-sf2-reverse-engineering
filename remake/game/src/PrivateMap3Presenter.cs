@@ -11,6 +11,7 @@ internal sealed record PrivateMap3PresentationPlan(
     bool IncludeTraversalViewport,
     bool ShowTraversalViewport,
     bool IncludeBaseVisualViewport,
+    PrivateMap3WorldTreatment WorldTreatment,
     float StatusY)
 {
     private const string DiagnosticExplanation =
@@ -29,9 +30,11 @@ internal sealed record PrivateMap3PresentationPlan(
             IncludeTraversalViewport: true,
             ShowTraversalViewport: true,
             IncludeBaseVisualViewport: false,
+            PrivateMap3WorldTreatment.ExactNearest,
             StatusY: 450);
 
-    internal static PrivateMap3PresentationPlan PrivateLocalWithBaseVisual() =>
+    internal static PrivateMap3PresentationPlan PrivateLocalWithBaseVisual(
+        PrivateMap3WorldTreatment worldTreatment = PrivateMap3WorldTreatment.ExactNearest) =>
         new(
             Map3Root.PrivateBannerText,
             BaseVisualExplanation,
@@ -39,6 +42,7 @@ internal sealed record PrivateMap3PresentationPlan(
             IncludeTraversalViewport: true,
             ShowTraversalViewport: false,
             IncludeBaseVisualViewport: true,
+            worldTreatment,
             StatusY: 310);
 
     internal static PrivateMap3PresentationPlan PrivateLocalUnavailable(
@@ -61,6 +65,7 @@ internal sealed record PrivateMap3PresentationPlan(
             IncludeTraversalViewport: false,
             ShowTraversalViewport: false,
             IncludeBaseVisualViewport: false,
+            PrivateMap3WorldTreatment.ExactNearest,
             StatusY: 105);
     }
 
@@ -93,16 +98,19 @@ internal sealed class PrivateMap3Presenter
     private readonly PrivateOriginalMapBaseViewport? _baseViewport;
     private readonly PrivateOriginalMapTraversalViewport? _viewport;
     private readonly Label _status;
+    private readonly PrivateMap3WorldTreatment _requestedWorldTreatment;
     private OriginalMapVisualPayloadDefinition? _visualDefinition;
 
     private PrivateMap3Presenter(
         PrivateOriginalMapBaseViewport? baseViewport,
         PrivateOriginalMapTraversalViewport? viewport,
-        Label status)
+        Label status,
+        PrivateMap3WorldTreatment requestedWorldTreatment)
     {
         _baseViewport = baseViewport;
         _viewport = viewport;
         _status = status;
+        _requestedWorldTreatment = requestedWorldTreatment;
     }
 
     internal PrivateOriginalMapTraversalViewProjection? Projection =>
@@ -123,6 +131,9 @@ internal sealed class PrivateMap3Presenter
     internal int? BaseAtlasScale => _baseViewport?.AtlasScale;
 
     internal string? BaseAtlasBucketDigest => _baseViewport?.AtlasBucketDigest;
+
+    internal PrivateMap3WorldTreatment WorldTreatment =>
+        _baseViewport?.WorldTreatment ?? PrivateMap3WorldTreatment.ExactNearest;
 
     internal static PrivateMap3Presenter Attach(
         Node2D parent,
@@ -181,7 +192,11 @@ internal sealed class PrivateMap3Presenter
         status.AddThemeFontSizeOverride("font_size", 18);
         parent.AddChild(status);
 
-        return new PrivateMap3Presenter(baseViewport, viewport, status);
+        return new PrivateMap3Presenter(
+            baseViewport,
+            viewport,
+            status,
+            plan.WorldTreatment);
     }
 
     internal void BindVisualDefinition(OriginalMapVisualPayloadDefinition definition)
@@ -223,6 +238,7 @@ internal sealed class PrivateMap3Presenter
             mount,
             snapshot,
             _visualDefinition,
+            _requestedWorldTreatment,
             out diagnostic);
     }
 

@@ -42,7 +42,23 @@ public sealed class PrivateMap3PresenterTests
         Assert.True(plan.IncludeTraversalViewport);
         Assert.False(plan.ShowTraversalViewport);
         Assert.True(plan.IncludeBaseVisualViewport);
+        Assert.Equal(PrivateMap3WorldTreatment.ExactNearest, plan.WorldTreatment);
         Assert.Equal(310, plan.StatusY);
+    }
+
+    [Fact]
+    public void EdgeScale2xPlanRetainsTheExplicitTreatmentWithoutMovingPresentationRules()
+    {
+        PrivateMap3PresentationPlan plan =
+            PrivateMap3PresentationPlan.PrivateLocalWithBaseVisual(
+                PrivateMap3WorldTreatment.EdgeScale2x);
+
+        Assert.True(plan.IncludeBaseVisualViewport);
+        Assert.Equal(PrivateMap3WorldTreatment.EdgeScale2x, plan.WorldTreatment);
+        Assert.Equal(
+            "Project-authored base composition from admitted private Map 3 data. " +
+                "Not full original fidelity.",
+            plan.ExplanationText);
     }
 
     [Fact]
@@ -115,6 +131,12 @@ public sealed class PrivateMap3PresenterTests
         Assert.Equal(
             "private-local-map3-base-atlas-diagnostic-consumer-v1",
             Map3Root.PrivateBaseAtlasCapability);
+        Assert.Equal(
+            "SF2_MAP3_PRIVATE_LOCAL_WORLD_TREATMENT_SMOKE ",
+            Map3Root.PrivateWorldTreatmentSmokeMarker);
+        Assert.Equal(
+            "private-local-map3-edge-scale2x-world-treatment-v1",
+            Map3Root.PrivateWorldTreatmentCapability);
         Assert.DoesNotContain(
             typeof(PrivateMap3Presenter).GetProperties(
                 System.Reflection.BindingFlags.Instance |

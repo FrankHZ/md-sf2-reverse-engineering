@@ -112,6 +112,22 @@ public sealed class PrivateOriginalMapBaseViewportTests
         Assert.Equal(
             new byte[] { 0, 255, 0, 255 },
             Pixel(afterProjection, playerPixelX, playerPixelY));
+
+        PrivateOriginalMapBaseViewProjection edgeBefore =
+            PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
+                beforeProjection,
+                outputScale: 2);
+        PrivateOriginalMapBaseViewProjection edgeAfter =
+            PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
+                afterProjection,
+                outputScale: 2);
+        Assert.Equal(
+            new byte[] { 255, 0, 0, 255 },
+            Pixel(edgeBefore, (playerPixelX * 2) + 1, (playerPixelY * 2) + 1));
+        Assert.Equal(
+            new byte[] { 0, 255, 0, 255 },
+            Pixel(edgeAfter, (playerPixelX * 2) + 1, (playerPixelY * 2) + 1));
+        Assert.NotEqual(edgeBefore.RgbaBytes, edgeAfter.RgbaBytes);
     }
 
     [Fact]
@@ -285,6 +301,128 @@ public sealed class PrivateOriginalMapBaseViewportTests
                 Selection(paletteIndex: 1),
                 exact,
                 scale: 2));
+    }
+
+    [Fact]
+    public void EdgeScale2xUsesExactRgbaNeighborsClampsEdgesAndAddsNoColors()
+    {
+        byte[] transparent = [0, 0, 0, 0];
+        byte[] red = [240, 16, 16, 128];
+        byte[] blue = [16, 16, 240, 255];
+        byte[] green = [16, 240, 16, 64];
+        byte[] source =
+        [
+            .. transparent, .. red, .. transparent,
+            .. red, .. blue, .. green,
+            .. transparent, .. green, .. transparent,
+        ];
+
+        byte[] output = PrivateOriginalMapBaseViewProjection.ApplyEdgeScale2x(
+            source,
+            width: 3,
+            height: 3);
+
+        Assert.Equal(6 * 6 * 4, output.Length);
+        Assert.Equal(transparent, Pixel(output, width: 6, x: 0, y: 0));
+        Assert.Equal(red, Pixel(output, width: 6, x: 2, y: 2));
+        Assert.Equal(blue, Pixel(output, width: 6, x: 3, y: 2));
+        Assert.Equal(blue, Pixel(output, width: 6, x: 2, y: 3));
+        Assert.Equal(green, Pixel(output, width: 6, x: 3, y: 3));
+
+        HashSet<string> sourceColors = PixelKeys(source);
+        Assert.All(PixelKeys(output), color => Assert.Contains(color, sourceColors));
+        byte firstOutput = output[0];
+        source[0] = 99;
+        Assert.Equal(firstOutput, output[0]);
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    public void EdgeTreatmentIsDeterministicAcrossBucketsAndPreservesProjectionIdentity(
+        int outputScale)
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[] block =
+        [
+            0x0100, 0x0101, 0x1902,
+            0x0100, 0x0101, 0x1902,
+            0x0100, 0x0101, 0x1902,
+        ];
+        PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+            [block],
+            new ushort[WorkingMapLayout.WordCount]);
+        PrivateOriginalMapBaseViewProjection logical =
+            PrivateOriginalMapBaseViewProjection.Create(snapshot, visual);
+
+        PrivateOriginalMapBaseViewProjection treated =
+            PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
+                logical,
+                outputScale);
+        PrivateOriginalMapBaseViewProjection repeated =
+            PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
+                logical,
+                outputScale);
+
+        Assert.Equal(logical.Map, treated.Map);
+        Assert.Equal(logical.OriginX, treated.OriginX);
+        Assert.Equal(logical.OriginY, treated.OriginY);
+        Assert.Equal(logical.PlayerColumn, treated.PlayerColumn);
+        Assert.Equal(logical.PlayerRow, treated.PlayerRow);
+        Assert.Equal(outputScale, treated.RasterScale);
+        Assert.Equal(288 * outputScale, treated.RasterPixelWidth);
+        Assert.Equal(168 * outputScale, treated.RasterPixelHeight);
+        Assert.Equal(treated.RgbaBytes, repeated.RgbaBytes);
+        HashSet<string> logicalColors = PixelKeys(logical.RgbaBytes);
+        Assert.All(
+            PixelKeys(treated.RgbaBytes),
+            color => Assert.Contains(color, logicalColors));
+
+        if (outputScale == 4)
+        {
+            PrivateOriginalMapBaseViewProjection edge2x =
+                PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
+                    logical,
+                    outputScale: 2);
+            AssertNearestReplication(edge2x, treated, factor: 2);
+        }
+    }
+
+    [Fact]
+    public void EdgeTreatmentCrossesComposedTileAndBlockBoundariesWithoutAtlasSeams()
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[] firstBlock = Enumerable.Repeat((ushort)0x0100, 9).ToArray();
+        firstBlock[1] = 0x0101;
+        firstBlock[2] = 0x1902;
+        ushort[] secondBlock = Enumerable.Repeat((ushort)0x0101, 9).ToArray();
+        ushort[] layout = new ushort[WorkingMapLayout.WordCount];
+        layout[51] = 1;
+        PrivateOriginalMapBaseViewProjection logical =
+            PrivateOriginalMapBaseViewProjection.Create(
+                Snapshot([firstBlock, secondBlock], layout),
+                visual);
+        PrivateOriginalMapBaseViewProjection edge =
+            PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
+                logical,
+                outputScale: 2);
+
+        Assert.Equal(new byte[] { 255, 0, 0, 255 }, Pixel(edge, 14, 4));
+        Assert.Equal(new byte[] { 255, 0, 0, 255 }, Pixel(edge, 15, 4));
+        Assert.Equal(new byte[] { 0, 255, 0, 255 }, Pixel(edge, 16, 4));
+        Assert.Equal(new byte[] { 0, 255, 0, 255 }, Pixel(edge, 17, 4));
+        Assert.Equal(new byte[] { 255, 0, 0, 255 }, Pixel(edge, 46, 16));
+        Assert.Equal(new byte[] { 255, 0, 0, 255 }, Pixel(edge, 47, 16));
+        Assert.Equal(new byte[] { 0, 255, 0, 255 }, Pixel(edge, 48, 16));
+        Assert.Equal(new byte[] { 0, 255, 0, 255 }, Pixel(edge, 49, 16));
+        Assert.Contains(
+            Enumerable.Range(0, edge.RgbaBytes.Count / 4)
+                .Select(index => Pixel(
+                    edge.RgbaBytes,
+                    edge.RasterPixelWidth,
+                    index % edge.RasterPixelWidth,
+                    index / edge.RasterPixelWidth)),
+            pixel => pixel.SequenceEqual(new byte[] { 0, 0, 255, 255 }));
     }
 
     private static OriginalMapVisualPayloadDefinition VisualDefinition()
@@ -486,5 +624,47 @@ public sealed class PrivateOriginalMapBaseViewportTests
     {
         int offset = ((y * projection.RasterPixelWidth) + x) * 4;
         return projection.RgbaBytes.Skip(offset).Take(4).ToArray();
+    }
+
+    private static byte[] Pixel(
+        IReadOnlyList<byte> rgbaBytes,
+        int width,
+        int x,
+        int y)
+    {
+        int offset = ((y * width) + x) * 4;
+        return rgbaBytes.Skip(offset).Take(4).ToArray();
+    }
+
+    private static HashSet<string> PixelKeys(IReadOnlyList<byte> rgbaBytes) =>
+        Enumerable.Range(0, rgbaBytes.Count / 4)
+            .Select(index => Convert.ToHexString(
+                rgbaBytes.Skip(index * 4).Take(4).ToArray()))
+            .ToHashSet(StringComparer.Ordinal);
+
+    private static void AssertNearestReplication(
+        PrivateOriginalMapBaseViewProjection source,
+        PrivateOriginalMapBaseViewProjection target,
+        int factor)
+    {
+        for (int y = 0; y < source.RasterPixelHeight; y++)
+        {
+            for (int x = 0; x < source.RasterPixelWidth; x++)
+            {
+                byte[] expected = Pixel(source, x, y);
+                for (int subY = 0; subY < factor; subY++)
+                {
+                    for (int subX = 0; subX < factor; subX++)
+                    {
+                        Assert.Equal(
+                            expected,
+                            Pixel(
+                                target,
+                                (x * factor) + subX,
+                                (y * factor) + subY));
+                    }
+                }
+            }
+        }
     }
 }
