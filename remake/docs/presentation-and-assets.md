@@ -216,6 +216,20 @@ independent runs to produce byte-identical 2x and 4x RGBA8 noninterlaced PNGs wi
 It writes only a fresh direct child under ignored `cache/` and generates the existing
 `manifests/presentation-assets-v1.json` shape inside that candidate. It does not promote or commit.
 
+Private Map 3 base-atlas candidate derivation uses the already accepted fixed ROM, tileset-metadata,
+and palette-metadata roots. Actual bytes and caller pins must all match those roots before metadata
+parsing. The tool derives, rather than accepts from a caller, palette zero and ordered tileset slots
+`[0, 37, 43, 53, 66]`. It reuses the maintained Stack decoder and the accepted pure 4bpp, palette,
+tileset-sheet, and deterministic PNG helpers. The ignored candidate contains only the exact selected
+private source bundle, one master, two runtime buckets, and the single-asset candidate manifest.
+
+The master is one 128-by-320 atlas: five vertical 128-by-64 segments in accepted slot order, each
+containing 128 8-by-8 tiles on a 16-by-8 grid. Runtime buckets are exact nearest-neighbor 2x and 4x
+derivatives with no mipmaps or repeat. Palette index zero is transparent and the other indices use
+the existing `v << 5 | v << 2 | v >> 1` channel expansion into straight-alpha sRGB RGBA8. This is a
+project-authored color-preserving review/runtime candidate policy. It does not prove Mega Drive
+analog output, display behavior, colorimetry, hardware chronology, or final-pixel parity.
+
 The local `md-sf2-gfx-remake` experiments remain useful R&D for comparing nearest, edge-aware, xBRZ,
 and color-ramp treatments, but they do not select product art or a general raster upscaler. In
 particular, 3x is not a runtime tier and no single upscaler becomes a global default from those
@@ -335,7 +349,8 @@ Migration order is intentionally incremental:
    entry choice own its first semantic panel migration;
 4. append one reviewed 58-by-58 tactical cursor transaction and mount it only as an additive
    `HasCursor` projection without moving tactical state into Godot;
-5. mount one bounded local world/character family and validate bucket switching;
+5. build and review one exact local Map 3 base-atlas transaction, then mount that bounded world
+   family and validate bucket switching;
 6. expand asset families only after their source, derivation, cache, and failure rules are closed;
 7. close music and sound-effect format/loop/streaming contracts separately.
 
@@ -350,6 +365,7 @@ gameplay authority into a scene, resource, filename, or animation callback.
 | fixed by this proposal | 960-by-540 logical grid; simulation/presentation separation; explicit asset-repository root/exported pack; local-Git source/master/runtime/manifest history; ignored reproducible cache and scratch; fail-closed mount; no synthetic product fallback |
 | fixed after acceptance | 4x new-raster authoring; original raster as local master; deterministic 2x/4x buckets; one resident bucket; safe-frame/aspect/accessibility model; thin Godot catalog migration |
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
+| implemented world-family tooling prerequisite | fixed private Map 3 ROM/metadata roots; exact palette/slot selection; five-segment 128-by-320 source-crisp atlas; deterministic nearest 2x/4x ignored candidate; no promotion or consumer |
 | implemented bounded consumer | reviewed `hud.yes-no-window-frame` and `hud.tactical-selection-cursor` master/runtime/manifest transactions; explicit PrivateLocal mount; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; one typed pending ENTER/STAY panel; one additive Active-state cursor ring retaining the typed color/glyph fallback |
 | separate implementation decision | original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original camera/layer/priority/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
