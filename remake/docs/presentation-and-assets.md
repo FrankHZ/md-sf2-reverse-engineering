@@ -297,6 +297,20 @@ enters runtime or a PCK.
 Admission animation counter, admission-visible frame, live palette at admission, movement-facing
 timing, DMA/cache completion, original rendered-color parity, and final pixels remain **Unknown**.
 
+The accepted `sf2-map3-original-player-locomotion-animation-runtime-v1` owner closes the bounded
+controlled-player timing gap without turning either half into a universal idle pose. A sibling local
+candidate builder keeps the original three source slots as three 48-by-24 two-half sheets: `up`,
+`horizontal`, and `down`. RIGHT reuses the horizontal sheet with the accepted horizontal mirror;
+there is no duplicate right-facing payload. Masters and nearest 2x/4x buckets retain both halves in
+source order. The builder validates the accepted admission counter/half, blocked-attempt ordering,
+and successful 13-tick half sequence before deriving the family, but does not itself implement a
+runtime clock or publish the private source.
+
+The earlier `initial-reference-frame` transaction remains a separate, narrower product input. Its
+half-zero name and bytes are not rewritten by the locomotion family, and it still carries no
+standing, idle, or original-admission-visible claim. A later consumer must use an Application-owned
+animation state rather than `SimulationStep` parity or `LastTraversal` alone.
+
 The optional named `edge-scale2x` world treatment is an explicit 9A presentation deviation layered
 after that exact admission. It is accepted only with the explicit private base-view and base-atlas
 selection; exact-nearest remains the default. Godot first requires the selected atlas bucket to be an
@@ -449,8 +463,10 @@ Migration order is intentionally incremental:
    `HasCursor` projection without moving tactical state into Godot;
 5. build and review one exact local Map 3 base-atlas transaction, mount that bounded world family,
    validate 2x/4x bucket switching, and retain pixel equivalence with the existing typed projection;
-6. expand the player family to animation only after frame choice, facing/movement timing, and runtime
-   state ownership are closed; do not relabel the current frame as standing, idle, or admission-live;
+6. derive the complete three-sheet controlled-player locomotion family from the accepted
+   facing/half/cadence owner, review and promote it as a separate local asset transaction, then bind
+   it only after Application owns the runtime phase; do not relabel the current reference frame as
+   standing, idle, or a universal admission frame;
 7. expand asset families only after their source, derivation, cache, and failure rules are closed;
 8. close music and sound-effect format/loop/streaming contracts separately.
 

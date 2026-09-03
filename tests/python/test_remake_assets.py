@@ -1220,6 +1220,76 @@ def _build_player_reference_candidate(
     )
 
 
+def _player_locomotion_input(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[Path, tuple[bytes, bytes, bytes]]:
+    pointer_table = 64
+    payload_addresses = (128, 256, 384)
+    palette_address = 1024
+    compressed_payloads = (b"\x11\x21\x31\x41", b"\x12\x22\x32\x42", b"\x13\x23\x33\x43")
+    rom = bytearray(2048)
+    for slot, (payload_address, compressed) in enumerate(
+        zip(payload_addresses, compressed_payloads, strict=True)
+    ):
+        pointer_offset = pointer_table + (slot * 4)
+        rom[pointer_offset : pointer_offset + 4] = payload_address.to_bytes(4, "big")
+        rom[payload_address : payload_address + len(compressed)] = compressed
+    palette_words = [0, 2, 4, 6, 8, 10, *([0] * 10)]
+    rom[palette_address : palette_address + 32] = b"".join(
+        word.to_bytes(2, "big") for word in palette_words
+    )
+    rom_path = tmp_path / "player-locomotion.rom"
+    rom_path.write_bytes(rom)
+    monkeypatch.setattr(remake_asset_build, "PLAYER_POINTER_TABLE_ADDRESS", pointer_table)
+    monkeypatch.setattr(
+        remake_asset_build,
+        "PLAYER_ANIMATION_PAYLOAD_ADDRESSES",
+        payload_addresses,
+    )
+    monkeypatch.setattr(remake_asset_build, "PLAYER_PALETTE_ADDRESS", palette_address)
+    monkeypatch.setattr(remake_asset_build, "ACCEPTED_ROM_SHA256", _digest(bytes(rom)))
+    monkeypatch.setattr(remake_asset_build, "ACCEPTED_ROM_SIZE", len(rom))
+
+    def decode(data: bytes, *, expected_output_bytes: int | None = None) -> BasicDecodeResult:
+        assert expected_output_bytes == remake_asset_build.PLAYER_DECODED_BYTES
+        slot = next(
+            index for index, payload in enumerate(compressed_payloads) if data.startswith(payload)
+        )
+        decoded = bytearray(remake_asset_build.PLAYER_DECODED_BYTES)
+        decoded[0] = (slot + 1) << 4
+        decoded[remake_asset_build.PLAYER_FRAME_BYTES] = (slot + 3) << 4
+        return BasicDecodeResult(
+            bytes(decoded),
+            len(compressed_payloads[slot]),
+            1,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+        )
+
+    monkeypatch.setattr(remake_asset_build, "decode_basic_compressed", decode)
+    return rom_path, compressed_payloads
+
+
+def _build_player_locomotion_candidate(
+    repository: CandidateRepository,
+    rom_path: Path,
+) -> dict[str, object]:
+    commit, tree = repository.pins()
+    return remake_asset_build.build_map3_player_locomotion_animation_candidate(
+        asset_root=str(repository.root),
+        expected_commit=commit,
+        expected_tree=tree,
+        rom_path=str(rom_path),
+        expected_rom_sha256=_digest(rom_path.read_bytes()),
+        candidate_name="map3-player-locomotion-candidate",
+    )
+
+
 @pytest.mark.parametrize(
     ("replacement", "code"),
     (
@@ -1891,4 +1961,221 @@ def test_exact_private_map3_player_reference_candidate_opt_in(tmp_path: Path) ->
     assert receipt["capability"] == remake_asset_build.PLAYER_BUILD_CAPABILITY
     assert receipt["selection"]["framePolicy"] == "initial-reference-frame"
     assert receipt["selection"]["sourceSlot"] == 2
+    assert receipt["cleanupStatus"] == "clean"
+
+
+def test_map3_player_locomotion_candidate_is_exact_deterministic_and_ignored(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+    rom_path, compressed_payloads = _player_locomotion_input(tmp_path, monkeypatch)
+    before = (*repository.pins(), _run(repository.root, "status", "--porcelain=v2", "-z"))
+
+    receipt = _build_player_locomotion_candidate(repository, rom_path)
+
+    candidate = repository.root / "cache" / "map3-player-locomotion-candidate"
+    assert sorted(
+        path.relative_to(candidate).as_posix() for path in candidate.rglob("*") if path.is_file()
+    ) == [
+        "manifests/presentation-assets-v1.json",
+        "masters/world/map3/player-locomotion-down.png",
+        "masters/world/map3/player-locomotion-horizontal.png",
+        "masters/world/map3/player-locomotion-up.png",
+        "runtime/world/map3/player-locomotion-down@2x.png",
+        "runtime/world/map3/player-locomotion-down@4x.png",
+        "runtime/world/map3/player-locomotion-horizontal@2x.png",
+        "runtime/world/map3/player-locomotion-horizontal@4x.png",
+        "runtime/world/map3/player-locomotion-up@2x.png",
+        "runtime/world/map3/player-locomotion-up@4x.png",
+        "source/world/map3/player-locomotion-animation-v1.bin",
+    ]
+    manifest = json.loads(
+        (candidate / "manifests" / "presentation-assets-v1.json").read_text(encoding="utf-8")
+    )
+    assert [asset["assetId"] for asset in manifest["assets"]] == [
+        "world.map3.player.locomotion.up",
+        "world.map3.player.locomotion.horizontal",
+        "world.map3.player.locomotion.down",
+    ]
+    assert all(asset["logicalSize"] == {"width": 48, "height": 24} for asset in manifest["assets"])
+    assert all(
+        [bucket["scale"] for bucket in asset["buckets"]] == [2, 4]
+        and all(bucket["filter"] == "nearest" for bucket in asset["buckets"])
+        for asset in manifest["assets"]
+    )
+    source = (
+        candidate / "source" / "world" / "map3" / "player-locomotion-animation-v1.bin"
+    ).read_bytes()
+    assert source.startswith(
+        remake_asset_build.PLAYER_ANIMATION_SOURCE_MAGIC
+        + bytes((remake_asset_build.PLAYER_MAPSPRITE_ID, 3, 0))
+        + len(compressed_payloads[0]).to_bytes(4, "big")
+        + compressed_payloads[0]
+    )
+    assert receipt["capability"] == remake_asset_build.PLAYER_ANIMATION_BUILD_CAPABILITY
+    assert receipt["locomotionContractId"] == remake_asset_build.PLAYER_LOCOMOTION_CONTRACT_ID
+    assert receipt["selection"]["sheets"] == [
+        {"name": "up", "sourceSlot": 0, "halves": [0, 1]},
+        {"name": "horizontal", "sourceSlot": 1, "halves": [0, 1]},
+        {"name": "down", "sourceSlot": 2, "halves": [0, 1]},
+    ]
+    assert receipt["selection"]["directions"] == [
+        {"direction": "UP", "facing": 1, "sheet": "up", "horizontalMirror": False},
+        {
+            "direction": "LEFT",
+            "facing": 2,
+            "sheet": "horizontal",
+            "horizontalMirror": False,
+        },
+        {
+            "direction": "RIGHT",
+            "facing": 0,
+            "sheet": "horizontal",
+            "horizontalMirror": True,
+        },
+        {"direction": "DOWN", "facing": 3, "sheet": "down", "horizontalMirror": False},
+    ]
+    assert receipt["selection"]["admissionCounter"] == 26
+    assert receipt["selection"]["admissionHalf"] == 1
+    assert receipt["selection"]["settledSuccessfulCounter"] == 20
+    assert receipt["selection"]["settledSuccessfulHalf"] == 1
+    up_width, up_height, up_pixels = _read_rgba_png(
+        candidate / "masters" / "world" / "map3" / "player-locomotion-up.png"
+    )
+    assert (up_width, up_height) == (48, 24)
+    assert up_pixels[:4] != up_pixels[24 * 4 : 25 * 4]
+    two_width, two_height, two_pixels = _read_rgba_png(
+        candidate / "runtime" / "world" / "map3" / "player-locomotion-up@2x.png"
+    )
+    assert (two_width, two_height) == (96, 48)
+    assert two_pixels[:8] == up_pixels[:4] * 2
+    assert two_pixels[: 96 * 4] == two_pixels[96 * 4 : 192 * 4]
+    encoded = json.dumps(receipt, sort_keys=True)
+    assert str(repository.root) not in encoded
+    assert str(rom_path) not in encoded
+    assert repository.pins() == before[:2]
+    assert _run(repository.root, "status", "--porcelain=v2", "-z") == before[2]
+    assert not list((repository.root / "cache").glob(".sf2-map3-player-animation-build-*"))
+
+
+@pytest.mark.parametrize(
+    ("mutation", "code"),
+    (
+        ("pointer", "SourcePayloadMismatch"),
+        ("decode-error", "DecodeFailure"),
+        ("decode-size", "DecodeFailure"),
+        ("decode-consumption", "DecodeFailure"),
+        ("palette-mask", "PalettePayloadMismatch"),
+        ("contract", "ContractMismatch"),
+    ),
+)
+def test_map3_player_locomotion_semantics_fail_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: str,
+    code: str,
+) -> None:
+    rom_path, compressed_payloads = _player_locomotion_input(tmp_path, monkeypatch)
+    rom = bytearray(rom_path.read_bytes())
+    if mutation == "pointer":
+        pointer_offset = remake_asset_build.PLAYER_POINTER_TABLE_ADDRESS + 4
+        rom[pointer_offset : pointer_offset + 4] = (129).to_bytes(4, "big")
+    elif mutation == "decode-error":
+        monkeypatch.setattr(
+            remake_asset_build,
+            "decode_basic_compressed",
+            lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("test decode drift")),
+        )
+    elif mutation == "decode-size":
+        monkeypatch.setattr(
+            remake_asset_build,
+            "decode_basic_compressed",
+            lambda *_args, **_kwargs: BasicDecodeResult(b"\0" * 574, 4, 1, 1, 0, 0, 0, 0, 0),
+        )
+    elif mutation == "decode-consumption":
+        monkeypatch.setattr(
+            remake_asset_build,
+            "decode_basic_compressed",
+            lambda data, **_kwargs: BasicDecodeResult(
+                b"\0" * 576, len(data) + 1, 1, 1, 0, 0, 0, 0, 0
+            ),
+        )
+    elif mutation == "palette-mask":
+        palette = remake_asset_build.PLAYER_PALETTE_ADDRESS
+        rom[palette : palette + 2] = b"\xff\xff"
+    else:
+        contract = json.loads(remake_asset_build.PLAYER_LOCOMOTION_CONTRACT.read_text("utf-8"))
+        contract["expectedObservation"]["admission"]["entity"]["animCounter"] = 25
+        contract_path = tmp_path / "drifted-locomotion-contract.json"
+        contract_path.write_text(json.dumps(contract), encoding="utf-8")
+        monkeypatch.setattr(remake_asset_build, "PLAYER_LOCOMOTION_CONTRACT", contract_path)
+
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        remake_asset_build._build_player_locomotion_animation_source(bytes(rom))
+
+    assert rejected.value.code == code
+    assert all(str(value) not in rejected.value.message for value in compressed_payloads)
+
+
+def test_map3_player_locomotion_fixed_rom_precedes_decode_and_rejects_relative_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+    rom_path, _compressed = _player_locomotion_input(tmp_path, monkeypatch)
+    original = rom_path.read_bytes()
+    mutated = bytearray(original)
+    mutated[-1] ^= 1
+    rom_path.write_bytes(mutated)
+    decode_called = False
+
+    def reject_decode(*_args: object, **_kwargs: object) -> BasicDecodeResult:
+        nonlocal decode_called
+        decode_called = True
+        raise AssertionError("digest drift reached Basic decode")
+
+    monkeypatch.setattr(remake_asset_build, "decode_basic_compressed", reject_decode)
+    commit, tree = repository.pins()
+    with pytest.raises(remake_asset_build.AssetBuildError) as digest_rejected:
+        remake_asset_build.build_map3_player_locomotion_animation_candidate(
+            asset_root=str(repository.root),
+            expected_commit=commit,
+            expected_tree=tree,
+            rom_path=str(rom_path),
+            expected_rom_sha256=_digest(mutated),
+            candidate_name="map3-player-locomotion-candidate",
+        )
+    assert digest_rejected.value.code == "ContentDigestMismatch"
+    assert decode_called is False
+
+    rom_path.write_bytes(original)
+    with pytest.raises(remake_asset_build.AssetBuildError) as relative_rejected:
+        remake_asset_build.build_map3_player_locomotion_animation_candidate(
+            asset_root=str(repository.root),
+            expected_commit=commit,
+            expected_tree=tree,
+            rom_path="relative/player.rom",
+            expected_rom_sha256=_digest(original),
+            candidate_name="map3-player-locomotion-candidate",
+        )
+    assert relative_rejected.value.code == "InvalidRequest"
+    assert str(tmp_path) not in relative_rejected.value.message
+
+
+def test_exact_private_map3_player_locomotion_candidate_opt_in(tmp_path: Path) -> None:
+    rom_value = os.environ.get("SF2_PRIVATE_ROM")
+    if not rom_value:
+        pytest.skip("set SF2_PRIVATE_ROM to the accepted private ROM")
+    repository = CandidateRepository.create(tmp_path / "exact-player-animation-asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+
+    receipt = _build_player_locomotion_candidate(repository, Path(rom_value))
+
+    assert receipt["status"] == "Pass"
+    assert receipt["capability"] == remake_asset_build.PLAYER_ANIMATION_BUILD_CAPABILITY
+    assert receipt["locomotionContractId"] == remake_asset_build.PLAYER_LOCOMOTION_CONTRACT_ID
+    assert receipt["selection"]["admissionHalf"] == 1
     assert receipt["cleanupStatus"] == "clean"
