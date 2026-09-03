@@ -33,6 +33,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         int originY,
         int playerColumn,
         int playerRow,
+        PrivateMap3CameraProjection? camera,
         int rasterScale,
         bool staticOverlayDiagnostic,
         int? overlayAreaRecordOrdinal,
@@ -45,6 +46,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         OriginY = originY;
         PlayerColumn = playerColumn;
         PlayerRow = playerRow;
+        Camera = camera;
         RasterScale = rasterScale;
         StaticOverlayDiagnostic = staticOverlayDiagnostic;
         OverlayAreaRecordOrdinal = overlayAreaRecordOrdinal;
@@ -62,6 +64,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
     internal int PlayerColumn { get; }
 
     internal int PlayerRow { get; }
+
+    internal PrivateMap3CameraProjection? Camera { get; }
 
     internal int RasterScale { get; }
 
@@ -84,7 +88,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
     internal static PrivateOriginalMapBaseViewProjection Create(
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapVisualPayloadDefinition visualDefinition,
-        bool staticOverlayDiagnostic = false)
+        bool staticOverlayDiagnostic = false,
+        PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(visualDefinition);
@@ -102,6 +107,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             visualDefinition.Selection,
             rasterScale: 1,
             staticOverlayDiagnostic,
+            playerLocomotion,
             (slot, localTile, row, column, _, _) =>
                 ResolvePayloadPixel(visualDefinition, slot, localTile, row, column));
     }
@@ -111,7 +117,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         OriginalMapVisualResourceSelection selection,
         IReadOnlyList<byte> atlasRgbaBytes,
         int scale,
-        bool staticOverlayDiagnostic = false)
+        bool staticOverlayDiagnostic = false,
+        PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(selection);
@@ -135,6 +142,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             selection,
             scale,
             staticOverlayDiagnostic,
+            playerLocomotion,
             (slot, localTile, row, column, subpixelRow, subpixelColumn) =>
                 ResolveAtlasPixel(
                 atlasRgbaBytes,
@@ -161,6 +169,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             logical.OriginY != physical.OriginY ||
             logical.PlayerColumn != physical.PlayerColumn ||
             logical.PlayerRow != physical.PlayerRow ||
+            logical.Camera != physical.Camera ||
             logical.StaticOverlayDiagnostic != physical.StaticOverlayDiagnostic ||
             logical.OverlayAreaRecordOrdinal != physical.OverlayAreaRecordOrdinal ||
             logical.OverlayDeltaX != physical.OverlayDeltaX ||
@@ -227,6 +236,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             logical.OriginY,
             logical.PlayerColumn,
             logical.PlayerRow,
+            logical.Camera,
             outputScale,
             logical.StaticOverlayDiagnostic,
             logical.OverlayAreaRecordOrdinal,
@@ -366,6 +376,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         OriginalMapVisualResourceSelection selection,
         int rasterScale,
         bool staticOverlayDiagnostic,
+        PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion,
         Func<int, int, int, int, int, int, SourcePixel> resolvePixel)
     {
         if (!SameSelection(snapshot.Definition.VisualResourceSelection, selection))
@@ -380,6 +391,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         int overlayDeltaY = 0;
         int originX;
         int originY;
+        PrivateMap3CameraProjection? camera = null;
         if (staticOverlayDiagnostic)
         {
             OriginalMapAreaDefinition[] candidates = snapshot.Definition.AreaCatalog.Records
@@ -417,47 +429,66 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         }
         else
         {
-            originX = Math.Clamp(
-                snapshot.PlayerPosition.X - (ColumnCount / 2),
-                0,
-                WorkingMapLayout.ColumnCount - ColumnCount);
-            originY = Math.Clamp(
-                snapshot.PlayerPosition.Y - (RowCount / 2),
-                0,
-                WorkingMapLayout.RowCount - RowCount);
+            camera = PrivateMap3CameraProjection.Create(snapshot, playerLocomotion);
+            originX = camera.OriginX;
+            originY = camera.OriginY;
         }
 
         int rasterPixelWidth = checked(PixelWidth * rasterScale);
         int rasterPixelHeight = checked(PixelHeight * rasterScale);
-        byte[] pixels = new byte[checked(rasterPixelWidth * rasterPixelHeight * 4)];
-        FillBackground(pixels);
+        int renderedColumns = ColumnCount + (camera?.RequiresTrailingColumn == true ? 1 : 0);
+        int renderedRows = RowCount + (camera?.RequiresTrailingRow == true ? 1 : 0);
+        int renderedPixelWidth = checked(
+            renderedColumns * BlockPixelSize * rasterScale);
+        int renderedPixelHeight = checked(
+            renderedRows * BlockPixelSize * rasterScale);
+        byte[] renderedPixels = new byte[checked(
+            renderedPixelWidth * renderedPixelHeight * 4)];
+        FillBackground(renderedPixels);
 
         RenderLayoutRegion(
-            pixels,
+            renderedPixels,
             snapshot,
             originX,
             originY,
+            renderedColumns,
+            renderedRows,
             rasterScale,
-            rasterPixelWidth,
+            renderedPixelWidth,
             resolvePixel);
         if (overlayArea is not null)
         {
             RenderLayoutRegion(
-                pixels,
+                renderedPixels,
                 snapshot,
                 checked(originX + overlayDeltaX),
                 checked(originY + overlayDeltaY),
+                renderedColumns,
+                renderedRows,
                 rasterScale,
-                rasterPixelWidth,
+                renderedPixelWidth,
                 resolvePixel);
         }
+
+        byte[] pixels = camera is null
+            ? renderedPixels
+            : CropVisibleCameraRegion(
+                renderedPixels,
+                renderedPixelWidth,
+                checked(camera.OriginPixelOffsetX * rasterScale),
+                checked(camera.OriginPixelOffsetY * rasterScale),
+                rasterPixelWidth,
+                rasterPixelHeight);
 
         return new PrivateOriginalMapBaseViewProjection(
             snapshot.Map,
             originX,
             originY,
-            snapshot.PlayerPosition.X - originX,
-            snapshot.PlayerPosition.Y - originY,
+            camera?.PlayerPixelX / BlockPixelSize ??
+                snapshot.PlayerPosition.X - originX,
+            camera?.PlayerPixelY / BlockPixelSize ??
+                snapshot.PlayerPosition.Y - originY,
+            camera,
             rasterScale,
             staticOverlayDiagnostic,
             overlayArea?.Identity.OneBasedRecordOrdinal,
@@ -471,13 +502,15 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         PrivateOriginalMapSessionSnapshot snapshot,
         int sourceOriginX,
         int sourceOriginY,
+        int columnCount,
+        int rowCount,
         int rasterScale,
         int rasterPixelWidth,
         Func<int, int, int, int, int, int, SourcePixel> resolvePixel)
     {
-        for (int blockRow = 0; blockRow < RowCount; blockRow++)
+        for (int blockRow = 0; blockRow < rowCount; blockRow++)
         {
-            for (int blockColumn = 0; blockColumn < ColumnCount; blockColumn++)
+            for (int blockColumn = 0; blockColumn < columnCount; blockColumn++)
             {
                 OriginalMapBlockDefinition block = snapshot.Definition.BlockCatalog.Resolve(
                     snapshot.WorkingLayout,
@@ -494,6 +527,40 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                     resolvePixel);
             }
         }
+    }
+
+    private static byte[] CropVisibleCameraRegion(
+        IReadOnlyList<byte> renderedPixels,
+        int renderedPixelWidth,
+        int sourcePixelX,
+        int sourcePixelY,
+        int visiblePixelWidth,
+        int visiblePixelHeight)
+    {
+        int renderedPixelHeight = renderedPixels.Count / checked(renderedPixelWidth * 4);
+        if (sourcePixelX < 0 || sourcePixelY < 0 ||
+            sourcePixelX + visiblePixelWidth > renderedPixelWidth ||
+            sourcePixelY + visiblePixelHeight > renderedPixelHeight)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(sourcePixelX),
+                "The camera crop must remain inside the bounded rendered region.");
+        }
+
+        byte[] visible = new byte[checked(visiblePixelWidth * visiblePixelHeight * 4)];
+        int rowByteCount = checked(visiblePixelWidth * 4);
+        for (int row = 0; row < visiblePixelHeight; row++)
+        {
+            int sourceOffset = checked(
+                ((((sourcePixelY + row) * renderedPixelWidth) + sourcePixelX) * 4));
+            int destinationOffset = checked(row * rowByteCount);
+            for (int index = 0; index < rowByteCount; index++)
+            {
+                visible[destinationOffset + index] = renderedPixels[sourceOffset + index];
+            }
+        }
+
+        return visible;
     }
 
     private static bool IsWithinLayoutRegion(int originX, int originY) =>
@@ -673,10 +740,12 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         ArgumentNullException.ThrowIfNull(projection);
         return new Rect2(
             new Vector2(
-                projection.PlayerColumn *
-                    PrivateOriginalMapBaseViewProjection.BlockPixelSize,
-                projection.PlayerRow *
-                    PrivateOriginalMapBaseViewProjection.BlockPixelSize),
+                projection.Camera?.PlayerPixelX ??
+                    projection.PlayerColumn *
+                        PrivateOriginalMapBaseViewProjection.BlockPixelSize,
+                projection.Camera?.PlayerPixelY ??
+                    projection.PlayerRow *
+                        PrivateOriginalMapBaseViewProjection.BlockPixelSize),
             new Vector2(
                 PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalWidth,
                 PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalHeight));
@@ -703,17 +772,32 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     {
         ArgumentNullException.ThrowIfNull(projection);
         ArgumentNullException.ThrowIfNull(sourcePosition);
-        float unitScale =
-            (float)PrivateOriginalMapBaseViewProjection.BlockPixelSize /
-            PrivateOriginalMapPlayerLocomotionSnapshot.SourceUnitsPerMapTile;
+        int visualXUnits = checked(
+            (sourcePosition.X *
+                PrivateOriginalMapPlayerLocomotionSnapshot.SourceUnitsPerMapTile) +
+            offsetXUnits);
+        int visualYUnits = checked(
+            (sourcePosition.Y *
+                PrivateOriginalMapPlayerLocomotionSnapshot.SourceUnitsPerMapTile) +
+            offsetYUnits);
+        if (visualXUnits % PrivateMap3CameraProjection.SourceUnitsPerLogicalPixel != 0 ||
+            visualYUnits % PrivateMap3CameraProjection.SourceUnitsPerLogicalPixel != 0)
+        {
+            throw new ArgumentException(
+                "Player locomotion must resolve to an exact logical-pixel boundary.",
+                nameof(offsetXUnits));
+        }
+
+        int topLeftPixelX = projection.Camera?.TopLeftPixelX ?? checked(
+            projection.OriginX * PrivateOriginalMapBaseViewProjection.BlockPixelSize);
+        int topLeftPixelY = projection.Camera?.TopLeftPixelY ?? checked(
+            projection.OriginY * PrivateOriginalMapBaseViewProjection.BlockPixelSize);
         return new Rect2(
             new Vector2(
-                ((sourcePosition.X - projection.OriginX) *
-                    PrivateOriginalMapBaseViewProjection.BlockPixelSize) +
-                    (offsetXUnits * unitScale),
-                ((sourcePosition.Y - projection.OriginY) *
-                    PrivateOriginalMapBaseViewProjection.BlockPixelSize) +
-                    (offsetYUnits * unitScale)),
+                (visualXUnits / PrivateMap3CameraProjection.SourceUnitsPerLogicalPixel) -
+                    topLeftPixelX,
+                (visualYUnits / PrivateMap3CameraProjection.SourceUnitsPerLogicalPixel) -
+                    topLeftPixelY),
             new Vector2(
                 PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalWidth,
                 PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalHeight));
@@ -995,7 +1079,8 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
             ? PrivateOriginalMapBaseViewProjection.Create(
                 snapshot,
                 visualDefinition,
-                staticOverlayDiagnostic)
+                staticOverlayDiagnostic,
+                playerLocomotion)
             : _worldTreatment switch
             {
                 PrivateMap3WorldTreatment.ExactNearest =>
@@ -1004,13 +1089,15 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                         visualDefinition.Selection,
                         _atlasRgbaBytes,
                         _atlasScale,
-                        staticOverlayDiagnostic),
+                        staticOverlayDiagnostic,
+                        playerLocomotion),
                 PrivateMap3WorldTreatment.EdgeScale2x =>
                     PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
                         PrivateOriginalMapBaseViewProjection.Create(
                             snapshot,
                             visualDefinition,
-                            staticOverlayDiagnostic),
+                            staticOverlayDiagnostic,
+                            playerLocomotion),
                         _atlasScale),
                 _ => throw new InvalidOperationException(
                     "The admitted private Map 3 world treatment is unknown."),

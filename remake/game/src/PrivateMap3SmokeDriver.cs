@@ -32,6 +32,9 @@ internal static class PrivateMap3SmokeDriver
         PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
         PrivateOriginalMapMoveApplied? moved = null;
         ExplorationDirection movedDirection = ExplorationDirection.East;
+        PrivateMap3CameraProjection? cameraAtMovementStart = null;
+        PrivateMap3CameraProjection? cameraAtMovementEnd = null;
+        bool observedSubTileCameraOrigin = false;
         foreach (ExplorationDirection direction in new[]
         {
             ExplorationDirection.East,
@@ -50,12 +53,49 @@ internal static class PrivateMap3SmokeDriver
                 started.Animation);
             if (applied.Traversal.Outcome == OriginalMapTraversalOutcome.Moved)
             {
+                if (presenter.ExpectsBaseProjection)
+                {
+                    if (!HasCoherentCameraProjection(
+                            presenter.BaseProjection,
+                            applied.Snapshot,
+                            started.Animation))
+                    {
+                        Fail(
+                            sceneTree,
+                            presenter,
+                            "PrivateLocal camera did not retain the source focus when movement began.");
+                        return;
+                    }
+
+                    cameraAtMovementStart = presenter.BaseProjection!.Camera;
+                }
+
                 int advances = 0;
                 PrivateOriginalMapPlayerLocomotionSnapshot animation = started.Animation;
                 while (animation.IsMoving)
                 {
                     animation = session.AdvancePrivateOriginalMapPlayerLocomotion();
                     presenter.Project(applied.Snapshot, "Movement smoke tick", animation);
+                    if (presenter.ExpectsBaseProjection)
+                    {
+                        if (!HasCoherentCameraProjection(
+                                presenter.BaseProjection,
+                                applied.Snapshot,
+                                animation))
+                        {
+                            Fail(
+                                sceneTree,
+                                presenter,
+                                "PrivateLocal camera drifted from the Application-owned locomotion focus.");
+                            return;
+                        }
+
+                        cameraAtMovementEnd = presenter.BaseProjection!.Camera;
+                        observedSubTileCameraOrigin |=
+                            cameraAtMovementEnd!.OriginPixelOffsetX != 0 ||
+                            cameraAtMovementEnd.OriginPixelOffsetY != 0;
+                    }
+
                     advances++;
                 }
 
@@ -113,6 +153,18 @@ internal static class PrivateMap3SmokeDriver
                     sceneTree,
                     presenter,
                     "PrivateLocal project-authored base view was not projected from the current snapshot.");
+                return;
+            }
+
+            if (cameraAtMovementStart is null || cameraAtMovementEnd is null ||
+                (cameraAtMovementStart.TopLeftPixelX != cameraAtMovementEnd.TopLeftPixelX ||
+                    cameraAtMovementStart.TopLeftPixelY != cameraAtMovementEnd.TopLeftPixelY) &&
+                !observedSubTileCameraOrigin)
+            {
+                Fail(
+                    sceneTree,
+                    presenter,
+                    "PrivateLocal camera did not exercise its bounded sub-tile follow projection.");
                 return;
             }
         }
@@ -193,6 +245,27 @@ internal static class PrivateMap3SmokeDriver
 
         Map3Root.TracePrivateStage(enabled: true, "quit-scheduled", smokeStarted);
         sceneTree.Quit(0);
+    }
+
+    private static bool HasCoherentCameraProjection(
+        PrivateOriginalMapBaseViewProjection? projection,
+        PrivateOriginalMapSessionSnapshot snapshot,
+        PrivateOriginalMapPlayerLocomotionSnapshot animation)
+    {
+        if (projection is null)
+        {
+            return false;
+        }
+
+        PrivateMap3CameraProjection expected =
+            PrivateMap3CameraProjection.Create(snapshot, animation);
+        Rect2 player = PrivateOriginalMapBaseViewport.PlayerLocomotionRect(
+            projection,
+            animation);
+        return projection.Camera == expected &&
+            projection.OriginX == expected.OriginX &&
+            projection.OriginY == expected.OriginY &&
+            player.Position == new Vector2(expected.PlayerPixelX, expected.PlayerPixelY);
     }
 
     private static bool RunBaseAtlasDiagnostic(

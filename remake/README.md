@@ -18,12 +18,15 @@ can replace only that view's transient decoded-tile sampling with the reviewed l
 atlas while retaining the same Application snapshot, block/tile selection, crop, and player marker.
 The same explicit private visual path now mounts the reviewed three-sheet controlled-player family;
 Application owns its facing, counter, half, and 13-tick movement phase while Godot projects the
-selected sheet and mirrors only RIGHT.
+selected sheet and mirrors only RIGHT. A project-authored modern camera follows that typed in-cell
+motion at two logical pixels per accepted transition, keeps the existing column-6/row-3 focus where
+map bounds permit, and samples the authoritative working layout through a bounded sub-tile crop.
 The selected bucket remains a full 576-by-336 or 1152-by-672 physical raster mapped into the fixed
 288-by-168 logical crop; Godot does not collapse it to a one-pixel-per-logical-unit intermediate.
 This manual bridge and diagnostic atlas are not natural
 battle admission, Battle 01, an original after-battle program, or the accepted continuous Map
-3-through-Battle 01 milestone, which remains **NOT READY**.
+3-through-Battle 01 milestone, which remains **NOT READY**. The camera is likewise not an original
+camera, plane-scroll, parallax, autoscroll, VInt, or final-pixel claim.
 
 The two persistent runtime disclosures are part of the product boundary:
 
