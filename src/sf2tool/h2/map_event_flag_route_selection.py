@@ -94,8 +94,20 @@ _RETAINED_OWNER_EXPECTED = {
     },
 }
 _CURRENT_CROSS_PROGRAM_VERIFIER_SHA256 = (
-    "D026A4B21AEAFF8EE6349810900EB1DC0B400A8A6017AF3DF0C24A6E9C34A066"
+    "BC408CE83A95FAF5429703D8FFE47B3F562060D1334A6998301A7E4B9D6BD723"
 )
+_CURRENT_MAP_EVENTS_VERIFIER_SHA256 = (
+    "F07892A4C590E452BCD8CB3683992DBD953EC2AB2E5CCF1A740DCFFBB0CD19CA"
+)
+_CURRENT_MAP_SETUP_VERIFIER_SHA256 = (
+    "4D4B543CADEE92E98A2BA3FF3E5594B01D32882027DCCF68AE55647FBBFF8E8E"
+)
+
+
+def _verifier_sha256(path: Path) -> str:
+    """Hash source text after one deterministic cross-platform EOL projection."""
+    source = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return _sha(source)
 
 
 def _receipt(path: Path, verifier_path: str, value: dict[str, Any]) -> dict[str, str]:
@@ -103,7 +115,7 @@ def _receipt(path: Path, verifier_path: str, value: dict[str, Any]) -> dict[str,
         "fixtureId": value["id"],
         "fixtureSha256": _sha(path.read_bytes()),
         "verifierPath": verifier_path,
-        "verifierSha256": _sha(repo_path(verifier_path).read_bytes()),
+        "verifierSha256": _verifier_sha256(repo_path(verifier_path)),
         "semanticSha256": _sha(canonical_json_bytes(value)),
     }
 
@@ -194,6 +206,8 @@ def _load_owners(
     current_expected["crossProgramFlagState"]["verifierSha256"] = (
         _CURRENT_CROSS_PROGRAM_VERIFIER_SHA256
     )
+    current_expected["routingSetup"]["verifierSha256"] = _CURRENT_MAP_EVENTS_VERIFIER_SHA256
+    current_expected["mapSetup"]["verifierSha256"] = _CURRENT_MAP_SETUP_VERIFIER_SHA256
     if owners != current_expected:
         raise ValueError("map-event flag route selection retained owner identity/hash drift")
     return cross, routing, map_setup, deepcopy(_RETAINED_OWNER_EXPECTED)
@@ -819,6 +833,4 @@ def normalize_map_event_flag_route_selection_later_owner_index(
 ) -> dict[str, Any]:
     from sf2tool.research_index import normalize_current_index_to_owner_predecessor
 
-    return normalize_current_index_to_owner_predecessor(
-        index, owner_id=ID
-    )
+    return normalize_current_index_to_owner_predecessor(index, owner_id=ID)
