@@ -151,6 +151,18 @@ shared harness or legacy-rail semantics, an upstream change that invalidates the
 explicit full-parity request. It is not the default for ordinary research, design, documentation, or
 bounded remake work. Follow ADR 0012 and the owning runbook for exact invalidation rules.
 
+Treat a completed long-running suite that reports failures as discovery evidence, not as a reason to
+repeat the whole suite after every correction. Preserve its exact failing node IDs and result. Verify
+the correction by rerunning those nodes, or their owning test files when node IDs are unavailable,
+plus the narrow gates selected by the changed paths. Do not rerun the complete slow suite in the same
+slice merely to replace a red aggregate result with a green one. Repeat it only when the user
+explicitly requests that rerun or the authoritative planner or runbook requires it because the
+correction itself broadened invalidation.
+
+Carry completed suite results, failing nodes, and process completion state in replacement-session
+handoffs. Never describe a completed failing run as interrupted or unknown and restart it from
+scratch.
+
 Gate invalidation is path- and dependency-based, not commit-SHA-based. A `main` advance limited to
 accepted, non-registered Layer B design-synthesis documents does not invalidate an already passing
 research full gate; after rebase, run the owning narrow command plus the normal `uv run sf2 verify`.
