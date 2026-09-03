@@ -44,6 +44,25 @@ Acceptance Checklist is the normative detailed acceptance profile.
 For H3, callback exceptions must reach the status/exit contract. New schema placement follows
 [`schemas/README.md`](./schemas/README.md).
 
+## Agent and Session Routing
+
+Use `gpt-5.6-sol` for a dedicated agent that owns a complete research, design, implementation, or
+integration lane. Reserve `gpt-5.6-terra` for an explicitly bounded single-file or single-assembly
+reverse-engineering task; it must not own a whole research lane or main-gate integration. This model
+routing replaces ADR 0004's earlier default-worker choice; its evidence, handoff, and root-acceptance
+checklist remains normative for any bounded Phase 2 task.
+
+Do not silently replace a long-lived lane owner with an in-thread subagent when its context becomes
+unreliable or a fresh session is needed. Stop, tell the user, and let the user create the replacement
+session. Keep in-thread subagents limited to small, independent subtasks.
+
+Before assigning work to any replacement session, send one compact current-state anchor: canonical
+repository and forbidden paths, worktree and branch, accepted base, exact owned paths, current
+commit/dirt/process/gate state, preserved failures and Unknowns, and the next stopping condition.
+Require a read-only state check before mutation, and state that this anchor supersedes stale or
+replayed instructions from compacted history. The main gate retains independent review and merge
+authority.
+
 ## Git, Ownership, and Integration
 
 `main` is the serialized integration branch, not an ordinary write worktree. Start a new slice from
