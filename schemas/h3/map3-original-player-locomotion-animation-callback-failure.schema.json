@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:sf2:h3:map3-original-player-locomotion-animation-callback-failure",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["owner", "caseId", "phase", "role", "actualPc", "expectedPc", "callbackCount", "callbacksCleared", "outputRemoved", "restoration", "restorationMismatch", "error"],
+  "properties": {
+    "owner": {"const": "map3-original-player-locomotion-animation"},
+    "caseId": {"enum": ["bootstrap", "admission", "attempt-up", "attempt-left", "attempt-right", "attempt-down"]},
+    "phase": {"type": "string", "minLength": 1},
+    "role": {"enum": ["bootstrap-check-sram", "checkpoint", "witch-new-action", "wait-for-event", "vint-update-entities", "update-entity-return", "control-character", "next-entity", "sprite-half-0", "sprite-half-1", "sprite-counter-after", "bootstrap-watchdog", "case-watchdog", "restoration", "callback-cleanup"]},
+    "actualPc": {"type": "integer", "minimum": 0},
+    "expectedPc": {"anyOf": [{"type": "integer", "minimum": 0}, {"type": "null"}]},
+    "callbackCount": {"type": "integer", "minimum": 0},
+    "callbacksCleared": {"type": "boolean"}, "outputRemoved": {"type": "boolean"},
+    "restoration": {"$ref": "#/definitions/restoration"},
+    "restorationMismatch": {"anyOf": [{"$ref": "#/definitions/mismatch"}, {"type": "null"}]},
+    "error": {"type": "string", "minLength": 1}
+  },
+  "definitions": {
+    "restoration": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scopeArmed", "bootstrapStateRestored", "playerEntity", "mapAndBattleState", "generatedRam", "sessionCartPatches", "callbacksCleared", "outputRemoved", "sessionRomDeleted"],
+      "properties": {"scopeArmed": {"type": "boolean"}, "bootstrapStateRestored": {"type": "boolean"}, "playerEntity": {"type": "boolean"}, "mapAndBattleState": {"type": "boolean"}, "generatedRam": {"type": "boolean"}, "sessionCartPatches": {"type": "boolean"}, "callbacksCleared": {"type": "boolean"}, "outputRemoved": {"type": "boolean"}, "sessionRomDeleted": {"type": "boolean"}}
+    },
+    "mismatch": {
+      "type": "object", "additionalProperties": false,
+      "required": ["domain", "address", "expected", "actual"],
+      "properties": {"domain": {"enum": ["scope", "playerEntity", "mapAndBattleState", "generatedRam", "sessionCartPatches"]}, "address": {"type": "integer", "minimum": 0}, "expected": {"type": "integer", "minimum": 0, "maximum": 255}, "actual": {"type": "integer", "minimum": 0, "maximum": 255}}
+    }
+  }
+}

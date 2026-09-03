@@ -26,8 +26,8 @@ It says that the file has been reached, not that every instruction in the file i
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
 | H2 fixture files | 102 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 3,093 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H3 fixture files | 95 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, its player locomotion/animation matrix, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
+| Address bindings | 3,101 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -656,7 +656,12 @@ is the one-case/one-launch `sf2-map3-admitted-start-runtime-v1` controlled admis
 MainLoop, the default Map 3 setup/init chain, and the first `WaitForEvent`. It binds the exact 26
 Map 3 source-path records without adding design associations, captures only licensing-safe state/
 trace facts, and leaves natural route, program/event effects, presentation, and Battle 01 work to
-R2–R4. The accepted R2a rail, sf2-map3-messenger-acceptance-runtime-v1, then retains the
+R2–R4. The separate four-case/one-launch
+`sf2-map3-original-player-locomotion-animation-runtime-v1` rail reuses that admission and confirms the
+controlled player's counter/visible-half seed, blocked-versus-one-tile input ordering, all enabled-VInt
+movement/counter/half transitions through settlement, and the static facing-to-slot/mirror join. It
+does not add pixel, palette, DMA, camera, NPC, battle-sprite, or H4/8C claims. The accepted R2a rail,
+sf2-map3-messenger-acceptance-runtime-v1, then retains the
 R1/R2 projections and observes only the original default-zero messenger acceptance through the
 post-ZoneEvent8 follower-ready WaitForEvent. Its prompt/join/follower chronology is confirmed;
 field-menu NotReached, later maps, Battle 01, presentation cadence, and 8C/H4 remain outside that
@@ -968,6 +973,12 @@ bypasses, effect/DMA calls, and the coordinate hash formula are also explicit. A
 one-launch H3 matrix now confirms wait thresholds, blocked/unblocked relative and absolute setup,
 successive acceleration/deceleration, facing/animation rules, crossover snap, and three arrival-tile
 states against an independent model. Normal-story reachability remains separate.
+The Map 3 player locomotion/animation rail now joins that synthetic movement owner to the accepted
+controlled admission and reference-frame selection owner. Its four replayed direction attempts prove
+that the original input phase follows the current VInt's movement phase, while sprite-half selection
+and its additional counter increment follow input. At the admitted coordinate, UP/RIGHT are blocked
+but still change facing and receive the sprite-only `26 -> 27` cadence; LEFT/DOWN install one tile and
+produce the exact 13-tick selection-counter sequence through settled half 1/counter 20.
 
 Map-content source/byte closure now covers all 79 map entries, 662 source-form sections, and 154
 private blocks/layout payloads. The 77 payload pairs also decode deterministically to 19,771 blocks

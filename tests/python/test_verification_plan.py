@@ -136,7 +136,7 @@ def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
     assert set(H2_COMMAND_PARTITIONS) == _registered_commands("h2_commands")
     assert set(COMMAND_LAUNCHES) == _registered_commands("h3_commands")
     assert len(H2_COMMAND_PARTITIONS) == 96
-    assert len(COMMAND_LAUNCHES) == 76
+    assert len(COMMAND_LAUNCHES) == 77
     assert len({partition.partition_id for partition in PARTITIONS}) == len(PARTITIONS)
     assert len(H2_PARTITION_IDS) == 6
     assert len(H3_PARTITION_IDS) == 6
@@ -756,7 +756,7 @@ def test_map3_battle01_victory_return_artifacts_select_h2_and_scenario_preflight
     assert plan["unclassifiedPaths"] == []
 
 
-def test_map3_original_player_reference_frame_artifacts_select_only_its_h2_command() -> None:
+def test_map3_original_player_reference_frame_artifacts_select_h2_and_locomotion() -> None:
     plan = plan_paths(
         (
             "src/sf2tool/h2/map3_original_player_reference_frame.py",
@@ -766,9 +766,12 @@ def test_map3_original_player_reference_frame_artifacts_select_only_its_h2_comma
         ),
         root=ROOT,
     )
-    assert _partition_ids(plan) == {"public-core", "h2-presentation"}
+    assert _partition_ids(plan) == {"public-core", "h2-presentation", "h3-witch"}
     assert _partition(plan, "h2-presentation")["commands"] == [
         "uv run sf2 h2 map3-original-player-reference-frame"
+    ]
+    assert _partition(plan, "h3-witch")["commands"] == [
+        "uv run sf2 h3 map3-original-player-locomotion-animation"
     ]
     assert plan["unclassifiedPaths"] == []
 
