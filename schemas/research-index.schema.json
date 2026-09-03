@@ -83,6 +83,20 @@
                         "anyOf": [
                           { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventPredicateResults|eventDialogueState|eventRequestState|eventRequestConsumption|interactionState|eventItemTransactions|flagLifecycleState|crossProgramFlagState)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventRequestConsumption|interactionState)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
                           { "enum": [
+                            "static.indexBindings.initializeMapEntities",
+                            "static.indexBindings.declareNewEntity",
+                            "static.indexBindings.getAllyMapsprite",
+                            "static.indexBindings.allyMapspriteTable",
+                            "static.indexBindings.mapspritePointerTable",
+                            "static.indexBindings.selectedMapsprite",
+                            "static.indexBindings.loadBasicCompressedData",
+                            "static.indexBindings.vintUpdateSprites",
+                            "static.indexBindings.initializeDisplay",
+                            "static.indexBindings.paletteBase",
+                            "static.indexBindings.dmaEntityMapsprite",
+                            "static.indexBindings.loadEntityMapsprites"
+                          ] },
+                          { "enum": [
                             "eventRandomBattleState.functionAddresses.entryAddress",
                             "eventRandomBattleState.completionFlagGate.callAddress",
                             "eventRandomBattleState.requestWriteSequence.setFlagCallAddress",

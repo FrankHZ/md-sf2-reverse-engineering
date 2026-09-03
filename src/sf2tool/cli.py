@@ -57,6 +57,9 @@ from sf2tool.h2.map3_battle01_victory_return import (
 )
 from sf2tool.h2.map3_castle_battle_unlock import verify_map3_castle_battle_unlock_static
 from sf2tool.h2.map3_optional_interactions import verify_map3_optional_interactions
+from sf2tool.h2.map3_original_player_reference_frame import (
+    verify_map3_original_player_reference_frame,
+)
 from sf2tool.h2.map_content import verify_map_content_contract
 from sf2tool.h2.map_data import verify_map_data_inventory
 from sf2tool.h2.map_descriptions import verify_map_descriptions_contract
@@ -656,6 +659,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="verify the public-safe static Map 3 castle-to-Battle 01 contract",
     )
     _add_local_paths(h2_map3_castle_battle_unlock)
+    h2_map3_original_player_reference_frame = h2_commands.add_parser(
+        "map3-original-player-reference-frame",
+        help="verify the public-safe static original Map 3 player reference frame",
+    )
+    _add_local_paths(h2_map3_original_player_reference_frame)
+    h2_map3_original_player_reference_frame.add_argument("--output-path", type=_path)
     h2_map3_battle01_admission = h2_commands.add_parser(
         "map3-battle01-admission",
         help="verify the public-safe static Map 21 to Battle 01 admission contract",
@@ -1742,6 +1751,14 @@ def dispatch(args: argparse.Namespace) -> None:
         print_record(verify_map3_optional_interactions(args.upstream_path))
     elif args.command == "h2" and args.h2_command == "map3-castle-battle-unlock":
         print_record(verify_map3_castle_battle_unlock_static(args.rom_path, args.upstream_path))
+    elif args.command == "h2" and args.h2_command == "map3-original-player-reference-frame":
+        print_record(
+            verify_map3_original_player_reference_frame(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
     elif args.command == "h2" and args.h2_command == "map3-battle01-admission":
         print_record(verify_map3_battle01_admission_static(args.rom_path, args.upstream_path))
     elif args.command == "h2" and args.h2_command == "map3-battle01-turn-control":

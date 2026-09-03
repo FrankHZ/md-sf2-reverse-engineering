@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-08-28
+- Evidence date: 2026-09-02
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 101 | Deterministic source/ROM contracts, often covering complete corpora |
+| H2 fixture files | 102 | Deterministic source/ROM contracts, often covering complete corpora |
 | H3 fixture files | 94 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 3,081 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| Address bindings | 3,093 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -93,6 +93,15 @@ The `sf2-map3-battle01-victory-return-static-v1` rail starts at the unentered Vi
 `d4 = 1` return, and MainLoop SwitchMap/Exploration call edge. Its 16-source/46-anchor corpus is
 H2-only: natural victory, executed program/join effects, re-entry chronology, stable 5B endpoint,
 complete 8C, R4b, and H3 remain **Unknown**.
+
+The `sf2-map3-original-player-reference-frame-static-v1` rail selects the controlled player from
+ally 0 through `InitializeMapEntities`, derives regular map-sprite ID 0 through the ally-row/SDMN
+transform, and proves facing 3 selects slot 2 `Mapsprite000_2`. Its selected Basic stream is
+source/H1/ROM-bound and decodes to two contiguous 288-byte, 24×24, 3×3-tile column-major 4bpp halves.
+Half 0 is only the project `initial-reference-frame` import policy rooted in initialization and the
+first VInt frame branch; it is not an observed standing/idle frame or first-wait visibility claim.
+`palette_Base` is copied to palette 3, while RGB expansion and rendered parity remain inferred or
+Unknown. The rail adds no H3 fixture or Application DTO/API.
 
 The `sf2-field-menu-control-static-v1` rail closes the bounded nine-source FieldMenu graph with
 23 H1/ROM anchors, exactly two alias-resolved caller sites, selector/call-order branches, and the

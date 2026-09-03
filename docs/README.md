@@ -245,6 +245,10 @@ Data-side directory inventory and ROM parity:
 - [map3-battle01-victory-return.md](./research/map3-battle01-victory-return.md): the H2-selected
   Victory → after-battle program → F401/F501 → MainLoop SwitchMap/Exploration call spine; natural
   victory, executed effects, and endpoint state remain Unknown.
+- [map3-original-player-reference-frame.md](./research/map3-original-player-reference-frame.md): the
+  public-safe H2 selection of controlled ally 0's regular map-sprite ID, facing-to-source-slot/mirror
+  rules, the two-half 24×24 Basic-decoded shape, the `initial-reference-frame` import policy, and the
+  `palette_Base`-to-palette3 format boundary without publishing original graphics or palette content.
 - [original-reference-replay-capability.md](./research/original-reference-replay-capability.md): the
   transport-only original-runtime replay capability, deterministic power-on BK2 materializer,
   passive observer, typed private receipt, containment/cleanup, and preflight-only planner boundary;
