@@ -325,6 +325,20 @@ not renamed as idle or standing. The lower-level viewport can still project it w
 mount is supplied, but explicit base-atlas composition fails closed when that mount is unavailable;
 it does not use the retained texture as a product-startup fallback.
 
+The same Godot projection owns a deliberately modern, project-authored camera follow. It derives its
+visual focus only from the authoritative private snapshot and the Application locomotion source plus
+offset. Each accepted 32-unit transition becomes two logical pixels; the focus remains at the
+existing column 6/row 3 while the 64-by-64 working-layout bounds permit, then clamps at the map edge.
+The base compositor samples at that continuous sub-tile origin into the unchanged 288-by-168 visible
+surface, using at most one bounded trailing block row or column. Typed payload and exact local-atlas
+paths share that crop, and edge-scale remains a post-composition treatment. Blocked movement retains
+the current camera; settled movement reaches the same tile-aligned crop as the earlier projection.
+
+This is a 9A presentation choice, not a consumer of the original camera-command runtime fixture. It
+does not define original target, dead-zone, clamp, Plane A/B, parallax, autoscroll, layer-switch,
+VInt/DMA, display, or final-pixel behavior. The fixed static-overlay diagnostic remains separately
+anchored and does not consume the live camera policy.
+
 The earlier `initial-reference-frame` transaction remains a separate, narrower product input. Its
 half-zero name and bytes are not rewritten by the locomotion family, and it still carries no
 standing, idle, or original-admission-visible claim. The locomotion consumer uses its separate
@@ -509,6 +523,7 @@ an admitted product font, Theme, original battle title, or presentation-fidelity
 | implemented world-family tooling prerequisite | fixed private Map 3 ROM/metadata roots; exact palette/slot selection; five-segment 128-by-320 source-crisp atlas; deterministic nearest 2x/4x ignored candidate; no implicit promotion or update |
 | implemented player-reference consumer | fixed private ROM root; exact controlled player, regular map-sprite, DOWN source-slot, no-mirror, and half-zero selection; bounded Basic decode; reviewed 24-by-24 `initial-reference-frame` master and nearest 2x/4x local transaction; exact Content mount and thin Godot logical-cell projection; no standing/idle, animation, or admission-visible claim |
 | implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop with exact-nearest startup parity; the static overlay is a no-player diagnostic using the admitted map palette by explicit policy; no source/master runtime input, PCK, or fidelity claim |
+| implemented modern camera consumer | Godot-only immutable focus projection from authoritative private snapshot plus Application locomotion offset; two logical pixels per accepted transition; column-6/row-3 centering with 64-by-64 map clamp; bounded sub-tile sampling shared by typed payload and local atlas; static overlay remains fixed; no original camera/plane/parallax/autoscroll/VInt/final-pixel claim |
 | separate implementation decision | live resize bucket remount and fullscreen/monitor transition UX; platform safe-area integration; original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original background-layer palette source; camera/layer/priority-with-sprites/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
 

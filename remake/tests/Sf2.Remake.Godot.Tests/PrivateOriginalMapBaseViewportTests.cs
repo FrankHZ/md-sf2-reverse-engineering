@@ -139,6 +139,62 @@ public sealed class PrivateOriginalMapBaseViewportTests
     }
 
     [Fact]
+    public void ContinuousCameraSamplesTheTrailingBlockAndKeepsThePlayerCentered()
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[] layout = new ushort[WorkingMapLayout.WordCount];
+        for (int y = 0; y < PrivateOriginalMapBaseViewProjection.RowCount; y++)
+        {
+            layout[(y * WorkingMapLayout.ColumnCount) + 62] = 1;
+        }
+
+        MapPosition source = new(56, 3);
+        MapPosition destination = new(57, 3);
+        PrivateOriginalMapPlayerLocomotionSnapshot animation =
+            PrivateMap3CameraProjectionTests.BeginLocomotion(
+                source,
+                destination,
+                ExplorationDirection.East,
+                OriginalMapTraversalOutcome.Moved);
+        animation = PrivateMap3CameraProjectionTests.Advance(animation);
+        PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+            [
+                Enumerable.Repeat((ushort)0x0100, 9).ToArray(),
+                Enumerable.Repeat((ushort)0x0101, 9).ToArray(),
+            ],
+            layout,
+            playerPosition: destination);
+
+        PrivateOriginalMapBaseViewProjection logical =
+            PrivateOriginalMapBaseViewProjection.Create(
+                snapshot,
+                visual,
+                playerLocomotion: animation);
+        PrivateOriginalMapBaseViewProjection physical =
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                snapshot,
+                visual.Selection,
+                BuildNearestAtlas(visual, scale: 2),
+                scale: 2,
+                playerLocomotion: animation);
+
+        Assert.NotNull(logical.Camera);
+        Assert.Equal(2, logical.Camera.OriginPixelOffsetX);
+        Assert.True(logical.Camera.RequiresTrailingColumn);
+        Assert.Equal(
+            new global::Godot.Vector2(144, 72),
+            PrivateOriginalMapBaseViewport.PlayerLocomotionRect(
+                logical,
+                animation).Position);
+        Assert.Equal(new byte[] { 255, 0, 0, 255 }, Pixel(logical, 285, 0));
+        Assert.Equal(new byte[] { 0, 255, 0, 255 }, Pixel(logical, 286, 0));
+        Assert.Equal(new byte[] { 0, 255, 0, 255 }, Pixel(logical, 287, 0));
+        Assert.True(PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
+            logical,
+            physical));
+    }
+
+    [Fact]
     public void TileMirrorAndFlipAreAppliedInsideTheProjectAuthoredRecipe()
     {
         OriginalMapVisualPayloadDefinition visual = VisualDefinition();
@@ -788,11 +844,12 @@ public sealed class PrivateOriginalMapBaseViewportTests
     private static byte ExpandChannel(int value) =>
         checked((byte)((value << 5) | (value << 2) | (value >> 1)));
 
-    private static PrivateOriginalMapSessionSnapshot Snapshot(
+    internal static PrivateOriginalMapSessionSnapshot Snapshot(
         IEnumerable<ushort[]> blockWords,
         ushort[] layoutWords,
         byte paletteIndex = 0,
-        IEnumerable<OriginalMapAreaDefinition>? areaDefinitions = null)
+        IEnumerable<OriginalMapAreaDefinition>? areaDefinitions = null,
+        MapPosition? playerPosition = null)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         WorkingMapLayout definitionLayout = new(new ushort[WorkingMapLayout.WordCount]);
@@ -844,7 +901,7 @@ public sealed class PrivateOriginalMapBaseViewportTests
             receipt,
             new WorkingMapLayout(layoutWords),
             simulationStep: 0,
-            new MapPosition(56, 3),
+            playerPosition ?? new MapPosition(56, 3),
             lastTraversal: null,
             controlledStepCopyApplied: false,
             lastLayoutMutation: null);
