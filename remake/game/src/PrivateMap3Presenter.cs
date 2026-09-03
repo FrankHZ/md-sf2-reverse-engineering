@@ -156,6 +156,15 @@ internal sealed class PrivateMap3Presenter
     internal string? PlayerReferenceBucketDigest =>
         _baseViewport?.PlayerReferenceBucketDigest;
 
+    internal bool UsesLocalPlayerLocomotion =>
+        _baseViewport?.UsesLocalPlayerLocomotion == true;
+
+    internal int? PlayerLocomotionScale =>
+        _baseViewport?.PlayerLocomotionScale;
+
+    internal PrivateOriginalMapPlayerLocomotionSnapshot? PlayerLocomotion =>
+        _baseViewport?.PlayerLocomotion;
+
     internal PrivateMap3WorldTreatment WorldTreatment =>
         _baseViewport?.WorldTreatment ?? PrivateMap3WorldTreatment.ExactNearest;
 
@@ -284,14 +293,35 @@ internal sealed class PrivateMap3Presenter
         return _baseViewport.TryBindLocalPlayerReference(mount, out diagnostic);
     }
 
+    internal bool TryBindPlayerLocomotion(
+        PrivateLocalPlayerLocomotionMount mount,
+        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
+    {
+        ArgumentNullException.ThrowIfNull(mount);
+        if (_baseViewport is null)
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The private presentation plan did not request a base visual viewport.");
+            return false;
+        }
+
+        return _baseViewport.TryBindLocalPlayerLocomotion(mount, out diagnostic);
+    }
+
     internal void Project(
         PrivateOriginalMapSessionSnapshot snapshot,
-        string outcome)
+        string outcome,
+        PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
         _viewport?.Project(snapshot);
         if (_baseViewport is not null && _visualDefinition is not null)
         {
-            _baseViewport.Project(snapshot, _visualDefinition, _staticOverlayDiagnostic);
+            _baseViewport.Project(
+                snapshot,
+                _visualDefinition,
+                _staticOverlayDiagnostic,
+                playerLocomotion);
         }
 
         _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome);

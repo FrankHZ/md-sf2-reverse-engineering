@@ -54,6 +54,144 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void ControlledAdmissionOwnsTheObservedDownHalfAndCounterState()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+
+        PrivateOriginalMapPlayerLocomotionSnapshot animation =
+            session.PrivateOriginalMapPlayerLocomotion;
+
+        Assert.Equal(PrivateOriginalMapPlayerLocomotionPhase.Admission, animation.Phase);
+        Assert.Equal(ExplorationDirection.South, animation.Direction);
+        Assert.Equal((byte)3, animation.OpaqueFacing);
+        Assert.Equal(PrivateOriginalMapPlayerLocomotionSheet.Down, animation.Sheet);
+        Assert.Equal(2, animation.SourceSlot);
+        Assert.False(animation.HorizontalMirror);
+        Assert.Equal(0, animation.Tick);
+        Assert.Equal(25, animation.CounterAtSelection);
+        Assert.Equal(26, animation.StoredCounter);
+        Assert.Equal(1, animation.SelectedHalf);
+        Assert.Equal(new MapPosition(56, 3), animation.SourcePosition);
+        Assert.Equal(animation.SourcePosition, animation.DestinationPosition);
+        Assert.False(animation.IsMoving);
+    }
+
+    [Theory]
+    [InlineData(
+        ExplorationDirection.North,
+        1,
+        PrivateOriginalMapPlayerLocomotionSheet.Up,
+        0,
+        false)]
+    [InlineData(
+        ExplorationDirection.East,
+        0,
+        PrivateOriginalMapPlayerLocomotionSheet.Horizontal,
+        1,
+        true)]
+    public void BlockedAttemptChangesFacingBeforeTheSingleSpriteTick(
+        ExplorationDirection direction,
+        byte facing,
+        PrivateOriginalMapPlayerLocomotionSheet sheet,
+        int sourceSlot,
+        bool horizontalMirror)
+    {
+        ushort[] words = EmptyWords();
+        MapPosition blocked = direction == ExplorationDirection.North
+            ? new MapPosition(56, 2)
+            : new MapPosition(57, 3);
+        words[Index(blocked.X, blocked.Y)] = OriginalMapTraversal.CollisionMask;
+        GameSession session = Start(Definition(words));
+
+        PrivateOriginalMapPlayerLocomotionStarted started =
+            session.BeginPrivateOriginalMapPlayerLocomotion(
+                new MoveExplorationCommand(direction));
+
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByCollision,
+            started.Move.Traversal.Outcome);
+        Assert.Equal(new MapPosition(56, 3), started.Move.Snapshot.PlayerPosition);
+        Assert.Equal(PrivateOriginalMapPlayerLocomotionPhase.Blocked,
+            started.Animation.Phase);
+        Assert.Equal(facing, started.Animation.OpaqueFacing);
+        Assert.Equal(sheet, started.Animation.Sheet);
+        Assert.Equal(sourceSlot, started.Animation.SourceSlot);
+        Assert.Equal(horizontalMirror, started.Animation.HorizontalMirror);
+        Assert.Equal(1, started.Animation.Tick);
+        Assert.Equal(26, started.Animation.CounterAtSelection);
+        Assert.Equal(27, started.Animation.StoredCounter);
+        Assert.Equal(1, started.Animation.SelectedHalf);
+        Assert.Equal(started.Animation.SourcePosition,
+            started.Animation.DestinationPosition);
+        Assert.False(started.Animation.IsMoving);
+    }
+
+    [Fact]
+    public void SuccessfulControlledMoveOwnsTheExactThirteenTickCadenceAndSettlement()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+
+        PrivateOriginalMapPlayerLocomotionStarted started =
+            session.BeginPrivateOriginalMapPlayerLocomotion(
+                new MoveExplorationCommand(ExplorationDirection.West));
+        List<PrivateOriginalMapPlayerLocomotionSnapshot> ticks = [started.Animation];
+        while (session.PrivateOriginalMapPlayerLocomotion.IsMoving)
+        {
+            ticks.Add(session.AdvancePrivateOriginalMapPlayerLocomotion());
+        }
+
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, started.Move.Traversal.Outcome);
+        Assert.Equal(new MapPosition(55, 3), started.Move.Snapshot.PlayerPosition);
+        Assert.Equal(Enumerable.Range(1, 13), ticks.Select(tick => tick.Tick));
+        Assert.Equal(
+            [26, 28, 30, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19],
+            ticks.Select(tick => tick.CounterAtSelection));
+        Assert.Equal(
+            [27, 29, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
+            ticks.Select(tick => tick.StoredCounter));
+        Assert.Equal(
+            [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+            ticks.Select(tick => tick.SelectedHalf));
+        Assert.Equal(
+            Enumerable.Range(0, 13).Select(index => -index * 32),
+            ticks.Select(tick => tick.OffsetXUnits));
+        Assert.All(ticks, tick => Assert.Equal(0, tick.OffsetYUnits));
+        Assert.All(ticks, tick => Assert.Equal((byte)2, tick.OpaqueFacing));
+        Assert.All(ticks, tick => Assert.Equal(
+            PrivateOriginalMapPlayerLocomotionSheet.Horizontal,
+            tick.Sheet));
+        Assert.All(ticks, tick => Assert.False(tick.HorizontalMirror));
+        Assert.Equal(PrivateOriginalMapPlayerLocomotionPhase.Settled,
+            ticks[^1].Phase);
+        Assert.Equal(new MapPosition(55, 3), ticks[^1].DestinationPosition);
+        Assert.False(ticks[^1].IsMoving);
+        Assert.Equal(1, session.PrivateOriginalMapSnapshot.SimulationStep);
+        Assert.Throws<InvalidOperationException>(() =>
+            session.AdvancePrivateOriginalMapPlayerLocomotion());
+    }
+
+    [Fact]
+    public void ActiveCycleRejectsReplacementAndRestartRestoresAdmissionAnimation()
+    {
+        AcceptedSource source = new(Accepted());
+        GameSession first = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+        first.BeginPrivateOriginalMapPlayerLocomotion(
+            new MoveExplorationCommand(ExplorationDirection.West));
+
+        Assert.Throws<InvalidOperationException>(() =>
+            first.BeginPrivateOriginalMapPlayerLocomotion(
+                new MoveExplorationCommand(ExplorationDirection.South)));
+
+        GameSession restarted = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+        Assert.Equal(PrivateOriginalMapPlayerLocomotionPhase.Admission,
+            restarted.PrivateOriginalMapPlayerLocomotion.Phase);
+        Assert.Equal(26, restarted.PrivateOriginalMapPlayerLocomotion.StoredCounter);
+        Assert.Equal(new MapPosition(56, 3),
+            restarted.PrivateOriginalMapPlayerLocomotion.SourcePosition);
+    }
+
+    [Fact]
     public void GameSessionOwnsMovedCollisionAndActiveAreaOutcomes()
     {
         ushort[] words = EmptyWords();

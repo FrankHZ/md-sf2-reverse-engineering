@@ -682,6 +682,43 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                 PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalHeight));
     }
 
+    internal static Rect2 PlayerLocomotionRect(
+        PrivateOriginalMapBaseViewProjection projection,
+        PrivateOriginalMapPlayerLocomotionSnapshot animation)
+    {
+        ArgumentNullException.ThrowIfNull(projection);
+        ArgumentNullException.ThrowIfNull(animation);
+        return PlayerLocomotionRect(
+            projection,
+            animation.SourcePosition,
+            animation.OffsetXUnits,
+            animation.OffsetYUnits);
+    }
+
+    internal static Rect2 PlayerLocomotionRect(
+        PrivateOriginalMapBaseViewProjection projection,
+        MapPosition sourcePosition,
+        int offsetXUnits,
+        int offsetYUnits)
+    {
+        ArgumentNullException.ThrowIfNull(projection);
+        ArgumentNullException.ThrowIfNull(sourcePosition);
+        float unitScale =
+            (float)PrivateOriginalMapBaseViewProjection.BlockPixelSize /
+            PrivateOriginalMapPlayerLocomotionSnapshot.SourceUnitsPerMapTile;
+        return new Rect2(
+            new Vector2(
+                ((sourcePosition.X - projection.OriginX) *
+                    PrivateOriginalMapBaseViewProjection.BlockPixelSize) +
+                    (offsetXUnits * unitScale),
+                ((sourcePosition.Y - projection.OriginY) *
+                    PrivateOriginalMapBaseViewProjection.BlockPixelSize) +
+                    (offsetYUnits * unitScale)),
+            new Vector2(
+                PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalWidth,
+                PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalHeight));
+    }
+
     public PrivateOriginalMapBaseViewport()
     {
         TextureFilter = RequiredTextureFilter;
@@ -704,6 +741,12 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     private string? _playerReferenceAssetId;
     private int _playerReferenceScale;
     private string? _playerReferenceBucketDigest;
+    private Dictionary<(
+        PrivateOriginalMapPlayerLocomotionSheet Sheet,
+        int Half,
+        bool HorizontalMirror), ImageTexture>? _playerLocomotionTextures;
+    private PrivateOriginalMapPlayerLocomotionSnapshot? _playerLocomotion;
+    private int _playerLocomotionScale;
     private PrivateMap3WorldTreatment _worldTreatment =
         PrivateMap3WorldTreatment.ExactNearest;
 
@@ -730,6 +773,15 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         : null;
 
     internal string? PlayerReferenceBucketDigest => _playerReferenceBucketDigest;
+
+    internal bool UsesLocalPlayerLocomotion => _playerLocomotionTextures is not null;
+
+    internal int? PlayerLocomotionScale => UsesLocalPlayerLocomotion
+        ? _playerLocomotionScale
+        : null;
+
+    internal PrivateOriginalMapPlayerLocomotionSnapshot? PlayerLocomotion =>
+        _playerLocomotion;
 
     internal PrivateMap3WorldTreatment WorldTreatment => _worldTreatment;
 
@@ -870,11 +922,75 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         return true;
     }
 
+    internal bool TryBindLocalPlayerLocomotion(
+        PrivateLocalPlayerLocomotionMount mount,
+        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
+    {
+        ArgumentNullException.ThrowIfNull(mount);
+        diagnostic = null;
+        PrivateLocalPresentationRasterMount[] sheets =
+            [mount.Up, mount.Horizontal, mount.Down];
+        if (sheets.Select(sheet => sheet.Bucket.Scale).Distinct().Count() != 1 ||
+            sheets.Any(sheet => !PrivateLocalPresentationAssetCatalog
+                .IsExactMap3PlayerLocomotionBinding(sheet.Definition, sheet.Bucket)))
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The private Map 3 player locomotion mount is incompatible with the viewport.");
+            return false;
+        }
+
+        Dictionary<(
+            PrivateOriginalMapPlayerLocomotionSheet Sheet,
+            int Half,
+            bool HorizontalMirror), ImageTexture> textures = [];
+        if (!TryDecodeLocomotionSheet(
+                mount.Up,
+                PrivateOriginalMapPlayerLocomotionSheet.Up,
+                includeMirroredFrames: false,
+                textures) ||
+            !TryDecodeLocomotionSheet(
+                mount.Horizontal,
+                PrivateOriginalMapPlayerLocomotionSheet.Horizontal,
+                includeMirroredFrames: true,
+                textures) ||
+            !TryDecodeLocomotionSheet(
+                mount.Down,
+                PrivateOriginalMapPlayerLocomotionSheet.Down,
+                includeMirroredFrames: false,
+                textures))
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.TextureRejected,
+                "Godot rejected an admitted private Map 3 player locomotion sheet.");
+            return false;
+        }
+
+        _playerLocomotionTextures = textures;
+        _playerLocomotionScale = sheets[0].Bucket.Scale;
+        return true;
+    }
+
     public void Project(
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapVisualPayloadDefinition visualDefinition,
-        bool staticOverlayDiagnostic = false)
+        bool staticOverlayDiagnostic = false,
+        PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        if (playerLocomotion is not null &&
+            playerLocomotion.DestinationPosition != snapshot.PlayerPosition)
+        {
+            throw new ArgumentException(
+                "The player locomotion destination must match the authoritative session position.",
+                nameof(playerLocomotion));
+        }
+
+        if (playerLocomotion is not null)
+        {
+            _playerLocomotion = playerLocomotion;
+        }
+
         _projection = _atlasRgbaBytes is null
             ? PrivateOriginalMapBaseViewProjection.Create(
                 snapshot,
@@ -918,7 +1034,20 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
 
         DrawTextureRect(_texture, LogicalTextureRect, tile: false);
-        if (_projection.ShowsPlayerMarker && _playerReferenceTexture is not null)
+        if (_projection.ShowsPlayerMarker &&
+            _playerLocomotionTextures is not null &&
+            _playerLocomotion is not null)
+        {
+            ImageTexture texture = _playerLocomotionTextures[(
+                _playerLocomotion.Sheet,
+                _playerLocomotion.SelectedHalf,
+                _playerLocomotion.HorizontalMirror)];
+            DrawTextureRect(
+                texture,
+                PlayerLocomotionRect(_projection, _playerLocomotion),
+                tile: false);
+        }
+        else if (_projection.ShowsPlayerMarker && _playerReferenceTexture is not null)
         {
             DrawTextureRect(
                 _playerReferenceTexture,
@@ -936,5 +1065,49 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                 new Vector2(12, 12));
             DrawRect(player, PlayerColor);
         }
+    }
+
+    private static bool TryDecodeLocomotionSheet(
+        PrivateLocalPresentationRasterMount mount,
+        PrivateOriginalMapPlayerLocomotionSheet sheet,
+        bool includeMirroredFrames,
+        IDictionary<(
+            PrivateOriginalMapPlayerLocomotionSheet Sheet,
+            int Half,
+            bool HorizontalMirror), ImageTexture> textures)
+    {
+        Image image = new();
+        Error error = image.LoadPngFromBuffer(mount.CopyPngBytes());
+        int scale = mount.Bucket.Scale;
+        int frameWidth = checked(
+            PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalWidth * scale);
+        int frameHeight = checked(
+            PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalHeight * scale);
+        if (error != Error.Ok ||
+            image.GetWidth() != checked(frameWidth * 2) ||
+            image.GetHeight() != frameHeight ||
+            image.GetFormat() != Image.Format.Rgba8)
+        {
+            image.Dispose();
+            return false;
+        }
+
+        for (int half = 0; half < 2; half++)
+        {
+            Image frame = image.GetRegion(new Rect2I(half * frameWidth, 0, frameWidth, frameHeight));
+            textures.Add((sheet, half, false), ImageTexture.CreateFromImage(frame));
+            frame.Dispose();
+            if (includeMirroredFrames)
+            {
+                Image mirrored = image.GetRegion(
+                    new Rect2I(half * frameWidth, 0, frameWidth, frameHeight));
+                mirrored.FlipX();
+                textures.Add((sheet, half, true), ImageTexture.CreateFromImage(mirrored));
+                mirrored.Dispose();
+            }
+        }
+
+        image.Dispose();
+        return true;
     }
 }

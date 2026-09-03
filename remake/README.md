@@ -16,6 +16,9 @@ apply the public synthetic world effect. Its optional local HUD panel can acknow
 the one-shot project-authored request before movement resumes. A separate explicit base-atlas option
 can replace only that view's transient decoded-tile sampling with the reviewed local 2x/4x nearest
 atlas while retaining the same Application snapshot, block/tile selection, crop, and player marker.
+The same explicit private visual path now mounts the reviewed three-sheet controlled-player family;
+Application owns its facing, counter, half, and 13-tick movement phase while Godot projects the
+selected sheet and mirrors only RIGHT.
 The selected bucket remains a full 576-by-336 or 1152-by-672 physical raster mapped into the fixed
 288-by-168 logical crop; Godot does not collapse it to a one-pixel-per-logical-unit intermediate.
 This manual bridge and diagnostic atlas are not natural
@@ -141,13 +144,16 @@ atlas builder, review and promotion are a separate local-only asset-repository t
 
 The reviewed local asset history now owns `hud.yes-no-window-frame`,
 `hud.tactical-selection-cursor`, `world.map3.base-tileset-atlas`, and
-`world.map3.player.initial-reference-frame`. The current four-asset checkpoint is local commit
-`f7a351f24e328c47b10a892613edeac07a07635a`, tree
-`9cc4c0959ebbe067f22adae5c079a65bcfd1f06d`, with manifest SHA-256
-`56382461FAA5168939A264FC37ABC8A7590A0D099C19DFB54DC0DC6F96F5DCB6`. The atlas and player runtime
+`world.map3.player.initial-reference-frame`, plus the `up`, `horizontal`, and `down` members of
+`world.map3.player.locomotion.*`. The current seven-asset checkpoint is local commit
+`ec07c0168b9bf684dfc62419351e343baf273c35`, tree
+`678a6b793c4815d9a7897935404dcea2a552e9d4`, with manifest SHA-256
+`39C18402BECB3CD541C293C2D5274E3B3E7A7932D49A1FDB47AEFB070F7E8151`. The atlas and player runtime
 buckets are reviewed nearest 2x/4x outputs; source and master material remain review/provenance
-inputs, not runtime files. The player asset is consumed only by the explicit base-atlas path as a
-project-authored 24-by-24 logical-cell projection of `initial-reference-frame`.
+inputs, not runtime files. The initial-reference frame remains a separate, narrower retained asset;
+the lower-level viewport can still project it when no locomotion mount is supplied. The explicit
+base-atlas composition mounts the three two-half sheets through Application-owned locomotion state
+and fails closed if that mount is unavailable rather than falling back to the retained frame.
 
 An explicit PrivateLocal launch may opt into HUD assets with `--private-hud-preview`, or into the
 atlas diagnostic with both `--private-map3-base-view` and `--private-map3-base-atlas`. Either asset
@@ -160,10 +166,13 @@ reader to reopen the fixed manifest, resolve and recheck each contained
 path/length/digest, and return a defensive byte copy before Godot decodes it. No runtime path crosses
 into Application or Godot. Partial
 values, an implicit mount, or a failed private mount never fall back while reporting private success.
-The base-atlas selection also requires the exact player reference asset from the same accepted local
-transaction. Godot replaces only the base view's project-authored player marker with that texture,
-keeps semantic position in the private session, and reprojects after movement. It does not select
-animation halves, call the frame standing/idle, or claim that it was visible at original admission.
+The base-atlas selection also requires the exact player reference and locomotion assets from the same
+accepted local transaction. Godot replaces only the base view's project-authored player marker,
+keeps semantic position and animation state in the private session, and advances the accepted small
+state transition once per fixed Godot physics tick. The adapter selects the Application-named sheet,
+half, and RIGHT mirror and maps 384 source movement units across one 24-pixel logical cell. It does
+not derive phase from `SimulationStep` or `LastTraversal`, call either half standing/idle, or claim a
+universal admission frame or wall-clock fidelity.
 
 The explicit PrivateLocal product profile now applies one adaptive windowed startup policy before any
 presentation payload is selected. The logical canvas and project fallback remain 960 by 540. On a real

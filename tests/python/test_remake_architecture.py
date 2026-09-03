@@ -111,7 +111,18 @@ def test_public_and_private_input_polling_share_one_internal_godot_adapter() -> 
     assert "ProcessPrivateInput" not in private_source
     assert "ProcessPrivateInput" not in root_source
     assert "ApplyPrivateMove(privateMovement);" in root_source
-    assert "_session.ApplyPrivateOriginalMap(" in private_source
+    assert "_session.BeginPrivateOriginalMapPlayerLocomotion(" in private_source
+    assert "_session.AdvancePrivateOriginalMapPlayerLocomotion();" in private_source
+    assert "public override void _PhysicsProcess(double delta)" in private_source
+    for forbidden in (
+        "SimulationStep %",
+        "LastTraversal",
+        "CounterAtSelection",
+        "SelectedHalf",
+        "SourceUnitsPerMovementTick",
+        "SuccessfulMovementTickCount",
+    ):
+        assert forbidden not in private_source
 
 
 def test_public_synthetic_smoke_is_an_internal_godot_driver() -> None:
@@ -236,7 +247,8 @@ def test_private_local_smoke_is_an_internal_godot_driver() -> None:
     ):
         assert dependency in driver_source
     for retained in (
-        "session.ApplyPrivateOriginalMap(",
+        "session.BeginPrivateOriginalMapPlayerLocomotion(",
+        "session.AdvancePrivateOriginalMapPlayerLocomotion();",
         "session.ApplyPrivateOriginalMapLayoutMutation(",
         "presenter.Project(",
         "presenter.ProjectStatus(message);",
