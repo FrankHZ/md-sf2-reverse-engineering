@@ -144,6 +144,18 @@ internal sealed class PrivateMap3Presenter
 
     internal string? BaseAtlasBucketDigest => _baseViewport?.AtlasBucketDigest;
 
+    internal bool UsesLocalPlayerReference =>
+        _baseViewport?.UsesLocalPlayerReference == true;
+
+    internal string? PlayerReferenceAssetId =>
+        _baseViewport?.PlayerReferenceAssetId;
+
+    internal int? PlayerReferenceScale =>
+        _baseViewport?.PlayerReferenceScale;
+
+    internal string? PlayerReferenceBucketDigest =>
+        _baseViewport?.PlayerReferenceBucketDigest;
+
     internal PrivateMap3WorldTreatment WorldTreatment =>
         _baseViewport?.WorldTreatment ?? PrivateMap3WorldTreatment.ExactNearest;
 
@@ -254,6 +266,22 @@ internal sealed class PrivateMap3Presenter
             _requestedWorldTreatment,
             _staticOverlayDiagnostic,
             out diagnostic);
+    }
+
+    internal bool TryBindPlayerReference(
+        PrivateLocalPresentationRasterMount mount,
+        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
+    {
+        ArgumentNullException.ThrowIfNull(mount);
+        if (_baseViewport is null)
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The private presentation plan did not request a base visual viewport.");
+            return false;
+        }
+
+        return _baseViewport.TryBindLocalPlayerReference(mount, out diagnostic);
     }
 
     internal void Project(

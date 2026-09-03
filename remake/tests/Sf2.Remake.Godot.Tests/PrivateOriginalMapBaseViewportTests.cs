@@ -66,6 +66,36 @@ public sealed class PrivateOriginalMapBaseViewportTests
     }
 
     [Fact]
+    public void PlayerReferenceOccupiesOnlyTheCurrentProjectAuthoredLogicalCell()
+    {
+        PrivateOriginalMapBaseViewProjection projection =
+            PrivateOriginalMapBaseViewProjection.Create(
+                Snapshot(
+                    [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+                    new ushort[WorkingMapLayout.WordCount]),
+                VisualDefinition());
+
+        Assert.Equal(
+            new global::Godot.Rect2(
+                new global::Godot.Vector2(144, 72),
+                new global::Godot.Vector2(24, 24)),
+            PrivateOriginalMapBaseViewport.PlayerReferenceRect(projection));
+        System.Reflection.MethodInfo? bind =
+            typeof(PrivateOriginalMapBaseViewport).GetMethod(
+                "TryBindLocalPlayerReference",
+                System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(bind);
+        Assert.Equal(
+            new[]
+            {
+                typeof(PrivateLocalPresentationRasterMount),
+                typeof(PrivateLocalPresentationAssetMountDiagnostic).MakeByRefType(),
+            },
+            bind.GetParameters().Select(parameter => parameter.ParameterType));
+    }
+
+    [Fact]
     public void TileMirrorAndFlipAreAppliedInsideTheProjectAuthoredRecipe()
     {
         OriginalMapVisualPayloadDefinition visual = VisualDefinition();

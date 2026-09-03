@@ -181,6 +181,12 @@ internal static class PrivateMap3SmokeDriver
             4 => PrivateLocalPresentationAssetCatalog.Map3BaseAtlas4xDigest,
             _ => null,
         };
+        string? expectedPlayerDigest = mountedScale switch
+        {
+            2 => PrivateLocalPresentationAssetCatalog.Map3PlayerReference2xDigest,
+            4 => PrivateLocalPresentationAssetCatalog.Map3PlayerReference4xDigest,
+            _ => null,
+        };
         if (projection is null ||
             mountedScale is not int scale ||
             projection.RasterScale != scale ||
@@ -202,12 +208,23 @@ internal static class PrivateMap3SmokeDriver
             !string.Equals(
                 presenter.BaseAtlasBucketDigest,
                 expectedBucketDigest,
+                StringComparison.Ordinal) ||
+            !presenter.UsesLocalPlayerReference ||
+            !string.Equals(
+                presenter.PlayerReferenceAssetId,
+                PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceAssetId,
+                StringComparison.Ordinal) ||
+            presenter.PlayerReferenceScale != scale ||
+            expectedPlayerDigest is null ||
+            !string.Equals(
+                presenter.PlayerReferenceBucketDigest,
+                expectedPlayerDigest,
                 StringComparison.Ordinal))
         {
             Fail(
                 sceneTree,
                 presenter,
-                "PrivateLocal Map 3 base-atlas projection was not bound exactly.");
+                "PrivateLocal Map 3 base-atlas and player-reference projection was not bound exactly.");
             return false;
         }
 

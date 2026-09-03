@@ -667,6 +667,21 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
             PrivateOriginalMapBaseViewProjection.PixelWidth,
             PrivateOriginalMapBaseViewProjection.PixelHeight));
 
+    internal static Rect2 PlayerReferenceRect(
+        PrivateOriginalMapBaseViewProjection projection)
+    {
+        ArgumentNullException.ThrowIfNull(projection);
+        return new Rect2(
+            new Vector2(
+                projection.PlayerColumn *
+                    PrivateOriginalMapBaseViewProjection.BlockPixelSize,
+                projection.PlayerRow *
+                    PrivateOriginalMapBaseViewProjection.BlockPixelSize),
+            new Vector2(
+                PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalWidth,
+                PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalHeight));
+    }
+
     public PrivateOriginalMapBaseViewport()
     {
         TextureFilter = RequiredTextureFilter;
@@ -685,6 +700,10 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     private int _atlasScale;
     private string? _atlasAssetId;
     private string? _atlasBucketDigest;
+    private ImageTexture? _playerReferenceTexture;
+    private string? _playerReferenceAssetId;
+    private int _playerReferenceScale;
+    private string? _playerReferenceBucketDigest;
     private PrivateMap3WorldTreatment _worldTreatment =
         PrivateMap3WorldTreatment.ExactNearest;
 
@@ -701,6 +720,16 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     internal int? AtlasScale => UsesLocalAtlas ? _atlasScale : null;
 
     internal string? AtlasBucketDigest => _atlasBucketDigest;
+
+    internal bool UsesLocalPlayerReference => _playerReferenceTexture is not null;
+
+    internal string? PlayerReferenceAssetId => _playerReferenceAssetId;
+
+    internal int? PlayerReferenceScale => UsesLocalPlayerReference
+        ? _playerReferenceScale
+        : null;
+
+    internal string? PlayerReferenceBucketDigest => _playerReferenceBucketDigest;
 
     internal PrivateMap3WorldTreatment WorldTreatment => _worldTreatment;
 
@@ -797,6 +826,50 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         return true;
     }
 
+    internal bool TryBindLocalPlayerReference(
+        PrivateLocalPresentationRasterMount mount,
+        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
+    {
+        ArgumentNullException.ThrowIfNull(mount);
+        diagnostic = null;
+        if (!PrivateLocalPresentationAssetCatalog.IsExactMap3PlayerReferenceBinding(
+                mount.Definition,
+                mount.Bucket) ||
+            mount.Bucket.Width != checked(
+                PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalWidth *
+                mount.Bucket.Scale) ||
+            mount.Bucket.Height != checked(
+                PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalHeight *
+                mount.Bucket.Scale))
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The private Map 3 player reference mount is incompatible with the viewport.");
+            return false;
+        }
+
+        Image image = new();
+        Error error = image.LoadPngFromBuffer(mount.CopyPngBytes());
+        if (error != Error.Ok ||
+            image.GetWidth() != mount.Bucket.Width ||
+            image.GetHeight() != mount.Bucket.Height ||
+            image.GetFormat() != Image.Format.Rgba8)
+        {
+            image.Dispose();
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.TextureRejected,
+                "Godot rejected the admitted private Map 3 player reference texture.");
+            return false;
+        }
+
+        _playerReferenceTexture = ImageTexture.CreateFromImage(image);
+        image.Dispose();
+        _playerReferenceAssetId = mount.Definition.AssetId;
+        _playerReferenceScale = mount.Bucket.Scale;
+        _playerReferenceBucketDigest = mount.Bucket.Sha256;
+        return true;
+    }
+
     public void Project(
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapVisualPayloadDefinition visualDefinition,
@@ -845,7 +918,14 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
 
         DrawTextureRect(_texture, LogicalTextureRect, tile: false);
-        if (_projection.ShowsPlayerMarker)
+        if (_projection.ShowsPlayerMarker && _playerReferenceTexture is not null)
+        {
+            DrawTextureRect(
+                _playerReferenceTexture,
+                PlayerReferenceRect(_projection),
+                tile: false);
+        }
+        else if (_projection.ShowsPlayerMarker)
         {
             Rect2 player = new(
                 new Vector2(
