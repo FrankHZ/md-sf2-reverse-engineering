@@ -96,6 +96,7 @@ public sealed partial class Map3Root
         PrivateLocalPresentationRasterMount? tacticalCursor = null;
         PrivateLocalPresentationRasterMount? baseAtlas = null;
         PrivateLocalPresentationRasterMount? playerReference = null;
+        PrivateLocalPlayerLocomotionMount? playerLocomotion = null;
         if ((selection.PrivateHudPreviewRequested || selection.PrivateBaseAtlasRequested) &&
             !TryPreparePrivatePresentationAssets(
                 selection,
@@ -104,7 +105,8 @@ public sealed partial class Map3Root
                 out hudPreview,
                 out tacticalCursor,
                 out baseAtlas,
-                out playerReference))
+                out playerReference,
+                out playerLocomotion))
         {
             return;
         }
@@ -119,6 +121,7 @@ public sealed partial class Map3Root
                 tacticalCursor,
                 baseAtlas,
                 playerReference,
+                playerLocomotion,
                 runSmoke,
                 sessionStarted);
             return;
@@ -169,6 +172,7 @@ public sealed partial class Map3Root
         PrivateLocalPresentationRasterMount? tacticalCursor,
         PrivateLocalPresentationRasterMount? baseAtlas,
         PrivateLocalPresentationRasterMount? playerReference,
+        PrivateLocalPlayerLocomotionMount? playerLocomotion,
         bool runSmoke,
         long sessionStarted)
     {
@@ -273,7 +277,22 @@ public sealed partial class Map3Root
             return;
         }
 
-        presenter.Project(started.Session.PrivateOriginalMapSnapshot, "Ready");
+        if (playerLocomotion is not null &&
+            !presenter.TryBindPlayerLocomotion(
+                playerLocomotion,
+                out PrivateLocalPresentationAssetMountDiagnostic? locomotionDiagnostic))
+        {
+            FailPrivateStartup(
+                $"PrivateLocal Map 3 player locomotion unavailable ({locomotionDiagnostic!.Code}).",
+                runSmoke,
+                "private-local");
+            return;
+        }
+
+        presenter.Project(
+            started.Session.PrivateOriginalMapSnapshot,
+            "Ready",
+            started.Session.PrivateOriginalMapPlayerLocomotion);
         if (runSmoke)
         {
             Callable.From(() => RunPrivateHeadlessSmoke(
@@ -293,12 +312,14 @@ public sealed partial class Map3Root
         out PrivateLocalPresentationRasterMount? hudPreview,
         out PrivateLocalPresentationRasterMount? tacticalCursor,
         out PrivateLocalPresentationRasterMount? baseAtlas,
-        out PrivateLocalPresentationRasterMount? playerReference)
+        out PrivateLocalPresentationRasterMount? playerReference,
+        out PrivateLocalPlayerLocomotionMount? playerLocomotion)
     {
         hudPreview = null;
         tacticalCursor = null;
         baseAtlas = null;
         playerReference = null;
+        playerLocomotion = null;
         OriginalMapImportResult importResult = importSource.Admit(importRequest);
         if (importResult is not OriginalMapImportAccepted importAccepted)
         {
@@ -414,6 +435,24 @@ public sealed partial class Map3Root
             }
 
             playerReference = mountedPlayer.Asset;
+
+            PrivateLocalPlayerLocomotionMountResult locomotionResult =
+                catalog.MountMap3PlayerLocomotion(
+                    packRequest,
+                    acceptedPack,
+                    effectivePhysicalScale);
+            if (locomotionResult is not PrivateLocalPlayerLocomotionMounted mountedLocomotion)
+            {
+                PrivateLocalPlayerLocomotionMountRejected rejected =
+                    (PrivateLocalPlayerLocomotionMountRejected)locomotionResult;
+                FailPrivateStartup(
+                    $"PrivateLocal Map 3 player locomotion unavailable ({rejected.Diagnostic.Code}).",
+                    selection.PrivateSmokeRequested,
+                    "private-local");
+                return false;
+            }
+
+            playerLocomotion = mountedLocomotion.Animation;
         }
 
         importSource = new PreadmittedOriginalMapImportSource(
@@ -489,15 +528,42 @@ public sealed partial class Map3Root
             return;
         }
 
-        PrivateOriginalMapMoveApplied applied = _session.ApplyPrivateOriginalMap(
-            new MoveExplorationCommand(direction));
-        _privatePresenter?.Project(applied.Snapshot, applied.Traversal.Outcome.ToString());
+        if (_session.PrivateOriginalMapPlayerLocomotion.IsMoving)
+        {
+            return;
+        }
+
+        PrivateOriginalMapPlayerLocomotionStarted started =
+            _session.BeginPrivateOriginalMapPlayerLocomotion(
+                new MoveExplorationCommand(direction));
+        _privatePresenter?.Project(
+            started.Move.Snapshot,
+            started.Move.Traversal.Outcome.ToString(),
+            started.Animation);
         if (_privateBattleBridgeEnabled)
         {
             _battlePresenter?.Project(
                 _session.PrivateOriginalMapBattleBridge,
                 "Private Map 3 traversal resumed");
         }
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        _ = delta;
+        if (_runtimeProfile != Map3RuntimeProfile.PrivateLocal ||
+            _session is null ||
+            !_session.PrivateOriginalMapPlayerLocomotion.IsMoving)
+        {
+            return;
+        }
+
+        PrivateOriginalMapPlayerLocomotionSnapshot animation =
+            _session.AdvancePrivateOriginalMapPlayerLocomotion();
+        _privatePresenter?.Project(
+            _session.PrivateOriginalMapSnapshot,
+            animation.IsMoving ? "Moving" : "Moved",
+            animation);
     }
 
     private Map3InputActions CreatePrivateBattleBridgeInputActions() =>

@@ -298,6 +298,7 @@ public sealed partial class GameSession
             controlledStepCopyApplied: false,
             lastLayoutMutation: null);
         GameSession session = new(snapshot);
+        session.InitializePrivateOriginalMapPlayerLocomotion();
         return new PrivateOriginalMapGameSessionStarted(session, accepted.Receipt);
     }
 

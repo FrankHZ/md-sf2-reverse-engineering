@@ -257,10 +257,11 @@ the existing `v << 5 | v << 2 | v >> 1` channel expansion into straight-alpha sR
 project-authored color-preserving review/runtime candidate policy. It does not prove Mega Drive
 analog output, display behavior, colorimetry, hardware chronology, or final-pixel parity.
 
-The current reviewed local pack at commit `f7a351f24e328c47b10a892613edeac07a07635a`, tree
-`9cc4c0959ebbe067f22adae5c079a65bcfd1f06d`, and manifest SHA-256
-`56382461FAA5168939A264FC37ABC8A7590A0D099C19DFB54DC0DC6F96F5DCB6` contains the two HUD assets,
-the exact atlas family, and the player initial-reference-frame family. The atlas's explicit
+The current reviewed local pack at commit `ec07c0168b9bf684dfc62419351e343baf273c35`, tree
+`678a6b793c4815d9a7897935404dcea2a552e9d4`, and manifest SHA-256
+`39C18402BECB3CD541C293C2D5274E3B3E7A7932D49A1FDB47AEFB070F7E8151` contains the two HUD assets,
+the exact atlas family, the player initial-reference-frame family, and the three controlled-player
+locomotion sheets. The atlas's explicit
 PrivateLocal consumer mounts only one selected 2x or 4x runtime PNG after Content rechecks the closed
 pack. Godot validates decoded RGBA8 dimensions and projects every physical bucket texel through the
 already authoritative working-layout/block/tile/slot/flip selection. A 2x bucket becomes a
@@ -271,11 +272,11 @@ including subpixel coordinates. Startup binding still proves that every scale-sq
 exactly repeats the typed 1x payload, so this transport closure does not admit a non-nearest
 derivative. It never reads private source bundles or masters, does not embed the asset root in
 Application/state/receipts, and does not place private data in a PCK. This is a diagnostic
-substitution for transient decoded-tile sampling, not original rendering. The player family is
+substitution for transient decoded-tile sampling, not original rendering. The player families are
 resolved from the same exact accepted transaction only when the base atlas is selected. Godot decodes
-the selected 2x or 4x PNG, retains it in the base viewport, and maps it onto the current typed
-player-position cell after every projection. Session position remains authoritative; the catalog,
-presenter, and viewport do not own gameplay or facing rules.
+the selected 2x or 4x PNGs and retains them in the base viewport. Session position and locomotion
+state remain authoritative; the catalog, presenter, and viewport do not own gameplay, facing,
+counter, half, or motion-phase rules.
 
 The sibling private Map 3 player reference-frame builder and bounded consumer remain narrower than an
 animation system. The builder fixes the controlled player selection to ally zero, resolves regular map-sprite zero,
@@ -294,8 +295,8 @@ Content rechecks its exact mounted commit, manifest, semantic asset, dimensions,
 nearest/no-mipmap/no-repeat policy before returning a defensive runtime-byte copy. Godot decodes and
 projects that copy only for the explicit PrivateLocal base-atlas path; source/master material never
 enters runtime or a PCK.
-Admission animation counter, admission-visible frame, live palette at admission, movement-facing
-timing, DMA/cache completion, original rendered-color parity, and final pixels remain **Unknown**.
+Admission rendered pixels, live palette at admission, DMA/cache completion, original rendered-color
+parity, wall-clock/display timing, and final pixels remain **Unknown**.
 
 The accepted `sf2-map3-original-player-locomotion-animation-runtime-v1` owner closes the bounded
 controlled-player timing gap without turning either half into a universal idle pose. A sibling local
@@ -306,10 +307,28 @@ source order. The builder validates the accepted admission counter/half, blocked
 and successful 13-tick half sequence before deriving the family, but does not itself implement a
 runtime clock or publish the private source.
 
+The bounded consumer implements that small state machine in Application. Its admission projection is
+DOWN/facing 3, half 1 selected at counter 25, with stored counter 26. A blocked attempt changes facing
+before the one sprite selection and settles without motion. A successful attempt owns tick 1 at the
+source, advances the remaining 384 source units in twelve 32-unit transitions, and settles on tick 13;
+counter selection, wrap, and half choice are computed by the accepted small transition rather than a
+hard-coded Godot sequence. The existing grid movement remains the semantic traversal result, while
+the separate Application locomotion projection carries the in-cell visual offset.
+
+Godot requests one Application animation transition from `_PhysicsProcess`, selects only the named
+`up`, `horizontal`, or `down` sheet and half, mirrors the horizontal sheet only for RIGHT, and maps the
+Application offset across the existing 24-pixel logical cell. It never advances animation from a
+render-frame count and never derives phase from `SimulationStep` or `LastTraversal`. This engine-native
+fixed-tick scheduling does not claim an accepted wall-clock, display, DMA, cache, or final-pixel timing
+equivalence. The earlier initial-reference texture remains a distinct, narrower retained asset and is
+not renamed as idle or standing. The lower-level viewport can still project it when no locomotion
+mount is supplied, but explicit base-atlas composition fails closed when that mount is unavailable;
+it does not use the retained texture as a product-startup fallback.
+
 The earlier `initial-reference-frame` transaction remains a separate, narrower product input. Its
 half-zero name and bytes are not rewritten by the locomotion family, and it still carries no
-standing, idle, or original-admission-visible claim. A later consumer must use an Application-owned
-animation state rather than `SimulationStep` parity or `LastTraversal` alone.
+standing, idle, or original-admission-visible claim. The locomotion consumer uses its separate
+Application-owned state and does not rewrite the earlier asset's identity or meaning.
 
 The optional named `edge-scale2x` world treatment is an explicit 9A presentation deviation layered
 after that exact admission. It is accepted only with the explicit private base-view and base-atlas

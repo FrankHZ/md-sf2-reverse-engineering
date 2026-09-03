@@ -96,6 +96,49 @@ public sealed class PrivateOriginalMapBaseViewportTests
     }
 
     [Fact]
+    public void PlayerLocomotionMapsAcceptedSourceUnitsAcrossOneLogicalCell()
+    {
+        PrivateOriginalMapBaseViewProjection projection =
+            PrivateOriginalMapBaseViewProjection.Create(
+                Snapshot(
+                    [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+                    new ushort[WorkingMapLayout.WordCount]),
+                VisualDefinition());
+
+        Assert.Equal(
+            new global::Godot.Rect2(
+                new global::Godot.Vector2(144, 72),
+                new global::Godot.Vector2(24, 24)),
+            PrivateOriginalMapBaseViewport.PlayerLocomotionRect(
+                projection,
+                new MapPosition(56, 3),
+                offsetXUnits: 0,
+                offsetYUnits: 0));
+        Assert.Equal(
+            new global::Godot.Rect2(
+                new global::Godot.Vector2(132, 72),
+                new global::Godot.Vector2(24, 24)),
+            PrivateOriginalMapBaseViewport.PlayerLocomotionRect(
+                projection,
+                new MapPosition(56, 3),
+                offsetXUnits: -192,
+                offsetYUnits: 0));
+        Assert.Equal(
+            new global::Godot.Rect2(
+                new global::Godot.Vector2(120, 72),
+                new global::Godot.Vector2(24, 24)),
+            PrivateOriginalMapBaseViewport.PlayerLocomotionRect(
+                projection,
+                new MapPosition(56, 3),
+                offsetXUnits: -384,
+                offsetYUnits: 0));
+        Assert.NotNull(typeof(PrivateOriginalMapBaseViewport).GetMethod(
+            "TryBindLocalPlayerLocomotion",
+            System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic));
+    }
+
+    [Fact]
     public void TileMirrorAndFlipAreAppliedInsideTheProjectAuthoredRecipe()
     {
         OriginalMapVisualPayloadDefinition visual = VisualDefinition();

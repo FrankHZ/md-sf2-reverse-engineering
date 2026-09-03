@@ -40,13 +40,39 @@ internal static class PrivateMap3SmokeDriver
             ExplorationDirection.North,
         })
         {
-            PrivateOriginalMapMoveApplied applied = session.ApplyPrivateOriginalMap(
-                new MoveExplorationCommand(direction));
+            PrivateOriginalMapPlayerLocomotionStarted started =
+                session.BeginPrivateOriginalMapPlayerLocomotion(
+                    new MoveExplorationCommand(direction));
+            PrivateOriginalMapMoveApplied applied = started.Move;
             presenter.Project(
                 applied.Snapshot,
-                applied.Traversal.Outcome.ToString());
+                applied.Traversal.Outcome.ToString(),
+                started.Animation);
             if (applied.Traversal.Outcome == OriginalMapTraversalOutcome.Moved)
             {
+                int advances = 0;
+                PrivateOriginalMapPlayerLocomotionSnapshot animation = started.Animation;
+                while (animation.IsMoving)
+                {
+                    animation = session.AdvancePrivateOriginalMapPlayerLocomotion();
+                    presenter.Project(applied.Snapshot, "Movement smoke tick", animation);
+                    advances++;
+                }
+
+                if (advances !=
+                        PrivateOriginalMapPlayerLocomotionSnapshot.SuccessfulMovementTickCount - 1 ||
+                    animation.Tick !=
+                        PrivateOriginalMapPlayerLocomotionSnapshot.SuccessfulMovementTickCount ||
+                    animation.DestinationPosition != applied.Snapshot.PlayerPosition ||
+                    animation.StoredCounter is < 0 or > 30)
+                {
+                    Fail(
+                        sceneTree,
+                        presenter,
+                        "PrivateLocal player locomotion did not settle through the Application-owned tick sequence.");
+                    return;
+                }
+
                 moved = applied;
                 movedDirection = direction;
                 break;

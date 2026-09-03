@@ -49,6 +49,31 @@ internal sealed class PrivateLocalPresentationRasterMount
     internal byte[] CopyPngBytes() => [.. _pngBytes];
 }
 
+internal abstract record PrivateLocalPlayerLocomotionMountResult;
+
+internal sealed record PrivateLocalPlayerLocomotionMounted(
+    PrivateLocalPlayerLocomotionMount Animation) :
+    PrivateLocalPlayerLocomotionMountResult;
+
+internal sealed record PrivateLocalPlayerLocomotionMountRejected(
+    PrivateLocalPresentationAssetMountDiagnostic Diagnostic) :
+    PrivateLocalPlayerLocomotionMountResult;
+
+internal sealed record PrivateLocalPlayerLocomotionMount(
+    PrivateLocalPresentationRasterMount Up,
+    PrivateLocalPresentationRasterMount Horizontal,
+    PrivateLocalPresentationRasterMount Down)
+{
+    internal PrivateLocalPresentationRasterMount Up { get; } =
+        Up ?? throw new ArgumentNullException(nameof(Up));
+
+    internal PrivateLocalPresentationRasterMount Horizontal { get; } =
+        Horizontal ?? throw new ArgumentNullException(nameof(Horizontal));
+
+    internal PrivateLocalPresentationRasterMount Down { get; } =
+        Down ?? throw new ArgumentNullException(nameof(Down));
+}
+
 internal sealed class PrivateLocalPresentationAssetCatalog
 {
     internal const string PreviewAssetId = "hud.yes-no-window-frame";
@@ -64,10 +89,18 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         "world.map3.player.initial-reference-frame";
     internal const int Map3PlayerReferenceLogicalWidth = 24;
     internal const int Map3PlayerReferenceLogicalHeight = 24;
+    internal const string Map3PlayerLocomotionUpAssetId =
+        "world.map3.player.locomotion.up";
+    internal const string Map3PlayerLocomotionHorizontalAssetId =
+        "world.map3.player.locomotion.horizontal";
+    internal const string Map3PlayerLocomotionDownAssetId =
+        "world.map3.player.locomotion.down";
+    internal const int Map3PlayerLocomotionLogicalWidth = 48;
+    internal const int Map3PlayerLocomotionLogicalHeight = 24;
     internal const string Map3AssetRepositoryCommit =
-        "f7a351f24e328c47b10a892613edeac07a07635a";
+        "ec07c0168b9bf684dfc62419351e343baf273c35";
     internal const string Map3AssetManifestDigest =
-        "56382461FAA5168939A264FC37ABC8A7590A0D099C19DFB54DC0DC6F96F5DCB6";
+        "39C18402BECB3CD541C293C2D5274E3B3E7A7932D49A1FDB47AEFB070F7E8151";
     internal const string Map3BaseAtlas2xDigest =
         "E974F59E15E493C29D871574299A46079EBA195BB4CC0B10FF37C2F310682A0A";
     internal const string Map3BaseAtlas4xDigest =
@@ -76,6 +109,18 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         "2F88562FD4D90ADE537B812D2BFCCC084D1CCF1002575B3CFF89C7B1C2BDFC47";
     internal const string Map3PlayerReference4xDigest =
         "15ED10B9CB5F6EFA7C5E65CBB8726ABE54D8EBF742B35BD764A1B2FAAF2A3E2C";
+    internal const string Map3PlayerLocomotionUp2xDigest =
+        "F32D9E383A173B84EFFD99FB7FB25A55D1C88D39196EED1FFD2AEC10A94AB31F";
+    internal const string Map3PlayerLocomotionUp4xDigest =
+        "DA0B5849D1A332F1ACB73BED48273C8790B02F1B2DD00670A2B50F59EDA47B63";
+    internal const string Map3PlayerLocomotionHorizontal2xDigest =
+        "E4EDDA45328D28E9C84F2E699A8F7FC283739737DB50A618FC53EC49623976FE";
+    internal const string Map3PlayerLocomotionHorizontal4xDigest =
+        "D1F20ADB4AB8B6A46456390E72375F43E082DE8D84ADF6EE0CB412F4F972782C";
+    internal const string Map3PlayerLocomotionDown2xDigest =
+        "81A483E7E589F75C1909AA633D03AA548D3A8CE3E8C153763C538116156D0138";
+    internal const string Map3PlayerLocomotionDown4xDigest =
+        "BDFD78C073E64A957FF147BA385FED891A384111AFB1B2DDF3B795D2E4C91117";
 
     private static readonly byte[] PngSignature =
         [137, 80, 78, 71, 13, 10, 26, 10];
@@ -204,6 +249,86 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         return mounted;
     }
 
+    internal PrivateLocalPlayerLocomotionMountResult MountMap3PlayerLocomotion(
+        LocalPresentationAssetPackRequest request,
+        LocalPresentationAssetPackAccepted accepted,
+        double effectivePhysicalScale)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(accepted);
+        if (!string.Equals(
+                request.ExpectedAssetRepositoryCommit,
+                Map3AssetRepositoryCommit,
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                request.ExpectedManifestDigest,
+                Map3AssetManifestDigest,
+                StringComparison.Ordinal))
+        {
+            return RejectLocomotion(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The Map 3 player locomotion mount requires the exact accepted local asset transaction.");
+        }
+
+        PrivateLocalPresentationAssetMountResult upResult = MountRaster(
+            request,
+            accepted,
+            effectivePhysicalScale,
+            Map3PlayerLocomotionUpAssetId,
+            Map3PlayerLocomotionLogicalWidth,
+            Map3PlayerLocomotionLogicalHeight,
+            "private Map 3 player up locomotion sheet");
+        if (upResult is not PrivateLocalPresentationAssetMounted mountedUp)
+        {
+            return RejectLocomotion((PrivateLocalPresentationAssetMountRejected)upResult);
+        }
+
+        PrivateLocalPresentationAssetMountResult horizontalResult = MountRaster(
+            request,
+            accepted,
+            effectivePhysicalScale,
+            Map3PlayerLocomotionHorizontalAssetId,
+            Map3PlayerLocomotionLogicalWidth,
+            Map3PlayerLocomotionLogicalHeight,
+            "private Map 3 player horizontal locomotion sheet");
+        if (horizontalResult is not PrivateLocalPresentationAssetMounted mountedHorizontal)
+        {
+            return RejectLocomotion(
+                (PrivateLocalPresentationAssetMountRejected)horizontalResult);
+        }
+
+        PrivateLocalPresentationAssetMountResult downResult = MountRaster(
+            request,
+            accepted,
+            effectivePhysicalScale,
+            Map3PlayerLocomotionDownAssetId,
+            Map3PlayerLocomotionLogicalWidth,
+            Map3PlayerLocomotionLogicalHeight,
+            "private Map 3 player down locomotion sheet");
+        if (downResult is not PrivateLocalPresentationAssetMounted mountedDown)
+        {
+            return RejectLocomotion((PrivateLocalPresentationAssetMountRejected)downResult);
+        }
+
+        PrivateLocalPresentationRasterMount[] sheets =
+            [mountedUp.Asset, mountedHorizontal.Asset, mountedDown.Asset];
+        if (sheets.Select(sheet => sheet.Bucket.Scale).Distinct().Count() != 1 ||
+            sheets.Any(sheet => !IsExactMap3PlayerLocomotionBinding(
+                sheet.Definition,
+                sheet.Bucket)))
+        {
+            return RejectLocomotion(
+                PrivateLocalPresentationAssetMountFailureCode.PayloadMismatch,
+                "The Map 3 player locomotion sheets do not retain one exact bucket and asset family.");
+        }
+
+        return new PrivateLocalPlayerLocomotionMounted(
+            new PrivateLocalPlayerLocomotionMount(
+                mountedUp.Asset,
+                mountedHorizontal.Asset,
+                mountedDown.Asset));
+    }
+
     internal static bool IsExactMap3BaseAtlasBinding(
         LocalPresentationRasterAssetDefinition definition,
         LocalPresentationRasterBucket bucket)
@@ -253,6 +378,42 @@ internal sealed class PrivateLocalPresentationAssetCatalog
             !bucket.Mipmaps &&
             !bucket.Repeat;
     }
+
+    internal static bool IsExactMap3PlayerLocomotionBinding(
+        LocalPresentationRasterAssetDefinition definition,
+        LocalPresentationRasterBucket bucket)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(bucket);
+        string? expectedDigest = (definition.AssetId, bucket.Scale) switch
+        {
+            (Map3PlayerLocomotionUpAssetId, 2) => Map3PlayerLocomotionUp2xDigest,
+            (Map3PlayerLocomotionUpAssetId, 4) => Map3PlayerLocomotionUp4xDigest,
+            (Map3PlayerLocomotionHorizontalAssetId, 2) =>
+                Map3PlayerLocomotionHorizontal2xDigest,
+            (Map3PlayerLocomotionHorizontalAssetId, 4) =>
+                Map3PlayerLocomotionHorizontal4xDigest,
+            (Map3PlayerLocomotionDownAssetId, 2) => Map3PlayerLocomotionDown2xDigest,
+            (Map3PlayerLocomotionDownAssetId, 4) => Map3PlayerLocomotionDown4xDigest,
+            _ => null,
+        };
+        return definition.LogicalSize.Width == Map3PlayerLocomotionLogicalWidth &&
+            definition.LogicalSize.Height == Map3PlayerLocomotionLogicalHeight &&
+            expectedDigest is not null &&
+            string.Equals(bucket.Sha256, expectedDigest, StringComparison.Ordinal) &&
+            string.Equals(bucket.Filter, "nearest", StringComparison.Ordinal) &&
+            !bucket.Mipmaps &&
+            !bucket.Repeat;
+    }
+
+    private static PrivateLocalPlayerLocomotionMountRejected RejectLocomotion(
+        PrivateLocalPresentationAssetMountRejected rejected) =>
+        new(rejected.Diagnostic);
+
+    private static PrivateLocalPlayerLocomotionMountRejected RejectLocomotion(
+        PrivateLocalPresentationAssetMountFailureCode code,
+        string message) =>
+        new(new PrivateLocalPresentationAssetMountDiagnostic(code, message));
 
     private PrivateLocalPresentationAssetMountResult MountRaster(
         LocalPresentationAssetPackRequest request,

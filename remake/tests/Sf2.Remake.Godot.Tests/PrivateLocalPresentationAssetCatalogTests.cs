@@ -186,6 +186,38 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
             repeated.Buckets[0]));
     }
 
+    [Theory]
+    [InlineData(PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionUpAssetId)]
+    [InlineData(PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionHorizontalAssetId)]
+    [InlineData(PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionDownAssetId)]
+    public void Map3PlayerLocomotionBindingRequiresExactFamilyDimensionsAndNearestPolicy(
+        string assetId)
+    {
+        LocalPresentationRasterAssetDefinition exact = PlayerLocomotionDefinition(assetId);
+        Assert.All(
+            exact.Buckets,
+            bucket => Assert.True(
+                PrivateLocalPresentationAssetCatalog.IsExactMap3PlayerLocomotionBinding(
+                    exact,
+                    bucket)));
+
+        LocalPresentationRasterAssetDefinition wrongSize =
+            PlayerLocomotionDefinition(assetId, width: 47);
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3PlayerLocomotionBinding(
+            wrongSize,
+            wrongSize.Buckets[0]));
+        LocalPresentationRasterAssetDefinition wrongDigest =
+            PlayerLocomotionDefinition(assetId, twoXDigest: new string('A', 64));
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3PlayerLocomotionBinding(
+            wrongDigest,
+            wrongDigest.Buckets[0]));
+        LocalPresentationRasterAssetDefinition wrongFilter =
+            PlayerLocomotionDefinition(assetId, filter: "linear");
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3PlayerLocomotionBinding(
+            wrongFilter,
+            wrongFilter.Buckets[0]));
+    }
+
     [Fact]
     public void GenericPresentationPackCannotSelfAuthorizeTheFixedMap3BaseAtlasTransaction()
     {
@@ -250,6 +282,12 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         PrivateLocalPresentationAssetMounted playerFourX =
             Assert.IsType<PrivateLocalPresentationAssetMounted>(
                 catalog.MountMap3PlayerReference(request, accepted, 3));
+        PrivateLocalPlayerLocomotionMounted locomotionTwoX =
+            Assert.IsType<PrivateLocalPlayerLocomotionMounted>(
+                catalog.MountMap3PlayerLocomotion(request, accepted, 1));
+        PrivateLocalPlayerLocomotionMounted locomotionFourX =
+            Assert.IsType<PrivateLocalPlayerLocomotionMounted>(
+                catalog.MountMap3PlayerLocomotion(request, accepted, 3));
         byte[] copied = twoX.Asset.CopyPngBytes();
         copied[0] = 0;
 
@@ -273,6 +311,13 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         byte[] playerCopy = playerTwoX.Asset.CopyPngBytes();
         playerCopy[0] = 0;
         Assert.Equal(137, playerTwoX.Asset.CopyPngBytes()[0]);
+        Assert.Equal(2, locomotionTwoX.Animation.Up.Bucket.Scale);
+        Assert.Equal(2, locomotionTwoX.Animation.Horizontal.Bucket.Scale);
+        Assert.Equal(2, locomotionTwoX.Animation.Down.Bucket.Scale);
+        Assert.Equal(4, locomotionFourX.Animation.Up.Bucket.Scale);
+        Assert.Equal(
+            PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionHorizontal4xDigest,
+            locomotionFourX.Animation.Horizontal.Bucket.Sha256);
     }
 
     [Fact]
@@ -522,6 +567,58 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
                     colorSpace: "srgb",
                     alphaMode: "straight"),
             ]);
+
+    private static LocalPresentationRasterAssetDefinition PlayerLocomotionDefinition(
+        string assetId,
+        int width = PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionLogicalWidth,
+        int height = PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionLogicalHeight,
+        string? twoXDigest = null,
+        string? fourXDigest = null,
+        string filter = "nearest")
+    {
+        (string expectedTwoX, string expectedFourX) = assetId switch
+        {
+            PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionUpAssetId =>
+                (PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionUp2xDigest,
+                    PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionUp4xDigest),
+            PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionHorizontalAssetId =>
+                (PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionHorizontal2xDigest,
+                    PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionHorizontal4xDigest),
+            PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionDownAssetId =>
+                (PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionDown2xDigest,
+                    PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionDown4xDigest),
+            _ => (new string('0', 64), new string('1', 64)),
+        };
+        return new LocalPresentationRasterAssetDefinition(
+            assetId,
+            new LocalPresentationLogicalSize(width, height),
+            [
+                new LocalPresentationRasterBucket(
+                    2,
+                    checked(width * 2),
+                    checked(height * 2),
+                    500,
+                    twoXDigest ?? expectedTwoX,
+                    "image/png",
+                    filter,
+                    mipmaps: false,
+                    repeat: false,
+                    colorSpace: "srgb",
+                    alphaMode: "straight"),
+                new LocalPresentationRasterBucket(
+                    4,
+                    checked(width * 4),
+                    checked(height * 4),
+                    900,
+                    fourXDigest ?? expectedFourX,
+                    "image/png",
+                    filter,
+                    mipmaps: false,
+                    repeat: false,
+                    colorSpace: "srgb",
+                    alphaMode: "straight"),
+            ]);
+    }
 
     private sealed class TemporaryPreviewPack : IDisposable
     {
