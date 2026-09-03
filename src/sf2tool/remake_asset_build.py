@@ -122,6 +122,25 @@ PLAYER_FRAME_TILE_COUNT = 9
 PLAYER_FRAME_TILES_PER_SIDE = 3
 PLAYER_FRAME_WIDTH = 24
 PLAYER_FRAME_HEIGHT = 24
+PLAYER_ANIMATION_BUILD_CAPABILITY = (
+    "private-local-map3-original-player-locomotion-animation-candidate-build-v1"
+)
+PLAYER_LOCOMOTION_CONTRACT_ID = "sf2-map3-original-player-locomotion-animation-runtime-v1"
+PLAYER_LOCOMOTION_CONTRACT = repo_path(
+    "tests/fixtures/h3/map3-original-player-locomotion-animation-runtime-v1.json"
+)
+PLAYER_ANIMATION_SOURCE_ASSET_ID = "source.world.map3.player.locomotion-animation"
+PLAYER_ANIMATION_POLICY_ID = "private-local-map3-player-locomotion-nearest-rgba8-v1"
+PLAYER_ANIMATION_SOURCE_FILE = "source/world/map3/player-locomotion-animation-v1.bin"
+PLAYER_ANIMATION_SOURCE_MAGIC = b"SF2-MAP3-PLAYER-LOCOMOTION-ANIMATION-V1\x00"
+PLAYER_ANIMATION_SHEETS = (
+    ("up", 0),
+    ("horizontal", 1),
+    ("down", 2),
+)
+PLAYER_ANIMATION_PAYLOAD_ADDRESSES = (822_080, 822_450, 822_782)
+PLAYER_ANIMATION_SHEET_WIDTH = PLAYER_FRAME_WIDTH * 2
+PLAYER_ANIMATION_SHEET_HEIGHT = PLAYER_FRAME_HEIGHT
 _TILESET_ROOT_FIELDS = {
     "schemaVersion",
     "id",
@@ -187,6 +206,7 @@ PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 _STAGING_PREFIX = ".sf2-hud-svg-build-"
 _WORLD_STAGING_PREFIX = ".sf2-map3-world-atlas-build-"
 _PLAYER_STAGING_PREFIX = ".sf2-map3-player-reference-build-"
+_PLAYER_ANIMATION_STAGING_PREFIX = ".sf2-map3-player-animation-build-"
 _ASSET_ID_PATTERN = re.compile(r"^hud\.([a-z0-9]+(?:-[a-z0-9]+)*)$")
 _CANDIDATE_NAME_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$")
 _ELEMENT_ID_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9._-]{0,127}$")
@@ -372,6 +392,19 @@ class WorldAtlasSource:
 class PlayerReferenceSource:
     source_bundle: bytes
     rgba_pixels: tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class PlayerAnimationSheet:
+    name: str
+    source_slot: int
+    rgba_pixels: tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class PlayerAnimationSource:
+    source_bundle: bytes
+    sheets: tuple[PlayerAnimationSheet, ...]
 
 
 ProcessRunner = Callable[..., ProcessReceipt]
@@ -973,6 +1006,242 @@ def _build_player_reference_source(rom: bytes) -> PlayerReferenceSource:
         )
     )
     return PlayerReferenceSource(source_bundle, tuple(pixels))
+
+
+def _load_player_locomotion_contract() -> Mapping[str, object]:
+    try:
+        document = json.loads(PLAYER_LOCOMOTION_CONTRACT.read_bytes())
+        static = document["static"]
+        facts = static["facts"]
+        facing_join = static["staticFacingJoin"]
+        observation = document["expectedObservation"]
+        admission = observation["admission"]
+        records = {record["direction"]: record for record in observation["records"]}
+    except (OSError, json.JSONDecodeError, KeyError, TypeError) as error:
+        raise _reject(
+            "ContractUnavailable",
+            "locomotionContract",
+            "The accepted player locomotion contract is unavailable or malformed.",
+        ) from error
+
+    expected_rules = [
+        {"direction": "UP", "facing": 1, "sourceSlot": 0, "horizontalMirror": False},
+        {"direction": "LEFT", "facing": 2, "sourceSlot": 1, "horizontalMirror": False},
+        {"direction": "RIGHT", "facing": 0, "sourceSlot": 1, "horizontalMirror": True},
+        {"direction": "DOWN", "facing": 3, "sourceSlot": 2, "horizontalMirror": False},
+    ]
+    successful_counters = [26, 28, 30, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19]
+    successful_post_counters = [27, 29, 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+    successful_halves = [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1]
+    try:
+        accepted = (
+            document["id"] == PLAYER_LOCOMOTION_CONTRACT_ID
+            and facts["halfThreshold"] == 15
+            and facts["counterResetAbove"] == 30
+            and facts["movementCounterVelocityShift"] == 5
+            and facts["spriteCounterIncrement"] == 1
+            and facing_join["directionRules"] == expected_rules
+            and admission["entity"]["animCounter"] == 26
+            and admission["entity"]["facing"] == 3
+            and admission["sprite"]
+            == {"counterAfter": 26, "counterAtSelection": 25, "selectedHalf": 1}
+            and len(observation["records"]) == 4
+            and set(records) == {"UP", "LEFT", "RIGHT", "DOWN"}
+            and all(
+                records[direction]["outcome"] == "blocked-no-movement"
+                and records[direction]["motionInstalled"] is False
+                and records[direction]["ticks"][0]["sprite"]
+                == {"counterAfter": 27, "counterAtSelection": 26, "selectedHalf": 1}
+                and records[direction]["settled"]["animCounter"] == 27
+                and records[direction]["settled"]["facing"]
+                == next(rule["facing"] for rule in expected_rules if rule["direction"] == direction)
+                for direction in ("UP", "RIGHT")
+            )
+            and all(
+                records[direction]["outcome"] == "moved-one-tile"
+                and records[direction]["motionInstalled"] is True
+                and [tick["sprite"]["counterAtSelection"] for tick in records[direction]["ticks"]]
+                == successful_counters
+                and [tick["sprite"]["counterAfter"] for tick in records[direction]["ticks"]]
+                == successful_post_counters
+                and [tick["sprite"]["selectedHalf"] for tick in records[direction]["ticks"]]
+                == successful_halves
+                and records[direction]["settled"]["animCounter"] == 20
+                and records[direction]["settled"]["facing"]
+                == next(rule["facing"] for rule in expected_rules if rule["direction"] == direction)
+                for direction in ("LEFT", "DOWN")
+            )
+        )
+    except (KeyError, TypeError) as error:
+        raise _reject(
+            "ContractMismatch",
+            "locomotionContract",
+            "The accepted player locomotion contract shape drifted.",
+        ) from error
+    if not accepted:
+        raise _reject(
+            "ContractMismatch",
+            "locomotionContract",
+            "The accepted player locomotion contract identity or bounded facts drifted.",
+        )
+    return document
+
+
+def _render_player_frame(frame: bytes, palette: list[tuple[int, int, int]]) -> tuple[int, ...]:
+    if len(frame) != PLAYER_FRAME_BYTES:
+        raise _reject(
+            "DecodedPayloadMismatch",
+            "playerPayload",
+            "A player locomotion frame has an incompatible decoded shape.",
+        )
+    tiles = [
+        decode_md_4bpp_tile(frame[offset : offset + TILE_BYTES_4BPP])
+        for offset in range(0, PLAYER_FRAME_BYTES, TILE_BYTES_4BPP)
+    ]
+    if len(tiles) != PLAYER_FRAME_TILE_COUNT:
+        raise _reject(
+            "DecodedPayloadMismatch",
+            "playerPayload",
+            "A player locomotion frame has an incompatible tile count.",
+        )
+    pixels = [0] * (PLAYER_FRAME_WIDTH * PLAYER_FRAME_HEIGHT * 4)
+    for tile_index, tile in enumerate(tiles):
+        tile_column = tile_index // PLAYER_FRAME_TILES_PER_SIDE
+        tile_row = tile_index % PLAYER_FRAME_TILES_PER_SIDE
+        origin_x = tile_column * WORLD_TILE_PIXEL_SIZE
+        origin_y = tile_row * WORLD_TILE_PIXEL_SIZE
+        for row in range(WORLD_TILE_PIXEL_SIZE):
+            for column in range(WORLD_TILE_PIXEL_SIZE):
+                palette_index = tile[(row * WORLD_TILE_PIXEL_SIZE) + column]
+                destination = (((origin_y + row) * PLAYER_FRAME_WIDTH) + origin_x + column) * 4
+                pixels[destination : destination + 4] = palette_index_rgba(
+                    palette,
+                    palette_index,
+                )
+    return tuple(pixels)
+
+
+def _combine_player_halves(
+    first: tuple[int, ...],
+    second: tuple[int, ...],
+) -> tuple[int, ...]:
+    row_bytes = PLAYER_FRAME_WIDTH * 4
+    output: list[int] = []
+    for row in range(PLAYER_FRAME_HEIGHT):
+        start = row * row_bytes
+        end = start + row_bytes
+        output.extend(first[start:end])
+        output.extend(second[start:end])
+    if len(output) != PLAYER_ANIMATION_SHEET_WIDTH * PLAYER_ANIMATION_SHEET_HEIGHT * 4:
+        raise _reject(
+            "GeneratorOutputInvalid",
+            "playerAnimation",
+            "The player locomotion sheet geometry drifted.",
+        )
+    return tuple(output)
+
+
+def _build_player_locomotion_animation_source(rom: bytes) -> PlayerAnimationSource:
+    _load_player_locomotion_contract()
+    if len(PLAYER_ANIMATION_PAYLOAD_ADDRESSES) != len(PLAYER_ANIMATION_SHEETS):
+        raise _reject(
+            "ContractMismatch",
+            "playerPayload",
+            "The player locomotion source-slot identity count drifted.",
+        )
+
+    palette_end = PLAYER_PALETTE_ADDRESS + WORLD_PALETTE_BYTES
+    if PLAYER_PALETTE_ADDRESS < 0 or palette_end > len(rom):
+        raise _reject(
+            "PalettePayloadMismatch",
+            "playerPalette",
+            "The selected player palette boundary is unavailable.",
+        )
+    palette_source = rom[PLAYER_PALETTE_ADDRESS:palette_end]
+    palette_words = [
+        int.from_bytes(palette_source[offset : offset + 2], "big")
+        for offset in range(0, WORLD_PALETTE_BYTES, 2)
+    ]
+    if len(palette_words) != WORLD_PALETTE_WORD_COUNT or any(
+        word & ~WORLD_PALETTE_MASK for word in palette_words
+    ):
+        raise _reject(
+            "PalettePayloadMismatch",
+            "playerPalette",
+            "The selected player palette word projection drifted.",
+        )
+    palette = [md_palette_color(word) for word in palette_words]
+
+    source_parts: list[bytes] = [
+        PLAYER_ANIMATION_SOURCE_MAGIC,
+        bytes((PLAYER_MAPSPRITE_ID, len(PLAYER_ANIMATION_SHEETS))),
+    ]
+    sheets: list[PlayerAnimationSheet] = []
+    for (name, source_slot), expected_address in zip(
+        PLAYER_ANIMATION_SHEETS,
+        PLAYER_ANIMATION_PAYLOAD_ADDRESSES,
+        strict=True,
+    ):
+        pointer_offset = PLAYER_POINTER_TABLE_ADDRESS + (source_slot * 4)
+        if (
+            pointer_offset < 0
+            or pointer_offset + 4 > len(rom)
+            or expected_address < 0
+            or expected_address >= len(rom)
+        ):
+            raise _reject(
+                "SourcePayloadMismatch",
+                "playerPayload",
+                "A player locomotion source-slot boundary is unavailable.",
+            )
+        selected_address = int.from_bytes(rom[pointer_offset : pointer_offset + 4], "big")
+        if selected_address != expected_address:
+            raise _reject(
+                "SourcePayloadMismatch",
+                "playerPayload",
+                "A player locomotion source-slot identity drifted.",
+            )
+        encoded = rom[selected_address:]
+        try:
+            decoded = decode_basic_compressed(
+                encoded,
+                expected_output_bytes=PLAYER_DECODED_BYTES,
+            )
+        except ValueError as error:
+            raise _reject(
+                "DecodeFailure",
+                "playerPayload",
+                "A player locomotion source slot failed bounded Basic decoding.",
+            ) from error
+        if (
+            decoded.input_bytes_consumed < 1
+            or decoded.input_bytes_consumed > len(encoded)
+            or len(decoded.output) != PLAYER_DECODED_BYTES
+        ):
+            raise _reject(
+                "DecodeFailure",
+                "playerPayload",
+                "A player locomotion source slot has incompatible Basic consumption.",
+            )
+        compressed = encoded[: decoded.input_bytes_consumed]
+        first = _render_player_frame(decoded.output[:PLAYER_FRAME_BYTES], palette)
+        second = _render_player_frame(decoded.output[PLAYER_FRAME_BYTES:], palette)
+        sheets.append(
+            PlayerAnimationSheet(
+                name,
+                source_slot,
+                _combine_player_halves(first, second),
+            )
+        )
+        source_parts.extend(
+            (
+                bytes((source_slot,)),
+                len(compressed).to_bytes(4, "big"),
+                compressed,
+            )
+        )
+    source_parts.append(palette_source)
+    return PlayerAnimationSource(b"".join(source_parts), tuple(sheets))
 
 
 def _scale_rgba_nearest(
@@ -2627,6 +2896,437 @@ def build_map3_player_reference_frame_candidate(
     return receipt
 
 
+def _player_animation_asset_id(name: str) -> str:
+    return f"world.map3.player.locomotion.{name}"
+
+
+def _player_animation_master_file(name: str) -> str:
+    return f"masters/world/map3/player-locomotion-{name}.png"
+
+
+def _player_animation_runtime_file(name: str, scale: int) -> str:
+    return f"runtime/world/map3/player-locomotion-{name}@{scale}x.png"
+
+
+def _player_animation_manifest(
+    source: PlayerAnimationSource,
+    generator_artifact_sha256: str,
+    bucket_identities: Mapping[str, tuple[PngIdentity, PngIdentity]],
+) -> dict[str, object]:
+    source_digest = _sha256(source.source_bundle)
+    assets: list[dict[str, object]] = []
+    for sheet in source.sheets:
+        identities = bucket_identities[sheet.name]
+        assets.append(
+            {
+                "assetId": _player_animation_asset_id(sheet.name),
+                "kind": "raster-image",
+                "logicalSize": {
+                    "width": PLAYER_ANIMATION_SHEET_WIDTH,
+                    "height": PLAYER_ANIMATION_SHEET_HEIGHT,
+                },
+                "source": {
+                    "assetId": PLAYER_ANIMATION_SOURCE_ASSET_ID,
+                    "sha256": source_digest,
+                },
+                "derivation": {
+                    "policyId": PLAYER_ANIMATION_POLICY_ID,
+                    "generatorId": WORLD_GENERATOR_ID,
+                    "generatorVersion": WORLD_GENERATOR_VERSION,
+                    "generatorArtifactSha256": generator_artifact_sha256,
+                },
+                "buckets": [
+                    {
+                        "scale": scale,
+                        "runtimePath": _player_animation_runtime_file(sheet.name, scale),
+                        "width": identity.width,
+                        "height": identity.height,
+                        "byteLength": identity.byte_length,
+                        "sha256": identity.sha256,
+                        "mediaType": "image/png",
+                        "filter": "nearest",
+                        "mipmaps": False,
+                        "repeat": False,
+                        "colorSpace": "srgb",
+                        "alphaMode": "straight",
+                    }
+                    for scale, identity in zip(WORLD_SCALES, identities, strict=True)
+                ],
+            }
+        )
+    return {
+        "schemaVersion": 1,
+        "packageId": PACKAGE_ID,
+        "repositoryId": REPOSITORY_ID,
+        "profile": PROFILE,
+        "capabilities": [PACK_CAPABILITY],
+        "logicalPresentation": {"width": 960, "height": 540},
+        "assets": assets,
+    }
+
+
+def _write_player_animation_candidate(
+    destination: Path,
+    source: PlayerAnimationSource,
+    masters: Mapping[str, Path],
+    outputs: Mapping[tuple[str, int], Path],
+    manifest: Mapping[str, object],
+) -> str:
+    candidate = destination / "candidate"
+    try:
+        candidate.mkdir()
+        source_target = candidate.joinpath(*PurePosixPath(PLAYER_ANIMATION_SOURCE_FILE).parts)
+        source_target.parent.mkdir(parents=True)
+        source_target.write_bytes(source.source_bundle)
+        for sheet in source.sheets:
+            master_target = candidate.joinpath(
+                *PurePosixPath(_player_animation_master_file(sheet.name)).parts
+            )
+            master_target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(masters[sheet.name], master_target)
+            for scale in WORLD_SCALES:
+                runtime_target = candidate.joinpath(
+                    *PurePosixPath(_player_animation_runtime_file(sheet.name, scale)).parts
+                )
+                runtime_target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(outputs[(sheet.name, scale)], runtime_target)
+        manifest_path = candidate.joinpath(*MANIFEST_RELATIVE_PATH.parts)
+        manifest_path.parent.mkdir(parents=True)
+        manifest_bytes = (
+            json.dumps(manifest, indent=2, ensure_ascii=True, sort_keys=True) + "\n"
+        ).encode("utf-8")
+        manifest_path.write_bytes(manifest_bytes)
+        try:
+            schema = json.loads(PACK_SCHEMA.read_text(encoding="utf-8"))
+            Draft202012Validator.check_schema(schema)
+            Draft202012Validator(schema).validate(json.loads(manifest_bytes))
+        except (OSError, json.JSONDecodeError, SchemaError, ValidationError) as error:
+            raise _reject(
+                "CandidateManifestInvalid",
+                "manifest",
+                "The generated player locomotion candidate manifest failed its tracked "
+                "closed schema.",
+            ) from error
+    except AssetBuildError:
+        raise
+    except OSError as error:
+        raise _reject(
+            "CandidateWriteFailed",
+            "candidate",
+            "The player locomotion candidate pack could not be written.",
+        ) from error
+    return _sha256(manifest_bytes)
+
+
+def build_map3_player_locomotion_animation_candidate(
+    *,
+    asset_root: str,
+    expected_commit: str,
+    expected_tree: str,
+    rom_path: str,
+    expected_rom_sha256: str,
+    candidate_name: str,
+) -> dict[str, object]:
+    """Build the ignored private Map 3 controlled-player locomotion frame family."""
+
+    candidate_relative = _require_world_candidate_name(candidate_name)
+    try:
+        checkout = validate_asset_checkout_identity(
+            asset_root,
+            expected_commit=expected_commit,
+            expected_tree=expected_tree,
+            required_ignored_path=candidate_relative,
+        )
+    except AssetPreflightError as error:
+        raise _reject(error.code, error.field, error.message) from error
+    rom = _read_fixed_private_input(
+        rom_path,
+        expected_rom_sha256,
+        ACCEPTED_ROM_SHA256,
+        ACCEPTED_ROM_SIZE,
+        "rom",
+    )
+    source = _build_player_locomotion_animation_source(rom)
+    generator_artifact_sha256 = _world_generator_artifact_sha256()
+
+    cache = checkout.root / "cache"
+    _require_no_reparse_chain(cache, "candidate")
+    created_cache = False
+    if not cache.exists():
+        try:
+            cache.mkdir()
+            created_cache = True
+        except OSError as error:
+            raise _reject(
+                "CandidateWriteFailed",
+                "candidate",
+                "The ignored cache is unavailable.",
+            ) from error
+    if not cache.is_dir():
+        raise _reject("PathRejected", "candidate", "The ignored cache boundary is invalid.")
+    destination = cache / candidate_name
+    _require_no_reparse_chain(destination, "candidate")
+    if os.path.lexists(destination):
+        raise _reject("CandidateExists", "candidate", "The candidate destination must be fresh.")
+    staging = cache / f"{_PLAYER_ANIMATION_STAGING_PREFIX}{uuid.uuid4().hex}.tmp"
+    if os.path.lexists(staging):
+        raise _reject("CandidateExists", "candidate", "The owned staging identity already exists.")
+
+    published = False
+    receipt: dict[str, object] | None = None
+    try:
+        staging.mkdir()
+        runs: list[
+            tuple[
+                dict[str, Path],
+                dict[tuple[str, int], Path],
+                dict[str, PngIdentity],
+                dict[str, tuple[PngIdentity, PngIdentity]],
+            ]
+        ] = []
+        for run_name in ("run-a", "run-b"):
+            run = staging / run_name
+            run.mkdir()
+            masters: dict[str, Path] = {}
+            outputs: dict[tuple[str, int], Path] = {}
+            master_identities: dict[str, PngIdentity] = {}
+            bucket_identities: dict[str, tuple[PngIdentity, PngIdentity]] = {}
+            for sheet in source.sheets:
+                master = run / f"player-locomotion-{sheet.name}.png"
+                write_png_rgba(
+                    master,
+                    PLAYER_ANIMATION_SHEET_WIDTH,
+                    PLAYER_ANIMATION_SHEET_HEIGHT,
+                    list(sheet.rgba_pixels),
+                )
+                masters[sheet.name] = master
+                master_identities[sheet.name] = _validate_png(
+                    master,
+                    PLAYER_ANIMATION_SHEET_WIDTH,
+                    PLAYER_ANIMATION_SHEET_HEIGHT,
+                    WORLD_MAXIMUM_PNG_BYTES,
+                )
+                identities: list[PngIdentity] = []
+                for scale in WORLD_SCALES:
+                    output = run / f"player-locomotion-{sheet.name}-{scale}x.png"
+                    write_png_rgba(
+                        output,
+                        PLAYER_ANIMATION_SHEET_WIDTH * scale,
+                        PLAYER_ANIMATION_SHEET_HEIGHT * scale,
+                        _scale_rgba_nearest(
+                            sheet.rgba_pixels,
+                            PLAYER_ANIMATION_SHEET_WIDTH,
+                            PLAYER_ANIMATION_SHEET_HEIGHT,
+                            scale,
+                        ),
+                    )
+                    outputs[(sheet.name, scale)] = output
+                    identities.append(
+                        _validate_png(
+                            output,
+                            PLAYER_ANIMATION_SHEET_WIDTH * scale,
+                            PLAYER_ANIMATION_SHEET_HEIGHT * scale,
+                            WORLD_MAXIMUM_PNG_BYTES,
+                        )
+                    )
+                bucket_identities[sheet.name] = (identities[0], identities[1])
+            runs.append((masters, outputs, master_identities, bucket_identities))
+
+        first_masters, first_outputs, master_identities, bucket_identities = runs[0]
+        second_masters, second_outputs, second_master_ids, second_bucket_ids = runs[1]
+        if (
+            master_identities != second_master_ids
+            or bucket_identities != second_bucket_ids
+            or any(
+                first_masters[sheet.name].read_bytes() != second_masters[sheet.name].read_bytes()
+                for sheet in source.sheets
+            )
+            or any(
+                first_outputs[(sheet.name, scale)].read_bytes()
+                != second_outputs[(sheet.name, scale)].read_bytes()
+                for sheet in source.sheets
+                for scale in WORLD_SCALES
+            )
+        ):
+            raise _reject(
+                "NonDeterministicOutput",
+                "playerAnimation",
+                "The player locomotion derivation did not produce byte-identical outputs.",
+            )
+        manifest = _player_animation_manifest(
+            source,
+            generator_artifact_sha256,
+            bucket_identities,
+        )
+        manifest_sha256 = _write_player_animation_candidate(
+            staging,
+            source,
+            first_masters,
+            first_outputs,
+            manifest,
+        )
+        try:
+            repeated = validate_asset_checkout_identity(
+                asset_root,
+                expected_commit=expected_commit,
+                expected_tree=expected_tree,
+                required_ignored_path=candidate_relative,
+            )
+        except AssetPreflightError as error:
+            raise _reject(error.code, error.field, error.message) from error
+        if repeated.identity != checkout.identity:
+            raise _reject(
+                "RepositoryStateMismatch",
+                "assetRepository",
+                "The local asset repository identity changed during candidate construction.",
+            )
+        for child in tuple(staging.iterdir()):
+            if child.name != "candidate":
+                shutil.rmtree(child)
+        os.rename(staging / "candidate", destination)
+        published = True
+        staging.rmdir()
+        try:
+            final_checkout = validate_asset_checkout_identity(
+                asset_root,
+                expected_commit=expected_commit,
+                expected_tree=expected_tree,
+                required_ignored_path=candidate_relative,
+            )
+        except AssetPreflightError as error:
+            raise _reject(error.code, error.field, error.message) from error
+        if final_checkout.identity != checkout.identity:
+            raise _reject(
+                "RepositoryStateMismatch",
+                "assetRepository",
+                "The local asset repository identity changed at candidate publication.",
+            )
+        receipt = {
+            "schemaVersion": 1,
+            "capability": PLAYER_ANIMATION_BUILD_CAPABILITY,
+            "status": "Pass",
+            "assetRepositoryCommit": checkout.identity.commit,
+            "assetRepositoryTree": checkout.identity.tree,
+            "locomotionContractId": PLAYER_LOCOMOTION_CONTRACT_ID,
+            "sourceAssetId": PLAYER_ANIMATION_SOURCE_ASSET_ID,
+            "assetIds": [_player_animation_asset_id(sheet.name) for sheet in source.sheets],
+            "masterSha256": {name: identity.sha256 for name, identity in master_identities.items()},
+            "generatorId": WORLD_GENERATOR_ID,
+            "generatorVersion": WORLD_GENERATOR_VERSION,
+            "generatorArtifactSha256": generator_artifact_sha256,
+            "policyId": PLAYER_ANIMATION_POLICY_ID,
+            "selection": {
+                "regularMapSpriteId": PLAYER_MAPSPRITE_ID,
+                "sheets": [
+                    {"name": sheet.name, "sourceSlot": sheet.source_slot, "halves": [0, 1]}
+                    for sheet in source.sheets
+                ],
+                "directions": [
+                    {"direction": "UP", "facing": 1, "sheet": "up", "horizontalMirror": False},
+                    {
+                        "direction": "LEFT",
+                        "facing": 2,
+                        "sheet": "horizontal",
+                        "horizontalMirror": False,
+                    },
+                    {
+                        "direction": "RIGHT",
+                        "facing": 0,
+                        "sheet": "horizontal",
+                        "horizontalMirror": True,
+                    },
+                    {
+                        "direction": "DOWN",
+                        "facing": 3,
+                        "sheet": "down",
+                        "horizontalMirror": False,
+                    },
+                ],
+                "halfThreshold": 15,
+                "admissionCounter": 26,
+                "admissionHalf": 1,
+                "settledSuccessfulCounter": 20,
+                "settledSuccessfulHalf": 1,
+            },
+            "logicalSheetSize": {
+                "width": PLAYER_ANIMATION_SHEET_WIDTH,
+                "height": PLAYER_ANIMATION_SHEET_HEIGHT,
+            },
+            "palettePolicy": {
+                "sourceSymbol": "palette_Base",
+                "wordMask": "0x0EEE",
+                "channelExpansion": "v<<5|v<<2|v>>1",
+                "transparentIndex": 0,
+                "colorSpace": "srgb",
+                "alphaMode": "straight",
+                "parityClaim": "project-inferred-rendering-policy",
+            },
+            "buckets": {
+                name: [
+                    {
+                        "scale": scale,
+                        "width": identity.width,
+                        "height": identity.height,
+                        "byteLength": identity.byte_length,
+                        "sha256": identity.sha256,
+                        "filter": "nearest",
+                        "mipmaps": False,
+                        "repeat": False,
+                    }
+                    for scale, identity in zip(WORLD_SCALES, identities, strict=True)
+                ]
+                for name, identities in bucket_identities.items()
+            },
+            "manifestSha256": manifest_sha256,
+            "cleanupStatus": "clean",
+        }
+    except AssetBuildError:
+        raise
+    except OSError as error:
+        raise _reject(
+            "CandidateWriteFailed",
+            "candidate",
+            "The player locomotion candidate build failed.",
+        ) from error
+    finally:
+        cleanup_error: AssetBuildError | None = None
+        if published and receipt is None and os.path.lexists(destination):
+            try:
+                shutil.rmtree(destination)
+                published = False
+            except OSError as error:
+                cleanup_error = _reject(
+                    "CleanupFailed",
+                    "candidate",
+                    "A failed player locomotion publication could not be rolled back.",
+                )
+                cleanup_error.__cause__ = error
+        if os.path.lexists(staging):
+            try:
+                _cleanup_owned(staging, cache, _PLAYER_ANIMATION_STAGING_PREFIX)
+            except AssetBuildError as error:
+                if cleanup_error is None:
+                    cleanup_error = error
+        if cleanup_error is not None and published and os.path.lexists(destination):
+            try:
+                shutil.rmtree(destination)
+                published = False
+            except OSError:
+                pass
+        if created_cache and not published:
+            with suppress(OSError):
+                cache.rmdir()
+        if cleanup_error is not None:
+            raise cleanup_error
+    if receipt is None or not published:
+        raise _reject(
+            "CandidateWriteFailed",
+            "candidate",
+            "The player locomotion candidate did not publish.",
+        )
+    return receipt
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Build one deterministic ignored local HUD SVG presentation candidate."
@@ -2658,6 +3358,13 @@ def _parser() -> argparse.ArgumentParser:
     player.add_argument("--rom", required=True)
     player.add_argument("--expected-rom-sha256", required=True)
     player.add_argument("--candidate-name", required=True)
+    animation = subparsers.add_parser("map3-player-locomotion-animation-candidate")
+    animation.add_argument("--asset-root", required=True)
+    animation.add_argument("--expected-commit", required=True)
+    animation.add_argument("--expected-tree", required=True)
+    animation.add_argument("--rom", required=True)
+    animation.add_argument("--expected-rom-sha256", required=True)
+    animation.add_argument("--candidate-name", required=True)
     return parser
 
 
@@ -2687,8 +3394,17 @@ def main(argv: list[str] | None = None) -> int:
                 expected_palette_metadata_sha256=arguments.expected_palette_metadata_sha256,
                 candidate_name=arguments.candidate_name,
             )
-        else:
+        elif arguments.command == "map3-player-reference-frame-candidate":
             receipt = build_map3_player_reference_frame_candidate(
+                asset_root=arguments.asset_root,
+                expected_commit=arguments.expected_commit,
+                expected_tree=arguments.expected_tree,
+                rom_path=arguments.rom,
+                expected_rom_sha256=arguments.expected_rom_sha256,
+                candidate_name=arguments.candidate_name,
+            )
+        else:
+            receipt = build_map3_player_locomotion_animation_candidate(
                 asset_root=arguments.asset_root,
                 expected_commit=arguments.expected_commit,
                 expected_tree=arguments.expected_tree,
