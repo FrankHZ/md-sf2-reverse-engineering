@@ -125,6 +125,19 @@ public sealed class PrivateMap3PresenterTests
                 typeof(PrivateLocalPresentationAssetMountDiagnostic).MakeByRefType(),
             },
             bind.GetParameters().Select(parameter => parameter.ParameterType));
+        System.Reflection.MethodInfo? playerBind = typeof(PrivateMap3Presenter).GetMethod(
+            "TryBindPlayerReference",
+            System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(playerBind);
+        Assert.Equal(typeof(bool), playerBind.ReturnType);
+        Assert.Equal(
+            new[]
+            {
+                typeof(PrivateLocalPresentationRasterMount),
+                typeof(PrivateLocalPresentationAssetMountDiagnostic).MakeByRefType(),
+            },
+            playerBind.GetParameters().Select(parameter => parameter.ParameterType));
         Assert.Equal(
             "SF2_MAP3_PRIVATE_LOCAL_BASE_ATLAS_SMOKE ",
             Map3Root.PrivateBaseAtlasSmokeMarker);
@@ -137,6 +150,12 @@ public sealed class PrivateMap3PresenterTests
         Assert.Equal(
             "private-local-map3-edge-scale2x-world-treatment-v1",
             Map3Root.PrivateWorldTreatmentCapability);
+        Assert.DoesNotContain(
+            typeof(Map3Root).GetFields(
+                System.Reflection.BindingFlags.Static |
+                System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.NonPublic),
+            field => field.Name.Contains("PlayerReferenceSmoke", StringComparison.Ordinal));
         Assert.DoesNotContain(
             typeof(PrivateMap3Presenter).GetProperties(
                 System.Reflection.BindingFlags.Instance |

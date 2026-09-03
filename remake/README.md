@@ -146,7 +146,8 @@ The reviewed local asset history now owns `hud.yes-no-window-frame`,
 `9cc4c0959ebbe067f22adae5c079a65bcfd1f06d`, with manifest SHA-256
 `56382461FAA5168939A264FC37ABC8A7590A0D099C19DFB54DC0DC6F96F5DCB6`. The atlas and player runtime
 buckets are reviewed nearest 2x/4x outputs; source and master material remain review/provenance
-inputs, not runtime files. The player asset is not yet consumed by Godot.
+inputs, not runtime files. The player asset is consumed only by the explicit base-atlas path as a
+project-authored 24-by-24 logical-cell projection of `initial-reference-frame`.
 
 An explicit PrivateLocal launch may opt into HUD assets with `--private-hud-preview`, or into the
 atlas diagnostic with both `--private-map3-base-view` and `--private-map3-base-atlas`. Either asset
@@ -159,6 +160,10 @@ reader to reopen the fixed manifest, resolve and recheck each contained
 path/length/digest, and return a defensive byte copy before Godot decodes it. No runtime path crosses
 into Application or Godot. Partial
 values, an implicit mount, or a failed private mount never fall back while reporting private success.
+The base-atlas selection also requires the exact player reference asset from the same accepted local
+transaction. Godot replaces only the base view's project-authored player marker with that texture,
+keeps semantic position in the private session, and reprojects after movement. It does not select
+animation halves, call the frame standing/idle, or claim that it was visible at original admission.
 
 The explicit PrivateLocal product profile now applies one adaptive windowed startup policy before any
 presentation payload is selected. The logical canvas and project fallback remain 960 by 540. On a real

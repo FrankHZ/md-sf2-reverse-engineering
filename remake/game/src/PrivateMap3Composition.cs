@@ -95,6 +95,7 @@ public sealed partial class Map3Root
         PrivateLocalPresentationRasterMount? hudPreview = null;
         PrivateLocalPresentationRasterMount? tacticalCursor = null;
         PrivateLocalPresentationRasterMount? baseAtlas = null;
+        PrivateLocalPresentationRasterMount? playerReference = null;
         if ((selection.PrivateHudPreviewRequested || selection.PrivateBaseAtlasRequested) &&
             !TryPreparePrivatePresentationAssets(
                 selection,
@@ -102,7 +103,8 @@ public sealed partial class Map3Root
                 ref source,
                 out hudPreview,
                 out tacticalCursor,
-                out baseAtlas))
+                out baseAtlas,
+                out playerReference))
         {
             return;
         }
@@ -116,6 +118,7 @@ public sealed partial class Map3Root
                 hudPreview,
                 tacticalCursor,
                 baseAtlas,
+                playerReference,
                 runSmoke,
                 sessionStarted);
             return;
@@ -165,6 +168,7 @@ public sealed partial class Map3Root
         PrivateLocalPresentationRasterMount? hudPreview,
         PrivateLocalPresentationRasterMount? tacticalCursor,
         PrivateLocalPresentationRasterMount? baseAtlas,
+        PrivateLocalPresentationRasterMount? playerReference,
         bool runSmoke,
         long sessionStarted)
     {
@@ -257,6 +261,18 @@ public sealed partial class Map3Root
             return;
         }
 
+        if (playerReference is not null &&
+            !presenter.TryBindPlayerReference(
+                playerReference,
+                out PrivateLocalPresentationAssetMountDiagnostic? playerDiagnostic))
+        {
+            FailPrivateStartup(
+                $"PrivateLocal Map 3 player reference unavailable ({playerDiagnostic!.Code}).",
+                runSmoke,
+                "private-local");
+            return;
+        }
+
         presenter.Project(started.Session.PrivateOriginalMapSnapshot, "Ready");
         if (runSmoke)
         {
@@ -276,11 +292,13 @@ public sealed partial class Map3Root
         ref IOriginalMapImportSource importSource,
         out PrivateLocalPresentationRasterMount? hudPreview,
         out PrivateLocalPresentationRasterMount? tacticalCursor,
-        out PrivateLocalPresentationRasterMount? baseAtlas)
+        out PrivateLocalPresentationRasterMount? baseAtlas,
+        out PrivateLocalPresentationRasterMount? playerReference)
     {
         hudPreview = null;
         tacticalCursor = null;
         baseAtlas = null;
+        playerReference = null;
         OriginalMapImportResult importResult = importSource.Admit(importRequest);
         if (importResult is not OriginalMapImportAccepted importAccepted)
         {
@@ -378,6 +396,24 @@ public sealed partial class Map3Root
             }
 
             baseAtlas = mountedAtlas.Asset;
+
+            PrivateLocalPresentationAssetMountResult playerResult =
+                catalog.MountMap3PlayerReference(
+                    packRequest,
+                    acceptedPack,
+                    effectivePhysicalScale);
+            if (playerResult is not PrivateLocalPresentationAssetMounted mountedPlayer)
+            {
+                PrivateLocalPresentationAssetMountRejected rejected =
+                    (PrivateLocalPresentationAssetMountRejected)playerResult;
+                FailPrivateStartup(
+                    $"PrivateLocal Map 3 player reference unavailable ({rejected.Diagnostic.Code}).",
+                    selection.PrivateSmokeRequested,
+                    "private-local");
+                return false;
+            }
+
+            playerReference = mountedPlayer.Asset;
         }
 
         importSource = new PreadmittedOriginalMapImportSource(

@@ -149,6 +149,44 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
     }
 
     [Fact]
+    public void Map3PlayerReferenceBindingRequiresExactIdentityDimensionsBucketsAndNearestPolicy()
+    {
+        LocalPresentationRasterAssetDefinition exact = PlayerReferenceDefinition();
+        Assert.All(
+            exact.Buckets,
+            bucket => Assert.True(
+                PrivateLocalPresentationAssetCatalog.IsExactMap3PlayerReferenceBinding(
+                    exact,
+                    bucket)));
+
+        LocalPresentationRasterAssetDefinition wrongAsset =
+            PlayerReferenceDefinition(assetId: "world.map3.player.other");
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3PlayerReferenceBinding(
+            wrongAsset,
+            wrongAsset.Buckets[0]));
+        LocalPresentationRasterAssetDefinition wrongSize =
+            PlayerReferenceDefinition(width: 23);
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3PlayerReferenceBinding(
+            wrongSize,
+            wrongSize.Buckets[0]));
+        LocalPresentationRasterAssetDefinition wrongDigest =
+            PlayerReferenceDefinition(twoXDigest: new string('A', 64));
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3PlayerReferenceBinding(
+            wrongDigest,
+            wrongDigest.Buckets[0]));
+        LocalPresentationRasterAssetDefinition wrongFilter =
+            PlayerReferenceDefinition(filter: "linear");
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3PlayerReferenceBinding(
+            wrongFilter,
+            wrongFilter.Buckets[0]));
+        LocalPresentationRasterAssetDefinition repeated =
+            PlayerReferenceDefinition(repeat: true);
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3PlayerReferenceBinding(
+            repeated,
+            repeated.Buckets[0]));
+    }
+
+    [Fact]
     public void GenericPresentationPackCannotSelfAuthorizeTheFixedMap3BaseAtlasTransaction()
     {
         using TemporaryPreviewPack package = new();
@@ -162,8 +200,16 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         AssertCode(
             package.Catalog.MountMap3BaseAtlas(
                 package.RequestWith(
-                    commit: PrivateLocalPresentationAssetCatalog.Map3BaseAtlasAssetRepositoryCommit,
-                    manifestDigest: PrivateLocalPresentationAssetCatalog.Map3BaseAtlasManifestDigest),
+                    commit: PrivateLocalPresentationAssetCatalog.Map3AssetRepositoryCommit,
+                    manifestDigest: PrivateLocalPresentationAssetCatalog.Map3AssetManifestDigest),
+                package.Accepted,
+                effectivePhysicalScale: 1),
+            PrivateLocalPresentationAssetMountFailureCode.InvalidBinding);
+        AssertCode(
+            package.Catalog.MountMap3PlayerReference(
+                package.RequestWith(
+                    commit: PrivateLocalPresentationAssetCatalog.Map3AssetRepositoryCommit,
+                    manifestDigest: PrivateLocalPresentationAssetCatalog.Map3AssetManifestDigest),
                 package.Accepted,
                 effectivePhysicalScale: 1),
             PrivateLocalPresentationAssetMountFailureCode.InvalidBinding);
@@ -181,13 +227,13 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
 
         LocalPresentationAssetPackReader reader = new(
             root,
-            PrivateLocalPresentationAssetCatalog.Map3BaseAtlasAssetRepositoryCommit);
+            PrivateLocalPresentationAssetCatalog.Map3AssetRepositoryCommit);
         LocalPresentationAssetPackRequest request = new(
             LocalPresentationAssetPackAdmission.PackageId,
             ContentProfile.PrivateLocal,
             LocalPresentationAssetPackAdmission.RepositoryId,
-            PrivateLocalPresentationAssetCatalog.Map3BaseAtlasAssetRepositoryCommit,
-            PrivateLocalPresentationAssetCatalog.Map3BaseAtlasManifestDigest);
+            PrivateLocalPresentationAssetCatalog.Map3AssetRepositoryCommit,
+            PrivateLocalPresentationAssetCatalog.Map3AssetManifestDigest);
         LocalPresentationAssetPackAccepted accepted =
             Assert.IsType<LocalPresentationAssetPackAccepted>(reader.Admit(request));
         PrivateLocalPresentationAssetCatalog catalog = new(reader);
@@ -198,6 +244,12 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         PrivateLocalPresentationAssetMounted fourX =
             Assert.IsType<PrivateLocalPresentationAssetMounted>(
                 catalog.MountMap3BaseAtlas(request, accepted, 3));
+        PrivateLocalPresentationAssetMounted playerTwoX =
+            Assert.IsType<PrivateLocalPresentationAssetMounted>(
+                catalog.MountMap3PlayerReference(request, accepted, 1));
+        PrivateLocalPresentationAssetMounted playerFourX =
+            Assert.IsType<PrivateLocalPresentationAssetMounted>(
+                catalog.MountMap3PlayerReference(request, accepted, 3));
         byte[] copied = twoX.Asset.CopyPngBytes();
         copied[0] = 0;
 
@@ -209,7 +261,18 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         Assert.Equal(
             PrivateLocalPresentationAssetCatalog.Map3BaseAtlas4xDigest,
             fourX.Asset.Bucket.Sha256);
+        Assert.Equal(2, playerTwoX.Asset.Bucket.Scale);
+        Assert.Equal(
+            PrivateLocalPresentationAssetCatalog.Map3PlayerReference2xDigest,
+            playerTwoX.Asset.Bucket.Sha256);
+        Assert.Equal(4, playerFourX.Asset.Bucket.Scale);
+        Assert.Equal(
+            PrivateLocalPresentationAssetCatalog.Map3PlayerReference4xDigest,
+            playerFourX.Asset.Bucket.Sha256);
         Assert.Equal(137, twoX.Asset.CopyPngBytes()[0]);
+        byte[] playerCopy = playerTwoX.Asset.CopyPngBytes();
+        playerCopy[0] = 0;
+        Assert.Equal(137, playerTwoX.Asset.CopyPngBytes()[0]);
     }
 
     [Fact]
@@ -417,6 +480,45 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
                     filter,
                     mipmaps,
                     repeat: false,
+                    colorSpace: "srgb",
+                    alphaMode: "straight"),
+            ]);
+
+    private static LocalPresentationRasterAssetDefinition PlayerReferenceDefinition(
+        string assetId = PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceAssetId,
+        int width = PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalWidth,
+        int height = PrivateLocalPresentationAssetCatalog.Map3PlayerReferenceLogicalHeight,
+        string twoXDigest = PrivateLocalPresentationAssetCatalog.Map3PlayerReference2xDigest,
+        string fourXDigest = PrivateLocalPresentationAssetCatalog.Map3PlayerReference4xDigest,
+        string filter = "nearest",
+        bool mipmaps = false,
+        bool repeat = false) =>
+        new(
+            assetId,
+            new LocalPresentationLogicalSize(width, height),
+            [
+                new LocalPresentationRasterBucket(
+                    2,
+                    checked(width * 2),
+                    checked(height * 2),
+                    401,
+                    twoXDigest,
+                    "image/png",
+                    filter,
+                    mipmaps,
+                    repeat,
+                    colorSpace: "srgb",
+                    alphaMode: "straight"),
+                new LocalPresentationRasterBucket(
+                    4,
+                    checked(width * 4),
+                    checked(height * 4),
+                    618,
+                    fourXDigest,
+                    "image/png",
+                    filter,
+                    mipmaps,
+                    repeat,
                     colorSpace: "srgb",
                     alphaMode: "straight"),
             ]);

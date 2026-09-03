@@ -271,11 +271,14 @@ including subpixel coordinates. Startup binding still proves that every scale-sq
 exactly repeats the typed 1x payload, so this transport closure does not admit a non-nearest
 derivative. It never reads private source bundles or masters, does not embed the asset root in
 Application/state/receipts, and does not place private data in a PCK. This is a diagnostic
-substitution for transient decoded-tile sampling, not original rendering. The newly reviewed player
-family remains unconsumed until a separate Godot slice.
+substitution for transient decoded-tile sampling, not original rendering. The player family is
+resolved from the same exact accepted transaction only when the base atlas is selected. Godot decodes
+the selected 2x or 4x PNG, retains it in the base viewport, and maps it onto the current typed
+player-position cell after every projection. Session position remains authoritative; the catalog,
+presenter, and viewport do not own gameplay or facing rules.
 
-The sibling private Map 3 player reference-frame builder is narrower than an animation or runtime
-consumer. It fixes the controlled player selection to ally zero, resolves regular map-sprite zero,
+The sibling private Map 3 player reference-frame builder and bounded consumer remain narrower than an
+animation system. The builder fixes the controlled player selection to ally zero, resolves regular map-sprite zero,
 selects the accepted DOWN-facing source slot two without horizontal mirroring, and Basic-decodes the
 two-half 576-byte source. Only half zero enters the candidate as a 24-by-24
 `initial-reference-frame`; the name does not mean standing, idle, or visible at controlled admission.
@@ -286,8 +289,11 @@ project-inferred straight-alpha sRGB channel expansion.
 
 Both actual ROM bytes and the caller pin must match the fixed accepted ROM root before pointer,
 decode, or palette work. The receipt identifies the source choice and derivation policy but contains
-no private path or payload. It remains a candidate only: promotion, Content admission, Godot
-projection, animation selection, and any PCK/export use require later separately reviewed work.
+no private path or payload. The reviewed source/master/runtime/manifest transaction is local only.
+Content rechecks its exact mounted commit, manifest, semantic asset, dimensions, bucket digest, and
+nearest/no-mipmap/no-repeat policy before returning a defensive runtime-byte copy. Godot decodes and
+projects that copy only for the explicit PrivateLocal base-atlas path; source/master material never
+enters runtime or a PCK.
 Admission animation counter, admission-visible frame, live palette at admission, movement-facing
 timing, DMA/cache completion, original rendered-color parity, and final pixels remain **Unknown**.
 
@@ -443,8 +449,8 @@ Migration order is intentionally incremental:
    `HasCursor` projection without moving tactical state into Godot;
 5. build and review one exact local Map 3 base-atlas transaction, mount that bounded world family,
    validate 2x/4x bucket switching, and retain pixel equivalence with the existing typed projection;
-6. mount the reviewed controlled-player initial-reference-frame family through a separately accepted
-   Godot consumer; do not relabel it as standing, idle, or admission-live;
+6. expand the player family to animation only after frame choice, facing/movement timing, and runtime
+   state ownership are closed; do not relabel the current frame as standing, idle, or admission-live;
 7. expand asset families only after their source, derivation, cache, and failure rules are closed;
 8. close music and sound-effect format/loop/streaming contracts separately.
 
@@ -466,7 +472,7 @@ an admitted product font, Theme, original battle title, or presentation-fidelity
 | implemented product display policy | PrivateLocal adaptive windowed startup up to a fitting 1920-by-1080 client; runtime 960-by-540 minimum; explicit physical target preservation; HiDPI without double counting; centered `keep` frame; one startup-resident 2x/4x bucket; restart required for bucket reselection |
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
 | implemented world-family tooling prerequisite | fixed private Map 3 ROM/metadata roots; exact palette/slot selection; five-segment 128-by-320 source-crisp atlas; deterministic nearest 2x/4x ignored candidate; no implicit promotion or update |
-| admitted player-reference prerequisite | fixed private ROM root; exact controlled player, regular map-sprite, DOWN source-slot, no-mirror, and half-zero selection; bounded Basic decode; reviewed 24-by-24 `initial-reference-frame` master and nearest 2x/4x local transaction; no Godot consumer, standing/idle, or admission-visible claim |
+| implemented player-reference consumer | fixed private ROM root; exact controlled player, regular map-sprite, DOWN source-slot, no-mirror, and half-zero selection; bounded Basic decode; reviewed 24-by-24 `initial-reference-frame` master and nearest 2x/4x local transaction; exact Content mount and thin Godot logical-cell projection; no standing/idle, animation, or admission-visible claim |
 | implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop with exact-nearest startup parity; the static overlay is a no-player diagnostic using the admitted map palette by explicit policy; no source/master runtime input, PCK, or fidelity claim |
 | separate implementation decision | live resize bucket remount and fullscreen/monitor transition UX; platform safe-area integration; original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original background-layer palette source; camera/layer/priority-with-sprites/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
