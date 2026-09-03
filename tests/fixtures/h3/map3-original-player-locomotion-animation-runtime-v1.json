@@ -1,0 +1,1408 @@
+{
+  "id": "sf2-map3-original-player-locomotion-animation-runtime-v1",
+  "system": "controlled-map3-original-player-locomotion-animation",
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "emulator": {
+    "name": "BizHawk",
+    "version": "2.11.1",
+    "core": "Genesis Plus GX"
+  },
+  "caseOrder": [
+    "attempt-up",
+    "attempt-left",
+    "attempt-right",
+    "attempt-down"
+  ],
+  "cases": [
+    {
+      "caseId": "attempt-up",
+      "direction": "UP",
+      "joypadName": "Up",
+      "facing": 1
+    },
+    {
+      "caseId": "attempt-left",
+      "direction": "LEFT",
+      "joypadName": "Left",
+      "facing": 2
+    },
+    {
+      "caseId": "attempt-right",
+      "direction": "RIGHT",
+      "joypadName": "Right",
+      "facing": 0
+    },
+    {
+      "caseId": "attempt-down",
+      "direction": "DOWN",
+      "joypadName": "Down",
+      "facing": 3
+    }
+  ],
+  "harness": {
+    "maxFrames": 5400,
+    "privateCapturePolicy": "none-recorded; private-capture-paths-remain-ignored"
+  },
+  "privateProvenance": {
+    "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+    "upstreamCommit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+  },
+  "static": {
+    "facts": {
+      "mapTileSize": 384,
+      "halfThreshold": 15,
+      "counterResetAbove": 30,
+      "movementCounterVelocityShift": 5,
+      "spriteCounterIncrement": 1,
+      "updateOrder": [
+        "movement-state-and-counter",
+        "control-input-attempt",
+        "sprite-half-selection",
+        "sprite-counter-increment"
+      ]
+    },
+    "staticFacingJoin": {
+      "fixture": "tests/fixtures/h2/map3-original-player-reference-frame-static-v1.json",
+      "fixtureId": "sf2-map3-original-player-reference-frame-static-v1",
+      "directionRules": [
+        {
+          "direction": "UP",
+          "facing": 1,
+          "sourceSlot": 0,
+          "horizontalMirror": false
+        },
+        {
+          "direction": "LEFT",
+          "facing": 2,
+          "sourceSlot": 1,
+          "horizontalMirror": false
+        },
+        {
+          "direction": "RIGHT",
+          "facing": 0,
+          "sourceSlot": 1,
+          "horizontalMirror": true
+        },
+        {
+          "direction": "DOWN",
+          "facing": 3,
+          "sourceSlot": 2,
+          "horizontalMirror": false
+        }
+      ],
+      "supersededPolicyOnly": {
+        "label": "initial-reference-frame",
+        "selectedHalf": 0,
+        "classification": "project-import-policy",
+        "sourceRoots": [
+          "DeclareNewEntity-animation-counter-initialization",
+          "VInt_UpdateSprites-first-frame-branch"
+        ],
+        "observedStandingOrIdleFrame": false,
+        "observedVisibleAtFirstWaitForEvent": false
+      }
+    },
+    "admittedStartFixtureId": "sf2-map3-admitted-start-runtime-v1",
+    "entityMovementFixtureId": "sf2-entity-movement-runtime-v1"
+  },
+  "expectedObservation": {
+    "admission": {
+      "boundary": "first-original-WaitForEvent-entry",
+      "entity": {
+        "animCounter": 26,
+        "facing": 3,
+        "x": 21504,
+        "xDest": 21504,
+        "xTravel": 0,
+        "xVelocity": 0,
+        "y": 1152,
+        "yDest": 1152,
+        "yTravel": 0,
+        "yVelocity": 0
+      },
+      "sprite": {
+        "counterAfter": 26,
+        "counterAtSelection": 25,
+        "selectedHalf": 1
+      }
+    },
+    "callbacksCleared": true,
+    "caseOrder": [
+      "attempt-up",
+      "attempt-left",
+      "attempt-right",
+      "attempt-down"
+    ],
+    "records": [
+      {
+        "caseId": "attempt-up",
+        "direction": "UP",
+        "inputObserved": true,
+        "inputTick": 1,
+        "motionInstalled": false,
+        "outcome": "blocked-no-movement",
+        "seed": {
+          "animCounter": 26,
+          "facing": 3,
+          "x": 21504,
+          "xDest": 21504,
+          "xTravel": 0,
+          "xVelocity": 0,
+          "y": 1152,
+          "yDest": 1152,
+          "yTravel": 0,
+          "yVelocity": 0
+        },
+        "settled": {
+          "animCounter": 27,
+          "facing": 1,
+          "x": 21504,
+          "xDest": 21504,
+          "xTravel": 0,
+          "xVelocity": 0,
+          "y": 1152,
+          "yDest": 1152,
+          "yTravel": 0,
+          "yVelocity": 0
+        },
+        "ticks": [
+          {
+            "afterMovement": {
+              "animCounter": 26,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 26,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": {
+              "after": {
+                "animCounter": 26,
+                "facing": 1,
+                "x": 21504,
+                "xDest": 21504,
+                "xTravel": 0,
+                "xVelocity": 0,
+                "y": 1152,
+                "yDest": 1152,
+                "yTravel": 0,
+                "yVelocity": 0
+              },
+              "before": {
+                "animCounter": 26,
+                "facing": 3,
+                "x": 21504,
+                "xDest": 21504,
+                "xTravel": 0,
+                "xVelocity": 0,
+                "y": 1152,
+                "yDest": 1152,
+                "yTravel": 0,
+                "yVelocity": 0
+              },
+              "playerInput": 1
+            },
+            "sprite": {
+              "counterAfter": 27,
+              "counterAtSelection": 26,
+              "selectedHalf": 1
+            },
+            "tick": 1
+          }
+        ],
+        "staticSelection": {
+          "direction": "UP",
+          "facing": 1,
+          "sourceSlot": 0,
+          "horizontalMirror": false
+        }
+      },
+      {
+        "caseId": "attempt-left",
+        "direction": "LEFT",
+        "inputObserved": true,
+        "inputTick": 1,
+        "motionInstalled": true,
+        "outcome": "moved-one-tile",
+        "seed": {
+          "animCounter": 26,
+          "facing": 3,
+          "x": 21504,
+          "xDest": 21504,
+          "xTravel": 0,
+          "xVelocity": 0,
+          "y": 1152,
+          "yDest": 1152,
+          "yTravel": 0,
+          "yVelocity": 0
+        },
+        "settled": {
+          "animCounter": 20,
+          "facing": 2,
+          "x": 21120,
+          "xDest": 21120,
+          "xTravel": 0,
+          "xVelocity": -32,
+          "y": 1152,
+          "yDest": 1152,
+          "yTravel": 0,
+          "yVelocity": 0
+        },
+        "ticks": [
+          {
+            "afterMovement": {
+              "animCounter": 26,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 26,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": {
+              "after": {
+                "animCounter": 26,
+                "facing": 2,
+                "x": 21504,
+                "xDest": 21120,
+                "xTravel": 384,
+                "xVelocity": -32,
+                "y": 1152,
+                "yDest": 1152,
+                "yTravel": 0,
+                "yVelocity": 0
+              },
+              "before": {
+                "animCounter": 26,
+                "facing": 3,
+                "x": 21504,
+                "xDest": 21504,
+                "xTravel": 0,
+                "xVelocity": 0,
+                "y": 1152,
+                "yDest": 1152,
+                "yTravel": 0,
+                "yVelocity": 0
+              },
+              "playerInput": 4
+            },
+            "sprite": {
+              "counterAfter": 27,
+              "counterAtSelection": 26,
+              "selectedHalf": 1
+            },
+            "tick": 1
+          },
+          {
+            "afterMovement": {
+              "animCounter": 28,
+              "facing": 2,
+              "x": 21472,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 27,
+              "facing": 2,
+              "x": 21504,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 29,
+              "counterAtSelection": 28,
+              "selectedHalf": 1
+            },
+            "tick": 2
+          },
+          {
+            "afterMovement": {
+              "animCounter": 30,
+              "facing": 2,
+              "x": 21440,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 29,
+              "facing": 2,
+              "x": 21472,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 0,
+              "counterAtSelection": 30,
+              "selectedHalf": 1
+            },
+            "tick": 3
+          },
+          {
+            "afterMovement": {
+              "animCounter": 1,
+              "facing": 2,
+              "x": 21408,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 0,
+              "facing": 2,
+              "x": 21440,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 2,
+              "counterAtSelection": 1,
+              "selectedHalf": 0
+            },
+            "tick": 4
+          },
+          {
+            "afterMovement": {
+              "animCounter": 3,
+              "facing": 2,
+              "x": 21376,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 2,
+              "facing": 2,
+              "x": 21408,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 4,
+              "counterAtSelection": 3,
+              "selectedHalf": 0
+            },
+            "tick": 5
+          },
+          {
+            "afterMovement": {
+              "animCounter": 5,
+              "facing": 2,
+              "x": 21344,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 4,
+              "facing": 2,
+              "x": 21376,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 6,
+              "counterAtSelection": 5,
+              "selectedHalf": 0
+            },
+            "tick": 6
+          },
+          {
+            "afterMovement": {
+              "animCounter": 7,
+              "facing": 2,
+              "x": 21312,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 6,
+              "facing": 2,
+              "x": 21344,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 8,
+              "counterAtSelection": 7,
+              "selectedHalf": 0
+            },
+            "tick": 7
+          },
+          {
+            "afterMovement": {
+              "animCounter": 9,
+              "facing": 2,
+              "x": 21280,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 8,
+              "facing": 2,
+              "x": 21312,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 10,
+              "counterAtSelection": 9,
+              "selectedHalf": 0
+            },
+            "tick": 8
+          },
+          {
+            "afterMovement": {
+              "animCounter": 11,
+              "facing": 2,
+              "x": 21248,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 10,
+              "facing": 2,
+              "x": 21280,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 12,
+              "counterAtSelection": 11,
+              "selectedHalf": 0
+            },
+            "tick": 9
+          },
+          {
+            "afterMovement": {
+              "animCounter": 13,
+              "facing": 2,
+              "x": 21216,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 12,
+              "facing": 2,
+              "x": 21248,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 14,
+              "counterAtSelection": 13,
+              "selectedHalf": 0
+            },
+            "tick": 10
+          },
+          {
+            "afterMovement": {
+              "animCounter": 15,
+              "facing": 2,
+              "x": 21184,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 14,
+              "facing": 2,
+              "x": 21216,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 16,
+              "counterAtSelection": 15,
+              "selectedHalf": 1
+            },
+            "tick": 11
+          },
+          {
+            "afterMovement": {
+              "animCounter": 17,
+              "facing": 2,
+              "x": 21152,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 16,
+              "facing": 2,
+              "x": 21184,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 18,
+              "counterAtSelection": 17,
+              "selectedHalf": 1
+            },
+            "tick": 12
+          },
+          {
+            "afterMovement": {
+              "animCounter": 19,
+              "facing": 2,
+              "x": 21120,
+              "xDest": 21120,
+              "xTravel": 0,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 18,
+              "facing": 2,
+              "x": 21152,
+              "xDest": 21120,
+              "xTravel": 384,
+              "xVelocity": -32,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": {
+              "after": {
+                "animCounter": 19,
+                "facing": 2,
+                "x": 21120,
+                "xDest": 21120,
+                "xTravel": 0,
+                "xVelocity": -32,
+                "y": 1152,
+                "yDest": 1152,
+                "yTravel": 0,
+                "yVelocity": 0
+              },
+              "before": {
+                "animCounter": 19,
+                "facing": 2,
+                "x": 21120,
+                "xDest": 21120,
+                "xTravel": 0,
+                "xVelocity": -32,
+                "y": 1152,
+                "yDest": 1152,
+                "yTravel": 0,
+                "yVelocity": 0
+              },
+              "playerInput": 0
+            },
+            "sprite": {
+              "counterAfter": 20,
+              "counterAtSelection": 19,
+              "selectedHalf": 1
+            },
+            "tick": 13
+          }
+        ],
+        "staticSelection": {
+          "direction": "LEFT",
+          "facing": 2,
+          "sourceSlot": 1,
+          "horizontalMirror": false
+        }
+      },
+      {
+        "caseId": "attempt-right",
+        "direction": "RIGHT",
+        "inputObserved": true,
+        "inputTick": 1,
+        "motionInstalled": false,
+        "outcome": "blocked-no-movement",
+        "seed": {
+          "animCounter": 26,
+          "facing": 3,
+          "x": 21504,
+          "xDest": 21504,
+          "xTravel": 0,
+          "xVelocity": 0,
+          "y": 1152,
+          "yDest": 1152,
+          "yTravel": 0,
+          "yVelocity": 0
+        },
+        "settled": {
+          "animCounter": 27,
+          "facing": 0,
+          "x": 21504,
+          "xDest": 21504,
+          "xTravel": 0,
+          "xVelocity": 0,
+          "y": 1152,
+          "yDest": 1152,
+          "yTravel": 0,
+          "yVelocity": 0
+        },
+        "ticks": [
+          {
+            "afterMovement": {
+              "animCounter": 26,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 26,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": {
+              "after": {
+                "animCounter": 26,
+                "facing": 0,
+                "x": 21504,
+                "xDest": 21504,
+                "xTravel": 0,
+                "xVelocity": 0,
+                "y": 1152,
+                "yDest": 1152,
+                "yTravel": 0,
+                "yVelocity": 0
+              },
+              "before": {
+                "animCounter": 26,
+                "facing": 3,
+                "x": 21504,
+                "xDest": 21504,
+                "xTravel": 0,
+                "xVelocity": 0,
+                "y": 1152,
+                "yDest": 1152,
+                "yTravel": 0,
+                "yVelocity": 0
+              },
+              "playerInput": 8
+            },
+            "sprite": {
+              "counterAfter": 27,
+              "counterAtSelection": 26,
+              "selectedHalf": 1
+            },
+            "tick": 1
+          }
+        ],
+        "staticSelection": {
+          "direction": "RIGHT",
+          "facing": 0,
+          "sourceSlot": 1,
+          "horizontalMirror": true
+        }
+      },
+      {
+        "caseId": "attempt-down",
+        "direction": "DOWN",
+        "inputObserved": true,
+        "inputTick": 1,
+        "motionInstalled": true,
+        "outcome": "moved-one-tile",
+        "seed": {
+          "animCounter": 26,
+          "facing": 3,
+          "x": 21504,
+          "xDest": 21504,
+          "xTravel": 0,
+          "xVelocity": 0,
+          "y": 1152,
+          "yDest": 1152,
+          "yTravel": 0,
+          "yVelocity": 0
+        },
+        "settled": {
+          "animCounter": 20,
+          "facing": 3,
+          "x": 21504,
+          "xDest": 21504,
+          "xTravel": 0,
+          "xVelocity": 0,
+          "y": 1536,
+          "yDest": 1536,
+          "yTravel": 0,
+          "yVelocity": 32
+        },
+        "ticks": [
+          {
+            "afterMovement": {
+              "animCounter": 26,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "beforeEntities": {
+              "animCounter": 26,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1152,
+              "yDest": 1152,
+              "yTravel": 0,
+              "yVelocity": 0
+            },
+            "inputAttempt": {
+              "after": {
+                "animCounter": 26,
+                "facing": 3,
+                "x": 21504,
+                "xDest": 21504,
+                "xTravel": 0,
+                "xVelocity": 0,
+                "y": 1152,
+                "yDest": 1536,
+                "yTravel": 384,
+                "yVelocity": 32
+              },
+              "before": {
+                "animCounter": 26,
+                "facing": 3,
+                "x": 21504,
+                "xDest": 21504,
+                "xTravel": 0,
+                "xVelocity": 0,
+                "y": 1152,
+                "yDest": 1152,
+                "yTravel": 0,
+                "yVelocity": 0
+              },
+              "playerInput": 2
+            },
+            "sprite": {
+              "counterAfter": 27,
+              "counterAtSelection": 26,
+              "selectedHalf": 1
+            },
+            "tick": 1
+          },
+          {
+            "afterMovement": {
+              "animCounter": 28,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1184,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 27,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1152,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 29,
+              "counterAtSelection": 28,
+              "selectedHalf": 1
+            },
+            "tick": 2
+          },
+          {
+            "afterMovement": {
+              "animCounter": 30,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1216,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 29,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1184,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 0,
+              "counterAtSelection": 30,
+              "selectedHalf": 1
+            },
+            "tick": 3
+          },
+          {
+            "afterMovement": {
+              "animCounter": 1,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1248,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 0,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1216,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 2,
+              "counterAtSelection": 1,
+              "selectedHalf": 0
+            },
+            "tick": 4
+          },
+          {
+            "afterMovement": {
+              "animCounter": 3,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1280,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 2,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1248,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 4,
+              "counterAtSelection": 3,
+              "selectedHalf": 0
+            },
+            "tick": 5
+          },
+          {
+            "afterMovement": {
+              "animCounter": 5,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1312,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 4,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1280,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 6,
+              "counterAtSelection": 5,
+              "selectedHalf": 0
+            },
+            "tick": 6
+          },
+          {
+            "afterMovement": {
+              "animCounter": 7,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1344,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 6,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1312,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 8,
+              "counterAtSelection": 7,
+              "selectedHalf": 0
+            },
+            "tick": 7
+          },
+          {
+            "afterMovement": {
+              "animCounter": 9,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1376,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 8,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1344,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 10,
+              "counterAtSelection": 9,
+              "selectedHalf": 0
+            },
+            "tick": 8
+          },
+          {
+            "afterMovement": {
+              "animCounter": 11,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1408,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 10,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1376,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 12,
+              "counterAtSelection": 11,
+              "selectedHalf": 0
+            },
+            "tick": 9
+          },
+          {
+            "afterMovement": {
+              "animCounter": 13,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1440,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 12,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1408,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 14,
+              "counterAtSelection": 13,
+              "selectedHalf": 0
+            },
+            "tick": 10
+          },
+          {
+            "afterMovement": {
+              "animCounter": 15,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1472,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 14,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1440,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 16,
+              "counterAtSelection": 15,
+              "selectedHalf": 1
+            },
+            "tick": 11
+          },
+          {
+            "afterMovement": {
+              "animCounter": 17,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1504,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 16,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1472,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": null,
+            "sprite": {
+              "counterAfter": 18,
+              "counterAtSelection": 17,
+              "selectedHalf": 1
+            },
+            "tick": 12
+          },
+          {
+            "afterMovement": {
+              "animCounter": 19,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1536,
+              "yDest": 1536,
+              "yTravel": 0,
+              "yVelocity": 32
+            },
+            "beforeEntities": {
+              "animCounter": 18,
+              "facing": 3,
+              "x": 21504,
+              "xDest": 21504,
+              "xTravel": 0,
+              "xVelocity": 0,
+              "y": 1504,
+              "yDest": 1536,
+              "yTravel": 384,
+              "yVelocity": 32
+            },
+            "inputAttempt": {
+              "after": {
+                "animCounter": 19,
+                "facing": 3,
+                "x": 21504,
+                "xDest": 21504,
+                "xTravel": 0,
+                "xVelocity": 0,
+                "y": 1536,
+                "yDest": 1536,
+                "yTravel": 0,
+                "yVelocity": 32
+              },
+              "before": {
+                "animCounter": 19,
+                "facing": 3,
+                "x": 21504,
+                "xDest": 21504,
+                "xTravel": 0,
+                "xVelocity": 0,
+                "y": 1536,
+                "yDest": 1536,
+                "yTravel": 0,
+                "yVelocity": 32
+              },
+              "playerInput": 0
+            },
+            "sprite": {
+              "counterAfter": 20,
+              "counterAtSelection": 19,
+              "selectedHalf": 1
+            },
+            "tick": 13
+          }
+        ],
+        "staticSelection": {
+          "direction": "DOWN",
+          "facing": 3,
+          "sourceSlot": 2,
+          "horizontalMirror": false
+        }
+      }
+    ],
+    "restoration": {
+      "bootstrapStateRestored": true,
+      "callbacksCleared": true,
+      "generatedRam": true,
+      "mapAndBattleState": true,
+      "outputRemoved": false,
+      "playerEntity": true,
+      "scopeArmed": true,
+      "sessionCartPatches": true,
+      "sessionRomDeleted": true
+    },
+    "system": "sf2-map3-original-player-locomotion-animation-runtime-v1"
+  },
+  "sourceContext": {
+    "functions": {
+      "waitForEvent": 153884,
+      "vintUpdateEntities": 20202,
+      "updateEntityData": 23916,
+      "updateEntityDataReturn": 24474,
+      "controlCharacter": 20472,
+      "nextEntity": 23902,
+      "vintUpdateSprites": 19560,
+      "spriteHalf0": 19764,
+      "spriteHalf1": 19770,
+      "spriteCounterAfter": 19804
+    },
+    "ram": {
+      "ENTITY_DATA": 16754946
+    }
+  }
+}

@@ -216,7 +216,7 @@ def test_h3_bootstrap_registry_closes_every_registered_owner() -> None:
         "battle01-intro-skip": 28,
         "map-debug-host": 25,
         "direct-function-seam": 13,
-        "witch-menu": 6,
+        "witch-menu": 7,
         "sound-driver": 1,
         "original-reference": 2,
     }
@@ -225,20 +225,20 @@ def test_h3_bootstrap_registry_closes_every_registered_owner() -> None:
         "battle01-intro-skip": 31,
         "map-debug-host": 25,
         "direct-function-seam": 11,
-        "witch-menu": 6,
+        "witch-menu": 7,
         "sound-driver": 1,
         "original-reference": 2,
     }
     assert Counter(launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()) == {
         0: 1,
-        1: 70,
+        1: 71,
         2: 1,
         8: 1,
         16: 1,
         14: 1,
         27: 1,
     }
-    assert sum(launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()) == 137
+    assert sum(launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()) == 138
     assert Counter(bootstrap.LEGACY_LAUNCHER_PROFILES.values()) == {
         "battle01-intro-skip": 15,
     }

@@ -160,6 +160,9 @@ from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
 from sf2tool.h3.map3_admitted_start import verify_map3_admitted_start
 from sf2tool.h3.map3_battle01_natural_route import verify_map3_battle01_natural_route
 from sf2tool.h3.map3_messenger_acceptance import verify_map3_messenger_acceptance
+from sf2tool.h3.map3_original_player_locomotion_animation import (
+    verify_map3_original_player_locomotion_animation,
+)
 from sf2tool.h3.map_animation_vdp import verify_map_animation_vdp
 from sf2tool.h3.map_block_copy_lifecycle import verify_map_block_copy_lifecycle
 from sf2tool.h3.map_block_mutation import verify_map_block_mutation
@@ -1131,6 +1134,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map3_admitted_start)
     h3_map3_admitted_start.add_argument("--timeout-seconds", type=int, default=180)
+    h3_map3_original_player_locomotion_animation = h3_commands.add_parser(
+        "map3-original-player-locomotion-animation",
+        help="verify controlled Map 3 movement ordering and visible animation halves",
+    )
+    _add_local_paths(h3_map3_original_player_locomotion_animation)
+    h3_map3_original_player_locomotion_animation.add_argument(
+        "--timeout-seconds", type=int, default=240
+    )
     h3_map3_battle01_natural_route = h3_commands.add_parser(
         "map3-battle01-natural-route",
         help="verify the natural Map 3 opening through messenger-program entry",
@@ -2387,6 +2398,17 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map3-admitted-start":
         print_record(
             verify_map3_admitted_start(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif (
+        args.command == "h3"
+        and args.h3_command == "map3-original-player-locomotion-animation"
+    ):
+        print_record(
+            verify_map3_original_player_locomotion_animation(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

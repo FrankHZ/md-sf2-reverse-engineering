@@ -210,6 +210,10 @@ Data-side directory inventory and ROM parity:
   MainLoop → default Map 3 setup/init → first exploration-wait evidence, its exact 26-record static
   join and admitted state fixture, scoped runtime restoration, and RA-11 private provenance
   foundation; it deliberately excludes natural route, presentation, and Battle 01 claims.
+- [`map3-original-player-locomotion-animation.md`](./research/map3-original-player-locomotion-animation.md):
+  the one-launch controlled Map 3 player input/movement/animation matrix, including admission counter
+  and visible half, blocked-versus-one-tile ordering, every enabled-VInt counter/half transition, and
+  the retained static facing-to-source-slot/mirror join.
 - [`map3-battle01-natural-route.md`](./research/map3-battle01-natural-route.md): the R2 original-input
   Map 3 opening from that admitted wait through `cs_5149A` messenger-program entry-before-body, with
   exact callback/state/input facts, field menu NotReached, and a strictly static, Inferred/partial
