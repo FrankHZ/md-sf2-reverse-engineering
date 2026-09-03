@@ -84,8 +84,11 @@ _RETAINED_OWNER_EXPECTED = {
         "semanticSha256": "764B26A40CEA1BCF9769384712716F52D74087D8D8A1CFA58348397CAED52BB6",
     },
 }
+_CURRENT_MAP_EVENTS_VERIFIER_SHA256 = (
+    "F07892A4C590E452BCD8CB3683992DBD953EC2AB2E5CCF1A740DCFFBB0CD19CA"
+)
 _CURRENT_FLAG_LIFECYCLE_VERIFIER_SHA256 = (
-    "2818CE61CBB185506E0784E3BA8DA4E37B825E47F1BD6649194731A7C779C8B7"
+    "9E1541E988E9FAB95B7D59B07B8873965E3EA4AB205372092CDA32D2925BEAFE"
 )
 _UNKNOWN_KEYS = (
     "naturalProgramReachability",
@@ -107,12 +110,18 @@ def _fixture_sha256(path: Path) -> str:
     return _sha(path.read_bytes())
 
 
+def _verifier_sha256(path: Path) -> str:
+    """Hash source text after one deterministic cross-platform EOL projection."""
+    source = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return _sha(source)
+
+
 def _retained_owner(path: Path, verifier_path: str, output: dict[str, Any]) -> dict[str, str]:
     return {
         "fixtureId": output["id"],
         "fixtureSha256": _fixture_sha256(path),
         "verifierPath": verifier_path,
-        "verifierSha256": _fixture_sha256(repo_path(verifier_path)),
+        "verifierSha256": _verifier_sha256(repo_path(verifier_path)),
         "semanticSha256": _sha(canonical_json_bytes(output)),
     }
 
@@ -166,7 +175,7 @@ def _guarded_retained_owners(
             "fixtureId": "sf2-map-events-static-v1:direct-flags",
             "fixtureSha256": _fixture_sha256(MAP_EVENTS_DIRECT_FLAGS_FIXTURE),
             "verifierPath": "src/sf2tool/h2/map_events.py",
-            "verifierSha256": _fixture_sha256(repo_path("src/sf2tool/h2/map_events.py")),
+            "verifierSha256": _verifier_sha256(repo_path("src/sf2tool/h2/map_events.py")),
             "semanticSha256": _sha(canonical_json_bytes(direct_flags)),
         },
         "flagLifecycleState": _retained_owner(
@@ -176,6 +185,7 @@ def _guarded_retained_owners(
         ),
     }
     current_expected = deepcopy(_RETAINED_OWNER_EXPECTED)
+    current_expected["mapEventsDirectFlags"]["verifierSha256"] = _CURRENT_MAP_EVENTS_VERIFIER_SHA256
     current_expected["flagLifecycleState"]["verifierSha256"] = (
         _CURRENT_FLAG_LIFECYCLE_VERIFIER_SHA256
     )
@@ -973,6 +983,4 @@ def normalize_map_event_cross_program_flag_state_later_owner_index(
     """Strictly normalize the current index through this owner's predecessor."""
     from sf2tool.research_index import normalize_current_index_to_owner_predecessor
 
-    return normalize_current_index_to_owner_predecessor(
-        index, owner_id=ID
-    )
+    return normalize_current_index_to_owner_predecessor(index, owner_id=ID)
