@@ -117,13 +117,36 @@ The builder result remains under ignored `cache/`; it does not stage, promote, c
 enter a PCK, or authorize public redistribution. Promotion remains a separate reviewed local
 asset-repository transaction.
 
+The player reference-frame candidate uses the same fixed ROM boundary without claiming a live
+admission frame:
+
+```powershell
+uv run python -m sf2tool.remake_asset_build map3-player-reference-frame-candidate `
+  --asset-root <fully-qualified-asset-checkout> `
+  --expected-commit <40-lowercase-hex> `
+  --expected-tree <40-lowercase-hex> `
+  --rom <fully-qualified-accepted-rom> `
+  --expected-rom-sha256 <accepted-uppercase-sha256> `
+  --candidate-name <fresh-cache-child>
+```
+
+It derives the accepted controlled player selection, regular map-sprite zero, DOWN source slot two,
+no horizontal mirror, and the first of the two decoded 24-by-24 halves. That half is named only
+`initial-reference-frame`: admission animation counter, admission-visible frame, movement-facing
+timing, DMA/cache completion, and the live palette at admission remain Unknown. The output is one
+ignored source bundle, a 24-by-24 master, and nearest-neighbor 2x/4x buckets under the existing closed
+manifest schema. Palette index zero is transparent; the same project-inferred channel expansion is
+used without a hardware, final-pixel, standing, idle, or original-visible-frame claim. As with the
+atlas builder, review and promotion are a separate local-only asset-repository transaction.
+
 The reviewed local asset history now owns `hud.yes-no-window-frame`,
-`hud.tactical-selection-cursor`, and `world.map3.base-tileset-atlas`. The current three-asset
-checkpoint is local commit `6cf2973698e3a90735a2e3eb03bd85c50a47e4e3`, tree
-`1873d97157250fcb282ffbc89c290a3e032d5bd9`, with manifest SHA-256
-`262C2F8A9A17CC843392F8818841F018C45B538610AEC41C75D38A018E829D78`. Its atlas runtime buckets are
-the reviewed nearest 2x/4x outputs; source and master material remain review/provenance inputs, not
-runtime files.
+`hud.tactical-selection-cursor`, `world.map3.base-tileset-atlas`, and
+`world.map3.player.initial-reference-frame`. The current four-asset checkpoint is local commit
+`f7a351f24e328c47b10a892613edeac07a07635a`, tree
+`9cc4c0959ebbe067f22adae5c079a65bcfd1f06d`, with manifest SHA-256
+`56382461FAA5168939A264FC37ABC8A7590A0D099C19DFB54DC0DC6F96F5DCB6`. The atlas and player runtime
+buckets are reviewed nearest 2x/4x outputs; source and master material remain review/provenance
+inputs, not runtime files. The player asset is not yet consumed by Godot.
 
 An explicit PrivateLocal launch may opt into HUD assets with `--private-hud-preview`, or into the
 atlas diagnostic with both `--private-map3-base-view` and `--private-map3-base-atlas`. Either asset

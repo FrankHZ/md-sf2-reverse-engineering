@@ -17,7 +17,7 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from sf2tool import remake_asset_build, remake_assets
-from sf2tool.compression import StackDecodeResult
+from sf2tool.compression import BasicDecodeResult, StackDecodeResult
 from sf2tool.remake_godot import ProcessReceipt
 
 HOOK_BYTES = (
@@ -1169,6 +1169,57 @@ def _read_rgba_png(path: Path) -> tuple[int, int, bytes]:
     return width, height, bytes(rgba)
 
 
+def _player_reference_input(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[Path, bytes]:
+    pointer_table = 64
+    payload_address = 128
+    palette_address = 512
+    compressed = b"\x12\x34\x56\x78"
+    rom = bytearray(1024)
+    pointer_offset = pointer_table + (2 * 4)
+    rom[pointer_offset : pointer_offset + 4] = payload_address.to_bytes(4, "big")
+    rom[payload_address : payload_address + len(compressed)] = compressed
+    palette_words = [0, 2, *([0] * 14)]
+    rom[palette_address : palette_address + 32] = b"".join(
+        word.to_bytes(2, "big") for word in palette_words
+    )
+    rom_path = tmp_path / "player-reference.rom"
+    rom_path.write_bytes(rom)
+    monkeypatch.setattr(remake_asset_build, "PLAYER_POINTER_TABLE_ADDRESS", pointer_table)
+    monkeypatch.setattr(remake_asset_build, "PLAYER_SELECTED_PAYLOAD_ADDRESS", payload_address)
+    monkeypatch.setattr(remake_asset_build, "PLAYER_PALETTE_ADDRESS", palette_address)
+    monkeypatch.setattr(remake_asset_build, "ACCEPTED_ROM_SHA256", _digest(bytes(rom)))
+    monkeypatch.setattr(remake_asset_build, "ACCEPTED_ROM_SIZE", len(rom))
+    decoded = bytearray(remake_asset_build.PLAYER_DECODED_BYTES)
+    decoded[0] = 0x10
+    decoded[remake_asset_build.PLAYER_FRAME_BYTES] = 0x20
+
+    def decode(data: bytes, *, expected_output_bytes: int | None = None) -> BasicDecodeResult:
+        assert data.startswith(compressed)
+        assert expected_output_bytes == remake_asset_build.PLAYER_DECODED_BYTES
+        return BasicDecodeResult(bytes(decoded), len(compressed), 1, 1, 0, 0, 0, 0, 0)
+
+    monkeypatch.setattr(remake_asset_build, "decode_basic_compressed", decode)
+    return rom_path, compressed
+
+
+def _build_player_reference_candidate(
+    repository: CandidateRepository,
+    rom_path: Path,
+) -> dict[str, object]:
+    commit, tree = repository.pins()
+    return remake_asset_build.build_map3_player_reference_frame_candidate(
+        asset_root=str(repository.root),
+        expected_commit=commit,
+        expected_tree=tree,
+        rom_path=str(rom_path),
+        expected_rom_sha256=_digest(rom_path.read_bytes()),
+        candidate_name="map3-player-reference-candidate",
+    )
+
+
 @pytest.mark.parametrize(
     ("replacement", "code"),
     (
@@ -1651,4 +1702,193 @@ def test_exact_private_map3_world_candidate_opt_in(tmp_path: Path) -> None:
     assert receipt["capability"] == remake_asset_build.WORLD_BUILD_CAPABILITY
     assert receipt["acceptedTilesetSlots"] == [0, 37, 43, 53, 66]
     assert receipt["atlasSize"] == {"width": 128, "height": 320}
+    assert receipt["cleanupStatus"] == "clean"
+
+
+def test_map3_player_reference_candidate_is_exact_deterministic_and_ignored(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+    rom_path, compressed = _player_reference_input(tmp_path, monkeypatch)
+    before = (*repository.pins(), _run(repository.root, "status", "--porcelain=v2", "-z"))
+
+    receipt = _build_player_reference_candidate(repository, rom_path)
+
+    candidate = repository.root / "cache" / "map3-player-reference-candidate"
+    assert sorted(
+        path.relative_to(candidate).as_posix() for path in candidate.rglob("*") if path.is_file()
+    ) == [
+        "manifests/presentation-assets-v1.json",
+        "masters/world/map3/player-initial-reference-frame.png",
+        "runtime/world/map3/player-initial-reference-frame@2x.png",
+        "runtime/world/map3/player-initial-reference-frame@4x.png",
+        "source/world/map3/player-initial-reference-frame-v1.bin",
+    ]
+    manifest = json.loads(
+        (candidate / "manifests" / "presentation-assets-v1.json").read_text(encoding="utf-8")
+    )
+    asset = manifest["assets"][0]
+    assert asset["assetId"] == remake_asset_build.PLAYER_ASSET_ID
+    assert asset["logicalSize"] == {"width": 24, "height": 24}
+    assert [bucket["scale"] for bucket in asset["buckets"]] == [2, 4]
+    assert all(bucket["filter"] == "nearest" for bucket in asset["buckets"])
+    source = (
+        candidate / "source" / "world" / "map3" / "player-initial-reference-frame-v1.bin"
+    ).read_bytes()
+    assert source.startswith(
+        remake_asset_build.PLAYER_SOURCE_MAGIC
+        + bytes(
+            (
+                remake_asset_build.PLAYER_MAPSPRITE_ID,
+                remake_asset_build.PLAYER_SOURCE_SLOT,
+                remake_asset_build.PLAYER_SELECTED_HALF,
+            )
+        )
+        + len(compressed).to_bytes(4, "big")
+        + compressed
+    )
+    assert receipt["selection"] == {
+        "controlledEntityIndex": 0,
+        "allyIndex": 0,
+        "regularMapSpriteId": 0,
+        "direction": "DOWN",
+        "facing": 3,
+        "sourceSlot": 2,
+        "horizontalMirror": False,
+        "selectedHalf": 0,
+        "framePolicy": "initial-reference-frame",
+    }
+    assert receipt["logicalSize"] == {"width": 24, "height": 24}
+    assert receipt["palettePolicy"]["parityClaim"] == "project-inferred-rendering-policy"
+    master_width, master_height, master_pixels = _read_rgba_png(
+        candidate / "masters" / "world" / "map3" / "player-initial-reference-frame.png"
+    )
+    assert (master_width, master_height) == (24, 24)
+    assert master_pixels[:8] == bytes([36, 0, 0, 255, 0, 0, 0, 0])
+    two_width, two_height, two_pixels = _read_rgba_png(
+        candidate / "runtime" / "world" / "map3" / "player-initial-reference-frame@2x.png"
+    )
+    assert (two_width, two_height) == (48, 48)
+    assert two_pixels[:16] == bytes([36, 0, 0, 255]) * 2 + bytes([0, 0, 0, 0]) * 2
+    assert two_pixels[: 48 * 4] == two_pixels[48 * 4 : 96 * 4]
+    encoded = json.dumps(receipt, sort_keys=True)
+    assert str(repository.root) not in encoded
+    assert str(rom_path) not in encoded
+    assert repository.pins() == before[:2]
+    assert _run(repository.root, "status", "--porcelain=v2", "-z") == before[2]
+    assert not list((repository.root / "cache").glob(".sf2-map3-player-reference-build-*"))
+
+
+@pytest.mark.parametrize(
+    ("mutation", "code"),
+    (
+        ("pointer", "SourcePayloadMismatch"),
+        ("decode-error", "DecodeFailure"),
+        ("decode-size", "DecodeFailure"),
+        ("decode-consumption", "DecodeFailure"),
+        ("palette-mask", "PalettePayloadMismatch"),
+    ),
+)
+def test_map3_player_reference_semantics_fail_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: str,
+    code: str,
+) -> None:
+    rom_path, _compressed = _player_reference_input(tmp_path, monkeypatch)
+    rom = bytearray(rom_path.read_bytes())
+    if mutation == "pointer":
+        pointer_offset = remake_asset_build.PLAYER_POINTER_TABLE_ADDRESS + (2 * 4)
+        rom[pointer_offset : pointer_offset + 4] = (129).to_bytes(4, "big")
+    elif mutation == "decode-error":
+        monkeypatch.setattr(
+            remake_asset_build,
+            "decode_basic_compressed",
+            lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("test decode drift")),
+        )
+    elif mutation == "decode-size":
+        monkeypatch.setattr(
+            remake_asset_build,
+            "decode_basic_compressed",
+            lambda *_args, **_kwargs: BasicDecodeResult(b"\0" * 574, 4, 1, 1, 0, 0, 0, 0, 0),
+        )
+    elif mutation == "decode-consumption":
+        monkeypatch.setattr(
+            remake_asset_build,
+            "decode_basic_compressed",
+            lambda data, **_kwargs: BasicDecodeResult(
+                b"\0" * 576, len(data) + 1, 1, 1, 0, 0, 0, 0, 0
+            ),
+        )
+    else:
+        palette = remake_asset_build.PLAYER_PALETTE_ADDRESS
+        rom[palette : palette + 2] = b"\xff\xff"
+
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        remake_asset_build._build_player_reference_source(bytes(rom))
+
+    assert rejected.value.code == code
+
+
+def test_map3_player_reference_fixed_rom_precedes_decode_and_rejects_relative_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+    rom_path, _compressed = _player_reference_input(tmp_path, monkeypatch)
+    original = rom_path.read_bytes()
+    mutated = bytearray(original)
+    mutated[-1] ^= 1
+    rom_path.write_bytes(mutated)
+    decode_called = False
+
+    def reject_decode(*_args: object, **_kwargs: object) -> BasicDecodeResult:
+        nonlocal decode_called
+        decode_called = True
+        raise AssertionError("digest drift reached Basic decode")
+
+    monkeypatch.setattr(remake_asset_build, "decode_basic_compressed", reject_decode)
+    commit, tree = repository.pins()
+    with pytest.raises(remake_asset_build.AssetBuildError) as digest_rejected:
+        remake_asset_build.build_map3_player_reference_frame_candidate(
+            asset_root=str(repository.root),
+            expected_commit=commit,
+            expected_tree=tree,
+            rom_path=str(rom_path),
+            expected_rom_sha256=_digest(mutated),
+            candidate_name="map3-player-reference-candidate",
+        )
+    assert digest_rejected.value.code == "ContentDigestMismatch"
+    assert decode_called is False
+
+    rom_path.write_bytes(original)
+    with pytest.raises(remake_asset_build.AssetBuildError) as relative_rejected:
+        remake_asset_build.build_map3_player_reference_frame_candidate(
+            asset_root=str(repository.root),
+            expected_commit=commit,
+            expected_tree=tree,
+            rom_path="relative/player.rom",
+            expected_rom_sha256=_digest(original),
+            candidate_name="map3-player-reference-candidate",
+        )
+    assert relative_rejected.value.code == "InvalidRequest"
+    assert str(tmp_path) not in relative_rejected.value.message
+
+
+def test_exact_private_map3_player_reference_candidate_opt_in(tmp_path: Path) -> None:
+    rom_value = os.environ.get("SF2_PRIVATE_ROM")
+    if not rom_value:
+        pytest.skip("set SF2_PRIVATE_ROM to the accepted private ROM")
+    repository = CandidateRepository.create(tmp_path / "exact-player-asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+
+    receipt = _build_player_reference_candidate(repository, Path(rom_value))
+
+    assert receipt["status"] == "Pass"
+    assert receipt["capability"] == remake_asset_build.PLAYER_BUILD_CAPABILITY
+    assert receipt["selection"]["framePolicy"] == "initial-reference-frame"
+    assert receipt["selection"]["sourceSlot"] == 2
     assert receipt["cleanupStatus"] == "clean"
