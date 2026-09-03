@@ -23,7 +23,12 @@ from pathlib import Path, PurePosixPath
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError, ValidationError
 
-from sf2tool.compression import StackDecodeResult, decode_stack_compressed
+from sf2tool.compression import (
+    BasicDecodeResult,
+    StackDecodeResult,
+    decode_basic_compressed,
+    decode_stack_compressed,
+)
 from sf2tool.paths import repo_path
 from sf2tool.remake_assets import (
     MANIFEST_RELATIVE_PATH,
@@ -40,6 +45,7 @@ from sf2tool.texture_extract import (
     TILE_BYTES_4BPP,
     decode_md_4bpp_tile,
     md_palette_color,
+    palette_index_rgba,
     render_tileset_sheet,
     write_png_rgba,
 )
@@ -94,6 +100,28 @@ WORLD_PALETTE_WORD_COUNT = 16
 WORLD_PALETTE_BYTES = WORLD_PALETTE_WORD_COUNT * 2
 WORLD_PALETTE_MASK = 0x0EEE
 WORLD_MAXIMUM_PNG_BYTES = 32 * 1024 * 1024
+PLAYER_BUILD_CAPABILITY = (
+    "private-local-map3-original-player-initial-reference-frame-candidate-build-v1"
+)
+PLAYER_ASSET_ID = "world.map3.player.initial-reference-frame"
+PLAYER_SOURCE_ASSET_ID = "source.world.map3.player.initial-reference-frame"
+PLAYER_POLICY_ID = "private-local-map3-player-reference-nearest-rgba8-v1"
+PLAYER_SOURCE_FILE = "source/world/map3/player-initial-reference-frame-v1.bin"
+PLAYER_MASTER_FILE = "masters/world/map3/player-initial-reference-frame.png"
+PLAYER_RUNTIME_TEMPLATE = "runtime/world/map3/player-initial-reference-frame@{scale}x.png"
+PLAYER_SOURCE_MAGIC = b"SF2-MAP3-PLAYER-INITIAL-REFERENCE-FRAME-V1\x00"
+PLAYER_MAPSPRITE_ID = 0
+PLAYER_SOURCE_SLOT = 2
+PLAYER_SELECTED_HALF = 0
+PLAYER_POINTER_TABLE_ADDRESS = 819_200
+PLAYER_SELECTED_PAYLOAD_ADDRESS = 822_782
+PLAYER_PALETTE_ADDRESS = 12_446
+PLAYER_DECODED_BYTES = 576
+PLAYER_FRAME_BYTES = 288
+PLAYER_FRAME_TILE_COUNT = 9
+PLAYER_FRAME_TILES_PER_SIDE = 3
+PLAYER_FRAME_WIDTH = 24
+PLAYER_FRAME_HEIGHT = 24
 _TILESET_ROOT_FIELDS = {
     "schemaVersion",
     "id",
@@ -158,6 +186,7 @@ SVG_NAMESPACE = "http://www.w3.org/2000/svg"
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 _STAGING_PREFIX = ".sf2-hud-svg-build-"
 _WORLD_STAGING_PREFIX = ".sf2-map3-world-atlas-build-"
+_PLAYER_STAGING_PREFIX = ".sf2-map3-player-reference-build-"
 _ASSET_ID_PATTERN = re.compile(r"^hud\.([a-z0-9]+(?:-[a-z0-9]+)*)$")
 _CANDIDATE_NAME_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$")
 _ELEMENT_ID_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9._-]{0,127}$")
@@ -337,6 +366,12 @@ class WorldAtlasSource:
     source_bundle: bytes
     rgba_pixels: tuple[int, ...]
     selected_slots: tuple[int, ...]
+
+
+@dataclass(frozen=True)
+class PlayerReferenceSource:
+    source_bundle: bytes
+    rgba_pixels: tuple[int, ...]
 
 
 ProcessRunner = Callable[..., ProcessReceipt]
@@ -828,6 +863,116 @@ def _build_world_atlas_source(
         )
     )
     return WorldAtlasSource(source_bundle, tuple(atlas_pixels), ACCEPTED_TILESET_SLOTS)
+
+
+def _build_player_reference_source(rom: bytes) -> PlayerReferenceSource:
+    pointer_offset = PLAYER_POINTER_TABLE_ADDRESS + (PLAYER_SOURCE_SLOT * 4)
+    if (
+        pointer_offset < 0
+        or pointer_offset + 4 > len(rom)
+        or PLAYER_SELECTED_PAYLOAD_ADDRESS < 0
+        or len(rom) <= PLAYER_SELECTED_PAYLOAD_ADDRESS
+    ):
+        raise _reject(
+            "SourcePayloadMismatch",
+            "playerPayload",
+            "The selected player reference-frame pointer boundary is unavailable.",
+        )
+    selected_address = int.from_bytes(rom[pointer_offset : pointer_offset + 4], "big")
+    if selected_address != PLAYER_SELECTED_PAYLOAD_ADDRESS:
+        raise _reject(
+            "SourcePayloadMismatch",
+            "playerPayload",
+            "The selected player reference-frame pointer identity drifted.",
+        )
+
+    encoded = rom[selected_address:]
+    try:
+        decoded: BasicDecodeResult = decode_basic_compressed(
+            encoded,
+            expected_output_bytes=PLAYER_DECODED_BYTES,
+        )
+    except ValueError as error:
+        raise _reject(
+            "DecodeFailure",
+            "playerPayload",
+            "The selected player reference frame failed bounded Basic decoding.",
+        ) from error
+    if (
+        decoded.input_bytes_consumed < 1
+        or decoded.input_bytes_consumed > len(encoded)
+        or len(decoded.output) != PLAYER_DECODED_BYTES
+    ):
+        raise _reject(
+            "DecodeFailure",
+            "playerPayload",
+            "The selected player reference-frame decode shape drifted.",
+        )
+    compressed = encoded[: decoded.input_bytes_consumed]
+    frame_start = PLAYER_SELECTED_HALF * PLAYER_FRAME_BYTES
+    frame = decoded.output[frame_start : frame_start + PLAYER_FRAME_BYTES]
+    if len(frame) != PLAYER_FRAME_BYTES:
+        raise _reject(
+            "DecodedPayloadMismatch",
+            "playerPayload",
+            "The selected player reference-frame half is unavailable.",
+        )
+
+    palette_end = PLAYER_PALETTE_ADDRESS + WORLD_PALETTE_BYTES
+    if PLAYER_PALETTE_ADDRESS < 0 or palette_end > len(rom):
+        raise _reject(
+            "PalettePayloadMismatch",
+            "playerPalette",
+            "The selected player palette boundary is unavailable.",
+        )
+    palette_source = rom[PLAYER_PALETTE_ADDRESS:palette_end]
+    palette_words = [
+        int.from_bytes(palette_source[offset : offset + 2], "big")
+        for offset in range(0, WORLD_PALETTE_BYTES, 2)
+    ]
+    if len(palette_words) != WORLD_PALETTE_WORD_COUNT or any(
+        word & ~WORLD_PALETTE_MASK for word in palette_words
+    ):
+        raise _reject(
+            "PalettePayloadMismatch",
+            "playerPalette",
+            "The selected player palette word projection drifted.",
+        )
+    palette = [md_palette_color(word) for word in palette_words]
+    tiles = [
+        decode_md_4bpp_tile(frame[offset : offset + TILE_BYTES_4BPP])
+        for offset in range(0, PLAYER_FRAME_BYTES, TILE_BYTES_4BPP)
+    ]
+    if len(tiles) != PLAYER_FRAME_TILE_COUNT:
+        raise _reject(
+            "DecodedPayloadMismatch",
+            "playerPayload",
+            "The selected player reference-frame tile count drifted.",
+        )
+    pixels = [0] * (PLAYER_FRAME_WIDTH * PLAYER_FRAME_HEIGHT * 4)
+    for tile_index, tile in enumerate(tiles):
+        tile_column = tile_index // PLAYER_FRAME_TILES_PER_SIDE
+        tile_row = tile_index % PLAYER_FRAME_TILES_PER_SIDE
+        origin_x = tile_column * WORLD_TILE_PIXEL_SIZE
+        origin_y = tile_row * WORLD_TILE_PIXEL_SIZE
+        for row in range(WORLD_TILE_PIXEL_SIZE):
+            for column in range(WORLD_TILE_PIXEL_SIZE):
+                palette_index = tile[(row * WORLD_TILE_PIXEL_SIZE) + column]
+                destination = (((origin_y + row) * PLAYER_FRAME_WIDTH) + origin_x + column) * 4
+                pixels[destination : destination + 4] = palette_index_rgba(
+                    palette,
+                    palette_index,
+                )
+    source_bundle = b"".join(
+        (
+            PLAYER_SOURCE_MAGIC,
+            bytes((PLAYER_MAPSPRITE_ID, PLAYER_SOURCE_SLOT, PLAYER_SELECTED_HALF)),
+            len(compressed).to_bytes(4, "big"),
+            compressed,
+            palette_source,
+        )
+    )
+    return PlayerReferenceSource(source_bundle, tuple(pixels))
 
 
 def _scale_rgba_nearest(
@@ -2118,6 +2263,370 @@ def build_map3_base_atlas_candidate(
     return receipt
 
 
+def _player_manifest(
+    source: PlayerReferenceSource,
+    generator_artifact_sha256: str,
+    buckets: tuple[PngIdentity, PngIdentity],
+) -> dict[str, object]:
+    bucket_records = [
+        {
+            "scale": scale,
+            "runtimePath": PLAYER_RUNTIME_TEMPLATE.format(scale=scale),
+            "width": identity.width,
+            "height": identity.height,
+            "byteLength": identity.byte_length,
+            "sha256": identity.sha256,
+            "mediaType": "image/png",
+            "filter": "nearest",
+            "mipmaps": False,
+            "repeat": False,
+            "colorSpace": "srgb",
+            "alphaMode": "straight",
+        }
+        for scale, identity in zip(WORLD_SCALES, buckets, strict=True)
+    ]
+    return {
+        "schemaVersion": 1,
+        "packageId": PACKAGE_ID,
+        "repositoryId": REPOSITORY_ID,
+        "profile": PROFILE,
+        "capabilities": [PACK_CAPABILITY],
+        "logicalPresentation": {"width": 960, "height": 540},
+        "assets": [
+            {
+                "assetId": PLAYER_ASSET_ID,
+                "kind": "raster-image",
+                "logicalSize": {"width": PLAYER_FRAME_WIDTH, "height": PLAYER_FRAME_HEIGHT},
+                "source": {
+                    "assetId": PLAYER_SOURCE_ASSET_ID,
+                    "sha256": _sha256(source.source_bundle),
+                },
+                "derivation": {
+                    "policyId": PLAYER_POLICY_ID,
+                    "generatorId": WORLD_GENERATOR_ID,
+                    "generatorVersion": WORLD_GENERATOR_VERSION,
+                    "generatorArtifactSha256": generator_artifact_sha256,
+                },
+                "buckets": bucket_records,
+            }
+        ],
+    }
+
+
+def _write_player_candidate(
+    destination: Path,
+    source: PlayerReferenceSource,
+    master: Path,
+    outputs: Mapping[int, Path],
+    manifest: Mapping[str, object],
+) -> str:
+    candidate = destination / "candidate"
+    try:
+        candidate.mkdir()
+        source_target = candidate.joinpath(*PurePosixPath(PLAYER_SOURCE_FILE).parts)
+        source_target.parent.mkdir(parents=True)
+        source_target.write_bytes(source.source_bundle)
+        master_target = candidate.joinpath(*PurePosixPath(PLAYER_MASTER_FILE).parts)
+        master_target.parent.mkdir(parents=True)
+        shutil.copyfile(master, master_target)
+        for scale, output in outputs.items():
+            runtime_target = candidate.joinpath(
+                *PurePosixPath(PLAYER_RUNTIME_TEMPLATE.format(scale=scale)).parts
+            )
+            runtime_target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(output, runtime_target)
+        manifest_path = candidate.joinpath(*MANIFEST_RELATIVE_PATH.parts)
+        manifest_path.parent.mkdir(parents=True)
+        manifest_bytes = (
+            json.dumps(manifest, indent=2, ensure_ascii=True, sort_keys=True) + "\n"
+        ).encode("utf-8")
+        manifest_path.write_bytes(manifest_bytes)
+        try:
+            schema = json.loads(PACK_SCHEMA.read_text(encoding="utf-8"))
+            Draft202012Validator.check_schema(schema)
+            Draft202012Validator(schema).validate(json.loads(manifest_bytes))
+        except (OSError, json.JSONDecodeError, SchemaError, ValidationError) as error:
+            raise _reject(
+                "CandidateManifestInvalid",
+                "manifest",
+                "The generated player reference candidate manifest failed its tracked "
+                "closed schema.",
+            ) from error
+    except AssetBuildError:
+        raise
+    except OSError as error:
+        raise _reject(
+            "CandidateWriteFailed",
+            "candidate",
+            "The player reference candidate pack could not be written.",
+        ) from error
+    return _sha256(manifest_bytes)
+
+
+def build_map3_player_reference_frame_candidate(
+    *,
+    asset_root: str,
+    expected_commit: str,
+    expected_tree: str,
+    rom_path: str,
+    expected_rom_sha256: str,
+    candidate_name: str,
+) -> dict[str, object]:
+    """Build one ignored private Map 3 player initial-reference-frame candidate."""
+
+    candidate_relative = _require_world_candidate_name(candidate_name)
+    try:
+        checkout = validate_asset_checkout_identity(
+            asset_root,
+            expected_commit=expected_commit,
+            expected_tree=expected_tree,
+            required_ignored_path=candidate_relative,
+        )
+    except AssetPreflightError as error:
+        raise _reject(error.code, error.field, error.message) from error
+    rom = _read_fixed_private_input(
+        rom_path,
+        expected_rom_sha256,
+        ACCEPTED_ROM_SHA256,
+        ACCEPTED_ROM_SIZE,
+        "rom",
+    )
+    source = _build_player_reference_source(rom)
+    generator_artifact_sha256 = _world_generator_artifact_sha256()
+
+    cache = checkout.root / "cache"
+    _require_no_reparse_chain(cache, "candidate")
+    created_cache = False
+    if not cache.exists():
+        try:
+            cache.mkdir()
+            created_cache = True
+        except OSError as error:
+            raise _reject(
+                "CandidateWriteFailed",
+                "candidate",
+                "The ignored cache is unavailable.",
+            ) from error
+    if not cache.is_dir():
+        raise _reject("PathRejected", "candidate", "The ignored cache boundary is invalid.")
+    destination = cache / candidate_name
+    _require_no_reparse_chain(destination, "candidate")
+    if os.path.lexists(destination):
+        raise _reject("CandidateExists", "candidate", "The candidate destination must be fresh.")
+    staging = cache / f"{_PLAYER_STAGING_PREFIX}{uuid.uuid4().hex}.tmp"
+    if os.path.lexists(staging):
+        raise _reject("CandidateExists", "candidate", "The owned staging identity already exists.")
+
+    published = False
+    receipt: dict[str, object] | None = None
+    try:
+        staging.mkdir()
+        run_outputs: list[tuple[Path, dict[int, Path], PngIdentity, tuple[PngIdentity, ...]]] = []
+        for run_name in ("run-a", "run-b"):
+            run = staging / run_name
+            run.mkdir()
+            master = run / "master.png"
+            write_png_rgba(
+                master,
+                PLAYER_FRAME_WIDTH,
+                PLAYER_FRAME_HEIGHT,
+                list(source.rgba_pixels),
+            )
+            master_identity = _validate_png(
+                master,
+                PLAYER_FRAME_WIDTH,
+                PLAYER_FRAME_HEIGHT,
+                WORLD_MAXIMUM_PNG_BYTES,
+            )
+            outputs: dict[int, Path] = {}
+            identities: list[PngIdentity] = []
+            for scale in WORLD_SCALES:
+                output = run / f"player-reference-{scale}x.png"
+                write_png_rgba(
+                    output,
+                    PLAYER_FRAME_WIDTH * scale,
+                    PLAYER_FRAME_HEIGHT * scale,
+                    _scale_rgba_nearest(
+                        source.rgba_pixels,
+                        PLAYER_FRAME_WIDTH,
+                        PLAYER_FRAME_HEIGHT,
+                        scale,
+                    ),
+                )
+                outputs[scale] = output
+                identities.append(
+                    _validate_png(
+                        output,
+                        PLAYER_FRAME_WIDTH * scale,
+                        PLAYER_FRAME_HEIGHT * scale,
+                        WORLD_MAXIMUM_PNG_BYTES,
+                    )
+                )
+            run_outputs.append((master, outputs, master_identity, tuple(identities)))
+
+        first_master, first_outputs, master_identity, bucket_identities = run_outputs[0]
+        second_master, second_outputs, second_master_identity, second_bucket_identities = (
+            run_outputs[1]
+        )
+        if (
+            master_identity != second_master_identity
+            or first_master.read_bytes() != second_master.read_bytes()
+            or bucket_identities != second_bucket_identities
+            or any(
+                first_outputs[scale].read_bytes() != second_outputs[scale].read_bytes()
+                for scale in WORLD_SCALES
+            )
+        ):
+            raise _reject(
+                "NonDeterministicOutput",
+                "playerReference",
+                "The player reference-frame derivation did not produce byte-identical outputs.",
+            )
+        manifest = _player_manifest(
+            source,
+            generator_artifact_sha256,
+            (bucket_identities[0], bucket_identities[1]),
+        )
+        manifest_sha256 = _write_player_candidate(
+            staging,
+            source,
+            first_master,
+            first_outputs,
+            manifest,
+        )
+        try:
+            repeated = validate_asset_checkout_identity(
+                asset_root,
+                expected_commit=expected_commit,
+                expected_tree=expected_tree,
+                required_ignored_path=candidate_relative,
+            )
+        except AssetPreflightError as error:
+            raise _reject(error.code, error.field, error.message) from error
+        if repeated.identity != checkout.identity:
+            raise _reject(
+                "RepositoryStateMismatch",
+                "assetRepository",
+                "The local asset repository identity changed during candidate construction.",
+            )
+        for child in tuple(staging.iterdir()):
+            if child.name != "candidate":
+                shutil.rmtree(child)
+        os.rename(staging / "candidate", destination)
+        published = True
+        staging.rmdir()
+        try:
+            final_checkout = validate_asset_checkout_identity(
+                asset_root,
+                expected_commit=expected_commit,
+                expected_tree=expected_tree,
+                required_ignored_path=candidate_relative,
+            )
+        except AssetPreflightError as error:
+            raise _reject(error.code, error.field, error.message) from error
+        if final_checkout.identity != checkout.identity:
+            raise _reject(
+                "RepositoryStateMismatch",
+                "assetRepository",
+                "The local asset repository identity changed at candidate publication.",
+            )
+        receipt = {
+            "schemaVersion": 1,
+            "capability": PLAYER_BUILD_CAPABILITY,
+            "status": "Pass",
+            "assetRepositoryCommit": checkout.identity.commit,
+            "assetRepositoryTree": checkout.identity.tree,
+            "assetId": PLAYER_ASSET_ID,
+            "sourceAssetId": PLAYER_SOURCE_ASSET_ID,
+            "masterSha256": master_identity.sha256,
+            "generatorId": WORLD_GENERATOR_ID,
+            "generatorVersion": WORLD_GENERATOR_VERSION,
+            "generatorArtifactSha256": generator_artifact_sha256,
+            "policyId": PLAYER_POLICY_ID,
+            "selection": {
+                "controlledEntityIndex": 0,
+                "allyIndex": 0,
+                "regularMapSpriteId": PLAYER_MAPSPRITE_ID,
+                "direction": "DOWN",
+                "facing": 3,
+                "sourceSlot": PLAYER_SOURCE_SLOT,
+                "horizontalMirror": False,
+                "selectedHalf": PLAYER_SELECTED_HALF,
+                "framePolicy": "initial-reference-frame",
+            },
+            "logicalSize": {"width": PLAYER_FRAME_WIDTH, "height": PLAYER_FRAME_HEIGHT},
+            "palettePolicy": {
+                "sourceSymbol": "palette_Base",
+                "wordMask": "0x0EEE",
+                "channelExpansion": "v<<5|v<<2|v>>1",
+                "transparentIndex": 0,
+                "colorSpace": "srgb",
+                "alphaMode": "straight",
+                "parityClaim": "project-inferred-rendering-policy",
+            },
+            "buckets": [
+                {
+                    "scale": scale,
+                    "width": identity.width,
+                    "height": identity.height,
+                    "byteLength": identity.byte_length,
+                    "sha256": identity.sha256,
+                    "filter": "nearest",
+                    "mipmaps": False,
+                    "repeat": False,
+                }
+                for scale, identity in zip(WORLD_SCALES, bucket_identities, strict=True)
+            ],
+            "manifestSha256": manifest_sha256,
+            "cleanupStatus": "clean",
+        }
+    except AssetBuildError:
+        raise
+    except OSError as error:
+        raise _reject(
+            "CandidateWriteFailed",
+            "candidate",
+            "The player reference candidate build failed.",
+        ) from error
+    finally:
+        cleanup_error: AssetBuildError | None = None
+        if published and receipt is None and os.path.lexists(destination):
+            try:
+                shutil.rmtree(destination)
+                published = False
+            except OSError as error:
+                cleanup_error = _reject(
+                    "CleanupFailed",
+                    "candidate",
+                    "A failed player reference publication could not be rolled back.",
+                )
+                cleanup_error.__cause__ = error
+        if os.path.lexists(staging):
+            try:
+                _cleanup_owned(staging, cache, _PLAYER_STAGING_PREFIX)
+            except AssetBuildError as error:
+                if cleanup_error is None:
+                    cleanup_error = error
+        if cleanup_error is not None and published and os.path.lexists(destination):
+            try:
+                shutil.rmtree(destination)
+                published = False
+            except OSError:
+                pass
+        if created_cache and not published:
+            with suppress(OSError):
+                cache.rmdir()
+        if cleanup_error is not None:
+            raise cleanup_error
+    if receipt is None or not published:
+        raise _reject(
+            "CandidateWriteFailed",
+            "candidate",
+            "The player reference candidate did not publish.",
+        )
+    return receipt
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Build one deterministic ignored local HUD SVG presentation candidate."
@@ -2142,6 +2651,13 @@ def _parser() -> argparse.ArgumentParser:
     world.add_argument("--palette-metadata", required=True)
     world.add_argument("--expected-palette-metadata-sha256", required=True)
     world.add_argument("--candidate-name", required=True)
+    player = subparsers.add_parser("map3-player-reference-frame-candidate")
+    player.add_argument("--asset-root", required=True)
+    player.add_argument("--expected-commit", required=True)
+    player.add_argument("--expected-tree", required=True)
+    player.add_argument("--rom", required=True)
+    player.add_argument("--expected-rom-sha256", required=True)
+    player.add_argument("--candidate-name", required=True)
     return parser
 
 
@@ -2158,7 +2674,7 @@ def main(argv: list[str] | None = None) -> int:
                 resvg_archive=arguments.resvg_archive,
                 candidate_name=arguments.candidate_name,
             )
-        else:
+        elif arguments.command == "map3-base-atlas-candidate":
             receipt = build_map3_base_atlas_candidate(
                 asset_root=arguments.asset_root,
                 expected_commit=arguments.expected_commit,
@@ -2169,6 +2685,15 @@ def main(argv: list[str] | None = None) -> int:
                 expected_tileset_metadata_sha256=arguments.expected_tileset_metadata_sha256,
                 palette_metadata_path=arguments.palette_metadata,
                 expected_palette_metadata_sha256=arguments.expected_palette_metadata_sha256,
+                candidate_name=arguments.candidate_name,
+            )
+        else:
+            receipt = build_map3_player_reference_frame_candidate(
+                asset_root=arguments.asset_root,
+                expected_commit=arguments.expected_commit,
+                expected_tree=arguments.expected_tree,
+                rom_path=arguments.rom,
+                expected_rom_sha256=arguments.expected_rom_sha256,
                 candidate_name=arguments.candidate_name,
             )
     except AssetBuildError as error:

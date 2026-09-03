@@ -257,20 +257,39 @@ the existing `v << 5 | v << 2 | v >> 1` channel expansion into straight-alpha sR
 project-authored color-preserving review/runtime candidate policy. It does not prove Mega Drive
 analog output, display behavior, colorimetry, hardware chronology, or final-pixel parity.
 
-The separately reviewed local transaction at commit
-`6cf2973698e3a90735a2e3eb03bd85c50a47e4e3` promotes that exact atlas family beside the two HUD
-assets under manifest SHA-256
-`262C2F8A9A17CC843392F8818841F018C45B538610AEC41C75D38A018E829D78`. Its explicit PrivateLocal
-consumer mounts only one selected 2x or 4x runtime PNG after Content rechecks the closed pack. Godot
-validates decoded RGBA8 dimensions and projects every physical bucket texel through the already
-authoritative working-layout/block/tile/slot/flip selection. A 2x bucket becomes a 576-by-336
-ImageTexture and a 4x bucket becomes a 1152-by-672 ImageTexture; `DrawTextureRect` maps either onto the
-same 288-by-168 logical crop, and the player marker remains a later logical overlay. Horizontal and
-vertical flips reverse the complete physical tile axes, including subpixel coordinates. Startup
-binding still proves that every scale-squared sample exactly repeats the typed 1x payload, so this
-transport closure does not admit a non-nearest derivative. It never reads the private source bundle or master,
-does not embed the asset root in Application/state/receipts, and does not place private data in a PCK.
-This is a diagnostic substitution for transient decoded-tile sampling, not original rendering.
+The current reviewed local pack at commit `f7a351f24e328c47b10a892613edeac07a07635a`, tree
+`9cc4c0959ebbe067f22adae5c079a65bcfd1f06d`, and manifest SHA-256
+`56382461FAA5168939A264FC37ABC8A7590A0D099C19DFB54DC0DC6F96F5DCB6` contains the two HUD assets,
+the exact atlas family, and the player initial-reference-frame family. The atlas's explicit
+PrivateLocal consumer mounts only one selected 2x or 4x runtime PNG after Content rechecks the closed
+pack. Godot validates decoded RGBA8 dimensions and projects every physical bucket texel through the
+already authoritative working-layout/block/tile/slot/flip selection. A 2x bucket becomes a
+576-by-336 ImageTexture and a 4x bucket becomes a 1152-by-672 ImageTexture; `DrawTextureRect` maps
+either onto the same 288-by-168 logical crop, and the current project-authored player marker remains
+a later logical overlay. Horizontal and vertical flips reverse the complete physical tile axes,
+including subpixel coordinates. Startup binding still proves that every scale-squared atlas sample
+exactly repeats the typed 1x payload, so this transport closure does not admit a non-nearest
+derivative. It never reads private source bundles or masters, does not embed the asset root in
+Application/state/receipts, and does not place private data in a PCK. This is a diagnostic
+substitution for transient decoded-tile sampling, not original rendering. The newly reviewed player
+family remains unconsumed until a separate Godot slice.
+
+The sibling private Map 3 player reference-frame builder is narrower than an animation or runtime
+consumer. It fixes the controlled player selection to ally zero, resolves regular map-sprite zero,
+selects the accepted DOWN-facing source slot two without horizontal mirroring, and Basic-decodes the
+two-half 576-byte source. Only half zero enters the candidate as a 24-by-24
+`initial-reference-frame`; the name does not mean standing, idle, or visible at controlled admission.
+The ignored candidate holds the exact selected compressed source plus accepted palette words in its
+private source bundle, one deterministic master PNG, nearest 2x/4x runtime buckets, and a single-asset
+closed manifest. Palette index zero is transparent and the other indices use the existing
+project-inferred straight-alpha sRGB channel expansion.
+
+Both actual ROM bytes and the caller pin must match the fixed accepted ROM root before pointer,
+decode, or palette work. The receipt identifies the source choice and derivation policy but contains
+no private path or payload. It remains a candidate only: promotion, Content admission, Godot
+projection, animation selection, and any PCK/export use require later separately reviewed work.
+Admission animation counter, admission-visible frame, live palette at admission, movement-facing
+timing, DMA/cache completion, original rendered-color parity, and final pixels remain **Unknown**.
 
 The optional named `edge-scale2x` world treatment is an explicit 9A presentation deviation layered
 after that exact admission. It is accepted only with the explicit private base-view and base-atlas
@@ -424,8 +443,10 @@ Migration order is intentionally incremental:
    `HasCursor` projection without moving tactical state into Godot;
 5. build and review one exact local Map 3 base-atlas transaction, mount that bounded world family,
    validate 2x/4x bucket switching, and retain pixel equivalence with the existing typed projection;
-6. expand asset families only after their source, derivation, cache, and failure rules are closed;
-7. close music and sound-effect format/loop/streaming contracts separately.
+6. mount the reviewed controlled-player initial-reference-frame family through a separately accepted
+   Godot consumer; do not relabel it as standing, idle, or admission-live;
+7. expand asset families only after their source, derivation, cache, and failure rules are closed;
+8. close music and sound-effect format/loop/streaming contracts separately.
 
 Godot owns resource loading, Theme application, viewport projection, and disposable scene nodes.
 Application owns semantic presentation/audio cues. Domain owns game rules. No asset migration may move
@@ -445,6 +466,7 @@ an admitted product font, Theme, original battle title, or presentation-fidelity
 | implemented product display policy | PrivateLocal adaptive windowed startup up to a fitting 1920-by-1080 client; runtime 960-by-540 minimum; explicit physical target preservation; HiDPI without double counting; centered `keep` frame; one startup-resident 2x/4x bucket; restart required for bucket reselection |
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
 | implemented world-family tooling prerequisite | fixed private Map 3 ROM/metadata roots; exact palette/slot selection; five-segment 128-by-320 source-crisp atlas; deterministic nearest 2x/4x ignored candidate; no implicit promotion or update |
+| admitted player-reference prerequisite | fixed private ROM root; exact controlled player, regular map-sprite, DOWN source-slot, no-mirror, and half-zero selection; bounded Basic decode; reviewed 24-by-24 `initial-reference-frame` master and nearest 2x/4x local transaction; no Godot consumer, standing/idle, or admission-visible claim |
 | implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop with exact-nearest startup parity; the static overlay is a no-player diagnostic using the admitted map palette by explicit policy; no source/master runtime input, PCK, or fidelity claim |
 | separate implementation decision | live resize bucket remount and fullscreen/monitor transition UX; platform safe-area integration; original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original background-layer palette source; camera/layer/priority-with-sprites/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
