@@ -141,6 +141,24 @@ PLAYER_ANIMATION_SHEETS = (
 PLAYER_ANIMATION_PAYLOAD_ADDRESSES = (822_080, 822_450, 822_782)
 PLAYER_ANIMATION_SHEET_WIDTH = PLAYER_FRAME_WIDTH * 2
 PLAYER_ANIMATION_SHEET_HEIGHT = PLAYER_FRAME_HEIGHT
+ENTITY142_BUILD_CAPABILITY = "private-local-map3-entity142-two-half-reference-candidate-v1"
+ENTITY142_CONTRACT_ID = "sf2-map3-entity142-interactable-reference-static-v1"
+ENTITY142_CONTRACT = repo_path(
+    "tests/fixtures/h2/map3-entity142-interactable-reference-static-v1.json"
+)
+ENTITY142_CONTRACT_SHA256 = "A1C59DA5FA5C0C1FF0A7474300E58163DEA7A70EC09883E19C2679684923BA80"
+ENTITY142_CONTRACT_SIZE = 6_815
+ENTITY142_ASSET_ID = "world.map3.entity142.astral.up.two-half-reference"
+ENTITY142_SOURCE_ASSET_ID = "source.world.map3.entity142.astral.up.two-half-reference"
+ENTITY142_POLICY_ID = "private-local-map3-entity142-two-half-nearest-rgba8-v1"
+ENTITY142_SOURCE_FILE = "source/world/map3/entity142-astral-up-two-half-reference-v1.bin"
+ENTITY142_MASTER_FILE = "masters/world/map3/entity142-astral-up-two-half-reference.png"
+ENTITY142_RUNTIME_TEMPLATE = (
+    "runtime/world/map3/entity142-astral-up-two-half-reference@{scale}x.png"
+)
+ENTITY142_SOURCE_MAGIC = b"SF2-MAP3-ENTITY142-ASTRAL-UP-TWO-HALF-REFERENCE-V1\x00"
+ENTITY142_SHEET_WIDTH = PLAYER_FRAME_WIDTH * 2
+ENTITY142_SHEET_HEIGHT = PLAYER_FRAME_HEIGHT
 _TILESET_ROOT_FIELDS = {
     "schemaVersion",
     "id",
@@ -207,6 +225,7 @@ _STAGING_PREFIX = ".sf2-hud-svg-build-"
 _WORLD_STAGING_PREFIX = ".sf2-map3-world-atlas-build-"
 _PLAYER_STAGING_PREFIX = ".sf2-map3-player-reference-build-"
 _PLAYER_ANIMATION_STAGING_PREFIX = ".sf2-map3-player-animation-build-"
+_ENTITY142_STAGING_PREFIX = ".sf2-map3-entity142-reference-build-"
 _ASSET_ID_PATTERN = re.compile(r"^hud\.([a-z0-9]+(?:-[a-z0-9]+)*)$")
 _CANDIDATE_NAME_PATTERN = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$")
 _ELEMENT_ID_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9._-]{0,127}$")
@@ -405,6 +424,36 @@ class PlayerAnimationSheet:
 class PlayerAnimationSource:
     source_bundle: bytes
     sheets: tuple[PlayerAnimationSheet, ...]
+
+
+@dataclass(frozen=True)
+class Entity142ReferenceContract:
+    transaction_digest: str
+    source_record_ordinal: int
+    logical_entity_id: int
+    physical_slot: int
+    map_sprite: int
+    source_facing: int
+    pointer_table_address: int
+    source_slot: int
+    payload_address: int
+    compressed_bytes: int
+    compressed_sha256: str
+    decoded_bytes: int
+    decoded_sha256: str
+    half_bytes: int
+    half_sha256: tuple[str, str]
+    palette_address: int
+    palette_bytes: int
+    palette_sha256: str
+    palette_word_mask: int
+    transparent_index: int
+
+
+@dataclass(frozen=True)
+class Entity142ReferenceSource:
+    source_bundle: bytes
+    rgba_pixels: tuple[int, ...]
 
 
 ProcessRunner = Callable[..., ProcessReceipt]
@@ -1006,6 +1055,327 @@ def _build_player_reference_source(rom: bytes) -> PlayerReferenceSource:
         )
     )
     return PlayerReferenceSource(source_bundle, tuple(pixels))
+
+
+def _load_entity142_reference_contract() -> Entity142ReferenceContract:
+    try:
+        raw = ENTITY142_CONTRACT.read_bytes()
+    except OSError as error:
+        raise _reject(
+            "ContractUnavailable",
+            "entity142Contract",
+            "The accepted entity 142 reference contract is unavailable.",
+        ) from error
+    if len(raw) != ENTITY142_CONTRACT_SIZE or _sha256(raw) != ENTITY142_CONTRACT_SHA256:
+        raise _reject(
+            "ContentDigestMismatch",
+            "entity142Contract",
+            "The accepted entity 142 reference contract identity drifted.",
+        )
+    try:
+        root = json.loads(raw)
+        if not isinstance(root, Mapping) or set(root) != {
+            "schemaVersion",
+            "id",
+            "upstream",
+            "romSha256",
+            "summary",
+            "static",
+        }:
+            raise TypeError("entity142 contract root is not closed")
+        static = root["static"]
+        if not isinstance(static, Mapping) or set(static) != {
+            "indexBindings",
+            "sourceRecord",
+            "identityMapping",
+            "interactionEvent",
+            "retainedRuntime",
+            "drawableReference",
+            "transactionDigest",
+            "retainedOwners",
+            "consumerBoundary",
+            "unknowns",
+        }:
+            raise TypeError("entity142 contract static object is not closed")
+        source_record = static["sourceRecord"]
+        raw_record = source_record["raw"]
+        identity = static["identityMapping"]
+        sequential_allocation = identity["sequentialAllocation"]
+        if not isinstance(sequential_allocation, Mapping):
+            raise TypeError("entity142 sequential allocation is malformed")
+        interaction = static["interactionEvent"]
+        drawable = static["drawableReference"]
+        direction = drawable["direction"]
+        pointer = drawable["pointer"]
+        compressed = drawable["compressed"]
+        decoded = drawable["decoded"]
+        halves = decoded["halves"]
+        image_format = drawable["format"]
+        palette = drawable["palette"]
+        unknowns = static["unknowns"]
+    except (json.JSONDecodeError, KeyError, TypeError) as error:
+        raise _reject(
+            "InvalidMetadata",
+            "entity142Contract",
+            "The accepted entity 142 reference contract is malformed.",
+        ) from error
+
+    exact_checks = (
+        (root.get("schemaVersion"), 1),
+        (root.get("id"), ENTITY142_CONTRACT_ID),
+        (root.get("romSha256"), ACCEPTED_ROM_SHA256),
+        (
+            root.get("upstream"),
+            {
+                "repository": ACCEPTED_UPSTREAM_REPOSITORY,
+                "commit": ACCEPTED_UPSTREAM_COMMIT,
+            },
+        ),
+        (source_record.get("table"), "ms_map3_Entities"),
+        (source_record.get("oneBasedOrdinal"), 17),
+        (source_record.get("zeroBasedIndex"), 16),
+        (source_record.get("recordHex"), "361101D1000460CE"),
+        (raw_record, {"x": 54, "y": 17, "facing": 1, "mapSprite": 209}),
+        (source_record.get("masked"), {"x": 54, "y": 17}),
+        (identity.get("logicalEntityId"), 142),
+        (sequential_allocation.get("resolvedPhysicalSlot"), 17),
+        (
+            identity.get("classification"),
+            "Confirmed-static-under-accepted-route-follower-state",
+        ),
+        (interaction.get("logicalEntityId"), 142),
+        (interaction.get("zeroBasedRecordIndex"), 15),
+        (interaction.get("target"), "Map3_EntityEvent15"),
+        (
+            direction,
+            {
+                "policyOwner": "sf2-map3-original-player-reference-frame-static-v1",
+                "symbol": "UP",
+                "value": 1,
+                "sourceSlot": 0,
+                "horizontalMirror": False,
+            },
+        ),
+        (pointer.get("table"), "pt_Mapsprites"),
+        (pointer.get("slot"), 627),
+        (pointer.get("payloadSymbol"), "Mapsprite209_0"),
+        (compressed.get("codec"), "Basic"),
+        (compressed.get("bytes"), 406),
+        (decoded.get("bytes"), 576),
+        (decoded.get("halfCount"), 2),
+        (decoded.get("halfBytes"), 288),
+        (image_format.get("framePixels"), [24, 24]),
+        (image_format.get("frameTiles"), [3, 3]),
+        (image_format.get("tileBytes"), 32),
+        (image_format.get("bitsPerPixel"), 4),
+        (image_format.get("pixelNibbleOrder"), "high-nibble-left"),
+        (image_format.get("tileOrder"), "column-major"),
+        (palette.get("policyOwner"), "sf2-map3-original-player-reference-frame-static-v1"),
+        (palette.get("sourceSymbol"), "palette_Base"),
+        (palette.get("destination"), "palette3"),
+        (palette.get("bytes"), 32),
+        (palette.get("words"), 16),
+        (palette.get("wordEndian"), "big"),
+        (palette.get("wordMask"), "0x0EEE"),
+        (palette.get("transparentIndex"), 0),
+        (
+            unknowns,
+            {
+                "interactionTimeAnimCounter": "Unknown",
+                "selectedVisibleHalf": "Unknown",
+                "exactObservedFrameOrAnimationContract": "Unknown",
+            },
+        ),
+    )
+    if any(actual != expected for actual, expected in exact_checks):
+        raise _reject(
+            "InvalidMetadata",
+            "entity142Contract",
+            "The accepted entity 142 reference contract semantics drifted.",
+        )
+    if (
+        not isinstance(halves, list)
+        or len(halves) != 2
+        or [item.get("index") for item in halves if isinstance(item, Mapping)] != [0, 1]
+        or any(not isinstance(item, Mapping) for item in halves)
+    ):
+        raise _reject(
+            "InvalidMetadata",
+            "entity142Contract",
+            "The accepted entity 142 half ordering drifted.",
+        )
+
+    return Entity142ReferenceContract(
+        transaction_digest=_metadata_sha256(
+            static.get("transactionDigest"), "entity142Contract.transactionDigest"
+        ),
+        source_record_ordinal=17,
+        logical_entity_id=142,
+        physical_slot=17,
+        map_sprite=209,
+        source_facing=1,
+        pointer_table_address=_metadata_int(
+            static["indexBindings"].get("mapspritePointerTable"),
+            "entity142Contract.pointerTable",
+        ),
+        source_slot=_metadata_int(pointer.get("slot"), "entity142Contract.sourceSlot"),
+        payload_address=_metadata_int(
+            pointer.get("payloadAddress"), "entity142Contract.payloadAddress"
+        ),
+        compressed_bytes=406,
+        compressed_sha256=_metadata_sha256(
+            compressed.get("sha256"), "entity142Contract.compressedSha256"
+        ),
+        decoded_bytes=576,
+        decoded_sha256=_metadata_sha256(decoded.get("sha256"), "entity142Contract.decodedSha256"),
+        half_bytes=288,
+        half_sha256=(
+            _metadata_sha256(halves[0].get("sha256"), "entity142Contract.half0Sha256"),
+            _metadata_sha256(halves[1].get("sha256"), "entity142Contract.half1Sha256"),
+        ),
+        palette_address=_metadata_int(palette.get("address"), "entity142Contract.paletteAddress"),
+        palette_bytes=32,
+        palette_sha256=_metadata_sha256(palette.get("sha256"), "entity142Contract.paletteSha256"),
+        palette_word_mask=0x0EEE,
+        transparent_index=0,
+    )
+
+
+def _build_entity142_reference_source(
+    rom: bytes,
+    contract: Entity142ReferenceContract,
+) -> Entity142ReferenceSource:
+    pointer_offset = contract.pointer_table_address + (contract.source_slot * 4)
+    if (
+        pointer_offset < 0
+        or pointer_offset + 4 > len(rom)
+        or contract.payload_address < 0
+        or contract.payload_address + contract.compressed_bytes > len(rom)
+    ):
+        raise _reject(
+            "SourcePayloadMismatch",
+            "entity142Payload",
+            "The entity 142 drawable source boundary is unavailable.",
+        )
+    if int.from_bytes(rom[pointer_offset : pointer_offset + 4], "big") != contract.payload_address:
+        raise _reject(
+            "SourcePayloadMismatch",
+            "entity142Payload",
+            "The entity 142 drawable pointer identity drifted.",
+        )
+    compressed = rom[
+        contract.payload_address : contract.payload_address + contract.compressed_bytes
+    ]
+    if _sha256(compressed) != contract.compressed_sha256:
+        raise _reject(
+            "SourcePayloadMismatch",
+            "entity142Payload",
+            "The entity 142 compressed drawable identity drifted.",
+        )
+    try:
+        decoded = decode_basic_compressed(
+            compressed,
+            expected_output_bytes=contract.decoded_bytes,
+        )
+    except ValueError as error:
+        raise _reject(
+            "DecodeFailure",
+            "entity142Payload",
+            "The entity 142 drawable failed bounded Basic decoding.",
+        ) from error
+    if (
+        decoded.input_bytes_consumed != contract.compressed_bytes
+        or len(decoded.output) != contract.decoded_bytes
+        or _sha256(decoded.output) != contract.decoded_sha256
+    ):
+        raise _reject(
+            "DecodeFailure",
+            "entity142Payload",
+            "The entity 142 Basic decode identity or consumption drifted.",
+        )
+    halves = tuple(
+        decoded.output[index * contract.half_bytes : (index + 1) * contract.half_bytes]
+        for index in range(2)
+    )
+    if tuple(_sha256(half) for half in halves) != contract.half_sha256:
+        raise _reject(
+            "DecodedPayloadMismatch",
+            "entity142Payload",
+            "The entity 142 ordered half identities drifted.",
+        )
+
+    palette_end = contract.palette_address + contract.palette_bytes
+    if contract.palette_address < 0 or palette_end > len(rom):
+        raise _reject(
+            "PalettePayloadMismatch",
+            "entity142Palette",
+            "The entity 142 palette boundary is unavailable.",
+        )
+    palette_source = rom[contract.palette_address : palette_end]
+    if _sha256(palette_source) != contract.palette_sha256:
+        raise _reject(
+            "PalettePayloadMismatch",
+            "entity142Palette",
+            "The entity 142 palette identity drifted.",
+        )
+    palette_words = [
+        int.from_bytes(palette_source[offset : offset + 2], "big")
+        for offset in range(0, contract.palette_bytes, 2)
+    ]
+    if (
+        len(palette_words) != WORLD_PALETTE_WORD_COUNT
+        or palette_words[contract.transparent_index] != 0
+        or any(word & ~contract.palette_word_mask for word in palette_words)
+    ):
+        raise _reject(
+            "PalettePayloadMismatch",
+            "entity142Palette",
+            "The entity 142 palette word projection drifted.",
+        )
+    palette = [md_palette_color(word) for word in palette_words]
+    pixels = [0] * (ENTITY142_SHEET_WIDTH * ENTITY142_SHEET_HEIGHT * 4)
+    for half_index, half in enumerate(halves):
+        tiles = [
+            decode_md_4bpp_tile(half[offset : offset + TILE_BYTES_4BPP])
+            for offset in range(0, contract.half_bytes, TILE_BYTES_4BPP)
+        ]
+        if len(tiles) != PLAYER_FRAME_TILE_COUNT:
+            raise _reject(
+                "DecodedPayloadMismatch",
+                "entity142Payload",
+                "An entity 142 half has an incompatible tile count.",
+            )
+        for tile_index, tile in enumerate(tiles):
+            tile_column = tile_index // PLAYER_FRAME_TILES_PER_SIDE
+            tile_row = tile_index % PLAYER_FRAME_TILES_PER_SIDE
+            origin_x = (half_index * PLAYER_FRAME_WIDTH) + (tile_column * WORLD_TILE_PIXEL_SIZE)
+            origin_y = tile_row * WORLD_TILE_PIXEL_SIZE
+            for row in range(WORLD_TILE_PIXEL_SIZE):
+                for column in range(WORLD_TILE_PIXEL_SIZE):
+                    palette_index = tile[(row * WORLD_TILE_PIXEL_SIZE) + column]
+                    destination = (
+                        ((origin_y + row) * ENTITY142_SHEET_WIDTH) + origin_x + column
+                    ) * 4
+                    pixels[destination : destination + 4] = palette_index_rgba(
+                        palette,
+                        palette_index,
+                    )
+
+    source_bundle = b"".join(
+        (
+            ENTITY142_SOURCE_MAGIC,
+            bytes.fromhex(ENTITY142_CONTRACT_SHA256),
+            bytes.fromhex(contract.transaction_digest),
+            bytes((contract.source_record_ordinal, contract.physical_slot)),
+            contract.logical_entity_id.to_bytes(2, "big"),
+            bytes((contract.map_sprite, contract.source_facing)),
+            contract.source_slot.to_bytes(2, "big"),
+            contract.compressed_bytes.to_bytes(4, "big"),
+            compressed,
+            palette_source,
+        )
+    )
+    return Entity142ReferenceSource(source_bundle, tuple(pixels))
 
 
 def _load_player_locomotion_contract() -> Mapping[str, object]:
@@ -2896,6 +3266,386 @@ def build_map3_player_reference_frame_candidate(
     return receipt
 
 
+def _entity142_manifest(
+    source: Entity142ReferenceSource,
+    generator_artifact_sha256: str,
+    buckets: tuple[PngIdentity, PngIdentity],
+) -> dict[str, object]:
+    return {
+        "schemaVersion": 1,
+        "packageId": PACKAGE_ID,
+        "repositoryId": REPOSITORY_ID,
+        "profile": PROFILE,
+        "capabilities": [PACK_CAPABILITY],
+        "logicalPresentation": {"width": 960, "height": 540},
+        "assets": [
+            {
+                "assetId": ENTITY142_ASSET_ID,
+                "kind": "raster-image",
+                "logicalSize": {
+                    "width": ENTITY142_SHEET_WIDTH,
+                    "height": ENTITY142_SHEET_HEIGHT,
+                },
+                "source": {
+                    "assetId": ENTITY142_SOURCE_ASSET_ID,
+                    "sha256": _sha256(source.source_bundle),
+                },
+                "derivation": {
+                    "policyId": ENTITY142_POLICY_ID,
+                    "generatorId": WORLD_GENERATOR_ID,
+                    "generatorVersion": WORLD_GENERATOR_VERSION,
+                    "generatorArtifactSha256": generator_artifact_sha256,
+                },
+                "buckets": [
+                    {
+                        "scale": scale,
+                        "runtimePath": ENTITY142_RUNTIME_TEMPLATE.format(scale=scale),
+                        "width": identity.width,
+                        "height": identity.height,
+                        "byteLength": identity.byte_length,
+                        "sha256": identity.sha256,
+                        "mediaType": "image/png",
+                        "filter": "nearest",
+                        "mipmaps": False,
+                        "repeat": False,
+                        "colorSpace": "srgb",
+                        "alphaMode": "straight",
+                    }
+                    for scale, identity in zip(WORLD_SCALES, buckets, strict=True)
+                ],
+            }
+        ],
+    }
+
+
+def _write_entity142_candidate(
+    destination: Path,
+    source: Entity142ReferenceSource,
+    master: Path,
+    outputs: Mapping[int, Path],
+    manifest: Mapping[str, object],
+) -> str:
+    candidate = destination / "candidate"
+    try:
+        candidate.mkdir()
+        source_target = candidate.joinpath(*PurePosixPath(ENTITY142_SOURCE_FILE).parts)
+        source_target.parent.mkdir(parents=True)
+        source_target.write_bytes(source.source_bundle)
+        master_target = candidate.joinpath(*PurePosixPath(ENTITY142_MASTER_FILE).parts)
+        master_target.parent.mkdir(parents=True)
+        shutil.copyfile(master, master_target)
+        for scale, output in outputs.items():
+            runtime_target = candidate.joinpath(
+                *PurePosixPath(ENTITY142_RUNTIME_TEMPLATE.format(scale=scale)).parts
+            )
+            runtime_target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(output, runtime_target)
+        manifest_path = candidate.joinpath(*MANIFEST_RELATIVE_PATH.parts)
+        manifest_path.parent.mkdir(parents=True)
+        manifest_bytes = (
+            json.dumps(manifest, indent=2, ensure_ascii=True, sort_keys=True) + "\n"
+        ).encode("utf-8")
+        manifest_path.write_bytes(manifest_bytes)
+        try:
+            schema = json.loads(PACK_SCHEMA.read_text(encoding="utf-8"))
+            Draft202012Validator.check_schema(schema)
+            Draft202012Validator(schema).validate(json.loads(manifest_bytes))
+        except (OSError, json.JSONDecodeError, SchemaError, ValidationError) as error:
+            raise _reject(
+                "InvalidMetadata",
+                "manifest",
+                "The entity 142 candidate manifest failed its tracked closed schema.",
+            ) from error
+    except AssetBuildError:
+        raise
+    except OSError as error:
+        raise _reject(
+            "CandidateWriteFailed",
+            "candidate",
+            "The entity 142 candidate pack could not be written.",
+        ) from error
+    return _sha256(manifest_bytes)
+
+
+def build_map3_entity142_two_half_reference_candidate(
+    *,
+    asset_root: str,
+    expected_commit: str,
+    expected_tree: str,
+    rom_path: str,
+    expected_rom_sha256: str,
+    candidate_name: str,
+) -> dict[str, object]:
+    """Build one ignored private Map 3 entity 142 two-half reference candidate."""
+
+    candidate_relative = _require_world_candidate_name(candidate_name)
+    try:
+        checkout = validate_asset_checkout_identity(
+            asset_root,
+            expected_commit=expected_commit,
+            expected_tree=expected_tree,
+            required_ignored_path=candidate_relative,
+        )
+    except AssetPreflightError as error:
+        raise _reject(error.code, error.field, error.message) from error
+    rom = _read_fixed_private_input(
+        rom_path,
+        expected_rom_sha256,
+        ACCEPTED_ROM_SHA256,
+        ACCEPTED_ROM_SIZE,
+        "rom",
+    )
+    contract = _load_entity142_reference_contract()
+    source = _build_entity142_reference_source(rom, contract)
+    generator_artifact_sha256 = _world_generator_artifact_sha256()
+
+    cache = checkout.root / "cache"
+    _require_no_reparse_chain(cache, "candidate")
+    created_cache = False
+    if not cache.exists():
+        try:
+            cache.mkdir()
+            created_cache = True
+        except OSError as error:
+            raise _reject(
+                "CandidateWriteFailed",
+                "candidate",
+                "The ignored cache is unavailable.",
+            ) from error
+    if not cache.is_dir():
+        raise _reject("PathRejected", "candidate", "The ignored cache boundary is invalid.")
+    destination = cache / candidate_name
+    _require_no_reparse_chain(destination, "candidate")
+    if os.path.lexists(destination):
+        raise _reject("CandidateExists", "candidate", "The candidate destination must be fresh.")
+    staging = cache / f"{_ENTITY142_STAGING_PREFIX}{uuid.uuid4().hex}.tmp"
+    if os.path.lexists(staging):
+        raise _reject("CandidateExists", "candidate", "The owned staging identity already exists.")
+
+    published = False
+    receipt: dict[str, object] | None = None
+    try:
+        staging.mkdir()
+        run_outputs: list[tuple[Path, dict[int, Path], PngIdentity, tuple[PngIdentity, ...]]] = []
+        for run_name in ("run-a", "run-b"):
+            run = staging / run_name
+            run.mkdir()
+            master = run / "master.png"
+            write_png_rgba(
+                master,
+                ENTITY142_SHEET_WIDTH,
+                ENTITY142_SHEET_HEIGHT,
+                list(source.rgba_pixels),
+            )
+            master_identity = _validate_png(
+                master,
+                ENTITY142_SHEET_WIDTH,
+                ENTITY142_SHEET_HEIGHT,
+                WORLD_MAXIMUM_PNG_BYTES,
+            )
+            outputs: dict[int, Path] = {}
+            identities: list[PngIdentity] = []
+            for scale in WORLD_SCALES:
+                output = run / f"entity142-reference-{scale}x.png"
+                write_png_rgba(
+                    output,
+                    ENTITY142_SHEET_WIDTH * scale,
+                    ENTITY142_SHEET_HEIGHT * scale,
+                    _scale_rgba_nearest(
+                        source.rgba_pixels,
+                        ENTITY142_SHEET_WIDTH,
+                        ENTITY142_SHEET_HEIGHT,
+                        scale,
+                    ),
+                )
+                outputs[scale] = output
+                identities.append(
+                    _validate_png(
+                        output,
+                        ENTITY142_SHEET_WIDTH * scale,
+                        ENTITY142_SHEET_HEIGHT * scale,
+                        WORLD_MAXIMUM_PNG_BYTES,
+                    )
+                )
+            run_outputs.append((master, outputs, master_identity, tuple(identities)))
+
+        first_master, first_outputs, master_identity, bucket_identities = run_outputs[0]
+        second_master, second_outputs, second_master_identity, second_bucket_identities = (
+            run_outputs[1]
+        )
+        if (
+            master_identity != second_master_identity
+            or first_master.read_bytes() != second_master.read_bytes()
+            or bucket_identities != second_bucket_identities
+            or any(
+                first_outputs[scale].read_bytes() != second_outputs[scale].read_bytes()
+                for scale in WORLD_SCALES
+            )
+        ):
+            raise _reject(
+                "NonDeterministicOutput",
+                "entity142Reference",
+                "The entity 142 reference derivation did not produce byte-identical outputs.",
+            )
+        manifest = _entity142_manifest(
+            source,
+            generator_artifact_sha256,
+            (bucket_identities[0], bucket_identities[1]),
+        )
+        manifest_sha256 = _write_entity142_candidate(
+            staging,
+            source,
+            first_master,
+            first_outputs,
+            manifest,
+        )
+        try:
+            repeated = validate_asset_checkout_identity(
+                asset_root,
+                expected_commit=expected_commit,
+                expected_tree=expected_tree,
+                required_ignored_path=candidate_relative,
+            )
+        except AssetPreflightError as error:
+            raise _reject(error.code, error.field, error.message) from error
+        if repeated.identity != checkout.identity:
+            raise _reject(
+                "RepositoryStateMismatch",
+                "assetRepository",
+                "The local asset repository identity changed during candidate construction.",
+            )
+        for child in tuple(staging.iterdir()):
+            if child.name != "candidate":
+                shutil.rmtree(child)
+        os.rename(staging / "candidate", destination)
+        published = True
+        staging.rmdir()
+        try:
+            final_checkout = validate_asset_checkout_identity(
+                asset_root,
+                expected_commit=expected_commit,
+                expected_tree=expected_tree,
+                required_ignored_path=candidate_relative,
+            )
+        except AssetPreflightError as error:
+            raise _reject(error.code, error.field, error.message) from error
+        if final_checkout.identity != checkout.identity:
+            raise _reject(
+                "RepositoryStateMismatch",
+                "assetRepository",
+                "The local asset repository identity changed at candidate publication.",
+            )
+        receipt = {
+            "schemaVersion": 1,
+            "capability": ENTITY142_BUILD_CAPABILITY,
+            "status": "Pass",
+            "assetRepositoryCommit": checkout.identity.commit,
+            "assetRepositoryTree": checkout.identity.tree,
+            "contractId": ENTITY142_CONTRACT_ID,
+            "contractSha256": ENTITY142_CONTRACT_SHA256,
+            "transactionDigest": contract.transaction_digest,
+            "assetId": ENTITY142_ASSET_ID,
+            "sourceAssetId": ENTITY142_SOURCE_ASSET_ID,
+            "masterSha256": master_identity.sha256,
+            "generatorId": WORLD_GENERATOR_ID,
+            "generatorVersion": WORLD_GENERATOR_VERSION,
+            "generatorArtifactSha256": generator_artifact_sha256,
+            "policyId": ENTITY142_POLICY_ID,
+            "selection": {
+                "sourceRecordOrdinal": contract.source_record_ordinal,
+                "logicalEntityId": contract.logical_entity_id,
+                "physicalSlot": contract.physical_slot,
+                "mapSprite": contract.map_sprite,
+                "direction": "UP",
+                "facing": contract.source_facing,
+                "sourceSlot": contract.source_slot,
+                "horizontalMirror": False,
+                "halves": [0, 1],
+                "selectedVisibleHalf": "Unknown",
+                "framePolicy": "two-half-reference-only",
+            },
+            "logicalSize": {
+                "width": ENTITY142_SHEET_WIDTH,
+                "height": ENTITY142_SHEET_HEIGHT,
+            },
+            "palettePolicy": {
+                "sourceSymbol": "palette_Base",
+                "destination": "palette3",
+                "wordMask": "0x0EEE",
+                "channelExpansion": "v<<5|v<<2|v>>1",
+                "transparentIndex": contract.transparent_index,
+                "colorSpace": "srgb",
+                "alphaMode": "straight",
+                "parityClaim": "project-authored-color-preserving-policy",
+            },
+            "unknowns": [
+                "interactionTimeAnimCounter",
+                "selectedVisibleHalf",
+                "exactObservedFrameOrAnimationContract",
+            ],
+            "buckets": [
+                {
+                    "scale": scale,
+                    "width": identity.width,
+                    "height": identity.height,
+                    "byteLength": identity.byte_length,
+                    "sha256": identity.sha256,
+                    "filter": "nearest",
+                    "mipmaps": False,
+                    "repeat": False,
+                }
+                for scale, identity in zip(WORLD_SCALES, bucket_identities, strict=True)
+            ],
+            "manifestSha256": manifest_sha256,
+            "cleanupStatus": "clean",
+        }
+    except AssetBuildError:
+        raise
+    except OSError as error:
+        raise _reject(
+            "CandidateWriteFailed",
+            "candidate",
+            "The entity 142 reference candidate build failed.",
+        ) from error
+    finally:
+        cleanup_error: AssetBuildError | None = None
+        if published and receipt is None and os.path.lexists(destination):
+            try:
+                shutil.rmtree(destination)
+                published = False
+            except OSError as error:
+                cleanup_error = _reject(
+                    "CleanupFailed",
+                    "candidate",
+                    "A failed entity 142 candidate publication could not be rolled back.",
+                )
+                cleanup_error.__cause__ = error
+        if os.path.lexists(staging):
+            try:
+                _cleanup_owned(staging, cache, _ENTITY142_STAGING_PREFIX)
+            except AssetBuildError as error:
+                if cleanup_error is None:
+                    cleanup_error = error
+        if cleanup_error is not None and published and os.path.lexists(destination):
+            try:
+                shutil.rmtree(destination)
+                published = False
+            except OSError:
+                pass
+        if created_cache and not published:
+            with suppress(OSError):
+                cache.rmdir()
+        if cleanup_error is not None:
+            raise cleanup_error
+    if receipt is None or not published:
+        raise _reject(
+            "CandidateWriteFailed",
+            "candidate",
+            "The entity 142 reference candidate did not publish.",
+        )
+    return receipt
+
+
 def _player_animation_asset_id(name: str) -> str:
     return f"world.map3.player.locomotion.{name}"
 
@@ -3365,6 +4115,13 @@ def _parser() -> argparse.ArgumentParser:
     animation.add_argument("--rom", required=True)
     animation.add_argument("--expected-rom-sha256", required=True)
     animation.add_argument("--candidate-name", required=True)
+    entity142 = subparsers.add_parser("map3-entity142-two-half-reference-candidate")
+    entity142.add_argument("--asset-root", required=True)
+    entity142.add_argument("--expected-commit", required=True)
+    entity142.add_argument("--expected-tree", required=True)
+    entity142.add_argument("--rom", required=True)
+    entity142.add_argument("--expected-rom-sha256", required=True)
+    entity142.add_argument("--candidate-name", required=True)
     return parser
 
 
@@ -3403,8 +4160,17 @@ def main(argv: list[str] | None = None) -> int:
                 expected_rom_sha256=arguments.expected_rom_sha256,
                 candidate_name=arguments.candidate_name,
             )
-        else:
+        elif arguments.command == "map3-player-locomotion-animation-candidate":
             receipt = build_map3_player_locomotion_animation_candidate(
+                asset_root=arguments.asset_root,
+                expected_commit=arguments.expected_commit,
+                expected_tree=arguments.expected_tree,
+                rom_path=arguments.rom,
+                expected_rom_sha256=arguments.expected_rom_sha256,
+                candidate_name=arguments.candidate_name,
+            )
+        else:
+            receipt = build_map3_entity142_two_half_reference_candidate(
                 asset_root=arguments.asset_root,
                 expected_commit=arguments.expected_commit,
                 expected_tree=arguments.expected_tree,

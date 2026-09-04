@@ -9,7 +9,7 @@ import subprocess
 import zipfile
 import zlib
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -1220,6 +1220,82 @@ def _build_player_reference_candidate(
     )
 
 
+def _entity142_reference_input(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[Path, bytes, remake_asset_build.Entity142ReferenceContract]:
+    pointer_table = 64
+    source_slot = 3
+    payload_address = 128
+    palette_address = 768
+    compressed = b"\x12\x34\x56\x78"
+    rom = bytearray(1024)
+    pointer_offset = pointer_table + (source_slot * 4)
+    rom[pointer_offset : pointer_offset + 4] = payload_address.to_bytes(4, "big")
+    rom[payload_address : payload_address + len(compressed)] = compressed
+    palette_words = [0, 2, 4, *([0] * 13)]
+    palette = b"".join(word.to_bytes(2, "big") for word in palette_words)
+    rom[palette_address : palette_address + len(palette)] = palette
+    decoded = bytearray(576)
+    decoded[0] = 0x10
+    decoded[288] = 0x20
+    halves = (bytes(decoded[:288]), bytes(decoded[288:]))
+    contract = remake_asset_build.Entity142ReferenceContract(
+        transaction_digest=_digest(b"project-authored-entity142-contract"),
+        source_record_ordinal=17,
+        logical_entity_id=142,
+        physical_slot=17,
+        map_sprite=209,
+        source_facing=1,
+        pointer_table_address=pointer_table,
+        source_slot=source_slot,
+        payload_address=payload_address,
+        compressed_bytes=len(compressed),
+        compressed_sha256=_digest(compressed),
+        decoded_bytes=len(decoded),
+        decoded_sha256=_digest(decoded),
+        half_bytes=288,
+        half_sha256=(_digest(halves[0]), _digest(halves[1])),
+        palette_address=palette_address,
+        palette_bytes=len(palette),
+        palette_sha256=_digest(palette),
+        palette_word_mask=0x0EEE,
+        transparent_index=0,
+    )
+    rom_path = tmp_path / "entity142-reference.rom"
+    rom_path.write_bytes(rom)
+    monkeypatch.setattr(remake_asset_build, "ACCEPTED_ROM_SHA256", _digest(bytes(rom)))
+    monkeypatch.setattr(remake_asset_build, "ACCEPTED_ROM_SIZE", len(rom))
+    monkeypatch.setattr(
+        remake_asset_build,
+        "_load_entity142_reference_contract",
+        lambda: contract,
+    )
+
+    def decode(data: bytes, *, expected_output_bytes: int | None = None) -> BasicDecodeResult:
+        assert data == compressed
+        assert expected_output_bytes == len(decoded)
+        return BasicDecodeResult(bytes(decoded), len(compressed), 1, 1, 0, 0, 0, 0, 0)
+
+    monkeypatch.setattr(remake_asset_build, "decode_basic_compressed", decode)
+    return rom_path, compressed, contract
+
+
+def _build_entity142_reference_candidate(
+    repository: CandidateRepository,
+    rom_path: Path,
+) -> dict[str, object]:
+    commit, tree = repository.pins()
+    return remake_asset_build.build_map3_entity142_two_half_reference_candidate(
+        asset_root=str(repository.root),
+        expected_commit=commit,
+        expected_tree=tree,
+        rom_path=str(rom_path),
+        expected_rom_sha256=_digest(rom_path.read_bytes()),
+        candidate_name="map3-entity142-reference-candidate",
+    )
+
+
 def _player_locomotion_input(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1961,6 +2037,232 @@ def test_exact_private_map3_player_reference_candidate_opt_in(tmp_path: Path) ->
     assert receipt["capability"] == remake_asset_build.PLAYER_BUILD_CAPABILITY
     assert receipt["selection"]["framePolicy"] == "initial-reference-frame"
     assert receipt["selection"]["sourceSlot"] == 2
+    assert receipt["cleanupStatus"] == "clean"
+
+
+def test_entity142_reference_contract_is_exact_and_keeps_runtime_half_unknown() -> None:
+    contract = remake_asset_build._load_entity142_reference_contract()
+
+    assert contract.source_record_ordinal == 17
+    assert contract.logical_entity_id == 142
+    assert contract.physical_slot == 17
+    assert contract.map_sprite == 209
+    assert contract.source_facing == 1
+    assert contract.source_slot == 627
+    assert contract.compressed_bytes == 406
+    assert contract.decoded_bytes == 576
+    assert contract.half_bytes == 288
+    assert len(contract.half_sha256) == 2
+    assert contract.transparent_index == 0
+
+
+def test_entity142_reference_contract_rejects_closed_shape_or_semantic_drift(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    document = json.loads(remake_asset_build.ENTITY142_CONTRACT.read_text(encoding="utf-8"))
+    document["unexpected"] = True
+    path = tmp_path / "drifted-entity142-contract.json"
+    raw = (json.dumps(document, indent=2) + "\n").encode()
+    path.write_bytes(raw)
+    monkeypatch.setattr(remake_asset_build, "ENTITY142_CONTRACT", path)
+    monkeypatch.setattr(remake_asset_build, "ENTITY142_CONTRACT_SIZE", len(raw))
+    monkeypatch.setattr(remake_asset_build, "ENTITY142_CONTRACT_SHA256", _digest(raw))
+
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        remake_asset_build._load_entity142_reference_contract()
+
+    assert rejected.value.code == "InvalidMetadata"
+    assert str(tmp_path) not in rejected.value.message
+
+
+def test_map3_entity142_two_half_candidate_is_exact_deterministic_and_ignored(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+    rom_path, compressed, contract = _entity142_reference_input(tmp_path, monkeypatch)
+    before = (*repository.pins(), _run(repository.root, "status", "--porcelain=v2", "-z"))
+
+    receipt = _build_entity142_reference_candidate(repository, rom_path)
+
+    candidate = repository.root / "cache" / "map3-entity142-reference-candidate"
+    assert sorted(
+        path.relative_to(candidate).as_posix() for path in candidate.rglob("*") if path.is_file()
+    ) == [
+        "manifests/presentation-assets-v1.json",
+        "masters/world/map3/entity142-astral-up-two-half-reference.png",
+        "runtime/world/map3/entity142-astral-up-two-half-reference@2x.png",
+        "runtime/world/map3/entity142-astral-up-two-half-reference@4x.png",
+        "source/world/map3/entity142-astral-up-two-half-reference-v1.bin",
+    ]
+    manifest = json.loads(
+        (candidate / "manifests" / "presentation-assets-v1.json").read_text(encoding="utf-8")
+    )
+    asset = manifest["assets"][0]
+    assert asset["assetId"] == remake_asset_build.ENTITY142_ASSET_ID
+    assert asset["logicalSize"] == {"width": 48, "height": 24}
+    assert [bucket["scale"] for bucket in asset["buckets"]] == [2, 4]
+    assert all(bucket["filter"] == "nearest" for bucket in asset["buckets"])
+    source = candidate.joinpath(*PurePosixPath(remake_asset_build.ENTITY142_SOURCE_FILE).parts)
+    prefix = b"".join(
+        (
+            remake_asset_build.ENTITY142_SOURCE_MAGIC,
+            bytes.fromhex(remake_asset_build.ENTITY142_CONTRACT_SHA256),
+            bytes.fromhex(contract.transaction_digest),
+            bytes((17, 17)),
+            (142).to_bytes(2, "big"),
+            bytes((209, 1)),
+            (3).to_bytes(2, "big"),
+            len(compressed).to_bytes(4, "big"),
+            compressed,
+        )
+    )
+    assert source.read_bytes().startswith(prefix)
+    assert receipt["selection"] == {
+        "sourceRecordOrdinal": 17,
+        "logicalEntityId": 142,
+        "physicalSlot": 17,
+        "mapSprite": 209,
+        "direction": "UP",
+        "facing": 1,
+        "sourceSlot": 3,
+        "horizontalMirror": False,
+        "halves": [0, 1],
+        "selectedVisibleHalf": "Unknown",
+        "framePolicy": "two-half-reference-only",
+    }
+    assert receipt["unknowns"] == [
+        "interactionTimeAnimCounter",
+        "selectedVisibleHalf",
+        "exactObservedFrameOrAnimationContract",
+    ]
+    assert receipt["logicalSize"] == {"width": 48, "height": 24}
+    assert receipt["palettePolicy"]["destination"] == "palette3"
+    master_width, master_height, master_pixels = _read_rgba_png(
+        candidate / "masters" / "world" / "map3" / "entity142-astral-up-two-half-reference.png"
+    )
+    assert (master_width, master_height) == (48, 24)
+    assert master_pixels[:4] != master_pixels[24 * 4 : 25 * 4]
+    assert master_pixels[3] == master_pixels[(24 * 4) + 3] == 255
+    two_width, two_height, two_pixels = _read_rgba_png(
+        candidate / "runtime" / "world" / "map3" / "entity142-astral-up-two-half-reference@2x.png"
+    )
+    assert (two_width, two_height) == (96, 48)
+    assert two_pixels[:4] == two_pixels[4:8]
+    assert two_pixels[: 96 * 4] == two_pixels[96 * 4 : 192 * 4]
+    encoded = json.dumps(receipt, sort_keys=True)
+    assert str(repository.root) not in encoded
+    assert str(rom_path) not in encoded
+    assert repository.pins() == before[:2]
+    assert _run(repository.root, "status", "--porcelain=v2", "-z") == before[2]
+    assert not list((repository.root / "cache").glob(".sf2-map3-entity142-reference-build-*"))
+
+
+@pytest.mark.parametrize(
+    ("mutation", "code"),
+    (
+        ("pointer", "SourcePayloadMismatch"),
+        ("compressed", "SourcePayloadMismatch"),
+        ("decode-consumption", "DecodeFailure"),
+        ("half", "DecodedPayloadMismatch"),
+        ("palette", "PalettePayloadMismatch"),
+    ),
+)
+def test_map3_entity142_two_half_semantics_fail_closed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    mutation: str,
+    code: str,
+) -> None:
+    rom_path, compressed, contract = _entity142_reference_input(tmp_path, monkeypatch)
+    rom = bytearray(rom_path.read_bytes())
+    if mutation == "pointer":
+        pointer_offset = contract.pointer_table_address + (contract.source_slot * 4)
+        rom[pointer_offset : pointer_offset + 4] = (contract.payload_address + 1).to_bytes(4, "big")
+    elif mutation == "compressed":
+        rom[contract.payload_address] ^= 1
+    elif mutation == "decode-consumption":
+        decoded = b"\0" * contract.decoded_bytes
+        monkeypatch.setattr(
+            remake_asset_build,
+            "decode_basic_compressed",
+            lambda *_args, **_kwargs: BasicDecodeResult(
+                decoded, len(compressed) - 1, 1, 1, 0, 0, 0, 0, 0
+            ),
+        )
+    elif mutation == "half":
+        contract = replace(contract, half_sha256=("0" * 64, contract.half_sha256[1]))
+    else:
+        rom[contract.palette_address + 1] ^= 1
+
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        remake_asset_build._build_entity142_reference_source(bytes(rom), contract)
+
+    assert rejected.value.code == code
+
+
+def test_map3_entity142_fixed_rom_precedes_contract_and_rejects_relative_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+    rom_path, _compressed, _contract = _entity142_reference_input(tmp_path, monkeypatch)
+    original = rom_path.read_bytes()
+    mutated = bytearray(original)
+    mutated[-1] ^= 1
+    rom_path.write_bytes(mutated)
+    contract_called = False
+
+    def reject_contract() -> remake_asset_build.Entity142ReferenceContract:
+        nonlocal contract_called
+        contract_called = True
+        raise AssertionError("digest drift reached the contract reader")
+
+    monkeypatch.setattr(remake_asset_build, "_load_entity142_reference_contract", reject_contract)
+    commit, tree = repository.pins()
+    with pytest.raises(remake_asset_build.AssetBuildError) as digest_rejected:
+        remake_asset_build.build_map3_entity142_two_half_reference_candidate(
+            asset_root=str(repository.root),
+            expected_commit=commit,
+            expected_tree=tree,
+            rom_path=str(rom_path),
+            expected_rom_sha256=_digest(mutated),
+            candidate_name="map3-entity142-reference-candidate",
+        )
+    assert digest_rejected.value.code == "ContentDigestMismatch"
+    assert contract_called is False
+
+    rom_path.write_bytes(original)
+    with pytest.raises(remake_asset_build.AssetBuildError) as relative_rejected:
+        remake_asset_build.build_map3_entity142_two_half_reference_candidate(
+            asset_root=str(repository.root),
+            expected_commit=commit,
+            expected_tree=tree,
+            rom_path="relative/entity142.rom",
+            expected_rom_sha256=_digest(original),
+            candidate_name="map3-entity142-reference-candidate",
+        )
+    assert relative_rejected.value.code == "InvalidRequest"
+    assert str(tmp_path) not in relative_rejected.value.message
+
+
+def test_exact_private_map3_entity142_two_half_candidate_opt_in(tmp_path: Path) -> None:
+    rom_value = os.environ.get("SF2_PRIVATE_ROM")
+    if not rom_value:
+        pytest.skip("set SF2_PRIVATE_ROM to the accepted private ROM")
+    repository = CandidateRepository.create(tmp_path / "exact-entity142-asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+
+    receipt = _build_entity142_reference_candidate(repository, Path(rom_value))
+
+    assert receipt["status"] == "Pass"
+    assert receipt["capability"] == remake_asset_build.ENTITY142_BUILD_CAPABILITY
+    assert receipt["contractId"] == remake_asset_build.ENTITY142_CONTRACT_ID
+    assert receipt["selection"]["halves"] == [0, 1]
+    assert receipt["selection"]["selectedVisibleHalf"] == "Unknown"
     assert receipt["cleanupStatus"] == "clean"
 
 
