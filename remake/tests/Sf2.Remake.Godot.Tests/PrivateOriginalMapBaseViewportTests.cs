@@ -422,6 +422,48 @@ public sealed class PrivateOriginalMapBaseViewportTests
     }
 
     [Fact]
+    public void BowieDoorCopyReprojectsTheTargetCellFromTheAuthoritativeLayout()
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[][] blocks =
+        [
+            Enumerable.Repeat((ushort)0x0100, 9).ToArray(),
+            Enumerable.Repeat((ushort)0x0101, 9).ToArray(),
+        ];
+        ushort[] beforeWords = new ushort[WorkingMapLayout.WordCount];
+        beforeWords[(8 * WorkingMapLayout.ColumnCount) + 4] =
+            OriginalMapTraversal.CollisionMask;
+        beforeWords[62] = 1;
+        WorkingMapBlockCopy copy = new(62, 0, 4, 8, 1, 1);
+        WorkingMapLayout afterLayout = new WorkingMapLayout(beforeWords).ApplyBlockCopy(copy);
+        PrivateOriginalMapSessionSnapshot before = Snapshot(
+            blocks,
+            beforeWords,
+            playerPosition: new MapPosition(4, 7));
+        PrivateOriginalMapSessionSnapshot after = Snapshot(
+            blocks,
+            afterLayout.Words.ToArray(),
+            playerPosition: new MapPosition(4, 7));
+
+        PrivateOriginalMapBaseViewProjection beforeProjection =
+            PrivateOriginalMapBaseViewProjection.Create(before, visual);
+        PrivateOriginalMapBaseViewProjection afterProjection =
+            PrivateOriginalMapBaseViewProjection.Create(after, visual);
+        int targetPixelX = (4 - beforeProjection.OriginX) *
+            PrivateOriginalMapBaseViewProjection.BlockPixelSize;
+        int targetPixelY = (8 - beforeProjection.OriginY) *
+            PrivateOriginalMapBaseViewProjection.BlockPixelSize;
+
+        Assert.Equal(
+            new byte[] { 255, 0, 0, 255 },
+            Pixel(beforeProjection, targetPixelX, targetPixelY));
+        Assert.Equal(
+            new byte[] { 0, 255, 0, 255 },
+            Pixel(afterProjection, targetPixelX, targetPixelY));
+        Assert.NotEqual(beforeProjection.RgbaBytes, afterProjection.RgbaBytes);
+    }
+
+    [Fact]
     public void StaticOverlayDiagnosticComposesTheUniqueAreaAndRetainsTransparentHoles()
     {
         OriginalMapVisualPayloadDefinition visual = VisualDefinition();

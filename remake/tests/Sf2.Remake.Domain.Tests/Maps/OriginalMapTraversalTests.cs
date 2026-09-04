@@ -122,6 +122,66 @@ public sealed class OriginalMapTraversalTests
         Assert.Equal(new MapPosition(11, 10), result.Position);
     }
 
+    [Theory]
+    [InlineData(ExplorationDirection.North, 10, 9)]
+    [InlineData(ExplorationDirection.East, 11, 10)]
+    [InlineData(ExplorationDirection.South, 10, 11)]
+    [InlineData(ExplorationDirection.West, 9, 10)]
+    public void CandidateTargetUsesTheSameCardinalPolicyAsTraversal(
+        ExplorationDirection direction,
+        int expectedX,
+        int expectedY)
+    {
+        OriginalMapTraversal traversal = Traversal(
+            new OriginalMapTraversalArea(0, 0, 63, 63));
+        WorkingMapLayout layout = new(EmptyWords());
+
+        MapPosition? target = traversal.ResolveCandidateTarget(
+            layout,
+            new MapPosition(10, 10),
+            direction);
+
+        Assert.Equal(new MapPosition(expectedX, expectedY), target);
+    }
+
+    [Fact]
+    public void CandidateTargetPreservesStairAndBoundaryRulesWithoutApplyingCollision()
+    {
+        OriginalMapTraversal traversal = Traversal(
+            new OriginalMapTraversalArea(0, 0, 63, 63));
+        ushort[] stairWords = EmptyWords();
+        stairWords[Index(10, 10)] = OriginalMapTraversal.RightStairMask;
+        stairWords[Index(11, 9)] = OriginalMapTraversal.RightStairMask;
+        WorkingMapLayout stairLayout = new(stairWords);
+
+        Assert.Equal(
+            new MapPosition(11, 9),
+            traversal.ResolveCandidateTarget(
+                stairLayout,
+                new MapPosition(10, 10),
+                ExplorationDirection.East));
+        Assert.Null(traversal.ResolveCandidateTarget(
+            stairLayout,
+            new MapPosition(0, 0),
+            ExplorationDirection.West));
+
+        ushort[] blockedWords = EmptyWords();
+        blockedWords[Index(11, 10)] = OriginalMapTraversal.CollisionMask;
+        WorkingMapLayout blockedLayout = new(blockedWords);
+        Assert.Equal(
+            new MapPosition(11, 10),
+            traversal.ResolveCandidateTarget(
+                blockedLayout,
+                new MapPosition(10, 10),
+                ExplorationDirection.East));
+        Assert.Equal(
+            OriginalMapTraversalOutcome.BlockedByCollision,
+            traversal.TryMove(
+                blockedLayout,
+                new MapPosition(10, 10),
+                ExplorationDirection.East).Outcome);
+    }
+
     [Fact]
     public void BlockCopyChangesLaterTraversalBecauseThePolicyRereadsTheCurrentLayout()
     {

@@ -419,6 +419,10 @@ public sealed class OriginalMapVisualGameSessionTests
             OriginalMapRuntimeAdmission.ControlledStepCopyDestinationX,
             OriginalMapRuntimeAdmission.ControlledStepCopyDestinationY)] |=
             OriginalMapTraversal.CollisionMask;
+        words[Index(
+            OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationX,
+            OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationY)] |=
+            OriginalMapTraversal.CollisionMask;
         return new OriginalMapImportDefinition(
             map,
             new WorkingMapLayout(words),
@@ -438,7 +442,8 @@ public sealed class OriginalMapVisualGameSessionTests
             ControlledStepCopy(map),
             AcceptedSameMapWarps(map),
             ["natural-route-and-effects-unknown"],
-            AcceptedRoofOnLoadClear(map));
+            AcceptedRoofOnLoadClear(map),
+            BowieDoorStepCopy(map));
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>
@@ -645,6 +650,24 @@ public sealed class OriginalMapVisualGameSessionTests
                 OriginalMapRuntimeAdmission.ControlledStepCopyDestinationY,
                 OriginalMapRuntimeAdmission.ControlledStepCopyWidth,
                 OriginalMapRuntimeAdmission.ControlledStepCopyHeight));
+
+    private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
+        new(
+            new OriginalMapStepCopyIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.ControlledStepCopyResourceId,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyRecordOrdinal),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyTriggerX,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyTriggerY),
+            new WorkingMapBlockCopy(
+                OriginalMapRuntimeAdmission.BowieDoorStepCopySourceX,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopySourceY,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationX,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationY,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyWidth,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyHeight));
 
     private static ushort[] SourceWords() =>
     [

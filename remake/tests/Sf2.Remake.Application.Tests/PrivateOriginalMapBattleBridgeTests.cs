@@ -482,6 +482,10 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             OriginalMapRuntimeAdmission.ControlledStepCopyDestinationX,
             OriginalMapRuntimeAdmission.ControlledStepCopyDestinationY)] |=
             OriginalMapTraversal.CollisionMask;
+        words[Index(
+            OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationX,
+            OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationY)] |=
+            OriginalMapTraversal.CollisionMask;
         return new OriginalMapImportDefinition(
             map,
             new WorkingMapLayout(words),
@@ -499,7 +503,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             StepCopy(map),
             SameMapWarps(map),
             ["original-battle-route-unknown"],
-            RoofOnLoadClear(map));
+            RoofOnLoadClear(map),
+            BowieDoorStepCopy(map));
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>
@@ -647,6 +652,24 @@ public sealed class PrivateOriginalMapBattleBridgeTests
                 OriginalMapRuntimeAdmission.ControlledStepCopyRecordOrdinal),
             new MapPosition(41, 13),
             new WorkingMapBlockCopy(62, 0, 41, 13, 1, 1));
+
+    private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
+        new(
+            new OriginalMapStepCopyIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.ControlledStepCopyResourceId,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyRecordOrdinal),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyTriggerX,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyTriggerY),
+            new WorkingMapBlockCopy(
+                OriginalMapRuntimeAdmission.BowieDoorStepCopySourceX,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopySourceY,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationX,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationY,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyWidth,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyHeight));
 
     private static ApplyPrivateOriginalMapLayoutMutationCommand MutationCommand(
         PrivateOriginalMapSessionSnapshot snapshot) =>
