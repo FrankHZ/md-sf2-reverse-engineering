@@ -25,6 +25,7 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.False(selection.PrivateBaseViewRequested);
         Assert.False(selection.PrivateBaseAtlasRequested);
         Assert.False(selection.PrivateStaticOverlayRequested);
+        Assert.False(selection.PrivateCurrentAreaOverlayRequested);
         Assert.False(selection.PrivateHudPreviewRequested);
         Assert.Null(selection.PresentationAssetRoot);
         Assert.Null(selection.PresentationAssetCommit);
@@ -63,6 +64,81 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.False(selection.PrivateBaseViewRequested);
         Assert.False(selection.PrivateBaseAtlasRequested);
         Assert.Null(selection.Diagnostic);
+    }
+
+    [Fact]
+    public void CurrentAreaOverlayRequiresAndRetainsTheExplicitPrivateBaseView()
+    {
+        string canonical = Absolute("canonical-map-import.json");
+        string assetRoot = Absolute("presentation-assets");
+
+        Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
+            [
+                "--runtime-profile=private-local",
+                $"--canonical-map-import={canonical}",
+                Map3RuntimeProfileSelection.PrivateBaseViewOption,
+                Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
+                Map3RuntimeProfileSelection.PrivateCurrentAreaOverlayOption,
+                $"--presentation-asset-root={assetRoot}",
+                $"--presentation-asset-commit={AtlasAssetCommit}",
+                $"--presentation-manifest-sha256={AtlasManifestDigest}",
+            ]);
+
+        Assert.True(selection.IsAvailable);
+        Assert.True(selection.PrivateBaseViewRequested);
+        Assert.True(selection.PrivateBaseAtlasRequested);
+        Assert.True(selection.PrivateCurrentAreaOverlayRequested);
+        Assert.False(selection.PrivateStaticOverlayRequested);
+        Assert.Null(selection.Diagnostic);
+    }
+
+    [Theory]
+    [InlineData("missing-base-view")]
+    [InlineData("duplicate")]
+    [InlineData("public-profile")]
+    [InlineData("missing-profile")]
+    [InlineData("static-overlay-conflict")]
+    public void CurrentAreaOverlayFailsClosedOutsideItsExplicitPrivateBoundary(string mutation)
+    {
+        string canonical = Absolute("canonical-map-import.json");
+        List<string> arguments =
+        [
+            "--runtime-profile=private-local",
+            $"--canonical-map-import={canonical}",
+            Map3RuntimeProfileSelection.PrivateBaseViewOption,
+            Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
+            Map3RuntimeProfileSelection.PrivateCurrentAreaOverlayOption,
+            $"--presentation-asset-root={Absolute("presentation-assets")}",
+            $"--presentation-asset-commit={AtlasAssetCommit}",
+            $"--presentation-manifest-sha256={AtlasManifestDigest}",
+        ];
+        switch (mutation)
+        {
+            case "missing-base-view":
+                arguments.Remove(Map3RuntimeProfileSelection.PrivateBaseViewOption);
+                break;
+            case "duplicate":
+                arguments.Add(Map3RuntimeProfileSelection.PrivateCurrentAreaOverlayOption);
+                break;
+            case "public-profile":
+                arguments[0] = "--runtime-profile=public-synthetic";
+                break;
+            case "missing-profile":
+                arguments.RemoveAt(0);
+                break;
+            case "static-overlay-conflict":
+                arguments.Add(Map3RuntimeProfileSelection.PrivateStaticOverlayOption);
+                break;
+            default:
+                throw new InvalidOperationException("Unknown test mutation.");
+        }
+
+        Map3RuntimeProfileSelection selection =
+            Map3RuntimeProfileSelection.Parse(arguments);
+
+        Assert.False(selection.IsAvailable);
+        Assert.False(selection.PrivateBaseViewRequested);
+        Assert.DoesNotContain(canonical, selection.Diagnostic, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -431,6 +507,7 @@ public sealed class Map3RuntimeProfileSelectionTests
     [Theory]
     [InlineData("--private-map3-base-view")]
     [InlineData("--private-map3-base-view", "--private-map3-static-overlay")]
+    [InlineData("--private-map3-base-view", "--private-map3-current-area-overlay")]
     public void PrivateBaseViewWithoutReviewedAtlasIsUnavailable(
         params string[] visualArguments)
     {

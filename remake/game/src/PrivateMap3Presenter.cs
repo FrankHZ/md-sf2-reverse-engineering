@@ -12,6 +12,7 @@ internal sealed record PrivateMap3PresentationPlan(
     bool IncludeBaseVisualViewport,
     PrivateMap3WorldTreatment WorldTreatment,
     bool StaticOverlayDiagnostic,
+    bool CurrentAreaOverlay,
     float StatusY)
 {
     private const string DiagnosticExplanation =
@@ -26,6 +27,10 @@ internal sealed record PrivateMap3PresentationPlan(
         "Project-authored STATIC OVERLAY DIAGNOSTIC using the admitted map palette. " +
         "Not gameplay or original layer-2 fidelity.";
 
+    private const string CurrentAreaOverlayExplanation =
+        "Project-authored current-area second-layer composition from admitted private Map 3 data. " +
+        "Not original layer priority, timing, or full fidelity.";
+
     internal static PrivateMap3PresentationPlan PrivateLocalAvailable() =>
         new(
             Map3Root.PrivateBannerText,
@@ -36,21 +41,36 @@ internal sealed record PrivateMap3PresentationPlan(
             IncludeBaseVisualViewport: false,
             PrivateMap3WorldTreatment.ExactNearest,
             StaticOverlayDiagnostic: false,
+            CurrentAreaOverlay: false,
             StatusY: 450);
 
     internal static PrivateMap3PresentationPlan PrivateLocalWithBaseVisual(
         PrivateMap3WorldTreatment worldTreatment = PrivateMap3WorldTreatment.ExactNearest,
-        bool staticOverlayDiagnostic = false) =>
-        new(
+        bool staticOverlayDiagnostic = false,
+        bool currentAreaOverlay = false)
+    {
+        if (staticOverlayDiagnostic && currentAreaOverlay)
+        {
+            throw new ArgumentException(
+                "Static and current-area overlay presentation modes are mutually exclusive.");
+        }
+
+        return new(
             Map3Root.PrivateBannerText,
-            staticOverlayDiagnostic ? StaticOverlayExplanation : BaseVisualExplanation,
+            staticOverlayDiagnostic
+                ? StaticOverlayExplanation
+                : currentAreaOverlay
+                    ? CurrentAreaOverlayExplanation
+                    : BaseVisualExplanation,
             "Admitting PrivateLocal canonical Map 3...",
             IncludeTraversalViewport: true,
             ShowTraversalViewport: false,
             IncludeBaseVisualViewport: true,
             worldTreatment,
             staticOverlayDiagnostic,
+            currentAreaOverlay,
             StatusY: 310);
+    }
 
     internal static PrivateMap3PresentationPlan PrivateLocalUnavailable(
         string diagnostic) =>
@@ -74,6 +94,7 @@ internal sealed record PrivateMap3PresentationPlan(
             IncludeBaseVisualViewport: false,
             PrivateMap3WorldTreatment.ExactNearest,
             StaticOverlayDiagnostic: false,
+            CurrentAreaOverlay: false,
             StatusY: 105);
     }
 
@@ -108,19 +129,22 @@ internal sealed class PrivateMap3Presenter
     private readonly Label _status;
     private readonly PrivateMap3WorldTreatment _requestedWorldTreatment;
     private readonly bool _staticOverlayDiagnostic;
+    private readonly bool _currentAreaOverlay;
 
     private PrivateMap3Presenter(
         PrivateOriginalMapBaseViewport? baseViewport,
         PrivateOriginalMapTraversalViewport? viewport,
         Label status,
         PrivateMap3WorldTreatment requestedWorldTreatment,
-        bool staticOverlayDiagnostic)
+        bool staticOverlayDiagnostic,
+        bool currentAreaOverlay)
     {
         _baseViewport = baseViewport;
         _viewport = viewport;
         _status = status;
         _requestedWorldTreatment = requestedWorldTreatment;
         _staticOverlayDiagnostic = staticOverlayDiagnostic;
+        _currentAreaOverlay = currentAreaOverlay;
     }
 
     internal PrivateOriginalMapTraversalViewProjection? Projection =>
@@ -234,7 +258,8 @@ internal sealed class PrivateMap3Presenter
             viewport,
             status,
             plan.WorldTreatment,
-            plan.StaticOverlayDiagnostic);
+            plan.StaticOverlayDiagnostic,
+            plan.CurrentAreaOverlay);
     }
 
     internal bool TryBindBaseAtlas(
@@ -257,6 +282,7 @@ internal sealed class PrivateMap3Presenter
             snapshot,
             _requestedWorldTreatment,
             _staticOverlayDiagnostic,
+            _currentAreaOverlay,
             out diagnostic);
     }
 
@@ -324,7 +350,8 @@ internal sealed class PrivateMap3Presenter
             _baseViewport.ProjectMountedAtlas(
                 snapshot,
                 _staticOverlayDiagnostic,
-                playerLocomotion);
+                playerLocomotion,
+                _currentAreaOverlay);
         }
 
         _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome);

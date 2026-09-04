@@ -43,7 +43,34 @@ public sealed class PrivateMap3PresenterTests
         Assert.False(plan.ShowTraversalViewport);
         Assert.True(plan.IncludeBaseVisualViewport);
         Assert.Equal(PrivateMap3WorldTreatment.ExactNearest, plan.WorldTreatment);
+        Assert.False(plan.StaticOverlayDiagnostic);
+        Assert.False(plan.CurrentAreaOverlay);
         Assert.Equal(310, plan.StatusY);
+    }
+
+    [Fact]
+    public void CurrentAreaOverlayPlanKeepsPlayableMarkersAndLabelsModernComposition()
+    {
+        PrivateMap3PresentationPlan plan =
+            PrivateMap3PresentationPlan.PrivateLocalWithBaseVisual(
+                currentAreaOverlay: true);
+
+        Assert.True(plan.IncludeBaseVisualViewport);
+        Assert.False(plan.StaticOverlayDiagnostic);
+        Assert.True(plan.CurrentAreaOverlay);
+        Assert.Equal(
+            "Project-authored current-area second-layer composition from admitted private Map 3 data. " +
+                "Not original layer priority, timing, or full fidelity.",
+            plan.ExplanationText);
+    }
+
+    [Fact]
+    public void StaticAndCurrentAreaOverlayPlansAreMutuallyExclusive()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            PrivateMap3PresentationPlan.PrivateLocalWithBaseVisual(
+                staticOverlayDiagnostic: true,
+                currentAreaOverlay: true));
     }
 
     [Fact]
@@ -103,6 +130,8 @@ public sealed class PrivateMap3PresenterTests
             Assert.False(plan.IncludeTraversalViewport);
             Assert.False(plan.ShowTraversalViewport);
             Assert.False(plan.IncludeBaseVisualViewport);
+            Assert.False(plan.StaticOverlayDiagnostic);
+            Assert.False(plan.CurrentAreaOverlay);
             Assert.Equal(105, plan.StatusY);
         }
     }

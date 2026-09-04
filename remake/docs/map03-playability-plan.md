@@ -14,7 +14,9 @@ The accepted runtime already admits the controlled private Map 3 state, authorit
 layout, traversal policy, current area, block and visual-resource data, selected setup entity
 population, reviewed local base atlas, player locomotion, a project-authored camera, one bounded
 entity diagnostic, a manual synthetic battle bridge, two exact private same-map warp records, and
-the first landing's distinct once-only roof-on-load clear.
+the first landing's distinct once-only roof-on-load clear. An explicit private-local presentation
+option also projects the live current area's non-zero second-layer offset from the authoritative
+working layout; zero-offset areas remain main-only.
 `GameSession` evaluates their candidate targets before ordinary passability and atomically relocates
 the authoritative position, facing, area, and step without executing opaque original targets. These
 capabilities do not execute natural setup, zone, door, dialogue, music, or original presentation
@@ -32,17 +34,13 @@ interaction/temporary flag lifecycle that are not yet runtime capabilities.
 
 ## Ordered Frontier
 
-1. Godot projects the live current area's second layer from the authoritative post-warp working
-   layout. Any
-   interim composition and draw order are labelled as modern remake policy until original plane,
-   priority, palette, camera, and timing behavior is accepted.
-2. The accepted zone, Bowie-door, school-door, and Sarah temporary-flag boundaries are admitted in
+1. The accepted zone, Bowie-door, school-door, and Sarah temporary-flag boundaries are admitted in
    evidence order before claiming a route to the second same-map warp.
-3. The accepted entity-142 interaction record gains a request/acknowledgement lifecycle without
+2. The accepted entity-142 interaction record gains a request/acknowledgement lifecycle without
    inventing dialogue or program effects.
-4. Broader selected-setup entities gain reviewed local assets and bounded visual policies after their
+3. Broader selected-setup entities gain reviewed local assets and bounded visual policies after their
    identities and visibility rules are closed.
-5. Remaining natural doors, steps, warps, roofs, and setup refinements follow their accepted evidence; Map
+4. Remaining natural doors, steps, warps, roofs, and setup refinements follow their accepted evidence; Map
    3 music and audio follow only after scene-use and playback boundaries are closed.
 
 ## Decision Rules

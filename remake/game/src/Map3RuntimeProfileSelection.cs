@@ -33,6 +33,8 @@ internal sealed record Map3RuntimeProfileSelection
     internal const string PrivateBaseViewOption = "--private-map3-base-view";
     internal const string PrivateBaseAtlasOption = "--private-map3-base-atlas";
     internal const string PrivateStaticOverlayOption = "--private-map3-static-overlay";
+    internal const string PrivateCurrentAreaOverlayOption =
+        "--private-map3-current-area-overlay";
     internal const string PrivateHudPreviewOption = "--private-hud-preview";
 
     private Map3RuntimeProfileSelection(
@@ -43,6 +45,7 @@ internal sealed record Map3RuntimeProfileSelection
         bool privateBaseViewRequested,
         bool privateBaseAtlasRequested,
         bool privateStaticOverlayRequested,
+        bool privateCurrentAreaOverlayRequested,
         bool privateHudPreviewRequested,
         string? presentationAssetRoot,
         string? presentationAssetCommit,
@@ -57,6 +60,7 @@ internal sealed record Map3RuntimeProfileSelection
         PrivateBaseViewRequested = privateBaseViewRequested;
         PrivateBaseAtlasRequested = privateBaseAtlasRequested;
         PrivateStaticOverlayRequested = privateStaticOverlayRequested;
+        PrivateCurrentAreaOverlayRequested = privateCurrentAreaOverlayRequested;
         PrivateHudPreviewRequested = privateHudPreviewRequested;
         PresentationAssetRoot = presentationAssetRoot;
         PresentationAssetCommit = presentationAssetCommit;
@@ -79,6 +83,8 @@ internal sealed record Map3RuntimeProfileSelection
 
     internal bool PrivateStaticOverlayRequested { get; }
 
+    internal bool PrivateCurrentAreaOverlayRequested { get; }
+
     internal bool PrivateHudPreviewRequested { get; }
 
     internal string? PresentationAssetRoot { get; }
@@ -99,6 +105,7 @@ internal sealed record Map3RuntimeProfileSelection
         bool privateBaseViewRequested = false;
         bool privateBaseAtlasRequested = false;
         bool privateStaticOverlayRequested = false;
+        bool privateCurrentAreaOverlayRequested = false;
         bool privateHudPreviewRequested = false;
 
         foreach (string argument in arguments)
@@ -155,6 +162,27 @@ internal sealed record Map3RuntimeProfileSelection
                 }
 
                 privateStaticOverlayRequested = true;
+                continue;
+            }
+
+            if (string.Equals(
+                    argument,
+                    PrivateCurrentAreaOverlayOption,
+                    StringComparison.Ordinal))
+            {
+                if (privateCurrentAreaOverlayRequested)
+                {
+                    return Unavailable(
+                        ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
+                        privateSmokeRequested,
+                        privateHudPreviewRequested,
+                        "The private current-area overlay option must appear at most once.",
+                        privateBaseAtlasRequested,
+                        privateStaticOverlayRequested,
+                        privateCurrentAreaOverlayRequested: true);
+                }
+
+                privateCurrentAreaOverlayRequested = true;
                 continue;
             }
 
@@ -218,6 +246,7 @@ internal sealed record Map3RuntimeProfileSelection
             privateBaseViewRequested ||
             privateBaseAtlasRequested ||
             privateStaticOverlayRequested ||
+            privateCurrentAreaOverlayRequested ||
             privateHudPreviewRequested ||
             privateSmokeRequested;
 
@@ -282,6 +311,30 @@ internal sealed record Map3RuntimeProfileSelection
                 "Private Map 3 static-overlay diagnostics require explicit private base-view selection.",
                 privateBaseAtlasRequested,
                 privateStaticOverlayRequested: true);
+        }
+
+        if (privateCurrentAreaOverlayRequested && !privateBaseViewRequested)
+        {
+            return Unavailable(
+                profile,
+                privateSmokeRequested,
+                privateHudPreviewRequested,
+                "Private Map 3 current-area overlay projection requires explicit private base-view selection.",
+                privateBaseAtlasRequested,
+                privateStaticOverlayRequested,
+                privateCurrentAreaOverlayRequested: true);
+        }
+
+        if (privateStaticOverlayRequested && privateCurrentAreaOverlayRequested)
+        {
+            return Unavailable(
+                profile,
+                privateSmokeRequested,
+                privateHudPreviewRequested,
+                "Private Map 3 static-overlay diagnostics and current-area overlay projection are mutually exclusive.",
+                privateBaseAtlasRequested,
+                privateStaticOverlayRequested: true,
+                privateCurrentAreaOverlayRequested: true);
         }
 
         PrivateMap3WorldTreatment worldTreatment = PrivateMap3WorldTreatment.ExactNearest;
@@ -375,6 +428,7 @@ internal sealed record Map3RuntimeProfileSelection
             privateBaseViewRequested: true,
             privateBaseAtlasRequested,
             privateStaticOverlayRequested,
+            privateCurrentAreaOverlayRequested,
             privateHudPreviewRequested,
             presentationAssetRoot,
             presentationAssetCommit,
@@ -464,6 +518,7 @@ internal sealed record Map3RuntimeProfileSelection
             privateBaseViewRequested: false,
             privateBaseAtlasRequested,
             privateStaticOverlayRequested: false,
+            privateCurrentAreaOverlayRequested: false,
             privateHudPreviewRequested,
             presentationAssetRoot,
             presentationAssetCommit,
@@ -477,7 +532,8 @@ internal sealed record Map3RuntimeProfileSelection
         bool privateHudPreviewRequested,
         string diagnostic,
         bool privateBaseAtlasRequested = false,
-        bool privateStaticOverlayRequested = false) =>
+        bool privateStaticOverlayRequested = false,
+        bool privateCurrentAreaOverlayRequested = false) =>
         new(
             profile,
             false,
@@ -486,6 +542,7 @@ internal sealed record Map3RuntimeProfileSelection
             privateBaseViewRequested: false,
             privateBaseAtlasRequested,
             privateStaticOverlayRequested,
+            privateCurrentAreaOverlayRequested,
             privateHudPreviewRequested,
             presentationAssetRoot: null,
             presentationAssetCommit: null,
