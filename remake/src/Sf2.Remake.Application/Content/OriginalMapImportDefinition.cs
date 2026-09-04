@@ -187,7 +187,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapStepCopyDefinition? bowieDoorStepCopy = null,
         OriginalMapZone601Definition? zone601 = null,
         OriginalMapSarahDefinition? sarah = null,
-        OriginalMapEntity142Definition? entity142 = null)
+        OriginalMapEntity142Definition? entity142 = null,
+        OriginalMapAstralZoneDefinition? astralZone = null)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
@@ -351,6 +352,31 @@ public sealed class OriginalMapImportDefinition
             }
         }
 
+        if (astralZone is not null)
+        {
+            if (astralZone.Identity.Map != map ||
+                astralZone.Identity.Setup != controlledAdmission.SelectedSetup ||
+                sarah is null ||
+                zone601 is null ||
+                entity142 is null ||
+                astralZone.SarahSourceRecord != sarah.ActorSourceRecord ||
+                astralZone.SarahLogicalActorId != sarah.LogicalActorId ||
+                astralZone.Zone601ActorSourceRecord != zone601.ActorSourceRecord ||
+                astralZone.Zone601LogicalActorId != zone601.LogicalActorId ||
+                astralZone.RequiredEntity142Flag602 != entity142.CompletionFlag602 ||
+                astralZone.MessengerCompletionFlag603 != sarah.LaterBranchFlag603 ||
+                !areaCatalog.Traversal.IsWithinActiveArea(astralZone.Trigger) ||
+                !areaCatalog.Traversal.IsWithinActiveArea(astralZone.SarahDestination) ||
+                !areaCatalog.Traversal.IsWithinActiveArea(
+                    astralZone.Zone601ActorDestination) ||
+                OriginalMapTraversal.IsBlocked(workingLayout, astralZone.Trigger))
+            {
+                throw new ArgumentException(
+                    "The Astral-zone handoff must bind the admitted Map 3 route actors, flags, traversable trigger, and active destinations.",
+                    nameof(astralZone));
+            }
+        }
+
         if (roofOnLoadClear is not null)
         {
             if (roofOnLoadClear.Identity.Map != map)
@@ -433,6 +459,7 @@ public sealed class OriginalMapImportDefinition
         Zone601 = zone601;
         Sarah = sarah;
         Entity142 = entity142;
+        AstralZone = astralZone;
     }
 
     public MapId Map { get; }
@@ -464,6 +491,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapSarahDefinition? Sarah { get; }
 
     public OriginalMapEntity142Definition? Entity142 { get; }
+
+    public OriginalMapAstralZoneDefinition? AstralZone { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

@@ -58,6 +58,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.Zone601InterceptionCapability,
                 PrivateCanonicalMap3ImportReader.SarahRouteCapability,
                 PrivateCanonicalMap3ImportReader.Entity142AcknowledgementCapability,
+                PrivateCanonicalMap3ImportReader.AstralZoneHandoffCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -142,6 +143,21 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(17, entity142.PhysicalActorSlot);
         Assert.Equal(new[] { 500, 501 }, entity142.FirstInteractionTextIds);
         Assert.Equal(new[] { 501 }, entity142.RepeatInteractionTextIds);
+        OriginalMapAstralZoneDefinition astralZone =
+            Assert.IsType<OriginalMapAstralZoneDefinition>(accepted.Definition.AstralZone);
+        Assert.Equal(new MapPosition(58, 13), astralZone.Trigger);
+        Assert.Equal(8, astralZone.Identity.OneBasedRecordOrdinal);
+        Assert.Equal("Map3_ZoneEvent7", astralZone.Identity.TargetIdentity);
+        Assert.Equal("cs_5148C", astralZone.PositionProgramIdentity);
+        Assert.Equal(new[] { 514, 515, 516 }, astralZone.TextIds);
+        Assert.Equal(new MapPosition(41, 10), astralZone.SarahDestination);
+        Assert.Equal(new MapPosition(6, 4), astralZone.Zone601ActorDestination);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedAstralZone(
+            astralZone,
+            sarah,
+            zone601,
+            accepted.Definition.Traversal,
+            accepted.Definition.WorkingLayout));
         Assert.Contains("natural-flags-setup-variant-selection",
             accepted.Definition.UnsupportedCapabilities);
         Assert.Equal(
@@ -249,6 +265,19 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
         JsonObject programDrift = SampleDocument();
         SarahProgramOperations(programDrift)[1]!.AsObject()["operandText"] = "2";
+        AssertCode(Admit(programDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void AstralZoneRecordAndPositionProgramDriftFailSemanticAdmission()
+    {
+        JsonObject recordDrift = SampleDocument();
+        ZoneRecords(recordDrift)[7]!.AsObject()["resolvedTargetAddress"] = 331367;
+        AssertCode(Admit(recordDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject programDrift = SampleDocument();
+        AstralZoneProgramOperations(programDrift)[1]!.AsObject()["operandText"] =
+            "128,7,4,UP";
         AssertCode(Admit(programDrift), OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
@@ -658,6 +687,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Contains(
             PrivateCanonicalMap3ImportReader.Entity142AcknowledgementCapability,
             accepted.Receipt.Capabilities);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.AstralZoneHandoffCapability,
+            accepted.Receipt.Capabilities);
         Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedEntity142(
             accepted.Definition.Entity142,
             accepted.Definition.EntityPopulation,
@@ -728,6 +760,12 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedSarah(
             accepted.Definition.Sarah,
             accepted.Definition.EntityPopulation,
+            accepted.Definition.Traversal,
+            accepted.Definition.WorkingLayout));
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedAstralZone(
+            accepted.Definition.AstralZone,
+            accepted.Definition.Sarah,
+            accepted.Definition.Zone601,
             accepted.Definition.Traversal,
             accepted.Definition.WorkingLayout));
         OriginalMapStepCopyDefinition stepCopy =
@@ -1026,6 +1064,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         kind = "cutscene",
                         operations = ZoneBlockingOperations(),
                     },
+                    new
+                    {
+                        id = "cs_5148C",
+                        address = 332940,
+                        path = "data/maps/entries/map03/mapsetups/scripts_1.asm",
+                        kind = "cutscene",
+                        operations = AstralZonePositionOperations(),
+                    },
                 },
                 initSourcePrograms = Array.Empty<object>(),
             },
@@ -1258,6 +1304,24 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         }).ToArray();
     }
 
+    private static object[] AstralZonePositionOperations()
+    {
+        (string Opcode, string Operand)[] values =
+        [
+            ("setPos", "ALLY_SARAH,41,10,UP"),
+            ("setPos", "128,6,4,UP"),
+            ("csc_end", ""),
+        ];
+        return values.Select((value, index) => (object)new
+        {
+            index,
+            opcode = value.Opcode,
+            operandText = value.Operand,
+            targetSymbols = Array.Empty<string>(),
+            targetAddresses = Array.Empty<int>(),
+        }).ToArray();
+    }
+
     private static object RoofRecord(
         int triggerX,
         int triggerY,
@@ -1366,6 +1430,10 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static JsonArray SarahProgramOperations(JsonObject document) =>
         ResourceArray(document, "standaloneScriptPrograms")[0]!
+            .AsObject()["operations"]!.AsArray();
+
+    private static JsonArray AstralZoneProgramOperations(JsonObject document) =>
+        ResourceArray(document, "standaloneScriptPrograms")[2]!
             .AsObject()["operations"]!.AsArray();
 
     private static (int, int, int, int, int, int) Geometry(WorkingMapBlockCopy copy) =>

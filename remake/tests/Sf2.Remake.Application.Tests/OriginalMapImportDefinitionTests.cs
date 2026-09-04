@@ -10,6 +10,71 @@ public sealed class OriginalMapImportDefinitionTests
         "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF";
 
     [Fact]
+    public void AstralZoneDefinitionOwnsClosedActorFlagTextAndStageBindings()
+    {
+        MapId map = new("map3");
+        List<int> textIds = [514, 515, 516];
+        List<OriginalMapAstralZoneStage> stages =
+        [
+            OriginalMapAstralZoneStage.ReadMessengerFlag603Clear,
+            OriginalMapAstralZoneStage.ReadEntity142Flag602Set,
+            OriginalMapAstralZoneStage.ReadCompletionFlag260Clear,
+            OriginalMapAstralZoneStage.PresentText514,
+            OriginalMapAstralZoneStage.PresentText515,
+            OriginalMapAstralZoneStage.PresentText516,
+            OriginalMapAstralZoneStage.RunPositionProgram,
+            OriginalMapAstralZoneStage.SetCompletionFlag260,
+        ];
+        OriginalMapAstralZoneDefinition definition = new(
+            new OriginalMapAstralZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId("ms_map3"),
+                "project-authored-zone-events",
+                8,
+                "project-authored-zone-event-7"),
+            new MapPosition(58, 13),
+            "project-authored-position-program",
+            603,
+            602,
+            260,
+            new OriginalMapEntityRecordIdentity("project-authored-entities", 1),
+            1,
+            new MapPosition(41, 10),
+            1,
+            new OriginalMapEntityRecordIdentity("project-authored-entities", 3),
+            128,
+            new MapPosition(6, 4),
+            1,
+            textIds,
+            stages);
+        textIds.Clear();
+        stages.Clear();
+
+        Assert.Equal(new[] { 514, 515, 516 }, definition.TextIds);
+        Assert.Equal(8, definition.Stages.Count);
+        Assert.Throws<NotSupportedException>(() =>
+            ((IList<int>)definition.TextIds).Add(517));
+        Assert.Throws<ArgumentException>(() => new OriginalMapAstralZoneDefinition(
+            definition.Identity,
+            definition.Trigger,
+            definition.PositionProgramIdentity,
+            definition.MessengerCompletionFlag603,
+            definition.RequiredEntity142Flag602,
+            definition.RequiredEntity142Flag602,
+            definition.SarahSourceRecord,
+            definition.SarahLogicalActorId,
+            definition.SarahDestination,
+            definition.SarahOpaqueFacing,
+            definition.Zone601ActorSourceRecord,
+            definition.Zone601LogicalActorId,
+            definition.Zone601ActorDestination,
+            definition.Zone601ActorOpaqueFacing,
+            definition.TextIds,
+            definition.Stages));
+    }
+
+    [Fact]
     public void DefinitionOwnsAControlledPrivateImportWithoutRuntimeWiring()
     {
         MapId map = new("map3");

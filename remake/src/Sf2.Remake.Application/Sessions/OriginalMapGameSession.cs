@@ -28,7 +28,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         PrivateOriginalMapEntity142Request? pendingEntity142 = null,
         PrivateOriginalMapEntity142Request? lastEntity142Request = null,
         PrivateOriginalMapEntity142AcknowledgementReceipt?
-            lastEntity142Acknowledgement = null)
+            lastEntity142Acknowledgement = null,
+        PrivateOriginalMapAstralZoneReceipt? lastAstralZone = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -50,7 +51,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
         else
         {
             admittedZone601 ??= PrivateOriginalMapZone601State.Ready(definition.Zone601);
-            if (!admittedZone601.Matches(definition.Zone601))
+            if (!admittedZone601.Matches(definition.Zone601, definition.AstralZone))
             {
                 throw new ArgumentException(
                     "Zone 601 state must match its admitted definition.",
@@ -96,7 +97,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
         else
         {
             admittedSarah ??= PrivateOriginalMapSarahState.Ready(definition.Sarah);
-            if (!admittedSarah.Matches(definition.Sarah))
+            if (!admittedSarah.Matches(definition.Sarah, definition.AstralZone))
             {
                 throw new ArgumentException(
                     "Sarah state must match its admitted definition.",
@@ -129,6 +130,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 admittedZone601?.Flag601Set == true ||
                 lastSarah is not null ||
                 admittedSarah?.TemporaryRouteFlag256Set == true ||
+                admittedSarah?.AstralZoneFlag260Set == true ||
+                lastAstralZone is not null ||
                 pendingEntity142 is not null ||
                 lastEntity142Request is not null ||
                 lastEntity142Acknowledgement is not null ||
@@ -318,6 +321,51 @@ public sealed record PrivateOriginalMapSessionSnapshot
             }
         }
 
+        if (lastAstralZone is not null)
+        {
+            OriginalMapAstralZoneDefinition admitted = definition.AstralZone ??
+                throw new ArgumentException(
+                    "An Astral-zone receipt requires its admitted definition.",
+                    nameof(lastAstralZone));
+            if (admittedSarah is null || admittedZone601 is null ||
+                admittedEntity142?.Flag602Set != true ||
+                !admittedSarah.AstralZoneFlag260Set ||
+                admittedSarah.Phase !=
+                    PrivateOriginalMapSarahLifecyclePhase.AstralZoneRepositioned ||
+                admittedZone601.Phase !=
+                    PrivateOriginalMapZone601LifecyclePhase.AstralZoneRepositioned ||
+                !lastAstralZone.Matches(admitted) ||
+                !ReferenceEquals(lastAstralZone.SarahAfter, admittedSarah) ||
+                !ReferenceEquals(lastAstralZone.Zone601After, admittedZone601) ||
+                lastTraversal is null ||
+                lastTraversal.Outcome != OriginalMapTraversalOutcome.Moved ||
+                lastTraversal.Position != admitted.Trigger ||
+                playerPosition != admitted.Trigger ||
+                lastAstralZone.SimulationStep != simulationStep)
+            {
+                throw new ArgumentException(
+                    "The Astral-zone receipt must match its atomic traversal and persistent actor state.",
+                    nameof(lastAstralZone));
+            }
+        }
+
+        if ((admittedSarah?.AstralZoneFlag260Set == true) !=
+                (admittedZone601?.Phase ==
+                    PrivateOriginalMapZone601LifecyclePhase.AstralZoneRepositioned))
+        {
+            throw new ArgumentException(
+                "Astral-zone Sarah and Zone 601 state must advance atomically.",
+                nameof(sarah));
+        }
+
+        if (admittedSarah?.AstralZoneFlag260Set == true &&
+            admittedEntity142?.Flag602Set != true)
+        {
+            throw new ArgumentException(
+                "Astral-zone completion requires the accepted Entity 142 completion state.",
+                nameof(entity142));
+        }
+
         if (lastLayoutMutation is not null &&
             (!controlledStepCopyApplied || lastLayoutMutation.SimulationStep != simulationStep))
         {
@@ -448,6 +496,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
         PendingEntity142 = pendingEntity142;
         LastEntity142Request = lastEntity142Request;
         LastEntity142Acknowledgement = lastEntity142Acknowledgement;
+        LastAstralZone = lastAstralZone;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -514,6 +563,10 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public PrivateOriginalMapEntity142AcknowledgementReceipt?
         LastEntity142Acknowledgement
     { get; }
+
+    public bool AstralZoneFlag260Set => Sarah?.AstralZoneFlag260Set == true;
+
+    public PrivateOriginalMapAstralZoneReceipt? LastAstralZone { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -543,7 +596,8 @@ public sealed record PrivateOriginalMapMoveApplied
     public PrivateOriginalMapMoveApplied(
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapTraversalResult traversal,
-        PrivateOriginalMapZone601Receipt? zone601 = null)
+        PrivateOriginalMapZone601Receipt? zone601 = null,
+        PrivateOriginalMapAstralZoneReceipt? astralZone = null)
     {
         Snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
         _traversal = traversal ?? throw new ArgumentNullException(nameof(traversal));
@@ -554,7 +608,15 @@ public sealed record PrivateOriginalMapMoveApplied
                 nameof(zone601));
         }
 
+        if (astralZone is not null && !ReferenceEquals(snapshot.LastAstralZone, astralZone))
+        {
+            throw new ArgumentException(
+                "An Astral-zone movement result must expose the snapshot's exact receipt.",
+                nameof(astralZone));
+        }
+
         Zone601 = zone601;
+        AstralZone = astralZone;
     }
 
     public PrivateOriginalMapMoveApplied(
@@ -578,6 +640,8 @@ public sealed record PrivateOriginalMapMoveApplied
     public PrivateOriginalMapRoofOnLoadReceipt? RoofOnLoad { get; }
 
     public PrivateOriginalMapZone601Receipt? Zone601 { get; }
+
+    public PrivateOriginalMapAstralZoneReceipt? AstralZone { get; }
 }
 
 public sealed partial class GameSession
@@ -637,6 +701,11 @@ public sealed partial class GameSession
         if (TryApplyPrivateOriginalMapZone601(current, command, out var zone601Applied))
         {
             return zone601Applied!;
+        }
+
+        if (TryApplyPrivateOriginalMapAstralZone(current, command, out var astralZoneApplied))
+        {
+            return astralZoneApplied!;
         }
 
         if (TryApplyPrivateOriginalMapNaturalStepCopy(
@@ -1068,6 +1137,19 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.entity142",
                 "The admitted definition does not retain the exact bounded Map 3 Entity 142 acknowledgement projection.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedAstralZone(
+                definition.AstralZone,
+                definition.Sarah,
+                definition.Zone601,
+                definition.Traversal,
+                definition.WorkingLayout))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.astralZone",
+                "The admitted definition does not retain the exact bounded Map 3 Astral-zone handoff projection.");
         }
 
         OriginalMapControlledAdmission controlled = definition.ControlledAdmission;
