@@ -62,6 +62,21 @@ public static class OriginalMapRuntimeAdmission
     public const int ControlledStepCopyWidth = 1;
     public const int ControlledStepCopyHeight = 1;
 
+    public const string SameMapWarpResourceId = "Map03s6_WarpEvents";
+    public const int SameMapWarpSourceRecordCount = 9;
+    public const int SchoolWarpRecordOrdinal = 6;
+    public const int SchoolWarpTriggerX = 46;
+    public const int SchoolWarpTriggerY = 7;
+    public const int SchoolWarpDestinationX = 59;
+    public const int SchoolWarpDestinationY = 12;
+    public const byte SchoolWarpOpaqueFacing = 2;
+    public const int HouseWarpRecordOrdinal = 9;
+    public const int HouseWarpTriggerX = 54;
+    public const int HouseWarpTriggerY = 3;
+    public const int HouseWarpDestinationX = 3;
+    public const int HouseWarpDestinationY = 3;
+    public const byte HouseWarpOpaqueFacing = 0;
+
     public const string ImportCapability = "private-canonical-map3-layout-import-v1";
     public const string TraversalCapability = "original-map3-traversal-policy-v1";
     public const string ControlledAdmissionCapability =
@@ -78,6 +93,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-source-blockset-admission-v1";
     public const string VisualReferenceAdmissionCapability =
         "private-local-map3-source-visual-reference-admission-v1";
+    public const string SameMapWarpAdmissionCapability =
+        "private-local-map3-same-map-warp-admission-v1";
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
@@ -92,6 +109,7 @@ public static class OriginalMapRuntimeAdmission
                 SelectedSetupEntityPopulationCapability,
                 BlocksetSourceAdmissionCapability,
                 VisualReferenceAdmissionCapability,
+                SameMapWarpAdmissionCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -107,6 +125,7 @@ public static class OriginalMapRuntimeAdmission
                 "sf2-map-entities-static-v1",
                 "sf2-map3-castle-battle-unlock-static-v1",
                 "sf2-map3-admitted-start-runtime-v1",
+                "sf2-map3-battle01-natural-route-runtime-v1",
             });
 
     public static IReadOnlyList<string> RequiredCapabilities => ReadOnlyRequiredCapabilities;
@@ -213,6 +232,53 @@ public static class OriginalMapRuntimeAdmission
             copy.Width == ControlledStepCopyWidth &&
             copy.Height == ControlledStepCopyHeight;
     }
+
+    public static bool HasExactAcceptedSameMapWarps(OriginalMapSameMapWarpCatalog? catalog)
+    {
+        if (catalog is null ||
+            catalog.Map != new MapId(MapId) ||
+            !string.Equals(catalog.ResourceId, SameMapWarpResourceId, StringComparison.Ordinal) ||
+            catalog.Records.Count != 2)
+        {
+            return false;
+        }
+
+        return IsExactSameMapWarp(
+                catalog.Records[0],
+                SchoolWarpRecordOrdinal,
+                SchoolWarpTriggerX,
+                SchoolWarpTriggerY,
+                SchoolWarpDestinationX,
+                SchoolWarpDestinationY,
+                SchoolWarpOpaqueFacing) &&
+            IsExactSameMapWarp(
+                catalog.Records[1],
+                HouseWarpRecordOrdinal,
+                HouseWarpTriggerX,
+                HouseWarpTriggerY,
+                HouseWarpDestinationX,
+                HouseWarpDestinationY,
+                HouseWarpOpaqueFacing);
+    }
+
+    private static bool IsExactSameMapWarp(
+        OriginalMapSameMapWarpDefinition definition,
+        int oneBasedRecordOrdinal,
+        int triggerX,
+        int triggerY,
+        int destinationX,
+        int destinationY,
+        byte opaqueFacing) =>
+        definition.Identity.Profile == ContentProfile.PrivateLocal &&
+        definition.Identity.Map == new MapId(MapId) &&
+        string.Equals(
+            definition.Identity.ResourceId,
+            SameMapWarpResourceId,
+            StringComparison.Ordinal) &&
+        definition.Identity.OneBasedRecordOrdinal == oneBasedRecordOrdinal &&
+        definition.Trigger == new MapPosition(triggerX, triggerY) &&
+        definition.Destination == new MapPosition(destinationX, destinationY) &&
+        definition.OpaqueFacing == opaqueFacing;
 
     public static bool HasExactAcceptedAreaProjection(OriginalMapTraversal traversal)
     {

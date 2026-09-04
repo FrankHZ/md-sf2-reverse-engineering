@@ -13,30 +13,35 @@ separate.
 The accepted runtime already admits the controlled private Map 3 state, authoritative working
 layout, traversal policy, current area, block and visual-resource data, selected setup entity
 population, reviewed local base atlas, player locomotion, a project-authored camera, one bounded
-entity diagnostic, and a manual synthetic battle bridge. These capabilities do not execute natural
-setup, zone, warp, door, dialogue, music, or original presentation behavior.
+entity diagnostic, a manual synthetic battle bridge, and two exact private same-map warp records.
+`GameSession` evaluates their candidate targets before ordinary passability and atomically relocates
+the authoritative position, facing, area, and step without executing opaque original targets. These
+capabilities do not execute natural setup, zone, door, dialogue, music, or original presentation
+behavior.
 
-The controlled start at tile `(56, 3)` is confined by the currently admitted traversal state to a
-22-cell pocket in area record 2. Neither area record 1, which is the only area with a nonzero
-second-layer offset, nor the accepted entity-142 interaction stand at `(55, 17)` is reachable from
-that pocket. A visible overlay or interaction slice therefore must not invent a teleport or claim a
-natural route.
+The first accepted warp exits the controlled-start pocket in area record 2 and lands in area record
+1. That landing has a separately evidenced roof-on-load clear which is not part of the warp itself.
+The current runtime does not apply that copy, so presenting the area-1 overlay as natural gameplay
+would leave a materially false roof state. The accepted entity-142 interaction stand at `(55, 17)`
+also remains unreachable: the route between the two admitted warps still depends on an accepted
+zone transition, two door copies, and a Sarah interaction/temporary flag lifecycle that are not yet
+runtime capabilities.
 
 ## Ordered Frontier
 
-1. Research closes the exact natural setup, zone, or warp transition that exits the controlled-start
-   pocket.
-2. Content and Application admit that transition, and `GameSession` applies it atomically while
-   preserving the existing state-ownership and fail-closed boundaries.
-3. Godot projects the live current area's second layer from the authoritative working layout. Any
+1. Content and Application admit the exact roof-on-load clear as a distinct current-layout mutation;
+   do not bundle it into the same-map warp or call it natural setup/init execution.
+2. Godot projects the live current area's second layer from the authoritative working layout. Any
    interim composition and draw order are labelled as modern remake policy until original plane,
    priority, palette, camera, and timing behavior is accepted.
+3. The accepted zone, Bowie-door, school-door, and Sarah temporary-flag boundaries are admitted in
+   evidence order before claiming a route to the second same-map warp.
 4. The accepted entity-142 interaction record gains a request/acknowledgement lifecycle without
    inventing dialogue or program effects.
 5. Broader selected-setup entities gain reviewed local assets and bounded visual policies after their
    identities and visibility rules are closed.
-6. Natural doors, steps, warps, and setup refinements follow their accepted evidence; Map 3 music and
-   audio follow only after scene-use and playback boundaries are closed.
+6. Remaining natural doors, steps, warps, and setup refinements follow their accepted evidence; Map
+   3 music and audio follow only after scene-use and playback boundaries are closed.
 
 ## Decision Rules
 

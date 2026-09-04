@@ -143,6 +143,7 @@ public sealed class OriginalMapImportDefinition
             visualResourceSelection,
             controlledAdmission,
             controlledStepCopy: null,
+            sameMapWarps: null,
             unsupportedCapabilities)
     {
     }
@@ -156,6 +157,31 @@ public sealed class OriginalMapImportDefinition
         OriginalMapVisualResourceSelection visualResourceSelection,
         OriginalMapControlledAdmission controlledAdmission,
         OriginalMapStepCopyDefinition? controlledStepCopy,
+        IEnumerable<string> unsupportedCapabilities)
+        : this(
+            map,
+            workingLayout,
+            blockCatalog,
+            areaCatalog,
+            entityPopulation,
+            visualResourceSelection,
+            controlledAdmission,
+            controlledStepCopy,
+            sameMapWarps: null,
+            unsupportedCapabilities)
+    {
+    }
+
+    public OriginalMapImportDefinition(
+        MapId map,
+        WorkingMapLayout workingLayout,
+        OriginalMapBlockCatalog blockCatalog,
+        OriginalMapAreaCatalog areaCatalog,
+        OriginalMapEntityPopulation entityPopulation,
+        OriginalMapVisualResourceSelection visualResourceSelection,
+        OriginalMapControlledAdmission controlledAdmission,
+        OriginalMapStepCopyDefinition? controlledStepCopy,
+        OriginalMapSameMapWarpCatalog? sameMapWarps,
         IEnumerable<string> unsupportedCapabilities)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
@@ -198,7 +224,29 @@ public sealed class OriginalMapImportDefinition
                 nameof(controlledStepCopy));
         }
 
+        if (sameMapWarps is not null && sameMapWarps.Map != map)
+        {
+            throw new ArgumentException(
+                "The same-map warp catalog must match the imported map.",
+                nameof(sameMapWarps));
+        }
+
         BlockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
+
+        if (sameMapWarps is not null)
+        {
+            foreach (OriginalMapSameMapWarpDefinition warp in sameMapWarps.Records)
+            {
+                if (!areaCatalog.Traversal.IsWithinActiveArea(warp.Trigger) ||
+                    !areaCatalog.Traversal.IsWithinActiveArea(warp.Destination) ||
+                    OriginalMapTraversal.IsBlocked(workingLayout, warp.Destination))
+                {
+                    throw new ArgumentException(
+                        "Every admitted same-map warp trigger and destination must fit the active map, and destinations must be traversable.",
+                        nameof(sameMapWarps));
+                }
+            }
+        }
 
         if (!areaCatalog.Traversal.IsWithinActiveArea(controlledAdmission.Position) ||
             OriginalMapTraversal.IsBlocked(workingLayout, controlledAdmission.Position))
@@ -232,6 +280,7 @@ public sealed class OriginalMapImportDefinition
 
         _unsupportedCapabilities = copiedUnsupported.AsReadOnly();
         ControlledStepCopy = controlledStepCopy;
+        SameMapWarps = sameMapWarps;
     }
 
     public MapId Map { get; }
@@ -251,6 +300,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapControlledAdmission ControlledAdmission { get; }
 
     public OriginalMapStepCopyDefinition? ControlledStepCopy { get; }
+
+    public OriginalMapSameMapWarpCatalog? SameMapWarps { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

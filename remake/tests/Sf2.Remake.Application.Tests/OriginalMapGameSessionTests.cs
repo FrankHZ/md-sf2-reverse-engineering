@@ -179,6 +179,100 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void CandidateTargetWarpPrecedesCollisionAndRelocatesAtomically()
+    {
+        ushort[] words = EmptyWords();
+        words[Index(
+            OriginalMapRuntimeAdmission.HouseWarpTriggerX,
+            OriginalMapRuntimeAdmission.HouseWarpTriggerY)] =
+            OriginalMapTraversal.CollisionMask;
+        GameSession session = Start(Definition(words));
+        WorkingMapLayout admittedLayout = session.PrivateOriginalMapSnapshot.WorkingLayout;
+
+        PrivateOriginalMapMoveApplied ordinary = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, ordinary.Traversal.Outcome);
+        Assert.Null(ordinary.SameMapWarp);
+        Assert.Equal(new MapPosition(55, 3), ordinary.Snapshot.PlayerPosition);
+
+        PrivateOriginalMapPlayerLocomotionStarted relocated =
+            session.BeginPrivateOriginalMapPlayerLocomotion(
+                new MoveExplorationCommand(ExplorationDirection.West));
+
+        PrivateOriginalMapSameMapWarpReceipt receipt =
+            Assert.IsType<PrivateOriginalMapSameMapWarpReceipt>(
+                relocated.Move.SameMapWarp);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.HouseWarpRecordOrdinal,
+            receipt.RecordIdentity.OneBasedRecordOrdinal);
+        Assert.Equal(new MapPosition(55, 3), receipt.Source);
+        Assert.Equal(
+            new MapPosition(
+                OriginalMapRuntimeAdmission.HouseWarpTriggerX,
+                OriginalMapRuntimeAdmission.HouseWarpTriggerY),
+            receipt.Trigger);
+        Assert.Equal(
+            new MapPosition(
+                OriginalMapRuntimeAdmission.HouseWarpDestinationX,
+                OriginalMapRuntimeAdmission.HouseWarpDestinationY),
+            receipt.Destination);
+        Assert.Equal((byte)0, receipt.OpaqueFacing);
+        Assert.Equal(2, receipt.SourceAreaOrdinal);
+        Assert.Equal(1, receipt.DestinationAreaOrdinal);
+        Assert.Equal(2, receipt.SimulationStep);
+        Assert.Equal(receipt.Destination, relocated.Move.Snapshot.PlayerPosition);
+        Assert.Same(admittedLayout, relocated.Move.Snapshot.WorkingLayout);
+        Assert.Null(relocated.Move.Snapshot.LastTraversal);
+        Assert.Null(relocated.Move.Snapshot.LastLayoutMutation);
+        Assert.Same(receipt, relocated.Move.Snapshot.LastSameMapWarp);
+        Assert.Equal(PrivateOriginalMapPlayerLocomotionPhase.Relocated,
+            relocated.Animation.Phase);
+        Assert.Equal(ExplorationDirection.East, relocated.Animation.Direction);
+        Assert.Equal((byte)0, relocated.Animation.OpaqueFacing);
+        Assert.False(relocated.Animation.IsMoving);
+        Assert.Equal(receipt.Source, relocated.Animation.SourcePosition);
+        Assert.Equal(receipt.Destination, relocated.Animation.DestinationPosition);
+        Assert.DoesNotContain(
+            typeof(PrivateOriginalMapSameMapWarpReceipt).GetProperties(),
+            property => new[] { "Path", "Payload", "Address", "Word" }
+                .Any(fragment => property.Name.Contains(fragment, StringComparison.Ordinal)));
+        Assert.Throws<ArgumentException>(() => new PrivateOriginalMapSameMapWarpReceipt(
+            receipt.RecordIdentity,
+            new MapPosition(56, 3),
+            receipt.Trigger,
+            receipt.Destination,
+            receipt.OpaqueFacing,
+            receipt.SourceAreaOrdinal,
+            receipt.DestinationAreaOrdinal,
+            receipt.SimulationStep));
+    }
+
+    [Fact]
+    public void RestartClearsSameMapWarpAndNonmatchingTargetsRemainOrdinaryTraversal()
+    {
+        AcceptedSource source = new(Accepted());
+        GameSession first = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+        first.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        PrivateOriginalMapMoveApplied warped = first.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        Assert.NotNull(warped.SameMapWarp);
+
+        GameSession restarted = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+        Assert.Equal(new MapPosition(56, 3),
+            restarted.PrivateOriginalMapSnapshot.PlayerPosition);
+        Assert.Equal(0, restarted.PrivateOriginalMapSnapshot.SimulationStep);
+        Assert.Null(restarted.PrivateOriginalMapSnapshot.LastSameMapWarp);
+
+        PrivateOriginalMapMoveApplied east = restarted.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, east.Traversal.Outcome);
+        Assert.Null(east.SameMapWarp);
+    }
+
+    [Fact]
     public void ActiveCycleRejectsReplacementAndRestartRestoresAdmissionAnimation()
     {
         AcceptedSource source = new(Accepted());
@@ -301,7 +395,7 @@ public sealed class OriginalMapGameSessionTests
     public void CurrentAreaRecomputesFromPositionAndSurvivesBlockedMutationAndRestartBoundaries()
     {
         ushort[] words = EmptyWords();
-        words[Index(49, 3)] = OriginalMapTraversal.CollisionMask;
+        words[Index(49, 4)] = OriginalMapTraversal.CollisionMask;
         OriginalMapImportAccepted accepted = Accepted(Definition(words));
         AcceptedSource source = new(accepted);
         GameSession session = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
@@ -311,6 +405,10 @@ public sealed class OriginalMapGameSessionTests
         Assert.Same(
             session.PrivateOriginalMapSnapshot.Definition.AreaCatalog.Records[1],
             session.PrivateOriginalMapSnapshot.CurrentAreaDefinition);
+        Assert.Equal(
+            OriginalMapTraversalOutcome.Moved,
+            session.ApplyPrivateOriginalMap(
+                new MoveExplorationCommand(ExplorationDirection.South)).Traversal.Outcome);
         for (int index = 0; index < 6; index++)
         {
             Assert.Equal(
@@ -320,7 +418,7 @@ public sealed class OriginalMapGameSessionTests
         }
 
         PrivateOriginalMapSessionSnapshot crossed = session.PrivateOriginalMapSnapshot;
-        Assert.Equal(new MapPosition(50, 3), crossed.PlayerPosition);
+        Assert.Equal(new MapPosition(50, 4), crossed.PlayerPosition);
         Assert.Equal(1, crossed.CurrentArea.OneBasedRecordOrdinal);
         Assert.Same(crossed.Definition.AreaCatalog.Records[0], crossed.CurrentAreaDefinition);
 
@@ -485,20 +583,20 @@ public sealed class OriginalMapGameSessionTests
         GameSession first = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
             GameSession.StartPrivateOriginalMap(source, Request())).Session;
 
-        for (int index = 0; index < 15; index++)
-        {
-            Assert.Equal(
-                OriginalMapTraversalOutcome.Moved,
-                first.ApplyPrivateOriginalMap(
-                    new MoveExplorationCommand(ExplorationDirection.West)).Traversal.Outcome);
-        }
-
         for (int index = 0; index < 9; index++)
         {
             Assert.Equal(
                 OriginalMapTraversalOutcome.Moved,
                 first.ApplyPrivateOriginalMap(
                     new MoveExplorationCommand(ExplorationDirection.South)).Traversal.Outcome);
+        }
+
+        for (int index = 0; index < 15; index++)
+        {
+            Assert.Equal(
+                OriginalMapTraversalOutcome.Moved,
+                first.ApplyPrivateOriginalMap(
+                    new MoveExplorationCommand(ExplorationDirection.West)).Traversal.Outcome);
         }
 
         Assert.Equal(new MapPosition(41, 12), first.PrivateOriginalMapSnapshot.PlayerPosition);
@@ -801,6 +899,35 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactSameMapWarps()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        OriginalMapSameMapWarpDefinition[] accepted = AcceptedSameMapWarps(map).Records.ToArray();
+        OriginalMapSameMapWarpDefinition changedDestination = new(
+            accepted[1].Identity,
+            accepted[1].Trigger,
+            new MapPosition(4, 3),
+            accepted[1].OpaqueFacing);
+
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                sameMapWarps: new OriginalMapSameMapWarpCatalog(
+                    [accepted[0], changedDestination])),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                sameMapWarps: new OriginalMapSameMapWarpCatalog(
+                    accepted.Reverse())),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedSameMapWarps(
+            AcceptedSameMapWarps(map)));
+    }
+
+    [Fact]
     public void AcceptedSourceDefinitionMustRetainExactSelectedSetupEntityPopulation()
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
@@ -890,7 +1017,8 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapAreaCatalog? areaCatalog = null,
         OriginalMapBlockCatalog? blockCatalog = null,
         OriginalMapEntityPopulation? entityPopulation = null,
-        OriginalMapVisualResourceSelection? visualResourceSelection = null)
+        OriginalMapVisualResourceSelection? visualResourceSelection = null,
+        OriginalMapSameMapWarpCatalog? sameMapWarps = null)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -919,8 +1047,48 @@ public sealed class OriginalMapGameSessionTests
                 OriginalMapRuntimeAdmission.SelectedInitIdentity,
                 noProgramRequest: true),
             ControlledStepCopy(map),
+            sameMapWarps ?? AcceptedSameMapWarps(map),
             ["natural-route-and-effects-unknown"]);
     }
+
+    private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>
+        new(
+        [
+            SameMapWarp(
+                map,
+                OriginalMapRuntimeAdmission.SchoolWarpRecordOrdinal,
+                OriginalMapRuntimeAdmission.SchoolWarpTriggerX,
+                OriginalMapRuntimeAdmission.SchoolWarpTriggerY,
+                OriginalMapRuntimeAdmission.SchoolWarpDestinationX,
+                OriginalMapRuntimeAdmission.SchoolWarpDestinationY,
+                OriginalMapRuntimeAdmission.SchoolWarpOpaqueFacing),
+            SameMapWarp(
+                map,
+                OriginalMapRuntimeAdmission.HouseWarpRecordOrdinal,
+                OriginalMapRuntimeAdmission.HouseWarpTriggerX,
+                OriginalMapRuntimeAdmission.HouseWarpTriggerY,
+                OriginalMapRuntimeAdmission.HouseWarpDestinationX,
+                OriginalMapRuntimeAdmission.HouseWarpDestinationY,
+                OriginalMapRuntimeAdmission.HouseWarpOpaqueFacing),
+        ]);
+
+    private static OriginalMapSameMapWarpDefinition SameMapWarp(
+        MapId map,
+        int ordinal,
+        int triggerX,
+        int triggerY,
+        int destinationX,
+        int destinationY,
+        byte opaqueFacing) =>
+        new(
+            new OriginalMapSameMapWarpIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.SameMapWarpResourceId,
+                ordinal),
+            new MapPosition(triggerX, triggerY),
+            new MapPosition(destinationX, destinationY),
+            opaqueFacing);
 
     private static OriginalMapVisualResourceSelection AcceptedVisualResourceSelection(MapId map) =>
         new(map, paletteIndex: 0, [0, 37, 43, 53, 66]);

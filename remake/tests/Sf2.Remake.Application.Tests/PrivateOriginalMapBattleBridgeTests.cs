@@ -497,8 +497,48 @@ public sealed class PrivateOriginalMapBattleBridgeTests
                 OriginalMapRuntimeAdmission.SelectedInitIdentity,
                 noProgramRequest: true),
             StepCopy(map),
+            SameMapWarps(map),
             ["original-battle-route-unknown"]);
     }
+
+    private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>
+        new(
+        [
+            SameMapWarp(
+                map,
+                OriginalMapRuntimeAdmission.SchoolWarpRecordOrdinal,
+                OriginalMapRuntimeAdmission.SchoolWarpTriggerX,
+                OriginalMapRuntimeAdmission.SchoolWarpTriggerY,
+                OriginalMapRuntimeAdmission.SchoolWarpDestinationX,
+                OriginalMapRuntimeAdmission.SchoolWarpDestinationY,
+                OriginalMapRuntimeAdmission.SchoolWarpOpaqueFacing),
+            SameMapWarp(
+                map,
+                OriginalMapRuntimeAdmission.HouseWarpRecordOrdinal,
+                OriginalMapRuntimeAdmission.HouseWarpTriggerX,
+                OriginalMapRuntimeAdmission.HouseWarpTriggerY,
+                OriginalMapRuntimeAdmission.HouseWarpDestinationX,
+                OriginalMapRuntimeAdmission.HouseWarpDestinationY,
+                OriginalMapRuntimeAdmission.HouseWarpOpaqueFacing),
+        ]);
+
+    private static OriginalMapSameMapWarpDefinition SameMapWarp(
+        MapId map,
+        int ordinal,
+        int triggerX,
+        int triggerY,
+        int destinationX,
+        int destinationY,
+        byte opaqueFacing) =>
+        new(
+            new OriginalMapSameMapWarpIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.SameMapWarpResourceId,
+                ordinal),
+            new MapPosition(triggerX, triggerY),
+            new MapPosition(destinationX, destinationY),
+            opaqueFacing);
 
     private static OriginalMapImportReceipt ImportReceipt() =>
         new(
