@@ -231,6 +231,16 @@ internal sealed class Map3InputAdapter
             }
         }
 
+        Map3InputBinding interaction = BindingList.Single(
+            binding => string.Equals(
+                binding.ActionName,
+                "request_entity_interaction",
+                StringComparison.Ordinal));
+        if (_isActionJustPressed(interaction.ActionName))
+        {
+            interaction.Dispatch(_actions);
+        }
+
         return null;
     }
 

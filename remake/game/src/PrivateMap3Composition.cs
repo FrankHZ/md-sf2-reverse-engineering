@@ -153,6 +153,7 @@ public sealed partial class Map3Root
         }
 
         _session = started.Session;
+        _inputAdapter = Map3InputAdapter.CreateGodot(CreatePrivateInputActions());
         _privatePresenter?.Project(started.Session.PrivateOriginalMapSnapshot, "Ready");
         if (runSmoke)
         {
@@ -222,7 +223,7 @@ public sealed partial class Map3Root
 
         _session = started.Session;
         _privateBattleBridgeEnabled = true;
-        _inputAdapter = Map3InputAdapter.CreateGodot(CreatePrivateBattleBridgeInputActions());
+        _inputAdapter = Map3InputAdapter.CreateGodot(CreatePrivateInputActions());
         _privateHudPreview?.ProjectBattleEntryChoice(
             started.Session.PrivateOriginalMapBattleBridge);
         PrivateMap3Presenter presenter = _privatePresenter!;
@@ -575,7 +576,7 @@ public sealed partial class Map3Root
             animation);
     }
 
-    private Map3InputActions CreatePrivateBattleBridgeInputActions() =>
+    private Map3InputActions CreatePrivateInputActions() =>
         new(
             ApplyPrivateMoveWhenAvailable,
             static () => { },
@@ -584,7 +585,7 @@ public sealed partial class Map3Root
             static () => { },
             static () => { },
             static _ => { },
-            static () => { },
+            ApplyPrivateSarahInteraction,
             static () => { },
             static () => { },
             static () => { },
@@ -599,6 +600,39 @@ public sealed partial class Map3Root
             ApplyPrivateBattleBridgeSelectionConfirmation,
             ApplyPrivateBattleBridgeSelectionCancellation,
             ApplyPrivateBattleBridgeCompletionAcknowledgement);
+
+    private void ApplyPrivateSarahInteraction()
+    {
+        if (_session is null)
+        {
+            return;
+        }
+
+        PrivateOriginalMapSarahInteractionResult result =
+            _session.InteractPrivateOriginalMapSarah(
+                new InteractPrivateOriginalMapSarahCommand(
+                    _session.PrivateOriginalMapSnapshot.SimulationStep));
+        switch (result)
+        {
+            case PrivateOriginalMapSarahInteractionApplied applied:
+                _privatePresenter?.Project(
+                    applied.Snapshot,
+                    applied.Receipt.Repeated
+                        ? "Sarah interaction repeated"
+                        : "Sarah route cleared",
+                    _session.PrivateOriginalMapPlayerLocomotion);
+                break;
+            case PrivateOriginalMapSarahInteractionRejected rejected:
+                _privatePresenter?.Project(
+                    rejected.Snapshot,
+                    $"Sarah interaction {rejected.Diagnostic.Code}",
+                    _session.PrivateOriginalMapPlayerLocomotion);
+                break;
+            default:
+                throw new InvalidOperationException(
+                    "Private Sarah interaction returned an unknown result.");
+        }
+    }
 
     private PrivateOriginalMapBattleBridgeBindingResult BindPrivateBattleBridge(
         GameSession session)

@@ -135,7 +135,9 @@ public sealed partial class GameSession
             receipt,
             current.SchoolDoorStepCopyApplied || !opensBowieDoor,
             current.Zone601,
-            lastZone601: null);
+            lastZone601: null,
+            current.Sarah,
+            lastSarah: null);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(next, traversal);
         return true;

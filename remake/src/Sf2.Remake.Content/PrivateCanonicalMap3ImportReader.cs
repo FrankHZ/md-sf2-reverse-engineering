@@ -38,6 +38,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.SchoolDoorStepCopyCapability;
     public const string Zone601InterceptionCapability =
         OriginalMapRuntimeAdmission.Zone601InterceptionCapability;
+    public const string SarahRouteCapability =
+        OriginalMapRuntimeAdmission.SarahRouteCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -68,13 +70,14 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         BowieDoorStepCopyCapability,
         SchoolDoorStepCopyCapability,
         Zone601InterceptionCapability,
+        SarahRouteCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
     [
         "natural-flags-setup-variant-selection",
         "natural-route-reach-order-and-continuity",
-        "entity-occupancy-collision-and-obstruction",
+        "generic-entity-occupancy-ai-and-obstruction",
         "other-warp-events-setup-init-effects-and-persistence",
         "original-assets-text-presentation-and-audio",
         "h3-h4-8c-private-fidelity",
@@ -360,6 +363,10 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             map,
             entityPopulation,
             resources);
+        OriginalMapSarahDefinition sarah = ReadAcceptedSarah(
+            map,
+            entityPopulation,
+            resources);
 
         OriginalMapControlledAdmission controlledAdmission = new(
             map,
@@ -383,7 +390,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             UnsupportedCapabilities,
             roofOnLoadClear,
             bowieDoorStepCopy,
-            zone601);
+            zone601,
+            sarah);
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -1469,6 +1477,20 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 "Map 3 must retain the accepted controlled entity-list identity.");
         }
 
+        if (!string.Equals(
+                RequiredString(
+                    setupReferences,
+                    "entityEvents",
+                    "map3.setup.references.entityEvents"),
+                OriginalMapRuntimeAdmission.SarahEntityEventResourceId,
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.setup.references.entityEvents",
+                "Map 3 must retain the accepted controlled entity-event identity.");
+        }
+
         return ReadEntityPopulation(
             map,
             new MapSetupId(Map3SetupIdentity),
@@ -1597,6 +1619,263 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         }
 
         return new OriginalMapEntityPopulation(map, selectedSetup, definitions);
+    }
+
+    private static OriginalMapSarahDefinition ReadAcceptedSarah(
+        MapId map,
+        OriginalMapEntityPopulation entityPopulation,
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        JsonElement handler = RequiredResource(
+            resources,
+            "entityEventHandlers",
+            OriginalMapRuntimeAdmission.SarahEntityEventResourceId);
+        RequireExactProperties(handler, "map3.sarah.handler", "id", "address", "kind", "records");
+        if (RequiredNonNegativeInt(handler, "address", "map3.sarah.handler.address") != 331536 ||
+            !string.Equals(
+                RequiredString(handler, "kind", "map3.sarah.handler.kind"),
+                "table",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.sarah.handler",
+                "The accepted Map 3 Sarah event table identity drifted.");
+        }
+
+        JsonElement records = RequiredProperty(handler, "records", "map3.sarah.handler.records");
+        RequireArray(records, "map3.sarah.handler.records");
+        if (records.GetArrayLength() != OriginalMapRuntimeAdmission.SarahEntityEventSourceRecordCount)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.sarah.handler.records",
+                "The accepted Map 3 entity-event record count drifted.");
+        }
+
+        HashSet<byte> specificEntities = [];
+        int defaultCount = 0;
+        JsonElement selected = default;
+        int ordinal = 0;
+        foreach (JsonElement record in records.EnumerateArray())
+        {
+            ordinal++;
+            string field = $"map3.sarah.handler.records[{ordinal - 1}]";
+            RequireExactProperties(
+                record,
+                field,
+                "address",
+                "kind",
+                "relativeOffset",
+                "resolvedTargetAddress",
+                "entity",
+                "flags");
+            _ = RequiredNonNegativeInt(record, "address", field + ".address");
+            _ = RequiredNonNegativeInt(record, "relativeOffset", field + ".relativeOffset");
+            _ = RequiredNonNegativeInt(
+                record,
+                "resolvedTargetAddress",
+                field + ".resolvedTargetAddress");
+            string kind = RequiredString(record, "kind", field + ".kind");
+            byte entity = RequiredByte(record, "entity", field + ".entity");
+            byte flags = RequiredByte(record, "flags", field + ".flags");
+            if (flags > 3)
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.InvalidMapProjection,
+                    field + ".flags",
+                    "Map 3 entity-event facing controls must fit the accepted opaque range.");
+            }
+
+            if (string.Equals(kind, "default", StringComparison.Ordinal))
+            {
+                defaultCount++;
+            }
+            else if (!string.Equals(kind, "specific", StringComparison.Ordinal) ||
+                !specificEntities.Add(entity))
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.DuplicateIdentity,
+                    field,
+                    "Map 3 entity events must retain unique specific actors and one default.");
+            }
+
+            if (ordinal == OriginalMapRuntimeAdmission.SarahEntityEventRecordOrdinal)
+            {
+                selected = record;
+            }
+        }
+
+        if (defaultCount != 1 ||
+            selected.ValueKind != JsonValueKind.Object ||
+            RequiredNonNegativeInt(selected, "address", "map3.sarah.record.address") != 331536 ||
+            !string.Equals(
+                RequiredString(selected, "kind", "map3.sarah.record.kind"),
+                "specific",
+                StringComparison.Ordinal) ||
+            RequiredNonNegativeInt(
+                selected,
+                "relativeOffset",
+                "map3.sarah.record.relativeOffset") != 68 ||
+            RequiredNonNegativeInt(
+                selected,
+                "resolvedTargetAddress",
+                "map3.sarah.record.resolvedTargetAddress") != 331604 ||
+            RequiredByte(selected, "entity", "map3.sarah.record.entity") !=
+                OriginalMapRuntimeAdmission.SarahLogicalActorId ||
+            RequiredByte(selected, "flags", "map3.sarah.record.flags") !=
+                OriginalMapRuntimeAdmission.SarahEntityEventOpaqueFacing)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.sarah.record",
+                "The accepted Map 3 Sarah event source record drifted.");
+        }
+
+        ValidateSarahBlockingProgram(resources);
+        OriginalMapEntityDefinition actor = entityPopulation.Records[
+            OriginalMapRuntimeAdmission.SarahActorSourceRecordOrdinal - 1];
+        Span<byte> acceptedAction = stackalloc byte[sizeof(uint)];
+        BinaryPrimitives.WriteUInt32BigEndian(
+            acceptedAction,
+            OriginalMapRuntimeAdmission.SarahActorInitialActionValue);
+        if (actor.Identity != new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.SarahActorSourceRecordOrdinal) ||
+            actor.RawX != OriginalMapRuntimeAdmission.SarahActorInitialX ||
+            actor.RawY != OriginalMapRuntimeAdmission.SarahActorInitialY ||
+            actor.OpaqueFacing != OriginalMapRuntimeAdmission.SarahActorInitialOpaqueFacing ||
+            actor.Kind != OriginalMapEntityRecordKind.Fixed ||
+            !actor.OpaqueTail.SequenceEqual(acceptedAction.ToArray()))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.sarah.actor",
+                "The accepted Map 3 Sarah source actor drifted.");
+        }
+
+        return new OriginalMapSarahDefinition(
+            new OriginalMapSarahEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                entityPopulation.SelectedSetup,
+                OriginalMapRuntimeAdmission.SarahEntityEventResourceId,
+                OriginalMapRuntimeAdmission.SarahEntityEventRecordOrdinal,
+                OriginalMapRuntimeAdmission.SarahEntityEventTargetIdentity,
+                OriginalMapRuntimeAdmission.SarahEntityEventOpaqueFacing),
+            actor.Identity,
+            OriginalMapRuntimeAdmission.SarahLogicalActorId,
+            actor.Position,
+            actor.OpaqueFacing,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.SarahPlayerInteractionX,
+                OriginalMapRuntimeAdmission.SarahPlayerInteractionY),
+            OriginalMapRuntimeAdmission.SarahPlayerInteractionOpaqueFacing,
+            OriginalMapRuntimeAdmission.SarahLaterBranchFlag603,
+            OriginalMapRuntimeAdmission.SarahLaterBranchFlag602,
+            OriginalMapRuntimeAdmission.SarahTemporaryRouteFlag256,
+            OriginalMapRuntimeAdmission.SarahBlockingSequenceIdentity,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.SarahFirstWaypointX,
+                OriginalMapRuntimeAdmission.SarahFirstWaypointY),
+            OriginalMapRuntimeAdmission.SarahRestoredOpaqueFacing,
+            OriginalMapRuntimeAdmission.SarahFirstTextIds,
+            OriginalMapRuntimeAdmission.SarahRepeatTextIds,
+            OriginalMapRuntimeAdmission.SarahFirstStages,
+            OriginalMapRuntimeAdmission.SarahRepeatStages);
+    }
+
+    private static void ValidateSarahBlockingProgram(
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        JsonElement program = RequiredResource(
+            resources,
+            "standaloneScriptPrograms",
+            OriginalMapRuntimeAdmission.SarahBlockingSequenceIdentity);
+        RequireExactProperties(
+            program,
+            "map3.sarah.program",
+            "id",
+            "address",
+            "path",
+            "kind",
+            "operations");
+        if (RequiredNonNegativeInt(program, "address", "map3.sarah.program.address") != 332758 ||
+            !string.Equals(
+                RequiredString(program, "kind", "map3.sarah.program.kind"),
+                "cutscene",
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                RequiredString(program, "path", "map3.sarah.program.path"),
+                "data/maps/entries/map03/mapsetups/scripts_1.asm",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.sarah.program",
+                "The accepted Sarah blocking program identity drifted.");
+        }
+
+        (string Opcode, string Operand)[] expected =
+        [
+            ("entityActionsWait", "ALLY_SARAH"),
+            ("moveLeft", "1"),
+            ("moveUp", "1"),
+            ("endActions", ""),
+            ("csc_end", ""),
+        ];
+        JsonElement operations = RequiredProperty(
+            program,
+            "operations",
+            "map3.sarah.program.operations");
+        RequireArray(operations, "map3.sarah.program.operations");
+        if (operations.GetArrayLength() != expected.Length)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.sarah.program.operations",
+                "The accepted Sarah blocking operation count drifted.");
+        }
+
+        int index = 0;
+        foreach (JsonElement operation in operations.EnumerateArray())
+        {
+            string field = $"map3.sarah.program.operations[{index}]";
+            RequireExactProperties(
+                operation,
+                field,
+                "index",
+                "opcode",
+                "operandText",
+                "targetSymbols",
+                "targetAddresses");
+            JsonElement symbols = RequiredProperty(operation, "targetSymbols", field + ".targetSymbols");
+            JsonElement addresses = RequiredProperty(
+                operation,
+                "targetAddresses",
+                field + ".targetAddresses");
+            RequireArray(symbols, field + ".targetSymbols");
+            RequireArray(addresses, field + ".targetAddresses");
+            if (RequiredNonNegativeInt(operation, "index", field + ".index") != index ||
+                !string.Equals(
+                    RequiredString(operation, "opcode", field + ".opcode"),
+                    expected[index].Opcode,
+                    StringComparison.Ordinal) ||
+                !string.Equals(
+                    RequiredText(operation, "operandText", field + ".operandText"),
+                    expected[index].Operand,
+                    StringComparison.Ordinal) ||
+                symbols.GetArrayLength() != 0 ||
+                addresses.GetArrayLength() != 0)
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.InvalidMapProjection,
+                    field,
+                    "The accepted Sarah blocking operation sequence drifted.");
+            }
+
+            index++;
+        }
     }
 
     private static OriginalMapZone601Definition ReadAcceptedZone601(

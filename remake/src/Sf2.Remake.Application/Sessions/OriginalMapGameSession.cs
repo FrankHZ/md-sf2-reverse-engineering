@@ -21,7 +21,9 @@ public sealed record PrivateOriginalMapSessionSnapshot
         PrivateOriginalMapNaturalStepCopyReceipt? lastNaturalStepCopy = null,
         bool schoolDoorStepCopyApplied = false,
         PrivateOriginalMapZone601State? zone601 = null,
-        PrivateOriginalMapZone601Receipt? lastZone601 = null)
+        PrivateOriginalMapZone601Receipt? lastZone601 = null,
+        PrivateOriginalMapSarahState? sarah = null,
+        PrivateOriginalMapSarahReceipt? lastSarah = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -51,6 +53,27 @@ public sealed record PrivateOriginalMapSessionSnapshot
             }
         }
 
+        PrivateOriginalMapSarahState? admittedSarah = sarah;
+        if (definition.Sarah is null)
+        {
+            if (sarah is not null || lastSarah is not null)
+            {
+                throw new ArgumentException(
+                    "Sarah state requires its admitted definition.",
+                    nameof(sarah));
+            }
+        }
+        else
+        {
+            admittedSarah ??= PrivateOriginalMapSarahState.Ready(definition.Sarah);
+            if (!admittedSarah.Matches(definition.Sarah))
+            {
+                throw new ArgumentException(
+                    "Sarah state must match its admitted definition.",
+                    nameof(sarah));
+            }
+        }
+
         definition.BlockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
         if (definition.Traversal.SelectActiveArea(playerPosition) is null ||
             OriginalMapTraversal.IsBlocked(workingLayout, playerPosition))
@@ -63,7 +86,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         int completedOperations =
             (lastTraversal is null ? 0 : 1) +
             (lastLayoutMutation is null ? 0 : 1) +
-            (lastSameMapWarp is null ? 0 : 1);
+            (lastSameMapWarp is null ? 0 : 1) +
+            (lastSarah is null ? 0 : 1);
         if (simulationStep == 0 &&
             (completedOperations != 0 ||
                 controlledStepCopyApplied ||
@@ -71,6 +95,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 schoolDoorStepCopyApplied ||
                 lastZone601 is not null ||
                 admittedZone601?.Flag601Set == true ||
+                lastSarah is not null ||
+                admittedSarah?.TemporaryRouteFlag256Set == true ||
                 admittedRoofLifecycle is not MapBlockCopyLifecycleInactiveState))
         {
             throw new ArgumentException(
@@ -190,6 +216,25 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 throw new ArgumentException(
                     "The Zone 601 receipt must match the atomic traversal and persistent state.",
                     nameof(lastZone601));
+            }
+        }
+
+        if (lastSarah is not null)
+        {
+            OriginalMapSarahDefinition admitted = definition.Sarah ??
+                throw new ArgumentException(
+                    "A Sarah receipt requires its admitted definition.",
+                    nameof(lastSarah));
+            if (admittedSarah is null ||
+                !lastSarah.Matches(admitted) ||
+                !ReferenceEquals(lastSarah.After, admittedSarah) ||
+                lastSarah.PlayerPosition != playerPosition ||
+                lastSarah.SimulationStep != simulationStep ||
+                lastTraversal is not null)
+            {
+                throw new ArgumentException(
+                    "The Sarah receipt must match the atomic interaction and persistent state.",
+                    nameof(lastSarah));
             }
         }
 
@@ -317,6 +362,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         SchoolDoorStepCopyApplied = schoolDoorStepCopyApplied;
         Zone601 = admittedZone601;
         LastZone601 = lastZone601;
+        Sarah = admittedSarah;
+        LastSarah = lastSarah;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -369,6 +416,10 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public PrivateOriginalMapZone601State? Zone601 { get; }
 
     public PrivateOriginalMapZone601Receipt? LastZone601 { get; }
+
+    public PrivateOriginalMapSarahState? Sarah { get; }
+
+    public PrivateOriginalMapSarahReceipt? LastSarah { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -502,6 +553,49 @@ public sealed partial class GameSession
             return stepCopyApplied!;
         }
 
+        MapPosition? candidate = current.Definition.Traversal.ResolveCandidateTarget(
+            current.WorkingLayout,
+            current.PlayerPosition,
+            command.Direction);
+        if (candidate is MapPosition occupiedPosition &&
+            occupiedPosition == current.Sarah?.ActorPosition)
+        {
+            ushort sourceWord = current.WorkingLayout[
+                current.PlayerPosition.X,
+                current.PlayerPosition.Y];
+            ushort destinationWord = current.WorkingLayout[
+                occupiedPosition.X,
+                occupiedPosition.Y];
+            OriginalMapTraversalResult occupied = new(
+                current.PlayerPosition,
+                current.PlayerPosition,
+                command.Direction,
+                OriginalMapTraversalOutcome.BlockedByOccupiedEntity,
+                sourceWord,
+                destinationWord);
+            PrivateOriginalMapSessionSnapshot blocked = new(
+                current.Definition,
+                current.Receipt,
+                current.WorkingLayout,
+                checked(current.SimulationStep + 1),
+                current.PlayerPosition,
+                occupied,
+                current.ControlledStepCopyApplied,
+                lastLayoutMutation: null,
+                lastSameMapWarp: null,
+                roofOnLoadLifecycle: current.RoofOnLoadLifecycle,
+                lastRoofOnLoad: null,
+                current.BowieDoorStepCopyApplied,
+                lastNaturalStepCopy: null,
+                current.SchoolDoorStepCopyApplied,
+                current.Zone601,
+                lastZone601: null,
+                current.Sarah,
+                lastSarah: null);
+            _privateOriginalMapSnapshot = blocked;
+            return new PrivateOriginalMapMoveApplied(blocked, occupied);
+        }
+
         OriginalMapTraversalResult traversal = current.Definition.Traversal.TryMove(
             current.WorkingLayout,
             current.PlayerPosition,
@@ -522,7 +616,9 @@ public sealed partial class GameSession
             lastNaturalStepCopy: null,
             current.SchoolDoorStepCopyApplied,
             current.Zone601,
-            lastZone601: null);
+            lastZone601: null,
+            current.Sarah,
+            lastSarah: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -598,7 +694,9 @@ public sealed partial class GameSession
             lastNaturalStepCopy: null,
             current.SchoolDoorStepCopyApplied,
             current.Zone601,
-            lastZone601: null);
+            lastZone601: null,
+            current.Sarah,
+            lastSarah: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -839,6 +937,18 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.zone601",
                 "The admitted definition does not retain the exact bounded Map 3 Zone 601 projection.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedSarah(
+                definition.Sarah,
+                definition.EntityPopulation,
+                definition.Traversal,
+                definition.WorkingLayout))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.sarah",
+                "The admitted definition does not retain the exact bounded Map 3 Sarah route projection.");
         }
 
         OriginalMapControlledAdmission controlled = definition.ControlledAdmission;

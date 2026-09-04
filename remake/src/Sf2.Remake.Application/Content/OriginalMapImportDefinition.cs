@@ -185,7 +185,8 @@ public sealed class OriginalMapImportDefinition
         IEnumerable<string> unsupportedCapabilities,
         OriginalMapRoofOnLoadDefinition? roofOnLoadClear = null,
         OriginalMapStepCopyDefinition? bowieDoorStepCopy = null,
-        OriginalMapZone601Definition? zone601 = null)
+        OriginalMapZone601Definition? zone601 = null,
+        OriginalMapSarahDefinition? sarah = null)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
@@ -274,6 +275,42 @@ public sealed class OriginalMapImportDefinition
             }
         }
 
+        if (sarah is not null)
+        {
+            if (sarah.Identity.Map != map ||
+                sarah.Identity.Setup != controlledAdmission.SelectedSetup)
+            {
+                throw new ArgumentException(
+                    "The Sarah definition must match the imported map and controlled setup.",
+                    nameof(sarah));
+            }
+
+            OriginalMapEntityDefinition sourceActor = entityPopulation.Records
+                .SingleOrDefault(record => record.Identity == sarah.ActorSourceRecord) ??
+                throw new ArgumentException(
+                    "Sarah must bind one admitted source entity record.",
+                    nameof(sarah));
+            if (sourceActor.Position != sarah.ActorInitialPosition ||
+                sourceActor.OpaqueFacing != sarah.ActorInitialOpaqueFacing)
+            {
+                throw new ArgumentException(
+                    "Sarah admission must retain her source position and facing.",
+                    nameof(sarah));
+            }
+
+            if (!areaCatalog.Traversal.IsWithinActiveArea(sarah.ActorInitialPosition) ||
+                !areaCatalog.Traversal.IsWithinActiveArea(sarah.PlayerInteractionPosition) ||
+                !areaCatalog.Traversal.IsWithinActiveArea(sarah.FirstInteractionWaypoint) ||
+                OriginalMapTraversal.IsBlocked(workingLayout, sarah.ActorInitialPosition) ||
+                OriginalMapTraversal.IsBlocked(workingLayout, sarah.PlayerInteractionPosition) ||
+                OriginalMapTraversal.IsBlocked(workingLayout, sarah.FirstInteractionWaypoint))
+            {
+                throw new ArgumentException(
+                    "Sarah's admitted route positions must remain active and traversable.",
+                    nameof(sarah));
+            }
+        }
+
         if (roofOnLoadClear is not null)
         {
             if (roofOnLoadClear.Identity.Map != map)
@@ -354,6 +391,7 @@ public sealed class OriginalMapImportDefinition
         RoofOnLoadClear = roofOnLoadClear;
         BowieDoorStepCopy = bowieDoorStepCopy;
         Zone601 = zone601;
+        Sarah = sarah;
     }
 
     public MapId Map { get; }
@@ -381,6 +419,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapStepCopyDefinition? BowieDoorStepCopy { get; }
 
     public OriginalMapZone601Definition? Zone601 { get; }
+
+    public OriginalMapSarahDefinition? Sarah { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

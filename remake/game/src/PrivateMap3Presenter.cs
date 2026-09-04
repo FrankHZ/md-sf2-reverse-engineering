@@ -122,6 +122,17 @@ internal sealed record PrivateMap3PresentationPlan(
                 $"{zone601.AmbientRange}; random choices Unknown";
         }
 
+        PrivateOriginalMapSarahState? sarah = snapshot.Sarah;
+        if (sarah is not null)
+        {
+            status +=
+                $"  |  Sarah {sarah.Phase}; actor {sarah.LogicalActorId} at " +
+                $"({sarah.ActorPosition.X}, {sarah.ActorPosition.Y}), facing " +
+                $"{sarah.ActorOpaqueFacing}; temporary route flag " +
+                $"{(sarah.TemporaryRouteFlag256Set ? "set" : "clear")}; " +
+                "F semantic interaction";
+        }
+
         return status;
     }
 }

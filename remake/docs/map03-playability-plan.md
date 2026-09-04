@@ -14,7 +14,13 @@ The accepted runtime already admits the controlled private Map 3 state, authorit
 layout, traversal policy, current area, block and visual-resource data, selected setup entity
 population, reviewed local base atlas, player locomotion, a project-authored camera, one bounded
 entity diagnostic, a manual synthetic battle bridge, two exact private same-map warp records, and
-the first landing's distinct once-only roof-on-load clear. An explicit private-local presentation
+the first landing's distinct once-only roof-on-load clear. Sarah is now one real route obstacle:
+Application owns her live tile/facing, the exact controlled first interaction from `(42,9)` facing
+up, the blocking move to `(41,7)`, temporary flag 256, and the text-ID/order receipt. Same-load
+reinteraction uses only the accepted shorter text sequence, current-map warps retain her state, and
+a newly admitted session restores `(42,8)` facing down with temporary flag 256 clear. Godot sends
+only a semantic interaction and projects typed status; it does not render original dialogue. An
+explicit private-local presentation
 option also projects the live current area's non-zero second-layer offset from the authoritative
 working layout; zero-offset areas remain main-only.
 `GameSession` evaluates their candidate targets before ordinary passability and atomically relocates
@@ -26,7 +32,8 @@ The evidence-owned Bowie-house and school-door steps are two bounded exceptions.
 admitted block copy before collision and commits the working layout and movement atomically. The
 school-door natural lifecycle remains distinct from the existing controlled row-6 diagnostic, and
 the existing Godot view reprojects either authoritative layout change. These two records do not
-claim `OpenDoor` generally or execute the later Sarah program.
+claim `OpenDoor` generally; the separate Sarah slice executes only its accepted 603-clear/602-clear
+route and leaves the later branches unsupported.
 
 The first post-warp slope target `(4,4)` now runs one bounded Zone 601 interception before ordinary
 passability. Application moves the player onto the admitted target, advances logical entity 128 from
@@ -42,21 +49,17 @@ snapshot as the relocation while retaining distinct warp and roof receipts. The 
 saves the prior rectangle, clears it with the accepted empty-word policy, and prevents duplicate
 activation. No restore command is exposed: the original reverse/leave trigger, general roof scan,
 presentation timing, and simulation-step parity remain outside this bounded slice. The accepted
-entity-142 interaction stand at `(55, 17)` also remains unreachable: the route between the two
-admitted warps still depends on Sarah's interaction and temporary-flag lifecycle. The bounded Zone
-601 transaction plus isolated door capabilities therefore do not establish natural route continuity.
+entity-142 interaction stand at `(55,17)` is now downstream of the admitted Sarah route, but its own
+acknowledgement/effect lifecycle is not implemented. These bounded transactions still do not
+establish route uniqueness, alternate-setup behavior, or full natural continuity.
 
 ## Ordered Queue
 
-1. **Zone 601:** implemented as the bounded candidate-target interception, deterministic blocking
-   sequence, live actor handoff, and once-only 601 session state described above.
-2. **Sarah:** add the exact 603/602/temporary-256 branch, movement/text order, facing restoration, and
-   new-map temporary reset before claiming continuity to the second warp.
-3. **Entity 142:** add an acknowledgement lifecycle for the accepted interaction record without
+1. **Entity 142:** add an acknowledgement lifecycle for the accepted interaction record without
    inventing dialogue or opaque program effects.
-4. **Broader setup entities/assets:** add reviewed identities, visibility rules, and local assets only
+2. **Broader setup entities/assets:** add reviewed identities, visibility rules, and local assets only
    through their accepted Content and presentation boundaries.
-5. **Audio and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
+3. **Audio and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
    door, warp, roof, music, and audio behavior without promoting Unknown presentation semantics.
 
 ## Decision Rules

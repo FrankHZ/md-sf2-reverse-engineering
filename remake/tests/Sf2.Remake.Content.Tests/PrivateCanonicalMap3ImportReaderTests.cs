@@ -23,8 +23,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     {
         JsonObject document = SampleDocument();
         byte[] bytes = DocumentBytes(document);
-        OriginalMapImportAccepted accepted = Assert.IsType<OriginalMapImportAccepted>(
-            PrivateCanonicalMap3ImportReader.AdmitSemanticDocumentForTests(bytes));
+        OriginalMapImportResult result =
+            PrivateCanonicalMap3ImportReader.AdmitSemanticDocumentForTests(bytes);
+        Assert.True(
+            result is OriginalMapImportAccepted,
+            result is OriginalMapImportRejected rejected
+                ? $"{rejected.Diagnostic.Code}:{rejected.Diagnostic.Field}:{rejected.Diagnostic.Message}"
+                : "The semantic import returned an unknown result.");
+        OriginalMapImportAccepted accepted = Assert.IsType<OriginalMapImportAccepted>(result);
 
         Assert.Equal(ContentProfile.PrivateLocal, accepted.Receipt.Profile);
         Assert.Equal(Digest(bytes), accepted.Receipt.ContentDigest);
@@ -50,6 +56,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.BowieDoorStepCopyCapability,
                 PrivateCanonicalMap3ImportReader.SchoolDoorStepCopyCapability,
                 PrivateCanonicalMap3ImportReader.Zone601InterceptionCapability,
+                PrivateCanonicalMap3ImportReader.SarahRouteCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -99,10 +106,10 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             accepted.Definition.EntityPopulation.Records[0].Position,
             accepted.Definition.EntityPopulation.Records[1].Position);
         Assert.Equal(
-            new byte[] { 0, 0, 0, 1 },
+            new byte[] { 0, 4, 0x60, 0xCE },
             accepted.Definition.EntityPopulation.Records[0].OpaqueTail);
         Assert.Equal(
-            new byte[] { 0xFF, 1, 2, 3 },
+            new byte[] { 0xFF, 42, 8, 3 },
             accepted.Definition.EntityPopulation.Records[1].OpaqueTail);
         OriginalMapZone601Definition zone601 =
             Assert.IsType<OriginalMapZone601Definition>(accepted.Definition.Zone601);
@@ -115,6 +122,18 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(new MapPosition(5, 4), zone601.ActorBlockingEndPosition);
         Assert.Equal(new[] { 510, 511, 483 }, zone601.TextIds);
         Assert.Equal("eas_Walking", zone601.AmbientBehaviorIdentity);
+        OriginalMapSarahDefinition sarah =
+            Assert.IsType<OriginalMapSarahDefinition>(accepted.Definition.Sarah);
+        Assert.Equal(new MapPosition(42, 8), sarah.ActorInitialPosition);
+        Assert.Equal(new MapPosition(42, 9), sarah.PlayerInteractionPosition);
+        Assert.Equal(new MapPosition(41, 7), sarah.FirstInteractionWaypoint);
+        Assert.Equal(new[] { 512, 480, 481 }, sarah.FirstInteractionTextIds);
+        Assert.Equal(new[] { 480, 481 }, sarah.RepeatInteractionTextIds);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedSarah(
+            sarah,
+            accepted.Definition.EntityPopulation,
+            accepted.Definition.Traversal,
+            accepted.Definition.WorkingLayout));
         Assert.Contains("natural-flags-setup-variant-selection",
             accepted.Definition.UnsupportedCapabilities);
         Assert.Equal(
@@ -205,6 +224,23 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
         JsonObject programDrift = SampleDocument();
         ZoneProgramOperations(programDrift)[2]!.AsObject()["operandText"] = "3";
+        AssertCode(Admit(programDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void SarahEventActorAndBlockingProgramDriftFailSemanticAdmission()
+    {
+        JsonObject eventDrift = SampleDocument();
+        EntityEventRecords(eventDrift)[0]!.AsObject()["flags"] = 2;
+        AssertCode(Admit(eventDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject actorDrift = SampleDocument();
+        EntityRecords(actorDrift)[0]!.AsObject()["x"] = 41;
+        EntityRecords(actorDrift)[0]!.AsObject()["rawX"] = 41;
+        AssertCode(Admit(actorDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject programDrift = SampleDocument();
+        SarahProgramOperations(programDrift)[1]!.AsObject()["operandText"] = "2";
         AssertCode(Admit(programDrift), OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
@@ -608,6 +644,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Contains(
             PrivateCanonicalMap3ImportReader.Zone601InterceptionCapability,
             accepted.Receipt.Capabilities);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.SarahRouteCapability,
+            accepted.Receipt.Capabilities);
         Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedRoofOnLoadClear(
             accepted.Definition.RoofOnLoadClear));
         Assert.Equal(
@@ -667,6 +706,11 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             new MapPosition(62, 0)));
         Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedZone601(
             accepted.Definition.Zone601,
+            accepted.Definition.EntityPopulation,
+            accepted.Definition.Traversal,
+            accepted.Definition.WorkingLayout));
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedSarah(
+            accepted.Definition.Sarah,
             accepted.Definition.EntityPopulation,
             accepted.Definition.Traversal,
             accepted.Definition.WorkingLayout));
@@ -928,25 +972,25 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                             {
                                 address = 6,
                                 kind = "fixed",
-                                rawX = 1,
-                                rawY = 2,
-                                x = 1,
-                                y = 2,
+                                rawX = OriginalMapRuntimeAdmission.SarahActorInitialX,
+                                rawY = OriginalMapRuntimeAdmission.SarahActorInitialY,
+                                x = OriginalMapRuntimeAdmission.SarahActorInitialX,
+                                y = OriginalMapRuntimeAdmission.SarahActorInitialY,
                                 facing = 3,
-                                mapSprite = 4,
-                                actionValue = 1U,
+                                mapSprite = 1,
+                                actionValue = OriginalMapRuntimeAdmission.SarahActorInitialActionValue,
                             },
                             new
                             {
                                 address = 14,
                                 kind = "walking",
-                                rawX = 0xC1,
-                                rawY = 2,
-                                x = 1,
-                                y = 2,
+                                rawX = 0xEA,
+                                rawY = 8,
+                                x = 42,
+                                y = 8,
                                 facing = 1,
                                 mapSprite = 5,
-                                walking = new { originX = 1, originY = 2, range = 3 },
+                                walking = new { originX = 42, originY = 8, range = 3 },
                             },
                             new
                             {
@@ -963,7 +1007,16 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         },
                     },
                 },
-                entityEventHandlers = Resource("ms_map3_EntityEvents"),
+                entityEventHandlers = new object[]
+                {
+                    new
+                    {
+                        id = "ms_map3_EntityEvents",
+                        address = 331536,
+                        kind = "table",
+                        records = SarahEntityEventSourceRecords(),
+                    },
+                },
                 zoneEventHandlers = new object[]
                 {
                     new
@@ -979,6 +1032,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 initFunctions = Resource("ms_map3_InitFunction"),
                 standaloneScriptPrograms = new object[]
                 {
+                    new
+                    {
+                        id = "cs_513D6",
+                        address = 332758,
+                        path = "data/maps/entries/map03/mapsetups/scripts_1.asm",
+                        kind = "cutscene",
+                        operations = SarahBlockingOperations(),
+                    },
                     new
                     {
                         id = "cs_5145C",
@@ -1038,6 +1099,36 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         ZoneRecord(331120, "default", 412, 331496, 253, 0),
     ];
 
+    private static object[] SarahEntityEventSourceRecords() =>
+    [
+        EntityEventRecord(331536, "specific", 68, 331604, 1, 3),
+        EntityEventRecord(331540, "specific", 136, 331672, 2, 0),
+        EntityEventRecord(331544, "specific", 170, 331706, 128, 1),
+        EntityEventRecord(331548, "specific", 188, 331724, 129, 3),
+        EntityEventRecord(331552, "specific", 198, 331734, 130, 1),
+        EntityEventRecord(331556, "specific", 212, 331748, 131, 1),
+        EntityEventRecord(331560, "specific", 218, 331754, 132, 0),
+        EntityEventRecord(331564, "specific", 224, 331760, 133, 1),
+        EntityEventRecord(331568, "specific", 238, 331774, 134, 1),
+        EntityEventRecord(331572, "specific", 244, 331780, 137, 1),
+        EntityEventRecord(331576, "specific", 254, 331790, 138, 1),
+        EntityEventRecord(331580, "specific", 272, 331808, 139, 1),
+        EntityEventRecord(331584, "specific", 290, 331826, 140, 1),
+        EntityEventRecord(331588, "specific", 300, 331836, 141, 1),
+        EntityEventRecord(331592, "specific", 238, 331774, 144, 1),
+        EntityEventRecord(331596, "specific", 308, 331844, 142, 3),
+        EntityEventRecord(331600, "default", 330, 331866, 253, 0),
+    ];
+
+    private static object EntityEventRecord(
+        int address,
+        string kind,
+        int relativeOffset,
+        int resolvedTargetAddress,
+        int entity,
+        int flags) =>
+        new { address, kind, relativeOffset, resolvedTargetAddress, entity, flags };
+
     private static object ZoneRecord(
         int address,
         string kind,
@@ -1062,6 +1153,26 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             ("textCursor", "483"),
             ("nextSingleText", "$0,128"),
             ("setActscriptWait", "128,eas_Init"),
+            ("csc_end", ""),
+        ];
+        return values.Select((value, index) => (object)new
+        {
+            index,
+            opcode = value.Opcode,
+            operandText = value.Operand,
+            targetSymbols = Array.Empty<string>(),
+            targetAddresses = Array.Empty<int>(),
+        }).ToArray();
+    }
+
+    private static object[] SarahBlockingOperations()
+    {
+        (string Opcode, string Operand)[] values =
+        [
+            ("entityActionsWait", "ALLY_SARAH"),
+            ("moveLeft", "1"),
+            ("moveUp", "1"),
+            ("endActions", ""),
             ("csc_end", ""),
         ];
         return values.Select((value, index) => (object)new
@@ -1173,6 +1284,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             .AsObject()["records"]!.AsArray();
 
     private static JsonArray ZoneProgramOperations(JsonObject document) =>
+        ResourceArray(document, "standaloneScriptPrograms")[1]!
+            .AsObject()["operations"]!.AsArray();
+
+    private static JsonArray EntityEventRecords(JsonObject document) =>
+        ResourceArray(document, "entityEventHandlers")[0]!
+            .AsObject()["records"]!.AsArray();
+
+    private static JsonArray SarahProgramOperations(JsonObject document) =>
         ResourceArray(document, "standaloneScriptPrograms")[0]!
             .AsObject()["operations"]!.AsArray();
 
