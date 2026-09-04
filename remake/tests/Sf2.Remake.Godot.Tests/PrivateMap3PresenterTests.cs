@@ -232,7 +232,9 @@ public sealed class PrivateMap3PresenterTests
         Assert.Equal(
             "Map map3  Tile (56, 3)  Area 2  Step 7  Moved  |  " +
                 "WASD semantic movement  |  Sarah Ready; actor 1 at " +
-                "(1, 1), facing 3; temporary route flag clear; F semantic interaction",
+                "(1, 1), facing 3; temporary route flag clear; F semantic interaction " +
+                "request  |  Entity142 logical 142/slot 17 at (54, 17), facing 1; " +
+                "flags261/602 clear; no pending request; F request / G acknowledge",
             status);
         Assert.Equal(new MapId(OriginalMapRuntimeAdmission.MapId), projection.Map);
         Assert.Equal(50, projection.OriginX);
@@ -271,7 +273,9 @@ public sealed class PrivateMap3PresenterTests
                 "WASD semantic movement  |  Zone601 complete; actor 128 at " +
                 "(5, 4), facing 2; ambient center (5, 6) range 1; " +
                 "random choices Unknown  |  Sarah Ready; actor 1 at " +
-                "(1, 1), facing 3; temporary route flag clear; F semantic interaction",
+                "(1, 1), facing 3; temporary route flag clear; F semantic interaction " +
+                "request  |  Entity142 logical 142/slot 17 at (54, 17), facing 1; " +
+                "flags261/602 clear; no pending request; F request / G acknowledge",
             status);
         Assert.DoesNotContain("510", status, StringComparison.Ordinal);
         Assert.DoesNotContain("dialogue", status, StringComparison.OrdinalIgnoreCase);
@@ -315,7 +319,8 @@ public sealed class PrivateMap3PresenterTests
             sameMapWarps: null,
             unsupportedCapabilities: ["natural-route-and-presentation-unknown"],
             zone601: Zone601(map),
-            sarah: Sarah(map));
+            sarah: Sarah(map),
+            entity142: Entity142(map));
         OriginalMapImportReceipt receipt = new(
             OriginalMapRuntimeAdmission.PackageId,
             OriginalMapRuntimeAdmission.SchemaVersion,
@@ -352,35 +357,44 @@ public sealed class PrivateMap3PresenterTests
         new(
             map,
             new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
-            [
-                new OriginalMapEntityDefinition(
-                    new OriginalMapEntityRecordIdentity(
-                        "project-authored-private-presenter-entities",
-                        1),
-                    rawX: 1,
-                    rawY: 1,
-                    opaqueFacing: 3,
-                    mapSprite: 0,
-                    [0, 0, 0, 0]),
-                new OriginalMapEntityDefinition(
-                    new OriginalMapEntityRecordIdentity(
-                        "project-authored-private-presenter-entities",
-                        2),
-                    rawX: 2,
-                    rawY: 2,
-                    opaqueFacing: 0,
-                    mapSprite: 0,
-                    [0, 0, 0, 0]),
-                new OriginalMapEntityDefinition(
-                    new OriginalMapEntityRecordIdentity(
-                        "project-authored-private-presenter-entities",
-                        3),
-                    rawX: 5,
-                    rawY: 6,
-                    opaqueFacing: 0,
-                    mapSprite: 195,
-                    [0, 4, 97, 2]),
-            ]);
+            Enumerable.Range(1, OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal)
+                .Select(ordinal => ordinal switch
+                {
+                    1 => EntityRecord(ordinal, rawX: 1, rawY: 1, opaqueFacing: 3),
+                    3 => EntityRecord(
+                        ordinal,
+                        rawX: 5,
+                        rawY: 6,
+                        mapSprite: 195,
+                        opaqueTail: [0, 4, 97, 2]),
+                    OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal =>
+                        EntityRecord(
+                            ordinal,
+                            rawX: OriginalMapRuntimeAdmission.Entity142ActorX,
+                            rawY: OriginalMapRuntimeAdmission.Entity142ActorY,
+                            opaqueFacing:
+                                OriginalMapRuntimeAdmission.Entity142ActorOpaqueFacing,
+                            mapSprite: OriginalMapRuntimeAdmission.Entity142ActorMapSprite,
+                            opaqueTail: [0, 4, 96, 206]),
+                    _ => EntityRecord(ordinal, rawX: ordinal, rawY: 30),
+                }));
+
+    private static OriginalMapEntityDefinition EntityRecord(
+        int ordinal,
+        int rawX,
+        int rawY,
+        byte opaqueFacing = 0,
+        byte mapSprite = 0,
+        IEnumerable<byte>? opaqueTail = null) =>
+        new(
+            new OriginalMapEntityRecordIdentity(
+                "project-authored-private-presenter-entities",
+                ordinal),
+            checked((byte)rawX),
+            checked((byte)rawY),
+            opaqueFacing,
+            mapSprite,
+            opaqueTail ?? [0, 0, 0, 0]);
 
     private static OriginalMapZone601Definition Zone601(MapId map) =>
         new(
@@ -438,6 +452,36 @@ public sealed class PrivateMap3PresenterTests
             [480, 481],
             OriginalMapRuntimeAdmission.SarahFirstStages,
             OriginalMapRuntimeAdmission.SarahRepeatStages);
+
+    private static OriginalMapEntity142Definition Entity142(MapId map) =>
+        new(
+            new OriginalMapEntity142EventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.Entity142EventResourceId,
+                OriginalMapRuntimeAdmission.Entity142EventRecordOrdinal,
+                OriginalMapRuntimeAdmission.Entity142EventTargetIdentity,
+                OriginalMapRuntimeAdmission.Entity142EventOpaqueFacing),
+            new OriginalMapEntityRecordIdentity(
+                "project-authored-private-presenter-entities",
+                OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.Entity142LogicalActorId,
+            OriginalMapRuntimeAdmission.Entity142PhysicalActorSlot,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Entity142ActorX,
+                OriginalMapRuntimeAdmission.Entity142ActorY),
+            OriginalMapRuntimeAdmission.Entity142ActorOpaqueFacing,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Entity142PlayerInteractionX,
+                OriginalMapRuntimeAdmission.Entity142PlayerInteractionY),
+            OriginalMapRuntimeAdmission.Entity142PlayerInteractionOpaqueFacing,
+            OriginalMapRuntimeAdmission.Entity142FirstInteractionFlag261,
+            OriginalMapRuntimeAdmission.Entity142CompletionFlag602,
+            OriginalMapRuntimeAdmission.Entity142FirstTextIds,
+            OriginalMapRuntimeAdmission.Entity142RepeatTextIds,
+            OriginalMapRuntimeAdmission.Entity142FirstStages,
+            OriginalMapRuntimeAdmission.Entity142RepeatStages);
 
     private static OriginalMapAreaDefinition Area(
         string resourceId,

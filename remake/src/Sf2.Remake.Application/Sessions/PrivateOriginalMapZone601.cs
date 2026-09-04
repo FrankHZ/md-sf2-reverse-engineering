@@ -281,7 +281,11 @@ public sealed partial class GameSession
             state,
             receipt,
             current.Sarah,
-            lastSarah: null);
+            lastSarah: null,
+            current.Entity142,
+            pendingEntity142: null,
+            lastEntity142Request: null,
+            lastEntity142Acknowledgement: null);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(next, traversal, receipt);
         return true;

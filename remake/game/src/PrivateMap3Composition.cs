@@ -585,8 +585,8 @@ public sealed partial class Map3Root
             static () => { },
             static () => { },
             static _ => { },
-            ApplyPrivateSarahInteraction,
-            static () => { },
+            ApplyPrivateInteractionRequest,
+            ApplyPrivateEntity142Acknowledgement,
             static () => { },
             static () => { },
             static () => { },
@@ -601,20 +601,20 @@ public sealed partial class Map3Root
             ApplyPrivateBattleBridgeSelectionCancellation,
             ApplyPrivateBattleBridgeCompletionAcknowledgement);
 
-    private void ApplyPrivateSarahInteraction()
+    private void ApplyPrivateInteractionRequest()
     {
         if (_session is null)
         {
             return;
         }
 
-        PrivateOriginalMapSarahInteractionResult result =
-            _session.InteractPrivateOriginalMapSarah(
-                new InteractPrivateOriginalMapSarahCommand(
-                    _session.PrivateOriginalMapSnapshot.SimulationStep));
+        PrivateOriginalMapInteractionResult result =
+            _session.RequestPrivateOriginalMapInteraction(
+                _session.PrivateOriginalMapSnapshot.SimulationStep);
         switch (result)
         {
-            case PrivateOriginalMapSarahInteractionApplied applied:
+            case PrivateOriginalMapSarahInteractionSelected selected:
+                PrivateOriginalMapSarahInteractionApplied applied = selected.Applied;
                 _privatePresenter?.Project(
                     applied.Snapshot,
                     applied.Receipt.Repeated
@@ -622,15 +622,65 @@ public sealed partial class Map3Root
                         : "Sarah route cleared",
                     _session.PrivateOriginalMapPlayerLocomotion);
                 break;
-            case PrivateOriginalMapSarahInteractionRejected rejected:
+            case PrivateOriginalMapEntity142InteractionRequested selected:
                 _privatePresenter?.Project(
-                    rejected.Snapshot,
-                    $"Sarah interaction {rejected.Diagnostic.Code}",
+                    selected.Applied.Snapshot,
+                    selected.Applied.Request.Repeated
+                        ? "Entity 142 repeat request pending; G acknowledges"
+                        : "Entity 142 first request pending; G acknowledges",
+                    _session.PrivateOriginalMapPlayerLocomotion);
+                break;
+            case PrivateOriginalMapSarahInteractionSelectionRejected selected:
+                _privatePresenter?.Project(
+                    selected.Rejected.Snapshot,
+                    $"Sarah interaction {selected.Rejected.Diagnostic.Code}",
+                    _session.PrivateOriginalMapPlayerLocomotion);
+                break;
+            case PrivateOriginalMapEntity142InteractionSelectionRejected selected:
+                _privatePresenter?.Project(
+                    selected.Rejected.Snapshot,
+                    $"Entity 142 request {selected.Rejected.Diagnostic.Code}",
                     _session.PrivateOriginalMapPlayerLocomotion);
                 break;
             default:
                 throw new InvalidOperationException(
-                    "Private Sarah interaction returned an unknown result.");
+                    "Private semantic interaction returned an unknown result.");
+        }
+    }
+
+    private void ApplyPrivateEntity142Acknowledgement()
+    {
+        if (_session?.PrivateOriginalMapSnapshot.PendingEntity142 is not
+            PrivateOriginalMapEntity142Request pending)
+        {
+            return;
+        }
+
+        PrivateOriginalMapEntity142AcknowledgementResult result =
+            _session.AcknowledgePrivateOriginalMapEntity142(
+                new AcknowledgePrivateOriginalMapEntity142Command(
+                    _session.PrivateOriginalMapSnapshot.SimulationStep,
+                    pending.RequestSequence,
+                    pending.EventIdentity));
+        switch (result)
+        {
+            case PrivateOriginalMapEntity142AcknowledgementApplied applied:
+                _privatePresenter?.Project(
+                    applied.Snapshot,
+                    applied.Receipt.Request.Repeated
+                        ? "Entity 142 repeat interaction acknowledged"
+                        : "Entity 142 flags 261/602 acknowledged",
+                    _session.PrivateOriginalMapPlayerLocomotion);
+                break;
+            case PrivateOriginalMapEntity142AcknowledgementRejected rejected:
+                _privatePresenter?.Project(
+                    rejected.Snapshot,
+                    $"Entity 142 acknowledgement {rejected.Diagnostic.Code}",
+                    _session.PrivateOriginalMapPlayerLocomotion);
+                break;
+            default:
+                throw new InvalidOperationException(
+                    "Private Entity 142 acknowledgement returned an unknown result.");
         }
     }
 

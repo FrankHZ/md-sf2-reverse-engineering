@@ -20,7 +20,14 @@ up, the blocking move to `(41,7)`, temporary flag 256, and the text-ID/order rec
 reinteraction uses only the accepted shorter text sequence, current-map warps retain her state, and
 a newly admitted session restores `(42,8)` facing down with temporary flag 256 clear. Godot sends
 only a semantic interaction and projects typed status; it does not render original dialogue. An
-explicit private-local presentation
+accepted Entity 142 lifecycle uses the same Application-owned semantic selection seam at `(55,17)`
+facing left. A request records the exact admitted event/actor identity and numeric text-ID sequence;
+acknowledgement atomically applies the accepted first-interaction flags 261 and 602, while same-load
+repetition emits only text ID 501 and remains idempotent. The actor occupies its admitted tile,
+wrong/stale/duplicate acknowledgements are zero-mutation, and other committed map mutations
+invalidate a pending request. Godot maps F to semantic selection and G to exact acknowledgement and
+projects only typed state; decoded text and opaque program effects remain unsupported. An explicit
+private-local presentation
 option also projects the live current area's non-zero second-layer offset from the authoritative
 working layout; zero-offset areas remain main-only.
 `GameSession` evaluates their candidate targets before ordinary passability and atomically relocates
@@ -49,17 +56,15 @@ snapshot as the relocation while retaining distinct warp and roof receipts. The 
 saves the prior rectangle, clears it with the accepted empty-word policy, and prevents duplicate
 activation. No restore command is exposed: the original reverse/leave trigger, general roof scan,
 presentation timing, and simulation-step parity remain outside this bounded slice. The accepted
-entity-142 interaction stand at `(55,17)` is now downstream of the admitted Sarah route, but its own
-acknowledgement/effect lifecycle is not implemented. These bounded transactions still do not
-establish route uniqueness, alternate-setup behavior, or full natural continuity.
+Entity 142 stand is downstream of the admitted Sarah route in the observed path, but this product
+capability does not claim route uniqueness or execute the later flag-602 Sarah/init branch. These
+bounded transactions still do not establish alternate-setup behavior or full natural continuity.
 
 ## Ordered Queue
 
-1. **Entity 142:** add an acknowledgement lifecycle for the accepted interaction record without
-   inventing dialogue or opaque program effects.
-2. **Broader setup entities/assets:** add reviewed identities, visibility rules, and local assets only
+1. **Broader setup entities/assets:** add reviewed identities, visibility rules, and local assets only
    through their accepted Content and presentation boundaries.
-3. **Audio and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
+2. **Audio and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
    door, warp, roof, music, and audio behavior without promoting Unknown presentation semantics.
 
 ## Decision Rules

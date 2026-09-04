@@ -668,6 +668,211 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void Entity142RequestAndAcknowledgementApplyTheExactFirstAndRepeatEffects()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        PrivateOriginalMapSessionSnapshot initial = session.PrivateOriginalMapSnapshot;
+        PrivateOriginalMapEntity142InteractionSelectionRejected wrongTarget =
+            Assert.IsType<PrivateOriginalMapEntity142InteractionSelectionRejected>(
+                session.RequestPrivateOriginalMapInteraction(initial.SimulationStep));
+        Assert.Equal(
+            PrivateOriginalMapEntity142RequestFailureCode.InteractionTargetMismatch,
+            wrongTarget.Rejected.Diagnostic.Code);
+        Assert.Same(initial, wrongTarget.Rejected.Snapshot);
+        Assert.Same(initial, session.PrivateOriginalMapSnapshot);
+
+        MoveToEntity142Interaction(session);
+        PrivateOriginalMapSessionSnapshot beforeRequest = session.PrivateOriginalMapSnapshot;
+        Assert.NotNull(beforeRequest.Entity142);
+        Assert.False(beforeRequest.Entity142.Flag261Set);
+        Assert.False(beforeRequest.Entity142.Flag602Set);
+
+        PrivateOriginalMapEntity142InteractionRequested selected =
+            Assert.IsType<PrivateOriginalMapEntity142InteractionRequested>(
+                session.RequestPrivateOriginalMapInteraction(beforeRequest.SimulationStep));
+        PrivateOriginalMapEntity142Request request = selected.Applied.Request;
+        Assert.Same(request, selected.Applied.Snapshot.PendingEntity142);
+        Assert.Same(request, selected.Applied.Snapshot.LastEntity142Request);
+        Assert.Equal(1, request.RequestSequence);
+        Assert.False(request.Repeated);
+        Assert.Equal(OriginalMapRuntimeAdmission.Entity142FirstTextIds, request.TextIds);
+        Assert.Equal(OriginalMapRuntimeAdmission.Entity142FirstStages, request.Stages);
+        Assert.Equal(OriginalMapRuntimeAdmission.Entity142EventTargetIdentity,
+            request.EventIdentity.TargetIdentity);
+        Assert.False(selected.Applied.Snapshot.Entity142!.Flag261Set);
+
+        PrivateOriginalMapSessionSnapshot pending = session.PrivateOriginalMapSnapshot;
+        PrivateOriginalMapEntity142InteractionSelectionRejected duplicateRequest =
+            Assert.IsType<PrivateOriginalMapEntity142InteractionSelectionRejected>(
+                session.RequestPrivateOriginalMapInteraction(pending.SimulationStep));
+        Assert.Equal(
+            PrivateOriginalMapEntity142RequestFailureCode.PendingRequestExists,
+            duplicateRequest.Rejected.Diagnostic.Code);
+        Assert.Same(pending, duplicateRequest.Rejected.Snapshot);
+
+        PrivateOriginalMapEntity142AcknowledgementRejected wrong =
+            Assert.IsType<PrivateOriginalMapEntity142AcknowledgementRejected>(
+                session.AcknowledgePrivateOriginalMapEntity142(
+                    new AcknowledgePrivateOriginalMapEntity142Command(
+                        pending.SimulationStep,
+                        request.RequestSequence + 1,
+                        request.EventIdentity)));
+        Assert.Equal(
+            PrivateOriginalMapEntity142AcknowledgementFailureCode.ReferenceMismatch,
+            wrong.Diagnostic.Code);
+        Assert.Same(pending, wrong.Snapshot);
+        Assert.Same(pending, session.PrivateOriginalMapSnapshot);
+
+        OriginalMapEntity142EventIdentity wrongIdentity = new(
+            request.EventIdentity.Profile,
+            request.EventIdentity.Map,
+            request.EventIdentity.Setup,
+            request.EventIdentity.ResourceId,
+            request.EventIdentity.OneBasedRecordOrdinal,
+            "project-authored-wrong-target",
+            request.EventIdentity.OpaqueEventFacing);
+        PrivateOriginalMapEntity142AcknowledgementRejected wrongEvent =
+            Assert.IsType<PrivateOriginalMapEntity142AcknowledgementRejected>(
+                session.AcknowledgePrivateOriginalMapEntity142(
+                    new AcknowledgePrivateOriginalMapEntity142Command(
+                        pending.SimulationStep,
+                        request.RequestSequence,
+                        wrongIdentity)));
+        Assert.Equal(
+            PrivateOriginalMapEntity142AcknowledgementFailureCode.ReferenceMismatch,
+            wrongEvent.Diagnostic.Code);
+        Assert.Same(pending, wrongEvent.Snapshot);
+
+        PrivateOriginalMapEntity142AcknowledgementApplied acknowledged =
+            Assert.IsType<PrivateOriginalMapEntity142AcknowledgementApplied>(
+                session.AcknowledgePrivateOriginalMapEntity142(
+                    new AcknowledgePrivateOriginalMapEntity142Command(
+                        pending.SimulationStep,
+                        request.RequestSequence,
+                        request.EventIdentity)));
+        Assert.True(acknowledged.Snapshot.Entity142!.Flag261Set);
+        Assert.True(acknowledged.Snapshot.Entity142.Flag602Set);
+        Assert.Null(acknowledged.Snapshot.PendingEntity142);
+        Assert.Same(acknowledged.Receipt, acknowledged.Snapshot.LastEntity142Acknowledgement);
+        Assert.Same(request, acknowledged.Receipt.Request);
+        Assert.Equal(OriginalMapRuntimeAdmission.Entity142FirstInteractionFlag261,
+            acknowledged.Receipt.FirstInteractionFlag261);
+        Assert.Equal(OriginalMapRuntimeAdmission.Entity142CompletionFlag602,
+            acknowledged.Receipt.CompletionFlag602);
+
+        PrivateOriginalMapEntity142AcknowledgementRejected duplicate =
+            Assert.IsType<PrivateOriginalMapEntity142AcknowledgementRejected>(
+                session.AcknowledgePrivateOriginalMapEntity142(
+                    new AcknowledgePrivateOriginalMapEntity142Command(
+                        acknowledged.Snapshot.SimulationStep,
+                        request.RequestSequence,
+                        request.EventIdentity)));
+        Assert.Equal(
+            PrivateOriginalMapEntity142AcknowledgementFailureCode.NoPendingRequest,
+            duplicate.Diagnostic.Code);
+        Assert.Same(acknowledged.Snapshot, duplicate.Snapshot);
+
+        PrivateOriginalMapEntity142InteractionRequested repeat =
+            Assert.IsType<PrivateOriginalMapEntity142InteractionRequested>(
+                session.RequestPrivateOriginalMapInteraction(
+                    session.PrivateOriginalMapSnapshot.SimulationStep));
+        Assert.True(repeat.Applied.Request.Repeated);
+        Assert.Equal(2, repeat.Applied.Request.RequestSequence);
+        Assert.Equal(OriginalMapRuntimeAdmission.Entity142RepeatTextIds,
+            repeat.Applied.Request.TextIds);
+        Assert.Equal(OriginalMapRuntimeAdmission.Entity142RepeatStages,
+            repeat.Applied.Request.Stages);
+        PrivateOriginalMapEntity142AcknowledgementApplied repeated =
+            Assert.IsType<PrivateOriginalMapEntity142AcknowledgementApplied>(
+                session.AcknowledgePrivateOriginalMapEntity142(
+                    new AcknowledgePrivateOriginalMapEntity142Command(
+                        repeat.Applied.Snapshot.SimulationStep,
+                        repeat.Applied.Request.RequestSequence,
+                        repeat.Applied.Request.EventIdentity)));
+        Assert.True(repeated.Snapshot.Entity142!.Flag261Set);
+        Assert.True(repeated.Snapshot.Entity142.Flag602Set);
+        Assert.Equal(2, repeated.Snapshot.Entity142.LastAcknowledgedRequestSequence);
+    }
+
+    [Fact]
+    public void Entity142OccupiesItsTileAndOtherMutationClearsPendingWithoutLosingFlags()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        MoveToEntity142Interaction(session);
+        PrivateOriginalMapSessionSnapshot beforeBlock = session.PrivateOriginalMapSnapshot;
+        PrivateOriginalMapMoveApplied blocked = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByOccupiedEntity,
+            blocked.Traversal.Outcome);
+        Assert.Equal(beforeBlock.PlayerPosition, blocked.Snapshot.PlayerPosition);
+
+        PrivateOriginalMapEntity142RequestApplied requested =
+            Assert.IsType<PrivateOriginalMapEntity142RequestApplied>(
+                session.RequestPrivateOriginalMapEntity142(
+                    new RequestPrivateOriginalMapEntity142Command(
+                        session.PrivateOriginalMapSnapshot.SimulationStep)));
+        PrivateOriginalMapMoveApplied moved = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.Null(moved.Snapshot.PendingEntity142);
+        Assert.Null(moved.Snapshot.LastEntity142Request);
+        Assert.False(moved.Snapshot.Entity142!.Flag261Set);
+
+        PrivateOriginalMapEntity142AcknowledgementRejected stale =
+            Assert.IsType<PrivateOriginalMapEntity142AcknowledgementRejected>(
+                session.AcknowledgePrivateOriginalMapEntity142(
+                    new AcknowledgePrivateOriginalMapEntity142Command(
+                        requested.Snapshot.SimulationStep,
+                        requested.Request.RequestSequence,
+                        requested.Request.EventIdentity)));
+        Assert.Equal(
+            PrivateOriginalMapEntity142AcknowledgementFailureCode.StaleSimulationStep,
+            stale.Diagnostic.Code);
+        Assert.Same(moved.Snapshot, stale.Snapshot);
+    }
+
+    [Fact]
+    public void Entity142CompletionPersistsButUnsupportedFlag602SarahBranchDoesNotRun()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        MoveToEntity142Interaction(session);
+        PrivateOriginalMapEntity142RequestApplied requested =
+            Assert.IsType<PrivateOriginalMapEntity142RequestApplied>(
+                session.RequestPrivateOriginalMapEntity142(
+                    new RequestPrivateOriginalMapEntity142Command(
+                        session.PrivateOriginalMapSnapshot.SimulationStep)));
+        _ = Assert.IsType<PrivateOriginalMapEntity142AcknowledgementApplied>(
+            session.AcknowledgePrivateOriginalMapEntity142(
+                new AcknowledgePrivateOriginalMapEntity142Command(
+                    requested.Snapshot.SimulationStep,
+                    requested.Request.RequestSequence,
+                    requested.Request.EventIdentity)));
+
+        Move(session, ExplorationDirection.North, 1);
+        Move(session, ExplorationDirection.West, 13);
+        Move(session, ExplorationDirection.North, 7);
+        PrivateOriginalMapPlayerLocomotionStarted sarahFacing =
+            session.BeginPrivateOriginalMapPlayerLocomotion(
+                new MoveExplorationCommand(ExplorationDirection.North));
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByOccupiedEntity,
+            sarahFacing.Move.Traversal.Outcome);
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+        Assert.Equal(new MapPosition(42, 9), before.PlayerPosition);
+        Assert.True(before.Entity142!.Flag602Set);
+        PrivateOriginalMapSarahInteractionSelectionRejected rejected =
+            Assert.IsType<PrivateOriginalMapSarahInteractionSelectionRejected>(
+                session.RequestPrivateOriginalMapInteraction(before.SimulationStep));
+        Assert.Equal(
+            PrivateOriginalMapSarahInteractionFailureCode.UnsupportedLaterBranchState,
+            rejected.Rejected.Diagnostic.Code);
+        Assert.Same(before, rejected.Rejected.Snapshot);
+
+        GameSession restarted = Start(Definition(EmptyWords()));
+        Assert.False(restarted.PrivateOriginalMapSnapshot.Entity142!.Flag261Set);
+        Assert.False(restarted.PrivateOriginalMapSnapshot.Entity142.Flag602Set);
+        Assert.Null(restarted.PrivateOriginalMapSnapshot.PendingEntity142);
+    }
+
+    [Fact]
     public void SarahReinteractionIsTextOnlyWhileWarpPreservesAndRestartClearsTheRoute()
     {
         GameSession session = Start(Definition(EmptyWords()));
@@ -1683,6 +1888,56 @@ public sealed class OriginalMapGameSessionTests
         Assert.Equal(new MapPosition(42, 9), session.PrivateOriginalMapSnapshot.PlayerPosition);
     }
 
+    [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactEntity142Projection()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), omitEntity142: true),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        OriginalMapEntity142Definition accepted = AcceptedEntity142(map);
+        OriginalMapEntity142Definition wrongFlag = new(
+            accepted.Identity,
+            accepted.ActorSourceRecord,
+            accepted.LogicalActorId,
+            accepted.PhysicalActorSlot,
+            accepted.ActorPosition,
+            accepted.ActorOpaqueFacing,
+            accepted.PlayerInteractionPosition,
+            accepted.PlayerInteractionOpaqueFacing,
+            accepted.FirstInteractionFlag261 + 1,
+            accepted.CompletionFlag602,
+            accepted.FirstInteractionTextIds,
+            accepted.RepeatInteractionTextIds,
+            accepted.FirstInteractionStages,
+            accepted.RepeatInteractionStages);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), entity142: wrongFlag),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedEntity142(
+            accepted,
+            AcceptedEntityPopulation(map),
+            AcceptedAreaCatalog().Traversal,
+            Definition(EmptyWords()).WorkingLayout));
+    }
+
+    private static void MoveToEntity142Interaction(GameSession session)
+    {
+        Move(session, ExplorationDirection.South, 14);
+        Move(session, ExplorationDirection.West, 1);
+        Assert.Equal(new MapPosition(55, 17),
+            session.PrivateOriginalMapSnapshot.PlayerPosition);
+        PrivateOriginalMapPlayerLocomotionStarted facing =
+            session.BeginPrivateOriginalMapPlayerLocomotion(
+                new MoveExplorationCommand(ExplorationDirection.West));
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByOccupiedEntity,
+            facing.Move.Traversal.Outcome);
+        Assert.Equal(OriginalMapRuntimeAdmission.Entity142PlayerInteractionOpaqueFacing,
+            facing.Animation.OpaqueFacing);
+    }
+
     private static void Move(
         GameSession session,
         ExplorationDirection direction,
@@ -1719,7 +1974,9 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapZone601Definition? zone601 = null,
         bool omitZone601 = false,
         OriginalMapSarahDefinition? sarah = null,
-        bool omitSarah = false)
+        bool omitSarah = false,
+        OriginalMapEntity142Definition? entity142 = null,
+        bool omitEntity142 = false)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -1772,7 +2029,10 @@ public sealed class OriginalMapGameSessionTests
                 : zone601 ?? AcceptedZone601(map),
             omitSarah || entityPopulation is not null
                 ? null
-                : sarah ?? AcceptedSarah(map));
+                : sarah ?? AcceptedSarah(map),
+            omitEntity142 || entityPopulation is not null
+                ? null
+                : entity142 ?? AcceptedEntity142(map));
     }
 
     private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
@@ -1932,6 +2192,36 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.SarahFirstStages,
             OriginalMapRuntimeAdmission.SarahRepeatStages);
 
+    private static OriginalMapEntity142Definition AcceptedEntity142(MapId map) =>
+        new(
+            new OriginalMapEntity142EventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.Entity142EventResourceId,
+                OriginalMapRuntimeAdmission.Entity142EventRecordOrdinal,
+                OriginalMapRuntimeAdmission.Entity142EventTargetIdentity,
+                OriginalMapRuntimeAdmission.Entity142EventOpaqueFacing),
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.Entity142LogicalActorId,
+            OriginalMapRuntimeAdmission.Entity142PhysicalActorSlot,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Entity142ActorX,
+                OriginalMapRuntimeAdmission.Entity142ActorY),
+            OriginalMapRuntimeAdmission.Entity142ActorOpaqueFacing,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Entity142PlayerInteractionX,
+                OriginalMapRuntimeAdmission.Entity142PlayerInteractionY),
+            OriginalMapRuntimeAdmission.Entity142PlayerInteractionOpaqueFacing,
+            OriginalMapRuntimeAdmission.Entity142FirstInteractionFlag261,
+            OriginalMapRuntimeAdmission.Entity142CompletionFlag602,
+            OriginalMapRuntimeAdmission.Entity142FirstTextIds,
+            OriginalMapRuntimeAdmission.Entity142RepeatTextIds,
+            OriginalMapRuntimeAdmission.Entity142FirstStages,
+            OriginalMapRuntimeAdmission.Entity142RepeatStages);
+
     private static OriginalMapEntityPopulation AcceptedEntityPopulation(MapId map) =>
         ProjectAuthoredEntityPopulation(
             map,
@@ -1954,25 +2244,39 @@ public sealed class OriginalMapGameSessionTests
                     ? (byte)OriginalMapRuntimeAdmission.SarahActorInitialX
                     : index == 2
                     ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialX
+                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
+                    ? (byte)OriginalMapRuntimeAdmission.Entity142ActorX
                     : checked((byte)index),
                 rawY: index == 0
                     ? (byte)OriginalMapRuntimeAdmission.SarahActorInitialY
                     : index == 2
                     ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialY
+                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
+                    ? (byte)OriginalMapRuntimeAdmission.Entity142ActorY
                     : (byte)0,
                 opaqueFacing: index == 0
                     ? OriginalMapRuntimeAdmission.SarahActorInitialOpaqueFacing
                     : index == 2
                     ? OriginalMapRuntimeAdmission.Zone601ActorInitialOpaqueFacing
+                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
+                    ? OriginalMapRuntimeAdmission.Entity142ActorOpaqueFacing
                     : (byte)3,
-                mapSprite: index == 2 ? (byte)195 : checked((byte)(index + 1)),
+                mapSprite: index == 2
+                    ? (byte)195
+                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
+                    ? OriginalMapRuntimeAdmission.Entity142ActorMapSprite
+                    : checked((byte)(index + 1)),
                 index == 0 && mutateFirstTail
                     ? [1, 0, 0, 0]
                     : index == 0
                         ? [0, 4, 0x60, 0xCE]
                     : index == 2
                         ? [0, 4, 97, 2]
-                    : !allFixed && index >= OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount
+                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
+                        ? [0, 4, 0x60, 0xCE]
+                    : !allFixed && (index ==
+                            OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount - 1 ||
+                        index > OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1)
                         ? [0xFF, checked((byte)index), 0, 1]
                         : [0, 0, 0, 0]))
             .ToArray();

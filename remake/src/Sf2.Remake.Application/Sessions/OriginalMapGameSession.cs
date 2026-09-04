@@ -23,7 +23,12 @@ public sealed record PrivateOriginalMapSessionSnapshot
         PrivateOriginalMapZone601State? zone601 = null,
         PrivateOriginalMapZone601Receipt? lastZone601 = null,
         PrivateOriginalMapSarahState? sarah = null,
-        PrivateOriginalMapSarahReceipt? lastSarah = null)
+        PrivateOriginalMapSarahReceipt? lastSarah = null,
+        PrivateOriginalMapEntity142State? entity142 = null,
+        PrivateOriginalMapEntity142Request? pendingEntity142 = null,
+        PrivateOriginalMapEntity142Request? lastEntity142Request = null,
+        PrivateOriginalMapEntity142AcknowledgementReceipt?
+            lastEntity142Acknowledgement = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -50,6 +55,31 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 throw new ArgumentException(
                     "Zone 601 state must match its admitted definition.",
                     nameof(zone601));
+            }
+        }
+
+        PrivateOriginalMapEntity142State? admittedEntity142 = entity142;
+        if (definition.Entity142 is null)
+        {
+            if (entity142 is not null ||
+                pendingEntity142 is not null ||
+                lastEntity142Request is not null ||
+                lastEntity142Acknowledgement is not null)
+            {
+                throw new ArgumentException(
+                    "Entity 142 state requires its admitted definition.",
+                    nameof(entity142));
+            }
+        }
+        else
+        {
+            admittedEntity142 ??=
+                PrivateOriginalMapEntity142State.Ready(definition.Entity142);
+            if (!admittedEntity142.Matches(definition.Entity142))
+            {
+                throw new ArgumentException(
+                    "Entity 142 state must match its admitted definition.",
+                    nameof(entity142));
             }
         }
 
@@ -87,7 +117,9 @@ public sealed record PrivateOriginalMapSessionSnapshot
             (lastTraversal is null ? 0 : 1) +
             (lastLayoutMutation is null ? 0 : 1) +
             (lastSameMapWarp is null ? 0 : 1) +
-            (lastSarah is null ? 0 : 1);
+            (lastSarah is null ? 0 : 1) +
+            (lastEntity142Request is null ? 0 : 1) +
+            (lastEntity142Acknowledgement is null ? 0 : 1);
         if (simulationStep == 0 &&
             (completedOperations != 0 ||
                 controlledStepCopyApplied ||
@@ -97,6 +129,10 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 admittedZone601?.Flag601Set == true ||
                 lastSarah is not null ||
                 admittedSarah?.TemporaryRouteFlag256Set == true ||
+                pendingEntity142 is not null ||
+                lastEntity142Request is not null ||
+                lastEntity142Acknowledgement is not null ||
+                admittedEntity142?.Flag261Set == true ||
                 admittedRoofLifecycle is not MapBlockCopyLifecycleInactiveState))
         {
             throw new ArgumentException(
@@ -238,6 +274,50 @@ public sealed record PrivateOriginalMapSessionSnapshot
             }
         }
 
+        if (pendingEntity142 is not null)
+        {
+            OriginalMapEntity142Definition admitted = definition.Entity142 ??
+                throw new ArgumentException(
+                    "A pending Entity 142 request requires its admitted definition.",
+                    nameof(pendingEntity142));
+            if (admittedEntity142 is null ||
+                !pendingEntity142.Matches(admitted) ||
+                !ReferenceEquals(pendingEntity142.StateBefore, admittedEntity142) ||
+                pendingEntity142.SimulationStep != simulationStep ||
+                !ReferenceEquals(lastEntity142Request, pendingEntity142) ||
+                lastEntity142Acknowledgement is not null)
+            {
+                throw new ArgumentException(
+                    "The pending Entity 142 request must match the exact snapshot state and request receipt.",
+                    nameof(pendingEntity142));
+            }
+        }
+        else if (lastEntity142Request is not null)
+        {
+            throw new ArgumentException(
+                "The last Entity 142 request must remain the exact pending request.",
+                nameof(lastEntity142Request));
+        }
+
+        if (lastEntity142Acknowledgement is not null)
+        {
+            OriginalMapEntity142Definition admitted = definition.Entity142 ??
+                throw new ArgumentException(
+                    "An Entity 142 acknowledgement requires its admitted definition.",
+                    nameof(lastEntity142Acknowledgement));
+            if (admittedEntity142 is null ||
+                !lastEntity142Acknowledgement.Matches(admitted) ||
+                !ReferenceEquals(lastEntity142Acknowledgement.After, admittedEntity142) ||
+                lastEntity142Acknowledgement.SimulationStep != simulationStep ||
+                pendingEntity142 is not null ||
+                lastEntity142Request is not null)
+            {
+                throw new ArgumentException(
+                    "The Entity 142 acknowledgement must match the exact persistent state and snapshot step.",
+                    nameof(lastEntity142Acknowledgement));
+            }
+        }
+
         if (lastLayoutMutation is not null &&
             (!controlledStepCopyApplied || lastLayoutMutation.SimulationStep != simulationStep))
         {
@@ -364,6 +444,10 @@ public sealed record PrivateOriginalMapSessionSnapshot
         LastZone601 = lastZone601;
         Sarah = admittedSarah;
         LastSarah = lastSarah;
+        Entity142 = admittedEntity142;
+        PendingEntity142 = pendingEntity142;
+        LastEntity142Request = lastEntity142Request;
+        LastEntity142Acknowledgement = lastEntity142Acknowledgement;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -420,6 +504,16 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public PrivateOriginalMapSarahState? Sarah { get; }
 
     public PrivateOriginalMapSarahReceipt? LastSarah { get; }
+
+    public PrivateOriginalMapEntity142State? Entity142 { get; }
+
+    public PrivateOriginalMapEntity142Request? PendingEntity142 { get; }
+
+    public PrivateOriginalMapEntity142Request? LastEntity142Request { get; }
+
+    public PrivateOriginalMapEntity142AcknowledgementReceipt?
+        LastEntity142Acknowledgement
+    { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -558,7 +652,8 @@ public sealed partial class GameSession
             current.PlayerPosition,
             command.Direction);
         if (candidate is MapPosition occupiedPosition &&
-            occupiedPosition == current.Sarah?.ActorPosition)
+            (occupiedPosition == current.Sarah?.ActorPosition ||
+                occupiedPosition == current.Entity142?.ActorPosition))
         {
             ushort sourceWord = current.WorkingLayout[
                 current.PlayerPosition.X,
@@ -591,7 +686,11 @@ public sealed partial class GameSession
                 current.Zone601,
                 lastZone601: null,
                 current.Sarah,
-                lastSarah: null);
+                lastSarah: null,
+                current.Entity142,
+                pendingEntity142: null,
+                lastEntity142Request: null,
+                lastEntity142Acknowledgement: null);
             _privateOriginalMapSnapshot = blocked;
             return new PrivateOriginalMapMoveApplied(blocked, occupied);
         }
@@ -618,7 +717,11 @@ public sealed partial class GameSession
             current.Zone601,
             lastZone601: null,
             current.Sarah,
-            lastSarah: null);
+            lastSarah: null,
+            current.Entity142,
+            pendingEntity142: null,
+            lastEntity142Request: null,
+            lastEntity142Acknowledgement: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -696,7 +799,11 @@ public sealed partial class GameSession
             current.Zone601,
             lastZone601: null,
             current.Sarah,
-            lastSarah: null);
+            lastSarah: null,
+            current.Entity142,
+            pendingEntity142: null,
+            lastEntity142Request: null,
+            lastEntity142Acknowledgement: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -949,6 +1056,18 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.sarah",
                 "The admitted definition does not retain the exact bounded Map 3 Sarah route projection.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedEntity142(
+                definition.Entity142,
+                definition.EntityPopulation,
+                definition.Traversal,
+                definition.WorkingLayout))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.entity142",
+                "The admitted definition does not retain the exact bounded Map 3 Entity 142 acknowledgement projection.");
         }
 
         OriginalMapControlledAdmission controlled = definition.ControlledAdmission;

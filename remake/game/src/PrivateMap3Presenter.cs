@@ -130,7 +130,21 @@ internal sealed record PrivateMap3PresentationPlan(
                 $"({sarah.ActorPosition.X}, {sarah.ActorPosition.Y}), facing " +
                 $"{sarah.ActorOpaqueFacing}; temporary route flag " +
                 $"{(sarah.TemporaryRouteFlag256Set ? "set" : "clear")}; " +
-                "F semantic interaction";
+                "F semantic interaction request";
+        }
+
+        PrivateOriginalMapEntity142State? entity142 = snapshot.Entity142;
+        if (entity142 is not null)
+        {
+            string pending = snapshot.PendingEntity142 is { } request
+                ? $"pending request {request.RequestSequence}"
+                : "no pending request";
+            status +=
+                $"  |  Entity142 logical {entity142.LogicalActorId}/slot " +
+                $"{entity142.PhysicalActorSlot} at ({entity142.ActorPosition.X}, " +
+                $"{entity142.ActorPosition.Y}), facing {entity142.ActorOpaqueFacing}; " +
+                $"flags261/602 {(entity142.Flag261Set ? "set" : "clear")}; " +
+                $"{pending}; F request / G acknowledge";
         }
 
         return status;
