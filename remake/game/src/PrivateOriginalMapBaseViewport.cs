@@ -944,6 +944,142 @@ internal sealed record PrivateMap3Entity142DiagnosticProjection(
     }
 }
 
+internal enum PrivateMap3LiveRouteActorGlyphKind
+{
+    SarahDiamond,
+    Zone601Square,
+}
+
+internal sealed record PrivateMap3LiveRouteActorGlyph(
+    PrivateMap3LiveRouteActorGlyphKind Kind,
+    int LogicalActorId,
+    OriginalMapEntityRecordIdentity SourceRecord,
+    MapPosition Position,
+    byte OpaqueFacing,
+    Rect2 DestinationRect);
+
+internal sealed class PrivateMap3LiveRouteActorGlyphProjection
+{
+    internal const string Capability =
+        "private-local-map3-live-route-actor-glyphs-v1";
+    internal const string Policy =
+        "project-authored-session-owned-route-actor-glyphs-v1";
+    internal const float GlyphSize = 14;
+    internal const float GlyphInset = 5;
+
+    private readonly ReadOnlyCollection<PrivateMap3LiveRouteActorGlyph> _actors;
+
+    private PrivateMap3LiveRouteActorGlyphProjection(
+        IEnumerable<PrivateMap3LiveRouteActorGlyph> actors)
+    {
+        ArgumentNullException.ThrowIfNull(actors);
+        PrivateMap3LiveRouteActorGlyph[] copied = [.. actors];
+        if (copied.Length == 0 ||
+            copied.Any(actor => actor is null) ||
+            copied.Select(actor => actor.Kind).Distinct().Count() != copied.Length ||
+            copied.Select(actor => actor.SourceRecord).Distinct().Count() != copied.Length)
+        {
+            throw new ArgumentException(
+                "Live route-actor glyphs require distinct typed actors and source records.",
+                nameof(actors));
+        }
+
+        _actors = Array.AsReadOnly(copied);
+    }
+
+    internal IReadOnlyList<PrivateMap3LiveRouteActorGlyph> Actors => _actors;
+
+    internal static bool TryCreate(
+        PrivateOriginalMapSessionSnapshot snapshot,
+        PrivateOriginalMapBaseViewProjection baseProjection,
+        out PrivateMap3LiveRouteActorGlyphProjection? projection)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(baseProjection);
+        projection = null;
+        if (baseProjection.StaticOverlayDiagnostic)
+        {
+            return true;
+        }
+
+        if (baseProjection.Map != snapshot.Map)
+        {
+            return false;
+        }
+
+        List<PrivateMap3LiveRouteActorGlyph> actors = [];
+        if (snapshot.Sarah is { } sarah)
+        {
+            actors.Add(Create(
+                PrivateMap3LiveRouteActorGlyphKind.SarahDiamond,
+                sarah.LogicalActorId,
+                sarah.ActorSourceRecord,
+                sarah.ActorPosition,
+                sarah.ActorOpaqueFacing,
+                baseProjection));
+        }
+
+        if (snapshot.Zone601 is { } zone601)
+        {
+            actors.Add(Create(
+                PrivateMap3LiveRouteActorGlyphKind.Zone601Square,
+                zone601.LogicalActorId,
+                zone601.ActorSourceRecord,
+                zone601.ActorPosition,
+                zone601.ActorOpaqueFacing,
+                baseProjection));
+        }
+
+        if (actors.Count > 0)
+        {
+            projection = new PrivateMap3LiveRouteActorGlyphProjection(actors);
+        }
+
+        return true;
+    }
+
+    private static PrivateMap3LiveRouteActorGlyph Create(
+        PrivateMap3LiveRouteActorGlyphKind kind,
+        int logicalActorId,
+        OriginalMapEntityRecordIdentity sourceRecord,
+        MapPosition position,
+        byte opaqueFacing,
+        PrivateOriginalMapBaseViewProjection baseProjection)
+    {
+        if (!Enum.IsDefined(kind))
+        {
+            throw new ArgumentOutOfRangeException(nameof(kind));
+        }
+
+        ArgumentOutOfRangeException.ThrowIfNegative(logicalActorId);
+        ArgumentNullException.ThrowIfNull(sourceRecord);
+        ArgumentNullException.ThrowIfNull(position);
+        if (opaqueFacing > 3)
+        {
+            throw new ArgumentOutOfRangeException(nameof(opaqueFacing));
+        }
+
+        int topLeftPixelX = baseProjection.Camera?.TopLeftPixelX ?? checked(
+            baseProjection.OriginX * PrivateOriginalMapBaseViewProjection.BlockPixelSize);
+        int topLeftPixelY = baseProjection.Camera?.TopLeftPixelY ?? checked(
+            baseProjection.OriginY * PrivateOriginalMapBaseViewProjection.BlockPixelSize);
+        Rect2 destination = new(
+            new Vector2(
+                checked(position.X * PrivateOriginalMapBaseViewProjection.BlockPixelSize) -
+                    topLeftPixelX + GlyphInset,
+                checked(position.Y * PrivateOriginalMapBaseViewProjection.BlockPixelSize) -
+                    topLeftPixelY + GlyphInset),
+            new Vector2(GlyphSize, GlyphSize));
+        return new(
+            kind,
+            logicalActorId,
+            sourceRecord,
+            position,
+            opaqueFacing,
+            destination);
+    }
+}
+
 internal sealed record PrivateMap3Entity142DiagnosticAnimationState
 {
     internal const string Capability =
@@ -978,6 +1114,10 @@ internal sealed record PrivateMap3Entity142DiagnosticAnimationState
 public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 {
     private static readonly Color PlayerColor = new("ffd166");
+    private static readonly Color SarahGlyphColor = new("56cfe1");
+    private static readonly Color Zone601GlyphColor = new("ff70a6");
+    private static readonly Color RouteActorOutlineColor = new("111827");
+    private static readonly Color RouteActorFacingColor = new("fff3b0");
 
     internal static readonly Rect2 LogicalTextureRect = new(
         Vector2.Zero,
@@ -1085,6 +1225,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     private int _playerLocomotionScale;
     private ImageTexture[]? _entity142DiagnosticTextures;
     private PrivateMap3Entity142DiagnosticProjection? _entity142DiagnosticProjection;
+    private PrivateMap3LiveRouteActorGlyphProjection? _liveRouteActorProjection;
     private PrivateMap3Entity142DiagnosticAnimationState _entity142DiagnosticAnimation =
         PrivateMap3Entity142DiagnosticAnimationState.Initial;
     private string? _entity142DiagnosticAssetId;
@@ -1130,6 +1271,9 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 
     internal PrivateMap3Entity142DiagnosticProjection? Entity142DiagnosticProjection =>
         _entity142DiagnosticProjection;
+
+    internal PrivateMap3LiveRouteActorGlyphProjection? LiveRouteActorProjection =>
+        _liveRouteActorProjection;
 
     internal PrivateMap3Entity142DiagnosticAnimationState Entity142DiagnosticAnimation =>
         _entity142DiagnosticAnimation;
@@ -1469,6 +1613,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
             _projection.RgbaBytes.ToArray());
         _texture = ImageTexture.CreateFromImage(image);
         image.Dispose();
+        ProjectLiveRouteActors(snapshot);
         ProjectEntity142Diagnostic(snapshot);
         QueueRedraw();
     }
@@ -1526,6 +1671,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
             _projection.RgbaBytes.ToArray());
         _texture = ImageTexture.CreateFromImage(image);
         image.Dispose();
+        ProjectLiveRouteActors(snapshot);
         ProjectEntity142Diagnostic(snapshot);
         QueueRedraw();
     }
@@ -1538,6 +1684,16 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
 
         DrawTextureRect(_texture, LogicalTextureRect, tile: false);
+        if (_projection.ShowsPlayerMarker && _liveRouteActorProjection is not null)
+        {
+            foreach (PrivateMap3LiveRouteActorGlyph actor in
+                _liveRouteActorProjection.Actors.Where(actor =>
+                    actor.DestinationRect.Intersects(LogicalTextureRect)))
+            {
+                DrawLiveRouteActor(actor);
+            }
+        }
+
         if (_projection.ShowsPlayerMarker &&
             _entity142DiagnosticTextures is not null &&
             _entity142DiagnosticProjection is not null &&
@@ -1622,6 +1778,61 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                 "The private Map 3 entity-142 diagnostic cannot project this snapshot.",
                 nameof(snapshot));
         }
+    }
+
+    private void ProjectLiveRouteActors(PrivateOriginalMapSessionSnapshot snapshot)
+    {
+        if (_projection is null ||
+            !PrivateMap3LiveRouteActorGlyphProjection.TryCreate(
+                snapshot,
+                _projection,
+                out _liveRouteActorProjection))
+        {
+            throw new ArgumentException(
+                "The private Map 3 live route actors cannot project this snapshot.",
+                nameof(snapshot));
+        }
+    }
+
+    private void DrawLiveRouteActor(PrivateMap3LiveRouteActorGlyph actor)
+    {
+        Rect2 rectangle = actor.DestinationRect;
+        Vector2 center = rectangle.GetCenter();
+        float half = rectangle.Size.X / 2;
+        if (actor.Kind == PrivateMap3LiveRouteActorGlyphKind.SarahDiamond)
+        {
+            Vector2[] points =
+            [
+                center + new Vector2(0, -half),
+                center + new Vector2(half, 0),
+                center + new Vector2(0, half),
+                center + new Vector2(-half, 0),
+            ];
+            DrawColoredPolygon(points, SarahGlyphColor);
+            DrawPolyline([.. points, points[0]], RouteActorOutlineColor, width: 2);
+        }
+        else
+        {
+            DrawRect(rectangle, Zone601GlyphColor);
+            DrawRect(rectangle, RouteActorOutlineColor, filled: false, width: 2);
+            DrawLine(rectangle.Position, rectangle.End, RouteActorOutlineColor, width: 2);
+            DrawLine(
+                new Vector2(rectangle.End.X, rectangle.Position.Y),
+                new Vector2(rectangle.Position.X, rectangle.End.Y),
+                RouteActorOutlineColor,
+                width: 2);
+        }
+
+        Vector2 facing = actor.OpaqueFacing switch
+        {
+            0 => Vector2.Right,
+            1 => Vector2.Up,
+            2 => Vector2.Left,
+            3 => Vector2.Down,
+            _ => throw new InvalidOperationException(
+                "A live route actor has an unknown opaque facing."),
+        };
+        DrawLine(center, center + (facing * 5), RouteActorFacingColor, width: 2);
     }
 
     private static bool TryDecodeLocomotionSheet(
