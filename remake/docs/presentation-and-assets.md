@@ -308,12 +308,17 @@ buckets using the same project-authored transparent-index and channel-expansion 
 reviewed local transaction retains all five source/master/runtime/manifest objects. The explicit
 base-atlas composition now resolves its runtime bucket through the existing Content reader and mounts
 it only after the immutable private snapshot retains the exact `ms_map3_Entities` record 17 population.
-Godot applies `project-authored-half0-diagnostic-idle-v1`: it crops the source-order left half, places
-that one diagnostic at the accepted record position relative to the current project-authored camera,
-and omits it from the static-overlay diagnostic. Logical entity 142 and physical slot 17 remain this
-exact route-bounded binding, not a general entity model. Which half was visible at interaction time,
-the exact original animation counter/cadence, idle meaning, visibility, lifecycle, walking, occupancy,
-collision, event behavior, and all-entity presentation remain **Unknown**.
+Godot applies `project-authored-half0-diagnostic-idle-v1` as the fresh-bind frame and places the exact
+record relative to the current project-authored camera. The bounded
+`project-authored-two-half-diagnostic-cadence-v1` adapter state then retains both cropped source-order
+halves and cycles `0 -> 1 -> 0`, holding each half for exactly 30 fixed Godot physics callbacks. It
+ignores callback `delta`, wall time, `SimulationStep`, and gameplay state; ordinary snapshot, movement,
+and camera reprojection preserve the phase, while a fresh exact bind resets it. Static-overlay mode
+projects, advances, and draws no entity. Logical entity 142 and physical slot 17 remain this exact
+route-bounded binding, not a general entity or animation model. Which half was visible at interaction
+time, the exact original animation counter/cadence, idle meaning, visibility and offscreen/pause
+behavior, lifecycle, walking, occupancy, collision, event behavior, and all-entity presentation remain
+**Unknown**.
 
 The accepted `sf2-map3-original-player-locomotion-animation-runtime-v1` owner closes the bounded
 controlled-player timing gap without turning either half into a universal idle pose. A sibling local
@@ -543,7 +548,7 @@ an admitted product font, Theme, original battle title, or presentation-fidelity
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
 | implemented world-family tooling prerequisite | fixed private Map 3 ROM/metadata roots; exact palette/slot selection; five-segment 128-by-320 source-crisp atlas; deterministic nearest 2x/4x ignored candidate; no implicit promotion or update |
 | implemented player-reference consumer | fixed private ROM root; exact controlled player, regular map-sprite, DOWN source-slot, no-mirror, and half-zero selection; bounded Basic decode; reviewed 24-by-24 `initial-reference-frame` master and nearest 2x/4x local transaction; exact Content mount and thin Godot logical-cell projection; no standing/idle, animation, or admission-visible claim |
-| implemented entity-reference tooling prerequisite and bounded consumer | fixed private ROM root plus accepted entity-142 fixture; exact record/slot/map-sprite/UP source; both decoded halves retained in source order as one reviewed 48-by-24 local sheet and nearest 2x/4x buckets; exact Content mount and Godot-only `project-authored-half0-diagnostic-idle-v1` selection for the one admitted record; no original selected-half/idle/counter/cadence/visibility/interaction semantics, lifecycle, all-entity renderer, or fidelity claim |
+| implemented entity-reference tooling prerequisite and bounded consumer | fixed private ROM root plus accepted entity-142 fixture; exact record/slot/map-sprite/UP source; both decoded halves retained in source order as one reviewed 48-by-24 local sheet and nearest 2x/4x buckets; exact Content mount, Godot-only half-zero fresh bind, and `project-authored-two-half-diagnostic-cadence-v1` viewport state holding each half for 30 fixed physics callbacks; no original selected-half/idle/counter/cadence/visibility/interaction semantics, lifecycle, all-entity renderer, or fidelity claim |
 | implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop after exact-nearest scale-block validation; no playable ROM/metadata reopen, source/master runtime input, PCK, or fidelity claim |
 | implemented modern camera consumer | Godot-only immutable focus projection from authoritative private snapshot plus Application locomotion offset; two logical pixels per accepted transition; column-6/row-3 centering with 64-by-64 map clamp; bounded sub-tile sampling shared by offline payload tests and the playable local atlas; static overlay remains fixed; no original camera/plane/parallax/autoscroll/VInt/final-pixel claim |
 | separate implementation decision | live resize bucket remount and fullscreen/monitor transition UX; platform safe-area integration; original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |

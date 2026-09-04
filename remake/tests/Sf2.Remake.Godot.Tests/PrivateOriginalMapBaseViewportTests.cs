@@ -139,7 +139,7 @@ public sealed class PrivateOriginalMapBaseViewportTests
     }
 
     [Fact]
-    public void Entity142DiagnosticUsesOnlyAcceptedRecord17AndProjectAuthoredHalfZero()
+    public void Entity142DiagnosticUsesOnlyAcceptedRecord17AndStartsFromProjectAuthoredHalfZero()
     {
         PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
             [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
@@ -170,12 +170,19 @@ public sealed class PrivateOriginalMapBaseViewportTests
         Assert.Equal(0, PrivateMap3Entity142DiagnosticProjection.SelectedSourceHalf);
         Assert.Equal(
             new global::Godot.Rect2I(0, 0, 48, 48),
-            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(2));
+            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(2, 0));
         Assert.Equal(
-            new global::Godot.Rect2I(0, 0, 96, 96),
-            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(4));
+            new global::Godot.Rect2I(48, 0, 48, 48),
+            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(2, 1));
+        Assert.Equal(
+            new global::Godot.Rect2I(96, 0, 96, 96),
+            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(4, 1));
         Assert.Throws<ArgumentOutOfRangeException>(() =>
-            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(1));
+            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(1, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(2, -1));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(2, 2));
         System.Reflection.MethodInfo? bind =
             typeof(PrivateOriginalMapBaseViewport).GetMethod(
                 "TryBindLocalEntity142Diagnostic",
@@ -190,6 +197,50 @@ public sealed class PrivateOriginalMapBaseViewportTests
                 typeof(PrivateLocalPresentationAssetMountDiagnostic).MakeByRefType(),
             },
             bind.GetParameters().Select(parameter => parameter.ParameterType));
+    }
+
+    [Fact]
+    public void Entity142DiagnosticAnimationUsesOnlyProjectAuthoredPhysicsTickCadence()
+    {
+        PrivateMap3Entity142DiagnosticAnimationState animation =
+            PrivateMap3Entity142DiagnosticAnimationState.Initial;
+
+        Assert.Equal(
+            "private-local-map3-entity142-two-half-diagnostic-animation-v1",
+            PrivateMap3Entity142DiagnosticAnimationState.Capability);
+        Assert.Equal(
+            "project-authored-two-half-diagnostic-cadence-v1",
+            PrivateMap3Entity142DiagnosticAnimationState.Policy);
+        Assert.Equal(30, PrivateMap3Entity142DiagnosticAnimationState.TicksPerHalf);
+        Assert.Equal(60, PrivateMap3Entity142DiagnosticAnimationState.FullCycleTicks);
+        Assert.Equal(0, animation.PresentationTick);
+        Assert.Equal(0, animation.SelectedSourceHalf);
+        Assert.Same(animation, animation.Advance(hasProjectedBinding: false));
+
+        for (int tick = 1; tick < 30; tick++)
+        {
+            animation = animation.Advance(hasProjectedBinding: true);
+            Assert.Equal(tick, animation.PresentationTick);
+            Assert.Equal(0, animation.SelectedSourceHalf);
+        }
+
+        animation = animation.Advance(hasProjectedBinding: true);
+        Assert.Equal(30, animation.PresentationTick);
+        Assert.Equal(1, animation.SelectedSourceHalf);
+
+        for (int tick = 31; tick < 60; tick++)
+        {
+            animation = animation.Advance(hasProjectedBinding: true);
+            Assert.Equal(tick, animation.PresentationTick);
+            Assert.Equal(1, animation.SelectedSourceHalf);
+        }
+
+        animation = animation.Advance(hasProjectedBinding: true);
+        Assert.Equal(PrivateMap3Entity142DiagnosticAnimationState.Initial, animation);
+        Assert.Equal(0, animation.SelectedSourceHalf);
+        Assert.DoesNotContain(
+            typeof(PrivateMap3Entity142DiagnosticAnimationState).GetProperties(),
+            property => property.CanWrite);
     }
 
     [Fact]

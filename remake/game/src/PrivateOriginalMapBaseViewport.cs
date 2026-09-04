@@ -881,6 +881,37 @@ internal sealed record PrivateMap3Entity142DiagnosticProjection(
     }
 }
 
+internal sealed record PrivateMap3Entity142DiagnosticAnimationState
+{
+    internal const string Capability =
+        "private-local-map3-entity142-two-half-diagnostic-animation-v1";
+    internal const string Policy = "project-authored-two-half-diagnostic-cadence-v1";
+    internal const int TicksPerHalf = 30;
+    internal const int FullCycleTicks = TicksPerHalf * 2;
+
+    private PrivateMap3Entity142DiagnosticAnimationState(int presentationTick)
+    {
+        if (presentationTick is < 0 or >= FullCycleTicks)
+        {
+            throw new ArgumentOutOfRangeException(nameof(presentationTick));
+        }
+
+        PresentationTick = presentationTick;
+    }
+
+    internal static PrivateMap3Entity142DiagnosticAnimationState Initial { get; } =
+        new(0);
+
+    internal int PresentationTick { get; }
+
+    internal int SelectedSourceHalf => PresentationTick / TicksPerHalf;
+
+    internal PrivateMap3Entity142DiagnosticAnimationState Advance(bool hasProjectedBinding) =>
+        hasProjectedBinding
+            ? new((PresentationTick + 1) % FullCycleTicks)
+            : this;
+}
+
 public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 {
     private static readonly Color PlayerColor = new("ffd166");
@@ -989,8 +1020,10 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         bool HorizontalMirror), ImageTexture>? _playerLocomotionTextures;
     private PrivateOriginalMapPlayerLocomotionSnapshot? _playerLocomotion;
     private int _playerLocomotionScale;
-    private ImageTexture? _entity142DiagnosticTexture;
+    private ImageTexture[]? _entity142DiagnosticTextures;
     private PrivateMap3Entity142DiagnosticProjection? _entity142DiagnosticProjection;
+    private PrivateMap3Entity142DiagnosticAnimationState _entity142DiagnosticAnimation =
+        PrivateMap3Entity142DiagnosticAnimationState.Initial;
     private string? _entity142DiagnosticAssetId;
     private int _entity142DiagnosticScale;
     private string? _entity142DiagnosticBucketDigest;
@@ -1030,10 +1063,13 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     internal PrivateOriginalMapPlayerLocomotionSnapshot? PlayerLocomotion =>
         _playerLocomotion;
 
-    internal bool UsesEntity142Diagnostic => _entity142DiagnosticTexture is not null;
+    internal bool UsesEntity142Diagnostic => _entity142DiagnosticTextures is not null;
 
     internal PrivateMap3Entity142DiagnosticProjection? Entity142DiagnosticProjection =>
         _entity142DiagnosticProjection;
+
+    internal PrivateMap3Entity142DiagnosticAnimationState Entity142DiagnosticAnimation =>
+        _entity142DiagnosticAnimation;
 
     internal string? Entity142DiagnosticAssetId => _entity142DiagnosticAssetId;
 
@@ -1051,17 +1087,25 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         TextureRepeatEnum repeat) =>
         filter == RequiredTextureFilter && repeat == RequiredTextureRepeat;
 
-    internal static Rect2I Entity142DiagnosticSourceRect(int scale)
+    internal static Rect2I Entity142DiagnosticSourceRect(int scale, int sourceHalf)
     {
         if (!LocalPresentationAssetPackAdmission.BucketScales.Contains(scale))
         {
             throw new ArgumentOutOfRangeException(nameof(scale));
         }
 
+        if (sourceHalf is < 0 or > 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(sourceHalf));
+        }
+
+        int frameWidth = checked(
+            (PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceLogicalWidth / 2) * scale);
+
         return new Rect2I(
+            checked(sourceHalf * frameWidth),
             0,
-            0,
-            checked((PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceLogicalWidth / 2) * scale),
+            frameWidth,
             checked(PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceLogicalHeight * scale));
     }
 
@@ -1283,9 +1327,16 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
             return false;
         }
 
-        Image frame = image.GetRegion(Entity142DiagnosticSourceRect(scale));
-        _entity142DiagnosticTexture = ImageTexture.CreateFromImage(frame);
-        frame.Dispose();
+        ImageTexture[] textures = new ImageTexture[2];
+        for (int sourceHalf = 0; sourceHalf < textures.Length; sourceHalf++)
+        {
+            Image frame = image.GetRegion(Entity142DiagnosticSourceRect(scale, sourceHalf));
+            textures[sourceHalf] = ImageTexture.CreateFromImage(frame);
+            frame.Dispose();
+        }
+
+        _entity142DiagnosticTextures = textures;
+        _entity142DiagnosticAnimation = PrivateMap3Entity142DiagnosticAnimationState.Initial;
         image.Dispose();
         _entity142DiagnosticAssetId = mount.Definition.AssetId;
         _entity142DiagnosticScale = scale;
@@ -1416,12 +1467,13 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 
         DrawTextureRect(_texture, LogicalTextureRect, tile: false);
         if (_projection.ShowsPlayerMarker &&
-            _entity142DiagnosticTexture is not null &&
+            _entity142DiagnosticTextures is not null &&
             _entity142DiagnosticProjection is not null &&
             _entity142DiagnosticProjection.DestinationRect.Intersects(LogicalTextureRect))
         {
             DrawTextureRect(
-                _entity142DiagnosticTexture,
+                _entity142DiagnosticTextures[
+                    _entity142DiagnosticAnimation.SelectedSourceHalf],
                 _entity142DiagnosticProjection.DestinationRect,
                 tile: false);
         }
@@ -1459,9 +1511,30 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
     }
 
+    public override void _PhysicsProcess(double delta)
+    {
+        _ = delta;
+        PrivateMap3Entity142DiagnosticAnimationState next =
+            _entity142DiagnosticAnimation.Advance(
+                _entity142DiagnosticTextures is not null &&
+                _entity142DiagnosticProjection is not null);
+        if (ReferenceEquals(next, _entity142DiagnosticAnimation))
+        {
+            return;
+        }
+
+        bool changedHalf =
+            next.SelectedSourceHalf != _entity142DiagnosticAnimation.SelectedSourceHalf;
+        _entity142DiagnosticAnimation = next;
+        if (changedHalf)
+        {
+            QueueRedraw();
+        }
+    }
+
     private void ProjectEntity142Diagnostic(PrivateOriginalMapSessionSnapshot snapshot)
     {
-        if (_entity142DiagnosticTexture is null)
+        if (_entity142DiagnosticTextures is null)
         {
             _entity142DiagnosticProjection = null;
             return;

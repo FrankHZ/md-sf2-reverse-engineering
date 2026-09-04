@@ -188,9 +188,13 @@ the lower-level viewport can still project it when no locomotion mount is suppli
 base-atlas composition mounts the three player two-half sheets through Application-owned locomotion
 state and fails closed if that mount is unavailable rather than falling back to the retained frame.
 It also mounts the entity-142 two-half reference and applies the explicitly project-authored
-`project-authored-half0-diagnostic-idle-v1` policy. That policy draws only source-order half zero for
-the exact accepted Map 3 `ms_map3_Entities` record 17 / logical entity 142 / physical slot 17 binding;
-it is a bounded diagnostic choice, not evidence that the half was visible or idle in the original.
+`project-authored-half0-diagnostic-idle-v1` policy as the fresh-bind frame for the exact accepted Map 3
+`ms_map3_Entities` record 17 / logical entity 142 / physical slot 17 binding. The viewport then applies
+`project-authored-two-half-diagnostic-cadence-v1`: presentation-only immutable state holds each
+source-order half for 30 fixed Godot physics callbacks and cycles `0 -> 1 -> 0`. Snapshot, movement,
+and camera reprojection preserve that phase; a fresh exact bind resets it to half zero. This bounded
+modern diagnostic choice ignores `delta`, wall time, `SimulationStep`, and gameplay state. It is not
+evidence that either half was visible or idle in the original, or that the original used this cadence.
 
 An explicit PrivateLocal launch may opt into HUD assets with `--private-hud-preview`, or into the
 atlas diagnostic with both `--private-map3-base-view` and `--private-map3-base-atlas`. Either asset
