@@ -57,6 +57,11 @@ public sealed class OriginalMapGameSessionTests
         Assert.False(started.Session.PrivateOriginalMapSnapshot.BowieDoorStepCopyApplied);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastNaturalStepCopy);
         Assert.False(started.Session.PrivateOriginalMapSnapshot.SchoolDoorStepCopyApplied);
+        Assert.Equal(
+            PrivateOriginalMapZone601LifecyclePhase.Ready,
+            started.Session.PrivateOriginalMapSnapshot.Zone601!.Phase);
+        Assert.False(started.Session.PrivateOriginalMapSnapshot.Zone601.Flag601Set);
+        Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastZone601);
         Assert.Same(
             started.Session.PrivateOriginalMapSnapshot.Definition.WorkingLayout,
             started.Session.PrivateOriginalMapSnapshot.WorkingLayout);
@@ -384,7 +389,7 @@ public sealed class OriginalMapGameSessionTests
             new MoveExplorationCommand(ExplorationDirection.West));
         _ = first.ApplyPrivateOriginalMap(
             new MoveExplorationCommand(ExplorationDirection.East));
-        for (int count = 0; count < 5; count++)
+        for (int count = 0; count < 4; count++)
         {
             _ = first.ApplyPrivateOriginalMap(
                 new MoveExplorationCommand(ExplorationDirection.South));
@@ -414,7 +419,7 @@ public sealed class OriginalMapGameSessionTests
             new MoveExplorationCommand(ExplorationDirection.East));
         _ = session.ApplyPrivateOriginalMap(
             new MoveExplorationCommand(ExplorationDirection.East));
-        for (int count = 0; count < 5; count++)
+        for (int count = 0; count < 4; count++)
         {
             _ = session.ApplyPrivateOriginalMap(
                 new MoveExplorationCommand(ExplorationDirection.South));
@@ -530,6 +535,103 @@ public sealed class OriginalMapGameSessionTests
                     MutationCommand(blocked.Snapshot)));
         Assert.True(diagnostic.Snapshot.ControlledStepCopyApplied);
         Assert.False(diagnostic.Snapshot.SchoolDoorStepCopyApplied);
+    }
+
+    [Fact]
+    public void FirstHouseWarpThenSlopeCandidateRunsZone601ExactlyOnceAndPersistsAcrossWarp()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        PrivateOriginalMapMoveApplied house = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        Assert.NotNull(house.SameMapWarp);
+        Assert.Equal(new MapPosition(3, 3), house.Snapshot.PlayerPosition);
+
+        PrivateOriginalMapMoveApplied intercepted = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, intercepted.Traversal.Outcome);
+        Assert.Equal(new MapPosition(3, 3), intercepted.Traversal.Source);
+        Assert.Equal(new MapPosition(4, 4), intercepted.Snapshot.PlayerPosition);
+        PrivateOriginalMapZone601Receipt receipt =
+            Assert.IsType<PrivateOriginalMapZone601Receipt>(intercepted.Zone601);
+        Assert.Same(receipt, intercepted.Snapshot.LastZone601);
+        Assert.Equal(OriginalMapRuntimeAdmission.Zone601RecordOrdinal,
+            receipt.EventIdentity.OneBasedRecordOrdinal);
+        Assert.Equal(OriginalMapRuntimeAdmission.Zone601TargetIdentity,
+            receipt.EventIdentity.TargetIdentity);
+        Assert.Equal(OriginalMapRuntimeAdmission.Zone601GateFlag, receipt.GateFlag);
+        Assert.Equal(OriginalMapRuntimeAdmission.Zone601BlockingSequenceIdentity,
+            receipt.BlockingSequenceIdentity);
+        Assert.Equal(OriginalMapRuntimeAdmission.Zone601TextIds, receipt.TextIds);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.Zone601BlockingStages,
+            receipt.BlockingStages);
+        Assert.Equal(receipt.SimulationStep, intercepted.Snapshot.SimulationStep);
+
+        PrivateOriginalMapZone601State completed = intercepted.Snapshot.Zone601!;
+        Assert.Equal(
+            PrivateOriginalMapZone601LifecyclePhase.AmbientWalkingHandoff,
+            completed.Phase);
+        Assert.True(completed.Flag601Set);
+        Assert.Equal(OriginalMapRuntimeAdmission.Zone601LogicalActorId,
+            completed.LogicalActorId);
+        Assert.Equal(new MapPosition(5, 4), completed.ActorPosition);
+        Assert.Equal((byte)2, completed.ActorOpaqueFacing);
+        Assert.Equal(OriginalMapRuntimeAdmission.Zone601AmbientBehaviorIdentity,
+            completed.ActorBehaviorIdentity);
+        Assert.Equal(new MapPosition(5, 6), completed.AmbientCenter);
+        Assert.Equal(1, completed.AmbientRange);
+
+        PrivateOriginalMapMoveApplied back = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        Assert.Null(back.Zone601);
+        PrivateOriginalMapMoveApplied reentered = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.Null(reentered.Zone601);
+        Assert.True(reentered.Snapshot.Zone601!.Flag601Set);
+        Assert.Null(reentered.Snapshot.LastZone601);
+
+        for (int count = 0; count < 51; count++)
+        {
+            _ = session.ApplyPrivateOriginalMap(
+                new MoveExplorationCommand(ExplorationDirection.East));
+        }
+
+        PrivateOriginalMapMoveApplied returned = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        Assert.Null(returned.SameMapWarp);
+        returned = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        Assert.NotNull(returned.SameMapWarp);
+        Assert.True(returned.Snapshot.Zone601!.Flag601Set);
+    }
+
+    [Fact]
+    public void RestartRestoresTheAcceptedZone601ActorAndClearsItsFlagAndReceipt()
+    {
+        AcceptedSource source = new(Accepted());
+        GameSession first = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+        _ = first.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        _ = first.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        _ = first.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.True(first.PrivateOriginalMapSnapshot.Zone601!.Flag601Set);
+
+        GameSession restarted = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+        PrivateOriginalMapZone601State ready = restarted.PrivateOriginalMapSnapshot.Zone601!;
+        Assert.Equal(PrivateOriginalMapZone601LifecyclePhase.Ready, ready.Phase);
+        Assert.False(ready.Flag601Set);
+        Assert.Equal(new MapPosition(5, 6), ready.ActorPosition);
+        Assert.Equal((byte)0, ready.ActorOpaqueFacing);
+        Assert.Equal(OriginalMapRuntimeAdmission.Zone601ActorInitialBehaviorIdentity,
+            ready.ActorBehaviorIdentity);
+        Assert.Null(restarted.PrivateOriginalMapSnapshot.LastZone601);
     }
 
     [Fact]
@@ -1357,6 +1459,44 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactZone601Projection()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), omitZone601: true),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        OriginalMapZone601Definition accepted = AcceptedZone601(map);
+        OriginalMapZone601Definition wrongFlag = new(
+            accepted.Identity,
+            accepted.Trigger,
+            accepted.GateFlag + 1,
+            accepted.BlockingSequenceIdentity,
+            accepted.ActorSourceRecord,
+            accepted.LogicalActorId,
+            accepted.ActorInitialPosition,
+            accepted.ActorInitialOpaqueFacing,
+            accepted.ActorInitialBehaviorIdentity,
+            accepted.ActorBlockingEndPosition,
+            accepted.ActorBlockingEndOpaqueFacing,
+            accepted.OpaqueFaceWaitOperand,
+            accepted.TextIds,
+            accepted.AmbientBehaviorIdentity,
+            accepted.AmbientCenter,
+            accepted.AmbientRange,
+            accepted.BlockingStages);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), zone601: wrongFlag),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedZone601(
+            accepted,
+            AcceptedEntityPopulation(map),
+            AcceptedAreaCatalog().Traversal,
+            Definition(EmptyWords()).WorkingLayout));
+    }
+
+    [Fact]
     public void TypedSourceRejectionPassesThroughWithoutCreatingASession()
     {
         OriginalMapImportDiagnostic diagnostic = new(
@@ -1416,7 +1556,9 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapRoofOnLoadDefinition? roofOnLoadClear = null,
         bool omitRoofOnLoadClear = false,
         OriginalMapStepCopyDefinition? bowieDoorStepCopy = null,
-        bool omitBowieDoorStepCopy = false)
+        bool omitBowieDoorStepCopy = false,
+        OriginalMapZone601Definition? zone601 = null,
+        bool omitZone601 = false)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -1432,6 +1574,12 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationX,
             OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationY)] |=
             OriginalMapTraversal.CollisionMask;
+        admittedWords[Index(3, 3)] = (ushort)(
+            (admittedWords[Index(3, 3)] & ~OriginalMapTraversal.CollisionMask) |
+            OriginalMapTraversal.LeftStairMask);
+        admittedWords[Index(4, 4)] = (ushort)(
+            (admittedWords[Index(4, 4)] & ~OriginalMapTraversal.CollisionMask) |
+            OriginalMapTraversal.LeftStairMask);
         OriginalMapAreaCatalog admittedAreas = areaCatalog ?? AcceptedAreaCatalog();
         OriginalMapSameMapWarpCatalog admittedWarps =
             sameMapWarps ?? AcceptedSameMapWarps(map);
@@ -1457,7 +1605,10 @@ public sealed class OriginalMapGameSessionTests
             omitRoofOnLoadClear
                 ? null
                 : roofOnLoadClear ?? RoofOnLoadClear(map, admittedWarps, admittedAreas),
-            omitBowieDoorStepCopy ? null : bowieDoorStepCopy ?? BowieDoorStepCopy(map));
+            omitBowieDoorStepCopy ? null : bowieDoorStepCopy ?? BowieDoorStepCopy(map),
+            omitZone601 || entityPopulation is not null
+                ? null
+                : zone601 ?? AcceptedZone601(map));
     }
 
     private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
@@ -1546,6 +1697,42 @@ public sealed class OriginalMapGameSessionTests
     private static OriginalMapVisualResourceSelection AcceptedVisualResourceSelection(MapId map) =>
         new(map, paletteIndex: 0, [0, 37, 43, 53, 66]);
 
+    private static OriginalMapZone601Definition AcceptedZone601(MapId map) =>
+        new(
+            new OriginalMapZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.Zone601ResourceId,
+                OriginalMapRuntimeAdmission.Zone601RecordOrdinal,
+                OriginalMapRuntimeAdmission.Zone601TargetIdentity),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Zone601TriggerX,
+                OriginalMapRuntimeAdmission.Zone601TriggerY),
+            OriginalMapRuntimeAdmission.Zone601GateFlag,
+            OriginalMapRuntimeAdmission.Zone601BlockingSequenceIdentity,
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.Zone601ActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.Zone601LogicalActorId,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Zone601ActorInitialX,
+                OriginalMapRuntimeAdmission.Zone601ActorInitialY),
+            OriginalMapRuntimeAdmission.Zone601ActorInitialOpaqueFacing,
+            OriginalMapRuntimeAdmission.Zone601ActorInitialBehaviorIdentity,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Zone601ActorBlockingEndX,
+                OriginalMapRuntimeAdmission.Zone601ActorBlockingEndY),
+            OriginalMapRuntimeAdmission.Zone601ActorBlockingEndOpaqueFacing,
+            OriginalMapRuntimeAdmission.Zone601OpaqueFaceWaitOperand,
+            OriginalMapRuntimeAdmission.Zone601TextIds,
+            OriginalMapRuntimeAdmission.Zone601AmbientBehaviorIdentity,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Zone601AmbientCenterX,
+                OriginalMapRuntimeAdmission.Zone601AmbientCenterY),
+            OriginalMapRuntimeAdmission.Zone601AmbientRange,
+            OriginalMapRuntimeAdmission.Zone601BlockingStages);
+
     private static OriginalMapEntityPopulation AcceptedEntityPopulation(MapId map) =>
         ProjectAuthoredEntityPopulation(
             map,
@@ -1564,12 +1751,20 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapEntityDefinition[] records = Enumerable.Range(0, count)
             .Select(index => new OriginalMapEntityDefinition(
                 new OriginalMapEntityRecordIdentity(resourceId, index + 1),
-                rawX: checked((byte)index),
-                rawY: 0,
-                opaqueFacing: 3,
-                mapSprite: checked((byte)(index + 1)),
+                rawX: index == 2
+                    ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialX
+                    : checked((byte)index),
+                rawY: index == 2
+                    ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialY
+                    : (byte)0,
+                opaqueFacing: index == 2
+                    ? OriginalMapRuntimeAdmission.Zone601ActorInitialOpaqueFacing
+                    : (byte)3,
+                mapSprite: index == 2 ? (byte)195 : checked((byte)(index + 1)),
                 index == 0 && mutateFirstTail
                     ? [1, 0, 0, 0]
+                    : index == 2
+                        ? [0, 4, 97, 2]
                     : !allFixed && index >= OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount
                         ? [0xFF, checked((byte)index), 0, 1]
                         : [0, 0, 0, 0]))

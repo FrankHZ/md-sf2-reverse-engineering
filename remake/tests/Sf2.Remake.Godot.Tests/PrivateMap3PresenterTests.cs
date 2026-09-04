@@ -240,6 +240,41 @@ public sealed class PrivateMap3PresenterTests
         Assert.Equal(3, projection.PlayerRow);
     }
 
+    [Fact]
+    public void CompletedZone601ProjectsOnlyTypedPersistentStateAndKeepsRandomPathUnknown()
+    {
+        PrivateOriginalMapSessionSnapshot ready = Snapshot();
+        OriginalMapZone601Definition definition = ready.Definition.Zone601!;
+        PrivateOriginalMapZone601State completed =
+            (PrivateOriginalMapZone601State)typeof(PrivateOriginalMapZone601State)
+                .GetMethod(
+                    "Complete",
+                    System.Reflection.BindingFlags.Static |
+                        System.Reflection.BindingFlags.NonPublic)!
+                .Invoke(null, [definition])!;
+        PrivateOriginalMapSessionSnapshot snapshot = new(
+            ready.Definition,
+            ready.Receipt,
+            ready.WorkingLayout,
+            ready.SimulationStep,
+            ready.PlayerPosition,
+            ready.LastTraversal,
+            ready.ControlledStepCopyApplied,
+            ready.LastLayoutMutation,
+            zone601: completed);
+
+        string status = PrivateMap3PresentationPlan.FormatStatus(snapshot, "Moved");
+
+        Assert.Equal(
+            "Map map3  Tile (56, 3)  Area 2  Step 7  Moved  |  " +
+                "WASD semantic movement  |  Zone601 complete; actor 128 at " +
+                "(5, 4), facing 2; ambient center (5, 6) range 1; " +
+                "random choices Unknown",
+            status);
+        Assert.DoesNotContain("510", status, StringComparison.Ordinal);
+        Assert.DoesNotContain("dialogue", status, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static PrivateOriginalMapSessionSnapshot Snapshot()
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
@@ -275,7 +310,9 @@ public sealed class PrivateMap3PresenterTests
                 OriginalMapRuntimeAdmission.SelectedInitIdentity,
                 noProgramRequest: true),
             controlledStepCopy: null,
-            unsupportedCapabilities: ["natural-route-and-presentation-unknown"]);
+            sameMapWarps: null,
+            unsupportedCapabilities: ["natural-route-and-presentation-unknown"],
+            zone601: Zone601(map));
         OriginalMapImportReceipt receipt = new(
             OriginalMapRuntimeAdmission.PackageId,
             OriginalMapRuntimeAdmission.SchemaVersion,
@@ -322,7 +359,53 @@ public sealed class PrivateMap3PresenterTests
                     opaqueFacing: 0,
                     mapSprite: 0,
                     [0, 0, 0, 0]),
+                new OriginalMapEntityDefinition(
+                    new OriginalMapEntityRecordIdentity(
+                        "project-authored-private-presenter-entities",
+                        2),
+                    rawX: 2,
+                    rawY: 2,
+                    opaqueFacing: 0,
+                    mapSprite: 0,
+                    [0, 0, 0, 0]),
+                new OriginalMapEntityDefinition(
+                    new OriginalMapEntityRecordIdentity(
+                        "project-authored-private-presenter-entities",
+                        3),
+                    rawX: 5,
+                    rawY: 6,
+                    opaqueFacing: 0,
+                    mapSprite: 195,
+                    [0, 4, 97, 2]),
             ]);
+
+    private static OriginalMapZone601Definition Zone601(MapId map) =>
+        new(
+            new OriginalMapZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                "project-authored-private-presenter-zone-events",
+                1,
+                "project-authored-zone601-target"),
+            new MapPosition(4, 4),
+            601,
+            "project-authored-zone601-sequence",
+            new OriginalMapEntityRecordIdentity(
+                "project-authored-private-presenter-entities",
+                3),
+            128,
+            new MapPosition(5, 6),
+            0,
+            "project-authored-init-slow",
+            new MapPosition(5, 4),
+            2,
+            20,
+            [510, 511, 483],
+            "project-authored-ambient-walking",
+            new MapPosition(5, 6),
+            1,
+            OriginalMapRuntimeAdmission.Zone601BlockingStages);
 
     private static OriginalMapAreaDefinition Area(
         string resourceId,

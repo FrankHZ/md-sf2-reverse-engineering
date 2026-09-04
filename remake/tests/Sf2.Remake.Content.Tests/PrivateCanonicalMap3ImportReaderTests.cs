@@ -49,6 +49,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.RoofOnLoadClearCapability,
                 PrivateCanonicalMap3ImportReader.BowieDoorStepCopyCapability,
                 PrivateCanonicalMap3ImportReader.SchoolDoorStepCopyCapability,
+                PrivateCanonicalMap3ImportReader.Zone601InterceptionCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -87,7 +88,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(new MapId("map3"), accepted.Definition.EntityPopulation.Map);
         Assert.Equal(new MapSetupId("ms_map3"), accepted.Definition.EntityPopulation.SelectedSetup);
         Assert.Equal("ms_map3_Entities", accepted.Definition.EntityPopulation.ResourceId);
-        Assert.Equal(2, accepted.Definition.EntityPopulation.Records.Count);
+        Assert.Equal(3, accepted.Definition.EntityPopulation.Records.Count);
         Assert.Equal(
             OriginalMapEntityRecordKind.Fixed,
             accepted.Definition.EntityPopulation.Records[0].Kind);
@@ -103,6 +104,17 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(
             new byte[] { 0xFF, 1, 2, 3 },
             accepted.Definition.EntityPopulation.Records[1].OpaqueTail);
+        OriginalMapZone601Definition zone601 =
+            Assert.IsType<OriginalMapZone601Definition>(accepted.Definition.Zone601);
+        Assert.Equal(new MapPosition(4, 4), zone601.Trigger);
+        Assert.Equal(7, zone601.Identity.OneBasedRecordOrdinal);
+        Assert.Equal("Map3_ZoneEvent6", zone601.Identity.TargetIdentity);
+        Assert.Equal(601, zone601.GateFlag);
+        Assert.Equal("cs_5145C", zone601.BlockingSequenceIdentity);
+        Assert.Equal(new MapPosition(5, 6), zone601.ActorInitialPosition);
+        Assert.Equal(new MapPosition(5, 4), zone601.ActorBlockingEndPosition);
+        Assert.Equal(new[] { 510, 511, 483 }, zone601.TextIds);
+        Assert.Equal("eas_Walking", zone601.AmbientBehaviorIdentity);
         Assert.Contains("natural-flags-setup-variant-selection",
             accepted.Definition.UnsupportedCapabilities);
         Assert.Equal(
@@ -178,6 +190,22 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         AssertCode(
             AdmitProduction(whitespaceMutation, Request(Digest(whitespaceMutation))),
             OriginalMapImportFailureCode.ContentDigestMismatch);
+    }
+
+    [Fact]
+    public void Zone601RecordActorAndBlockingProgramDriftFailSemanticAdmission()
+    {
+        JsonObject recordDrift = SampleDocument();
+        ZoneRecords(recordDrift)[6]!.AsObject()["x"] = 5;
+        AssertCode(Admit(recordDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject actorDrift = SampleDocument();
+        EntityRecords(actorDrift)[2]!.AsObject()["actionValue"] = 1U;
+        AssertCode(Admit(actorDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject programDrift = SampleDocument();
+        ZoneProgramOperations(programDrift)[2]!.AsObject()["operandText"] = "3";
+        AssertCode(Admit(programDrift), OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
     [Fact]
@@ -577,6 +605,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Contains(
             PrivateCanonicalMap3ImportReader.RoofOnLoadClearCapability,
             accepted.Receipt.Capabilities);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.Zone601InterceptionCapability,
+            accepted.Receipt.Capabilities);
         Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedRoofOnLoadClear(
             accepted.Definition.RoofOnLoadClear));
         Assert.Equal(
@@ -634,6 +665,11 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.False(OriginalMapTraversal.IsBlocked(
             accepted.Definition.WorkingLayout,
             new MapPosition(62, 0)));
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedZone601(
+            accepted.Definition.Zone601,
+            accepted.Definition.EntityPopulation,
+            accepted.Definition.Traversal,
+            accepted.Definition.WorkingLayout));
         OriginalMapStepCopyDefinition stepCopy =
             Assert.IsType<OriginalMapStepCopyDefinition>(
                 accepted.Definition.ControlledStepCopy);
@@ -696,6 +732,8 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         int[] layoutWords = new int[WorkingMapLayout.WordCount];
         layoutWords[Index(41, 13)] = OriginalMapTraversal.CollisionMask;
         layoutWords[Index(4, 8)] = OriginalMapTraversal.CollisionMask;
+        layoutWords[Index(3, 3)] = OriginalMapTraversal.LeftStairMask;
+        layoutWords[Index(4, 4)] = OriginalMapTraversal.LeftStairMask;
         object[] maps = Enumerable.Range(0, 79)
             .Select(id => (object)new
             {
@@ -910,15 +948,46 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                                 mapSprite = 5,
                                 walking = new { originX = 1, originY = 2, range = 3 },
                             },
+                            new
+                            {
+                                address = 22,
+                                kind = "fixed",
+                                rawX = 5,
+                                rawY = 6,
+                                x = 5,
+                                y = 6,
+                                facing = 0,
+                                mapSprite = 195,
+                                actionValue = OriginalMapRuntimeAdmission.Zone601ActorInitialActionValue,
+                            },
                         },
                     },
                 },
                 entityEventHandlers = Resource("ms_map3_EntityEvents"),
-                zoneEventHandlers = Resource("ms_map3_ZoneEvents"),
+                zoneEventHandlers = new object[]
+                {
+                    new
+                    {
+                        id = "ms_map3_ZoneEvents",
+                        address = 331084,
+                        kind = "table",
+                        records = ZoneSourceRecords(),
+                    },
+                },
                 itemEventHandlers = Resource("ms_map3_Section5"),
                 areaDescriptionHandlers = Resource("ms_map3_AreaDescriptions"),
                 initFunctions = Resource("ms_map3_InitFunction"),
-                standaloneScriptPrograms = Array.Empty<object>(),
+                standaloneScriptPrograms = new object[]
+                {
+                    new
+                    {
+                        id = "cs_5145C",
+                        address = 332892,
+                        path = "data/maps/entries/map03/mapsetups/scripts_1.asm",
+                        kind = "cutscene",
+                        operations = ZoneBlockingOperations(),
+                    },
+                },
                 initSourcePrograms = Array.Empty<object>(),
             },
             runtimeQuestions = new[] { "unsupported-natural-runtime" },
@@ -954,6 +1023,56 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         RoofRecord(38, 24, 255, 255, 5, 5, 36, 51),
         RoofRecord(41, 13, 255, 255, 9, 8, 39, 37),
     ];
+
+    private static object[] ZoneSourceRecords() =>
+    [
+        ZoneRecord(331084, "specific", 40, 331124, 2, 255),
+        ZoneRecord(331088, "specific", 96, 331180, 27, 5),
+        ZoneRecord(331092, "specific", 96, 331180, 28, 5),
+        ZoneRecord(331096, "specific", 96, 331180, 29, 5),
+        ZoneRecord(331100, "specific", 172, 331256, 30, 5),
+        ZoneRecord(331104, "specific", 172, 331256, 31, 5),
+        ZoneRecord(331108, "specific", 248, 331332, 4, 4),
+        ZoneRecord(331112, "specific", 282, 331366, 58, 13),
+        ZoneRecord(331116, "specific", 390, 331474, 43, 10),
+        ZoneRecord(331120, "default", 412, 331496, 253, 0),
+    ];
+
+    private static object ZoneRecord(
+        int address,
+        string kind,
+        int relativeOffset,
+        int resolvedTargetAddress,
+        int x,
+        int y) =>
+        new { address, kind, relativeOffset, resolvedTargetAddress, x, y };
+
+    private static object[] ZoneBlockingOperations()
+    {
+        (string Opcode, string Operand)[] values =
+        [
+            ("setActscriptWait", "128,eas_Init"),
+            ("entityActionsWait", "128"),
+            ("moveUp", "2"),
+            ("faceLeft", "20"),
+            ("endActions", ""),
+            ("textCursor", "510"),
+            ("nextText", "$0,128"),
+            ("nextText", "$0,128"),
+            ("textCursor", "483"),
+            ("nextSingleText", "$0,128"),
+            ("setActscriptWait", "128,eas_Init"),
+            ("csc_end", ""),
+        ];
+        return values.Select((value, index) => (object)new
+        {
+            index,
+            opcode = value.Opcode,
+            operandText = value.Operand,
+            targetSymbols = Array.Empty<string>(),
+            targetAddresses = Array.Empty<int>(),
+        }).ToArray();
+    }
 
     private static object RoofRecord(
         int triggerX,
@@ -1048,6 +1167,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     private static JsonArray RoofRecords(JsonObject document) =>
         ResourceArray(document, "roofEventTables")[0]!
             .AsObject()["records"]!.AsArray();
+
+    private static JsonArray ZoneRecords(JsonObject document) =>
+        ResourceArray(document, "zoneEventHandlers")[0]!
+            .AsObject()["records"]!.AsArray();
+
+    private static JsonArray ZoneProgramOperations(JsonObject document) =>
+        ResourceArray(document, "standaloneScriptPrograms")[0]!
+            .AsObject()["operations"]!.AsArray();
 
     private static (int, int, int, int, int, int) Geometry(WorkingMapBlockCopy copy) =>
         (copy.SourceX, copy.SourceY, copy.DestinationX, copy.DestinationY,

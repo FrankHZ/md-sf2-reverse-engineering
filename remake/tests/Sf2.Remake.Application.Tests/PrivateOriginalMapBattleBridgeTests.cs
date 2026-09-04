@@ -486,6 +486,12 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationX,
             OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationY)] |=
             OriginalMapTraversal.CollisionMask;
+        words[Index(3, 3)] = (ushort)(
+            (words[Index(3, 3)] & ~OriginalMapTraversal.CollisionMask) |
+            OriginalMapTraversal.LeftStairMask);
+        words[Index(4, 4)] = (ushort)(
+            (words[Index(4, 4)] & ~OriginalMapTraversal.CollisionMask) |
+            OriginalMapTraversal.LeftStairMask);
         return new OriginalMapImportDefinition(
             map,
             new WorkingMapLayout(words),
@@ -504,7 +510,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             SameMapWarps(map),
             ["original-battle-route-unknown"],
             RoofOnLoadClear(map),
-            BowieDoorStepCopy(map));
+            BowieDoorStepCopy(map),
+            AcceptedZone601(map));
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>
@@ -598,14 +605,58 @@ public sealed class PrivateOriginalMapBattleBridgeTests
                     new OriginalMapEntityRecordIdentity(
                         OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
                         index + 1),
-                    rawX: checked((byte)index),
-                    rawY: 0,
-                    opaqueFacing: 3,
-                    mapSprite: checked((byte)(index + 1)),
-                    index >= OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount
+                    rawX: index == 2
+                        ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialX
+                        : checked((byte)index),
+                    rawY: index == 2
+                        ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialY
+                        : (byte)0,
+                    opaqueFacing: index == 2
+                        ? OriginalMapRuntimeAdmission.Zone601ActorInitialOpaqueFacing
+                        : (byte)3,
+                    mapSprite: index == 2 ? (byte)195 : checked((byte)(index + 1)),
+                    index == 2
+                        ? [0, 4, 97, 2]
+                        : index >= OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount
                         ? [0xFF, checked((byte)index), 0, 1]
                         : [0, 0, 0, 0])),
             OriginalMapRuntimeAdmission.AcceptedEntityProjectionDigest);
+
+    private static OriginalMapZone601Definition AcceptedZone601(MapId map) =>
+        new(
+            new OriginalMapZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.Zone601ResourceId,
+                OriginalMapRuntimeAdmission.Zone601RecordOrdinal,
+                OriginalMapRuntimeAdmission.Zone601TargetIdentity),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Zone601TriggerX,
+                OriginalMapRuntimeAdmission.Zone601TriggerY),
+            OriginalMapRuntimeAdmission.Zone601GateFlag,
+            OriginalMapRuntimeAdmission.Zone601BlockingSequenceIdentity,
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.Zone601ActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.Zone601LogicalActorId,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Zone601ActorInitialX,
+                OriginalMapRuntimeAdmission.Zone601ActorInitialY),
+            OriginalMapRuntimeAdmission.Zone601ActorInitialOpaqueFacing,
+            OriginalMapRuntimeAdmission.Zone601ActorInitialBehaviorIdentity,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Zone601ActorBlockingEndX,
+                OriginalMapRuntimeAdmission.Zone601ActorBlockingEndY),
+            OriginalMapRuntimeAdmission.Zone601ActorBlockingEndOpaqueFacing,
+            OriginalMapRuntimeAdmission.Zone601OpaqueFaceWaitOperand,
+            OriginalMapRuntimeAdmission.Zone601TextIds,
+            OriginalMapRuntimeAdmission.Zone601AmbientBehaviorIdentity,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Zone601AmbientCenterX,
+                OriginalMapRuntimeAdmission.Zone601AmbientCenterY),
+            OriginalMapRuntimeAdmission.Zone601AmbientRange,
+            OriginalMapRuntimeAdmission.Zone601BlockingStages);
 
     private static OriginalMapBlockCatalog BlockCatalog() =>
         new(

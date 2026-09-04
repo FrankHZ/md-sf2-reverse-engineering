@@ -184,7 +184,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapSameMapWarpCatalog? sameMapWarps,
         IEnumerable<string> unsupportedCapabilities,
         OriginalMapRoofOnLoadDefinition? roofOnLoadClear = null,
-        OriginalMapStepCopyDefinition? bowieDoorStepCopy = null)
+        OriginalMapStepCopyDefinition? bowieDoorStepCopy = null,
+        OriginalMapZone601Definition? zone601 = null)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
@@ -240,6 +241,37 @@ public sealed class OriginalMapImportDefinition
             throw new ArgumentException(
                 "The same-map warp catalog must match the imported map.",
                 nameof(sameMapWarps));
+        }
+
+        if (zone601 is not null)
+        {
+            if (zone601.Identity.Map != map ||
+                zone601.Identity.Setup != controlledAdmission.SelectedSetup)
+            {
+                throw new ArgumentException(
+                    "The Zone 601 definition must match the imported map and controlled setup.",
+                    nameof(zone601));
+            }
+
+            OriginalMapEntityDefinition sourceActor = entityPopulation.Records
+                .SingleOrDefault(record => record.Identity == zone601.ActorSourceRecord) ??
+                throw new ArgumentException(
+                    "The Zone 601 actor must bind one admitted source entity record.",
+                    nameof(zone601));
+            if (sourceActor.Position != zone601.ActorInitialPosition ||
+                sourceActor.OpaqueFacing != zone601.ActorInitialOpaqueFacing)
+            {
+                throw new ArgumentException(
+                    "The Zone 601 actor admission must retain its source position and facing.",
+                    nameof(zone601));
+            }
+
+            if (!areaCatalog.Traversal.IsWithinActiveArea(zone601.Trigger))
+            {
+                throw new ArgumentException(
+                    "The Zone 601 trigger must remain inside the admitted active map.",
+                    nameof(zone601));
+            }
         }
 
         if (roofOnLoadClear is not null)
@@ -321,6 +353,7 @@ public sealed class OriginalMapImportDefinition
         SameMapWarps = sameMapWarps;
         RoofOnLoadClear = roofOnLoadClear;
         BowieDoorStepCopy = bowieDoorStepCopy;
+        Zone601 = zone601;
     }
 
     public MapId Map { get; }
@@ -346,6 +379,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapRoofOnLoadDefinition? RoofOnLoadClear { get; }
 
     public OriginalMapStepCopyDefinition? BowieDoorStepCopy { get; }
+
+    public OriginalMapZone601Definition? Zone601 { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

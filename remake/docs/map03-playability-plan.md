@@ -19,13 +19,22 @@ option also projects the live current area's non-zero second-layer offset from t
 working layout; zero-offset areas remain main-only.
 `GameSession` evaluates their candidate targets before ordinary passability and atomically relocates
 the authoritative position, facing, area, and step without executing opaque original targets. These
-capabilities do not execute natural setup, zone, dialogue, music, or original presentation behavior.
+capabilities do not execute natural setup, general zone/dialogue programs, music, or original
+presentation behavior.
 The evidence-owned Bowie-house and school-door steps are two bounded exceptions. Moving south from
 `(4,7)` toward `(4,8)`, or north from `(41,14)` toward `(41,13)`, applies only that door's exact
 admitted block copy before collision and commits the working layout and movement atomically. The
 school-door natural lifecycle remains distinct from the existing controlled row-6 diagnostic, and
 the existing Godot view reprojects either authoritative layout change. These two records do not
-claim `OpenDoor` generally or execute the preceding Zone 601 or later Sarah programs.
+claim `OpenDoor` generally or execute the later Sarah program.
+
+The first post-warp slope target `(4,4)` now runs one bounded Zone 601 interception before ordinary
+passability. Application moves the player onto the admitted target, advances logical entity 128 from
+its source `(5,6)`/RIGHT state through the exact blocking move, facing, and text-ID order, records the
+ambient-walking handoff centered at `(5,6)` with range 1, and only then sets the session-owned 601
+state. Re-entry does not replay it, current-map warps retain it, and a new admitted session restores
+the initial actor and clear gate. Godot projects this typed completion state but does not render the
+original text or simulate ambient random choices.
 
 The first accepted warp exits the controlled-start pocket in area record 2 and lands in area record
 1. Application commits its separately evidenced roof-on-load clear in the same authoritative
@@ -34,21 +43,21 @@ saves the prior rectangle, clears it with the accepted empty-word policy, and pr
 activation. No restore command is exposed: the original reverse/leave trigger, general roof scan,
 presentation timing, and simulation-step parity remain outside this bounded slice. The accepted
 entity-142 interaction stand at `(55, 17)` also remains unreachable: the route between the two
-admitted warps still depends on the preceding accepted zone transition and a Sarah
-interaction/temporary flag lifecycle that are not yet runtime capabilities. The isolated door
-capabilities therefore do not establish natural route continuity.
+admitted warps still depends on Sarah's interaction and temporary-flag lifecycle. The bounded Zone
+601 transaction plus isolated door capabilities therefore do not establish natural route continuity.
 
-## Ordered Frontier
+## Ordered Queue
 
-1. The accepted zone and Sarah temporary-flag boundaries are admitted in evidence order before
-   claiming a route to the second same-map warp; both bounded door copies remain isolated until that
-   chain closes.
-2. The accepted entity-142 interaction record gains a request/acknowledgement lifecycle without
-   inventing dialogue or program effects.
-3. Broader selected-setup entities gain reviewed local assets and bounded visual policies after their
-   identities and visibility rules are closed.
-4. Remaining natural doors, steps, warps, roofs, and setup refinements follow their accepted evidence; Map
-   3 music and audio follow only after scene-use and playback boundaries are closed.
+1. **Zone 601:** implemented as the bounded candidate-target interception, deterministic blocking
+   sequence, live actor handoff, and once-only 601 session state described above.
+2. **Sarah:** add the exact 603/602/temporary-256 branch, movement/text order, facing restoration, and
+   new-map temporary reset before claiming continuity to the second warp.
+3. **Entity 142:** add an acknowledgement lifecycle for the accepted interaction record without
+   inventing dialogue or opaque program effects.
+4. **Broader setup entities/assets:** add reviewed identities, visibility rules, and local assets only
+   through their accepted Content and presentation boundaries.
+5. **Audio and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
+   door, warp, roof, music, and audio behavior without promoting Unknown presentation semantics.
 
 ## Decision Rules
 
