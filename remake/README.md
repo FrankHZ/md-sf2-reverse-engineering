@@ -44,6 +44,8 @@ The two persistent runtime disclosures are part of the product boundary:
 
 Current capabilities and retained Unknowns are summarized in
 [Capability Status](./docs/capability-status.md).
+The forward player-visible sequence and its current traversal blocker are maintained in the
+[Map 3 Playability Plan](./docs/map03-playability-plan.md).
 
 ## Runtime Profiles
 
