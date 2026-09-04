@@ -138,6 +138,26 @@ public sealed class PrivateMap3PresenterTests
                 typeof(PrivateLocalPresentationAssetMountDiagnostic).MakeByRefType(),
             },
             playerBind.GetParameters().Select(parameter => parameter.ParameterType));
+        System.Reflection.MethodInfo? entityBind = typeof(PrivateMap3Presenter).GetMethod(
+            "TryBindEntity142Diagnostic",
+            System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(entityBind);
+        Assert.Equal(typeof(bool), entityBind.ReturnType);
+        Assert.Equal(
+            new[]
+            {
+                typeof(PrivateLocalPresentationRasterMount),
+                typeof(PrivateOriginalMapSessionSnapshot),
+                typeof(PrivateLocalPresentationAssetMountDiagnostic).MakeByRefType(),
+            },
+            entityBind.GetParameters().Select(parameter => parameter.ParameterType));
+        Assert.Equal(
+            "private-local-map3-entity142-half0-diagnostic-idle-consumer-v1",
+            PrivateMap3Entity142DiagnosticProjection.Capability);
+        Assert.Equal(
+            "project-authored-half0-diagnostic-idle-v1",
+            PrivateMap3Entity142DiagnosticProjection.Policy);
         Assert.Equal(
             "SF2_MAP3_PRIVATE_LOCAL_BASE_ATLAS_SMOKE ",
             Map3Root.PrivateBaseAtlasSmokeMarker);
@@ -156,6 +176,12 @@ public sealed class PrivateMap3PresenterTests
                 System.Reflection.BindingFlags.Public |
                 System.Reflection.BindingFlags.NonPublic),
             field => field.Name.Contains("PlayerReferenceSmoke", StringComparison.Ordinal));
+        Assert.DoesNotContain(
+            typeof(Map3Root).GetFields(
+                System.Reflection.BindingFlags.Static |
+                System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.NonPublic),
+            field => field.Name.Contains("Entity142", StringComparison.Ordinal));
         Assert.DoesNotContain(
             typeof(PrivateMap3Presenter).GetProperties(
                 System.Reflection.BindingFlags.Instance |

@@ -783,6 +783,104 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             StringComparison.OrdinalIgnoreCase);
 }
 
+internal sealed record PrivateMap3Entity142DiagnosticProjection(
+    int LogicalEntityId,
+    int PhysicalEntitySlot,
+    OriginalMapEntityRecordIdentity SourceRecord,
+    MapPosition Position,
+    Rect2 DestinationRect)
+{
+    internal const string Capability =
+        "private-local-map3-entity142-half0-diagnostic-idle-consumer-v1";
+    internal const string Policy = "project-authored-half0-diagnostic-idle-v1";
+    internal const int AcceptedLogicalEntityId = 142;
+    internal const int AcceptedPhysicalEntitySlot = 17;
+    internal const int AcceptedSourceRecordOrdinal = 17;
+    internal const byte AcceptedRawX = 54;
+    internal const byte AcceptedRawY = 17;
+    internal const byte AcceptedOpaqueFacing = 1;
+    internal const byte AcceptedMapSprite = 209;
+    internal const int SelectedSourceHalf = 0;
+
+    private static readonly byte[] AcceptedOpaqueTail = [0x00, 0x04, 0x60, 0xCE];
+
+    internal static bool TryCreate(
+        PrivateOriginalMapSessionSnapshot snapshot,
+        PrivateOriginalMapBaseViewProjection baseProjection,
+        out PrivateMap3Entity142DiagnosticProjection? projection)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        ArgumentNullException.ThrowIfNull(baseProjection);
+        projection = null;
+        if (baseProjection.StaticOverlayDiagnostic)
+        {
+            return true;
+        }
+
+        if (baseProjection.Map != snapshot.Map ||
+            !TryResolveAcceptedRecord(snapshot, out OriginalMapEntityDefinition? record))
+        {
+            return false;
+        }
+
+        OriginalMapEntityDefinition acceptedRecord = record!;
+        int topLeftPixelX = baseProjection.Camera?.TopLeftPixelX ?? checked(
+            baseProjection.OriginX * PrivateOriginalMapBaseViewProjection.BlockPixelSize);
+        int topLeftPixelY = baseProjection.Camera?.TopLeftPixelY ?? checked(
+            baseProjection.OriginY * PrivateOriginalMapBaseViewProjection.BlockPixelSize);
+        Rect2 destination = new(
+            new Vector2(
+                checked(acceptedRecord.Position.X *
+                    PrivateOriginalMapBaseViewProjection.BlockPixelSize) - topLeftPixelX,
+                checked(acceptedRecord.Position.Y *
+                    PrivateOriginalMapBaseViewProjection.BlockPixelSize) - topLeftPixelY),
+            new Vector2(
+                PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceLogicalWidth / 2,
+                PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceLogicalHeight));
+        projection = new PrivateMap3Entity142DiagnosticProjection(
+            AcceptedLogicalEntityId,
+            AcceptedPhysicalEntitySlot,
+            acceptedRecord.Identity,
+            acceptedRecord.Position,
+            destination);
+        return true;
+    }
+
+    internal static bool TryResolveAcceptedRecord(
+        PrivateOriginalMapSessionSnapshot snapshot,
+        out OriginalMapEntityDefinition? record)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        record = null;
+        OriginalMapEntityPopulation population = snapshot.EntityPopulation;
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedEntityPopulation(population))
+        {
+            return false;
+        }
+
+        OriginalMapEntityDefinition candidate =
+            population.Records[AcceptedSourceRecordOrdinal - 1];
+        if (!string.Equals(
+                candidate.Identity.ResourceId,
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                StringComparison.Ordinal) ||
+            candidate.Identity.OneBasedRecordOrdinal != AcceptedSourceRecordOrdinal ||
+            candidate.RawX != AcceptedRawX ||
+            candidate.RawY != AcceptedRawY ||
+            candidate.Position != new MapPosition(AcceptedRawX, AcceptedRawY) ||
+            candidate.OpaqueFacing != AcceptedOpaqueFacing ||
+            candidate.MapSprite != AcceptedMapSprite ||
+            candidate.Kind != OriginalMapEntityRecordKind.Fixed ||
+            !candidate.OpaqueTail.SequenceEqual(AcceptedOpaqueTail))
+        {
+            return false;
+        }
+
+        record = candidate;
+        return true;
+    }
+}
+
 public sealed partial class PrivateOriginalMapBaseViewport : Node2D
 {
     private static readonly Color PlayerColor = new("ffd166");
@@ -891,6 +989,11 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         bool HorizontalMirror), ImageTexture>? _playerLocomotionTextures;
     private PrivateOriginalMapPlayerLocomotionSnapshot? _playerLocomotion;
     private int _playerLocomotionScale;
+    private ImageTexture? _entity142DiagnosticTexture;
+    private PrivateMap3Entity142DiagnosticProjection? _entity142DiagnosticProjection;
+    private string? _entity142DiagnosticAssetId;
+    private int _entity142DiagnosticScale;
+    private string? _entity142DiagnosticBucketDigest;
     private PrivateMap3WorldTreatment _worldTreatment =
         PrivateMap3WorldTreatment.ExactNearest;
 
@@ -927,12 +1030,40 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     internal PrivateOriginalMapPlayerLocomotionSnapshot? PlayerLocomotion =>
         _playerLocomotion;
 
+    internal bool UsesEntity142Diagnostic => _entity142DiagnosticTexture is not null;
+
+    internal PrivateMap3Entity142DiagnosticProjection? Entity142DiagnosticProjection =>
+        _entity142DiagnosticProjection;
+
+    internal string? Entity142DiagnosticAssetId => _entity142DiagnosticAssetId;
+
+    internal int? Entity142DiagnosticScale => UsesEntity142Diagnostic
+        ? _entity142DiagnosticScale
+        : null;
+
+    internal string? Entity142DiagnosticBucketDigest =>
+        _entity142DiagnosticBucketDigest;
+
     internal PrivateMap3WorldTreatment WorldTreatment => _worldTreatment;
 
     internal static bool IsRequiredTextureSampling(
         TextureFilterEnum filter,
         TextureRepeatEnum repeat) =>
         filter == RequiredTextureFilter && repeat == RequiredTextureRepeat;
+
+    internal static Rect2I Entity142DiagnosticSourceRect(int scale)
+    {
+        if (!LocalPresentationAssetPackAdmission.BucketScales.Contains(scale))
+        {
+            throw new ArgumentOutOfRangeException(nameof(scale));
+        }
+
+        return new Rect2I(
+            0,
+            0,
+            checked((PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceLogicalWidth / 2) * scale),
+            checked(PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceLogicalHeight * scale));
+    }
 
     internal bool TryBindLocalAtlas(
         PrivateLocalPresentationRasterMount mount,
@@ -1112,6 +1243,56 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         return true;
     }
 
+    internal bool TryBindLocalEntity142Diagnostic(
+        PrivateLocalPresentationRasterMount mount,
+        PrivateOriginalMapSessionSnapshot snapshot,
+        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
+    {
+        ArgumentNullException.ThrowIfNull(mount);
+        ArgumentNullException.ThrowIfNull(snapshot);
+        diagnostic = null;
+        if (!PrivateLocalPresentationAssetCatalog.IsExactMap3Entity142ReferenceBinding(
+                mount.Definition,
+                mount.Bucket) ||
+            !PrivateMap3Entity142DiagnosticProjection.TryResolveAcceptedRecord(
+                snapshot,
+                out _))
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The private Map 3 entity-142 diagnostic binding drifted.");
+            return false;
+        }
+
+        Image image = new();
+        Error error = image.LoadPngFromBuffer(mount.CopyPngBytes());
+        int scale = mount.Bucket.Scale;
+        int frameWidth = checked(
+            (PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceLogicalWidth / 2) * scale);
+        int frameHeight = checked(
+            PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceLogicalHeight * scale);
+        if (error != Error.Ok ||
+            image.GetWidth() != checked(frameWidth * 2) ||
+            image.GetHeight() != frameHeight ||
+            image.GetFormat() != Image.Format.Rgba8)
+        {
+            image.Dispose();
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.TextureRejected,
+                "Godot rejected the admitted private Map 3 entity-142 diagnostic sheet.");
+            return false;
+        }
+
+        Image frame = image.GetRegion(Entity142DiagnosticSourceRect(scale));
+        _entity142DiagnosticTexture = ImageTexture.CreateFromImage(frame);
+        frame.Dispose();
+        image.Dispose();
+        _entity142DiagnosticAssetId = mount.Definition.AssetId;
+        _entity142DiagnosticScale = scale;
+        _entity142DiagnosticBucketDigest = mount.Bucket.Sha256;
+        return true;
+    }
+
     public void Project(
         PrivateOriginalMapSessionSnapshot snapshot,
         OriginalMapVisualPayloadDefinition visualDefinition,
@@ -1167,6 +1348,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
             _projection.RgbaBytes.ToArray());
         _texture = ImageTexture.CreateFromImage(image);
         image.Dispose();
+        ProjectEntity142Diagnostic(snapshot);
         QueueRedraw();
     }
 
@@ -1221,6 +1403,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
             _projection.RgbaBytes.ToArray());
         _texture = ImageTexture.CreateFromImage(image);
         image.Dispose();
+        ProjectEntity142Diagnostic(snapshot);
         QueueRedraw();
     }
 
@@ -1232,6 +1415,17 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
 
         DrawTextureRect(_texture, LogicalTextureRect, tile: false);
+        if (_projection.ShowsPlayerMarker &&
+            _entity142DiagnosticTexture is not null &&
+            _entity142DiagnosticProjection is not null &&
+            _entity142DiagnosticProjection.DestinationRect.Intersects(LogicalTextureRect))
+        {
+            DrawTextureRect(
+                _entity142DiagnosticTexture,
+                _entity142DiagnosticProjection.DestinationRect,
+                tile: false);
+        }
+
         if (_projection.ShowsPlayerMarker &&
             _playerLocomotionTextures is not null &&
             _playerLocomotion is not null)
@@ -1262,6 +1456,26 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                         PrivateOriginalMapBaseViewProjection.BlockPixelSize) + 6),
                 new Vector2(12, 12));
             DrawRect(player, PlayerColor);
+        }
+    }
+
+    private void ProjectEntity142Diagnostic(PrivateOriginalMapSessionSnapshot snapshot)
+    {
+        if (_entity142DiagnosticTexture is null)
+        {
+            _entity142DiagnosticProjection = null;
+            return;
+        }
+
+        if (_projection is null ||
+            !PrivateMap3Entity142DiagnosticProjection.TryCreate(
+                snapshot,
+                _projection,
+                out _entity142DiagnosticProjection))
+        {
+            throw new ArgumentException(
+                "The private Map 3 entity-142 diagnostic cannot project this snapshot.",
+                nameof(snapshot));
         }
     }
 

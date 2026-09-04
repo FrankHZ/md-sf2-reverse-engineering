@@ -97,10 +97,14 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         "world.map3.player.locomotion.down";
     internal const int Map3PlayerLocomotionLogicalWidth = 48;
     internal const int Map3PlayerLocomotionLogicalHeight = 24;
+    internal const string Map3Entity142ReferenceAssetId =
+        "world.map3.entity142.astral.up.two-half-reference";
+    internal const int Map3Entity142ReferenceLogicalWidth = 48;
+    internal const int Map3Entity142ReferenceLogicalHeight = 24;
     internal const string Map3AssetRepositoryCommit =
-        "ec07c0168b9bf684dfc62419351e343baf273c35";
+        "d89274972905742f8a02b8d8b20d2c96d2ff9ca9";
     internal const string Map3AssetManifestDigest =
-        "39C18402BECB3CD541C293C2D5274E3B3E7A7932D49A1FDB47AEFB070F7E8151";
+        "5599BBB898C298B21C05AAC8BF01B8926F79FD02E07F34AD91455C2013D0D6ED";
     internal const string Map3BaseAtlas2xDigest =
         "E974F59E15E493C29D871574299A46079EBA195BB4CC0B10FF37C2F310682A0A";
     internal const string Map3BaseAtlas4xDigest =
@@ -121,6 +125,10 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         "81A483E7E589F75C1909AA633D03AA548D3A8CE3E8C153763C538116156D0138";
     internal const string Map3PlayerLocomotionDown4xDigest =
         "BDFD78C073E64A957FF147BA385FED891A384111AFB1B2DDF3B795D2E4C91117";
+    internal const string Map3Entity142Reference2xDigest =
+        "BA42EC9F142794436C2637AF4F7BED3FDE0B22A9CE34B684E81B245AB822D5D9";
+    internal const string Map3Entity142Reference4xDigest =
+        "A7111EF8ADE4D4E5BCF071FDF4CB513875276CB8F3DC6CD17B6B08FC4BD3EFED";
 
     private static readonly byte[] PngSignature =
         [137, 80, 78, 71, 13, 10, 26, 10];
@@ -329,6 +337,52 @@ internal sealed class PrivateLocalPresentationAssetCatalog
                 mountedDown.Asset));
     }
 
+    internal PrivateLocalPresentationAssetMountResult MountMap3Entity142Reference(
+        LocalPresentationAssetPackRequest request,
+        LocalPresentationAssetPackAccepted accepted,
+        double effectivePhysicalScale)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(accepted);
+        if (!string.Equals(
+                request.ExpectedAssetRepositoryCommit,
+                Map3AssetRepositoryCommit,
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                request.ExpectedManifestDigest,
+                Map3AssetManifestDigest,
+                StringComparison.Ordinal))
+        {
+            return Reject(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The Map 3 entity-142 reference mount requires the exact accepted local asset transaction.");
+        }
+
+        PrivateLocalPresentationAssetMountResult result = MountRaster(
+            request,
+            accepted,
+            effectivePhysicalScale,
+            Map3Entity142ReferenceAssetId,
+            Map3Entity142ReferenceLogicalWidth,
+            Map3Entity142ReferenceLogicalHeight,
+            "private Map 3 entity-142 diagnostic reference");
+        if (result is not PrivateLocalPresentationAssetMounted mounted)
+        {
+            return result;
+        }
+
+        if (!IsExactMap3Entity142ReferenceBinding(
+                mounted.Asset.Definition,
+                mounted.Asset.Bucket))
+        {
+            return Reject(
+                PrivateLocalPresentationAssetMountFailureCode.PayloadMismatch,
+                "The admitted Map 3 entity-142 reference payload identity drifted.");
+        }
+
+        return mounted;
+    }
+
     internal static bool IsExactMap3BaseAtlasBinding(
         LocalPresentationRasterAssetDefinition definition,
         LocalPresentationRasterBucket bucket)
@@ -399,6 +453,31 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         };
         return definition.LogicalSize.Width == Map3PlayerLocomotionLogicalWidth &&
             definition.LogicalSize.Height == Map3PlayerLocomotionLogicalHeight &&
+            expectedDigest is not null &&
+            string.Equals(bucket.Sha256, expectedDigest, StringComparison.Ordinal) &&
+            string.Equals(bucket.Filter, "nearest", StringComparison.Ordinal) &&
+            !bucket.Mipmaps &&
+            !bucket.Repeat;
+    }
+
+    internal static bool IsExactMap3Entity142ReferenceBinding(
+        LocalPresentationRasterAssetDefinition definition,
+        LocalPresentationRasterBucket bucket)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(bucket);
+        string? expectedDigest = bucket.Scale switch
+        {
+            2 => Map3Entity142Reference2xDigest,
+            4 => Map3Entity142Reference4xDigest,
+            _ => null,
+        };
+        return string.Equals(
+                definition.AssetId,
+                Map3Entity142ReferenceAssetId,
+                StringComparison.Ordinal) &&
+            definition.LogicalSize.Width == Map3Entity142ReferenceLogicalWidth &&
+            definition.LogicalSize.Height == Map3Entity142ReferenceLogicalHeight &&
             expectedDigest is not null &&
             string.Equals(bucket.Sha256, expectedDigest, StringComparison.Ordinal) &&
             string.Equals(bucket.Filter, "nearest", StringComparison.Ordinal) &&

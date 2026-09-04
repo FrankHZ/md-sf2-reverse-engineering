@@ -219,6 +219,42 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
     }
 
     [Fact]
+    public void Map3Entity142BindingRequiresExactTwoHalfIdentityAndNearestPolicy()
+    {
+        LocalPresentationRasterAssetDefinition exact = Entity142Definition();
+        Assert.All(
+            exact.Buckets,
+            bucket => Assert.True(
+                PrivateLocalPresentationAssetCatalog.IsExactMap3Entity142ReferenceBinding(
+                    exact,
+                    bucket)));
+
+        LocalPresentationRasterAssetDefinition wrongAsset =
+            Entity142Definition(assetId: "world.map3.entity142.other");
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3Entity142ReferenceBinding(
+            wrongAsset,
+            wrongAsset.Buckets[0]));
+        LocalPresentationRasterAssetDefinition wrongSize = Entity142Definition(width: 24);
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3Entity142ReferenceBinding(
+            wrongSize,
+            wrongSize.Buckets[0]));
+        LocalPresentationRasterAssetDefinition wrongDigest =
+            Entity142Definition(twoXDigest: new string('A', 64));
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3Entity142ReferenceBinding(
+            wrongDigest,
+            wrongDigest.Buckets[0]));
+        LocalPresentationRasterAssetDefinition wrongFilter =
+            Entity142Definition(filter: "linear");
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3Entity142ReferenceBinding(
+            wrongFilter,
+            wrongFilter.Buckets[0]));
+        LocalPresentationRasterAssetDefinition repeated = Entity142Definition(repeat: true);
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3Entity142ReferenceBinding(
+            repeated,
+            repeated.Buckets[0]));
+    }
+
+    [Fact]
     public void GenericPresentationPackCannotSelfAuthorizeTheFixedMap3BaseAtlasTransaction()
     {
         using TemporaryPreviewPack package = new();
@@ -239,6 +275,14 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
             PrivateLocalPresentationAssetMountFailureCode.InvalidBinding);
         AssertCode(
             package.Catalog.MountMap3PlayerReference(
+                package.RequestWith(
+                    commit: PrivateLocalPresentationAssetCatalog.Map3AssetRepositoryCommit,
+                    manifestDigest: PrivateLocalPresentationAssetCatalog.Map3AssetManifestDigest),
+                package.Accepted,
+                effectivePhysicalScale: 1),
+            PrivateLocalPresentationAssetMountFailureCode.InvalidBinding);
+        AssertCode(
+            package.Catalog.MountMap3Entity142Reference(
                 package.RequestWith(
                     commit: PrivateLocalPresentationAssetCatalog.Map3AssetRepositoryCommit,
                     manifestDigest: PrivateLocalPresentationAssetCatalog.Map3AssetManifestDigest),
@@ -288,6 +332,12 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         PrivateLocalPlayerLocomotionMounted locomotionFourX =
             Assert.IsType<PrivateLocalPlayerLocomotionMounted>(
                 catalog.MountMap3PlayerLocomotion(request, accepted, 3));
+        PrivateLocalPresentationAssetMounted entityTwoX =
+            Assert.IsType<PrivateLocalPresentationAssetMounted>(
+                catalog.MountMap3Entity142Reference(request, accepted, 1));
+        PrivateLocalPresentationAssetMounted entityFourX =
+            Assert.IsType<PrivateLocalPresentationAssetMounted>(
+                catalog.MountMap3Entity142Reference(request, accepted, 3));
         byte[] copied = twoX.Asset.CopyPngBytes();
         copied[0] = 0;
 
@@ -318,6 +368,17 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         Assert.Equal(
             PrivateLocalPresentationAssetCatalog.Map3PlayerLocomotionHorizontal4xDigest,
             locomotionFourX.Animation.Horizontal.Bucket.Sha256);
+        Assert.Equal(2, entityTwoX.Asset.Bucket.Scale);
+        Assert.Equal(
+            PrivateLocalPresentationAssetCatalog.Map3Entity142Reference2xDigest,
+            entityTwoX.Asset.Bucket.Sha256);
+        Assert.Equal(4, entityFourX.Asset.Bucket.Scale);
+        Assert.Equal(
+            PrivateLocalPresentationAssetCatalog.Map3Entity142Reference4xDigest,
+            entityFourX.Asset.Bucket.Sha256);
+        byte[] entityCopy = entityTwoX.Asset.CopyPngBytes();
+        entityCopy[0] = 0;
+        Assert.Equal(137, entityTwoX.Asset.CopyPngBytes()[0]);
     }
 
     [Fact]
@@ -619,6 +680,44 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
                     alphaMode: "straight"),
             ]);
     }
+
+    private static LocalPresentationRasterAssetDefinition Entity142Definition(
+        string assetId = PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceAssetId,
+        int width = PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceLogicalWidth,
+        int height = PrivateLocalPresentationAssetCatalog.Map3Entity142ReferenceLogicalHeight,
+        string twoXDigest = PrivateLocalPresentationAssetCatalog.Map3Entity142Reference2xDigest,
+        string fourXDigest = PrivateLocalPresentationAssetCatalog.Map3Entity142Reference4xDigest,
+        string filter = "nearest",
+        bool repeat = false) =>
+        new(
+            assetId,
+            new LocalPresentationLogicalSize(width, height),
+            [
+                new LocalPresentationRasterBucket(
+                    2,
+                    checked(width * 2),
+                    checked(height * 2),
+                    651,
+                    twoXDigest,
+                    "image/png",
+                    filter,
+                    mipmaps: false,
+                    repeat,
+                    colorSpace: "srgb",
+                    alphaMode: "straight"),
+                new LocalPresentationRasterBucket(
+                    4,
+                    checked(width * 4),
+                    checked(height * 4),
+                    1126,
+                    fourXDigest,
+                    "image/png",
+                    filter,
+                    mipmaps: false,
+                    repeat,
+                    colorSpace: "srgb",
+                    alphaMode: "straight"),
+            ]);
 
     private sealed class TemporaryPreviewPack : IDisposable
     {

@@ -139,6 +139,112 @@ public sealed class PrivateOriginalMapBaseViewportTests
     }
 
     [Fact]
+    public void Entity142DiagnosticUsesOnlyAcceptedRecord17AndProjectAuthoredHalfZero()
+    {
+        PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+            [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+            new ushort[WorkingMapLayout.WordCount],
+            playerPosition: new MapPosition(55, 17),
+            entityPopulation: AcceptedEntity142Population());
+        PrivateOriginalMapBaseViewProjection baseProjection =
+            PrivateOriginalMapBaseViewProjection.Create(snapshot, VisualDefinition());
+
+        Assert.True(PrivateMap3Entity142DiagnosticProjection.TryCreate(
+            snapshot,
+            baseProjection,
+            out PrivateMap3Entity142DiagnosticProjection? projection));
+        Assert.NotNull(projection);
+        Assert.Equal(
+            "private-local-map3-entity142-half0-diagnostic-idle-consumer-v1",
+            PrivateMap3Entity142DiagnosticProjection.Capability);
+        Assert.Equal(
+            "project-authored-half0-diagnostic-idle-v1",
+            PrivateMap3Entity142DiagnosticProjection.Policy);
+        Assert.Equal(142, projection.LogicalEntityId);
+        Assert.Equal(17, projection.PhysicalEntitySlot);
+        Assert.Equal("ms_map3_Entities", projection.SourceRecord.ResourceId);
+        Assert.Equal(17, projection.SourceRecord.OneBasedRecordOrdinal);
+        Assert.Equal(new MapPosition(54, 17), projection.Position);
+        Assert.Equal(new global::Godot.Vector2(120, 72), projection.DestinationRect.Position);
+        Assert.Equal(new global::Godot.Vector2(24, 24), projection.DestinationRect.Size);
+        Assert.Equal(0, PrivateMap3Entity142DiagnosticProjection.SelectedSourceHalf);
+        Assert.Equal(
+            new global::Godot.Rect2I(0, 0, 48, 48),
+            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(2));
+        Assert.Equal(
+            new global::Godot.Rect2I(0, 0, 96, 96),
+            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(4));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            PrivateOriginalMapBaseViewport.Entity142DiagnosticSourceRect(1));
+        System.Reflection.MethodInfo? bind =
+            typeof(PrivateOriginalMapBaseViewport).GetMethod(
+                "TryBindLocalEntity142Diagnostic",
+                System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(bind);
+        Assert.Equal(
+            new[]
+            {
+                typeof(PrivateLocalPresentationRasterMount),
+                typeof(PrivateOriginalMapSessionSnapshot),
+                typeof(PrivateLocalPresentationAssetMountDiagnostic).MakeByRefType(),
+            },
+            bind.GetParameters().Select(parameter => parameter.ParameterType));
+    }
+
+    [Fact]
+    public void Entity142DiagnosticRejectsPopulationOrRecordDriftAndStaticOverlayExcludesIt()
+    {
+        PrivateOriginalMapSessionSnapshot missing = Snapshot(
+            [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+            new ushort[WorkingMapLayout.WordCount]);
+        PrivateOriginalMapBaseViewProjection missingProjection =
+            PrivateOriginalMapBaseViewProjection.Create(missing, VisualDefinition());
+        Assert.False(PrivateMap3Entity142DiagnosticProjection.TryCreate(
+            missing,
+            missingProjection,
+            out _));
+
+        foreach (string drift in new[]
+        {
+            "raw-x",
+            "raw-y",
+            "facing",
+            "map-sprite",
+            "kind",
+            "tail",
+        })
+        {
+            PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+                [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+                new ushort[WorkingMapLayout.WordCount],
+                entityPopulation: AcceptedEntity142Population(drift));
+            PrivateOriginalMapBaseViewProjection baseProjection =
+                PrivateOriginalMapBaseViewProjection.Create(snapshot, VisualDefinition());
+            Assert.False(PrivateMap3Entity142DiagnosticProjection.TryCreate(
+                snapshot,
+                baseProjection,
+                out _));
+        }
+
+        PrivateOriginalMapSessionSnapshot exact = Snapshot(
+            [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+            new ushort[WorkingMapLayout.WordCount],
+            areaDefinitions: StaticOverlayAreas(),
+            entityPopulation: AcceptedEntity142Population());
+        PrivateOriginalMapBaseViewProjection overlay =
+            PrivateOriginalMapBaseViewProjection.Create(
+                exact,
+                VisualDefinition(),
+                staticOverlayDiagnostic: true);
+        Assert.True(PrivateMap3Entity142DiagnosticProjection.TryCreate(
+            exact,
+            overlay,
+            out PrivateMap3Entity142DiagnosticProjection? excluded));
+        Assert.Null(excluded);
+    }
+
+    [Fact]
     public void ContinuousCameraSamplesTheTrailingBlockAndKeepsThePlayerCentered()
     {
         OriginalMapVisualPayloadDefinition visual = VisualDefinition();
@@ -856,7 +962,8 @@ public sealed class PrivateOriginalMapBaseViewportTests
         ushort[] layoutWords,
         byte paletteIndex = 0,
         IEnumerable<OriginalMapAreaDefinition>? areaDefinitions = null,
-        MapPosition? playerPosition = null)
+        MapPosition? playerPosition = null,
+        OriginalMapEntityPopulation? entityPopulation = null)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         WorkingMapLayout definitionLayout = new(new ushort[WorkingMapLayout.WordCount]);
@@ -879,7 +986,7 @@ public sealed class PrivateOriginalMapBaseViewportTests
             definitionLayout,
             blockCatalog,
             areaCatalog,
-            ProjectAuthoredEntityPopulation(map),
+            entityPopulation ?? ProjectAuthoredEntityPopulation(map),
             Selection(paletteIndex),
             new OriginalMapControlledAdmission(
                 map,
@@ -930,6 +1037,62 @@ public sealed class PrivateOriginalMapBaseViewportTests
                     mapSprite: 0,
                     [0, 0, 0, 0]),
             ]);
+
+    private static OriginalMapEntityPopulation AcceptedEntity142Population(
+        string? targetDrift = null)
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        List<OriginalMapEntityDefinition> records = [];
+        for (int ordinal = 1; ordinal <= OriginalMapRuntimeAdmission.AcceptedEntityRecordCount;
+            ordinal++)
+        {
+            bool target = ordinal ==
+                PrivateMap3Entity142DiagnosticProjection.AcceptedSourceRecordOrdinal;
+            bool walking = ordinal <= OriginalMapRuntimeAdmission.AcceptedWalkingEntityRecordCount;
+            byte rawX = target
+                ? (byte)(targetDrift == "raw-x" ? 55 : 54)
+                : (byte)ordinal;
+            byte rawY = target
+                ? (byte)(targetDrift == "raw-y" ? 18 : 17)
+                : (byte)ordinal;
+            byte facing = target
+                ? (byte)(targetDrift == "facing" ? 2 : 1)
+                : (byte)0;
+            byte mapSprite = target
+                ? (byte)(targetDrift == "map-sprite" ? 208 : 209)
+                : (byte)0;
+            byte[] tail = target
+                ? targetDrift switch
+                {
+                    "kind" => [0xFF, 0x04, 0x60, 0xCE],
+                    "tail" => [0x00, 0x04, 0x60, 0xCF],
+                    _ => [0x00, 0x04, 0x60, 0xCE],
+                }
+                : walking ? [0xFF, 0, 0, 0] : [0, 0, 0, 0];
+            records.Add(new OriginalMapEntityDefinition(
+                new OriginalMapEntityRecordIdentity(
+                    OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                    ordinal),
+                rawX,
+                rawY,
+                facing,
+                mapSprite,
+                tail));
+        }
+
+        System.Reflection.ConstructorInfo constructor =
+            typeof(OriginalMapEntityPopulation).GetConstructors(
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 4);
+        return (OriginalMapEntityPopulation)constructor.Invoke(
+        [
+            map,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            records,
+            OriginalMapRuntimeAdmission.AcceptedEntityProjectionDigest,
+        ]);
+    }
 
     private static OriginalMapAreaDefinition[] StaticOverlayAreas() =>
     [

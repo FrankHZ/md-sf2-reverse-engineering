@@ -96,6 +96,7 @@ public sealed partial class Map3Root
         PrivateLocalPresentationRasterMount? baseAtlas = null;
         PrivateLocalPresentationRasterMount? playerReference = null;
         PrivateLocalPlayerLocomotionMount? playerLocomotion = null;
+        PrivateLocalPresentationRasterMount? entity142Diagnostic = null;
         if ((selection.PrivateHudPreviewRequested || selection.PrivateBaseAtlasRequested) &&
             !TryPreparePrivatePresentationAssets(
                 selection,
@@ -105,7 +106,8 @@ public sealed partial class Map3Root
                 out tacticalCursor,
                 out baseAtlas,
                 out playerReference,
-                out playerLocomotion))
+                out playerLocomotion,
+                out entity142Diagnostic))
         {
             return;
         }
@@ -121,6 +123,7 @@ public sealed partial class Map3Root
                 baseAtlas,
                 playerReference,
                 playerLocomotion,
+                entity142Diagnostic,
                 runSmoke,
                 sessionStarted);
             return;
@@ -172,6 +175,7 @@ public sealed partial class Map3Root
         PrivateLocalPresentationRasterMount? baseAtlas,
         PrivateLocalPresentationRasterMount? playerReference,
         PrivateLocalPlayerLocomotionMount? playerLocomotion,
+        PrivateLocalPresentationRasterMount? entity142Diagnostic,
         bool runSmoke,
         long sessionStarted)
     {
@@ -258,6 +262,19 @@ public sealed partial class Map3Root
             return;
         }
 
+        if (entity142Diagnostic is not null &&
+            !presenter.TryBindEntity142Diagnostic(
+                entity142Diagnostic,
+                started.Session.PrivateOriginalMapSnapshot,
+                out PrivateLocalPresentationAssetMountDiagnostic? entityDiagnostic))
+        {
+            FailPrivateStartup(
+                $"PrivateLocal Map 3 entity-142 diagnostic unavailable ({entityDiagnostic!.Code}).",
+                runSmoke,
+                "private-local");
+            return;
+        }
+
         presenter.Project(
             started.Session.PrivateOriginalMapSnapshot,
             "Ready",
@@ -282,13 +299,15 @@ public sealed partial class Map3Root
         out PrivateLocalPresentationRasterMount? tacticalCursor,
         out PrivateLocalPresentationRasterMount? baseAtlas,
         out PrivateLocalPresentationRasterMount? playerReference,
-        out PrivateLocalPlayerLocomotionMount? playerLocomotion)
+        out PrivateLocalPlayerLocomotionMount? playerLocomotion,
+        out PrivateLocalPresentationRasterMount? entity142Diagnostic)
     {
         hudPreview = null;
         tacticalCursor = null;
         baseAtlas = null;
         playerReference = null;
         playerLocomotion = null;
+        entity142Diagnostic = null;
         OriginalMapImportResult importResult = importSource.Admit(importRequest);
         if (importResult is not OriginalMapImportAccepted importAccepted)
         {
@@ -422,6 +441,24 @@ public sealed partial class Map3Root
             }
 
             playerLocomotion = mountedLocomotion.Animation;
+
+            PrivateLocalPresentationAssetMountResult entityResult =
+                catalog.MountMap3Entity142Reference(
+                    packRequest,
+                    acceptedPack,
+                    effectivePhysicalScale);
+            if (entityResult is not PrivateLocalPresentationAssetMounted mountedEntity)
+            {
+                PrivateLocalPresentationAssetMountRejected rejected =
+                    (PrivateLocalPresentationAssetMountRejected)entityResult;
+                FailPrivateStartup(
+                    $"PrivateLocal Map 3 entity-142 diagnostic unavailable ({rejected.Diagnostic.Code}).",
+                    selection.PrivateSmokeRequested,
+                    "private-local");
+                return false;
+            }
+
+            entity142Diagnostic = mountedEntity.Asset;
         }
 
         importSource = new PreadmittedOriginalMapImportSource(

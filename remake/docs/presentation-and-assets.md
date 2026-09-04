@@ -260,8 +260,8 @@ analog output, display behavior, colorimetry, hardware chronology, or final-pixe
 The current reviewed local pack at commit `d89274972905742f8a02b8d8b20d2c96d2ff9ca9`, tree
 `fb2581bac58f662e4e5143b52776b15c2cf5ca25`, and manifest SHA-256
 `5599BBB898C298B21C05AAC8BF01B8926F79FD02E07F34AD91455C2013D0D6ED` contains the two HUD assets,
-the exact atlas family, the player initial-reference-frame family, and the three controlled-player
-locomotion sheets. It also retains one unconsumed entity-142/Astral UP two-half reference sheet. The
+the exact atlas family, the player initial-reference-frame family, the three controlled-player
+locomotion sheets, and one entity-142/Astral UP two-half reference sheet. The
 atlas's explicit
 PrivateLocal consumer mounts only one selected 2x or 4x runtime PNG after Content rechecks the closed
 pack. Godot validates decoded RGBA8 dimensions and projects every physical bucket texel through the
@@ -300,14 +300,20 @@ enters runtime or a PCK.
 Admission rendered pixels, live palette at admission, DMA/cache completion, original rendered-color
 parity, wall-clock/display timing, and final pixels remain **Unknown**.
 
-The sibling entity-142 candidate builder is fixture-bound and deliberately stops before product
+The sibling entity-142 candidate builder is fixture-bound and does not decide original product
 selection. It validates the fixed-ROM root, the exact accepted Map 3 record/physical slot/logical entity,
 map-sprite 209, UP-facing source, compressed bytes, both decoded-half identities, and palette 3. It
 renders both 24-by-24 halves in source order into one 48-by-24 master and deterministic nearest 2x/4x
 buckets using the same project-authored transparent-index and channel-expansion policy. The separately
-reviewed local transaction retains all five source/master/runtime/manifest objects, but no Application,
-Content, or Godot consumer resolves this asset. Which half was visible at interaction time, the exact
-animation counter/cadence, idle meaning, visibility, and interaction behavior remain **Unknown**.
+reviewed local transaction retains all five source/master/runtime/manifest objects. The explicit
+base-atlas composition now resolves its runtime bucket through the existing Content reader and mounts
+it only after the immutable private snapshot retains the exact `ms_map3_Entities` record 17 population.
+Godot applies `project-authored-half0-diagnostic-idle-v1`: it crops the source-order left half, places
+that one diagnostic at the accepted record position relative to the current project-authored camera,
+and omits it from the static-overlay diagnostic. Logical entity 142 and physical slot 17 remain this
+exact route-bounded binding, not a general entity model. Which half was visible at interaction time,
+the exact original animation counter/cadence, idle meaning, visibility, lifecycle, walking, occupancy,
+collision, event behavior, and all-entity presentation remain **Unknown**.
 
 The accepted `sf2-map3-original-player-locomotion-animation-runtime-v1` owner closes the bounded
 controlled-player timing gap without turning either half into a universal idle pose. A sibling local
@@ -537,13 +543,13 @@ an admitted product font, Theme, original battle title, or presentation-fidelity
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
 | implemented world-family tooling prerequisite | fixed private Map 3 ROM/metadata roots; exact palette/slot selection; five-segment 128-by-320 source-crisp atlas; deterministic nearest 2x/4x ignored candidate; no implicit promotion or update |
 | implemented player-reference consumer | fixed private ROM root; exact controlled player, regular map-sprite, DOWN source-slot, no-mirror, and half-zero selection; bounded Basic decode; reviewed 24-by-24 `initial-reference-frame` master and nearest 2x/4x local transaction; exact Content mount and thin Godot logical-cell projection; no standing/idle, animation, or admission-visible claim |
-| implemented entity-reference tooling prerequisite | fixed private ROM root plus accepted entity-142 fixture; exact record/slot/map-sprite/UP source; both decoded halves retained in source order as one reviewed 48-by-24 local sheet and nearest 2x/4x buckets; no selected half, idle/counter/cadence/visibility/interaction semantics, consumer, or fidelity claim |
+| implemented entity-reference tooling prerequisite and bounded consumer | fixed private ROM root plus accepted entity-142 fixture; exact record/slot/map-sprite/UP source; both decoded halves retained in source order as one reviewed 48-by-24 local sheet and nearest 2x/4x buckets; exact Content mount and Godot-only `project-authored-half0-diagnostic-idle-v1` selection for the one admitted record; no original selected-half/idle/counter/cadence/visibility/interaction semantics, lifecycle, all-entity renderer, or fidelity claim |
 | implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop after exact-nearest scale-block validation; no playable ROM/metadata reopen, source/master runtime input, PCK, or fidelity claim |
 | implemented modern camera consumer | Godot-only immutable focus projection from authoritative private snapshot plus Application locomotion offset; two logical pixels per accepted transition; column-6/row-3 centering with 64-by-64 map clamp; bounded sub-tile sampling shared by offline payload tests and the playable local atlas; static overlay remains fixed; no original camera/plane/parallax/autoscroll/VInt/final-pixel claim |
 | separate implementation decision | live resize bucket remount and fullscreen/monitor transition UX; platform safe-area integration; original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original background-layer palette source; camera/layer/priority-with-sprites/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
 
-The local asset repository and three bounded semantic consumers now exist, but this document still does
+The local asset repository and four bounded semantic consumers now exist, but this document still does
 not authorize a product batch, PCK inclusion, presenter-wide migration, original Yes/No/cursor
 interaction, admitted product font/input glyphs, or a general Theme. Those changes require separately
 owned, reviewable implementation slices.
