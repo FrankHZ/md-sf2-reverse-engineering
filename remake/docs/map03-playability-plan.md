@@ -13,34 +13,36 @@ separate.
 The accepted runtime already admits the controlled private Map 3 state, authoritative working
 layout, traversal policy, current area, block and visual-resource data, selected setup entity
 population, reviewed local base atlas, player locomotion, a project-authored camera, one bounded
-entity diagnostic, a manual synthetic battle bridge, and two exact private same-map warp records.
+entity diagnostic, a manual synthetic battle bridge, two exact private same-map warp records, and
+the first landing's distinct once-only roof-on-load clear.
 `GameSession` evaluates their candidate targets before ordinary passability and atomically relocates
 the authoritative position, facing, area, and step without executing opaque original targets. These
 capabilities do not execute natural setup, zone, door, dialogue, music, or original presentation
 behavior.
 
 The first accepted warp exits the controlled-start pocket in area record 2 and lands in area record
-1. That landing has a separately evidenced roof-on-load clear which is not part of the warp itself.
-The current runtime does not apply that copy, so presenting the area-1 overlay as natural gameplay
-would leave a materially false roof state. The accepted entity-142 interaction stand at `(55, 17)`
-also remains unreachable: the route between the two admitted warps still depends on an accepted
-zone transition, two door copies, and a Sarah interaction/temporary flag lifecycle that are not yet
-runtime capabilities.
+1. Application commits its separately evidenced roof-on-load clear in the same authoritative
+snapshot as the relocation while retaining distinct warp and roof receipts. The Domain lifecycle
+saves the prior rectangle, clears it with the accepted empty-word policy, and prevents duplicate
+activation. No restore command is exposed: the original reverse/leave trigger, general roof scan,
+presentation timing, and simulation-step parity remain outside this bounded slice. The accepted
+entity-142 interaction stand at `(55, 17)` also remains unreachable: the route between the two
+admitted warps still depends on an accepted zone transition, two door copies, and a Sarah
+interaction/temporary flag lifecycle that are not yet runtime capabilities.
 
 ## Ordered Frontier
 
-1. Content and Application admit the exact roof-on-load clear as a distinct current-layout mutation;
-   do not bundle it into the same-map warp or call it natural setup/init execution.
-2. Godot projects the live current area's second layer from the authoritative working layout. Any
+1. Godot projects the live current area's second layer from the authoritative post-warp working
+   layout. Any
    interim composition and draw order are labelled as modern remake policy until original plane,
    priority, palette, camera, and timing behavior is accepted.
-3. The accepted zone, Bowie-door, school-door, and Sarah temporary-flag boundaries are admitted in
+2. The accepted zone, Bowie-door, school-door, and Sarah temporary-flag boundaries are admitted in
    evidence order before claiming a route to the second same-map warp.
-4. The accepted entity-142 interaction record gains a request/acknowledgement lifecycle without
+3. The accepted entity-142 interaction record gains a request/acknowledgement lifecycle without
    inventing dialogue or program effects.
-5. Broader selected-setup entities gain reviewed local assets and bounded visual policies after their
+4. Broader selected-setup entities gain reviewed local assets and bounded visual policies after their
    identities and visibility rules are closed.
-6. Remaining natural doors, steps, warps, and setup refinements follow their accepted evidence; Map
+5. Remaining natural doors, steps, warps, roofs, and setup refinements follow their accepted evidence; Map
    3 music and audio follow only after scene-use and playback boundaries are closed.
 
 ## Decision Rules

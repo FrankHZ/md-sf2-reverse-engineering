@@ -186,6 +186,7 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.HouseWarpTriggerX,
             OriginalMapRuntimeAdmission.HouseWarpTriggerY)] =
             OriginalMapTraversal.CollisionMask;
+        FillRoofRegion(words, value: 1);
         GameSession session = Start(Definition(words));
         WorkingMapLayout admittedLayout = session.PrivateOriginalMapSnapshot.WorkingLayout;
 
@@ -221,10 +222,26 @@ public sealed class OriginalMapGameSessionTests
         Assert.Equal(1, receipt.DestinationAreaOrdinal);
         Assert.Equal(2, receipt.SimulationStep);
         Assert.Equal(receipt.Destination, relocated.Move.Snapshot.PlayerPosition);
-        Assert.Same(admittedLayout, relocated.Move.Snapshot.WorkingLayout);
+        Assert.NotSame(admittedLayout, relocated.Move.Snapshot.WorkingLayout);
+        AssertRoofRegion(relocated.Move.Snapshot.WorkingLayout, expected: 0);
         Assert.Null(relocated.Move.Snapshot.LastTraversal);
         Assert.Null(relocated.Move.Snapshot.LastLayoutMutation);
         Assert.Same(receipt, relocated.Move.Snapshot.LastSameMapWarp);
+        PrivateOriginalMapRoofOnLoadReceipt roof =
+            Assert.IsType<PrivateOriginalMapRoofOnLoadReceipt>(relocated.Move.RoofOnLoad);
+        Assert.Same(roof, relocated.Move.Snapshot.LastRoofOnLoad);
+        Assert.Equal(OriginalMapRuntimeAdmission.HouseRoofOnLoadRecordOrdinal,
+            roof.RecordIdentity.OneBasedRecordOrdinal);
+        Assert.Equal(receipt.RecordIdentity, roof.AppliedAfterWarp);
+        Assert.Equal(OriginalMapRuntimeAdmission.HouseRoofDestinationAreaOrdinal,
+            roof.DestinationArea.OneBasedRecordOrdinal);
+        Assert.Equal(56, roof.SavedCellCount);
+        Assert.True(roof.ViewUpdateRequested);
+        Assert.Equal(receipt.SimulationStep, roof.SimulationStep);
+        MapBlockCopyLifecycleActiveState roofState =
+            Assert.IsType<MapBlockCopyLifecycleActiveState>(
+                relocated.Move.Snapshot.RoofOnLoadLifecycle);
+        Assert.Equal(Enumerable.Repeat((ushort)1, 56), roofState.SavedWords);
         Assert.Equal(PrivateOriginalMapPlayerLocomotionPhase.Relocated,
             relocated.Animation.Phase);
         Assert.Equal(ExplorationDirection.East, relocated.Animation.Direction);
@@ -236,6 +253,10 @@ public sealed class OriginalMapGameSessionTests
             typeof(PrivateOriginalMapSameMapWarpReceipt).GetProperties(),
             property => new[] { "Path", "Payload", "Address", "Word" }
                 .Any(fragment => property.Name.Contains(fragment, StringComparison.Ordinal)));
+        Assert.DoesNotContain(
+            typeof(PrivateOriginalMapRoofOnLoadReceipt).GetProperties(),
+            property => new[] { "Path", "Payload", "Address", "Word" }
+                .Any(fragment => property.Name.Contains(fragment, StringComparison.Ordinal)));
         Assert.Throws<ArgumentException>(() => new PrivateOriginalMapSameMapWarpReceipt(
             receipt.RecordIdentity,
             new MapPosition(56, 3),
@@ -245,6 +266,13 @@ public sealed class OriginalMapGameSessionTests
             receipt.SourceAreaOrdinal,
             receipt.DestinationAreaOrdinal,
             receipt.SimulationStep));
+
+        PrivateOriginalMapMoveApplied afterReload = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.Null(afterReload.SameMapWarp);
+        Assert.Null(afterReload.RoofOnLoad);
+        Assert.Same(roofState, afterReload.Snapshot.RoofOnLoadLifecycle);
+        AssertRoofRegion(afterReload.Snapshot.WorkingLayout, expected: 0);
     }
 
     [Fact]
@@ -265,11 +293,46 @@ public sealed class OriginalMapGameSessionTests
             restarted.PrivateOriginalMapSnapshot.PlayerPosition);
         Assert.Equal(0, restarted.PrivateOriginalMapSnapshot.SimulationStep);
         Assert.Null(restarted.PrivateOriginalMapSnapshot.LastSameMapWarp);
+        Assert.Null(restarted.PrivateOriginalMapSnapshot.LastRoofOnLoad);
+        Assert.IsType<MapBlockCopyLifecycleInactiveState>(
+            restarted.PrivateOriginalMapSnapshot.RoofOnLoadLifecycle);
 
         PrivateOriginalMapMoveApplied east = restarted.ApplyPrivateOriginalMap(
             new MoveExplorationCommand(ExplorationDirection.East));
         Assert.Equal(OriginalMapTraversalOutcome.Moved, east.Traversal.Outcome);
         Assert.Null(east.SameMapWarp);
+        Assert.Null(east.RoofOnLoad);
+    }
+
+    [Fact]
+    public void OtherAdmittedWarpDoesNotInventASecondRoofEffect()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        WorkingMapLayout admittedLayout = session.PrivateOriginalMapSnapshot.WorkingLayout;
+        for (int count = 0; count < 4; count++)
+        {
+            _ = session.ApplyPrivateOriginalMap(
+                new MoveExplorationCommand(ExplorationDirection.South));
+        }
+
+        for (int count = 0; count < 9; count++)
+        {
+            _ = session.ApplyPrivateOriginalMap(
+                new MoveExplorationCommand(ExplorationDirection.West));
+        }
+
+        PrivateOriginalMapMoveApplied relocated = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.SchoolWarpRecordOrdinal,
+            Assert.IsType<PrivateOriginalMapSameMapWarpReceipt>(relocated.SameMapWarp)
+                .RecordIdentity.OneBasedRecordOrdinal);
+        Assert.Null(relocated.RoofOnLoad);
+        Assert.Null(relocated.Snapshot.LastRoofOnLoad);
+        Assert.IsType<MapBlockCopyLifecycleInactiveState>(
+            relocated.Snapshot.RoofOnLoadLifecycle);
+        Assert.Same(admittedLayout, relocated.Snapshot.WorkingLayout);
     }
 
     [Fact]
@@ -928,6 +991,35 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactRoofOnLoadClear()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        OriginalMapSameMapWarpCatalog warps = AcceptedSameMapWarps(map);
+        OriginalMapAreaCatalog areas = AcceptedAreaCatalog();
+        OriginalMapRoofOnLoadDefinition accepted = RoofOnLoadClear(map, warps, areas);
+        OriginalMapRoofOnLoadDefinition changed = new(
+            accepted.Identity,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.HouseRoofSourceTriggerX + 1,
+                OriginalMapRuntimeAdmission.HouseRoofSourceTriggerY),
+            accepted.ClearDestination,
+            accepted.Width,
+            accepted.Height,
+            accepted.AppliedAfterWarp,
+            accepted.DestinationArea);
+
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), roofOnLoadClear: changed),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), omitRoofOnLoadClear: true),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedRoofOnLoadClear(accepted));
+    }
+
+    [Fact]
     public void AcceptedSourceDefinitionMustRetainExactSelectedSetupEntityPopulation()
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
@@ -1018,7 +1110,9 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapBlockCatalog? blockCatalog = null,
         OriginalMapEntityPopulation? entityPopulation = null,
         OriginalMapVisualResourceSelection? visualResourceSelection = null,
-        OriginalMapSameMapWarpCatalog? sameMapWarps = null)
+        OriginalMapSameMapWarpCatalog? sameMapWarps = null,
+        OriginalMapRoofOnLoadDefinition? roofOnLoadClear = null,
+        bool omitRoofOnLoadClear = false)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -1030,11 +1124,14 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.ControlledStepCopySourceX,
             OriginalMapRuntimeAdmission.ControlledStepCopySourceY)] &=
             unchecked((ushort)~OriginalMapTraversal.CollisionMask);
+        OriginalMapAreaCatalog admittedAreas = areaCatalog ?? AcceptedAreaCatalog();
+        OriginalMapSameMapWarpCatalog admittedWarps =
+            sameMapWarps ?? AcceptedSameMapWarps(map);
         return new OriginalMapImportDefinition(
             map,
             new WorkingMapLayout(admittedWords),
             blockCatalog ?? AcceptedBlockCatalog(),
-            areaCatalog ?? AcceptedAreaCatalog(),
+            admittedAreas,
             entityPopulation ?? AcceptedEntityPopulation(map),
             visualResourceSelection ?? AcceptedVisualResourceSelection(map),
             new OriginalMapControlledAdmission(
@@ -1047,8 +1144,11 @@ public sealed class OriginalMapGameSessionTests
                 OriginalMapRuntimeAdmission.SelectedInitIdentity,
                 noProgramRequest: true),
             ControlledStepCopy(map),
-            sameMapWarps ?? AcceptedSameMapWarps(map),
-            ["natural-route-and-effects-unknown"]);
+            admittedWarps,
+            ["natural-route-and-effects-unknown"],
+            omitRoofOnLoadClear
+                ? null
+                : roofOnLoadClear ?? RoofOnLoadClear(map, admittedWarps, admittedAreas));
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>
@@ -1089,6 +1189,32 @@ public sealed class OriginalMapGameSessionTests
             new MapPosition(triggerX, triggerY),
             new MapPosition(destinationX, destinationY),
             opaqueFacing);
+
+    private static OriginalMapRoofOnLoadDefinition RoofOnLoadClear(
+        MapId map,
+        OriginalMapSameMapWarpCatalog warps,
+        OriginalMapAreaCatalog areas) =>
+        new(
+            new OriginalMapRoofOnLoadIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.RoofOnLoadResourceId,
+                OriginalMapRuntimeAdmission.HouseRoofOnLoadRecordOrdinal),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.HouseRoofSourceTriggerX,
+                OriginalMapRuntimeAdmission.HouseRoofSourceTriggerY),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.HouseRoofClearDestinationX,
+                OriginalMapRuntimeAdmission.HouseRoofClearDestinationY),
+            OriginalMapRuntimeAdmission.HouseRoofClearWidth,
+            OriginalMapRuntimeAdmission.HouseRoofClearHeight,
+            warps.Records.Single(record => record.Identity.OneBasedRecordOrdinal ==
+                OriginalMapRuntimeAdmission.HouseWarpRecordOrdinal).Identity,
+            areas.Records[
+                areas.Traversal.SelectActiveArea(new MapPosition(
+                    OriginalMapRuntimeAdmission.HouseWarpDestinationX,
+                    OriginalMapRuntimeAdmission.HouseWarpDestinationY))!.OneBasedRecordOrdinal - 1]
+                .Identity);
 
     private static OriginalMapVisualResourceSelection AcceptedVisualResourceSelection(MapId map) =>
         new(map, paletteIndex: 0, [0, 37, 43, 53, 66]);
@@ -1283,6 +1409,34 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.AcceptedContentDigest);
 
     private static ushort[] EmptyWords() => new ushort[WorkingMapLayout.WordCount];
+
+    private static void FillRoofRegion(ushort[] words, ushort value)
+    {
+        for (int y = 0; y < OriginalMapRuntimeAdmission.HouseRoofClearHeight; y++)
+        {
+            for (int x = 0; x < OriginalMapRuntimeAdmission.HouseRoofClearWidth; x++)
+            {
+                words[Index(
+                    OriginalMapRuntimeAdmission.HouseRoofClearDestinationX + x,
+                    OriginalMapRuntimeAdmission.HouseRoofClearDestinationY + y)] = value;
+            }
+        }
+    }
+
+    private static void AssertRoofRegion(WorkingMapLayout layout, ushort expected)
+    {
+        for (int y = 0; y < OriginalMapRuntimeAdmission.HouseRoofClearHeight; y++)
+        {
+            for (int x = 0; x < OriginalMapRuntimeAdmission.HouseRoofClearWidth; x++)
+            {
+                Assert.Equal(
+                    expected,
+                    layout[
+                        OriginalMapRuntimeAdmission.HouseRoofClearDestinationX + x,
+                        OriginalMapRuntimeAdmission.HouseRoofClearDestinationY + y]);
+            }
+        }
+    }
 
     private static int Index(int x, int y) =>
         (y * WorkingMapLayout.ColumnCount) + x;

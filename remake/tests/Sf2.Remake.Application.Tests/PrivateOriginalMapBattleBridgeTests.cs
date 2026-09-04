@@ -498,7 +498,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
                 noProgramRequest: true),
             StepCopy(map),
             SameMapWarps(map),
-            ["original-battle-route-unknown"]);
+            ["original-battle-route-unknown"],
+            RoofOnLoadClear(map));
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>
@@ -539,6 +540,30 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             new MapPosition(triggerX, triggerY),
             new MapPosition(destinationX, destinationY),
             opaqueFacing);
+
+    private static OriginalMapRoofOnLoadDefinition RoofOnLoadClear(MapId map) =>
+        new(
+            new OriginalMapRoofOnLoadIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.RoofOnLoadResourceId,
+                OriginalMapRuntimeAdmission.HouseRoofOnLoadRecordOrdinal),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.HouseRoofSourceTriggerX,
+                OriginalMapRuntimeAdmission.HouseRoofSourceTriggerY),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.HouseRoofClearDestinationX,
+                OriginalMapRuntimeAdmission.HouseRoofClearDestinationY),
+            OriginalMapRuntimeAdmission.HouseRoofClearWidth,
+            OriginalMapRuntimeAdmission.HouseRoofClearHeight,
+            new OriginalMapSameMapWarpIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.SameMapWarpResourceId,
+                OriginalMapRuntimeAdmission.HouseWarpRecordOrdinal),
+            new OriginalMapAreaRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedAreaResourceId,
+                OriginalMapRuntimeAdmission.HouseRoofDestinationAreaOrdinal));
 
     private static OriginalMapImportReceipt ImportReceipt() =>
         new(

@@ -14,13 +14,17 @@ public sealed record PrivateOriginalMapSessionSnapshot
         OriginalMapTraversalResult? lastTraversal,
         bool controlledStepCopyApplied,
         PrivateOriginalMapLayoutMutationReceipt? lastLayoutMutation,
-        PrivateOriginalMapSameMapWarpReceipt? lastSameMapWarp = null)
+        PrivateOriginalMapSameMapWarpReceipt? lastSameMapWarp = null,
+        MapBlockCopyLifecycleState? roofOnLoadLifecycle = null,
+        PrivateOriginalMapRoofOnLoadReceipt? lastRoofOnLoad = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
         ArgumentOutOfRangeException.ThrowIfNegative(simulationStep);
         PlayerPosition = playerPosition ?? throw new ArgumentNullException(nameof(playerPosition));
+        MapBlockCopyLifecycleState admittedRoofLifecycle =
+            roofOnLoadLifecycle ?? MapBlockCopyLifecycleState.Inactive;
         definition.BlockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
         if (definition.Traversal.SelectActiveArea(playerPosition) is null ||
             OriginalMapTraversal.IsBlocked(workingLayout, playerPosition))
@@ -35,7 +39,9 @@ public sealed record PrivateOriginalMapSessionSnapshot
             (lastLayoutMutation is null ? 0 : 1) +
             (lastSameMapWarp is null ? 0 : 1);
         if (simulationStep == 0 &&
-            (completedOperations != 0 || controlledStepCopyApplied))
+            (completedOperations != 0 ||
+                controlledStepCopyApplied ||
+                admittedRoofLifecycle is not MapBlockCopyLifecycleInactiveState))
         {
             throw new ArgumentException(
                 "The initial private original-map snapshot cannot contain a completed operation.",
@@ -94,6 +100,65 @@ public sealed record PrivateOriginalMapSessionSnapshot
             }
         }
 
+        if (admittedRoofLifecycle is MapBlockCopyLifecycleActiveState activeRoof)
+        {
+            OriginalMapRoofOnLoadDefinition roof = definition.RoofOnLoadClear ??
+                throw new ArgumentException(
+                    "An active roof-on-load lifecycle requires its admitted definition.",
+                    nameof(roofOnLoadLifecycle));
+            if (activeRoof.RecordOrdinal != roof.Identity.OneBasedRecordOrdinal ||
+                activeRoof.DestinationX != roof.ClearDestination.X ||
+                activeRoof.DestinationY != roof.ClearDestination.Y ||
+                activeRoof.Width != roof.Width ||
+                activeRoof.Height != roof.Height ||
+                activeRoof.SavedWords.Count != checked(roof.Width * roof.Height))
+            {
+                throw new ArgumentException(
+                    "The active roof-on-load lifecycle does not match its admitted record.",
+                    nameof(roofOnLoadLifecycle));
+            }
+
+            for (int y = 0; y < roof.Height; y++)
+            {
+                for (int x = 0; x < roof.Width; x++)
+                {
+                    if (workingLayout[roof.ClearDestination.X + x, roof.ClearDestination.Y + y] != 0)
+                    {
+                        throw new ArgumentException(
+                            "An active roof-on-load lifecycle requires the authoritative cleared layout.",
+                            nameof(workingLayout));
+                    }
+                }
+            }
+        }
+        else if (admittedRoofLifecycle is not MapBlockCopyLifecycleInactiveState)
+        {
+            throw new ArgumentOutOfRangeException(nameof(roofOnLoadLifecycle));
+        }
+
+        if (lastRoofOnLoad is not null)
+        {
+            OriginalMapRoofOnLoadDefinition roof = definition.RoofOnLoadClear ??
+                throw new ArgumentException(
+                    "A roof-on-load receipt requires its admitted definition.",
+                    nameof(lastRoofOnLoad));
+            if (lastSameMapWarp is null ||
+                lastRoofOnLoad.SimulationStep != simulationStep ||
+                lastRoofOnLoad.RecordIdentity != roof.Identity ||
+                lastRoofOnLoad.AppliedAfterWarp != lastSameMapWarp.RecordIdentity ||
+                lastRoofOnLoad.DestinationArea != roof.DestinationArea ||
+                lastRoofOnLoad.SourceTrigger != roof.SourceTrigger ||
+                lastRoofOnLoad.ClearDestination != roof.ClearDestination ||
+                lastRoofOnLoad.Width != roof.Width ||
+                lastRoofOnLoad.Height != roof.Height ||
+                admittedRoofLifecycle is not MapBlockCopyLifecycleActiveState)
+            {
+                throw new ArgumentException(
+                    "The roof-on-load receipt must match the atomic warp snapshot and admitted record.",
+                    nameof(lastRoofOnLoad));
+            }
+        }
+
         if (controlledStepCopyApplied && definition.ControlledStepCopy is null)
         {
             throw new ArgumentException(
@@ -114,6 +179,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         ControlledStepCopyApplied = controlledStepCopyApplied;
         LastLayoutMutation = lastLayoutMutation;
         LastSameMapWarp = lastSameMapWarp;
+        RoofOnLoadLifecycle = admittedRoofLifecycle;
+        LastRoofOnLoad = lastRoofOnLoad;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -152,6 +219,10 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public PrivateOriginalMapLayoutMutationReceipt? LastLayoutMutation { get; }
 
     public PrivateOriginalMapSameMapWarpReceipt? LastSameMapWarp { get; }
+
+    public MapBlockCopyLifecycleState RoofOnLoadLifecycle { get; }
+
+    public PrivateOriginalMapRoofOnLoadReceipt? LastRoofOnLoad { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -188,10 +259,12 @@ public sealed record PrivateOriginalMapMoveApplied
 
     public PrivateOriginalMapMoveApplied(
         PrivateOriginalMapSessionSnapshot snapshot,
-        PrivateOriginalMapSameMapWarpReceipt sameMapWarp)
+        PrivateOriginalMapSameMapWarpReceipt sameMapWarp,
+        PrivateOriginalMapRoofOnLoadReceipt? roofOnLoad = null)
     {
         Snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
         SameMapWarp = sameMapWarp ?? throw new ArgumentNullException(nameof(sameMapWarp));
+        RoofOnLoad = roofOnLoad;
     }
 
     public PrivateOriginalMapSessionSnapshot Snapshot { get; }
@@ -201,6 +274,8 @@ public sealed record PrivateOriginalMapMoveApplied
             "A same-map warp outcome does not contain an ordinary traversal result.");
 
     public PrivateOriginalMapSameMapWarpReceipt? SameMapWarp { get; }
+
+    public PrivateOriginalMapRoofOnLoadReceipt? RoofOnLoad { get; }
 }
 
 public sealed partial class GameSession
@@ -270,7 +345,9 @@ public sealed partial class GameSession
             traversal,
             current.ControlledStepCopyApplied,
             lastLayoutMutation: null,
-            lastSameMapWarp: null);
+            lastSameMapWarp: null,
+            roofOnLoadLifecycle: current.RoofOnLoadLifecycle,
+            lastRoofOnLoad: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -339,7 +416,9 @@ public sealed partial class GameSession
             lastTraversal: null,
             controlledStepCopyApplied: true,
             receipt,
-            lastSameMapWarp: null);
+            lastSameMapWarp: null,
+            roofOnLoadLifecycle: current.RoofOnLoadLifecycle,
+            lastRoofOnLoad: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -362,7 +441,9 @@ public sealed partial class GameSession
             lastTraversal: null,
             controlledStepCopyApplied: false,
             lastLayoutMutation: null,
-            lastSameMapWarp: null);
+            lastSameMapWarp: null,
+            roofOnLoadLifecycle: MapBlockCopyLifecycleState.Inactive,
+            lastRoofOnLoad: null);
         GameSession session = new(snapshot);
         session.InitializePrivateOriginalMapPlayerLocomotion();
         return new PrivateOriginalMapGameSessionStarted(session, accepted.Receipt);
@@ -517,6 +598,15 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.sameMapWarps",
                 "The admitted definition does not retain the exact bounded Map 3 same-map warp projection.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedRoofOnLoadClear(
+                definition.RoofOnLoadClear))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.roofOnLoadClear",
+                "The admitted definition does not retain the exact bounded Map 3 roof-on-load clear projection.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(

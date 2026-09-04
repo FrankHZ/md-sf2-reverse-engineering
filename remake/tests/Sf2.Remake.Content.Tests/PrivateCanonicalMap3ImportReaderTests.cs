@@ -46,6 +46,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.BlocksetSourceAdmissionCapability,
                 PrivateCanonicalMap3ImportReader.VisualReferenceAdmissionCapability,
                 PrivateCanonicalMap3ImportReader.SameMapWarpAdmissionCapability,
+                PrivateCanonicalMap3ImportReader.RoofOnLoadClearCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -125,6 +126,13 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(new MapPosition(59, 12), warps.Records[0].Destination);
         Assert.Equal(new MapPosition(3, 3), warps.Records[1].Destination);
         Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedSameMapWarps(warps));
+        OriginalMapRoofOnLoadDefinition roof =
+            Assert.IsType<OriginalMapRoofOnLoadDefinition>(
+                accepted.Definition.RoofOnLoadClear);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedRoofOnLoadClear(roof));
+        Assert.Equal(new MapPosition(4, 8), roof.SourceTrigger);
+        Assert.Equal(new MapPosition(2, 32), roof.ClearDestination);
+        Assert.Equal((7, 8), (roof.Width, roof.Height));
     }
 
     [Fact]
@@ -428,6 +436,45 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     }
 
     [Fact]
+    public void RoofOnLoadResourceRowsAndExactClearProjectionFailClosed()
+    {
+        JsonObject wrongResource = SampleDocument();
+        ResourceArray(wrongResource, "roofEventTables")[0]!.AsObject()["id"] =
+            "OtherRoofEvents";
+        Map(wrongResource, 3)["references"]!.AsObject()["roofEventTable"] =
+            "OtherRoofEvents";
+        AssertCode(Admit(wrongResource), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject wrongCount = SampleDocument();
+        RoofRecords(wrongCount).RemoveAt(9);
+        AssertCode(Admit(wrongCount), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject unknownField = SampleDocument();
+        RoofRecords(unknownField)[0]!.AsObject()["unexpected"] = true;
+        AssertCode(Admit(unknownField), OriginalMapImportFailureCode.InvalidDocument);
+
+        JsonObject reordered = SampleDocument();
+        JsonArray reorderedRows = RoofRecords(reordered);
+        JsonNode first = reorderedRows[0]!.DeepClone();
+        reorderedRows[0] = reorderedRows[1]!.DeepClone();
+        reorderedRows[1] = first;
+        AssertCode(Admit(reordered), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        foreach ((string field, JsonNode? value) in new[]
+        {
+            ("trigger", JsonSerializer.SerializeToNode(Point(5, 8))),
+            ("source", JsonSerializer.SerializeToNode(Point(0, 0))),
+            ("size", JsonSerializer.SerializeToNode(new { width = 6, height = 8 })),
+            ("destination", JsonSerializer.SerializeToNode(Point(3, 32))),
+        })
+        {
+            JsonObject drift = SampleDocument();
+            RoofRecords(drift)[0]!.AsObject()[field] = value;
+            AssertCode(Admit(drift), OriginalMapImportFailureCode.InvalidMapProjection);
+        }
+    }
+
+    [Fact]
     public void MissingPrivatePathReturnsOnlyAPathFreeTypedDiagnostic()
     {
         string missing = Path.Combine(
@@ -504,6 +551,11 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Contains(
             PrivateCanonicalMap3ImportReader.SelectedSetupEntityPopulationCapability,
             accepted.Receipt.Capabilities);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.RoofOnLoadClearCapability,
+            accepted.Receipt.Capabilities);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedRoofOnLoadClear(
+            accepted.Definition.RoofOnLoadClear));
         Assert.Equal(
             OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
             accepted.Definition.EntityPopulation.ResourceId);
@@ -739,7 +791,16 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                             .ToArray(),
                     },
                 },
-                roofEventTables = Resource("Map03s5_RoofEvents"),
+                roofEventTables = new object[]
+                {
+                    new
+                    {
+                        id = "Map03s5_RoofEvents",
+                        address = 8,
+                        sourceKind = "roofEvents",
+                        records = RoofSourceRecords(),
+                    },
+                },
                 warpEventTables = new object[]
                 {
                     new
@@ -841,6 +902,37 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         WarpRecord(54, 3, 255, 3, 3, 0),
     ];
 
+    private static object[] RoofSourceRecords() =>
+    [
+        RoofRecord(4, 8, 255, 255, 7, 8, 2, 32),
+        RoofRecord(7, 22, 255, 255, 6, 6, 5, 48),
+        RoofRecord(8, 22, 255, 255, 6, 6, 5, 48),
+        RoofRecord(12, 12, 255, 255, 6, 6, 10, 38),
+        RoofRecord(19, 12, 255, 255, 6, 5, 17, 39),
+        RoofRecord(20, 20, 0, 0, 1, 1, 20, 20),
+        RoofRecord(21, 20, 1, 1, 1, 1, 21, 20),
+        RoofRecord(32, 15, 255, 255, 5, 6, 30, 41),
+        RoofRecord(38, 24, 255, 255, 5, 5, 36, 51),
+        RoofRecord(41, 13, 255, 255, 9, 8, 39, 37),
+    ];
+
+    private static object RoofRecord(
+        int triggerX,
+        int triggerY,
+        int sourceX,
+        int sourceY,
+        int width,
+        int height,
+        int destinationX,
+        int destinationY) =>
+        new
+        {
+            trigger = Point(triggerX, triggerY),
+            source = Point(sourceX, sourceY),
+            size = new { width, height },
+            destination = Point(destinationX, destinationY),
+        };
+
     private static object WarpRecord(
         int triggerX,
         int triggerY,
@@ -912,6 +1004,10 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static JsonArray WarpRecords(JsonObject document) =>
         ResourceArray(document, "warpEventTables")[0]!
+            .AsObject()["records"]!.AsArray();
+
+    private static JsonArray RoofRecords(JsonObject document) =>
+        ResourceArray(document, "roofEventTables")[0]!
             .AsObject()["records"]!.AsArray();
 
     private static (int, int, int, int, int, int) Geometry(WorkingMapBlockCopy copy) =>
