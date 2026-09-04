@@ -33,6 +33,7 @@ _FOLLOWER_FUNCTIONS = Path("code/common/scripting/map/followersfunctions_1.asm")
 _FOLLOWER_TABLE = Path("data/scripting/entity/followers.asm")
 _ENTITY_FUNCTIONS = Path("code/common/scripting/entity/entityfunctions_1.asm")
 _MAPSCRIPT_FUNCTIONS = Path("code/common/scripting/map/mapscriptengine_1.asm")
+_MAP_SETUP_FUNCTIONS = Path("code/common/scripting/map/mapsetupsfunctions_1.asm")
 _MAP3_ENTITIES = Path("data/maps/entries/map03/mapsetups/s1_entities.asm")
 _MAP3_EVENTS = Path("data/maps/entries/map03/mapsetups/s2_entityevents.asm")
 _MAPSPRITE_ENTRIES = Path("data/graphics/mapsprites/entries.asm")
@@ -44,20 +45,25 @@ _NATURAL_ROUTE_SCHEMA = repo_path("schemas/h3/map3-battle01-natural-route-fixtur
 _OPTIONAL_INTERACTIONS_FIXTURE = repo_path(
     "tests/fixtures/h2/map3-optional-interactions-static-v1.json"
 )
+_PLAYER_REFERENCE_FIXTURE = repo_path(
+    "tests/fixtures/h2/map3-original-player-reference-frame-static-v1.json"
+)
+_PLAYER_REFERENCE_SCHEMA = repo_path(
+    "schemas/h2/map3-original-player-reference-frame-static-fixture.schema.json"
+)
+_PLAYER_REFERENCE_OWNER = "sf2-map3-original-player-reference-frame-static-v1"
 
 _TARGET_SOURCE_INDEX = 16
 _TARGET_SOURCE_ORDINAL = 17
 _TARGET_LOGICAL_ID = 142
 _TARGET_PHYSICAL_SLOT = 17
 _TARGET_MAPSPRITE = 209
-_TARGET_DIRECTION_SLOT = 0
 _TARGET_SYMBOL = "Mapsprite209_0"
 _ENTITY_RECORD_BYTES = 8
 _EVENT_RECORD_INDEX = 15
 _EVENT_RECORD_BYTES = 4
 _DECODED_BYTES = 576
 _HALF_BYTES = 288
-_PALETTE_BYTES = 32
 
 _INDEX_FIXTURE = "tests/fixtures/h2/map3-entity142-interactable-reference-static-v1.json"
 _INDEX_DOCUMENT = "docs/research/map3-entity142-interactable-reference.md"
@@ -372,7 +378,9 @@ def _source_and_mapping_contract(
     return source_record, identity
 
 
-def _event_contract(addresses: dict[str, int], h1: bytes, rom: bytes) -> dict[str, Any]:
+def _event_contract(
+    disasm: Path, addresses: dict[str, int], h1: bytes, rom: bytes
+) -> dict[str, Any]:
     event_address = addresses["ms_map3_EntityEvents"] + _EVENT_RECORD_INDEX * _EVENT_RECORD_BYTES
     event_record = rom[event_address : event_address + _EVENT_RECORD_BYTES]
     if (
@@ -393,6 +401,20 @@ def _event_contract(addresses: dict[str, int], h1: bytes, rom: bytes) -> dict[st
         raise ValueError("Map 3 entity-142 reference retained event owner drift")
     if addresses["Map3_EntityEvent15"] != 331844:
         raise ValueError("Map 3 entity-142 reference event target address drift")
+    setup_functions = _source_text(disasm, _MAP_SETUP_FUNCTIONS)
+    _require_order(
+        _function_section(setup_functions, "RunMapSetupEntityEvent"),
+        (
+            "RunMapSetupEntityEvent:",
+            "move.b  1(a0,d7.w),d6",
+            "btst    #0,d6",
+            "jsr     (UpdateEntityProperties).w",
+            "jsr     (a0)",
+            "btst    #1,d6",
+            "jsr     (UpdateEntityProperties).w",
+        ),
+        "entity-event facing-control operand use",
+    )
     return {
         "table": "ms_map3_EntityEvents",
         "zeroBasedRecordIndex": _EVENT_RECORD_INDEX,
@@ -401,7 +423,13 @@ def _event_contract(addresses: dict[str, int], h1: bytes, rom: bytes) -> dict[st
         "recordHex": event_record.hex().upper(),
         "recordSha256": _sha256(event_record),
         "logicalEntityId": event_record[0],
-        "requiredPlayerFacing": {"symbol": "DOWN", "value": event_record[1]},
+        "eventFacingControl": {
+            "sourceSymbol": row["facing"],
+            "value": event_record[1],
+            "loadedRegister": "D6",
+            "testedBits": [0, 1],
+            "broaderSemantics": "Unknown",
+        },
         "target": "Map3_EntityEvent15",
         "targetAddress": addresses["Map3_EntityEvent15"],
         "routeRelevance": "mandatory-observed-opening",
@@ -409,16 +437,43 @@ def _event_contract(addresses: dict[str, int], h1: bytes, rom: bytes) -> dict[st
     }
 
 
+def _retained_player_reference_policy(source_record: dict[str, Any]) -> dict[str, Any]:
+    fixture = load_json(_PLAYER_REFERENCE_FIXTURE)
+    validate_json(fixture, _PLAYER_REFERENCE_SCHEMA, owner=str(_PLAYER_REFERENCE_FIXTURE))
+    if fixture.get("id") != _PLAYER_REFERENCE_OWNER:
+        raise ValueError("Map 3 entity-142 reference retained player owner drift")
+    static = fixture["static"]
+    direction = next(
+        (
+            rule
+            for rule in static["directionSelection"]["rules"]
+            if rule["direction"] == source_record["facing"]["symbol"]
+            and rule["facing"] == source_record["facing"]["value"]
+        ),
+        None,
+    )
+    if direction is None:
+        raise ValueError("Map 3 entity-142 reference retained direction policy drift")
+    return {"direction": direction, "palette": static["palettePolicy"]}
+
+
 def _drawable_contract(
-    disasm: Path, addresses: dict[str, int], h1: bytes, rom: bytes
+    disasm: Path,
+    addresses: dict[str, int],
+    h1: bytes,
+    rom: bytes,
+    source_record: dict[str, Any],
 ) -> dict[str, Any]:
+    retained_policy = _retained_player_reference_policy(source_record)
+    direction = retained_policy["direction"]
+    palette_policy = retained_policy["palette"]
     entries = (disasm / _MAPSPRITE_ENTRIES).read_text(encoding="utf-8")
     definitions = dict(
         re.findall(r'^\s*(Mapsprite\d{3}_[012]):\s*incbin\s+"([^"]+)"', entries, re.MULTILINE)
     )
     definition_start = entries.find(next(iter(definitions)) + ":")
     references = re.findall(r"\bdc\.l\s+(Mapsprite\d{3}_[012])\b", entries[:definition_start])
-    pointer_slot = _TARGET_MAPSPRITE * 3 + _TARGET_DIRECTION_SLOT
+    pointer_slot = _TARGET_MAPSPRITE * 3 + direction["sourceSlot"]
     if len(references) != 720 or references[pointer_slot] != _TARGET_SYMBOL:
         raise ValueError("Map 3 entity-142 reference map-sprite pointer selection drift")
     source_path = definitions.get(_TARGET_SYMBOL)
@@ -458,22 +513,24 @@ def _drawable_contract(
     palette = (disasm / _BASE_PALETTE).read_bytes()
     palette_address = addresses["palette_Base"]
     if (
-        len(palette) != _PALETTE_BYTES
+        len(palette) != palette_policy["encodedBytes"]
         or rom[palette_address : palette_address + len(palette)] != palette
         or h1[palette_address : palette_address + len(palette)] != palette
     ):
         raise ValueError("Map 3 entity-142 reference palette source/H1/ROM parity drift")
     words = [int.from_bytes(palette[i : i + 2], "big") for i in range(0, len(palette), 2)]
-    if len(words) != 16 or any(word & ~0x0EEE for word in words):
+    palette_mask = int(palette_policy["wordMask"], 0)
+    if len(words) != palette_policy["wordCount"] or any(word & ~palette_mask for word in words):
         raise ValueError("Map 3 entity-142 reference palette word/mask drift")
 
     return {
         "mapSprite": {"symbol": "MAPSPRITE_ASTRAL", "value": _TARGET_MAPSPRITE},
         "direction": {
-            "symbol": "UP",
-            "value": 1,
-            "sourceSlot": _TARGET_DIRECTION_SLOT,
-            "horizontalMirror": False,
+            "policyOwner": _PLAYER_REFERENCE_OWNER,
+            "symbol": direction["direction"],
+            "value": direction["facing"],
+            "sourceSlot": direction["sourceSlot"],
+            "horizontalMirror": direction["horizontalMirror"],
         },
         "pointer": {
             "table": "pt_Mapsprites",
@@ -503,18 +560,19 @@ def _drawable_contract(
             "frameTiles": [3, 3],
             "tileBytes": 32,
             "bitsPerPixel": 4,
-            "pixelNibbleOrder": "high-nibble-left",
-            "tileOrder": "column-major",
+            "pixelNibbleOrder": palette_policy["pixelNibbleOrder"],
+            "tileOrder": palette_policy["tileOrder"],
         },
         "palette": {
-            "sourceSymbol": "palette_Base",
-            "destination": "palette3",
+            "policyOwner": _PLAYER_REFERENCE_OWNER,
+            "sourceSymbol": palette_policy["sourceSymbol"],
+            "destination": palette_policy["destination"],
             "address": palette_address,
             "bytes": len(palette),
             "words": len(words),
-            "wordEndian": "big",
-            "wordMask": "0x0EEE",
-            "transparentIndex": 0,
+            "wordEndian": palette_policy["wordEndian"],
+            "wordMask": palette_policy["wordMask"],
+            "transparentIndex": palette_policy["transparentIndex"],
             "sha256": _sha256(palette),
             "sourceH1RomParity": True,
         },
@@ -615,8 +673,8 @@ def build_map3_entity142_interactable_reference(
         raise ValueError("Map 3 entity-142 reference accepted H1/ROM identity drift")
 
     source_record, identity = _source_and_mapping_contract(disasm, addresses, h1, rom)
-    event = _event_contract(addresses, h1, rom)
-    drawable = _drawable_contract(disasm, addresses, h1, rom)
+    event = _event_contract(disasm, addresses, h1, rom)
+    drawable = _drawable_contract(disasm, addresses, h1, rom, source_record)
     runtime = _retained_runtime_contract()
     commitment = {
         "sourceRecordSha256": source_record["recordSha256"],

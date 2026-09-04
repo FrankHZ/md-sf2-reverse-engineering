@@ -56,6 +56,13 @@ def test_identity_mapping_event_and_two_half_reference_are_exact() -> None:
     assert static["identityMapping"]["sequentialAllocation"]["resolvedPhysicalSlot"] == 17
     assert static["interactionEvent"]["zeroBasedRecordIndex"] == 15
     assert static["interactionEvent"]["target"] == "Map3_EntityEvent15"
+    assert static["interactionEvent"]["eventFacingControl"] == {
+        "sourceSymbol": "DOWN",
+        "value": 3,
+        "loadedRegister": "D6",
+        "testedBits": [0, 1],
+        "broaderSemantics": "Unknown",
+    }
     assert static["retainedRuntime"]["newRuntimeObservation"] is False
     assert static["retainedRuntime"]["dispatch"] == {
         "logicalEntityId": 142,
@@ -63,10 +70,20 @@ def test_identity_mapping_event_and_two_half_reference_are_exact() -> None:
         "target": "Map3_EntityEvent15",
     }
     drawable = static["drawableReference"]
+    assert drawable["direction"] == {
+        "policyOwner": "sf2-map3-original-player-reference-frame-static-v1",
+        "symbol": "UP",
+        "value": 1,
+        "sourceSlot": 0,
+        "horizontalMirror": False,
+    }
     assert drawable["pointer"]["payloadSymbol"] == "Mapsprite209_0"
     assert drawable["decoded"]["bytes"] == 576
     assert drawable["decoded"]["halfBytes"] == 288
     assert [row["index"] for row in drawable["decoded"]["halves"]] == [0, 1]
+    assert drawable["palette"]["policyOwner"] == (
+        "sf2-map3-original-player-reference-frame-static-v1"
+    )
     assert drawable["assetReadiness"] == {
         "classification": "two-half-reference",
         "selectedVisibleHalf": "Unknown",
@@ -100,6 +117,12 @@ def test_identity_mapping_event_and_two_half_reference_are_exact() -> None:
             "msFixedEntity 54, 17, UP, MAPSPRITE_ASTRAL, eas_Init",
             "msFixedEntity 54, 17, DOWN, MAPSPRITE_ASTRAL, eas_Init",
             "selected source record",
+        ),
+        (
+            reference._MAP_SETUP_FUNCTIONS,
+            "btst    #0,d6",
+            "btst    #2,d6",
+            "facing-control operand use",
         ),
     ),
 )
@@ -147,18 +170,60 @@ def test_retained_runtime_near_miss_is_rejected(monkeypatch: pytest.MonkeyPatch)
         reference.build_map3_entity142_interactable_reference(ROM, UPSTREAM)
 
 
+def test_retained_player_reference_policy_near_miss_is_rejected(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original = reference.load_json
+
+    def changed(path: Path):
+        value = original(path)
+        if path == reference._PLAYER_REFERENCE_FIXTURE:
+            value = copy.deepcopy(value)
+            up = next(
+                row
+                for row in value["static"]["directionSelection"]["rules"]
+                if row["direction"] == "UP"
+            )
+            up["sourceSlot"] = 1
+        return value
+
+    monkeypatch.setattr(reference, "load_json", changed)
+    with pytest.raises(ValueError):
+        reference.build_map3_entity142_interactable_reference(ROM, UPSTREAM)
+
+
 @pytest.mark.parametrize(
     "mutation",
     (
         lambda value: value["static"]["identityMapping"].update({"logicalEntityId": 17}),
         lambda value: value["static"]["sourceRecord"].update({"oneBasedOrdinal": 16}),
         lambda value: value["static"]["interactionEvent"].update({"zeroBasedRecordIndex": 16}),
+        lambda value: value["static"]["interactionEvent"]["eventFacingControl"].update(
+            {"value": 2}
+        ),
+        lambda value: value["static"]["interactionEvent"].update(
+            {"requiredPlayerFacing": {"symbol": "DOWN", "value": 3}}
+        ),
         lambda value: value["static"]["retainedRuntime"].update({"newRuntimeObservation": True}),
         lambda value: value["static"]["drawableReference"]["decoded"].update({"halfBytes": 576}),
         lambda value: value["static"]["drawableReference"]["assetReadiness"].update(
             {"selectedVisibleHalf": 0}
         ),
         lambda value: value["static"]["unknowns"].pop("interactionTimeAnimCounter"),
+        lambda value: value["static"]["identityMapping"]["followerReuse"]["rows"][0].update(
+            {"extra": True}
+        ),
+        lambda value: value["static"]["retainedRuntime"]["player"].update({"extra": True}),
+        lambda value: value["static"]["retainedRuntime"]["entityTarget"].update({"extra": True}),
+        lambda value: value["static"]["retainedRuntime"]["dispatch"].update({"extra": True}),
+        lambda value: value["static"]["drawableReference"]["mapSprite"].update({"extra": True}),
+        lambda value: value["static"]["drawableReference"]["direction"].update({"extra": True}),
+        lambda value: value["static"]["drawableReference"]["pointer"].update({"extra": True}),
+        lambda value: value["static"]["drawableReference"]["decoded"]["halves"][0].update(
+            {"extra": True}
+        ),
+        lambda value: value["static"]["drawableReference"]["format"].update({"extra": True}),
+        lambda value: value["static"]["drawableReference"]["palette"].update({"extra": True}),
     ),
 )
 def test_schema_rejects_adversarial_contract_mutations(mutation: object) -> None:

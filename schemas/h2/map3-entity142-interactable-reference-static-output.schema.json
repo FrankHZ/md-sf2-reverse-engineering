@@ -45,12 +45,20 @@
         "interactionEvent": {"$ref": "#/$defs/interactionEvent"},
         "retainedRuntime": {"$ref": "#/$defs/retainedRuntime"},
         "drawableReference": {"$ref": "#/$defs/drawableReference"},
-        "transactionDigest": {"$ref": "#/$defs/sha256"},
+        "transactionDigest": {"const": "1D7B5A7A6C34C696D962992F99835CC96AECF17E5889252EC5EC4E4D5C4947C3"},
         "retainedOwners": {
           "type": "array",
           "minItems": 6,
           "maxItems": 6,
-          "items": {"type": "string"}
+          "additionalItems": false,
+          "items": [
+            {"const": "sf2-map-entities-static-v1"},
+            {"const": "sf2-map3-optional-interactions-static-v1"},
+            {"const": "sf2-map-sprite-decode-v1"},
+            {"const": "sf2-map3-original-player-reference-frame-static-v1"},
+            {"const": "sf2-tech-graphics-static-v1"},
+            {"const": "sf2-map3-battle01-natural-route-runtime-v1"}
+          ]
         },
         "consumerBoundary": {
           "type": "object",
@@ -72,7 +80,6 @@
     }
   },
   "$defs": {
-    "sha256": {"type": "string", "pattern": "^[0-9A-F]{64}$"},
     "indexBindings": {
       "type": "object",
       "additionalProperties": false,
@@ -90,7 +97,7 @@
       "required": ["table", "oneBasedOrdinal", "zeroBasedIndex", "address", "recordBytes", "recordHex", "recordSha256", "macro", "raw", "masked", "facing", "mapSprite", "fixedTail", "sourceH1RomParity"],
       "properties": {
         "table": {"const": "ms_map3_Entities"}, "oneBasedOrdinal": {"const": 17}, "zeroBasedIndex": {"const": 16},
-        "address": {"const": 330672}, "recordBytes": {"const": 8}, "recordHex": {"const": "361101D1000460CE"}, "recordSha256": {"$ref": "#/$defs/sha256"}, "macro": {"const": "msFixedEntity"},
+        "address": {"const": 330672}, "recordBytes": {"const": 8}, "recordHex": {"const": "361101D1000460CE"}, "recordSha256": {"const": "02C4CA1BED67A6E95633181973E41C6EB843069FD520B7D958B0B6805DD06451"}, "macro": {"const": "msFixedEntity"},
         "raw": {"type": "object", "required": ["x", "y", "facing", "mapSprite"], "additionalProperties": false, "properties": {"x": {"const": 54}, "y": {"const": 17}, "facing": {"const": 1}, "mapSprite": {"const": 209}}},
         "masked": {"type": "object", "required": ["x", "y"], "additionalProperties": false, "properties": {"x": {"const": 54}, "y": {"const": 17}}},
         "facing": {"type": "object", "required": ["symbol", "value"], "additionalProperties": false, "properties": {"symbol": {"const": "UP"}, "value": {"const": 1}}},
@@ -105,17 +112,46 @@
       "properties": {
         "logicalEntityId": {"const": 142},
         "logicalEncoding": {"type": "object", "additionalProperties": false, "required": ["entityIndexListOffset", "negativeByteTransform", "entityEnemyIndexDifference"], "properties": {"entityIndexListOffset": {"const": 46}, "negativeByteTransform": {"const": "subtract-ENTITY_ENEMY_INDEX_DIFFERENCE"}, "entityEnemyIndexDifference": {"const": 96}}},
-        "followerReuse": {"type": "object", "additionalProperties": false, "required": ["requiredAcceptedRouteFlag", "rows", "rowsConsumeNewPhysicalSlots"], "properties": {"requiredAcceptedRouteFlag": {"const": 66}, "rows": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "object"}}, "rowsConsumeNewPhysicalSlots": {"const": false}}},
+        "followerReuse": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["requiredAcceptedRouteFlag", "rows", "rowsConsumeNewPhysicalSlots"],
+          "properties": {
+            "requiredAcceptedRouteFlag": {"const": 66},
+            "rows": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "additionalItems": false,
+              "items": [
+                {"type": "object", "additionalProperties": false, "required": ["sourceOrdinal", "entity", "physicalSlot"], "properties": {"sourceOrdinal": {"const": 1}, "entity": {"const": "ALLY_SARAH"}, "physicalSlot": {"const": 1}}},
+                {"type": "object", "additionalProperties": false, "required": ["sourceOrdinal", "entity", "physicalSlot"], "properties": {"sourceOrdinal": {"const": 2}, "entity": {"const": "ALLY_CHESTER"}, "physicalSlot": {"const": 2}}}
+              ]
+            },
+            "rowsConsumeNewPhysicalSlots": {"const": false}
+          }
+        },
         "sequentialAllocation": {"type": "object", "additionalProperties": false, "required": ["firstNonAllySourceOrdinal", "firstNonAllyLogicalEntityId", "firstNonAllyPhysicalSlot", "nonAllyDeclarationsThroughTarget", "resolvedPhysicalSlot"], "properties": {"firstNonAllySourceOrdinal": {"const": 3}, "firstNonAllyLogicalEntityId": {"const": 128}, "firstNonAllyPhysicalSlot": {"const": 3}, "nonAllyDeclarationsThroughTarget": {"const": 15}, "resolvedPhysicalSlot": {"const": 17}}},
         "entityIndexListRamAddress": {"const": 16757056}, "entityDataRamAddress": {"const": 16754946}, "entityDefinitionBytes": {"const": 32}, "resolvedPhysicalAddress": {"const": 16755490}, "classification": {"const": "Confirmed-static-under-accepted-route-follower-state"}
       }
     },
     "interactionEvent": {
       "type": "object", "additionalProperties": false,
-      "required": ["table", "zeroBasedRecordIndex", "address", "recordBytes", "recordHex", "recordSha256", "logicalEntityId", "requiredPlayerFacing", "target", "targetAddress", "routeRelevance", "sourceH1RomParity"],
+      "required": ["table", "zeroBasedRecordIndex", "address", "recordBytes", "recordHex", "recordSha256", "logicalEntityId", "eventFacingControl", "target", "targetAddress", "routeRelevance", "sourceH1RomParity"],
       "properties": {
-        "table": {"const": "ms_map3_EntityEvents"}, "zeroBasedRecordIndex": {"const": 15}, "address": {"const": 331596}, "recordBytes": {"const": 4}, "recordHex": {"const": "8E030134"}, "recordSha256": {"$ref": "#/$defs/sha256"}, "logicalEntityId": {"const": 142},
-        "requiredPlayerFacing": {"type": "object", "additionalProperties": false, "required": ["symbol", "value"], "properties": {"symbol": {"const": "DOWN"}, "value": {"const": 3}}},
+        "table": {"const": "ms_map3_EntityEvents"}, "zeroBasedRecordIndex": {"const": 15}, "address": {"const": 331596}, "recordBytes": {"const": 4}, "recordHex": {"const": "8E030134"}, "recordSha256": {"const": "7065D6B8FE58F42AF58DB6DC88F17F6E29E7EEBDE62424F9A781EBA68C6E9F8C"}, "logicalEntityId": {"const": 142},
+        "eventFacingControl": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sourceSymbol", "value", "loadedRegister", "testedBits", "broaderSemantics"],
+          "properties": {
+            "sourceSymbol": {"const": "DOWN"},
+            "value": {"const": 3},
+            "loadedRegister": {"const": "D6"},
+            "testedBits": {"type": "array", "minItems": 2, "maxItems": 2, "additionalItems": false, "items": [{"const": 0}, {"const": 1}]},
+            "broaderSemantics": {"const": "Unknown"}
+          }
+        },
         "target": {"const": "Map3_EntityEvent15"}, "targetAddress": {"const": 331844}, "routeRelevance": {"const": "mandatory-observed-opening"}, "sourceH1RomParity": {"const": true}
       }
     },
@@ -123,18 +159,48 @@
       "type": "object", "additionalProperties": false,
       "required": ["fixtureId", "fixture", "fixtureSha256", "classification", "player", "entityTarget", "dispatch", "chronology", "newRuntimeObservation"],
       "properties": {
-        "fixtureId": {"const": "sf2-map3-battle01-natural-route-runtime-v1"}, "fixture": {"const": "tests/fixtures/h3/map3-battle01-natural-route-v1.json"}, "fixtureSha256": {"$ref": "#/$defs/sha256"}, "classification": {"const": "retained-accepted-runtime"},
-        "player": {"type": "object"}, "entityTarget": {"type": "object"}, "dispatch": {"type": "object"}, "chronology": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "string"}}, "newRuntimeObservation": {"const": false}
+        "fixtureId": {"const": "sf2-map3-battle01-natural-route-runtime-v1"},
+        "fixture": {"const": "tests/fixtures/h3/map3-battle01-natural-route-v1.json"},
+        "fixtureSha256": {"const": "38B3D8A6FA84D35FBA145947E73F88C3593A24D48E574599F6EB25E27C0989C3"},
+        "classification": {"const": "retained-accepted-runtime"},
+        "player": {"type": "object", "additionalProperties": false, "required": ["map", "x", "y", "facing"], "properties": {"map": {"const": 3}, "x": {"const": 55}, "y": {"const": 17}, "facing": {"const": "Left"}}},
+        "entityTarget": {"type": "object", "additionalProperties": false, "required": ["id", "map", "x", "y", "facing"], "properties": {"id": {"const": 142}, "map": {"const": 3}, "x": {"const": 54}, "y": {"const": 17}, "facing": {"const": "Up"}}},
+        "dispatch": {"type": "object", "additionalProperties": false, "required": ["logicalEntityId", "register", "target"], "properties": {"logicalEntityId": {"const": 142}, "register": {"const": "D0"}, "target": {"const": "Map3_EntityEvent15"}}},
+        "chronology": {"type": "array", "minItems": 4, "maxItems": 4, "additionalItems": false, "items": [{"const": "action:ProcessPlayerAction:map3-entity142"}, {"const": "action:GetActivatedEntity:map3-entity142"}, {"const": "action:RunMapSetupEntityEvent:map3-entity142"}, {"const": "entity:Map3_EntityEvent15"}]},
+        "newRuntimeObservation": {"const": false}
       }
     },
     "drawableReference": {
       "type": "object", "additionalProperties": false,
       "required": ["mapSprite", "direction", "pointer", "compressed", "decoded", "format", "palette", "assetReadiness"],
       "properties": {
-        "mapSprite": {"type": "object"}, "direction": {"type": "object"}, "pointer": {"type": "object"},
-        "compressed": {"type": "object", "required": ["codec", "sourcePath", "bytes", "sha256", "sourceH1RomParity"], "properties": {"codec": {"const": "Basic"}, "sourcePath": {"const": "data/graphics/mapsprites/mapsprite209-0.bin"}, "bytes": {"const": 406}, "sha256": {"$ref": "#/$defs/sha256"}, "sourceH1RomParity": {"const": true}}},
-        "decoded": {"type": "object", "required": ["bytes", "sha256", "halfCount", "halfBytes", "halves"], "properties": {"bytes": {"const": 576}, "sha256": {"$ref": "#/$defs/sha256"}, "halfCount": {"const": 2}, "halfBytes": {"const": 288}, "halves": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "object", "required": ["index", "sha256"], "properties": {"index": {"type": "integer"}, "sha256": {"$ref": "#/$defs/sha256"}}}}}},
-        "format": {"type": "object"}, "palette": {"type": "object", "required": ["sourceSymbol", "destination", "address", "bytes", "words", "wordEndian", "wordMask", "transparentIndex", "sha256", "sourceH1RomParity"], "properties": {"sourceSymbol": {"const": "palette_Base"}, "destination": {"const": "palette3"}, "address": {"const": 12446}, "bytes": {"const": 32}, "words": {"const": 16}, "wordEndian": {"const": "big"}, "wordMask": {"const": "0x0EEE"}, "transparentIndex": {"const": 0}, "sha256": {"$ref": "#/$defs/sha256"}, "sourceH1RomParity": {"const": true}}},
+        "mapSprite": {"type": "object", "additionalProperties": false, "required": ["symbol", "value"], "properties": {"symbol": {"const": "MAPSPRITE_ASTRAL"}, "value": {"const": 209}}},
+        "direction": {"type": "object", "additionalProperties": false, "required": ["policyOwner", "symbol", "value", "sourceSlot", "horizontalMirror"], "properties": {"policyOwner": {"const": "sf2-map3-original-player-reference-frame-static-v1"}, "symbol": {"const": "UP"}, "value": {"const": 1}, "sourceSlot": {"const": 0}, "horizontalMirror": {"const": false}}},
+        "pointer": {"type": "object", "additionalProperties": false, "required": ["table", "slot", "entryAddress", "payloadSymbol", "payloadAddress"], "properties": {"table": {"const": "pt_Mapsprites"}, "slot": {"const": 627}, "entryAddress": {"const": 821708}, "payloadSymbol": {"const": "Mapsprite209_0"}, "payloadAddress": {"const": 1022258}}},
+        "compressed": {"type": "object", "additionalProperties": false, "required": ["codec", "sourcePath", "bytes", "sha256", "sourceH1RomParity"], "properties": {"codec": {"const": "Basic"}, "sourcePath": {"const": "data/graphics/mapsprites/mapsprite209-0.bin"}, "bytes": {"const": 406}, "sha256": {"const": "3C15EE610058A309F3BFC5EAF8885E693515645AFE46F1DC348CFE009ECD4E5C"}, "sourceH1RomParity": {"const": true}}},
+        "decoded": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["bytes", "sha256", "halfCount", "halfBytes", "halves"],
+          "properties": {
+            "bytes": {"const": 576},
+            "sha256": {"const": "53DC0B04B731E5C825AB21EB239A4098347372A49E1EABFDE93DF1AA12A79D7E"},
+            "halfCount": {"const": 2},
+            "halfBytes": {"const": 288},
+            "halves": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "additionalItems": false,
+              "items": [
+                {"type": "object", "additionalProperties": false, "required": ["index", "sha256"], "properties": {"index": {"const": 0}, "sha256": {"const": "AA4107DA7DD29D1C01FAE524258387064395C80186D15FF9C4369E2AF0C6C9E0"}}},
+                {"type": "object", "additionalProperties": false, "required": ["index", "sha256"], "properties": {"index": {"const": 1}, "sha256": {"const": "635A142A42D1FAF46417CC97FE7B4ED4B93C57F8DE9BD8B3B5C0C29C7B47EA29"}}}
+              ]
+            }
+          }
+        },
+        "format": {"type": "object", "additionalProperties": false, "required": ["framePixels", "frameTiles", "tileBytes", "bitsPerPixel", "pixelNibbleOrder", "tileOrder"], "properties": {"framePixels": {"type": "array", "minItems": 2, "maxItems": 2, "additionalItems": false, "items": [{"const": 24}, {"const": 24}]}, "frameTiles": {"type": "array", "minItems": 2, "maxItems": 2, "additionalItems": false, "items": [{"const": 3}, {"const": 3}]}, "tileBytes": {"const": 32}, "bitsPerPixel": {"const": 4}, "pixelNibbleOrder": {"const": "high-nibble-left"}, "tileOrder": {"const": "column-major"}}},
+        "palette": {"type": "object", "additionalProperties": false, "required": ["policyOwner", "sourceSymbol", "destination", "address", "bytes", "words", "wordEndian", "wordMask", "transparentIndex", "sha256", "sourceH1RomParity"], "properties": {"policyOwner": {"const": "sf2-map3-original-player-reference-frame-static-v1"}, "sourceSymbol": {"const": "palette_Base"}, "destination": {"const": "palette3"}, "address": {"const": 12446}, "bytes": {"const": 32}, "words": {"const": 16}, "wordEndian": {"const": "big"}, "wordMask": {"const": "0x0EEE"}, "transparentIndex": {"const": 0}, "sha256": {"const": "AE87926BBF9A1BD12B117F7B7FDA71689C9068DDE475FB1DF9887E113B6E5FF5"}, "sourceH1RomParity": {"const": true}}},
         "assetReadiness": {"type": "object", "additionalProperties": false, "required": ["classification", "selectedVisibleHalf", "interactionTimeAnimCounter"], "properties": {"classification": {"const": "two-half-reference"}, "selectedVisibleHalf": {"const": "Unknown"}, "interactionTimeAnimCounter": {"const": "Unknown"}}}
       }
     }

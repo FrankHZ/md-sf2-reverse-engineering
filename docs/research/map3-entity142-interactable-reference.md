@@ -46,8 +46,11 @@ runtime evidence and was not rerun.
 ## Interaction Join
 
 **Confirmed static:** zero-based Map 3 entity-event record 15 is the four-byte record
-`8E 03 01 34` at ROM `0x50F4C`. It selects logical entity 142, requires player facing `DOWN=3`, and
-targets `Map3_EntityEvent15` at `0x51044`.
+`8E 03 01 34` at ROM `0x50F4C`. It selects logical entity 142, carries the source facing-control
+operand `DOWN=3`, and targets `Map3_EntityEvent15` at `0x51044`. This operand is not a player-facing
+admission requirement: `RunMapSetupEntityEvent` copies it into D6, tests bit 0 around the pre-event
+`UpdateEntityProperties` sequence, and tests bit 1 around the post-event sequence. Broader operand
+semantics remain **Unknown**.
 
 **Confirmed retained runtime:** the accepted natural-route fixture places the player at `(55,17)`
 facing Left and entity 142 at `(54,17)` facing Up. Its observed chronology reaches
@@ -57,13 +60,16 @@ launching BizHawk.
 
 ## Two-Half Drawable Reference
 
-**Confirmed static:** `MAPSPRITE_ASTRAL=209` facing Up selects pointer slot 627 and
-`Mapsprite209_0`. The Basic-compressed source matches H1 and ROM, consumes 406 bytes, and decodes
-without remainder to 576 bytes. The result is exactly two contiguous 288-byte halves, each a 24×24,
-3×3-tile, 4bpp frame with high-nibble-left pixels and column-major tile placement.
+**Confirmed static:** the accepted original-player reference owner maps facing Up (`1`) to source slot
+0 without horizontal mirroring. Applying that retained direction policy to `MAPSPRITE_ASTRAL=209`
+selects pointer slot 627 and `Mapsprite209_0`. The Basic-compressed source matches H1 and ROM,
+consumes 406 bytes, and decodes without remainder to 576 bytes. The result is exactly two contiguous
+288-byte halves, each a 24×24, 3×3-tile, 4bpp frame with high-nibble-left pixels and column-major tile
+placement.
 
-The ordinary entity palette is `palette_Base`; `InitializeDisplay` copies it to palette 3. Its 32
-bytes form 16 big-endian words under mask `0x0EEE`, with palette index 0 transparent.
+The same retained owner supplies the ordinary-entity palette policy: `palette_Base` to palette 3,
+32 bytes, 16 big-endian words under mask `0x0EEE`, and transparent palette index 0. This owner then
+independently rechecks the source/H1/ROM palette bytes and `InitializeDisplay` copy sequence.
 
 This is an asset-ready **two-half reference** only. Both half hashes are retained so an authorized
 private importer can reproduce either half, but neither is promoted to the observed visible frame.

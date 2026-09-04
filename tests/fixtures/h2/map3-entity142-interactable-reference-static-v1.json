@@ -80,7 +80,13 @@
       "recordHex": "8E030134",
       "recordSha256": "7065D6B8FE58F42AF58DB6DC88F17F6E29E7EEBDE62424F9A781EBA68C6E9F8C",
       "logicalEntityId": 142,
-      "requiredPlayerFacing": {"symbol": "DOWN", "value": 3},
+      "eventFacingControl": {
+        "sourceSymbol": "DOWN",
+        "value": 3,
+        "loadedRegister": "D6",
+        "testedBits": [0, 1],
+        "broaderSemantics": "Unknown"
+      },
       "target": "Map3_EntityEvent15",
       "targetAddress": 331844,
       "routeRelevance": "mandatory-observed-opening",
@@ -104,7 +110,13 @@
     },
     "drawableReference": {
       "mapSprite": {"symbol": "MAPSPRITE_ASTRAL", "value": 209},
-      "direction": {"symbol": "UP", "value": 1, "sourceSlot": 0, "horizontalMirror": false},
+      "direction": {
+        "policyOwner": "sf2-map3-original-player-reference-frame-static-v1",
+        "symbol": "UP",
+        "value": 1,
+        "sourceSlot": 0,
+        "horizontalMirror": false
+      },
       "pointer": {
         "table": "pt_Mapsprites",
         "slot": 627,
@@ -138,6 +150,7 @@
         "tileOrder": "column-major"
       },
       "palette": {
+        "policyOwner": "sf2-map3-original-player-reference-frame-static-v1",
         "sourceSymbol": "palette_Base",
         "destination": "palette3",
         "address": 12446,
