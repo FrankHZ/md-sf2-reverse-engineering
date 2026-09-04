@@ -771,6 +771,7 @@ def test_map3_original_player_reference_frame_artifacts_select_h2_and_locomotion
     )
     assert _partition_ids(plan) == {"public-core", "h2-presentation", "h3-witch"}
     assert _partition(plan, "h2-presentation")["commands"] == [
+        "uv run sf2 h2 map3-entity142-interactable-reference",
         "uv run sf2 h2 map3-original-player-reference-frame"
     ]
     assert _partition(plan, "h3-witch")["commands"] == [
