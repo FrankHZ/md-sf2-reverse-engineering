@@ -279,7 +279,9 @@ public sealed partial class GameSession
             lastNaturalStepCopy: null,
             current.SchoolDoorStepCopyApplied,
             state,
-            receipt);
+            receipt,
+            current.Sarah,
+            lastSarah: null);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(next, traversal, receipt);
         return true;

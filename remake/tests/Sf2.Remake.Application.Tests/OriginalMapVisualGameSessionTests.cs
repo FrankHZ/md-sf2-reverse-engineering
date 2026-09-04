@@ -450,7 +450,8 @@ public sealed class OriginalMapVisualGameSessionTests
             ["natural-route-and-effects-unknown"],
             AcceptedRoofOnLoadClear(map),
             BowieDoorStepCopy(map),
-            AcceptedZone601(map));
+            AcceptedZone601(map),
+            AcceptedSarah(map));
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>
@@ -596,17 +597,25 @@ public sealed class OriginalMapVisualGameSessionTests
                     new OriginalMapEntityRecordIdentity(
                         OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
                         index + 1),
-                    rawX: index == 2
+                    rawX: index == 0
+                        ? (byte)OriginalMapRuntimeAdmission.SarahActorInitialX
+                        : index == 2
                         ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialX
                         : checked((byte)index),
-                    rawY: index == 2
+                    rawY: index == 0
+                        ? (byte)OriginalMapRuntimeAdmission.SarahActorInitialY
+                        : index == 2
                         ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialY
                         : (byte)0,
-                    opaqueFacing: index == 2
+                    opaqueFacing: index == 0
+                        ? OriginalMapRuntimeAdmission.SarahActorInitialOpaqueFacing
+                        : index == 2
                         ? OriginalMapRuntimeAdmission.Zone601ActorInitialOpaqueFacing
                         : (byte)3,
                     mapSprite: index == 2 ? (byte)195 : checked((byte)(index + 1)),
-                    index == 2
+                    index == 0
+                        ? [0, 4, 0x60, 0xCE]
+                        : index == 2
                         ? [0, 4, 97, 2]
                         : index >= OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount
                         ? [0xFF, checked((byte)index), 0, 1]
@@ -648,6 +657,41 @@ public sealed class OriginalMapVisualGameSessionTests
                 OriginalMapRuntimeAdmission.Zone601AmbientCenterY),
             OriginalMapRuntimeAdmission.Zone601AmbientRange,
             OriginalMapRuntimeAdmission.Zone601BlockingStages);
+
+    private static OriginalMapSarahDefinition AcceptedSarah(MapId map) =>
+        new(
+            new OriginalMapSarahEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.SarahEntityEventResourceId,
+                OriginalMapRuntimeAdmission.SarahEntityEventRecordOrdinal,
+                OriginalMapRuntimeAdmission.SarahEntityEventTargetIdentity,
+                OriginalMapRuntimeAdmission.SarahEntityEventOpaqueFacing),
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.SarahActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.SarahLogicalActorId,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.SarahActorInitialX,
+                OriginalMapRuntimeAdmission.SarahActorInitialY),
+            OriginalMapRuntimeAdmission.SarahActorInitialOpaqueFacing,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.SarahPlayerInteractionX,
+                OriginalMapRuntimeAdmission.SarahPlayerInteractionY),
+            OriginalMapRuntimeAdmission.SarahPlayerInteractionOpaqueFacing,
+            OriginalMapRuntimeAdmission.SarahLaterBranchFlag603,
+            OriginalMapRuntimeAdmission.SarahLaterBranchFlag602,
+            OriginalMapRuntimeAdmission.SarahTemporaryRouteFlag256,
+            OriginalMapRuntimeAdmission.SarahBlockingSequenceIdentity,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.SarahFirstWaypointX,
+                OriginalMapRuntimeAdmission.SarahFirstWaypointY),
+            OriginalMapRuntimeAdmission.SarahRestoredOpaqueFacing,
+            OriginalMapRuntimeAdmission.SarahFirstTextIds,
+            OriginalMapRuntimeAdmission.SarahRepeatTextIds,
+            OriginalMapRuntimeAdmission.SarahFirstStages,
+            OriginalMapRuntimeAdmission.SarahRepeatStages);
 
     private static OriginalMapBlockCatalog AcceptedBlockCatalog() =>
         new(

@@ -228,6 +228,28 @@ public sealed class OriginalMapTraversalTests
         Assert.Throws<ArgumentException>(() => new OriginalMapTraversalArea(2, 1, 1, 2));
     }
 
+    [Fact]
+    public void TypedOccupiedEntityResultRetainsPositionWithoutChangingTraversalPolicy()
+    {
+        MapPosition source = new(42, 9);
+        OriginalMapTraversalResult result = new(
+            source,
+            source,
+            ExplorationDirection.North,
+            OriginalMapTraversalOutcome.BlockedByOccupiedEntity,
+            sourceWord: 1,
+            destinationWord: 2);
+
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByOccupiedEntity, result.Outcome);
+        Assert.Same(source, result.Position);
+        Assert.Equal((ushort)2, result.DestinationWord);
+        Assert.Equal(
+            OriginalMapTraversalOutcome.Moved,
+            Traversal(new OriginalMapTraversalArea(0, 0, 63, 63))
+                .TryMove(new WorkingMapLayout(EmptyWords()), source, ExplorationDirection.North)
+                .Outcome);
+    }
+
     private static OriginalMapTraversal Traversal(params OriginalMapTraversalArea[] areas) =>
         new(areas);
 

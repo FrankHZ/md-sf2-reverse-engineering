@@ -231,7 +231,8 @@ public sealed class PrivateMap3PresenterTests
 
         Assert.Equal(
             "Map map3  Tile (56, 3)  Area 2  Step 7  Moved  |  " +
-                "WASD semantic movement",
+                "WASD semantic movement  |  Sarah Ready; actor 1 at " +
+                "(1, 1), facing 3; temporary route flag clear; F semantic interaction",
             status);
         Assert.Equal(new MapId(OriginalMapRuntimeAdmission.MapId), projection.Map);
         Assert.Equal(50, projection.OriginX);
@@ -269,7 +270,8 @@ public sealed class PrivateMap3PresenterTests
             "Map map3  Tile (56, 3)  Area 2  Step 7  Moved  |  " +
                 "WASD semantic movement  |  Zone601 complete; actor 128 at " +
                 "(5, 4), facing 2; ambient center (5, 6) range 1; " +
-                "random choices Unknown",
+                "random choices Unknown  |  Sarah Ready; actor 1 at " +
+                "(1, 1), facing 3; temporary route flag clear; F semantic interaction",
             status);
         Assert.DoesNotContain("510", status, StringComparison.Ordinal);
         Assert.DoesNotContain("dialogue", status, StringComparison.OrdinalIgnoreCase);
@@ -312,7 +314,8 @@ public sealed class PrivateMap3PresenterTests
             controlledStepCopy: null,
             sameMapWarps: null,
             unsupportedCapabilities: ["natural-route-and-presentation-unknown"],
-            zone601: Zone601(map));
+            zone601: Zone601(map),
+            sarah: Sarah(map));
         OriginalMapImportReceipt receipt = new(
             OriginalMapRuntimeAdmission.PackageId,
             OriginalMapRuntimeAdmission.SchemaVersion,
@@ -356,7 +359,7 @@ public sealed class PrivateMap3PresenterTests
                         1),
                     rawX: 1,
                     rawY: 1,
-                    opaqueFacing: 0,
+                    opaqueFacing: 3,
                     mapSprite: 0,
                     [0, 0, 0, 0]),
                 new OriginalMapEntityDefinition(
@@ -406,6 +409,35 @@ public sealed class PrivateMap3PresenterTests
             new MapPosition(5, 6),
             1,
             OriginalMapRuntimeAdmission.Zone601BlockingStages);
+
+    private static OriginalMapSarahDefinition Sarah(MapId map) =>
+        new(
+            new OriginalMapSarahEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                "project-authored-private-presenter-entity-events",
+                1,
+                "project-authored-sarah-target",
+                opaqueEventFacing: 3),
+            new OriginalMapEntityRecordIdentity(
+                "project-authored-private-presenter-entities",
+                1),
+            logicalActorId: 1,
+            new MapPosition(1, 1),
+            actorInitialOpaqueFacing: 3,
+            new MapPosition(1, 2),
+            playerInteractionOpaqueFacing: 1,
+            laterBranchFlag603: 603,
+            laterBranchFlag602: 602,
+            temporaryRouteFlag256: 256,
+            "project-authored-sarah-sequence",
+            new MapPosition(2, 1),
+            restoredOpaqueFacing: 3,
+            [512, 480, 481],
+            [480, 481],
+            OriginalMapRuntimeAdmission.SarahFirstStages,
+            OriginalMapRuntimeAdmission.SarahRepeatStages);
 
     private static OriginalMapAreaDefinition Area(
         string resourceId,

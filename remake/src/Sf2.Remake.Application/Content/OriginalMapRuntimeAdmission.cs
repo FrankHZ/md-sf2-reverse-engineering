@@ -119,6 +119,28 @@ public static class OriginalMapRuntimeAdmission
     public const int Zone601AmbientCenterY = 6;
     public const int Zone601AmbientRange = 1;
 
+    public const string SarahEntityEventResourceId = "ms_map3_EntityEvents";
+    public const int SarahEntityEventSourceRecordCount = 17;
+    public const int SarahEntityEventRecordOrdinal = 1;
+    public const string SarahEntityEventTargetIdentity = "Map3_EntityEvent0";
+    public const byte SarahEntityEventOpaqueFacing = 3;
+    public const int SarahActorSourceRecordOrdinal = 1;
+    public const int SarahLogicalActorId = 1;
+    public const int SarahActorInitialX = 42;
+    public const int SarahActorInitialY = 8;
+    public const byte SarahActorInitialOpaqueFacing = 3;
+    public const uint SarahActorInitialActionValue = 0x000460CE;
+    public const int SarahPlayerInteractionX = 42;
+    public const int SarahPlayerInteractionY = 9;
+    public const byte SarahPlayerInteractionOpaqueFacing = 1;
+    public const int SarahLaterBranchFlag603 = 603;
+    public const int SarahLaterBranchFlag602 = 602;
+    public const int SarahTemporaryRouteFlag256 = 256;
+    public const string SarahBlockingSequenceIdentity = "cs_513D6";
+    public const int SarahFirstWaypointX = 41;
+    public const int SarahFirstWaypointY = 7;
+    public const byte SarahRestoredOpaqueFacing = 3;
+
     public const string RoofOnLoadResourceId = "Map03s5_RoofEvents";
     public const int RoofOnLoadSourceRecordCount = 10;
     public const int HouseRoofOnLoadRecordOrdinal = 1;
@@ -156,6 +178,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-school-door-step-copy-v1";
     public const string Zone601InterceptionCapability =
         "private-local-map3-zone601-interception-v1";
+    public const string SarahRouteCapability =
+        "private-local-map3-sarah-route-v1";
 
     private static readonly ReadOnlyCollection<int> ReadOnlyZone601TextIds =
         Array.AsReadOnly(new[] { 510, 511, 483 });
@@ -172,6 +196,40 @@ public static class OriginalMapRuntimeAdmission
             OriginalMapZone601BlockingStage.ActorReinitAndWait,
             OriginalMapZone601BlockingStage.AmbientWalkingHandoff,
             OriginalMapZone601BlockingStage.SetFlag601,
+        ]);
+
+    private static readonly ReadOnlyCollection<int> ReadOnlySarahFirstTextIds =
+        Array.AsReadOnly(new[] { 512, 480, 481 });
+
+    private static readonly ReadOnlyCollection<int> ReadOnlySarahRepeatTextIds =
+        Array.AsReadOnly(new[] { 480, 481 });
+
+    private static readonly ReadOnlyCollection<OriginalMapSarahInteractionStage>
+        ReadOnlySarahFirstStages = Array.AsReadOnly(
+        [
+            OriginalMapSarahInteractionStage.ReadFlag603Clear,
+            OriginalMapSarahInteractionStage.ReadFlag602Clear,
+            OriginalMapSarahInteractionStage.ReadTemporaryFlag256Clear,
+            OriginalMapSarahInteractionStage.PresentText512,
+            OriginalMapSarahInteractionStage.PresentText480,
+            OriginalMapSarahInteractionStage.PresentText481,
+            OriginalMapSarahInteractionStage.ReadTemporaryFlag256ClearAgain,
+            OriginalMapSarahInteractionStage.MoveLeftOneAndWait,
+            OriginalMapSarahInteractionStage.MoveUpOneAndWait,
+            OriginalMapSarahInteractionStage.SetTemporaryFlag256,
+            OriginalMapSarahInteractionStage.RestoreFacingDown,
+        ]);
+
+    private static readonly ReadOnlyCollection<OriginalMapSarahInteractionStage>
+        ReadOnlySarahRepeatStages = Array.AsReadOnly(
+        [
+            OriginalMapSarahInteractionStage.ReadFlag603Clear,
+            OriginalMapSarahInteractionStage.ReadFlag602Clear,
+            OriginalMapSarahInteractionStage.ReadTemporaryFlag256Set,
+            OriginalMapSarahInteractionStage.PresentText480,
+            OriginalMapSarahInteractionStage.PresentText481,
+            OriginalMapSarahInteractionStage.ReadTemporaryFlag256SetAgain,
+            OriginalMapSarahInteractionStage.RestoreFacingDown,
         ]);
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
@@ -192,6 +250,7 @@ public static class OriginalMapRuntimeAdmission
                 BowieDoorStepCopyCapability,
                 SchoolDoorStepCopyCapability,
                 Zone601InterceptionCapability,
+                SarahRouteCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -219,6 +278,16 @@ public static class OriginalMapRuntimeAdmission
 
     public static IReadOnlyList<OriginalMapZone601BlockingStage> Zone601BlockingStages =>
         ReadOnlyZone601BlockingStages;
+
+    public static IReadOnlyList<int> SarahFirstTextIds => ReadOnlySarahFirstTextIds;
+
+    public static IReadOnlyList<int> SarahRepeatTextIds => ReadOnlySarahRepeatTextIds;
+
+    public static IReadOnlyList<OriginalMapSarahInteractionStage> SarahFirstStages =>
+        ReadOnlySarahFirstStages;
+
+    public static IReadOnlyList<OriginalMapSarahInteractionStage> SarahRepeatStages =>
+        ReadOnlySarahRepeatStages;
 
     internal static bool HasExactRequiredCapabilities(IEnumerable<string> capabilities)
     {
@@ -433,6 +502,78 @@ public static class OriginalMapRuntimeAdmission
                 new MapPosition(HouseWarpDestinationX, HouseWarpDestinationY),
                 ExplorationDirection.East) == definition.Trigger &&
             !OriginalMapTraversal.IsBlocked(workingLayout, definition.Trigger);
+    }
+
+    public static bool HasExactAcceptedSarah(
+        OriginalMapSarahDefinition? definition,
+        OriginalMapEntityPopulation population,
+        OriginalMapTraversal traversal,
+        WorkingMapLayout workingLayout)
+    {
+        ArgumentNullException.ThrowIfNull(population);
+        ArgumentNullException.ThrowIfNull(traversal);
+        ArgumentNullException.ThrowIfNull(workingLayout);
+        if (definition is null ||
+            definition.Identity != new OriginalMapSarahEventIdentity(
+                ContentProfile.PrivateLocal,
+                new MapId(MapId),
+                new MapSetupId(SelectedSetupId),
+                SarahEntityEventResourceId,
+                SarahEntityEventRecordOrdinal,
+                SarahEntityEventTargetIdentity,
+                SarahEntityEventOpaqueFacing) ||
+            definition.ActorSourceRecord != new OriginalMapEntityRecordIdentity(
+                AcceptedEntityListResourceId,
+                SarahActorSourceRecordOrdinal) ||
+            definition.LogicalActorId != SarahLogicalActorId ||
+            definition.ActorInitialPosition != new MapPosition(
+                SarahActorInitialX,
+                SarahActorInitialY) ||
+            definition.ActorInitialOpaqueFacing != SarahActorInitialOpaqueFacing ||
+            definition.PlayerInteractionPosition != new MapPosition(
+                SarahPlayerInteractionX,
+                SarahPlayerInteractionY) ||
+            definition.PlayerInteractionOpaqueFacing != SarahPlayerInteractionOpaqueFacing ||
+            definition.LaterBranchFlag603 != SarahLaterBranchFlag603 ||
+            definition.LaterBranchFlag602 != SarahLaterBranchFlag602 ||
+            definition.TemporaryRouteFlag256 != SarahTemporaryRouteFlag256 ||
+            !string.Equals(
+                definition.BlockingSequenceIdentity,
+                SarahBlockingSequenceIdentity,
+                StringComparison.Ordinal) ||
+            definition.FirstInteractionWaypoint != new MapPosition(
+                SarahFirstWaypointX,
+                SarahFirstWaypointY) ||
+            definition.RestoredOpaqueFacing != SarahRestoredOpaqueFacing ||
+            !definition.FirstInteractionTextIds.SequenceEqual(ReadOnlySarahFirstTextIds) ||
+            !definition.RepeatInteractionTextIds.SequenceEqual(ReadOnlySarahRepeatTextIds) ||
+            !definition.FirstInteractionStages.SequenceEqual(ReadOnlySarahFirstStages) ||
+            !definition.RepeatInteractionStages.SequenceEqual(ReadOnlySarahRepeatStages) ||
+            population.Map != definition.Identity.Map ||
+            population.SelectedSetup != definition.Identity.Setup ||
+            population.ResourceId != definition.ActorSourceRecord.ResourceId ||
+            population.Records.Count < definition.ActorSourceRecord.OneBasedRecordOrdinal)
+        {
+            return false;
+        }
+
+        OriginalMapEntityDefinition actor =
+            population.Records[definition.ActorSourceRecord.OneBasedRecordOrdinal - 1];
+        Span<byte> expectedAction = stackalloc byte[sizeof(uint)];
+        BinaryPrimitives.WriteUInt32BigEndian(expectedAction, SarahActorInitialActionValue);
+        return actor.Identity == definition.ActorSourceRecord &&
+            actor.Position == definition.ActorInitialPosition &&
+            actor.RawX == SarahActorInitialX &&
+            actor.RawY == SarahActorInitialY &&
+            actor.OpaqueFacing == definition.ActorInitialOpaqueFacing &&
+            actor.Kind == OriginalMapEntityRecordKind.Fixed &&
+            actor.OpaqueTail.SequenceEqual(expectedAction.ToArray()) &&
+            traversal.IsWithinActiveArea(definition.ActorInitialPosition) &&
+            traversal.IsWithinActiveArea(definition.PlayerInteractionPosition) &&
+            traversal.IsWithinActiveArea(definition.FirstInteractionWaypoint) &&
+            !OriginalMapTraversal.IsBlocked(workingLayout, definition.ActorInitialPosition) &&
+            !OriginalMapTraversal.IsBlocked(workingLayout, definition.PlayerInteractionPosition) &&
+            !OriginalMapTraversal.IsBlocked(workingLayout, definition.FirstInteractionWaypoint);
     }
 
     public static bool HasExactAcceptedSameMapWarps(OriginalMapSameMapWarpCatalog? catalog)

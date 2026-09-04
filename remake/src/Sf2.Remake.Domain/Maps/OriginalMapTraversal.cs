@@ -73,6 +73,7 @@ public enum OriginalMapTraversalOutcome
     BlockedByBoundary,
     BlockedOutsideActiveArea,
     BlockedByCollision,
+    BlockedByOccupiedEntity,
 }
 
 public sealed record OriginalMapTraversalResult

@@ -485,10 +485,10 @@ public sealed class OriginalMapGameSessionTests
             ExplorationDirection.North,
             ExplorationDirection.North,
             ExplorationDirection.North,
+            ExplorationDirection.North,
+            ExplorationDirection.North,
+            ExplorationDirection.North,
             ExplorationDirection.East,
-            ExplorationDirection.North,
-            ExplorationDirection.North,
-            ExplorationDirection.North,
             ExplorationDirection.East,
             ExplorationDirection.East,
             ExplorationDirection.East,
@@ -632,6 +632,109 @@ public sealed class OriginalMapGameSessionTests
         Assert.Equal(OriginalMapRuntimeAdmission.Zone601ActorInitialBehaviorIdentity,
             ready.ActorBehaviorIdentity);
         Assert.Null(restarted.PrivateOriginalMapSnapshot.LastZone601);
+    }
+
+    [Fact]
+    public void SarahOccupiesHerLiveTileAndFirstInteractionAppliesTheAcceptedRouteAtomically()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        MoveToSarahInteraction(session);
+
+        PrivateOriginalMapPlayerLocomotionStarted blocked =
+            session.BeginPrivateOriginalMapPlayerLocomotion(
+                new MoveExplorationCommand(ExplorationDirection.North));
+        Assert.Equal(
+            OriginalMapTraversalOutcome.BlockedByOccupiedEntity,
+            blocked.Move.Traversal.Outcome);
+        Assert.Equal(new MapPosition(42, 9), blocked.Move.Snapshot.PlayerPosition);
+        Assert.Equal((byte)1, blocked.Animation.OpaqueFacing);
+
+        long step = session.PrivateOriginalMapSnapshot.SimulationStep;
+        PrivateOriginalMapSarahInteractionApplied applied =
+            Assert.IsType<PrivateOriginalMapSarahInteractionApplied>(
+                session.InteractPrivateOriginalMapSarah(
+                    new InteractPrivateOriginalMapSarahCommand(step)));
+
+        Assert.Equal(new[] { 512, 480, 481 }, applied.Receipt.TextIds);
+        Assert.Equal(OriginalMapRuntimeAdmission.SarahFirstStages, applied.Receipt.Stages);
+        Assert.False(applied.Receipt.Repeated);
+        Assert.False(applied.Receipt.LaterBranchFlag603Set);
+        Assert.False(applied.Receipt.LaterBranchFlag602Set);
+        Assert.Equal("cs_513D6", applied.Receipt.BlockingSequenceIdentity);
+        Assert.Equal(new MapPosition(41, 7), applied.Snapshot.Sarah!.ActorPosition);
+        Assert.Equal((byte)3, applied.Snapshot.Sarah.ActorOpaqueFacing);
+        Assert.True(applied.Snapshot.Sarah.TemporaryRouteFlag256Set);
+        Assert.Same(applied.Receipt, applied.Snapshot.LastSarah);
+    }
+
+    [Fact]
+    public void SarahReinteractionIsTextOnlyWhileWarpPreservesAndRestartClearsTheRoute()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        MoveToSarahInteraction(session);
+        _ = session.BeginPrivateOriginalMapPlayerLocomotion(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        _ = Assert.IsType<PrivateOriginalMapSarahInteractionApplied>(
+            session.InteractPrivateOriginalMapSarah(
+                new InteractPrivateOriginalMapSarahCommand(
+                    session.PrivateOriginalMapSnapshot.SimulationStep)));
+
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        _ = session.BeginPrivateOriginalMapPlayerLocomotion(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        PrivateOriginalMapSarahState before = session.PrivateOriginalMapSnapshot.Sarah!;
+        PrivateOriginalMapSarahInteractionApplied repeated =
+            Assert.IsType<PrivateOriginalMapSarahInteractionApplied>(
+                session.InteractPrivateOriginalMapSarah(
+                    new InteractPrivateOriginalMapSarahCommand(
+                        session.PrivateOriginalMapSnapshot.SimulationStep)));
+        Assert.True(repeated.Receipt.Repeated);
+        Assert.Equal(new[] { 480, 481 }, repeated.Receipt.TextIds);
+        Assert.Equal(OriginalMapRuntimeAdmission.SarahRepeatStages, repeated.Receipt.Stages);
+        Assert.Same(before, repeated.Snapshot.Sarah);
+
+        Move(session, ExplorationDirection.South, 2);
+        Move(session, ExplorationDirection.East, 13);
+        Move(session, ExplorationDirection.North, 7);
+        Assert.NotNull(session.PrivateOriginalMapSnapshot.LastSameMapWarp);
+        Assert.Same(before, session.PrivateOriginalMapSnapshot.Sarah);
+
+        GameSession restarted = Start(Definition(EmptyWords()));
+        Assert.Equal(new MapPosition(42, 8), restarted.PrivateOriginalMapSnapshot.Sarah!.ActorPosition);
+        Assert.Equal((byte)3, restarted.PrivateOriginalMapSnapshot.Sarah.ActorOpaqueFacing);
+        Assert.False(restarted.PrivateOriginalMapSnapshot.Sarah.TemporaryRouteFlag256Set);
+        Assert.Null(restarted.PrivateOriginalMapSnapshot.LastSarah);
+    }
+
+    [Fact]
+    public void WrongAndStaleSarahInteractionsAreReferenceEqualZeroMutation()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        PrivateOriginalMapSessionSnapshot initial = session.PrivateOriginalMapSnapshot;
+        PrivateOriginalMapSarahInteractionRejected wrong =
+            Assert.IsType<PrivateOriginalMapSarahInteractionRejected>(
+                session.InteractPrivateOriginalMapSarah(
+                    new InteractPrivateOriginalMapSarahCommand(initial.SimulationStep)));
+        Assert.Equal(
+            PrivateOriginalMapSarahInteractionFailureCode.InteractionTargetMismatch,
+            wrong.Diagnostic.Code);
+        Assert.Same(initial, wrong.Snapshot);
+        Assert.Same(initial, session.PrivateOriginalMapSnapshot);
+
+        MoveToSarahInteraction(session);
+        PrivateOriginalMapSessionSnapshot current = session.PrivateOriginalMapSnapshot;
+        PrivateOriginalMapSarahInteractionRejected stale =
+            Assert.IsType<PrivateOriginalMapSarahInteractionRejected>(
+                session.InteractPrivateOriginalMapSarah(
+                    new InteractPrivateOriginalMapSarahCommand(current.SimulationStep - 1)));
+        Assert.Equal(
+            PrivateOriginalMapSarahInteractionFailureCode.StaleSimulationStep,
+            stale.Diagnostic.Code);
+        Assert.Same(current, stale.Snapshot);
+        Assert.Same(current, session.PrivateOriginalMapSnapshot);
     }
 
     [Fact]
@@ -1497,6 +1600,44 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactSarahProjection()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), omitSarah: true),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        OriginalMapSarahDefinition accepted = AcceptedSarah(map);
+        OriginalMapSarahDefinition wrongFlag = new(
+            accepted.Identity,
+            accepted.ActorSourceRecord,
+            accepted.LogicalActorId,
+            accepted.ActorInitialPosition,
+            accepted.ActorInitialOpaqueFacing,
+            accepted.PlayerInteractionPosition,
+            accepted.PlayerInteractionOpaqueFacing,
+            accepted.LaterBranchFlag603,
+            accepted.LaterBranchFlag602,
+            accepted.TemporaryRouteFlag256 + 1,
+            accepted.BlockingSequenceIdentity,
+            accepted.FirstInteractionWaypoint,
+            accepted.RestoredOpaqueFacing,
+            accepted.FirstInteractionTextIds,
+            accepted.RepeatInteractionTextIds,
+            accepted.FirstInteractionStages,
+            accepted.RepeatInteractionStages);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), sarah: wrongFlag),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedSarah(
+            accepted,
+            AcceptedEntityPopulation(map),
+            AcceptedAreaCatalog().Traversal,
+            Definition(EmptyWords()).WorkingLayout));
+    }
+
+    [Fact]
     public void TypedSourceRejectionPassesThroughWithoutCreatingASession()
     {
         OriginalMapImportDiagnostic diagnostic = new(
@@ -1535,6 +1676,24 @@ public sealed class OriginalMapGameSessionTests
         }
     }
 
+    private static void MoveToSarahInteraction(GameSession session)
+    {
+        Move(session, ExplorationDirection.South, 6);
+        Move(session, ExplorationDirection.West, 14);
+        Assert.Equal(new MapPosition(42, 9), session.PrivateOriginalMapSnapshot.PlayerPosition);
+    }
+
+    private static void Move(
+        GameSession session,
+        ExplorationDirection direction,
+        int count)
+    {
+        for (int index = 0; index < count; index++)
+        {
+            _ = session.ApplyPrivateOriginalMap(new MoveExplorationCommand(direction));
+        }
+    }
+
     private static GameSession Start(OriginalMapImportDefinition definition) =>
         Assert.IsType<PrivateOriginalMapGameSessionStarted>(
             GameSession.StartPrivateOriginalMap(
@@ -1558,7 +1717,9 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapStepCopyDefinition? bowieDoorStepCopy = null,
         bool omitBowieDoorStepCopy = false,
         OriginalMapZone601Definition? zone601 = null,
-        bool omitZone601 = false)
+        bool omitZone601 = false,
+        OriginalMapSarahDefinition? sarah = null,
+        bool omitSarah = false)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -1608,7 +1769,10 @@ public sealed class OriginalMapGameSessionTests
             omitBowieDoorStepCopy ? null : bowieDoorStepCopy ?? BowieDoorStepCopy(map),
             omitZone601 || entityPopulation is not null
                 ? null
-                : zone601 ?? AcceptedZone601(map));
+                : zone601 ?? AcceptedZone601(map),
+            omitSarah || entityPopulation is not null
+                ? null
+                : sarah ?? AcceptedSarah(map));
     }
 
     private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
@@ -1733,6 +1897,41 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.Zone601AmbientRange,
             OriginalMapRuntimeAdmission.Zone601BlockingStages);
 
+    private static OriginalMapSarahDefinition AcceptedSarah(MapId map) =>
+        new(
+            new OriginalMapSarahEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.SarahEntityEventResourceId,
+                OriginalMapRuntimeAdmission.SarahEntityEventRecordOrdinal,
+                OriginalMapRuntimeAdmission.SarahEntityEventTargetIdentity,
+                OriginalMapRuntimeAdmission.SarahEntityEventOpaqueFacing),
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.SarahActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.SarahLogicalActorId,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.SarahActorInitialX,
+                OriginalMapRuntimeAdmission.SarahActorInitialY),
+            OriginalMapRuntimeAdmission.SarahActorInitialOpaqueFacing,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.SarahPlayerInteractionX,
+                OriginalMapRuntimeAdmission.SarahPlayerInteractionY),
+            OriginalMapRuntimeAdmission.SarahPlayerInteractionOpaqueFacing,
+            OriginalMapRuntimeAdmission.SarahLaterBranchFlag603,
+            OriginalMapRuntimeAdmission.SarahLaterBranchFlag602,
+            OriginalMapRuntimeAdmission.SarahTemporaryRouteFlag256,
+            OriginalMapRuntimeAdmission.SarahBlockingSequenceIdentity,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.SarahFirstWaypointX,
+                OriginalMapRuntimeAdmission.SarahFirstWaypointY),
+            OriginalMapRuntimeAdmission.SarahRestoredOpaqueFacing,
+            OriginalMapRuntimeAdmission.SarahFirstTextIds,
+            OriginalMapRuntimeAdmission.SarahRepeatTextIds,
+            OriginalMapRuntimeAdmission.SarahFirstStages,
+            OriginalMapRuntimeAdmission.SarahRepeatStages);
+
     private static OriginalMapEntityPopulation AcceptedEntityPopulation(MapId map) =>
         ProjectAuthoredEntityPopulation(
             map,
@@ -1751,18 +1950,26 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapEntityDefinition[] records = Enumerable.Range(0, count)
             .Select(index => new OriginalMapEntityDefinition(
                 new OriginalMapEntityRecordIdentity(resourceId, index + 1),
-                rawX: index == 2
+                rawX: index == 0
+                    ? (byte)OriginalMapRuntimeAdmission.SarahActorInitialX
+                    : index == 2
                     ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialX
                     : checked((byte)index),
-                rawY: index == 2
+                rawY: index == 0
+                    ? (byte)OriginalMapRuntimeAdmission.SarahActorInitialY
+                    : index == 2
                     ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialY
                     : (byte)0,
-                opaqueFacing: index == 2
+                opaqueFacing: index == 0
+                    ? OriginalMapRuntimeAdmission.SarahActorInitialOpaqueFacing
+                    : index == 2
                     ? OriginalMapRuntimeAdmission.Zone601ActorInitialOpaqueFacing
                     : (byte)3,
                 mapSprite: index == 2 ? (byte)195 : checked((byte)(index + 1)),
                 index == 0 && mutateFirstTail
                     ? [1, 0, 0, 0]
+                    : index == 0
+                        ? [0, 4, 0x60, 0xCE]
                     : index == 2
                         ? [0, 4, 97, 2]
                     : !allFixed && index >= OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount
