@@ -1,5 +1,4 @@
 using Godot;
-using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 
 namespace Sf2.Remake.GodotAdapter;
@@ -109,7 +108,6 @@ internal sealed class PrivateMap3Presenter
     private readonly Label _status;
     private readonly PrivateMap3WorldTreatment _requestedWorldTreatment;
     private readonly bool _staticOverlayDiagnostic;
-    private OriginalMapVisualPayloadDefinition? _visualDefinition;
 
     private PrivateMap3Presenter(
         PrivateOriginalMapBaseViewport? baseViewport,
@@ -233,18 +231,6 @@ internal sealed class PrivateMap3Presenter
             plan.StaticOverlayDiagnostic);
     }
 
-    internal void BindVisualDefinition(OriginalMapVisualPayloadDefinition definition)
-    {
-        ArgumentNullException.ThrowIfNull(definition);
-        if (_baseViewport is null)
-        {
-            throw new InvalidOperationException(
-                "The private presentation plan did not request a base visual viewport.");
-        }
-
-        _visualDefinition = definition;
-    }
-
     internal bool TryBindBaseAtlas(
         PrivateLocalPresentationRasterMount mount,
         PrivateOriginalMapSessionSnapshot snapshot,
@@ -260,18 +246,9 @@ internal sealed class PrivateMap3Presenter
             return false;
         }
 
-        if (_visualDefinition is null)
-        {
-            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
-                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
-                "The private visual definition must be bound before the base atlas.");
-            return false;
-        }
-
         return _baseViewport.TryBindLocalAtlas(
             mount,
             snapshot,
-            _visualDefinition,
             _requestedWorldTreatment,
             _staticOverlayDiagnostic,
             out diagnostic);
@@ -315,11 +292,10 @@ internal sealed class PrivateMap3Presenter
         PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
         _viewport?.Project(snapshot);
-        if (_baseViewport is not null && _visualDefinition is not null)
+        if (_baseViewport is not null && _baseViewport.UsesLocalAtlas)
         {
-            _baseViewport.Project(
+            _baseViewport.ProjectMountedAtlas(
                 snapshot,
-                _visualDefinition,
                 _staticOverlayDiagnostic,
                 playerLocomotion);
         }

@@ -40,7 +40,6 @@ public sealed partial class Map3Root
 
     private Map3RuntimeProfile? _runtimeProfile;
     private PrivateMap3Presenter? _privatePresenter;
-    private PrivateOriginalMapVisualRuntimeBinding? _privateVisualBinding;
     private PrivateLocalHudPreview? _privateHudPreview;
     private bool _privateBattleBridgeEnabled;
 
@@ -176,50 +175,22 @@ public sealed partial class Map3Root
         bool runSmoke,
         long sessionStarted)
     {
-        OriginalMapVisualResourceSelection visualSelection = new(
-            new MapId(OriginalMapRuntimeAdmission.MapId),
-            paletteIndex: 0,
-            [0, 37, 43, 53, 66]);
-        IOriginalMapVisualPayloadSource visualSource =
-            new PrivateOriginalMap3VisualPayloadReader(
-                selection.OriginalRomPath!,
-                selection.TilesetMetadataPath!,
-                selection.PaletteMetadataPath!);
-        PrivateOriginalMapVisualGameSessionStartResult result =
-            GameSession.StartPrivateOriginalMapWithVisualPayload(
-                importSource,
-                importRequest,
-                visualSource,
-                new OriginalMapVisualPayloadRequest(
-                    OriginalMapVisualPayloadAdmission.PackageId,
-                    ContentProfile.PrivateLocal,
-                    visualSelection,
-                    OriginalMapVisualPayloadAdmission.AcceptedRomSha256,
-                    OriginalMapVisualPayloadAdmission.AcceptedTilesetMetadataDigest,
-                    OriginalMapVisualPayloadAdmission.AcceptedPaletteMetadataDigest));
+        PrivateOriginalMapGameSessionStartResult result =
+            GameSession.StartPrivateOriginalMap(importSource, importRequest);
         TracePrivateStage(runSmoke, "game-session-start", sessionStarted);
-        if (result is not PrivateOriginalMapVisualGameSessionStarted started)
+        if (result is not PrivateOriginalMapGameSessionStarted started)
         {
-            string code = result switch
-            {
-                PrivateOriginalMapVisualGameSessionImportRejected rejected =>
-                    rejected.Diagnostic.Code.ToString(),
-                PrivateOriginalMapVisualGameSessionPayloadRejected rejected =>
-                    rejected.Diagnostic.Code.ToString(),
-                PrivateOriginalMapVisualGameSessionBindingRejected rejected =>
-                    rejected.Diagnostic.Code.ToString(),
-                _ => throw new InvalidOperationException(
-                    "Unknown private visual runtime admission result."),
-            };
+            PrivateOriginalMapGameSessionStartRejected rejected =
+                (PrivateOriginalMapGameSessionStartRejected)result;
             FailPrivateStartup(
-                $"PrivateLocal base view unavailable ({code}).",
+                $"PrivateLocal base view unavailable ({rejected.Diagnostic.Code}).",
                 runSmoke,
                 "private-local");
             return;
         }
 
         PrivateOriginalMapBattleBridgeBindingResult bridgeBinding =
-            BindPrivateBattleBridge(started);
+            BindPrivateBattleBridge(started.Session);
         if (bridgeBinding is not PrivateOriginalMapBattleBridgeBound)
         {
             PrivateOriginalMapBattleBridgeBindingRejected rejected =
@@ -245,13 +216,11 @@ public sealed partial class Map3Root
         }
 
         _session = started.Session;
-        _privateVisualBinding = started.Binding;
         _privateBattleBridgeEnabled = true;
         _inputAdapter = Map3InputAdapter.CreateGodot(CreatePrivateBattleBridgeInputActions());
         _privateHudPreview?.ProjectBattleEntryChoice(
             started.Session.PrivateOriginalMapBattleBridge);
         PrivateMap3Presenter presenter = _privatePresenter!;
-        presenter.BindVisualDefinition(_privateVisualBinding.Definition);
         if (baseAtlas is not null &&
             !presenter.TryBindBaseAtlas(
                 baseAtlas,
@@ -592,7 +561,7 @@ public sealed partial class Map3Root
             ApplyPrivateBattleBridgeCompletionAcknowledgement);
 
     private PrivateOriginalMapBattleBridgeBindingResult BindPrivateBattleBridge(
-        PrivateOriginalMapVisualGameSessionStarted started)
+        GameSession session)
     {
         byte[] packageBytes = Godot.FileAccess.GetFileAsBytes(
             "res://content/public-synthetic-map3-smoke-v1.json");
@@ -614,8 +583,7 @@ public sealed partial class Map3Root
                     message));
         }
 
-        return started.Session.BindPrivateOriginalMapBattleBridge(
-            started.Binding,
+        return session.BindPrivateOriginalMapBattleBridge(
             accepted.Scenario.MapContext.PublicSyntheticBattles.Definitions[0]);
     }
 

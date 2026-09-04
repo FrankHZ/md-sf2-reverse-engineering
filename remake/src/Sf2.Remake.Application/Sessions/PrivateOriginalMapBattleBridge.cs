@@ -253,7 +253,6 @@ public sealed class PrivateOriginalMapBattleBridgeSnapshot
 public enum PrivateOriginalMapBattleBridgeFailureCode
 {
     AlreadyBound,
-    VisualBindingMismatch,
     BattleDefinitionUnavailable,
     NotBound,
     WrongState,
@@ -453,10 +452,8 @@ public sealed partial class GameSession
         _privateOriginalMapBattleBridge;
 
     public PrivateOriginalMapBattleBridgeBindingResult BindPrivateOriginalMapBattleBridge(
-        PrivateOriginalMapVisualRuntimeBinding visualBinding,
         PublicSyntheticBattleDefinition battle)
     {
-        ArgumentNullException.ThrowIfNull(visualBinding);
         ArgumentNullException.ThrowIfNull(battle);
         PrivateOriginalMapSessionSnapshot current = PrivateOriginalMapSnapshot;
         if (_privateOriginalMapBattleBridge is not null)
@@ -464,19 +461,6 @@ public sealed partial class GameSession
             return RejectBinding(
                 PrivateOriginalMapBattleBridgeFailureCode.AlreadyBound,
                 "The private battle bridge is already bound to this session.");
-        }
-
-        if (!SameSelection(
-                current.Definition.VisualResourceSelection,
-                visualBinding.Definition.Selection) ||
-            !string.Equals(
-                visualBinding.Capability,
-                PrivateOriginalMapVisualRuntimeAdmission.Capability,
-                StringComparison.Ordinal))
-        {
-            return RejectBinding(
-                PrivateOriginalMapBattleBridgeFailureCode.VisualBindingMismatch,
-                "The private battle bridge requires the exact admitted Map 3 visual binding.");
         }
 
         OriginalMapControlledAdmission controlled = current.Definition.ControlledAdmission;

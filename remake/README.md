@@ -10,12 +10,13 @@ Phase 4 implementation is active through bounded Map 3 slices. The current runti
 tracked public-synthetic exploration shell, one project-authored 3-by-2 tactical micro-battle with a
 deterministic enemy response, typed victory/defeat, same-definition retry, an atomic once-only
 synthetic victory effect, and exploration return. A separate private-local traversal shell with an
-opt-in project-authored Map 3 base view can explicitly enter the same tactical reducer at the
+opt-in, reviewed-local-asset-backed Map 3 base view can explicitly enter the same tactical reducer at the
 controlled start; defeat/retry and victory preserve the exact private traversal snapshot and never
 apply the public synthetic world effect. Its optional local HUD panel can acknowledge entry or decline
-the one-shot project-authored request before movement resumes. A separate explicit base-atlas option
-can replace only that view's transient decoded-tile sampling with the reviewed local 2x/4x nearest
-atlas while retaining the same Application snapshot, block/tile selection, crop, and player marker.
+the one-shot project-authored request before movement resumes. The explicit base-view plus base-atlas
+selection uses the reviewed local 2x/4x nearest atlas directly while retaining the same Application
+snapshot, block/tile selection, crop, and player marker; playable startup does not reopen the ROM or
+tileset/palette extraction metadata.
 The same explicit private visual path now mounts the reviewed three-sheet controlled-player family;
 Application owns its facing, counter, half, and 13-tick movement phase while Godot projects the
 selected sheet and mirrors only RIGHT. A project-authored modern camera follows that typed in-cell
@@ -161,9 +162,9 @@ and fails closed if that mount is unavailable rather than falling back to the re
 An explicit PrivateLocal launch may opt into HUD assets with `--private-hud-preview`, or into the
 atlas diagnostic with both `--private-map3-base-view` and `--private-map3-base-atlas`. Either asset
 selection requires one fully qualified asset root, the exact lowercase mounted commit string, and the
-exact uppercase manifest SHA-256. Atlas selection also requires the existing private ROM and metadata
-inputs because the authoritative typed visual binding remains required. The Content reader admits the
-complete pack before `GameSession` starts; HUD plus atlas share that one admission. The thin Godot
+exact uppercase manifest SHA-256. The Content reader admits the complete pack before `GameSession`
+starts; HUD plus atlas share that one admission, while canonical Map 3 import remains the separate
+logical/session input. The thin Godot
 catalog resolves only requested semantic IDs and accepted 2x/4x buckets. It asks the same Content
 reader to reopen the fixed manifest, resolve and recheck each contained
 path/length/digest, and return a defensive byte copy before Godot decodes it. No runtime path crosses
@@ -175,7 +176,9 @@ keeps semantic position and animation state in the private session, and advances
 state transition once per fixed Godot physics tick. The adapter selects the Application-named sheet,
 half, and RIGHT mirror and maps 384 source movement units across one 24-pixel logical cell. It does
 not derive phase from `SimulationStep` or `LastTraversal`, call either half standing/idle, or claim a
-universal admission frame or wall-clock fidelity.
+universal admission frame or wall-clock fidelity. The fixed-ROM visual-payload reader and cross-port
+binding remain offline admission/tooling support; playable startup neither invokes them nor accepts
+`--original-rom`, `--map-tileset-metadata`, or `--map-palette-metadata`.
 
 The explicit PrivateLocal product profile now applies one adaptive windowed startup policy before any
 presentation payload is selected. The logical canvas and project fallback remain 960 by 540. On a real

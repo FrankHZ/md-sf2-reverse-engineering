@@ -268,11 +268,12 @@ already authoritative working-layout/block/tile/slot/flip selection. A 2x bucket
 576-by-336 ImageTexture and a 4x bucket becomes a 1152-by-672 ImageTexture; `DrawTextureRect` maps
 either onto the same 288-by-168 logical crop, and the current project-authored player marker remains
 a later logical overlay. Horizontal and vertical flips reverse the complete physical tile axes,
-including subpixel coordinates. Startup binding still proves that every scale-squared atlas sample
-exactly repeats the typed 1x payload, so this transport closure does not admit a non-nearest
-derivative. It never reads private source bundles or masters, does not embed the asset root in
+including subpixel coordinates. The reviewed pack is presentation-authoritative at playable startup:
+Godot validates that every scale-squared atlas sample is identical before any logical collapse, so the
+existing `exact-nearest` identity cannot silently admit arbitrary reviewed art. It does not reopen the
+ROM or tileset/palette metadata, never reads private source bundles or masters, and does not embed the asset root in
 Application/state/receipts, and does not place private data in a PCK. This is a diagnostic
-substitution for transient decoded-tile sampling, not original rendering. The player families are
+local presentation policy, not original rendering. The player families are
 resolved from the same exact accepted transaction only when the base atlas is selected. Godot decodes
 the selected 2x or 4x PNGs and retains them in the base viewport. Session position and locomotion
 state remain authoritative; the catalog, presenter, and viewport do not own gameplay, facing,
@@ -331,7 +332,8 @@ offset. Each accepted 32-unit transition becomes two logical pixels; the focus r
 existing column 6/row 3 while the 64-by-64 working-layout bounds permit, then clamps at the map edge.
 The base compositor samples at that continuous sub-tile origin into the unchanged 288-by-168 visible
 surface, using at most one bounded trailing block row or column. Typed payload and exact local-atlas
-paths share that crop, and edge-scale remains a post-composition treatment. Blocked movement retains
+projection tests and the playable exact local-atlas path share that crop, and edge-scale remains a
+post-composition treatment. Blocked movement retains
 the current camera; settled movement reaches the same tile-aligned crop as the earlier projection.
 
 This is a 9A presentation choice, not a consumer of the original camera-command runtime fixture. It
@@ -347,8 +349,9 @@ Application-owned state and does not rewrite the earlier asset's identity or mea
 The optional named `edge-scale2x` world treatment is an explicit 9A presentation deviation layered
 after that exact admission. It is accepted only with the explicit private base-view and base-atlas
 selection; exact-nearest remains the default. Godot first requires the selected atlas bucket to be an
-exact nearest replication of the typed payload, then the adapter composes the current 288-by-168
-logical base-world crop from the authoritative working layout, block selection, tile slots, and flips.
+exact nearest replication within every scale block, then collapses that admitted atlas to the current
+288-by-168 logical base-world crop from the authoritative working layout, block selection, tile slots,
+and flips. It never recreates that source by reopening ROM or extraction metadata at runtime.
 Standard Scale2x rules compare exact RGBA neighbors across the complete composed crop, with clamped
 crop edges, and copy only colors already present. The 2x bucket receives that 576-by-336 result. The
 4x bucket deterministically nearest-doubles each accepted Scale2x output pixel, rather than making a
@@ -522,8 +525,8 @@ an admitted product font, Theme, original battle title, or presentation-fidelity
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
 | implemented world-family tooling prerequisite | fixed private Map 3 ROM/metadata roots; exact palette/slot selection; five-segment 128-by-320 source-crisp atlas; deterministic nearest 2x/4x ignored candidate; no implicit promotion or update |
 | implemented player-reference consumer | fixed private ROM root; exact controlled player, regular map-sprite, DOWN source-slot, no-mirror, and half-zero selection; bounded Basic decode; reviewed 24-by-24 `initial-reference-frame` master and nearest 2x/4x local transaction; exact Content mount and thin Godot logical-cell projection; no standing/idle, animation, or admission-visible claim |
-| implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop with exact-nearest startup parity; the static overlay is a no-player diagnostic using the admitted map palette by explicit policy; no source/master runtime input, PCK, or fidelity claim |
-| implemented modern camera consumer | Godot-only immutable focus projection from authoritative private snapshot plus Application locomotion offset; two logical pixels per accepted transition; column-6/row-3 centering with 64-by-64 map clamp; bounded sub-tile sampling shared by typed payload and local atlas; static overlay remains fixed; no original camera/plane/parallax/autoscroll/VInt/final-pixel claim |
+| implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop after exact-nearest scale-block validation; no playable ROM/metadata reopen, source/master runtime input, PCK, or fidelity claim |
+| implemented modern camera consumer | Godot-only immutable focus projection from authoritative private snapshot plus Application locomotion offset; two logical pixels per accepted transition; column-6/row-3 centering with 64-by-64 map clamp; bounded sub-tile sampling shared by offline payload tests and the playable local atlas; static overlay remains fixed; no original camera/plane/parallax/autoscroll/VInt/final-pixel claim |
 | separate implementation decision | live resize bucket remount and fullscreen/monitor transition UX; platform safe-area integration; original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original background-layer palette source; camera/layer/priority-with-sprites/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
 
