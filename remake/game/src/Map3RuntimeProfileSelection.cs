@@ -20,9 +20,9 @@ internal sealed record Map3RuntimeProfileSelection
 {
     private const string ProfileOption = "--runtime-profile";
     private const string ImportOption = "--canonical-map-import";
-    private const string RomOption = "--original-rom";
-    private const string TilesetMetadataOption = "--map-tileset-metadata";
-    private const string PaletteMetadataOption = "--map-palette-metadata";
+    private const string RetiredRomOption = "--original-rom";
+    private const string RetiredTilesetMetadataOption = "--map-tileset-metadata";
+    private const string RetiredPaletteMetadataOption = "--map-palette-metadata";
     private const string PresentationAssetRootOption = "--presentation-asset-root";
     private const string PresentationAssetCommitOption = "--presentation-asset-commit";
     private const string PresentationManifestDigestOption =
@@ -43,9 +43,6 @@ internal sealed record Map3RuntimeProfileSelection
         bool privateBaseViewRequested,
         bool privateBaseAtlasRequested,
         bool privateStaticOverlayRequested,
-        string? originalRomPath,
-        string? tilesetMetadataPath,
-        string? paletteMetadataPath,
         bool privateHudPreviewRequested,
         string? presentationAssetRoot,
         string? presentationAssetCommit,
@@ -60,9 +57,6 @@ internal sealed record Map3RuntimeProfileSelection
         PrivateBaseViewRequested = privateBaseViewRequested;
         PrivateBaseAtlasRequested = privateBaseAtlasRequested;
         PrivateStaticOverlayRequested = privateStaticOverlayRequested;
-        OriginalRomPath = originalRomPath;
-        TilesetMetadataPath = tilesetMetadataPath;
-        PaletteMetadataPath = paletteMetadataPath;
         PrivateHudPreviewRequested = privateHudPreviewRequested;
         PresentationAssetRoot = presentationAssetRoot;
         PresentationAssetCommit = presentationAssetCommit;
@@ -84,12 +78,6 @@ internal sealed record Map3RuntimeProfileSelection
     internal bool PrivateBaseAtlasRequested { get; }
 
     internal bool PrivateStaticOverlayRequested { get; }
-
-    internal string? OriginalRomPath { get; }
-
-    internal string? TilesetMetadataPath { get; }
-
-    internal string? PaletteMetadataPath { get; }
 
     internal bool PrivateHudPreviewRequested { get; }
 
@@ -191,6 +179,15 @@ internal sealed record Map3RuntimeProfileSelection
                 continue;
             }
 
+            if (IsRetiredPlayableVisualOption(option))
+            {
+                return Unavailable(
+                    ParseKnownProfile(values.GetValueOrDefault(ProfileOption)),
+                    privateSmokeRequested,
+                    privateHudPreviewRequested,
+                    "Playable PrivateLocal no longer accepts ROM or tileset/palette metadata paths; build and admit the reviewed local asset pack offline.");
+            }
+
             if (string.Equals(argument, option, StringComparison.Ordinal) ||
                 !argument.StartsWith(option + "=", StringComparison.Ordinal))
             {
@@ -214,9 +211,6 @@ internal sealed record Map3RuntimeProfileSelection
         values.TryGetValue(ProfileOption, out string? profileValue);
         Map3RuntimeProfile? profile = ParseKnownProfile(profileValue);
         bool hasPrivateInputs = values.ContainsKey(ImportOption) ||
-            values.ContainsKey(RomOption) ||
-            values.ContainsKey(TilesetMetadataOption) ||
-            values.ContainsKey(PaletteMetadataOption) ||
             values.ContainsKey(PresentationAssetRootOption) ||
             values.ContainsKey(PresentationAssetCommitOption) ||
             values.ContainsKey(PresentationManifestDigestOption) ||
@@ -351,43 +345,26 @@ internal sealed record Map3RuntimeProfileSelection
                 privateBaseAtlasRequested);
         }
 
-        bool hasAnyVisualPath = values.ContainsKey(RomOption) ||
-            values.ContainsKey(TilesetMetadataOption) ||
-            values.ContainsKey(PaletteMetadataOption);
         if (!privateBaseViewRequested)
         {
-            return hasAnyVisualPath
-                ? Unavailable(
-                    profile,
-                    privateSmokeRequested,
-                    privateHudPreviewRequested,
-                    "Private visual inputs require explicit private Map 3 base-view selection.")
-                : Available(
-                    profile.Value,
-                    canonicalImportPath,
-                    privateSmokeRequested,
-                    privateHudPreviewRequested,
-                    privateBaseAtlasRequested,
-                    presentationAssetRoot,
-                    presentationAssetCommit,
-                    presentationManifestDigest);
+            return Available(
+                profile.Value,
+                canonicalImportPath,
+                privateSmokeRequested,
+                privateHudPreviewRequested,
+                privateBaseAtlasRequested,
+                presentationAssetRoot,
+                presentationAssetCommit,
+                presentationManifestDigest);
         }
 
-        if (!TryNormalizeRequiredPath(
-                values.GetValueOrDefault(RomOption),
-                out string? originalRomPath) ||
-            !TryNormalizeRequiredPath(
-                values.GetValueOrDefault(TilesetMetadataOption),
-                out string? tilesetMetadataPath) ||
-            !TryNormalizeRequiredPath(
-                values.GetValueOrDefault(PaletteMetadataOption),
-                out string? paletteMetadataPath))
+        if (!privateBaseAtlasRequested)
         {
             return Unavailable(
                 profile,
                 privateSmokeRequested,
                 privateHudPreviewRequested,
-                "Private Map 3 base view requires fully qualified ignored ROM, tileset-metadata, and palette-metadata paths.");
+                "Private Map 3 base view requires the explicit reviewed local base-atlas selection.");
         }
 
         return new Map3RuntimeProfileSelection(
@@ -398,9 +375,6 @@ internal sealed record Map3RuntimeProfileSelection
             privateBaseViewRequested: true,
             privateBaseAtlasRequested,
             privateStaticOverlayRequested,
-            originalRomPath,
-            tilesetMetadataPath,
-            paletteMetadataPath,
             privateHudPreviewRequested,
             presentationAssetRoot,
             presentationAssetCommit,
@@ -415,9 +389,9 @@ internal sealed record Map3RuntimeProfileSelection
         {
             ProfileOption,
             ImportOption,
-            RomOption,
-            TilesetMetadataOption,
-            PaletteMetadataOption,
+            RetiredRomOption,
+            RetiredTilesetMetadataOption,
+            RetiredPaletteMetadataOption,
             PresentationAssetRootOption,
             PresentationAssetCommitOption,
             PresentationManifestDigestOption,
@@ -434,13 +408,18 @@ internal sealed record Map3RuntimeProfileSelection
         return null;
     }
 
+    private static bool IsRetiredPlayableVisualOption(string option) =>
+        string.Equals(option, RetiredRomOption, StringComparison.Ordinal) ||
+        string.Equals(option, RetiredTilesetMetadataOption, StringComparison.Ordinal) ||
+        string.Equals(option, RetiredPaletteMetadataOption, StringComparison.Ordinal);
+
     private static string OptionLabel(string option) => option switch
     {
         ProfileOption => "runtime profile",
         ImportOption => "canonical import",
-        RomOption => "original ROM",
-        TilesetMetadataOption => "map tileset metadata",
-        PaletteMetadataOption => "map palette metadata",
+        RetiredRomOption => "retired original ROM",
+        RetiredTilesetMetadataOption => "retired map tileset metadata",
+        RetiredPaletteMetadataOption => "retired map palette metadata",
         PresentationAssetRootOption => "presentation asset root",
         PresentationAssetCommitOption => "presentation asset commit",
         PresentationManifestDigestOption => "presentation manifest digest",
@@ -485,9 +464,6 @@ internal sealed record Map3RuntimeProfileSelection
             privateBaseViewRequested: false,
             privateBaseAtlasRequested,
             privateStaticOverlayRequested: false,
-            originalRomPath: null,
-            tilesetMetadataPath: null,
-            paletteMetadataPath: null,
             privateHudPreviewRequested,
             presentationAssetRoot,
             presentationAssetCommit,
@@ -510,9 +486,6 @@ internal sealed record Map3RuntimeProfileSelection
             privateBaseViewRequested: false,
             privateBaseAtlasRequested,
             privateStaticOverlayRequested,
-            originalRomPath: null,
-            tilesetMetadataPath: null,
-            paletteMetadataPath: null,
             privateHudPreviewRequested,
             presentationAssetRoot: null,
             presentationAssetCommit: null,

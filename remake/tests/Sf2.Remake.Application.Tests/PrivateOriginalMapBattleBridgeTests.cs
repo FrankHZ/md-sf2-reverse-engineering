@@ -2,7 +2,6 @@ using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
-using System.Reflection;
 using Xunit;
 
 namespace Sf2.Remake.Application.Tests;
@@ -10,15 +9,13 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalMapBattleBridgeTests
 {
     [Fact]
-    public void ExactVisualSessionBindsOneControlledStartBridgeWithoutPublicWorldState()
+    public void ExactPrivateSessionBindsOneControlledStartBridgeWithoutPresentationDependency()
     {
-        PrivateOriginalMapVisualGameSessionStarted started = Start();
+        PrivateOriginalMapGameSessionStarted started = Start();
 
         PrivateOriginalMapBattleBridgeBound bound = Assert.IsType<
             PrivateOriginalMapBattleBridgeBound>(
-            started.Session.BindPrivateOriginalMapBattleBridge(
-                started.Binding,
-                Battle()));
+            started.Session.BindPrivateOriginalMapBattleBridge(Battle()));
 
         Assert.Equal(PrivateOriginalMapBattleBridgeStatus.Ready, bound.Bridge.Status);
         Assert.Equal(
@@ -39,9 +36,7 @@ public sealed class PrivateOriginalMapBattleBridgeTests
 
         PrivateOriginalMapBattleBridgeBindingRejected duplicate = Assert.IsType<
             PrivateOriginalMapBattleBridgeBindingRejected>(
-            started.Session.BindPrivateOriginalMapBattleBridge(
-                started.Binding,
-                Battle()));
+            started.Session.BindPrivateOriginalMapBattleBridge(Battle()));
         Assert.Equal(
             PrivateOriginalMapBattleBridgeFailureCode.AlreadyBound,
             duplicate.Diagnostic.Code);
@@ -51,7 +46,7 @@ public sealed class PrivateOriginalMapBattleBridgeTests
     [Fact]
     public void TriggerAndAcknowledgementsFailClosedWithoutChangingEitherState()
     {
-        PrivateOriginalMapVisualGameSessionStarted started = Start();
+        PrivateOriginalMapGameSessionStarted started = Start();
         GameSession session = started.Session;
         PrivateOriginalMapBattleBridgeSnapshot ready = Bind(started);
         PrivateOriginalMapSessionSnapshot traversal = session.PrivateOriginalMapSnapshot;
@@ -103,7 +98,7 @@ public sealed class PrivateOriginalMapBattleBridgeTests
     [Fact]
     public void PendingEntryCanBeDeclinedExactlyOnceBeforeMovementResumes()
     {
-        PrivateOriginalMapVisualGameSessionStarted started = Start();
+        PrivateOriginalMapGameSessionStarted started = Start();
         GameSession session = started.Session;
         PrivateOriginalMapBattleBridgeSnapshot ready = Bind(started);
         PrivateOriginalMapSessionSnapshot traversal = session.PrivateOriginalMapSnapshot;
@@ -200,14 +195,14 @@ public sealed class PrivateOriginalMapBattleBridgeTests
         Assert.Equal(traversal.SimulationStep + 1, moved.Snapshot.SimulationStep);
         Assert.Same(declined.Bridge, session.PrivateOriginalMapBattleBridge);
 
-        PrivateOriginalMapVisualGameSessionStarted restarted = Start();
+        PrivateOriginalMapGameSessionStarted restarted = Start();
         Assert.Null(restarted.Session.PrivateOriginalMapBattleBridge);
     }
 
     [Fact]
     public void DefeatRetriesAndVictoryReturnsTheSameTraversalSnapshotBeforeMovementResumes()
     {
-        PrivateOriginalMapVisualGameSessionStarted started = Start();
+        PrivateOriginalMapGameSessionStarted started = Start();
         GameSession session = started.Session;
         PrivateOriginalMapBattleBridgeSnapshot ready = Bind(started);
         PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
@@ -345,34 +340,15 @@ public sealed class PrivateOriginalMapBattleBridgeTests
         Assert.Equal(OriginalMapTraversalOutcome.Moved, moved.Traversal.Outcome);
         Assert.Equal(before.SimulationStep + 1, moved.Snapshot.SimulationStep);
 
-        PrivateOriginalMapVisualGameSessionStarted restarted = Start();
+        PrivateOriginalMapGameSessionStarted restarted = Start();
         Assert.Null(restarted.Session.PrivateOriginalMapBattleBridge);
         Assert.Equal(0, restarted.Session.PrivateOriginalMapSnapshot.SimulationStep);
     }
 
     [Fact]
-    public void MismatchedVisualBindingAndUnknownCommandsAreTypedAndPathFree()
+    public void UnknownCommandsAreTypedAndPathFreeAfterSessionOwnedBinding()
     {
-        PrivateOriginalMapVisualGameSessionStarted started = Start();
-        OriginalMapVisualPayloadDefinition wrongDefinition = VisualDefinition();
-        typeof(OriginalMapVisualPayloadDefinition).GetField(
-            "<Selection>k__BackingField",
-            BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(
-                wrongDefinition,
-                new OriginalMapVisualResourceSelection(
-                    new MapId("map3"),
-                    1,
-                    [0, 37, 43, 53, 66]));
-        PrivateOriginalMapVisualRuntimeBinding wrongBinding = new(
-            wrongDefinition,
-            VisualReceipt());
-        PrivateOriginalMapBattleBridgeBindingRejected rejected = Assert.IsType<
-            PrivateOriginalMapBattleBridgeBindingRejected>(
-            started.Session.BindPrivateOriginalMapBattleBridge(wrongBinding, Battle()));
-        Assert.Equal(
-            PrivateOriginalMapBattleBridgeFailureCode.VisualBindingMismatch,
-            rejected.Diagnostic.Code);
-
+        PrivateOriginalMapGameSessionStarted started = Start();
         PrivateOriginalMapBattleBridgeSnapshot ready = Bind(started);
         PrivateOriginalMapBattleBridgeRejected unsupported = Assert.IsType<
             PrivateOriginalMapBattleBridgeRejected>(
@@ -386,11 +362,9 @@ public sealed class PrivateOriginalMapBattleBridgeTests
     }
 
     private static PrivateOriginalMapBattleBridgeSnapshot Bind(
-        PrivateOriginalMapVisualGameSessionStarted started) =>
+        PrivateOriginalMapGameSessionStarted started) =>
         Assert.IsType<PrivateOriginalMapBattleBridgeBound>(
-            started.Session.BindPrivateOriginalMapBattleBridge(
-                started.Binding,
-                Battle())).Bridge;
+            started.Session.BindPrivateOriginalMapBattleBridge(Battle())).Bridge;
 
     private static void AssertMove(GameSession session, TacticalDirection direction)
     {
@@ -451,26 +425,16 @@ public sealed class PrivateOriginalMapBattleBridgeTests
         Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
     }
 
-    private static PrivateOriginalMapVisualGameSessionStarted Start() =>
-        Assert.IsType<PrivateOriginalMapVisualGameSessionStarted>(
-            GameSession.StartPrivateOriginalMapWithVisualPayload(
+    private static PrivateOriginalMapGameSessionStarted Start() =>
+        Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(
                 new ImportSource(new OriginalMapImportAccepted(
                     ImportDefinition(),
                     ImportReceipt())),
                 new OriginalMapImportRequest(
                     OriginalMapRuntimeAdmission.PackageId,
                     ContentProfile.PrivateLocal,
-                    OriginalMapRuntimeAdmission.AcceptedContentDigest),
-                new VisualSource(new OriginalMapVisualPayloadAccepted(
-                    VisualDefinition(),
-                    VisualReceipt())),
-                new OriginalMapVisualPayloadRequest(
-                    OriginalMapVisualPayloadAdmission.PackageId,
-                    ContentProfile.PrivateLocal,
-                    Selection(),
-                    OriginalMapVisualPayloadAdmission.AcceptedRomSha256,
-                    OriginalMapVisualPayloadAdmission.AcceptedTilesetMetadataDigest,
-                    OriginalMapVisualPayloadAdmission.AcceptedPaletteMetadataDigest)));
+                    OriginalMapRuntimeAdmission.AcceptedContentDigest)));
 
     private static PublicSyntheticBattleDefinition Battle() =>
         new(
@@ -551,46 +515,6 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             OriginalMapRuntimeAdmission.RequiredEvidenceOwners,
             OriginalMapRuntimeAdmission.RequiredCapabilities);
 
-    private static OriginalMapVisualPayloadDefinition VisualDefinition()
-    {
-        OriginalMapVisualResourceSelection selection = Selection();
-        return new OriginalMapVisualPayloadDefinition(
-            selection,
-            new OriginalMapPalettePayload(selection.PaletteIndex, PaletteWords()),
-            Tilesets(selection));
-    }
-
-    private static OriginalMapTilesetPayload[] Tilesets(
-        OriginalMapVisualResourceSelection selection) =>
-        Enumerable.Range(0, 5)
-            .Select(index => new OriginalMapTilesetPayload(
-                index + 1,
-                selection.TilesetSlots[index],
-                Enumerable.Repeat(
-                    checked((byte)(index + 1)),
-                    OriginalMapVisualPayloadAdmission.DecodedBytesPerTileset)))
-            .ToArray();
-
-    private static OriginalMapVisualPayloadReceipt VisualReceipt() =>
-        new(
-            OriginalMapVisualPayloadAdmission.PackageId,
-            OriginalMapVisualPayloadAdmission.SchemaVersion,
-            ContentProfile.PrivateLocal,
-            OriginalMapVisualPayloadAdmission.Capability,
-            new OriginalMapVisualPayloadProvenance(
-                OriginalMapVisualPayloadAdmission.AcceptedRomSha256,
-                OriginalMapVisualPayloadAdmission.AcceptedUpstreamRepository,
-                OriginalMapVisualPayloadAdmission.AcceptedUpstreamCommit,
-                OriginalMapVisualPayloadAdmission.TilesetMetadataId,
-                OriginalMapVisualPayloadAdmission.AcceptedTilesetMetadataDigest,
-                OriginalMapVisualPayloadAdmission.PaletteMetadataId,
-                OriginalMapVisualPayloadAdmission.AcceptedPaletteMetadataDigest),
-            OriginalMapVisualPayloadAdmission.RequiredEvidenceOwners,
-            OriginalMapVisualPayloadAdmission.SelectedPaletteCount,
-            OriginalMapVisualPayloadAdmission.PaletteWordCount,
-            OriginalMapVisualPayloadAdmission.SelectedTilesetCount,
-            OriginalMapVisualPayloadAdmission.DecodedBytesPerTileset);
-
     private static OriginalMapVisualResourceSelection Selection() =>
         new(new MapId("map3"), paletteIndex: 0, [0, 37, 43, 53, 66]);
 
@@ -644,26 +568,12 @@ public sealed class PrivateOriginalMapBattleBridgeTests
         PrivateOriginalMapSessionSnapshot snapshot) =>
         new(snapshot.Definition.ControlledStepCopy!.Identity, snapshot.SimulationStep);
 
-    private static ushort[] PaletteWords() =>
-    [
-        0x0EEE, 0x0222, 0x0444, 0x0666,
-        0x0888, 0x0AAA, 0x0CCC, 0x0000,
-        0x0002, 0x0020, 0x0200, 0x000E,
-        0x00E0, 0x0E00, 0x0246, 0x068A,
-    ];
-
     private static int Index(int x, int y) =>
         (y * WorkingMapLayout.ColumnCount) + x;
 
     private sealed record ImportSource(OriginalMapImportResult Result) : IOriginalMapImportSource
     {
         public OriginalMapImportResult Admit(OriginalMapImportRequest request) => Result;
-    }
-
-    private sealed record VisualSource(OriginalMapVisualPayloadResult Result) :
-        IOriginalMapVisualPayloadSource
-    {
-        public OriginalMapVisualPayloadResult Admit(OriginalMapVisualPayloadRequest request) => Result;
     }
 
     private sealed record UnknownCommand : IGameSessionCommand;

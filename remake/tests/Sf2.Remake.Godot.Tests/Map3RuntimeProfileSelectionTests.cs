@@ -25,9 +25,6 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.False(selection.PrivateBaseViewRequested);
         Assert.False(selection.PrivateBaseAtlasRequested);
         Assert.False(selection.PrivateStaticOverlayRequested);
-        Assert.Null(selection.OriginalRomPath);
-        Assert.Null(selection.TilesetMetadataPath);
-        Assert.Null(selection.PaletteMetadataPath);
         Assert.False(selection.PrivateHudPreviewRequested);
         Assert.Null(selection.PresentationAssetRoot);
         Assert.Null(selection.PresentationAssetCommit);
@@ -157,44 +154,32 @@ public sealed class Map3RuntimeProfileSelectionTests
     }
 
     [Fact]
-    public void ExplicitPrivateBaseViewRequiresAndNormalizesAllIgnoredInputs()
+    public void ExplicitPrivateBaseViewRequiresTheReviewedLocalAtlas()
     {
         string canonical = Absolute("canonical-map-import.json");
-        string rom = Absolute("sf2.bin");
-        string tilesets = Absolute("map-tilesets.json");
-        string palettes = Absolute("map-palettes.json");
-
         Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
             [
                 "--runtime-profile=private-local",
                 $"--canonical-map-import={canonical}",
                 Map3RuntimeProfileSelection.PrivateBaseViewOption,
-                $"--original-rom={rom}",
-                $"--map-tileset-metadata={tilesets}",
-                $"--map-palette-metadata={palettes}",
                 Map3RuntimeProfileSelection.PrivateSmokeOption,
             ]);
 
-        Assert.True(selection.IsAvailable);
+        Assert.False(selection.IsAvailable);
         Assert.Equal(Map3RuntimeProfile.PrivateLocal, selection.RequestedProfile);
-        Assert.Equal(canonical, selection.CanonicalImportPath);
-        Assert.True(selection.PrivateBaseViewRequested);
+        Assert.Null(selection.CanonicalImportPath);
+        Assert.False(selection.PrivateBaseViewRequested);
         Assert.False(selection.PrivateBaseAtlasRequested);
         Assert.False(selection.PrivateStaticOverlayRequested);
-        Assert.Equal(rom, selection.OriginalRomPath);
-        Assert.Equal(tilesets, selection.TilesetMetadataPath);
-        Assert.Equal(palettes, selection.PaletteMetadataPath);
         Assert.True(selection.PrivateSmokeRequested);
-        Assert.Null(selection.Diagnostic);
+        Assert.Contains("base-atlas", selection.Diagnostic, StringComparison.Ordinal);
+        Assert.DoesNotContain(canonical, selection.Diagnostic, StringComparison.Ordinal);
     }
 
     [Fact]
     public void ExplicitPrivateBaseAtlasRequiresBaseViewAndCompletePresentationPins()
     {
         string canonical = Absolute("canonical-map-import.json");
-        string rom = Absolute("sf2.bin");
-        string tilesets = Absolute("map-tilesets.json");
-        string palettes = Absolute("map-palettes.json");
         string assetRoot = Absolute("presentation-assets");
 
         Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
@@ -203,9 +188,6 @@ public sealed class Map3RuntimeProfileSelectionTests
                 $"--canonical-map-import={canonical}",
                 Map3RuntimeProfileSelection.PrivateBaseViewOption,
                 Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
-                $"--original-rom={rom}",
-                $"--map-tileset-metadata={tilesets}",
-                $"--map-palette-metadata={palettes}",
                 $"--presentation-asset-root={assetRoot}",
                 $"--presentation-asset-commit={AtlasAssetCommit}",
                 $"--presentation-manifest-sha256={AtlasManifestDigest}",
@@ -225,25 +207,24 @@ public sealed class Map3RuntimeProfileSelectionTests
     public void StaticOverlayDiagnosticRequiresAndRetainsAnExplicitPrivateBaseView()
     {
         string canonical = Absolute("canonical-map-import.json");
-        string rom = Absolute("sf2.bin");
-        string tilesets = Absolute("map-tilesets.json");
-        string palettes = Absolute("map-palettes.json");
+        string assetRoot = Absolute("presentation-assets");
 
         Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
             [
                 "--runtime-profile=private-local",
                 $"--canonical-map-import={canonical}",
                 Map3RuntimeProfileSelection.PrivateBaseViewOption,
+                Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
                 Map3RuntimeProfileSelection.PrivateStaticOverlayOption,
-                $"--original-rom={rom}",
-                $"--map-tileset-metadata={tilesets}",
-                $"--map-palette-metadata={palettes}",
+                $"--presentation-asset-root={assetRoot}",
+                $"--presentation-asset-commit={AtlasAssetCommit}",
+                $"--presentation-manifest-sha256={AtlasManifestDigest}",
             ]);
 
         Assert.True(selection.IsAvailable);
         Assert.True(selection.PrivateBaseViewRequested);
         Assert.True(selection.PrivateStaticOverlayRequested);
-        Assert.False(selection.PrivateBaseAtlasRequested);
+        Assert.True(selection.PrivateBaseAtlasRequested);
         Assert.Equal(PrivateMap3WorldTreatment.ExactNearest, selection.WorldTreatment);
         Assert.Null(selection.Diagnostic);
     }
@@ -261,10 +242,11 @@ public sealed class Map3RuntimeProfileSelectionTests
             "--runtime-profile=private-local",
             $"--canonical-map-import={Absolute("canonical-map-import.json")}",
             Map3RuntimeProfileSelection.PrivateBaseViewOption,
+            Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
             Map3RuntimeProfileSelection.PrivateStaticOverlayOption,
-            $"--original-rom={Absolute("sf2.bin")}",
-            $"--map-tileset-metadata={Absolute("map-tilesets.json")}",
-            $"--map-palette-metadata={Absolute("map-palettes.json")}",
+            $"--presentation-asset-root={Absolute("presentation-assets")}",
+            $"--presentation-asset-commit={AtlasAssetCommit}",
+            $"--presentation-manifest-sha256={AtlasManifestDigest}",
         ];
         switch (mutation)
         {
@@ -289,7 +271,6 @@ public sealed class Map3RuntimeProfileSelectionTests
 
         Assert.False(selection.IsAvailable);
         Assert.False(selection.PrivateBaseViewRequested);
-        Assert.Null(selection.OriginalRomPath);
         Assert.DoesNotContain(
             Absolute("canonical-map-import.json"),
             selection.Diagnostic,
@@ -363,9 +344,6 @@ public sealed class Map3RuntimeProfileSelectionTests
     public void HudAndBaseAtlasMayShareOneCompletePresentationSelection()
     {
         string canonical = Absolute("canonical-map-import.json");
-        string rom = Absolute("sf2.bin");
-        string tilesets = Absolute("map-tilesets.json");
-        string palettes = Absolute("map-palettes.json");
         string assetRoot = Absolute("presentation-assets");
 
         Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
@@ -375,9 +353,6 @@ public sealed class Map3RuntimeProfileSelectionTests
                 Map3RuntimeProfileSelection.PrivateBaseViewOption,
                 Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
                 Map3RuntimeProfileSelection.PrivateHudPreviewOption,
-                $"--original-rom={rom}",
-                $"--map-tileset-metadata={tilesets}",
-                $"--map-palette-metadata={palettes}",
                 $"--presentation-asset-root={assetRoot}",
                 $"--presentation-asset-commit={AtlasAssetCommit}",
                 $"--presentation-manifest-sha256={AtlasManifestDigest}",
@@ -455,9 +430,8 @@ public sealed class Map3RuntimeProfileSelectionTests
 
     [Theory]
     [InlineData("--private-map3-base-view")]
-    [InlineData("--private-map3-base-view", "--original-rom=relative.bin")]
-    [InlineData("--private-map3-base-view", "--original-rom=")]
-    public void IncompleteOrRelativePrivateBaseViewIsUnavailable(
+    [InlineData("--private-map3-base-view", "--private-map3-static-overlay")]
+    public void PrivateBaseViewWithoutReviewedAtlasIsUnavailable(
         params string[] visualArguments)
     {
         string canonical = Absolute("canonical-map-import.json");
@@ -474,26 +448,42 @@ public sealed class Map3RuntimeProfileSelectionTests
         Assert.False(selection.IsAvailable);
         Assert.Equal(Map3RuntimeProfile.PrivateLocal, selection.RequestedProfile);
         Assert.False(selection.PrivateBaseViewRequested);
-        Assert.Null(selection.OriginalRomPath);
         Assert.DoesNotContain(canonical, selection.Diagnostic, StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void VisualPathsWithoutExplicitBaseViewNeverEnableThePrivateRenderer()
+    [Theory]
+    [InlineData("--original-rom")]
+    [InlineData("--map-tileset-metadata")]
+    [InlineData("--map-palette-metadata")]
+    public void RetiredPlayableVisualInputsAreExplicitlyRejectedAndPathFree(string option)
     {
         string canonical = Absolute("canonical-map-import.json");
-        string rom = Absolute("sf2.bin");
+        string retiredPath = Absolute("retired-private-input.bin");
         Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
             [
                 "--runtime-profile=private-local",
                 $"--canonical-map-import={canonical}",
-                $"--original-rom={rom}",
+                $"{option}={retiredPath}",
             ]);
 
         Assert.False(selection.IsAvailable);
         Assert.False(selection.PrivateBaseViewRequested);
-        Assert.Null(selection.OriginalRomPath);
-        Assert.DoesNotContain(rom, selection.Diagnostic, StringComparison.Ordinal);
+        Assert.Contains("no longer accepts", selection.Diagnostic, StringComparison.Ordinal);
+        Assert.DoesNotContain(retiredPath, selection.Diagnostic, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("--original-rom")]
+    [InlineData("--map-tileset-metadata")]
+    [InlineData("--map-palette-metadata")]
+    public void BareRetiredPlayableVisualInputsUseTheSameExplicitDiagnostic(string option)
+    {
+        Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
+            ["--runtime-profile=private-local", option]);
+
+        Assert.False(selection.IsAvailable);
+        Assert.Equal(Map3RuntimeProfile.PrivateLocal, selection.RequestedProfile);
+        Assert.Contains("no longer accepts", selection.Diagnostic, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -528,22 +518,31 @@ public sealed class Map3RuntimeProfileSelectionTests
     }
 
     [Fact]
-    public void DuplicateVisualOptionsAreUnavailableAndPathFree()
+    public void CompleteLegacyVisualInputSetCannotSelfAuthorizePlayableRuntime()
     {
         string canonical = Absolute("canonical-map-import.json");
         string rom = Absolute("sf2.bin");
+        string tilesets = Absolute("map-tilesets.json");
+        string palettes = Absolute("map-palettes.json");
         Map3RuntimeProfileSelection selection = Map3RuntimeProfileSelection.Parse(
             [
                 "--runtime-profile=private-local",
                 $"--canonical-map-import={canonical}",
                 Map3RuntimeProfileSelection.PrivateBaseViewOption,
+                Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
                 $"--original-rom={rom}",
-                $"--original-rom={rom}",
+                $"--map-tileset-metadata={tilesets}",
+                $"--map-palette-metadata={palettes}",
+                $"--presentation-asset-root={Absolute("presentation-assets")}",
+                $"--presentation-asset-commit={AtlasAssetCommit}",
+                $"--presentation-manifest-sha256={AtlasManifestDigest}",
             ]);
 
         Assert.False(selection.IsAvailable);
-        Assert.Null(selection.OriginalRomPath);
+        Assert.Contains("no longer accepts", selection.Diagnostic, StringComparison.Ordinal);
         Assert.DoesNotContain(rom, selection.Diagnostic, StringComparison.Ordinal);
+        Assert.DoesNotContain(tilesets, selection.Diagnostic, StringComparison.Ordinal);
+        Assert.DoesNotContain(palettes, selection.Diagnostic, StringComparison.Ordinal);
     }
 
     private static string Absolute(string fileName) =>
@@ -555,9 +554,6 @@ public sealed class Map3RuntimeProfileSelectionTests
         $"--canonical-map-import={Absolute("canonical-map-import.json")}",
         Map3RuntimeProfileSelection.PrivateBaseViewOption,
         Map3RuntimeProfileSelection.PrivateBaseAtlasOption,
-        $"--original-rom={Absolute("sf2.bin")}",
-        $"--map-tileset-metadata={Absolute("map-tilesets.json")}",
-        $"--map-palette-metadata={Absolute("map-palettes.json")}",
         $"--presentation-asset-root={Absolute("presentation-assets")}",
         $"--presentation-asset-commit={AtlasAssetCommit}",
         $"--presentation-manifest-sha256={AtlasManifestDigest}",

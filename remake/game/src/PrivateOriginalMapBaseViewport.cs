@@ -209,6 +209,65 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         return true;
     }
 
+    internal static PrivateOriginalMapBaseViewProjection CollapseExactNearestReplication(
+        PrivateOriginalMapBaseViewProjection physical)
+    {
+        ArgumentNullException.ThrowIfNull(physical);
+        if (!LocalPresentationAssetPackAdmission.BucketScales.Contains(physical.RasterScale))
+        {
+            throw new ArgumentException(
+                "The private atlas projection must use an admitted nearest bucket scale.",
+                nameof(physical));
+        }
+
+        int scale = physical.RasterScale;
+        int physicalWidth = checked(PixelWidth * scale);
+        byte[] logical = new byte[checked(PixelWidth * PixelHeight * 4)];
+        for (int y = 0; y < PixelHeight; y++)
+        {
+            for (int x = 0; x < PixelWidth; x++)
+            {
+                SourcePixel sample = ReadPixel(
+                    physical.RgbaBytes,
+                    physicalWidth,
+                    x * scale,
+                    y * scale);
+                for (int repeatedY = 0; repeatedY < scale; repeatedY++)
+                {
+                    for (int repeatedX = 0; repeatedX < scale; repeatedX++)
+                    {
+                        if (ReadPixel(
+                                physical.RgbaBytes,
+                                physicalWidth,
+                                (x * scale) + repeatedX,
+                                (y * scale) + repeatedY) != sample)
+                        {
+                            throw new ArgumentException(
+                                "The private atlas projection is not an exact nearest replication.",
+                                nameof(physical));
+                        }
+                    }
+                }
+
+                WritePixel(logical, PixelWidth, x, y, sample);
+            }
+        }
+
+        return new PrivateOriginalMapBaseViewProjection(
+            physical.Map,
+            physical.OriginX,
+            physical.OriginY,
+            physical.PlayerColumn,
+            physical.PlayerRow,
+            physical.Camera,
+            rasterScale: 1,
+            physical.StaticOverlayDiagnostic,
+            physical.OverlayAreaRecordOrdinal,
+            physical.OverlayDeltaX,
+            physical.OverlayDeltaY,
+            logical);
+    }
+
     internal static PrivateOriginalMapBaseViewProjection CreateEdgeScale2x(
         PrivateOriginalMapBaseViewProjection logical,
         int outputScale)
@@ -818,6 +877,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     private ImageTexture? _texture;
     private PrivateOriginalMapBaseViewProjection? _projection;
     private byte[]? _atlasRgbaBytes;
+    private OriginalMapVisualResourceSelection? _atlasSelection;
     private int _atlasScale;
     private string? _atlasAssetId;
     private string? _atlasBucketDigest;
@@ -877,14 +937,12 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
     internal bool TryBindLocalAtlas(
         PrivateLocalPresentationRasterMount mount,
         PrivateOriginalMapSessionSnapshot snapshot,
-        OriginalMapVisualPayloadDefinition visualDefinition,
         PrivateMap3WorldTreatment worldTreatment,
         bool staticOverlayDiagnostic,
         out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
     {
         ArgumentNullException.ThrowIfNull(mount);
         ArgumentNullException.ThrowIfNull(snapshot);
-        ArgumentNullException.ThrowIfNull(visualDefinition);
         if (worldTreatment is not PrivateMap3WorldTreatment.ExactNearest and
             not PrivateMap3WorldTreatment.EdgeScale2x)
         {
@@ -932,29 +990,28 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
             return false;
         }
 
-        PrivateOriginalMapBaseViewProjection payloadProjection =
-            PrivateOriginalMapBaseViewProjection.Create(
-                snapshot,
-                visualDefinition,
-                staticOverlayDiagnostic);
         PrivateOriginalMapBaseViewProjection atlasProjection =
             PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
                 snapshot,
-                visualDefinition.Selection,
+                snapshot.Definition.VisualResourceSelection,
                 rgbaBytes,
                 mount.Bucket.Scale,
                 staticOverlayDiagnostic);
-        if (!PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
-                payloadProjection,
-                atlasProjection))
+        try
+        {
+            _ = PrivateOriginalMapBaseViewProjection.CollapseExactNearestReplication(
+                atlasProjection);
+        }
+        catch (ArgumentException)
         {
             diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
                 PrivateLocalPresentationAssetMountFailureCode.PayloadMismatch,
-                "The admitted private Map 3 base atlas is not an exact nearest replication of the typed visual payload.");
+                "The admitted private Map 3 base atlas is not an exact nearest replication.");
             return false;
         }
 
         _atlasRgbaBytes = [.. rgbaBytes];
+        _atlasSelection = snapshot.Definition.VisualResourceSelection;
         _atlasScale = mount.Bucket.Scale;
         _atlasAssetId = mount.Definition.AssetId;
         _atlasBucketDigest = mount.Bucket.Sha256;
@@ -1102,6 +1159,60 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                 _ => throw new InvalidOperationException(
                     "The admitted private Map 3 world treatment is unknown."),
             };
+        Image image = Image.CreateFromData(
+            _projection.RasterPixelWidth,
+            _projection.RasterPixelHeight,
+            useMipmaps: false,
+            Image.Format.Rgba8,
+            _projection.RgbaBytes.ToArray());
+        _texture = ImageTexture.CreateFromImage(image);
+        image.Dispose();
+        QueueRedraw();
+    }
+
+    internal void ProjectMountedAtlas(
+        PrivateOriginalMapSessionSnapshot snapshot,
+        bool staticOverlayDiagnostic = false,
+        PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        if (_atlasRgbaBytes is null || _atlasSelection is null)
+        {
+            throw new InvalidOperationException(
+                "The private base viewport requires an admitted local atlas before projection.");
+        }
+
+        if (playerLocomotion is not null &&
+            playerLocomotion.DestinationPosition != snapshot.PlayerPosition)
+        {
+            throw new ArgumentException(
+                "The player locomotion destination must match the authoritative session position.",
+                nameof(playerLocomotion));
+        }
+
+        if (playerLocomotion is not null)
+        {
+            _playerLocomotion = playerLocomotion;
+        }
+
+        PrivateOriginalMapBaseViewProjection atlas =
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                snapshot,
+                _atlasSelection,
+                _atlasRgbaBytes,
+                _atlasScale,
+                staticOverlayDiagnostic,
+                playerLocomotion);
+        _projection = _worldTreatment switch
+        {
+            PrivateMap3WorldTreatment.ExactNearest => atlas,
+            PrivateMap3WorldTreatment.EdgeScale2x =>
+                PrivateOriginalMapBaseViewProjection.CreateEdgeScale2x(
+                    PrivateOriginalMapBaseViewProjection.CollapseExactNearestReplication(atlas),
+                    _atlasScale),
+            _ => throw new InvalidOperationException(
+                "The admitted private Map 3 world treatment is unknown."),
+        };
         Image image = Image.CreateFromData(
             _projection.RasterPixelWidth,
             _projection.RasterPixelHeight,

@@ -11,7 +11,7 @@ make Godot an evidence owner.
 | Profile | Selection | Admitted inputs | Current claim |
 | --- | --- | --- | --- |
 | `public-synthetic` | default, or explicit public selection | tracked project-authored package and tracked placeholder presentation | redistribution-safe implementation and export smoke; **not original fidelity** |
-| `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path; optional features require their own complete explicit value sets | caller-owned local inputs admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
+| `private-local` | explicit profile plus one explicit fully qualified ignored canonical-import path; optional presentation requires the reviewed local asset pack | canonical logical import plus caller-mounted local presentation assets admitted by fixed identity, provenance, shape, and capability checks | bounded original Map 3 traversal, optional project-authored base composition/battle bridge, and optional local HUD frame/entry-choice projection; **not full original fidelity** |
 
 The runtime always displays the appropriate disclosure:
 
@@ -45,17 +45,20 @@ The profile is never inferred from a discovered file, environment default, or pr
 path remains at the outer Godot composition and Content-reader boundary. It does not cross into Domain,
 Application snapshots, receipts, status text, smoke output, or committed configuration.
 
-The optional base view is independently explicit and requires all three additional ignored inputs:
+The optional base view is independently explicit and requires the reviewed local base atlas:
 
 ```text
 --private-map3-base-view
---original-rom=<fully-qualified-ignored-path>
---map-tileset-metadata=<fully-qualified-ignored-path>
---map-palette-metadata=<fully-qualified-ignored-path>
+--private-map3-base-atlas
+--presentation-asset-root=<fully-qualified-local-pack>
+--presentation-asset-commit=<40-lowercase-hex>
+--presentation-manifest-sha256=<64-uppercase-hex>
 ```
 
-Supplying any visual path without the opt-in, omitting one input, or using a relative path makes the
-requested profile unavailable. The traversal-only private profile remains valid without these options.
+Omitting the atlas or any pack pin, using a relative path, or supplying the retired playable-runtime
+options `--original-rom`, `--map-tileset-metadata`, or `--map-palette-metadata` makes the requested
+profile unavailable with a path-free diagnostic. Those inputs remain valid only for offline builders,
+evidence, and verification. The traversal-only private profile remains valid without presentation.
 
 When the base view is admitted, a manual semantic input at the controlled start may request the
 project-authored tactical micro-battle from the tracked public-synthetic package. This does not infer
@@ -73,17 +76,19 @@ public profile also fail closed.
 
 ## Private Admission Layers
 
-The current private boundary has two sibling Content ports:
+The private logical and offline visual boundaries remain separate:
 
 1. canonical Map 3 import admits the accepted map projection, traversal inputs, bounded source records,
    and visual-resource references;
-2. base visual payload admission validates caller-selected local ROM and metadata inputs and maps only
-   admitted decoded buffers and palette forms into Application-owned immutable definitions.
+2. base visual payload admission validates caller-selected local ROM and metadata inputs for offline
+   tooling/protocol checks and maps decoded buffers and palette forms into immutable definitions; and
+3. playable presentation admits the reviewed local asset pack directly and rechecks its exact
+   commit, manifest, semantic asset identities, dimensions, bucket policy, and contained payloads.
 
 Each production reader checks the accepted fixed trust roots and the caller's additional pins before
-parsing the corresponding document where required. Application then checks the typed package,
-provenance, capability, dimensions, evidence-owner closure, and cross-port Map 3 selection before a
-session or visual runtime binding is created.
+parsing the corresponding document where required. The playable session uses only the canonical import;
+the project-authored battle bridge binds to that admitted session/controlled start. The retained visual
+runtime binding checks the offline typed protocol but is not invoked by playable Godot startup.
 
 Content authenticates actual bytes. Application validates the typed protocol and compatibility between
 accepted results; it does not claim cryptographic protection against a malicious in-process port that
@@ -97,9 +102,10 @@ The following remain ignored and local:
 - official engine archives, export templates, and other downloaded executables; and
 - generated Godot import state, builds, exports, logs, and smoke receipts.
 
-Private compressed source bytes are validated transiently and do not cross into Application. Admitted
-decoded buffers remain in memory and are not committed, printed, embedded in a public package, or
-exported by the current private runtime. Diagnostics are typed and path-free.
+Private compressed source bytes and extraction metadata remain offline. The playable profile reads only
+the canonical logical import and selected runtime PNGs from the admitted local asset pack; neither is
+committed, printed, embedded in a public package, or exported by the current private runtime.
+Diagnostics are typed and path-free.
 
 Use the repository's [Local Private Input Layout](../../docs/operations/local-private-inputs.md) for
 machine-private input routing. Worktree-local writable state remains isolated even when immutable shared
@@ -108,7 +114,7 @@ inputs are registered centrally.
 ## Fidelity Boundary
 
 PrivateLocal provides semantic traversal, project-authored diagnostics, and an optional Godot base
-view. The view consumes the accepted visual runtime binding and reprojects after movement or admitted
+view. The view consumes the reviewed local asset pack and reprojects after movement or admitted
 working-layout mutation. It may also present the explicitly requested project-authored tactical bridge
 without changing ownership of either traversal or battle rules. Its 12-by-7 player-centered crop,
 empty-pixel background, Mega Drive channel expansion, Godot image/marker presentation, and manual

@@ -192,6 +192,11 @@ public sealed class PrivateOriginalMapBaseViewportTests
         Assert.True(PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
             logical,
             physical));
+        PrivateOriginalMapBaseViewProjection collapsed =
+            PrivateOriginalMapBaseViewProjection.CollapseExactNearestReplication(physical);
+        Assert.Equal(1, collapsed.RasterScale);
+        Assert.Equal(logical.Camera, collapsed.Camera);
+        Assert.Equal(logical.RgbaBytes, collapsed.RgbaBytes);
     }
 
     [Fact]
@@ -574,6 +579,8 @@ public sealed class PrivateOriginalMapBaseViewportTests
         Assert.False(PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
             logical,
             physical));
+        Assert.Throws<ArgumentException>(() =>
+            PrivateOriginalMapBaseViewProjection.CollapseExactNearestReplication(physical));
     }
 
     [Fact]

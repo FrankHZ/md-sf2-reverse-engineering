@@ -46,7 +46,9 @@ not share a weaker content reader or silently convert one profile into the other
 The implemented Domain boundaries are already independently testable and engine-free. Application
 owns public-synthetic session lifecycles plus a separate admitted private Map 3 traversal state behind
 the same logical `GameSession` facade. Content exposes three public readers: one tracked synthetic
-package reader and two private-local readers for canonical map import and base visual payload admission.
+package reader and two private-local readers for canonical map import and offline base visual payload
+admission. Playable PrivateLocal composition consumes the canonical import plus the separately reviewed
+local presentation pack; it does not reopen ROM or extraction metadata at startup.
 
 Two areas currently concentrate more responsibility than the target shape:
 
@@ -94,6 +96,8 @@ authority. Their direct typed branches are the bounded composition root, not inc
 
 Presentation helpers may directly construct nodes, choose project-authored diagnostic colors, and
 format labels. They remain disposable adapter state and never become another gameplay authority.
+The project-authored private battle bridge binds to the already-admitted private session and controlled
+start, not to a presentation payload. Presentation pack admission remains an outer composition concern.
 
 ### Application facade
 
