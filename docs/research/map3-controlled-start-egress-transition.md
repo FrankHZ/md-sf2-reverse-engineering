@@ -110,8 +110,9 @@ coordinate or area.
 The accepted natural route supplies the bridge between the two warps:
 
 1. The forced slope step `(3,3) -> (4,4)` admits `Map3_ZoneEvent6`. With flag
-   601 clear it runs `cs_5145C`, moves entity 128, and sets flag 601. It does
-   not relocate the player or select a setup/layout variant.
+   601 clear it runs `cs_5145C`, performs the bounded entity-128 interception,
+   hands that entity to ambient walking, and sets flag 601. It does not
+   relocate the player or select a setup/layout variant.
 2. The Bowie-house door at `(4,8)` and school door at `(41,13)` are step-event
    block copies. They mutate their door cells; neither is a warp.
 3. Entity Sarah initially blocks the school route at `(42,8)`. Interaction
@@ -123,6 +124,143 @@ The accepted natural route supplies the bridge between the two warps:
 Flags 601 and 256 describe mandatory events on this accepted route, but they
 do not guard either warp record. The only setup-selection predicates remain
 flags 609, 506, and 543; none is set by this bridge.
+
+## Zone 601 interception lifecycle
+
+The default Map 3 zone table row is zero-based 6 / one-based 7 at ROM
+`0x50D64`, with bytes `04 04 00 F8`. Its `(4,4)` key and table-relative
+`0x00F8` target select `Map3_ZoneEvent6` at `0x50E44`. On the retained route,
+the post-warp player is at `(3,3)` and the next `Right` supplies `(4,4)` as
+the raw target in `MAP_EVENT_PARAM_1` and `MAP_EVENT_PARAM_3`. The caller chain
+is `ProcessMapEventType6_ZoneEvent` (`0x25A7C`) ->
+`RunMapSetupZoneEvent` (`0x4751A`) -> the matching row ->
+`Map3_ZoneEvent6`. The first caller applies `eas_Init` to controlled entity 0;
+the table consumer compares the raw target coordinates and calls the row
+target synchronously.
+
+The interception actor is Map 3 entity-source row zero-based 2 / one-based 3
+at `0x50B40`, bytes `05 06 00 C3 00 04 61 02`: the woman at `(5,6)`, facing
+`RIGHT`, initialized by `eas_InitSlow`. In this accepted opening,
+`InitializeMapEntities` assigns Sarah and Chester's preceding ally rows to
+physical slots 1 and 2 and this first non-ally row to physical slot 3. Its
+logical ID is 128 (`0x80`): `GetEntityIndexForCombatant` subtracts the enemy
+index difference `0x60`, then `ENTITY_INDEX_LIST[0x20]` resolves to slot 3.
+The current-map house warp does not rebuild entities. `eas_InitSlow` reaches
+its idle loop without changing the source position, so this accepted static
+state remains `(5,6)` before Zone 6.
+
+With flag 601 clear, the exact order is:
+
+1. `cs_5145C` assigns `eas_Init` to logical entity 128 and waits until the
+   physical entity returns to `eas_Idle`.
+2. A waiting entity-action sequence executes `moveUp 2`, which installs the
+   relative destination `(5,4)` and waits for arrival, followed by
+   `faceLeft 20`, which sets facing `LEFT` and carries the encoded wait operand
+   20. The cutscene script does not advance until the sequence returns to
+   `eas_Idle`.
+3. The script presents text IDs 510 and 511 with entity 128, then resets the
+   cursor and presents single-text ID 483. Each map-script text command calls
+   `DisplayText` synchronously; all three calls return before the next entity
+   assignment or any flag write. This establishes script gating, not exact
+   rendered-text timing.
+4. The script assigns `eas_Init` to entity 128 once more, waits for idle, and
+   returns to the zone handler. At this boundary the deterministic cutscene
+   displacement is `(5,6) -> (5,4)` and the facing is `LEFT`.
+5. The handler calls `MakeEntityWalk` (`0x47808`) with raw selector `0x80` and
+   operands `(5,6,1)`. After resolving slot 3, `SetWalkingActscript`
+   (`0x44CD0`) copies `eas_Walking` and replaces its center-X, center-Y, and
+   range operands with those values. This is an immediate behavior handoff,
+   not a synchronous command to walk back to `(5,6)`: after its initial wait,
+   the entity repeatedly chooses a random one-tile move subject to the
+   center/range bounds, collision, and entity-destination checks.
+6. Only after that handoff does the handler set flag 601 and return.
+   `RunMapSetupZoneEvent` closes the presentation, waits one VInt, and calls
+   `WaitForEntityToStopMoving` (`0x44DA4`) with `D0=0`; it waits for the
+   controlled player, not slot 3. Ambient entity-128 walking may therefore
+   continue after route control resumes.
+
+Flag 601 is read once before all effects, written once after all blocking
+movement and dialogue plus the nonblocking walking handoff, and is not cleared
+anywhere in the pinned source. Re-entering `(4,4)` with it set returns directly
+without replaying the script or replacing the walking behavior. It is outside
+the temporary range cleared on a true new-map load, so both current-map and
+new-map exploration entries retain it until a broader game-state reset. The
+accepted H3 trace confirms the first natural Zone 6 and `cs_5145C` entries and
+later route progress; the exact subsequent random choices and terminal
+position of entity 128 are deliberately **Unknown**. The mandatory route fact
+is the synchronous Zone 6 lifecycle and return, not a later warp predicate:
+neither accepted warp row reads flag 601.
+
+## Sarah interaction and temporary flag 256
+
+Sarah's entity-source row is zero-based 0 / one-based 1 at `0x50B30`, bytes
+`2A 08 03 01 00 04 60 CE`, placing logical ally 1 at `(42,8)`, facing `DOWN`,
+in physical slot 1. Her entity-event row is zero-based 0 / one-based 1 at
+`0x50F10`, bytes `01 03 00 44`; it selects logical ally 1,
+`Map3_EntityEvent0` at `0x50F54`, and event-facing control `DOWN` (`3`).
+
+The retained input is `C` at player `(42,9)`, facing `UP`. The accepted H3
+chronology is `ProcessPlayerAction` -> `GetActivatedEntity` ->
+`RunMapSetupEntityEvent` (`0x4761A`) -> `Map3_EntityEvent0` -> `cs_513D6`.
+The event dispatcher resolves `ENTITY_INDEX_LIST[1]` to physical slot 1.
+Because both low bits of the row's facing-control byte are set, it first turns
+Sarah opposite the player's `UP` facing (`DOWN`) and, after the handler
+returns, restores her original activated-entity facing (`DOWN`).
+
+With flags 603, 602, and 256 initially clear, the handler order is exact:
+
+1. read 603 and take its clear branch;
+2. read 602 and take its clear branch;
+3. read 256 and, because it is clear, present text ID 512;
+4. present text IDs 480 and 481;
+5. read 256 a second time and take its clear branch;
+6. run `cs_513D6`, whose waiting action sequence moves Sarah left one tile
+   `(42,8) -> (41,8)`, then up one tile `(41,8) -> (41,7)`, waiting for each
+   destination and for the sequence to return to idle; the last move leaves
+   the action-script facing `UP`;
+7. after the script returns, set temporary flag 256 and return; then the event
+   dispatcher restores Sarah's facing to `DOWN`, closes the portrait/text
+   presentation, and reactivates entity updates.
+
+Thus all three text commands gate Sarah's movement, movement completion gates
+the flag-256 write, and the dispatcher cleanup/facing restoration gates return
+to exploration. The accepted H3 observer sees the complete action/event/script
+chronology and, when flag 256 marks the waypoint complete, reads physical slot
+1 at `(41,7)`. It does not provide a rendered-text, per-frame movement, or
+post-cleanup facing observation; those ordering and facing facts are static
+source/H1/ROM results.
+
+While flags 603 and 602 remain clear, a same-load re-interaction with flag 256
+set skips text 512, still presents 480 and 481, then skips `cs_513D6` and the
+redundant flag write. Flag 256 has no local clear in this handler. The
+current-map `0xFF` stair warps take `ExplorationLoop`'s map-index-not-provided
+branch, preserving live entities and skipping `ClearMapSetupTempFlags`; the
+retained H3 endpoint confirms flag 256 remains set across the accepted
+same-map warp chain. By contrast, a map-index-provided exploration entry
+reinitializes entities and then `ClearMapSetupTempFlags` clears all 128 flags
+from 256 through 383 before the selected map init runs. A map-index-provided
+entry that selects this same default Map 3 entity setup would therefore place
+Sarah back at `(42,8)` and clear 256; no bounded H3 re-entry case has observed
+the replay. If 602 is set, Sarah instead uses text 502; if 603 is set, the
+handler reads follower flag 66 and may run `cs_513E2`. Those later story
+branches are outside this route-lifecycle slice.
+
+## Minimum faithful runtime state and deferred presentation
+
+A truthful implementation of this bridge needs the candidate-target event
+ordering, default Map 3 setup, flags 601/603/602/256 and the temporary-flag
+reset boundary, logical actor identity, live actor position/facing/behavior,
+and blocking text/action/script order. It must preserve current-map entity and
+temporary-flag state across the two `MAP_CURRENT` warps. It need not reproduce
+the original physical slot numbers internally, but it must not confuse raw
+logical selector `0x80` with physical slot 3, or Sarah's logical ID 1 with a
+newly allocated NPC ID.
+
+The exact ambient random-walk choices, interpolation and frame counts,
+textbox rendering and advance timing, portraits, camera, audio, alternate
+Map 3 setup variants, downstream 602/603 branches, save/power-cycle
+persistence, and global shortest-route uniqueness remain deferred. None is
+promoted by the retained natural-route H3 observation.
 
 ## Second warp: area 1 to the entity 142 region
 
@@ -154,7 +292,8 @@ accepted chain.
 | --- | --- | --- |
 | record widths/order, first-match scan, target-marker-before-passability order, current-map reload policy, area scan, and roof-on-load scan | **Confirmed static source/H1/ROM** | `sf2-map-content-static-v1` |
 | `(56,3)`, facing 3, Map 3/default setup/init, clear selector flags, first wait | **Confirmed bounded H3** | `sf2-map3-admitted-start-runtime-v1` |
-| both warp requests, reload/init/wait chronology, mandatory bridge, area-3 route, and entity 142 dispatch | **Confirmed bounded H3** | `sf2-map3-battle01-natural-route-runtime-v1` |
+| Zone 601 and Sarah record identities, logical-to-physical actor resolution, exact handler/script/action/text order, flag writes, facing restoration, and temporary-flag clear range | **Confirmed static source/H1/ROM** | pinned `SF2DISASM` source plus the ROM rows named above |
+| both warp requests, reload/init/wait chronology, Zone 6 and Sarah event/script entry order, Sarah slot-1 waypoint `(41,7)`, flag-256 same-map continuity, area-3 route, and entity 142 dispatch | **Confirmed bounded H3** | `sf2-map3-battle01-natural-route-runtime-v1` |
 | entity 142 source/event identity and physical-slot relation | **Confirmed static under the accepted route state** | `sf2-map3-entity142-interactable-reference-static-v1` |
 | globally shortest input route or uniqueness under every possible entity/flag state | **Unknown** | not required by this bounded accepted chain |
 | exact fade frames, roof appearance, camera transition frames, audio timing, and other rendered presentation | **Unknown** | future admitted presentation evidence |
