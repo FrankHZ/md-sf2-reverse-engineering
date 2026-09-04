@@ -9,6 +9,7 @@ public enum PrivateOriginalMapSarahLifecyclePhase
     Ready,
     RouteCleared,
     AstralZoneRepositioned,
+    MessengerFollowerReady,
 }
 
 public sealed record PrivateOriginalMapSarahState
@@ -40,7 +41,8 @@ public sealed record PrivateOriginalMapSarahState
                 (temporaryRouteFlag256Set || astralZoneFlag260Set)) ||
             (phase == PrivateOriginalMapSarahLifecyclePhase.RouteCleared &&
                 (!temporaryRouteFlag256Set || astralZoneFlag260Set)) ||
-            (phase == PrivateOriginalMapSarahLifecyclePhase.AstralZoneRepositioned &&
+            ((phase == PrivateOriginalMapSarahLifecyclePhase.AstralZoneRepositioned ||
+                    phase == PrivateOriginalMapSarahLifecyclePhase.MessengerFollowerReady) &&
                 (!temporaryRouteFlag256Set || !astralZoneFlag260Set)))
         {
             throw new ArgumentException(
@@ -67,6 +69,11 @@ public sealed record PrivateOriginalMapSarahState
     public bool TemporaryRouteFlag256Set { get; }
 
     public bool AstralZoneFlag260Set { get; }
+
+    public bool IsMessengerFollowerReady =>
+        Phase == PrivateOriginalMapSarahLifecyclePhase.MessengerFollowerReady;
+
+    public bool OccupiesRouteTile => !IsMessengerFollowerReady;
 
     internal static PrivateOriginalMapSarahState Ready(OriginalMapSarahDefinition definition)
     {
@@ -119,9 +126,39 @@ public sealed record PrivateOriginalMapSarahState
             astralZoneFlag260Set: true);
     }
 
+    internal static PrivateOriginalMapSarahState MessengerFollowerReady(
+        OriginalMapSarahDefinition definition,
+        OriginalMapAstralZoneDefinition astralZone,
+        OriginalMapMessengerAcceptanceDefinition messenger)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(astralZone);
+        ArgumentNullException.ThrowIfNull(messenger);
+        if (messenger.SarahSourceRecord != definition.ActorSourceRecord ||
+            messenger.SarahCharacterId != definition.LogicalActorId ||
+            !messenger.Followers.Any(link =>
+                link.FollowerId == definition.LogicalActorId))
+        {
+            throw new ArgumentException(
+                "Messenger acceptance must bind Sarah's admitted follower state.",
+                nameof(messenger));
+        }
+
+        PrivateOriginalMapSarahState astral = AstralZoneRepositioned(definition, astralZone);
+        return new(
+            PrivateOriginalMapSarahLifecyclePhase.MessengerFollowerReady,
+            astral.ActorSourceRecord,
+            astral.LogicalActorId,
+            astral.ActorPosition,
+            astral.ActorOpaqueFacing,
+            temporaryRouteFlag256Set: true,
+            astralZoneFlag260Set: true);
+    }
+
     internal bool Matches(
         OriginalMapSarahDefinition definition,
-        OriginalMapAstralZoneDefinition? astralZone = null)
+        OriginalMapAstralZoneDefinition? astralZone = null,
+        OriginalMapMessengerAcceptanceDefinition? messenger = null)
     {
         ArgumentNullException.ThrowIfNull(definition);
         return this == (Phase switch
@@ -133,6 +170,13 @@ public sealed record PrivateOriginalMapSarahState
                     definition,
                     astralZone ?? throw new InvalidOperationException(
                         "Astral-zone Sarah state requires its admitted definition.")),
+            PrivateOriginalMapSarahLifecyclePhase.MessengerFollowerReady =>
+                MessengerFollowerReady(
+                    definition,
+                    astralZone ?? throw new InvalidOperationException(
+                        "Messenger follower state requires its admitted Astral definition."),
+                    messenger ?? throw new InvalidOperationException(
+                        "Messenger follower state requires its admitted definition.")),
             _ => throw new InvalidOperationException("Unknown Sarah lifecycle phase."),
         });
     }
@@ -341,7 +385,7 @@ public sealed partial class GameSession
         bool initialTarget = before.Phase == PrivateOriginalMapSarahLifecyclePhase.Ready &&
             current.PlayerPosition == definition.PlayerInteractionPosition &&
             locomotion.OpaqueFacing == definition.PlayerInteractionOpaqueFacing;
-        if (target != before.ActorPosition ||
+        if (!before.OccupiesRouteTile || target != before.ActorPosition ||
             (before.Phase == PrivateOriginalMapSarahLifecyclePhase.Ready && !initialTarget))
         {
             return RejectSarah(

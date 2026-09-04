@@ -232,6 +232,24 @@ public sealed class PrivateOriginalMapBaseViewportTests
     }
 
     [Fact]
+    public void SarahGlyphProjectionStopsWhenApplicationReleasesRouteOccupancy()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+            [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+            new ushort[WorkingMapLayout.WordCount],
+            entityPopulation: RouteActorPopulation(map),
+            zone601: Zone601(map),
+            sarah: Sarah(map));
+        PrivateOriginalMapSarahState follower =
+            PrivateMap3PresenterTests.MessengerFollowerSarah(snapshot.Sarah!);
+
+        Assert.True(PrivateMap3LiveRouteActorGlyphProjection.ShouldProjectSarah(
+            snapshot.Sarah!));
+        Assert.False(PrivateMap3LiveRouteActorGlyphProjection.ShouldProjectSarah(follower));
+    }
+
+    [Fact]
     public void Entity142DiagnosticUsesOnlyAcceptedRecord17AndStartsFromProjectAuthoredHalfZero()
     {
         PrivateOriginalMapSessionSnapshot snapshot = Snapshot(

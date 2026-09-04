@@ -1008,7 +1008,7 @@ internal sealed class PrivateMap3LiveRouteActorGlyphProjection
         }
 
         List<PrivateMap3LiveRouteActorGlyph> actors = [];
-        if (snapshot.Sarah is { } sarah)
+        if (snapshot.Sarah is { } sarah && ShouldProjectSarah(sarah))
         {
             actors.Add(Create(
                 PrivateMap3LiveRouteActorGlyphKind.SarahDiamond,
@@ -1036,6 +1036,12 @@ internal sealed class PrivateMap3LiveRouteActorGlyphProjection
         }
 
         return true;
+    }
+
+    internal static bool ShouldProjectSarah(PrivateOriginalMapSarahState sarah)
+    {
+        ArgumentNullException.ThrowIfNull(sarah);
+        return sarah.OccupiesRouteTile;
     }
 
     private static PrivateMap3LiveRouteActorGlyph Create(

@@ -44,6 +44,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.Entity142AcknowledgementCapability;
     public const string AstralZoneHandoffCapability =
         OriginalMapRuntimeAdmission.AstralZoneHandoffCapability;
+    public const string MessengerAcceptanceCapability =
+        OriginalMapRuntimeAdmission.MessengerAcceptanceCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -77,6 +79,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         SarahRouteCapability,
         Entity142AcknowledgementCapability,
         AstralZoneHandoffCapability,
+        MessengerAcceptanceCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -382,6 +385,13 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             sarah,
             zone601,
             resources);
+        OriginalMapMessengerAcceptanceDefinition messengerAcceptance =
+            ReadAcceptedMessengerAcceptance(
+                map,
+                entityPopulation,
+                sarah,
+                entity142,
+                resources);
 
         OriginalMapControlledAdmission controlledAdmission = new(
             map,
@@ -408,7 +418,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             zone601,
             sarah,
             entity142,
-            astralZone);
+            astralZone,
+            messengerAcceptance);
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -2212,6 +2223,449 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                     "The accepted Astral-zone position operation sequence drifted.");
             }
         }
+    }
+
+    private static OriginalMapMessengerAcceptanceDefinition
+        ReadAcceptedMessengerAcceptance(
+            MapId map,
+            OriginalMapEntityPopulation entityPopulation,
+            OriginalMapSarahDefinition sarah,
+            OriginalMapEntity142Definition entity142,
+            IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        JsonElement handler = RequiredResource(
+            resources,
+            "zoneEventHandlers",
+            OriginalMapRuntimeAdmission.MessengerZoneEventResourceId);
+        RequireExactProperties(
+            handler,
+            "map3.messenger.handler",
+            "id",
+            "address",
+            "kind",
+            "records");
+        if (RequiredNonNegativeInt(
+                handler,
+                "address",
+                "map3.messenger.handler.address") !=
+                OriginalMapRuntimeAdmission.MessengerZoneEventHandlerAddress ||
+            !string.Equals(
+                RequiredString(handler, "kind", "map3.messenger.handler.kind"),
+                "table",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.messenger.handler",
+                "The accepted Map 3 messenger event table identity drifted.");
+        }
+
+        JsonElement records = RequiredProperty(
+            handler,
+            "records",
+            "map3.messenger.handler.records");
+        RequireArray(records, "map3.messenger.handler.records");
+        if (records.GetArrayLength() !=
+            OriginalMapRuntimeAdmission.MessengerZoneEventSourceRecordCount)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.messenger.handler.records",
+                "The accepted Map 3 messenger event record count drifted.");
+        }
+
+        HashSet<int> triggers = [];
+        int defaultCount = 0;
+        int ordinal = 0;
+        foreach (JsonElement record in records.EnumerateArray())
+        {
+            ordinal++;
+            string field = $"map3.messenger.handler.records[{ordinal - 1}]";
+            RequireExactProperties(
+                record,
+                field,
+                "address",
+                "kind",
+                "relativeOffset",
+                "resolvedTargetAddress",
+                "x",
+                "y");
+            _ = RequiredNonNegativeInt(record, "address", field + ".address");
+            _ = RequiredNonNegativeInt(record, "relativeOffset", field + ".relativeOffset");
+            _ = RequiredNonNegativeInt(
+                record,
+                "resolvedTargetAddress",
+                field + ".resolvedTargetAddress");
+            string kind = RequiredString(record, "kind", field + ".kind");
+            byte x = RequiredByte(record, "x", field + ".x");
+            byte y = RequiredByte(record, "y", field + ".y");
+            if (string.Equals(kind, "default", StringComparison.Ordinal))
+            {
+                defaultCount++;
+            }
+            else if (!string.Equals(kind, "specific", StringComparison.Ordinal) ||
+                !triggers.Add((x << 8) | y))
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.DuplicateIdentity,
+                    field,
+                    "Map 3 messenger events require unique specific triggers and one default.");
+            }
+        }
+
+        JsonElement selected = records[
+            OriginalMapRuntimeAdmission.MessengerZoneEventRecordOrdinal - 1];
+        if (defaultCount != 1 ||
+            RequiredNonNegativeInt(selected, "address", "map3.messenger.record.address") !=
+                OriginalMapRuntimeAdmission.MessengerZoneEventRecordAddress ||
+            !string.Equals(
+                RequiredString(selected, "kind", "map3.messenger.record.kind"),
+                "specific",
+                StringComparison.Ordinal) ||
+            RequiredNonNegativeInt(
+                selected,
+                "relativeOffset",
+                "map3.messenger.record.relativeOffset") !=
+                OriginalMapRuntimeAdmission.MessengerZoneEventRelativeOffset ||
+            RequiredNonNegativeInt(
+                selected,
+                "resolvedTargetAddress",
+                "map3.messenger.record.resolvedTargetAddress") !=
+                OriginalMapRuntimeAdmission.MessengerZoneEventResolvedTargetAddress ||
+            RequiredByte(selected, "x", "map3.messenger.record.x") !=
+                OriginalMapRuntimeAdmission.MessengerTriggerX ||
+            RequiredByte(selected, "y", "map3.messenger.record.y") !=
+                OriginalMapRuntimeAdmission.MessengerTriggerY)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.messenger.record",
+                "The accepted Map 3 messenger source record drifted.");
+        }
+
+        ValidateMessengerPrograms(resources);
+        OriginalMapEntityDefinition messengerActor = entityPopulation.Records[
+            OriginalMapRuntimeAdmission.MessengerActor143SourceRecordOrdinal - 1];
+        OriginalMapEntityDefinition guard138 = entityPopulation.Records[
+            OriginalMapRuntimeAdmission.MessengerGuard138SourceRecordOrdinal - 1];
+        OriginalMapEntityDefinition guard139 = entityPopulation.Records[
+            OriginalMapRuntimeAdmission.MessengerGuard139SourceRecordOrdinal - 1];
+        if (!MatchesAcceptedMessengerActor(
+                messengerActor,
+                OriginalMapRuntimeAdmission.MessengerActor143SourceRecordOrdinal,
+                OriginalMapRuntimeAdmission.MessengerActor143InitialX,
+                OriginalMapRuntimeAdmission.MessengerActor143InitialY,
+                OriginalMapRuntimeAdmission.MessengerActor143InitialOpaqueFacing,
+                OriginalMapRuntimeAdmission.MessengerActor143MapSprite,
+                OriginalMapRuntimeAdmission.MessengerActor143ActionValue) ||
+            !MatchesAcceptedMessengerActor(
+                guard138,
+                OriginalMapRuntimeAdmission.MessengerGuard138SourceRecordOrdinal,
+                OriginalMapRuntimeAdmission.MessengerGuard138X,
+                OriginalMapRuntimeAdmission.MessengerGuard138Y,
+                OriginalMapRuntimeAdmission.MessengerGuard138OpaqueFacing,
+                OriginalMapRuntimeAdmission.MessengerGuardMapSprite,
+                OriginalMapRuntimeAdmission.MessengerGuardActionValue) ||
+            !MatchesAcceptedMessengerActor(
+                guard139,
+                OriginalMapRuntimeAdmission.MessengerGuard139SourceRecordOrdinal,
+                OriginalMapRuntimeAdmission.MessengerGuard139X,
+                OriginalMapRuntimeAdmission.MessengerGuard139Y,
+                OriginalMapRuntimeAdmission.MessengerGuard139OpaqueFacing,
+                OriginalMapRuntimeAdmission.MessengerGuardMapSprite,
+                OriginalMapRuntimeAdmission.MessengerGuardActionValue))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.messenger.actors",
+                "The accepted Map 3 messenger route actor source state drifted.");
+        }
+
+        return new OriginalMapMessengerAcceptanceDefinition(
+            new OriginalMapMessengerZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                sarah.Identity.Setup,
+                OriginalMapRuntimeAdmission.MessengerZoneEventResourceId,
+                OriginalMapRuntimeAdmission.MessengerZoneEventRecordOrdinal,
+                OriginalMapRuntimeAdmission.MessengerZoneEventTargetIdentity),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.MessengerApproachX,
+                OriginalMapRuntimeAdmission.MessengerApproachY),
+            OriginalMapRuntimeAdmission.MessengerEntryDirection,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.MessengerTriggerX,
+                OriginalMapRuntimeAdmission.MessengerTriggerY),
+            OriginalMapRuntimeAdmission.MessengerProgramIdentity,
+            OriginalMapRuntimeAdmission.MessengerAcceptedBranchProgramIdentity,
+            OriginalMapRuntimeAdmission.MessengerControlShapeSha256,
+            OriginalMapRuntimeAdmission.MessengerPromptReturn,
+            OriginalMapRuntimeAdmission.MessengerPromptFlag89,
+            OriginalMapRuntimeAdmission.MessengerJoinSelector,
+            OriginalMapRuntimeAdmission.MessengerFlag600,
+            OriginalMapRuntimeAdmission.MessengerFlag66,
+            OriginalMapRuntimeAdmission.MessengerCompletionFlag603,
+            sarah.ActorSourceRecord,
+            OriginalMapRuntimeAdmission.MessengerSarahCharacterId,
+            entity142.ActorSourceRecord,
+            entity142.LogicalActorId,
+            messengerActor.Identity,
+            OriginalMapRuntimeAdmission.MessengerActor143LogicalId,
+            messengerActor.Position,
+            messengerActor.OpaqueFacing,
+            OriginalMapRuntimeAdmission.MessengerTextIds,
+            OriginalMapRuntimeAdmission.MessengerSpeakerOperands,
+            OriginalMapRuntimeAdmission.MessengerJoinedCharacterIds,
+            OriginalMapRuntimeAdmission.MessengerFollowers,
+            OriginalMapRuntimeAdmission.MessengerGuards,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.MessengerTriggerX,
+                OriginalMapRuntimeAdmission.MessengerTriggerY),
+            OriginalMapRuntimeAdmission.MessengerEndpointOpaqueFacing,
+            OriginalMapRuntimeAdmission.MessengerTerminalIdentity,
+            OriginalMapRuntimeAdmission.MessengerStages);
+    }
+
+    private static bool MatchesAcceptedMessengerActor(
+        OriginalMapEntityDefinition actor,
+        int oneBasedRecordOrdinal,
+        int x,
+        int y,
+        byte opaqueFacing,
+        byte mapSprite,
+        uint actionValue)
+    {
+        Span<byte> expectedAction = stackalloc byte[sizeof(uint)];
+        BinaryPrimitives.WriteUInt32BigEndian(expectedAction, actionValue);
+        return actor.Identity == new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                oneBasedRecordOrdinal) &&
+            actor.RawX == x && actor.RawY == y &&
+            actor.Position == new MapPosition(x, y) &&
+            actor.OpaqueFacing == opaqueFacing && actor.MapSprite == mapSprite &&
+            actor.Kind == OriginalMapEntityRecordKind.Fixed &&
+            actor.OpaqueTail.SequenceEqual(expectedAction.ToArray());
+    }
+
+    private static void ValidateMessengerPrograms(
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        JsonElement program = RequiredResource(
+            resources,
+            "standaloneScriptPrograms",
+            OriginalMapRuntimeAdmission.MessengerProgramIdentity);
+        JsonElement operations = ValidateMessengerProgramHeader(
+            program,
+            "map3.messenger.program",
+            OriginalMapRuntimeAdmission.MessengerProgramIdentity,
+            OriginalMapRuntimeAdmission.MessengerProgramAddress,
+            OriginalMapRuntimeAdmission.MessengerProgramOperationCount);
+        ValidateMessengerOperation(
+            operations[0],
+            "map3.messenger.program.operations[0]",
+            0,
+            "textCursor",
+            "517",
+            [],
+            []);
+        ValidateMessengerOperation(
+            operations[102],
+            "map3.messenger.program.operations[102]",
+            102,
+            "yesNo",
+            "",
+            [],
+            []);
+        ValidateMessengerOperation(
+            operations[103],
+            "map3.messenger.program.operations[103]",
+            103,
+            "jumpIfFlagSet",
+            "89,cs_51614",
+            [OriginalMapRuntimeAdmission.MessengerAcceptedBranchProgramIdentity],
+            [OriginalMapRuntimeAdmission.MessengerAcceptedBranchProgramAddress]);
+        ValidateMessengerOperation(
+            operations[111],
+            "map3.messenger.program.operations[111]",
+            111,
+            "jump",
+            "cs_51650",
+            ["cs_51650"],
+            [OriginalMapRuntimeAdmission.MessengerProgramEndAddress]);
+
+        JsonElement accepted = RequiredResource(
+            resources,
+            "standaloneScriptPrograms",
+            OriginalMapRuntimeAdmission.MessengerAcceptedBranchProgramIdentity);
+        JsonElement acceptedOperations = ValidateMessengerProgramHeader(
+            accepted,
+            "map3.messenger.acceptedBranch",
+            OriginalMapRuntimeAdmission.MessengerAcceptedBranchProgramIdentity,
+            OriginalMapRuntimeAdmission.MessengerAcceptedBranchProgramAddress,
+            OriginalMapRuntimeAdmission.MessengerAcceptedBranchOperationCount);
+        (string Opcode, string Operand)[] expected =
+        [
+            ("textCursor", "535"),
+            ("nextSingleText", "$0,ALLY_SARAH"),
+            ("setFacing", "ALLY_CHESTER,LEFT"),
+            ("nextSingleText", "$0,ALLY_CHESTER"),
+            ("setF", "600"),
+            ("setF", "66"),
+            ("join", "128"),
+            ("followEntity", "ALLY_SARAH,ALLY_BOWIE,2"),
+            ("followEntity", "ALLY_CHESTER,ALLY_SARAH,2"),
+            ("setPos", "138,27,3,DOWN"),
+            ("setPos", "139,31,3,DOWN"),
+        ];
+        for (int index = 0; index < expected.Length; index++)
+        {
+            ValidateMessengerOperation(
+                acceptedOperations[index],
+                $"map3.messenger.acceptedBranch.operations[{index}]",
+                index,
+                expected[index].Opcode,
+                expected[index].Operand,
+                [],
+                []);
+        }
+    }
+
+    private static JsonElement ValidateMessengerProgramHeader(
+        JsonElement program,
+        string field,
+        string identity,
+        int address,
+        int operationCount)
+    {
+        RequireExactProperties(program, field, "id", "address", "path", "kind", "operations");
+        if (!string.Equals(RequiredString(program, "id", field + ".id"), identity,
+                StringComparison.Ordinal) ||
+            RequiredNonNegativeInt(program, "address", field + ".address") != address ||
+            !string.Equals(
+                RequiredString(program, "path", field + ".path"),
+                "data/maps/entries/map03/mapsetups/scripts_1.asm",
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                RequiredString(program, "kind", field + ".kind"),
+                "cutscene",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                field,
+                "The accepted messenger program identity drifted.");
+        }
+
+        JsonElement operations = RequiredProperty(program, "operations", field + ".operations");
+        RequireArray(operations, field + ".operations");
+        if (operations.GetArrayLength() != operationCount)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                field + ".operations",
+                "The accepted messenger program operation count drifted.");
+        }
+
+        int index = 0;
+        foreach (JsonElement operation in operations.EnumerateArray())
+        {
+            string operationField = $"{field}.operations[{index}]";
+            RequireExactProperties(
+                operation,
+                operationField,
+                "index",
+                "opcode",
+                "operandText",
+                "targetSymbols",
+                "targetAddresses");
+            JsonElement symbols = RequiredProperty(
+                operation,
+                "targetSymbols",
+                operationField + ".targetSymbols");
+            JsonElement addresses = RequiredProperty(
+                operation,
+                "targetAddresses",
+                operationField + ".targetAddresses");
+            RequireArray(symbols, operationField + ".targetSymbols");
+            RequireArray(addresses, operationField + ".targetAddresses");
+            if (RequiredNonNegativeInt(operation, "index", operationField + ".index") != index)
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.InvalidMapProjection,
+                    operationField + ".index",
+                    "Messenger program operations must retain contiguous source order.");
+            }
+
+            index++;
+        }
+
+        return operations;
+    }
+
+    private static void ValidateMessengerOperation(
+        JsonElement operation,
+        string field,
+        int index,
+        string opcode,
+        string operand,
+        IReadOnlyList<string> targetSymbols,
+        IReadOnlyList<int> targetAddresses)
+    {
+        JsonElement symbols = RequiredProperty(operation, "targetSymbols", field + ".targetSymbols");
+        JsonElement addresses = RequiredProperty(
+            operation,
+            "targetAddresses",
+            field + ".targetAddresses");
+        string[] actualSymbols = symbols.EnumerateArray()
+            .Select((value, targetIndex) => RequiredMessengerTextValue(
+                value,
+                $"{field}.targetSymbols[{targetIndex}]"))
+            .ToArray();
+        int[] actualAddresses = addresses.EnumerateArray()
+            .Select((value, targetIndex) => RequiredMessengerAddressValue(
+                value,
+                $"{field}.targetAddresses[{targetIndex}]"))
+            .ToArray();
+        if (RequiredNonNegativeInt(operation, "index", field + ".index") != index ||
+            !string.Equals(RequiredString(operation, "opcode", field + ".opcode"), opcode,
+                StringComparison.Ordinal) ||
+            !string.Equals(RequiredText(operation, "operandText", field + ".operandText"), operand,
+                StringComparison.Ordinal) ||
+            !actualSymbols.SequenceEqual(targetSymbols) ||
+            !actualAddresses.SequenceEqual(targetAddresses))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                field,
+                "The accepted messenger program operation drifted.");
+        }
+    }
+
+    private static string RequiredMessengerTextValue(JsonElement value, string field)
+    {
+        if (value.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(value.GetString()))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                field,
+                "A messenger program target symbol must be a non-empty string.");
+        }
+
+        return value.GetString()!;
+    }
+
+    private static int RequiredMessengerAddressValue(JsonElement value, string field)
+    {
+        if (value.ValueKind != JsonValueKind.Number || !value.TryGetInt32(out int result) ||
+            result < 0)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                field,
+                "A messenger program target address must be a non-negative integer.");
+        }
+
+        return result;
     }
 
     private static void ValidateSarahBlockingProgram(

@@ -14,7 +14,8 @@ public sealed record PrivateOriginalMapEntity142State
         byte actorOpaqueFacing,
         bool flag261Set,
         bool flag602Set,
-        long lastAcknowledgedRequestSequence)
+        long lastAcknowledgedRequestSequence,
+        bool routeOccupancyReleased)
     {
         ActorSourceRecord = actorSourceRecord ??
             throw new ArgumentNullException(nameof(actorSourceRecord));
@@ -27,7 +28,8 @@ public sealed record PrivateOriginalMapEntity142State
         }
 
         ArgumentOutOfRangeException.ThrowIfNegative(lastAcknowledgedRequestSequence);
-        if (flag261Set != flag602Set || flag261Set != (lastAcknowledgedRequestSequence > 0))
+        if (flag261Set != flag602Set || flag261Set != (lastAcknowledgedRequestSequence > 0) ||
+            (routeOccupancyReleased && !flag602Set))
         {
             throw new ArgumentException(
                 "Entity 142 state must retain the exact ready or acknowledged flag shape.");
@@ -39,6 +41,7 @@ public sealed record PrivateOriginalMapEntity142State
         Flag261Set = flag261Set;
         Flag602Set = flag602Set;
         LastAcknowledgedRequestSequence = lastAcknowledgedRequestSequence;
+        RouteOccupancyReleased = routeOccupancyReleased;
     }
 
     public OriginalMapEntityRecordIdentity ActorSourceRecord { get; }
@@ -57,6 +60,10 @@ public sealed record PrivateOriginalMapEntity142State
 
     public long LastAcknowledgedRequestSequence { get; }
 
+    public bool RouteOccupancyReleased { get; }
+
+    public bool OccupiesRouteTile => !RouteOccupancyReleased;
+
     internal static PrivateOriginalMapEntity142State Ready(
         OriginalMapEntity142Definition definition)
     {
@@ -69,7 +76,8 @@ public sealed record PrivateOriginalMapEntity142State
             definition.ActorOpaqueFacing,
             flag261Set: false,
             flag602Set: false,
-            lastAcknowledgedRequestSequence: 0);
+            lastAcknowledgedRequestSequence: 0,
+            routeOccupancyReleased: false);
     }
 
     internal static PrivateOriginalMapEntity142State Acknowledged(
@@ -86,15 +94,54 @@ public sealed record PrivateOriginalMapEntity142State
             definition.ActorOpaqueFacing,
             flag261Set: true,
             flag602Set: true,
-            requestSequence);
+            requestSequence,
+            routeOccupancyReleased: false);
     }
 
-    internal bool Matches(OriginalMapEntity142Definition definition)
+    internal static PrivateOriginalMapEntity142State ReleaseRouteOccupancy(
+        OriginalMapEntity142Definition definition,
+        PrivateOriginalMapEntity142State before,
+        OriginalMapMessengerAcceptanceDefinition messenger)
     {
         ArgumentNullException.ThrowIfNull(definition);
-        return this == (Flag261Set
-            ? Acknowledged(definition, LastAcknowledgedRequestSequence)
-            : Ready(definition));
+        ArgumentNullException.ThrowIfNull(before);
+        ArgumentNullException.ThrowIfNull(messenger);
+        if (!before.Matches(definition) || !before.Flag602Set ||
+            before.RouteOccupancyReleased ||
+            messenger.Entity142SourceRecord != definition.ActorSourceRecord ||
+            messenger.Entity142LogicalActorId != definition.LogicalActorId)
+        {
+            throw new ArgumentException(
+                "Messenger acceptance must release the acknowledged Entity 142 route actor.",
+                nameof(before));
+        }
+
+        return new(
+            definition.ActorSourceRecord,
+            definition.LogicalActorId,
+            definition.PhysicalActorSlot,
+            definition.ActorPosition,
+            definition.ActorOpaqueFacing,
+            flag261Set: true,
+            flag602Set: true,
+            before.LastAcknowledgedRequestSequence,
+            routeOccupancyReleased: true);
+    }
+
+    internal bool Matches(
+        OriginalMapEntity142Definition definition,
+        OriginalMapMessengerAcceptanceDefinition? messenger = null)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        return this == (RouteOccupancyReleased
+            ? ReleaseRouteOccupancy(
+                definition,
+                Acknowledged(definition, LastAcknowledgedRequestSequence),
+                messenger ?? throw new InvalidOperationException(
+                    "Released Entity 142 state requires its admitted messenger definition."))
+            : Flag261Set
+                ? Acknowledged(definition, LastAcknowledgedRequestSequence)
+                : Ready(definition));
     }
 }
 
@@ -481,7 +528,8 @@ public sealed partial class GameSession
             throw new InvalidOperationException(
                 "The private Map 3 snapshot has no Entity 142 state.");
         MapPosition? target = FacingTarget(current.PlayerPosition, locomotion.OpaqueFacing);
-        if (current.PlayerPosition != definition.PlayerInteractionPosition ||
+        if (!state.OccupiesRouteTile ||
+            current.PlayerPosition != definition.PlayerInteractionPosition ||
             locomotion.OpaqueFacing != definition.PlayerInteractionOpaqueFacing ||
             target != state.ActorPosition)
         {

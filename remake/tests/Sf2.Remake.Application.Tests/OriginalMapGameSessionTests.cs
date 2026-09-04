@@ -946,6 +946,104 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedMessengerRouteAtomicallyJoinsForceAndReleasesLiveRouteActors()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        Assert.False(session.PrivateOriginalMapSnapshot.MessengerAcceptance!.Accepted);
+
+        CompleteRouteThroughEntity142(session);
+        Move(session, ExplorationDirection.North, 4);
+        Move(session, ExplorationDirection.East, 3);
+        Assert.True(session.PrivateOriginalMapSnapshot.AstralZoneFlag260Set);
+        Move(session, ExplorationDirection.West, 16);
+        Move(session, ExplorationDirection.North, 3);
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+        Assert.Equal(new MapPosition(42, 10), before.PlayerPosition);
+
+        PrivateOriginalMapPlayerLocomotionStarted started =
+            session.BeginPrivateOriginalMapPlayerLocomotion(
+                new MoveExplorationCommand(ExplorationDirection.East));
+        PrivateOriginalMapMessengerAcceptanceReceipt receipt =
+            Assert.IsType<PrivateOriginalMapMessengerAcceptanceReceipt>(
+                started.Move.MessengerAcceptance);
+
+        Assert.Same(receipt, started.Move.Snapshot.LastMessengerAcceptance);
+        Assert.Equal(new MapPosition(43, 10), started.Move.Snapshot.PlayerPosition);
+        Assert.Equal("Map3_ZoneEvent8", receipt.EventIdentity.TargetIdentity);
+        Assert.Equal("cs_5149A", receipt.MessengerProgramIdentity);
+        Assert.Equal("cs_51614", receipt.AcceptedBranchProgramIdentity);
+        Assert.Equal(OriginalMapRuntimeAdmission.MessengerControlShapeSha256,
+            receipt.ControlShapeSha256);
+        Assert.Equal(0, receipt.PromptReturn);
+        Assert.Equal(89, receipt.PromptFlag89);
+        Assert.True(receipt.PromptFlag89Set);
+        Assert.Equal(new[] { 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527,
+            528, 529, 530, 531, 535, 536, 447 }, receipt.TextIds);
+        Assert.Equal(OriginalMapRuntimeAdmission.MessengerSpeakerOperands,
+            receipt.SpeakerOperands);
+        Assert.Equal(OriginalMapRuntimeAdmission.MessengerStages, receipt.Stages);
+        Assert.True(receipt.Flag600Set);
+        Assert.True(receipt.Flag66Set);
+        Assert.True(receipt.CompletionFlag603Set);
+        Assert.Equal("WaitForEvent", receipt.TerminalIdentity);
+
+        PrivateOriginalMapMessengerAcceptanceState completed =
+            started.Move.Snapshot.MessengerAcceptance!;
+        Assert.True(completed.Accepted);
+        Assert.Equal(new[] { 1, 2 }, completed.JoinedCharacterIds);
+        Assert.Equal(new[] { (1, 0, 2), (2, 1, 2) },
+            completed.Followers.Select(link =>
+                (link.FollowerId, link.LeaderId, link.Distance)));
+        Assert.Equal(new[] { (138, 27, 3, (byte)3), (139, 31, 3, (byte)3) },
+            completed.Guards.Select(guard =>
+                (guard.LogicalActorId, guard.Position.X, guard.Position.Y,
+                    guard.OpaqueFacing)));
+        Assert.True(started.Move.Snapshot.Sarah!.IsMessengerFollowerReady);
+        Assert.False(started.Move.Snapshot.Sarah.OccupiesRouteTile);
+        Assert.True(started.Move.Snapshot.Entity142!.RouteOccupancyReleased);
+        Assert.False(started.Move.Snapshot.Entity142.OccupiesRouteTile);
+        Assert.Equal(PrivateOriginalMapPlayerLocomotionPhase.ScriptedEndpoint,
+            started.Animation.Phase);
+        Assert.Equal(ExplorationDirection.South, started.Animation.Direction);
+        Assert.Equal((byte)3, started.Animation.OpaqueFacing);
+        Assert.Equal(PrivateOriginalMapPlayerLocomotionSheet.Down,
+            started.Animation.Sheet);
+
+        PrivateOriginalMapMoveApplied left = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        PrivateOriginalMapMoveApplied revisited = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.Null(left.MessengerAcceptance);
+        Assert.Null(revisited.MessengerAcceptance);
+        Assert.True(revisited.Snapshot.MessengerAcceptance!.Accepted);
+
+        GameSession restarted = Start(Definition(EmptyWords()));
+        Assert.False(restarted.PrivateOriginalMapSnapshot.MessengerAcceptance!.Accepted);
+        Assert.Null(restarted.PrivateOriginalMapSnapshot.LastMessengerAcceptance);
+        Assert.True(restarted.PrivateOriginalMapSnapshot.Sarah!.OccupiesRouteTile);
+        Assert.True(restarted.PrivateOriginalMapSnapshot.Entity142!.OccupiesRouteTile);
+    }
+
+    [Fact]
+    public void MessengerTriggerWithoutTheAcceptedPreconditionsRemainsOrdinaryTraversal()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        Move(session, ExplorationDirection.South, 7);
+        Move(session, ExplorationDirection.West, 14);
+        Assert.Equal(new MapPosition(42, 10), session.PrivateOriginalMapSnapshot.PlayerPosition);
+
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+        PrivateOriginalMapMoveApplied moved = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, moved.Traversal.Outcome);
+        Assert.Null(moved.MessengerAcceptance);
+        Assert.False(moved.Snapshot.MessengerAcceptance!.Accepted);
+        Assert.Same(before.Sarah, moved.Snapshot.Sarah);
+        Assert.Same(before.Entity142, moved.Snapshot.Entity142);
+    }
+
+    [Fact]
     public void SarahReinteractionIsTextOnlyWhileWarpPreservesAndRestartClearsTheRoute()
     {
         GameSession session = Start(Definition(EmptyWords()));
@@ -2034,6 +2132,53 @@ public sealed class OriginalMapGameSessionTests
             Definition(EmptyWords()).WorkingLayout));
     }
 
+    [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactMessengerProjection()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), omitMessengerAcceptance: true),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        OriginalMapMessengerAcceptanceDefinition accepted =
+            AcceptedOriginalMapMessenger.Create(map);
+        OriginalMapMessengerAcceptanceDefinition wrongBranch = new(
+            accepted.Identity,
+            accepted.Approach,
+            accepted.EntryDirection,
+            accepted.Trigger,
+            accepted.MessengerProgramIdentity,
+            "project-authored-wrong-accepted-branch",
+            accepted.ControlShapeSha256,
+            accepted.PromptReturn,
+            accepted.PromptFlag89,
+            accepted.JoinSelector,
+            accepted.Flag600,
+            accepted.Flag66,
+            accepted.CompletionFlag603,
+            accepted.SarahSourceRecord,
+            accepted.SarahCharacterId,
+            accepted.Entity142SourceRecord,
+            accepted.Entity142LogicalActorId,
+            accepted.MessengerActorSourceRecord,
+            accepted.MessengerLogicalActorId,
+            accepted.MessengerActorInitialPosition,
+            accepted.MessengerActorInitialOpaqueFacing,
+            accepted.TextIds,
+            accepted.SpeakerOperands,
+            accepted.JoinedCharacterIds,
+            accepted.Followers,
+            accepted.Guards,
+            accepted.Endpoint,
+            accepted.EndpointOpaqueFacing,
+            accepted.TerminalIdentity,
+            accepted.Stages);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), messengerAcceptance: wrongBranch),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
     private static void CompleteRouteThroughEntity142(GameSession session)
     {
         Move(session, ExplorationDirection.West, 2);
@@ -2132,7 +2277,9 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapEntity142Definition? entity142 = null,
         bool omitEntity142 = false,
         OriginalMapAstralZoneDefinition? astralZone = null,
-        bool omitAstralZone = false)
+        bool omitAstralZone = false,
+        OriginalMapMessengerAcceptanceDefinition? messengerAcceptance = null,
+        bool omitMessengerAcceptance = false)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -2192,7 +2339,11 @@ public sealed class OriginalMapGameSessionTests
             omitAstralZone || entityPopulation is not null || omitZone601 || omitSarah ||
                 omitEntity142
                 ? null
-                : astralZone ?? AcceptedAstralZone(map));
+                : astralZone ?? AcceptedAstralZone(map),
+            omitMessengerAcceptance || entityPopulation is not null || omitZone601 ||
+                omitSarah || omitEntity142 || omitAstralZone
+                ? null
+                : messengerAcceptance ?? AcceptedOriginalMapMessenger.Create(map));
     }
 
     private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
@@ -2418,11 +2569,7 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.AstralZoneStages);
 
     private static OriginalMapEntityPopulation AcceptedEntityPopulation(MapId map) =>
-        ProjectAuthoredEntityPopulation(
-            map,
-            OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
-            OriginalMapRuntimeAdmission.AcceptedEntityRecordCount,
-            acceptedDigestOverride: true);
+        AcceptedOriginalMapMessenger.CreateEntityPopulation(map);
 
     private static OriginalMapEntityPopulation ProjectAuthoredEntityPopulation(
         MapId map,
@@ -2686,4 +2833,135 @@ public sealed class OriginalMapGameSessionTests
         public OriginalMapImportResult Admit(OriginalMapImportRequest request) =>
             new OriginalMapImportRejected(diagnostic);
     }
+}
+
+internal static class AcceptedOriginalMapMessenger
+{
+    internal static OriginalMapEntityPopulation CreateEntityPopulation(MapId map)
+    {
+        OriginalMapEntityDefinition[] records = Enumerable.Range(
+            0,
+            OriginalMapRuntimeAdmission.AcceptedEntityRecordCount)
+            .Select(index => CreateEntityRecord(index))
+            .ToArray();
+        return new OriginalMapEntityPopulation(
+            map,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            records,
+            OriginalMapRuntimeAdmission.AcceptedEntityProjectionDigest);
+    }
+
+    private static OriginalMapEntityDefinition CreateEntityRecord(int index)
+    {
+        int ordinal = index + 1;
+        (byte x, byte y, byte facing, byte sprite, byte[] tail) = ordinal switch
+        {
+            OriginalMapRuntimeAdmission.SarahActorSourceRecordOrdinal =>
+                ((byte)OriginalMapRuntimeAdmission.SarahActorInitialX,
+                    (byte)OriginalMapRuntimeAdmission.SarahActorInitialY,
+                    OriginalMapRuntimeAdmission.SarahActorInitialOpaqueFacing,
+                    (byte)1,
+                    new byte[] { 0, 4, 0x60, 0xCE }),
+            2 => ((byte)0xEA, (byte)8, (byte)1, (byte)5,
+                new byte[] { 0xFF, 42, 8, 3 }),
+            OriginalMapRuntimeAdmission.Zone601ActorSourceRecordOrdinal =>
+                ((byte)OriginalMapRuntimeAdmission.Zone601ActorInitialX,
+                    (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialY,
+                    OriginalMapRuntimeAdmission.Zone601ActorInitialOpaqueFacing,
+                    (byte)195,
+                    new byte[] { 0, 4, 97, 2 }),
+            OriginalMapRuntimeAdmission.MessengerGuard138SourceRecordOrdinal =>
+                ((byte)OriginalMapRuntimeAdmission.MessengerGuard138X,
+                    (byte)OriginalMapRuntimeAdmission.MessengerGuard138Y,
+                    OriginalMapRuntimeAdmission.MessengerGuard138OpaqueFacing,
+                    OriginalMapRuntimeAdmission.MessengerGuardMapSprite,
+                    new byte[] { 0, 4, 0x60, 0xCE }),
+            OriginalMapRuntimeAdmission.MessengerGuard139SourceRecordOrdinal =>
+                ((byte)OriginalMapRuntimeAdmission.MessengerGuard139X,
+                    (byte)OriginalMapRuntimeAdmission.MessengerGuard139Y,
+                    OriginalMapRuntimeAdmission.MessengerGuard139OpaqueFacing,
+                    OriginalMapRuntimeAdmission.MessengerGuardMapSprite,
+                    new byte[] { 0, 4, 0x60, 0xCE }),
+            OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal =>
+                ((byte)OriginalMapRuntimeAdmission.Entity142ActorX,
+                    (byte)OriginalMapRuntimeAdmission.Entity142ActorY,
+                    OriginalMapRuntimeAdmission.Entity142ActorOpaqueFacing,
+                    OriginalMapRuntimeAdmission.Entity142ActorMapSprite,
+                    new byte[] { 0, 4, 0x60, 0xCE }),
+            OriginalMapRuntimeAdmission.MessengerActor143SourceRecordOrdinal =>
+                ((byte)OriginalMapRuntimeAdmission.MessengerActor143InitialX,
+                    (byte)OriginalMapRuntimeAdmission.MessengerActor143InitialY,
+                    OriginalMapRuntimeAdmission.MessengerActor143InitialOpaqueFacing,
+                    OriginalMapRuntimeAdmission.MessengerActor143MapSprite,
+                    new byte[] { 0, 4, 0x60, 0xCE }),
+            _ when ordinal == OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount ||
+                    ordinal > OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal =>
+                (checked((byte)index), (byte)0, (byte)3, checked((byte)(index + 1)),
+                    new byte[] { 0xFF, checked((byte)index), 0, 1 }),
+            _ => (checked((byte)index), (byte)0, (byte)3,
+                checked((byte)(index + 1)), new byte[] { 0, 0, 0, 0 }),
+        };
+        return new OriginalMapEntityDefinition(
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                ordinal),
+            x,
+            y,
+            facing,
+            sprite,
+            tail);
+    }
+
+    internal static OriginalMapMessengerAcceptanceDefinition Create(MapId map) =>
+        new(
+            new OriginalMapMessengerZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.MessengerZoneEventResourceId,
+                OriginalMapRuntimeAdmission.MessengerZoneEventRecordOrdinal,
+                OriginalMapRuntimeAdmission.MessengerZoneEventTargetIdentity),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.MessengerApproachX,
+                OriginalMapRuntimeAdmission.MessengerApproachY),
+            OriginalMapRuntimeAdmission.MessengerEntryDirection,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.MessengerTriggerX,
+                OriginalMapRuntimeAdmission.MessengerTriggerY),
+            OriginalMapRuntimeAdmission.MessengerProgramIdentity,
+            OriginalMapRuntimeAdmission.MessengerAcceptedBranchProgramIdentity,
+            OriginalMapRuntimeAdmission.MessengerControlShapeSha256,
+            OriginalMapRuntimeAdmission.MessengerPromptReturn,
+            OriginalMapRuntimeAdmission.MessengerPromptFlag89,
+            OriginalMapRuntimeAdmission.MessengerJoinSelector,
+            OriginalMapRuntimeAdmission.MessengerFlag600,
+            OriginalMapRuntimeAdmission.MessengerFlag66,
+            OriginalMapRuntimeAdmission.MessengerCompletionFlag603,
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.SarahActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.MessengerSarahCharacterId,
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.Entity142LogicalActorId,
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.MessengerActor143SourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.MessengerActor143LogicalId,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.MessengerActor143InitialX,
+                OriginalMapRuntimeAdmission.MessengerActor143InitialY),
+            OriginalMapRuntimeAdmission.MessengerActor143InitialOpaqueFacing,
+            OriginalMapRuntimeAdmission.MessengerTextIds,
+            OriginalMapRuntimeAdmission.MessengerSpeakerOperands,
+            OriginalMapRuntimeAdmission.MessengerJoinedCharacterIds,
+            OriginalMapRuntimeAdmission.MessengerFollowers,
+            OriginalMapRuntimeAdmission.MessengerGuards,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.MessengerTriggerX,
+                OriginalMapRuntimeAdmission.MessengerTriggerY),
+            OriginalMapRuntimeAdmission.MessengerEndpointOpaqueFacing,
+            OriginalMapRuntimeAdmission.MessengerTerminalIdentity,
+            OriginalMapRuntimeAdmission.MessengerStages);
 }

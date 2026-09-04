@@ -187,6 +187,63 @@ public static class OriginalMapRuntimeAdmission
     public const int AstralZoneActor128DestinationY = 4;
     public const byte AstralZoneActor128OpaqueFacing = 1;
 
+    public const int MessengerZoneEventHandlerAddress = 331084;
+    public const string MessengerZoneEventResourceId = "ms_map3_ZoneEvents";
+    public const int MessengerZoneEventSourceRecordCount = 10;
+    public const int MessengerZoneEventRecordOrdinal = 9;
+    public const int MessengerZoneEventRecordAddress = 331116;
+    public const int MessengerZoneEventRelativeOffset = 390;
+    public const int MessengerZoneEventResolvedTargetAddress = 331474;
+    public const string MessengerZoneEventTargetIdentity = "Map3_ZoneEvent8";
+    public const int MessengerApproachX = 42;
+    public const int MessengerApproachY = 10;
+    public const ExplorationDirection MessengerEntryDirection = ExplorationDirection.East;
+    public const int MessengerTriggerX = 43;
+    public const int MessengerTriggerY = 10;
+    public const string MessengerProgramIdentity = "cs_5149A";
+    public const int MessengerProgramAddress = 332954;
+    public const int MessengerProgramOperationCount = 112;
+    public const string MessengerAcceptedBranchProgramIdentity = "cs_51614";
+    public const int MessengerAcceptedBranchProgramAddress = 333332;
+    public const int MessengerAcceptedBranchOperationCount = 11;
+    public const int MessengerProgramEndAddress = 333392;
+    public const string MessengerControlShapeSha256 =
+        "B542F358F80A1537D767AB7CBFFD91E886248B9805ED3111503C32FF29177586";
+    public const int MessengerPromptReturn = 0;
+    public const int MessengerPromptFlag89 = 89;
+    public const int MessengerJoinSelector = 128;
+    public const int MessengerFlag600 = 600;
+    public const int MessengerFlag66 = 66;
+    public const int MessengerCompletionFlag603 = 603;
+    public const int MessengerSarahCharacterId = 1;
+    public const int MessengerChesterCharacterId = 2;
+    public const int MessengerBowieCharacterId = 0;
+    public const int MessengerFollowerDistance = 2;
+    public const int MessengerActor143SourceRecordOrdinal = 18;
+    public const int MessengerActor143LogicalId = 143;
+    public const int MessengerActor143SourceAddress = 330680;
+    public const int MessengerActor143InitialX = 63;
+    public const int MessengerActor143InitialY = 63;
+    public const byte MessengerActor143InitialOpaqueFacing = 1;
+    public const byte MessengerActor143MapSprite = 206;
+    public const uint MessengerActor143ActionValue = 0x000460CE;
+    public const int MessengerGuard138SourceRecordOrdinal = 13;
+    public const int MessengerGuard138SourceAddress = 330640;
+    public const int MessengerGuard138LogicalId = 138;
+    public const int MessengerGuard138X = 27;
+    public const int MessengerGuard138Y = 3;
+    public const byte MessengerGuard138OpaqueFacing = 3;
+    public const int MessengerGuard139SourceRecordOrdinal = 14;
+    public const int MessengerGuard139SourceAddress = 330648;
+    public const int MessengerGuard139LogicalId = 139;
+    public const int MessengerGuard139X = 31;
+    public const int MessengerGuard139Y = 3;
+    public const byte MessengerGuard139OpaqueFacing = 3;
+    public const byte MessengerGuardMapSprite = 206;
+    public const uint MessengerGuardActionValue = 0x000460CE;
+    public const byte MessengerEndpointOpaqueFacing = 3;
+    public const string MessengerTerminalIdentity = "WaitForEvent";
+
     public const string RoofOnLoadResourceId = "Map03s5_RoofEvents";
     public const int RoofOnLoadSourceRecordCount = 10;
     public const int HouseRoofOnLoadRecordOrdinal = 1;
@@ -230,6 +287,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-entity142-acknowledgement-v1";
     public const string AstralZoneHandoffCapability =
         "private-local-map3-astral-zone-handoff-v1";
+    public const string MessengerAcceptanceCapability =
+        "private-local-map3-messenger-acceptance-v1";
 
     private static readonly ReadOnlyCollection<int> ReadOnlyZone601TextIds =
         Array.AsReadOnly(new[] { 510, 511, 483 });
@@ -322,6 +381,76 @@ public static class OriginalMapRuntimeAdmission
             OriginalMapAstralZoneStage.SetCompletionFlag260,
         ]);
 
+    private static readonly ReadOnlyCollection<int> ReadOnlyMessengerTextIds =
+        Array.AsReadOnly(new[]
+        {
+            517, 518, 519, 520, 521, 522, 523, 524, 525,
+            526, 527, 528, 529, 530, 531, 535, 536, 447,
+        });
+
+    private static readonly ReadOnlyCollection<int?> ReadOnlyMessengerSpeakerOperands =
+        Array.AsReadOnly<int?>(
+        [
+            142, 142, 142, 143, 143, 142, 143, 142, 142,
+            2, 2, 49153, 2, 49153, 49153, 1, 2, null,
+        ]);
+
+    private static readonly ReadOnlyCollection<int> ReadOnlyMessengerJoinedCharacterIds =
+        Array.AsReadOnly(new[] { MessengerSarahCharacterId, MessengerChesterCharacterId });
+
+    private static readonly ReadOnlyCollection<OriginalMapMessengerFollowerLink>
+        ReadOnlyMessengerFollowers = Array.AsReadOnly(
+        [
+            new OriginalMapMessengerFollowerLink(
+                MessengerSarahCharacterId,
+                MessengerBowieCharacterId,
+                MessengerFollowerDistance),
+            new OriginalMapMessengerFollowerLink(
+                MessengerChesterCharacterId,
+                MessengerSarahCharacterId,
+                MessengerFollowerDistance),
+        ]);
+
+    private static readonly ReadOnlyCollection<OriginalMapMessengerGuardState>
+        ReadOnlyMessengerGuards = Array.AsReadOnly(
+        [
+            new OriginalMapMessengerGuardState(
+                MessengerGuard138LogicalId,
+                new OriginalMapEntityRecordIdentity(
+                    AcceptedEntityListResourceId,
+                    MessengerGuard138SourceRecordOrdinal),
+                new MapPosition(MessengerGuard138X, MessengerGuard138Y),
+                MessengerGuard138OpaqueFacing),
+            new OriginalMapMessengerGuardState(
+                MessengerGuard139LogicalId,
+                new OriginalMapEntityRecordIdentity(
+                    AcceptedEntityListResourceId,
+                    MessengerGuard139SourceRecordOrdinal),
+                new MapPosition(MessengerGuard139X, MessengerGuard139Y),
+                MessengerGuard139OpaqueFacing),
+        ]);
+
+    private static readonly ReadOnlyCollection<OriginalMapMessengerAcceptanceStage>
+        ReadOnlyMessengerStages = Array.AsReadOnly(
+        [
+            OriginalMapMessengerAcceptanceStage.EnterMessengerProgram,
+            OriginalMapMessengerAcceptanceStage.PresentPrePromptTextSequence,
+            OriginalMapMessengerAcceptanceStage.AcceptDefaultPrompt,
+            OriginalMapMessengerAcceptanceStage.ObservePromptFlag89Set,
+            OriginalMapMessengerAcceptanceStage.PresentAcceptedBranchTextSequence,
+            OriginalMapMessengerAcceptanceStage.SetFlag600,
+            OriginalMapMessengerAcceptanceStage.SetFlag66,
+            OriginalMapMessengerAcceptanceStage.JoinSarah,
+            OriginalMapMessengerAcceptanceStage.JoinChester,
+            OriginalMapMessengerAcceptanceStage.LinkSarahToBowie,
+            OriginalMapMessengerAcceptanceStage.LinkChesterToSarah,
+            OriginalMapMessengerAcceptanceStage.PositionGuard138,
+            OriginalMapMessengerAcceptanceStage.PositionGuard139,
+            OriginalMapMessengerAcceptanceStage.ReturnMessengerProgram,
+            OriginalMapMessengerAcceptanceStage.SetCompletionFlag603,
+            OriginalMapMessengerAcceptanceStage.ReachStableWaitForEvent,
+        ]);
+
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
             new[]
@@ -343,6 +472,7 @@ public static class OriginalMapRuntimeAdmission
                 SarahRouteCapability,
                 Entity142AcknowledgementCapability,
                 AstralZoneHandoffCapability,
+                MessengerAcceptanceCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -359,6 +489,7 @@ public static class OriginalMapRuntimeAdmission
                 "sf2-map3-castle-battle-unlock-static-v1",
                 "sf2-map3-admitted-start-runtime-v1",
                 "sf2-map3-battle01-natural-route-runtime-v1",
+                "sf2-map3-messenger-acceptance-runtime-v1",
             });
 
     public static IReadOnlyList<string> RequiredCapabilities => ReadOnlyRequiredCapabilities;
@@ -397,6 +528,23 @@ public static class OriginalMapRuntimeAdmission
 
     public static IReadOnlyList<OriginalMapAstralZoneStage> AstralZoneStages =>
         ReadOnlyAstralZoneStages;
+
+    public static IReadOnlyList<int> MessengerTextIds => ReadOnlyMessengerTextIds;
+
+    public static IReadOnlyList<int?> MessengerSpeakerOperands =>
+        ReadOnlyMessengerSpeakerOperands;
+
+    public static IReadOnlyList<int> MessengerJoinedCharacterIds =>
+        ReadOnlyMessengerJoinedCharacterIds;
+
+    public static IReadOnlyList<OriginalMapMessengerFollowerLink> MessengerFollowers =>
+        ReadOnlyMessengerFollowers;
+
+    public static IReadOnlyList<OriginalMapMessengerGuardState> MessengerGuards =>
+        ReadOnlyMessengerGuards;
+
+    public static IReadOnlyList<OriginalMapMessengerAcceptanceStage> MessengerStages =>
+        ReadOnlyMessengerStages;
 
     internal static bool HasExactRequiredCapabilities(IEnumerable<string> capabilities)
     {
@@ -794,6 +942,134 @@ public static class OriginalMapRuntimeAdmission
         }
 
         return true;
+    }
+
+    public static bool HasExactAcceptedMessengerAcceptance(
+        OriginalMapMessengerAcceptanceDefinition? definition,
+        OriginalMapEntityPopulation population,
+        OriginalMapSarahDefinition? sarah,
+        OriginalMapEntity142Definition? entity142,
+        OriginalMapAstralZoneDefinition? astralZone,
+        OriginalMapTraversal traversal,
+        WorkingMapLayout workingLayout)
+    {
+        ArgumentNullException.ThrowIfNull(population);
+        ArgumentNullException.ThrowIfNull(traversal);
+        ArgumentNullException.ThrowIfNull(workingLayout);
+        if (definition is null || sarah is null || entity142 is null || astralZone is null ||
+            definition.Identity != new OriginalMapMessengerZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                new MapId(MapId),
+                new MapSetupId(SelectedSetupId),
+                MessengerZoneEventResourceId,
+                MessengerZoneEventRecordOrdinal,
+                MessengerZoneEventTargetIdentity) ||
+            definition.Approach != new MapPosition(MessengerApproachX, MessengerApproachY) ||
+            definition.EntryDirection != MessengerEntryDirection ||
+            definition.Trigger != new MapPosition(MessengerTriggerX, MessengerTriggerY) ||
+            !string.Equals(definition.MessengerProgramIdentity, MessengerProgramIdentity,
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                definition.AcceptedBranchProgramIdentity,
+                MessengerAcceptedBranchProgramIdentity,
+                StringComparison.Ordinal) ||
+            !string.Equals(definition.ControlShapeSha256, MessengerControlShapeSha256,
+                StringComparison.OrdinalIgnoreCase) ||
+            definition.PromptReturn != MessengerPromptReturn ||
+            definition.PromptFlag89 != MessengerPromptFlag89 ||
+            definition.JoinSelector != MessengerJoinSelector ||
+            definition.Flag600 != MessengerFlag600 || definition.Flag66 != MessengerFlag66 ||
+            definition.CompletionFlag603 != MessengerCompletionFlag603 ||
+            definition.SarahSourceRecord != sarah.ActorSourceRecord ||
+            definition.SarahCharacterId != MessengerSarahCharacterId ||
+            definition.Entity142SourceRecord != entity142.ActorSourceRecord ||
+            definition.Entity142LogicalActorId != entity142.LogicalActorId ||
+            definition.MessengerActorSourceRecord != new OriginalMapEntityRecordIdentity(
+                AcceptedEntityListResourceId,
+                MessengerActor143SourceRecordOrdinal) ||
+            definition.MessengerLogicalActorId != MessengerActor143LogicalId ||
+            definition.MessengerActorInitialPosition != new MapPosition(
+                MessengerActor143InitialX,
+                MessengerActor143InitialY) ||
+            definition.MessengerActorInitialOpaqueFacing !=
+                MessengerActor143InitialOpaqueFacing ||
+            !definition.TextIds.SequenceEqual(ReadOnlyMessengerTextIds) ||
+            !definition.SpeakerOperands.SequenceEqual(ReadOnlyMessengerSpeakerOperands) ||
+            !definition.JoinedCharacterIds.SequenceEqual(ReadOnlyMessengerJoinedCharacterIds) ||
+            !definition.Followers.SequenceEqual(ReadOnlyMessengerFollowers) ||
+            !definition.Guards.SequenceEqual(ReadOnlyMessengerGuards) ||
+            definition.Endpoint != new MapPosition(MessengerTriggerX, MessengerTriggerY) ||
+            definition.EndpointOpaqueFacing != MessengerEndpointOpaqueFacing ||
+            !string.Equals(definition.TerminalIdentity, MessengerTerminalIdentity,
+                StringComparison.Ordinal) ||
+            !definition.Stages.SequenceEqual(ReadOnlyMessengerStages) ||
+            astralZone.CompletionFlag260 != AstralZoneCompletionFlag260 ||
+            astralZone.RequiredEntity142Flag602 != entity142.CompletionFlag602 ||
+            astralZone.MessengerCompletionFlag603 != definition.CompletionFlag603 ||
+            population.Map != definition.Identity.Map ||
+            population.SelectedSetup != definition.Identity.Setup ||
+            population.ResourceId != AcceptedEntityListResourceId ||
+            population.Records.Count != AcceptedEntityRecordCount ||
+            !traversal.IsWithinActiveArea(definition.Approach) ||
+            !traversal.IsWithinActiveArea(definition.Trigger) ||
+            OriginalMapTraversal.IsBlocked(workingLayout, definition.Approach) ||
+            OriginalMapTraversal.IsBlocked(workingLayout, definition.Trigger))
+        {
+            return false;
+        }
+
+        OriginalMapEntityDefinition messenger =
+            population.Records[MessengerActor143SourceRecordOrdinal - 1];
+        OriginalMapEntityDefinition guard138 =
+            population.Records[MessengerGuard138SourceRecordOrdinal - 1];
+        OriginalMapEntityDefinition guard139 =
+            population.Records[MessengerGuard139SourceRecordOrdinal - 1];
+        return MatchesFixedEntity(
+                messenger,
+                MessengerActor143SourceRecordOrdinal,
+                MessengerActor143InitialX,
+                MessengerActor143InitialY,
+                MessengerActor143InitialOpaqueFacing,
+                MessengerActor143MapSprite,
+                MessengerActor143ActionValue) &&
+            MatchesFixedEntity(
+                guard138,
+                MessengerGuard138SourceRecordOrdinal,
+                MessengerGuard138X,
+                MessengerGuard138Y,
+                MessengerGuard138OpaqueFacing,
+                MessengerGuardMapSprite,
+                MessengerGuardActionValue) &&
+            MatchesFixedEntity(
+                guard139,
+                MessengerGuard139SourceRecordOrdinal,
+                MessengerGuard139X,
+                MessengerGuard139Y,
+                MessengerGuard139OpaqueFacing,
+                MessengerGuardMapSprite,
+                MessengerGuardActionValue);
+    }
+
+    private static bool MatchesFixedEntity(
+        OriginalMapEntityDefinition entity,
+        int oneBasedRecordOrdinal,
+        int x,
+        int y,
+        byte opaqueFacing,
+        byte mapSprite,
+        uint actionValue)
+    {
+        Span<byte> expectedAction = stackalloc byte[sizeof(uint)];
+        BinaryPrimitives.WriteUInt32BigEndian(expectedAction, actionValue);
+        return entity.Identity == new OriginalMapEntityRecordIdentity(
+                AcceptedEntityListResourceId,
+                oneBasedRecordOrdinal) &&
+            entity.RawX == x && entity.RawY == y &&
+            entity.Position == new MapPosition(x, y) &&
+            entity.OpaqueFacing == opaqueFacing &&
+            entity.MapSprite == mapSprite &&
+            entity.Kind == OriginalMapEntityRecordKind.Fixed &&
+            entity.OpaqueTail.SequenceEqual(expectedAction.ToArray());
     }
 
     public static bool HasExactAcceptedSameMapWarps(OriginalMapSameMapWarpCatalog? catalog)
