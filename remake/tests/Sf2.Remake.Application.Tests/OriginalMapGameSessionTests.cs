@@ -56,6 +56,7 @@ public sealed class OriginalMapGameSessionTests
         Assert.False(started.Session.PrivateOriginalMapSnapshot.ControlledStepCopyApplied);
         Assert.False(started.Session.PrivateOriginalMapSnapshot.BowieDoorStepCopyApplied);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastNaturalStepCopy);
+        Assert.False(started.Session.PrivateOriginalMapSnapshot.SchoolDoorStepCopyApplied);
         Assert.Same(
             started.Session.PrivateOriginalMapSnapshot.Definition.WorkingLayout,
             started.Session.PrivateOriginalMapSnapshot.WorkingLayout);
@@ -428,6 +429,128 @@ public sealed class OriginalMapGameSessionTests
         Assert.False(blocked.Snapshot.BowieDoorStepCopyApplied);
         Assert.Null(blocked.Snapshot.LastNaturalStepCopy);
         Assert.Same(before.WorkingLayout, blocked.Snapshot.WorkingLayout);
+    }
+
+    [Fact]
+    public void SchoolDoorNaturalStepCopyUsesItsExactNorthApproachAndAppliesOnce()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        MoveToSchoolDoorApproach(session);
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+        Assert.Equal(new MapPosition(41, 14), before.PlayerPosition);
+        Assert.True(OriginalMapTraversal.IsBlocked(
+            before.WorkingLayout,
+            new MapPosition(41, 13)));
+
+        PrivateOriginalMapMoveApplied opened = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        PrivateOriginalMapNaturalStepCopyReceipt receipt =
+            Assert.IsType<PrivateOriginalMapNaturalStepCopyReceipt>(
+                opened.Snapshot.LastNaturalStepCopy);
+
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, opened.Traversal.Outcome);
+        Assert.Equal(new MapPosition(41, 13), opened.Snapshot.PlayerPosition);
+        Assert.True(opened.Snapshot.SchoolDoorStepCopyApplied);
+        Assert.False(opened.Snapshot.ControlledStepCopyApplied);
+        Assert.Equal(opened.Snapshot.Definition.ControlledStepCopy!.Identity,
+            receipt.RecordIdentity);
+        Assert.Equal(new MapPosition(41, 14), receipt.Source);
+        Assert.Equal(new MapPosition(41, 13), receipt.Trigger);
+        Assert.Equal((62, 0, 41, 13, 1, 1), Geometry(receipt.Copy));
+        Assert.Equal(
+            PrivateOriginalMapCollisionCategory.BlockedByAcceptedCollisionClass,
+            receipt.BeforeCollision);
+        Assert.Equal(
+            PrivateOriginalMapCollisionCategory.ActiveNonBlocked,
+            receipt.AfterCollision);
+        Assert.NotSame(before.WorkingLayout, opened.Snapshot.WorkingLayout);
+
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.South));
+        WorkingMapLayout openedLayout = session.PrivateOriginalMapSnapshot.WorkingLayout;
+        PrivateOriginalMapMoveApplied revisited = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, revisited.Traversal.Outcome);
+        Assert.True(revisited.Snapshot.SchoolDoorStepCopyApplied);
+        Assert.Null(revisited.Snapshot.LastNaturalStepCopy);
+        Assert.Same(openedLayout, revisited.Snapshot.WorkingLayout);
+
+        foreach (ExplorationDirection direction in new[]
+        {
+            ExplorationDirection.North,
+            ExplorationDirection.North,
+            ExplorationDirection.North,
+            ExplorationDirection.East,
+            ExplorationDirection.North,
+            ExplorationDirection.North,
+            ExplorationDirection.North,
+            ExplorationDirection.East,
+            ExplorationDirection.East,
+            ExplorationDirection.East,
+            ExplorationDirection.East,
+        })
+        {
+            _ = session.ApplyPrivateOriginalMap(new MoveExplorationCommand(direction));
+        }
+
+        Assert.Equal(new MapPosition(59, 12), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        Assert.True(session.PrivateOriginalMapSnapshot.SchoolDoorStepCopyApplied);
+        Assert.Same(openedLayout, session.PrivateOriginalMapSnapshot.WorkingLayout);
+    }
+
+    [Fact]
+    public void SchoolDoorDoesNotGeneralizeToTheNorthSideOrConflateTheControlledDiagnostic()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        for (int count = 0; count < 9; count++)
+        {
+            _ = session.ApplyPrivateOriginalMap(
+                new MoveExplorationCommand(ExplorationDirection.South));
+        }
+
+        for (int count = 0; count < 15; count++)
+        {
+            _ = session.ApplyPrivateOriginalMap(
+                new MoveExplorationCommand(ExplorationDirection.West));
+        }
+
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+        Assert.Equal(new MapPosition(41, 12), before.PlayerPosition);
+        PrivateOriginalMapMoveApplied blocked = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.South));
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByCollision, blocked.Traversal.Outcome);
+        Assert.False(blocked.Snapshot.SchoolDoorStepCopyApplied);
+        Assert.False(blocked.Snapshot.ControlledStepCopyApplied);
+        Assert.Null(blocked.Snapshot.LastNaturalStepCopy);
+        Assert.Same(before.WorkingLayout, blocked.Snapshot.WorkingLayout);
+
+        PrivateOriginalMapLayoutMutationApplied diagnostic =
+            Assert.IsType<PrivateOriginalMapLayoutMutationApplied>(
+                session.ApplyPrivateOriginalMapLayoutMutation(
+                    MutationCommand(blocked.Snapshot)));
+        Assert.True(diagnostic.Snapshot.ControlledStepCopyApplied);
+        Assert.False(diagnostic.Snapshot.SchoolDoorStepCopyApplied);
+    }
+
+    [Fact]
+    public void RestartRestoresTheClosedSchoolDoorAndClearsItsNaturalState()
+    {
+        AcceptedSource source = new(Accepted());
+        GameSession first = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+        MoveToSchoolDoorApproach(first);
+        _ = first.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        Assert.True(first.PrivateOriginalMapSnapshot.SchoolDoorStepCopyApplied);
+        Assert.NotNull(first.PrivateOriginalMapSnapshot.LastNaturalStepCopy);
+
+        GameSession restarted = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+        Assert.False(restarted.PrivateOriginalMapSnapshot.SchoolDoorStepCopyApplied);
+        Assert.Null(restarted.PrivateOriginalMapSnapshot.LastNaturalStepCopy);
+        Assert.True(OriginalMapTraversal.IsBlocked(
+            restarted.PrivateOriginalMapSnapshot.WorkingLayout,
+            new MapPosition(41, 13)));
     }
 
     [Fact]
@@ -1255,6 +1378,21 @@ public sealed class OriginalMapGameSessionTests
 
         Assert.Throws<InvalidOperationException>(() =>
             session.Apply(new MoveExplorationCommand(ExplorationDirection.East)));
+    }
+
+    private static void MoveToSchoolDoorApproach(GameSession session)
+    {
+        for (int count = 0; count < 11; count++)
+        {
+            _ = session.ApplyPrivateOriginalMap(
+                new MoveExplorationCommand(ExplorationDirection.South));
+        }
+
+        for (int count = 0; count < 15; count++)
+        {
+            _ = session.ApplyPrivateOriginalMap(
+                new MoveExplorationCommand(ExplorationDirection.West));
+        }
     }
 
     private static GameSession Start(OriginalMapImportDefinition definition) =>

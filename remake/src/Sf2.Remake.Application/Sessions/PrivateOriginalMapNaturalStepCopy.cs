@@ -51,24 +51,40 @@ public sealed record PrivateOriginalMapNaturalStepCopyReceipt
 
 public sealed partial class GameSession
 {
-    private bool TryApplyPrivateOriginalMapBowieDoorStepCopy(
+    private bool TryApplyPrivateOriginalMapNaturalStepCopy(
         PrivateOriginalMapSessionSnapshot current,
         MoveExplorationCommand command,
         out PrivateOriginalMapMoveApplied? applied)
     {
         applied = null;
-        OriginalMapStepCopyDefinition? admitted = current.Definition.BowieDoorStepCopy;
         MapPosition? candidate = current.Definition.Traversal.ResolveCandidateTarget(
             current.WorkingLayout,
             current.PlayerPosition,
             command.Direction);
-        if (admitted is null ||
-            current.BowieDoorStepCopyApplied ||
-            current.PlayerPosition != new MapPosition(
+        OriginalMapStepCopyDefinition? admitted = null;
+        bool opensBowieDoor = false;
+        if (!current.BowieDoorStepCopyApplied &&
+            current.PlayerPosition == new MapPosition(
                 OriginalMapRuntimeAdmission.BowieDoorStepCopyApproachX,
-                OriginalMapRuntimeAdmission.BowieDoorStepCopyApproachY) ||
-            command.Direction != OriginalMapRuntimeAdmission.BowieDoorStepCopyDirection ||
-            candidate != admitted.Trigger)
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyApproachY) &&
+            command.Direction == OriginalMapRuntimeAdmission.BowieDoorStepCopyDirection &&
+            candidate == current.Definition.BowieDoorStepCopy?.Trigger)
+        {
+            admitted = current.Definition.BowieDoorStepCopy;
+            opensBowieDoor = true;
+        }
+        else if (!current.SchoolDoorStepCopyApplied &&
+            !current.ControlledStepCopyApplied &&
+            current.PlayerPosition == new MapPosition(
+                OriginalMapRuntimeAdmission.SchoolDoorStepCopyApproachX,
+                OriginalMapRuntimeAdmission.SchoolDoorStepCopyApproachY) &&
+            command.Direction == OriginalMapRuntimeAdmission.SchoolDoorStepCopyDirection &&
+            candidate == current.Definition.ControlledStepCopy?.Trigger)
+        {
+            admitted = current.Definition.ControlledStepCopy;
+        }
+
+        if (admitted is null)
         {
             return false;
         }
@@ -91,7 +107,7 @@ public sealed partial class GameSession
             traversal.Position != admitted.Trigger)
         {
             throw new InvalidOperationException(
-                "The admitted Bowie-door step-copy did not produce its exact atomic traversal result.");
+                "The admitted natural door step-copy did not produce its exact atomic traversal result.");
         }
 
         long nextStep = checked(current.SimulationStep + 1);
@@ -115,8 +131,9 @@ public sealed partial class GameSession
             lastSameMapWarp: null,
             roofOnLoadLifecycle: current.RoofOnLoadLifecycle,
             lastRoofOnLoad: null,
-            bowieDoorStepCopyApplied: true,
-            receipt);
+            current.BowieDoorStepCopyApplied || opensBowieDoor,
+            receipt,
+            current.SchoolDoorStepCopyApplied || !opensBowieDoor);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(next, traversal);
         return true;

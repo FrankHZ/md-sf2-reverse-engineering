@@ -18,7 +18,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         MapBlockCopyLifecycleState? roofOnLoadLifecycle = null,
         PrivateOriginalMapRoofOnLoadReceipt? lastRoofOnLoad = null,
         bool bowieDoorStepCopyApplied = false,
-        PrivateOriginalMapNaturalStepCopyReceipt? lastNaturalStepCopy = null)
+        PrivateOriginalMapNaturalStepCopyReceipt? lastNaturalStepCopy = null,
+        bool schoolDoorStepCopyApplied = false)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -44,6 +45,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
             (completedOperations != 0 ||
                 controlledStepCopyApplied ||
                 bowieDoorStepCopyApplied ||
+                schoolDoorStepCopyApplied ||
                 admittedRoofLifecycle is not MapBlockCopyLifecycleInactiveState))
         {
             throw new ArgumentException(
@@ -80,19 +82,50 @@ public sealed record PrivateOriginalMapSessionSnapshot
             }
         }
 
-        if (lastNaturalStepCopy is not null)
+        if (schoolDoorStepCopyApplied)
         {
             OriginalMapStepCopyDefinition admitted =
-                definition.BowieDoorStepCopy ?? throw new ArgumentException(
-                    "A natural step-copy receipt requires its admitted definition.",
-                    nameof(lastNaturalStepCopy));
-            if (!bowieDoorStepCopyApplied ||
+                definition.ControlledStepCopy ?? throw new ArgumentException(
+                    "An applied school-door step-copy requires its admitted definition.",
+                    nameof(schoolDoorStepCopyApplied));
+            if (workingLayout[admitted.Copy.DestinationX, admitted.Copy.DestinationY] !=
+                workingLayout[admitted.Copy.SourceX, admitted.Copy.SourceY])
+            {
+                throw new ArgumentException(
+                    "An applied school-door step-copy requires the authoritative copied layout.",
+                    nameof(workingLayout));
+            }
+        }
+
+        if (lastNaturalStepCopy is not null)
+        {
+            bool isBowieDoor =
+                lastNaturalStepCopy.RecordIdentity == definition.BowieDoorStepCopy?.Identity;
+            bool isSchoolDoor =
+                lastNaturalStepCopy.RecordIdentity == definition.ControlledStepCopy?.Identity;
+            OriginalMapStepCopyDefinition? admitted = isBowieDoor
+                ? definition.BowieDoorStepCopy
+                : isSchoolDoor
+                    ? definition.ControlledStepCopy
+                    : null;
+            MapPosition expectedSource = isBowieDoor
+                ? new MapPosition(
+                    OriginalMapRuntimeAdmission.BowieDoorStepCopyApproachX,
+                    OriginalMapRuntimeAdmission.BowieDoorStepCopyApproachY)
+                : new MapPosition(
+                    OriginalMapRuntimeAdmission.SchoolDoorStepCopyApproachX,
+                    OriginalMapRuntimeAdmission.SchoolDoorStepCopyApproachY);
+            ExplorationDirection expectedDirection = isBowieDoor
+                ? OriginalMapRuntimeAdmission.BowieDoorStepCopyDirection
+                : OriginalMapRuntimeAdmission.SchoolDoorStepCopyDirection;
+            if (admitted is null ||
+                isBowieDoor == isSchoolDoor ||
+                (isBowieDoor && !bowieDoorStepCopyApplied) ||
+                (isSchoolDoor && !schoolDoorStepCopyApplied) ||
                 lastTraversal is null ||
                 lastTraversal.Outcome != OriginalMapTraversalOutcome.Moved ||
-                lastTraversal.Source != new MapPosition(
-                    OriginalMapRuntimeAdmission.BowieDoorStepCopyApproachX,
-                    OriginalMapRuntimeAdmission.BowieDoorStepCopyApproachY) ||
-                lastTraversal.Direction != OriginalMapRuntimeAdmission.BowieDoorStepCopyDirection ||
+                lastTraversal.Source != expectedSource ||
+                lastTraversal.Direction != expectedDirection ||
                 lastNaturalStepCopy.RecordIdentity != admitted.Identity ||
                 lastNaturalStepCopy.Source != lastTraversal.Source ||
                 lastNaturalStepCopy.Trigger != admitted.Trigger ||
@@ -235,6 +268,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
         LastRoofOnLoad = lastRoofOnLoad;
         BowieDoorStepCopyApplied = bowieDoorStepCopyApplied;
         LastNaturalStepCopy = lastNaturalStepCopy;
+        SchoolDoorStepCopyApplied = schoolDoorStepCopyApplied;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -281,6 +315,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public bool BowieDoorStepCopyApplied { get; }
 
     public PrivateOriginalMapNaturalStepCopyReceipt? LastNaturalStepCopy { get; }
+
+    public bool SchoolDoorStepCopyApplied { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -390,7 +426,7 @@ public sealed partial class GameSession
             return warpApplied!;
         }
 
-        if (TryApplyPrivateOriginalMapBowieDoorStepCopy(
+        if (TryApplyPrivateOriginalMapNaturalStepCopy(
                 current,
                 command,
                 out var stepCopyApplied))
@@ -415,7 +451,8 @@ public sealed partial class GameSession
             roofOnLoadLifecycle: current.RoofOnLoadLifecycle,
             lastRoofOnLoad: null,
             current.BowieDoorStepCopyApplied,
-            lastNaturalStepCopy: null);
+            lastNaturalStepCopy: null,
+            current.SchoolDoorStepCopyApplied);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -488,7 +525,8 @@ public sealed partial class GameSession
             roofOnLoadLifecycle: current.RoofOnLoadLifecycle,
             lastRoofOnLoad: null,
             current.BowieDoorStepCopyApplied,
-            lastNaturalStepCopy: null);
+            lastNaturalStepCopy: null,
+            current.SchoolDoorStepCopyApplied);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -515,7 +553,8 @@ public sealed partial class GameSession
             roofOnLoadLifecycle: MapBlockCopyLifecycleState.Inactive,
             lastRoofOnLoad: null,
             bowieDoorStepCopyApplied: false,
-            lastNaturalStepCopy: null);
+            lastNaturalStepCopy: null,
+            schoolDoorStepCopyApplied: false);
         GameSession session = new(snapshot);
         session.InitializePrivateOriginalMapPlayerLocomotion();
         return new PrivateOriginalMapGameSessionStarted(session, accepted.Receipt);

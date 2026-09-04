@@ -34,6 +34,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.RoofOnLoadClearCapability;
     public const string BowieDoorStepCopyCapability =
         OriginalMapRuntimeAdmission.BowieDoorStepCopyCapability;
+    public const string SchoolDoorStepCopyCapability =
+        OriginalMapRuntimeAdmission.SchoolDoorStepCopyCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -62,6 +64,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         SameMapWarpAdmissionCapability,
         RoofOnLoadClearCapability,
         BowieDoorStepCopyCapability,
+        SchoolDoorStepCopyCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
