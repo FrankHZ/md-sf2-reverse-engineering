@@ -22,6 +22,9 @@ immutable, source-shaped Application data. The private session snapshot exposes 
 without creating mutable NPC state. Coordinates are masked only into typed map positions; facing,
 map-sprite, and tail bytes remain opaque, and no entity visibility, walking, action, interaction, or
 presentation behavior is inferred.
+The repository tooling can derive the accepted entity-142/Astral UP source as one local-only 48-by-24
+two-half reference sheet with nearest 2x/4x review buckets. Both halves stay in source order: no half is
+named idle, selected for interaction time, or consumed by the playable runtime.
 The same explicit private visual path now mounts the reviewed three-sheet controlled-player family;
 Application owns its facing, counter, half, and 13-tick movement phase while Godot projects the
 selected sheet and mirrors only RIGHT. A project-authored modern camera follows that typed in-cell
@@ -151,13 +154,33 @@ manifest schema. Palette index zero is transparent; the same project-inferred ch
 used without a hardware, final-pixel, standing, idle, or original-visible-frame claim. As with the
 atlas builder, review and promotion are a separate local-only asset-repository transaction.
 
+The entity-142 reference candidate uses the accepted fixed-ROM evidence fixture rather than a caller-
+selected sprite identity:
+
+```powershell
+uv run python -m sf2tool.remake_asset_build map3-entity142-two-half-reference-candidate `
+  --asset-root <fully-qualified-asset-checkout> `
+  --expected-commit <40-lowercase-hex> `
+  --expected-tree <40-lowercase-hex> `
+  --rom <fully-qualified-accepted-rom> `
+  --expected-rom-sha256 <accepted-uppercase-sha256> `
+  --candidate-name <fresh-cache-child>
+```
+
+It binds the exact Map 3 record/slot, logical entity 142, map-sprite 209, UP-facing source, compressed
+payload, two decoded 24-by-24 halves, and palette 3 before emitting one 48-by-24 sheet. The halves remain
+in source order and both enter the master and nearest 2x/4x buckets. The builder does not choose an
+interaction-time half or infer idle, counter, cadence, visibility, or interaction behavior. Its ignored
+candidate and separately reviewed local asset transaction do not create a product consumer.
+
 The reviewed local asset history now owns `hud.yes-no-window-frame`,
 `hud.tactical-selection-cursor`, `world.map3.base-tileset-atlas`, and
 `world.map3.player.initial-reference-frame`, plus the `up`, `horizontal`, and `down` members of
-`world.map3.player.locomotion.*`. The current seven-asset checkpoint is local commit
-`ec07c0168b9bf684dfc62419351e343baf273c35`, tree
-`678a6b793c4815d9a7897935404dcea2a552e9d4`, with manifest SHA-256
-`39C18402BECB3CD541C293C2D5274E3B3E7A7932D49A1FDB47AEFB070F7E8151`. The atlas and player runtime
+`world.map3.player.locomotion.*`, and the unconsumed
+`world.map3.entity142.astral.up.two-half-reference`. The current eight-asset checkpoint is local commit
+`d89274972905742f8a02b8d8b20d2c96d2ff9ca9`, tree
+`fb2581bac58f662e4e5143b52776b15c2cf5ca25`, with manifest SHA-256
+`5599BBB898C298B21C05AAC8BF01B8926F79FD02E07F34AD91455C2013D0D6ED`. The atlas and player runtime
 buckets are reviewed nearest 2x/4x outputs; source and master material remain review/provenance
 inputs, not runtime files. The initial-reference frame remains a separate, narrower retained asset;
 the lower-level viewport can still project it when no locomotion mount is supplied. The explicit
