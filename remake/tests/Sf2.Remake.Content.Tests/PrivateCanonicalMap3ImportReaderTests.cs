@@ -42,6 +42,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.ControlledStepCopyCapability,
                 PrivateCanonicalMap3ImportReader.CurrentAreaDiagnosticCapability,
                 PrivateCanonicalMap3ImportReader.AreaSourceRecordAdmissionCapability,
+                PrivateCanonicalMap3ImportReader.SelectedSetupEntityPopulationCapability,
                 PrivateCanonicalMap3ImportReader.BlocksetSourceAdmissionCapability,
                 PrivateCanonicalMap3ImportReader.VisualReferenceAdmissionCapability,
             },
@@ -79,6 +80,25 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal("ms_map3_InitFunction",
             accepted.Definition.ControlledAdmission.SelectedInitIdentity);
         Assert.True(accepted.Definition.ControlledAdmission.NoProgramRequest);
+        Assert.Equal(new MapId("map3"), accepted.Definition.EntityPopulation.Map);
+        Assert.Equal(new MapSetupId("ms_map3"), accepted.Definition.EntityPopulation.SelectedSetup);
+        Assert.Equal("ms_map3_Entities", accepted.Definition.EntityPopulation.ResourceId);
+        Assert.Equal(2, accepted.Definition.EntityPopulation.Records.Count);
+        Assert.Equal(
+            OriginalMapEntityRecordKind.Fixed,
+            accepted.Definition.EntityPopulation.Records[0].Kind);
+        Assert.Equal(
+            OriginalMapEntityRecordKind.Walking,
+            accepted.Definition.EntityPopulation.Records[1].Kind);
+        Assert.Equal(
+            accepted.Definition.EntityPopulation.Records[0].Position,
+            accepted.Definition.EntityPopulation.Records[1].Position);
+        Assert.Equal(
+            new byte[] { 0, 0, 0, 1 },
+            accepted.Definition.EntityPopulation.Records[0].OpaqueTail);
+        Assert.Equal(
+            new byte[] { 0xFF, 1, 2, 3 },
+            accepted.Definition.EntityPopulation.Records[1].OpaqueTail);
         Assert.Contains("natural-flags-setup-variant-selection",
             accepted.Definition.UnsupportedCapabilities);
         Assert.Equal(
@@ -361,6 +381,26 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     }
 
     [Fact]
+    public void EntityPopulationShapeCoordinatesKindsAndSetupReferenceFailClosed()
+    {
+        JsonObject unknownField = SampleDocument();
+        EntityRecords(unknownField)[0]!.AsObject()["unexpected"] = true;
+        AssertCode(Admit(unknownField), OriginalMapImportFailureCode.InvalidDocument);
+
+        JsonObject coordinateDrift = SampleDocument();
+        EntityRecords(coordinateDrift)[0]!.AsObject()["x"] = 2;
+        AssertCode(Admit(coordinateDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject kindDrift = SampleDocument();
+        EntityRecords(kindDrift)[0]!.AsObject()["actionValue"] = 0xFF000000U;
+        AssertCode(Admit(kindDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject referenceDrift = SampleDocument();
+        SetupReferences(referenceDrift)["entities"] = "other-entities";
+        AssertCode(Admit(referenceDrift), OriginalMapImportFailureCode.MissingReference);
+    }
+
+    [Fact]
     public void AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput()
     {
         string? path = Environment.GetEnvironmentVariable("SF2_PRIVATE_CANONICAL_MAP_IMPORT");
@@ -391,6 +431,32 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Contains(
             PrivateCanonicalMap3ImportReader.VisualReferenceAdmissionCapability,
             accepted.Receipt.Capabilities);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.SelectedSetupEntityPopulationCapability,
+            accepted.Receipt.Capabilities);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+            accepted.Definition.EntityPopulation.ResourceId);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedEntityRecordCount,
+            accepted.Definition.EntityPopulation.Records.Count);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount,
+            accepted.Definition.EntityPopulation.Records.Count(record =>
+                record.Kind == OriginalMapEntityRecordKind.Fixed));
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedWalkingEntityRecordCount,
+            accepted.Definition.EntityPopulation.Records.Count(record =>
+                record.Kind == OriginalMapEntityRecordKind.Walking));
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedSequencedEntityRecordCount,
+            accepted.Definition.EntityPopulation.Records.Count(record =>
+                record.Kind == OriginalMapEntityRecordKind.Sequenced));
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedEntityProjectionDigest,
+            accepted.Definition.EntityPopulation.ProjectionDigest);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedEntityPopulation(
+            accepted.Definition.EntityPopulation));
         Assert.Equal(
             OriginalMapRuntimeAdmission.AcceptedBlocksetResourceId,
             accepted.Definition.BlockCatalog.ResourceId);
@@ -633,7 +699,41 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                     new { id = "ms_map3_variant_b" },
                     new { id = "ms_map3_variant_c" },
                 },
-                entityLists = Resource("ms_map3_Entities"),
+                entityLists = new object[]
+                {
+                    new
+                    {
+                        id = "ms_map3_Entities",
+                        address = 6,
+                        records = new object[]
+                        {
+                            new
+                            {
+                                address = 6,
+                                kind = "fixed",
+                                rawX = 1,
+                                rawY = 2,
+                                x = 1,
+                                y = 2,
+                                facing = 3,
+                                mapSprite = 4,
+                                actionValue = 1U,
+                            },
+                            new
+                            {
+                                address = 14,
+                                kind = "walking",
+                                rawX = 0xC1,
+                                rawY = 2,
+                                x = 1,
+                                y = 2,
+                                facing = 1,
+                                mapSprite = 5,
+                                walking = new { originX = 1, originY = 2, range = 3 },
+                            },
+                        },
+                    },
+                },
                 entityEventHandlers = Resource("ms_map3_EntityEvents"),
                 zoneEventHandlers = Resource("ms_map3_ZoneEvents"),
                 itemEventHandlers = Resource("ms_map3_Section5"),
@@ -681,6 +781,12 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static JsonArray AreaRecords(JsonObject document) =>
         ResourceArray(document, "areaTables")[0]!.AsObject()["records"]!.AsArray();
+
+    private static JsonArray EntityRecords(JsonObject document) =>
+        ResourceArray(document, "entityLists")[0]!.AsObject()["records"]!.AsArray();
+
+    private static JsonObject SetupReferences(JsonObject document) =>
+        ResourceArray(document, "setupDefinitions")[0]!.AsObject()["references"]!.AsObject();
 
     private static JsonArray LayoutWords(JsonObject document) =>
         ResourceArray(document, "layouts")[0]!.AsObject()["words"]!.AsArray();

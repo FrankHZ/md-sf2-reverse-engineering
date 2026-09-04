@@ -879,6 +879,7 @@ public sealed class PrivateOriginalMapBaseViewportTests
             definitionLayout,
             blockCatalog,
             areaCatalog,
+            ProjectAuthoredEntityPopulation(map),
             Selection(paletteIndex),
             new OriginalMapControlledAdmission(
                 map,
@@ -913,6 +914,22 @@ public sealed class PrivateOriginalMapBaseViewportTests
             controlledStepCopyApplied: false,
             lastLayoutMutation: null);
     }
+
+    private static OriginalMapEntityPopulation ProjectAuthoredEntityPopulation(MapId map) =>
+        new(
+            map,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            [
+                new OriginalMapEntityDefinition(
+                    new OriginalMapEntityRecordIdentity(
+                        "project-authored-base-view-entities",
+                        1),
+                    rawX: 1,
+                    rawY: 1,
+                    opaqueFacing: 0,
+                    mapSprite: 0,
+                    [0, 0, 0, 0]),
+            ]);
 
     private static OriginalMapAreaDefinition[] StaticOverlayAreas() =>
     [

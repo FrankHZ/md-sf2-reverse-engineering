@@ -527,6 +527,7 @@ public sealed class PublicSyntheticBattlePresenterTests
                     mainLayerType: 0,
                     defaultMusic: 0),
             ]),
+            ProjectAuthoredEntityPopulation(map),
             new OriginalMapVisualResourceSelection(map, 0, [0, 37, 43, 53, 66]),
             new OriginalMapControlledAdmission(
                 map,
@@ -560,6 +561,22 @@ public sealed class PublicSyntheticBattlePresenterTests
             controlledStepCopyApplied: false,
             lastLayoutMutation: null);
     }
+
+    private static OriginalMapEntityPopulation ProjectAuthoredEntityPopulation(MapId map) =>
+        new(
+            map,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            [
+                new OriginalMapEntityDefinition(
+                    new OriginalMapEntityRecordIdentity(
+                        "project-authored-battle-presenter-entities",
+                        1),
+                    rawX: 1,
+                    rawY: 1,
+                    opaqueFacing: 0,
+                    mapSprite: 0,
+                    [0, 0, 0, 0]),
+            ]);
 
     private static (GameSession Session, ScenarioAdmissionReceipt Receipt) StartSession()
     {

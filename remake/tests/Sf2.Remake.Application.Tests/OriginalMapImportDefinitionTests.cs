@@ -16,6 +16,7 @@ public sealed class OriginalMapImportDefinitionTests
         OriginalMapAreaCatalog areaCatalog = AreaCatalog(
             new OriginalMapTraversalArea(0, 0, 63, 63));
         WorkingMapLayout layout = new(new ushort[WorkingMapLayout.WordCount]);
+        OriginalMapEntityPopulation entityPopulation = Population(map);
         OriginalMapVisualResourceSelection visualResourceSelection = VisualSelection(map);
         List<string> unsupported = ["natural-route", "presentation"];
         OriginalMapControlledAdmission admission = new(
@@ -31,6 +32,7 @@ public sealed class OriginalMapImportDefinitionTests
             layout,
             BlockCatalog(),
             areaCatalog,
+            entityPopulation,
             visualResourceSelection,
             admission,
             unsupported);
@@ -38,6 +40,7 @@ public sealed class OriginalMapImportDefinitionTests
 
         Assert.Same(layout, definition.WorkingLayout);
         Assert.Same(areaCatalog, definition.AreaCatalog);
+        Assert.Same(entityPopulation, definition.EntityPopulation);
         Assert.Same(visualResourceSelection, definition.VisualResourceSelection);
         Assert.Same(areaCatalog.Traversal, definition.Traversal);
         Assert.Equal(new MapPosition(56, 3), definition.ControlledAdmission.Position);
@@ -65,6 +68,7 @@ public sealed class OriginalMapImportDefinitionTests
                 new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
                 BlockCatalog(),
                 areaCatalog,
+                Population(map),
                 VisualSelection(map),
                 admission,
                 ["unknown"]));
@@ -74,6 +78,7 @@ public sealed class OriginalMapImportDefinitionTests
                 new WorkingMapLayout(blockedWords),
                 BlockCatalog(),
                 areaCatalog,
+                Population(map),
                 VisualSelection(map),
                 admission,
                 ["unknown"]));
@@ -83,6 +88,7 @@ public sealed class OriginalMapImportDefinitionTests
                 new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
                 BlockCatalog(),
                 areaCatalog,
+                Population(map),
                 VisualSelection(map),
                 admission,
                 []));
@@ -95,9 +101,84 @@ public sealed class OriginalMapImportDefinitionTests
                 new WorkingMapLayout(missingBlockWords),
                 BlockCatalog(),
                 areaCatalog,
+                Population(map),
                 VisualSelection(map),
                 admission,
                 ["unknown"]));
+    }
+
+    [Fact]
+    public void EntityPopulationOwnsOrderedOpaqueRecordsWithoutInventingBehavior()
+    {
+        MapId map = new("map3");
+        byte[] tail = [0xFF, 7, 8, 3];
+        OriginalMapEntityDefinition walking = new(
+            new OriginalMapEntityRecordIdentity("project-authored-entities", 1),
+            rawX: 0xC7,
+            rawY: 0x88,
+            opaqueFacing: 3,
+            mapSprite: 42,
+            tail);
+        List<OriginalMapEntityDefinition> records =
+        [
+            walking,
+            new(
+                new OriginalMapEntityRecordIdentity("project-authored-entities", 2),
+                rawX: 7,
+                rawY: 8,
+                opaqueFacing: 1,
+                mapSprite: 43,
+                [0, 0, 0, 1]),
+            new(
+                new OriginalMapEntityRecordIdentity("project-authored-entities", 3),
+                rawX: 7,
+                rawY: 8,
+                opaqueFacing: 0,
+                mapSprite: 44,
+                [0xFE, 0, 0, 2]),
+        ];
+
+        OriginalMapEntityPopulation population = new(
+            map,
+            new MapSetupId("ms_map3"),
+            records);
+        tail[0] = 0;
+        records.Clear();
+
+        Assert.Equal("project-authored-entities", population.ResourceId);
+        Assert.Equal(3, population.Records.Count);
+        Assert.NotSame(walking, population.Records[0]);
+        Assert.Equal(new MapPosition(7, 8), population.Records[0].Position);
+        Assert.Equal(OriginalMapEntityRecordKind.Walking, population.Records[0].Kind);
+        Assert.Equal(new byte[] { 0xFF, 7, 8, 3 }, population.Records[0].OpaqueTail);
+        Assert.Equal(OriginalMapEntityRecordKind.Fixed, population.Records[1].Kind);
+        Assert.Equal(OriginalMapEntityRecordKind.Sequenced, population.Records[2].Kind);
+        Assert.Equal(population.Records[1].Position, population.Records[2].Position);
+        Assert.Throws<NotSupportedException>(
+            () => ((IList<byte>)population.Records[0].OpaqueTail).Add(0));
+    }
+
+    [Fact]
+    public void EntityPopulationRejectsMalformedTailAndNonContiguousOrMixedIdentity()
+    {
+        MapId map = new("map3");
+        Assert.Throws<ArgumentException>(() => Entity("entities", 1, [0, 0, 0]));
+        Assert.Throws<ArgumentException>(() => Entity("entities", 1, [0, 0, 0, 0, 0]));
+        Assert.Throws<ArgumentException>(() => new OriginalMapEntityPopulation(
+            map,
+            new MapSetupId("ms_map3"),
+            []));
+        Assert.Throws<ArgumentException>(() => new OriginalMapEntityPopulation(
+            map,
+            new MapSetupId("ms_map3"),
+            [Entity("entities", 2, [0, 0, 0, 0])]));
+        Assert.Throws<ArgumentException>(() => new OriginalMapEntityPopulation(
+            map,
+            new MapSetupId("ms_map3"),
+            [
+                Entity("entities", 1, [0, 0, 0, 0]),
+                Entity("other-entities", 2, [0, 0, 0, 0]),
+            ]));
     }
 
     [Fact]
@@ -310,6 +391,24 @@ public sealed class OriginalMapImportDefinitionTests
 
     private static OriginalMapVisualResourceSelection VisualSelection(MapId map) =>
         new(map, paletteIndex: 0, [0, 37, 43, 53, 66]);
+
+    private static OriginalMapEntityPopulation Population(MapId map) =>
+        new(
+            map,
+            new MapSetupId("ms_map3"),
+            [Entity("project-authored-entities", 1, [0, 0, 0, 0])]);
+
+    private static OriginalMapEntityDefinition Entity(
+        string resourceId,
+        int oneBasedOrdinal,
+        IEnumerable<byte> opaqueTail) =>
+        new(
+            new OriginalMapEntityRecordIdentity(resourceId, oneBasedOrdinal),
+            rawX: 1,
+            rawY: 2,
+            opaqueFacing: 3,
+            mapSprite: 4,
+            opaqueTail);
 
     private static OriginalMapBlockCatalog BlockCatalog(int count = 3) =>
         new(Enumerable.Range(0, count).Select(index => Block(

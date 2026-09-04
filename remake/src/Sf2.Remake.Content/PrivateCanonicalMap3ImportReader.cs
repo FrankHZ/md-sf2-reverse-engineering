@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -21,6 +22,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.CurrentAreaDiagnosticCapability;
     public const string AreaSourceRecordAdmissionCapability =
         OriginalMapRuntimeAdmission.AreaSourceRecordAdmissionCapability;
+    public const string SelectedSetupEntityPopulationCapability =
+        OriginalMapRuntimeAdmission.SelectedSetupEntityPopulationCapability;
     public const string BlocksetSourceAdmissionCapability =
         OriginalMapRuntimeAdmission.BlocksetSourceAdmissionCapability;
     public const string VisualReferenceAdmissionCapability =
@@ -47,6 +50,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         ControlledStepCopyCapability,
         CurrentAreaDiagnosticCapability,
         AreaSourceRecordAdmissionCapability,
+        SelectedSetupEntityPopulationCapability,
         BlocksetSourceAdmissionCapability,
         VisualReferenceAdmissionCapability,
     ];
@@ -319,7 +323,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             RequiredString(references, "stepEventTable", "maps[3].references.stepEventTable"));
         OriginalMapStepCopyDefinition controlledStepCopy =
             ReadControlledSchoolDoorStep(stepTable, workingLayout);
-        ValidateControlledSetup(references, resources);
+        OriginalMapEntityPopulation entityPopulation =
+            ReadControlledSetupPopulation(map, references, resources);
 
         OriginalMapControlledAdmission controlledAdmission = new(
             map,
@@ -335,6 +340,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             workingLayout,
             blockCatalog,
             areaCatalog,
+            entityPopulation,
             visualResourceSelection,
             controlledAdmission,
             controlledStepCopy,
@@ -982,7 +988,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         return selected;
     }
 
-    private static void ValidateControlledSetup(
+    private static OriginalMapEntityPopulation ReadControlledSetupPopulation(
+        MapId map,
         JsonElement references,
         IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
     {
@@ -1090,6 +1097,150 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 "map3.setup.references.initFunction",
                 "Map 3 must retain the accepted controlled init identity.");
         }
+
+        string entityListId = RequiredString(
+            setupReferences,
+            "entities",
+            "map3.setup.references.entities");
+        if (!string.Equals(
+                entityListId,
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.setup.references.entities",
+                "Map 3 must retain the accepted controlled entity-list identity.");
+        }
+
+        return ReadEntityPopulation(
+            map,
+            new MapSetupId(Map3SetupIdentity),
+            RequiredResource(resources, "entityLists", entityListId));
+    }
+
+    private static OriginalMapEntityPopulation ReadEntityPopulation(
+        MapId map,
+        MapSetupId selectedSetup,
+        JsonElement resource)
+    {
+        const string resourceField = "map3.entityList";
+        RequireExactProperties(resource, resourceField, "id", "address", "records");
+        string resourceId = RequiredString(resource, "id", resourceField + ".id");
+        _ = RequiredNonNegativeInt(resource, "address", resourceField + ".address");
+        JsonElement records = RequiredProperty(resource, "records", resourceField + ".records");
+        RequireArray(records, resourceField + ".records");
+
+        List<OriginalMapEntityDefinition> definitions = [];
+        foreach (JsonElement record in records.EnumerateArray())
+        {
+            string field = $"{resourceField}.records[{definitions.Count}]";
+            RequireObject(record, field);
+            string kind = RequiredString(record, "kind", field + ".kind");
+            bool walking = string.Equals(kind, "walking", StringComparison.Ordinal);
+            if (walking)
+            {
+                RequireExactProperties(
+                    record,
+                    field,
+                    "address",
+                    "kind",
+                    "rawX",
+                    "rawY",
+                    "x",
+                    "y",
+                    "facing",
+                    "mapSprite",
+                    "walking");
+            }
+            else if (string.Equals(kind, "fixed", StringComparison.Ordinal) ||
+                string.Equals(kind, "sequenced", StringComparison.Ordinal))
+            {
+                RequireExactProperties(
+                    record,
+                    field,
+                    "address",
+                    "kind",
+                    "rawX",
+                    "rawY",
+                    "x",
+                    "y",
+                    "facing",
+                    "mapSprite",
+                    "actionValue");
+            }
+            else
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.InvalidMapProjection,
+                    field + ".kind",
+                    "The original Map 3 entity kind is not recognized.");
+            }
+
+            _ = RequiredNonNegativeInt(record, "address", field + ".address");
+            byte rawX = RequiredByte(record, "rawX", field + ".rawX");
+            byte rawY = RequiredByte(record, "rawY", field + ".rawY");
+            byte x = RequiredByte(record, "x", field + ".x");
+            byte y = RequiredByte(record, "y", field + ".y");
+            if (x != (rawX & 0x3F) || y != (rawY & 0x3F))
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.InvalidMapProjection,
+                    field + ".position",
+                    "The original Map 3 entity position does not match the accepted coordinate mask.");
+            }
+
+            byte[] opaqueTail;
+            if (walking)
+            {
+                JsonElement walkingSeed = RequiredProperty(record, "walking", field + ".walking");
+                RequireObject(walkingSeed, field + ".walking");
+                RequireExactProperties(
+                    walkingSeed,
+                    field + ".walking",
+                    "originX",
+                    "originY",
+                    "range");
+                opaqueTail =
+                [
+                    0xFF,
+                    RequiredByte(walkingSeed, "originX", field + ".walking.originX"),
+                    RequiredByte(walkingSeed, "originY", field + ".walking.originY"),
+                    RequiredByte(walkingSeed, "range", field + ".walking.range"),
+                ];
+            }
+            else
+            {
+                uint actionValue = RequiredUInt32(record, "actionValue", field + ".actionValue");
+                opaqueTail = new byte[OriginalMapEntityDefinition.OpaqueTailByteCount];
+                BinaryPrimitives.WriteUInt32BigEndian(opaqueTail, actionValue);
+            }
+
+            OriginalMapEntityDefinition definition = new(
+                new OriginalMapEntityRecordIdentity(resourceId, definitions.Count + 1),
+                rawX,
+                rawY,
+                RequiredByte(record, "facing", field + ".facing"),
+                RequiredByte(record, "mapSprite", field + ".mapSprite"),
+                opaqueTail);
+            OriginalMapEntityRecordKind expectedKind = kind switch
+            {
+                "walking" => OriginalMapEntityRecordKind.Walking,
+                "sequenced" => OriginalMapEntityRecordKind.Sequenced,
+                _ => OriginalMapEntityRecordKind.Fixed,
+            };
+            if (definition.Kind != expectedKind)
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.InvalidMapProjection,
+                    field + ".kind",
+                    "The original Map 3 entity kind does not match its opaque tail.");
+            }
+
+            definitions.Add(definition);
+        }
+
+        return new OriginalMapEntityPopulation(map, selectedSetup, definitions);
     }
 
     private static JsonElement RequiredResource(
@@ -1220,6 +1371,20 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 field,
                 "A canonical address or count cannot be negative.");
+        }
+
+        return value;
+    }
+
+    private static uint RequiredUInt32(JsonElement owner, string name, string field)
+    {
+        JsonElement property = RequiredProperty(owner, name, field);
+        if (property.ValueKind != JsonValueKind.Number || !property.TryGetUInt32(out uint value))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                field,
+                "Canonical value must be an unsigned 32-bit integer.");
         }
 
         return value;

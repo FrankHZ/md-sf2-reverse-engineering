@@ -207,6 +207,7 @@ public sealed class PrivateMap3PresenterTests
                     new ushort[OriginalMapBlockDefinition.OpaqueWordCount]),
             ]),
             areaCatalog,
+            ProjectAuthoredEntityPopulation(map),
             new OriginalMapVisualResourceSelection(
                 map,
                 paletteIndex: 0,
@@ -251,6 +252,22 @@ public sealed class PrivateMap3PresenterTests
             controlledStepCopyApplied: false,
             lastLayoutMutation: null);
     }
+
+    private static OriginalMapEntityPopulation ProjectAuthoredEntityPopulation(MapId map) =>
+        new(
+            map,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            [
+                new OriginalMapEntityDefinition(
+                    new OriginalMapEntityRecordIdentity(
+                        "project-authored-private-presenter-entities",
+                        1),
+                    rawX: 1,
+                    rawY: 1,
+                    opaqueFacing: 0,
+                    mapSprite: 0,
+                    [0, 0, 0, 0]),
+            ]);
 
     private static OriginalMapAreaDefinition Area(
         string resourceId,

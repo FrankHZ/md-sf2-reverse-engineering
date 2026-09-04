@@ -194,6 +194,7 @@ public sealed class PrivateOriginalMapTraversalViewportTests
                     new ushort[OriginalMapBlockDefinition.OpaqueWordCount]),
             ]),
             areaCatalog,
+            ProjectAuthoredEntityPopulation(map),
             new OriginalMapVisualResourceSelection(
                 map,
                 paletteIndex: 0,
@@ -252,6 +253,22 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             controlledStepCopyApplied: false,
             lastLayoutMutation: null);
     }
+
+    private static OriginalMapEntityPopulation ProjectAuthoredEntityPopulation(MapId map) =>
+        new(
+            map,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            [
+                new OriginalMapEntityDefinition(
+                    new OriginalMapEntityRecordIdentity(
+                        "project-authored-viewport-entities",
+                        1),
+                    rawX: 1,
+                    rawY: 1,
+                    opaqueFacing: 0,
+                    mapSprite: 0,
+                    [0, 0, 0, 0]),
+            ]);
 
     private static int Index(int x, int y) =>
         (y * WorkingMapLayout.ColumnCount) + x;

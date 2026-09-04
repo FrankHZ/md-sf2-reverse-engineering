@@ -102,6 +102,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public OriginalMapAreaDefinition CurrentAreaDefinition =>
         Definition.AreaCatalog.Resolve(CurrentArea);
 
+    public OriginalMapEntityPopulation EntityPopulation => Definition.EntityPopulation;
+
     public OriginalMapBlockDefinition CurrentBlockDefinition =>
         Definition.BlockCatalog.Resolve(WorkingLayout, PlayerPosition);
 
@@ -451,6 +453,15 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.visualResourceSelection",
                 "The admitted definition does not retain the exact Map 3 palette and tileset reference projection.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedEntityPopulation(
+                definition.EntityPopulation))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.entityPopulation",
+                "The admitted definition does not retain the exact selected-setup Map 3 entity population.");
         }
 
         OriginalMapControlledAdmission controlled = definition.ControlledAdmission;

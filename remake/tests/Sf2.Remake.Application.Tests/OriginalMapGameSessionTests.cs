@@ -41,6 +41,15 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.AcceptedVisualReferenceProjectionDigest,
             started.Session.PrivateOriginalMapSnapshot.Definition.VisualResourceSelection
                 .ProjectionDigest);
+        Assert.Same(
+            started.Session.PrivateOriginalMapSnapshot.Definition.EntityPopulation,
+            started.Session.PrivateOriginalMapSnapshot.EntityPopulation);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedEntityRecordCount,
+            started.Session.PrivateOriginalMapSnapshot.EntityPopulation.Records.Count);
+        Assert.Equal(
+            OriginalMapRuntimeAdmission.AcceptedEntityProjectionDigest,
+            started.Session.PrivateOriginalMapSnapshot.EntityPopulation.ProjectionDigest);
         Assert.Equal(0, started.Session.PrivateOriginalMapSnapshot.SimulationStep);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastTraversal);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastLayoutMutation);
@@ -655,6 +664,7 @@ public sealed class OriginalMapGameSessionTests
             layout,
             AcceptedBlockCatalog(),
             areaCatalog,
+            AcceptedEntityPopulation(map),
             AcceptedVisualResourceSelection(map),
             controlled,
             ["natural-route-and-effects-unknown"]);
@@ -663,6 +673,7 @@ public sealed class OriginalMapGameSessionTests
             layout,
             AcceptedBlockCatalog(),
             areaCatalog,
+            AcceptedEntityPopulation(map),
             AcceptedVisualResourceSelection(map),
             controlled,
             new OriginalMapStepCopyDefinition(
@@ -790,6 +801,56 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactSelectedSetupEntityPopulation()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                entityPopulation: ProjectAuthoredEntityPopulation(
+                    map,
+                    "other-entities",
+                    OriginalMapRuntimeAdmission.AcceptedEntityRecordCount,
+                    acceptedDigestOverride: true)),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                entityPopulation: ProjectAuthoredEntityPopulation(
+                    map,
+                    OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                    OriginalMapRuntimeAdmission.AcceptedEntityRecordCount,
+                    acceptedDigestOverride: true,
+                    allFixed: true)),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                entityPopulation: ProjectAuthoredEntityPopulation(
+                    map,
+                    OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                    OriginalMapRuntimeAdmission.AcceptedEntityRecordCount - 1,
+                    acceptedDigestOverride: true)),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                entityPopulation: ProjectAuthoredEntityPopulation(
+                    map,
+                    OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                    OriginalMapRuntimeAdmission.AcceptedEntityRecordCount,
+                    mutateFirstTail: true)),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedEntityPopulation(
+            AcceptedEntityPopulation(map)));
+    }
+
+    [Fact]
     public void TypedSourceRejectionPassesThroughWithoutCreatingASession()
     {
         OriginalMapImportDiagnostic diagnostic = new(
@@ -828,6 +889,7 @@ public sealed class OriginalMapGameSessionTests
         ushort[] words,
         OriginalMapAreaCatalog? areaCatalog = null,
         OriginalMapBlockCatalog? blockCatalog = null,
+        OriginalMapEntityPopulation? entityPopulation = null,
         OriginalMapVisualResourceSelection? visualResourceSelection = null)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
@@ -845,6 +907,7 @@ public sealed class OriginalMapGameSessionTests
             new WorkingMapLayout(admittedWords),
             blockCatalog ?? AcceptedBlockCatalog(),
             areaCatalog ?? AcceptedAreaCatalog(),
+            entityPopulation ?? AcceptedEntityPopulation(map),
             visualResourceSelection ?? AcceptedVisualResourceSelection(map),
             new OriginalMapControlledAdmission(
                 map,
@@ -861,6 +924,44 @@ public sealed class OriginalMapGameSessionTests
 
     private static OriginalMapVisualResourceSelection AcceptedVisualResourceSelection(MapId map) =>
         new(map, paletteIndex: 0, [0, 37, 43, 53, 66]);
+
+    private static OriginalMapEntityPopulation AcceptedEntityPopulation(MapId map) =>
+        ProjectAuthoredEntityPopulation(
+            map,
+            OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+            OriginalMapRuntimeAdmission.AcceptedEntityRecordCount,
+            acceptedDigestOverride: true);
+
+    private static OriginalMapEntityPopulation ProjectAuthoredEntityPopulation(
+        MapId map,
+        string resourceId,
+        int count,
+        bool acceptedDigestOverride = false,
+        bool mutateFirstTail = false,
+        bool allFixed = false)
+    {
+        OriginalMapEntityDefinition[] records = Enumerable.Range(0, count)
+            .Select(index => new OriginalMapEntityDefinition(
+                new OriginalMapEntityRecordIdentity(resourceId, index + 1),
+                rawX: checked((byte)index),
+                rawY: 0,
+                opaqueFacing: 3,
+                mapSprite: checked((byte)(index + 1)),
+                index == 0 && mutateFirstTail
+                    ? [1, 0, 0, 0]
+                    : !allFixed && index >= OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount
+                        ? [0xFF, checked((byte)index), 0, 1]
+                        : [0, 0, 0, 0]))
+            .ToArray();
+        MapSetupId setup = new(OriginalMapRuntimeAdmission.SelectedSetupId);
+        return acceptedDigestOverride
+            ? new OriginalMapEntityPopulation(
+                map,
+                setup,
+                records,
+                OriginalMapRuntimeAdmission.AcceptedEntityProjectionDigest)
+            : new OriginalMapEntityPopulation(map, setup, records);
+    }
 
     private static OriginalMapBlockCatalog AcceptedBlockCatalog() =>
         new(
