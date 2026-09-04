@@ -1,5 +1,6 @@
 using Godot;
 using Sf2.Remake.Application.Sessions;
+using Sf2.Remake.Domain.Maps;
 
 namespace Sf2.Remake.GodotAdapter;
 
@@ -104,11 +105,24 @@ internal sealed record PrivateMap3PresentationPlan(
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentException.ThrowIfNullOrWhiteSpace(outcome);
-        return
+        string status =
             $"Map {snapshot.Map}  Tile ({snapshot.PlayerPosition.X}, " +
             $"{snapshot.PlayerPosition.Y})  Area {snapshot.CurrentArea.OneBasedRecordOrdinal}  " +
             $"Step {snapshot.SimulationStep}  {outcome}  |  " +
             "WASD semantic movement";
+        PrivateOriginalMapZone601State? zone601 = snapshot.Zone601;
+        if (zone601?.Flag601Set == true)
+        {
+            MapPosition ambientCenter = zone601.AmbientCenter!;
+            status +=
+                $"  |  Zone601 complete; actor {zone601.LogicalActorId} at " +
+                $"({zone601.ActorPosition.X}, {zone601.ActorPosition.Y}), facing " +
+                $"{zone601.ActorOpaqueFacing}; ambient center " +
+                $"({ambientCenter.X}, {ambientCenter.Y}) range " +
+                $"{zone601.AmbientRange}; random choices Unknown";
+        }
+
+        return status;
     }
 }
 

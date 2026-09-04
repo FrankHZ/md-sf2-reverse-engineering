@@ -19,7 +19,9 @@ public sealed record PrivateOriginalMapSessionSnapshot
         PrivateOriginalMapRoofOnLoadReceipt? lastRoofOnLoad = null,
         bool bowieDoorStepCopyApplied = false,
         PrivateOriginalMapNaturalStepCopyReceipt? lastNaturalStepCopy = null,
-        bool schoolDoorStepCopyApplied = false)
+        bool schoolDoorStepCopyApplied = false,
+        PrivateOriginalMapZone601State? zone601 = null,
+        PrivateOriginalMapZone601Receipt? lastZone601 = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -28,6 +30,27 @@ public sealed record PrivateOriginalMapSessionSnapshot
         PlayerPosition = playerPosition ?? throw new ArgumentNullException(nameof(playerPosition));
         MapBlockCopyLifecycleState admittedRoofLifecycle =
             roofOnLoadLifecycle ?? MapBlockCopyLifecycleState.Inactive;
+        PrivateOriginalMapZone601State? admittedZone601 = zone601;
+        if (definition.Zone601 is null)
+        {
+            if (zone601 is not null || lastZone601 is not null)
+            {
+                throw new ArgumentException(
+                    "Zone 601 state requires its admitted definition.",
+                    nameof(zone601));
+            }
+        }
+        else
+        {
+            admittedZone601 ??= PrivateOriginalMapZone601State.Ready(definition.Zone601);
+            if (!admittedZone601.Matches(definition.Zone601))
+            {
+                throw new ArgumentException(
+                    "Zone 601 state must match its admitted definition.",
+                    nameof(zone601));
+            }
+        }
+
         definition.BlockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
         if (definition.Traversal.SelectActiveArea(playerPosition) is null ||
             OriginalMapTraversal.IsBlocked(workingLayout, playerPosition))
@@ -46,6 +69,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 controlledStepCopyApplied ||
                 bowieDoorStepCopyApplied ||
                 schoolDoorStepCopyApplied ||
+                lastZone601 is not null ||
+                admittedZone601?.Flag601Set == true ||
                 admittedRoofLifecycle is not MapBlockCopyLifecycleInactiveState))
         {
             throw new ArgumentException(
@@ -144,6 +169,27 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 throw new ArgumentException(
                     "The natural step-copy receipt must match the admitted atomic traversal.",
                     nameof(lastNaturalStepCopy));
+            }
+        }
+
+        if (lastZone601 is not null)
+        {
+            OriginalMapZone601Definition admitted = definition.Zone601 ??
+                throw new ArgumentException(
+                    "A Zone 601 receipt requires its admitted definition.",
+                    nameof(lastZone601));
+            if (admittedZone601?.Flag601Set != true ||
+                !lastZone601.Matches(admitted) ||
+                lastTraversal is null ||
+                lastTraversal.Outcome != OriginalMapTraversalOutcome.Moved ||
+                lastTraversal.Source != lastZone601.PlayerSource ||
+                lastTraversal.Position != lastZone601.CandidateTarget ||
+                lastTraversal.Position != playerPosition ||
+                lastZone601.SimulationStep != simulationStep)
+            {
+                throw new ArgumentException(
+                    "The Zone 601 receipt must match the atomic traversal and persistent state.",
+                    nameof(lastZone601));
             }
         }
 
@@ -269,6 +315,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         BowieDoorStepCopyApplied = bowieDoorStepCopyApplied;
         LastNaturalStepCopy = lastNaturalStepCopy;
         SchoolDoorStepCopyApplied = schoolDoorStepCopyApplied;
+        Zone601 = admittedZone601;
+        LastZone601 = lastZone601;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -317,6 +365,10 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public PrivateOriginalMapNaturalStepCopyReceipt? LastNaturalStepCopy { get; }
 
     public bool SchoolDoorStepCopyApplied { get; }
+
+    public PrivateOriginalMapZone601State? Zone601 { get; }
+
+    public PrivateOriginalMapZone601Receipt? LastZone601 { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -345,10 +397,19 @@ public sealed record PrivateOriginalMapMoveApplied
 
     public PrivateOriginalMapMoveApplied(
         PrivateOriginalMapSessionSnapshot snapshot,
-        OriginalMapTraversalResult traversal)
+        OriginalMapTraversalResult traversal,
+        PrivateOriginalMapZone601Receipt? zone601 = null)
     {
         Snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
         _traversal = traversal ?? throw new ArgumentNullException(nameof(traversal));
+        if (zone601 is not null && !ReferenceEquals(snapshot.LastZone601, zone601))
+        {
+            throw new ArgumentException(
+                "A Zone 601 movement result must expose the snapshot's exact receipt.",
+                nameof(zone601));
+        }
+
+        Zone601 = zone601;
     }
 
     public PrivateOriginalMapMoveApplied(
@@ -370,6 +431,8 @@ public sealed record PrivateOriginalMapMoveApplied
     public PrivateOriginalMapSameMapWarpReceipt? SameMapWarp { get; }
 
     public PrivateOriginalMapRoofOnLoadReceipt? RoofOnLoad { get; }
+
+    public PrivateOriginalMapZone601Receipt? Zone601 { get; }
 }
 
 public sealed partial class GameSession
@@ -426,6 +489,11 @@ public sealed partial class GameSession
             return warpApplied!;
         }
 
+        if (TryApplyPrivateOriginalMapZone601(current, command, out var zone601Applied))
+        {
+            return zone601Applied!;
+        }
+
         if (TryApplyPrivateOriginalMapNaturalStepCopy(
                 current,
                 command,
@@ -452,7 +520,9 @@ public sealed partial class GameSession
             lastRoofOnLoad: null,
             current.BowieDoorStepCopyApplied,
             lastNaturalStepCopy: null,
-            current.SchoolDoorStepCopyApplied);
+            current.SchoolDoorStepCopyApplied,
+            current.Zone601,
+            lastZone601: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -526,7 +596,9 @@ public sealed partial class GameSession
             lastRoofOnLoad: null,
             current.BowieDoorStepCopyApplied,
             lastNaturalStepCopy: null,
-            current.SchoolDoorStepCopyApplied);
+            current.SchoolDoorStepCopyApplied,
+            current.Zone601,
+            lastZone601: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -755,6 +827,18 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.entityPopulation",
                 "The admitted definition does not retain the exact selected-setup Map 3 entity population.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedZone601(
+                definition.Zone601,
+                definition.EntityPopulation,
+                definition.Traversal,
+                definition.WorkingLayout))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.zone601",
+                "The admitted definition does not retain the exact bounded Map 3 Zone 601 projection.");
         }
 
         OriginalMapControlledAdmission controlled = definition.ControlledAdmission;

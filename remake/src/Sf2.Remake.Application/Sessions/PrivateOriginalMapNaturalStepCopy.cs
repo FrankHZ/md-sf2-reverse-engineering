@@ -133,7 +133,9 @@ public sealed partial class GameSession
             lastRoofOnLoad: null,
             current.BowieDoorStepCopyApplied || opensBowieDoor,
             receipt,
-            current.SchoolDoorStepCopyApplied || !opensBowieDoor);
+            current.SchoolDoorStepCopyApplied || !opensBowieDoor,
+            current.Zone601,
+            lastZone601: null);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(next, traversal);
         return true;

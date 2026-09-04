@@ -36,6 +36,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.BowieDoorStepCopyCapability;
     public const string SchoolDoorStepCopyCapability =
         OriginalMapRuntimeAdmission.SchoolDoorStepCopyCapability;
+    public const string Zone601InterceptionCapability =
+        OriginalMapRuntimeAdmission.Zone601InterceptionCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -65,6 +67,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         RoofOnLoadClearCapability,
         BowieDoorStepCopyCapability,
         SchoolDoorStepCopyCapability,
+        Zone601InterceptionCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -353,6 +356,10 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             ReadAcceptedDoorSteps(stepTable, workingLayout);
         OriginalMapEntityPopulation entityPopulation =
             ReadControlledSetupPopulation(map, references, resources);
+        OriginalMapZone601Definition zone601 = ReadAcceptedZone601(
+            map,
+            entityPopulation,
+            resources);
 
         OriginalMapControlledAdmission controlledAdmission = new(
             map,
@@ -375,7 +382,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             sameMapWarps,
             UnsupportedCapabilities,
             roofOnLoadClear,
-            bowieDoorStepCopy);
+            bowieDoorStepCopy,
+            zone601);
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -1591,6 +1599,263 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         return new OriginalMapEntityPopulation(map, selectedSetup, definitions);
     }
 
+    private static OriginalMapZone601Definition ReadAcceptedZone601(
+        MapId map,
+        OriginalMapEntityPopulation entityPopulation,
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        JsonElement handler = RequiredResource(
+            resources,
+            "zoneEventHandlers",
+            OriginalMapRuntimeAdmission.Zone601ResourceId);
+        RequireExactProperties(handler, "map3.zone601.handler", "id", "address", "kind", "records");
+        if (RequiredNonNegativeInt(handler, "address", "map3.zone601.handler.address") != 331084 ||
+            !string.Equals(
+                RequiredString(handler, "kind", "map3.zone601.handler.kind"),
+                "table",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.zone601.handler",
+                "The accepted Map 3 Zone 601 source table identity drifted.");
+        }
+
+        JsonElement records = RequiredProperty(handler, "records", "map3.zone601.handler.records");
+        RequireArray(records, "map3.zone601.handler.records");
+        if (records.GetArrayLength() != OriginalMapRuntimeAdmission.Zone601SourceRecordCount)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.zone601.handler.records",
+                "The accepted Map 3 zone table record count drifted.");
+        }
+
+        HashSet<(byte X, byte Y)> specificKeys = [];
+        int defaultCount = 0;
+        JsonElement selected = default;
+        int ordinal = 0;
+        foreach (JsonElement record in records.EnumerateArray())
+        {
+            ordinal++;
+            string field = $"map3.zone601.handler.records[{ordinal - 1}]";
+            RequireExactProperties(
+                record,
+                field,
+                "address",
+                "kind",
+                "relativeOffset",
+                "resolvedTargetAddress",
+                "x",
+                "y");
+            _ = RequiredNonNegativeInt(record, "address", field + ".address");
+            _ = RequiredNonNegativeInt(record, "relativeOffset", field + ".relativeOffset");
+            _ = RequiredNonNegativeInt(
+                record,
+                "resolvedTargetAddress",
+                field + ".resolvedTargetAddress");
+            string kind = RequiredString(record, "kind", field + ".kind");
+            byte x = RequiredByte(record, "x", field + ".x");
+            byte y = RequiredByte(record, "y", field + ".y");
+            if (string.Equals(kind, "default", StringComparison.Ordinal))
+            {
+                defaultCount++;
+            }
+            else if (!string.Equals(kind, "specific", StringComparison.Ordinal) ||
+                !specificKeys.Add((x, y)))
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.DuplicateIdentity,
+                    field,
+                    "Map 3 zone source records must retain unique specific keys and one default.");
+            }
+
+            if (ordinal == OriginalMapRuntimeAdmission.Zone601RecordOrdinal)
+            {
+                selected = record;
+            }
+        }
+
+        if (defaultCount != 1 ||
+            selected.ValueKind != JsonValueKind.Object ||
+            RequiredNonNegativeInt(selected, "address", "map3.zone601.record.address") != 331108 ||
+            !string.Equals(
+                RequiredString(selected, "kind", "map3.zone601.record.kind"),
+                "specific",
+                StringComparison.Ordinal) ||
+            RequiredNonNegativeInt(
+                selected,
+                "relativeOffset",
+                "map3.zone601.record.relativeOffset") != 248 ||
+            RequiredNonNegativeInt(
+                selected,
+                "resolvedTargetAddress",
+                "map3.zone601.record.resolvedTargetAddress") != 331332 ||
+            RequiredByte(selected, "x", "map3.zone601.record.x") !=
+                OriginalMapRuntimeAdmission.Zone601TriggerX ||
+            RequiredByte(selected, "y", "map3.zone601.record.y") !=
+                OriginalMapRuntimeAdmission.Zone601TriggerY)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.zone601.record",
+                "The accepted Map 3 Zone 601 source record drifted.");
+        }
+
+        ValidateZone601BlockingProgram(resources);
+        OriginalMapEntityDefinition actor = entityPopulation.Records[
+            OriginalMapRuntimeAdmission.Zone601ActorSourceRecordOrdinal - 1];
+        Span<byte> acceptedAction = stackalloc byte[sizeof(uint)];
+        BinaryPrimitives.WriteUInt32BigEndian(
+            acceptedAction,
+            OriginalMapRuntimeAdmission.Zone601ActorInitialActionValue);
+        if (actor.Identity != new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.Zone601ActorSourceRecordOrdinal) ||
+            actor.RawX != OriginalMapRuntimeAdmission.Zone601ActorInitialX ||
+            actor.RawY != OriginalMapRuntimeAdmission.Zone601ActorInitialY ||
+            actor.OpaqueFacing != OriginalMapRuntimeAdmission.Zone601ActorInitialOpaqueFacing ||
+            actor.Kind != OriginalMapEntityRecordKind.Fixed ||
+            !actor.OpaqueTail.SequenceEqual(acceptedAction.ToArray()))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.zone601.actor",
+                "The accepted Map 3 Zone 601 source actor drifted.");
+        }
+
+        return new OriginalMapZone601Definition(
+            new OriginalMapZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                entityPopulation.SelectedSetup,
+                OriginalMapRuntimeAdmission.Zone601ResourceId,
+                OriginalMapRuntimeAdmission.Zone601RecordOrdinal,
+                OriginalMapRuntimeAdmission.Zone601TargetIdentity),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Zone601TriggerX,
+                OriginalMapRuntimeAdmission.Zone601TriggerY),
+            OriginalMapRuntimeAdmission.Zone601GateFlag,
+            OriginalMapRuntimeAdmission.Zone601BlockingSequenceIdentity,
+            actor.Identity,
+            OriginalMapRuntimeAdmission.Zone601LogicalActorId,
+            actor.Position,
+            actor.OpaqueFacing,
+            OriginalMapRuntimeAdmission.Zone601ActorInitialBehaviorIdentity,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Zone601ActorBlockingEndX,
+                OriginalMapRuntimeAdmission.Zone601ActorBlockingEndY),
+            OriginalMapRuntimeAdmission.Zone601ActorBlockingEndOpaqueFacing,
+            OriginalMapRuntimeAdmission.Zone601OpaqueFaceWaitOperand,
+            OriginalMapRuntimeAdmission.Zone601TextIds,
+            OriginalMapRuntimeAdmission.Zone601AmbientBehaviorIdentity,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Zone601AmbientCenterX,
+                OriginalMapRuntimeAdmission.Zone601AmbientCenterY),
+            OriginalMapRuntimeAdmission.Zone601AmbientRange,
+            OriginalMapRuntimeAdmission.Zone601BlockingStages);
+    }
+
+    private static void ValidateZone601BlockingProgram(
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        JsonElement program = RequiredResource(
+            resources,
+            "standaloneScriptPrograms",
+            OriginalMapRuntimeAdmission.Zone601BlockingSequenceIdentity);
+        RequireExactProperties(
+            program,
+            "map3.zone601.program",
+            "id",
+            "address",
+            "path",
+            "kind",
+            "operations");
+        if (RequiredNonNegativeInt(program, "address", "map3.zone601.program.address") != 332892 ||
+            !string.Equals(
+                RequiredString(program, "kind", "map3.zone601.program.kind"),
+                "cutscene",
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                RequiredString(program, "path", "map3.zone601.program.path"),
+                "data/maps/entries/map03/mapsetups/scripts_1.asm",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.zone601.program",
+                "The accepted Zone 601 blocking program identity drifted.");
+        }
+
+        (string Opcode, string Operand)[] expected =
+        [
+            ("setActscriptWait", "128,eas_Init"),
+            ("entityActionsWait", "128"),
+            ("moveUp", "2"),
+            ("faceLeft", "20"),
+            ("endActions", ""),
+            ("textCursor", "510"),
+            ("nextText", "$0,128"),
+            ("nextText", "$0,128"),
+            ("textCursor", "483"),
+            ("nextSingleText", "$0,128"),
+            ("setActscriptWait", "128,eas_Init"),
+            ("csc_end", ""),
+        ];
+        JsonElement operations = RequiredProperty(
+            program,
+            "operations",
+            "map3.zone601.program.operations");
+        RequireArray(operations, "map3.zone601.program.operations");
+        if (operations.GetArrayLength() != expected.Length)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.zone601.program.operations",
+                "The accepted Zone 601 blocking operation count drifted.");
+        }
+
+        int index = 0;
+        foreach (JsonElement operation in operations.EnumerateArray())
+        {
+            string field = $"map3.zone601.program.operations[{index}]";
+            RequireExactProperties(
+                operation,
+                field,
+                "index",
+                "opcode",
+                "operandText",
+                "targetSymbols",
+                "targetAddresses");
+            JsonElement targetSymbols = RequiredProperty(operation, "targetSymbols", field + ".targetSymbols");
+            JsonElement targetAddresses = RequiredProperty(
+                operation,
+                "targetAddresses",
+                field + ".targetAddresses");
+            RequireArray(targetSymbols, field + ".targetSymbols");
+            RequireArray(targetAddresses, field + ".targetAddresses");
+            if (RequiredInt(operation, "index", field + ".index") != index ||
+                !string.Equals(
+                    RequiredString(operation, "opcode", field + ".opcode"),
+                    expected[index].Opcode,
+                    StringComparison.Ordinal) ||
+                !string.Equals(
+                    RequiredText(operation, "operandText", field + ".operandText"),
+                    expected[index].Operand,
+                    StringComparison.Ordinal) ||
+                targetSymbols.GetArrayLength() != 0 ||
+                targetAddresses.GetArrayLength() != 0)
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.InvalidMapProjection,
+                    field,
+                    "The accepted Zone 601 blocking operation sequence drifted.");
+            }
+
+            index++;
+        }
+    }
+
     private static JsonElement RequiredResource(
         IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources,
         string collection,
@@ -1691,6 +1956,20 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 field,
                 "A required canonical identity must be a non-empty string.");
+        }
+
+        return value.GetString()!;
+    }
+
+    private static string RequiredText(JsonElement owner, string name, string field)
+    {
+        JsonElement value = RequiredProperty(owner, name, field);
+        if (value.ValueKind != JsonValueKind.String)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                field,
+                "A required canonical text operand must be a string.");
         }
 
         return value.GetString()!;

@@ -95,6 +95,30 @@ public static class OriginalMapRuntimeAdmission
     public const int HouseWarpDestinationY = 3;
     public const byte HouseWarpOpaqueFacing = 0;
 
+    public const string Zone601ResourceId = "ms_map3_ZoneEvents";
+    public const int Zone601SourceRecordCount = 10;
+    public const int Zone601RecordOrdinal = 7;
+    public const int Zone601TriggerX = 4;
+    public const int Zone601TriggerY = 4;
+    public const string Zone601TargetIdentity = "Map3_ZoneEvent6";
+    public const string Zone601BlockingSequenceIdentity = "cs_5145C";
+    public const int Zone601GateFlag = 601;
+    public const int Zone601ActorSourceRecordOrdinal = 3;
+    public const int Zone601LogicalActorId = 128;
+    public const int Zone601ActorInitialX = 5;
+    public const int Zone601ActorInitialY = 6;
+    public const byte Zone601ActorInitialOpaqueFacing = 0;
+    public const string Zone601ActorInitialBehaviorIdentity = "eas_InitSlow";
+    public const uint Zone601ActorInitialActionValue = 0x00046102;
+    public const int Zone601ActorBlockingEndX = 5;
+    public const int Zone601ActorBlockingEndY = 4;
+    public const byte Zone601ActorBlockingEndOpaqueFacing = 2;
+    public const int Zone601OpaqueFaceWaitOperand = 20;
+    public const string Zone601AmbientBehaviorIdentity = "eas_Walking";
+    public const int Zone601AmbientCenterX = 5;
+    public const int Zone601AmbientCenterY = 6;
+    public const int Zone601AmbientRange = 1;
+
     public const string RoofOnLoadResourceId = "Map03s5_RoofEvents";
     public const int RoofOnLoadSourceRecordCount = 10;
     public const int HouseRoofOnLoadRecordOrdinal = 1;
@@ -130,6 +154,25 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-bowie-door-step-copy-v1";
     public const string SchoolDoorStepCopyCapability =
         "private-local-map3-school-door-step-copy-v1";
+    public const string Zone601InterceptionCapability =
+        "private-local-map3-zone601-interception-v1";
+
+    private static readonly ReadOnlyCollection<int> ReadOnlyZone601TextIds =
+        Array.AsReadOnly(new[] { 510, 511, 483 });
+
+    private static readonly ReadOnlyCollection<OriginalMapZone601BlockingStage>
+        ReadOnlyZone601BlockingStages = Array.AsReadOnly(
+        [
+            OriginalMapZone601BlockingStage.ActorInitAndWait,
+            OriginalMapZone601BlockingStage.ActorMoveUpTwoAndWait,
+            OriginalMapZone601BlockingStage.ActorFaceLeftAndWait,
+            OriginalMapZone601BlockingStage.PresentText510,
+            OriginalMapZone601BlockingStage.PresentText511,
+            OriginalMapZone601BlockingStage.PresentText483,
+            OriginalMapZone601BlockingStage.ActorReinitAndWait,
+            OriginalMapZone601BlockingStage.AmbientWalkingHandoff,
+            OriginalMapZone601BlockingStage.SetFlag601,
+        ]);
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
@@ -148,6 +191,7 @@ public static class OriginalMapRuntimeAdmission
                 RoofOnLoadClearCapability,
                 BowieDoorStepCopyCapability,
                 SchoolDoorStepCopyCapability,
+                Zone601InterceptionCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -170,6 +214,11 @@ public static class OriginalMapRuntimeAdmission
 
     public static IReadOnlyList<string> RequiredEvidenceOwners =>
         ReadOnlyRequiredEvidenceOwners;
+
+    public static IReadOnlyList<int> Zone601TextIds => ReadOnlyZone601TextIds;
+
+    public static IReadOnlyList<OriginalMapZone601BlockingStage> Zone601BlockingStages =>
+        ReadOnlyZone601BlockingStages;
 
     internal static bool HasExactRequiredCapabilities(IEnumerable<string> capabilities)
     {
@@ -302,6 +351,89 @@ public static class OriginalMapRuntimeAdmission
     public static bool HasExactAcceptedSchoolDoorStepCopy(
         OriginalMapStepCopyDefinition? definition) =>
         IsExactControlledStepCopy(definition);
+
+    public static bool HasExactAcceptedZone601(
+        OriginalMapZone601Definition? definition,
+        OriginalMapEntityPopulation population,
+        OriginalMapTraversal traversal,
+        WorkingMapLayout workingLayout)
+    {
+        ArgumentNullException.ThrowIfNull(population);
+        ArgumentNullException.ThrowIfNull(traversal);
+        ArgumentNullException.ThrowIfNull(workingLayout);
+        if (definition is null ||
+            definition.Identity.Profile != ContentProfile.PrivateLocal ||
+            definition.Identity.Map != new MapId(MapId) ||
+            definition.Identity.Setup != new MapSetupId(SelectedSetupId) ||
+            !string.Equals(
+                definition.Identity.ResourceId,
+                Zone601ResourceId,
+                StringComparison.Ordinal) ||
+            definition.Identity.OneBasedRecordOrdinal != Zone601RecordOrdinal ||
+            !string.Equals(
+                definition.Identity.TargetIdentity,
+                Zone601TargetIdentity,
+                StringComparison.Ordinal) ||
+            definition.Trigger != new MapPosition(Zone601TriggerX, Zone601TriggerY) ||
+            definition.GateFlag != Zone601GateFlag ||
+            !string.Equals(
+                definition.BlockingSequenceIdentity,
+                Zone601BlockingSequenceIdentity,
+                StringComparison.Ordinal) ||
+            definition.ActorSourceRecord != new OriginalMapEntityRecordIdentity(
+                AcceptedEntityListResourceId,
+                Zone601ActorSourceRecordOrdinal) ||
+            definition.LogicalActorId != Zone601LogicalActorId ||
+            definition.ActorInitialPosition != new MapPosition(
+                Zone601ActorInitialX,
+                Zone601ActorInitialY) ||
+            definition.ActorInitialOpaqueFacing != Zone601ActorInitialOpaqueFacing ||
+            !string.Equals(
+                definition.ActorInitialBehaviorIdentity,
+                Zone601ActorInitialBehaviorIdentity,
+                StringComparison.Ordinal) ||
+            definition.ActorBlockingEndPosition != new MapPosition(
+                Zone601ActorBlockingEndX,
+                Zone601ActorBlockingEndY) ||
+            definition.ActorBlockingEndOpaqueFacing != Zone601ActorBlockingEndOpaqueFacing ||
+            definition.OpaqueFaceWaitOperand != Zone601OpaqueFaceWaitOperand ||
+            !definition.TextIds.SequenceEqual(ReadOnlyZone601TextIds) ||
+            !string.Equals(
+                definition.AmbientBehaviorIdentity,
+                Zone601AmbientBehaviorIdentity,
+                StringComparison.Ordinal) ||
+            definition.AmbientCenter != new MapPosition(
+                Zone601AmbientCenterX,
+                Zone601AmbientCenterY) ||
+            definition.AmbientRange != Zone601AmbientRange ||
+            !definition.BlockingStages.SequenceEqual(ReadOnlyZone601BlockingStages) ||
+            population.Map != definition.Identity.Map ||
+            population.SelectedSetup != definition.Identity.Setup ||
+            population.ResourceId != definition.ActorSourceRecord.ResourceId ||
+            population.Records.Count < definition.ActorSourceRecord.OneBasedRecordOrdinal)
+        {
+            return false;
+        }
+
+        OriginalMapEntityDefinition actor =
+            population.Records[definition.ActorSourceRecord.OneBasedRecordOrdinal - 1];
+        Span<byte> expectedAction = stackalloc byte[sizeof(uint)];
+        BinaryPrimitives.WriteUInt32BigEndian(
+            expectedAction,
+            Zone601ActorInitialActionValue);
+        return actor.Identity == definition.ActorSourceRecord &&
+            actor.Position == definition.ActorInitialPosition &&
+            actor.RawX == Zone601ActorInitialX &&
+            actor.RawY == Zone601ActorInitialY &&
+            actor.OpaqueFacing == definition.ActorInitialOpaqueFacing &&
+            actor.Kind == OriginalMapEntityRecordKind.Fixed &&
+            actor.OpaqueTail.SequenceEqual(expectedAction.ToArray()) &&
+            traversal.ResolveCandidateTarget(
+                workingLayout,
+                new MapPosition(HouseWarpDestinationX, HouseWarpDestinationY),
+                ExplorationDirection.East) == definition.Trigger &&
+            !OriginalMapTraversal.IsBlocked(workingLayout, definition.Trigger);
+    }
 
     public static bool HasExactAcceptedSameMapWarps(OriginalMapSameMapWarpCatalog? catalog)
     {

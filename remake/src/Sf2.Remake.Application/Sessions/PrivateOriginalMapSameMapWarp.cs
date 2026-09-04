@@ -163,7 +163,9 @@ public sealed partial class GameSession
             roofReceipt,
             current.BowieDoorStepCopyApplied,
             lastNaturalStepCopy: null,
-            current.SchoolDoorStepCopyApplied);
+            current.SchoolDoorStepCopyApplied,
+            current.Zone601,
+            lastZone601: null);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(next, receipt, roofReceipt);
         return true;
