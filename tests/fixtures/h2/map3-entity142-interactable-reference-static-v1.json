@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map3-entity142-interactable-reference-static-v1",
+  "upstream": {
+    "repository": "https://github.com/ShiningForceCentral/SF2DISASM.git",
+    "commit": "c834c652b6862bc5679fd7f69a38a7093206efc6"
+  },
+  "romSha256": "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9",
+  "summary": {
+    "existingIndexRecordObjects": 8,
+    "newIndexRecordObjects": 0,
+    "newIndexAddressObjects": 0,
+    "newH2Bindings": 8,
+    "newDocumentAppends": 8,
+    "decodedBytes": 576,
+    "decodedHalves": 2,
+    "paletteWords": 16,
+    "unknowns": 3
+  },
+  "static": {
+    "indexBindings": {
+      "initializeMapEntities": 278732,
+      "initializeFollowerEntities": 279192,
+      "declareNewEntity": 280010,
+      "getEntityAddressFromCharacter": 290890,
+      "map3Entities": 330544,
+      "map3EntityEvents": 331536,
+      "mapspritePointerTable": 819200,
+      "paletteBase": 12446
+    },
+    "sourceRecord": {
+      "table": "ms_map3_Entities",
+      "oneBasedOrdinal": 17,
+      "zeroBasedIndex": 16,
+      "address": 330672,
+      "recordBytes": 8,
+      "recordHex": "361101D1000460CE",
+      "recordSha256": "02C4CA1BED67A6E95633181973E41C6EB843069FD520B7D958B0B6805DD06451",
+      "macro": "msFixedEntity",
+      "raw": {"x": 54, "y": 17, "facing": 1, "mapSprite": 209},
+      "masked": {"x": 54, "y": 17},
+      "facing": {"symbol": "UP", "value": 1},
+      "mapSprite": {"symbol": "MAPSPRITE_ASTRAL", "value": 209},
+      "fixedTail": {"sourceToken": "eas_Init", "hex": "000460CE", "semantics": "Unknown"},
+      "sourceH1RomParity": true
+    },
+    "identityMapping": {
+      "logicalEntityId": 142,
+      "logicalEncoding": {
+        "entityIndexListOffset": 46,
+        "negativeByteTransform": "subtract-ENTITY_ENEMY_INDEX_DIFFERENCE",
+        "entityEnemyIndexDifference": 96
+      },
+      "followerReuse": {
+        "requiredAcceptedRouteFlag": 66,
+        "rows": [
+          {"sourceOrdinal": 1, "entity": "ALLY_SARAH", "physicalSlot": 1},
+          {"sourceOrdinal": 2, "entity": "ALLY_CHESTER", "physicalSlot": 2}
+        ],
+        "rowsConsumeNewPhysicalSlots": false
+      },
+      "sequentialAllocation": {
+        "firstNonAllySourceOrdinal": 3,
+        "firstNonAllyLogicalEntityId": 128,
+        "firstNonAllyPhysicalSlot": 3,
+        "nonAllyDeclarationsThroughTarget": 15,
+        "resolvedPhysicalSlot": 17
+      },
+      "entityIndexListRamAddress": 16757056,
+      "entityDataRamAddress": 16754946,
+      "entityDefinitionBytes": 32,
+      "resolvedPhysicalAddress": 16755490,
+      "classification": "Confirmed-static-under-accepted-route-follower-state"
+    },
+    "interactionEvent": {
+      "table": "ms_map3_EntityEvents",
+      "zeroBasedRecordIndex": 15,
+      "address": 331596,
+      "recordBytes": 4,
+      "recordHex": "8E030134",
+      "recordSha256": "7065D6B8FE58F42AF58DB6DC88F17F6E29E7EEBDE62424F9A781EBA68C6E9F8C",
+      "logicalEntityId": 142,
+      "requiredPlayerFacing": {"symbol": "DOWN", "value": 3},
+      "target": "Map3_EntityEvent15",
+      "targetAddress": 331844,
+      "routeRelevance": "mandatory-observed-opening",
+      "sourceH1RomParity": true
+    },
+    "retainedRuntime": {
+      "fixtureId": "sf2-map3-battle01-natural-route-runtime-v1",
+      "fixture": "tests/fixtures/h3/map3-battle01-natural-route-v1.json",
+      "fixtureSha256": "38B3D8A6FA84D35FBA145947E73F88C3593A24D48E574599F6EB25E27C0989C3",
+      "classification": "retained-accepted-runtime",
+      "player": {"map": 3, "x": 55, "y": 17, "facing": "Left"},
+      "entityTarget": {"id": 142, "map": 3, "x": 54, "y": 17, "facing": "Up"},
+      "dispatch": {"logicalEntityId": 142, "register": "D0", "target": "Map3_EntityEvent15"},
+      "chronology": [
+        "action:ProcessPlayerAction:map3-entity142",
+        "action:GetActivatedEntity:map3-entity142",
+        "action:RunMapSetupEntityEvent:map3-entity142",
+        "entity:Map3_EntityEvent15"
+      ],
+      "newRuntimeObservation": false
+    },
+    "drawableReference": {
+      "mapSprite": {"symbol": "MAPSPRITE_ASTRAL", "value": 209},
+      "direction": {"symbol": "UP", "value": 1, "sourceSlot": 0, "horizontalMirror": false},
+      "pointer": {
+        "table": "pt_Mapsprites",
+        "slot": 627,
+        "entryAddress": 821708,
+        "payloadSymbol": "Mapsprite209_0",
+        "payloadAddress": 1022258
+      },
+      "compressed": {
+        "codec": "Basic",
+        "sourcePath": "data/graphics/mapsprites/mapsprite209-0.bin",
+        "bytes": 406,
+        "sha256": "3C15EE610058A309F3BFC5EAF8885E693515645AFE46F1DC348CFE009ECD4E5C",
+        "sourceH1RomParity": true
+      },
+      "decoded": {
+        "bytes": 576,
+        "sha256": "53DC0B04B731E5C825AB21EB239A4098347372A49E1EABFDE93DF1AA12A79D7E",
+        "halfCount": 2,
+        "halfBytes": 288,
+        "halves": [
+          {"index": 0, "sha256": "AA4107DA7DD29D1C01FAE524258387064395C80186D15FF9C4369E2AF0C6C9E0"},
+          {"index": 1, "sha256": "635A142A42D1FAF46417CC97FE7B4ED4B93C57F8DE9BD8B3B5C0C29C7B47EA29"}
+        ]
+      },
+      "format": {
+        "framePixels": [24, 24],
+        "frameTiles": [3, 3],
+        "tileBytes": 32,
+        "bitsPerPixel": 4,
+        "pixelNibbleOrder": "high-nibble-left",
+        "tileOrder": "column-major"
+      },
+      "palette": {
+        "sourceSymbol": "palette_Base",
+        "destination": "palette3",
+        "address": 12446,
+        "bytes": 32,
+        "words": 16,
+        "wordEndian": "big",
+        "wordMask": "0x0EEE",
+        "transparentIndex": 0,
+        "sha256": "AE87926BBF9A1BD12B117F7B7FDA71689C9068DDE475FB1DF9887E113B6E5FF5",
+        "sourceH1RomParity": true
+      },
+      "assetReadiness": {
+        "classification": "two-half-reference",
+        "selectedVisibleHalf": "Unknown",
+        "interactionTimeAnimCounter": "Unknown"
+      }
+    },
+    "transactionDigest": "1D7B5A7A6C34C696D962992F99835CC96AECF17E5889252EC5EC4E4D5C4947C3",
+    "retainedOwners": [
+      "sf2-map-entities-static-v1",
+      "sf2-map3-optional-interactions-static-v1",
+      "sf2-map-sprite-decode-v1",
+      "sf2-map3-original-player-reference-frame-static-v1",
+      "sf2-tech-graphics-static-v1",
+      "sf2-map3-battle01-natural-route-runtime-v1"
+    ],
+    "consumerBoundary": {"applicationDtoOrApi": "out-of-scope", "futureConsumerRequirementsOnly": true},
+    "unknowns": {
+      "interactionTimeAnimCounter": "Unknown",
+      "selectedVisibleHalf": "Unknown",
+      "exactObservedFrameOrAnimationContract": "Unknown"
+    }
+  }
+}

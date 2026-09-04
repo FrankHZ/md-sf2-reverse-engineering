@@ -135,7 +135,7 @@ def _expected_artifact_commands(
 def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
     assert set(H2_COMMAND_PARTITIONS) == _registered_commands("h2_commands")
     assert set(COMMAND_LAUNCHES) == _registered_commands("h3_commands")
-    assert len(H2_COMMAND_PARTITIONS) == 96
+    assert len(H2_COMMAND_PARTITIONS) == 97
     assert len(COMMAND_LAUNCHES) == 77
     assert len({partition.partition_id for partition in PARTITIONS}) == len(PARTITIONS)
     assert len(H2_PARTITION_IDS) == 6
@@ -609,7 +609,7 @@ def test_field_search_control_artifacts_select_only_their_bounded_command() -> N
     assert plan["unclassifiedPaths"] == []
 
 
-def test_map3_optional_interaction_artifacts_select_only_their_bounded_command() -> None:
+def test_map3_optional_interaction_artifacts_select_their_bounded_dependents() -> None:
     plan = plan_paths(
         (
             "tests/fixtures/h2/map3-optional-interactions-static-v1.json",
@@ -618,9 +618,12 @@ def test_map3_optional_interaction_artifacts_select_only_their_bounded_command()
         root=ROOT,
     )
 
-    assert _partition_ids(plan) == {"public-core", "h2-map-scripting"}
+    assert _partition_ids(plan) == {"public-core", "h2-map-scripting", "h2-presentation"}
     assert _partition(plan, "h2-map-scripting")["commands"] == [
         "uv run sf2 h2 map3-optional-interactions"
+    ]
+    assert _partition(plan, "h2-presentation")["commands"] == [
+        "uv run sf2 h2 map3-entity142-interactable-reference"
     ]
     assert plan["unclassifiedPaths"] == []
 
@@ -772,6 +775,24 @@ def test_map3_original_player_reference_frame_artifacts_select_h2_and_locomotion
     ]
     assert _partition(plan, "h3-witch")["commands"] == [
         "uv run sf2 h3 map3-original-player-locomotion-animation"
+    ]
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_map3_entity142_interactable_reference_artifacts_select_the_static_owner() -> None:
+    plan = plan_paths(
+        (
+            "src/sf2tool/h2/map3_entity142_interactable_reference.py",
+            "tests/fixtures/h2/map3-entity142-interactable-reference-static-v1.json",
+            "schemas/h2/map3-entity142-interactable-reference-static-output.schema.json",
+            "schemas/h2/map3-entity142-interactable-reference-static-fixture.schema.json",
+            "manifests/extractions/map3-entity142-interactable-reference-static.json",
+        ),
+        root=ROOT,
+    )
+    assert _partition_ids(plan) == {"public-core", "h2-presentation"}
+    assert _partition(plan, "h2-presentation")["commands"] == [
+        "uv run sf2 h2 map3-entity142-interactable-reference"
     ]
     assert plan["unclassifiedPaths"] == []
 

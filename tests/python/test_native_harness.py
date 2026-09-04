@@ -43,15 +43,15 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Status"] == "PASS"
     assert result["Records"] == 1627
     assert result["Confirmed"] == 1627
-    assert result["H2Fixtures"] == 102
+    assert result["H2Fixtures"] == 103
     assert result["H3Fixtures"] == result["H3FixtureFiles"] == 95
-    assert result["AddressBindings"] == 3101
+    assert result["AddressBindings"] == 3109
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1590
     assert result["AlternateListingRecords"] == 37
     assert result["Z80MusicBankRecords"] == 37
-    assert result["ResearchDocuments"] == 65
+    assert result["ResearchDocuments"] == 66
     assert result["DesignContracts"] == 68
 
 

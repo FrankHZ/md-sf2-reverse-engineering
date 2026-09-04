@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "sf2-map3-entity142-interactable-reference-static-v1",
+  "outputSha256": "BE3B6DBC5BAB16CDEDEA89D04FFDAC5611BF47FD4987B34C0A395FD48CC709DB",
+  "summary": {
+    "existingIndexRecordObjects": 8,
+    "newIndexRecordObjects": 0,
+    "newIndexAddressObjects": 0,
+    "newH2Bindings": 8,
+    "newDocumentAppends": 8,
+    "decodedBytes": 576,
+    "decodedHalves": 2,
+    "paletteWords": 16,
+    "unknowns": 3
+  }
+}

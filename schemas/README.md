@@ -52,6 +52,10 @@ script-control definitions have one tracked owner each; neither root copies defi
 H3 consumers. `src/sf2tool/h2/map_script_engine.py` retains complete fixture-field equality,
 provenance/address, summary, runtime-question, and canonical-digest checks before output is written.
 
+The Map 3 entity-142 interactable reference keeps both its output and fixture roots under `h2/`.
+The schemas own the closed identity, mapping, event, retained-runtime, two-half drawable, palette, and
+Unknown-register shapes; the tracked fixture and verifier retain exact values and cross-owner equality.
+
 The maintained structured H3 observers reuse the callback failure, pending-callback audit,
 physical-PC role audit, failure-contract, and terminal-status protocol under `h3/`. The maintained
 owner roots include control/audio, transition, entity-presentation-FX, random-services, SRAM

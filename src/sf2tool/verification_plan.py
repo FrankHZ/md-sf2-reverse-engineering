@@ -113,6 +113,7 @@ H2_COMMAND_GROUPS = {
         "compression-consumers",
         "icon-graphics",
         "map-palettes",
+        "map3-entity142-interactable-reference",
         "map3-original-player-reference-frame",
         "map-sprites",
         "map-tilesets",

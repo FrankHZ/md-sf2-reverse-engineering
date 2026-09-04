@@ -638,7 +638,8 @@ def _map3_navigation_plan(
         (3, (41, 13), (42, 9), "map3-sarah-classroom", False, True, school_initial_occupancy),
         (3, (42, 9), (46, 7), "map3-school-stairs-down", True, True, school_post_sarah_occupancy),
         # The 46,7 MAP_CURRENT warp resolves to the lower school at 59,12.
-        # Source record 16 is entity 142 (Astral) at 54,17.  Its north/south
+        # One-based source record 17 (zero-based index 16) is entity 142
+        # (Astral) at 54,17.  Its north/south
         # neighbours are collidable; the decoded lower-school layout admits
         # only the reachable west neighbour (55,17), which faces Left into
         # that entity.  This is a C action, not an attempted movement onto it.
@@ -1180,11 +1181,13 @@ def _assert_source_route(
         raise ValueError("Battle 01 before-cutscene first operations drift")
 
     # The source entity records retain two follower entries before the regular
-    # map entities.  The rejected 140 dispatch proved that record 14 is the
-    # guard at (1,23); record 16 is the actual source placement that the
+    # map entities.  The rejected 140 dispatch proved that zero-based index 14
+    # is the guard at (1,23); zero-based index 16 / one-based record 17 is the
+    # actual source placement that the
     # `msEntityEvent 142,DOWN` row selects.  The H3 callback below observes
     # 142 at the original dispatch seam, so neither source ordering nor a
-    # comment is being substituted for the runtime entity index.
+    # comment is being substituted for the runtime entity index.  Source-row
+    # identities are one-based in the public contract: index 16 is record 17.
     map3_entity_rows = re.findall(
         r"^\s*(ms(?:Fixed|Walking)Entity)\s+([^\n;]+)", map3_entities, re.MULTILINE
     )

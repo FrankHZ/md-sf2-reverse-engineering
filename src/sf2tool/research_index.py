@@ -34,6 +34,26 @@ class LaterOwnerStep:
 
 _LATER_OWNER_STEPS = (
     LaterOwnerStep(
+        owner_id="sf2-map3-entity142-interactable-reference-static-v1",
+        predecessor_owner_id="sf2-map3-original-player-locomotion-animation-runtime-v1",
+        remover=(
+            "sf2tool.h2.map3_entity142_interactable_reference:"
+            "_remove_map3_entity142_interactable_reference_later_owner_index_delta"
+        ),
+        state_sha256="49B80B7692154290D234A270DFB289AD158AFC96F1EDDE57270C981B438E176A",
+        predecessor_sha256=("7F5992C71A615E9BDC1D3FA58ECA752960B16E61B4FF3057BDD170F77A5FC1CE"),
+    ),
+    LaterOwnerStep(
+        owner_id="sf2-map3-original-player-locomotion-animation-runtime-v1",
+        predecessor_owner_id="sf2-map3-original-player-reference-frame-static-v1",
+        remover=(
+            "sf2tool.research_index_locomotion_owner:"
+            "_remove_map3_original_player_locomotion_animation_later_owner_index_delta"
+        ),
+        state_sha256="7F5992C71A615E9BDC1D3FA58ECA752960B16E61B4FF3057BDD170F77A5FC1CE",
+        predecessor_sha256=("862D9A6CD7CF860034EF5544D43C68FB4970E295BE590EB69AE99045993295B5"),
+    ),
+    LaterOwnerStep(
         owner_id="sf2-map3-original-player-reference-frame-static-v1",
         predecessor_owner_id="sf2-map-event-flag-route-selection-static-v1",
         remover=(
