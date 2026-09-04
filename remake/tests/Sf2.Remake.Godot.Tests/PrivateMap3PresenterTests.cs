@@ -304,6 +304,25 @@ public sealed class PrivateMap3PresenterTests
             PrivateMap3PresentationPlan.Entity142Action(released, "ignored pending label"));
     }
 
+    [Fact]
+    public void CastleGatePresentationUsesOnlyTypedPersistentState()
+    {
+        OriginalMapCastleGateDefinition definition = CastleGateDefinition();
+        PrivateOriginalMapCastleGateState ready = InvokeCastleGateState("Ready", definition);
+        PrivateOriginalMapCastleGateState opened = InvokeCastleGateState("Completed", definition);
+
+        Assert.Equal(
+            "Castle gate closed; bounded event ready only after messenger acceptance",
+            PrivateMap3PresentationPlan.CastleGateStatus(ready));
+        string status = PrivateMap3PresentationPlan.CastleGateStatus(opened);
+        Assert.Equal(
+            "Castle gate open; flag604 set; bounded opening admission complete; " +
+                "source dialogue/facing/restoration, timing, and presentation Unknown",
+            status);
+        Assert.DoesNotContain("text", status, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("asset", status, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static PrivateOriginalMapSessionSnapshot Snapshot()
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
@@ -375,6 +394,40 @@ public sealed class PrivateMap3PresenterTests
             controlledStepCopyApplied: false,
             lastLayoutMutation: null);
     }
+
+    private static OriginalMapCastleGateDefinition CastleGateDefinition()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        return new OriginalMapCastleGateDefinition(
+            new OriginalMapZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.CastleGateZoneEventResourceId,
+                OriginalMapRuntimeAdmission.CastleGateZoneEventRecordOrdinal,
+                OriginalMapRuntimeAdmission.CastleGateZoneEventTargetIdentity),
+            new MapPosition(31, 6),
+            ExplorationDirection.North,
+            new MapPosition(31, 5),
+            OriginalMapRuntimeAdmission.CastleGateProgramIdentity,
+            OriginalMapRuntimeAdmission.CastleGateControlShapeSha256,
+            OriginalMapRuntimeAdmission.CastleGateTextCursorId,
+            OriginalMapRuntimeAdmission.CastleGateCompletionFlag604,
+            OriginalMapRuntimeAdmission.CastleGateSourceProgramOperationCount,
+            OriginalMapRuntimeAdmission.CastleGateProjectionSourceOperationIndices,
+            OriginalMapRuntimeAdmission.CastleGateGuardMoves,
+            OriginalMapRuntimeAdmission.CastleGateStages);
+    }
+
+    private static PrivateOriginalMapCastleGateState InvokeCastleGateState(
+        string method,
+        OriginalMapCastleGateDefinition definition) =>
+        (PrivateOriginalMapCastleGateState)typeof(PrivateOriginalMapCastleGateState)
+            .GetMethod(
+                method,
+                System.Reflection.BindingFlags.Static |
+                    System.Reflection.BindingFlags.NonPublic)!
+            .Invoke(null, [definition])!;
 
     private static OriginalMapEntityPopulation ProjectAuthoredEntityPopulation(MapId map) =>
         new(

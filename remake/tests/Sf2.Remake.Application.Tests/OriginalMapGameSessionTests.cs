@@ -1044,6 +1044,76 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedCastleGateRouteOpensOnceAndRetainsItsTypedAtomicReceipt()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        CompleteRouteThroughMessenger(session);
+        MoveToCastleGateApproach(session);
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+        Assert.False(before.CastleGate!.Opened);
+        Assert.Equal(new MapPosition(31, 6), before.PlayerPosition);
+
+        PrivateOriginalMapMoveApplied opened = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        PrivateOriginalMapCastleGateReceipt receipt =
+            Assert.IsType<PrivateOriginalMapCastleGateReceipt>(opened.CastleGate);
+
+        Assert.Same(receipt, opened.Snapshot.LastCastleGate);
+        Assert.Same(receipt.Traversal, opened.Traversal);
+        Assert.Equal(new MapPosition(31, 5), opened.Snapshot.PlayerPosition);
+        Assert.True(opened.Snapshot.CastleGate!.Opened);
+        Assert.True(opened.Snapshot.CastleGate.Flag604Set);
+        Assert.Equal("Map3_ZoneEvent4", receipt.EventIdentity.TargetIdentity);
+        Assert.Equal("cs_51652", receipt.ProgramIdentity);
+        Assert.Equal(OriginalMapRuntimeAdmission.CastleGateControlShapeSha256,
+            receipt.ControlShapeSha256);
+        Assert.Equal(537, receipt.TextCursorId);
+        Assert.Equal(604, receipt.CompletionFlag);
+        Assert.Equal(26, receipt.SourceOperationCount);
+        Assert.Equal(new[] { 0, 1, 2, 3, 4, 5, 25 },
+            receipt.ProjectionSourceOperationIndices);
+        Assert.Equal(
+            new[] { (138, 28, 3), (139, 30, 3) },
+            receipt.GuardMoves.Select(move =>
+                (move.LogicalActorId, move.Destination.X, move.Destination.Y)));
+        Assert.Equal(OriginalMapRuntimeAdmission.CastleGateStages, receipt.Stages);
+        Assert.Same(before.CastleGate, receipt.Before);
+        Assert.Same(opened.Snapshot.CastleGate, receipt.After);
+
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.South));
+        PrivateOriginalMapMoveApplied revisited = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        Assert.Null(revisited.CastleGate);
+        Assert.True(revisited.Snapshot.CastleGate!.Opened);
+        Assert.Null(revisited.Snapshot.LastCastleGate);
+
+        GameSession restarted = Start(Definition(EmptyWords()));
+        Assert.False(restarted.PrivateOriginalMapSnapshot.CastleGate!.Opened);
+        Assert.Null(restarted.PrivateOriginalMapSnapshot.LastCastleGate);
+    }
+
+    [Fact]
+    public void CastleGateTargetWithoutMessengerAcceptanceRemainsOrdinaryTraversal()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        MoveToSchoolDoorApproach(session);
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        MoveFromOpenSchoolDoorToCastleGateApproach(session);
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+
+        PrivateOriginalMapMoveApplied moved = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.North));
+
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, moved.Traversal.Outcome);
+        Assert.Null(moved.CastleGate);
+        Assert.False(moved.Snapshot.CastleGate!.Opened);
+        Assert.Same(before.CastleGate, moved.Snapshot.CastleGate);
+        Assert.False(moved.Snapshot.MessengerAcceptance!.Accepted);
+    }
+
+    [Fact]
     public void SarahReinteractionIsTextOnlyWhileWarpPreservesAndRestartClearsTheRoute()
     {
         GameSession session = Start(Definition(EmptyWords()));
@@ -2179,6 +2249,34 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
+    [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactCastleGateProjection()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), omitCastleGate: true),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        OriginalMapCastleGateDefinition accepted = AcceptedOriginalMapCastleGate.Create(map);
+        OriginalMapCastleGateDefinition wrongProgram = new(
+            accepted.Identity,
+            accepted.Approach,
+            accepted.EntryDirection,
+            accepted.Trigger,
+            "project-authored-wrong-program",
+            accepted.ControlShapeSha256,
+            accepted.TextCursorId,
+            accepted.CompletionFlag,
+            accepted.SourceOperationCount,
+            accepted.ProjectionSourceOperationIndices,
+            accepted.GuardMoves,
+            accepted.Stages);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), castleGate: wrongProgram),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
     private static void CompleteRouteThroughEntity142(GameSession session)
     {
         Move(session, ExplorationDirection.West, 2);
@@ -2220,6 +2318,38 @@ public sealed class OriginalMapGameSessionTests
                     requested.Request.RequestSequence,
                     requested.Request.EventIdentity)));
         Assert.True(session.PrivateOriginalMapSnapshot.Entity142!.Flag602Set);
+    }
+
+    private static void CompleteRouteThroughMessenger(GameSession session)
+    {
+        CompleteRouteThroughEntity142(session);
+        Move(session, ExplorationDirection.North, 4);
+        Move(session, ExplorationDirection.East, 3);
+        Move(session, ExplorationDirection.West, 16);
+        Move(session, ExplorationDirection.North, 3);
+        PrivateOriginalMapMoveApplied accepted = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.NotNull(accepted.MessengerAcceptance);
+        Assert.True(accepted.Snapshot.MessengerAcceptance!.Accepted);
+    }
+
+    private static void MoveToCastleGateApproach(GameSession session)
+    {
+        Move(session, ExplorationDirection.South, 4);
+        Move(session, ExplorationDirection.West, 2);
+        Move(session, ExplorationDirection.North, 1);
+        Assert.True(session.PrivateOriginalMapSnapshot.SchoolDoorStepCopyApplied);
+        MoveFromOpenSchoolDoorToCastleGateApproach(session);
+    }
+
+    private static void MoveFromOpenSchoolDoorToCastleGateApproach(GameSession session)
+    {
+        Move(session, ExplorationDirection.South, 4);
+        Move(session, ExplorationDirection.West, 6);
+        Move(session, ExplorationDirection.North, 8);
+        Move(session, ExplorationDirection.West, 2);
+        Move(session, ExplorationDirection.North, 3);
+        Move(session, ExplorationDirection.West, 2);
     }
 
     private static void MoveToEntity142Interaction(GameSession session)
@@ -2279,7 +2409,9 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapAstralZoneDefinition? astralZone = null,
         bool omitAstralZone = false,
         OriginalMapMessengerAcceptanceDefinition? messengerAcceptance = null,
-        bool omitMessengerAcceptance = false)
+        bool omitMessengerAcceptance = false,
+        OriginalMapCastleGateDefinition? castleGate = null,
+        bool omitCastleGate = false)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -2343,7 +2475,11 @@ public sealed class OriginalMapGameSessionTests
             omitMessengerAcceptance || entityPopulation is not null || omitZone601 ||
                 omitSarah || omitEntity142 || omitAstralZone
                 ? null
-                : messengerAcceptance ?? AcceptedOriginalMapMessenger.Create(map));
+                : messengerAcceptance ?? AcceptedOriginalMapMessenger.Create(map),
+            omitCastleGate || omitMessengerAcceptance || entityPopulation is not null ||
+                omitZone601 || omitSarah || omitEntity142 || omitAstralZone
+                ? null
+                : castleGate ?? AcceptedOriginalMapCastleGate.Create(map));
     }
 
     private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
@@ -2964,4 +3100,32 @@ internal static class AcceptedOriginalMapMessenger
             OriginalMapRuntimeAdmission.MessengerEndpointOpaqueFacing,
             OriginalMapRuntimeAdmission.MessengerTerminalIdentity,
             OriginalMapRuntimeAdmission.MessengerStages);
+}
+
+internal static class AcceptedOriginalMapCastleGate
+{
+    internal static OriginalMapCastleGateDefinition Create(MapId map) =>
+        new(
+            new OriginalMapZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.CastleGateZoneEventResourceId,
+                OriginalMapRuntimeAdmission.CastleGateZoneEventRecordOrdinal,
+                OriginalMapRuntimeAdmission.CastleGateZoneEventTargetIdentity),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.CastleGateApproachX,
+                OriginalMapRuntimeAdmission.CastleGateApproachY),
+            OriginalMapRuntimeAdmission.CastleGateEntryDirection,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.CastleGateTriggerX,
+                OriginalMapRuntimeAdmission.CastleGateTriggerY),
+            OriginalMapRuntimeAdmission.CastleGateProgramIdentity,
+            OriginalMapRuntimeAdmission.CastleGateControlShapeSha256,
+            OriginalMapRuntimeAdmission.CastleGateTextCursorId,
+            OriginalMapRuntimeAdmission.CastleGateCompletionFlag604,
+            OriginalMapRuntimeAdmission.CastleGateSourceProgramOperationCount,
+            OriginalMapRuntimeAdmission.CastleGateProjectionSourceOperationIndices,
+            OriginalMapRuntimeAdmission.CastleGateGuardMoves,
+            OriginalMapRuntimeAdmission.CastleGateStages);
 }

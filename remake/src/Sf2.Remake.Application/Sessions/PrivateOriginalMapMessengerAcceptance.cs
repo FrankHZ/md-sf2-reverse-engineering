@@ -314,7 +314,9 @@ public sealed partial class GameSession
             lastEntity142Acknowledgement: null,
             lastAstralZone: null,
             messengerAcceptance: after,
-            lastMessengerAcceptance: receipt);
+            lastMessengerAcceptance: receipt,
+            current.CastleGate,
+            lastCastleGate: null);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(
             next,

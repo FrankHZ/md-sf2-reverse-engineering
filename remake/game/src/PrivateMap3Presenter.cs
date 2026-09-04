@@ -154,7 +154,24 @@ internal sealed record PrivateMap3PresentationPlan(
                 "Sarah/Chester follower-ready; prose/audio/timing Unknown";
         }
 
+        if (snapshot.CastleGate is { } castleGate)
+        {
+            status += "  |  " + CastleGateStatus(castleGate);
+        }
+
         return status;
+    }
+
+    internal static string CastleGateStatus(PrivateOriginalMapCastleGateState castleGate)
+    {
+        ArgumentNullException.ThrowIfNull(castleGate);
+        if (!castleGate.Opened)
+        {
+            return "Castle gate closed; bounded event ready only after messenger acceptance";
+        }
+
+        return "Castle gate open; flag604 set; bounded opening admission complete; " +
+            "source dialogue/facing/restoration, timing, and presentation Unknown";
     }
 
     internal static string SarahAction(PrivateOriginalMapSarahState sarah)

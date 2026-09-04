@@ -186,7 +186,11 @@ public sealed partial class GameSession
             pendingEntity142: null,
             lastEntity142Request: null,
             lastEntity142Acknowledgement: null,
-            lastAstralZone: receipt);
+            lastAstralZone: receipt,
+            current.MessengerAcceptance,
+            lastMessengerAcceptance: null,
+            current.CastleGate,
+            lastCastleGate: null);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(
             next,

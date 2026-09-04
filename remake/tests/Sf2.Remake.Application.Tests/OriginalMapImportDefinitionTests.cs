@@ -10,6 +10,60 @@ public sealed class OriginalMapImportDefinitionTests
         "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF";
 
     [Fact]
+    public void CastleGateDefinitionOwnsClosedGuardMovesAndStagesDefensively()
+    {
+        OriginalMapCastleGateDefinition accepted =
+            AcceptedOriginalMapCastleGate.Create(new MapId("map3"));
+        List<OriginalMapCastleGateGuardMove> moves = [.. accepted.GuardMoves];
+        List<OriginalMapCastleGateStage> stages = [.. accepted.Stages];
+        OriginalMapCastleGateDefinition definition = new(
+            accepted.Identity,
+            accepted.Approach,
+            accepted.EntryDirection,
+            accepted.Trigger,
+            accepted.ProgramIdentity,
+            accepted.ControlShapeSha256,
+            accepted.TextCursorId,
+            accepted.CompletionFlag,
+            accepted.SourceOperationCount,
+            accepted.ProjectionSourceOperationIndices,
+            moves,
+            stages);
+        moves.Clear();
+        stages.Clear();
+
+        Assert.Equal(2, definition.GuardMoves.Count);
+        Assert.Equal(7, definition.Stages.Count);
+        Assert.Equal(
+            new[]
+            {
+                OriginalMapCastleGateStage.SetTextCursor537,
+                OriginalMapCastleGateStage.BeginGuard138Actions,
+                OriginalMapCastleGateStage.MoveGuard138RightOne,
+                OriginalMapCastleGateStage.EndGuard138Actions,
+                OriginalMapCastleGateStage.BeginGuard139ActionsAndWait,
+                OriginalMapCastleGateStage.MoveGuard139LeftOne,
+                OriginalMapCastleGateStage.EndCastleGateProgram,
+            },
+            definition.Stages);
+        Assert.Throws<NotSupportedException>(() =>
+            ((IList<OriginalMapCastleGateGuardMove>)definition.GuardMoves).Clear());
+        Assert.Throws<ArgumentException>(() => new OriginalMapCastleGateDefinition(
+            accepted.Identity,
+            accepted.Approach,
+            accepted.EntryDirection,
+            accepted.Trigger,
+            accepted.ProgramIdentity,
+            accepted.ControlShapeSha256,
+            accepted.TextCursorId,
+            accepted.CompletionFlag,
+            accepted.SourceOperationCount,
+            accepted.ProjectionSourceOperationIndices,
+            [accepted.GuardMoves[0], accepted.GuardMoves[0]],
+            accepted.Stages));
+    }
+
+    [Fact]
     public void MessengerAcceptanceDefinitionOwnsClosedAlignedForceAndStageBindings()
     {
         OriginalMapMessengerAcceptanceDefinition accepted =

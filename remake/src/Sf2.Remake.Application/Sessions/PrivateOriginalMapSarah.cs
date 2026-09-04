@@ -437,7 +437,12 @@ public sealed partial class GameSession
             current.Entity142,
             pendingEntity142: null,
             lastEntity142Request: null,
-            lastEntity142Acknowledgement: null);
+            lastEntity142Acknowledgement: null,
+            lastAstralZone: null,
+            current.MessengerAcceptance,
+            lastMessengerAcceptance: null,
+            current.CastleGate,
+            lastCastleGate: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapSarahInteractionApplied(next, receipt);
     }

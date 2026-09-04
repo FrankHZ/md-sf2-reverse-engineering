@@ -37,7 +37,16 @@ flags 89/600/66/603, Sarah and Chester joins/follower links, two guard endpoints
 Entity 142 releases route occupancy, and the player finishes facing down. The transaction is once-only
 and a fresh session reconstructs the pre-messenger state. This is one evidence-owned accepted branch,
 not a general prompt, force, follower, zone, or script interpreter; decoded prose, audio, timing,
-entity-143 presentation, and alternate/rejected prompt behavior remain outside it. The existing live
+entity-143 presentation, and alternate/rejected prompt behavior remain outside it. From that completed
+messenger state, entering the bounded castle-gate target `(31,5)` from `(31,6)` now commits one more
+Application-owned transaction. Content validates the exact admitted zone record and complete
+source-shaped 26-operation program, then exposes only the accepted seven-stage bounded product
+projection. The session records text cursor 537, caller-owned flag 604, and the two typed guard opening
+moves. It does not execute or reinterpret the omitted source dialogue, facing, or later guard-restoration
+operations. The transaction is once-only and a fresh session restores the closed state. Godot projects
+only closed/open status and the bounded opening moves; final guard facing, decoded text, animation,
+audio, timing, natural execution order, the north cross-map transition, and Battle 01 remain Unknown.
+This is not a general zone-event or script interpreter. The existing live
 route-actor glyphs visibly follow committed positions and stop drawing Sarah after Application releases
 her route occupancy, without new Godot selection rules or original-sprite claims. An explicit private-local presentation
 option also projects the live current area's non-zero second-layer offset from the authoritative
@@ -73,14 +82,19 @@ presentation timing, and simulation-step parity remain outside this bounded slic
 Entity 142 stand, Astral handoff, and messenger acceptance are downstream of the admitted Sarah route
 in one controlled evidence path, but this product capability does not claim route uniqueness,
 alternate prompt results, or general flag-driven setup/init execution. These bounded transactions
-still do not establish the castle-gate/cross-map Battle 01 admission, alternate-setup behavior, or
+still do not establish cross-map Battle 01 admission, alternate-setup behavior, or
 full natural continuity.
+
+The current immutable snapshot is reconstructed by each specialized session reducer. Preserving the
+new castle-gate state across those boundaries exposed repeated mechanical pass-through work. That is a
+current-state refactor candidate for a later independently reviewed slice, not a reason to broaden this
+capability or centralize event semantics now.
 
 ## Ordered Queue
 
-1. **Castle-gate and Battle 01 admission:** close the next evidence-owned route transaction and typed
-   cross-runtime handoff without treating the existing manual synthetic battle bridge as original
-   admission or inventing setup, flag, or program semantics.
+1. **Cross-map and Battle 01 admission:** close the next evidence-owned north transition and typed
+   cross-runtime handoff after the bounded castle-gate state without treating the existing manual
+   synthetic battle bridge as original admission or inventing setup, flag, or program semantics.
 2. **Setup entities, audio, and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
    door, warp, roof, music, and audio behavior without promoting Unknown presentation semantics.
 
