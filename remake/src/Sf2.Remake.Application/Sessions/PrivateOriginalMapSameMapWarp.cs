@@ -109,18 +109,57 @@ public sealed partial class GameSession
             sourceArea.OneBasedRecordOrdinal,
             destinationArea.OneBasedRecordOrdinal,
             nextStep);
+        WorkingMapLayout nextLayout = current.WorkingLayout;
+        MapBlockCopyLifecycleState nextRoofLifecycle = current.RoofOnLoadLifecycle;
+        PrivateOriginalMapRoofOnLoadReceipt? roofReceipt = null;
+        OriginalMapRoofOnLoadDefinition? roof = current.Definition.RoofOnLoadClear;
+        OriginalMapAreaDefinition destinationAreaDefinition =
+            current.Definition.AreaCatalog.Resolve(destinationArea);
+        if (roof is not null &&
+            roof.AppliesTo(warp.Identity, destinationAreaDefinition.Identity))
+        {
+            MapBlockCopyLifecycleResult roofResult = MapBlockCopyLifecycleReducer.Activate(
+                current.WorkingLayout,
+                current.RoofOnLoadLifecycle,
+                new MapViewUpdateState(
+                    Channel0Requested: false,
+                    Channel1Requested: false),
+                roof.Identity.OneBasedRecordOrdinal,
+                roof.CreateClearMutation());
+            nextLayout = roofResult.Layout;
+            nextRoofLifecycle = roofResult.LifecycleState;
+            if (roofResult.UpdateMarks.Count != 0)
+            {
+                MapBlockCopyLifecycleActiveState active =
+                    (MapBlockCopyLifecycleActiveState)roofResult.LifecycleState;
+                roofReceipt = new PrivateOriginalMapRoofOnLoadReceipt(
+                    roof.Identity,
+                    warp.Identity,
+                    destinationAreaDefinition.Identity,
+                    roof.SourceTrigger,
+                    roof.ClearDestination,
+                    roof.Width,
+                    roof.Height,
+                    active.SavedWords.Count,
+                    roofResult.UpdateState.Channel0Requested,
+                    nextStep);
+            }
+        }
+
         PrivateOriginalMapSessionSnapshot next = new(
             current.Definition,
             current.Receipt,
-            current.WorkingLayout,
+            nextLayout,
             nextStep,
             warp.Destination,
             lastTraversal: null,
             current.ControlledStepCopyApplied,
             lastLayoutMutation: null,
-            receipt);
+            receipt,
+            nextRoofLifecycle,
+            roofReceipt);
         _privateOriginalMapSnapshot = next;
-        applied = new PrivateOriginalMapMoveApplied(next, receipt);
+        applied = new PrivateOriginalMapMoveApplied(next, receipt, roofReceipt);
         return true;
     }
 

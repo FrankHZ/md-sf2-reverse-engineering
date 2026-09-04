@@ -182,7 +182,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapControlledAdmission controlledAdmission,
         OriginalMapStepCopyDefinition? controlledStepCopy,
         OriginalMapSameMapWarpCatalog? sameMapWarps,
-        IEnumerable<string> unsupportedCapabilities)
+        IEnumerable<string> unsupportedCapabilities,
+        OriginalMapRoofOnLoadDefinition? roofOnLoadClear = null)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
@@ -229,6 +230,33 @@ public sealed class OriginalMapImportDefinition
             throw new ArgumentException(
                 "The same-map warp catalog must match the imported map.",
                 nameof(sameMapWarps));
+        }
+
+        if (roofOnLoadClear is not null)
+        {
+            if (roofOnLoadClear.Identity.Map != map)
+            {
+                throw new ArgumentException(
+                    "The roof-on-load clear map must equal the imported map.",
+                    nameof(roofOnLoadClear));
+            }
+
+            OriginalMapSameMapWarpDefinition admittedWarp = sameMapWarps?.Records
+                .SingleOrDefault(record => record.Identity == roofOnLoadClear.AppliedAfterWarp) ??
+                throw new ArgumentException(
+                    "The roof-on-load clear must bind one admitted same-map warp.",
+                    nameof(roofOnLoadClear));
+            int areaIndex = roofOnLoadClear.DestinationArea.OneBasedRecordOrdinal - 1;
+            if (areaIndex < 0 ||
+                areaIndex >= areaCatalog.Records.Count ||
+                areaCatalog.Records[areaIndex].Identity != roofOnLoadClear.DestinationArea ||
+                areaCatalog.Traversal.SelectActiveArea(admittedWarp.Destination)
+                    ?.OneBasedRecordOrdinal != roofOnLoadClear.DestinationArea.OneBasedRecordOrdinal)
+            {
+                throw new ArgumentException(
+                    "The roof-on-load clear must bind the warp destination's admitted area.",
+                    nameof(roofOnLoadClear));
+            }
         }
 
         BlockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
@@ -281,6 +309,7 @@ public sealed class OriginalMapImportDefinition
         _unsupportedCapabilities = copiedUnsupported.AsReadOnly();
         ControlledStepCopy = controlledStepCopy;
         SameMapWarps = sameMapWarps;
+        RoofOnLoadClear = roofOnLoadClear;
     }
 
     public MapId Map { get; }
@@ -302,6 +331,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapStepCopyDefinition? ControlledStepCopy { get; }
 
     public OriginalMapSameMapWarpCatalog? SameMapWarps { get; }
+
+    public OriginalMapRoofOnLoadDefinition? RoofOnLoadClear { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

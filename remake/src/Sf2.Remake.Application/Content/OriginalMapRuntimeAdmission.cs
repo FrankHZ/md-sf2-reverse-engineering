@@ -77,6 +77,17 @@ public static class OriginalMapRuntimeAdmission
     public const int HouseWarpDestinationY = 3;
     public const byte HouseWarpOpaqueFacing = 0;
 
+    public const string RoofOnLoadResourceId = "Map03s5_RoofEvents";
+    public const int RoofOnLoadSourceRecordCount = 10;
+    public const int HouseRoofOnLoadRecordOrdinal = 1;
+    public const int HouseRoofSourceTriggerX = 4;
+    public const int HouseRoofSourceTriggerY = 8;
+    public const int HouseRoofClearDestinationX = 2;
+    public const int HouseRoofClearDestinationY = 32;
+    public const int HouseRoofClearWidth = 7;
+    public const int HouseRoofClearHeight = 8;
+    public const int HouseRoofDestinationAreaOrdinal = 1;
+
     public const string ImportCapability = "private-canonical-map3-layout-import-v1";
     public const string TraversalCapability = "original-map3-traversal-policy-v1";
     public const string ControlledAdmissionCapability =
@@ -95,6 +106,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-source-visual-reference-admission-v1";
     public const string SameMapWarpAdmissionCapability =
         "private-local-map3-same-map-warp-admission-v1";
+    public const string RoofOnLoadClearCapability =
+        "private-local-map3-roof-on-load-clear-v1";
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
@@ -110,6 +123,7 @@ public static class OriginalMapRuntimeAdmission
                 BlocksetSourceAdmissionCapability,
                 VisualReferenceAdmissionCapability,
                 SameMapWarpAdmissionCapability,
+                RoofOnLoadClearCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -259,6 +273,37 @@ public static class OriginalMapRuntimeAdmission
                 HouseWarpDestinationX,
                 HouseWarpDestinationY,
                 HouseWarpOpaqueFacing);
+    }
+
+    public static bool HasExactAcceptedRoofOnLoadClear(
+        OriginalMapRoofOnLoadDefinition? definition)
+    {
+        if (definition is null)
+        {
+            return false;
+        }
+
+        OriginalMapRoofOnLoadIdentity identity = definition.Identity;
+        return identity.Profile == ContentProfile.PrivateLocal &&
+            identity.Map == new MapId(MapId) &&
+            string.Equals(identity.ResourceId, RoofOnLoadResourceId, StringComparison.Ordinal) &&
+            identity.OneBasedRecordOrdinal == HouseRoofOnLoadRecordOrdinal &&
+            definition.SourceTrigger == new MapPosition(
+                HouseRoofSourceTriggerX,
+                HouseRoofSourceTriggerY) &&
+            definition.ClearDestination == new MapPosition(
+                HouseRoofClearDestinationX,
+                HouseRoofClearDestinationY) &&
+            definition.Width == HouseRoofClearWidth &&
+            definition.Height == HouseRoofClearHeight &&
+            definition.AppliedAfterWarp == new OriginalMapSameMapWarpIdentity(
+                ContentProfile.PrivateLocal,
+                new MapId(MapId),
+                SameMapWarpResourceId,
+                HouseWarpRecordOrdinal) &&
+            definition.DestinationArea == new OriginalMapAreaRecordIdentity(
+                AcceptedAreaResourceId,
+                HouseRoofDestinationAreaOrdinal);
     }
 
     private static bool IsExactSameMapWarp(

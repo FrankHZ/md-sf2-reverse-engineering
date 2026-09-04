@@ -437,7 +437,8 @@ public sealed class OriginalMapVisualGameSessionTests
                 noProgramRequest: true),
             ControlledStepCopy(map),
             AcceptedSameMapWarps(map),
-            ["natural-route-and-effects-unknown"]);
+            ["natural-route-and-effects-unknown"],
+            AcceptedRoofOnLoadClear(map));
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>
@@ -478,6 +479,30 @@ public sealed class OriginalMapVisualGameSessionTests
             new MapPosition(triggerX, triggerY),
             new MapPosition(destinationX, destinationY),
             opaqueFacing);
+
+    private static OriginalMapRoofOnLoadDefinition AcceptedRoofOnLoadClear(MapId map) =>
+        new(
+            new OriginalMapRoofOnLoadIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.RoofOnLoadResourceId,
+                OriginalMapRuntimeAdmission.HouseRoofOnLoadRecordOrdinal),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.HouseRoofSourceTriggerX,
+                OriginalMapRuntimeAdmission.HouseRoofSourceTriggerY),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.HouseRoofClearDestinationX,
+                OriginalMapRuntimeAdmission.HouseRoofClearDestinationY),
+            OriginalMapRuntimeAdmission.HouseRoofClearWidth,
+            OriginalMapRuntimeAdmission.HouseRoofClearHeight,
+            new OriginalMapSameMapWarpIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.SameMapWarpResourceId,
+                OriginalMapRuntimeAdmission.HouseWarpRecordOrdinal),
+            new OriginalMapAreaRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedAreaResourceId,
+                OriginalMapRuntimeAdmission.HouseRoofDestinationAreaOrdinal));
 
     private static OriginalMapImportReceipt ImportReceipt(
         string? packageId = null,

@@ -30,6 +30,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.VisualReferenceAdmissionCapability;
     public const string SameMapWarpAdmissionCapability =
         OriginalMapRuntimeAdmission.SameMapWarpAdmissionCapability;
+    public const string RoofOnLoadClearCapability =
+        OriginalMapRuntimeAdmission.RoofOnLoadClearCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -56,6 +58,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         BlocksetSourceAdmissionCapability,
         VisualReferenceAdmissionCapability,
         SameMapWarpAdmissionCapability,
+        RoofOnLoadClearCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -326,6 +329,15 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             RequiredString(references, "warpEventTable", "maps[3].references.warpEventTable"));
         OriginalMapSameMapWarpCatalog sameMapWarps = ReadAcceptedSameMapWarps(warpTable);
 
+        JsonElement roofTable = RequiredResource(
+            resources,
+            "roofEventTables",
+            RequiredString(references, "roofEventTable", "maps[3].references.roofEventTable"));
+        OriginalMapRoofOnLoadDefinition roofOnLoadClear = ReadAcceptedRoofOnLoadClear(
+            roofTable,
+            sameMapWarps,
+            areaCatalog);
+
         JsonElement stepTable = RequiredResource(
             resources,
             "stepEventTables",
@@ -354,7 +366,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             controlledAdmission,
             controlledStepCopy,
             sameMapWarps,
-            UnsupportedCapabilities);
+            UnsupportedCapabilities,
+            roofOnLoadClear);
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -796,6 +809,126 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         }
 
         return catalog;
+    }
+
+    private static OriginalMapRoofOnLoadDefinition ReadAcceptedRoofOnLoadClear(
+        JsonElement resource,
+        OriginalMapSameMapWarpCatalog sameMapWarps,
+        OriginalMapAreaCatalog areaCatalog)
+    {
+        const string resourceField = "map3.roofEventTable";
+        RequireExactProperties(
+            resource,
+            resourceField,
+            "id",
+            "address",
+            "sourceKind",
+            "records");
+        string resourceId = RequiredString(resource, "id", resourceField + ".id");
+        if (!string.Equals(
+                resourceId,
+                OriginalMapRuntimeAdmission.RoofOnLoadResourceId,
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                resourceField + ".id",
+                "Map 3 does not retain the accepted roof-event resource identity.");
+        }
+
+        _ = RequiredNonNegativeInt(resource, "address", resourceField + ".address");
+        if (!string.Equals(
+                RequiredString(resource, "sourceKind", resourceField + ".sourceKind"),
+                "roofEvents",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                resourceField + ".sourceKind",
+                "Map 3 does not retain the accepted roof-event source kind.");
+        }
+
+        JsonElement records = RequiredProperty(resource, "records", resourceField + ".records");
+        RequireArray(records, resourceField + ".records");
+        if (records.GetArrayLength() != OriginalMapRuntimeAdmission.RoofOnLoadSourceRecordCount)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                resourceField + ".records",
+                "Map 3 must retain its exact source roof-record count.");
+        }
+
+        OriginalMapRoofOnLoadDefinition? selected = null;
+        int zeroBasedOrdinal = 0;
+        foreach (JsonElement record in records.EnumerateArray())
+        {
+            string field = $"{resourceField}.records[{zeroBasedOrdinal}]";
+            RequireObject(record, field);
+            RequireExactProperties(record, field, "trigger", "source", "size", "destination");
+            (int triggerX, int triggerY) = ReadPoint(
+                RequiredProperty(record, "trigger", field + ".trigger"),
+                field + ".trigger",
+                byteSized: true);
+            (int sourceX, int sourceY) = ReadPoint(
+                RequiredProperty(record, "source", field + ".source"),
+                field + ".source",
+                byteSized: true);
+            (int width, int height) = ReadSize(
+                RequiredProperty(record, "size", field + ".size"),
+                field + ".size");
+            (int destinationX, int destinationY) = ReadPoint(
+                RequiredProperty(record, "destination", field + ".destination"),
+                field + ".destination",
+                byteSized: true);
+            int oneBasedOrdinal = zeroBasedOrdinal + 1;
+            if (oneBasedOrdinal == OriginalMapRuntimeAdmission.HouseRoofOnLoadRecordOrdinal)
+            {
+                if (triggerX != OriginalMapRuntimeAdmission.HouseRoofSourceTriggerX ||
+                    triggerY != OriginalMapRuntimeAdmission.HouseRoofSourceTriggerY ||
+                    sourceX != byte.MaxValue ||
+                    sourceY != byte.MaxValue ||
+                    width != OriginalMapRuntimeAdmission.HouseRoofClearWidth ||
+                    height != OriginalMapRuntimeAdmission.HouseRoofClearHeight ||
+                    destinationX != OriginalMapRuntimeAdmission.HouseRoofClearDestinationX ||
+                    destinationY != OriginalMapRuntimeAdmission.HouseRoofClearDestinationY)
+                {
+                    throw Admission(
+                        OriginalMapImportFailureCode.InvalidMapProjection,
+                        field,
+                        "The accepted Bowie-house roof-on-load clear record drifted.");
+                }
+
+                OriginalMapSameMapWarpDefinition appliedAfterWarp = sameMapWarps.Records.Single(
+                    warp => warp.Identity.OneBasedRecordOrdinal ==
+                        OriginalMapRuntimeAdmission.HouseWarpRecordOrdinal);
+                OriginalMapAreaDefinition destinationArea = areaCatalog.Records[
+                    OriginalMapRuntimeAdmission.HouseRoofDestinationAreaOrdinal - 1];
+                selected = new OriginalMapRoofOnLoadDefinition(
+                    new OriginalMapRoofOnLoadIdentity(
+                        ContentProfile.PrivateLocal,
+                        new MapId(OriginalMapRuntimeAdmission.MapId),
+                        resourceId,
+                        oneBasedOrdinal),
+                    new MapPosition(triggerX, triggerY),
+                    new MapPosition(destinationX, destinationY),
+                    width,
+                    height,
+                    appliedAfterWarp.Identity,
+                    destinationArea.Identity);
+            }
+
+            zeroBasedOrdinal++;
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedRoofOnLoadClear(selected))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                resourceField,
+                "The accepted Map 3 roof-on-load clear projection drifted.");
+        }
+
+        return selected!;
     }
 
     private static ushort[] ReadLayout(JsonElement resource, int blockCount)

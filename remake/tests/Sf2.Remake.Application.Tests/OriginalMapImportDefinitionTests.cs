@@ -212,6 +212,78 @@ public sealed class OriginalMapImportDefinitionTests
     }
 
     [Fact]
+    public void RoofOnLoadClearBindsOnePrivateWarpAndItsDestinationArea()
+    {
+        MapId map = new("map3");
+        OriginalMapAreaCatalog areas = AreaCatalog(
+            new OriginalMapTraversalArea(0, 0, 63, 63));
+        OriginalMapSameMapWarpDefinition warp = Warp(
+            map,
+            "project-authored-warps",
+            ordinal: 2,
+            trigger: new MapPosition(10, 10),
+            destination: new MapPosition(11, 10),
+            opaqueFacing: 0);
+        OriginalMapSameMapWarpCatalog warps = new([warp]);
+        OriginalMapRoofOnLoadDefinition roof = new(
+            new OriginalMapRoofOnLoadIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                "project-authored-roofs",
+                oneBasedRecordOrdinal: 1),
+            sourceTrigger: new MapPosition(4, 8),
+            clearDestination: new MapPosition(2, 20),
+            width: 7,
+            height: 8,
+            warp.Identity,
+            areas.Records[0].Identity);
+
+        OriginalMapImportDefinition definition = new(
+            map,
+            new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
+            BlockCatalog(),
+            areas,
+            Population(map),
+            VisualSelection(map),
+            Admission(map),
+            controlledStepCopy: null,
+            warps,
+            ["unknown"],
+            roof);
+
+        Assert.Same(roof, definition.RoofOnLoadClear);
+        Assert.Throws<ArgumentException>(() => new OriginalMapRoofOnLoadIdentity(
+            ContentProfile.PublicSynthetic,
+            map,
+            "project-authored-roofs",
+            1));
+        Assert.Throws<ArgumentException>(() => new OriginalMapRoofOnLoadDefinition(
+            roof.Identity,
+            roof.SourceTrigger,
+            roof.ClearDestination,
+            roof.Width,
+            roof.Height,
+            new OriginalMapSameMapWarpIdentity(
+                ContentProfile.PrivateLocal,
+                new MapId("other"),
+                warp.Identity.ResourceId,
+                warp.Identity.OneBasedRecordOrdinal),
+            roof.DestinationArea));
+        Assert.Throws<ArgumentException>(() => new OriginalMapImportDefinition(
+            map,
+            definition.WorkingLayout,
+            definition.BlockCatalog,
+            definition.AreaCatalog,
+            definition.EntityPopulation,
+            definition.VisualResourceSelection,
+            definition.ControlledAdmission,
+            controlledStepCopy: null,
+            sameMapWarps: null,
+            ["unknown"],
+            roof));
+    }
+
+    [Fact]
     public void EntityPopulationOwnsOrderedOpaqueRecordsWithoutInventingBehavior()
     {
         MapId map = new("map3");
