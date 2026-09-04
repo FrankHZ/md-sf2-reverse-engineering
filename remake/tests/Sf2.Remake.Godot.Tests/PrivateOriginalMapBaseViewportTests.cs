@@ -139,6 +139,99 @@ public sealed class PrivateOriginalMapBaseViewportTests
     }
 
     [Fact]
+    public void LiveRouteActorGlyphsProjectOnlySessionOwnedSarahAndZone601State()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+            [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+            new ushort[WorkingMapLayout.WordCount],
+            playerPosition: new MapPosition(42, 9),
+            entityPopulation: RouteActorPopulation(map),
+            zone601: Zone601(map),
+            sarah: Sarah(map));
+        PrivateOriginalMapBaseViewProjection baseProjection =
+            PrivateOriginalMapBaseViewProjection.Create(snapshot, VisualDefinition());
+
+        Assert.True(PrivateMap3LiveRouteActorGlyphProjection.TryCreate(
+            snapshot,
+            baseProjection,
+            out PrivateMap3LiveRouteActorGlyphProjection? projection));
+        Assert.NotNull(projection);
+        Assert.Equal(
+            "private-local-map3-live-route-actor-glyphs-v1",
+            PrivateMap3LiveRouteActorGlyphProjection.Capability);
+        Assert.Equal(
+            "project-authored-session-owned-route-actor-glyphs-v1",
+            PrivateMap3LiveRouteActorGlyphProjection.Policy);
+        Assert.Equal(2, projection.Actors.Count);
+
+        PrivateMap3LiveRouteActorGlyph sarah = projection.Actors[0];
+        Assert.Equal(PrivateMap3LiveRouteActorGlyphKind.SarahDiamond, sarah.Kind);
+        Assert.Equal(1, sarah.LogicalActorId);
+        Assert.Equal(1, sarah.SourceRecord.OneBasedRecordOrdinal);
+        Assert.Equal(new MapPosition(42, 8), sarah.Position);
+        Assert.Equal((byte)3, sarah.OpaqueFacing);
+        Assert.Equal(
+            new global::Godot.Vector2(
+                (42 * PrivateOriginalMapBaseViewProjection.BlockPixelSize) -
+                    baseProjection.Camera!.TopLeftPixelX + 5,
+                (8 * PrivateOriginalMapBaseViewProjection.BlockPixelSize) -
+                    baseProjection.Camera.TopLeftPixelY + 5),
+            sarah.DestinationRect.Position);
+        Assert.Equal(new global::Godot.Vector2(14, 14), sarah.DestinationRect.Size);
+
+        PrivateMap3LiveRouteActorGlyph zone601 = projection.Actors[1];
+        Assert.Equal(PrivateMap3LiveRouteActorGlyphKind.Zone601Square, zone601.Kind);
+        Assert.Equal(128, zone601.LogicalActorId);
+        Assert.Equal(3, zone601.SourceRecord.OneBasedRecordOrdinal);
+        Assert.Equal(new MapPosition(5, 6), zone601.Position);
+        Assert.Equal((byte)0, zone601.OpaqueFacing);
+        Assert.Throws<NotSupportedException>(() =>
+            ((IList<PrivateMap3LiveRouteActorGlyph>)projection.Actors)[0] = zone601);
+
+        Assert.DoesNotContain(
+            typeof(PrivateMap3LiveRouteActorGlyph).GetProperties(),
+            property => property.Name.Contains("Asset", StringComparison.OrdinalIgnoreCase) ||
+                property.Name.Contains("Sprite", StringComparison.OrdinalIgnoreCase) ||
+                property.Name.Contains("Tail", StringComparison.OrdinalIgnoreCase) ||
+                property.Name.Contains("Visible", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void LiveRouteActorGlyphsDoNotPromoteTheGenericPopulationOrStaticOverlay()
+    {
+        PrivateOriginalMapSessionSnapshot generic = Snapshot(
+            [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+            new ushort[WorkingMapLayout.WordCount]);
+        PrivateOriginalMapBaseViewProjection genericProjection =
+            PrivateOriginalMapBaseViewProjection.Create(generic, VisualDefinition());
+        Assert.True(PrivateMap3LiveRouteActorGlyphProjection.TryCreate(
+            generic,
+            genericProjection,
+            out PrivateMap3LiveRouteActorGlyphProjection? absent));
+        Assert.Null(absent);
+
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        PrivateOriginalMapSessionSnapshot routeActors = Snapshot(
+            [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+            new ushort[WorkingMapLayout.WordCount],
+            areaDefinitions: StaticOverlayAreas(),
+            entityPopulation: RouteActorPopulation(map),
+            zone601: Zone601(map),
+            sarah: Sarah(map));
+        PrivateOriginalMapBaseViewProjection staticOverlay =
+            PrivateOriginalMapBaseViewProjection.Create(
+                routeActors,
+                VisualDefinition(),
+                staticOverlayDiagnostic: true);
+        Assert.True(PrivateMap3LiveRouteActorGlyphProjection.TryCreate(
+            routeActors,
+            staticOverlay,
+            out PrivateMap3LiveRouteActorGlyphProjection? excluded));
+        Assert.Null(excluded);
+    }
+
+    [Fact]
     public void Entity142DiagnosticUsesOnlyAcceptedRecord17AndStartsFromProjectAuthoredHalfZero()
     {
         PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
@@ -1168,7 +1261,9 @@ public sealed class PrivateOriginalMapBaseViewportTests
         byte paletteIndex = 0,
         IEnumerable<OriginalMapAreaDefinition>? areaDefinitions = null,
         MapPosition? playerPosition = null,
-        OriginalMapEntityPopulation? entityPopulation = null)
+        OriginalMapEntityPopulation? entityPopulation = null,
+        OriginalMapZone601Definition? zone601 = null,
+        OriginalMapSarahDefinition? sarah = null)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         WorkingMapLayout definitionLayout = new(new ushort[WorkingMapLayout.WordCount]);
@@ -1201,7 +1296,10 @@ public sealed class PrivateOriginalMapBaseViewportTests
                 OriginalMapRuntimeAdmission.SelectedInitIdentity,
                 noProgramRequest: true),
             controlledStepCopy: null,
-            unsupportedCapabilities: ["project-authored-original-presentation-unknown"]);
+            sameMapWarps: null,
+            unsupportedCapabilities: ["project-authored-original-presentation-unknown"],
+            zone601: zone601,
+            sarah: sarah);
         OriginalMapImportReceipt receipt = new(
             OriginalMapRuntimeAdmission.PackageId,
             OriginalMapRuntimeAdmission.SchemaVersion,
@@ -1226,6 +1324,97 @@ public sealed class PrivateOriginalMapBaseViewportTests
             controlledStepCopyApplied: false,
             lastLayoutMutation: null);
     }
+
+    private static OriginalMapEntityPopulation RouteActorPopulation(MapId map) =>
+        new(
+            map,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            [
+                new OriginalMapEntityDefinition(
+                    new OriginalMapEntityRecordIdentity(
+                        "project-authored-base-view-route-entities",
+                        1),
+                    rawX: 42,
+                    rawY: 8,
+                    opaqueFacing: 3,
+                    mapSprite: 1,
+                    [0, 4, 96, 206]),
+                new OriginalMapEntityDefinition(
+                    new OriginalMapEntityRecordIdentity(
+                        "project-authored-base-view-route-entities",
+                        2),
+                    rawX: 44,
+                    rawY: 10,
+                    opaqueFacing: 1,
+                    mapSprite: 2,
+                    [0, 0, 0, 0]),
+                new OriginalMapEntityDefinition(
+                    new OriginalMapEntityRecordIdentity(
+                        "project-authored-base-view-route-entities",
+                        3),
+                    rawX: 5,
+                    rawY: 6,
+                    opaqueFacing: 0,
+                    mapSprite: 195,
+                    [0, 4, 97, 2]),
+            ]);
+
+    private static OriginalMapZone601Definition Zone601(MapId map) =>
+        new(
+            new OriginalMapZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                "project-authored-base-view-zone-events",
+                1,
+                "project-authored-zone601-target"),
+            new MapPosition(4, 4),
+            601,
+            "project-authored-zone601-sequence",
+            new OriginalMapEntityRecordIdentity(
+                "project-authored-base-view-route-entities",
+                3),
+            128,
+            new MapPosition(5, 6),
+            0,
+            "project-authored-init-slow",
+            new MapPosition(5, 4),
+            2,
+            20,
+            [510, 511, 483],
+            "project-authored-ambient-walking",
+            new MapPosition(5, 6),
+            1,
+            OriginalMapRuntimeAdmission.Zone601BlockingStages);
+
+    private static OriginalMapSarahDefinition Sarah(MapId map) =>
+        new(
+            new OriginalMapSarahEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                "project-authored-base-view-entity-events",
+                1,
+                "project-authored-sarah-target",
+                opaqueEventFacing: 3),
+            new OriginalMapEntityRecordIdentity(
+                "project-authored-base-view-route-entities",
+                1),
+            logicalActorId: 1,
+            new MapPosition(42, 8),
+            actorInitialOpaqueFacing: 3,
+            new MapPosition(42, 9),
+            playerInteractionOpaqueFacing: 1,
+            laterBranchFlag603: 603,
+            laterBranchFlag602: 602,
+            temporaryRouteFlag256: 256,
+            "project-authored-sarah-sequence",
+            new MapPosition(41, 7),
+            restoredOpaqueFacing: 3,
+            [512, 480, 481],
+            [480, 481],
+            OriginalMapRuntimeAdmission.SarahFirstStages,
+            OriginalMapRuntimeAdmission.SarahRepeatStages);
 
     private static OriginalMapEntityPopulation ProjectAuthoredEntityPopulation(MapId map) =>
         new(

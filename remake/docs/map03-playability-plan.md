@@ -48,7 +48,10 @@ its source `(5,6)`/RIGHT state through the exact blocking move, facing, and text
 ambient-walking handoff centered at `(5,6)` with range 1, and only then sets the session-owned 601
 state. Re-entry does not replay it, current-map warps retain it, and a new admitted session restores
 the initial actor and clear gate. Godot projects this typed completion state but does not render the
-original text or simulate ambient random choices.
+original text or simulate ambient random choices. The private base view now gives Sarah and Zone 601
+distinct project-authored glyphs at their live Application-owned positions and facings, so those two
+route actors remain readable as the session moves them. The glyphs are a modern presentation aid,
+not evidence of original visibility, sprites, animation, or general entity behavior.
 
 The first accepted warp exits the controlled-start pocket in area record 2 and lands in area record
 1. Application commits its separately evidenced roof-on-load clear in the same authoritative
@@ -62,8 +65,9 @@ bounded transactions still do not establish alternate-setup behavior or full nat
 
 ## Ordered Queue
 
-1. **Broader setup entities/assets:** add reviewed identities, visibility rules, and local assets only
-   through their accepted Content and presentation boundaries.
+1. **Next evidence-owned setup entity/assets:** add another entity only after its route relevance,
+   runtime visibility, and any local presentation asset are accepted through their owning Content
+   and presentation boundaries; do not project the remaining generic population by default.
 2. **Audio and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
    door, warp, roof, music, and audio behavior without promoting Unknown presentation semantics.
 
