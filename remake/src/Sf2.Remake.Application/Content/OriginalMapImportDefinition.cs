@@ -186,7 +186,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapRoofOnLoadDefinition? roofOnLoadClear = null,
         OriginalMapStepCopyDefinition? bowieDoorStepCopy = null,
         OriginalMapZone601Definition? zone601 = null,
-        OriginalMapSarahDefinition? sarah = null)
+        OriginalMapSarahDefinition? sarah = null,
+        OriginalMapEntity142Definition? entity142 = null)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
@@ -311,6 +312,45 @@ public sealed class OriginalMapImportDefinition
             }
         }
 
+        if (entity142 is not null)
+        {
+            if (entity142.Identity.Map != map ||
+                entity142.Identity.Setup != controlledAdmission.SelectedSetup)
+            {
+                throw new ArgumentException(
+                    "The Entity 142 definition must match the imported map and controlled setup.",
+                    nameof(entity142));
+            }
+
+            OriginalMapEntityDefinition sourceActor = entityPopulation.Records
+                .SingleOrDefault(record => record.Identity == entity142.ActorSourceRecord) ??
+                throw new ArgumentException(
+                    "Entity 142 must bind one admitted source entity record.",
+                    nameof(entity142));
+            if (sourceActor.Position != entity142.ActorPosition ||
+                sourceActor.OpaqueFacing != entity142.ActorOpaqueFacing ||
+                entity142.PhysicalActorSlot !=
+                    entity142.ActorSourceRecord.OneBasedRecordOrdinal)
+            {
+                throw new ArgumentException(
+                    "Entity 142 admission must retain its source slot, position, and facing.",
+                    nameof(entity142));
+            }
+
+            if (!areaCatalog.Traversal.IsWithinActiveArea(entity142.ActorPosition) ||
+                !areaCatalog.Traversal.IsWithinActiveArea(
+                    entity142.PlayerInteractionPosition) ||
+                OriginalMapTraversal.IsBlocked(workingLayout, entity142.ActorPosition) ||
+                OriginalMapTraversal.IsBlocked(
+                    workingLayout,
+                    entity142.PlayerInteractionPosition))
+            {
+                throw new ArgumentException(
+                    "Entity 142's admitted interaction positions must remain active and traversable.",
+                    nameof(entity142));
+            }
+        }
+
         if (roofOnLoadClear is not null)
         {
             if (roofOnLoadClear.Identity.Map != map)
@@ -392,6 +432,7 @@ public sealed class OriginalMapImportDefinition
         BowieDoorStepCopy = bowieDoorStepCopy;
         Zone601 = zone601;
         Sarah = sarah;
+        Entity142 = entity142;
     }
 
     public MapId Map { get; }
@@ -421,6 +462,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapZone601Definition? Zone601 { get; }
 
     public OriginalMapSarahDefinition? Sarah { get; }
+
+    public OriginalMapEntity142Definition? Entity142 { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

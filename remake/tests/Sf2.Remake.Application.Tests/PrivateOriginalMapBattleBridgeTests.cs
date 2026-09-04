@@ -512,7 +512,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             RoofOnLoadClear(map),
             BowieDoorStepCopy(map),
             AcceptedZone601(map),
-            AcceptedSarah(map));
+            AcceptedSarah(map),
+            AcceptedEntity142(map));
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>
@@ -608,25 +609,38 @@ public sealed class PrivateOriginalMapBattleBridgeTests
                         index + 1),
                     rawX: index == 0
                         ? (byte)OriginalMapRuntimeAdmission.SarahActorInitialX
-                        : index == 2
+                    : index == 2
                         ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialX
+                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
+                        ? (byte)OriginalMapRuntimeAdmission.Entity142ActorX
                         : checked((byte)index),
                     rawY: index == 0
                         ? (byte)OriginalMapRuntimeAdmission.SarahActorInitialY
-                        : index == 2
+                    : index == 2
                         ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialY
+                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
+                        ? (byte)OriginalMapRuntimeAdmission.Entity142ActorY
                         : (byte)0,
                     opaqueFacing: index == 0
                         ? OriginalMapRuntimeAdmission.SarahActorInitialOpaqueFacing
-                        : index == 2
+                    : index == 2
                         ? OriginalMapRuntimeAdmission.Zone601ActorInitialOpaqueFacing
+                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
+                        ? OriginalMapRuntimeAdmission.Entity142ActorOpaqueFacing
                         : (byte)3,
-                    mapSprite: index == 2 ? (byte)195 : checked((byte)(index + 1)),
+                    mapSprite: index == 2
+                        ? (byte)195
+                        : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
+                        ? OriginalMapRuntimeAdmission.Entity142ActorMapSprite
+                        : checked((byte)(index + 1)),
                     index == 0
                         ? [0, 4, 0x60, 0xCE]
-                        : index == 2
+                    : index == 2
                         ? [0, 4, 97, 2]
-                        : index >= OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount
+                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
+                        ? [0, 4, 0x60, 0xCE]
+                        : index == OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount - 1 ||
+                            index > OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
                         ? [0xFF, checked((byte)index), 0, 1]
                         : [0, 0, 0, 0])),
             OriginalMapRuntimeAdmission.AcceptedEntityProjectionDigest);
@@ -701,6 +715,36 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             OriginalMapRuntimeAdmission.SarahRepeatTextIds,
             OriginalMapRuntimeAdmission.SarahFirstStages,
             OriginalMapRuntimeAdmission.SarahRepeatStages);
+
+    private static OriginalMapEntity142Definition AcceptedEntity142(MapId map) =>
+        new(
+            new OriginalMapEntity142EventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.Entity142EventResourceId,
+                OriginalMapRuntimeAdmission.Entity142EventRecordOrdinal,
+                OriginalMapRuntimeAdmission.Entity142EventTargetIdentity,
+                OriginalMapRuntimeAdmission.Entity142EventOpaqueFacing),
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.Entity142LogicalActorId,
+            OriginalMapRuntimeAdmission.Entity142PhysicalActorSlot,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Entity142ActorX,
+                OriginalMapRuntimeAdmission.Entity142ActorY),
+            OriginalMapRuntimeAdmission.Entity142ActorOpaqueFacing,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Entity142PlayerInteractionX,
+                OriginalMapRuntimeAdmission.Entity142PlayerInteractionY),
+            OriginalMapRuntimeAdmission.Entity142PlayerInteractionOpaqueFacing,
+            OriginalMapRuntimeAdmission.Entity142FirstInteractionFlag261,
+            OriginalMapRuntimeAdmission.Entity142CompletionFlag602,
+            OriginalMapRuntimeAdmission.Entity142FirstTextIds,
+            OriginalMapRuntimeAdmission.Entity142RepeatTextIds,
+            OriginalMapRuntimeAdmission.Entity142FirstStages,
+            OriginalMapRuntimeAdmission.Entity142RepeatStages);
 
     private static OriginalMapBlockCatalog BlockCatalog() =>
         new(

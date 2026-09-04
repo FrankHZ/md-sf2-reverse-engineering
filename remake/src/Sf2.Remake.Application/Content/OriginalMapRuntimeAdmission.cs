@@ -141,6 +141,30 @@ public static class OriginalMapRuntimeAdmission
     public const int SarahFirstWaypointY = 7;
     public const byte SarahRestoredOpaqueFacing = 3;
 
+    public const int Entity142EventHandlerAddress = 331536;
+    public const string Entity142EventResourceId = "ms_map3_EntityEvents";
+    public const int Entity142EventSourceRecordCount = 17;
+    public const int Entity142EventRecordOrdinal = 16;
+    public const int Entity142EventRecordAddress = 331596;
+    public const int Entity142EventRelativeOffset = 308;
+    public const int Entity142EventResolvedTargetAddress = 331844;
+    public const string Entity142EventTargetIdentity = "Map3_EntityEvent15";
+    public const byte Entity142EventOpaqueFacing = 3;
+    public const int Entity142ActorSourceRecordOrdinal = 17;
+    public const int Entity142LogicalActorId = 142;
+    public const int Entity142PhysicalActorSlot = 17;
+    public const int Entity142ActorSourceAddress = 330672;
+    public const int Entity142ActorX = 54;
+    public const int Entity142ActorY = 17;
+    public const byte Entity142ActorOpaqueFacing = 1;
+    public const byte Entity142ActorMapSprite = 209;
+    public const uint Entity142ActorActionValue = 0x000460CE;
+    public const int Entity142PlayerInteractionX = 55;
+    public const int Entity142PlayerInteractionY = 17;
+    public const byte Entity142PlayerInteractionOpaqueFacing = 2;
+    public const int Entity142FirstInteractionFlag261 = 261;
+    public const int Entity142CompletionFlag602 = 602;
+
     public const string RoofOnLoadResourceId = "Map03s5_RoofEvents";
     public const int RoofOnLoadSourceRecordCount = 10;
     public const int HouseRoofOnLoadRecordOrdinal = 1;
@@ -180,6 +204,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-zone601-interception-v1";
     public const string SarahRouteCapability =
         "private-local-map3-sarah-route-v1";
+    public const string Entity142AcknowledgementCapability =
+        "private-local-map3-entity142-acknowledgement-v1";
 
     private static readonly ReadOnlyCollection<int> ReadOnlyZone601TextIds =
         Array.AsReadOnly(new[] { 510, 511, 483 });
@@ -232,6 +258,30 @@ public static class OriginalMapRuntimeAdmission
             OriginalMapSarahInteractionStage.RestoreFacingDown,
         ]);
 
+    private static readonly ReadOnlyCollection<int> ReadOnlyEntity142FirstTextIds =
+        Array.AsReadOnly(new[] { 500, 501 });
+
+    private static readonly ReadOnlyCollection<int> ReadOnlyEntity142RepeatTextIds =
+        Array.AsReadOnly(new[] { 501 });
+
+    private static readonly ReadOnlyCollection<OriginalMapEntity142InteractionStage>
+        ReadOnlyEntity142FirstStages = Array.AsReadOnly(
+        [
+            OriginalMapEntity142InteractionStage.ReadFlag261Clear,
+            OriginalMapEntity142InteractionStage.PresentText500,
+            OriginalMapEntity142InteractionStage.SetFlag261,
+            OriginalMapEntity142InteractionStage.PresentText501,
+            OriginalMapEntity142InteractionStage.SetFlag602,
+        ]);
+
+    private static readonly ReadOnlyCollection<OriginalMapEntity142InteractionStage>
+        ReadOnlyEntity142RepeatStages = Array.AsReadOnly(
+        [
+            OriginalMapEntity142InteractionStage.ReadFlag261Set,
+            OriginalMapEntity142InteractionStage.PresentText501,
+            OriginalMapEntity142InteractionStage.SetFlag602,
+        ]);
+
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
             new[]
@@ -251,6 +301,7 @@ public static class OriginalMapRuntimeAdmission
                 SchoolDoorStepCopyCapability,
                 Zone601InterceptionCapability,
                 SarahRouteCapability,
+                Entity142AcknowledgementCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -288,6 +339,18 @@ public static class OriginalMapRuntimeAdmission
 
     public static IReadOnlyList<OriginalMapSarahInteractionStage> SarahRepeatStages =>
         ReadOnlySarahRepeatStages;
+
+    public static IReadOnlyList<int> Entity142FirstTextIds =>
+        ReadOnlyEntity142FirstTextIds;
+
+    public static IReadOnlyList<int> Entity142RepeatTextIds =>
+        ReadOnlyEntity142RepeatTextIds;
+
+    public static IReadOnlyList<OriginalMapEntity142InteractionStage> Entity142FirstStages =>
+        ReadOnlyEntity142FirstStages;
+
+    public static IReadOnlyList<OriginalMapEntity142InteractionStage> Entity142RepeatStages =>
+        ReadOnlyEntity142RepeatStages;
 
     internal static bool HasExactRequiredCapabilities(IEnumerable<string> capabilities)
     {
@@ -574,6 +637,67 @@ public static class OriginalMapRuntimeAdmission
             !OriginalMapTraversal.IsBlocked(workingLayout, definition.ActorInitialPosition) &&
             !OriginalMapTraversal.IsBlocked(workingLayout, definition.PlayerInteractionPosition) &&
             !OriginalMapTraversal.IsBlocked(workingLayout, definition.FirstInteractionWaypoint);
+    }
+
+    public static bool HasExactAcceptedEntity142(
+        OriginalMapEntity142Definition? definition,
+        OriginalMapEntityPopulation population,
+        OriginalMapTraversal traversal,
+        WorkingMapLayout workingLayout)
+    {
+        ArgumentNullException.ThrowIfNull(population);
+        ArgumentNullException.ThrowIfNull(traversal);
+        ArgumentNullException.ThrowIfNull(workingLayout);
+        if (definition is null ||
+            definition.Identity != new OriginalMapEntity142EventIdentity(
+                ContentProfile.PrivateLocal,
+                new MapId(MapId),
+                new MapSetupId(SelectedSetupId),
+                Entity142EventResourceId,
+                Entity142EventRecordOrdinal,
+                Entity142EventTargetIdentity,
+                Entity142EventOpaqueFacing) ||
+            definition.ActorSourceRecord != new OriginalMapEntityRecordIdentity(
+                AcceptedEntityListResourceId,
+                Entity142ActorSourceRecordOrdinal) ||
+            definition.LogicalActorId != Entity142LogicalActorId ||
+            definition.PhysicalActorSlot != Entity142PhysicalActorSlot ||
+            definition.ActorPosition != new MapPosition(Entity142ActorX, Entity142ActorY) ||
+            definition.ActorOpaqueFacing != Entity142ActorOpaqueFacing ||
+            definition.PlayerInteractionPosition != new MapPosition(
+                Entity142PlayerInteractionX,
+                Entity142PlayerInteractionY) ||
+            definition.PlayerInteractionOpaqueFacing != Entity142PlayerInteractionOpaqueFacing ||
+            definition.FirstInteractionFlag261 != Entity142FirstInteractionFlag261 ||
+            definition.CompletionFlag602 != Entity142CompletionFlag602 ||
+            !definition.FirstInteractionTextIds.SequenceEqual(ReadOnlyEntity142FirstTextIds) ||
+            !definition.RepeatInteractionTextIds.SequenceEqual(ReadOnlyEntity142RepeatTextIds) ||
+            !definition.FirstInteractionStages.SequenceEqual(ReadOnlyEntity142FirstStages) ||
+            !definition.RepeatInteractionStages.SequenceEqual(ReadOnlyEntity142RepeatStages) ||
+            population.Map != definition.Identity.Map ||
+            population.SelectedSetup != definition.Identity.Setup ||
+            population.ResourceId != definition.ActorSourceRecord.ResourceId ||
+            population.Records.Count < definition.ActorSourceRecord.OneBasedRecordOrdinal)
+        {
+            return false;
+        }
+
+        OriginalMapEntityDefinition actor =
+            population.Records[definition.ActorSourceRecord.OneBasedRecordOrdinal - 1];
+        Span<byte> expectedAction = stackalloc byte[sizeof(uint)];
+        BinaryPrimitives.WriteUInt32BigEndian(expectedAction, Entity142ActorActionValue);
+        return actor.Identity == definition.ActorSourceRecord &&
+            actor.RawX == Entity142ActorX &&
+            actor.RawY == Entity142ActorY &&
+            actor.Position == definition.ActorPosition &&
+            actor.OpaqueFacing == definition.ActorOpaqueFacing &&
+            actor.MapSprite == Entity142ActorMapSprite &&
+            actor.Kind == OriginalMapEntityRecordKind.Fixed &&
+            actor.OpaqueTail.SequenceEqual(expectedAction.ToArray()) &&
+            traversal.IsWithinActiveArea(definition.ActorPosition) &&
+            traversal.IsWithinActiveArea(definition.PlayerInteractionPosition) &&
+            !OriginalMapTraversal.IsBlocked(workingLayout, definition.ActorPosition) &&
+            !OriginalMapTraversal.IsBlocked(workingLayout, definition.PlayerInteractionPosition);
     }
 
     public static bool HasExactAcceptedSameMapWarps(OriginalMapSameMapWarpCatalog? catalog)

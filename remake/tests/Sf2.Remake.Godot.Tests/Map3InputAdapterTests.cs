@@ -181,18 +181,23 @@ public sealed class Map3InputAdapterTests
         Assert.Equal(0, probe.TotalCalls);
     }
 
-    [Fact]
-    public void PrivatePollingDispatchesOnlyTheSemanticEntityInteractionAction()
+    [Theory]
+    [InlineData("request_entity_interaction", true)]
+    [InlineData("acknowledge_entity_interaction", false)]
+    public void PrivatePollingDispatchesOnlyThePressedSemanticEntityInteractionAction(
+        string actionName,
+        bool expectsRequest)
     {
         ActionProbe probe = new();
         Map3InputAdapter adapter = new(
             CreateRecordingActions(probe),
-            action => action == "request_entity_interaction");
+            action => action == actionName);
 
         ExplorationDirection? direction = adapter.PollPrivateOriginalMapMovement();
 
         Assert.Null(direction);
-        Assert.Equal(1, probe.RequestEntityInteraction);
+        Assert.Equal(expectsRequest ? 1 : 0, probe.RequestEntityInteraction);
+        Assert.Equal(expectsRequest ? 0 : 1, probe.AcknowledgeEntityInteraction);
         Assert.Equal(1, probe.TotalCalls);
     }
 

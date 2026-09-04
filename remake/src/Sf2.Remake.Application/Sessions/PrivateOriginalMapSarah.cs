@@ -207,6 +207,7 @@ public enum PrivateOriginalMapSarahInteractionFailureCode
     LocomotionBusy,
     BattleBridgeBusy,
     InteractionTargetMismatch,
+    UnsupportedLaterBranchState,
 }
 
 public sealed record PrivateOriginalMapSarahInteractionDiagnostic(
@@ -309,6 +310,14 @@ public sealed partial class GameSession
                 "The semantic interaction does not select the live Sarah actor.");
         }
 
+        if (current.Entity142?.Flag602Set == true)
+        {
+            return RejectSarah(
+                current,
+                PrivateOriginalMapSarahInteractionFailureCode.UnsupportedLaterBranchState,
+                "Sarah's later flag-602 branch remains outside this bounded private Map 3 slice.");
+        }
+
         bool repeated = before.Phase == PrivateOriginalMapSarahLifecyclePhase.RouteCleared;
         PrivateOriginalMapSarahState after = repeated
             ? before
@@ -340,7 +349,11 @@ public sealed partial class GameSession
             current.Zone601,
             lastZone601: null,
             after,
-            receipt);
+            receipt,
+            current.Entity142,
+            pendingEntity142: null,
+            lastEntity142Request: null,
+            lastEntity142Acknowledgement: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapSarahInteractionApplied(next, receipt);
     }

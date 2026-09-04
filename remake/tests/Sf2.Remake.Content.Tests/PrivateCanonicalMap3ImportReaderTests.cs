@@ -57,6 +57,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.SchoolDoorStepCopyCapability,
                 PrivateCanonicalMap3ImportReader.Zone601InterceptionCapability,
                 PrivateCanonicalMap3ImportReader.SarahRouteCapability,
+                PrivateCanonicalMap3ImportReader.Entity142AcknowledgementCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -95,7 +96,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(new MapId("map3"), accepted.Definition.EntityPopulation.Map);
         Assert.Equal(new MapSetupId("ms_map3"), accepted.Definition.EntityPopulation.SelectedSetup);
         Assert.Equal("ms_map3_Entities", accepted.Definition.EntityPopulation.ResourceId);
-        Assert.Equal(3, accepted.Definition.EntityPopulation.Records.Count);
+        Assert.Equal(19, accepted.Definition.EntityPopulation.Records.Count);
         Assert.Equal(
             OriginalMapEntityRecordKind.Fixed,
             accepted.Definition.EntityPopulation.Records[0].Kind);
@@ -134,6 +135,13 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             accepted.Definition.EntityPopulation,
             accepted.Definition.Traversal,
             accepted.Definition.WorkingLayout));
+        OriginalMapEntity142Definition entity142 =
+            Assert.IsType<OriginalMapEntity142Definition>(accepted.Definition.Entity142);
+        Assert.Equal(new MapPosition(54, 17), entity142.ActorPosition);
+        Assert.Equal(new MapPosition(55, 17), entity142.PlayerInteractionPosition);
+        Assert.Equal(17, entity142.PhysicalActorSlot);
+        Assert.Equal(new[] { 500, 501 }, entity142.FirstInteractionTextIds);
+        Assert.Equal(new[] { 501 }, entity142.RepeatInteractionTextIds);
         Assert.Contains("natural-flags-setup-variant-selection",
             accepted.Definition.UnsupportedCapabilities);
         Assert.Equal(
@@ -647,6 +655,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Contains(
             PrivateCanonicalMap3ImportReader.SarahRouteCapability,
             accepted.Receipt.Capabilities);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.Entity142AcknowledgementCapability,
+            accepted.Receipt.Capabilities);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedEntity142(
+            accepted.Definition.Entity142,
+            accepted.Definition.EntityPopulation,
+            accepted.Definition.Traversal,
+            accepted.Definition.WorkingLayout));
         Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedRoofOnLoadClear(
             accepted.Definition.RoofOnLoadClear));
         Assert.Equal(
@@ -966,45 +982,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                     {
                         id = "ms_map3_Entities",
                         address = 6,
-                        records = new object[]
-                        {
-                            new
-                            {
-                                address = 6,
-                                kind = "fixed",
-                                rawX = OriginalMapRuntimeAdmission.SarahActorInitialX,
-                                rawY = OriginalMapRuntimeAdmission.SarahActorInitialY,
-                                x = OriginalMapRuntimeAdmission.SarahActorInitialX,
-                                y = OriginalMapRuntimeAdmission.SarahActorInitialY,
-                                facing = 3,
-                                mapSprite = 1,
-                                actionValue = OriginalMapRuntimeAdmission.SarahActorInitialActionValue,
-                            },
-                            new
-                            {
-                                address = 14,
-                                kind = "walking",
-                                rawX = 0xEA,
-                                rawY = 8,
-                                x = 42,
-                                y = 8,
-                                facing = 1,
-                                mapSprite = 5,
-                                walking = new { originX = 42, originY = 8, range = 3 },
-                            },
-                            new
-                            {
-                                address = 22,
-                                kind = "fixed",
-                                rawX = 5,
-                                rawY = 6,
-                                x = 5,
-                                y = 6,
-                                facing = 0,
-                                mapSprite = 195,
-                                actionValue = OriginalMapRuntimeAdmission.Zone601ActorInitialActionValue,
-                            },
-                        },
+                        records = EntitySourceRecords(),
                     },
                 },
                 entityEventHandlers = new object[]
@@ -1119,6 +1097,101 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         EntityEventRecord(331596, "specific", 308, 331844, 142, 3),
         EntityEventRecord(331600, "default", 330, 331866, 253, 0),
     ];
+
+    private static object[] EntitySourceRecords()
+    {
+        List<object> records =
+        [
+            new
+            {
+                address = 6,
+                kind = "fixed",
+                rawX = OriginalMapRuntimeAdmission.SarahActorInitialX,
+                rawY = OriginalMapRuntimeAdmission.SarahActorInitialY,
+                x = OriginalMapRuntimeAdmission.SarahActorInitialX,
+                y = OriginalMapRuntimeAdmission.SarahActorInitialY,
+                facing = 3,
+                mapSprite = 1,
+                actionValue = OriginalMapRuntimeAdmission.SarahActorInitialActionValue,
+            },
+            new
+            {
+                address = 14,
+                kind = "walking",
+                rawX = 0xEA,
+                rawY = 8,
+                x = 42,
+                y = 8,
+                facing = 1,
+                mapSprite = 5,
+                walking = new { originX = 42, originY = 8, range = 3 },
+            },
+            new
+            {
+                address = 22,
+                kind = "fixed",
+                rawX = 5,
+                rawY = 6,
+                x = 5,
+                y = 6,
+                facing = 0,
+                mapSprite = 195,
+                actionValue = OriginalMapRuntimeAdmission.Zone601ActorInitialActionValue,
+            },
+        ];
+        for (int ordinal = 4; ordinal <= 19; ordinal++)
+        {
+            if (ordinal == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal)
+            {
+                records.Add(new
+                {
+                    address = OriginalMapRuntimeAdmission.Entity142ActorSourceAddress,
+                    kind = "fixed",
+                    rawX = OriginalMapRuntimeAdmission.Entity142ActorX,
+                    rawY = OriginalMapRuntimeAdmission.Entity142ActorY,
+                    x = OriginalMapRuntimeAdmission.Entity142ActorX,
+                    y = OriginalMapRuntimeAdmission.Entity142ActorY,
+                    facing = OriginalMapRuntimeAdmission.Entity142ActorOpaqueFacing,
+                    mapSprite = OriginalMapRuntimeAdmission.Entity142ActorMapSprite,
+                    actionValue = OriginalMapRuntimeAdmission.Entity142ActorActionValue,
+                });
+                continue;
+            }
+
+            records.Add(new
+            {
+                address = 1000 + (ordinal * 8),
+                kind = "fixed",
+                rawX = ordinal,
+                rawY = 1,
+                x = ordinal,
+                y = 1,
+                facing = 0,
+                mapSprite = ordinal,
+                actionValue = 0U,
+            });
+        }
+
+        return [.. records];
+    }
+
+    [Fact]
+    public void Entity142EventAndSourceActorDriftFailSemanticAdmission()
+    {
+        JsonObject eventDrift = SampleDocument();
+        EntityEventRecords(eventDrift)[
+            OriginalMapRuntimeAdmission.Entity142EventRecordOrdinal - 1]!
+            .AsObject()["relativeOffset"] =
+                OriginalMapRuntimeAdmission.Entity142EventRelativeOffset + 1;
+        AssertCode(Admit(eventDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject actorDrift = SampleDocument();
+        EntityRecords(actorDrift)[
+            OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1]!
+            .AsObject()["mapSprite"] =
+                OriginalMapRuntimeAdmission.Entity142ActorMapSprite - 1;
+        AssertCode(Admit(actorDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
 
     private static object EntityEventRecord(
         int address,

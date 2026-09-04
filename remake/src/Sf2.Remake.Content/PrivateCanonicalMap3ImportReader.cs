@@ -40,6 +40,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.Zone601InterceptionCapability;
     public const string SarahRouteCapability =
         OriginalMapRuntimeAdmission.SarahRouteCapability;
+    public const string Entity142AcknowledgementCapability =
+        OriginalMapRuntimeAdmission.Entity142AcknowledgementCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -71,6 +73,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         SchoolDoorStepCopyCapability,
         Zone601InterceptionCapability,
         SarahRouteCapability,
+        Entity142AcknowledgementCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -367,6 +370,10 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             map,
             entityPopulation,
             resources);
+        OriginalMapEntity142Definition entity142 = ReadAcceptedEntity142(
+            map,
+            entityPopulation,
+            resources);
 
         OriginalMapControlledAdmission controlledAdmission = new(
             map,
@@ -391,7 +398,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             roofOnLoadClear,
             bowieDoorStepCopy,
             zone601,
-            sarah);
+            sarah,
+            entity142);
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -1783,6 +1791,177 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             OriginalMapRuntimeAdmission.SarahRepeatTextIds,
             OriginalMapRuntimeAdmission.SarahFirstStages,
             OriginalMapRuntimeAdmission.SarahRepeatStages);
+    }
+
+    private static OriginalMapEntity142Definition ReadAcceptedEntity142(
+        MapId map,
+        OriginalMapEntityPopulation entityPopulation,
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        JsonElement handler = RequiredResource(
+            resources,
+            "entityEventHandlers",
+            OriginalMapRuntimeAdmission.Entity142EventResourceId);
+        RequireExactProperties(
+            handler,
+            "map3.entity142.handler",
+            "id",
+            "address",
+            "kind",
+            "records");
+        if (RequiredNonNegativeInt(
+                handler,
+                "address",
+                "map3.entity142.handler.address") !=
+                OriginalMapRuntimeAdmission.Entity142EventHandlerAddress ||
+            !string.Equals(
+                RequiredString(handler, "kind", "map3.entity142.handler.kind"),
+                "table",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.entity142.handler",
+                "The accepted Map 3 Entity 142 event table identity drifted.");
+        }
+
+        JsonElement records = RequiredProperty(
+            handler,
+            "records",
+            "map3.entity142.handler.records");
+        RequireArray(records, "map3.entity142.handler.records");
+        if (records.GetArrayLength() !=
+            OriginalMapRuntimeAdmission.Entity142EventSourceRecordCount)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.entity142.handler.records",
+                "The accepted Map 3 entity-event record count drifted.");
+        }
+
+        JsonElement selected = records[
+            OriginalMapRuntimeAdmission.Entity142EventRecordOrdinal - 1];
+        RequireExactProperties(
+            selected,
+            "map3.entity142.record",
+            "address",
+            "kind",
+            "relativeOffset",
+            "resolvedTargetAddress",
+            "entity",
+            "flags");
+        if (RequiredNonNegativeInt(selected, "address", "map3.entity142.record.address") !=
+                OriginalMapRuntimeAdmission.Entity142EventRecordAddress ||
+            !string.Equals(
+                RequiredString(selected, "kind", "map3.entity142.record.kind"),
+                "specific",
+                StringComparison.Ordinal) ||
+            RequiredNonNegativeInt(
+                selected,
+                "relativeOffset",
+                "map3.entity142.record.relativeOffset") !=
+                OriginalMapRuntimeAdmission.Entity142EventRelativeOffset ||
+            RequiredNonNegativeInt(
+                selected,
+                "resolvedTargetAddress",
+                "map3.entity142.record.resolvedTargetAddress") !=
+                OriginalMapRuntimeAdmission.Entity142EventResolvedTargetAddress ||
+            RequiredByte(selected, "entity", "map3.entity142.record.entity") !=
+                OriginalMapRuntimeAdmission.Entity142LogicalActorId ||
+            RequiredByte(selected, "flags", "map3.entity142.record.flags") !=
+                OriginalMapRuntimeAdmission.Entity142EventOpaqueFacing)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.entity142.record",
+                "The accepted Map 3 Entity 142 event source record drifted.");
+        }
+
+        JsonElement entityList = RequiredResource(
+            resources,
+            "entityLists",
+            OriginalMapRuntimeAdmission.AcceptedEntityListResourceId);
+        JsonElement sourceRecords = RequiredProperty(
+            entityList,
+            "records",
+            "map3.entity142.actor.records");
+        RequireArray(sourceRecords, "map3.entity142.actor.records");
+        if (sourceRecords.GetArrayLength() <
+            OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.MissingReference,
+                "map3.entity142.actor",
+                "The accepted Map 3 Entity 142 source actor is missing.");
+        }
+
+        JsonElement source = sourceRecords[
+            OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1];
+        RequireExactProperties(
+            source,
+            "map3.entity142.actor",
+            "address",
+            "kind",
+            "rawX",
+            "rawY",
+            "x",
+            "y",
+            "facing",
+            "mapSprite",
+            "actionValue");
+        if (RequiredNonNegativeInt(source, "address", "map3.entity142.actor.address") !=
+                OriginalMapRuntimeAdmission.Entity142ActorSourceAddress ||
+            !string.Equals(
+                RequiredString(source, "kind", "map3.entity142.actor.kind"),
+                "fixed",
+                StringComparison.Ordinal) ||
+            RequiredByte(source, "rawX", "map3.entity142.actor.rawX") !=
+                OriginalMapRuntimeAdmission.Entity142ActorX ||
+            RequiredByte(source, "rawY", "map3.entity142.actor.rawY") !=
+                OriginalMapRuntimeAdmission.Entity142ActorY ||
+            RequiredByte(source, "x", "map3.entity142.actor.x") !=
+                OriginalMapRuntimeAdmission.Entity142ActorX ||
+            RequiredByte(source, "y", "map3.entity142.actor.y") !=
+                OriginalMapRuntimeAdmission.Entity142ActorY ||
+            RequiredByte(source, "facing", "map3.entity142.actor.facing") !=
+                OriginalMapRuntimeAdmission.Entity142ActorOpaqueFacing ||
+            RequiredByte(source, "mapSprite", "map3.entity142.actor.mapSprite") !=
+                OriginalMapRuntimeAdmission.Entity142ActorMapSprite ||
+            RequiredUInt32(source, "actionValue", "map3.entity142.actor.actionValue") !=
+                OriginalMapRuntimeAdmission.Entity142ActorActionValue)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.entity142.actor",
+                "The accepted Map 3 Entity 142 source actor drifted.");
+        }
+
+        OriginalMapEntityDefinition actor = entityPopulation.Records[
+            OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1];
+        return new OriginalMapEntity142Definition(
+            new OriginalMapEntity142EventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                entityPopulation.SelectedSetup,
+                OriginalMapRuntimeAdmission.Entity142EventResourceId,
+                OriginalMapRuntimeAdmission.Entity142EventRecordOrdinal,
+                OriginalMapRuntimeAdmission.Entity142EventTargetIdentity,
+                OriginalMapRuntimeAdmission.Entity142EventOpaqueFacing),
+            actor.Identity,
+            OriginalMapRuntimeAdmission.Entity142LogicalActorId,
+            OriginalMapRuntimeAdmission.Entity142PhysicalActorSlot,
+            actor.Position,
+            actor.OpaqueFacing,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.Entity142PlayerInteractionX,
+                OriginalMapRuntimeAdmission.Entity142PlayerInteractionY),
+            OriginalMapRuntimeAdmission.Entity142PlayerInteractionOpaqueFacing,
+            OriginalMapRuntimeAdmission.Entity142FirstInteractionFlag261,
+            OriginalMapRuntimeAdmission.Entity142CompletionFlag602,
+            OriginalMapRuntimeAdmission.Entity142FirstTextIds,
+            OriginalMapRuntimeAdmission.Entity142RepeatTextIds,
+            OriginalMapRuntimeAdmission.Entity142FirstStages,
+            OriginalMapRuntimeAdmission.Entity142RepeatStages);
     }
 
     private static void ValidateSarahBlockingProgram(
