@@ -189,7 +189,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapSarahDefinition? sarah = null,
         OriginalMapEntity142Definition? entity142 = null,
         OriginalMapAstralZoneDefinition? astralZone = null,
-        OriginalMapMessengerAcceptanceDefinition? messengerAcceptance = null)
+        OriginalMapMessengerAcceptanceDefinition? messengerAcceptance = null,
+        OriginalMapCastleGateDefinition? castleGate = null)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
@@ -435,6 +436,32 @@ public sealed class OriginalMapImportDefinition
             }
         }
 
+        if (castleGate is not null)
+        {
+            if (castleGate.Identity.Map != map ||
+                castleGate.Identity.Setup != controlledAdmission.SelectedSetup ||
+                messengerAcceptance is null ||
+                !areaCatalog.Traversal.IsWithinActiveArea(castleGate.Approach) ||
+                !areaCatalog.Traversal.IsWithinActiveArea(castleGate.Trigger) ||
+                OriginalMapTraversal.IsBlocked(workingLayout, castleGate.Approach) ||
+                OriginalMapTraversal.IsBlocked(workingLayout, castleGate.Trigger) ||
+                areaCatalog.Traversal.ResolveCandidateTarget(
+                    workingLayout,
+                    castleGate.Approach,
+                    castleGate.EntryDirection) != castleGate.Trigger ||
+                castleGate.GuardMoves.Count != messengerAcceptance.Guards.Count ||
+                castleGate.GuardMoves.Any(move =>
+                    messengerAcceptance.Guards.SingleOrDefault(guard =>
+                        guard.LogicalActorId == move.LogicalActorId &&
+                        guard.SourceRecord == move.SourceRecord &&
+                        guard.Position == move.Source) is null))
+            {
+                throw new ArgumentException(
+                    "The castle-gate opening must bind the admitted post-messenger Map 3 route and guard positions.",
+                    nameof(castleGate));
+            }
+        }
+
         if (roofOnLoadClear is not null)
         {
             if (roofOnLoadClear.Identity.Map != map)
@@ -519,6 +546,7 @@ public sealed class OriginalMapImportDefinition
         Entity142 = entity142;
         AstralZone = astralZone;
         MessengerAcceptance = messengerAcceptance;
+        CastleGate = castleGate;
     }
 
     public MapId Map { get; }
@@ -554,6 +582,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapAstralZoneDefinition? AstralZone { get; }
 
     public OriginalMapMessengerAcceptanceDefinition? MessengerAcceptance { get; }
+
+    public OriginalMapCastleGateDefinition? CastleGate { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

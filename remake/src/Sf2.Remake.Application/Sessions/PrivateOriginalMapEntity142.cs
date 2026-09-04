@@ -570,7 +570,12 @@ public sealed partial class GameSession
             state,
             request,
             request,
-            lastEntity142Acknowledgement: null);
+            lastEntity142Acknowledgement: null,
+            lastAstralZone: null,
+            current.MessengerAcceptance,
+            lastMessengerAcceptance: null,
+            current.CastleGate,
+            lastCastleGate: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapEntity142RequestApplied(next, request);
     }
@@ -660,7 +665,12 @@ public sealed partial class GameSession
             after,
             pendingEntity142: null,
             lastEntity142Request: null,
-            receipt);
+            receipt,
+            lastAstralZone: null,
+            current.MessengerAcceptance,
+            lastMessengerAcceptance: null,
+            current.CastleGate,
+            lastCastleGate: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapEntity142AcknowledgementApplied(next, receipt);
     }

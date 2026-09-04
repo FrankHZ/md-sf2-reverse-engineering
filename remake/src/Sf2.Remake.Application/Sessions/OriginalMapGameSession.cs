@@ -31,7 +31,9 @@ public sealed record PrivateOriginalMapSessionSnapshot
             lastEntity142Acknowledgement = null,
         PrivateOriginalMapAstralZoneReceipt? lastAstralZone = null,
         PrivateOriginalMapMessengerAcceptanceState? messengerAcceptance = null,
-        PrivateOriginalMapMessengerAcceptanceReceipt? lastMessengerAcceptance = null)
+        PrivateOriginalMapMessengerAcceptanceReceipt? lastMessengerAcceptance = null,
+        PrivateOriginalMapCastleGateState? castleGate = null,
+        PrivateOriginalMapCastleGateReceipt? lastCastleGate = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -141,6 +143,29 @@ public sealed record PrivateOriginalMapSessionSnapshot
             }
         }
 
+        PrivateOriginalMapCastleGateState? admittedCastleGate = castleGate;
+        if (definition.CastleGate is null)
+        {
+            if (castleGate is not null || lastCastleGate is not null)
+            {
+                throw new ArgumentException(
+                    "Castle-gate state requires its admitted definition.",
+                    nameof(castleGate));
+            }
+        }
+        else
+        {
+            admittedCastleGate ??= PrivateOriginalMapCastleGateState.Ready(
+                definition.CastleGate);
+            if (!admittedCastleGate.Matches(definition.CastleGate) ||
+                (admittedCastleGate.Opened && admittedMessenger?.Accepted != true))
+            {
+                throw new ArgumentException(
+                    "Castle-gate state must match its admitted definition and completed messenger prerequisite.",
+                    nameof(castleGate));
+            }
+        }
+
         definition.BlockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
         if (definition.Traversal.SelectActiveArea(playerPosition) is null ||
             OriginalMapTraversal.IsBlocked(workingLayout, playerPosition))
@@ -170,6 +195,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 lastAstralZone is not null ||
                 admittedMessenger?.Accepted == true ||
                 lastMessengerAcceptance is not null ||
+                admittedCastleGate?.Opened == true ||
+                lastCastleGate is not null ||
                 pendingEntity142 is not null ||
                 lastEntity142Request is not null ||
                 lastEntity142Acknowledgement is not null ||
@@ -410,6 +437,27 @@ public sealed record PrivateOriginalMapSessionSnapshot
             }
         }
 
+        if (lastCastleGate is not null)
+        {
+            OriginalMapCastleGateDefinition admitted =
+                definition.CastleGate ?? throw new ArgumentException(
+                    "A castle-gate receipt requires its admitted definition.",
+                    nameof(lastCastleGate));
+            if (admittedCastleGate?.Opened != true ||
+                admittedMessenger?.Accepted != true ||
+                !lastCastleGate.Matches(admitted) ||
+                !ReferenceEquals(lastCastleGate.After, admittedCastleGate) ||
+                lastTraversal is null ||
+                lastTraversal != lastCastleGate.Traversal ||
+                playerPosition != admitted.Trigger ||
+                lastCastleGate.SimulationStep != simulationStep)
+            {
+                throw new ArgumentException(
+                    "The castle-gate receipt must match its atomic traversal and persistent route state.",
+                    nameof(lastCastleGate));
+            }
+        }
+
         if ((admittedSarah?.AstralZoneFlag260Set == true) !=
                 (admittedZone601?.Phase ==
                     PrivateOriginalMapZone601LifecyclePhase.AstralZoneRepositioned))
@@ -570,6 +618,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         LastAstralZone = lastAstralZone;
         MessengerAcceptance = admittedMessenger;
         LastMessengerAcceptance = lastMessengerAcceptance;
+        CastleGate = admittedCastleGate;
+        LastCastleGate = lastCastleGate;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -644,6 +694,10 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public PrivateOriginalMapMessengerAcceptanceState? MessengerAcceptance { get; }
 
     public PrivateOriginalMapMessengerAcceptanceReceipt? LastMessengerAcceptance { get; }
+
+    public PrivateOriginalMapCastleGateState? CastleGate { get; }
+
+    public PrivateOriginalMapCastleGateReceipt? LastCastleGate { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -675,7 +729,8 @@ public sealed record PrivateOriginalMapMoveApplied
         OriginalMapTraversalResult traversal,
         PrivateOriginalMapZone601Receipt? zone601 = null,
         PrivateOriginalMapAstralZoneReceipt? astralZone = null,
-        PrivateOriginalMapMessengerAcceptanceReceipt? messengerAcceptance = null)
+        PrivateOriginalMapMessengerAcceptanceReceipt? messengerAcceptance = null,
+        PrivateOriginalMapCastleGateReceipt? castleGate = null)
     {
         Snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
         _traversal = traversal ?? throw new ArgumentNullException(nameof(traversal));
@@ -701,9 +756,18 @@ public sealed record PrivateOriginalMapMoveApplied
                 nameof(messengerAcceptance));
         }
 
+
+        if (castleGate is not null && !ReferenceEquals(snapshot.LastCastleGate, castleGate))
+        {
+            throw new ArgumentException(
+                "A castle-gate movement result must expose the snapshot's exact receipt.",
+                nameof(castleGate));
+        }
+
         Zone601 = zone601;
         AstralZone = astralZone;
         MessengerAcceptance = messengerAcceptance;
+        CastleGate = castleGate;
     }
 
     public PrivateOriginalMapMoveApplied(
@@ -731,6 +795,8 @@ public sealed record PrivateOriginalMapMoveApplied
     public PrivateOriginalMapAstralZoneReceipt? AstralZone { get; }
 
     public PrivateOriginalMapMessengerAcceptanceReceipt? MessengerAcceptance { get; }
+
+    public PrivateOriginalMapCastleGateReceipt? CastleGate { get; }
 }
 
 public sealed partial class GameSession
@@ -805,6 +871,11 @@ public sealed partial class GameSession
             return messengerApplied!;
         }
 
+        if (TryApplyPrivateOriginalMapCastleGate(current, command, out var castleGateApplied))
+        {
+            return castleGateApplied!;
+        }
+
         if (TryApplyPrivateOriginalMapNaturalStepCopy(
                 current,
                 command,
@@ -858,7 +929,12 @@ public sealed partial class GameSession
                 current.Entity142,
                 pendingEntity142: null,
                 lastEntity142Request: null,
-                lastEntity142Acknowledgement: null);
+                lastEntity142Acknowledgement: null,
+                lastAstralZone: null,
+                current.MessengerAcceptance,
+                lastMessengerAcceptance: null,
+                current.CastleGate,
+                lastCastleGate: null);
             _privateOriginalMapSnapshot = blocked;
             return new PrivateOriginalMapMoveApplied(blocked, occupied);
         }
@@ -889,7 +965,12 @@ public sealed partial class GameSession
             current.Entity142,
             pendingEntity142: null,
             lastEntity142Request: null,
-            lastEntity142Acknowledgement: null);
+            lastEntity142Acknowledgement: null,
+            lastAstralZone: null,
+            current.MessengerAcceptance,
+            lastMessengerAcceptance: null,
+            current.CastleGate,
+            lastCastleGate: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -971,7 +1052,12 @@ public sealed partial class GameSession
             current.Entity142,
             pendingEntity142: null,
             lastEntity142Request: null,
-            lastEntity142Acknowledgement: null);
+            lastEntity142Acknowledgement: null,
+            lastAstralZone: null,
+            current.MessengerAcceptance,
+            lastMessengerAcceptance: null,
+            current.CastleGate,
+            lastCastleGate: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -1264,6 +1350,18 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.messengerAcceptance",
                 "The admitted definition does not retain the exact bounded Map 3 messenger acceptance projection.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedCastleGate(
+                definition.CastleGate,
+                definition.MessengerAcceptance,
+                definition.Traversal,
+                definition.WorkingLayout))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.castleGate",
+                "The admitted definition does not retain the exact bounded Map 3 castle-gate opening projection.");
         }
 
         OriginalMapControlledAdmission controlled = definition.ControlledAdmission;

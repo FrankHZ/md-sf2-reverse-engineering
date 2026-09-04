@@ -454,7 +454,8 @@ public sealed class OriginalMapVisualGameSessionTests
             AcceptedSarah(map),
             AcceptedEntity142(map),
             AcceptedAstralZone(map),
-            AcceptedOriginalMapMessenger.Create(map));
+            AcceptedOriginalMapMessenger.Create(map),
+            AcceptedOriginalMapCastleGate.Create(map));
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>

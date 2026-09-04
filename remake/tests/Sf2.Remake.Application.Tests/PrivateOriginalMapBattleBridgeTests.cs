@@ -515,7 +515,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             AcceptedSarah(map),
             AcceptedEntity142(map),
             AcceptedAstralZone(map),
-            AcceptedOriginalMapMessenger.Create(map));
+            AcceptedOriginalMapMessenger.Create(map),
+            AcceptedOriginalMapCastleGate.Create(map));
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>

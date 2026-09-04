@@ -244,6 +244,34 @@ public static class OriginalMapRuntimeAdmission
     public const byte MessengerEndpointOpaqueFacing = 3;
     public const string MessengerTerminalIdentity = "WaitForEvent";
 
+    public const int CastleGateZoneEventHandlerAddress = 331084;
+    public const string CastleGateZoneEventResourceId = "ms_map3_ZoneEvents";
+    public const int CastleGateZoneEventSourceRecordCount = 10;
+    public const int CastleGateZoneEventRecordOrdinal = 6;
+    public const int CastleGateZoneEventRecordAddress = 331104;
+    public const int CastleGateZoneEventRelativeOffset = 172;
+    public const int CastleGateZoneEventResolvedTargetAddress = 331256;
+    public const string CastleGateZoneEventTargetIdentity = "Map3_ZoneEvent4";
+    public const int CastleGateApproachX = 31;
+    public const int CastleGateApproachY = 6;
+    public const ExplorationDirection CastleGateEntryDirection = ExplorationDirection.North;
+    public const int CastleGateTriggerX = 31;
+    public const int CastleGateTriggerY = 5;
+    public const string CastleGateProgramIdentity = "cs_51652";
+    public const int CastleGateProgramAddress = 333394;
+    public const int CastleGateProgramOperationCount = 7;
+    public const int CastleGateSourceProgramOperationCount = 26;
+    public const string CastleGateControlShapeSha256 =
+        "09BB739724F4F4D21C4C44D1466E962418948EBDEDFD7DE36DA4F31C2220CA26";
+    public const int CastleGateTextCursorId = 537;
+    public const int CastleGateCompletionFlag604 = 604;
+    public const int CastleGateGuard138DestinationX = 28;
+    public const int CastleGateGuard138DestinationY = 3;
+    public const ExplorationDirection CastleGateGuard138Direction = ExplorationDirection.East;
+    public const int CastleGateGuard139DestinationX = 30;
+    public const int CastleGateGuard139DestinationY = 3;
+    public const ExplorationDirection CastleGateGuard139Direction = ExplorationDirection.West;
+
     public const string RoofOnLoadResourceId = "Map03s5_RoofEvents";
     public const int RoofOnLoadSourceRecordCount = 10;
     public const int HouseRoofOnLoadRecordOrdinal = 1;
@@ -289,6 +317,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-astral-zone-handoff-v1";
     public const string MessengerAcceptanceCapability =
         "private-local-map3-messenger-acceptance-v1";
+    public const string CastleGateOpeningCapability =
+        "private-local-map3-castle-gate-opening-v1";
 
     private static readonly ReadOnlyCollection<int> ReadOnlyZone601TextIds =
         Array.AsReadOnly(new[] { 510, 511, 483 });
@@ -451,6 +481,55 @@ public static class OriginalMapRuntimeAdmission
             OriginalMapMessengerAcceptanceStage.ReachStableWaitForEvent,
         ]);
 
+    private static readonly ReadOnlyCollection<OriginalMapCastleGateGuardMove>
+        ReadOnlyCastleGateGuardMoves = Array.AsReadOnly(
+        [
+            new OriginalMapCastleGateGuardMove(
+                MessengerGuard138LogicalId,
+                new OriginalMapEntityRecordIdentity(
+                    AcceptedEntityListResourceId,
+                    MessengerGuard138SourceRecordOrdinal),
+                new MapPosition(MessengerGuard138X, MessengerGuard138Y),
+                CastleGateGuard138Direction,
+                new MapPosition(
+                    CastleGateGuard138DestinationX,
+                    CastleGateGuard138DestinationY)),
+            new OriginalMapCastleGateGuardMove(
+                MessengerGuard139LogicalId,
+                new OriginalMapEntityRecordIdentity(
+                    AcceptedEntityListResourceId,
+                    MessengerGuard139SourceRecordOrdinal),
+                new MapPosition(MessengerGuard139X, MessengerGuard139Y),
+                CastleGateGuard139Direction,
+                new MapPosition(
+                    CastleGateGuard139DestinationX,
+                    CastleGateGuard139DestinationY)),
+        ]);
+
+    private static readonly ReadOnlyCollection<OriginalMapCastleGateStage>
+        ReadOnlyCastleGateStages = Array.AsReadOnly(
+        [
+            OriginalMapCastleGateStage.SetTextCursor537,
+            OriginalMapCastleGateStage.BeginGuard138Actions,
+            OriginalMapCastleGateStage.MoveGuard138RightOne,
+            OriginalMapCastleGateStage.EndGuard138Actions,
+            OriginalMapCastleGateStage.BeginGuard139ActionsAndWait,
+            OriginalMapCastleGateStage.MoveGuard139LeftOne,
+            OriginalMapCastleGateStage.EndCastleGateProgram,
+        ]);
+
+    private static readonly ReadOnlyCollection<int>
+        ReadOnlyCastleGateProjectionSourceOperationIndices = Array.AsReadOnly(
+        [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            25,
+        ]);
+
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
             new[]
@@ -473,6 +552,7 @@ public static class OriginalMapRuntimeAdmission
                 Entity142AcknowledgementCapability,
                 AstralZoneHandoffCapability,
                 MessengerAcceptanceCapability,
+                CastleGateOpeningCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -545,6 +625,15 @@ public static class OriginalMapRuntimeAdmission
 
     public static IReadOnlyList<OriginalMapMessengerAcceptanceStage> MessengerStages =>
         ReadOnlyMessengerStages;
+
+    public static IReadOnlyList<OriginalMapCastleGateGuardMove> CastleGateGuardMoves =>
+        ReadOnlyCastleGateGuardMoves;
+
+    public static IReadOnlyList<OriginalMapCastleGateStage> CastleGateStages =>
+        ReadOnlyCastleGateStages;
+
+    public static IReadOnlyList<int> CastleGateProjectionSourceOperationIndices =>
+        ReadOnlyCastleGateProjectionSourceOperationIndices;
 
     internal static bool HasExactRequiredCapabilities(IEnumerable<string> capabilities)
     {
@@ -1048,6 +1137,60 @@ public static class OriginalMapRuntimeAdmission
                 MessengerGuard139OpaqueFacing,
                 MessengerGuardMapSprite,
                 MessengerGuardActionValue);
+    }
+
+    public static bool HasExactAcceptedCastleGate(
+        OriginalMapCastleGateDefinition? definition,
+        OriginalMapMessengerAcceptanceDefinition? messengerAcceptance,
+        OriginalMapTraversal traversal,
+        WorkingMapLayout workingLayout)
+    {
+        ArgumentNullException.ThrowIfNull(traversal);
+        ArgumentNullException.ThrowIfNull(workingLayout);
+        if (definition is null || messengerAcceptance is null ||
+            definition.Identity != new OriginalMapZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                new MapId(MapId),
+                new MapSetupId(SelectedSetupId),
+                CastleGateZoneEventResourceId,
+                CastleGateZoneEventRecordOrdinal,
+                CastleGateZoneEventTargetIdentity) ||
+            definition.Approach != new MapPosition(CastleGateApproachX, CastleGateApproachY) ||
+            definition.EntryDirection != CastleGateEntryDirection ||
+            definition.Trigger != new MapPosition(CastleGateTriggerX, CastleGateTriggerY) ||
+            !string.Equals(
+                definition.ProgramIdentity,
+                CastleGateProgramIdentity,
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                definition.ControlShapeSha256,
+                CastleGateControlShapeSha256,
+                StringComparison.OrdinalIgnoreCase) ||
+            definition.TextCursorId != CastleGateTextCursorId ||
+            definition.CompletionFlag != CastleGateCompletionFlag604 ||
+            definition.SourceOperationCount != CastleGateSourceProgramOperationCount ||
+            !definition.ProjectionSourceOperationIndices.SequenceEqual(
+                ReadOnlyCastleGateProjectionSourceOperationIndices) ||
+            !definition.GuardMoves.SequenceEqual(ReadOnlyCastleGateGuardMoves) ||
+            !definition.Stages.SequenceEqual(ReadOnlyCastleGateStages) ||
+            !traversal.IsWithinActiveArea(definition.Approach) ||
+            !traversal.IsWithinActiveArea(definition.Trigger) ||
+            OriginalMapTraversal.IsBlocked(workingLayout, definition.Approach) ||
+            OriginalMapTraversal.IsBlocked(workingLayout, definition.Trigger) ||
+            traversal.ResolveCandidateTarget(
+                workingLayout,
+                definition.Approach,
+                definition.EntryDirection) != definition.Trigger)
+        {
+            return false;
+        }
+
+        return messengerAcceptance.Guards.Count == definition.GuardMoves.Count &&
+            definition.GuardMoves.All(move =>
+                messengerAcceptance.Guards.SingleOrDefault(guard =>
+                    guard.LogicalActorId == move.LogicalActorId &&
+                    guard.SourceRecord == move.SourceRecord &&
+                    guard.Position == move.Source) is not null);
     }
 
     private static bool MatchesFixedEntity(

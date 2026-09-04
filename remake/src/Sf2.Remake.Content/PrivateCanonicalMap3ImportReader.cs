@@ -46,6 +46,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.AstralZoneHandoffCapability;
     public const string MessengerAcceptanceCapability =
         OriginalMapRuntimeAdmission.MessengerAcceptanceCapability;
+    public const string CastleGateOpeningCapability =
+        OriginalMapRuntimeAdmission.CastleGateOpeningCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -80,6 +82,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         Entity142AcknowledgementCapability,
         AstralZoneHandoffCapability,
         MessengerAcceptanceCapability,
+        CastleGateOpeningCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -392,6 +395,10 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 sarah,
                 entity142,
                 resources);
+        OriginalMapCastleGateDefinition castleGate = ReadAcceptedCastleGate(
+            map,
+            messengerAcceptance,
+            resources);
 
         OriginalMapControlledAdmission controlledAdmission = new(
             map,
@@ -419,7 +426,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             sarah,
             entity142,
             astralZone,
-            messengerAcceptance);
+            messengerAcceptance,
+            castleGate);
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -2424,6 +2432,162 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             OriginalMapRuntimeAdmission.MessengerEndpointOpaqueFacing,
             OriginalMapRuntimeAdmission.MessengerTerminalIdentity,
             OriginalMapRuntimeAdmission.MessengerStages);
+    }
+
+    private static OriginalMapCastleGateDefinition ReadAcceptedCastleGate(
+        MapId map,
+        OriginalMapMessengerAcceptanceDefinition messengerAcceptance,
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        JsonElement handler = RequiredResource(
+            resources,
+            "zoneEventHandlers",
+            OriginalMapRuntimeAdmission.CastleGateZoneEventResourceId);
+        RequireExactProperties(
+            handler,
+            "map3.castleGate.handler",
+            "id",
+            "address",
+            "kind",
+            "records");
+        JsonElement records = RequiredProperty(
+            handler,
+            "records",
+            "map3.castleGate.handler.records");
+        RequireArray(records, "map3.castleGate.handler.records");
+        if (RequiredNonNegativeInt(
+                handler,
+                "address",
+                "map3.castleGate.handler.address") !=
+                OriginalMapRuntimeAdmission.CastleGateZoneEventHandlerAddress ||
+            !string.Equals(
+                RequiredString(handler, "kind", "map3.castleGate.handler.kind"),
+                "table",
+                StringComparison.Ordinal) ||
+            records.GetArrayLength() !=
+                OriginalMapRuntimeAdmission.CastleGateZoneEventSourceRecordCount)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.castleGate.handler",
+                "The accepted Map 3 castle-gate event table identity drifted.");
+        }
+
+        JsonElement selected = records[
+            OriginalMapRuntimeAdmission.CastleGateZoneEventRecordOrdinal - 1];
+        RequireExactProperties(
+            selected,
+            "map3.castleGate.record",
+            "address",
+            "kind",
+            "relativeOffset",
+            "resolvedTargetAddress",
+            "x",
+            "y");
+        if (RequiredNonNegativeInt(
+                selected,
+                "address",
+                "map3.castleGate.record.address") !=
+                OriginalMapRuntimeAdmission.CastleGateZoneEventRecordAddress ||
+            !string.Equals(
+                RequiredString(selected, "kind", "map3.castleGate.record.kind"),
+                "specific",
+                StringComparison.Ordinal) ||
+            RequiredNonNegativeInt(
+                selected,
+                "relativeOffset",
+                "map3.castleGate.record.relativeOffset") !=
+                OriginalMapRuntimeAdmission.CastleGateZoneEventRelativeOffset ||
+            RequiredNonNegativeInt(
+                selected,
+                "resolvedTargetAddress",
+                "map3.castleGate.record.resolvedTargetAddress") !=
+                OriginalMapRuntimeAdmission.CastleGateZoneEventResolvedTargetAddress ||
+            RequiredByte(selected, "x", "map3.castleGate.record.x") !=
+                OriginalMapRuntimeAdmission.CastleGateTriggerX ||
+            RequiredByte(selected, "y", "map3.castleGate.record.y") !=
+                OriginalMapRuntimeAdmission.CastleGateTriggerY)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.castleGate.record",
+                "The accepted Map 3 castle-gate source record drifted.");
+        }
+
+        JsonElement program = RequiredResource(
+            resources,
+            "standaloneScriptPrograms",
+            OriginalMapRuntimeAdmission.CastleGateProgramIdentity);
+        JsonElement operations = ValidateMessengerProgramHeader(
+            program,
+            "map3.castleGate.program",
+            OriginalMapRuntimeAdmission.CastleGateProgramIdentity,
+            OriginalMapRuntimeAdmission.CastleGateProgramAddress,
+            OriginalMapRuntimeAdmission.CastleGateSourceProgramOperationCount);
+        (string Opcode, string Operand)[] expected =
+        [
+            ("textCursor", "537"),
+            ("entityActions", "138"),
+            ("moveRight", "1"),
+            ("endActions", ""),
+            ("entityActionsWait", "139"),
+            ("moveLeft", "1"),
+            ("endActions", ""),
+            ("setFacing", "138,DOWN"),
+            ("setFacing", "139,DOWN"),
+            ("nextSingleText", "$0,138"),
+            ("setFacing", "ALLY_SARAH,UP"),
+            ("setFacing", "ALLY_CHESTER,UP"),
+            ("nextSingleText", "$C0,ALLY_SARAH"),
+            ("nextSingleText", "$0,138"),
+            ("nextSingleText", "$C0,ALLY_SARAH"),
+            ("nextSingleText", "$0,138"),
+            ("nextSingleText", "$0,139"),
+            ("entityActions", "138"),
+            ("moveLeft", "1"),
+            ("endActions", ""),
+            ("entityActionsWait", "139"),
+            ("moveRight", "1"),
+            ("endActions", ""),
+            ("setFacing", "138,DOWN"),
+            ("setFacing", "139,DOWN"),
+            ("csc_end", ""),
+        ];
+        for (int index = 0; index < expected.Length; index++)
+        {
+            ValidateMessengerOperation(
+                operations[index],
+                $"map3.castleGate.program.operations[{index}]",
+                index,
+                expected[index].Opcode,
+                expected[index].Operand,
+                [],
+                []);
+        }
+
+        return new OriginalMapCastleGateDefinition(
+            new OriginalMapZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                messengerAcceptance.Identity.Setup,
+                OriginalMapRuntimeAdmission.CastleGateZoneEventResourceId,
+                OriginalMapRuntimeAdmission.CastleGateZoneEventRecordOrdinal,
+                OriginalMapRuntimeAdmission.CastleGateZoneEventTargetIdentity),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.CastleGateApproachX,
+                OriginalMapRuntimeAdmission.CastleGateApproachY),
+            OriginalMapRuntimeAdmission.CastleGateEntryDirection,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.CastleGateTriggerX,
+                OriginalMapRuntimeAdmission.CastleGateTriggerY),
+            OriginalMapRuntimeAdmission.CastleGateProgramIdentity,
+            OriginalMapRuntimeAdmission.CastleGateControlShapeSha256,
+            OriginalMapRuntimeAdmission.CastleGateTextCursorId,
+            OriginalMapRuntimeAdmission.CastleGateCompletionFlag604,
+            OriginalMapRuntimeAdmission.CastleGateSourceProgramOperationCount,
+            OriginalMapRuntimeAdmission.CastleGateProjectionSourceOperationIndices,
+            OriginalMapRuntimeAdmission.CastleGateGuardMoves,
+            OriginalMapRuntimeAdmission.CastleGateStages);
     }
 
     private static bool MatchesAcceptedMessengerActor(
