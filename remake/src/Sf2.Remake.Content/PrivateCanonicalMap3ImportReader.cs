@@ -28,6 +28,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.BlocksetSourceAdmissionCapability;
     public const string VisualReferenceAdmissionCapability =
         OriginalMapRuntimeAdmission.VisualReferenceAdmissionCapability;
+    public const string SameMapWarpAdmissionCapability =
+        OriginalMapRuntimeAdmission.SameMapWarpAdmissionCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -53,6 +55,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         SelectedSetupEntityPopulationCapability,
         BlocksetSourceAdmissionCapability,
         VisualReferenceAdmissionCapability,
+        SameMapWarpAdmissionCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -60,7 +63,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         "natural-flags-setup-variant-selection",
         "natural-route-reach-order-and-continuity",
         "entity-occupancy-collision-and-obstruction",
-        "warp-event-init-effects-and-persistence",
+        "other-warp-events-setup-init-effects-and-persistence",
         "original-assets-text-presentation-and-audio",
         "h3-h4-8c-private-fidelity",
     ];
@@ -317,6 +320,12 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             RequiredString(references, "areaTable", "maps[3].references.areaTable"));
         OriginalMapAreaCatalog areaCatalog = ReadActiveAreas(areaTable);
 
+        JsonElement warpTable = RequiredResource(
+            resources,
+            "warpEventTables",
+            RequiredString(references, "warpEventTable", "maps[3].references.warpEventTable"));
+        OriginalMapSameMapWarpCatalog sameMapWarps = ReadAcceptedSameMapWarps(warpTable);
+
         JsonElement stepTable = RequiredResource(
             resources,
             "stepEventTables",
@@ -344,6 +353,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             visualResourceSelection,
             controlledAdmission,
             controlledStepCopy,
+            sameMapWarps,
             UnsupportedCapabilities);
         OriginalMapImportReceipt receipt = new(
             PackageId,
@@ -653,6 +663,139 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         }
 
         return new OriginalMapBlockCatalog(definitions);
+    }
+
+    private static OriginalMapSameMapWarpCatalog ReadAcceptedSameMapWarps(
+        JsonElement resource)
+    {
+        const string resourceField = "map3.warpEventTable";
+        RequireExactProperties(
+            resource,
+            resourceField,
+            "id",
+            "address",
+            "sourceKind",
+            "records");
+        string resourceId = RequiredString(resource, "id", resourceField + ".id");
+        if (!string.Equals(
+                resourceId,
+                OriginalMapRuntimeAdmission.SameMapWarpResourceId,
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                resourceField + ".id",
+                "Map 3 does not retain the accepted warp-event resource identity.");
+        }
+
+        _ = RequiredNonNegativeInt(resource, "address", resourceField + ".address");
+        if (!string.Equals(
+                RequiredString(resource, "sourceKind", resourceField + ".sourceKind"),
+                "warpEvents",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                resourceField + ".sourceKind",
+                "Map 3 does not retain the accepted warp-event source kind.");
+        }
+
+        JsonElement records = RequiredProperty(resource, "records", resourceField + ".records");
+        RequireArray(records, resourceField + ".records");
+        if (records.GetArrayLength() != OriginalMapRuntimeAdmission.SameMapWarpSourceRecordCount)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                resourceField + ".records",
+                "Map 3 must retain its exact source warp-record count.");
+        }
+
+        List<OriginalMapSameMapWarpDefinition> admitted = [];
+        int zeroBasedOrdinal = 0;
+        foreach (JsonElement record in records.EnumerateArray())
+        {
+            string field = $"{resourceField}.records[{zeroBasedOrdinal}]";
+            RequireObject(record, field);
+            RequireExactProperties(
+                record,
+                field,
+                "trigger",
+                "scrollMode",
+                "retainsCoordinates",
+                "scrollDirection",
+                "targetMap",
+                "destination",
+                "facing",
+                "reserved");
+            (int triggerX, int triggerY) = ReadPoint(
+                RequiredProperty(record, "trigger", field + ".trigger"),
+                field + ".trigger",
+                byteSized: true);
+            byte scrollMode = RequiredByte(record, "scrollMode", field + ".scrollMode");
+            bool retainsCoordinates = RequiredBoolean(
+                record,
+                "retainsCoordinates",
+                field + ".retainsCoordinates");
+            JsonElement scrollDirection = RequiredProperty(
+                record,
+                "scrollDirection",
+                field + ".scrollDirection");
+            if (scrollDirection.ValueKind is not JsonValueKind.Null &&
+                !TryByte(scrollDirection, out _))
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.InvalidMapProjection,
+                    field + ".scrollDirection",
+                    "A canonical warp scroll direction must be null or a byte.");
+            }
+
+            byte targetMap = RequiredByte(record, "targetMap", field + ".targetMap");
+            (int destinationX, int destinationY) = ReadPoint(
+                RequiredProperty(record, "destination", field + ".destination"),
+                field + ".destination",
+                byteSized: true);
+            byte facing = RequiredByte(record, "facing", field + ".facing");
+            byte reserved = RequiredByte(record, "reserved", field + ".reserved");
+
+            int oneBasedOrdinal = zeroBasedOrdinal + 1;
+            if (oneBasedOrdinal is OriginalMapRuntimeAdmission.SchoolWarpRecordOrdinal or
+                OriginalMapRuntimeAdmission.HouseWarpRecordOrdinal)
+            {
+                if (scrollMode != 0 || retainsCoordinates ||
+                    scrollDirection.ValueKind is not JsonValueKind.Null ||
+                    targetMap != byte.MaxValue || reserved != 0)
+                {
+                    throw Admission(
+                        OriginalMapImportFailureCode.InvalidMapProjection,
+                        field,
+                        "The accepted Map 3 egress warp must remain a no-scroll current-map relocation.");
+                }
+
+                admitted.Add(
+                    new OriginalMapSameMapWarpDefinition(
+                        new OriginalMapSameMapWarpIdentity(
+                            ContentProfile.PrivateLocal,
+                            new MapId(OriginalMapRuntimeAdmission.MapId),
+                            resourceId,
+                            oneBasedOrdinal),
+                        new MapPosition(triggerX, triggerY),
+                        new MapPosition(destinationX, destinationY),
+                        facing));
+            }
+
+            zeroBasedOrdinal++;
+        }
+
+        OriginalMapSameMapWarpCatalog catalog = new(admitted);
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedSameMapWarps(catalog))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                resourceField,
+                "The accepted Map 3 same-map warp projection drifted.");
+        }
+
+        return catalog;
     }
 
     private static ushort[] ReadLayout(JsonElement resource, int blockCount)
@@ -1360,6 +1503,20 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         }
 
         return result;
+    }
+
+    private static bool RequiredBoolean(JsonElement owner, string name, string field)
+    {
+        JsonElement value = RequiredProperty(owner, name, field);
+        if (value.ValueKind is not (JsonValueKind.True or JsonValueKind.False))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                field,
+                "A required canonical value must be a boolean.");
+        }
+
+        return value.GetBoolean();
     }
 
     private static int RequiredNonNegativeInt(JsonElement owner, string name, string field)

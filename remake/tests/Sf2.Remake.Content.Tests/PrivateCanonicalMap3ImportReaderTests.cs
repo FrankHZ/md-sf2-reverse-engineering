@@ -45,6 +45,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.SelectedSetupEntityPopulationCapability,
                 PrivateCanonicalMap3ImportReader.BlocksetSourceAdmissionCapability,
                 PrivateCanonicalMap3ImportReader.VisualReferenceAdmissionCapability,
+                PrivateCanonicalMap3ImportReader.SameMapWarpAdmissionCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -116,6 +117,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(6, stepCopy.Identity.OneBasedRecordOrdinal);
         Assert.Equal(new MapPosition(41, 13), stepCopy.Trigger);
         Assert.Equal((62, 0, 41, 13, 1, 1), Geometry(stepCopy.Copy));
+        OriginalMapSameMapWarpCatalog warps = Assert.IsType<OriginalMapSameMapWarpCatalog>(
+            accepted.Definition.SameMapWarps);
+        Assert.Equal("Map03s6_WarpEvents", warps.ResourceId);
+        Assert.Equal(new[] { 6, 9 },
+            warps.Records.Select(record => record.Identity.OneBasedRecordOrdinal));
+        Assert.Equal(new MapPosition(59, 12), warps.Records[0].Destination);
+        Assert.Equal(new MapPosition(3, 3), warps.Records[1].Destination);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedSameMapWarps(warps));
     }
 
     [Fact]
@@ -363,6 +372,62 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     }
 
     [Fact]
+    public void SameMapWarpResourceRowsAndExactSelectedProjectionFailClosed()
+    {
+        JsonObject wrongResource = SampleDocument();
+        ResourceArray(wrongResource, "warpEventTables")[0]!.AsObject()["id"] =
+            "OtherWarpEvents";
+        Map(wrongResource, 3)["references"]!.AsObject()["warpEventTable"] =
+            "OtherWarpEvents";
+        AssertCode(Admit(wrongResource), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject wrongCount = SampleDocument();
+        WarpRecords(wrongCount).RemoveAt(0);
+        AssertCode(Admit(wrongCount), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject wrongSourceKind = SampleDocument();
+        ResourceArray(wrongSourceKind, "warpEventTables")[0]!.AsObject()["sourceKind"] =
+            "otherWarpEvents";
+        AssertCode(Admit(wrongSourceKind), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject unknownField = SampleDocument();
+        WarpRecords(unknownField)[8]!.AsObject()["unexpected"] = true;
+        AssertCode(Admit(unknownField), OriginalMapImportFailureCode.InvalidDocument);
+
+        JsonObject reordered = SampleDocument();
+        JsonArray reorderedRows = WarpRecords(reordered);
+        JsonNode row5 = reorderedRows[5]!.DeepClone();
+        reorderedRows[5] = reorderedRows[8]!.DeepClone();
+        reorderedRows[8] = row5;
+        AssertCode(Admit(reordered), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        foreach ((string field, JsonNode? value) in new[]
+        {
+            ("scrollMode", JsonValue.Create(1)),
+            ("retainsCoordinates", JsonValue.Create(true)),
+            ("scrollDirection", JsonValue.Create(2)),
+            ("targetMap", JsonValue.Create(3)),
+            ("facing", JsonValue.Create(1)),
+            ("reserved", JsonValue.Create(1)),
+        })
+        {
+            JsonObject drift = SampleDocument();
+            WarpRecords(drift)[8]!.AsObject()[field] = value;
+            AssertCode(Admit(drift), OriginalMapImportFailureCode.InvalidMapProjection);
+        }
+
+        JsonObject triggerDrift = SampleDocument();
+        WarpRecords(triggerDrift)[8]!.AsObject()["trigger"] =
+            JsonSerializer.SerializeToNode(Point(53, 3));
+        AssertCode(Admit(triggerDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject destinationDrift = SampleDocument();
+        WarpRecords(destinationDrift)[5]!.AsObject()["destination"] =
+            JsonSerializer.SerializeToNode(Point(58, 12));
+        AssertCode(Admit(destinationDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
     public void MissingPrivatePathReturnsOnlyAPathFreeTypedDiagnostic()
     {
         string missing = Path.Combine(
@@ -409,12 +474,17 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             return;
         }
 
-        OriginalMapImportAccepted accepted = Assert.IsType<OriginalMapImportAccepted>(
-            new PrivateCanonicalMap3ImportReader(path).Admit(
-                new OriginalMapImportRequest(
-                    PrivateCanonicalMap3ImportReader.PackageId,
-                    ContentProfile.PrivateLocal,
-                    AcceptedCanonicalDigest)));
+        OriginalMapImportResult result = new PrivateCanonicalMap3ImportReader(path).Admit(
+            new OriginalMapImportRequest(
+                PrivateCanonicalMap3ImportReader.PackageId,
+                ContentProfile.PrivateLocal,
+                AcceptedCanonicalDigest));
+        Assert.True(
+            result is OriginalMapImportAccepted,
+            result is OriginalMapImportRejected rejected
+                ? $"{rejected.Diagnostic.Code}:{rejected.Diagnostic.Field}:{rejected.Diagnostic.Message}"
+                : "The private import returned an unknown result.");
+        OriginalMapImportAccepted accepted = Assert.IsType<OriginalMapImportAccepted>(result);
 
         Assert.Equal(AcceptedCanonicalDigest, accepted.Receipt.ContentDigest);
         Assert.Equal(AcceptedDecodedLayoutDigest, accepted.Receipt.DecodedLayoutDigest);
@@ -670,7 +740,16 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                     },
                 },
                 roofEventTables = Resource("Map03s5_RoofEvents"),
-                warpEventTables = Resource("Map03s6_WarpEvents"),
+                warpEventTables = new object[]
+                {
+                    new
+                    {
+                        id = "Map03s6_WarpEvents",
+                        address = 7,
+                        sourceKind = "warpEvents",
+                        records = WarpSourceRecords(),
+                    },
+                },
                 itemTables = new object[]
                 {
                     new { id = "Map03s7_ChestItems" },
@@ -749,6 +828,38 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static object[] Resource(string id) => [new { id }];
 
+    private static object[] WarpSourceRecords() =>
+    [
+        WarpRecord(255, 1, 19, 26, 30, 1),
+        WarpRecord(0, 255, 66, 29, 32, 3),
+        WarpRecord(50, 23, 44, 1, 25, 0),
+        WarpRecord(50, 24, 44, 1, 25, 0),
+        WarpRecord(50, 25, 44, 1, 25, 0),
+        WarpRecord(46, 7, 255, 59, 12, 2),
+        WarpRecord(59, 12, 255, 46, 7, 3),
+        WarpRecord(3, 3, 255, 54, 3, 0),
+        WarpRecord(54, 3, 255, 3, 3, 0),
+    ];
+
+    private static object WarpRecord(
+        int triggerX,
+        int triggerY,
+        int targetMap,
+        int destinationX,
+        int destinationY,
+        int facing) =>
+        new
+        {
+            trigger = Point(triggerX, triggerY),
+            scrollMode = 0,
+            retainsCoordinates = false,
+            scrollDirection = (int?)null,
+            targetMap,
+            destination = Point(destinationX, destinationY),
+            facing,
+            reserved = 0,
+        };
+
     private static object Point(int x, int y) => new { x, y };
 
     private static object AreaRecord(
@@ -797,6 +908,10 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static JsonArray StepRecords(JsonObject document) =>
         ResourceArray(document, "stepEventTables")[0]!
+            .AsObject()["records"]!.AsArray();
+
+    private static JsonArray WarpRecords(JsonObject document) =>
+        ResourceArray(document, "warpEventTables")[0]!
             .AsObject()["records"]!.AsArray();
 
     private static (int, int, int, int, int, int) Geometry(WorkingMapBlockCopy copy) =>

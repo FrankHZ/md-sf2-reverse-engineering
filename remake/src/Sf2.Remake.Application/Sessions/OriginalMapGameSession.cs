@@ -13,7 +13,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         MapPosition playerPosition,
         OriginalMapTraversalResult? lastTraversal,
         bool controlledStepCopyApplied,
-        PrivateOriginalMapLayoutMutationReceipt? lastLayoutMutation)
+        PrivateOriginalMapLayoutMutationReceipt? lastLayoutMutation,
+        PrivateOriginalMapSameMapWarpReceipt? lastSameMapWarp = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -29,15 +30,19 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 nameof(playerPosition));
         }
 
+        int completedOperations =
+            (lastTraversal is null ? 0 : 1) +
+            (lastLayoutMutation is null ? 0 : 1) +
+            (lastSameMapWarp is null ? 0 : 1);
         if (simulationStep == 0 &&
-            (lastTraversal is not null || lastLayoutMutation is not null || controlledStepCopyApplied))
+            (completedOperations != 0 || controlledStepCopyApplied))
         {
             throw new ArgumentException(
                 "The initial private original-map snapshot cannot contain a completed operation.",
                 nameof(simulationStep));
         }
 
-        if (simulationStep > 0 && (lastTraversal is null) == (lastLayoutMutation is null))
+        if (simulationStep > 0 && completedOperations != 1)
         {
             throw new ArgumentException(
                 "A non-initial private original-map snapshot must identify exactly one last operation.",
@@ -59,6 +64,36 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 nameof(lastLayoutMutation));
         }
 
+        if (lastSameMapWarp is not null &&
+            (lastSameMapWarp.Destination != playerPosition ||
+                lastSameMapWarp.SimulationStep != simulationStep))
+        {
+            throw new ArgumentException(
+                "The same-map warp receipt must end at the authoritative snapshot step and position.",
+                nameof(lastSameMapWarp));
+        }
+
+        if (lastSameMapWarp is not null)
+        {
+            OriginalMapSameMapWarpDefinition admitted =
+                definition.SameMapWarps?.Select(definition.Map, lastSameMapWarp.Trigger) ??
+                throw new ArgumentException(
+                    "A same-map warp receipt requires its admitted record.",
+                    nameof(lastSameMapWarp));
+            if (admitted.Identity != lastSameMapWarp.RecordIdentity ||
+                admitted.Destination != lastSameMapWarp.Destination ||
+                admitted.OpaqueFacing != lastSameMapWarp.OpaqueFacing ||
+                definition.Traversal.SelectActiveArea(lastSameMapWarp.Source)
+                    ?.OneBasedRecordOrdinal != lastSameMapWarp.SourceAreaOrdinal ||
+                definition.Traversal.SelectActiveArea(lastSameMapWarp.Destination)
+                    ?.OneBasedRecordOrdinal != lastSameMapWarp.DestinationAreaOrdinal)
+            {
+                throw new ArgumentException(
+                    "The same-map warp receipt does not match its admitted record and area projection.",
+                    nameof(lastSameMapWarp));
+            }
+        }
+
         if (controlledStepCopyApplied && definition.ControlledStepCopy is null)
         {
             throw new ArgumentException(
@@ -78,6 +113,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
         LastTraversal = lastTraversal;
         ControlledStepCopyApplied = controlledStepCopyApplied;
         LastLayoutMutation = lastLayoutMutation;
+        LastSameMapWarp = lastSameMapWarp;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -114,6 +150,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public bool ControlledStepCopyApplied { get; }
 
     public PrivateOriginalMapLayoutMutationReceipt? LastLayoutMutation { get; }
+
+    public PrivateOriginalMapSameMapWarpReceipt? LastSameMapWarp { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -136,15 +174,33 @@ public sealed record PrivateOriginalMapGameSessionStartRejected(
         Diagnostic ?? throw new ArgumentNullException(nameof(Diagnostic));
 }
 
-public sealed record PrivateOriginalMapMoveApplied(
-    PrivateOriginalMapSessionSnapshot Snapshot,
-    OriginalMapTraversalResult Traversal)
+public sealed record PrivateOriginalMapMoveApplied
 {
-    public PrivateOriginalMapSessionSnapshot Snapshot { get; } =
-        Snapshot ?? throw new ArgumentNullException(nameof(Snapshot));
+    private readonly OriginalMapTraversalResult? _traversal;
 
-    public OriginalMapTraversalResult Traversal { get; } =
-        Traversal ?? throw new ArgumentNullException(nameof(Traversal));
+    public PrivateOriginalMapMoveApplied(
+        PrivateOriginalMapSessionSnapshot snapshot,
+        OriginalMapTraversalResult traversal)
+    {
+        Snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
+        _traversal = traversal ?? throw new ArgumentNullException(nameof(traversal));
+    }
+
+    public PrivateOriginalMapMoveApplied(
+        PrivateOriginalMapSessionSnapshot snapshot,
+        PrivateOriginalMapSameMapWarpReceipt sameMapWarp)
+    {
+        Snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
+        SameMapWarp = sameMapWarp ?? throw new ArgumentNullException(nameof(sameMapWarp));
+    }
+
+    public PrivateOriginalMapSessionSnapshot Snapshot { get; }
+
+    public OriginalMapTraversalResult Traversal => _traversal ??
+        throw new InvalidOperationException(
+            "A same-map warp outcome does not contain an ordinary traversal result.");
+
+    public PrivateOriginalMapSameMapWarpReceipt? SameMapWarp { get; }
 }
 
 public sealed partial class GameSession
@@ -196,6 +252,11 @@ public sealed partial class GameSession
         }
 
         PrivateOriginalMapSessionSnapshot current = PrivateOriginalMapSnapshot;
+        if (TryApplyPrivateOriginalMapSameMapWarp(current, command, out var warpApplied))
+        {
+            return warpApplied!;
+        }
+
         OriginalMapTraversalResult traversal = current.Definition.Traversal.TryMove(
             current.WorkingLayout,
             current.PlayerPosition,
@@ -208,7 +269,8 @@ public sealed partial class GameSession
             traversal.Position,
             traversal,
             current.ControlledStepCopyApplied,
-            lastLayoutMutation: null);
+            lastLayoutMutation: null,
+            lastSameMapWarp: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -276,7 +338,8 @@ public sealed partial class GameSession
             current.PlayerPosition,
             lastTraversal: null,
             controlledStepCopyApplied: true,
-            receipt);
+            receipt,
+            lastSameMapWarp: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -298,7 +361,8 @@ public sealed partial class GameSession
             accepted.Definition.ControlledAdmission.Position,
             lastTraversal: null,
             controlledStepCopyApplied: false,
-            lastLayoutMutation: null);
+            lastLayoutMutation: null,
+            lastSameMapWarp: null);
         GameSession session = new(snapshot);
         session.InitializePrivateOriginalMapPlayerLocomotion();
         return new PrivateOriginalMapGameSessionStarted(session, accepted.Receipt);
@@ -444,6 +508,15 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.blockCatalog",
                 "The admitted definition does not retain the exact ordered Map 3 blockset projection.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedSameMapWarps(
+                definition.SameMapWarps))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.sameMapWarps",
+                "The admitted definition does not retain the exact bounded Map 3 same-map warp projection.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(

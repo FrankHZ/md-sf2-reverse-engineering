@@ -108,6 +108,110 @@ public sealed class OriginalMapImportDefinitionTests
     }
 
     [Fact]
+    public void SameMapWarpCatalogOwnsExactPrivateRecordsAndSelectsByCandidateTarget()
+    {
+        MapId map = new("map3");
+        OriginalMapSameMapWarpDefinition first = Warp(
+            map,
+            "project-authored-warps",
+            ordinal: 2,
+            trigger: new MapPosition(10, 10),
+            destination: new MapPosition(11, 10),
+            opaqueFacing: 0);
+        OriginalMapSameMapWarpDefinition second = Warp(
+            map,
+            "project-authored-warps",
+            ordinal: 7,
+            trigger: new MapPosition(20, 20),
+            destination: new MapPosition(21, 20),
+            opaqueFacing: 2);
+        List<OriginalMapSameMapWarpDefinition> records = [first, second];
+
+        OriginalMapSameMapWarpCatalog catalog = new(records);
+        records.Clear();
+
+        Assert.Equal(map, catalog.Map);
+        Assert.Equal("project-authored-warps", catalog.ResourceId);
+        Assert.Equal([first, second], catalog.Records);
+        Assert.Same(first, catalog.Select(map, first.Trigger));
+        Assert.Null(catalog.Select(map, new MapPosition(9, 10)));
+        Assert.Null(catalog.Select(new MapId("other"), first.Trigger));
+        Assert.Throws<NotSupportedException>(() =>
+            ((IList<OriginalMapSameMapWarpDefinition>)catalog.Records).Add(first));
+    }
+
+    [Fact]
+    public void SameMapWarpCatalogAndImportFailClosedOnIdentityAndGeometryDrift()
+    {
+        MapId map = new("map3");
+        OriginalMapSameMapWarpDefinition first = Warp(
+            map,
+            "project-authored-warps",
+            ordinal: 2,
+            trigger: new MapPosition(10, 10),
+            destination: new MapPosition(11, 10),
+            opaqueFacing: 0);
+
+        Assert.Throws<ArgumentException>(() => new OriginalMapSameMapWarpCatalog([]));
+        Assert.Throws<ArgumentException>(() => new OriginalMapSameMapWarpCatalog([null!]));
+        Assert.Throws<ArgumentException>(() => new OriginalMapSameMapWarpCatalog(
+        [
+            first,
+            Warp(map, "other-warps", 3, new MapPosition(20, 20),
+                new MapPosition(21, 20), 2),
+        ]));
+        Assert.Throws<ArgumentException>(() => new OriginalMapSameMapWarpCatalog(
+        [
+            first,
+            Warp(map, "project-authored-warps", 2, new MapPosition(20, 20),
+                new MapPosition(21, 20), 2),
+        ]));
+        Assert.Throws<ArgumentException>(() => new OriginalMapSameMapWarpCatalog(
+        [
+            first,
+            Warp(map, "project-authored-warps", 3, first.Trigger,
+                new MapPosition(21, 20), 2),
+        ]));
+        Assert.Throws<ArgumentException>(() => new OriginalMapSameMapWarpIdentity(
+            ContentProfile.PublicSynthetic,
+            map,
+            "project-authored-warps",
+            1));
+
+        OriginalMapAreaCatalog areaCatalog = AreaCatalog(
+            new OriginalMapTraversalArea(0, 0, 30, 30));
+        ushort[] blocked = new ushort[WorkingMapLayout.WordCount];
+        blocked[(10 * WorkingMapLayout.ColumnCount) + 11] =
+            OriginalMapTraversal.CollisionMask;
+        Assert.Throws<ArgumentException>(() => new OriginalMapImportDefinition(
+            map,
+            new WorkingMapLayout(blocked),
+            BlockCatalog(),
+            areaCatalog,
+            Population(map),
+            VisualSelection(map),
+            Admission(map),
+            controlledStepCopy: null,
+            new OriginalMapSameMapWarpCatalog([first]),
+            ["unknown"]));
+        Assert.Throws<ArgumentException>(() => new OriginalMapImportDefinition(
+            map,
+            new WorkingMapLayout(new ushort[WorkingMapLayout.WordCount]),
+            BlockCatalog(),
+            areaCatalog,
+            Population(map),
+            VisualSelection(map),
+            Admission(map),
+            controlledStepCopy: null,
+            new OriginalMapSameMapWarpCatalog(
+            [
+                Warp(map, "project-authored-warps", 2,
+                    new MapPosition(31, 10), new MapPosition(11, 10), 0),
+            ]),
+            ["unknown"]));
+    }
+
+    [Fact]
     public void EntityPopulationOwnsOrderedOpaqueRecordsWithoutInventingBehavior()
     {
         MapId map = new("map3");
@@ -388,6 +492,23 @@ public sealed class OriginalMapImportDefinitionTests
             new MapSetupId("ms_map3"),
             "ms_map3_InitFunction",
             noProgramRequest: true);
+
+    private static OriginalMapSameMapWarpDefinition Warp(
+        MapId map,
+        string resourceId,
+        int ordinal,
+        MapPosition trigger,
+        MapPosition destination,
+        byte opaqueFacing) =>
+        new(
+            new OriginalMapSameMapWarpIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                resourceId,
+                ordinal),
+            trigger,
+            destination,
+            opaqueFacing);
 
     private static OriginalMapVisualResourceSelection VisualSelection(MapId map) =>
         new(map, paletteIndex: 0, [0, 37, 43, 53, 66]);

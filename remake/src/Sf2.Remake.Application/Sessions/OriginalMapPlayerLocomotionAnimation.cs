@@ -8,6 +8,7 @@ public enum PrivateOriginalMapPlayerLocomotionPhase
     Blocked,
     Moving,
     Settled,
+    Relocated,
 }
 
 public enum PrivateOriginalMapPlayerLocomotionSheet
@@ -196,6 +197,39 @@ public sealed record PrivateOriginalMapPlayerLocomotionSnapshot
             offsetYUnits: 0);
     }
 
+    internal static PrivateOriginalMapPlayerLocomotionSnapshot Relocate(
+        PrivateOriginalMapPlayerLocomotionSnapshot current,
+        PrivateOriginalMapSameMapWarpReceipt receipt)
+    {
+        ArgumentNullException.ThrowIfNull(current);
+        ArgumentNullException.ThrowIfNull(receipt);
+        ExplorationDirection direction = receipt.OpaqueFacing switch
+        {
+            0 => ExplorationDirection.East,
+            1 => ExplorationDirection.North,
+            2 => ExplorationDirection.West,
+            3 => ExplorationDirection.South,
+            _ => throw new ArgumentOutOfRangeException(nameof(receipt)),
+        };
+        (byte facing, PrivateOriginalMapPlayerLocomotionSheet sheet, int slot, bool mirror) =
+            Selection(direction);
+        return new PrivateOriginalMapPlayerLocomotionSnapshot(
+            PrivateOriginalMapPlayerLocomotionPhase.Relocated,
+            direction,
+            facing,
+            sheet,
+            slot,
+            mirror,
+            tick: 0,
+            counterAtSelection: current.StoredCounter,
+            storedCounter: current.StoredCounter,
+            selectedHalf: current.SelectedHalf,
+            receipt.Source,
+            receipt.Destination,
+            offsetXUnits: 0,
+            offsetYUnits: 0);
+    }
+
     internal PrivateOriginalMapPlayerLocomotionSnapshot Advance()
     {
         if (!IsMoving)
@@ -299,8 +333,11 @@ public sealed partial class GameSession
 
         MapPosition sourcePosition = PrivateOriginalMapSnapshot.PlayerPosition;
         PrivateOriginalMapMoveApplied move = ApplyPrivateOriginalMap(command);
-        PrivateOriginalMapPlayerLocomotionSnapshot next =
-            PrivateOriginalMapPlayerLocomotionSnapshot.Begin(
+        PrivateOriginalMapPlayerLocomotionSnapshot next = move.SameMapWarp is not null
+            ? PrivateOriginalMapPlayerLocomotionSnapshot.Relocate(
+                current,
+                move.SameMapWarp)
+            : PrivateOriginalMapPlayerLocomotionSnapshot.Begin(
                 current,
                 command.Direction,
                 sourcePosition,

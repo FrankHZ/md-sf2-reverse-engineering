@@ -436,8 +436,48 @@ public sealed class OriginalMapVisualGameSessionTests
                 OriginalMapRuntimeAdmission.SelectedInitIdentity,
                 noProgramRequest: true),
             ControlledStepCopy(map),
+            AcceptedSameMapWarps(map),
             ["natural-route-and-effects-unknown"]);
     }
+
+    private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>
+        new(
+        [
+            SameMapWarp(
+                map,
+                OriginalMapRuntimeAdmission.SchoolWarpRecordOrdinal,
+                OriginalMapRuntimeAdmission.SchoolWarpTriggerX,
+                OriginalMapRuntimeAdmission.SchoolWarpTriggerY,
+                OriginalMapRuntimeAdmission.SchoolWarpDestinationX,
+                OriginalMapRuntimeAdmission.SchoolWarpDestinationY,
+                OriginalMapRuntimeAdmission.SchoolWarpOpaqueFacing),
+            SameMapWarp(
+                map,
+                OriginalMapRuntimeAdmission.HouseWarpRecordOrdinal,
+                OriginalMapRuntimeAdmission.HouseWarpTriggerX,
+                OriginalMapRuntimeAdmission.HouseWarpTriggerY,
+                OriginalMapRuntimeAdmission.HouseWarpDestinationX,
+                OriginalMapRuntimeAdmission.HouseWarpDestinationY,
+                OriginalMapRuntimeAdmission.HouseWarpOpaqueFacing),
+        ]);
+
+    private static OriginalMapSameMapWarpDefinition SameMapWarp(
+        MapId map,
+        int ordinal,
+        int triggerX,
+        int triggerY,
+        int destinationX,
+        int destinationY,
+        byte opaqueFacing) =>
+        new(
+            new OriginalMapSameMapWarpIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.SameMapWarpResourceId,
+                ordinal),
+            new MapPosition(triggerX, triggerY),
+            new MapPosition(destinationX, destinationY),
+            opaqueFacing);
 
     private static OriginalMapImportReceipt ImportReceipt(
         string? packageId = null,

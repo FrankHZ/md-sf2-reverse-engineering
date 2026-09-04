@@ -544,7 +544,9 @@ public sealed partial class Map3Root
                 new MoveExplorationCommand(direction));
         _privatePresenter?.Project(
             started.Move.Snapshot,
-            started.Move.Traversal.Outcome.ToString(),
+            started.Move.SameMapWarp is null
+                ? started.Move.Traversal.Outcome.ToString()
+                : "SameMapWarp",
             started.Animation);
         if (_privateBattleBridgeEnabled)
         {
