@@ -452,7 +452,8 @@ public sealed class OriginalMapVisualGameSessionTests
             BowieDoorStepCopy(map),
             AcceptedZone601(map),
             AcceptedSarah(map),
-            AcceptedEntity142(map));
+            AcceptedEntity142(map),
+            AcceptedAstralZone(map));
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>
@@ -736,6 +737,41 @@ public sealed class OriginalMapVisualGameSessionTests
             OriginalMapRuntimeAdmission.Entity142RepeatTextIds,
             OriginalMapRuntimeAdmission.Entity142FirstStages,
             OriginalMapRuntimeAdmission.Entity142RepeatStages);
+
+    private static OriginalMapAstralZoneDefinition AcceptedAstralZone(MapId map) =>
+        new(
+            new OriginalMapAstralZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.AstralZoneEventResourceId,
+                OriginalMapRuntimeAdmission.AstralZoneEventRecordOrdinal,
+                OriginalMapRuntimeAdmission.AstralZoneEventTargetIdentity),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.AstralZoneTriggerX,
+                OriginalMapRuntimeAdmission.AstralZoneTriggerY),
+            OriginalMapRuntimeAdmission.AstralZonePositionProgramIdentity,
+            OriginalMapRuntimeAdmission.AstralZoneMessengerCompletionFlag603,
+            OriginalMapRuntimeAdmission.AstralZoneRequiredEntity142Flag602,
+            OriginalMapRuntimeAdmission.AstralZoneCompletionFlag260,
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.SarahActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.SarahLogicalActorId,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.AstralZoneSarahDestinationX,
+                OriginalMapRuntimeAdmission.AstralZoneSarahDestinationY),
+            OriginalMapRuntimeAdmission.AstralZoneSarahOpaqueFacing,
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.Zone601ActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.Zone601LogicalActorId,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.AstralZoneActor128DestinationX,
+                OriginalMapRuntimeAdmission.AstralZoneActor128DestinationY),
+            OriginalMapRuntimeAdmission.AstralZoneActor128OpaqueFacing,
+            OriginalMapRuntimeAdmission.AstralZoneTextIds,
+            OriginalMapRuntimeAdmission.AstralZoneStages);
 
     private static OriginalMapBlockCatalog AcceptedBlockCatalog() =>
         new(

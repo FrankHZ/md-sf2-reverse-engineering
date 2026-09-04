@@ -8,6 +8,7 @@ public enum PrivateOriginalMapZone601LifecyclePhase
 {
     Ready,
     AmbientWalkingHandoff,
+    AstralZoneRepositioned,
 }
 
 public sealed record PrivateOriginalMapZone601State
@@ -41,10 +42,12 @@ public sealed record PrivateOriginalMapZone601State
         if (phase == PrivateOriginalMapZone601LifecyclePhase.Ready &&
             (flag601Set || ambientCenter is not null || ambientRange is not null) ||
             phase == PrivateOriginalMapZone601LifecyclePhase.AmbientWalkingHandoff &&
+            (!flag601Set || ambientCenter is null || ambientRange is null || ambientRange < 0) ||
+            phase == PrivateOriginalMapZone601LifecyclePhase.AstralZoneRepositioned &&
             (!flag601Set || ambientCenter is null || ambientRange is null || ambientRange < 0))
         {
             throw new ArgumentException(
-                "The Zone 601 state must retain an exact ready or ambient-handoff shape.");
+                "The Zone 601 state must retain an exact ready, ambient-handoff, or Astral-zone shape.");
         }
 
         Phase = phase;
@@ -106,7 +109,35 @@ public sealed record PrivateOriginalMapZone601State
             definition.AmbientRange);
     }
 
-    internal bool Matches(OriginalMapZone601Definition definition)
+    internal static PrivateOriginalMapZone601State AstralZoneRepositioned(
+        OriginalMapZone601Definition definition,
+        OriginalMapAstralZoneDefinition astralZone)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(astralZone);
+        if (astralZone.Zone601ActorSourceRecord != definition.ActorSourceRecord ||
+            astralZone.Zone601LogicalActorId != definition.LogicalActorId)
+        {
+            throw new ArgumentException(
+                "The Astral-zone handoff must bind the admitted Zone 601 actor.",
+                nameof(astralZone));
+        }
+
+        return new(
+            PrivateOriginalMapZone601LifecyclePhase.AstralZoneRepositioned,
+            definition.ActorSourceRecord,
+            definition.LogicalActorId,
+            astralZone.Zone601ActorDestination,
+            astralZone.Zone601ActorOpaqueFacing,
+            definition.AmbientBehaviorIdentity,
+            flag601Set: true,
+            definition.AmbientCenter,
+            definition.AmbientRange);
+    }
+
+    internal bool Matches(
+        OriginalMapZone601Definition definition,
+        OriginalMapAstralZoneDefinition? astralZone = null)
     {
         ArgumentNullException.ThrowIfNull(definition);
         PrivateOriginalMapZone601State expected = Phase switch
@@ -114,6 +145,11 @@ public sealed record PrivateOriginalMapZone601State
             PrivateOriginalMapZone601LifecyclePhase.Ready => Ready(definition),
             PrivateOriginalMapZone601LifecyclePhase.AmbientWalkingHandoff =>
                 Complete(definition),
+            PrivateOriginalMapZone601LifecyclePhase.AstralZoneRepositioned =>
+                AstralZoneRepositioned(
+                    definition,
+                    astralZone ?? throw new InvalidOperationException(
+                        "Astral-zone Zone 601 state requires its admitted definition.")),
             _ => throw new InvalidOperationException("Unknown Zone 601 lifecycle phase."),
         };
         return this == expected;

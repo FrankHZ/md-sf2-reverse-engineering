@@ -873,6 +873,79 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedRouteEntersAstralZoneOnceAndAtomicallyRepositionsLiveActors()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        CompleteRouteThroughEntity142(session);
+
+        Move(session, ExplorationDirection.North, 4);
+        Move(session, ExplorationDirection.East, 2);
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+        Assert.Equal(new MapPosition(57, 13), before.PlayerPosition);
+        Assert.False(before.AstralZoneFlag260Set);
+
+        PrivateOriginalMapMoveApplied applied = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+
+        PrivateOriginalMapAstralZoneReceipt receipt =
+            Assert.IsType<PrivateOriginalMapAstralZoneReceipt>(applied.AstralZone);
+        Assert.Same(receipt, applied.Snapshot.LastAstralZone);
+        Assert.Equal(new MapPosition(58, 13), applied.Snapshot.PlayerPosition);
+        Assert.Equal("Map3_ZoneEvent7", receipt.EventIdentity.TargetIdentity);
+        Assert.Equal("cs_5148C", receipt.PositionProgramIdentity);
+        Assert.Equal(new[] { 514, 515, 516 }, receipt.TextIds);
+        Assert.Equal(OriginalMapRuntimeAdmission.AstralZoneStages, receipt.Stages);
+        Assert.False(receipt.MessengerCompletionFlag603Set);
+        Assert.True(receipt.RequiredEntity142Flag602Set);
+        Assert.True(receipt.CompletionFlag260Set);
+        Assert.True(applied.Snapshot.AstralZoneFlag260Set);
+        Assert.Equal(
+            PrivateOriginalMapSarahLifecyclePhase.AstralZoneRepositioned,
+            applied.Snapshot.Sarah!.Phase);
+        Assert.Equal(new MapPosition(41, 10), applied.Snapshot.Sarah.ActorPosition);
+        Assert.Equal((byte)1, applied.Snapshot.Sarah.ActorOpaqueFacing);
+        Assert.Equal(
+            PrivateOriginalMapZone601LifecyclePhase.AstralZoneRepositioned,
+            applied.Snapshot.Zone601!.Phase);
+        Assert.Equal(new MapPosition(6, 4), applied.Snapshot.Zone601.ActorPosition);
+        Assert.Equal((byte)1, applied.Snapshot.Zone601.ActorOpaqueFacing);
+
+        PrivateOriginalMapMoveApplied left = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        PrivateOriginalMapMoveApplied revisited = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.Null(left.AstralZone);
+        Assert.Null(revisited.AstralZone);
+        Assert.True(revisited.Snapshot.AstralZoneFlag260Set);
+        Assert.Equal(new MapPosition(41, 10), revisited.Snapshot.Sarah!.ActorPosition);
+        Assert.Equal(new MapPosition(6, 4), revisited.Snapshot.Zone601!.ActorPosition);
+    }
+
+    [Fact]
+    public void AstralZoneRequiresTheCompletedAcceptedRouteAndRestartClearsIt()
+    {
+        GameSession incomplete = Start(Definition(EmptyWords()));
+        Move(incomplete, ExplorationDirection.South, 10);
+        Move(incomplete, ExplorationDirection.East, 1);
+        PrivateOriginalMapMoveApplied ordinary = incomplete.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.Null(ordinary.AstralZone);
+        Assert.False(ordinary.Snapshot.AstralZoneFlag260Set);
+
+        GameSession completed = Start(Definition(EmptyWords()));
+        CompleteRouteThroughEntity142(completed);
+        Move(completed, ExplorationDirection.North, 4);
+        Move(completed, ExplorationDirection.East, 3);
+        Assert.True(completed.PrivateOriginalMapSnapshot.AstralZoneFlag260Set);
+
+        GameSession restarted = Start(Definition(EmptyWords()));
+        Assert.False(restarted.PrivateOriginalMapSnapshot.AstralZoneFlag260Set);
+        Assert.Null(restarted.PrivateOriginalMapSnapshot.LastAstralZone);
+        Assert.Equal(new MapPosition(42, 8), restarted.PrivateOriginalMapSnapshot.Sarah!.ActorPosition);
+        Assert.Equal(new MapPosition(5, 6), restarted.PrivateOriginalMapSnapshot.Zone601!.ActorPosition);
+    }
+
+    [Fact]
     public void SarahReinteractionIsTextOnlyWhileWarpPreservesAndRestartClearsTheRoute()
     {
         GameSession session = Start(Definition(EmptyWords()));
@@ -1923,6 +1996,87 @@ public sealed class OriginalMapGameSessionTests
             Definition(EmptyWords()).WorkingLayout));
     }
 
+    [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactAstralZoneProjection()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), omitAstralZone: true),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        OriginalMapAstralZoneDefinition accepted = AcceptedAstralZone(map);
+        OriginalMapAstralZoneDefinition wrongProgram = new(
+            accepted.Identity,
+            accepted.Trigger,
+            "project-authored-wrong-program",
+            accepted.MessengerCompletionFlag603,
+            accepted.RequiredEntity142Flag602,
+            accepted.CompletionFlag260,
+            accepted.SarahSourceRecord,
+            accepted.SarahLogicalActorId,
+            accepted.SarahDestination,
+            accepted.SarahOpaqueFacing,
+            accepted.Zone601ActorSourceRecord,
+            accepted.Zone601LogicalActorId,
+            accepted.Zone601ActorDestination,
+            accepted.Zone601ActorOpaqueFacing,
+            accepted.TextIds,
+            accepted.Stages);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), astralZone: wrongProgram),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedAstralZone(
+            accepted,
+            AcceptedSarah(map),
+            AcceptedZone601(map),
+            AcceptedAreaCatalog().Traversal,
+            Definition(EmptyWords()).WorkingLayout));
+    }
+
+    private static void CompleteRouteThroughEntity142(GameSession session)
+    {
+        Move(session, ExplorationDirection.West, 2);
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.True(session.PrivateOriginalMapSnapshot.Zone601!.Flag601Set);
+
+        Move(session, ExplorationDirection.West, 1);
+        Move(session, ExplorationDirection.South, 1);
+        Move(session, ExplorationDirection.East, 39);
+        Move(session, ExplorationDirection.South, 3);
+        Move(session, ExplorationDirection.East, 1);
+        Move(session, ExplorationDirection.South, 2);
+        Move(session, ExplorationDirection.West, 1);
+        Assert.Equal(new MapPosition(42, 9), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        _ = session.BeginPrivateOriginalMapPlayerLocomotion(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        _ = Assert.IsType<PrivateOriginalMapSarahInteractionApplied>(
+            session.InteractPrivateOriginalMapSarah(
+                new InteractPrivateOriginalMapSarahCommand(
+                    session.PrivateOriginalMapSnapshot.SimulationStep)));
+
+        Move(session, ExplorationDirection.South, 8);
+        Move(session, ExplorationDirection.North, 1);
+        Move(session, ExplorationDirection.East, 13);
+        Move(session, ExplorationDirection.South, 1);
+        Assert.Equal(new MapPosition(55, 17), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        _ = session.BeginPrivateOriginalMapPlayerLocomotion(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        PrivateOriginalMapEntity142RequestApplied requested =
+            Assert.IsType<PrivateOriginalMapEntity142RequestApplied>(
+                session.RequestPrivateOriginalMapEntity142(
+                    new RequestPrivateOriginalMapEntity142Command(
+                        session.PrivateOriginalMapSnapshot.SimulationStep)));
+        _ = Assert.IsType<PrivateOriginalMapEntity142AcknowledgementApplied>(
+            session.AcknowledgePrivateOriginalMapEntity142(
+                new AcknowledgePrivateOriginalMapEntity142Command(
+                    requested.Snapshot.SimulationStep,
+                    requested.Request.RequestSequence,
+                    requested.Request.EventIdentity)));
+        Assert.True(session.PrivateOriginalMapSnapshot.Entity142!.Flag602Set);
+    }
+
     private static void MoveToEntity142Interaction(GameSession session)
     {
         Move(session, ExplorationDirection.South, 14);
@@ -1976,7 +2130,9 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapSarahDefinition? sarah = null,
         bool omitSarah = false,
         OriginalMapEntity142Definition? entity142 = null,
-        bool omitEntity142 = false)
+        bool omitEntity142 = false,
+        OriginalMapAstralZoneDefinition? astralZone = null,
+        bool omitAstralZone = false)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -2032,7 +2188,11 @@ public sealed class OriginalMapGameSessionTests
                 : sarah ?? AcceptedSarah(map),
             omitEntity142 || entityPopulation is not null
                 ? null
-                : entity142 ?? AcceptedEntity142(map));
+                : entity142 ?? AcceptedEntity142(map),
+            omitAstralZone || entityPopulation is not null || omitZone601 || omitSarah ||
+                omitEntity142
+                ? null
+                : astralZone ?? AcceptedAstralZone(map));
     }
 
     private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
@@ -2221,6 +2381,41 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.Entity142RepeatTextIds,
             OriginalMapRuntimeAdmission.Entity142FirstStages,
             OriginalMapRuntimeAdmission.Entity142RepeatStages);
+
+    private static OriginalMapAstralZoneDefinition AcceptedAstralZone(MapId map) =>
+        new(
+            new OriginalMapAstralZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+                OriginalMapRuntimeAdmission.AstralZoneEventResourceId,
+                OriginalMapRuntimeAdmission.AstralZoneEventRecordOrdinal,
+                OriginalMapRuntimeAdmission.AstralZoneEventTargetIdentity),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.AstralZoneTriggerX,
+                OriginalMapRuntimeAdmission.AstralZoneTriggerY),
+            OriginalMapRuntimeAdmission.AstralZonePositionProgramIdentity,
+            OriginalMapRuntimeAdmission.AstralZoneMessengerCompletionFlag603,
+            OriginalMapRuntimeAdmission.AstralZoneRequiredEntity142Flag602,
+            OriginalMapRuntimeAdmission.AstralZoneCompletionFlag260,
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.SarahActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.SarahLogicalActorId,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.AstralZoneSarahDestinationX,
+                OriginalMapRuntimeAdmission.AstralZoneSarahDestinationY),
+            OriginalMapRuntimeAdmission.AstralZoneSarahOpaqueFacing,
+            new OriginalMapEntityRecordIdentity(
+                OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                OriginalMapRuntimeAdmission.Zone601ActorSourceRecordOrdinal),
+            OriginalMapRuntimeAdmission.Zone601LogicalActorId,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.AstralZoneActor128DestinationX,
+                OriginalMapRuntimeAdmission.AstralZoneActor128DestinationY),
+            OriginalMapRuntimeAdmission.AstralZoneActor128OpaqueFacing,
+            OriginalMapRuntimeAdmission.AstralZoneTextIds,
+            OriginalMapRuntimeAdmission.AstralZoneStages);
 
     private static OriginalMapEntityPopulation AcceptedEntityPopulation(MapId map) =>
         ProjectAuthoredEntityPopulation(

@@ -42,6 +42,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.SarahRouteCapability;
     public const string Entity142AcknowledgementCapability =
         OriginalMapRuntimeAdmission.Entity142AcknowledgementCapability;
+    public const string AstralZoneHandoffCapability =
+        OriginalMapRuntimeAdmission.AstralZoneHandoffCapability;
 
     public const string CanonicalRepository =
         OriginalMapRuntimeAdmission.AcceptedUpstreamRepository;
@@ -74,6 +76,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         Zone601InterceptionCapability,
         SarahRouteCapability,
         Entity142AcknowledgementCapability,
+        AstralZoneHandoffCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -374,6 +377,11 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             map,
             entityPopulation,
             resources);
+        OriginalMapAstralZoneDefinition astralZone = ReadAcceptedAstralZone(
+            map,
+            sarah,
+            zone601,
+            resources);
 
         OriginalMapControlledAdmission controlledAdmission = new(
             map,
@@ -399,7 +407,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             bowieDoorStepCopy,
             zone601,
             sarah,
-            entity142);
+            entity142,
+            astralZone);
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -1962,6 +1971,247 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             OriginalMapRuntimeAdmission.Entity142RepeatTextIds,
             OriginalMapRuntimeAdmission.Entity142FirstStages,
             OriginalMapRuntimeAdmission.Entity142RepeatStages);
+    }
+
+    private static OriginalMapAstralZoneDefinition ReadAcceptedAstralZone(
+        MapId map,
+        OriginalMapSarahDefinition sarah,
+        OriginalMapZone601Definition zone601,
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        JsonElement handler = RequiredResource(
+            resources,
+            "zoneEventHandlers",
+            OriginalMapRuntimeAdmission.AstralZoneEventResourceId);
+        RequireExactProperties(
+            handler,
+            "map3.astralZone.handler",
+            "id",
+            "address",
+            "kind",
+            "records");
+        if (RequiredNonNegativeInt(
+                handler,
+                "address",
+                "map3.astralZone.handler.address") !=
+                OriginalMapRuntimeAdmission.AstralZoneEventHandlerAddress ||
+            !string.Equals(
+                RequiredString(handler, "kind", "map3.astralZone.handler.kind"),
+                "table",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.astralZone.handler",
+                "The accepted Map 3 Astral-zone event table identity drifted.");
+        }
+
+        JsonElement records = RequiredProperty(
+            handler,
+            "records",
+            "map3.astralZone.handler.records");
+        RequireArray(records, "map3.astralZone.handler.records");
+        if (records.GetArrayLength() !=
+            OriginalMapRuntimeAdmission.AstralZoneEventSourceRecordCount)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.astralZone.handler.records",
+                "The accepted Map 3 zone-event record count drifted.");
+        }
+
+        HashSet<int> triggers = [];
+        int defaultCount = 0;
+        int ordinal = 0;
+        foreach (JsonElement record in records.EnumerateArray())
+        {
+            ordinal++;
+            string field = $"map3.astralZone.handler.records[{ordinal - 1}]";
+            RequireExactProperties(
+                record,
+                field,
+                "address",
+                "kind",
+                "relativeOffset",
+                "resolvedTargetAddress",
+                "x",
+                "y");
+            _ = RequiredNonNegativeInt(record, "address", field + ".address");
+            _ = RequiredNonNegativeInt(record, "relativeOffset", field + ".relativeOffset");
+            _ = RequiredNonNegativeInt(
+                record,
+                "resolvedTargetAddress",
+                field + ".resolvedTargetAddress");
+            string kind = RequiredString(record, "kind", field + ".kind");
+            byte x = RequiredByte(record, "x", field + ".x");
+            byte y = RequiredByte(record, "y", field + ".y");
+            if (string.Equals(kind, "default", StringComparison.Ordinal))
+            {
+                defaultCount++;
+            }
+            else if (!string.Equals(kind, "specific", StringComparison.Ordinal) ||
+                !triggers.Add((x << 8) | y))
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.DuplicateIdentity,
+                    field,
+                    "Map 3 zone events must retain unique specific triggers and one default.");
+            }
+        }
+
+        JsonElement selected = records[
+            OriginalMapRuntimeAdmission.AstralZoneEventRecordOrdinal - 1];
+        if (defaultCount != 1 ||
+            RequiredNonNegativeInt(selected, "address", "map3.astralZone.record.address") !=
+                OriginalMapRuntimeAdmission.AstralZoneEventRecordAddress ||
+            !string.Equals(
+                RequiredString(selected, "kind", "map3.astralZone.record.kind"),
+                "specific",
+                StringComparison.Ordinal) ||
+            RequiredNonNegativeInt(
+                selected,
+                "relativeOffset",
+                "map3.astralZone.record.relativeOffset") !=
+                OriginalMapRuntimeAdmission.AstralZoneEventRelativeOffset ||
+            RequiredNonNegativeInt(
+                selected,
+                "resolvedTargetAddress",
+                "map3.astralZone.record.resolvedTargetAddress") !=
+                OriginalMapRuntimeAdmission.AstralZoneEventResolvedTargetAddress ||
+            RequiredByte(selected, "x", "map3.astralZone.record.x") !=
+                OriginalMapRuntimeAdmission.AstralZoneTriggerX ||
+            RequiredByte(selected, "y", "map3.astralZone.record.y") !=
+                OriginalMapRuntimeAdmission.AstralZoneTriggerY)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.astralZone.record",
+                "The accepted Map 3 Astral-zone source record drifted.");
+        }
+
+        ValidateAstralZonePositionProgram(resources);
+        return new OriginalMapAstralZoneDefinition(
+            new OriginalMapAstralZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                sarah.Identity.Setup,
+                OriginalMapRuntimeAdmission.AstralZoneEventResourceId,
+                OriginalMapRuntimeAdmission.AstralZoneEventRecordOrdinal,
+                OriginalMapRuntimeAdmission.AstralZoneEventTargetIdentity),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.AstralZoneTriggerX,
+                OriginalMapRuntimeAdmission.AstralZoneTriggerY),
+            OriginalMapRuntimeAdmission.AstralZonePositionProgramIdentity,
+            OriginalMapRuntimeAdmission.AstralZoneMessengerCompletionFlag603,
+            OriginalMapRuntimeAdmission.AstralZoneRequiredEntity142Flag602,
+            OriginalMapRuntimeAdmission.AstralZoneCompletionFlag260,
+            sarah.ActorSourceRecord,
+            sarah.LogicalActorId,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.AstralZoneSarahDestinationX,
+                OriginalMapRuntimeAdmission.AstralZoneSarahDestinationY),
+            OriginalMapRuntimeAdmission.AstralZoneSarahOpaqueFacing,
+            zone601.ActorSourceRecord,
+            zone601.LogicalActorId,
+            new MapPosition(
+                OriginalMapRuntimeAdmission.AstralZoneActor128DestinationX,
+                OriginalMapRuntimeAdmission.AstralZoneActor128DestinationY),
+            OriginalMapRuntimeAdmission.AstralZoneActor128OpaqueFacing,
+            OriginalMapRuntimeAdmission.AstralZoneTextIds,
+            OriginalMapRuntimeAdmission.AstralZoneStages);
+    }
+
+    private static void ValidateAstralZonePositionProgram(
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        JsonElement program = RequiredResource(
+            resources,
+            "standaloneScriptPrograms",
+            OriginalMapRuntimeAdmission.AstralZonePositionProgramIdentity);
+        RequireExactProperties(
+            program,
+            "map3.astralZone.program",
+            "id",
+            "address",
+            "path",
+            "kind",
+            "operations");
+        if (RequiredNonNegativeInt(program, "address", "map3.astralZone.program.address") !=
+                OriginalMapRuntimeAdmission.AstralZonePositionProgramAddress ||
+            !string.Equals(
+                RequiredString(program, "kind", "map3.astralZone.program.kind"),
+                "cutscene",
+                StringComparison.Ordinal) ||
+            !string.Equals(
+                RequiredString(program, "path", "map3.astralZone.program.path"),
+                "data/maps/entries/map03/mapsetups/scripts_1.asm",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.astralZone.program",
+                "The accepted Astral-zone position program identity drifted.");
+        }
+
+        (string Opcode, string Operand)[] expected =
+        [
+            ("setPos", "ALLY_SARAH,41,10,UP"),
+            ("setPos", "128,6,4,UP"),
+            ("csc_end", ""),
+        ];
+        JsonElement operations = RequiredProperty(
+            program,
+            "operations",
+            "map3.astralZone.program.operations");
+        RequireArray(operations, "map3.astralZone.program.operations");
+        if (operations.GetArrayLength() != expected.Length)
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "map3.astralZone.program.operations",
+                "The accepted Astral-zone position operation count drifted.");
+        }
+
+        for (int index = 0; index < expected.Length; index++)
+        {
+            JsonElement operation = operations[index];
+            string field = $"map3.astralZone.program.operations[{index}]";
+            RequireExactProperties(
+                operation,
+                field,
+                "index",
+                "opcode",
+                "operandText",
+                "targetSymbols",
+                "targetAddresses");
+            JsonElement targetSymbols = RequiredProperty(
+                operation,
+                "targetSymbols",
+                field + ".targetSymbols");
+            JsonElement targetAddresses = RequiredProperty(
+                operation,
+                "targetAddresses",
+                field + ".targetAddresses");
+            RequireArray(targetSymbols, field + ".targetSymbols");
+            RequireArray(targetAddresses, field + ".targetAddresses");
+            if (RequiredNonNegativeInt(operation, "index", field + ".index") != index ||
+                !string.Equals(
+                    RequiredString(operation, "opcode", field + ".opcode"),
+                    expected[index].Opcode,
+                    StringComparison.Ordinal) ||
+                !string.Equals(
+                    RequiredText(operation, "operandText", field + ".operandText"),
+                    expected[index].Operand,
+                    StringComparison.Ordinal) ||
+                targetSymbols.GetArrayLength() != 0 ||
+                targetAddresses.GetArrayLength() != 0)
+            {
+                throw Admission(
+                    OriginalMapImportFailureCode.InvalidMapProjection,
+                    field,
+                    "The accepted Astral-zone position operation sequence drifted.");
+            }
+        }
     }
 
     private static void ValidateSarahBlockingProgram(

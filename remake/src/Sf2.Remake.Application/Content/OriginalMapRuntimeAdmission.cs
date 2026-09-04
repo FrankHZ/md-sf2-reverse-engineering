@@ -165,6 +165,28 @@ public static class OriginalMapRuntimeAdmission
     public const int Entity142FirstInteractionFlag261 = 261;
     public const int Entity142CompletionFlag602 = 602;
 
+    public const int AstralZoneEventHandlerAddress = 331084;
+    public const string AstralZoneEventResourceId = "ms_map3_ZoneEvents";
+    public const int AstralZoneEventSourceRecordCount = 10;
+    public const int AstralZoneEventRecordOrdinal = 8;
+    public const int AstralZoneEventRecordAddress = 331112;
+    public const int AstralZoneEventRelativeOffset = 282;
+    public const int AstralZoneEventResolvedTargetAddress = 331366;
+    public const string AstralZoneEventTargetIdentity = "Map3_ZoneEvent7";
+    public const int AstralZoneTriggerX = 58;
+    public const int AstralZoneTriggerY = 13;
+    public const string AstralZonePositionProgramIdentity = "cs_5148C";
+    public const int AstralZonePositionProgramAddress = 332940;
+    public const int AstralZoneMessengerCompletionFlag603 = 603;
+    public const int AstralZoneRequiredEntity142Flag602 = 602;
+    public const int AstralZoneCompletionFlag260 = 260;
+    public const int AstralZoneSarahDestinationX = 41;
+    public const int AstralZoneSarahDestinationY = 10;
+    public const byte AstralZoneSarahOpaqueFacing = 1;
+    public const int AstralZoneActor128DestinationX = 6;
+    public const int AstralZoneActor128DestinationY = 4;
+    public const byte AstralZoneActor128OpaqueFacing = 1;
+
     public const string RoofOnLoadResourceId = "Map03s5_RoofEvents";
     public const int RoofOnLoadSourceRecordCount = 10;
     public const int HouseRoofOnLoadRecordOrdinal = 1;
@@ -206,6 +228,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-sarah-route-v1";
     public const string Entity142AcknowledgementCapability =
         "private-local-map3-entity142-acknowledgement-v1";
+    public const string AstralZoneHandoffCapability =
+        "private-local-map3-astral-zone-handoff-v1";
 
     private static readonly ReadOnlyCollection<int> ReadOnlyZone601TextIds =
         Array.AsReadOnly(new[] { 510, 511, 483 });
@@ -282,6 +306,22 @@ public static class OriginalMapRuntimeAdmission
             OriginalMapEntity142InteractionStage.SetFlag602,
         ]);
 
+    private static readonly ReadOnlyCollection<int> ReadOnlyAstralZoneTextIds =
+        Array.AsReadOnly(new[] { 514, 515, 516 });
+
+    private static readonly ReadOnlyCollection<OriginalMapAstralZoneStage>
+        ReadOnlyAstralZoneStages = Array.AsReadOnly(
+        [
+            OriginalMapAstralZoneStage.ReadMessengerFlag603Clear,
+            OriginalMapAstralZoneStage.ReadEntity142Flag602Set,
+            OriginalMapAstralZoneStage.ReadCompletionFlag260Clear,
+            OriginalMapAstralZoneStage.PresentText514,
+            OriginalMapAstralZoneStage.PresentText515,
+            OriginalMapAstralZoneStage.PresentText516,
+            OriginalMapAstralZoneStage.RunPositionProgram,
+            OriginalMapAstralZoneStage.SetCompletionFlag260,
+        ]);
+
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
             new[]
@@ -302,6 +342,7 @@ public static class OriginalMapRuntimeAdmission
                 Zone601InterceptionCapability,
                 SarahRouteCapability,
                 Entity142AcknowledgementCapability,
+                AstralZoneHandoffCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -351,6 +392,11 @@ public static class OriginalMapRuntimeAdmission
 
     public static IReadOnlyList<OriginalMapEntity142InteractionStage> Entity142RepeatStages =>
         ReadOnlyEntity142RepeatStages;
+
+    public static IReadOnlyList<int> AstralZoneTextIds => ReadOnlyAstralZoneTextIds;
+
+    public static IReadOnlyList<OriginalMapAstralZoneStage> AstralZoneStages =>
+        ReadOnlyAstralZoneStages;
 
     internal static bool HasExactRequiredCapabilities(IEnumerable<string> capabilities)
     {
@@ -698,6 +744,56 @@ public static class OriginalMapRuntimeAdmission
             traversal.IsWithinActiveArea(definition.PlayerInteractionPosition) &&
             !OriginalMapTraversal.IsBlocked(workingLayout, definition.ActorPosition) &&
             !OriginalMapTraversal.IsBlocked(workingLayout, definition.PlayerInteractionPosition);
+    }
+
+    public static bool HasExactAcceptedAstralZone(
+        OriginalMapAstralZoneDefinition? definition,
+        OriginalMapSarahDefinition? sarah,
+        OriginalMapZone601Definition? zone601,
+        OriginalMapTraversal traversal,
+        WorkingMapLayout workingLayout)
+    {
+        ArgumentNullException.ThrowIfNull(traversal);
+        ArgumentNullException.ThrowIfNull(workingLayout);
+        if (definition is null || sarah is null || zone601 is null ||
+            definition.Identity != new OriginalMapAstralZoneEventIdentity(
+                ContentProfile.PrivateLocal,
+                new MapId(MapId),
+                new MapSetupId(SelectedSetupId),
+                AstralZoneEventResourceId,
+                AstralZoneEventRecordOrdinal,
+                AstralZoneEventTargetIdentity) ||
+            definition.Trigger != new MapPosition(AstralZoneTriggerX, AstralZoneTriggerY) ||
+            !string.Equals(
+                definition.PositionProgramIdentity,
+                AstralZonePositionProgramIdentity,
+                StringComparison.Ordinal) ||
+            definition.MessengerCompletionFlag603 != AstralZoneMessengerCompletionFlag603 ||
+            definition.RequiredEntity142Flag602 != AstralZoneRequiredEntity142Flag602 ||
+            definition.CompletionFlag260 != AstralZoneCompletionFlag260 ||
+            definition.SarahSourceRecord != sarah.ActorSourceRecord ||
+            definition.SarahLogicalActorId != sarah.LogicalActorId ||
+            definition.SarahDestination != new MapPosition(
+                AstralZoneSarahDestinationX,
+                AstralZoneSarahDestinationY) ||
+            definition.SarahOpaqueFacing != AstralZoneSarahOpaqueFacing ||
+            definition.Zone601ActorSourceRecord != zone601.ActorSourceRecord ||
+            definition.Zone601LogicalActorId != zone601.LogicalActorId ||
+            definition.Zone601ActorDestination != new MapPosition(
+                AstralZoneActor128DestinationX,
+                AstralZoneActor128DestinationY) ||
+            definition.Zone601ActorOpaqueFacing != AstralZoneActor128OpaqueFacing ||
+            !definition.TextIds.SequenceEqual(ReadOnlyAstralZoneTextIds) ||
+            !definition.Stages.SequenceEqual(ReadOnlyAstralZoneStages) ||
+            !traversal.IsWithinActiveArea(definition.Trigger) ||
+            !traversal.IsWithinActiveArea(definition.SarahDestination) ||
+            !traversal.IsWithinActiveArea(definition.Zone601ActorDestination) ||
+            OriginalMapTraversal.IsBlocked(workingLayout, definition.Trigger))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public static bool HasExactAcceptedSameMapWarps(OriginalMapSameMapWarpCatalog? catalog)

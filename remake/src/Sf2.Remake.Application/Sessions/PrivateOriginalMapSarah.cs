@@ -8,6 +8,7 @@ public enum PrivateOriginalMapSarahLifecyclePhase
 {
     Ready,
     RouteCleared,
+    AstralZoneRepositioned,
 }
 
 public sealed record PrivateOriginalMapSarahState
@@ -18,7 +19,8 @@ public sealed record PrivateOriginalMapSarahState
         int logicalActorId,
         MapPosition actorPosition,
         byte actorOpaqueFacing,
-        bool temporaryRouteFlag256Set)
+        bool temporaryRouteFlag256Set,
+        bool astralZoneFlag260Set)
     {
         if (!Enum.IsDefined(phase))
         {
@@ -35,18 +37,21 @@ public sealed record PrivateOriginalMapSarahState
         }
 
         if ((phase == PrivateOriginalMapSarahLifecyclePhase.Ready &&
-                temporaryRouteFlag256Set) ||
+                (temporaryRouteFlag256Set || astralZoneFlag260Set)) ||
             (phase == PrivateOriginalMapSarahLifecyclePhase.RouteCleared &&
-                !temporaryRouteFlag256Set))
+                (!temporaryRouteFlag256Set || astralZoneFlag260Set)) ||
+            (phase == PrivateOriginalMapSarahLifecyclePhase.AstralZoneRepositioned &&
+                (!temporaryRouteFlag256Set || !astralZoneFlag260Set)))
         {
             throw new ArgumentException(
-                "Sarah state must retain the exact ready or route-cleared shape.");
+                "Sarah state must retain the exact ready, route-cleared, or Astral-zone shape.");
         }
 
         Phase = phase;
         LogicalActorId = logicalActorId;
         ActorOpaqueFacing = actorOpaqueFacing;
         TemporaryRouteFlag256Set = temporaryRouteFlag256Set;
+        AstralZoneFlag260Set = astralZoneFlag260Set;
     }
 
     public PrivateOriginalMapSarahLifecyclePhase Phase { get; }
@@ -61,6 +66,8 @@ public sealed record PrivateOriginalMapSarahState
 
     public bool TemporaryRouteFlag256Set { get; }
 
+    public bool AstralZoneFlag260Set { get; }
+
     internal static PrivateOriginalMapSarahState Ready(OriginalMapSarahDefinition definition)
     {
         ArgumentNullException.ThrowIfNull(definition);
@@ -70,7 +77,8 @@ public sealed record PrivateOriginalMapSarahState
             definition.LogicalActorId,
             definition.ActorInitialPosition,
             definition.ActorInitialOpaqueFacing,
-            temporaryRouteFlag256Set: false);
+            temporaryRouteFlag256Set: false,
+            astralZoneFlag260Set: false);
     }
 
     internal static PrivateOriginalMapSarahState RouteCleared(
@@ -83,16 +91,48 @@ public sealed record PrivateOriginalMapSarahState
             definition.LogicalActorId,
             definition.FirstInteractionWaypoint,
             definition.RestoredOpaqueFacing,
-            temporaryRouteFlag256Set: true);
+            temporaryRouteFlag256Set: true,
+            astralZoneFlag260Set: false);
     }
 
-    internal bool Matches(OriginalMapSarahDefinition definition)
+    internal static PrivateOriginalMapSarahState AstralZoneRepositioned(
+        OriginalMapSarahDefinition definition,
+        OriginalMapAstralZoneDefinition astralZone)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(astralZone);
+        if (astralZone.SarahSourceRecord != definition.ActorSourceRecord ||
+            astralZone.SarahLogicalActorId != definition.LogicalActorId)
+        {
+            throw new ArgumentException(
+                "The Astral-zone handoff must bind the admitted Sarah actor.",
+                nameof(astralZone));
+        }
+
+        return new(
+            PrivateOriginalMapSarahLifecyclePhase.AstralZoneRepositioned,
+            definition.ActorSourceRecord,
+            definition.LogicalActorId,
+            astralZone.SarahDestination,
+            astralZone.SarahOpaqueFacing,
+            temporaryRouteFlag256Set: true,
+            astralZoneFlag260Set: true);
+    }
+
+    internal bool Matches(
+        OriginalMapSarahDefinition definition,
+        OriginalMapAstralZoneDefinition? astralZone = null)
     {
         ArgumentNullException.ThrowIfNull(definition);
         return this == (Phase switch
         {
             PrivateOriginalMapSarahLifecyclePhase.Ready => Ready(definition),
             PrivateOriginalMapSarahLifecyclePhase.RouteCleared => RouteCleared(definition),
+            PrivateOriginalMapSarahLifecyclePhase.AstralZoneRepositioned =>
+                AstralZoneRepositioned(
+                    definition,
+                    astralZone ?? throw new InvalidOperationException(
+                        "Astral-zone Sarah state requires its admitted definition.")),
             _ => throw new InvalidOperationException("Unknown Sarah lifecycle phase."),
         });
     }
