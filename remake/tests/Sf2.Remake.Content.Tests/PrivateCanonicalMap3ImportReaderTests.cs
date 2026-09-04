@@ -47,6 +47,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.VisualReferenceAdmissionCapability,
                 PrivateCanonicalMap3ImportReader.SameMapWarpAdmissionCapability,
                 PrivateCanonicalMap3ImportReader.RoofOnLoadClearCapability,
+                PrivateCanonicalMap3ImportReader.BowieDoorStepCopyCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -118,6 +119,13 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(6, stepCopy.Identity.OneBasedRecordOrdinal);
         Assert.Equal(new MapPosition(41, 13), stepCopy.Trigger);
         Assert.Equal((62, 0, 41, 13, 1, 1), Geometry(stepCopy.Copy));
+        OriginalMapStepCopyDefinition bowieDoor =
+            Assert.IsType<OriginalMapStepCopyDefinition>(
+                accepted.Definition.BowieDoorStepCopy);
+        Assert.Equal(1, bowieDoor.Identity.OneBasedRecordOrdinal);
+        Assert.Equal(new MapPosition(4, 8), bowieDoor.Trigger);
+        Assert.Equal((62, 0, 4, 8, 1, 1), Geometry(bowieDoor.Copy));
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedBowieDoorStepCopy(bowieDoor));
         OriginalMapSameMapWarpCatalog warps = Assert.IsType<OriginalMapSameMapWarpCatalog>(
             accepted.Definition.SameMapWarps);
         Assert.Equal("Map03s6_WarpEvents", warps.ResourceId);
@@ -303,7 +311,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     }
 
     [Fact]
-    public void SchoolDoorCopyAndCurrentWordCollisionPolarityFailClosed()
+    public void BowieAndSchoolDoorCopiesAndCurrentWordCollisionPolarityFailClosed()
     {
         JsonObject missingDoor = SampleDocument();
         ResourceArray(missingDoor, "stepEventTables")[0]!
@@ -313,6 +321,12 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         JsonObject passableDestination = SampleDocument();
         LayoutWords(passableDestination)[Index(41, 13)] = 0;
         AssertCode(Admit(passableDestination), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject passableBowieDestination = SampleDocument();
+        LayoutWords(passableBowieDestination)[Index(4, 8)] = 0;
+        AssertCode(
+            Admit(passableBowieDestination),
+            OriginalMapImportFailureCode.InvalidMapProjection);
 
         JsonObject blockedSource = SampleDocument();
         LayoutWords(blockedSource)[Index(62, 0)] = OriginalMapTraversal.CollisionMask;
@@ -338,6 +352,13 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         StepRecords(wrongGeometry)[5]!.AsObject()["destination"] =
             JsonSerializer.SerializeToNode(Point(42, 13));
         AssertCode(Admit(wrongGeometry), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject wrongBowieGeometry = SampleDocument();
+        StepRecords(wrongBowieGeometry)[0]!.AsObject()["destination"] =
+            JsonSerializer.SerializeToNode(Point(5, 8));
+        AssertCode(
+            Admit(wrongBowieGeometry),
+            OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
     [Fact]
@@ -616,6 +637,11 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 accepted.Definition.ControlledStepCopy);
         Assert.Equal(6, stepCopy.Identity.OneBasedRecordOrdinal);
         Assert.Equal((62, 0, 41, 13, 1, 1), Geometry(stepCopy.Copy));
+        OriginalMapStepCopyDefinition bowieDoor =
+            Assert.IsType<OriginalMapStepCopyDefinition>(
+                accepted.Definition.BowieDoorStepCopy);
+        Assert.Equal(1, bowieDoor.Identity.OneBasedRecordOrdinal);
+        Assert.Equal((62, 0, 4, 8, 1, 1), Geometry(bowieDoor.Copy));
     }
 
     private static OriginalMapImportResult Admit(JsonObject document)
@@ -667,6 +693,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     {
         int[] layoutWords = new int[WorkingMapLayout.WordCount];
         layoutWords[Index(41, 13)] = OriginalMapTraversal.CollisionMask;
+        layoutWords[Index(4, 8)] = OriginalMapTraversal.CollisionMask;
         object[] maps = Enumerable.Range(0, 79)
             .Select(id => (object)new
             {
@@ -773,14 +800,24 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         id = "Map03s4_StepEvents",
                         address = 4,
                         sourceKind = "stepEvents",
-                        records = Enumerable.Range(0, 5)
-                            .Select(index => new
+                        records = new[]
                             {
-                                trigger = Point(index, 60),
-                                source = Point(index, 61),
-                                size = new { width = 1, height = 1 },
-                                destination = Point(index, 62),
-                            })
+                                new
+                                {
+                                    trigger = Point(4, 8),
+                                    source = Point(62, 0),
+                                    size = new { width = 1, height = 1 },
+                                    destination = Point(4, 8),
+                                },
+                            }
+                            .Concat(Enumerable.Range(1, 4)
+                                .Select(index => new
+                                {
+                                    trigger = Point(index, 60),
+                                    source = Point(index, 61),
+                                    size = new { width = 1, height = 1 },
+                                    destination = Point(index, 62),
+                                }))
                             .Append(new
                             {
                                 trigger = Point(41, 13),

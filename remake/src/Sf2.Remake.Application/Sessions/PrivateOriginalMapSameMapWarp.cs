@@ -76,8 +76,11 @@ public sealed partial class GameSession
     {
         applied = null;
         OriginalMapSameMapWarpCatalog? catalog = current.Definition.SameMapWarps;
-        if (catalog is null ||
-            !TryCandidateTarget(current.PlayerPosition, command.Direction, out MapPosition? trigger))
+        MapPosition? trigger = current.Definition.Traversal.ResolveCandidateTarget(
+            current.WorkingLayout,
+            current.PlayerPosition,
+            command.Direction);
+        if (catalog is null || trigger is null)
         {
             return false;
         }
@@ -157,35 +160,12 @@ public sealed partial class GameSession
             lastLayoutMutation: null,
             receipt,
             nextRoofLifecycle,
-            roofReceipt);
+            roofReceipt,
+            current.BowieDoorStepCopyApplied,
+            lastNaturalStepCopy: null);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(next, receipt, roofReceipt);
         return true;
     }
 
-    private static bool TryCandidateTarget(
-        MapPosition source,
-        ExplorationDirection direction,
-        out MapPosition? candidate)
-    {
-        (int deltaX, int deltaY) = direction switch
-        {
-            ExplorationDirection.North => (0, -1),
-            ExplorationDirection.East => (1, 0),
-            ExplorationDirection.South => (0, 1),
-            ExplorationDirection.West => (-1, 0),
-            _ => throw new ArgumentOutOfRangeException(nameof(direction)),
-        };
-        int x = source.X + deltaX;
-        int y = source.Y + deltaY;
-        if (x is < 0 or >= WorkingMapLayout.ColumnCount ||
-            y is < 0 or >= WorkingMapLayout.RowCount)
-        {
-            candidate = null;
-            return false;
-        }
-
-        candidate = new MapPosition(x, y);
-        return true;
-    }
 }

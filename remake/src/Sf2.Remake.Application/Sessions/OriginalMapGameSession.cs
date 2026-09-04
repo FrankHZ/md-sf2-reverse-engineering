@@ -16,7 +16,9 @@ public sealed record PrivateOriginalMapSessionSnapshot
         PrivateOriginalMapLayoutMutationReceipt? lastLayoutMutation,
         PrivateOriginalMapSameMapWarpReceipt? lastSameMapWarp = null,
         MapBlockCopyLifecycleState? roofOnLoadLifecycle = null,
-        PrivateOriginalMapRoofOnLoadReceipt? lastRoofOnLoad = null)
+        PrivateOriginalMapRoofOnLoadReceipt? lastRoofOnLoad = null,
+        bool bowieDoorStepCopyApplied = false,
+        PrivateOriginalMapNaturalStepCopyReceipt? lastNaturalStepCopy = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -41,6 +43,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
         if (simulationStep == 0 &&
             (completedOperations != 0 ||
                 controlledStepCopyApplied ||
+                bowieDoorStepCopyApplied ||
                 admittedRoofLifecycle is not MapBlockCopyLifecycleInactiveState))
         {
             throw new ArgumentException(
@@ -60,6 +63,55 @@ public sealed record PrivateOriginalMapSessionSnapshot
             throw new ArgumentException(
                 "The traversal result must end at the authoritative session position.",
                 nameof(lastTraversal));
+        }
+
+        if (bowieDoorStepCopyApplied)
+        {
+            OriginalMapStepCopyDefinition admitted =
+                definition.BowieDoorStepCopy ?? throw new ArgumentException(
+                    "An applied Bowie-door step-copy requires its admitted definition.",
+                    nameof(bowieDoorStepCopyApplied));
+            if (workingLayout[admitted.Copy.DestinationX, admitted.Copy.DestinationY] !=
+                workingLayout[admitted.Copy.SourceX, admitted.Copy.SourceY])
+            {
+                throw new ArgumentException(
+                    "An applied Bowie-door step-copy requires the authoritative copied layout.",
+                    nameof(workingLayout));
+            }
+        }
+
+        if (lastNaturalStepCopy is not null)
+        {
+            OriginalMapStepCopyDefinition admitted =
+                definition.BowieDoorStepCopy ?? throw new ArgumentException(
+                    "A natural step-copy receipt requires its admitted definition.",
+                    nameof(lastNaturalStepCopy));
+            if (!bowieDoorStepCopyApplied ||
+                lastTraversal is null ||
+                lastTraversal.Outcome != OriginalMapTraversalOutcome.Moved ||
+                lastTraversal.Source != new MapPosition(
+                    OriginalMapRuntimeAdmission.BowieDoorStepCopyApproachX,
+                    OriginalMapRuntimeAdmission.BowieDoorStepCopyApproachY) ||
+                lastTraversal.Direction != OriginalMapRuntimeAdmission.BowieDoorStepCopyDirection ||
+                lastNaturalStepCopy.RecordIdentity != admitted.Identity ||
+                lastNaturalStepCopy.Source != lastTraversal.Source ||
+                lastNaturalStepCopy.Trigger != admitted.Trigger ||
+                lastNaturalStepCopy.Trigger != playerPosition ||
+                lastNaturalStepCopy.Copy != admitted.Copy ||
+                lastNaturalStepCopy.BeforeCollision !=
+                    PrivateOriginalMapCollisionCategory.BlockedByAcceptedCollisionClass ||
+                lastNaturalStepCopy.AfterCollision !=
+                    PrivateOriginalMapCollisionCategory.ActiveNonBlocked ||
+                lastNaturalStepCopy.SimulationStep != simulationStep ||
+                definition.Traversal.ResolveCandidateTarget(
+                    workingLayout,
+                    lastTraversal.Source,
+                    lastTraversal.Direction) != admitted.Trigger)
+            {
+                throw new ArgumentException(
+                    "The natural step-copy receipt must match the admitted atomic traversal.",
+                    nameof(lastNaturalStepCopy));
+            }
         }
 
         if (lastLayoutMutation is not null &&
@@ -181,6 +233,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         LastSameMapWarp = lastSameMapWarp;
         RoofOnLoadLifecycle = admittedRoofLifecycle;
         LastRoofOnLoad = lastRoofOnLoad;
+        BowieDoorStepCopyApplied = bowieDoorStepCopyApplied;
+        LastNaturalStepCopy = lastNaturalStepCopy;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -223,6 +277,10 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public MapBlockCopyLifecycleState RoofOnLoadLifecycle { get; }
 
     public PrivateOriginalMapRoofOnLoadReceipt? LastRoofOnLoad { get; }
+
+    public bool BowieDoorStepCopyApplied { get; }
+
+    public PrivateOriginalMapNaturalStepCopyReceipt? LastNaturalStepCopy { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -332,6 +390,14 @@ public sealed partial class GameSession
             return warpApplied!;
         }
 
+        if (TryApplyPrivateOriginalMapBowieDoorStepCopy(
+                current,
+                command,
+                out var stepCopyApplied))
+        {
+            return stepCopyApplied!;
+        }
+
         OriginalMapTraversalResult traversal = current.Definition.Traversal.TryMove(
             current.WorkingLayout,
             current.PlayerPosition,
@@ -347,7 +413,9 @@ public sealed partial class GameSession
             lastLayoutMutation: null,
             lastSameMapWarp: null,
             roofOnLoadLifecycle: current.RoofOnLoadLifecycle,
-            lastRoofOnLoad: null);
+            lastRoofOnLoad: null,
+            current.BowieDoorStepCopyApplied,
+            lastNaturalStepCopy: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -418,7 +486,9 @@ public sealed partial class GameSession
             receipt,
             lastSameMapWarp: null,
             roofOnLoadLifecycle: current.RoofOnLoadLifecycle,
-            lastRoofOnLoad: null);
+            lastRoofOnLoad: null,
+            current.BowieDoorStepCopyApplied,
+            lastNaturalStepCopy: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -443,7 +513,9 @@ public sealed partial class GameSession
             lastLayoutMutation: null,
             lastSameMapWarp: null,
             roofOnLoadLifecycle: MapBlockCopyLifecycleState.Inactive,
-            lastRoofOnLoad: null);
+            lastRoofOnLoad: null,
+            bowieDoorStepCopyApplied: false,
+            lastNaturalStepCopy: null);
         GameSession session = new(snapshot);
         session.InitializePrivateOriginalMapPlayerLocomotion();
         return new PrivateOriginalMapGameSessionStarted(session, accepted.Receipt);
@@ -607,6 +679,25 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.roofOnLoadClear",
                 "The admitted definition does not retain the exact bounded Map 3 roof-on-load clear projection.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedBowieDoorStepCopy(
+                definition.BowieDoorStepCopy) ||
+            !OriginalMapTraversal.IsBlocked(
+                definition.WorkingLayout,
+                new MapPosition(
+                    OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationX,
+                    OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationY)) ||
+            OriginalMapTraversal.IsBlocked(
+                definition.WorkingLayout,
+                new MapPosition(
+                    OriginalMapRuntimeAdmission.BowieDoorStepCopySourceX,
+                    OriginalMapRuntimeAdmission.BowieDoorStepCopySourceY)))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.bowieDoorStepCopy",
+                "The admitted definition does not retain the exact natural Bowie-door step-copy projection.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(

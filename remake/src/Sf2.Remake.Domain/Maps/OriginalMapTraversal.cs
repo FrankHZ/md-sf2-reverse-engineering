@@ -213,25 +213,8 @@ public sealed class OriginalMapTraversal
         }
 
         ushort sourceWord = layout[position.X, position.Y];
-        (int deltaX, int deltaY) = DirectionDelta(direction);
-        ushort sourceCollision = (ushort)(sourceWord & CollisionMask);
-        if (direction is ExplorationDirection.East or ExplorationDirection.West &&
-            sourceCollision is RightStairMask or LeftStairMask)
-        {
-            (int stairX, int stairY) = ResolveStairCandidate(
-                position,
-                direction,
-                sourceCollision);
-            if (IsWithinLayout(stairX, stairY) &&
-                (layout[stairX, stairY] & CollisionMask) == sourceCollision)
-            {
-                deltaY = stairY - position.Y;
-            }
-        }
-
-        int destinationX = position.X + deltaX;
-        int destinationY = position.Y + deltaY;
-        if (!IsWithinLayout(destinationX, destinationY))
+        MapPosition? destination = ResolveCandidateTarget(layout, position, direction);
+        if (destination is null)
         {
             return Blocked(
                 position,
@@ -241,8 +224,7 @@ public sealed class OriginalMapTraversal
                 destinationWord: null);
         }
 
-        MapPosition destination = new(destinationX, destinationY);
-        ushort destinationWord = layout[destinationX, destinationY];
+        ushort destinationWord = layout[destination.X, destination.Y];
         if (!IsWithinActiveArea(destination))
         {
             return Blocked(
@@ -270,6 +252,45 @@ public sealed class OriginalMapTraversal
             OriginalMapTraversalOutcome.Moved,
             sourceWord,
             destinationWord);
+    }
+
+    public MapPosition? ResolveCandidateTarget(
+        WorkingMapLayout layout,
+        MapPosition position,
+        ExplorationDirection direction)
+    {
+        ArgumentNullException.ThrowIfNull(layout);
+        ArgumentNullException.ThrowIfNull(position);
+        if (!Enum.IsDefined(direction))
+        {
+            throw new ArgumentOutOfRangeException(nameof(direction));
+        }
+
+        ushort sourceWord = layout[position.X, position.Y];
+        (int deltaX, int deltaY) = DirectionDelta(direction);
+        ushort sourceCollision = (ushort)(sourceWord & CollisionMask);
+        if (direction is ExplorationDirection.East or ExplorationDirection.West &&
+            sourceCollision is RightStairMask or LeftStairMask)
+        {
+            (int stairX, int stairY) = ResolveStairCandidate(
+                position,
+                direction,
+                sourceCollision);
+            if (IsWithinLayout(stairX, stairY) &&
+                (layout[stairX, stairY] & CollisionMask) == sourceCollision)
+            {
+                deltaY = stairY - position.Y;
+            }
+        }
+
+        int destinationX = position.X + deltaX;
+        int destinationY = position.Y + deltaY;
+        if (!IsWithinLayout(destinationX, destinationY))
+        {
+            return null;
+        }
+
+        return new MapPosition(destinationX, destinationY);
     }
 
     private static OriginalMapTraversalResult Blocked(

@@ -54,6 +54,8 @@ public sealed class OriginalMapGameSessionTests
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastTraversal);
         Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastLayoutMutation);
         Assert.False(started.Session.PrivateOriginalMapSnapshot.ControlledStepCopyApplied);
+        Assert.False(started.Session.PrivateOriginalMapSnapshot.BowieDoorStepCopyApplied);
+        Assert.Null(started.Session.PrivateOriginalMapSnapshot.LastNaturalStepCopy);
         Assert.Same(
             started.Session.PrivateOriginalMapSnapshot.Definition.WorkingLayout,
             started.Session.PrivateOriginalMapSnapshot.WorkingLayout);
@@ -302,6 +304,130 @@ public sealed class OriginalMapGameSessionTests
         Assert.Equal(OriginalMapTraversalOutcome.Moved, east.Traversal.Outcome);
         Assert.Null(east.SameMapWarp);
         Assert.Null(east.RoofOnLoad);
+    }
+
+    [Fact]
+    public void BowieDoorStepCopyPrecedesCollisionAndMovesAtomicallyOnce()
+    {
+        ushort[] words = EmptyWords();
+        words[Index(3, 3)] = OriginalMapTraversal.LeftStairMask;
+        words[Index(4, 4)] = OriginalMapTraversal.LeftStairMask;
+        GameSession session = Start(Definition(words));
+
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        for (int count = 0; count < 3; count++)
+        {
+            _ = session.ApplyPrivateOriginalMap(
+                new MoveExplorationCommand(ExplorationDirection.South));
+        }
+
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+        Assert.Equal(new MapPosition(4, 7), before.PlayerPosition);
+        Assert.True(OriginalMapTraversal.IsBlocked(
+            before.WorkingLayout,
+            new MapPosition(4, 8)));
+        PrivateOriginalMapMoveApplied opened = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.South));
+
+        PrivateOriginalMapNaturalStepCopyReceipt receipt =
+            Assert.IsType<PrivateOriginalMapNaturalStepCopyReceipt>(
+                opened.Snapshot.LastNaturalStepCopy);
+        Assert.Equal(OriginalMapTraversalOutcome.Moved, opened.Traversal.Outcome);
+        Assert.Equal(new MapPosition(4, 8), opened.Snapshot.PlayerPosition);
+        Assert.True(opened.Snapshot.BowieDoorStepCopyApplied);
+        Assert.Equal(OriginalMapRuntimeAdmission.BowieDoorStepCopyRecordOrdinal,
+            receipt.RecordIdentity.OneBasedRecordOrdinal);
+        Assert.Equal(new MapPosition(4, 7), receipt.Source);
+        Assert.Equal(new MapPosition(4, 8), receipt.Trigger);
+        Assert.Equal((62, 0, 4, 8, 1, 1), Geometry(receipt.Copy));
+        Assert.Equal(
+            PrivateOriginalMapCollisionCategory.BlockedByAcceptedCollisionClass,
+            receipt.BeforeCollision);
+        Assert.Equal(
+            PrivateOriginalMapCollisionCategory.ActiveNonBlocked,
+            receipt.AfterCollision);
+        Assert.Equal(opened.Snapshot.SimulationStep, receipt.SimulationStep);
+        Assert.NotSame(before.WorkingLayout, opened.Snapshot.WorkingLayout);
+        Assert.Equal(
+            opened.Snapshot.WorkingLayout[62, 0],
+            opened.Snapshot.WorkingLayout[4, 8]);
+
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.North));
+        WorkingMapLayout openedLayout = session.PrivateOriginalMapSnapshot.WorkingLayout;
+        PrivateOriginalMapMoveApplied returned = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.South));
+        Assert.True(returned.Snapshot.BowieDoorStepCopyApplied);
+        Assert.Null(returned.Snapshot.LastNaturalStepCopy);
+        Assert.Same(openedLayout, returned.Snapshot.WorkingLayout);
+        Assert.DoesNotContain(
+            typeof(PrivateOriginalMapNaturalStepCopyReceipt).GetProperties(),
+            property => new[] { "Path", "Payload", "Address", "Word" }
+                .Any(fragment => property.Name.Contains(fragment, StringComparison.Ordinal)));
+    }
+
+    [Fact]
+    public void RestartRestoresTheClosedBowieDoorAndClearsItsNaturalReceipt()
+    {
+        AcceptedSource source = new(Accepted());
+        GameSession first = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+        _ = first.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        _ = first.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        _ = first.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        for (int count = 0; count < 5; count++)
+        {
+            _ = first.ApplyPrivateOriginalMap(
+                new MoveExplorationCommand(ExplorationDirection.South));
+        }
+
+        Assert.True(first.PrivateOriginalMapSnapshot.BowieDoorStepCopyApplied);
+        Assert.NotNull(first.PrivateOriginalMapSnapshot.LastNaturalStepCopy);
+
+        GameSession restarted = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(source, Request())).Session;
+        Assert.False(restarted.PrivateOriginalMapSnapshot.BowieDoorStepCopyApplied);
+        Assert.Null(restarted.PrivateOriginalMapSnapshot.LastNaturalStepCopy);
+        Assert.True(OriginalMapTraversal.IsBlocked(
+            restarted.PrivateOriginalMapSnapshot.WorkingLayout,
+            new MapPosition(4, 8)));
+    }
+
+    [Fact]
+    public void BowieDoorDoesNotGeneralizeBeyondTheAcceptedSouthApproach()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        _ = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.East));
+        for (int count = 0; count < 5; count++)
+        {
+            _ = session.ApplyPrivateOriginalMap(
+                new MoveExplorationCommand(ExplorationDirection.South));
+        }
+
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+        Assert.Equal(new MapPosition(5, 8), before.PlayerPosition);
+        PrivateOriginalMapMoveApplied blocked = session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.West));
+
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByCollision, blocked.Traversal.Outcome);
+        Assert.False(blocked.Snapshot.BowieDoorStepCopyApplied);
+        Assert.Null(blocked.Snapshot.LastNaturalStepCopy);
+        Assert.Same(before.WorkingLayout, blocked.Snapshot.WorkingLayout);
     }
 
     [Fact]
@@ -1070,6 +1196,44 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void AcceptedSourceDefinitionMustRetainExactBowieDoorStepCopy()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.MapId);
+        AssertRejectedReceipt(
+            Definition(EmptyWords(), omitBowieDoorStepCopy: true),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                bowieDoorStepCopy: new OriginalMapStepCopyDefinition(
+                    new OriginalMapStepCopyIdentity(
+                        ContentProfile.PrivateLocal,
+                        map,
+                        OriginalMapRuntimeAdmission.ControlledStepCopyResourceId,
+                        OriginalMapRuntimeAdmission.BowieDoorStepCopyRecordOrdinal + 1),
+                    new MapPosition(4, 8),
+                    new WorkingMapBlockCopy(62, 0, 4, 8, 1, 1))),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        AssertRejectedReceipt(
+            Definition(
+                EmptyWords(),
+                bowieDoorStepCopy: new OriginalMapStepCopyDefinition(
+                    new OriginalMapStepCopyIdentity(
+                        ContentProfile.PrivateLocal,
+                        map,
+                        OriginalMapRuntimeAdmission.ControlledStepCopyResourceId,
+                        OriginalMapRuntimeAdmission.BowieDoorStepCopyRecordOrdinal),
+                    new MapPosition(5, 8),
+                    new WorkingMapBlockCopy(62, 0, 5, 8, 1, 1))),
+            Receipt(),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedBowieDoorStepCopy(
+            BowieDoorStepCopy(map)));
+    }
+
+    [Fact]
     public void TypedSourceRejectionPassesThroughWithoutCreatingASession()
     {
         OriginalMapImportDiagnostic diagnostic = new(
@@ -1112,7 +1276,9 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapVisualResourceSelection? visualResourceSelection = null,
         OriginalMapSameMapWarpCatalog? sameMapWarps = null,
         OriginalMapRoofOnLoadDefinition? roofOnLoadClear = null,
-        bool omitRoofOnLoadClear = false)
+        bool omitRoofOnLoadClear = false,
+        OriginalMapStepCopyDefinition? bowieDoorStepCopy = null,
+        bool omitBowieDoorStepCopy = false)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -1124,6 +1290,10 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.ControlledStepCopySourceX,
             OriginalMapRuntimeAdmission.ControlledStepCopySourceY)] &=
             unchecked((ushort)~OriginalMapTraversal.CollisionMask);
+        admittedWords[Index(
+            OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationX,
+            OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationY)] |=
+            OriginalMapTraversal.CollisionMask;
         OriginalMapAreaCatalog admittedAreas = areaCatalog ?? AcceptedAreaCatalog();
         OriginalMapSameMapWarpCatalog admittedWarps =
             sameMapWarps ?? AcceptedSameMapWarps(map);
@@ -1148,8 +1318,27 @@ public sealed class OriginalMapGameSessionTests
             ["natural-route-and-effects-unknown"],
             omitRoofOnLoadClear
                 ? null
-                : roofOnLoadClear ?? RoofOnLoadClear(map, admittedWarps, admittedAreas));
+                : roofOnLoadClear ?? RoofOnLoadClear(map, admittedWarps, admittedAreas),
+            omitBowieDoorStepCopy ? null : bowieDoorStepCopy ?? BowieDoorStepCopy(map));
     }
+
+    private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
+        new(
+            new OriginalMapStepCopyIdentity(
+                ContentProfile.PrivateLocal,
+                map,
+                OriginalMapRuntimeAdmission.ControlledStepCopyResourceId,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyRecordOrdinal),
+            new MapPosition(
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyTriggerX,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyTriggerY),
+            new WorkingMapBlockCopy(
+                OriginalMapRuntimeAdmission.BowieDoorStepCopySourceX,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopySourceY,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationX,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyDestinationY,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyWidth,
+                OriginalMapRuntimeAdmission.BowieDoorStepCopyHeight));
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>
         new(

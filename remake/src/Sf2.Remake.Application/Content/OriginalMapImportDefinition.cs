@@ -183,7 +183,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapStepCopyDefinition? controlledStepCopy,
         OriginalMapSameMapWarpCatalog? sameMapWarps,
         IEnumerable<string> unsupportedCapabilities,
-        OriginalMapRoofOnLoadDefinition? roofOnLoadClear = null)
+        OriginalMapRoofOnLoadDefinition? roofOnLoadClear = null,
+        OriginalMapStepCopyDefinition? bowieDoorStepCopy = null)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
@@ -223,6 +224,15 @@ public sealed class OriginalMapImportDefinition
             throw new ArgumentException(
                 "The controlled step-copy map must equal the imported map.",
                 nameof(controlledStepCopy));
+        }
+
+        if (bowieDoorStepCopy is not null &&
+            (bowieDoorStepCopy.Identity.Map != map ||
+                bowieDoorStepCopy.Identity == controlledStepCopy?.Identity))
+        {
+            throw new ArgumentException(
+                "The Bowie-door step-copy must match the imported map and remain distinct from the controlled diagnostic.",
+                nameof(bowieDoorStepCopy));
         }
 
         if (sameMapWarps is not null && sameMapWarps.Map != map)
@@ -310,6 +320,7 @@ public sealed class OriginalMapImportDefinition
         ControlledStepCopy = controlledStepCopy;
         SameMapWarps = sameMapWarps;
         RoofOnLoadClear = roofOnLoadClear;
+        BowieDoorStepCopy = bowieDoorStepCopy;
     }
 
     public MapId Map { get; }
@@ -333,6 +344,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapSameMapWarpCatalog? SameMapWarps { get; }
 
     public OriginalMapRoofOnLoadDefinition? RoofOnLoadClear { get; }
+
+    public OriginalMapStepCopyDefinition? BowieDoorStepCopy { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

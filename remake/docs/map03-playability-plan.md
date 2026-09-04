@@ -19,8 +19,11 @@ option also projects the live current area's non-zero second-layer offset from t
 working layout; zero-offset areas remain main-only.
 `GameSession` evaluates their candidate targets before ordinary passability and atomically relocates
 the authoritative position, facing, area, and step without executing opaque original targets. These
-capabilities do not execute natural setup, zone, door, dialogue, music, or original presentation
-behavior.
+capabilities do not execute natural setup, zone, dialogue, music, or original presentation behavior.
+The evidence-owned Bowie-house door step is one bounded exception: moving south from `(4,7)` toward
+`(4,8)` applies its exact admitted block copy before collision, commits the working layout and
+movement atomically, and lets the existing Godot view reproject the opened cell. It does not claim
+`OpenDoor` generally or execute the preceding Zone 601 program.
 
 The first accepted warp exits the controlled-start pocket in area record 2 and lands in area record
 1. Application commits its separately evidenced roof-on-load clear in the same authoritative
@@ -29,13 +32,15 @@ saves the prior rectangle, clears it with the accepted empty-word policy, and pr
 activation. No restore command is exposed: the original reverse/leave trigger, general roof scan,
 presentation timing, and simulation-step parity remain outside this bounded slice. The accepted
 entity-142 interaction stand at `(55, 17)` also remains unreachable: the route between the two
-admitted warps still depends on an accepted zone transition, two door copies, and a Sarah
-interaction/temporary flag lifecycle that are not yet runtime capabilities.
+admitted warps still depends on the preceding accepted zone transition, the school-door copy, and a
+Sarah interaction/temporary flag lifecycle that are not yet runtime capabilities. The isolated
+Bowie-door capability therefore does not establish natural route continuity.
 
 ## Ordered Frontier
 
-1. The accepted zone, Bowie-door, school-door, and Sarah temporary-flag boundaries are admitted in
-   evidence order before claiming a route to the second same-map warp.
+1. The accepted zone, school-door, and Sarah temporary-flag boundaries are admitted in evidence
+   order before claiming a route to the second same-map warp; the already bounded Bowie-door copy
+   remains isolated until that chain closes.
 2. The accepted entity-142 interaction record gains a request/acknowledgement lifecycle without
    inventing dialogue or program effects.
 3. Broader selected-setup entities gain reviewed local assets and bounded visual policies after their
