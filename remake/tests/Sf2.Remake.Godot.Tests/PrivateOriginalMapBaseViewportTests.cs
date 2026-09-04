@@ -595,6 +595,118 @@ public sealed class PrivateOriginalMapBaseViewportTests
     }
 
     [Fact]
+    public void CurrentAreaOverlayKeepsZeroDeltaAreaMainOnlyWithPlayableMarkers()
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[][] blocks =
+        [
+            Enumerable.Repeat((ushort)0x0100, 9).ToArray(),
+        ];
+        PrivateOriginalMapSessionSnapshot snapshot = Snapshot(
+            blocks,
+            new ushort[WorkingMapLayout.WordCount],
+            areaDefinitions: StaticOverlayAreas(),
+            playerPosition: new MapPosition(56, 3));
+
+        PrivateOriginalMapBaseViewProjection mainOnly =
+            PrivateOriginalMapBaseViewProjection.Create(snapshot, visual);
+        PrivateOriginalMapBaseViewProjection currentArea =
+            PrivateOriginalMapBaseViewProjection.Create(
+                snapshot,
+                visual,
+                currentAreaOverlay: true);
+
+        Assert.True(currentArea.CurrentAreaOverlay);
+        Assert.False(currentArea.StaticOverlayDiagnostic);
+        Assert.True(currentArea.ShowsPlayerMarker);
+        Assert.Null(currentArea.OverlayAreaRecordOrdinal);
+        Assert.Equal(0, currentArea.OverlayDeltaX);
+        Assert.Equal(0, currentArea.OverlayDeltaY);
+        Assert.Equal(mainOnly.RgbaBytes, currentArea.RgbaBytes);
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    public void CurrentAreaOverlayUsesLatestShiftedLayoutAndZeroBlockHoles(int scale)
+    {
+        OriginalMapVisualPayloadDefinition visual = VisualDefinition();
+        ushort[] greenOverlay = new ushort[9];
+        greenOverlay[0] = 0x0101;
+        ushort[] blueOverlay = new ushort[9];
+        blueOverlay[0] = 0x0102;
+        ushort[][] blocks =
+        [
+            Enumerable.Repeat((ushort)0x0100, 9).ToArray(),
+            greenOverlay,
+            blueOverlay,
+        ];
+        ushort[] beforeWords = StaticOverlayLayout(
+            firstOverlayBlock: 1,
+            transparentOverlayBlock: 0);
+        ushort[] afterWords = StaticOverlayLayout(
+            firstOverlayBlock: 2,
+            transparentOverlayBlock: 0);
+        PrivateOriginalMapSessionSnapshot before = Snapshot(
+            blocks,
+            beforeWords,
+            areaDefinitions: StaticOverlayAreas(),
+            playerPosition: new MapPosition(6, 3));
+        PrivateOriginalMapSessionSnapshot after = Snapshot(
+            blocks,
+            afterWords,
+            areaDefinitions: StaticOverlayAreas(),
+            playerPosition: new MapPosition(6, 3));
+
+        PrivateOriginalMapBaseViewProjection beforeLogical =
+            PrivateOriginalMapBaseViewProjection.Create(
+                before,
+                visual,
+                currentAreaOverlay: true);
+        PrivateOriginalMapBaseViewProjection beforePhysical =
+            PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
+                before,
+                visual.Selection,
+                BuildNearestAtlas(visual, scale),
+                scale,
+                currentAreaOverlay: true);
+        PrivateOriginalMapBaseViewProjection afterLogical =
+            PrivateOriginalMapBaseViewProjection.Create(
+                after,
+                visual,
+                currentAreaOverlay: true);
+
+        Assert.True(beforeLogical.CurrentAreaOverlay);
+        Assert.True(beforeLogical.ShowsPlayerMarker);
+        Assert.Equal(1, beforeLogical.OverlayAreaRecordOrdinal);
+        Assert.Equal(0, beforeLogical.OverlayDeltaX);
+        Assert.Equal(32, beforeLogical.OverlayDeltaY);
+        Assert.Equal(new byte[] { 0, 255, 0, 255 }, Pixel(beforeLogical, 0, 0));
+        Assert.Equal(
+            new byte[] { 255, 0, 0, 255 },
+            Pixel(beforeLogical, PrivateOriginalMapBaseViewProjection.BlockPixelSize, 0));
+        Assert.Equal(new byte[] { 0, 0, 255, 255 }, Pixel(afterLogical, 0, 0));
+        Assert.True(PrivateOriginalMapBaseViewProjection.IsExactNearestReplication(
+            beforeLogical,
+            beforePhysical));
+    }
+
+    [Fact]
+    public void CurrentAreaAndStaticOverlayProjectionModesAreMutuallyExclusive()
+    {
+        Assert.Equal(
+            "currentAreaOverlay",
+            Assert.Throws<ArgumentException>(() =>
+                PrivateOriginalMapBaseViewProjection.Create(
+                    Snapshot(
+                        [Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+                        new ushort[WorkingMapLayout.WordCount]),
+                    VisualDefinition(),
+                    staticOverlayDiagnostic: true,
+                    currentAreaOverlay: true)).ParamName);
+    }
+
+    [Fact]
     public void SnapshotAndPayloadSelectionMismatchFailsBeforeRendering()
     {
         OriginalMapVisualPayloadDefinition visual = VisualDefinition();
