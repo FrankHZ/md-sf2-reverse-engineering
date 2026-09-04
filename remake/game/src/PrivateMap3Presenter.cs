@@ -163,6 +163,12 @@ internal sealed class PrivateMap3Presenter
     internal PrivateOriginalMapPlayerLocomotionSnapshot? PlayerLocomotion =>
         _baseViewport?.PlayerLocomotion;
 
+    internal bool UsesEntity142Diagnostic =>
+        _baseViewport?.UsesEntity142Diagnostic == true;
+
+    internal PrivateMap3Entity142DiagnosticProjection? Entity142DiagnosticProjection =>
+        _baseViewport?.Entity142DiagnosticProjection;
+
     internal PrivateMap3WorldTreatment WorldTreatment =>
         _baseViewport?.WorldTreatment ?? PrivateMap3WorldTreatment.ExactNearest;
 
@@ -284,6 +290,27 @@ internal sealed class PrivateMap3Presenter
         }
 
         return _baseViewport.TryBindLocalPlayerLocomotion(mount, out diagnostic);
+    }
+
+    internal bool TryBindEntity142Diagnostic(
+        PrivateLocalPresentationRasterMount mount,
+        PrivateOriginalMapSessionSnapshot snapshot,
+        out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
+    {
+        ArgumentNullException.ThrowIfNull(mount);
+        ArgumentNullException.ThrowIfNull(snapshot);
+        if (_baseViewport is null)
+        {
+            diagnostic = new PrivateLocalPresentationAssetMountDiagnostic(
+                PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The private presentation plan did not request a base visual viewport.");
+            return false;
+        }
+
+        return _baseViewport.TryBindLocalEntity142Diagnostic(
+            mount,
+            snapshot,
+            out diagnostic);
     }
 
     internal void Project(

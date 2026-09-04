@@ -171,12 +171,13 @@ It binds the exact Map 3 record/slot, logical entity 142, map-sprite 209, UP-fac
 payload, two decoded 24-by-24 halves, and palette 3 before emitting one 48-by-24 sheet. The halves remain
 in source order and both enter the master and nearest 2x/4x buckets. The builder does not choose an
 interaction-time half or infer idle, counter, cadence, visibility, or interaction behavior. Its ignored
-candidate and separately reviewed local asset transaction do not create a product consumer.
+candidate and separately reviewed local asset transaction do not by themselves select a product
+frame.
 
 The reviewed local asset history now owns `hud.yes-no-window-frame`,
 `hud.tactical-selection-cursor`, `world.map3.base-tileset-atlas`, and
 `world.map3.player.initial-reference-frame`, plus the `up`, `horizontal`, and `down` members of
-`world.map3.player.locomotion.*`, and the unconsumed
+`world.map3.player.locomotion.*`, and
 `world.map3.entity142.astral.up.two-half-reference`. The current eight-asset checkpoint is local commit
 `d89274972905742f8a02b8d8b20d2c96d2ff9ca9`, tree
 `fb2581bac58f662e4e5143b52776b15c2cf5ca25`, with manifest SHA-256
@@ -184,8 +185,12 @@ The reviewed local asset history now owns `hud.yes-no-window-frame`,
 buckets are reviewed nearest 2x/4x outputs; source and master material remain review/provenance
 inputs, not runtime files. The initial-reference frame remains a separate, narrower retained asset;
 the lower-level viewport can still project it when no locomotion mount is supplied. The explicit
-base-atlas composition mounts the three two-half sheets through Application-owned locomotion state
-and fails closed if that mount is unavailable rather than falling back to the retained frame.
+base-atlas composition mounts the three player two-half sheets through Application-owned locomotion
+state and fails closed if that mount is unavailable rather than falling back to the retained frame.
+It also mounts the entity-142 two-half reference and applies the explicitly project-authored
+`project-authored-half0-diagnostic-idle-v1` policy. That policy draws only source-order half zero for
+the exact accepted Map 3 `ms_map3_Entities` record 17 / logical entity 142 / physical slot 17 binding;
+it is a bounded diagnostic choice, not evidence that the half was visible or idle in the original.
 
 An explicit PrivateLocal launch may opt into HUD assets with `--private-hud-preview`, or into the
 atlas diagnostic with both `--private-map3-base-view` and `--private-map3-base-atlas`. Either asset
@@ -198,8 +203,9 @@ reader to reopen the fixed manifest, resolve and recheck each contained
 path/length/digest, and return a defensive byte copy before Godot decodes it. No runtime path crosses
 into Application or Godot. Partial
 values, an implicit mount, or a failed private mount never fall back while reporting private success.
-The base-atlas selection also requires the exact player reference and locomotion assets from the same
-accepted local transaction. Godot replaces only the base view's project-authored player marker,
+The base-atlas selection also requires the exact player reference, locomotion, and entity-142 reference
+assets from the same accepted local transaction. Godot replaces only the base view's project-authored
+player marker and adds the one exact entity diagnostic,
 keeps semantic position and animation state in the private session, and advances the accepted small
 state transition once per fixed Godot physics tick. The adapter selects the Application-named sheet,
 half, and RIGHT mirror and maps 384 source movement units across one 24-pixel logical cell. It does
@@ -207,6 +213,9 @@ not derive phase from `SimulationStep` or `LastTraversal`, call either half stan
 universal admission frame or wall-clock fidelity. The fixed-ROM visual-payload reader and cross-port
 binding remain offline admission/tooling support; playable startup neither invokes them nor accepts
 `--original-rom`, `--map-tileset-metadata`, or `--map-palette-metadata`.
+The entity diagnostic reprojects only from the immutable admitted population and the current Godot
+camera crop; the static-overlay diagnostic omits it. It does not add entity movement, occupancy,
+collision, lifecycle, event effects, interaction behavior, or all-entity rendering.
 
 The explicit PrivateLocal product profile now applies one adaptive windowed startup policy before any
 presentation payload is selected. The logical canvas and project fallback remain 960 by 540. On a real
