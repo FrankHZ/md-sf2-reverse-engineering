@@ -17,6 +17,11 @@ the one-shot project-authored request before movement resumes. The explicit base
 selection uses the reviewed local 2x/4x nearest atlas directly while retaining the same Application
 snapshot, block/tile selection, crop, and player marker; playable startup does not reopen the ROM or
 tileset/palette extraction metadata.
+The fixed private canonical import also admits the controlled setup's ordered entity population as
+immutable, source-shaped Application data. The private session snapshot exposes that same population
+without creating mutable NPC state. Coordinates are masked only into typed map positions; facing,
+map-sprite, and tail bytes remain opaque, and no entity visibility, walking, action, interaction, or
+presentation behavior is inferred.
 The same explicit private visual path now mounts the reviewed three-sheet controlled-player family;
 Application owns its facing, counter, half, and 13-tick movement phase while Godot projects the
 selected sheet and mirrors only RIGHT. A project-authored modern camera follows that typed in-cell
@@ -267,6 +272,10 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
 - `GameSession` is the sole logical gameplay mutation facade.
 - Domain and Application code do not depend on Godot, JSON, machine paths, or original payloads.
 - Content validates external identities and structure before constructing admitted definitions.
+- The private canonical adapter validates the selected setup's exact ordered entity projection and
+  constructs one immutable population authority shared by the import definition and private snapshot.
+  Raw source addresses and local paths do not cross into Application; opaque record bytes do not imply
+  runtime action, walking, visibility, interaction, or rendering semantics.
 - Godot maps input to semantic commands and projects authoritative observations; it does not own
   gameplay rules.
 - The public-synthetic tactical micro-battle is deterministic project-authored content. Its actor,

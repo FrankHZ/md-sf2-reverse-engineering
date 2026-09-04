@@ -36,6 +36,13 @@ public static class OriginalMapRuntimeAdmission
         "A9C712C1E02FB4A03CA60E68FF3AEFE6CC71A9E07A986E0CEB46C9CD9C81A2A6";
     public const string AcceptedAreaSourceProjectionDigest =
         "B60D96CC0359E390A8C26FDA9CE3313023ACB4774902CD99E12CB798041EB225";
+    public const string AcceptedEntityListResourceId = "ms_map3_Entities";
+    public const int AcceptedEntityRecordCount = 19;
+    public const int AcceptedFixedEntityRecordCount = 16;
+    public const int AcceptedWalkingEntityRecordCount = 3;
+    public const int AcceptedSequencedEntityRecordCount = 0;
+    public const string AcceptedEntityProjectionDigest =
+        "344A1BB9BBFD26D1A4AF3913A54BB42284D2095D8D5F4E3022BFD303AA6D739D";
 
     public const string MapId = "map3";
     public const int StartX = 56;
@@ -65,6 +72,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-current-area-diagnostic-v1";
     public const string AreaSourceRecordAdmissionCapability =
         "private-local-map3-source-area-record-admission-v1";
+    public const string SelectedSetupEntityPopulationCapability =
+        "private-local-map3-selected-setup-entity-population-v1";
     public const string BlocksetSourceAdmissionCapability =
         "private-local-map3-source-blockset-admission-v1";
     public const string VisualReferenceAdmissionCapability =
@@ -80,6 +89,7 @@ public static class OriginalMapRuntimeAdmission
                 ControlledStepCopyCapability,
                 CurrentAreaDiagnosticCapability,
                 AreaSourceRecordAdmissionCapability,
+                SelectedSetupEntityPopulationCapability,
                 BlocksetSourceAdmissionCapability,
                 VisualReferenceAdmissionCapability,
             });
@@ -93,6 +103,8 @@ public static class OriginalMapRuntimeAdmission
                 "sf2-canonical-map-import-v1",
                 "sf2-map-tileset-decode-v1",
                 "sf2-map-palette-static-v1",
+                "sf2-map-setup-static-v1",
+                "sf2-map-entities-static-v1",
                 "sf2-map3-castle-battle-unlock-static-v1",
                 "sf2-map3-admitted-start-runtime-v1",
             });
@@ -143,6 +155,35 @@ public static class OriginalMapRuntimeAdmission
             string.Equals(
                 selection.ProjectionDigest,
                 AcceptedVisualReferenceProjectionDigest,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool HasExactAcceptedEntityPopulation(
+        OriginalMapEntityPopulation population)
+    {
+        ArgumentNullException.ThrowIfNull(population);
+        return string.Equals(population.Map.Value, MapId, StringComparison.Ordinal) &&
+            string.Equals(
+                population.SelectedSetup.Value,
+                SelectedSetupId,
+                StringComparison.Ordinal) &&
+            string.Equals(
+                population.ResourceId,
+                AcceptedEntityListResourceId,
+                StringComparison.Ordinal) &&
+            population.Records.Count == AcceptedEntityRecordCount &&
+            population.Records.Count(record =>
+                record.Kind == OriginalMapEntityRecordKind.Fixed) ==
+                AcceptedFixedEntityRecordCount &&
+            population.Records.Count(record =>
+                record.Kind == OriginalMapEntityRecordKind.Walking) ==
+                AcceptedWalkingEntityRecordCount &&
+            population.Records.Count(record =>
+                record.Kind == OriginalMapEntityRecordKind.Sequenced) ==
+                AcceptedSequencedEntityRecordCount &&
+            string.Equals(
+                population.ProjectionDigest,
+                AcceptedEntityProjectionDigest,
                 StringComparison.OrdinalIgnoreCase);
     }
 

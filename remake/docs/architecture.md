@@ -37,6 +37,12 @@ device input
 `GameSession` is the only logical gameplay mutation facade. Godot may request a command or project a
 result; it does not change position, flags, inventory, request state, RNG, or flow state directly.
 Content constructs admitted immutable definitions but does not mutate a running session.
+For the private canonical Map 3 port, the import definition is the sole owner of the selected setup's
+ordered entity population and the private snapshot exposes that exact immutable object. Content maps
+source-shaped records to stable resource/ordinal identities, raw and masked coordinates, opaque facing
+and map-sprite values, and a defensively owned opaque tail. Application does not receive source
+addresses and does not promote those bytes into visibility, walking, action, interaction, or rendering
+rules.
 
 The public-synthetic and private-local profiles share the assembly direction and Godot host. They do
 not share a weaker content reader or silently convert one profile into the other.
@@ -49,6 +55,9 @@ the same logical `GameSession` facade. Content exposes three public readers: one
 package reader and two private-local readers for canonical map import and offline base visual payload
 admission. Playable PrivateLocal composition consumes the canonical import plus the separately reviewed
 local presentation pack; it does not reopen ROM or extraction metadata at startup.
+The canonical reader also admits the selected setup's entity population behind the same fixed private
+trust boundary. This is typed session context only; neither `GameSession` nor Godot currently creates
+mutable entity lifecycles or presentation from it.
 
 Two areas currently concentrate more responsibility than the target shape:
 

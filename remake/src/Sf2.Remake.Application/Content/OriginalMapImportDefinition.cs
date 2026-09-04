@@ -130,6 +130,7 @@ public sealed class OriginalMapImportDefinition
         WorkingMapLayout workingLayout,
         OriginalMapBlockCatalog blockCatalog,
         OriginalMapAreaCatalog areaCatalog,
+        OriginalMapEntityPopulation entityPopulation,
         OriginalMapVisualResourceSelection visualResourceSelection,
         OriginalMapControlledAdmission controlledAdmission,
         IEnumerable<string> unsupportedCapabilities)
@@ -138,6 +139,7 @@ public sealed class OriginalMapImportDefinition
             workingLayout,
             blockCatalog,
             areaCatalog,
+            entityPopulation,
             visualResourceSelection,
             controlledAdmission,
             controlledStepCopy: null,
@@ -150,6 +152,7 @@ public sealed class OriginalMapImportDefinition
         WorkingMapLayout workingLayout,
         OriginalMapBlockCatalog blockCatalog,
         OriginalMapAreaCatalog areaCatalog,
+        OriginalMapEntityPopulation entityPopulation,
         OriginalMapVisualResourceSelection visualResourceSelection,
         OriginalMapControlledAdmission controlledAdmission,
         OriginalMapStepCopyDefinition? controlledStepCopy,
@@ -159,6 +162,8 @@ public sealed class OriginalMapImportDefinition
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
         BlockCatalog = blockCatalog ?? throw new ArgumentNullException(nameof(blockCatalog));
         AreaCatalog = areaCatalog ?? throw new ArgumentNullException(nameof(areaCatalog));
+        EntityPopulation = entityPopulation ??
+            throw new ArgumentNullException(nameof(entityPopulation));
         VisualResourceSelection = visualResourceSelection ??
             throw new ArgumentNullException(nameof(visualResourceSelection));
         ControlledAdmission = controlledAdmission ??
@@ -176,6 +181,14 @@ public sealed class OriginalMapImportDefinition
             throw new ArgumentException(
                 "The controlled admission map must equal the imported map.",
                 nameof(controlledAdmission));
+        }
+
+        if (entityPopulation.Map != map ||
+            entityPopulation.SelectedSetup != controlledAdmission.SelectedSetup)
+        {
+            throw new ArgumentException(
+                "The entity population must match the imported map and controlled setup.",
+                nameof(entityPopulation));
         }
 
         if (controlledStepCopy is not null && controlledStepCopy.Identity.Map != map)
@@ -228,6 +241,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapBlockCatalog BlockCatalog { get; }
 
     public OriginalMapAreaCatalog AreaCatalog { get; }
+
+    public OriginalMapEntityPopulation EntityPopulation { get; }
 
     public OriginalMapVisualResourceSelection VisualResourceSelection { get; }
 

@@ -424,6 +424,7 @@ public sealed class OriginalMapVisualGameSessionTests
             new WorkingMapLayout(words),
             AcceptedBlockCatalog(),
             AcceptedAreaCatalog(),
+            AcceptedEntityPopulation(map),
             selection ?? ExactSelection(),
             new OriginalMapControlledAdmission(
                 map,
@@ -508,6 +509,24 @@ public sealed class OriginalMapVisualGameSessionTests
             new MapId(OriginalMapRuntimeAdmission.MapId),
             paletteIndex: 0,
             [0, 37, 43, 53, 66]);
+
+    private static OriginalMapEntityPopulation AcceptedEntityPopulation(MapId map) =>
+        new(
+            map,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            Enumerable.Range(0, OriginalMapRuntimeAdmission.AcceptedEntityRecordCount)
+                .Select(index => new OriginalMapEntityDefinition(
+                    new OriginalMapEntityRecordIdentity(
+                        OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
+                        index + 1),
+                    rawX: checked((byte)index),
+                    rawY: 0,
+                    opaqueFacing: 3,
+                    mapSprite: checked((byte)(index + 1)),
+                    index >= OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount
+                        ? [0xFF, checked((byte)index), 0, 1]
+                        : [0, 0, 0, 0])),
+            OriginalMapRuntimeAdmission.AcceptedEntityProjectionDigest);
 
     private static OriginalMapBlockCatalog AcceptedBlockCatalog() =>
         new(
