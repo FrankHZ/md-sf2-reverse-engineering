@@ -453,7 +453,8 @@ public sealed class OriginalMapVisualGameSessionTests
             AcceptedZone601(map),
             AcceptedSarah(map),
             AcceptedEntity142(map),
-            AcceptedAstralZone(map));
+            AcceptedAstralZone(map),
+            AcceptedOriginalMapMessenger.Create(map));
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>
@@ -591,51 +592,7 @@ public sealed class OriginalMapVisualGameSessionTests
             [0, 37, 43, 53, 66]);
 
     private static OriginalMapEntityPopulation AcceptedEntityPopulation(MapId map) =>
-        new(
-            map,
-            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
-            Enumerable.Range(0, OriginalMapRuntimeAdmission.AcceptedEntityRecordCount)
-                .Select(index => new OriginalMapEntityDefinition(
-                    new OriginalMapEntityRecordIdentity(
-                        OriginalMapRuntimeAdmission.AcceptedEntityListResourceId,
-                        index + 1),
-                    rawX: index == 0
-                        ? (byte)OriginalMapRuntimeAdmission.SarahActorInitialX
-                    : index == 2
-                        ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialX
-                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
-                        ? (byte)OriginalMapRuntimeAdmission.Entity142ActorX
-                        : checked((byte)index),
-                    rawY: index == 0
-                        ? (byte)OriginalMapRuntimeAdmission.SarahActorInitialY
-                    : index == 2
-                        ? (byte)OriginalMapRuntimeAdmission.Zone601ActorInitialY
-                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
-                        ? (byte)OriginalMapRuntimeAdmission.Entity142ActorY
-                        : (byte)0,
-                    opaqueFacing: index == 0
-                        ? OriginalMapRuntimeAdmission.SarahActorInitialOpaqueFacing
-                    : index == 2
-                        ? OriginalMapRuntimeAdmission.Zone601ActorInitialOpaqueFacing
-                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
-                        ? OriginalMapRuntimeAdmission.Entity142ActorOpaqueFacing
-                        : (byte)3,
-                    mapSprite: index == 2
-                        ? (byte)195
-                        : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
-                        ? OriginalMapRuntimeAdmission.Entity142ActorMapSprite
-                        : checked((byte)(index + 1)),
-                    index == 0
-                        ? [0, 4, 0x60, 0xCE]
-                    : index == 2
-                        ? [0, 4, 97, 2]
-                    : index == OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
-                        ? [0, 4, 0x60, 0xCE]
-                        : index == OriginalMapRuntimeAdmission.AcceptedFixedEntityRecordCount - 1 ||
-                            index > OriginalMapRuntimeAdmission.Entity142ActorSourceRecordOrdinal - 1
-                        ? [0xFF, checked((byte)index), 0, 1]
-                        : [0, 0, 0, 0])),
-            OriginalMapRuntimeAdmission.AcceptedEntityProjectionDigest);
+        AcceptedOriginalMapMessenger.CreateEntityPopulation(map);
 
     private static OriginalMapZone601Definition AcceptedZone601(MapId map) =>
         new(

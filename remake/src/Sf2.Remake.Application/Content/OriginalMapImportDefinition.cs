@@ -188,7 +188,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapZone601Definition? zone601 = null,
         OriginalMapSarahDefinition? sarah = null,
         OriginalMapEntity142Definition? entity142 = null,
-        OriginalMapAstralZoneDefinition? astralZone = null)
+        OriginalMapAstralZoneDefinition? astralZone = null,
+        OriginalMapMessengerAcceptanceDefinition? messengerAcceptance = null)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
@@ -377,6 +378,63 @@ public sealed class OriginalMapImportDefinition
             }
         }
 
+        if (messengerAcceptance is not null)
+        {
+            if (messengerAcceptance.Identity.Map != map ||
+                messengerAcceptance.Identity.Setup != controlledAdmission.SelectedSetup ||
+                sarah is null || entity142 is null || astralZone is null ||
+                messengerAcceptance.SarahSourceRecord != sarah.ActorSourceRecord ||
+                messengerAcceptance.SarahCharacterId != sarah.LogicalActorId ||
+                messengerAcceptance.Entity142SourceRecord != entity142.ActorSourceRecord ||
+                messengerAcceptance.Entity142LogicalActorId != entity142.LogicalActorId ||
+                messengerAcceptance.CompletionFlag603 != sarah.LaterBranchFlag603 ||
+                messengerAcceptance.Trigger != messengerAcceptance.Endpoint ||
+                !areaCatalog.Traversal.IsWithinActiveArea(messengerAcceptance.Approach) ||
+                !areaCatalog.Traversal.IsWithinActiveArea(messengerAcceptance.Trigger) ||
+                OriginalMapTraversal.IsBlocked(workingLayout, messengerAcceptance.Approach) ||
+                OriginalMapTraversal.IsBlocked(workingLayout, messengerAcceptance.Trigger) ||
+                areaCatalog.Traversal.ResolveCandidateTarget(
+                    workingLayout,
+                    messengerAcceptance.Approach,
+                    messengerAcceptance.EntryDirection) != messengerAcceptance.Trigger)
+            {
+                throw new ArgumentException(
+                    "Messenger acceptance must bind the admitted post-Astral Map 3 route and actors.",
+                    nameof(messengerAcceptance));
+            }
+
+            OriginalMapEntityDefinition messengerActor = entityPopulation.Records
+                .SingleOrDefault(record =>
+                    record.Identity == messengerAcceptance.MessengerActorSourceRecord) ??
+                throw new ArgumentException(
+                    "Messenger acceptance must bind one admitted messenger actor record.",
+                    nameof(messengerAcceptance));
+            if (messengerActor.Position != messengerAcceptance.MessengerActorInitialPosition ||
+                messengerActor.OpaqueFacing !=
+                    messengerAcceptance.MessengerActorInitialOpaqueFacing)
+            {
+                throw new ArgumentException(
+                    "Messenger acceptance must retain the messenger actor source state.",
+                    nameof(messengerAcceptance));
+            }
+
+            foreach (OriginalMapMessengerGuardState guard in messengerAcceptance.Guards)
+            {
+                OriginalMapEntityDefinition source = entityPopulation.Records
+                    .SingleOrDefault(record => record.Identity == guard.SourceRecord) ??
+                    throw new ArgumentException(
+                        "Every messenger guard must bind one admitted source record.",
+                        nameof(messengerAcceptance));
+                if (source.Position != guard.Position ||
+                    source.OpaqueFacing != guard.OpaqueFacing)
+                {
+                    throw new ArgumentException(
+                        "Messenger guard endpoints must retain their admitted source state.",
+                        nameof(messengerAcceptance));
+                }
+            }
+        }
+
         if (roofOnLoadClear is not null)
         {
             if (roofOnLoadClear.Identity.Map != map)
@@ -460,6 +518,7 @@ public sealed class OriginalMapImportDefinition
         Sarah = sarah;
         Entity142 = entity142;
         AstralZone = astralZone;
+        MessengerAcceptance = messengerAcceptance;
     }
 
     public MapId Map { get; }
@@ -493,6 +552,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapEntity142Definition? Entity142 { get; }
 
     public OriginalMapAstralZoneDefinition? AstralZone { get; }
+
+    public OriginalMapMessengerAcceptanceDefinition? MessengerAcceptance { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

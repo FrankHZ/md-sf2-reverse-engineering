@@ -59,6 +59,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.SarahRouteCapability,
                 PrivateCanonicalMap3ImportReader.Entity142AcknowledgementCapability,
                 PrivateCanonicalMap3ImportReader.AstralZoneHandoffCapability,
+                PrivateCanonicalMap3ImportReader.MessengerAcceptanceCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -156,6 +157,26 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             astralZone,
             sarah,
             zone601,
+            accepted.Definition.Traversal,
+            accepted.Definition.WorkingLayout));
+        OriginalMapMessengerAcceptanceDefinition messenger =
+            Assert.IsType<OriginalMapMessengerAcceptanceDefinition>(
+                accepted.Definition.MessengerAcceptance);
+        Assert.Equal(new MapPosition(42, 10), messenger.Approach);
+        Assert.Equal(ExplorationDirection.East, messenger.EntryDirection);
+        Assert.Equal(new MapPosition(43, 10), messenger.Trigger);
+        Assert.Equal("cs_5149A", messenger.MessengerProgramIdentity);
+        Assert.Equal("cs_51614", messenger.AcceptedBranchProgramIdentity);
+        Assert.Equal(OriginalMapRuntimeAdmission.MessengerTextIds, messenger.TextIds);
+        Assert.Equal(OriginalMapRuntimeAdmission.MessengerSpeakerOperands,
+            messenger.SpeakerOperands);
+        Assert.Equal(OriginalMapRuntimeAdmission.MessengerStages, messenger.Stages);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedMessengerAcceptance(
+            messenger,
+            accepted.Definition.EntityPopulation,
+            sarah,
+            entity142,
+            astralZone,
             accepted.Definition.Traversal,
             accepted.Definition.WorkingLayout));
         Assert.Contains("natural-flags-setup-variant-selection",
@@ -279,6 +300,40 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         AstralZoneProgramOperations(programDrift)[1]!.AsObject()["operandText"] =
             "128,7,4,UP";
         AssertCode(Admit(programDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void MessengerEventActorsAndAcceptedProgramDriftFailSemanticAdmission()
+    {
+        JsonObject zoneDrift = SampleDocument();
+        ZoneRecords(zoneDrift)[
+            OriginalMapRuntimeAdmission.MessengerZoneEventRecordOrdinal - 1]!
+            .AsObject()["relativeOffset"] =
+                OriginalMapRuntimeAdmission.MessengerZoneEventRelativeOffset + 1;
+        AssertCode(Admit(zoneDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject actorDrift = SampleDocument();
+        EntityRecords(actorDrift)[
+            OriginalMapRuntimeAdmission.MessengerActor143SourceRecordOrdinal - 1]!
+            .AsObject()["mapSprite"] =
+                OriginalMapRuntimeAdmission.MessengerActor143MapSprite - 1;
+        AssertCode(Admit(actorDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject guardDrift = SampleDocument();
+        EntityRecords(guardDrift)[
+            OriginalMapRuntimeAdmission.MessengerGuard138SourceRecordOrdinal - 1]!
+            .AsObject()["x"] = OriginalMapRuntimeAdmission.MessengerGuard138X - 1;
+        AssertCode(Admit(guardDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject branchDrift = SampleDocument();
+        MessengerAcceptedProgramOperations(branchDrift)[6]!
+            .AsObject()["operandText"] = "129";
+        AssertCode(Admit(branchDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject controlDrift = SampleDocument();
+        MessengerMainProgramOperations(controlDrift)[103]!
+            .AsObject()["targetAddresses"] = new JsonArray(333333);
+        AssertCode(Admit(controlDrift), OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
     [Fact]
@@ -690,6 +745,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Contains(
             PrivateCanonicalMap3ImportReader.AstralZoneHandoffCapability,
             accepted.Receipt.Capabilities);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.MessengerAcceptanceCapability,
+            accepted.Receipt.Capabilities);
         Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedEntity142(
             accepted.Definition.Entity142,
             accepted.Definition.EntityPopulation,
@@ -766,6 +824,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             accepted.Definition.AstralZone,
             accepted.Definition.Sarah,
             accepted.Definition.Zone601,
+            accepted.Definition.Traversal,
+            accepted.Definition.WorkingLayout));
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedMessengerAcceptance(
+            accepted.Definition.MessengerAcceptance,
+            accepted.Definition.EntityPopulation,
+            accepted.Definition.Sarah,
+            accepted.Definition.Entity142,
+            accepted.Definition.AstralZone,
             accepted.Definition.Traversal,
             accepted.Definition.WorkingLayout));
         OriginalMapStepCopyDefinition stepCopy =
@@ -1072,6 +1138,22 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         kind = "cutscene",
                         operations = AstralZonePositionOperations(),
                     },
+                    new
+                    {
+                        id = "cs_5149A",
+                        address = 332954,
+                        path = "data/maps/entries/map03/mapsetups/scripts_1.asm",
+                        kind = "cutscene",
+                        operations = MessengerMainOperations(),
+                    },
+                    new
+                    {
+                        id = "cs_51614",
+                        address = 333332,
+                        path = "data/maps/entries/map03/mapsetups/scripts_1.asm",
+                        kind = "cutscene",
+                        operations = MessengerAcceptedOperations(),
+                    },
                 },
                 initSourcePrograms = Array.Empty<object>(),
             },
@@ -1204,6 +1286,55 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 continue;
             }
 
+            if (ordinal == OriginalMapRuntimeAdmission.MessengerActor143SourceRecordOrdinal)
+            {
+                records.Add(new
+                {
+                    address = OriginalMapRuntimeAdmission.MessengerActor143SourceAddress,
+                    kind = "fixed",
+                    rawX = OriginalMapRuntimeAdmission.MessengerActor143InitialX,
+                    rawY = OriginalMapRuntimeAdmission.MessengerActor143InitialY,
+                    x = OriginalMapRuntimeAdmission.MessengerActor143InitialX,
+                    y = OriginalMapRuntimeAdmission.MessengerActor143InitialY,
+                    facing = OriginalMapRuntimeAdmission.MessengerActor143InitialOpaqueFacing,
+                    mapSprite = OriginalMapRuntimeAdmission.MessengerActor143MapSprite,
+                    actionValue = OriginalMapRuntimeAdmission.MessengerActor143ActionValue,
+                });
+                continue;
+            }
+
+            if (ordinal is OriginalMapRuntimeAdmission.MessengerGuard138SourceRecordOrdinal or
+                OriginalMapRuntimeAdmission.MessengerGuard139SourceRecordOrdinal)
+            {
+                bool first = ordinal ==
+                    OriginalMapRuntimeAdmission.MessengerGuard138SourceRecordOrdinal;
+                records.Add(new
+                {
+                    address = first
+                        ? OriginalMapRuntimeAdmission.MessengerGuard138SourceAddress
+                        : OriginalMapRuntimeAdmission.MessengerGuard139SourceAddress,
+                    kind = "fixed",
+                    rawX = first
+                        ? OriginalMapRuntimeAdmission.MessengerGuard138X
+                        : OriginalMapRuntimeAdmission.MessengerGuard139X,
+                    rawY = first
+                        ? OriginalMapRuntimeAdmission.MessengerGuard138Y
+                        : OriginalMapRuntimeAdmission.MessengerGuard139Y,
+                    x = first
+                        ? OriginalMapRuntimeAdmission.MessengerGuard138X
+                        : OriginalMapRuntimeAdmission.MessengerGuard139X,
+                    y = first
+                        ? OriginalMapRuntimeAdmission.MessengerGuard138Y
+                        : OriginalMapRuntimeAdmission.MessengerGuard139Y,
+                    facing = first
+                        ? OriginalMapRuntimeAdmission.MessengerGuard138OpaqueFacing
+                        : OriginalMapRuntimeAdmission.MessengerGuard139OpaqueFacing,
+                    mapSprite = OriginalMapRuntimeAdmission.MessengerGuardMapSprite,
+                    actionValue = OriginalMapRuntimeAdmission.MessengerGuardActionValue,
+                });
+                continue;
+            }
+
             records.Add(new
             {
                 address = 1000 + (ordinal * 8),
@@ -1322,6 +1453,63 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         }).ToArray();
     }
 
+    private static object[] MessengerMainOperations()
+    {
+        object[] operations = Enumerable.Range(0, 112)
+            .Select(index => MessengerOperation(index, "noop", ""))
+            .ToArray();
+        operations[0] = MessengerOperation(0, "textCursor", "517");
+        operations[102] = MessengerOperation(102, "yesNo", "");
+        operations[103] = MessengerOperation(
+            103,
+            "jumpIfFlagSet",
+            "89,cs_51614",
+            ["cs_51614"],
+            [333332]);
+        operations[111] = MessengerOperation(
+            111,
+            "jump",
+            "cs_51650",
+            ["cs_51650"],
+            [333392]);
+        return operations;
+    }
+
+    private static object[] MessengerAcceptedOperations()
+    {
+        (string Opcode, string Operand)[] values =
+        [
+            ("textCursor", "535"),
+            ("nextSingleText", "$0,ALLY_SARAH"),
+            ("setFacing", "ALLY_CHESTER,LEFT"),
+            ("nextSingleText", "$0,ALLY_CHESTER"),
+            ("setF", "600"),
+            ("setF", "66"),
+            ("join", "128"),
+            ("followEntity", "ALLY_SARAH,ALLY_BOWIE,2"),
+            ("followEntity", "ALLY_CHESTER,ALLY_SARAH,2"),
+            ("setPos", "138,27,3,DOWN"),
+            ("setPos", "139,31,3,DOWN"),
+        ];
+        return values.Select((value, index) =>
+            MessengerOperation(index, value.Opcode, value.Operand)).ToArray();
+    }
+
+    private static object MessengerOperation(
+        int index,
+        string opcode,
+        string operandText,
+        string[]? targetSymbols = null,
+        int[]? targetAddresses = null) =>
+        new
+        {
+            index,
+            opcode,
+            operandText,
+            targetSymbols = targetSymbols ?? Array.Empty<string>(),
+            targetAddresses = targetAddresses ?? Array.Empty<int>(),
+        };
+
     private static object RoofRecord(
         int triggerX,
         int triggerY,
@@ -1422,6 +1610,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static JsonArray ZoneProgramOperations(JsonObject document) =>
         ResourceArray(document, "standaloneScriptPrograms")[1]!
+            .AsObject()["operations"]!.AsArray();
+
+    private static JsonArray MessengerMainProgramOperations(JsonObject document) =>
+        ResourceArray(document, "standaloneScriptPrograms")[3]!
+            .AsObject()["operations"]!.AsArray();
+
+    private static JsonArray MessengerAcceptedProgramOperations(JsonObject document) =>
+        ResourceArray(document, "standaloneScriptPrograms")[4]!
             .AsObject()["operations"]!.AsArray();
 
     private static JsonArray EntityEventRecords(JsonObject document) =>

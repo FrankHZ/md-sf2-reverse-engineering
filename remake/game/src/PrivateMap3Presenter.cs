@@ -130,7 +130,7 @@ internal sealed record PrivateMap3PresentationPlan(
                 $"({sarah.ActorPosition.X}, {sarah.ActorPosition.Y}), facing " +
                 $"{sarah.ActorOpaqueFacing}; temporary route flag " +
                 $"{(sarah.TemporaryRouteFlag256Set ? "set" : "clear")}; " +
-                "F semantic interaction request";
+                SarahAction(sarah);
         }
 
         PrivateOriginalMapEntity142State? entity142 = snapshot.Entity142;
@@ -144,10 +144,36 @@ internal sealed record PrivateMap3PresentationPlan(
                 $"{entity142.PhysicalActorSlot} at ({entity142.ActorPosition.X}, " +
                 $"{entity142.ActorPosition.Y}), facing {entity142.ActorOpaqueFacing}; " +
                 $"flags261/602 {(entity142.Flag261Set ? "set" : "clear")}; " +
-                $"{pending}; F request / G acknowledge";
+                Entity142Action(entity142, pending);
+        }
+
+        if (snapshot.MessengerAcceptance?.Accepted == true)
+        {
+            status +=
+                "  |  Messenger accepted; flags600/66/603 set; " +
+                "Sarah/Chester follower-ready; prose/audio/timing Unknown";
         }
 
         return status;
+    }
+
+    internal static string SarahAction(PrivateOriginalMapSarahState sarah)
+    {
+        ArgumentNullException.ThrowIfNull(sarah);
+        return sarah.IsMessengerFollowerReady
+            ? "follower ready; route occupancy released"
+            : "F semantic interaction request";
+    }
+
+    internal static string Entity142Action(
+        PrivateOriginalMapEntity142State entity142,
+        string pending)
+    {
+        ArgumentNullException.ThrowIfNull(entity142);
+        ArgumentException.ThrowIfNullOrWhiteSpace(pending);
+        return entity142.RouteOccupancyReleased
+            ? "route occupancy released; immutable sprite diagnostic only"
+            : $"{pending}; F request / G acknowledge";
     }
 }
 

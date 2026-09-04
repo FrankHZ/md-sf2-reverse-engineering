@@ -10,6 +10,96 @@ public sealed class OriginalMapImportDefinitionTests
         "0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF";
 
     [Fact]
+    public void MessengerAcceptanceDefinitionOwnsClosedAlignedForceAndStageBindings()
+    {
+        OriginalMapMessengerAcceptanceDefinition accepted =
+            AcceptedOriginalMapMessenger.Create(new MapId("map3"));
+        List<int> textIds = [.. accepted.TextIds];
+        List<int?> speakers = [.. accepted.SpeakerOperands];
+        List<int> joined = [.. accepted.JoinedCharacterIds];
+        List<OriginalMapMessengerFollowerLink> followers = [.. accepted.Followers];
+        List<OriginalMapMessengerGuardState> guards = [.. accepted.Guards];
+        List<OriginalMapMessengerAcceptanceStage> stages = [.. accepted.Stages];
+        OriginalMapMessengerAcceptanceDefinition definition = new(
+            accepted.Identity,
+            accepted.Approach,
+            accepted.EntryDirection,
+            accepted.Trigger,
+            accepted.MessengerProgramIdentity,
+            accepted.AcceptedBranchProgramIdentity,
+            accepted.ControlShapeSha256,
+            accepted.PromptReturn,
+            accepted.PromptFlag89,
+            accepted.JoinSelector,
+            accepted.Flag600,
+            accepted.Flag66,
+            accepted.CompletionFlag603,
+            accepted.SarahSourceRecord,
+            accepted.SarahCharacterId,
+            accepted.Entity142SourceRecord,
+            accepted.Entity142LogicalActorId,
+            accepted.MessengerActorSourceRecord,
+            accepted.MessengerLogicalActorId,
+            accepted.MessengerActorInitialPosition,
+            accepted.MessengerActorInitialOpaqueFacing,
+            textIds,
+            speakers,
+            joined,
+            followers,
+            guards,
+            accepted.Endpoint,
+            accepted.EndpointOpaqueFacing,
+            accepted.TerminalIdentity,
+            stages);
+        textIds.Clear();
+        speakers.Clear();
+        joined.Clear();
+        followers.Clear();
+        guards.Clear();
+        stages.Clear();
+
+        Assert.Equal(18, definition.TextIds.Count);
+        Assert.Equal(18, definition.SpeakerOperands.Count);
+        Assert.Equal(new[] { 1, 2 }, definition.JoinedCharacterIds);
+        Assert.Equal(2, definition.Followers.Count);
+        Assert.Equal(2, definition.Guards.Count);
+        Assert.Equal(16, definition.Stages.Count);
+        Assert.Throws<NotSupportedException>(() =>
+            ((IList<int>)definition.TextIds).Add(999));
+        Assert.Throws<ArgumentException>(() => new OriginalMapMessengerAcceptanceDefinition(
+            accepted.Identity,
+            accepted.Approach,
+            accepted.EntryDirection,
+            accepted.Trigger,
+            accepted.MessengerProgramIdentity,
+            accepted.AcceptedBranchProgramIdentity,
+            accepted.ControlShapeSha256,
+            accepted.PromptReturn,
+            accepted.PromptFlag89,
+            accepted.JoinSelector,
+            accepted.Flag600,
+            accepted.Flag66,
+            accepted.CompletionFlag603,
+            accepted.SarahSourceRecord,
+            accepted.SarahCharacterId,
+            accepted.Entity142SourceRecord,
+            accepted.Entity142LogicalActorId,
+            accepted.MessengerActorSourceRecord,
+            accepted.MessengerLogicalActorId,
+            accepted.MessengerActorInitialPosition,
+            accepted.MessengerActorInitialOpaqueFacing,
+            accepted.TextIds,
+            accepted.SpeakerOperands.Skip(1),
+            accepted.JoinedCharacterIds,
+            accepted.Followers,
+            accepted.Guards,
+            accepted.Endpoint,
+            accepted.EndpointOpaqueFacing,
+            accepted.TerminalIdentity,
+            accepted.Stages));
+    }
+
+    [Fact]
     public void AstralZoneDefinitionOwnsClosedActorFlagTextAndStageBindings()
     {
         MapId map = new("map3");

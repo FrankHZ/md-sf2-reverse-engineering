@@ -281,6 +281,29 @@ public sealed class PrivateMap3PresenterTests
         Assert.DoesNotContain("dialogue", status, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void MessengerCompletionPresentationUsesOnlyTypedReleasedRouteState()
+    {
+        PrivateOriginalMapSessionSnapshot ready = Snapshot();
+        Assert.Equal(
+            "F semantic interaction request",
+            PrivateMap3PresentationPlan.SarahAction(ready.Sarah!));
+        Assert.Equal(
+            "no pending request; F request / G acknowledge",
+            PrivateMap3PresentationPlan.Entity142Action(
+                ready.Entity142!,
+                "no pending request"));
+
+        PrivateOriginalMapSarahState follower = MessengerFollowerSarah(ready.Sarah!);
+        PrivateOriginalMapEntity142State released = ReleasedEntity142(ready.Entity142!);
+        Assert.Equal(
+            "follower ready; route occupancy released",
+            PrivateMap3PresentationPlan.SarahAction(follower));
+        Assert.Equal(
+            "route occupancy released; immutable sprite diagnostic only",
+            PrivateMap3PresentationPlan.Entity142Action(released, "ignored pending label"));
+    }
+
     private static PrivateOriginalMapSessionSnapshot Snapshot()
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
@@ -498,4 +521,46 @@ public sealed class PrivateMap3PresenterTests
             new OriginalMapAreaBytePair(0, 0),
             mainLayerType: 0,
             defaultMusic: 0);
+
+    internal static PrivateOriginalMapSarahState MessengerFollowerSarah(
+        PrivateOriginalMapSarahState ready)
+    {
+        System.Reflection.ConstructorInfo constructor =
+            typeof(PrivateOriginalMapSarahState).GetConstructors(
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 7);
+        return (PrivateOriginalMapSarahState)constructor.Invoke(
+        [
+            PrivateOriginalMapSarahLifecyclePhase.MessengerFollowerReady,
+            ready.ActorSourceRecord,
+            ready.LogicalActorId,
+            new MapPosition(41, 10),
+            (byte)1,
+            true,
+            true,
+        ]);
+    }
+
+    private static PrivateOriginalMapEntity142State ReleasedEntity142(
+        PrivateOriginalMapEntity142State ready)
+    {
+        System.Reflection.ConstructorInfo constructor =
+            typeof(PrivateOriginalMapEntity142State).GetConstructors(
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic)
+            .Single(candidate => candidate.GetParameters().Length == 9);
+        return (PrivateOriginalMapEntity142State)constructor.Invoke(
+        [
+            ready.ActorSourceRecord,
+            ready.LogicalActorId,
+            ready.PhysicalActorSlot,
+            ready.ActorPosition,
+            ready.ActorOpaqueFacing,
+            true,
+            true,
+            1L,
+            true,
+        ]);
+    }
 }

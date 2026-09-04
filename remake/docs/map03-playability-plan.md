@@ -30,10 +30,16 @@ projects only typed state; decoded text and opaque program effects remain unsupp
 accepted Zone 601, Sarah, and Entity 142 state is complete, entering the exact `(58,13)` zone runs one
 bounded Application-owned Astral handoff: numeric text IDs 514/515/516 remain receipt data, the
 accepted position program identity repositions Sarah to `(41,10)` and actor 128 to `(6,4)` facing up,
-and temporary flag 260 prevents replay. This is one evidence-owned transaction, not a general zone or
-script interpreter; messenger flag 603 completion, decoded prose, audio, timing, and subsequent route
-remain outside it. The existing live route-actor glyphs visibly follow the committed positions without
-new Godot rules or original-sprite claims. An explicit private-local presentation
+and temporary flag 260 prevents replay. From the accepted approach `(42,10)`, moving east now commits
+one exact messenger-acceptance transaction at `(43,10)`: Application owns the accepted prompt result,
+flags 89/600/66/603, Sarah and Chester joins/follower links, two guard endpoints, stable
+`WaitForEvent` result, and the typed numeric text/speaker/program receipt. Sarah becomes follower-ready,
+Entity 142 releases route occupancy, and the player finishes facing down. The transaction is once-only
+and a fresh session reconstructs the pre-messenger state. This is one evidence-owned accepted branch,
+not a general prompt, force, follower, zone, or script interpreter; decoded prose, audio, timing,
+entity-143 presentation, and alternate/rejected prompt behavior remain outside it. The existing live
+route-actor glyphs visibly follow committed positions and stop drawing Sarah after Application releases
+her route occupancy, without new Godot selection rules or original-sprite claims. An explicit private-local presentation
 option also projects the live current area's non-zero second-layer offset from the authoritative
 working layout; zero-offset areas remain main-only.
 `GameSession` evaluates their candidate targets before ordinary passability and atomically relocates
@@ -64,17 +70,18 @@ snapshot as the relocation while retaining distinct warp and roof receipts. The 
 saves the prior rectangle, clears it with the accepted empty-word policy, and prevents duplicate
 activation. No restore command is exposed: the original reverse/leave trigger, general roof scan,
 presentation timing, and simulation-step parity remain outside this bounded slice. The accepted
-Entity 142 stand and Astral handoff are downstream of the admitted Sarah route in the observed path,
-but this product capability does not claim route uniqueness, messenger completion, or general
-flag-driven setup/init execution. These bounded transactions still do not establish alternate-setup
-behavior or full natural continuity.
+Entity 142 stand, Astral handoff, and messenger acceptance are downstream of the admitted Sarah route
+in one controlled evidence path, but this product capability does not claim route uniqueness,
+alternate prompt results, or general flag-driven setup/init execution. These bounded transactions
+still do not establish the castle-gate/cross-map Battle 01 admission, alternate-setup behavior, or
+full natural continuity.
 
 ## Ordered Queue
 
-1. **Next evidence-owned setup entity/assets:** add another entity only after its route relevance,
-   closed behavior/visibility, and any local presentation asset are accepted through their owning
-   Content and presentation boundaries; do not project the remaining generic population by default.
-2. **Audio and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
+1. **Castle-gate and Battle 01 admission:** close the next evidence-owned route transaction and typed
+   cross-runtime handoff without treating the existing manual synthetic battle bridge as original
+   admission or inventing setup, flag, or program semantics.
+2. **Setup entities, audio, and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
    door, warp, roof, music, and audio behavior without promoting Unknown presentation semantics.
 
 ## Decision Rules

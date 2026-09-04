@@ -9,6 +9,7 @@ public enum PrivateOriginalMapPlayerLocomotionPhase
     Moving,
     Settled,
     Relocated,
+    ScriptedEndpoint,
 }
 
 public enum PrivateOriginalMapPlayerLocomotionSheet
@@ -230,6 +231,39 @@ public sealed record PrivateOriginalMapPlayerLocomotionSnapshot
             offsetYUnits: 0);
     }
 
+    internal static PrivateOriginalMapPlayerLocomotionSnapshot CompleteMessengerAcceptance(
+        PrivateOriginalMapPlayerLocomotionSnapshot current,
+        PrivateOriginalMapMessengerAcceptanceReceipt receipt)
+    {
+        ArgumentNullException.ThrowIfNull(current);
+        ArgumentNullException.ThrowIfNull(receipt);
+        ExplorationDirection direction = receipt.EndpointOpaqueFacing switch
+        {
+            0 => ExplorationDirection.East,
+            1 => ExplorationDirection.North,
+            2 => ExplorationDirection.West,
+            3 => ExplorationDirection.South,
+            _ => throw new ArgumentOutOfRangeException(nameof(receipt)),
+        };
+        (byte facing, PrivateOriginalMapPlayerLocomotionSheet sheet, int slot, bool mirror) =
+            Selection(direction);
+        return new PrivateOriginalMapPlayerLocomotionSnapshot(
+            PrivateOriginalMapPlayerLocomotionPhase.ScriptedEndpoint,
+            direction,
+            facing,
+            sheet,
+            slot,
+            mirror,
+            tick: 0,
+            counterAtSelection: current.StoredCounter,
+            storedCounter: current.StoredCounter,
+            selectedHalf: current.SelectedHalf,
+            receipt.PlayerSource,
+            receipt.Endpoint,
+            offsetXUnits: 0,
+            offsetYUnits: 0);
+    }
+
     internal PrivateOriginalMapPlayerLocomotionSnapshot Advance()
     {
         if (!IsMoving)
@@ -337,6 +371,10 @@ public sealed partial class GameSession
             ? PrivateOriginalMapPlayerLocomotionSnapshot.Relocate(
                 current,
                 move.SameMapWarp)
+            : move.MessengerAcceptance is not null
+                ? PrivateOriginalMapPlayerLocomotionSnapshot.CompleteMessengerAcceptance(
+                    current,
+                    move.MessengerAcceptance)
             : PrivateOriginalMapPlayerLocomotionSnapshot.Begin(
                 current,
                 command.Direction,
