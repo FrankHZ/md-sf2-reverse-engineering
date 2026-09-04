@@ -162,7 +162,8 @@ public sealed partial class GameSession
             nextRoofLifecycle,
             roofReceipt,
             current.BowieDoorStepCopyApplied,
-            lastNaturalStepCopy: null);
+            lastNaturalStepCopy: null,
+            current.SchoolDoorStepCopyApplied);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(next, receipt, roofReceipt);
         return true;

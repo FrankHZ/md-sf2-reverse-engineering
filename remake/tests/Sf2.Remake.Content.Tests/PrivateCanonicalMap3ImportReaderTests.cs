@@ -48,6 +48,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.SameMapWarpAdmissionCapability,
                 PrivateCanonicalMap3ImportReader.RoofOnLoadClearCapability,
                 PrivateCanonicalMap3ImportReader.BowieDoorStepCopyCapability,
+                PrivateCanonicalMap3ImportReader.SchoolDoorStepCopyCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -119,6 +120,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(6, stepCopy.Identity.OneBasedRecordOrdinal);
         Assert.Equal(new MapPosition(41, 13), stepCopy.Trigger);
         Assert.Equal((62, 0, 41, 13, 1, 1), Geometry(stepCopy.Copy));
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedSchoolDoorStepCopy(stepCopy));
         OriginalMapStepCopyDefinition bowieDoor =
             Assert.IsType<OriginalMapStepCopyDefinition>(
                 accepted.Definition.BowieDoorStepCopy);

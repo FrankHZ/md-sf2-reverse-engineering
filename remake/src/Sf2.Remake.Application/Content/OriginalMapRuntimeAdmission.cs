@@ -76,6 +76,10 @@ public static class OriginalMapRuntimeAdmission
     public const int BowieDoorStepCopyWidth = 1;
     public const int BowieDoorStepCopyHeight = 1;
 
+    public const int SchoolDoorStepCopyApproachX = 41;
+    public const int SchoolDoorStepCopyApproachY = 14;
+    public const ExplorationDirection SchoolDoorStepCopyDirection = ExplorationDirection.North;
+
     public const string SameMapWarpResourceId = "Map03s6_WarpEvents";
     public const int SameMapWarpSourceRecordCount = 9;
     public const int SchoolWarpRecordOrdinal = 6;
@@ -124,6 +128,8 @@ public static class OriginalMapRuntimeAdmission
         "private-local-map3-roof-on-load-clear-v1";
     public const string BowieDoorStepCopyCapability =
         "private-local-map3-bowie-door-step-copy-v1";
+    public const string SchoolDoorStepCopyCapability =
+        "private-local-map3-school-door-step-copy-v1";
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredCapabilities =
         Array.AsReadOnly(
@@ -141,6 +147,7 @@ public static class OriginalMapRuntimeAdmission
                 SameMapWarpAdmissionCapability,
                 RoofOnLoadClearCapability,
                 BowieDoorStepCopyCapability,
+                SchoolDoorStepCopyCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -291,6 +298,10 @@ public static class OriginalMapRuntimeAdmission
             copy.Width == BowieDoorStepCopyWidth &&
             copy.Height == BowieDoorStepCopyHeight;
     }
+
+    public static bool HasExactAcceptedSchoolDoorStepCopy(
+        OriginalMapStepCopyDefinition? definition) =>
+        IsExactControlledStepCopy(definition);
 
     public static bool HasExactAcceptedSameMapWarps(OriginalMapSameMapWarpCatalog? catalog)
     {
