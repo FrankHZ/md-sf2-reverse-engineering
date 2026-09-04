@@ -56,6 +56,9 @@ from sf2tool.h2.map3_battle01_victory_return import (
     verify_map3_battle01_victory_return_static,
 )
 from sf2tool.h2.map3_castle_battle_unlock import verify_map3_castle_battle_unlock_static
+from sf2tool.h2.map3_entity142_interactable_reference import (
+    verify_map3_entity142_interactable_reference,
+)
 from sf2tool.h2.map3_optional_interactions import verify_map3_optional_interactions
 from sf2tool.h2.map3_original_player_reference_frame import (
     verify_map3_original_player_reference_frame,
@@ -668,6 +671,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h2_map3_original_player_reference_frame)
     h2_map3_original_player_reference_frame.add_argument("--output-path", type=_path)
+    h2_map3_entity142_interactable_reference = h2_commands.add_parser(
+        "map3-entity142-interactable-reference",
+        help="verify the static and retained-runtime Map 3 entity-142 two-half reference",
+    )
+    _add_local_paths(h2_map3_entity142_interactable_reference)
+    h2_map3_entity142_interactable_reference.add_argument("--output-path", type=_path)
     h2_map3_battle01_admission = h2_commands.add_parser(
         "map3-battle01-admission",
         help="verify the public-safe static Map 21 to Battle 01 admission contract",
@@ -1765,6 +1774,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h2" and args.h2_command == "map3-original-player-reference-frame":
         print_record(
             verify_map3_original_player_reference_frame(
+                args.rom_path,
+                args.upstream_path,
+                output_path=args.output_path,
+            )
+        )
+    elif args.command == "h2" and args.h2_command == "map3-entity142-interactable-reference":
+        print_record(
+            verify_map3_entity142_interactable_reference(
                 args.rom_path,
                 args.upstream_path,
                 output_path=args.output_path,

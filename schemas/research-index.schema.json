@@ -84,7 +84,9 @@
                           { "pattern": "^(?!sourceContext\\.(?:actionCompletionSpine|turnFinalizationSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventPredicateResults|eventDialogueState|eventRequestState|eventRequestConsumption|interactionState|eventItemTransactions|flagLifecycleState|crossProgramFlagState)\\.)(function|ram|table|instrumentation|sourceContext|turnOrderConsumer|controlDispatch|battle01ControlInputs|aiConstructionHandoff|commonActionConstruction|actionEffectSpine|fieldMenuSpine|fieldItemEffects|fieldSearchSpine|eventDirectState|eventDirectControl|eventDirectHandoff|eventRequestConsumption|interactionState)(?:\\.[A-Za-z][A-Za-z0-9_]*)+$" },
                           { "enum": [
                             "static.indexBindings.initializeMapEntities",
+                            "static.indexBindings.initializeFollowerEntities",
                             "static.indexBindings.declareNewEntity",
+                            "static.indexBindings.getEntityAddressFromCharacter",
                             "static.indexBindings.getAllyMapsprite",
                             "static.indexBindings.allyMapspriteTable",
                             "static.indexBindings.mapspritePointerTable",
@@ -94,7 +96,9 @@
                             "static.indexBindings.initializeDisplay",
                             "static.indexBindings.paletteBase",
                             "static.indexBindings.dmaEntityMapsprite",
-                            "static.indexBindings.loadEntityMapsprites"
+                            "static.indexBindings.loadEntityMapsprites",
+                            "static.indexBindings.map3Entities",
+                            "static.indexBindings.map3EntityEvents"
                           ] },
                           { "enum": [
                             "eventRandomBattleState.functionAddresses.entryAddress",

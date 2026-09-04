@@ -257,17 +257,21 @@ def test_later_owner_index_normalizer_is_deep_exact_and_fail_closed() -> None:
     remove_delta = (
         reference_frame._remove_map3_original_player_reference_frame_later_owner_index_delta
     )
-    normalized = remove_delta(current)
+    owner_state = research_index._normalize_current_index_to_owner_state(
+        current, owner_id=reference_frame.ID
+    )
+    normalized = remove_delta(owner_state)
     assert current == original
-    registry_head = research_index._LATER_OWNER_STEPS[0]
-    assert registry_head.owner_id == reference_frame.ID
-    assert registry_head.predecessor_owner_id == "sf2-map-event-flag-route-selection-static-v1"
-    assert registry_head.remover == (
+    registry_step = next(
+        step for step in research_index._LATER_OWNER_STEPS if step.owner_id == reference_frame.ID
+    )
+    assert registry_step.predecessor_owner_id == "sf2-map-event-flag-route-selection-static-v1"
+    assert registry_step.remover == (
         "sf2tool.h2.map3_original_player_reference_frame:"
         "_remove_map3_original_player_reference_frame_later_owner_index_delta"
     )
-    assert registry_head.state_sha256 == research_index._canonical_index_sha256(current)
-    assert registry_head.predecessor_sha256 == research_index._canonical_index_sha256(normalized)
+    assert registry_step.state_sha256 == research_index._canonical_index_sha256(owner_state)
+    assert registry_step.predecessor_sha256 == research_index._canonical_index_sha256(normalized)
     assert (
         research_index.normalize_current_index_to_owner_predecessor(
             current, owner_id=reference_frame.ID
@@ -287,19 +291,19 @@ def test_later_owner_index_normalizer_is_deep_exact_and_fail_closed() -> None:
     def record_for(value: dict[str, object], record_id: str) -> dict[str, object]:
         return next(record for record in value["records"] if record["id"] == record_id)
 
-    malformed = copy.deepcopy(current)
+    malformed = copy.deepcopy(owner_state)
     record = record_for(malformed, "scripting.map.mapfunctions")
     record["evidence"].append(copy.deepcopy(record["evidence"][-1]))
     with pytest.raises(ValueError, match="evidence/document drift"):
         remove_delta(malformed)
 
-    malformed = copy.deepcopy(current)
+    malformed = copy.deepcopy(owner_state)
     record = record_for(malformed, "scripting.entity.declarenewentity")
     record["documents"].remove(reference_frame._INDEX_DOCUMENT)
     with pytest.raises(ValueError, match="evidence/document drift"):
         remove_delta(malformed)
 
-    malformed = copy.deepcopy(current)
+    malformed = copy.deepcopy(owner_state)
     record = record_for(malformed, "auxiliary.data.pt-mapsprites")
     next(address for address in record["addresses"] if address["id"] == "selected-payload")[
         "value"
@@ -307,12 +311,12 @@ def test_later_owner_index_normalizer_is_deep_exact_and_fail_closed() -> None:
     with pytest.raises(ValueError, match="index address drift"):
         remove_delta(malformed)
 
-    malformed = copy.deepcopy(current)
+    malformed = copy.deepcopy(owner_state)
     record_for(malformed, "scripting.map.mapfunctions")["symbol"] = "NearMiss"
     with pytest.raises(ValueError, match="predecessor record drift"):
         remove_delta(malformed)
 
-    malformed = copy.deepcopy(current)
+    malformed = copy.deepcopy(owner_state)
     record_for(malformed, "battle.activation.activate-enemies")["status"] = "inferred"
     with pytest.raises(ValueError, match="predecessor index drift"):
         remove_delta(malformed)
@@ -350,8 +354,8 @@ def test_index_has_exact_existing_owner_delta_and_public_totals() -> None:
     }
     result = verify_index()
     assert result["Records"] == 1627
-    assert result["H2Fixtures"] == 102
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 94
-    assert result["AddressBindings"] == 3093
-    assert result["ResearchDocuments"] == 64
+    assert result["H2Fixtures"] == 103
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 95
+    assert result["AddressBindings"] == 3109
+    assert result["ResearchDocuments"] == 66
     assert result["DesignContracts"] == 68

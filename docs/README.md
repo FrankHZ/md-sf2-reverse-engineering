@@ -253,6 +253,10 @@ Data-side directory inventory and ROM parity:
   public-safe H2 selection of controlled ally 0's regular map-sprite ID, facing-to-source-slot/mirror
   rules, the two-half 24×24 Basic-decoded shape, the `initial-reference-frame` import policy, and the
   `palette_Base`-to-palette3 format boundary without publishing original graphics or palette content.
+- [map3-entity142-interactable-reference.md](./research/map3-entity142-interactable-reference.md):
+  the route-specific logical entity 142 to physical slot 17 mapping, source/event record join, retained
+  natural interaction evidence, and public-safe `Mapsprite209_0` two-half reference while the live
+  animation counter and selected visible half remain Unknown.
 - [original-reference-replay-capability.md](./research/original-reference-replay-capability.md): the
   transport-only original-runtime replay capability, deterministic power-on BK2 materializer,
   passive observer, typed private receipt, containment/cleanup, and preflight-only planner boundary;

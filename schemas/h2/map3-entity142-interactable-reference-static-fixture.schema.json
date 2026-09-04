@@ -1,0 +1,5 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sf2.example/schemas/h2/map3-entity142-interactable-reference-static-fixture.schema.json",
+  "$ref": "https://sf2.example/schemas/h2/map3-entity142-interactable-reference-static-output.schema.json"
+}
