@@ -210,6 +210,10 @@ Data-side directory inventory and ROM parity:
   MainLoop → default Map 3 setup/init → first exploration-wait evidence, its exact 26-record static
   join and admitted state fixture, scoped runtime restoration, and RA-11 private provenance
   foundation; it deliberately excludes natural route, presentation, and Battle 01 claims.
+- [`map3-controlled-start-egress-transition.md`](./research/map3-controlled-start-egress-transition.md):
+  the source/H1/ROM and retained-runtime join for the two same-map warps from the controlled
+  `(56,3)` pocket through Map 3 area 1 into entity 142's area 3, including reload/setup/layout
+  boundaries and the mandatory intervening route predicates.
 - [`map3-original-player-locomotion-animation.md`](./research/map3-original-player-locomotion-animation.md):
   the one-launch controlled Map 3 player input/movement/animation matrix, including admission counter
   and visible half, blocked-versus-one-tile ordering, every enabled-VInt counter/half transition, and
