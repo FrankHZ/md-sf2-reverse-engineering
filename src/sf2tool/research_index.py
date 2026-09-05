@@ -34,6 +34,16 @@ class LaterOwnerStep:
 
 _LATER_OWNER_STEPS = (
     LaterOwnerStep(
+        owner_id="sf2-map3-battle01-player-ready-runtime-v1",
+        predecessor_owner_id="sf2-map3-entity142-interactable-reference-static-v1",
+        remover=(
+            "sf2tool.h3.map3_battle01_player_ready:"
+            "_remove_map3_battle01_player_ready_later_owner_index_delta"
+        ),
+        state_sha256="F41B7864213E05AE31FCFBEBDE42F171490790773E7C017FD5AC9BABA210942B",
+        predecessor_sha256=("49B80B7692154290D234A270DFB289AD158AFC96F1EDDE57270C981B438E176A"),
+    ),
+    LaterOwnerStep(
         owner_id="sf2-map3-entity142-interactable-reference-static-v1",
         predecessor_owner_id="sf2-map3-original-player-locomotion-animation-runtime-v1",
         remover=(

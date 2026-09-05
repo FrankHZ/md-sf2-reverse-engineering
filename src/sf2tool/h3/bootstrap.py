@@ -382,6 +382,15 @@ COMMAND_LAUNCHES = {
             cases_fixture="tests/fixtures/h3/map3-battle01-natural-route-v1.json",
         ),
     ),
+    "map3-battle01-player-ready": _command(
+        "sf2tool.h3.map3_battle01_player_ready",
+        "verify_map3_battle01_player_ready",
+        "witch-menu",
+        _launch(
+            "tools/bizhawk/map3_messenger_acceptance_observer.lua",
+            cases_fixture="tests/fixtures/h3/map3-battle01-player-ready-v1.json",
+        ),
+    ),
     "map3-messenger-acceptance": _command(
         "sf2tool.h3.map3_messenger_acceptance",
         "verify_map3_messenger_acceptance",

@@ -36,6 +36,8 @@ _H1_BINARY = Path("build/sf2build-h1.bin")
 _ROM_SHA256 = "9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9"
 _UPSTREAM_COMMIT = "c834c652b6862bc5679fd7f69a38a7093206efc6"
 _DIRECTIONS = {"Up": (0, -1), "Right": (1, 0), "Down": (0, 1), "Left": (-1, 0)}
+_MAP_EVENT_TYPE_MASK = 0x3C00
+_MAP_EVENT_WARP = 0x1000
 
 _SOURCE_SURFACE = (
     "sf2const.asm",
@@ -291,6 +293,8 @@ def _controller(source: str) -> dict[str, Any]:
             "btst #$E,d1",
             "addi.w #$82,d0",
             "addi.w #-$82,d0",
+            "cmpi.w #$1000,d3",
+            "bsr.w WarpIfSetAtPoint",
             "cmpi.w #$C000,(a4,d2.w)",
         ),
         "controller collision",
@@ -449,6 +453,25 @@ def _navigation(
     }
 
 
+def _warp_trigger_points(
+    surface: dict[str, Any], source: tuple[int, int]
+) -> list[tuple[int, int]]:
+    """Return source-coordinate matches that can actually dispatch a warp event."""
+    source_x, source_y = source
+    width = surface["width"]
+    x_values = range(width) if source_x == 0xFF else (source_x,)
+    y_values = range(width) if source_y == 0xFF else (source_y,)
+    return [
+        (x, y)
+        for y in y_values
+        for x in x_values
+        if 0 <= x < width
+        and 0 <= y < width
+        and _in_area((x, y), surface["area"])
+        and surface["layout"][y * width + x] & _MAP_EVENT_TYPE_MASK == _MAP_EVENT_WARP
+    ]
+
+
 def _retained_r2b(rom_path: Path, upstream_path: Path) -> dict[str, Any]:
     fixture_path = R2B_FIXTURE
     fixture = load_json(fixture_path)
@@ -510,15 +533,18 @@ def _extension_route(
         post_program_occupancy,
         frozenset(),
     )
+    trigger_points = _warp_trigger_points(surfaces[40], tuple(selected40[0]["from"]))
     candidates: list[tuple[int, tuple[int, int], list[list[int]], list[str]]] = []
-    for x in range(surfaces[40]["width"]):
+    for point in trigger_points:
         try:
-            points, inputs = _shortest(surfaces[40], (4, 30), (x, 12), controller)
+            points, inputs = _shortest(surfaces[40], (4, 30), point, controller)
         except ValueError:
             continue
-        candidates.append((len(inputs), (x, 12), points, inputs))
+        candidates.append((len(inputs), point, points, inputs))
     if not candidates:
-        raise ValueError("Map 3 Battle 01 admission Map40 wildcard has no legal terminal")
+        raise ValueError(
+            "Map 3 Battle 01 admission Map40 wildcard has no reachable warp-event terminal"
+        )
     candidates.sort(key=lambda item: (item[0], item[1]))
     _, selected_terminal, _, _ = candidates[0]
     wildcard_nodes = frozenset(point for _, point, _, _ in candidates if point != selected_terminal)
@@ -575,7 +601,7 @@ def _extension_route(
     route["nodeCount"] = sum(len(segment.get("points", [])) for segment in segments)
     route["inputCount"] = sum(len(segment.get("inputs", [])) for segment in segments)
     route["sha256"] = hashlib.sha256(_canonical(route)).hexdigest().upper()
-    if (route["nodeCount"], route["inputCount"]) != (40, 38):
+    if (route["nodeCount"], route["inputCount"]) != (48, 46):
         raise ValueError("Map 3 Battle 01 admission extension route denominator drift")
     return route
 

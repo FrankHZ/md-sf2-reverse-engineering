@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sf2.example/schemas/h3/map3-battle01-player-ready-callback-failure.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["owner", "caseId", "phase", "role", "actualPc", "expectedPc", "callbackCount", "callbacksCleared", "outputRemoved", "restoration", "restorationMismatch", "error"],
+  "properties": {
+    "owner": {"const": "map3-battle01-player-ready"},
+    "caseId": {"enum": ["bootstrap", "bridged-r2b-to-first-battle01-player-ready"]},
+    "phase": {"type": "string", "minLength": 1},
+    "role": {"type": "string", "minLength": 1},
+    "actualPc": {"type": "integer", "minimum": 0},
+    "expectedPc": {"type": ["integer", "null"], "minimum": 0},
+    "callbackCount": {"type": "integer", "minimum": 0},
+    "callbacksCleared": {"type": "boolean"},
+    "outputRemoved": {"type": "boolean"},
+    "restoration": {"$ref": "#/$defs/restoration"},
+    "restorationMismatch": {"type": ["null", "object"], "additionalProperties": false, "required": ["domain", "address", "expected", "actual"], "properties": {"domain": {"type": "string"}, "address": {"type": "integer", "minimum": 0}, "expected": {"type": "integer", "minimum": 0, "maximum": 255}, "actual": {"type": "integer", "minimum": 0, "maximum": 255}}},
+    "error": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "restoration": {"type": "object", "additionalProperties": false, "required": ["scopeArmed", "gameFlags", "combatantAllyRecords", "mapAndBattleState", "playerEntity", "forceAndParty", "followerState", "touchedEntities", "dialogueAndInput", "cameraState", "bootstrapFrame", "gold", "generatedRam", "sessionCartPatches", "sessionStateRestored", "callbacksCleared", "outputRemoved"], "properties": {"scopeArmed": {"type": "boolean"}, "gameFlags": {"type": "boolean"}, "combatantAllyRecords": {"type": "boolean"}, "mapAndBattleState": {"type": "boolean"}, "playerEntity": {"type": "boolean"}, "forceAndParty": {"type": "boolean"}, "followerState": {"type": "boolean"}, "touchedEntities": {"type": "boolean"}, "dialogueAndInput": {"type": "boolean"}, "cameraState": {"type": "boolean"}, "bootstrapFrame": {"type": "boolean"}, "gold": {"type": "boolean"}, "generatedRam": {"type": "boolean"}, "sessionCartPatches": {"type": "boolean"}, "sessionStateRestored": {"type": "boolean"}, "callbacksCleared": {"type": "boolean"}, "outputRemoved": {"type": "boolean"}}}
+  }
+}
