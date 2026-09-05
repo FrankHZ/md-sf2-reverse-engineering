@@ -429,12 +429,27 @@ public sealed class OriginalMapVisualGameSessionTests
         words[Index(4, 4)] = (ushort)(
             (words[Index(4, 4)] & ~OriginalMapTraversal.CollisionMask) |
             OriginalMapTraversal.LeftStairMask);
+        WorkingMapLayout layout = new(words);
+        OriginalMapBlockCatalog blocks = AcceptedBlockCatalog();
+        OriginalMapAreaCatalog areas = AcceptedAreaCatalog();
+        OriginalMapEntityPopulation entities = AcceptedEntityPopulation(map);
+        OriginalMapExplorationRuntimeDefinition initialRuntime = new(
+            map,
+            layout,
+            blocks,
+            areas,
+            entities,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            OriginalMapRuntimeAdmission.SelectedInitIdentity,
+            OriginalMapRuntimeAdmission.AcceptedDecodedLayoutDigest,
+            OriginalMapRuntimeAdmission.AcceptedCollisionProjectionDigest,
+            useProjectionDigestOverride: true);
         return new OriginalMapImportDefinition(
             map,
-            new WorkingMapLayout(words),
-            AcceptedBlockCatalog(),
-            AcceptedAreaCatalog(),
-            AcceptedEntityPopulation(map),
+            layout,
+            blocks,
+            areas,
+            entities,
             selection ?? ExactSelection(),
             new OriginalMapControlledAdmission(
                 map,
@@ -455,7 +470,9 @@ public sealed class OriginalMapVisualGameSessionTests
             AcceptedEntity142(map),
             AcceptedAstralZone(map),
             AcceptedOriginalMapMessenger.Create(map),
-            AcceptedOriginalMapCastleGate.Create(map));
+            AcceptedOriginalMapCastleGate.Create(map),
+            AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime),
+            AcceptedOriginalMapRuntimeCatalog.NorthTransition());
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>

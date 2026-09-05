@@ -212,6 +212,7 @@ internal sealed class PrivateMap3Presenter
     private readonly PrivateMap3WorldTreatment _requestedWorldTreatment;
     private readonly bool _staticOverlayDiagnostic;
     private readonly bool _currentAreaOverlay;
+    private readonly bool _showTraversalOnInitialMap;
 
     private PrivateMap3Presenter(
         PrivateOriginalMapBaseViewport? baseViewport,
@@ -219,7 +220,8 @@ internal sealed class PrivateMap3Presenter
         Label status,
         PrivateMap3WorldTreatment requestedWorldTreatment,
         bool staticOverlayDiagnostic,
-        bool currentAreaOverlay)
+        bool currentAreaOverlay,
+        bool showTraversalOnInitialMap)
     {
         _baseViewport = baseViewport;
         _viewport = viewport;
@@ -227,6 +229,7 @@ internal sealed class PrivateMap3Presenter
         _requestedWorldTreatment = requestedWorldTreatment;
         _staticOverlayDiagnostic = staticOverlayDiagnostic;
         _currentAreaOverlay = currentAreaOverlay;
+        _showTraversalOnInitialMap = showTraversalOnInitialMap;
     }
 
     internal PrivateOriginalMapTraversalViewProjection? Projection =>
@@ -341,7 +344,8 @@ internal sealed class PrivateMap3Presenter
             status,
             plan.WorldTreatment,
             plan.StaticOverlayDiagnostic,
-            plan.CurrentAreaOverlay);
+            plan.CurrentAreaOverlay,
+            plan.ShowTraversalViewport);
     }
 
     internal bool TryBindBaseAtlas(
@@ -426,8 +430,23 @@ internal sealed class PrivateMap3Presenter
         string outcome,
         PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
+        (bool traversalVisible, bool baseVisible) = ProjectionVisibility(
+            snapshot.Map,
+            snapshot.Definition.Map,
+            _baseViewport is not null,
+            _showTraversalOnInitialMap);
+        if (_viewport is not null)
+        {
+            _viewport.Visible = traversalVisible;
+        }
+
+        if (_baseViewport is not null)
+        {
+            _baseViewport.Visible = baseVisible;
+        }
+
         _viewport?.Project(snapshot);
-        if (_baseViewport is not null && _baseViewport.UsesLocalAtlas)
+        if (baseVisible && _baseViewport is not null && _baseViewport.UsesLocalAtlas)
         {
             _baseViewport.ProjectMountedAtlas(
                 snapshot,
@@ -437,6 +456,20 @@ internal sealed class PrivateMap3Presenter
         }
 
         _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome);
+    }
+
+    internal static (bool TraversalVisible, bool BaseVisible) ProjectionVisibility(
+        MapId currentMap,
+        MapId initialMap,
+        bool hasBaseViewport,
+        bool showTraversalOnInitialMap)
+    {
+        ArgumentNullException.ThrowIfNull(currentMap);
+        ArgumentNullException.ThrowIfNull(initialMap);
+        bool isInitialMap = currentMap == initialMap;
+        return (
+            TraversalVisible: !isInitialMap || showTraversalOnInitialMap,
+            BaseVisible: hasBaseViewport && isInitialMap);
     }
 
     internal void ProjectStatus(string message)

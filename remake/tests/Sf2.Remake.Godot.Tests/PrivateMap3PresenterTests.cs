@@ -49,6 +49,28 @@ public sealed class PrivateMap3PresenterTests
     }
 
     [Fact]
+    public void CrossMapRuntimeUsesTraversalDiagnosticsAndHidesTheMap3OnlyAtlas()
+    {
+        (bool traversalVisible, bool baseVisible) =
+            PrivateMap3Presenter.ProjectionVisibility(
+                new MapId(OriginalMapRuntimeAdmission.Map19Id),
+                new MapId(OriginalMapRuntimeAdmission.MapId),
+                hasBaseViewport: true,
+                showTraversalOnInitialMap: false);
+        (bool restoredTraversal, bool restoredBase) =
+            PrivateMap3Presenter.ProjectionVisibility(
+                new MapId(OriginalMapRuntimeAdmission.MapId),
+                new MapId(OriginalMapRuntimeAdmission.MapId),
+                hasBaseViewport: true,
+                showTraversalOnInitialMap: false);
+
+        Assert.True(traversalVisible);
+        Assert.False(baseVisible);
+        Assert.False(restoredTraversal);
+        Assert.True(restoredBase);
+    }
+
+    [Fact]
     public void CurrentAreaOverlayPlanKeepsPlayableMarkersAndLabelsModernComposition()
     {
         PrivateMap3PresentationPlan plan =

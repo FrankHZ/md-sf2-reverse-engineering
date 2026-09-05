@@ -190,14 +190,15 @@ public sealed class OriginalMapImportDefinition
         OriginalMapEntity142Definition? entity142 = null,
         OriginalMapAstralZoneDefinition? astralZone = null,
         OriginalMapMessengerAcceptanceDefinition? messengerAcceptance = null,
-        OriginalMapCastleGateDefinition? castleGate = null)
+        OriginalMapCastleGateDefinition? castleGate = null,
+        OriginalMapExplorationRuntimeCatalog? runtimeCatalog = null,
+        OriginalMapCrossMapTransitionDefinition? northMap19Transition = null)
     {
-        Map = map ?? throw new ArgumentNullException(nameof(map));
-        WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
-        BlockCatalog = blockCatalog ?? throw new ArgumentNullException(nameof(blockCatalog));
-        AreaCatalog = areaCatalog ?? throw new ArgumentNullException(nameof(areaCatalog));
-        EntityPopulation = entityPopulation ??
-            throw new ArgumentNullException(nameof(entityPopulation));
+        ArgumentNullException.ThrowIfNull(map);
+        ArgumentNullException.ThrowIfNull(workingLayout);
+        ArgumentNullException.ThrowIfNull(blockCatalog);
+        ArgumentNullException.ThrowIfNull(areaCatalog);
+        ArgumentNullException.ThrowIfNull(entityPopulation);
         VisualResourceSelection = visualResourceSelection ??
             throw new ArgumentNullException(nameof(visualResourceSelection));
         ControlledAdmission = controlledAdmission ??
@@ -489,7 +490,7 @@ public sealed class OriginalMapImportDefinition
             }
         }
 
-        BlockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
+        blockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
 
         if (sameMapWarps is not null)
         {
@@ -537,6 +538,60 @@ public sealed class OriginalMapImportDefinition
         }
 
         _unsupportedCapabilities = copiedUnsupported.AsReadOnly();
+        OriginalMapExplorationRuntimeDefinition initialRuntime = runtimeCatalog is null
+            ? new OriginalMapExplorationRuntimeDefinition(
+                map,
+                workingLayout,
+                blockCatalog,
+                areaCatalog,
+                entityPopulation,
+                controlledAdmission.SelectedSetup,
+                controlledAdmission.SelectedInitIdentity)
+            : runtimeCatalog.Resolve(map);
+        if (!ReferenceEquals(initialRuntime.WorkingLayout, workingLayout) ||
+            !ReferenceEquals(initialRuntime.BlockCatalog, blockCatalog) ||
+            !ReferenceEquals(initialRuntime.AreaCatalog, areaCatalog) ||
+            !ReferenceEquals(initialRuntime.EntityPopulation, entityPopulation) ||
+            initialRuntime.SelectedSetup != controlledAdmission.SelectedSetup ||
+            !string.Equals(
+                initialRuntime.SelectedInitIdentity,
+                controlledAdmission.SelectedInitIdentity,
+                StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "The initial original-map runtime must be the sole owner of the imported map data.",
+                nameof(runtimeCatalog));
+        }
+
+        RuntimeCatalog = runtimeCatalog ??
+            new OriginalMapExplorationRuntimeCatalog([initialRuntime]);
+        if (northMap19Transition is not null)
+        {
+            OriginalMapExplorationRuntimeDefinition destinationRuntime =
+                RuntimeCatalog.Resolve(northMap19Transition.DestinationMap);
+            if (northMap19Transition.Identity.SourceMap != map ||
+                !initialRuntime.Traversal.IsWithinActiveArea(
+                    northMap19Transition.AdmittedApproach) ||
+                !initialRuntime.Traversal.IsWithinActiveArea(
+                    northMap19Transition.AdmittedTrigger) ||
+                initialRuntime.Traversal.ResolveCandidateTarget(
+                    initialRuntime.WorkingLayout,
+                    northMap19Transition.AdmittedApproach,
+                    northMap19Transition.AdmittedDirection) !=
+                    northMap19Transition.AdmittedTrigger ||
+                !destinationRuntime.Traversal.IsWithinActiveArea(
+                    northMap19Transition.Destination) ||
+                OriginalMapTraversal.IsBlocked(
+                    destinationRuntime.WorkingLayout,
+                    northMap19Transition.Destination))
+            {
+                throw new ArgumentException(
+                    "The north cross-map transition must bind admitted source and destination runtimes.",
+                    nameof(northMap19Transition));
+            }
+        }
+
+        NorthMap19Transition = northMap19Transition;
         ControlledStepCopy = controlledStepCopy;
         SameMapWarps = sameMapWarps;
         RoofOnLoadClear = roofOnLoadClear;
@@ -549,15 +604,20 @@ public sealed class OriginalMapImportDefinition
         CastleGate = castleGate;
     }
 
-    public MapId Map { get; }
+    public OriginalMapExplorationRuntimeCatalog RuntimeCatalog { get; }
 
-    public WorkingMapLayout WorkingLayout { get; }
+    public OriginalMapExplorationRuntimeDefinition InitialRuntime =>
+        RuntimeCatalog.Resolve(ControlledAdmission.Map);
 
-    public OriginalMapBlockCatalog BlockCatalog { get; }
+    public MapId Map => InitialRuntime.Map;
 
-    public OriginalMapAreaCatalog AreaCatalog { get; }
+    public WorkingMapLayout WorkingLayout => InitialRuntime.WorkingLayout;
 
-    public OriginalMapEntityPopulation EntityPopulation { get; }
+    public OriginalMapBlockCatalog BlockCatalog => InitialRuntime.BlockCatalog;
+
+    public OriginalMapAreaCatalog AreaCatalog => InitialRuntime.AreaCatalog;
+
+    public OriginalMapEntityPopulation EntityPopulation => InitialRuntime.EntityPopulation;
 
     public OriginalMapVisualResourceSelection VisualResourceSelection { get; }
 
@@ -584,6 +644,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapMessengerAcceptanceDefinition? MessengerAcceptance { get; }
 
     public OriginalMapCastleGateDefinition? CastleGate { get; }
+
+    public OriginalMapCrossMapTransitionDefinition? NorthMap19Transition { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

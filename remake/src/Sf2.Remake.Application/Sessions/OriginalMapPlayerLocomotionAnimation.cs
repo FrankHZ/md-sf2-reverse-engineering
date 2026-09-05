@@ -231,6 +231,34 @@ public sealed record PrivateOriginalMapPlayerLocomotionSnapshot
             offsetYUnits: 0);
     }
 
+    internal static PrivateOriginalMapPlayerLocomotionSnapshot Relocate(
+        PrivateOriginalMapPlayerLocomotionSnapshot current,
+        PrivateOriginalMapCrossMapTransitionReceipt receipt)
+    {
+        ArgumentNullException.ThrowIfNull(current);
+        ArgumentNullException.ThrowIfNull(receipt);
+        ExplorationDirection direction = DirectionFromOpaqueFacing(
+            receipt.DestinationOpaqueFacing,
+            nameof(receipt));
+        (byte facing, PrivateOriginalMapPlayerLocomotionSheet sheet, int slot, bool mirror) =
+            Selection(direction);
+        return new PrivateOriginalMapPlayerLocomotionSnapshot(
+            PrivateOriginalMapPlayerLocomotionPhase.Relocated,
+            direction,
+            facing,
+            sheet,
+            slot,
+            mirror,
+            tick: 0,
+            counterAtSelection: current.StoredCounter,
+            storedCounter: current.StoredCounter,
+            selectedHalf: current.SelectedHalf,
+            receipt.Source,
+            receipt.Destination,
+            offsetXUnits: 0,
+            offsetYUnits: 0);
+    }
+
     internal static PrivateOriginalMapPlayerLocomotionSnapshot CompleteMessengerAcceptance(
         PrivateOriginalMapPlayerLocomotionSnapshot current,
         PrivateOriginalMapMessengerAcceptanceReceipt receipt)
@@ -314,6 +342,17 @@ public sealed record PrivateOriginalMapPlayerLocomotionSnapshot
             _ => throw new ArgumentOutOfRangeException(nameof(direction)),
         };
 
+    private static ExplorationDirection DirectionFromOpaqueFacing(
+        byte opaqueFacing,
+        string parameterName) => opaqueFacing switch
+        {
+            0 => ExplorationDirection.East,
+            1 => ExplorationDirection.North,
+            2 => ExplorationDirection.West,
+            3 => ExplorationDirection.South,
+            _ => throw new ArgumentOutOfRangeException(parameterName),
+        };
+
     private static (int DeltaX, int DeltaY) DirectionDelta(
         ExplorationDirection direction) => direction switch
         {
@@ -367,7 +406,11 @@ public sealed partial class GameSession
 
         MapPosition sourcePosition = PrivateOriginalMapSnapshot.PlayerPosition;
         PrivateOriginalMapMoveApplied move = ApplyPrivateOriginalMap(command);
-        PrivateOriginalMapPlayerLocomotionSnapshot next = move.SameMapWarp is not null
+        PrivateOriginalMapPlayerLocomotionSnapshot next = move.CrossMapTransition is not null
+            ? PrivateOriginalMapPlayerLocomotionSnapshot.Relocate(
+                current,
+                move.CrossMapTransition)
+            : move.SameMapWarp is not null
             ? PrivateOriginalMapPlayerLocomotionSnapshot.Relocate(
                 current,
                 move.SameMapWarp)

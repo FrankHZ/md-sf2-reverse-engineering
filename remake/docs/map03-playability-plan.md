@@ -43,10 +43,15 @@ Application-owned transaction. Content validates the exact admitted zone record 
 source-shaped 26-operation program, then exposes only the accepted seven-stage bounded product
 projection. The session records text cursor 537, caller-owned flag 604, and the two typed guard opening
 moves. It does not execute or reinterpret the omitted source dialogue, facing, or later guard-restoration
-operations. The transaction is once-only and a fresh session restores the closed state. Godot projects
-only closed/open status and the bounded opening moves; final guard facing, decoded text, animation,
-audio, timing, natural execution order, the north cross-map transition, and Battle 01 remain Unknown.
-This is not a general zone-event or script interpreter. The existing live
+operations. The transaction is once-only and a fresh session restores the closed state. After that
+bounded gate state is open, moving north from the accepted approach applies the exact admitted outbound
+warp and atomically replaces the authoritative runtime with the catalog-owned Map 19 layout, traversal,
+area, block, selected-setup, init-identity, and entity data. The destination is `(26,30)` with opaque
+facing `1`; Godot projects its typed position through the existing traversal diagnostics and hides the
+Map 3-only atlas. A fresh session still starts from controlled Map 3. This does not execute the selected
+Map 19 setup/init/events/entities or establish natural Battle 01 admission. Final guard facing, decoded
+text, original Map 19 rendering, animation, audio, timing, natural execution order, and Battle 01 remain
+Unknown. This is not a general zone-event, warp, or script interpreter. The existing live
 route-actor glyphs visibly follow committed positions and stop drawing Sarah after Application releases
 her route occupancy, without new Godot selection rules or original-sprite claims. An explicit private-local presentation
 option also projects the live current area's non-zero second-layer offset from the authoritative
@@ -81,9 +86,9 @@ activation. No restore command is exposed: the original reverse/leave trigger, g
 presentation timing, and simulation-step parity remain outside this bounded slice. The accepted
 Entity 142 stand, Astral handoff, and messenger acceptance are downstream of the admitted Sarah route
 in one controlled evidence path, but this product capability does not claim route uniqueness,
-alternate prompt results, or general flag-driven setup/init execution. These bounded transactions
-still do not establish cross-map Battle 01 admission, alternate-setup behavior, or
-full natural continuity.
+alternate prompt results, or general flag-driven setup/init execution. These bounded transactions and
+the north Map 3-to-Map 19 relocation still do not establish natural Battle 01 admission,
+alternate-setup behavior, Map 19 event execution, or full natural continuity.
 
 The current immutable snapshot is reconstructed by each specialized session reducer. Preserving the
 new castle-gate state across those boundaries exposed repeated mechanical pass-through work. That is a
@@ -92,9 +97,9 @@ capability or centralize event semantics now.
 
 ## Ordered Queue
 
-1. **Cross-map and Battle 01 admission:** close the next evidence-owned north transition and typed
-   cross-runtime handoff after the bounded castle-gate state without treating the existing manual
-   synthetic battle bridge as original admission or inventing setup, flag, or program semantics.
+1. **Battle 01 admission after Map 19 entry:** close the next evidence-owned handoff from the admitted
+   Map 19 runtime without treating the existing manual synthetic battle bridge as original admission
+   or inventing setup, flag, program, entity, or natural-route semantics.
 2. **Setup entities, audio, and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
    door, warp, roof, music, and audio behavior without promoting Unknown presentation semantics.
 

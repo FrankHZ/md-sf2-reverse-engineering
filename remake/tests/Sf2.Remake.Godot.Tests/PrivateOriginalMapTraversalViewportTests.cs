@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Domain.Maps;
@@ -85,6 +86,23 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             Assert.Single(
                 projection.Cells,
                 cell => cell.MapX == 57 && cell.MapY == 3).Category);
+    }
+
+    [Fact]
+    public void ProjectionUsesTheCatalogOwnedCurrentMapRuntimeAfterCrossMapAdmission()
+    {
+        PrivateOriginalMapSessionSnapshot snapshot = CrossMapSnapshot();
+
+        PrivateOriginalMapTraversalViewProjection projection =
+            PrivateOriginalMapTraversalViewProjection.Create(snapshot);
+
+        Assert.Equal(new MapId(OriginalMapRuntimeAdmission.Map19Id), projection.Map);
+        Assert.True(Count(
+            projection,
+            PrivateOriginalMapTraversalCellCategory.OutsideAcceptedActiveArea) > 0);
+        Assert.Equal(
+            PrivateOriginalMapTraversalCellCategory.ActiveNonBlocked,
+            Assert.Single(projection.Cells, cell => cell.IsPlayer).Category);
     }
 
     [Fact]
@@ -269,6 +287,143 @@ public sealed class PrivateOriginalMapTraversalViewportTests
                     mapSprite: 0,
                     [0, 0, 0, 0]),
             ]);
+
+    private static PrivateOriginalMapSessionSnapshot CrossMapSnapshot()
+    {
+        MapId map3 = new(OriginalMapRuntimeAdmission.MapId);
+        MapId map19 = new(OriginalMapRuntimeAdmission.Map19Id);
+        OriginalMapExplorationRuntimeDefinition initial = Runtime(
+            map3,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            OriginalMapRuntimeAdmission.SelectedInitIdentity,
+            "project-authored-map3-blocks",
+            new OriginalMapTraversalArea(0, 0, 63, 63),
+            new MapPosition(56, 3));
+        OriginalMapExplorationRuntimeDefinition destination = Runtime(
+            map19,
+            new MapSetupId(OriginalMapRuntimeAdmission.Map19SelectedSetupId),
+            OriginalMapRuntimeAdmission.Map19SelectedInitIdentity,
+            "project-authored-map19-blocks",
+            new OriginalMapTraversalArea(24, 28, 28, 31),
+            new MapPosition(26, 30));
+        OriginalMapExplorationRuntimeCatalog catalog = new([initial, destination]);
+        OriginalMapCrossMapTransitionDefinition transition = new(
+            new OriginalMapCrossMapTransitionIdentity(
+                ContentProfile.PrivateLocal,
+                map3,
+                OriginalMapRuntimeAdmission.SameMapWarpResourceId,
+                OriginalMapRuntimeAdmission.NorthMap19WarpRecordOrdinal),
+            OriginalMapRuntimeAdmission.NorthMap19WarpSourceTriggerX,
+            OriginalMapRuntimeAdmission.NorthMap19WarpSourceTriggerY,
+            new MapPosition(28, 2),
+            ExplorationDirection.North,
+            new MapPosition(28, 1),
+            map19,
+            new MapPosition(26, 30),
+            OriginalMapRuntimeAdmission.NorthMap19WarpDestinationOpaqueFacing);
+        OriginalMapImportDefinition definition = new(
+            map3,
+            initial.WorkingLayout,
+            initial.BlockCatalog,
+            initial.AreaCatalog,
+            initial.EntityPopulation,
+            new OriginalMapVisualResourceSelection(map3, 0, [0, 37, 43, 53, 66]),
+            new OriginalMapControlledAdmission(
+                map3,
+                new MapPosition(56, 3),
+                OriginalMapRuntimeAdmission.OpaqueStartFacing,
+                initial.SelectedSetup,
+                initial.SelectedInitIdentity,
+                noProgramRequest: true),
+            controlledStepCopy: null,
+            sameMapWarps: null,
+            unsupportedCapabilities: ["project-authored-unknown"],
+            runtimeCatalog: catalog,
+            northMap19Transition: transition);
+        OriginalMapImportReceipt receipt = new(
+            OriginalMapRuntimeAdmission.PackageId,
+            OriginalMapRuntimeAdmission.SchemaVersion,
+            OriginalMapRuntimeAdmission.AcceptedContentDigest,
+            OriginalMapRuntimeAdmission.AcceptedDecodedLayoutDigest,
+            OriginalMapRuntimeAdmission.AcceptedCollisionProjectionDigest,
+            ContentProfile.PrivateLocal,
+            new OriginalMapImportProvenance(
+                OriginalMapRuntimeAdmission.PackageId,
+                OriginalMapRuntimeAdmission.AcceptedRomSha256,
+                OriginalMapRuntimeAdmission.AcceptedUpstreamRepository,
+                OriginalMapRuntimeAdmission.AcceptedUpstreamCommit),
+            OriginalMapRuntimeAdmission.RequiredEvidenceOwners,
+            OriginalMapRuntimeAdmission.RequiredCapabilities);
+        return new PrivateOriginalMapSessionSnapshot(
+            definition,
+            receipt,
+            destination.WorkingLayout,
+            simulationStep: 1,
+            new MapPosition(26, 30),
+            lastTraversal: new OriginalMapTraversalResult(
+                new MapPosition(26, 30),
+                new MapPosition(26, 30),
+                ExplorationDirection.North,
+                OriginalMapTraversalOutcome.BlockedByBoundary,
+                sourceWord: 0,
+                destinationWord: null),
+            controlledStepCopyApplied: false,
+            lastLayoutMutation: null,
+            currentRuntime: destination);
+    }
+
+    private static OriginalMapExplorationRuntimeDefinition Runtime(
+        MapId map,
+        MapSetupId setup,
+        string initIdentity,
+        string blockResourceId,
+        OriginalMapTraversalArea area,
+        MapPosition entityPosition)
+    {
+        WorkingMapLayout layout = new(new ushort[WorkingMapLayout.WordCount]);
+        OriginalMapBlockCatalog blocks = new(
+        [
+            new OriginalMapBlockDefinition(
+                new OriginalMapBlockRecordIdentity(blockResourceId, 0),
+                new ushort[OriginalMapBlockDefinition.OpaqueWordCount]),
+        ]);
+        OriginalMapAreaCatalog areas = new(
+        [
+            new OriginalMapAreaDefinition(
+                new OriginalMapAreaRecordIdentity(blockResourceId + "-areas", 1),
+                area,
+                new OriginalMapAreaWordPair(0, 0),
+                new OriginalMapAreaWordPair(0, 0),
+                new OriginalMapAreaWordPair(256, 256),
+                new OriginalMapAreaWordPair(256, 256),
+                new OriginalMapAreaBytePair(0, 0),
+                new OriginalMapAreaBytePair(0, 0),
+                mainLayerType: 0,
+                defaultMusic: 0),
+        ]);
+        OriginalMapEntityPopulation population = new(
+            map,
+            setup,
+        [
+            new OriginalMapEntityDefinition(
+                new OriginalMapEntityRecordIdentity(blockResourceId + "-entities", 1),
+                checked((byte)entityPosition.X),
+                checked((byte)entityPosition.Y),
+                opaqueFacing: 0,
+                mapSprite: 0,
+                [0, 0, 0, 0]),
+        ]);
+        return new OriginalMapExplorationRuntimeDefinition(
+            map,
+            layout,
+            blocks,
+            areas,
+            population,
+            setup,
+            initIdentity,
+            Convert.ToHexString(SHA256.HashData(new byte[WorkingMapLayout.WordCount * 2])),
+            Convert.ToHexString(SHA256.HashData(new byte[WorkingMapLayout.WordCount])));
+    }
 
     private static int Index(int x, int y) =>
         (y * WorkingMapLayout.ColumnCount) + x;
