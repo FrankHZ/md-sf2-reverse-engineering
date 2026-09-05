@@ -9,11 +9,12 @@ Acceptance Checklist.
 
 ## Root and Worker Setup
 
-The root scopes one coherent slice and its acceptance commands but does not personally reverse
-engineer or implement it. It starts exactly one `terra_reverse_engineer` worker with no inherited
-controller turns (`fork_turns: "none"`). If the named role is unavailable, the root explicitly starts
-`gpt-5.6-terra` with the same bounded handoff. Never run parallel write workers in one slice
-worktree.
+Apply `AGENTS.md` and [ADR 0018](../decisions/0018-astra-role-routing-trial.md) for model and task
+routing. The dedicated Research owner scopes and may execute a complete slice directly. Only a small,
+independent single-file, single-assembly, or single-function reverse-engineering subtask may go to
+`terra_reverse_engineer`, with no inherited controller turns (`fork_turns: "none"`). If that role is
+unavailable, explicitly select `gpt-5.6-terra` with the same bounded handoff. A worker is not mandatory;
+never assign Terra the whole lane or run parallel writers in one worktree.
 
 The self-contained handoff names:
 
@@ -27,14 +28,14 @@ The self-contained handoff names:
   **Worker Acceptance Checklist**; and
 - explicit exclusions and active-lane dependencies.
 
-The worker performs the complete static inventory, structured parser or contract, project-owned
-tests and research documentation, and grouped H3 question queue required by the slice. It preserves
+For delegated work, the worker performs the complete assigned static inventory, structured parser or
+contract, project-owned tests and research documentation, and grouped H3 question queue. It preserves
 evidence labels and provenance, avoids project-direction decisions, performs the ADR 0004 adversarial
 checklist against its full diff, fixes the weaknesses it finds, reports those corrections, and hands
 the work back without staging or committing.
 
-Questions, incomplete evidence, and review findings return to the same worker through a follow-up.
-The root does not take over reverse engineering or implementation.
+Questions, incomplete evidence, and review findings in a delegated subtask return to the same worker
+through a follow-up. The dedicated owner retains the undelegated work and the complete slice handoff.
 
 ## H3 Closure
 
@@ -49,9 +50,11 @@ question, preserves exact launch and failure accounting, and does not weaken a g
 
 ## Root Acceptance and Handoff
 
-The root accepts a completed slice only after it:
+Whether implemented directly or with a bounded worker, the dedicated owner hands off a slice only
+after it:
 
-1. reviews the worker handoff, changed-file list, complete diff, evidence, and counters;
+1. reviews any worker handoff, changed-file list, complete diff, evidence, and counters against
+   ADR 0004's Worker Acceptance Checklist;
 2. reruns the owning narrow command plus `uv run sf2 verify`;
 3. scans for private or generated inputs and unintended changes;
 4. stages only accepted paths and reviews the cached diff;
@@ -95,7 +98,8 @@ If the sole worker is unresponsive, the lane verifies that no writer process or 
 remains active, interrupts or closes that worker, and starts exactly one replacement with the complete
 unchanged slice contract in the same topic worktree. The replacement is serial: do not start it until
 the prior worker is confirmed stopped. Then continue the normal worker-review-gate flow without user
-or main-gate approval. Worker failure is not permission for the root to take over implementation.
+or main-gate approval. This recovery rule is for temporary bounded workers, not long-lived lane owners;
+replacement role tasks follow the explicit user-request and current-state-anchor rules in `AGENTS.md`.
 
 Use **stuck** or **blocked on the user** only for an operational inability to continue:
 
