@@ -868,8 +868,8 @@ is created only when a real disagreement appears and the choice constrains later
   Phase 2 first audits static batches, then concentrates questions that cannot be decided statically
   into single BizHawk matrices.
 - [`0004-single-terra-worker-with-root-acceptance.md`](./decisions/0004-single-terra-worker-with-root-acceptance.md):
-  the workflow boundary where a single Terra worker completes a Phase 2 evidence slice and the root
-  thread independently reviews, verifies, scans, and commits.
+  the detailed Phase 2 worker evidence and root-acceptance checklist; current model and delegation
+  routing is amended by ADR 0018.
 - [`0005-remake-value-driven-driver-freeze.md`](./decisions/0005-remake-value-driven-driver-freeze.md):
   preserves existing evidence and verification while freezing low-remake-value driver/hardware
   exactness, redirecting the Phase 2 main line to events, maps, UI/save, and implementation-neutral
@@ -921,6 +921,9 @@ is created only when a real disagreement appears and the choice constrains later
   refines the accepted remake architecture so trust, authoritative mutation, versioned ports, and stable
   observations retain heavy typing while same-process presentation and orchestration default to direct,
   internal implementation.
+- [`0018-astra-role-routing-trial.md`](./decisions/0018-astra-role-routing-trial.md):
+  records a two-to-three-slice Astra/Sol role trial, bounded Terra delegation, explicit fresh-task
+  migration and startup/rename verification, and evaluation through existing independent reviews.
 
 ## Evidence Vocabulary
 
