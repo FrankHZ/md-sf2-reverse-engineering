@@ -544,11 +544,14 @@ public sealed partial class Map3Root
         PrivateOriginalMapPlayerLocomotionStarted started =
             _session.BeginPrivateOriginalMapPlayerLocomotion(
                 new MoveExplorationCommand(direction));
+        string outcome = started.Move.CrossMapTransition is not null
+            ? "CrossMapTransition"
+            : started.Move.SameMapWarp is not null
+                ? "SameMapWarp"
+                : started.Move.Traversal.Outcome.ToString();
         _privatePresenter?.Project(
             started.Move.Snapshot,
-            started.Move.SameMapWarp is null
-                ? started.Move.Traversal.Outcome.ToString()
-                : "SameMapWarp",
+            outcome,
             started.Animation);
         if (_privateBattleBridgeEnabled)
         {

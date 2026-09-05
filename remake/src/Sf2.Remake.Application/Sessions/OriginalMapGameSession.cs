@@ -33,13 +33,37 @@ public sealed record PrivateOriginalMapSessionSnapshot
         PrivateOriginalMapMessengerAcceptanceState? messengerAcceptance = null,
         PrivateOriginalMapMessengerAcceptanceReceipt? lastMessengerAcceptance = null,
         PrivateOriginalMapCastleGateState? castleGate = null,
-        PrivateOriginalMapCastleGateReceipt? lastCastleGate = null)
+        PrivateOriginalMapCastleGateReceipt? lastCastleGate = null,
+        OriginalMapExplorationRuntimeDefinition? currentRuntime = null,
+        PrivateOriginalMapCrossMapTransitionReceipt? lastCrossMapTransition = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
         ArgumentOutOfRangeException.ThrowIfNegative(simulationStep);
         PlayerPosition = playerPosition ?? throw new ArgumentNullException(nameof(playerPosition));
+        if (currentRuntime is null)
+        {
+            if (definition.RuntimeCatalog.Records.Count != 1)
+            {
+                throw new ArgumentNullException(
+                    nameof(currentRuntime),
+                    "A multi-map private snapshot requires its exact current runtime.");
+            }
+
+            currentRuntime = definition.InitialRuntime;
+        }
+
+        OriginalMapExplorationRuntimeDefinition admittedRuntime =
+            definition.RuntimeCatalog.Resolve(currentRuntime.Map);
+        if (!ReferenceEquals(admittedRuntime, currentRuntime))
+        {
+            throw new ArgumentException(
+                "The current runtime must be the exact catalog-owned instance.",
+                nameof(currentRuntime));
+        }
+
+        CurrentRuntime = currentRuntime;
         MapBlockCopyLifecycleState admittedRoofLifecycle =
             roofOnLoadLifecycle ?? MapBlockCopyLifecycleState.Inactive;
         PrivateOriginalMapZone601State? admittedZone601 = zone601;
@@ -166,8 +190,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
             }
         }
 
-        definition.BlockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
-        if (definition.Traversal.SelectActiveArea(playerPosition) is null ||
+        CurrentRuntime.BlockCatalog.ValidateLayoutReferences(workingLayout, nameof(workingLayout));
+        if (CurrentRuntime.Traversal.SelectActiveArea(playerPosition) is null ||
             OriginalMapTraversal.IsBlocked(workingLayout, playerPosition))
         {
             throw new ArgumentException(
@@ -179,6 +203,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
             (lastTraversal is null ? 0 : 1) +
             (lastLayoutMutation is null ? 0 : 1) +
             (lastSameMapWarp is null ? 0 : 1) +
+            (lastCrossMapTransition is null ? 0 : 1) +
             (lastSarah is null ? 0 : 1) +
             (lastEntity142Request is null ? 0 : 1) +
             (lastEntity142Acknowledgement is null ? 0 : 1);
@@ -197,6 +222,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 lastMessengerAcceptance is not null ||
                 admittedCastleGate?.Opened == true ||
                 lastCastleGate is not null ||
+                lastCrossMapTransition is not null ||
                 pendingEntity142 is not null ||
                 lastEntity142Request is not null ||
                 lastEntity142Acknowledgement is not null ||
@@ -220,6 +246,30 @@ public sealed record PrivateOriginalMapSessionSnapshot
             throw new ArgumentException(
                 "The traversal result must end at the authoritative session position.",
                 nameof(lastTraversal));
+        }
+
+        if (lastCrossMapTransition is not null)
+        {
+            OriginalMapCrossMapTransitionDefinition admitted =
+                definition.NorthMap19Transition ?? throw new ArgumentException(
+                    "A cross-map receipt requires its admitted transition definition.",
+                    nameof(lastCrossMapTransition));
+            if (lastCrossMapTransition.SimulationStep != simulationStep ||
+                lastCrossMapTransition.RecordIdentity != admitted.Identity ||
+                lastCrossMapTransition.Source != admitted.AdmittedApproach ||
+                lastCrossMapTransition.Trigger != admitted.AdmittedTrigger ||
+                lastCrossMapTransition.DestinationMap != admitted.DestinationMap ||
+                lastCrossMapTransition.Destination != admitted.Destination ||
+                lastCrossMapTransition.DestinationOpaqueFacing !=
+                    admitted.DestinationOpaqueFacing ||
+                CurrentRuntime.Map != admitted.DestinationMap ||
+                playerPosition != admitted.Destination ||
+                !ReferenceEquals(CurrentRuntime.WorkingLayout, workingLayout))
+            {
+                throw new ArgumentException(
+                    "The cross-map receipt must match the atomic destination runtime snapshot.",
+                    nameof(lastCrossMapTransition));
+            }
         }
 
         if (bowieDoorStepCopyApplied)
@@ -620,6 +670,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
         LastMessengerAcceptance = lastMessengerAcceptance;
         CastleGate = admittedCastleGate;
         LastCastleGate = lastCastleGate;
+        LastCrossMapTransition = lastCrossMapTransition;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -630,24 +681,26 @@ public sealed record PrivateOriginalMapSessionSnapshot
 
     public OriginalMapImportReceipt Receipt { get; }
 
-    public MapId Map => Definition.Map;
+    public OriginalMapExplorationRuntimeDefinition CurrentRuntime { get; }
+
+    public MapId Map => CurrentRuntime.Map;
 
     public WorkingMapLayout WorkingLayout { get; }
 
     public MapPosition PlayerPosition { get; }
 
     public OriginalMapTraversalAreaSelection CurrentArea =>
-        Definition.Traversal.SelectActiveArea(PlayerPosition) ??
+        CurrentRuntime.Traversal.SelectActiveArea(PlayerPosition) ??
         throw new InvalidOperationException(
             "The authoritative private original-map position has no admitted active area.");
 
     public OriginalMapAreaDefinition CurrentAreaDefinition =>
-        Definition.AreaCatalog.Resolve(CurrentArea);
+        CurrentRuntime.AreaCatalog.Resolve(CurrentArea);
 
-    public OriginalMapEntityPopulation EntityPopulation => Definition.EntityPopulation;
+    public OriginalMapEntityPopulation EntityPopulation => CurrentRuntime.EntityPopulation;
 
     public OriginalMapBlockDefinition CurrentBlockDefinition =>
-        Definition.BlockCatalog.Resolve(WorkingLayout, PlayerPosition);
+        CurrentRuntime.BlockCatalog.Resolve(WorkingLayout, PlayerPosition);
 
     public long SimulationStep { get; }
 
@@ -698,6 +751,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public PrivateOriginalMapCastleGateState? CastleGate { get; }
 
     public PrivateOriginalMapCastleGateReceipt? LastCastleGate { get; }
+
+    public PrivateOriginalMapCrossMapTransitionReceipt? LastCrossMapTransition { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -780,15 +835,32 @@ public sealed record PrivateOriginalMapMoveApplied
         RoofOnLoad = roofOnLoad;
     }
 
+    public PrivateOriginalMapMoveApplied(
+        PrivateOriginalMapSessionSnapshot snapshot,
+        PrivateOriginalMapCrossMapTransitionReceipt crossMapTransition)
+    {
+        Snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
+        CrossMapTransition = crossMapTransition ??
+            throw new ArgumentNullException(nameof(crossMapTransition));
+        if (!ReferenceEquals(snapshot.LastCrossMapTransition, crossMapTransition))
+        {
+            throw new ArgumentException(
+                "A cross-map movement result must expose the snapshot's exact receipt.",
+                nameof(crossMapTransition));
+        }
+    }
+
     public PrivateOriginalMapSessionSnapshot Snapshot { get; }
 
     public OriginalMapTraversalResult Traversal => _traversal ??
         throw new InvalidOperationException(
-            "A same-map warp outcome does not contain an ordinary traversal result.");
+            "A relocation outcome does not contain an ordinary traversal result.");
 
     public PrivateOriginalMapSameMapWarpReceipt? SameMapWarp { get; }
 
     public PrivateOriginalMapRoofOnLoadReceipt? RoofOnLoad { get; }
+
+    public PrivateOriginalMapCrossMapTransitionReceipt? CrossMapTransition { get; }
 
     public PrivateOriginalMapZone601Receipt? Zone601 { get; }
 
@@ -848,22 +920,34 @@ public sealed partial class GameSession
         }
 
         PrivateOriginalMapSessionSnapshot current = PrivateOriginalMapSnapshot;
-        if (TryApplyPrivateOriginalMapSameMapWarp(current, command, out var warpApplied))
+        if (current.Map == current.Definition.Map &&
+            TryApplyPrivateOriginalMapSameMapWarp(current, command, out var warpApplied))
         {
             return warpApplied!;
         }
 
-        if (TryApplyPrivateOriginalMapZone601(current, command, out var zone601Applied))
+        if (TryApplyPrivateOriginalMapCrossMapTransition(
+                current,
+                command,
+                out var crossMapApplied))
+        {
+            return crossMapApplied!;
+        }
+
+        if (current.Map == current.Definition.Map &&
+            TryApplyPrivateOriginalMapZone601(current, command, out var zone601Applied))
         {
             return zone601Applied!;
         }
 
-        if (TryApplyPrivateOriginalMapAstralZone(current, command, out var astralZoneApplied))
+        if (current.Map == current.Definition.Map &&
+            TryApplyPrivateOriginalMapAstralZone(current, command, out var astralZoneApplied))
         {
             return astralZoneApplied!;
         }
 
-        if (TryApplyPrivateOriginalMapMessengerAcceptance(
+        if (current.Map == current.Definition.Map &&
+            TryApplyPrivateOriginalMapMessengerAcceptance(
                 current,
                 command,
                 out var messengerApplied))
@@ -871,12 +955,14 @@ public sealed partial class GameSession
             return messengerApplied!;
         }
 
-        if (TryApplyPrivateOriginalMapCastleGate(current, command, out var castleGateApplied))
+        if (current.Map == current.Definition.Map &&
+            TryApplyPrivateOriginalMapCastleGate(current, command, out var castleGateApplied))
         {
             return castleGateApplied!;
         }
 
-        if (TryApplyPrivateOriginalMapNaturalStepCopy(
+        if (current.Map == current.Definition.Map &&
+            TryApplyPrivateOriginalMapNaturalStepCopy(
                 current,
                 command,
                 out var stepCopyApplied))
@@ -884,11 +970,12 @@ public sealed partial class GameSession
             return stepCopyApplied!;
         }
 
-        MapPosition? candidate = current.Definition.Traversal.ResolveCandidateTarget(
+        MapPosition? candidate = current.CurrentRuntime.Traversal.ResolveCandidateTarget(
             current.WorkingLayout,
             current.PlayerPosition,
             command.Direction);
-        if (candidate is MapPosition occupiedPosition &&
+        if (current.Map == current.Definition.Map &&
+            candidate is MapPosition occupiedPosition &&
             ((current.Sarah?.OccupiesRouteTile == true &&
                     occupiedPosition == current.Sarah.ActorPosition) ||
                 (current.Entity142?.OccupiesRouteTile == true &&
@@ -934,12 +1021,14 @@ public sealed partial class GameSession
                 current.MessengerAcceptance,
                 lastMessengerAcceptance: null,
                 current.CastleGate,
-                lastCastleGate: null);
+                lastCastleGate: null,
+                current.CurrentRuntime,
+                lastCrossMapTransition: null);
             _privateOriginalMapSnapshot = blocked;
             return new PrivateOriginalMapMoveApplied(blocked, occupied);
         }
 
-        OriginalMapTraversalResult traversal = current.Definition.Traversal.TryMove(
+        OriginalMapTraversalResult traversal = current.CurrentRuntime.Traversal.TryMove(
             current.WorkingLayout,
             current.PlayerPosition,
             command.Direction);
@@ -970,7 +1059,9 @@ public sealed partial class GameSession
             current.MessengerAcceptance,
             lastMessengerAcceptance: null,
             current.CastleGate,
-            lastCastleGate: null);
+            lastCastleGate: null,
+            current.CurrentRuntime,
+            lastCrossMapTransition: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -986,6 +1077,14 @@ public sealed partial class GameSession
         }
 
         PrivateOriginalMapSessionSnapshot current = PrivateOriginalMapSnapshot;
+        if (current.Map != current.Definition.Map)
+        {
+            return RejectLayoutMutation(
+                current,
+                PrivateOriginalMapLayoutMutationFailureCode.ReferenceMismatch,
+                "The controlled Map 3 layout mutation is unavailable on the current runtime map.");
+        }
+
         OriginalMapStepCopyDefinition admitted =
             current.Definition.ControlledStepCopy ?? throw new InvalidOperationException(
                 "The admitted private original-map definition has no controlled step-copy record.");
@@ -1057,7 +1156,9 @@ public sealed partial class GameSession
             current.MessengerAcceptance,
             lastMessengerAcceptance: null,
             current.CastleGate,
-            lastCastleGate: null);
+            lastCastleGate: null,
+            current.CurrentRuntime,
+            lastCrossMapTransition: null);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -1085,7 +1186,9 @@ public sealed partial class GameSession
             lastRoofOnLoad: null,
             bowieDoorStepCopyApplied: false,
             lastNaturalStepCopy: null,
-            schoolDoorStepCopyApplied: false);
+            schoolDoorStepCopyApplied: false,
+            currentRuntime: accepted.Definition.InitialRuntime,
+            lastCrossMapTransition: null);
         GameSession session = new(snapshot);
         session.InitializePrivateOriginalMapPlayerLocomotion();
         return new PrivateOriginalMapGameSessionStarted(session, accepted.Receipt);
@@ -1222,6 +1325,27 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.MissingReference,
                 "receipt.capabilities",
                 "The admitted receipt does not contain the exact bounded runtime capability set.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedRuntimeCatalog(
+                definition.RuntimeCatalog) ||
+            !ReferenceEquals(
+                definition.RuntimeCatalog.Resolve(definition.Map),
+                definition.InitialRuntime))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.runtimeCatalog",
+                "The admitted definition does not retain the exact Map 3 and Map 19 runtime catalog.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedNorthMap19Transition(
+                definition.NorthMap19Transition))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.northMap19Transition",
+                "The admitted definition does not retain the exact bounded Map 3 north transition.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedBlocksetProjection(

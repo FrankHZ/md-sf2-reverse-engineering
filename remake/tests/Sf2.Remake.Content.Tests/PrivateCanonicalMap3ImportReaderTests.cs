@@ -61,6 +61,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.AstralZoneHandoffCapability,
                 PrivateCanonicalMap3ImportReader.MessengerAcceptanceCapability,
                 PrivateCanonicalMap3ImportReader.CastleGateOpeningCapability,
+                PrivateCanonicalMap3ImportReader.NorthMap19TransitionCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -238,6 +239,29 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(new MapPosition(4, 8), roof.SourceTrigger);
         Assert.Equal(new MapPosition(2, 32), roof.ClearDestination);
         Assert.Equal((7, 8), (roof.Width, roof.Height));
+        Assert.Equal(2, accepted.Definition.RuntimeCatalog.Records.Count);
+        Assert.Same(
+            accepted.Definition.InitialRuntime,
+            accepted.Definition.RuntimeCatalog.Resolve(new MapId("map3")));
+        OriginalMapExplorationRuntimeDefinition map19Runtime =
+            accepted.Definition.RuntimeCatalog.Resolve(new MapId("map19"));
+        Assert.Equal("Map19s0_Blocks", map19Runtime.BlockCatalog.ResourceId);
+        Assert.Equal("Map19s2_Areas", map19Runtime.AreaCatalog.ResourceId);
+        Assert.Equal("ms_map19_Entities", map19Runtime.EntityPopulation.ResourceId);
+        Assert.Equal(13, map19Runtime.EntityPopulation.Records.Count);
+        Assert.Equal(new MapSetupId("ms_map19"), map19Runtime.SelectedSetup);
+        Assert.Equal("ms_map19_InitFunction", map19Runtime.SelectedInitIdentity);
+        OriginalMapCrossMapTransitionDefinition north =
+            Assert.IsType<OriginalMapCrossMapTransitionDefinition>(
+                accepted.Definition.NorthMap19Transition);
+        Assert.Equal(1, north.Identity.OneBasedRecordOrdinal);
+        Assert.Equal((byte)255, north.SourceTriggerX);
+        Assert.Equal((byte)1, north.SourceTriggerY);
+        Assert.Equal(new MapPosition(28, 2), north.AdmittedApproach);
+        Assert.Equal(ExplorationDirection.North, north.AdmittedDirection);
+        Assert.Equal(new MapPosition(28, 1), north.AdmittedTrigger);
+        Assert.Equal(new MapId("map19"), north.DestinationMap);
+        Assert.Equal(new MapPosition(26, 30), north.Destination);
     }
 
     [Fact]
@@ -655,6 +679,48 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     }
 
     [Fact]
+    public void NorthMap19RuntimeAndOutboundWarpFailClosedOnReferenceSetupAndProjectionDrift()
+    {
+        JsonObject warpDrift = SampleDocument();
+        WarpRecords(warpDrift)[0]!.AsObject()["targetMap"] = 20;
+        AssertCode(Admit(warpDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject mapReferenceDrift = SampleDocument();
+        Map(mapReferenceDrift, 19)["references"]!.AsObject()["layout"] = "missing-layout";
+        AssertCode(Admit(mapReferenceDrift), OriginalMapImportFailureCode.MissingReference);
+
+        JsonObject animationDrift = SampleDocument();
+        Map(animationDrift, 19)["references"]!.AsObject()["animationTable"] =
+            "Map03s9_Animations";
+        AssertCode(Admit(animationDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject setupDrift = SampleDocument();
+        ResourceById(setupDrift, "setupRoutes", "MapSetupRoute19")["defaultSetup"] =
+            "ms_map19_flag501";
+        AssertCode(Admit(setupDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject variantOrderDrift = SampleDocument();
+        JsonArray variants = ResourceById(
+            variantOrderDrift,
+            "setupRoutes",
+            "MapSetupRoute19")["flagVariants"]!.AsArray();
+        JsonNode first = variants[0]!.DeepClone();
+        variants[0] = variants[1]!.DeepClone();
+        variants[1] = first;
+        AssertCode(Admit(variantOrderDrift), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject blockedDestination = SampleDocument();
+        ResourceById(blockedDestination, "layouts", "Map19s1_Layout")["words"]!
+            .AsArray()[Index(26, 30)] = OriginalMapTraversal.CollisionMask;
+        AssertCode(Admit(blockedDestination), OriginalMapImportFailureCode.InvalidMapProjection);
+
+        JsonObject entityReferenceDrift = SampleDocument();
+        ResourceById(entityReferenceDrift, "setupDefinitions", "ms_map19")
+            ["references"]!.AsObject()["entities"] = "missing-map19-entities";
+        AssertCode(Admit(entityReferenceDrift), OriginalMapImportFailureCode.MissingReference);
+    }
+
+    [Fact]
     public void RoofOnLoadResourceRowsAndExactClearProjectionFailClosed()
     {
         JsonObject wrongResource = SampleDocument();
@@ -788,6 +854,13 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Contains(
             PrivateCanonicalMap3ImportReader.MessengerAcceptanceCapability,
             accepted.Receipt.Capabilities);
+        Assert.Contains(
+            PrivateCanonicalMap3ImportReader.NorthMap19TransitionCapability,
+            accepted.Receipt.Capabilities);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedRuntimeCatalog(
+            accepted.Definition.RuntimeCatalog));
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedNorthMap19Transition(
+            accepted.Definition.NorthMap19Transition));
         Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedEntity142(
             accepted.Definition.Entity142,
             accepted.Definition.EntityPopulation,
@@ -949,17 +1022,17 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                     : new[] { 0, 1, 2, 3, 4 },
                 references = new
                 {
-                    blockset = "Map03s0_Blocks",
-                    layout = "Map03s1_Layout",
-                    areaTable = "Map03s2_Areas",
-                    flagEventTable = "Map03s3_FlagEvents",
-                    stepEventTable = "Map03s4_StepEvents",
-                    roofEventTable = "Map03s5_RoofEvents",
-                    warpEventTable = "Map03s6_WarpEvents",
-                    chestItemTable = "Map03s7_ChestItems",
-                    otherItemTable = "Map03s8_OtherItems",
-                    animationTable = "Map03s9_Animations",
-                    setupRoute = "MapSetupRoute03",
+                    blockset = id == 19 ? "Map19s0_Blocks" : "Map03s0_Blocks",
+                    layout = id == 19 ? "Map19s1_Layout" : "Map03s1_Layout",
+                    areaTable = id == 19 ? "Map19s2_Areas" : "Map03s2_Areas",
+                    flagEventTable = id == 19 ? "Map19s3_FlagEvents" : "Map03s3_FlagEvents",
+                    stepEventTable = id == 19 ? "Map19s4_StepEvents" : "Map03s4_StepEvents",
+                    roofEventTable = id == 19 ? "Map19s5_RoofEvents" : "Map03s5_RoofEvents",
+                    warpEventTable = id == 19 ? "Map19s6_WarpEvents" : "Map03s6_WarpEvents",
+                    chestItemTable = id == 19 ? "Map19s7_ChestItems" : "Map03s7_ChestItems",
+                    otherItemTable = id == 19 ? "Map19s8_OtherItems" : "Map03s8_OtherItems",
+                    animationTable = id == 19 ? null : "Map03s9_Animations",
+                    setupRoute = id == 19 ? "MapSetupRoute19" : "MapSetupRoute03",
                 },
             })
             .ToArray();
@@ -971,6 +1044,15 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             areaDescriptions = "ms_map3_AreaDescriptions",
             itemEvents = "ms_map3_Section5",
             initFunction = "ms_map3_InitFunction",
+        };
+        object map19SetupReferences = new
+        {
+            entities = "ms_map19_Entities",
+            entityEvents = "ms_map19_EntityEvents",
+            zoneEvents = "ms_map19_ZoneEvents",
+            areaDescriptions = "ms_map19_AreaDescriptions",
+            itemEvents = "ms_map19_Section5",
+            initFunction = "ms_map19_InitFunction",
         };
         JsonNode? node = JsonSerializer.SerializeToNode(new
         {
@@ -1009,6 +1091,12 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         address = 1,
                         blocks = Enumerable.Range(0, 3).Select(_ => new int[9]).ToArray(),
                     },
+                    new
+                    {
+                        id = "Map19s0_Blocks",
+                        address = 101,
+                        blocks = Enumerable.Range(0, 3).Select(_ => new int[9]).ToArray(),
+                    },
                 },
                 layouts = new object[]
                 {
@@ -1019,6 +1107,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         width = 64,
                         height = 64,
                         words = layoutWords,
+                    },
+                    new
+                    {
+                        id = "Map19s1_Layout",
+                        address = 102,
+                        width = 64,
+                        height = 64,
+                        words = new int[WorkingMapLayout.WordCount],
                     },
                 },
                 areaTables = new object[]
@@ -1035,8 +1131,18 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                             AreaRecord(51, 10, 61, 19),
                         },
                     },
+                    new
+                    {
+                        id = "Map19s2_Areas",
+                        address = 103,
+                        sourceKind = "areas",
+                        records = new[]
+                        {
+                            AreaRecord(0, 0, 40, 31, secondForegroundY: 32, defaultMusic: 38),
+                        },
+                    },
                 },
-                flagEventTables = Resource("Map03s3_FlagEvents"),
+                flagEventTables = Resources("Map03s3_FlagEvents", "Map19s3_FlagEvents"),
                 stepEventTables = new object[]
                 {
                     new
@@ -1071,6 +1177,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                             })
                             .ToArray(),
                     },
+                    new { id = "Map19s4_StepEvents" },
                 },
                 roofEventTables = new object[]
                 {
@@ -1081,6 +1188,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         sourceKind = "roofEvents",
                         records = RoofSourceRecords(),
                     },
+                    new { id = "Map19s5_RoofEvents" },
                 },
                 warpEventTables = new object[]
                 {
@@ -1091,11 +1199,14 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         sourceKind = "warpEvents",
                         records = WarpSourceRecords(),
                     },
+                    new { id = "Map19s6_WarpEvents" },
                 },
                 itemTables = new object[]
                 {
                     new { id = "Map03s7_ChestItems" },
                     new { id = "Map03s8_OtherItems" },
+                    new { id = "Map19s7_ChestItems" },
+                    new { id = "Map19s8_OtherItems" },
                 },
                 animationTables = Resource("Map03s9_Animations"),
                 setupRoutes = new object[]
@@ -1112,6 +1223,21 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                             new { flag = 3, setup = "ms_map3_variant_c" },
                         },
                     },
+                    new
+                    {
+                        id = "MapSetupRoute19",
+                        map = 19,
+                        defaultSetup = "ms_map19",
+                        flagVariants = new object[]
+                        {
+                            new { flag = 501, setup = "ms_map19_flag501" },
+                            new { flag = 609, setup = "ms_map19_flag609" },
+                            new { flag = 506, setup = "ms_map19_flag506" },
+                            new { flag = 507, setup = "ms_map19_flag507" },
+                            new { flag = 543, setup = "ms_map19_flag543" },
+                            new { flag = 982, setup = "ms_map19_flag982" },
+                        },
+                    },
                 },
                 setupDefinitions = new object[]
                 {
@@ -1119,6 +1245,13 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                     new { id = "ms_map3_variant_a" },
                     new { id = "ms_map3_variant_b" },
                     new { id = "ms_map3_variant_c" },
+                    new { id = "ms_map19", address = 105, references = map19SetupReferences },
+                    new { id = "ms_map19_flag501" },
+                    new { id = "ms_map19_flag609" },
+                    new { id = "ms_map19_flag506" },
+                    new { id = "ms_map19_flag507" },
+                    new { id = "ms_map19_flag543" },
+                    new { id = "ms_map19_flag982" },
                 },
                 entityLists = new object[]
                 {
@@ -1127,6 +1260,12 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         id = "ms_map3_Entities",
                         address = 6,
                         records = EntitySourceRecords(),
+                    },
+                    new
+                    {
+                        id = "ms_map19_Entities",
+                        address = 106,
+                        records = Map19EntitySourceRecords(),
                     },
                 },
                 entityEventHandlers = new object[]
@@ -1138,6 +1277,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         kind = "table",
                         records = SarahEntityEventSourceRecords(),
                     },
+                    new { id = "ms_map19_EntityEvents" },
                 },
                 zoneEventHandlers = new object[]
                 {
@@ -1148,10 +1288,13 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                         kind = "table",
                         records = ZoneSourceRecords(),
                     },
+                    new { id = "ms_map19_ZoneEvents" },
                 },
-                itemEventHandlers = Resource("ms_map3_Section5"),
-                areaDescriptionHandlers = Resource("ms_map3_AreaDescriptions"),
-                initFunctions = Resource("ms_map3_InitFunction"),
+                itemEventHandlers = Resources("ms_map3_Section5", "ms_map19_Section5"),
+                areaDescriptionHandlers = Resources(
+                    "ms_map3_AreaDescriptions",
+                    "ms_map19_AreaDescriptions"),
+                initFunctions = Resources("ms_map3_InitFunction", "ms_map19_InitFunction"),
                 standaloneScriptPrograms = new object[]
                 {
                     new
@@ -1211,6 +1354,9 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     }
 
     private static object[] Resource(string id) => [new { id }];
+
+    private static object[] Resources(params string[] ids) =>
+        ids.Select(id => (object)new { id }).ToArray();
 
     private static object[] WarpSourceRecords() =>
     [
@@ -1394,6 +1540,44 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 facing = 0,
                 mapSprite = ordinal,
                 actionValue = 0U,
+            });
+        }
+
+        return [.. records];
+    }
+
+    private static object[] Map19EntitySourceRecords()
+    {
+        List<object> records = [];
+        for (int ordinal = 1; ordinal <= 9; ordinal++)
+        {
+            records.Add(new
+            {
+                address = 2000 + (ordinal * 8),
+                kind = "fixed",
+                rawX = ordinal,
+                rawY = 1,
+                x = ordinal,
+                y = 1,
+                facing = 0,
+                mapSprite = ordinal,
+                actionValue = 0U,
+            });
+        }
+
+        for (int ordinal = 10; ordinal <= 13; ordinal++)
+        {
+            records.Add(new
+            {
+                address = 2000 + (ordinal * 8),
+                kind = "walking",
+                rawX = ordinal,
+                rawY = 2,
+                x = ordinal,
+                y = 2,
+                facing = 1,
+                mapSprite = ordinal,
+                walking = new { originX = ordinal, originY = 2, range = 1 },
             });
         }
 
@@ -1636,7 +1820,8 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         int minimumY,
         int maximumX,
         int maximumY,
-        int secondForegroundY = 0) =>
+        int secondForegroundY = 0,
+        int defaultMusic = 8) =>
         new
         {
             mainLayerStart = Point(minimumX, minimumY),
@@ -1648,7 +1833,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             mainLayerAutoscroll = Point(0, 0),
             secondLayerAutoscroll = Point(0, 0),
             mainLayerType = 0,
-            defaultMusic = 8,
+            defaultMusic,
         };
 
     private static JsonObject Map(JsonObject document, int mapId) =>
@@ -1658,6 +1843,17 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
 
     private static JsonArray ResourceArray(JsonObject document, string name) =>
         document["resources"]!.AsObject()[name]!.AsArray();
+
+    private static JsonObject ResourceById(
+        JsonObject document,
+        string collection,
+        string id) =>
+        ResourceArray(document, collection)
+            .Select(node => node!.AsObject())
+            .Single(resource => string.Equals(
+                resource["id"]!.GetValue<string>(),
+                id,
+                StringComparison.Ordinal));
 
     private static JsonArray AreaRecords(JsonObject document) =>
         ResourceArray(document, "areaTables")[0]!.AsObject()["records"]!.AsArray();

@@ -212,7 +212,9 @@ public sealed partial class GameSession
             current.MessengerAcceptance,
             lastMessengerAcceptance: null,
             after,
-            receipt);
+            receipt,
+            current.CurrentRuntime,
+            lastCrossMapTransition: null);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(next, traversal, castleGate: receipt);
         return true;

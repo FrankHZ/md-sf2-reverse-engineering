@@ -492,12 +492,27 @@ public sealed class PrivateOriginalMapBattleBridgeTests
         words[Index(4, 4)] = (ushort)(
             (words[Index(4, 4)] & ~OriginalMapTraversal.CollisionMask) |
             OriginalMapTraversal.LeftStairMask);
+        WorkingMapLayout layout = new(words);
+        OriginalMapBlockCatalog blocks = BlockCatalog();
+        OriginalMapAreaCatalog areas = AreaCatalog();
+        OriginalMapEntityPopulation entities = EntityPopulation(map);
+        OriginalMapExplorationRuntimeDefinition initialRuntime = new(
+            map,
+            layout,
+            blocks,
+            areas,
+            entities,
+            new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
+            OriginalMapRuntimeAdmission.SelectedInitIdentity,
+            OriginalMapRuntimeAdmission.AcceptedDecodedLayoutDigest,
+            OriginalMapRuntimeAdmission.AcceptedCollisionProjectionDigest,
+            useProjectionDigestOverride: true);
         return new OriginalMapImportDefinition(
             map,
-            new WorkingMapLayout(words),
-            BlockCatalog(),
-            AreaCatalog(),
-            EntityPopulation(map),
+            layout,
+            blocks,
+            areas,
+            entities,
             Selection(),
             new OriginalMapControlledAdmission(
                 map,
@@ -516,7 +531,9 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             AcceptedEntity142(map),
             AcceptedAstralZone(map),
             AcceptedOriginalMapMessenger.Create(map),
-            AcceptedOriginalMapCastleGate.Create(map));
+            AcceptedOriginalMapCastleGate.Create(map),
+            AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime),
+            AcceptedOriginalMapRuntimeCatalog.NorthTransition());
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>

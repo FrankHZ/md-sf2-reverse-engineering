@@ -316,7 +316,9 @@ public sealed partial class GameSession
             messengerAcceptance: after,
             lastMessengerAcceptance: receipt,
             current.CastleGate,
-            lastCastleGate: null);
+            lastCastleGate: null,
+            current.CurrentRuntime,
+            lastCrossMapTransition: null);
         _privateOriginalMapSnapshot = next;
         applied = new PrivateOriginalMapMoveApplied(
             next,

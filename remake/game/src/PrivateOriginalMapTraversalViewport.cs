@@ -101,7 +101,7 @@ internal sealed class PrivateOriginalMapTraversalViewProjection
         PrivateOriginalMapSessionSnapshot snapshot,
         MapPosition position)
     {
-        if (!snapshot.Definition.Traversal.IsWithinActiveArea(position))
+        if (!snapshot.CurrentRuntime.Traversal.IsWithinActiveArea(position))
         {
             return PrivateOriginalMapTraversalCellCategory.OutsideAcceptedActiveArea;
         }

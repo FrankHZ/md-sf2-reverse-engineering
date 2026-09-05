@@ -261,6 +261,105 @@ public sealed class OriginalMapImportDefinitionTests
     }
 
     [Fact]
+    public void ExplorationRuntimeCatalogOwnsExactMapLookupWithoutFallback()
+    {
+        OriginalMapExplorationRuntimeDefinition map3 = Runtime(
+            new MapId("map3"),
+            new MapSetupId("ms_map3"),
+            "ms_map3_InitFunction");
+        OriginalMapExplorationRuntimeDefinition map19 = Runtime(
+            new MapId("map19"),
+            new MapSetupId("ms_map19"),
+            "ms_map19_InitFunction");
+        List<OriginalMapExplorationRuntimeDefinition> source = [map3, map19];
+
+        OriginalMapExplorationRuntimeCatalog catalog = new(source);
+        source.Clear();
+
+        Assert.Equal([map3, map19], catalog.Records);
+        Assert.Same(map3, catalog.Resolve(new MapId("map3")));
+        Assert.Same(map19, catalog.Resolve(new MapId("map19")));
+        Assert.Throws<KeyNotFoundException>(() => catalog.Resolve(new MapId("missing")));
+        Assert.Throws<ArgumentException>(() =>
+            new OriginalMapExplorationRuntimeCatalog([map3, map3]));
+        Assert.Throws<ArgumentException>(() =>
+            new OriginalMapExplorationRuntimeCatalog([]));
+    }
+
+    [Fact]
+    public void DefinitionUsesCatalogRuntimeAsSingleMapStateAuthority()
+    {
+        MapId map3 = new("map3");
+        MapId map19 = new("map19");
+        OriginalMapExplorationRuntimeDefinition initial = Runtime(
+            map3,
+            new MapSetupId("ms_map3"),
+            "ms_map3_InitFunction");
+        OriginalMapExplorationRuntimeDefinition destination = Runtime(
+            map19,
+            new MapSetupId("ms_map19"),
+            "ms_map19_InitFunction");
+        OriginalMapExplorationRuntimeCatalog catalog = new([initial, destination]);
+        OriginalMapCrossMapTransitionDefinition transition = new(
+            new OriginalMapCrossMapTransitionIdentity(
+                ContentProfile.PrivateLocal,
+                map3,
+                "project-authored-warps",
+                1),
+            sourceTriggerX: byte.MaxValue,
+            sourceTriggerY: 1,
+            new MapPosition(28, 2),
+            ExplorationDirection.North,
+            new MapPosition(28, 1),
+            map19,
+            new MapPosition(26, 30),
+            destinationOpaqueFacing: 1);
+
+        OriginalMapImportDefinition definition = new(
+            map3,
+            initial.WorkingLayout,
+            initial.BlockCatalog,
+            initial.AreaCatalog,
+            initial.EntityPopulation,
+            VisualSelection(map3),
+            new OriginalMapControlledAdmission(
+                map3,
+                new MapPosition(56, 3),
+                3,
+                initial.SelectedSetup,
+                initial.SelectedInitIdentity,
+                noProgramRequest: true),
+            controlledStepCopy: null,
+            sameMapWarps: null,
+            unsupportedCapabilities: ["unknown"],
+            runtimeCatalog: catalog,
+            northMap19Transition: transition);
+
+        Assert.Same(initial, definition.InitialRuntime);
+        Assert.Same(initial.WorkingLayout, definition.WorkingLayout);
+        Assert.Same(destination, definition.RuntimeCatalog.Resolve(map19));
+        Assert.Same(transition, definition.NorthMap19Transition);
+
+        OriginalMapExplorationRuntimeDefinition competing = Runtime(
+            map3,
+            new MapSetupId("ms_map3"),
+            "ms_map3_InitFunction");
+        Assert.Throws<ArgumentException>(() => new OriginalMapImportDefinition(
+            map3,
+            initial.WorkingLayout,
+            initial.BlockCatalog,
+            initial.AreaCatalog,
+            initial.EntityPopulation,
+            VisualSelection(map3),
+            Admission(map3),
+            controlledStepCopy: null,
+            sameMapWarps: null,
+            unsupportedCapabilities: ["unknown"],
+            runtimeCatalog: new OriginalMapExplorationRuntimeCatalog([competing, destination]),
+            northMap19Transition: transition));
+    }
+
+    [Fact]
     public void DefinitionRejectsMapMismatchBlockedStartAndOpenCapabilityBoundary()
     {
         MapId map = new("map3");
@@ -843,4 +942,27 @@ public sealed class OriginalMapImportDefinitionTests
             new OriginalMapAreaBytePair(0, 0),
             mainLayerType: 0,
             defaultMusic: 0);
+
+    private static OriginalMapExplorationRuntimeDefinition Runtime(
+        MapId map,
+        MapSetupId setup,
+        string initIdentity)
+    {
+        WorkingMapLayout layout = new(new ushort[WorkingMapLayout.WordCount]);
+        OriginalMapBlockCatalog blocks = BlockCatalog();
+        OriginalMapAreaCatalog areas = AreaCatalog(
+            new OriginalMapTraversalArea(0, 0, 63, 63));
+        OriginalMapEntityPopulation population = new(
+            map,
+            setup,
+            [Entity("project-authored-entities-" + map.Value, 1, [0, 0, 0, 0])]);
+        return new OriginalMapExplorationRuntimeDefinition(
+            map,
+            layout,
+            blocks,
+            areas,
+            population,
+            setup,
+            initIdentity);
+    }
 }
