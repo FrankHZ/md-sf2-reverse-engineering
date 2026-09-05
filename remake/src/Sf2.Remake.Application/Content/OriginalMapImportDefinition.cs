@@ -192,7 +192,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapMessengerAcceptanceDefinition? messengerAcceptance = null,
         OriginalMapCastleGateDefinition? castleGate = null,
         OriginalMapExplorationRuntimeCatalog? runtimeCatalog = null,
-        OriginalMapCrossMapTransitionDefinition? northMap19Transition = null)
+        OriginalMapCrossMapTransitionDefinition? northMap19Transition = null,
+        OriginalMapCrossMapTransitionDefinition? royalMap20Transition = null)
     {
         ArgumentNullException.ThrowIfNull(map);
         ArgumentNullException.ThrowIfNull(workingLayout);
@@ -591,7 +592,36 @@ public sealed class OriginalMapImportDefinition
             }
         }
 
+        if (royalMap20Transition is not null)
+        {
+            OriginalMapExplorationRuntimeDefinition sourceRuntime =
+                RuntimeCatalog.Resolve(royalMap20Transition.Identity.SourceMap);
+            OriginalMapExplorationRuntimeDefinition destinationRuntime =
+                RuntimeCatalog.Resolve(royalMap20Transition.DestinationMap);
+            if (royalMap20Transition.Identity.SourceMap != new MapId(OriginalMapRuntimeAdmission.Map19Id) ||
+                !sourceRuntime.Traversal.IsWithinActiveArea(
+                    royalMap20Transition.AdmittedApproach) ||
+                !sourceRuntime.Traversal.IsWithinActiveArea(
+                    royalMap20Transition.AdmittedTrigger) ||
+                sourceRuntime.Traversal.ResolveCandidateTarget(
+                    sourceRuntime.WorkingLayout,
+                    royalMap20Transition.AdmittedApproach,
+                    royalMap20Transition.AdmittedDirection) !=
+                    royalMap20Transition.AdmittedTrigger ||
+                !destinationRuntime.Traversal.IsWithinActiveArea(
+                    royalMap20Transition.Destination) ||
+                OriginalMapTraversal.IsBlocked(
+                    destinationRuntime.WorkingLayout,
+                    royalMap20Transition.Destination))
+            {
+                throw new ArgumentException(
+                    "The royal cross-map transition must bind admitted source and destination runtimes.",
+                    nameof(royalMap20Transition));
+            }
+        }
+
         NorthMap19Transition = northMap19Transition;
+        RoyalMap20Transition = royalMap20Transition;
         ControlledStepCopy = controlledStepCopy;
         SameMapWarps = sameMapWarps;
         RoofOnLoadClear = roofOnLoadClear;
@@ -646,6 +676,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapCastleGateDefinition? CastleGate { get; }
 
     public OriginalMapCrossMapTransitionDefinition? NorthMap19Transition { get; }
+
+    public OriginalMapCrossMapTransitionDefinition? RoyalMap20Transition { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

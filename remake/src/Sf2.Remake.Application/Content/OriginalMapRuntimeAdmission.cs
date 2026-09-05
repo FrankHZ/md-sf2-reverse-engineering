@@ -68,6 +68,44 @@ public static class OriginalMapRuntimeAdmission
     public const string Map19EntityProjectionDigest =
         "8471F30D66C6C68873D135F72E0C6A3FB909F886638F15A6F4F18EDBD27DDCDC";
 
+    public const string Map20Id = "map20";
+    public const string Map20BlocksetResourceId = "Map20s0_Blocks";
+    public const int Map20BlockCount = 376;
+    public const string Map20BlocksetProjectionDigest =
+        "B4AF73B3A810A2431D1D88EFBBFA0C62029C13F689CF74C845B6893C31608F69";
+    public const string Map20DecodedLayoutDigest =
+        "FBB9851422BEE93242A644E00367F6AE08BE2D85B1A1828F79B3BDA2304FA749";
+    public const string Map20CollisionProjectionDigest =
+        "F7E37D09A609C9ABDBAC7A4F2DB069CBED2233B81DA3BF9B7335313E2EF32254";
+    public const string Map20AreaResourceId = "Map20s2_Areas";
+    public const int Map20AreaRecordCount = 3;
+    public const string Map20AreaProjectionDigest =
+        "56E9F7D7C6E7DB6F018612AFD47519C53CD4B69E62C75D6208A5D1C6DA7595C0";
+    public const string Map20AreaSourceProjectionDigest =
+        "1B458DB3012CC30FC7184E2CF2AD85F44D4EF0807A7CABE56E37358D1E37D29A";
+    public const string Map20SelectedSetupId = "ms_map20";
+    public const string Map20SelectedInitIdentity = "ms_map20_InitFunction";
+    public const string Map20EntityListResourceId = "ms_map20_Entities";
+    public const int Map20EntityRecordCount = 8;
+    public const int Map20FixedEntityRecordCount = 7;
+    public const int Map20WalkingEntityRecordCount = 1;
+    public const string Map20EntityProjectionDigest =
+        "7350F0612C704C1DBEE16E9F48399CB21BE3CC1B653261A8910DBF6661BCB02D";
+
+    public const string RoyalMap20TransitionCapability = "private-map19-royal-map20-transition-v1";
+    public const string RoyalMap20WarpResourceId = "Map19s6_WarpEvents";
+    public const int RoyalMap20WarpRecordOrdinal = 2;
+    public const byte RoyalMap20WarpSourceTriggerX = 23;
+    public const byte RoyalMap20WarpSourceTriggerY = 3;
+    public const int RoyalMap20WarpApproachX = 22;
+    public const int RoyalMap20WarpApproachY = 4;
+    public const ExplorationDirection RoyalMap20WarpDirection = ExplorationDirection.East;
+    public const int RoyalMap20WarpTriggerX = 23;
+    public const int RoyalMap20WarpTriggerY = 3;
+    public const int RoyalMap20WarpDestinationX = 23;
+    public const int RoyalMap20WarpDestinationY = 37;
+    public const byte RoyalMap20WarpDestinationOpaqueFacing = 3;
+
     public const string MapId = "map3";
     public const int StartX = 56;
     public const int StartY = 3;
@@ -592,6 +630,7 @@ public static class OriginalMapRuntimeAdmission
                 MessengerAcceptanceCapability,
                 CastleGateOpeningCapability,
                 NorthMap19TransitionCapability,
+                RoyalMap20TransitionCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -708,7 +747,7 @@ public static class OriginalMapRuntimeAdmission
         OriginalMapExplorationRuntimeCatalog catalog)
     {
         ArgumentNullException.ThrowIfNull(catalog);
-        if (catalog.Records.Count != 2)
+        if (catalog.Records.Count != 3)
         {
             return false;
         }
@@ -734,12 +773,40 @@ public static class OriginalMapRuntimeAdmission
                 HasExactAcceptedAreaProjection(map3.Traversal) &&
                 HasExactAcceptedAreaSourceProjection(map3.AreaCatalog) &&
                 HasExactAcceptedEntityPopulation(map3.EntityPopulation) &&
-                HasExactAcceptedMap19Runtime(map19);
+                HasExactAcceptedMap19Runtime(map19) &&
+                HasExactAcceptedMap20Runtime(catalog.Resolve(new MapId(Map20Id)));
         }
         catch (KeyNotFoundException)
         {
             return false;
         }
+    }
+
+    public static bool HasExactAcceptedRoyalMap20Transition(
+        OriginalMapCrossMapTransitionDefinition? transition)
+    {
+        return transition is not null &&
+            transition.Identity.Profile == ContentProfile.PrivateLocal &&
+            transition.Identity.SourceMap == new MapId(Map19Id) &&
+            string.Equals(
+                transition.Identity.SourceResourceId,
+                RoyalMap20WarpResourceId,
+                StringComparison.Ordinal) &&
+            transition.Identity.OneBasedRecordOrdinal == RoyalMap20WarpRecordOrdinal &&
+            transition.SourceTriggerX == RoyalMap20WarpSourceTriggerX &&
+            transition.SourceTriggerY == RoyalMap20WarpSourceTriggerY &&
+            transition.AdmittedApproach == new MapPosition(
+                RoyalMap20WarpApproachX,
+                RoyalMap20WarpApproachY) &&
+            transition.AdmittedDirection == RoyalMap20WarpDirection &&
+            transition.AdmittedTrigger == new MapPosition(
+                RoyalMap20WarpTriggerX,
+                RoyalMap20WarpTriggerY) &&
+            transition.DestinationMap == new MapId(Map20Id) &&
+            transition.Destination == new MapPosition(
+                RoyalMap20WarpDestinationX,
+                RoyalMap20WarpDestinationY) &&
+            transition.DestinationOpaqueFacing == RoyalMap20WarpDestinationOpaqueFacing;
     }
 
     public static bool HasExactAcceptedNorthMap19Transition(
@@ -815,48 +882,107 @@ public static class OriginalMapRuntimeAdmission
                 StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool HasExactMap19AreaProjection(OriginalMapAreaCatalog catalog)
+    private static bool HasExactAcceptedMap20Runtime(
+        OriginalMapExplorationRuntimeDefinition runtime)
+    {
+        return runtime.Map == new MapId(Map20Id) &&
+            runtime.SelectedSetup == new MapSetupId(Map20SelectedSetupId) &&
+            string.Equals(
+                runtime.SelectedInitIdentity,
+                Map20SelectedInitIdentity,
+                StringComparison.Ordinal) &&
+            string.Equals(
+                runtime.DecodedLayoutDigest,
+                Map20DecodedLayoutDigest,
+                StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(
+                runtime.CollisionProjectionDigest,
+                Map20CollisionProjectionDigest,
+                StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(
+                runtime.BlockCatalog.ResourceId,
+                Map20BlocksetResourceId,
+                StringComparison.Ordinal) &&
+            runtime.BlockCatalog.Records.Count == Map20BlockCount &&
+            string.Equals(
+                runtime.BlockCatalog.ProjectionDigest,
+                Map20BlocksetProjectionDigest,
+                StringComparison.OrdinalIgnoreCase) &&
+            HasExactMap20AreaProjection(runtime.AreaCatalog) &&
+            runtime.EntityPopulation.Map == new MapId(Map20Id) &&
+            runtime.EntityPopulation.SelectedSetup == new MapSetupId(Map20SelectedSetupId) &&
+            string.Equals(
+                runtime.EntityPopulation.ResourceId,
+                Map20EntityListResourceId,
+                StringComparison.Ordinal) &&
+            runtime.EntityPopulation.Records.Count == Map20EntityRecordCount &&
+            runtime.EntityPopulation.Records.Count(record =>
+                record.Kind == OriginalMapEntityRecordKind.Fixed) ==
+                Map20FixedEntityRecordCount &&
+            runtime.EntityPopulation.Records.Count(record =>
+                record.Kind == OriginalMapEntityRecordKind.Walking) ==
+                Map20WalkingEntityRecordCount &&
+            string.Equals(
+                runtime.EntityPopulation.ProjectionDigest,
+                Map20EntityProjectionDigest,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool HasExactMap19AreaProjection(OriginalMapAreaCatalog catalog) =>
+        HasExactCastleAreaProjection(catalog, Map19AreaResourceId, Map19AreaRecordCount,
+            Map19AreaProjectionDigest, Map19AreaSourceProjectionDigest);
+
+    private static bool HasExactMap20AreaProjection(OriginalMapAreaCatalog catalog) =>
+        HasExactCastleAreaProjection(catalog, Map20AreaResourceId, Map20AreaRecordCount,
+            Map20AreaProjectionDigest, Map20AreaSourceProjectionDigest);
+
+    private static bool HasExactCastleAreaProjection(
+        OriginalMapAreaCatalog catalog, string resourceId, int recordCount,
+        string boundsDigest, string sourceDigest)
     {
         if (!string.Equals(
                 catalog.ResourceId,
-                Map19AreaResourceId,
+                resourceId,
                 StringComparison.Ordinal) ||
-            catalog.Records.Count != Map19AreaRecordCount)
+            catalog.Records.Count != recordCount)
         {
             return false;
         }
 
-        OriginalMapAreaDefinition area = catalog.Records[0];
-        Span<byte> bounds = stackalloc byte[5];
-        bounds[0] = 1;
-        bounds[1] = checked((byte)area.MainLayerBounds.MinimumX);
-        bounds[2] = checked((byte)area.MainLayerBounds.MinimumY);
-        bounds[3] = checked((byte)area.MainLayerBounds.MaximumX);
-        bounds[4] = checked((byte)area.MainLayerBounds.MaximumY);
-        Span<byte> source = stackalloc byte[31];
-        source[0] = 1;
+        byte[] bounds = new byte[1 + recordCount * 4];
+        byte[] source = new byte[1 + recordCount * 30];
+        bounds[0] = checked((byte)recordCount);
+        source[0] = checked((byte)recordCount);
+        int boundsOffset = 1;
         int offset = 1;
-        WriteWord(source, ref offset, checked((ushort)area.MainLayerBounds.MinimumX));
-        WriteWord(source, ref offset, checked((ushort)area.MainLayerBounds.MinimumY));
-        WriteWord(source, ref offset, checked((ushort)area.MainLayerBounds.MaximumX));
-        WriteWord(source, ref offset, checked((ushort)area.MainLayerBounds.MaximumY));
-        WritePair(source, ref offset, area.SecondLayerForegroundStart);
-        WritePair(source, ref offset, area.SecondLayerBackgroundStart);
-        WritePair(source, ref offset, area.MainLayerParallax);
-        WritePair(source, ref offset, area.SecondLayerParallax);
-        source[offset++] = area.MainLayerAutoscroll.X;
-        source[offset++] = area.MainLayerAutoscroll.Y;
-        source[offset++] = area.SecondLayerAutoscroll.X;
-        source[offset++] = area.SecondLayerAutoscroll.Y;
-        source[offset++] = area.MainLayerType;
-        source[offset] = area.DefaultMusic;
+        foreach (OriginalMapAreaDefinition area in catalog.Records)
+        {
+            bounds[boundsOffset++] = checked((byte)area.MainLayerBounds.MinimumX);
+            bounds[boundsOffset++] = checked((byte)area.MainLayerBounds.MinimumY);
+            bounds[boundsOffset++] = checked((byte)area.MainLayerBounds.MaximumX);
+            bounds[boundsOffset++] = checked((byte)area.MainLayerBounds.MaximumY);
+            WriteWord(source, ref offset, checked((ushort)area.MainLayerBounds.MinimumX));
+            WriteWord(source, ref offset, checked((ushort)area.MainLayerBounds.MinimumY));
+            WriteWord(source, ref offset, checked((ushort)area.MainLayerBounds.MaximumX));
+            WriteWord(source, ref offset, checked((ushort)area.MainLayerBounds.MaximumY));
+            WritePair(source, ref offset, area.SecondLayerForegroundStart);
+            WritePair(source, ref offset, area.SecondLayerBackgroundStart);
+            WritePair(source, ref offset, area.MainLayerParallax);
+            WritePair(source, ref offset, area.SecondLayerParallax);
+            source[offset++] = area.MainLayerAutoscroll.X;
+            source[offset++] = area.MainLayerAutoscroll.Y;
+            source[offset++] = area.SecondLayerAutoscroll.X;
+            source[offset++] = area.SecondLayerAutoscroll.Y;
+            source[offset++] = area.MainLayerType;
+            source[offset++] = area.DefaultMusic;
+        }
         return string.Equals(
                 Convert.ToHexString(SHA256.HashData(bounds)),
-                Map19AreaProjectionDigest,
+                boundsDigest,
                 StringComparison.OrdinalIgnoreCase) &&
             string.Equals(
                 Convert.ToHexString(SHA256.HashData(source)),
-                Map19AreaSourceProjectionDigest,
+                sourceDigest,
                 StringComparison.OrdinalIgnoreCase);
     }
 

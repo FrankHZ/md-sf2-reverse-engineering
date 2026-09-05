@@ -533,7 +533,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             AcceptedOriginalMapMessenger.Create(map),
             AcceptedOriginalMapCastleGate.Create(map),
             AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime),
-            AcceptedOriginalMapRuntimeCatalog.NorthTransition());
+            AcceptedOriginalMapRuntimeCatalog.NorthTransition(),
+            AcceptedOriginalMapRuntimeCatalog.RoyalTransition());
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>

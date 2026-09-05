@@ -472,7 +472,8 @@ public sealed class OriginalMapVisualGameSessionTests
             AcceptedOriginalMapMessenger.Create(map),
             AcceptedOriginalMapCastleGate.Create(map),
             AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime),
-            AcceptedOriginalMapRuntimeCatalog.NorthTransition());
+            AcceptedOriginalMapRuntimeCatalog.NorthTransition(),
+            AcceptedOriginalMapRuntimeCatalog.RoyalTransition());
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>

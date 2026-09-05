@@ -1,8 +1,10 @@
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content;
+using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Content;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
@@ -62,6 +64,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.MessengerAcceptanceCapability,
                 PrivateCanonicalMap3ImportReader.CastleGateOpeningCapability,
                 PrivateCanonicalMap3ImportReader.NorthMap19TransitionCapability,
+                PrivateCanonicalMap3ImportReader.RoyalMap20TransitionCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -239,7 +242,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(new MapPosition(4, 8), roof.SourceTrigger);
         Assert.Equal(new MapPosition(2, 32), roof.ClearDestination);
         Assert.Equal((7, 8), (roof.Width, roof.Height));
-        Assert.Equal(2, accepted.Definition.RuntimeCatalog.Records.Count);
+        Assert.Equal(3, accepted.Definition.RuntimeCatalog.Records.Count);
         Assert.Same(
             accepted.Definition.InitialRuntime,
             accepted.Definition.RuntimeCatalog.Resolve(new MapId("map3")));
@@ -262,6 +265,20 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(new MapPosition(28, 1), north.AdmittedTrigger);
         Assert.Equal(new MapId("map19"), north.DestinationMap);
         Assert.Equal(new MapPosition(26, 30), north.Destination);
+        OriginalMapExplorationRuntimeDefinition map20Runtime =
+            accepted.Definition.RuntimeCatalog.Resolve(new MapId("map20"));
+        Assert.Equal("Map20s0_Blocks", map20Runtime.BlockCatalog.ResourceId);
+        Assert.Equal("ms_map20_Entities", map20Runtime.EntityPopulation.ResourceId);
+        Assert.Equal(8, map20Runtime.EntityPopulation.Records.Count);
+        Assert.Equal(new MapSetupId("ms_map20"), map20Runtime.SelectedSetup);
+        Assert.Equal("ms_map20_InitFunction", map20Runtime.SelectedInitIdentity);
+        OriginalMapCrossMapTransitionDefinition royal = Assert.IsType<OriginalMapCrossMapTransitionDefinition>(
+            accepted.Definition.RoyalMap20Transition);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedRoyalMap20Transition(royal));
+        Assert.Equal(2, royal.Identity.OneBasedRecordOrdinal);
+        Assert.Equal(new MapPosition(22, 4), royal.AdmittedApproach);
+        Assert.Equal(new MapPosition(23, 3), royal.AdmittedTrigger);
+        Assert.Equal(new MapPosition(23, 37), royal.Destination);
     }
 
     [Fact]
@@ -957,6 +974,135 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 accepted.Definition.BowieDoorStepCopy);
         Assert.Equal(1, bowieDoor.Identity.OneBasedRecordOrdinal);
         Assert.Equal((62, 0, 4, 8, 1, 1), Geometry(bowieDoor.Copy));
+        CheckRoyalRouteFromControlledMap19Entry(path);
+    }
+
+    [Fact]
+    public void Map20SourceIdentityDriftReportsItsOwnField()
+    {
+        JsonObject document = SampleDocument();
+        document["maps"]![20]!["sourceSymbol"] = "Map19";
+        OriginalMapImportRejected rejected = Assert.IsType<OriginalMapImportRejected>(Admit(document));
+        Assert.Equal(OriginalMapImportFailureCode.InvalidMapProjection, rejected.Diagnostic.Code);
+        Assert.Equal("maps[20].sourceSymbol", rejected.Diagnostic.Field);
+    }
+
+    private static void CheckRoyalRouteFromControlledMap19Entry(string path)
+    {
+        GameSession session = Assert.IsType<PrivateOriginalMapGameSessionStarted>(
+            GameSession.StartPrivateOriginalMap(
+                new PrivateCanonicalMap3ImportReader(path), Request(AcceptedCanonicalDigest))).Session;
+        MapScenarioAccepted publicPackage = Assert.IsType<MapScenarioAccepted>(
+            new PublicSyntheticMap3PackageReader(Path.Combine(AppContext.BaseDirectory, "content"))
+                .Admit(new MapScenarioRequest(
+                    PublicSyntheticMap3PackageReader.PackageId, ContentProfile.PublicSynthetic)));
+        PrivateOriginalMapBattleBridgeSnapshot bridge = Assert.IsType<PrivateOriginalMapBattleBridgeBound>(
+            session.BindPrivateOriginalMapBattleBridge(
+                Assert.Single(publicPackage.Scenario.MapContext!.PublicSyntheticBattles.Definitions))).Bridge;
+        PrivateOriginalMapSessionSnapshot initial = session.PrivateOriginalMapSnapshot;
+        OriginalMapImportDefinition definition = initial.Definition;
+        OriginalMapExplorationRuntimeDefinition map19 = definition.RuntimeCatalog.Resolve(new MapId("map19"));
+
+        // Explicit test-only entry seed, not a natural Map 3 route or an init execution claim.
+        // Reuse the production state factories and validated snapshot without adding a runtime seed API.
+        static T State<T>(string method, params object[] arguments) => (T)typeof(T)
+            .GetMethod(method, BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(null, arguments)!;
+        PrivateOriginalMapSessionSnapshot entry = new(
+            definition, initial.Receipt, map19.WorkingLayout, 1, new MapPosition(26, 30),
+            lastTraversal: null, controlledStepCopyApplied: false, lastLayoutMutation: null,
+            zone601: State<PrivateOriginalMapZone601State>(
+                "AstralZoneRepositioned", definition.Zone601!, definition.AstralZone!),
+            sarah: State<PrivateOriginalMapSarahState>(
+                "MessengerFollowerReady", definition.Sarah!, definition.AstralZone!, definition.MessengerAcceptance!),
+            entity142: State<PrivateOriginalMapEntity142State>(
+                "ReleaseRouteOccupancy", definition.Entity142!,
+                State<PrivateOriginalMapEntity142State>("Acknowledged", definition.Entity142!, 1L),
+                definition.MessengerAcceptance!),
+            castleGate: State<PrivateOriginalMapCastleGateState>("Completed", definition.CastleGate!),
+            currentRuntime: map19,
+            lastCrossMapTransition: (PrivateOriginalMapCrossMapTransitionReceipt)Activator.CreateInstance(
+                typeof(PrivateOriginalMapCrossMapTransitionReceipt), BindingFlags.Instance | BindingFlags.NonPublic,
+                binder: null, args: [definition.NorthMap19Transition!, 1L], culture: null)!);
+        typeof(GameSession).GetField("_privateOriginalMapSnapshot", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(session, entry);
+
+        string fixturePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+            "../../../../../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json"));
+        using JsonDocument fixture = JsonDocument.Parse(File.ReadAllText(fixturePath));
+        JsonElement route = fixture.RootElement.GetProperty("static").GetProperty("routeGraph")
+            .GetProperty("segments").EnumerateArray()
+            .Single(segment => segment.GetProperty("id").GetString() == "map19-entry-to-royal-warp");
+        JsonElement inputs = route.GetProperty("inputs");
+        JsonElement points = route.GetProperty("points");
+        Assert.Equal(38, inputs.GetArrayLength());
+        int zoneHits = 0;
+        for (int index = 0; index < inputs.GetArrayLength(); index++)
+        {
+            ExplorationDirection direction = inputs[index].GetString() switch
+            {
+                "Up" => ExplorationDirection.North,
+                "Down" => ExplorationDirection.South,
+                "Left" => ExplorationDirection.West,
+                "Right" => ExplorationDirection.East,
+                _ => throw new InvalidOperationException("Unknown route input."),
+            };
+            Assert.Equal(new MapPosition(points[index][0].GetInt32(), points[index][1].GetInt32()),
+                session.PrivateOriginalMapSnapshot.PlayerPosition);
+            PrivateOriginalMapPlayerLocomotionStarted move = session.BeginPrivateOriginalMapPlayerLocomotion(
+                new MoveExplorationCommand(direction));
+            PrivateOriginalMapSessionSnapshot after = move.Move.Snapshot;
+            Assert.Equal(entry.SimulationStep + index + 1, after.SimulationStep);
+            Assert.Same(entry.Receipt, after.Receipt);
+            Assert.Same(entry.Zone601, after.Zone601);
+            Assert.Same(entry.Sarah, after.Sarah);
+            Assert.Same(entry.Entity142, after.Entity142);
+            Assert.Same(entry.MessengerAcceptance, after.MessengerAcceptance);
+            Assert.Same(entry.CastleGate, after.CastleGate);
+            Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+            Assert.Null(after.LastSarah);
+            Assert.Null(after.LastEntity142Acknowledgement);
+            Assert.Null(after.LastAstralZone);
+            Assert.Null(after.LastMessengerAcceptance);
+            Assert.Null(after.LastCastleGate);
+            if (index < 37)
+            {
+                Assert.Same(map19, after.CurrentRuntime);
+                Assert.Equal(new MapPosition(points[index + 1][0].GetInt32(), points[index + 1][1].GetInt32()),
+                    after.PlayerPosition);
+                if (after.PlayerPosition == new MapPosition(29, 15) || after.PlayerPosition == new MapPosition(25, 13))
+                {
+                    zoneHits++;
+                    Assert.Equal(0x1400, after.WorkingLayout[after.PlayerPosition.X, after.PlayerPosition.Y] & 0x3C00);
+                }
+            }
+            else
+            {
+                PrivateOriginalMapCrossMapTransitionReceipt receipt =
+                    Assert.IsType<PrivateOriginalMapCrossMapTransitionReceipt>(move.Move.CrossMapTransition);
+                Assert.Equal(new MapPosition(23, 3), receipt.Trigger);
+                Assert.Equal(OriginalMapRuntimeAdmission.RoyalMap20TransitionCapability, receipt.Capability);
+                Assert.Equal((byte)3, move.Animation.OpaqueFacing);
+                Assert.Equal(new MapId("map20"), after.Map);
+                Assert.Equal(new MapPosition(23, 37), after.PlayerPosition);
+                Assert.Equal(2, after.CurrentArea.OneBasedRecordOrdinal);
+                Assert.Same(definition.RuntimeCatalog.Resolve(after.Map), after.CurrentRuntime);
+                Assert.Same(after.CurrentRuntime.WorkingLayout, after.WorkingLayout);
+                Assert.Equal("ms_map20_InitFunction", after.CurrentRuntime.SelectedInitIdentity);
+            }
+
+            for (int tick = 0; tick < 13 && session.PrivateOriginalMapPlayerLocomotion.IsMoving; tick++)
+            {
+                session.AdvancePrivateOriginalMapPlayerLocomotion();
+            }
+
+            Assert.False(session.PrivateOriginalMapPlayerLocomotion.IsMoving);
+        }
+
+        Assert.Equal(2, zoneHits);
+        Assert.True(entry.Zone601!.Flag601Set && entry.Sarah!.TemporaryRouteFlag256Set && entry.AstralZoneFlag260Set);
+        Assert.True(entry.Entity142!.Flag261Set && entry.Entity142.Flag602Set);
+        Assert.True(entry.MessengerAcceptance!.Accepted && entry.CastleGate!.Flag604Set);
+        Assert.Equal(PrivateOriginalMapBattleBridgeStatus.Ready, bridge.Status);
     }
 
     private static OriginalMapImportResult Admit(JsonObject document)
@@ -1350,7 +1496,103 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             },
             runtimeQuestions = new[] { "unsupported-natural-runtime" },
         });
-        return node!.AsObject();
+        JsonObject result = node!.AsObject();
+        AddSyntheticRoyalPassage(result);
+        return result;
+    }
+
+    private static void AddSyntheticRoyalPassage(JsonObject document)
+    {
+        JsonObject resources = document["resources"]!.AsObject();
+        // Clone only the already synthetic Map19 records, never original private payloads.
+        foreach ((string _, JsonNode? collection) in resources)
+        {
+            JsonArray rows = collection!.AsArray();
+            foreach (JsonObject source in rows.OfType<JsonObject>().ToArray())
+            {
+                string id = source["id"]!.GetValue<string>();
+                if (!id.Contains("Map19", StringComparison.Ordinal) && !id.Contains("map19", StringComparison.Ordinal) &&
+                    id != "MapSetupRoute19")
+                {
+                    continue;
+                }
+
+                JsonObject clone = JsonNode.Parse(source.ToJsonString()
+                    .Replace("Map19", "Map20", StringComparison.Ordinal)
+                    .Replace("map19", "map20", StringComparison.Ordinal)
+                    .Replace("Route19", "Route20", StringComparison.Ordinal))!.AsObject();
+                rows.Add(clone);
+            }
+        }
+
+        JsonObject map20 = document["maps"]!.AsArray()[20]!.AsObject();
+        map20["references"] = JsonNode.Parse(document["maps"]!.AsArray()[19]!["references"]!.ToJsonString()
+            .Replace("Map19", "Map20", StringComparison.Ordinal)
+            .Replace("Route19", "Route20", StringComparison.Ordinal));
+        JsonObject Find(string collection, string id) => resources[collection]!.AsArray()
+            .OfType<JsonObject>().Single(row => row["id"]!.GetValue<string>() == id);
+        JsonObject setup = Find("setupRoutes", "MapSetupRoute20");
+        setup["map"] = 20;
+        setup["flagVariants"] = JsonSerializer.SerializeToNode(new[] { 501, 609, 506, 543 }
+            .Select(flag => new { flag, setup = $"ms_map20_flag{flag}" }));
+        JsonArray entityRows = Find("entityLists", "ms_map20_Entities")["records"]!.AsArray();
+        JsonNode walking = entityRows[9]!.DeepClone();
+        while (entityRows.Count > 7) entityRows.RemoveAt(7);
+        entityRows.Add(walking);
+        Find("areaTables", "Map20s2_Areas")["records"]!.AsArray()[0]!["mainLayerEnd"]!["y"] = 45;
+        JsonArray words = Find("layouts", "Map19s1_Layout")["words"]!.AsArray();
+        words[Index(22, 4)] = OriginalMapTraversal.RightStairMask;
+        words[Index(23, 3)] = OriginalMapTraversal.RightStairMask | 0x1000;
+        words[Index(29, 15)] = 0x1400;
+        words[Index(25, 13)] = 0x1400;
+        JsonObject warp = Find("warpEventTables", "Map19s6_WarpEvents");
+        warp["address"] = 673358;
+        warp["sourceKind"] = "warpEvents";
+        warp["records"] = JsonSerializer.SerializeToNode(Enumerable.Range(0, 7).Select(index => new
+        {
+            trigger = Point(index == 1 ? 23 : 60, index == 1 ? 3 : index),
+            scrollMode = 0,
+            retainsCoordinates = false,
+            scrollDirection = (int?)null,
+            targetMap = 20,
+            destination = Point(23, 37),
+            facing = 3,
+            reserved = 0,
+        }));
+        JsonObject zone = Find("zoneEventHandlers", "ms_map19_ZoneEvents");
+        zone["address"] = 339348;
+        zone["kind"] = "table";
+        zone["records"] = JsonSerializer.SerializeToNode(new[]
+        {
+            new { address = 339348, kind = "default", relativeOffset = 32,
+                resolvedTargetAddress = 339380, x = 253, y = 0 },
+        });
+    }
+
+    [Theory]
+    [InlineData("targetMap", 21)]
+    [InlineData("facing", 1)]
+    [InlineData("scrollMode", 16)]
+    [InlineData("reserved", 1)]
+    public void RoyalWarpRejectsAlteredSourceOperands(string field, int value)
+    {
+        JsonObject document = SampleDocument();
+        JsonObject table = document["resources"]!["warpEventTables"]!.AsArray().OfType<JsonObject>()
+            .Single(row => row["id"]!.GetValue<string>() == "Map19s6_WarpEvents");
+        table["records"]!.AsArray()[1]![field] = value;
+        AssertCode(PrivateCanonicalMap3ImportReader.AdmitSemanticDocumentForTests(DocumentBytes(document)),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void RoyalWarpRejectsChangedDefaultZoneTarget()
+    {
+        JsonObject document = SampleDocument();
+        JsonObject table = document["resources"]!["zoneEventHandlers"]!.AsArray().OfType<JsonObject>()
+            .Single(row => row["id"]!.GetValue<string>() == "ms_map19_ZoneEvents");
+        table["records"]!.AsArray()[0]!["resolvedTargetAddress"] = 339382;
+        AssertCode(PrivateCanonicalMap3ImportReader.AdmitSemanticDocumentForTests(DocumentBytes(document)),
+            OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
     private static object[] Resource(string id) => [new { id }];

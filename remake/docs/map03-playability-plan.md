@@ -48,10 +48,19 @@ bounded gate state is open, moving north from the accepted approach applies the 
 warp and atomically replaces the authoritative runtime with the catalog-owned Map 19 layout, traversal,
 area, block, selected-setup, init-identity, and entity data. The destination is `(26,30)` with opaque
 facing `1`; Godot projects its typed position through the existing traversal diagnostics and hides the
-Map 3-only atlas. A fresh session still starts from controlled Map 3. This does not execute the selected
-Map 19 setup/init/events/entities or establish natural Battle 01 admission. Final guard facing, decoded
-text, original Map 19 rendering, animation, audio, timing, natural execution order, and Battle 01 remain
-Unknown. This is not a general zone-event, warp, or script interpreter. The existing live
+Map 3-only atlas. From Map 19 entry, the accepted 38-input royal route crosses the two default RTS
+zones and reaches `(22,4)`. Moving east resolves the stair target `(23,3)` and commits warp record 2
+into the catalog-owned Map 20 runtime at `(23,37)`, area record 2, with opaque facing `3`. The same
+Application transition reducer retains the Map 3 route flags, actor state, import receipt, and manual
+battle bridge; per-operation receipts retain the existing reset boundary. Godot continues to project
+typed traversal diagnostics. A fresh session still starts from controlled Map 3.
+
+The Map 20 endpoint is **before its selected init executes**, not palace player-ready admission.
+Map 19/20 setup selection is fixed to the admitted default data; init, generic events, entities, music,
+and rendering have no new execution consumer. Further Map 20 movement remains diagnostic traversal.
+Final guard facing, decoded text, original rendering, animation, audio, timing, natural caller state,
+execution order, and Battle 01 remain **Unknown**. This is not a general zone-event, warp, or script
+interpreter. The existing live
 route-actor glyphs visibly follow committed positions and stop drawing Sarah after Application releases
 her route occupancy, without new Godot selection rules or original-sprite claims. An explicit private-local presentation
 option also projects the live current area's non-zero second-layer offset from the authoritative
@@ -87,8 +96,46 @@ presentation timing, and simulation-step parity remain outside this bounded slic
 Entity 142 stand, Astral handoff, and messenger acceptance are downstream of the admitted Sarah route
 in one controlled evidence path, but this product capability does not claim route uniqueness,
 alternate prompt results, or general flag-driven setup/init execution. These bounded transactions and
-the north Map 3-to-Map 19 relocation still do not establish natural Battle 01 admission,
-alternate-setup behavior, Map 19 event execution, or full natural continuity.
+the north Map 3-to-Map 19 and royal Map 19-to-Map 20 relocations still do not establish natural Battle
+01 admission, alternate-setup behavior, general map event execution, or full natural continuity.
+
+## Royal Route Acceptance Boundary
+
+**Confirmed:** the accepted [castle unlock source owner](../../docs/research/map3-castle-battle-unlock.md)
+and its [static fixture](../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json) own
+`map19-entry-to-royal-warp`, its 38 inputs and points, the default zone cells `(29,15)` and `(25,13)`,
+and `Map19s6_WarpEvents` record 2. Content requires the exact no-scroll destination operands and the
+default zone table resolving to `Map19_DefaultZoneEvent` at `0x52DB4`, a direct RTS. The existing
+traversal handles those zero-effect cells without a new event reducer.
+
+The pinned Map 19 init source checks flags 605/608 and conditionally calls `cs_53104`, whose bounded
+effect moves entity 140 to `(63,63)` facing left. The royal route avoids both that position and its
+default `(16,5)` position. This known static shape does not establish natural caller flags; init
+execution remains **Unsupported**, and natural reach and ordering remain **Unknown**. The existing
+Battle 01 H3 observation starts at a bridge-seeded Map 21 terminal and does not close this continuity.
+
+The Application test `RoyalExitCommitsMap20BeforeInitAndPreservesRouteState` exercises the route with
+minimal public synthetic stair/zone facts. The existing optional Content test additionally reads the
+accepted ignored canonical import, explicitly seeds a validated Map 19 entry snapshot at `(26,30)`
+with completed Map 3 route state, and executes every fixture input through the current Application
+session. It checks each point, both default zones, the destination catalog instance and area, facing,
+unchanged flags and import receipt, cleared transient receipts, and the unchanged ready manual bridge.
+The test-only seed does not prove the preceding natural Map 3 route or execute either map's init.
+
+After the locked build, reproduce the private check from `remake/`:
+
+```powershell
+$env:SF2_PRIVATE_CANONICAL_MAP_IMPORT = [IO.Path]::GetFullPath('../local/derived/canonical-map-import.json')
+try {
+    dotnet test tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter 'FullyQualifiedName~AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput'
+} finally {
+    Remove-Item Env:SF2_PRIVATE_CANONICAL_MAP_IMPORT
+}
+```
+
+The caller supplies the accepted worktree-local input read-only. Without that environment variable,
+the optional test returns without running private checks; public test success alone is not private
+route evidence. Private payloads and test reports remain ignored.
 
 The current immutable snapshot is reconstructed by each specialized session reducer. Preserving the
 new castle-gate state across those boundaries exposed repeated mechanical pass-through work. That is a
@@ -97,9 +144,10 @@ capability or centralize event semantics now.
 
 ## Ordered Queue
 
-1. **Battle 01 admission after Map 19 entry:** close the next evidence-owned handoff from the admitted
-   Map 19 runtime without treating the existing manual synthetic battle bridge as original admission
-   or inventing setup, flag, program, entity, or natural-route semantics.
+1. **Map 20 lifecycle after the royal entry:** follow accepted evidence from the explicit pre-init
+   endpoint, without treating the existing manual synthetic battle bridge as original admission or
+   inventing setup, flag, program, entity, or natural-route semantics. Natural Battle 01 continuity
+   remains a later acceptance boundary.
 2. **Setup entities, audio, and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
    door, warp, roof, music, and audio behavior without promoting Unknown presentation semantics.
 

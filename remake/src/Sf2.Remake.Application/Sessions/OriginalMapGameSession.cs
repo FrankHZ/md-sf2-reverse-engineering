@@ -251,7 +251,9 @@ public sealed record PrivateOriginalMapSessionSnapshot
         if (lastCrossMapTransition is not null)
         {
             OriginalMapCrossMapTransitionDefinition admitted =
-                definition.NorthMap19Transition ?? throw new ArgumentException(
+                (lastCrossMapTransition.DestinationMap == new MapId(OriginalMapRuntimeAdmission.Map20Id)
+                    ? definition.RoyalMap20Transition
+                    : definition.NorthMap19Transition) ?? throw new ArgumentException(
                     "A cross-map receipt requires its admitted transition definition.",
                     nameof(lastCrossMapTransition));
             if (lastCrossMapTransition.SimulationStep != simulationStep ||
@@ -1336,7 +1338,7 @@ public sealed partial class GameSession
             return Diagnostic(
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.runtimeCatalog",
-                "The admitted definition does not retain the exact Map 3 and Map 19 runtime catalog.");
+                "The admitted definition does not retain the exact Map 3, Map 19 and Map 20 runtime catalog.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedNorthMap19Transition(
@@ -1346,6 +1348,15 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.northMap19Transition",
                 "The admitted definition does not retain the exact bounded Map 3 north transition.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedRoyalMap20Transition(
+                definition.RoyalMap20Transition))
+        {
+            return Diagnostic(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.royalMap20Transition",
+                "The admitted definition does not retain the exact bounded Map 19 royal transition.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedBlocksetProjection(
