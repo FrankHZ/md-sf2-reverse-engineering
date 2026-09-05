@@ -53,8 +53,8 @@ def test_fixture_is_closed_public_static_contract() -> None:
         "battleMapRowIndex": 1,
         "battleSpritesetEntries": 9,
         "beforeBattleCommands": 128,
-        "extensionLogicalInputs": 38,
-        "extensionRouteNodes": 40,
+        "extensionLogicalInputs": 46,
+        "extensionRouteNodes": 48,
         "h1Fields": 47,
         "map21WarpRows": 2,
         "map40WarpRows": 2,
@@ -80,15 +80,14 @@ def test_fixture_is_closed_public_static_contract() -> None:
         ],
     }
     route = static["extensionRoute"]
-    assert route["nodeCount"] == 40 and route["inputCount"] == 38
-    assert route["sha256"] == "F6D0835A9027D64BD1799735FB0C5460D095DA9474D99CA8C171E972F6386C73"
+    assert route["nodeCount"] == 48 and route["inputCount"] == 46
+    assert route["sha256"] == "68CBEBD2BF8A69054CCCEF7719BAFF5E1B8190B388E849BB091375DBA1D771AB"
     assert route["map40WildcardCandidates"] == [
-        {"point": [4, 12], "inputCount": 20},
-        {"point": [5, 12], "inputCount": 21},
         {"point": [14, 12], "inputCount": 28},
         {"point": [15, 12], "inputCount": 29},
-        {"point": [25, 12], "inputCount": 39},
     ]
+    assert route["segments"][2]["to"] == [14, 12]
+    assert route["segments"][3]["from"]["point"] == [14, 12]
     assert route["occupancy"] == [{"map": 21, "point": [6, 16]}, {"map": 40, "entityCount": 0}]
     spine = static["admission"]
     assert spine["mainLoop"]["orderedCalls"] == [
@@ -248,6 +247,13 @@ def test_route_occupancy_retained_projection_and_private_cutscene_prose_guards(
     surface["layout"][1] = 0xC000
     with pytest.raises(ValueError, match="static route is blocked"):
         admission._shortest(surface, (0, 0), (2, 0), controller)
+
+    event_surface = {
+        "width": 3,
+        "layout": [0, 0, 0, 0, 0x1000, 0x1400, 0, 0, 0],
+        "area": (0, 0, 2, 2),
+    }
+    assert admission._warp_trigger_points(event_surface, (0xFF, 1)) == [(1, 1)]
 
     region_rows = """table_BattleRegionCutscenes:
 dc.b BATTLE_TO_MOUN

@@ -234,12 +234,15 @@ Data-side directory inventory and ROM parity:
   fallback for the source-derived Map 3/19/20/21 castle-to-unlock graph, zones, warps, occupancy,
   and F401/F256 program semantics; natural execution and Battle 01 admission remain Unknown.
 - [map3-battle01-admission.md](./research/map3-battle01-admission.md): the public-safe H2 static
-  extension from the retained Map 21 terminal through Maps 40/57, Battle 01 admission/init, structural
-  cutscene IDs/hashes, and the pre-first-turn boundary; natural continuity, caller order, prose, and
-  player-ready/8C claims remain Unknown.
+  extension from the retained Map 21 terminal through Maps 40/57 and the one-case H3 continuation
+  from an explicit non-natural R2a follower-ready → R2b terminal bridge through original admission,
+  turn generation, actor dispatch, and the first stable player-input seam; omitted natural bridge
+  continuity, route-carried natural state, prose, later control, victory, and complete 8C remain
+  Unknown.
 - [map3-battle01-turn-control.md](./research/map3-battle01-turn-control.md): the public-safe H2
-  Battle 01 first-turn consumer/control-to-pre-resolution spine; natural actor/control,
-  input/action/path/target, resolution, after-turn, multi-round, victory, and player-ready remain Unknown.
+  Battle 01 first-turn consumer/control-to-pre-resolution spine; the later explicit-bridge H3 reaches
+  only its first stable player-input seam, while wholly natural actor/control, post-seam input/action/
+  path/target, resolution, after-turn, multi-round, and victory remain Unknown.
 - [map3-battle01-action-effect.md](./research/map3-battle01-action-effect.md): the public-safe H2
   ApplyActionEffect dispatcher and three Apply-to-DropEnemyItem caller contexts; actual branch/result/
   reward/drop/follow-up/post-effect facts remain Unknown.

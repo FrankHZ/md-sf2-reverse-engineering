@@ -1,7 +1,7 @@
 # Source Coverage and Research Cadence
 
 - Status: **Confirmed** for the pinned-source inventory and current evidence counters
-- Evidence date: 2026-09-02
+- Evidence date: 2026-09-05
 - ROM: USA retail, SHA-256 `9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9`
 - Source baseline: `ShiningForceCentral/SF2DISASM` commit
   `c834c652b6862bc5679fd7f69a38a7093206efc6`
@@ -25,9 +25,9 @@ It says that the file has been reached, not that every instruction in the file i
 | Executable code-file reach | 98.45% | 381 indexed code files / 387 pinned code files; **not** line or function coverage |
 | H2 data-ASM inventory | 100.00% | 1,690 / 1,690 pinned data ASM files belong to deterministic inventory rails |
 | Indexed data-file reach | 60.18% | 1,017 / 1,690: 980 H1 files plus 37 explicitly domain-bound Z80 songs |
-| H2 fixture files | 102 | Deterministic source/ROM contracts, often covering complete corpora |
-| H3 fixture files | 95 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, its player locomotion/animation matrix, Map 3 natural opening, and its accepted messenger continuation are runtime-confirmed at their bounded seams |
-| Address bindings | 3,101 | Checked ROM/RAM relationships between fixtures and symbols/state |
+| H2 fixture files | 103 | Deterministic source/ROM contracts, often covering complete corpora |
+| H3 fixture files | 96 | Runtime contracts, often containing multiple cases; the 15-case service-entry/return rail, seven-case Church Raise rail, eleven-case Church Cure rail, five-case Church Save lifecycle rail, Map 3 admitted-start controlled seam, its player locomotion/animation matrix, Map 3 natural opening, its accepted messenger continuation, and the explicit-bridge Battle 01 player-ready continuation are runtime-confirmed at their bounded seams |
+| Address bindings | 3,111 | Checked ROM/RAM relationships between fixtures and symbols/state |
 | H2 ROM table ranges | 25 | Deterministic source/ROM dual-path extraction ranges |
 
 The H2 surface now covers all 1,690 data ASM files. It includes the complete 1,390-file map ASM build
@@ -63,17 +63,25 @@ derives the legal Map 21 → 40 → 57 extension plus the static CheckBattle/Bat
 and pre-first-turn spine. Its structural cutscene IDs/hashes and presentation-owner joins deliberately
 exclude prose, runtime state, natural continuity, first actor, player readiness, and complete 8C.
 
+The one-case `sf2-map3-battle01-player-ready-runtime-v1` rail begins at the accepted R2a
+follower-ready seam and declares an explicit non-natural bridge to the retained R2b Map 21 terminal.
+Original control then executes all 46 field inputs, both warps, Map 57/Battle 01 admission, before/start
+program routing, load, turn generation, actor-1 dispatch, and the first stable player movement-input
+seam. It confirms only that post-bridge chronology and state; natural R2a → R2b continuity, a wholly
+natural route-carried snapshot/actor, later control, victory, prose, and complete 8C remain Unknown.
+
 The `sf2-map3-battle01-turn-control-static-v1` rail begins only after retained turn generation at
 `BattleLoop` `0x23B40`, joins the first turn consumer, player/AI routing, Battle 01 commandsets, and
 common action construction, and ends at the unentered first ApplyActionEffect edge. It is H2-only:
-natural actor/control selection, input chronology, action/target/path, resolution, after-turn,
-multi-round, victory, and player-ready remain in one closed runtime Unknown register.
+wholly natural actor/control selection and route-carried state, input after the newly observed stable
+player-ready seam, action/target/path, resolution, after-turn, multi-round, and victory remain in one
+closed runtime Unknown register.
 
 The `sf2-map3-battle01-action-effect-static-v1` rail retains that R3a edge and closes only the
 `ApplyActionEffect` selector/call/return spine plus the three direct Apply-to-DropEnemyItem contexts.
 It adds no H3 fixture: actual dispatch reach, per-target result, status/death/EXP/gold/drop/follow-up,
-post-effect arrival, after-turn, multi-round, victory, and player-ready remain one closed runtime
-Unknown register.
+post-effect arrival, after-turn, multi-round, and victory remain one closed runtime Unknown register.
+The later bounded H3 stops at the earlier player-ready seam and does not enter this dispatcher.
 
 The `sf2-map3-battle01-action-completion-static-v1` rail retains the R3b projection and its
 battle-actions 47-record/29-path boundary, then statically closes the three DropEnemyItem return
@@ -85,8 +93,8 @@ actual return, replay, after-turn, next-turn dispatch, and victory remain **Unkn
 The `sf2-map3-battle01-turn-finalization-static-v1` rail starts at that unentered `0x24106`
 continuation and statically guards caller replay/teardown/reload plus BattleLoop cleanup/count,
 after-turn, outcome edges, and the unentered `0x23BB2 -> 0x23B40` backedge. It is H2-only;
-natural continuity and all reached branches/results, player readiness, victory/defeat bodies, and R4
-remain **Unknown**.
+natural continuity and all reached branches/results, player readiness after the first observed seam,
+victory/defeat bodies, and R4 remain **Unknown**.
 
 The `sf2-map3-battle01-victory-return-static-v1` rail starts at the unentered Victory body
 `0x23CBA`, retains the selected after-battle route/program, `F401` clear then `F501` set,
@@ -668,7 +676,11 @@ field-menu NotReached, later maps, Battle 01, presentation cadence, and 8C/H4 re
 one-case continuation.
 The static R2c admission extension then retains that boundary while checking the Map 21/40 warps,
 Map 57 Battle 01 row, initialization, structural before/start cutscene routing, and turn-generation
-position. It records no natural caller order or runtime continuity and creates no H3 fixture.
+position. The subsequent one-case H3 rail uses an explicit non-natural R2a follower-ready → R2b
+terminal bridge, then confirms original Map 21/40/57 traversal, Battle 01 admission, turn generation,
+actor-1 dispatch, and the stable player movement-input seam. It does not confirm the omitted natural
+bridge continuity, a wholly natural route-carried snapshot/actor, later battle control, victory,
+dialogue prose, or complete 8C presentation.
 The map-script engine is now structurally closed as 90 slots, 82 non-filler opcodes, eight filler
 slots, 83 unique handlers, and 93 macro forms. A complete code/data scan owns all 13,515 macro calls
 and makes eleven unused definitions explicit. All 133 primary operand fields and their 234 bytes are

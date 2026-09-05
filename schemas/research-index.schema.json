@@ -101,6 +101,10 @@
                             "static.indexBindings.map3EntityEvents"
                           ] },
                           { "enum": [
+                            "static.functions.ProcessBattleEntityControlPlayerInput",
+                            "static.functions.playerReadyPc"
+                          ] },
+                          { "enum": [
                             "eventRandomBattleState.functionAddresses.entryAddress",
                             "eventRandomBattleState.completionFlagGate.callAddress",
                             "eventRandomBattleState.requestWriteSequence.setFlagCallAddress",

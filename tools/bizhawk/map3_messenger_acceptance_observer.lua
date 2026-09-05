@@ -1,4 +1,6 @@
 local config = assert(dofile(assert(os.getenv("SF2_H3_CONFIG"), "SF2_H3_CONFIG is not set")))
+local extension_enabled = config.extension ~= nil
+local OWNER = extension_enabled and config.extension.owner or "map3-messenger-acceptance"
 
 -- R2a consumes the accepted controlled R1/R2 setup, then continues through
 -- the original messenger body only.  It never advances into the Castle route.
@@ -42,6 +44,19 @@ local messenger_entry_seen, prompt_return_seen = false, false
 local text_ids, speaker_operands, follow_commands = {}, {}, {}
 local follower_command_seen, follower_service_seen = false, false
 local messenger_result = nil
+local extension_plan_index, extension_warp_index = 1, 1
+local extension_control_ready, extension_move_committed = false, false
+local extension_wait_after_warp, extension_bridge_pending = false, false
+local extension_bridge_seeded, extension_route_complete = false, false
+local extension_progress_frame = nil
+local extension_chronology, extension_turn_entries = {}, {}
+local extension_before_seen, extension_before_script_seen = false, false
+local extension_load_seen, extension_start_seen, extension_start_script_seen = false, false, false
+local extension_activate_seen, extension_region_seen, extension_spawn_seen = false, false, false
+local extension_turn_order_seen, extension_player_control_seen = false, false
+local extension_control_entity_seen, extension_ready_seen = false, false
+local extension_player_actor, extension_bridge_result, extension_result = nil, nil, nil
+local extension_action_character, extension_action_physical, extension_action_address = nil, nil, nil
 -- Keep every source-plan transition and original interaction well inside the
 -- host-side 300-second launch timeout. This is a harness watchdog only, not
 -- an original timing assertion.
@@ -51,6 +66,7 @@ local ROUTE_MOVE_STALL_FRAME_LIMIT = 120
 -- controller callbacks, so an unproductive loop closes through typed cleanup.
 local ROUTE_PHASE_WATCHDOG_FRAME_LIMIT = 1200
 local MESSENGER_PHASE_WATCHDOG_FRAME_LIMIT = 7200
+local EXTENSION_PHASE_WATCHDOG_FRAME_LIMIT = 1800
 
 local function status(value)
     local file = assert(io.open(config.statusPath, "a"))
@@ -62,18 +78,23 @@ local function reg(name) return emu.getregister("M68K " .. name) & 0xFFFFFFFF en
 
 local function read_span(address, length)
     local values = {}
-    for offset = 0, length - 1 do values[#values + 1] = memory.read_u8(address + offset, "M68K BUS") end
+    for offset = 0, length - 1 do
+        values[#values + 1] = memory.read_u8((address + offset) & 0xFFFFFF, "M68K BUS")
+    end
     return values
 end
 
 local function restore_span(address, expected)
-    for offset, value in ipairs(expected) do memory.write_u8(address + offset - 1, value, "M68K BUS") end
+    for offset, value in ipairs(expected) do
+        memory.write_u8((address + offset - 1) & 0xFFFFFF, value, "M68K BUS")
+    end
 end
 
 local function first_mismatch(domain, address, expected)
     for offset, value in ipairs(expected) do
-        local actual = memory.read_u8(address + offset - 1, "M68K BUS")
-        if actual ~= value then return { domain = domain, address = address + offset - 1, expected = value, actual = actual } end
+        local current = (address + offset - 1) & 0xFFFFFF
+        local actual = memory.read_u8(current, "M68K BUS")
+        if actual ~= value then return { domain = domain, address = current, expected = value, actual = actual } end
     end
     return nil
 end
@@ -264,7 +285,36 @@ local function note_messenger_progress()
 end
 
 local function enforce_route_phase_watchdog()
-    if not route_started or finish_pending or pending_failure then return end
+    if finish_pending or pending_failure then return end
+    if extension_enabled and extension_progress_frame then
+        if frame_count - extension_progress_frame > EXTENSION_PHASE_WATCHDOG_FRAME_LIMIT then
+            local entity = config.ram.ENTITY_DATA
+            local tile = config.ram.MAP_TILE_SIZE
+            local map = memory.read_u8(config.ram.CURRENT_MAP, "M68K BUS")
+            local x = math.floor(memory.read_u16_be(entity + config.ram.ENTITYDEF_OFFSET_X, "M68K BUS") / tile)
+            local y = math.floor(memory.read_u16_be(entity + config.ram.ENTITYDEF_OFFSET_Y, "M68K BUS") / tile)
+            local facing = memory.read_u8(entity + config.ram.ENTITYDEF_OFFSET_FACING, "M68K BUS")
+            local action_script, action_wait = nil, nil
+            if extension_action_address then
+                action_script = memory.read_u32_be(
+                    extension_action_address + config.ram.ENTITYDEF_OFFSET_ACTSCRIPTADDR, "M68K BUS"
+                ) & 0xFFFFFF
+                action_wait = memory.read_u8(
+                    extension_action_address + config.ram.ENTITYDEF_OFFSET_ACTSCRIPTWAITTIMER, "M68K BUS"
+                )
+            end
+            fail("extension-phase-watchdog", nil, string.format(
+                "player-ready extension stalled: phase=%s map=%d x=%d y=%d facing=%d plan=%d/%d warp=%d/%d lastCallback=%s/%s actionCharacter=%s actionPhysical=%s actionScript=%s actionWait=%s",
+                phase, map, x, y, facing, extension_plan_index, #config.extension.inputPlan,
+                extension_warp_index, #config.extension.warps,
+                tostring(last_callback_role), tostring(last_callback_pc),
+                tostring(extension_action_character), tostring(extension_action_physical),
+                tostring(action_script), tostring(action_wait)
+            ))
+        end
+        return
+    end
+    if not route_started then return end
     if phase == "messenger" then
         if messenger_progress_frame and frame_count - messenger_progress_frame <= MESSENGER_PHASE_WATCHDOG_FRAME_LIMIT then return end
         fail("case-watchdog", nil, string.format(
@@ -317,6 +367,72 @@ end
 local function flag_is_set(flag)
     local address = config.ram.GAME_FLAGS + math.floor(flag / 8)
     return (memory.read_u8(address, "M68K BUS") & (0x80 >> (flag % 8))) ~= 0
+end
+
+local function write_flag(flag, value)
+    local address = config.ram.GAME_FLAGS + math.floor(flag / 8)
+    local mask = 0x80 >> (flag % 8)
+    local current = memory.read_u8(address, "M68K BUS")
+    if value then current = current | mask else current = current & ((~mask) & 0xFF) end
+    memory.write_u8(address, current, "M68K BUS")
+    assert(flag_is_set(flag) == value, "harness flag seed readback drift for F" .. flag)
+end
+
+local function append_extension_trace(value)
+    extension_chronology[#extension_chronology + 1] = value
+    extension_progress_frame = frame_count
+end
+
+local function seed_extension_terminal()
+    assert(extension_enabled and not extension_bridge_seeded, "R2b terminal bridge seeded more than once")
+    local bridge = config.extension.bridge
+    local map, x, y, facing = current_position()
+    assert(
+        map == bridge.map and x == bridge.player.x and y == bridge.player.y
+            and (facing & config.ram.DIRECTION_MASK) == bridge.player.facing,
+        string.format(
+            "harness bridge landing drift: expected=(%d,%d,%d,%d) actual=(%d,%d,%d,%d)",
+            bridge.map, bridge.player.x, bridge.player.y, bridge.player.facing,
+            map, x, y, facing & config.ram.DIRECTION_MASK
+        )
+    )
+    for _, flag in ipairs(bridge.setFlags) do write_flag(flag, true) end
+    for _, flag in ipairs(bridge.clearFlags) do write_flag(flag, false) end
+
+    local physical = memory.read_u8(
+        config.ram.ENTITY_INDEX_LIST + bridge.guard.entityIndexSelector, "M68K BUS"
+    )
+    local address = config.ram.ENTITY_DATA + physical * config.ram.ENTITYDEF_SIZE
+    local tile = config.ram.MAP_TILE_SIZE
+    memory.write_u16_be(address + config.ram.ENTITYDEF_OFFSET_X, bridge.guard.x * tile, "M68K BUS")
+    memory.write_u16_be(address + config.ram.ENTITYDEF_OFFSET_Y, bridge.guard.y * tile, "M68K BUS")
+    memory.write_u16_be(address + config.ram.ENTITYDEF_OFFSET_XDEST, bridge.guard.x * tile, "M68K BUS")
+    memory.write_u16_be(address + config.ram.ENTITYDEF_OFFSET_YDEST, bridge.guard.y * tile, "M68K BUS")
+    local raw_facing = memory.read_u8(address + config.ram.ENTITYDEF_OFFSET_FACING, "M68K BUS")
+    memory.write_u8(
+        address + config.ram.ENTITYDEF_OFFSET_FACING,
+        (raw_facing & ((~config.ram.DIRECTION_MASK) & 0xFF)) | bridge.guard.facing,
+        "M68K BUS"
+    )
+
+    extension_bridge_result = {
+        map = map,
+        player = { x = x, y = y, facing = facing & config.ram.DIRECTION_MASK },
+        guard = { character = bridge.guard.character, physicalEntity = physical,
+            x = bridge.guard.x, y = bridge.guard.y, facing = bridge.guard.facing },
+        setFlags = bridge.setFlags,
+        clearFlags = bridge.clearFlags,
+    }
+
+    memory.write_u32_be(config.ram.RANDOM_SEED, bridge.randomSeed, "M68K BUS")
+    memory.write_u32_be(config.ram.RANDOM_SEED_COPY, bridge.randomSeedCopy, "M68K BUS")
+    memory.write_u8(config.ram.FRAME_COUNTER, bridge.frameCounter, "M68K BUS")
+    memory.write_u32_be(config.ram.SECONDS_COUNTER, bridge.secondsCounter, "M68K BUS")
+    memory.write_u8(config.ram.SECONDS_COUNTER_FRAMES, bridge.secondsCounterFrames, "M68K BUS")
+
+    extension_bridge_seeded, extension_control_ready, phase = true, true, "extension-route"
+    append_extension_trace("harness-bridge:seed-r2b-terminal")
+    status("milestone:r2b-terminal-bridge-seeded")
 end
 
 local function logical_input_edge(map, x, y, input, waypoint)
@@ -663,7 +779,68 @@ local function bounded_route_wait(waypoint, map, x, y, reason)
     end
 end
 
+local function set_extension_input(input)
+    local buttons = {}
+    if input ~= "" then buttons[input] = true end
+    joypad.set(buttons, 1)
+    joypad.set({}, 2)
+    last_input = input
+end
+
+local function extension_input()
+    if phase == "extension-bridge-requested" then
+        local bridge = config.extension.bridge
+        memory.write_u16_be(config.ram.MAP_EVENT_TYPE, bridge.eventType, "M68K BUS")
+        memory.write_u8(config.ram.MAP_EVENT_PARAM_1, bridge.eventParam1, "M68K BUS")
+        memory.write_u8(config.ram.MAP_EVENT_PARAM_2, bridge.map, "M68K BUS")
+        memory.write_u8(config.ram.MAP_EVENT_PARAM_3, bridge.player.x, "M68K BUS")
+        memory.write_u8(config.ram.MAP_EVENT_PARAM_4, bridge.player.y, "M68K BUS")
+        memory.write_u8(config.ram.MAP_EVENT_PARAM_5, bridge.player.facing, "M68K BUS")
+        phase = "extension-bridge-injected"
+        append_extension_trace("harness-bridge:event-word-injected")
+        status("milestone:r2b-terminal-bridge-event-injected")
+        set_extension_input("")
+        return
+    end
+    if phase == "extension-route" then
+        if not extension_control_ready then set_extension_input(""); return end
+        local map, x, y = current_position()
+        local transition = config.extension.inputPlan[extension_plan_index]
+        if transition and map == transition.to.map and x == transition.to.x and y == transition.to.y then
+            assert(extension_move_committed, "R2c route reached a destination without original movement commit")
+            extension_plan_index = extension_plan_index + 1
+            extension_move_committed = false
+            append_extension_trace("original:field-input:" .. transition.waypoint .. ":" .. transition.input)
+            transition = config.extension.inputPlan[extension_plan_index]
+        end
+        if not transition then
+            if map == config.extension.admission.map then
+                extension_route_complete, phase = true, "extension-battle"
+                append_extension_trace("original:r2c-route-complete")
+                status("milestone:r2c-natural-extension-complete")
+            end
+            set_extension_input("")
+            return
+        end
+        if map == transition.from.map and x == transition.from.x and y == transition.from.y then
+            if extension_move_committed then set_extension_input("")
+            else set_extension_input(transition.input) end
+            return
+        end
+        set_extension_input("")
+        return
+    end
+    if phase == "extension-battle" or phase == "extension-before"
+        or phase == "extension-load" or phase == "extension-start"
+        or phase == "extension-turns" then
+        set_extension_input((frame_count % 12 < 4) and "C" or "")
+        return
+    end
+    set_extension_input("")
+end
+
 local function route_input()
+    if extension_enabled and extension_progress_frame then extension_input(); return end
     if not route_started or finish_pending then set_input("", "idle"); return end
     if phase == "messenger" then
         -- The original dialogue and Yes/No UI consume normal controller C.
@@ -767,10 +944,12 @@ local function add_callback(address, role, handler)
     assert(callbacks[address] == nil, "more than one callback registered at physical PC " .. string.format("%X", address))
     callbacks[address] = { role = role, id = event.on_bus_exec(function()
         if pending_failure then return end
-        if route_started then last_callback_role, last_callback_pc = role, address end
+        if route_started or extension_progress_frame then
+            last_callback_role, last_callback_pc = role, address
+        end
         local ok, message = pcall(handler)
         if not ok then fail(role, address, message) end
-    end, address, "sf2-map3-messenger-acceptance-" .. role, "M68K BUS") }
+    end, address, "sf2-" .. OWNER .. "-" .. role, "M68K BUS") }
     callback_order[#callback_order + 1] = address
 end
 
@@ -864,7 +1043,13 @@ end)
 
 -- "r1-main-loop"
 add_callback(config.r1.functions.mainLoopAddress, "r1-main-loop", function()
-    if phase == "await-r1-main-loop" then phase = "await-r1-exploration"; append_trace("r1", "main-loop") end
+    if phase == "await-r1-main-loop" then
+        phase = "await-r1-exploration"
+        append_trace("r1", "main-loop")
+    elseif extension_enabled and phase == "extension-bridge-injected" then
+        phase = "extension-bridge-loading"
+        append_extension_trace("original:MainLoop-after-harness-bridge")
+    end
 end)
 
 -- "r1-exploration-loop"
@@ -944,7 +1129,21 @@ add_callback(config.r1.functions.waitForEventAddress, "follower-ready-wait", fun
         )
         zone_return_seen, follower_wait_seen, phase = true, true, "follower-ready"
         status("milestone:messenger-followers-ready")
-        finish_pending = true
+        if extension_enabled then
+            route_started, route_control_ready = false, false
+            extension_bridge_pending, phase = true, "extension-bridge-requested"
+            extension_progress_frame = frame_count
+            append_extension_trace("r2a:follower-ready")
+            append_extension_trace("harness-bridge:request-map21-terminal")
+            status("milestone:r2b-terminal-bridge-requested")
+        else
+            finish_pending = true
+        end
+    elseif extension_enabled and phase == "extension-bridge-loading" then
+        seed_extension_terminal()
+    elseif extension_enabled and phase == "extension-route" and extension_wait_after_warp then
+        extension_wait_after_warp, extension_control_ready = false, true
+        append_extension_trace("original:post-warp-WaitForEvent")
     end
 end)
 
@@ -975,6 +1174,19 @@ add_callback(config.functions.esc02_controlCharacter, "input-controller", functi
                 )
             )
         end
+    elseif extension_enabled and phase == "extension-route" and extension_control_ready then
+        local transition = config.extension.inputPlan[extension_plan_index]
+        if transition and (reg("A0") & 0xFFFFFF) == config.ram.ENTITY_DATA then
+            local actual_input = (reg("D7") & 0xFFFF) == 0
+                and memory.read_u8(config.ram.CURRENT_PLAYER_INPUT, "M68K BUS")
+                or memory.read_u8(config.ram.PLAYER_1_INPUT, "M68K BUS")
+            if actual_input ~= 0 then
+                assert(
+                    actual_input == input_mask(transition.input),
+                    "R2c extension controller latched an unplanned non-neutral field input"
+                )
+            end
+        end
     end
 end)
 
@@ -990,6 +1202,13 @@ add_callback(config.functions.loc_52E8, "input-controller-move-commit", function
         if planned and last_input == planned.input then
             planned_input_committed = true
             set_input("", "movement-commit")
+        end
+    elseif extension_enabled and phase == "extension-route" and extension_control_ready
+        and (reg("A0") & 0xFFFFFF) == config.ram.ENTITY_DATA then
+        local transition = config.extension.inputPlan[extension_plan_index]
+        if transition then
+            extension_move_committed = true
+            set_extension_input("")
         end
     end
 end)
@@ -1173,6 +1392,17 @@ end)
 -- One ExecuteMapScript PC dispatches the retained Map 3 prefix and the R2a
 -- boundary; never register a callback on cs_5149A because it is script data.
 add_callback(config.functions.ExecuteMapScript, "messenger-script-entry", function()
+    if extension_enabled and extension_progress_frame and not route_started then
+        local target = reg("A0") & 0xFFFFFF
+        if phase == "extension-before" and target == config.extension.functions.bbcs_01 then
+            extension_before_script_seen = true
+            append_extension_trace("original:ExecuteMapScript:bbcs_01")
+        elseif phase == "extension-start" and target == config.extension.functions.ms_Empty then
+            extension_start_script_seen = true
+            append_extension_trace("original:ExecuteMapScript:ms_Empty")
+        end
+        return
+    end
     if not route_started then return end
     local target = reg("A0") & 0xFFFFFF
     for _, symbol in ipairs(config.route.scriptSymbols) do
@@ -1263,6 +1493,10 @@ end)
 -- The body callbacks are all original code.  They are phase-scoped so the
 -- retained R1/R2 prefix cannot satisfy an R2a assertion by coincidence.
 local function observe_messenger_text()
+    if extension_enabled and phase == "extension-before" then
+        extension_progress_frame = frame_count
+        return
+    end
     if phase ~= "messenger" then return end
     assert(messenger_entry_seen, "text command occurred before cs_5149A body entry")
     local text_id = memory.read_u16_be(config.ram.CUTSCENE_DIALOG_INDEX, "M68K BUS")
@@ -1395,8 +1629,55 @@ add_callback(config.functions.Map3_ZoneEvent8 + 22, "zone-event8-return", functi
 end)
 
 -- "warp"
+if extension_enabled then
+    add_callback(config.functions.ProcessMapEvent, "extension-map-event-dispatch", function()
+        if not extension_bridge_pending then return end
+        assert(
+            phase == "extension-bridge-injected" and (reg("D0") & 0xFFFF) == config.extension.bridge.eventType,
+            "explicit harness bridge did not reach original ProcessMapEvent as event type 1"
+        )
+        append_extension_trace("original:ProcessMapEvent:harness-bridge")
+        status("milestone:r2b-terminal-bridge-event-dispatched")
+    end)
+end
+
 add_callback(config.functions.ProcessMapEventType1_Warp, "warp", function()
-    if route_started then
+    if extension_enabled and extension_bridge_pending then
+        local bridge = config.extension.bridge
+        status("milestone:r2b-terminal-bridge-warp-handler-entered")
+        assert(
+            memory.read_u8(config.ram.MAP_EVENT_PARAM_1, "M68K BUS") == bridge.eventParam1
+                and memory.read_u8(config.ram.MAP_EVENT_PARAM_2, "M68K BUS") == bridge.map
+                and memory.read_u8(config.ram.MAP_EVENT_PARAM_3, "M68K BUS") == bridge.player.x
+                and memory.read_u8(config.ram.MAP_EVENT_PARAM_4, "M68K BUS") == bridge.player.y
+                and memory.read_u8(config.ram.MAP_EVENT_PARAM_5, "M68K BUS") == bridge.player.facing,
+            "explicit R2a-to-R2b harness bridge parameters drift"
+        )
+        extension_bridge_pending, phase = false, "extension-bridge-loading"
+        append_extension_trace("original:ProcessMapEventType1_Warp:harness-bridge")
+    elseif extension_enabled and phase == "extension-route" then
+        local expected = config.extension.warps[extension_warp_index]
+        local map = memory.read_u8(config.ram.CURRENT_MAP, "M68K BUS")
+        local destination_x, destination_y = current_destination()
+        local transition = config.extension.inputPlan[extension_plan_index]
+        assert(
+            expected and map == expected.from.map
+                and destination_x == expected.from.x and destination_y == expected.from.y
+                and transition and transition.to.map == expected.from.map
+                and transition.to.x == expected.from.x and transition.to.y == expected.from.y
+                and memory.read_u8(config.ram.MAP_EVENT_PARAM_2, "M68K BUS") == expected.to.map
+                and memory.read_u8(config.ram.MAP_EVENT_PARAM_3, "M68K BUS") == expected.to.x
+                and memory.read_u8(config.ram.MAP_EVENT_PARAM_4, "M68K BUS") == expected.to.y
+                and memory.read_u8(config.ram.MAP_EVENT_PARAM_5, "M68K BUS") == expected.to.facing,
+            "R2c original warp parameters or source destination drift"
+        )
+        append_extension_trace("original:field-input:" .. transition.waypoint .. ":" .. transition.input)
+        extension_plan_index = extension_plan_index + 1
+        extension_warp_index = extension_warp_index + 1
+        extension_control_ready, extension_wait_after_warp = false, true
+        extension_move_committed = false
+        append_extension_trace("original:warp:" .. expected.id)
+    elseif route_started then
         local waypoint = config.route.waypoints[route_index]
         local map, x, y = current_position()
         local destination = waypoint and waypoint.completionDestination
@@ -1441,6 +1722,142 @@ add_callback(config.functions.ProcessMapEventType1_Warp, "warp", function()
         append_trace("map-event", "warp:" .. waypoint.id)
     end
 end)
+
+if extension_enabled then
+    add_callback(config.extension.functions.CheckBattle, "extension-check-battle", function()
+        -- MainLoop carries the post-warp map in D0.  CURRENT_MAP still holds
+        -- the source map at this entry and is committed later by battle load.
+        local map = reg("D0") & 0xFF
+        if not extension_progress_frame or map ~= config.extension.admission.map then return end
+        assert(
+            (phase == "extension-route" or phase == "extension-battle")
+                and extension_bridge_seeded and map == config.extension.admission.map
+                and flag_is_set(config.extension.admission.unlockedFlag)
+                and not flag_is_set(config.extension.admission.completedFlag),
+            "Battle01 CheckBattle did not follow the bridged R2c route state"
+        )
+        if not extension_route_complete then
+            extension_route_complete, phase = true, "extension-battle"
+            append_extension_trace("original:r2c-route-complete")
+            status("milestone:r2c-natural-extension-complete")
+        end
+        append_extension_trace("original:CheckBattle")
+    end)
+
+    add_callback(config.extension.functions.BattleLoop, "extension-battle-loop", function()
+        assert(extension_route_complete, "BattleLoop entered before R2c route closure")
+        assert((reg("D0") & 0xFF) == config.extension.admission.map, "BattleLoop map argument drift")
+        assert((reg("D1") & 0xFF) == config.extension.admission.battle, "BattleLoop battle argument drift")
+        phase = "extension-before"
+        append_extension_trace("original:BattleLoop")
+        status("milestone:battle01-loop-entered")
+    end)
+
+    add_callback(config.extension.functions.ExecuteBeforeBattleCutscene, "extension-before-battle", function()
+        assert(phase == "extension-before", "before-battle cutscene entered outside new-battle branch")
+        extension_before_seen = true
+        append_extension_trace("original:ExecuteBeforeBattleCutscene")
+    end)
+
+    add_callback(config.extension.functions.csc15_setEntityActscript, "extension-before-set-actscript", function()
+        if phase == "extension-before" then extension_progress_frame = frame_count end
+    end)
+
+    add_callback(config.extension.functions.csc2A_entityShiver, "extension-before-entity-shiver", function()
+        if phase == "extension-before" then extension_progress_frame = frame_count end
+    end)
+
+    add_callback(config.extension.functions.csc2D_entityActionSequence, "extension-before-entity-actions", function()
+        if phase ~= "extension-before" then return end
+        extension_progress_frame = frame_count
+        local character = memory.read_u8(reg("A6") & 0xFFFFFF, "M68K BUS")
+        local selector = character
+        if selector >= 0x80 then selector = selector - 0x60 end
+        local physical = memory.read_u8(config.ram.ENTITY_INDEX_LIST + selector, "M68K BUS")
+        extension_action_character, extension_action_physical = character, physical
+        extension_action_address = config.ram.ENTITY_DATA + physical * config.ram.ENTITYDEF_SIZE
+    end)
+
+    add_callback(config.extension.functions.LoadBattle, "extension-load-battle", function()
+        assert(
+            extension_before_seen and extension_before_script_seen,
+            "LoadBattle entered before the original Battle01 before-cutscene returned"
+        )
+        extension_load_seen, phase = true, "extension-load"
+        append_extension_trace("original:LoadBattle")
+    end)
+
+    add_callback(config.extension.functions.ExecuteBattleStartCutscene, "extension-battle-start", function()
+        assert(extension_load_seen, "battle-start cutscene entered before LoadBattle returned")
+        extension_start_seen, phase = true, "extension-start"
+        append_extension_trace("original:ExecuteBattleStartCutscene")
+    end)
+
+    add_callback(config.extension.functions.ActivateEnemies, "extension-activate-enemies", function()
+        assert(
+            extension_start_seen and extension_start_script_seen,
+            "ActivateEnemies entered before the original empty battle-start script returned"
+        )
+        extension_activate_seen, phase = true, "extension-turns"
+        append_extension_trace("original:ActivateEnemies")
+    end)
+
+    add_callback(config.extension.functions.ExecuteBattleRegionCutscene, "extension-region-cutscene", function()
+        assert(extension_activate_seen, "battle-region cutscene preceded enemy activation")
+        extension_region_seen = true
+        append_extension_trace("original:ExecuteBattleRegionCutscene")
+    end)
+
+    add_callback(config.extension.functions.PopulateTargetsListWithSpawningEnemies, "extension-spawn-list", function()
+        assert(extension_region_seen, "spawning list preceded battle-region cutscene return")
+        extension_spawn_seen = true
+        append_extension_trace("original:PopulateTargetsListWithSpawningEnemies")
+    end)
+
+    add_callback(config.extension.functions.GenerateBattleTurnOrder, "extension-turn-order", function()
+        assert(extension_spawn_seen, "turn order preceded spawning-list return")
+        extension_turn_order_seen = true
+        append_extension_trace("original:GenerateBattleTurnOrder")
+        status("milestone:battle01-turn-order-entered")
+    end)
+
+    add_callback(config.extension.functions.ExecuteIndividualTurn, "extension-individual-turn", function()
+        assert(extension_turn_order_seen, "individual turn preceded original turn-order generation")
+        local actor = reg("D0") & 0xFF
+        extension_turn_entries[#extension_turn_entries + 1] = actor
+        append_extension_trace("original:ExecuteIndividualTurn:" .. actor)
+    end)
+
+    add_callback(config.extension.functions.ProcessBattleEntityControlPlayerInput, "extension-player-control", function()
+        assert(extension_turn_order_seen, "player control preceded original turn-order generation")
+        local offset = memory.read_u8(config.ram.CURRENT_BATTLE_TURN, "M68K BUS")
+        extension_player_actor = memory.read_u8(config.ram.BATTLE_TURN_ORDER + offset, "M68K BUS")
+        assert(extension_player_actor < config.ram.COMBATANT_ENEMIES_START, "first player controller actor was not an ally")
+        extension_player_control_seen, phase = true, "extension-await-player-ready"
+        append_extension_trace("original:ProcessBattleEntityControlPlayerInput:" .. extension_player_actor)
+        status("milestone:battle01-player-control-entered")
+    end)
+
+    add_callback(config.extension.functions.ControlBattleEntity, "extension-control-battle-entity", function()
+        assert(extension_player_control_seen, "ControlBattleEntity preceded player-control dispatch")
+        extension_control_entity_seen = true
+        append_extension_trace("original:ControlBattleEntity")
+    end)
+
+    add_callback(config.extension.functions.playerReadyPc, "extension-player-ready", function()
+        assert(
+            phase == "extension-await-player-ready" and extension_control_entity_seen,
+            "player-ready input read preceded original player-control setup"
+        )
+        assert(
+            memory.read_u8(config.ram.CURRENT_PLAYER_INPUT, "M68K BUS") == 0,
+            "player-ready seam did not observe neutral current input"
+        )
+        extension_ready_seen, finish_pending = true, true
+        append_extension_trace("original:ControlBattleEntity:after-WaitForVInt-before-input-read")
+        status("milestone:battle01-player-ready")
+    end)
+end
 
 local function entity_position(entity)
     local address = config.ram.ENTITY_DATA + entity * config.ram.ENTITYDEF_SIZE
@@ -1488,6 +1905,214 @@ local function write_followers(file, values)
     file:write("]")
 end
 
+local function json_write(file, value)
+    local kind = type(value)
+    if kind == "nil" then file:write("null"); return end
+    if kind == "boolean" or kind == "number" then file:write(tostring(value)); return end
+    if kind == "string" then file:write('"' .. json_escape(value) .. '"'); return end
+    assert(kind == "table", "unsupported JSON value type " .. kind)
+    local count, max_index, array = 0, 0, true
+    for key, _ in pairs(value) do
+        count = count + 1
+        if type(key) ~= "number" or key < 1 or key % 1 ~= 0 then array = false
+        elseif key > max_index then max_index = key end
+    end
+    if array and max_index == count then
+        file:write("[")
+        for index = 1, max_index do
+            if index > 1 then file:write(",") end
+            json_write(file, value[index])
+        end
+        file:write("]")
+        return
+    end
+    file:write("{")
+    local keys = {}
+    for key, _ in pairs(value) do keys[#keys + 1] = key end
+    table.sort(keys)
+    for index, key in ipairs(keys) do
+        if index > 1 then file:write(",") end
+        file:write('"' .. json_escape(key) .. '":')
+        json_write(file, value[key])
+    end
+    file:write("}")
+end
+
+local function extension_combatant(combatant)
+    local index = combatant
+    if combatant >= config.ram.COMBATANT_ENEMIES_START then
+        index = combatant - config.ram.ENTITY_ENEMY_INDEX_DIFFERENCE
+    end
+    local base = config.ram.COMBATANT_DATA + index * config.ram.COMBATANT_DATA_ENTRY_SIZE
+    local function byte(offset) return memory.read_u8(base + offset, "M68K BUS") end
+    local function word(offset) return memory.read_u16_be(base + offset, "M68K BUS") end
+    return {
+        id = combatant,
+        class = byte(config.ram.COMBATANT_OFFSET_CLASS),
+        level = byte(config.ram.COMBATANT_OFFSET_LEVEL),
+        hpMax = word(config.ram.COMBATANT_OFFSET_HP_MAX),
+        hpCurrent = word(config.ram.COMBATANT_OFFSET_HP_CURRENT),
+        mpMax = byte(config.ram.COMBATANT_OFFSET_MP_MAX),
+        mpCurrent = byte(config.ram.COMBATANT_OFFSET_MP_CURRENT),
+        attack = byte(config.ram.COMBATANT_OFFSET_ATT_CURRENT),
+        defense = byte(config.ram.COMBATANT_OFFSET_DEF_CURRENT),
+        agility = byte(config.ram.COMBATANT_OFFSET_AGI_CURRENT),
+        move = byte(config.ram.COMBATANT_OFFSET_MOV_CURRENT),
+        items = {
+            word(config.ram.COMBATANT_OFFSET_ITEM_0),
+            word(config.ram.COMBATANT_OFFSET_ITEM_0 + 2),
+            word(config.ram.COMBATANT_OFFSET_ITEM_0 + 4),
+            word(config.ram.COMBATANT_OFFSET_ITEM_0 + 6),
+        },
+        spells = {
+            byte(config.ram.COMBATANT_OFFSET_SPELLS),
+            byte(config.ram.COMBATANT_OFFSET_SPELLS + 1),
+            byte(config.ram.COMBATANT_OFFSET_SPELLS + 2),
+            byte(config.ram.COMBATANT_OFFSET_SPELLS + 3),
+        },
+        statusEffects = word(config.ram.COMBATANT_OFFSET_STATUSEFFECTS),
+        x = byte(config.ram.COMBATANT_OFFSET_X),
+        y = byte(config.ram.COMBATANT_OFFSET_Y),
+        activationBitfield = word(config.ram.COMBATANT_OFFSET_ACTIVATION_BITFIELD),
+    }
+end
+
+local function capture_extension_result()
+    assert(extension_enabled and extension_ready_seen, "player-ready result captured before terminal seam")
+    assert(
+        extension_before_seen and extension_before_script_seen and extension_load_seen
+            and extension_start_seen and extension_start_script_seen and extension_activate_seen
+            and extension_region_seen and extension_spawn_seen and extension_turn_order_seen
+            and extension_player_control_seen and extension_control_entity_seen,
+        "player-ready lifecycle callback closure drift"
+    )
+    local admission = config.extension.admission
+    local map = memory.read_u8(config.ram.CURRENT_MAP, "M68K BUS")
+    local battle = memory.read_u8(config.ram.CURRENT_BATTLE, "M68K BUS")
+    local area = {
+        memory.read_u8(config.ram.BATTLE_AREA_X, "M68K BUS"),
+        memory.read_u8(config.ram.BATTLE_AREA_Y, "M68K BUS"),
+        memory.read_u8(config.ram.BATTLE_AREA_WIDTH, "M68K BUS"),
+        memory.read_u8(config.ram.BATTLE_AREA_HEIGHT, "M68K BUS"),
+    }
+    assert(
+        map == admission.map and battle == admission.battle
+            and area[1] == admission.area[1] and area[2] == admission.area[2]
+            and area[3] == admission.area[3] and area[4] == admission.area[4],
+        "stable player-ready map/battle/area drift"
+    )
+    local region_flags = {}
+    for flag = admission.regionFlagStart, admission.regionFlagEnd do
+        region_flags[#region_flags + 1] = flag_is_set(flag)
+        assert(not region_flags[#region_flags], "battle region flag remained set at first player-ready seam")
+    end
+    assert(
+        flag_is_set(admission.unlockedFlag) and not flag_is_set(admission.completedFlag)
+            and flag_is_set(admission.introFlag),
+        "Battle01 unlock/completion/intro flags drift at player-ready seam"
+    )
+
+    local active_party, party_count = {}, memory.read_u16_be(config.ram.BATTLE_PARTY_MEMBERS_NUMBER, "M68K BUS")
+    for index = 0, party_count - 1 do
+        active_party[#active_party + 1] = memory.read_u8(config.ram.BATTLE_PARTY_MEMBERS + index, "M68K BUS")
+    end
+    assert(
+        party_count == 3 and active_party[1] == 0 and active_party[2] == 1 and active_party[3] == 2,
+        "Battle01 active party did not retain Bowie/Sarah/Chester"
+    )
+    local combatants = {}
+    for _, combatant in ipairs(config.extension.participatingCombatants) do
+        local record = extension_combatant(combatant)
+        assert(record.x ~= 0xFF and record.y ~= 0xFF and record.hpCurrent > 0, "participating combatant was not placed and living")
+        combatants[#combatants + 1] = record
+    end
+
+    local order = {}
+    for index = 0, config.extension.turnOrderEntries - 1 do
+        local actor = memory.read_u8(config.ram.BATTLE_TURN_ORDER + index * 2, "M68K BUS")
+        if actor == 0xFF then break end
+        order[#order + 1] = {
+            actor = actor,
+            score = memory.read_u8(config.ram.BATTLE_TURN_ORDER + index * 2 + 1, "M68K BUS"),
+        }
+    end
+    local current_offset = memory.read_u8(config.ram.CURRENT_BATTLE_TURN, "M68K BUS")
+    local current_actor = memory.read_u8(config.ram.BATTLE_TURN_ORDER + current_offset, "M68K BUS")
+    local moving_actor = memory.read_u16_be(config.ram.MOVING_BATTLE_ENTITY_INDEX, "M68K BUS")
+    assert(
+        #order == #config.extension.participatingCombatants
+            and current_actor == extension_player_actor and moving_actor == extension_player_actor,
+        "turn-order/current-player closure drift at semantic input boundary"
+    )
+
+    extension_result = {
+        caseId = config.caseOrder[1],
+        retained = config.extension.retained,
+        continuity = {
+            kind = "controlled-harness-bridge",
+            naturalR2bContinuity = false,
+            bridge = assert(extension_bridge_result),
+        },
+        chronology = extension_chronology,
+        admission = {
+            map = map,
+            battle = battle,
+            area = area,
+            flags = {
+                f401 = flag_is_set(401),
+                f501 = flag_is_set(501),
+                f451 = flag_is_set(451),
+            },
+            regionFlags90Through105 = region_flags,
+        },
+        scenario = { activeParty = active_party, combatants = combatants },
+        turnState = {
+            entries = order,
+            currentTurnOffset = current_offset,
+            currentActor = current_actor,
+            executedActorsBeforeReady = extension_turn_entries,
+        },
+        deterministicState = {
+            seeded = {
+                randomSeed = config.extension.bridge.randomSeed,
+                randomSeedCopy = config.extension.bridge.randomSeedCopy,
+                frameCounter = config.extension.bridge.frameCounter,
+                secondsCounter = config.extension.bridge.secondsCounter,
+                secondsCounterFrames = config.extension.bridge.secondsCounterFrames,
+            },
+            ready = {
+                randomSeed = memory.read_u32_be(config.ram.RANDOM_SEED, "M68K BUS") & 0xFFFFFFFF,
+                randomSeedCopy = memory.read_u32_be(config.ram.RANDOM_SEED_COPY, "M68K BUS") & 0xFFFFFFFF,
+                frameCounter = memory.read_u8(config.ram.FRAME_COUNTER, "M68K BUS"),
+                secondsCounter = memory.read_u32_be(config.ram.SECONDS_COUNTER, "M68K BUS") & 0xFFFFFFFF,
+                secondsCounterFrames = memory.read_u8(config.ram.SECONDS_COUNTER_FRAMES, "M68K BUS"),
+            },
+        },
+        readiness = {
+            boundary = "ControlBattleEntity.after-WaitForVInt-before-input-read",
+            pc = config.extension.functions.playerReadyPc,
+            semanticInputMode = "battle-entity-movement",
+            currentPlayerInput = memory.read_u8(config.ram.CURRENT_PLAYER_INPUT, "M68K BUS"),
+            movingBattleEntity = moving_actor,
+            viewTargetEntity = memory.read_u8(config.ram.VIEW_TARGET_ENTITY, "M68K BUS"),
+            currentBattleAction = memory.read_u16_be(config.ram.CURRENT_BATTLEACTION, "M68K BUS"),
+            isTargeting = memory.read_u8(config.ram.IS_TARGETING, "M68K BUS"),
+            mapEventType = memory.read_u8(config.ram.MAP_EVENT_TYPE, "M68K BUS"),
+            beforeBattleScriptReturned = extension_load_seen,
+            battleStartScriptReturned = extension_activate_seen,
+            turnOrderReturned = #extension_turn_entries > 0,
+            transferPending = memory.read_u8(config.ram.MAP_EVENT_TYPE, "M68K BUS") ~= 0,
+            cutsceneOrMenuModal = false,
+        },
+    }
+    assert(
+        extension_result.readiness.currentPlayerInput == 0
+            and not extension_result.readiness.transferPending
+            and extension_result.readiness.isTargeting == 0,
+        "stable player-ready input/modal state drift"
+    )
+end
+
 local function capture_messenger_result()
     assert(messenger_result == nil, "messenger result captured more than once")
     local map, x, y, facing = current_position()
@@ -1521,6 +2146,36 @@ local function capture_messenger_result()
 end
 
 local function write_observation(restoration)
+    if extension_enabled then
+        local result = assert(extension_result, "player-ready result was not captured before restoration")
+        local file = assert(io.open(config.outputPath, "w"))
+        json_write(file, {
+            system = config.fixtureId,
+            caseOrder = config.caseOrder,
+            records = { result },
+            callbacksCleared = restoration.callbacksCleared,
+            restoration = {
+                gameFlags = restoration.gameFlags,
+                combatantAllyRecords = restoration.combatantAllyRecords,
+                mapAndBattleState = restoration.mapAndBattleState,
+                playerEntity = restoration.playerEntity,
+                forceAndParty = restoration.forceAndParty,
+                followerState = restoration.followerState,
+                touchedEntities = restoration.touchedEntities,
+                dialogueAndInput = restoration.dialogueAndInput,
+                cameraState = restoration.cameraState,
+                bootstrapFrame = restoration.bootstrapFrame,
+                gold = restoration.gold,
+                generatedRam = restoration.generatedRam,
+                callbacksCleared = restoration.callbacksCleared,
+                sessionCartPatches = restoration.sessionCartPatches,
+                sessionRomDeleted = false,
+            },
+        })
+        file:write("\n")
+        file:close()
+        return
+    end
     local result = assert(messenger_result, "messenger result was not captured before restoration")
     local file = assert(io.open(config.outputPath, "w"))
     file:write('{"system":"' .. config.fixtureId .. '","caseOrder":["' .. config.caseOrder[1] .. '"],"records":[{"caseId":"' .. config.caseOrder[1] .. '","r1FixtureId":"sf2-map3-admitted-start-runtime-v1","r2FixtureId":"sf2-map3-battle01-natural-route-runtime-v1","textIds":')
@@ -1561,9 +2216,11 @@ while true do
         status("milestone:r1-core-state-saved-outside-callback")
     end
     if finish_pending then
-        local captured, capture_message = pcall(capture_messenger_result)
+        local captured, capture_message
+        if extension_enabled then captured, capture_message = pcall(capture_extension_result)
+        else captured, capture_message = pcall(capture_messenger_result) end
         if not captured then
-            fail("follower-ready-wait", nil, "terminal result capture exception: " .. tostring(capture_message))
+            fail(extension_enabled and "player-ready" or "follower-ready-wait", nil, "terminal result capture exception: " .. tostring(capture_message))
         else
             local ok, message = pcall(finalize_success)
             if not ok then fail("restoration", nil, "success finalization exception: " .. tostring(message)) end

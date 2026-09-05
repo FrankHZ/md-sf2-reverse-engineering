@@ -136,7 +136,7 @@ def test_partition_registry_owns_every_cli_evidence_command_once() -> None:
     assert set(H2_COMMAND_PARTITIONS) == _registered_commands("h2_commands")
     assert set(COMMAND_LAUNCHES) == _registered_commands("h3_commands")
     assert len(H2_COMMAND_PARTITIONS) == 97
-    assert len(COMMAND_LAUNCHES) == 77
+    assert len(COMMAND_LAUNCHES) == 78
     assert len({partition.partition_id for partition in PARTITIONS}) == len(PARTITIONS)
     assert len(H2_PARTITION_IDS) == 6
     assert len(H3_PARTITION_IDS) == 6
@@ -628,7 +628,7 @@ def test_map3_optional_interaction_artifacts_select_their_bounded_dependents() -
     assert plan["unclassifiedPaths"] == []
 
 
-def test_map3_castle_static_artifacts_select_only_their_bounded_command() -> None:
+def test_map3_castle_static_artifacts_select_dependent_player_ready_runtime() -> None:
     plan = plan_paths(
         (
             "tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json",
@@ -637,14 +637,17 @@ def test_map3_castle_static_artifacts_select_only_their_bounded_command() -> Non
         root=ROOT,
     )
 
-    assert _partition_ids(plan) == {"public-core", "h2-map-scripting"}
+    assert _partition_ids(plan) == {"public-core", "h2-map-scripting", "h3-witch"}
     assert _partition(plan, "h2-map-scripting")["commands"] == [
         "uv run sf2 h2 map3-castle-battle-unlock"
+    ]
+    assert _partition(plan, "h3-witch")["commands"] == [
+        "uv run sf2 h3 map3-battle01-player-ready"
     ]
     assert plan["unclassifiedPaths"] == []
 
 
-def test_map3_battle01_admission_artifacts_select_only_their_bounded_command() -> None:
+def test_map3_battle01_admission_artifacts_select_dependent_player_ready_runtime() -> None:
     assert not hasattr(verification_plan, "H2_DEPENDENCY_ONLY_ARTIFACTS")
     plan = plan_paths(
         (
@@ -654,14 +657,17 @@ def test_map3_battle01_admission_artifacts_select_only_their_bounded_command() -
         root=ROOT,
     )
 
-    assert _partition_ids(plan) == {"public-core", "h2-map-scripting"}
+    assert _partition_ids(plan) == {"public-core", "h2-map-scripting", "h3-witch"}
     assert _partition(plan, "h2-map-scripting")["commands"] == [
         "uv run sf2 h2 map3-battle01-admission"
+    ]
+    assert _partition(plan, "h3-witch")["commands"] == [
+        "uv run sf2 h3 map3-battle01-player-ready"
     ]
     assert plan["unclassifiedPaths"] == []
 
 
-def test_map3_battle01_turn_control_artifacts_select_only_their_bounded_command() -> None:
+def test_map3_battle01_turn_control_artifacts_select_dependent_player_ready_runtime() -> None:
     plan = plan_paths(
         (
             "tests/fixtures/h2/map3-battle01-turn-control-static-v1.json",
@@ -670,9 +676,12 @@ def test_map3_battle01_turn_control_artifacts_select_only_their_bounded_command(
         root=ROOT,
     )
 
-    assert _partition_ids(plan) == {"public-core", "h2-battle-logic"}
+    assert _partition_ids(plan) == {"public-core", "h2-battle-logic", "h3-witch"}
     assert _partition(plan, "h2-battle-logic")["commands"] == [
         "uv run sf2 h2 map3-battle01-turn-control"
+    ]
+    assert _partition(plan, "h3-witch")["commands"] == [
+        "uv run sf2 h3 map3-battle01-player-ready"
     ]
     assert plan["unclassifiedPaths"] == []
 
@@ -900,6 +909,19 @@ def test_map3_messenger_artifacts_select_only_their_bounded_command() -> None:
 
     assert _partition_ids(plan) == {"public-core", "h3-witch"}
     assert _partition(plan, "h3-witch")["commands"] == ["uv run sf2 h3 map3-messenger-acceptance"]
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_map3_battle01_player_ready_artifacts_select_only_their_bounded_command() -> None:
+    plan = plan_paths(
+        ("src/sf2tool/h3/map3_battle01_player_ready.py",),
+        root=ROOT,
+    )
+
+    assert _partition_ids(plan) == {"public-core", "h3-witch"}
+    assert _partition(plan, "h3-witch")["commands"] == [
+        "uv run sf2 h3 map3-battle01-player-ready"
+    ]
     assert plan["unclassifiedPaths"] == []
 
 

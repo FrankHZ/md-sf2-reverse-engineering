@@ -83,8 +83,8 @@ default; a concrete caller-dependent ambiguity is routed through ADR 0016 and AD
 
 ## Exact Accepted-Index Audit
 
-The research index now contains **1,625 records**, **176 fixtures** (82 H2, 94 H3), and
-**2,703 address bindings**. The scenario-relevant denominators are:
+The research index now contains **1,627 records**, **199 fixtures** (103 H2, 96 H3), and
+**3,111 address bindings**. The scenario-relevant denominators are:
 
 | Evidence surface | Exact count | Owner |
 | --- | ---: | --- |
@@ -161,14 +161,20 @@ predicates. It is static reachability only, not observed chronology.
 Map 21 → 40 → 57 links and the source/H1/ROM-checked CheckBattle/BattleLoop/cutscene/LoadBattle
 spine. This is source legality only; natural R2a → R2b → R2c continuity remains **Unknown**.
 
+**Confirmed (explicit-bridge H3 extension):** one declared non-natural bridge enters the original
+map-event/warp handler from the accepted R2a follower-ready seam and seeds exactly the retained R2b
+Map 21 terminal. Original player control then performs the 46-input Map 21/40 route, both warps, and
+the Map 57 handoff. This confirms only post-bridge execution; the omitted natural R2a → R2b story
+segment remains **Unknown**.
+
 **Confirmed (RA-08 static graph only):** the FieldMenu source/H1/ROM control graph has two guarded
 alias-resolved callers, selector branches, and helper/order boundaries. The accepted R2 and R2a
 runtime seams both retain field menu **NotReached**; later natural continuity, admission, input, and
 outcomes remain **Unknown**.
 
-**Gaps:** natural inputs and their chronological results along the route (RA-03); VInt-edge event
-publication versus input sampling timing; exploration/VDP frame sequencing; the field-menu branch's
-natural admission and behavior when the 2A route requires it (RA-08); and reached
+**Gaps:** natural inputs and chronology through the omitted R2a → R2b segment (RA-03); VInt-edge
+event publication versus input sampling timing; exploration/VDP frame sequencing; the field-menu
+branch's natural admission and behavior when the 2A route requires it (RA-08); and reached
 roof/door/warp/vehicle transition frames. Under 8C these reached observable surfaces join RA-11; they
 are no longer optional presentation work.
 
@@ -234,16 +240,22 @@ handler sources F256. This confirms program/flag semantics, not a runtime handof
 the new-battle branch, before/start routing, and LoadBattle order are source/H1/ROM-derived. Natural
 admission and caller order remain **Unknown**.
 
-**Gaps (RA-04):** the natural chronological path from Map 3 to the Battle 01 trigger is unobserved —
-the intermediate maps, the trigger coordinates actually reached, the battle-unlock flag state, and the
-before/start cutscene execution in a natural flow are all **Unknown**. The accepted Battle 01 H3
-entries use Debug Battle Test, which sets the shared intro flag and skips the cutscene scripts; the
-two Battle 01 cutscene data files are indexed but their story effects are not reconstructed.
+**Confirmed (explicit-bridge H3 extension):** after the declared R2a follower-ready → R2b terminal
+bridge, original control executes the Map 21 → 40 → 57 route, reaches both selected trigger
+coordinates, preserves F401, enters `CheckBattle` then `BattleLoop`, returns from the selected
+before/start programs, and completes `LoadBattle`. This is observed post-bridge caller order, not
+natural execution of the omitted story segment.
 
-**Inferred / partial (R2):** source/H1/ROM deterministically reconstruct the Map 3 → 19 → 20 → 21
-→ 40 → 57 topology and Battle 01 routing, but the only runtime observation remains the Map 3 opening
-through `cs_5149A` entry.  The exact remaining seam is the messenger body through F401, the Map 57
-trigger, before/start cutscenes, and battle-ready state.
+**Gaps (RA-04):** natural chronological continuity through the bridged R2a → R2b story segment is
+unobserved. Therefore a wholly natural Map 3-to-Battle 01 admission remains **Unknown**, even though
+the post-bridge Maps 21/40/57 chronology and caller order are confirmed. The two Battle 01 cutscene
+data files are indexed and the selected programs return in the bounded run, but dialogue prose,
+presentation, and complete story effects are not reconstructed.
+
+**Inferred / partial natural route:** source/H1/ROM deterministically reconstruct Map 3 → 19 → 20
+→ 21 topology, while bounded runtime reaches the R2a follower-ready seam and separately confirms the
+post-bridge Map 21 → 40 → 57 route through player-ready. The exact remaining continuity seam is the
+omitted follower-ready → retained Map 21 terminal story segment.
 
 ### 8. Battle 01 natural encounter setup
 
@@ -257,22 +269,29 @@ order `0:109, 2:8, 1:6, 128:6, 133:6, 129:4, 130:4, 131:4, 132:4`; region activa
 in the complete region-cutscene table; first-round source order ends at turn-order generation before
 the first individual turn. This is not a natural initialized snapshot or first-actor observation.
 
-**Gap (RA-05):** the R3a static rail adds the post-generation first-consumer/control-dispatch
-foundation only. The natural-entry snapshot (the roster/stats/items/spells/flags/RNG state carried into
-the battle from the route) is **Unknown**; all Battle 01 runtime evidence derives from the debug entry
-path and controlled seeds. Later-round region-state clearing and natural secondary-region data remain
-explicit open questions.
+**Confirmed (explicit-bridge H3 extension):** the bounded run captures map 57/battle 1/area
+`(0,0,16,20)`, flags F401/F451 set and F501/F90–F105 clear, active allies 0/1/2, all nine combatants,
+the generated order `1:6, 2:6, 128:5, 131:5, 133:5, 129:4, 130:4, 132:4, 0:3`, current actor 1,
+and the deterministic ready-state RNG/time fields. Actor 1 is the sole dispatched actor before stop.
+
+**Gap (RA-05):** the full combatant snapshot, first actor, and player-ready state are confirmed only
+for the declared bridge seed and post-bridge original route. A wholly natural-entry snapshot and
+independently natural first-actor result remain **Unknown**. Later-round region-state clearing and
+natural secondary-region data remain explicit open questions.
 
 ### 9. Player turn and battle menu control
 
 **Confirmed:** the 15-record battle-functions static contract and its design-contract owner; the
 complete shared battle-function file inventory; player-control/cursor/menu static decisions; input
-surface.
+surface. The explicit-bridge H3 continuation reaches actor 1 in `ControlBattleEntity` immediately
+after `WaitForVInt` and before its input read, with neutral input/action/targeting/map-event state, no
+modal or transfer pending, and semantic battle-entity-movement input readiness.
 
-**Gaps (RA-06 part):** natural player input cadence, cancel paths, and menu selection through a real
-Battle 01 turn are **Unknown**; no natural multi-round playthrough has been observed. R3a/R3b/R3c/R3d add
-only the **Confirmed** static control-to-ApplyActionEffect-to-DropEnemyItem-to-action-completion/caller-finalization graph
-through the unentered `0x23BB2 -> 0x23B40` backedge; actual branches, loops, and results remain **Unknown**.
+**Gaps (RA-06 part):** input after that first stable seam, cancel paths, and menu selection through a
+Battle 01 turn are **Unknown**; no natural multi-round playthrough has been observed. R3a/R3b/R3c/R3d
+add only the **Confirmed** static control-to-ApplyActionEffect-to-DropEnemyItem-to-action-completion/
+caller-finalization graph through the unentered `0x23BB2 -> 0x23B40` backedge; actual branches, loops,
+and results remain **Unknown**.
 
 ### 10. AI, navigation, actions, resolution
 
@@ -354,9 +373,9 @@ slice under ADR 0003 (one launch per coherent matrix).
 | --- | --- | --- | --- | --- | --- |
 | RA-01 | 1 | Exact admitted Map 3 start state | R1 controlled matrix now captures map, position, facing, flag bitset, party/stats/items/spells, gold, difficulty, RNG, and time at first exploration entry and observes the default row; natural player-visible admission remains R2 | **Confirmed** controlled default / **Unknown** natural state | R2 dependency |
 | RA-02 | 2 | Map 3 setup/init/event chain effects | R1 observes setup → init function and no default guarded program request; R2 must observe a natural real-program/event/description chain and state effects | **Confirmed** controlled default prefix / **Unknown** natural effects | R2 dependency |
-| RA-03 | 3 | Natural Map 3 route | R2c confirms only static R2b-terminal extension/source legality; natural R2a → R2b → R2c continuity remains separately unobserved | **Confirmed** R2a bounded runtime / **Confirmed** R2b/R2c static graph / **Unknown** natural continuity | Deferred / conditional |
-| RA-04 | 7 | Map-to-battle admission | R2c confirms static Map 21 → 40 → 57, CheckBattle/BattleLoop/before/start/LoadBattle spine; natural admission and caller order still require evidence | **Confirmed** static spine / **Unknown** natural admission/caller order | Deferred / conditional |
-| RA-05 | 8 | Battle 01 natural encounter state | R2c/R3a confirm static definitions/init/turn-generation/first-consumer-control foundation; capture the full natural scenario state and first actor without inferring player readiness | **Confirmed** debug-entry and static foundation; **Unknown** natural snapshot/first actor/player-ready | Deferred / conditional |
+| RA-03 | 3 | Natural Map 3 route | R2a confirms follower-ready; the explicit bridge then confirms original Map 21/40/57 player traversal, while natural R2a → R2b continuity remains unobserved | **Confirmed** bounded endpoints and post-bridge route / **Unknown** omitted natural continuity | Deferred / conditional |
+| RA-04 | 7 | Map-to-battle admission | The post-bridge run confirms Map 21 → 40 → 57 triggers and original CheckBattle/BattleLoop/before/start/LoadBattle caller order; a wholly natural admission still depends on the omitted bridge | **Confirmed** post-bridge runtime spine / **Unknown** wholly natural admission | Deferred / conditional |
+| RA-05 | 8 | Battle 01 natural encounter state | The bridge-seeded run captures the full combatant/flag/RNG/time snapshot, generated order, actor 1, and stable player input seam; independently natural state/actor remain open | **Confirmed** bounded bridge-seeded snapshot/actor/player-ready / **Unknown** wholly natural snapshot/actor | Deferred / conditional |
 | RA-06 | 9+10 | Complete playable battle trace | R3a/R3b/R3c/R3d confirm only the static control-to-ApplyActionEffect-to-DropEnemyItem-to-action-completion/caller-finalization graph through unentered `0x23BB2 -> 0x23B40`; a fixed-seed, scripted-input H4 reference matrix through victory is required only when a concrete accepted-contract or acceptance ambiguity passes ADR 0014's gate | **Confirmed** bounded/static graph; **Unknown** complete | Deferred / conditional |
 | RA-07 | 12 | Victory, after-battle, endpoint state | R4a confirms only the selected unentered victory body → Battle 01 after-battle program → `F401`/`F501` → `d4=1` → MainLoop SwitchMap/Exploration static spine; a bounded observation of natural execution, program completion/effects, return routing, and post-battle state is conditional on ADR 0014's gate | **Confirmed** selected static spine; **Unknown** natural/runtime endpoint | Deferred / conditional |
 | RA-08 | 5 | Field menu on route | H2 confirms only the static caller/selector/control graph. R2 and R2a both record `NotReached`; later route continuity and any natural menu admission/outcome remain unobserved | **Confirmed** static graph and R2/R2a NotReached / **Unknown** natural continuity | Deferred / conditional |
@@ -408,27 +427,33 @@ root/worker slice contract (ADR 0004):
 4. **Slice R2b — static fallback (RA-03, RA-04):** **Confirmed H2 static contract** by
    `sf2-map3-castle-battle-unlock-static-v1`. It preserves R1/R2/R2a as dependency guards and derives
    the Maps 3/19/20/21 legal source graph, zone/warp/occupancy topology, and F401/F256 source
-   semantics. Natural continuation, Maps 21 → 40 → 57, Battle 01 admission, and R2c readiness remain
-   **Unknown**; this is not an H3 observation or readiness promotion.
+   semantics. This rail itself adds no runtime admission or readiness observation, and natural
+   continuation through its omitted story segment remains **Unknown**.
 5. **Slice R2c — static Battle 01 admission extension (RA-03, RA-04, RA-05, RA-08, RA-09,
    RA-11):** **Confirmed H2 static contract** by
    `sf2-map3-battle01-admission-static-v1`. It begins only from the retained R2b terminal model and
    derives Maps 21/40/57, battle admission/initialization, structural cutscene IDs/hashes, and
-   pre-first-turn order. Natural continuity, caller order, initialized state, actor, prose, menus, and
-   complete 8C remain **Unknown**.
+   pre-first-turn order. Natural continuity and runtime state remain **Unknown** at this static rail.
    R3a/R3b then add only the post-generation control-to-ApplyActionEffect-to-DropEnemyItem H2 spine;
-   they do not close natural state, actor/control selection, player input, action/resolution, or any H3 question.
-6. **Conditional R3 — complete Battle 01 playthrough (RA-05, RA-06, reached RA-11):** a fixed-seed
+   they do not close runtime branches or results.
+6. **Slice R2d — explicit-bridge player-ready continuation (RA-03, RA-04, RA-05):** **completed at
+   the bounded seam** by `sf2-map3-battle01-player-ready-runtime-v1`. It starts at R2a follower-ready,
+   invokes the original event/warp handler for one declared harness bridge to the retained R2b Map 21
+   terminal, then leaves original control to traverse Maps 21/40/57, admit and initialize Battle 01,
+   generate turn order, dispatch actor 1, and stop immediately before the first player input read.
+   Natural R2a → R2b continuity, wholly natural state/actor selection, post-seam input, action/results,
+   prose/presentation, victory, and complete 8C remain **Unknown**.
+7. **Conditional R3 — complete Battle 01 playthrough (RA-05, RA-06, reached RA-11):** a fixed-seed
    and scripted-input H4 reference matrix from natural entry through victory may be authorized only
    for a concrete caller-dependent ambiguity that passes ADR 0014's gate. It reuses accepted battle,
    scene, graphics, sound, and timing fixtures as authoritative subsystem goldens rather than copying
    or weakening them; it is not an automatic continuity launch.
-7. **Conditional R4b — after-battle, endpoint, and H4 definition closure (RA-07, RA-11, RA-12):**
+8. **Conditional R4b — after-battle, endpoint, and H4 definition closure (RA-07, RA-11, RA-12):**
    after R4a's selected static spine, a bounded observation through the after-program seam to the
    accepted 5B endpoint may be authorized only by the same gate. It then freezes the final state
    contract, private capture manifest, comparison domains, exact or field-specific tolerances,
    licensing-safe public report, and the separate 9A/10A accessibility/deviation assertions.
-8. **Deferred/non-blocking:** RA-10 persistence remains outside the 6A milestone. No save H3 slice is
+9. **Deferred/non-blocking:** RA-10 persistence remains outside the 6A milestone. No save H3 slice is
    part of R1–R4; any later persistence work requires a separate accepted milestone. RA-08 produces a
    dedicated extension only if the Research-proven 2A route actually reaches the field menu.
 
@@ -445,6 +470,7 @@ blocker.
 | Controlled New reaches first Map 3 exploration wait through default setup/init | **Confirmed** bounded runtime | [`map3-admitted-start`](map3-admitted-start.md), `sf2-map3-admitted-start-runtime-v1` | Not natural reachability, route programs/events, or 8C presentation |
 | R1 admitted Map 3 opening reaches `cs_5149A` entry-before-body | **Confirmed** bounded runtime | [`map3-battle01-natural-route`](map3-battle01-natural-route.md), `sf2-map3-battle01-natural-route-runtime-v1` | Not a continuous Map 19/20/21/40/57 or Battle 01 runtime route |
 | R2a accepts the messenger prompt and reaches follower-ready WaitForEvent | **Confirmed** bounded runtime | [map3-messenger-acceptance](map3-messenger-acceptance.md), sf2-map3-messenger-acceptance-runtime-v1 | Not later-map, battle-admission, persistence, prose/presentation, or 8C evidence |
+| Explicit R2a follower-ready → R2b terminal bridge then original control reaches first Battle 01 player input | **Confirmed** bounded runtime | [`map3-battle01-admission`](map3-battle01-admission.md), `sf2-map3-battle01-player-ready-runtime-v1` | Not natural execution of the bridged story segment, later battle control, victory, prose, or complete 8C |
 | 26 Map 3 records exist, aggregate-owned, unassociated | **Confirmed** indexed inventory | `sf2-map-data-static-v1`, [map-data research](map-data-inventory.md) | Not route chronology, selection, or effects |
 | Map 3 default/609/506/543 init dispatch executes its modeled targets | **Confirmed** bounded runtime | `sf2-map-init-dispatch-runtime-v1`, [map-data research](map-data-inventory.md) | Init-script effects, story reachability, persistence |
 | Map 3 setup flag meanings 506/543/609 | **Unknown** | `sf2-map-data-static-v1` | Shared operands across many maps; not route evidence by themselves |
@@ -454,7 +480,7 @@ blocker.
 | Private-local original inputs | **Accepted product boundary; evidence inventory OPEN** | ADR 0010 option 7C | No tracked/uploaded/public-CI/public-release payloads; identity, provenance, hashes, tools, and capture conditions remain RA-11 |
 | Reached frame/audio/hardware parity | **Accepted mandatory target; evidence OPEN** | ADR 0010 option 8C and bounded ADR 0005 condition-3 reopening | Reached observables only; reuse existing seams; unrelated hardware/driver work frozen |
 | Accessibility and modern mappings | **Accepted product/H4 deviation surface** | ADR 0010 options 9A/10A | Separate checks; never substitute for or alter the 8C exact reference run |
-| Natural Map 3 route, Battle 01 admission, complete playthrough, after-battle effects | **Unknown** | none — gap register RA-03/RA-04/RA-06/RA-07 | Deferred/conditional eventual-milestone research; no inference from source labels |
+| Natural continuity through the omitted R2a → R2b segment, complete playthrough, after-battle effects | **Unknown** | none — gap register RA-03/RA-04/RA-06/RA-07 | Deferred/conditional eventual-milestone research; no inference from the bounded bridge |
 
 ## Reproduction
 
@@ -476,4 +502,10 @@ The bounded R2 opening is reproduced by:
 
 ```powershell
 uv run sf2 h3 map3-battle01-natural-route --timeout-seconds 300
+```
+
+The explicit-bridge Battle 01 player-ready continuation is reproduced by:
+
+```powershell
+uv run sf2 h3 map3-battle01-player-ready --timeout-seconds 600
 ```

@@ -162,6 +162,7 @@ from sf2tool.h3.growth import (
 from sf2tool.h3.kill_exp import verify_kill_exp_level_differences
 from sf2tool.h3.map3_admitted_start import verify_map3_admitted_start
 from sf2tool.h3.map3_battle01_natural_route import verify_map3_battle01_natural_route
+from sf2tool.h3.map3_battle01_player_ready import verify_map3_battle01_player_ready
 from sf2tool.h3.map3_messenger_acceptance import verify_map3_messenger_acceptance
 from sf2tool.h3.map3_original_player_locomotion_animation import (
     verify_map3_original_player_locomotion_animation,
@@ -1157,6 +1158,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     _add_local_paths(h3_map3_battle01_natural_route)
     h3_map3_battle01_natural_route.add_argument("--timeout-seconds", type=int, default=300)
+    h3_map3_battle01_player_ready = h3_commands.add_parser(
+        "map3-battle01-player-ready",
+        help="verify Battle 01 admission through the first stable player-control input seam",
+    )
+    _add_local_paths(h3_map3_battle01_player_ready)
+    h3_map3_battle01_player_ready.add_argument("--timeout-seconds", type=int, default=600)
     h3_map3_messenger_acceptance = h3_commands.add_parser(
         "map3-messenger-acceptance",
         help="verify Map 3 messenger acceptance through the follower-ready wait",
@@ -2434,6 +2441,14 @@ def dispatch(args: argparse.Namespace) -> None:
     elif args.command == "h3" and args.h3_command == "map3-battle01-natural-route":
         print_record(
             verify_map3_battle01_natural_route(
+                args.rom_path,
+                args.upstream_path,
+                timeout_seconds=args.timeout_seconds,
+            )
+        )
+    elif args.command == "h3" and args.h3_command == "map3-battle01-player-ready":
+        print_record(
+            verify_map3_battle01_player_ready(
                 args.rom_path,
                 args.upstream_path,
                 timeout_seconds=args.timeout_seconds,

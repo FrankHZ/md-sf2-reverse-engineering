@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sf2.example/schemas/h3/map3-battle01-player-ready-observation.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["system", "caseOrder", "records", "callbacksCleared", "restoration"],
+  "properties": {
+    "system": {"const": "sf2-map3-battle01-player-ready-runtime-v1"},
+    "caseOrder": {"const": ["bridged-r2b-to-first-battle01-player-ready"]},
+    "records": {"type": "array", "minItems": 1, "maxItems": 1, "items": {"$ref": "#/$defs/record"}},
+    "callbacksCleared": {"const": true},
+    "restoration": {"$ref": "#/$defs/restoration"}
+  },
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[A-F0-9]{64}$"},
+    "retained": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixtureId", "fixtureSha256"],
+      "properties": {
+        "fixtureId": {"type": "string", "minLength": 1},
+        "fixtureSha256": {"$ref": "#/$defs/hash"}
+      }
+    },
+    "combatant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "class", "level", "hpCurrent", "hpMax", "mpCurrent", "mpMax", "attack", "defense", "agility", "move", "items", "spells", "statusEffects", "x", "y", "activationBitfield"],
+      "properties": {
+        "id": {"type": "integer", "minimum": 0, "maximum": 255},
+        "class": {"type": "integer", "minimum": 0, "maximum": 255},
+        "level": {"type": "integer", "minimum": 0, "maximum": 255},
+        "hpCurrent": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "hpMax": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "mpCurrent": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "mpMax": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "attack": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "defense": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "agility": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "move": {"type": "integer", "minimum": 0, "maximum": 255},
+        "items": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "integer", "minimum": 0, "maximum": 255}},
+        "spells": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "integer", "minimum": 0, "maximum": 255}},
+        "statusEffects": {"type": "integer", "minimum": 0, "maximum": 65535},
+        "x": {"type": "integer", "minimum": 0, "maximum": 255},
+        "y": {"type": "integer", "minimum": 0, "maximum": 255},
+        "activationBitfield": {"type": "integer", "minimum": 0, "maximum": 65535}
+      }
+    },
+    "turnEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actor", "score"],
+      "properties": {
+        "actor": {"type": "integer", "minimum": 0, "maximum": 255},
+        "score": {"type": "integer", "minimum": 0, "maximum": 255}
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["caseId", "chronology", "continuity", "retained", "admission", "scenario", "turnState", "deterministicState", "readiness"],
+      "properties": {
+        "caseId": {"const": "bridged-r2b-to-first-battle01-player-ready"},
+        "chronology": {"type": "array", "minItems": 71, "maxItems": 71, "items": {"type": "string", "minLength": 1}},
+        "continuity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "naturalR2bContinuity", "bridge"],
+          "properties": {
+            "kind": {"const": "controlled-harness-bridge"},
+            "naturalR2bContinuity": {"const": false},
+            "bridge": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["map", "player", "guard", "setFlags", "clearFlags"],
+              "properties": {
+                "map": {"const": 21},
+                "player": {"type": "object", "additionalProperties": false, "required": ["x", "y", "facing"], "properties": {"x": {"const": 5}, "y": {"const": 15}, "facing": {"const": 3}}},
+                "guard": {"type": "object", "additionalProperties": false, "required": ["character", "physicalEntity", "x", "y", "facing"], "properties": {"character": {"const": 128}, "physicalEntity": {"type": "integer", "minimum": 0}, "x": {"const": 6}, "y": {"const": 16}, "facing": {"const": 3}}},
+                "setFlags": {"const": [600, 66, 603, 604, 605, 607, 608, 401, 256]},
+                "clearFlags": {"const": [501, 609, 506, 543]}
+              }
+            }
+          }
+        },
+        "retained": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sf2-map3-admitted-start-runtime-v1", "sf2-map3-battle01-natural-route-runtime-v1", "sf2-map3-messenger-acceptance-runtime-v1", "sf2-map3-castle-battle-unlock-static-v1", "sf2-map3-battle01-admission-static-v1", "sf2-map3-battle01-turn-control-static-v1"],
+          "properties": {
+            "sf2-map3-admitted-start-runtime-v1": {"$ref": "#/$defs/retained"},
+            "sf2-map3-battle01-natural-route-runtime-v1": {"$ref": "#/$defs/retained"},
+            "sf2-map3-messenger-acceptance-runtime-v1": {"$ref": "#/$defs/retained"},
+            "sf2-map3-castle-battle-unlock-static-v1": {"$ref": "#/$defs/retained"},
+            "sf2-map3-battle01-admission-static-v1": {"$ref": "#/$defs/retained"},
+            "sf2-map3-battle01-turn-control-static-v1": {"$ref": "#/$defs/retained"}
+          }
+        },
+        "admission": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["map", "battle", "area", "flags", "regionFlags90Through105"],
+          "properties": {
+            "map": {"const": 57},
+            "battle": {"const": 1},
+            "area": {"const": [0, 0, 16, 20]},
+            "flags": {"type": "object", "additionalProperties": false, "required": ["f401", "f451", "f501"], "properties": {"f401": {"const": true}, "f451": {"const": true}, "f501": {"const": false}}},
+            "regionFlags90Through105": {"type": "array", "minItems": 16, "maxItems": 16, "items": {"const": false}}
+          }
+        },
+        "scenario": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["activeParty", "combatants"],
+          "properties": {
+            "activeParty": {"const": [0, 1, 2]},
+            "combatants": {"type": "array", "minItems": 9, "maxItems": 9, "items": {"$ref": "#/$defs/combatant"}}
+          }
+        },
+        "turnState": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["currentActor", "currentTurnOffset", "entries", "executedActorsBeforeReady"],
+          "properties": {
+            "currentActor": {"const": 1},
+            "currentTurnOffset": {"const": 0},
+            "entries": {"type": "array", "minItems": 9, "maxItems": 9, "items": {"$ref": "#/$defs/turnEntry"}},
+            "executedActorsBeforeReady": {"const": [1]}
+          }
+        },
+        "deterministicState": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["seeded", "ready"],
+          "properties": {
+            "seeded": {"type": "object", "additionalProperties": false, "required": ["randomSeed", "randomSeedCopy", "frameCounter", "secondsCounter", "secondsCounterFrames"], "properties": {"randomSeed": {"const": 4660}, "randomSeedCopy": {"const": 4660}, "frameCounter": {"const": 0}, "secondsCounter": {"const": 0}, "secondsCounterFrames": {"const": 0}}},
+            "ready": {"type": "object", "additionalProperties": false, "required": ["randomSeed", "randomSeedCopy", "frameCounter", "secondsCounter", "secondsCounterFrames"], "properties": {"randomSeed": {"type": "integer", "minimum": 0, "maximum": 4294967295}, "randomSeedCopy": {"const": 4660}, "frameCounter": {"type": "integer", "minimum": 0, "maximum": 255}, "secondsCounter": {"type": "integer", "minimum": 0}, "secondsCounterFrames": {"type": "integer", "minimum": 0, "maximum": 59}}}
+          }
+        },
+        "readiness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["boundary", "pc", "beforeBattleScriptReturned", "battleStartScriptReturned", "turnOrderReturned", "currentPlayerInput", "movingBattleEntity", "viewTargetEntity", "currentBattleAction", "isTargeting", "mapEventType", "transferPending", "cutsceneOrMenuModal", "semanticInputMode"],
+          "properties": {
+            "boundary": {"const": "ControlBattleEntity.after-WaitForVInt-before-input-read"},
+            "pc": {"const": 142960},
+            "beforeBattleScriptReturned": {"const": true},
+            "battleStartScriptReturned": {"const": true},
+            "turnOrderReturned": {"const": true},
+            "currentPlayerInput": {"const": 0},
+            "movingBattleEntity": {"const": 1},
+            "viewTargetEntity": {"const": 1},
+            "currentBattleAction": {"const": 0},
+            "isTargeting": {"const": 0},
+            "mapEventType": {"const": 0},
+            "transferPending": {"const": false},
+            "cutsceneOrMenuModal": {"const": false},
+            "semanticInputMode": {"const": "battle-entity-movement"}
+          }
+        }
+      }
+    },
+    "restoration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gameFlags", "combatantAllyRecords", "mapAndBattleState", "playerEntity", "forceAndParty", "followerState", "touchedEntities", "dialogueAndInput", "cameraState", "bootstrapFrame", "gold", "generatedRam", "callbacksCleared", "sessionCartPatches", "sessionRomDeleted"],
+      "properties": {
+        "gameFlags": {"const": true}, "combatantAllyRecords": {"const": true}, "mapAndBattleState": {"const": true}, "playerEntity": {"const": true}, "forceAndParty": {"const": true}, "followerState": {"const": true}, "touchedEntities": {"const": true}, "dialogueAndInput": {"const": true}, "cameraState": {"const": true}, "bootstrapFrame": {"const": true}, "gold": {"const": true}, "generatedRam": {"const": true}, "callbacksCleared": {"const": true}, "sessionCartPatches": {"const": true}, "sessionRomDeleted": {"const": true}
+      }
+    }
+  }
+}

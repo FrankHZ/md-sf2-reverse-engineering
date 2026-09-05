@@ -44,8 +44,8 @@ def test_research_index_validates_without_private_inputs() -> None:
     assert result["Records"] == 1627
     assert result["Confirmed"] == 1627
     assert result["H2Fixtures"] == 103
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 95
-    assert result["AddressBindings"] == 3109
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 96
+    assert result["AddressBindings"] == 3111
     assert result["IndexedCodeFiles"] == 381
     assert result["IndexedDataFiles"] == 1017
     assert result["H1ListingRecords"] == 1590
@@ -831,6 +831,13 @@ def test_map3_battle01_natural_route_has_one_natural_runtime_command() -> None:
     assert args.h3_command == "map3-battle01-natural-route"
     assert args.rom_path.name == "sf2-us.bin"
     assert args.timeout_seconds == 300
+
+
+def test_map3_battle01_player_ready_has_one_bounded_runtime_command() -> None:
+    args = build_parser().parse_args(["h3", "map3-battle01-player-ready"])
+    assert args.h3_command == "map3-battle01-player-ready"
+    assert args.rom_path.name == "sf2-us.bin"
+    assert args.timeout_seconds == 600
 
 
 def test_map3_messenger_acceptance_has_one_bounded_runtime_command() -> None:
