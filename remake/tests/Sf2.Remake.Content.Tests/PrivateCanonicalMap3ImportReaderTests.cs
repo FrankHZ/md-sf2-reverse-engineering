@@ -66,6 +66,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.NorthMap19TransitionCapability,
                 PrivateCanonicalMap3ImportReader.RoyalMap20TransitionCapability,
                 OriginalMapRuntimeAdmission.PalaceFirstVisitCapability,
+                OriginalMapRuntimeAdmission.RoyalReturnMap19TransitionCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -1136,9 +1137,47 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Same(applied.Snapshot, session.PrivateOriginalMapSnapshot);
         Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
         Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
-        var moved = session.ApplyPrivateOriginalMap(new MoveExplorationCommand(ExplorationDirection.South));
-        Assert.Equal(new MapPosition(23, 40), moved.Snapshot.PlayerPosition);
-        Assert.Same(applied.Receipt, moved.Snapshot.PalaceFirstVisit);
+        JsonElement returnRoute = fixture.RootElement.GetProperty("static").GetProperty("routeGraph")
+            .GetProperty("segments").EnumerateArray()
+            .Single(segment => segment.GetProperty("id").GetString() == "map20-palace-return-to-royal-warp");
+        Assert.Equal(2, returnRoute.GetProperty("inputs").GetArrayLength());
+        for (int index = 0; index < 2; index++)
+        {
+            Assert.Equal("Up", returnRoute.GetProperty("inputs")[index].GetString());
+            Assert.Equal(new MapPosition(23, 39 - index), session.PrivateOriginalMapSnapshot.PlayerPosition);
+            var move = session.BeginPrivateOriginalMapPlayerLocomotion(new MoveExplorationCommand(ExplorationDirection.North));
+            Assert.Same(applied.Receipt, move.Move.Snapshot.PalaceFirstVisit);
+            Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+            if (index == 0)
+            {
+                Assert.Null(move.Move.CrossMapTransition);
+                Assert.Equal(new MapPosition(23, 38), move.Move.Snapshot.PlayerPosition);
+            }
+            else
+            {
+                var receipt = Assert.IsType<PrivateOriginalMapCrossMapTransitionReceipt>(move.Move.CrossMapTransition);
+                Assert.Equal(OriginalMapRuntimeAdmission.RoyalReturnMap19TransitionCapability, receipt.Capability);
+                Assert.Equal(5, receipt.RecordIdentity.OneBasedRecordOrdinal);
+                Assert.Equal(new MapId("map19"), move.Move.Snapshot.Map);
+                Assert.Equal(new MapPosition(23, 3), move.Move.Snapshot.PlayerPosition);
+                Assert.Equal(1, move.Move.Snapshot.CurrentArea.OneBasedRecordOrdinal);
+                Assert.Same(map19, move.Move.Snapshot.CurrentRuntime);
+                Assert.Same(map19.WorkingLayout, move.Move.Snapshot.WorkingLayout);
+                Assert.Equal((byte)2, receipt.DestinationOpaqueFacing);
+                Assert.Equal((byte)2, move.Animation.OpaqueFacing);
+                Assert.Same(move.Animation, session.PrivateOriginalMapPlayerLocomotion);
+                Assert.Same(entry.Receipt, move.Move.Snapshot.Receipt);
+                Assert.Same(entry.Zone601, move.Move.Snapshot.Zone601);
+                Assert.Same(entry.Sarah, move.Move.Snapshot.Sarah);
+                Assert.Same(entry.Entity142, move.Move.Snapshot.Entity142);
+                Assert.Same(entry.MessengerAcceptance, move.Move.Snapshot.MessengerAcceptance);
+                Assert.Same(entry.CastleGate, move.Move.Snapshot.CastleGate);
+            }
+            for (int tick = 0; tick < 13 && session.PrivateOriginalMapPlayerLocomotion.IsMoving; tick++)
+                session.AdvancePrivateOriginalMapPlayerLocomotion();
+            Assert.False(session.PrivateOriginalMapPlayerLocomotion.IsMoving);
+        }
+        Assert.Equal(applied.Snapshot.SimulationStep + 2, session.PrivateOriginalMapSnapshot.SimulationStep);
     }
 
     private static OriginalMapImportResult Admit(JsonObject document)
@@ -1633,6 +1672,69 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     }
 
     [Theory]
+    [InlineData("trigger/x", 22)]
+    [InlineData("trigger/y", 36)]
+    [InlineData("destination/x", 22)]
+    [InlineData("destination/y", 4)]
+    [InlineData("targetMap", 20)]
+    [InlineData("facing", 3)]
+    [InlineData("scrollMode", 16)]
+    [InlineData("reserved", 1)]
+    public void RoyalReturnRejectsAlteredExactWarpOperands(string field, int value)
+    {
+        JsonObject document = SampleDocument();
+        JsonNode row = PalaceResource(document, "warpEventTables", "Map20s6_WarpEvents")["records"]![4]!;
+        string[] parts = field.Split('/');
+        if (parts.Length == 2) row[parts[0]]![parts[1]] = value;
+        else row[field] = value;
+        AssertCode(Admit(document), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Theory]
+    [InlineData("address")]
+    [InlineData("count")]
+    [InlineData("retains")]
+    [InlineData("scrollDirection")]
+    [InlineData("missing")]
+    [InlineData("reordered")]
+    public void RoyalReturnRejectsChangedTableIdentityAndRecordShape(string drift)
+    {
+        JsonObject document = SampleDocument();
+        JsonObject table = PalaceResource(document, "warpEventTables", "Map20s6_WarpEvents");
+        JsonArray rows = table["records"]!.AsArray();
+        switch (drift)
+        {
+            case "address": table["address"] = 676827; break;
+            case "count": rows.RemoveAt(10); break;
+            case "retains": rows[4]!["retainsCoordinates"] = true; break;
+            case "scrollDirection": rows[4]!["scrollDirection"] = 0; break;
+            case "missing": rows[4]!.AsObject().Remove("facing"); break;
+            case "reordered": rows[4] = rows[3]!.DeepClone(); break;
+        }
+        AssertCode(Admit(document), drift == "missing"
+            ? OriginalMapImportFailureCode.InvalidDocument
+            : OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void RoyalReturnAdmitsRawFacingInsteadOfTheConflictingGraphAnnotation()
+    {
+        var definition = Assert.IsType<OriginalMapImportAccepted>(Admit(SampleDocument())).Definition;
+        var transition = Assert.IsType<OriginalMapCrossMapTransitionDefinition>(definition.RoyalReturnMap19Transition);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedRoyalReturnMap19Transition(transition));
+        Assert.Equal((byte)2, transition.DestinationOpaqueFacing);
+        string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+            "../../../../../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json"));
+        using JsonDocument fixture = JsonDocument.Parse(File.ReadAllText(path));
+        JsonElement source = fixture.RootElement.GetProperty("static");
+        Assert.Equal("LEFT", source.GetProperty("warps").GetProperty("map20Royal")[0].GetProperty("facing").GetString());
+        JsonElement graphWarp = source.GetProperty("routeGraph").GetProperty("segments").EnumerateArray()
+            .Single(row => row.GetProperty("id").GetString() == "map20-to-map19-royal-return");
+        // Preserve this accepted research annotation discrepancy; it is not the raw warp field.
+        Assert.Equal("DOWN", graphWarp.GetProperty("to").GetProperty("facing").GetString());
+    }
+
+    [Theory]
     [InlineData(0, "#$22803781,((ENTITY_DATA-$1000000)).w")]
     [InlineData(2, "608")]
     [InlineData(3, "ms_map20_flag501_InitFunction")]
@@ -1702,6 +1804,13 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         JsonObject resources = document["resources"]!.AsObject();
         JsonObject Find(string collection, string id) => resources[collection]!.AsArray()
             .OfType<JsonObject>().Single(row => row["id"]!.GetValue<string>() == id);
+        JsonObject returnTable = Find("warpEventTables", "Map20s6_WarpEvents");
+        returnTable["address"] = 676826;
+        returnTable["sourceKind"] = "warpEvents";
+        returnTable["records"] = JsonSerializer.SerializeToNode(
+            Enumerable.Range(0, 11).Select(index => index == 4
+                ? WarpRecord(23, 37, 19, 23, 3, 2)
+                : WarpRecord(0, 0, 255, 0, 0, 0)));
         JsonObject init = Find("initFunctions", "ms_map20_InitFunction");
         init["address"] = 342374;
         init["kind"] = "operationList";

@@ -194,7 +194,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapExplorationRuntimeCatalog? runtimeCatalog = null,
         OriginalMapCrossMapTransitionDefinition? northMap19Transition = null,
         OriginalMapCrossMapTransitionDefinition? royalMap20Transition = null,
-        OriginalMapPalaceFirstVisitDefinition? palaceFirstVisit = null)
+        OriginalMapPalaceFirstVisitDefinition? palaceFirstVisit = null,
+        OriginalMapCrossMapTransitionDefinition? royalReturnMap19Transition = null)
     {
         ArgumentNullException.ThrowIfNull(map);
         ArgumentNullException.ThrowIfNull(workingLayout);
@@ -621,9 +622,31 @@ public sealed class OriginalMapImportDefinition
             }
         }
 
+        if (royalReturnMap19Transition is not null)
+        {
+            OriginalMapExplorationRuntimeDefinition sourceRuntime =
+                RuntimeCatalog.Resolve(royalReturnMap19Transition.Identity.SourceMap);
+            OriginalMapExplorationRuntimeDefinition destinationRuntime =
+                RuntimeCatalog.Resolve(royalReturnMap19Transition.DestinationMap);
+            if (royalReturnMap19Transition.Identity.SourceMap != new MapId(OriginalMapRuntimeAdmission.Map20Id) ||
+                !sourceRuntime.Traversal.IsWithinActiveArea(royalReturnMap19Transition.AdmittedApproach) ||
+                !sourceRuntime.Traversal.IsWithinActiveArea(royalReturnMap19Transition.AdmittedTrigger) ||
+                sourceRuntime.Traversal.ResolveCandidateTarget(sourceRuntime.WorkingLayout,
+                    royalReturnMap19Transition.AdmittedApproach, royalReturnMap19Transition.AdmittedDirection) !=
+                    royalReturnMap19Transition.AdmittedTrigger ||
+                !destinationRuntime.Traversal.IsWithinActiveArea(royalReturnMap19Transition.Destination) ||
+                OriginalMapTraversal.IsBlocked(destinationRuntime.WorkingLayout, royalReturnMap19Transition.Destination))
+            {
+                throw new ArgumentException(
+                    "The royal return must bind admitted source and destination runtimes.",
+                    nameof(royalReturnMap19Transition));
+            }
+        }
+
         NorthMap19Transition = northMap19Transition;
         RoyalMap20Transition = royalMap20Transition;
         PalaceFirstVisit = palaceFirstVisit;
+        RoyalReturnMap19Transition = royalReturnMap19Transition;
         ControlledStepCopy = controlledStepCopy;
         SameMapWarps = sameMapWarps;
         RoofOnLoadClear = roofOnLoadClear;
@@ -682,6 +705,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapCrossMapTransitionDefinition? RoyalMap20Transition { get; }
 
     public OriginalMapPalaceFirstVisitDefinition? PalaceFirstVisit { get; }
+
+    public OriginalMapCrossMapTransitionDefinition? RoyalReturnMap19Transition { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

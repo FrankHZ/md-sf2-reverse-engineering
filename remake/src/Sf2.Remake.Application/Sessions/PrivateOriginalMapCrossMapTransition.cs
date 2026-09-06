@@ -22,7 +22,9 @@ public sealed record PrivateOriginalMapCrossMapTransitionReceipt
 
     public string Capability => DestinationMap == new MapId(OriginalMapRuntimeAdmission.Map20Id)
         ? OriginalMapRuntimeAdmission.RoyalMap20TransitionCapability
-        : OriginalMapRuntimeAdmission.NorthMap19TransitionCapability;
+        : RecordIdentity.SourceMap == new MapId(OriginalMapRuntimeAdmission.Map20Id)
+            ? OriginalMapRuntimeAdmission.RoyalReturnMap19TransitionCapability
+            : OriginalMapRuntimeAdmission.NorthMap19TransitionCapability;
 
     public OriginalMapCrossMapTransitionIdentity RecordIdentity { get; }
 
@@ -54,14 +56,23 @@ public sealed partial class GameSession
                 ? current.Definition.NorthMap19Transition
                 : current.Map == new MapId(OriginalMapRuntimeAdmission.Map19Id)
                     ? current.Definition.RoyalMap20Transition
-                    : null;
+                    : current.Map == new MapId(OriginalMapRuntimeAdmission.Map20Id)
+                        ? current.Definition.RoyalReturnMap19Transition
+                        : null;
         if (transition is null ||
             current.Map != transition.Identity.SourceMap ||
             current.PlayerPosition != transition.AdmittedApproach ||
             command.Direction != transition.AdmittedDirection ||
-            current.CastleGate?.Opened != true)
+            current.CastleGate?.Opened != true ||
+            (current.Map == new MapId(OriginalMapRuntimeAdmission.Map20Id) && current.PalaceFirstVisit is null))
         {
             return false;
+        }
+
+        if (PrivateOriginalMapPlayerLocomotion.IsMoving)
+        {
+            throw new InvalidOperationException(
+                "A cross-map relocation is unavailable while player locomotion is active.");
         }
 
         OriginalMapExplorationRuntimeDefinition destinationRuntime =
@@ -97,8 +108,12 @@ public sealed partial class GameSession
             current.CastleGate,
             lastCastleGate: null,
             destinationRuntime,
-            receipt);
+            receipt,
+            current.PalaceFirstVisit);
+        PrivateOriginalMapPlayerLocomotionSnapshot animation =
+            PrivateOriginalMapPlayerLocomotionSnapshot.Relocate(PrivateOriginalMapPlayerLocomotion, receipt);
         _privateOriginalMapSnapshot = next;
+        _privateOriginalMapPlayerLocomotion = animation;
         applied = new PrivateOriginalMapMoveApplied(next, receipt);
         return true;
     }
