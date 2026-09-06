@@ -73,14 +73,25 @@ those retained digest fields. Their behavior, terminals, counts, and Unknowns do
 The player-ready fixture re-anchors its R2b/R2c/R3a `fixtureSha256` references under `static.retained`
 and `expectedObservation.records[0].retained`, plus `static.sourceProjectionSha256`, whose existing
 calculation includes R3a's retained R2c projection. This updates the expected comparison contract's
-static references; it is not a new runtime observation. The completed original run and its raw
-observation remain unchanged and were not replayed for this correction.
+static references; that re-anchoring itself is not a new runtime observation. The completed original
+run and its raw observation remain unchanged. Under ADR 0012/0014, this candidate separately passes
+one dependency-selected `uv run sf2 h3 map3-battle01-player-ready` run: one case, 46 logical inputs,
+one launch, complete status/golden/restoration checks, zero retained callbacks, and deletion of the
+session ROM. The Lua Console output is empty and the process exits. The candidate's receipts are
+preserved separately; this does not establish any new natural-continuity claim.
 
 A complete structured comparison against accepted base `62718b6b4dcb4ca100aafca734e32e082237353f`
 permits only those seven scalar pointers in the H3 fixture. Its cases, controlled Map 21 bridge,
 input plan, warps, RAM, functions, source hashes, and every runtime observation field are unchanged.
 The observer source is unchanged; rebuilding its configuration changes only the three
 `extension.retained` fixture digests. The original natural-continuity Unknowns remain in force.
+
+The original-reference scenario descriptor retains the finalization and victory fixtures by raw
+file hash. Its two `/staticFixtures/*/sha256` references were already stale at the accepted base:
+preflight completed with `static-fixture-identity`, structured `FAIL`, and `ProcessStarts=0`, despite
+CLI exit 0. Only those two hashes are re-anchored; the complete remaining descriptor is unchanged.
+The selected `uv run sf2 h3 original-reference-replay-scenario-api --preflight-only` now reports
+`PASS`, `ProcessStarts=0`. This is descriptor validation, not original-reference replay execution.
 
 ## Unknown runtime boundary
 
