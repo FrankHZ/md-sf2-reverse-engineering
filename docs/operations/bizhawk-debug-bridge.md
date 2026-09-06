@@ -180,8 +180,8 @@ then exited 1 at toolchain provenance because the new worktree had no registered
 local `SF2DISASM` checkout. That completed result remains a failure. After preparing
 an independent checkout at the manifest-pinned commit and copying/verifying the
 registered JDK tree into this worktree, normal `uv run sf2 verify` **passed**,
-including all 148 commit-critical tests and toolchain provenance. No complete H3,
-H1 rebuild, or `--full` profile was run.
+including all 148 commit-critical tests and toolchain provenance. At the initial
+Draft boundary, no complete H3, H1 rebuild, or `--full` profile had been run.
 
 The clean committed planner classified `tools/bizhawk/debug_bridge.lua` as
 `unknown H3 input`, selecting all six H3 partitions plus public core and tooling
@@ -204,9 +204,9 @@ The post-correction command
 source-only and Lua-only bridge mappings, and a synthetic future reverse-dependent
 consumer. These do not execute a full Python suite or any H3 scenario.
 
-### Experiment stopping boundary: merge readiness is not satisfied
+### Initial Draft verification boundary
 
-The code candidate `c64075e718d2fc3a529f0cf2cb7cff18ab0fd5c7` has a clean
+The initial code candidate `c64075e718d2fc3a529f0cf2cb7cff18ab0fd5c7` had a clean
 committed plan with **no unclassified paths**, but the complete change also edits
 the planner and its existing owning test file. Its exact selection is reproducible
 with `uv run sf2 verify plan --base origin/main --head HEAD` on this clean candidate
@@ -230,15 +230,143 @@ Neither that import nor the planner's self-classification was changed to suppres
 these selections. The complete consumer command list remains in the reproducible
 planner output; the reason families above describe why it is selected.
 
-Main-gate explicitly limited this user-requested experiment to a reviewable Draft
-PR, with no additional complete Python, H1/H2/H3 or remake gate executions and no
-more emulator launches. This is a **verification stopping boundary**, not a waiver
-that turns the unexecuted selections into PASS or NotApplicable. Public CI is
-reported separately in the PR handoff; any CI checks it runs do not establish that
-all selected local/runtime partitions passed. The experiment smoke is **PASS**;
-merge readiness remains **not satisfied**, and this slice is **not Done**. The Draft
-must remain frozen for independent review, without merge, productionization, or
-worktree/ref cleanup.
+Main-gate initially limited the experiment to a reviewable Draft PR. The **NOT RUN**
+entries above preserve that initial verification stopping boundary; they were not
+a waiver or PASS. Merge readiness was not satisfied at that boundary. The subsequent
+merge-readiness authorization admitted the selected gates below, while preserving
+the eleven completed bridge launches and prohibiting additional bridge smoke runs.
+
+### Merge-readiness follow-up
+
+The expanded change owns the original six bridge/planner paths and five test files:
+`test_original_reference_replay.py`, `test_map3_entity142_interactable_reference.py`,
+`test_map3_original_player_reference_frame.py`, `test_map3_messenger_acceptance.py`,
+and `test_h3_bootstrap_inventory.py`, all under `tests/python/`. Production H2/H3
+code, schemas, registries and fixed digests are unchanged by these test corrections.
+
+Direct bridge verification consists of the 27 focused tests and the eleven real
+bridge launches accounted above. The combined 113-test run also covers planner
+ownership. The subsequent H1, H2, H3 and remake checks exercised the existing
+verifiers and launchers; **those H2/H3 commands did not use the bridge**. Their
+conservative planner selection and results are regression evidence, not additional
+observations of the bridge transport or a measure of its usefulness.
+
+One `pwsh -NoProfile -File scripts/Invoke-Sf2Rebuild.ps1 -KeepBuildArtifacts`
+**passed**, reproducing all 2,097,152 bytes of the manifest baseline. Its retained
+listing, symbols and binary supply the conventional local H1 consumer filenames.
+The initial copy omitted the conventional binary name; the correction copied the
+actual retained successful rebuild output and verified its identity. It did not
+substitute the original ROM for a rebuild or run a second rebuild.
+
+The single complete Python discovery run used
+`uv run pytest -n 4 --dist loadfile --max-worker-restart 0 --durations 25 --tb=short`
+with an ignored JUnit destination. It **completed with exit 1: 2,970 passed,
+193 failed, 9 skipped in 1,539.69 seconds**. Of those failures, 188 stopped on the
+missing conventional H1 binary/denominator. After supplying the retained H1 output,
+those exact 188 nodes **passed in 58.92 seconds**. The complete suite was not rerun.
+
+Four of the original nine skips also depended on that missing H1 binary. Once the
+input existed, these exact nodes **passed separately in 12.38 seconds**:
+`test_field_search_control.py::test_field_search_retained_owner_digest_drift_rejects_fixture_comparison`,
+`test_field_search_control.py::test_field_search_complete_verifier_matches_fixture`,
+`test_field_item_effects.py::test_field_item_effects_complete_verifier_matches_fixture`,
+and `test_field_menu_control.py::test_field_menu_complete_verifier_matches_fixture`,
+all under `tests/python/`. The other five original skips remain the explicit resvg
+and private-visual environment-variable opt-ins; they were not silently promoted
+to passing checks.
+
+The other five completed failures were present in the accepted base and are
+preserved here by their exact test nodes:
+
+- `tests/python/test_original_reference_replay.py::test_real_global_ordinal_one_lock_is_consumed_read_only`
+  required a private historical launch ledger in a new worktree. The test now
+  visibly skips only when its local ledger file is absent. An existing empty,
+  malformed or forged ledger still reaches the strict validator. Synthetic missing
+  and forged-lock tests remain intact; no historical ledger was copied or invented.
+- `tests/python/test_map3_entity142_interactable_reference.py::test_index_has_exact_existing_record_delta_and_public_totals`
+  applied an owner-only remover directly to the later current index. It now uses the
+  existing strict registered chain to recover that owner's state before checking
+  the unchanged predecessor digest, exact bindings and nonmutation.
+- `tests/python/test_map3_original_player_reference_frame.py::test_index_has_exact_existing_owner_delta_and_public_totals`
+  retained totals from before the accepted player-ready registration. Both affected
+  index tests now check 96 H3 fixtures and 3,111 address bindings; exact global and
+  owner checks remain.
+- `tests/python/test_map3_messenger_acceptance.py::test_observer_config_has_no_accepted_output_and_closed_roles_and_phases`
+  counted the shared observer's opt-in player-ready callbacks as messenger callbacks.
+  The test now checks the two complete `config.extension` registration blocks,
+  preserves messenger enum checks, and closes the extension's 17 registrations and
+  ten phases against exact accepted sets. Guard-removal and unknown-role mutations
+  must fail. The extension schema permits nonempty role/phase strings: the exact
+  extension sets are a **test boundary**, not a newly claimed schema enum.
+- `tests/python/test_h3_bootstrap_inventory.py::test_h3_bootstrap_registry_closes_every_registered_owner`
+  omitted the accepted player-ready command from command/launch totals. Its one
+  launch is checked explicitly: eight witch-menu commands, 72 one-launch commands,
+  and 139 registered launches. The seven witch-menu observer count remains unchanged.
+
+All five complete owning test files **passed: 116 passed, one optional historical
+ledger skip in 27.09 seconds**, including the new callback-boundary mutations.
+These results and the 188-node correction are separate results; they do not turn
+the completed 193-failure discovery run into a new complete-suite PASS.
+
+The committed eleven-path planner has no unclassified paths. Compared with the
+initial six-path plan it adds only `h2-presentation`, with
+`uv run sf2 h2 map3-entity142-interactable-reference` and
+`uv run sf2 h2 map3-original-player-reference-frame`, plus the five already executed
+owning test commands. The selected total is 33 H2 commands and the original 77 H3
+runtime/preflight commands. No broader legacy aggregate was run solely to repeat
+the already completed H1 and Python work.
+
+| Selected gate | Follow-up result |
+| --- | --- |
+| Full Python discovery and corrections | Original **FAIL** retained; 188 corrected nodes **PASS**; five owning files **116 PASS / one skip**; four newly enabled H1 nodes **PASS**; five original opt-in skips retained |
+| H1 | **PASS**, one byte-perfect retained rebuild |
+| Release .NET restore/build/test | **PASS** in Public CI run `34010394626` at `535ebba09dab2b17347020453594e982f8900af6`; retained across test/document-only corrections |
+| Godot | **PASS**, `uv run python -m sf2tool.remake_godot`; all seven steps exit 0, no timeout, cleanup clean |
+| H2 | **PASS**, all 33 selected commands; explicit owning PASS or complete saved output/fixture comparison reviewed separately from process completion |
+| H3 | **30 semantic PASS / 47 NOT RUN**; queue safely paused after `spell-status`, with no callback failures or remaining owned processes in the completed commands |
+| Final public-core, committed planner and CI | Required on the frozen head for independent integration; exact head and results are recorded in [PR #310](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/310) |
+
+The last H3 command, `uv run sf2 h3 spell-status`, completed naturally with exit 0
+and semantic PASS at 2026-09-06 00:40:13 America/Chicago. The next command,
+`spell-summon`, was held before launch. The queue's exit 1 reflects that deliberate
+hold, not an interrupted command or an H3 test failure. No emulator was terminated
+to pause the queue. All 30 completed commands have explicit owning PASS results,
+saved status snapshots without callback-failure markers, and no residual owned PID.
+
+These **47 commands remain NOT RUN**. Each entry is a suffix of `uv run sf2 h3`:
+
+| Selected partition | Unexecuted command suffixes |
+| --- | --- |
+| `h3-battle01` (1) | `spell-summon` |
+| `h3-map-debug` (25) | `entity-movement`, `entity-population-reload`, `force-state-active-party`, `force-state-roster-death`, `map-animation-vdp`, `map-block-copy-lifecycle`, `map-block-mutation`, `map-camera-control`, `map-entity-action-bridge`, `map-entity-gesture-relationship-motion`, `map-entity-lifecycle-presentation`, `map-entity-placement`, `map-event-dispatch`, `map-init-dispatch`, `map-interaction-trigger`, `map-lifecycle`, `map-script-control-audio`, `map-script-dialogue`, `map-script-entity-clone`, `map-script-entity-presentation-fx`, `map-script-screen-presentation`, `map-script-transition`, `map-script-ui-primary`, `map-setup-selection`, `story-state` |
+| `h3-direct-seam` (11) | `blacksmith-mithril`, `church-cure-lifecycle`, `church-raise-lifecycle`, `church-save-lifecycle`, `controller-input`, `growth`, `growth-prowess`, `growth-refresh`, `service-menu-lifecycle`, `sram-lifecycle`, `stat-clamps` |
+| `h3-witch` (8) | `map3-admitted-start`, `map3-battle01-natural-route`, `map3-battle01-player-ready`, `map3-messenger-acceptance`, `map3-original-player-locomotion-animation`, `witch-new-game-lifecycle`, `witch-save-actions`, `witch-save-menu-actions` |
+| `h3-sound` (1) | `sound-timing` |
+| `h3-original-reference` (1) | `original-reference-replay-capability --preflight-only` |
+
+The clean-head planner reproduces the full selection. Ignored per-command logs,
+status snapshots, `h2-semantic-review.json`, `h3-semantic-review.json` and
+`main-gate-hold-summary.json` are retained under
+`local/derived/debug-bridge/merge-gates/`; they contain private/generated data and
+must not be attached to the PR. The table above preserves the unexecuted boundary
+without requiring access to those local records.
+
+### Bounded merge acceptance for PR #310
+
+On 2026-09-06, the user explicitly authorized merging PR #310 and main-gate
+accepted its bounded integration on the recorded direct bridge evidence,
+proportional public verification and the disclosed regression boundary. The
+remaining 47 H3 commands stay paused; this decision does not require resuming them.
+It applies **only to PR #310**. It neither changes the global planner nor relabels
+the unexecuted selections as PASS or NotApplicable. The original full Python
+failure and its separate correction results remain as recorded above.
+
+Independent main-gate review retains execution of the merge after the frozen
+head's normal `uv run sf2 verify`, clean committed-head
+`uv run sf2 verify plan --base origin/main --head HEAD`, and public CI are checked.
+This acceptance preserves the graceful-EOF cleanup failure and the successful
+owned-process containment boundary. It does not establish a production debugger,
+original-game behavior evidence, or authorization for worktree/ref cleanup.
 
 Rough timings from launch 08: warm queries roughly 0.5–18 ms, three frames about
 51 ms, callback run about 167 ms. These are one local operational sample, including
