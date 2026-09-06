@@ -221,24 +221,26 @@ def test_h3_bootstrap_registry_closes_every_registered_owner() -> None:
         "original-reference": 2,
     }
     assert list(dispatches).count("service-menu-lifecycle") == 1
+    assert bootstrap.H3_COMMAND_PROFILES["map3-battle01-player-ready"] == "witch-menu"
+    assert bootstrap.COMMAND_LAUNCHES["map3-battle01-player-ready"].expected_launches == 1
     assert Counter(bootstrap.H3_COMMAND_PROFILES.values()) == {
         "battle01-intro-skip": 31,
         "map-debug-host": 25,
         "direct-function-seam": 11,
-        "witch-menu": 7,
+        "witch-menu": 8,
         "sound-driver": 1,
         "original-reference": 2,
     }
     assert Counter(launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()) == {
         0: 1,
-        1: 71,
+        1: 72,
         2: 1,
         8: 1,
         16: 1,
         14: 1,
         27: 1,
     }
-    assert sum(launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()) == 138
+    assert sum(launch.expected_launches for launch in bootstrap.COMMAND_LAUNCHES.values()) == 139
     assert Counter(bootstrap.LEGACY_LAUNCHER_PROFILES.values()) == {
         "battle01-intro-skip": 15,
     }

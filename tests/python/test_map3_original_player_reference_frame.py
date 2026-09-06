@@ -355,7 +355,7 @@ def test_index_has_exact_existing_owner_delta_and_public_totals() -> None:
     result = verify_index()
     assert result["Records"] == 1627
     assert result["H2Fixtures"] == 103
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 95
-    assert result["AddressBindings"] == 3109
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 96
+    assert result["AddressBindings"] == 3111
     assert result["ResearchDocuments"] == 66
     assert result["DesignContracts"] == 68

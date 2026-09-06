@@ -885,6 +885,8 @@ def test_global_ordinal_one_lock_rejects_forged_or_missing_rows_before_process(
 
 
 def test_real_global_ordinal_one_lock_is_consumed_read_only() -> None:
+    if not replay._ledger_path().exists():
+        pytest.skip("this worktree has no optional private historical launch ledger")
     ledger = replay._validate_ledger(replay._load_ledger())
     ordinal_one = next(row for row in ledger if row["ordinal"] == 1)
 
