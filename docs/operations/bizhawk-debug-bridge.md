@@ -179,6 +179,20 @@ then exited 1 at toolchain provenance because the new worktree has no registered
 local `SF2DISASM` checkout. The aggregate command is **not a pass**; that dependency
 is unavailable here. No complete H3, H1 rebuild, or `--full` profile was run.
 
+The clean committed planner classified `tools/bizhawk/debug_bridge.lua` as
+`unknown H3 input`, selecting all six H3 partitions plus public core and tooling
+Python. This is a real placement/ownership problem, not permission to ignore its
+selection. The focused public-CI node
+`tests/python/test_verification_plan.py::test_every_tracked_h2_h3_artifact_has_closed_exact_ownership`
+was run and **failed** at line 817 because that exact Lua path is outside the
+closed H3 owner sets. Its completed result is retained; no historical H3 suite or
+complete Python suite was run in response. Main-gate must decide the smallest
+ownership correction before acceptance. The proposed correction is moving this
+communication-only script to `tools/debug_bridge.lua`, outside the H3-specific
+directory, with the Python script reference and this document updated; it requires
+the explicitly assigned Lua path ownership to be extended first. Do not weaken the
+planner, the closed-owner assertion, or an existing H3 fixture to admit this tool.
+
 Rough timings from launch 08: warm queries roughly 0.5–18 ms, three frames about
 51 ms, callback run about 167 ms. These are one local operational sample, including
 UI scheduling, not a benchmark, latency guarantee, or measured agent quota saving.
@@ -192,7 +206,7 @@ UI scheduling, not a benchmark, latency guarantee, or measured agent quota savin
 - **Unknown:** graceful Lua callback unregistration after EOF. The retained process
   handle was killed and waited successfully, so that core cannot continue executing
   callbacks; the last status file does not prove `event.unregisterbyid` ran.
-- **Unknown:** idle sessions longer than five seconds, other cores/releases/OSes,
+- **Unknown:** sustained sessions with periodic keepalives, other cores/releases/OSes,
   external script cancellation, hostile local clients, and sustained throughput.
   A stalled receive can block the emulator UI; do not use the bridge as a production
   debugger or a replacement for accepted batch H3 evidence.
