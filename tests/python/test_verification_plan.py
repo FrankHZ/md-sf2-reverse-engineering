@@ -1099,6 +1099,36 @@ def test_remake_asset_preflight_runner_and_test_select_tooling_and_dotnet() -> N
     assert runner["unclassifiedPaths"] == test["unclassifiedPaths"] == []
 
 
+@pytest.mark.parametrize("path", ("src/sf2tool/bizhawk_debug_bridge.py", "tools/debug_bridge.lua"))
+def test_debug_bridge_source_and_lua_select_owning_tests_only(path: str) -> None:
+    plan = plan_paths((path,), root=ROOT)
+
+    assert _partition_ids(plan) == {"public-core", "tooling-python"}
+    assert _partition(plan, "tooling-python")["commands"] == [
+        "uv run pytest tests/python/test_bizhawk_debug_bridge.py"
+    ]
+    assert plan["unclassifiedPaths"] == []
+
+
+def test_debug_bridge_source_preserves_future_reverse_dependents(tmp_path: Path) -> None:
+    source = tmp_path / "src/sf2tool"
+    source.mkdir(parents=True)
+    (source / "bizhawk_debug_bridge.py").write_text("", encoding="utf-8")
+    (source / "harness.py").write_text("import sf2tool.bizhawk_debug_bridge\n", encoding="utf-8")
+
+    plan = plan_paths(("src/sf2tool/bizhawk_debug_bridge.py",), root=tmp_path)
+
+    assert _partition_ids(plan) == {"public-core", "tooling-python", "h1-original"}
+    assert _partition(plan, "tooling-python")["commands"] == [
+        "uv run pytest tests/python/test_bizhawk_debug_bridge.py"
+    ]
+    assert (
+        "src/sf2tool/bizhawk_debug_bridge.py reaches sf2tool.harness"
+        in _partition(plan, "h1-original")["reasons"]
+    )
+    assert plan["unclassifiedPaths"] == []
+
+
 def test_remake_asset_builder_and_toolchain_select_tooling_only() -> None:
     runner = plan_paths(("src/sf2tool/remake_asset_build.py",), root=ROOT)
     toolchain = plan_paths(("remake/presentation-toolchain.json",), root=ROOT)

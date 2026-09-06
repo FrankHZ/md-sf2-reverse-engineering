@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from jsonschema import Draft7Validator
 
+from sf2tool import research_index
 from sf2tool.h2 import map3_entity142_interactable_reference as reference
 from sf2tool.jsonio import validate_json
 from sf2tool.research_index import verify_index
@@ -253,6 +254,7 @@ def test_public_fixture_has_no_private_payload_or_path_surface() -> None:
 
 def test_index_has_exact_existing_record_delta_and_public_totals() -> None:
     index = json.loads((ROOT / "manifests/research-index.json").read_text(encoding="utf-8"))
+    original = copy.deepcopy(index)
     evidence = [
         (record, item)
         for record in index["records"]
@@ -262,13 +264,24 @@ def test_index_has_exact_existing_record_delta_and_public_totals() -> None:
     assert len(evidence) == 8
     assert sum(len(item["bindings"]) for _, item in evidence) == 8
     assert sum(record["documents"].count(reference._INDEX_DOCUMENT) for record, _ in evidence) == 8
-    normalized = reference._remove_map3_entity142_interactable_reference_later_owner_index_delta(
-        index
+    owner_state = research_index._normalize_current_index_to_owner_state(
+        index, owner_id=reference.ID
     )
+    normalized = reference._remove_map3_entity142_interactable_reference_later_owner_index_delta(
+        owner_state
+    )
+    assert index == original
     assert reference._canonical_digest(normalized) == reference._PREDECESSOR_INDEX_SHA256
+    assert (
+        research_index.normalize_current_index_to_owner_predecessor(index, owner_id=reference.ID)
+        == normalized
+    )
+    step = next(row for row in research_index._LATER_OWNER_STEPS if row.owner_id == reference.ID)
+    assert step.state_sha256 == research_index._canonical_index_sha256(owner_state)
+    assert step.predecessor_sha256 == research_index._canonical_index_sha256(normalized)
     result = verify_index()
     assert result["Records"] == 1627
     assert result["H2Fixtures"] == 103
-    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 95
-    assert result["AddressBindings"] == 3109
+    assert result["H3Fixtures"] == result["H3FixtureFiles"] == 96
+    assert result["AddressBindings"] == 3111
     assert result["ResearchDocuments"] == 66

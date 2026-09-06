@@ -12,7 +12,9 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from jsonschema import Draft202012Validator
 
+from sf2tool.h3 import map3_battle01_player_ready as player_ready
 from sf2tool.h3 import map3_messenger_acceptance as rail
 from sf2tool.h3.bizhawk import bizhawk_contract
 from sf2tool.jsonio import load_json, validate_json
@@ -424,20 +426,50 @@ def test_fixture_and_retained_projection_drift_stop_before_launch(
     assert calls >= 2
 
 
-def test_observer_config_has_no_accepted_output_and_closed_roles_and_phases() -> None:
-    fixture = load_json(rail.FIXTURE)
-    config = rail._observer_config(fixture, _contract())
-
-    rail._assert_clean_config(config)
-    rail._assert_lua_roles()
-
-    source = rail.OBSERVER.read_text(encoding="utf-8")
-    callback_roles = set(re.findall(r'add_callback\([^,\n]+,\s*"([^"]+)"', source))
+def _assert_observer_callback_owners(source: str) -> None:
+    assert "local extension_enabled = config.extension ~= nil" in source
+    assert (
+        'local OWNER = extension_enabled and config.extension.owner or "map3-messenger-acceptance"'
+        in source
+    )
+    # These are the two top-level opt-in registration blocks in the shared observer.
+    # Match their complete boundaries; a moved or unguarded callback must fail.
+    guard = r"^if extension_enabled then\n.*?^end$"
+    blocks = re.findall(guard, source, re.MULTILINE | re.DOTALL)
+    assert len(blocks) == 2
+    callback = r'add_callback\(([^,\n]+),\s*"([^"]+)"'
+    registrations = re.findall(callback, source)
+    assert len(re.findall(r"\badd_callback\(", source)) == len(registrations) + 1
+    extension_callbacks = re.findall(callback, "\n".join(blocks))
+    expected_extension = {
+        "config.functions.ProcessMapEvent": "extension-map-event-dispatch",
+        "config.extension.functions.CheckBattle": "extension-check-battle",
+        "config.extension.functions.BattleLoop": "extension-battle-loop",
+        "config.extension.functions.ExecuteBeforeBattleCutscene": "extension-before-battle",
+        "config.extension.functions.csc15_setEntityActscript": "extension-before-set-actscript",
+        "config.extension.functions.csc2A_entityShiver": "extension-before-entity-shiver",
+        "config.extension.functions.csc2D_entityActionSequence": "extension-before-entity-actions",
+        "config.extension.functions.LoadBattle": "extension-load-battle",
+        "config.extension.functions.ExecuteBattleStartCutscene": "extension-battle-start",
+        "config.extension.functions.ActivateEnemies": "extension-activate-enemies",
+        "config.extension.functions.ExecuteBattleRegionCutscene": "extension-region-cutscene",
+        "config.extension.functions.PopulateTargetsListWithSpawningEnemies": "extension-spawn-list",
+        "config.extension.functions.GenerateBattleTurnOrder": "extension-turn-order",
+        "config.extension.functions.ExecuteIndividualTurn": "extension-individual-turn",
+        "config.extension.functions.ProcessBattleEntityControlPlayerInput": (
+            "extension-player-control"
+        ),
+        "config.extension.functions.ControlBattleEntity": "extension-control-battle-entity",
+        "config.extension.functions.playerReadyPc": "extension-player-ready",
+    }
+    assert len(extension_callbacks) == len(expected_extension) == 17
+    assert dict(extension_callbacks) == expected_extension
+    base_source = re.sub(guard, "", source, flags=re.MULTILINE | re.DOTALL)
+    callback_roles = {role for _, role in re.findall(callback, base_source)}
     failure_schema = load_json(rail.FAILURE_SCHEMA)
     schema_roles = set(failure_schema["properties"]["role"]["enum"])
     assert callback_roles <= schema_roles
     assert callback_roles >= rail.REQUIRED_LUA_ROLES
-    assert "expectedObservation" not in json.dumps(config, sort_keys=True)
 
     phase_lines = [line for line in source.splitlines() if "phase" in line]
     produced_phases = {
@@ -448,6 +480,58 @@ def test_observer_config_has_no_accepted_output_and_closed_roles_and_phases() ->
     }
     schema_phases = set(failure_schema["properties"]["phase"]["enum"])
     assert produced_phases == schema_phases
+
+    extension_phases = {
+        "extension-bridge-requested",
+        "extension-bridge-injected",
+        "extension-bridge-loading",
+        "extension-route",
+        "extension-battle",
+        "extension-before",
+        "extension-load",
+        "extension-start",
+        "extension-turns",
+        "extension-await-player-ready",
+    }
+    extension_roles = set(expected_extension.values()) | {"extension-phase-watchdog"}
+    assert set(re.findall(r'"(extension-[a-z0-9-]+)"', source)) == (
+        extension_roles | extension_phases
+    )
+    extension_schema = load_json(player_ready.FAILURE_SCHEMA)
+    assert extension_schema["properties"]["owner"]["const"] == player_ready.OWNER
+    # The accepted extension schema permits nonempty strings. Exact closure above
+    # belongs to this test, not to a nonexistent enum in that schema.
+    for role in extension_roles:
+        Draft202012Validator(extension_schema["properties"]["role"]).validate(role)
+    for phase in extension_phases:
+        Draft202012Validator(extension_schema["properties"]["phase"]).validate(phase)
+
+
+def test_observer_config_has_no_accepted_output_and_closed_roles_and_phases() -> None:
+    fixture = load_json(rail.FIXTURE)
+    config = rail._observer_config(fixture, _contract())
+    rail._assert_clean_config(config)
+    rail._assert_lua_roles()
+    assert "extension" not in config
+    extension_fixture = load_json(player_ready.FIXTURE)
+    extension_config = player_ready._observer_config(extension_fixture, extension_fixture["static"])
+    assert extension_config["extension"]["owner"] == player_ready.OWNER
+    assert player_ready.OBSERVER == rail.OBSERVER
+    assert "expectedObservation" not in json.dumps([config, extension_config], sort_keys=True)
+    _assert_observer_callback_owners(rail.OBSERVER.read_text(encoding="utf-8"))
+
+
+@pytest.mark.parametrize("mutation", ["outside-guard", "unknown-role"])
+def test_shared_observer_callback_ownership_rejects_near_misses(mutation: str) -> None:
+    source = rail.OBSERVER.read_text(encoding="utf-8")
+    if mutation == "outside-guard":
+        source = source.replace(
+            "if extension_enabled then\n    add_callback", "do\n    add_callback", 1
+        )
+    else:
+        source = source.replace('"extension-check-battle"', '"extension-unknown"', 1)
+    with pytest.raises(AssertionError):
+        _assert_observer_callback_owners(source)
 
 
 def test_typed_callback_failure_reports_consistent_cleanup_facts(

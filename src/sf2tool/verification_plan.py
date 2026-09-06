@@ -674,6 +674,17 @@ def plan_paths(
 
     for path in changed_paths:
         normalized = path.replace("\\", "/")
+        if normalized in {"src/sf2tool/bizhawk_debug_bridge.py", "tools/debug_bridge.lua"}:
+            _selection_entry(
+                selected,
+                "tooling-python",
+                normalized,
+                ("uv run pytest tests/python/test_bizhawk_debug_bridge.py",),
+            )
+            if normalized.endswith(".py"):
+                _select_dependents(selected, root, normalized)
+            continue
+
         if normalized == "remake/presentation-toolchain.json":
             _selection_entry(
                 selected,
