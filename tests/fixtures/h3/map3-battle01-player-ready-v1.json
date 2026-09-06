@@ -43,15 +43,15 @@
       },
       "sf2-map3-castle-battle-unlock-static-v1": {
         "fixtureId": "sf2-map3-castle-battle-unlock-static-v1",
-        "fixtureSha256": "9FC8CEF9CD86CCA0D9DE44998CCBEE8DFF32FCEE618BA5B94AD64ECA3A19B416"
+        "fixtureSha256": "4E66A473106A104DAF189F9168668CD8BBC2F47EF507A7247A32F322CE6F715A"
       },
       "sf2-map3-battle01-admission-static-v1": {
         "fixtureId": "sf2-map3-battle01-admission-static-v1",
-        "fixtureSha256": "575ADCF64113C3A62E1AD3635D594904FC0B0E8F8E552ECFFEFEB227C9DFCDE8"
+        "fixtureSha256": "91C439D7F81BB31165AF8DF00BBC466CE47F5BE0A4F450F517256CEC2BED11CB"
       },
       "sf2-map3-battle01-turn-control-static-v1": {
         "fixtureId": "sf2-map3-battle01-turn-control-static-v1",
-        "fixtureSha256": "82740FF408AB1FD3FE00E31AA5F760FBA52DDF67799516C1FCDEEDEF9437872F"
+        "fixtureSha256": "08189F29C8BD672DC31750F74289B9D75C54398E0F85E83F9C2A395B8DF588A4"
       }
     },
     "bridge": {
@@ -1068,7 +1068,7 @@
       "code/common/scripting/map/ms_empty.asm": "7CA9C3D7EAE975FC5A6D33F6363654471D4A7A0E4F02BF4C230DC51433BD263E",
       "data/battles/entries/battle01/cs_beforebattle.asm": "721CAC2A111704E45D4310730A3F3EFCEDA241384D3A0E6B5B7FA7C50EB1C110"
     },
-    "sourceProjectionSha256": "38C32D404FF387AE4BC35823748982A176275291ABF4C78622A3CA8995F862F6"
+    "sourceProjectionSha256": "F939B2B1570F16452DD20F5090B8A70A59CBF5E9352EC083284952867D0B8509"
   },
   "expectedObservation": {
     "callbacksCleared": true,
@@ -1259,7 +1259,7 @@
           },
           "sf2-map3-battle01-admission-static-v1": {
             "fixtureId": "sf2-map3-battle01-admission-static-v1",
-            "fixtureSha256": "575ADCF64113C3A62E1AD3635D594904FC0B0E8F8E552ECFFEFEB227C9DFCDE8"
+            "fixtureSha256": "91C439D7F81BB31165AF8DF00BBC466CE47F5BE0A4F450F517256CEC2BED11CB"
           },
           "sf2-map3-battle01-natural-route-runtime-v1": {
             "fixtureId": "sf2-map3-battle01-natural-route-runtime-v1",
@@ -1267,11 +1267,11 @@
           },
           "sf2-map3-battle01-turn-control-static-v1": {
             "fixtureId": "sf2-map3-battle01-turn-control-static-v1",
-            "fixtureSha256": "82740FF408AB1FD3FE00E31AA5F760FBA52DDF67799516C1FCDEEDEF9437872F"
+            "fixtureSha256": "08189F29C8BD672DC31750F74289B9D75C54398E0F85E83F9C2A395B8DF588A4"
           },
           "sf2-map3-castle-battle-unlock-static-v1": {
             "fixtureId": "sf2-map3-castle-battle-unlock-static-v1",
-            "fixtureSha256": "9FC8CEF9CD86CCA0D9DE44998CCBEE8DFF32FCEE618BA5B94AD64ECA3A19B416"
+            "fixtureSha256": "4E66A473106A104DAF189F9168668CD8BBC2F47EF507A7247A32F322CE6F715A"
           },
           "sf2-map3-messenger-acceptance-runtime-v1": {
             "fixtureId": "sf2-map3-messenger-acceptance-runtime-v1",

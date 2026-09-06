@@ -198,16 +198,15 @@ to Map 19 `(23,3)`. The accepted canonical import's `Map20s6_WarpEvents` table a
 facing `2`, reserved `0`, `retainsCoordinates=false`, and `scrollDirection=null`. Content requires
 that exact record identity, shape and operands, then binds the existing cross-map definition.
 
-The facing discrepancy in accepted research is preserved explicitly. `static.warps.map20Royal`
-records `LEFT`, checked against the pinned source's `data/maps/entries/map20/6-warp-events.asm` by
+`static.warps.map20Royal` and the `static.routeGraph` segment
+`map20-to-map19-royal-return.to.facing` both record `LEFT`, derived from record 5 of the pinned
+`data/maps/entries/map20/6-warp-events.asm` by
 [`_warps`](../../src/sf2tool/h2/map3_castle_battle_unlock.py). The canonical
 [`_decode_warps`](../../src/sf2tool/h2/map_import.py) reads `facing` directly from byte offset 6 of each
-8-byte record; the accepted return byte is `2`, consistent with `LEFT`. In contrast, the same fixture's
-`static.routeGraph` segment `map20-to-map19-royal-return` has a separately hardcoded
-`to.facing="DOWN"`. That annotation is not derived from the warp byte and is not the product's facing
-authority. Its intended interpretation remains **Unknown**; neither a later init-facing change nor
-natural runtime orientation is inferred from it. The minimal research correction owner is the graph
-row in `map3_castle_battle_unlock.py` and its existing static fixture, outside this product slice.
+8-byte record; the accepted return byte is `2`, consistent with `LEFT`. Research checks the ordered
+source fields against that decoded record and the H1/ROM table before validating the graph consumer.
+The product continues to use the raw warp field. Natural runtime orientation and any later
+init-facing change remain **Unknown**.
 
 The controlled return requires the retained first-visit result, exact Map 20 approach `(23,38)`, and
 north direction. Entering the terminal without the completed result, from another approach, or with
