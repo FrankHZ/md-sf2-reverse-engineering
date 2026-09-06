@@ -7,7 +7,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from sf2tool.h2.battle_ai import _parse_source_file
+from sf2tool.h2.battle_ai import _function_block, _parse_source_file, _strip_comment
 from sf2tool.h2.battle_scene_animations import _listing_address
 from sf2tool.h2.battle_scene_engine import _resolve_upstream
 from sf2tool.jsonio import load_json, validate_json
@@ -46,6 +46,234 @@ def _require_fragments(source: str, fragments: tuple[str, ...], owner: str) -> N
     missing = [fragment for fragment in fragments if fragment not in source]
     if missing:
         raise ValueError(f"{owner} source-shape drift: missing {missing}")
+
+
+def _warp_function_statements(source: str, name: str) -> list[str]:
+    # Retain only the existing parser's structural end marker, not comment instructions.
+    lines = [
+        line if line.strip() == f"; End of function {name}" else _strip_comment(line)
+        for line in source.splitlines()
+    ]
+    cleaned = "\n".join(line.strip() for line in lines)
+    if (
+        len(re.findall(rf"^{re.escape(name)}:$", cleaned, re.MULTILINE)) != 1
+        or sum(line.strip() == f"; End of function {name}" for line in lines) != 1
+    ):
+        raise ValueError(f"warp facing function boundary drift: {name}")
+    try:
+        block = _function_block(cleaned, name)
+    except ValueError as error:
+        raise ValueError(f"warp facing function boundary drift: {name}") from error
+    statements = []
+    labels: set[str] = set()
+    for line in block.splitlines():
+        statement = re.sub(r"\s*,\s*", ",", " ".join(line.split()))
+        if statement:
+            if statement.endswith(":"):
+                if statement in labels:
+                    raise ValueError(f"warp facing duplicate label: {name}/{statement}")
+                labels.add(statement)
+            # Short/word branches have the same source-level target and stack role.
+            statement = re.sub(r"^(b(?:ra|sr|eq|ne|lt))\.[sw] ", r"\1 ", statement)
+            statements.append(statement)
+    return statements
+
+
+def _guard_warp_facing_handoff(sources: dict[str, str]) -> None:
+    """Check the facing/return source spine without adding runtime or output facts."""
+    exploration = sources["code/gameflow/exploration/exploration.asm"]
+    functions = sources["code/gameflow/exploration/explorationfunctions_2.asm"]
+    main = sources["code/gameflow/mainloop.asm"]
+
+    def check(actual: list[str], expected: tuple[str, ...], owner: str) -> None:
+        if actual != list(expected):
+            raise ValueError(f"warp facing source spine drift: {owner}")
+
+    def spine(statements: list[str]) -> list[str]:
+        # Keep every control/stack operation and predicate, plus every direct D3 or
+        # warp-field access. Nonselected arithmetic is not a newly claimed algorithm.
+        # The remaining original rows are arithmetic/data moves, not inline machine
+        # code, directives or unknown macros that could hide a control/stack effect.
+        allowed = {
+            "movem.l",
+            "movem.w",
+            "ext.l",
+            "divs.w",
+            "clr.w",
+            "move.b",
+            "move.w",
+            "move.l",
+            "movea.l",
+            "lsl.w",
+            "mulu.w",
+            "addq.l",
+            "moveq",
+            "lea",
+            "cmpi.w",
+            "cmpi.b",
+            "cmp.b",
+            "tst.b",
+            "beq",
+            "bne",
+            "blt",
+            "bra",
+            "bsr",
+            "jsr",
+            "rts",
+            "chkFlg",
+            "sndCom",
+        }
+        if any(not row.endswith(":") and row.split()[0] not in allowed for row in statements):
+            raise ValueError("warp facing unsupported source statement")
+        return [
+            row
+            for row in statements
+            if row.endswith(":")
+            or re.match(r"(?:b\w*|j\w*|r\w*|movem|cmp\w*|tst|chkFlg|sndCom)\b", row)
+            or re.search(r"\b(?:sp|a7|d3|MAP_EVENT_\w+|MAPDATA_\w*WARP\w*)\b", row)
+        ]
+
+    check(
+        spine(_warp_function_statements(exploration, "WarpIfSetAtPoint")),
+        (
+            "movem.l d0-d1/d7,-(sp)",
+            "movea.l MAPDATA_OFFSET_EVENT_WARP(a2),a2",
+            "@CheckWarp:",
+            "cmpi.w #-1,(a2)",
+            "beq @Done",
+            "tst.b (a2)",
+            "blt @CompareY",
+            "cmp.b (a2),d0",
+            "bne @NextPoint",
+            "@CompareY:",
+            "tst.b MAPDATA_EVENT_WARP_OFFSET_Y(a2)",
+            "blt @SetWarpElements",
+            "cmp.b MAPDATA_EVENT_WARP_OFFSET_Y(a2),d1",
+            "bne @NextPoint",
+            "@SetWarpElements:",
+            "move.w #MAP_EVENT_WARP,((MAP_EVENT_TYPE-$1000000)).w",
+            "move.l MAPDATA_EVENT_WARP_OFFSET_TYPE(a2),((MAP_EVENT_PARAM_1-$1000000)).w",
+            "move.w MAPDATA_EVENT_WARP_OFFSET_FACING(a2),((MAP_EVENT_PARAM_5-$1000000)).w",
+            "@Done:",
+            "movem.l (sp)+,d0-d1/d7",
+            "rts",
+            "@NextPoint:",
+            "addq.l #MAPDATA_EVENT_WARP_ENTRY_SIZE,a2",
+            "bra @CheckWarp",
+        ),
+        "WarpIfSetAtPoint",
+    )
+    dispatch = _warp_function_statements(functions, "ProcessMapEvent")
+    check(
+        dispatch[:3],
+        (
+            "clr.w ((MAP_EVENT_TYPE-$1000000)).w",
+            "subq.w #1,d0",
+            "beq ProcessMapEventType1_Warp",
+        ),
+        "ProcessMapEvent warp tail branch",
+    )
+    check(
+        spine(_warp_function_statements(functions, "ProcessMapEventType1_Warp")),
+        (
+            "tst.b ((MAP_EVENT_PARAM_1-$1000000)).w",
+            "bne loc_259CC",
+            "movem.w d0,-(sp)",
+            "sndCom SOUND_COMMAND_GET_D0_PARAMETER",
+            "movem.w (sp)+,d0",
+            "jsr j_MakeEntityIdle",
+            "movem.l (sp)+,d0",
+            "clr.w d3",
+            "move.b ((MAP_EVENT_PARAM_2-$1000000)).w,d0",
+            "bsr UpdatePlayerPosFromMapEvent",
+            "move.b ((MAP_EVENT_PARAM_3-$1000000)).w,d5",
+            "blt loc_259BA",
+            "loc_259BA:",
+            "move.b ((MAP_EVENT_PARAM_4-$1000000)).w,d5",
+            "blt loc_259C2",
+            "loc_259C2:",
+            "move.b ((MAP_EVENT_PARAM_5-$1000000)).w,d3",
+            "move.b ((MAP_EVENT_PARAM_1-$1000000)).w,d4",
+            "rts",
+            "loc_259CC:",
+            "jsr j_MakeEntityIdle",
+            "move.b ((MAP_EVENT_PARAM_2-$1000000)).w,d0",
+            "cmpi.b #MAP_OVERWORLD_PACALON_KINGDOM_DROUGHT,d0",
+            "bne @Continue",
+            "chkFlg 530",
+            "beq @Continue",
+            "@Continue:",
+            "jsr (ProcessMapTransition).w",
+            "move.b ((MAP_EVENT_PARAM_3-$1000000)).w,d0",
+            "blt loc_25A04",
+            "loc_25A04:",
+            "move.b ((MAP_EVENT_PARAM_4-$1000000)).w,d0",
+            "blt loc_25A18",
+            "loc_25A18:",
+            "clr.w d3",
+            "bsr UpdatePlayerPosFromMapEvent",
+            "jsr j_DeclareRaftEntity",
+            "rts",
+        ),
+        "ProcessMapEventType1_Warp zero/nonzero parameter paths",
+    )
+    check(
+        _warp_function_statements(functions, "UpdatePlayerPosFromMapEvent"),
+        (
+            "move.l a0,-(sp)",
+            "lea ((ENTITY_DATA-$1000000)).w,a0",
+            "move.w (a0),d1",
+            "ext.l d1",
+            "divs.w #MAP_TILE_SIZE,d1",
+            "move.w ENTITYDEF_OFFSET_Y(a0),d2",
+            "ext.l d2",
+            "divs.w #MAP_TILE_SIZE,d2",
+            "clr.w d3",
+            "move.b ENTITYDEF_OFFSET_FACING(a0),d3",
+            "movea.l (sp)+,a0",
+            "rts",
+        ),
+        "UpdatePlayerPosFromMapEvent",
+    )
+    loop = _warp_function_statements(functions, "ExplorationLoop")
+    try:
+        start, end = loop.index("loc_2586A:"), loop.index("loc_2587E:")
+    except ValueError as error:
+        raise ValueError("warp facing exploration caller boundary drift") from error
+    check(
+        loop[start:end],
+        (
+            "loc_2586A:",
+            "clr.w d0",
+            "bsr SetMoveSfx",
+            "bsr WaitForEvent",
+            "tst.w d0",
+            "beq loc_2587E",
+            "bsr ProcessMapEvent",
+            "bra loc_2586A",
+        ),
+        "ExplorationLoop direct caller and continuation",
+    )
+    check(
+        _warp_function_statements(main, "MainLoop"),
+        (
+            "module",
+            "clr.b ((DEACTIVATE_WINDOW_HIDING-$1000000)).w",
+            "@Start:",
+            "bsr SwitchMap",
+            "bsr CheckBattle",
+            "cmpi.w #-1,d7",
+            "beq @Exploration",
+            "move.w d7,d1",
+            "jsr j_BattleLoop",
+            "alt_MainLoopEntry:",
+            "bsr SwitchMap",
+            "@Exploration:",
+            "jsr j_ExplorationLoop",
+            "bra @Start",
+        ),
+        "MainLoop direct caller and continuation",
+    )
 
 
 def _index_records_for_gameflow_scope() -> list[dict[str, Any]]:
@@ -151,6 +379,7 @@ def _startup_facts(sources: dict[str, str]) -> dict[str, Any]:
 
 
 def _exploration_facts(sources: dict[str, str]) -> dict[str, Any]:
+    _guard_warp_facing_handoff(sources)
     main = sources["code/gameflow/mainloop.asm"]
     functions0 = sources["code/gameflow/exploration/explorationfunctions_0.asm"]
     functions1 = sources["code/gameflow/exploration/explorationfunctions_1.asm"]

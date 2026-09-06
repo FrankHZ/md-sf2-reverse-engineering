@@ -89,3 +89,232 @@ def test_gameflow_source_scope_join_rejects_missing_layout_file_coverage(
 
     with pytest.raises(ValueError, match="research-index source coverage drift"):
         gameflow._index_records_for_gameflow_scope()
+
+
+@pytest.mark.skipif(not UPSTREAM.is_dir(), reason="pinned upstream checkout is unavailable")
+def test_warp_facing_wrong_parameter_fails_during_inventory_construction(monkeypatch) -> None:
+    read_source = gameflow.read_upstream_text
+
+    def wrong_parameter(path):
+        source = read_source(path)
+        if path.name == "explorationfunctions_2.asm":
+            original = "move.b  ((MAP_EVENT_PARAM_5-$1000000)).w,d3"
+            assert source.count(original) == 1
+            source = source.replace(original, original.replace("PARAM_5", "PARAM_4"))
+        return source
+
+    monkeypatch.setattr(gameflow, "read_upstream_text", wrong_parameter)
+    with pytest.raises(ValueError, match="warp facing"):
+        build_gameflow_inventory(UPSTREAM)
+
+
+def test_warp_statements_are_function_scoped_comment_free_and_width_preserving() -> None:
+    source = """Other:
+        move.l d0,d3
+; End of function Other
+Probe: ; move.b wrong,d3
+        ; rts
+        move.b value , d3 ; move.w decoy,d3
+        bne.s @Finish
+@Finish: ; another comment
+        rts
+; End of function Probe
+Later:
+        move.w d1,d3
+; End of function Later
+"""
+    assert gameflow._warp_function_statements(source, "Probe") == [
+        "move.b value,d3",
+        "bne @Finish",
+        "@Finish:",
+        "rts",
+    ]
+    assert gameflow._warp_function_statements(source.replace("bne.s", "bne.w"), "Probe") == (
+        gameflow._warp_function_statements(source, "Probe")
+    )
+
+
+@pytest.mark.parametrize(
+    "source",
+    (
+        "ProbeExtra:\n rts\n; End of function ProbeExtra",
+        "; Probe:\n rts\n; End of function Probe",
+        "Probe:\n rts\n; End of function ProbeExtra",
+        "Probe:\n rts\n; End of function Probe\nProbe:\n rts\n; End of function Probe",
+        "Probe:\n@Same:\n@Same:\n rts\n; End of function Probe",
+        "Probe:\n rts\n; End of function Probe\n; End of function Probe",
+    ),
+    ids=(
+        "near-entry",
+        "comment-entry",
+        "near-end",
+        "duplicate-function",
+        "duplicate-label",
+        "duplicate-end",
+    ),
+)
+def test_warp_statements_reject_ambiguous_or_near_miss_boundaries(source: str) -> None:
+    with pytest.raises(ValueError, match="warp facing"):
+        gameflow._warp_function_statements(source, "Probe")
+
+
+@pytest.fixture
+def warp_sources() -> dict[str, str]:
+    if not UPSTREAM.is_dir():
+        pytest.skip("pinned upstream checkout is unavailable")
+    return {
+        str(path).replace("\\", "/"): gameflow.read_upstream_text(UPSTREAM / "disasm" / path)
+        for path in gameflow.SOURCE_PATHS
+        if path.name in ("exploration.asm", "explorationfunctions_2.asm", "mainloop.asm")
+    }
+
+
+def _change_warp_function(sources, name, old, new):
+    changed = dict(sources)
+    matches = [key for key, source in changed.items() if f"\n{name}:" in source]
+    assert len(matches) == 1
+    key = matches[0]
+    prefix, entry, rest = changed[key].partition(f"{name}:")
+    body, end, tail = rest.partition(f"; End of function {name}")
+    assert old in body
+    changed[key] = prefix + entry + body.replace(old, new, 1) + end + tail
+    return changed
+
+
+def test_warp_source_spine_accepts_original_and_legal_branch_suffixes(warp_sources) -> None:
+    assert gameflow._guard_warp_facing_handoff(warp_sources) is None
+    changed = _change_warp_function(
+        warp_sources, "ProcessMapEventType1_Warp", "bne.w   loc_259CC", "bne.s   loc_259CC"
+    )
+    changed = _change_warp_function(changed, "MainLoop", "bsr.w   SwitchMap", "bsr.s   SwitchMap")
+    changed = _change_warp_function(
+        changed,
+        "ProcessMapEventType1_Warp",
+        "move.b  ((MAP_EVENT_PARAM_5-$1000000)).w,d3",
+        "move.b\t((MAP_EVENT_PARAM_5-$1000000)).w , d3 ; not PARAM_4",
+    )
+    assert gameflow._guard_warp_facing_handoff(changed) is None
+
+
+@pytest.mark.parametrize(
+    ("name", "old", "new"),
+    (
+        (
+            "WarpIfSetAtPoint",
+            "move.w  MAPDATA_EVENT_WARP_OFFSET_FACING",
+            "move.b  MAPDATA_EVENT_WARP_OFFSET_FACING",
+        ),
+        (
+            "WarpIfSetAtPoint",
+            "MAPDATA_EVENT_WARP_OFFSET_FACING(a2)",
+            "MAPDATA_EVENT_WARP_OFFSET_TYPE(a2)",
+        ),
+        ("WarpIfSetAtPoint", "blt.s   @SetWarpElements", "bne.s   @SetWarpElements"),
+        ("WarpIfSetAtPoint", "@SetWarpElements:", "@SetWarpElementsWrong:"),
+        (
+            "ProcessMapEvent",
+            "beq.w   ProcessMapEventType1_Warp",
+            "bsr.w   ProcessMapEventType1_Warp",
+        ),
+        ("ProcessMapEventType1_Warp", "tst.b   ((MAP_EVENT_PARAM_1", "tst.w   ((MAP_EVENT_PARAM_1"),
+        ("ProcessMapEventType1_Warp", "bne.w   loc_259CC", "beq.w   loc_259CC"),
+        ("ProcessMapEventType1_Warp", "bne.w   loc_259CC", "bne.w   loc_259C2"),
+        ("ProcessMapEventType1_Warp", "movem.l (sp)+,d0", "movem.w (sp)+,d0"),
+        ("ProcessMapEventType1_Warp", "movem.l (sp)+,d0", "; movem.l (sp)+,d0"),
+        (
+            "ProcessMapEventType1_Warp",
+            "move.b  ((MAP_EVENT_PARAM_5-$1000000)).w,d3",
+            "move.w  ((MAP_EVENT_PARAM_5-$1000000)).w,d3",
+        ),
+        (
+            "ProcessMapEventType1_Warp",
+            "move.b  ((MAP_EVENT_PARAM_5-$1000000)).w,d3",
+            "move.b  ((MAP_EVENT_PARAM_5_EXTRA-$1000000)).w,d3",
+        ),
+        (
+            "ProcessMapEventType1_Warp",
+            "move.b  ((MAP_EVENT_PARAM_5-$1000000)).w,d3",
+            "; move.b  ((MAP_EVENT_PARAM_5-$1000000)).w,d3",
+        ),
+        (
+            "ProcessMapEventType1_Warp",
+            "move.b  ((MAP_EVENT_PARAM_5-$1000000)).w,d3",
+            "rts\n move.b  ((MAP_EVENT_PARAM_5-$1000000)).w,d3",
+        ),
+        (
+            "ProcessMapEventType1_Warp",
+            "loc_259CC:",
+            "loc_259CC:\n move.b ((MAP_EVENT_PARAM_5-$1000000)).w,d3",
+        ),
+        ("ProcessMapEventType1_Warp", "loc_259CC:", "loc_259CC:\n dc.w $4E75"),
+        ("ProcessMapEventType1_Warp", "loc_259CC:", "loc_259CC:\n movem.l d0-d4,(a0)"),
+        ("ProcessMapEventType1_Warp", "loc_259CC:", "loc_259CC:\n move.w #0,d3"),
+        ("ProcessMapEventType1_Warp", "jsr     j_DeclareRaftEntity", "jmp     j_DeclareRaftEntity"),
+        (
+            "UpdatePlayerPosFromMapEvent",
+            "move.b  ENTITYDEF_OFFSET_FACING(a0),d3",
+            "move.b  ENTITYDEF_OFFSET_Y(a0),d3",
+        ),
+        ("UpdatePlayerPosFromMapEvent", "movea.l (sp)+,a0", "movea.w (sp)+,a0"),
+        ("ExplorationLoop", "bsr.w   ProcessMapEvent", "jmp     ProcessMapEvent"),
+        ("ExplorationLoop", "bsr.w   ProcessMapEvent", "move.l d3,-(sp)\n bsr.w ProcessMapEvent"),
+        ("MainLoop", "jsr     j_ExplorationLoop", "jmp     j_ExplorationLoop"),
+        ("MainLoop", "bra.s   @Start", "rts"),
+    ),
+    ids=(
+        "producer-width",
+        "producer-field",
+        "producer-polarity",
+        "producer-label",
+        "dispatch-stack",
+        "selector-width",
+        "selector-polarity",
+        "selector-target",
+        "pop-width",
+        "comment-pop",
+        "facing-width",
+        "near-field",
+        "comment-field",
+        "early-return",
+        "wrong-branch-write",
+        "inline-machine-code",
+        "register-range",
+        "d3-clobber",
+        "callee-tail",
+        "helper-field",
+        "helper-stack-width",
+        "caller-tail",
+        "caller-push",
+        "outer-caller-tail",
+        "outer-return",
+    ),
+)
+def test_warp_source_mutations_fail_before_fixture_comparison(warp_sources, name, old, new) -> None:
+    changed = _change_warp_function(warp_sources, name, old, new)
+    with pytest.raises(ValueError, match="warp facing"):
+        gameflow._guard_warp_facing_handoff(changed)
+
+
+def test_warp_facing_cannot_be_relocated_into_nonzero_branch(warp_sources) -> None:
+    read = "move.b  ((MAP_EVENT_PARAM_5-$1000000)).w,d3"
+    changed = _change_warp_function(warp_sources, "ProcessMapEventType1_Warp", read, "")
+    changed = _change_warp_function(
+        changed, "ProcessMapEventType1_Warp", "loc_259CC:", f"loc_259CC:\n {read}"
+    )
+    with pytest.raises(ValueError, match="warp facing"):
+        gameflow._guard_warp_facing_handoff(changed)
+
+
+@pytest.mark.parametrize("instruction", ("movem.l (sp)+,d0", "rts"), ids=("pop", "return"))
+def test_warp_stack_and_return_order_cannot_be_preserved_only_as_fragments(
+    warp_sources, instruction
+) -> None:
+    changed = _change_warp_function(
+        warp_sources, "ProcessMapEventType1_Warp", instruction, ""
+    )
+    read = "move.b  ((MAP_EVENT_PARAM_5-$1000000)).w,d3"
+    changed = _change_warp_function(
+        changed, "ProcessMapEventType1_Warp", read, f"{instruction}\n {read}"
+    )
+    with pytest.raises(ValueError, match="warp facing"):
+        gameflow._guard_warp_facing_handoff(changed)

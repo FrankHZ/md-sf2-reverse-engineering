@@ -90,6 +90,67 @@ The bounded [field-search-control.md](field-search-control.md) owner retains the
 `CheckArea` caller polarity, faced-tile derivation, dispatch order, content classification, and
 fallback/rollback control. This core document retains the broader exploration inventory only.
 
+## Warp Facing and Return Source Guard
+
+Evidence date: 2026-09-05. **Confirmed (source structure only):** the existing
+`uv run sf2 h2 gameflow-core` command now calls `_guard_warp_facing_handoff` in
+[`gameflow.py`](../../src/sf2tool/h2/gameflow.py) during inventory construction, before fixture
+comparison. It uses the same pinned source revision stated above and the existing source/H1
+inventory owners; it does not add an instruction-byte parity or runtime observation claim.
+
+The bounded source chain is:
+
+- `code/gameflow/exploration/exploration.asm`, `WarpIfSetAtPoint`: the selected row writes
+  `MAP_EVENT_WARP` as a word, the type/map/coordinate fields as a longword starting at
+  `MAP_EVENT_PARAM_1`, and the facing field as a word at `MAP_EVENT_PARAM_5`. The guard retains the
+  exact/wildcard scan branches, their label destinations, write order, and saved-register return.
+- `code/gameflow/exploration/explorationfunctions_2.asm`, `ProcessMapEvent`: the cleared request
+  and first decrement lead to a conditional **branch**, not a subroutine call, to
+  `ProcessMapEventType1_Warp`.
+- In that handler, a **byte** test of `MAP_EVENT_PARAM_1` separates the zero and nonzero paths.
+  The zero path balances its sound-command word save/restore, calls `j_MakeEntityIdle`, and discards
+  one stack longword with `movem.l (sp)+,d0`. After `UpdatePlayerPosFromMapEvent` and the coordinate
+  branches, it reads `MAP_EVENT_PARAM_5` as a **byte** into D3, then reads parameter 1 into D4 and
+  reaches its first RTS with no intervening call. This is the source's facing-parameter return path.
+- The nonzero path instead calls `ProcessMapTransition`, performs its coordinate branches, then
+  calls `UpdatePlayerPosFromMapEvent` and `j_DeclareRaftEntity` before its own RTS. It contains no
+  `MAP_EVENT_PARAM_5` access or extra return-address pop. The helper reads the entity's X/Y words,
+  uses the source `MAP_TILE_SIZE` divisions, clears D3, reads `ENTITYDEF_OFFSET_FACING` as a byte,
+  restores A0, and returns. In particular, this does **not** claim that the later raft call preserves
+  D3, that the transition preserves the prior entity facing, or that either callee's effects occurred.
+- The exact `ExplorationLoop` event-dispatch block calls `ProcessMapEvent` with BSR and otherwise
+  branches back to its event loop. `code/gameflow/mainloop.asm`, `MainLoop`, calls
+  `j_ExplorationLoop` with JSR and follows that call with its outer-loop backedge. Together with the
+  handler's tail dispatch and explicit longword pop, these are static caller/return relationships,
+  not observed stack contents or an executed return to MainLoop.
+
+The guard extracts each exact named function through the existing function-block parser, excludes
+instruction-like comments, rejects duplicate boundaries/labels, and compares ordered source
+statements rather than searching for fragments anywhere in a file. Within the producer/handler it
+retains every control/stack operation, predicate, direct D3 access, and warp-field access; remaining
+arithmetic/data moves are not newly modeled algorithms. Unknown macros and inline machine-code
+directives are rejected. The helper and direct caller blocks are checked completely. Whitespace,
+inline comments, and equivalent short/word branch suffixes are accepted; data-access and stack widths
+remain exact. No whole-game caller inventory or general control-flow framework is introduced.
+
+[`test_gameflow.py`](../../tests/python/test_gameflow.py) supplies the source-parser boundary tests,
+legal-suffix positive cases, and scoped mutations of producer/consumer fields and widths, branch
+polarity/targets/ownership, D3 clobbers, stack operations, and RTS/call positions. The initial
+`test_warp_facing_wrong_parameter_fails_during_inventory_construction` completed with
+`DID NOT RAISE` when parameter 5 was replaced by parameter 4; the added guard rejects that mutation
+during construction. The fixture, schemas, manifest, output shape/values, index, and counters are
+unchanged.
+
+The first direct-consumer `uv run sf2 h2 map-event-request-consumption` attempt completed with
+exit 1 because the new worktree lacked `build/sf2build-h1.bin`; the interaction-state consumer had
+not started. The independent input copy was then supplied and matched the canonical ROM identity.
+This is an input-preparation correction, not evidence of a guard failure or a new H1 rebuild.
+
+**Unknown:** actual caller state and D3 at runtime returns, natural reachability, downstream init and
+final entity facing, callee effects, timing, presentation, and persistence. This source-only guard
+does not reopen any completed route investigation or authorize an H3 launch. A frame-end debugger
+query would not establish the instruction-time state at these return boundaries.
+
 ## Concentrated Runtime Queue
 
 No emulator was launched for this inventory. Four coherent matrices remain queued:
