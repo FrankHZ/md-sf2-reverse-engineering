@@ -204,6 +204,42 @@ The post-correction command
 source-only and Lua-only bridge mappings, and a synthetic future reverse-dependent
 consumer. These do not execute a full Python suite or any H3 scenario.
 
+### Experiment stopping boundary: merge readiness is not satisfied
+
+The code candidate `c64075e718d2fc3a529f0cf2cb7cff18ab0fd5c7` has a clean
+committed plan with **no unclassified paths**, but the complete change also edits
+the planner and its existing owning test file. Its exact selection is reproducible
+with `uv run sf2 verify plan --base origin/main --head HEAD` on this clean candidate
+and the subsequent documentation-only handoff commit. The existing classifications
+therefore select more than the new bridge's two individual entry paths:
+
+| Selected partition | Exact reason or reason family | Execution status |
+| --- | --- | --- |
+| `public-core` | `always-run commit gate` | `uv run sf2 verify` **PASS** after the recorded input setup correction |
+| `tooling-python` | The bridge source, Lua and tests, plus `src/sf2tool/verification_plan.py` and `tests/python/test_verification_plan.py` | Both focused test files **PASS** (113 combined); generic `uv run pytest` **NOT RUN** |
+| `remake-dotnet` | `src/sf2tool/verification_plan.py` | `dotnet restore remake/Sf2.Remake.sln --locked-mode`, `dotnet build remake/Sf2.Remake.sln --configuration Release --no-restore`, and `dotnet test remake/Sf2.Remake.sln --configuration Release --no-build --no-restore` **NOT RUN locally** |
+| `remake-godot` | `src/sf2tool/verification_plan.py` | `uv run python -m sf2tool.remake_godot` **NOT RUN** |
+| `h1-original` | `src/sf2tool/h3/bootstrap.py reaches sf2tool.harness` | **NOT RUN**; planner has no standalone H1 command |
+| `h2-battle-logic`, `h2-stats-items`, `h2-map-scripting`, `h2-services-state` | `src/sf2tool/h3/bootstrap.py reaches sf2tool.h2.<consumer>` | All selected owning commands **NOT RUN** |
+| `h3-battle01`, `h3-map-debug`, `h3-direct-seam`, `h3-witch`, `h3-sound`, `h3-original-reference` | `src/sf2tool/h3/bootstrap.py reaches sf2tool.h3.<consumer>` | All selected runtime/preflight commands **NOT RUN** |
+
+The bootstrap selections originate in the **existing**
+`from sf2tool.h3.bootstrap import COMMAND_LAUNCHES` in the changed planner test
+file: `_select_imports` follows the shared bootstrap's reverse dependents.
+Neither that import nor the planner's self-classification was changed to suppress
+these selections. The complete consumer command list remains in the reproducible
+planner output; the reason families above describe why it is selected.
+
+Main-gate explicitly limited this user-requested experiment to a reviewable Draft
+PR, with no additional complete Python, H1/H2/H3 or remake gate executions and no
+more emulator launches. This is a **verification stopping boundary**, not a waiver
+that turns the unexecuted selections into PASS or NotApplicable. Public CI is
+reported separately in the PR handoff; any CI checks it runs do not establish that
+all selected local/runtime partitions passed. The experiment smoke is **PASS**;
+merge readiness remains **not satisfied**, and this slice is **not Done**. The Draft
+must remain frozen for independent review, without merge, productionization, or
+worktree/ref cleanup.
+
 Rough timings from launch 08: warm queries roughly 0.5–18 ms, three frames about
 51 ms, callback run about 167 ms. These are one local operational sample, including
 UI scheduling, not a benchmark, latency guarantee, or measured agent quota saving.
