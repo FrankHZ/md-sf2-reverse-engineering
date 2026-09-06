@@ -41,10 +41,57 @@ records with the post-`cs_53996` zero-intersection guard; Map 21 retains the two
 interaction metadata.
 
 **Confirmed:** the legal source-derived graph has 16 ordered segments and 110 logical inputs, with
-SHA-256 `D5AAD8F84D72F033012DD769C34FD6FCA8E8BC32EC81912712D9EFFDD5D3C5D4`. It models collision,
+SHA-256 `02C5C3A720F1C61356F7B030BE1E0194BBAE3E241E036CD53E1E0640571393D0`. It models collision,
 areas, the Map 3 school-door copy, restored guards, occupancy, zone bits, and exact/wildcard terminal
 warp predicates. It is a reproducible static reachability artifact, not replay cadence or proof that a
 caller executes the sequence in that order.
+
+**Confirmed:** `map20-to-map19-royal-return.to.facing` is the static destination-facing
+annotation sourced from `warpFacing LEFT` in the fifth record of
+`data/maps/entries/map20/6-warp-events.asm`. H1 symbol `Map20s6_WarpEvents` is `0xA53DA`;
+the 11 eight-byte rows end with a two-byte terminator. Record 5 starts at `0xA53FA` and its
+facing field at offset 6 (`0xA5400`) is `2`, resolved through `LEFT` in `sf2enums.asm`.
+The record's trigger is `(23,37)`, target operand is `MAP_GRANSEAL_CASTLE_2F` (19), and
+destination is `(23,3)`, with no scroll and a zero reserved byte. The `mWarp`,
+`warpNoScroll`, `warpMap`, `warpDest`, and `warpFacing` macro order places facing after the
+two trigger, one scroll, one map, and two destination bytes; the existing map-content encoder
+and canonical map-import decoder are reused to check that relationship.
+
+The parser checks every Map 20 record's ordered field operands against the decoded encoding and
+the complete H1/ROM table before selecting record 5. It then derives `static.warps.map20Royal`
+and both graph-edge facing annotations from that record; the retained R2 predicate still owns the
+map/coordinate join. A mismatched graph consumer is rejected before the route digest or golden
+comparison. These annotations describe the warp field, not observed outgoing or incoming player
+orientation. Natural init and any later facing changes remain **Unknown**.
+
+## Retained dependency compatibility
+
+The admission, turn-control, action-effect, action-completion, turn-finalization, and victory-return
+fixtures retain parent identities. Their existing builders propagate this correction only through
+those retained digest fields. Their behavior, terminals, counts, and Unknowns do not change.
+
+The player-ready fixture re-anchors its R2b/R2c/R3a `fixtureSha256` references under `static.retained`
+and `expectedObservation.records[0].retained`, plus `static.sourceProjectionSha256`, whose existing
+calculation includes R3a's retained R2c projection. This updates the expected comparison contract's
+static references; that re-anchoring itself is not a new runtime observation. The completed original
+run and its raw observation remain unchanged. Under ADR 0012/0014, this candidate separately passes
+one dependency-selected `uv run sf2 h3 map3-battle01-player-ready` run: one case, 46 logical inputs,
+one launch, complete status/golden/restoration checks, zero retained callbacks, and deletion of the
+session ROM. The Lua Console output is empty and the process exits. The candidate's receipts are
+preserved separately; this does not establish any new natural-continuity claim.
+
+A complete structured comparison against accepted base `62718b6b4dcb4ca100aafca734e32e082237353f`
+permits only those seven scalar pointers in the H3 fixture. Its cases, controlled Map 21 bridge,
+input plan, warps, RAM, functions, source hashes, and every runtime observation field are unchanged.
+The observer source is unchanged; rebuilding its configuration changes only the three
+`extension.retained` fixture digests. The original natural-continuity Unknowns remain in force.
+
+The original-reference scenario descriptor retains the finalization and victory fixtures by raw
+file hash. Its two `/staticFixtures/*/sha256` references were already stale at the accepted base:
+preflight completed with `static-fixture-identity`, structured `FAIL`, and `ProcessStarts=0`, despite
+CLI exit 0. Only those two hashes are re-anchored; the complete remaining descriptor is unchanged.
+The selected `uv run sf2 h3 original-reference-replay-scenario-api --preflight-only` now reports
+`PASS`, `ProcessStarts=0`. This is descriptor validation, not original-reference replay execution.
 
 ## Unknown runtime boundary
 

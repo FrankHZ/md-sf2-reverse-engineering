@@ -14,6 +14,8 @@ from typing import Any
 
 from jsonschema import Draft7Validator
 
+from sf2tool.h2.map_content import _arguments, _encode_source, _parse_equates
+from sf2tool.h2.map_import import _decode_warps
 from sf2tool.h2.map_layouts import decode_map_blocks, decode_map_layout
 from sf2tool.jsonio import load_json, validate_json
 from sf2tool.paths import repo_path
@@ -909,11 +911,99 @@ def _occupancy(
     }
 
 
-def _warps(text: dict[str, str]) -> dict[str, list[dict[str, Any]]]:
+def _royal_return_warp(
+    source: str,
+    constants: dict[str, int],
+    encoded: bytes,
+    addresses: dict[str, int],
+    h1_binary: bytes,
+    rom: bytes,
+) -> dict[str, Any]:
+    """Bind Map20's fifth source record to its original eight-byte H1/ROM row."""
+    lines = [line.strip() for line in _without_comments(source).splitlines() if line.strip()]
+    if len(lines) != 11 * 5 + 1 or lines[-1] != "endWord":
+        raise ValueError("Map 3 castle static royal warp table shape drift")
+    source_fields = []
+    # Unlike the older subset search, every statement has one field and one row.
+    # This guards order, near-miss macros, extra operands, and byte truncation in
+    # the shared encoder before its result is interpreted by the shared decoder.
+    for offset in range(0, len(lines) - 1, 5):
+        fields = []
+        for index, (macro, count) in enumerate(
+            (
+                ("mWarp", 2),
+                ("warpNoScroll|warpScroll", 1),
+                ("warpMap", 1),
+                ("warpDest", 2),
+                ("warpFacing", 1),
+            )
+        ):
+            match = re.fullmatch(rf"({macro})(?:\s+(.+))?", lines[offset + index])
+            if match is None:
+                raise ValueError("Map 3 castle static royal warp field order/identity drift")
+            operand = match.group(2) or ""
+            width = 0 if match.group(1) == "warpNoScroll" else count
+            values = _arguments(operand, width, constants) if width else []
+            if (not width and operand) or any(not 0 <= value <= 255 for value in values):
+                raise ValueError("Map 3 castle static royal warp byte operand drift")
+            if index == 1:
+                values = [0] if not width else [0x10 + values[0]]
+            fields.append(values)
+        source_fields.append(fields)
+    address = addresses.get("Map20s6_WarpEvents")
+    if address != 0xA53DA or len(encoded) != 11 * 8 + 2 or encoded[-2:] != b"\xff\xff":
+        raise ValueError("Map 3 castle static royal warp H1 table identity/width drift")
+    if (
+        encoded != h1_binary[address : address + len(encoded)]
+        or encoded != rom[address : address + len(encoded)]
+    ):
+        raise ValueError("Map 3 castle static royal warp source/H1/ROM record drift")
+    decoded = _decode_warps(encoded, 11)
+    decoded_fields = [
+        [
+            [row["trigger"]["x"], row["trigger"]["y"]],
+            [row["scrollMode"]],
+            [row["targetMap"]],
+            [row["destination"]["x"], row["destination"]["y"]],
+            [row["facing"]],
+        ]
+        for row in decoded
+    ]
+    if source_fields != decoded_fields:
+        raise ValueError("Map 3 castle static royal warp field use-site drift")
+    row = decoded[4]
+    if row != {
+        "trigger": {"x": 23, "y": 37},
+        "scrollMode": 0,
+        "retainsCoordinates": False,
+        "scrollDirection": None,
+        "targetMap": 19,
+        "destination": {"x": 23, "y": 3},
+        "facing": constants["LEFT"],
+        "reserved": 0,
+    }:
+        raise ValueError("Map 3 castle static royal warp record identity/consumer drift")
+    facing_operand = lines[4 * 5 + 4].split()[1]
+    map_operand = lines[4 * 5 + 2].split()[1]
+    if (
+        map_operand != "MAP_GRANSEAL_CASTLE_2F"
+        or facing_operand != "LEFT"
+        or constants[facing_operand] != row["facing"]
+    ):
+        raise ValueError("Map 3 castle static royal warp facing use-site drift")
+    return {
+        "from": [row["trigger"]["x"], row["trigger"]["y"]],
+        "to": [row["destination"]["x"], row["destination"]["y"]],
+        "facing": facing_operand,
+    }
+
+
+def _warps(
+    text: dict[str, str], root: Path, addresses: dict[str, int], h1_binary: bytes, rom: bytes
+) -> dict[str, list[dict[str, Any]]]:
     expected = {
         "map19Royal": (19, (23, 3, 23, 37, "DOWN")),
         "map19Tower": (19, (6, 2, 6, 37, "RIGHT")),
-        "map20Royal": (20, (23, 37, 23, 3, "LEFT")),
         "map20Tower": (20, (3, 36, 3, 16, "RIGHT"), (6, 37, 6, 2, "LEFT")),
         "map21Tower": (21, (3, 16, 3, 36, "RIGHT")),
     }
@@ -931,6 +1021,14 @@ def _warps(text: dict[str, str]) -> dict[str, list[dict[str, Any]]]:
         output[name] = [
             {"from": [x, y], "to": [dx, dy], "facing": facing} for x, y, dx, dy, facing in rows
         ]
+    relative = "data/maps/entries/map20/6-warp-events.asm"
+    constants = _parse_equates(root)
+    encoded, count, trailing_rts = _encode_source(root / relative, "warpEvents", constants)
+    if count != 11 or trailing_rts:
+        raise ValueError("Map 3 castle static royal warp encoded table shape drift")
+    output["map20Royal"] = [
+        _royal_return_warp(text[relative], constants, encoded, addresses, h1_binary, rom)
+    ]
     return output
 
 
@@ -1054,7 +1152,7 @@ def _retained_warp_predicate(
 
 
 def _retained_warp_joins(
-    graph: dict[str, Any], warps: list[dict[str, int]]
+    graph: dict[str, Any], warps: list[dict[str, int]], source_warps: dict[str, Any]
 ) -> list[dict[str, Any]]:
     """Prove the five retained R2 predicates join only route-terminal edges."""
     joined: list[dict[str, Any]] = []
@@ -1066,6 +1164,12 @@ def _retained_warp_joins(
         navigation, following = graph["segments"][index - 1], graph["segments"][index + 1]
         source = segment["from"]
         destination = segment["to"]
+        if segment["id"] == "map20-to-map19-royal-return":
+            royal = source_warps["map20Royal"][0]
+            if source != {"map": 20, "point": royal["from"], "facing": royal["facing"]} or (
+                destination != {"map": 19, "point": royal["to"], "facing": royal["facing"]}
+            ):
+                raise ValueError("Map 3 castle static royal warp graph use-site drift")
         if (
             navigation["kind"] != "navigation"
             or navigation["map"] != source["map"]
@@ -1119,7 +1223,7 @@ _ROUTE_SEGMENT_IDS = (
     "map20-to-map21-middle-tower-warp",
     "map21-guard-unlock-return-and-terminal-wait",
 )
-_ROUTE_GRAPH_SHA256 = "D5AAD8F84D72F033012DD769C34FD6FCA8E8BC32EC81912712D9EFFDD5D3C5D4"
+_ROUTE_GRAPH_SHA256 = "02C5C3A720F1C61356F7B030BE1E0194BBAE3E241E036CD53E1E0640571393D0"
 
 
 def _validate_route_graph(graph: dict[str, Any]) -> str:
@@ -1289,8 +1393,16 @@ def _route_graph(
         {
             "id": "map20-to-map19-royal-return",
             "kind": "warp",
-            "from": {"map": 20, "point": [23, 37], "facing": "LEFT"},
-            "to": {"map": 19, "point": [23, 3], "facing": "DOWN"},
+            "from": {
+                "map": 20,
+                "point": warps["map20Royal"][0]["from"],
+                "facing": warps["map20Royal"][0]["facing"],
+            },
+            "to": {
+                "map": 19,
+                "point": warps["map20Royal"][0]["to"],
+                "facing": warps["map20Royal"][0]["facing"],
+            },
         }
     )
     s.append(
@@ -1395,7 +1507,6 @@ def _route_graph(
         ],
         "segments": s,
     }
-    _validate_route_graph(graph)
     return graph
 
 
@@ -1655,9 +1766,11 @@ def build_map3_castle_battle_unlock_static(rom_path: Path, upstream_path: Path) 
         for map_id in (3, 19, 20, 21)
     }
     occupancy = _occupancy(text, surfaces, controller)
-    warps = _warps(text)
+    warps = _warps(text, root, addresses, h1_binary, rom)
     retained_r2_warps = _retained_r2_warps()
     graph = _route_graph(text, root, addresses, rom, warps, occupancy, retained_r2_warps)
+    warp_joins = _retained_warp_joins(graph, retained_r2_warps, warps)
+    _validate_route_graph(graph)
     topology = _zone_topology(zones, graph, surfaces, controller, occupancy)
     toolchain = load_json(TOOLCHAIN)
     output = {
@@ -1691,7 +1804,7 @@ def build_map3_castle_battle_unlock_static(rom_path: Path, upstream_path: Path) 
             },
             "programs": programs,
             "warps": warps,
-            "retainedWarpJoins": _retained_warp_joins(graph, retained_r2_warps),
+            "retainedWarpJoins": warp_joins,
             "zones": {**zones, **topology},
             "occupancy": occupancy,
             "routeGraph": graph,

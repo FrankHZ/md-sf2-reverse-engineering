@@ -77,6 +77,129 @@ def test_fixture_rejects_missing_and_extra_public_fields() -> None:
         validate_json(changed, rail.SCHEMA, owner="route digest")
 
 
+def test_royal_return_graph_uses_the_retained_warp_facing() -> None:
+    static = _fixture()["static"]
+    warp = static["warps"]["map20Royal"][0]
+    segment = next(
+        row
+        for row in static["routeGraph"]["segments"]
+        if row["id"] == "map20-to-map19-royal-return"
+    )
+    assert segment["to"]["facing"] == warp["facing"]
+
+
+@pytest.fixture
+def royal_warp_inputs(tmp_path: Path) -> tuple:
+    """Project-authored rows isolate the fifth record without private payloads."""
+    rows = []
+    for index in range(11):
+        x, y, dx, dy = (23, 37, 23, 3) if index == 4 else (index, 10, index, 1)
+        rows.append(
+            f"mWarp {x}, {y}\nwarpNoScroll\nwarpMap MAP_GRANSEAL_CASTLE_2F\n"
+            f"warpDest {dx}, {dy}\nwarpFacing LEFT\n"
+        )
+    source = "\n".join(rows) + "endWord\n"
+    constants = {"LEFT": 2, "DOWN": 3, "MAP_GRANSEAL_CASTLE_2F": 19}
+    path = tmp_path / "synthetic-warps.asm"
+    path.write_text(source, encoding="utf-8")
+    encoded, count, trailing = rail._encode_source(path, "warpEvents", constants)
+    assert (count, trailing) == (11, False)
+    address = 0xA53DA
+    rom = bytes(address) + encoded
+    return source, constants, encoded, {"Map20s6_WarpEvents": address}, rom, rom
+
+
+def test_royal_warp_derives_exact_record_and_ignores_comments(royal_warp_inputs: tuple) -> None:
+    source, *rest = royal_warp_inputs
+    expected = {"from": [23, 37], "to": [23, 3], "facing": "LEFT"}
+    assert rail._royal_return_warp(source, *rest) == expected
+    commented = "; mWarp 23,37; warpFacing DOWN\n" + source.replace(
+        "warpFacing LEFT", "\twarpFacing   LEFT ; warpFacing DOWN near-miss"
+    )
+    assert rail._royal_return_warp(commented, *rest) == expected
+
+
+@pytest.mark.parametrize(
+    ("old", "new"),
+    [
+        ("mWarp 23, 37", "mWarp 24, 37"),
+        ("warpDest 23, 3", "warpDest 23, 4"),
+        ("warpDest 23, 3", "warpDest 23, 259"),
+        ("warpDest 23, 3", "warpDest 23, 3, 0"),
+        ("warpDest 23, 3", "warpDestExtra 23, 3"),
+        ("warpDest 23, 3", "near_miss: warpDest 23, 3"),
+        ("warpNoScroll", "warpNoScroll 0"),
+        ("warpNoScroll", "warpScroll DOWN"),
+        ("warpMap MAP_GRANSEAL_CASTLE_2F", "warpMap 20"),
+        ("warpMap MAP_GRANSEAL_CASTLE_2F", "warpMap 19"),
+        ("warpDest 23, 3\nwarpFacing LEFT", "warpFacing LEFT\nwarpDest 23, 3"),
+        ("warpDest 23, 3\nwarpFacing LEFT", "warpDest 23, 3\nwarpFacing DOWN"),
+        ("endWord", "endWord\nwarpFacing LEFT"),
+    ],
+)
+def test_royal_warp_rejects_source_operand_order_and_identity_drift(
+    royal_warp_inputs: tuple, old: str, new: str
+) -> None:
+    source, *rest = royal_warp_inputs
+    assert old in source
+    with pytest.raises(ValueError):
+        rail._royal_return_warp(source.replace(old, new), *rest)
+
+
+def test_royal_warp_rejects_reordered_records_and_enum_drift(royal_warp_inputs: tuple) -> None:
+    source, constants, encoded, addresses, h1, rom = royal_warp_inputs
+    rows = source.split("\n\n")
+    rows[3], rows[4] = rows[4], rows[3]
+    with pytest.raises(ValueError, match="field use-site drift"):
+        rail._royal_return_warp("\n\n".join(rows), constants, encoded, addresses, h1, rom)
+    with pytest.raises(ValueError, match="field use-site drift"):
+        rail._royal_return_warp(source, {**constants, "LEFT": 3}, encoded, addresses, h1, rom)
+
+
+@pytest.mark.parametrize("input_index", [2, 4, 5])
+def test_royal_warp_requires_source_h1_rom_agreement(
+    royal_warp_inputs: tuple, input_index: int
+) -> None:
+    args = list(royal_warp_inputs)
+    changed = bytearray(args[input_index])
+    offset = (0 if input_index == 2 else 0xA53DA) + 4 * 8 + 6
+    changed[offset] = 3
+    args[input_index] = bytes(changed)
+    with pytest.raises(ValueError, match="source/H1/ROM record drift"):
+        rail._royal_return_warp(*args)
+
+
+def test_royal_warp_rejects_h1_identity_and_decoder_drift(
+    royal_warp_inputs: tuple, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source, constants, encoded, addresses, h1, rom = royal_warp_inputs
+    with pytest.raises(ValueError, match="H1 table identity/width drift"):
+        rail._royal_return_warp(source, constants, encoded, {}, h1, rom)
+    with pytest.raises(ValueError, match="source/H1/ROM record drift"):
+        rail._royal_return_warp(source, constants, encoded, addresses, h1[:-1], rom)
+    decoder = rail._decode_warps
+
+    def wrong_facing(data: bytes, count: int) -> list:
+        rows = decoder(data, count)
+        rows[4]["facing"] = 3
+        return rows
+
+    monkeypatch.setattr(rail, "_decode_warps", wrong_facing)
+    with pytest.raises(ValueError, match="field use-site drift"):
+        rail._royal_return_warp(*royal_warp_inputs)
+
+
+@pytest.mark.parametrize("endpoint", ["from", "to"])
+def test_royal_warp_graph_consumer_rejects_facing_drift_before_golden(endpoint: str) -> None:
+    static = _fixture()["static"]
+    graph = deepcopy(static["routeGraph"])
+    warps = [join["row"] for join in static["retainedWarpJoins"]]
+    segment = next(row for row in graph["segments"] if row["id"] == "map20-to-map19-royal-return")
+    segment[endpoint]["facing"] = "DOWN"
+    with pytest.raises(ValueError, match="royal warp graph use-site drift"):
+        rail._retained_warp_joins(graph, warps, static["warps"])
+
+
 def test_retained_warp_predicate_requires_exact_or_wildcard_single_match() -> None:
     row = {
         "fromMap": 3,

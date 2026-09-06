@@ -626,9 +626,9 @@
             },
             "retainedR3d": {
               "fixtureId": "sf2-map3-battle01-turn-finalization-static-v1",
-              "fixtureSha256": "0421705397BF7F3B5DAB04590DF3245ED417D999974E9E44D3DEABF654C38F72",
+              "fixtureSha256": "E50640A8BA47857B5D105FC2294F574616E13451EF919C2A2B12D9290C5DBD23",
               "turnFinalizationSpineSha256": "860D17A3031893D33B1FE408E4D9223B667C7AF61024FF10B9A00CEA7E746E72",
-              "sha256": "01E163CDB32F4E3BCCABCD099A2266EB7AD1AC9B5FEF41D9950EC7035989FDEA"
+              "sha256": "83CFAA9936DE92BE9FD4A86A53C7FE5B1B0F577060BB17DB2BED710C7810420C"
             },
             "retainedOwners": {
               "battleControl": {

@@ -86,12 +86,12 @@ the Map 3-only atlas. Map 20 arrival remains explicitly pre-init, with its contr
 result unselected. F at the palace entrance explicitly applies that result while skipping the scene;
 the once-only typed receipt survives further Map 20 traversal, the exact two-input royal return and
 subsequent Map 19 movement, and resets in a fresh session. Return facing uses raw warp byte 2/LEFT;
-the accepted route graph's hardcoded DOWN annotation disagrees and remains a separate research-owner
-question, not an inferred init or natural facing result. Map 19/20
-general init and event/entity execution remain **Unsupported**; natural caller state, original rendering, and continuity to Battle 01
+the accepted research graph now derives its matching LEFT annotation from the same warp record.
+Map 19/20 general init and event/entity execution remain **Unsupported**; natural caller state,
+original rendering, natural facing, and continuity to Battle 01
 remain **Unknown / NOT READY**. The known static init shape and bounded route checks are recorded in
 the [playability plan](./map03-playability-plan.md#royal-route-acceptance-boundary) and its
 [controlled first-visit boundary](./map03-playability-plan.md#controlled-palace-first-visit-result).
 The [royal return boundary](./map03-playability-plan.md#royal-return-acceptance-boundary) records the
-exact source fields, retained discrepancy, rejection rules and controlled private reproduction.
+exact source fields, matching research annotation, rejection rules and controlled private reproduction.
 See [Architecture](./architecture.md).

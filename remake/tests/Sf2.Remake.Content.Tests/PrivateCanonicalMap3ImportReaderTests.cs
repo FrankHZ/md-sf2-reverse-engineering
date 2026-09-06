@@ -1717,7 +1717,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
     }
 
     [Fact]
-    public void RoyalReturnAdmitsRawFacingInsteadOfTheConflictingGraphAnnotation()
+    public void RoyalReturnRawFacingAgreesWithTheSourceDerivedGraphAnnotation()
     {
         var definition = Assert.IsType<OriginalMapImportAccepted>(Admit(SampleDocument())).Definition;
         var transition = Assert.IsType<OriginalMapCrossMapTransitionDefinition>(definition.RoyalReturnMap19Transition);
@@ -1730,8 +1730,8 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal("LEFT", source.GetProperty("warps").GetProperty("map20Royal")[0].GetProperty("facing").GetString());
         JsonElement graphWarp = source.GetProperty("routeGraph").GetProperty("segments").EnumerateArray()
             .Single(row => row.GetProperty("id").GetString() == "map20-to-map19-royal-return");
-        // Preserve this accepted research annotation discrepancy; it is not the raw warp field.
-        Assert.Equal("DOWN", graphWarp.GetProperty("to").GetProperty("facing").GetString());
+        Assert.Equal(source.GetProperty("warps").GetProperty("map20Royal")[0].GetProperty("facing").GetString(),
+            graphWarp.GetProperty("to").GetProperty("facing").GetString());
     }
 
     [Theory]
