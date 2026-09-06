@@ -125,7 +125,7 @@ The test-only seed does not prove the preceding natural Map 3 route or execute e
 After the locked build, reproduce the private check from `remake/`:
 
 ```powershell
-$env:SF2_PRIVATE_CANONICAL_MAP_IMPORT = [IO.Path]::GetFullPath('../local/derived/canonical-map-import.json')
+$env:SF2_PRIVATE_CANONICAL_MAP_IMPORT = (Resolve-Path -LiteralPath '../local/derived/canonical-map-import.json').ProviderPath
 try {
     dotnet test tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter 'FullyQualifiedName~AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput'
 } finally {
