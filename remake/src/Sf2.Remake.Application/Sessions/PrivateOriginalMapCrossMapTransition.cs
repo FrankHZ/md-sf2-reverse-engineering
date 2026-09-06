@@ -20,7 +20,9 @@ public sealed record PrivateOriginalMapCrossMapTransitionReceipt
         SimulationStep = simulationStep;
     }
 
-    public string Capability => OriginalMapRuntimeAdmission.NorthMap19TransitionCapability;
+    public string Capability => DestinationMap == new MapId(OriginalMapRuntimeAdmission.Map20Id)
+        ? OriginalMapRuntimeAdmission.RoyalMap20TransitionCapability
+        : OriginalMapRuntimeAdmission.NorthMap19TransitionCapability;
 
     public OriginalMapCrossMapTransitionIdentity RecordIdentity { get; }
 
@@ -48,7 +50,11 @@ public sealed partial class GameSession
         ArgumentNullException.ThrowIfNull(command);
         applied = null;
         OriginalMapCrossMapTransitionDefinition? transition =
-            current.Definition.NorthMap19Transition;
+            current.Map == current.Definition.Map
+                ? current.Definition.NorthMap19Transition
+                : current.Map == new MapId(OriginalMapRuntimeAdmission.Map19Id)
+                    ? current.Definition.RoyalMap20Transition
+                    : null;
         if (transition is null ||
             current.Map != transition.Identity.SourceMap ||
             current.PlayerPosition != transition.AdmittedApproach ||
