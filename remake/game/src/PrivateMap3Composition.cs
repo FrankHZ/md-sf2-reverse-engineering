@@ -616,6 +616,18 @@ public sealed partial class Map3Root
                 _session.PrivateOriginalMapSnapshot.SimulationStep);
         switch (result)
         {
+            case PrivateOriginalMapPalaceFirstVisitApplied palace:
+                _privatePresenter?.Project(
+                    palace.Snapshot,
+                    "Controlled first-visit result applied; scene skipped",
+                    _session.PrivateOriginalMapPlayerLocomotion);
+                break;
+            case PrivateOriginalMapPalaceFirstVisitRejected palace:
+                _privatePresenter?.Project(
+                    palace.Snapshot,
+                    $"First-visit result unavailable: {palace.Code}",
+                    _session.PrivateOriginalMapPlayerLocomotion);
+                break;
             case PrivateOriginalMapSarahInteractionSelected selected:
                 PrivateOriginalMapSarahInteractionApplied applied = selected.Applied;
                 _privatePresenter?.Project(

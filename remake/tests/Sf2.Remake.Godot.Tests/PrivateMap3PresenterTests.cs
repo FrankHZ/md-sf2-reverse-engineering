@@ -9,6 +9,26 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateMap3PresenterTests
 {
     [Fact]
+    public void PalaceStatusDistinguishesExplicitSkippedSceneResultFromUnselectedArrival()
+    {
+        string unselected = PrivateMap3PresentationPlan.PalaceFirstVisitStatus(null);
+        Assert.Contains("F apply controlled first-visit result", unselected);
+        Assert.Contains("skip scene", unselected);
+        Assert.Contains("unselected", unselected);
+        var definition = new OriginalMapPalaceFirstVisitDefinition(
+            OriginalMapRuntimeAdmission.PalaceInitBodySha256,
+            OriginalMapRuntimeAdmission.PalaceScriptProjectionSha256);
+        var receipt = (PrivateOriginalMapPalaceFirstVisitReceipt)Activator.CreateInstance(
+            typeof(PrivateOriginalMapPalaceFirstVisitReceipt),
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+            binder: null, args: [definition, 1L], culture: null)!;
+        string completed = PrivateMap3PresentationPlan.PalaceFirstVisitStatus(receipt);
+        Assert.Contains("Controlled first-visit result applied", completed);
+        Assert.Contains("scene skipped", completed);
+        Assert.DoesNotContain("F apply", completed);
+    }
+
+    [Fact]
     public void AvailablePrivateLocalPlanPreservesTheExactDiagnosticPresentation()
     {
         PrivateMap3PresentationPlan plan =

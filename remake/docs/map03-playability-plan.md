@@ -55,9 +55,13 @@ Application transition reducer retains the Map 3 route flags, actor state, impor
 battle bridge; per-operation receipts retain the existing reset boundary. Godot continues to project
 typed traversal diagnostics. A fresh session still starts from controlled Map 3.
 
-The Map 20 endpoint is **before its selected init executes**, not palace player-ready admission.
-Map 19/20 setup selection is fixed to the admitted default data; init, generic events, entities, music,
-and rendering have no new execution consumer. Further Map 20 movement remains diagnostic traversal.
+The Map 20 arrival is **before its selected init executes**. Its nullable first-visit result remains
+unselected until the user presses F at the palace entrance to apply a controlled result while skipping
+the scene. Application owns that explicit preset and atomically moves the player to `(23,39)` facing
+down, records completion flag 605, and retains typed entity-131 endpoint and entity-130 hidden results.
+Arrival alone does not resolve natural caller flags or admit a natural palace player-ready lifecycle.
+Map 19/20 setup selection is fixed to the admitted default data; general init, event, entity, music,
+and rendering execution remains unsupported. Further Map 20 movement remains diagnostic traversal.
 Final guard facing, decoded text, original rendering, animation, audio, timing, natural caller state,
 execution order, and Battle 01 remain **Unknown**. This is not a general zone-event, warp, or script
 interpreter. The existing live
@@ -121,6 +125,9 @@ with completed Map 3 route state, and executes every fixture input through the c
 session. It checks each point, both default zones, the destination catalog instance and area, facing,
 unchanged flags and import receipt, cleared transient receipts, and the unchanged ready manual bridge.
 The test-only seed does not prove the preceding natural Map 3 route or execute either map's init.
+The same current session then explicitly applies the controlled palace result, verifies its fixed
+imported-token projection, player endpoint/facing and retained route state, rejects a duplicate without
+mutating snapshot, locomotion, or bridge, and retains the receipt through ordinary palace movement.
 
 After the locked build, reproduce the private check from `remake/`:
 
@@ -137,6 +144,46 @@ The caller supplies the accepted worktree-local input read-only. Without that en
 the optional test returns without running private checks; public test success alone is not private
 route evidence. Private payloads and test reports remain ignored.
 
+## Controlled Palace First-Visit Result
+
+**Confirmed:** the same accepted castle-unlock source owner and fixture pin SF2DISASM commit
+`c834c652b6862bc5679fd7f69a38a7093206efc6`, Map 20's
+`data/maps/entries/map20/mapsetups/s6_initfunction.asm`, and `ms_map20_InitFunction` at `0x53966`.
+The complete 12-operation init shape checks packed entry `$22803780`, checks 605 before selecting
+`cs_53996` or the `cs_53B60` shared tail, sets 605 after the first-visit script returns, and then checks
+507 before the separate later program. Flag 608 is not a direct guard here. Natural caller values,
+reach, and timing remain **Unknown**; the bounded command explicitly selects the clear-605/507 preset.
+
+Content binds all 113 imported operations of `cs_53996` at `0x53996`, followed by the label
+`cs_53B60:` and that tail's two operations, `hide 130` and `csc_end`. It validates the consumed source
+indices: text cursor 2176 at 0, player `(23,39)`/DOWN at 1, and entity-131 right/up/right moves at
+16/69/77 with their surrounding action boundaries. Entity 131 starts at `(18,40)` and ends at
+`(20,39)`. Entity 130's hidden result and entity 131's endpoint are separate typed receipt fields;
+the catalog's immutable source entity population remains unchanged and has no generic execution or
+rendering consumer. Dialogue, camera, sound, follower actions, and intermediate choreography are
+skipped, not interpreted by a general VM.
+
+The source owner's normalized source-text control-effect digest is
+`CBFCC3AC371E2FBB9BA844B7A3C3DE0B6EA92549B5192A16EF3385E7A678A556`.
+The distinct imported-token projection digest is
+`0CF57192969A95347789B3857439F824230E8D58AB6CAF4B574B872C0B1A29B3`:
+SHA-256 of the UTF-8 compact JSON array of 116 strings, each operation represented by
+`opcode + " " + operandText` with trailing whitespace removed, including the shared-tail label
+between programs. The init body digest is
+`68809DD783F749F19112E33D7B70AC663C0101D5B720779437B7449706B6776C`.
+The optional private command above reproduces the C# imported-token binding against the accepted
+canonical input. Synthetic source-shape tests cannot establish either source identity.
+
+`PalaceFirstVisitExplicitlyCommitsOnceAndRetainsItsControlledResult` checks the explicit interaction,
+single-step completion, unchanged source population and previous route state, locomotion facing,
+repeat rejection, movement retention, and fresh-session reset. Companion Application tests cover
+stale requests, wrong preset/map/position, locomotion busy, and battle bridge busy with zero mutation
+of all three session authorities. Content tests reject changed init guards, branch metadata, consumed
+effects, truncated source, and malformed tokens. Godot projects the typed outcome and labels the F
+action as applying a controlled result with the scene skipped; it never selects an original branch.
+Later F507 programs, royal return warps, natural init execution, and Battle 01 admission are outside
+this capability.
+
 The current immutable snapshot is reconstructed by each specialized session reducer. Preserving the
 new castle-gate state across those boundaries exposed repeated mechanical pass-through work. That is a
 current-state refactor candidate for a later independently reviewed slice, not a reason to broaden this
@@ -144,8 +191,8 @@ capability or centralize event semantics now.
 
 ## Ordered Queue
 
-1. **Map 20 lifecycle after the royal entry:** follow accepted evidence from the explicit pre-init
-   endpoint, without treating the existing manual synthetic battle bridge as original admission or
+1. **Remaining Map 20 lifecycle:** follow accepted evidence beyond the explicit controlled first-visit
+   result, without treating the existing manual synthetic battle bridge as original admission or
    inventing setup, flag, program, entity, or natural-route semantics. Natural Battle 01 continuity
    remains a later acceptance boundary.
 2. **Setup entities, audio, and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,

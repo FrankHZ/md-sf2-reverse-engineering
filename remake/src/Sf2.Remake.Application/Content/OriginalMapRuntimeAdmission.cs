@@ -106,6 +106,16 @@ public static class OriginalMapRuntimeAdmission
     public const int RoyalMap20WarpDestinationY = 37;
     public const byte RoyalMap20WarpDestinationOpaqueFacing = 3;
 
+    public const string PalaceFirstVisitCapability = "private-map20-controlled-first-visit-result-v1";
+    public const string PalaceInitBodySha256 =
+        "68809DD783F749F19112E33D7B70AC663C0101D5B720779437B7449706B6776C";
+    // Imported operation-token projection, including the shared tail label. This is distinct
+    // from the source-whitespace control-effect digest retained by the accepted H2 owner.
+    public const string PalaceScriptProjectionSha256 =
+        "0CF57192969A95347789B3857439F824230E8D58AB6CAF4B574B872C0B1A29B3";
+    public const string PalaceSourceControlEffectSha256 =
+        "CBFCC3AC371E2FBB9BA844B7A3C3DE0B6EA92549B5192A16EF3385E7A678A556";
+
     public const string MapId = "map3";
     public const int StartX = 56;
     public const int StartY = 3;
@@ -631,6 +641,7 @@ public static class OriginalMapRuntimeAdmission
                 CastleGateOpeningCapability,
                 NorthMap19TransitionCapability,
                 RoyalMap20TransitionCapability,
+                PalaceFirstVisitCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -807,6 +818,26 @@ public static class OriginalMapRuntimeAdmission
                 RoyalMap20WarpDestinationX,
                 RoyalMap20WarpDestinationY) &&
             transition.DestinationOpaqueFacing == RoyalMap20WarpDestinationOpaqueFacing;
+    }
+
+    public static bool HasExactAcceptedPalaceFirstVisit(
+        OriginalMapPalaceFirstVisitDefinition? definition,
+        OriginalMapExplorationRuntimeCatalog catalog)
+    {
+        if (definition is null ||
+            !string.Equals(definition.InitBodySha256, PalaceInitBodySha256, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(definition.ScriptProjectionSha256, PalaceScriptProjectionSha256, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        OriginalMapExplorationRuntimeDefinition runtime = catalog.Resolve(definition.Map);
+        return runtime.Traversal.IsWithinActiveArea(definition.PlayerEndpoint) &&
+            !OriginalMapTraversal.IsBlocked(runtime.WorkingLayout, definition.PlayerEndpoint) &&
+            runtime.EntityPopulation.Records[2].Identity == definition.HiddenEntity130 &&
+            runtime.EntityPopulation.Records[2].Position == new MapPosition(19, 39) &&
+            runtime.EntityPopulation.Records[3].Identity == definition.MovedEntity131 &&
+            runtime.EntityPopulation.Records[3].Position == definition.Entity131Source;
     }
 
     public static bool HasExactAcceptedNorthMap19Transition(

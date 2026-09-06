@@ -92,6 +92,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         CastleGateOpeningCapability,
         NorthMap19TransitionCapability,
         RoyalMap20TransitionCapability,
+        OriginalMapRuntimeAdmission.PalaceFirstVisitCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -99,7 +100,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         "natural-flags-setup-variant-selection",
         "natural-route-reach-order-and-continuity",
         "map19-setup-init-event-and-entity-runtime-semantics",
-        "map20-setup-init-palace-program-and-entity-runtime-semantics",
+        "map20-natural-init-branch-selection-dialogue-presentation-and-generic-entity-runtime",
         "map19-original-rendering-assets-camera-and-presentation",
         "generic-entity-occupancy-ai-and-obstruction",
         "other-warp-events-setup-init-effects-and-persistence",
@@ -488,7 +489,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             castleGate,
             runtimeCatalog,
             northMap19Transition,
-            royalMap20Transition);
+            royalMap20Transition,
+            ReadPalaceFirstVisit(resources));
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -629,6 +631,96 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             new MapId(OriginalMapRuntimeAdmission.Map20Id),
             new MapPosition(RequiredInt(destination, "x", field), RequiredInt(destination, "y", field)),
             checked((byte)RequiredInt(row, "facing", field)));
+    }
+
+    private static OriginalMapPalaceFirstVisitDefinition ReadPalaceFirstVisit(
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        const string field = "map20.controlledFirstVisit";
+        JsonElement init = RequiredResource(resources, "initFunctions", "ms_map20_InitFunction");
+        RequireExactProperties(init, field, "id", "address", "kind", "bodySha256",
+            "scriptTargets", "callTargets", "operations");
+        JsonElement initOperations = RequiredProperty(init, "operations", field);
+        RequireArray(initOperations, field);
+        string initDigest = RequiredString(init, "bodySha256", field);
+        JsonElement scriptTargets = RequiredProperty(init, "scriptTargets", field);
+        JsonElement callTargets = RequiredProperty(init, "callTargets", field);
+        RequireArray(scriptTargets, field);
+        RequireArray(callTargets, field);
+        if (RequiredInt(init, "address", field) != 342374 ||
+            RequiredString(init, "kind", field) != "operationList" ||
+            initDigest != OriginalMapRuntimeAdmission.PalaceInitBodySha256 ||
+            initOperations.GetArrayLength() != 12 || callTargets.GetArrayLength() != 0 ||
+            !scriptTargets.EnumerateArray().Select(value => value.GetString())
+                .SequenceEqual(new[] { "cs_53996", "cs_53B60", "cs_53FD8" }))
+        {
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                "The palace entry and branch source identity drifted.");
+        }
+
+        (string Opcode, string Operand)[] guards =
+        [
+            ("cmpi.l", "#$22803780,((ENTITY_DATA-$1000000)).w"),
+            ("bne.s", "ms_map20_flag501_InitFunction"), ("chkFlg", "605"),
+            ("bne.s", "byte_53982"), ("script", "cs_53996"), ("setFlg", "605"),
+            ("bra.s", "ms_map20_flag501_InitFunction"), ("script", "cs_53B60"),
+            ("chkFlg", "507"), ("beq.s", "return_53994"), ("script", "cs_53FD8"), ("rts", ""),
+        ];
+        for (int index = 0; index < guards.Length; index++)
+        {
+            JsonElement op = initOperations[index];
+            RequireExactProperties(op, field, "index", "labels", "opcode", "operandText",
+                "branchTargetSymbol", "branchTargetAddress", "localBranchTargetIndex");
+            int? target = index switch { 1 or 6 => 8, 3 => 7, 9 => 11, _ => null };
+            int? address = target switch { 8 => 342408, 7 => 342402, 11 => 342420, _ => null };
+            JsonElement labels = RequiredProperty(op, "labels", field);
+            RequireArray(labels, field);
+            string[] expectedLabels = index switch
+            {
+                7 => ["byte_53982"],
+                8 => ["ms_map20_flag501_InitFunction"],
+                11 => ["return_53994"],
+                _ => [],
+            };
+            if (RequiredInt(op, "index", field) != index ||
+                RequiredString(op, "opcode", field) != guards[index].Opcode ||
+                RequiredProperty(op, "operandText", field).GetString() != guards[index].Operand ||
+                !labels.EnumerateArray().Select(value => value.GetString()).SequenceEqual(expectedLabels) ||
+                RequiredProperty(op, "branchTargetSymbol", field).GetString() != (target is null ? null : guards[index].Operand) ||
+                RequiredProperty(op, "localBranchTargetIndex", field).Deserialize<int?>() != target ||
+                RequiredProperty(op, "branchTargetAddress", field).Deserialize<int?>() != address)
+            {
+                throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                    "The complete palace entry, first-visit/revisit, or later flag branch drifted.");
+            }
+        }
+
+        const string path = "data/maps/entries/map20/mapsetups/s6_initfunction.asm";
+        JsonElement main = ValidateMessengerProgramHeader(
+            RequiredResource(resources, "initSourcePrograms", "cs_53996"), field, "cs_53996", 342422, 113, path);
+        JsonElement tail = ValidateMessengerProgramHeader(
+            RequiredResource(resources, "initSourcePrograms", "cs_53B60"), field, "cs_53B60", 342880, 2, path);
+        (int Index, string Opcode, string Operand)[] effects =
+        [
+            (0, "textCursor", "2176"), (1, "setPos", "ALLY_BOWIE,23,39,DOWN"),
+            (15, "entityActionsWait", "131"), (16, "moveRight", "1"), (17, "endActions", ""),
+            (68, "entityActionsWait", "131"), (69, "moveUp", "1"), (70, "endActions", ""),
+            (76, "entityActionsWait", "131"), (77, "moveRight", "1"), (78, "endActions", ""),
+        ];
+        foreach (var effect in effects)
+        {
+            ValidateMessengerOperation(main[effect.Index], field, effect.Index, effect.Opcode, effect.Operand, [], []);
+        }
+
+        ValidateMessengerOperation(tail[0], field, 0, "hide", "130", [], []);
+        ValidateMessengerOperation(tail[1], field, 1, "csc_end", "", [], []);
+        // Bind every imported operation in the first-visit span, followed by its shared tail.
+        // The H2 source-text digest is a separate provenance identity, not this JSON projection.
+        string Token(JsonElement operation) =>
+            (RequiredString(operation, "opcode", field) + " " +
+                RequiredText(operation, "operandText", field)).TrimEnd();
+        string[] tokens = [.. main.EnumerateArray().Select(Token), "cs_53B60:", .. tail.EnumerateArray().Select(Token)];
+        return new(initDigest, Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(tokens))));
     }
 
     private static void ValidateGeometry(JsonElement geometry)
@@ -3134,7 +3226,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         string field,
         string identity,
         int address,
-        int operationCount)
+        int operationCount,
+        string sourcePath = "data/maps/entries/map03/mapsetups/scripts_1.asm")
     {
         RequireExactProperties(program, field, "id", "address", "path", "kind", "operations");
         if (!string.Equals(RequiredString(program, "id", field + ".id"), identity,
@@ -3142,7 +3235,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             RequiredNonNegativeInt(program, "address", field + ".address") != address ||
             !string.Equals(
                 RequiredString(program, "path", field + ".path"),
-                "data/maps/entries/map03/mapsetups/scripts_1.asm",
+                sourcePath,
                 StringComparison.Ordinal) ||
             !string.Equals(
                 RequiredString(program, "kind", field + ".kind"),

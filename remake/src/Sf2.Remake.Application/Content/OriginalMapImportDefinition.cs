@@ -193,7 +193,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapCastleGateDefinition? castleGate = null,
         OriginalMapExplorationRuntimeCatalog? runtimeCatalog = null,
         OriginalMapCrossMapTransitionDefinition? northMap19Transition = null,
-        OriginalMapCrossMapTransitionDefinition? royalMap20Transition = null)
+        OriginalMapCrossMapTransitionDefinition? royalMap20Transition = null,
+        OriginalMapPalaceFirstVisitDefinition? palaceFirstVisit = null)
     {
         ArgumentNullException.ThrowIfNull(map);
         ArgumentNullException.ThrowIfNull(workingLayout);
@@ -622,6 +623,7 @@ public sealed class OriginalMapImportDefinition
 
         NorthMap19Transition = northMap19Transition;
         RoyalMap20Transition = royalMap20Transition;
+        PalaceFirstVisit = palaceFirstVisit;
         ControlledStepCopy = controlledStepCopy;
         SameMapWarps = sameMapWarps;
         RoofOnLoadClear = roofOnLoadClear;
@@ -678,6 +680,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapCrossMapTransitionDefinition? NorthMap19Transition { get; }
 
     public OriginalMapCrossMapTransitionDefinition? RoyalMap20Transition { get; }
+
+    public OriginalMapPalaceFirstVisitDefinition? PalaceFirstVisit { get; }
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

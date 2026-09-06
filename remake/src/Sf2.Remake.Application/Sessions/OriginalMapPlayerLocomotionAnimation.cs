@@ -292,6 +292,21 @@ public sealed record PrivateOriginalMapPlayerLocomotionSnapshot
             offsetYUnits: 0);
     }
 
+    internal static PrivateOriginalMapPlayerLocomotionSnapshot CompletePalaceFirstVisit(
+        PrivateOriginalMapPlayerLocomotionSnapshot current,
+        PrivateOriginalMapPalaceFirstVisitReceipt receipt)
+    {
+        ArgumentNullException.ThrowIfNull(current);
+        ArgumentNullException.ThrowIfNull(receipt);
+        ExplorationDirection direction = DirectionFromOpaqueFacing(receipt.PlayerOpaqueFacing, nameof(receipt));
+        (byte facing, PrivateOriginalMapPlayerLocomotionSheet sheet, int slot, bool mirror) = Selection(direction);
+        return new PrivateOriginalMapPlayerLocomotionSnapshot(
+            PrivateOriginalMapPlayerLocomotionPhase.ScriptedEndpoint, direction, facing, sheet, slot, mirror,
+            tick: 0, counterAtSelection: current.StoredCounter, storedCounter: current.StoredCounter,
+            selectedHalf: current.SelectedHalf, receipt.PlayerSource, receipt.PlayerEndpoint,
+            offsetXUnits: 0, offsetYUnits: 0);
+    }
+
     internal PrivateOriginalMapPlayerLocomotionSnapshot Advance()
     {
         if (!IsMoving)
