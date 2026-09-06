@@ -46,9 +46,9 @@ For H3, callback exceptions must reach the status/exit contract. New schema plac
 
 ## Agent and Session Routing
 
-Use [ADR 0018](./docs/decisions/0018-astra-role-routing-trial.md) for the bounded Astra/Sol role trial,
-its default models, task-migration boundary, and exit decision. Dedicated owners may execute their
-complete lane; reserve `gpt-5.6-terra` for an explicitly bounded single-file, single-assembly, or
+Use [ADR 0018](./docs/decisions/0018-astra-role-routing-trial.md) for accepted Astra/Sol role routing,
+its default models, task-migration boundary, and completed trial's exit decision. Dedicated owners
+may execute their complete lane; reserve `gpt-5.6-terra` for an explicitly bounded single-file, single-assembly, or
 single-function reverse-engineering subtask, never a whole lane or integration. This routing replaces
 ADR 0004's earlier model and mandatory-worker choice; its evidence, handoff, and root-acceptance
 checklist remains normative for any bounded Phase 2 task.

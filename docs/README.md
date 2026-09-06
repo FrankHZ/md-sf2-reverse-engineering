@@ -922,8 +922,8 @@ is created only when a real disagreement appears and the choice constrains later
   observations retain heavy typing while same-process presentation and orchestration default to direct,
   internal implementation.
 - [`0018-astra-role-routing-trial.md`](./decisions/0018-astra-role-routing-trial.md):
-  records a two-to-three-slice Astra/Sol role trial, bounded Terra delegation, explicit fresh-task
-  migration and startup/rename verification, and evaluation through existing independent reviews.
+  owns accepted Astra/Sol role routing after the completed trial, bounded Terra delegation,
+  explicit task migration, and safeguards for context resumption and proportional verification.
 
 ## Evidence Vocabulary
 
