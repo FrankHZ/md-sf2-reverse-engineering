@@ -14,7 +14,7 @@ investigation but does not establish a production debugger or unattended service
 ## Ownership and reproduction
 
 The implementation is [the standalone Python module](../../src/sf2tool/bizhawk_debug_bridge.py),
-[the fixed Lua script](../../tools/bizhawk/debug_bridge.lua), and
+[the fixed Lua script](../../tools/debug_bridge.lua), and
 [focused tests](../../tests/python/test_bizhawk_debug_bridge.py). It does not register
 an `sf2` command or change existing H3 observers, harnesses, fixtures, or schemas.
 
@@ -154,7 +154,7 @@ comes from accepted `tests/fixtures/h3/controller-input-v1.json` →
 No ROM modification, seeded CPU register, savestate, or old #303/#309 route was used.
 This does not promote that callback to evidence about natural game progression.
 
-All ten launches completed; none is pending or an interrupted historical H3 run:
+All eleven launches completed; none is pending or an interrupted historical H3 run:
 
 | Local launch | Outcome and correction |
 | --- | --- |
@@ -166,6 +166,7 @@ All ten launches completed; none is pending or an interrupted historical H3 run:
 | 08 | **PASS** smoke, normal exit 0. |
 | 09 | **PASS** bounded EOF containment; graceful recovery **FAIL** as above. |
 | 10 | **PASS** idle timeout cleanup, deliberate exit 1. |
+| 11 | **PASS** one smoke after the authorized Lua path move, normal exit 0; idle/EOF results retained without rerunning them. |
 
 The first Python test run completed with 20 passed and two setup errors, including
 an oversized parameter ID in its output; the corrected compact-ID/socket test run
@@ -173,11 +174,14 @@ passed 21. The expanded focused suite passed 27, including injected Lua executio
 The Lua tests require the pinned local `lua54.dll` and visibly skip without it;
 they never launch EmuHawk. Raw launches and test receipts remain ignored.
 
-The normal `uv run sf2 verify` completed its 148 commit-critical Python tests,
+The initial `uv run sf2 verify` completed its 148 commit-critical Python tests,
 Ruff, documentation traceability, research index and H0 ROM checks successfully,
-then exited 1 at toolchain provenance because the new worktree has no registered
-local `SF2DISASM` checkout. The aggregate command is **not a pass**; that dependency
-is unavailable here. No complete H3, H1 rebuild, or `--full` profile was run.
+then exited 1 at toolchain provenance because the new worktree had no registered
+local `SF2DISASM` checkout. That completed result remains a failure. After preparing
+an independent checkout at the manifest-pinned commit and copying/verifying the
+registered JDK tree into this worktree, normal `uv run sf2 verify` **passed**,
+including all 148 commit-critical tests and toolchain provenance. No complete H3,
+H1 rebuild, or `--full` profile was run.
 
 The clean committed planner classified `tools/bizhawk/debug_bridge.lua` as
 `unknown H3 input`, selecting all six H3 partitions plus public core and tooling
@@ -186,12 +190,19 @@ selection. The focused public-CI node
 `tests/python/test_verification_plan.py::test_every_tracked_h2_h3_artifact_has_closed_exact_ownership`
 was run and **failed** at line 817 because that exact Lua path is outside the
 closed H3 owner sets. Its completed result is retained; no historical H3 suite or
-complete Python suite was run in response. Main-gate must decide the smallest
-ownership correction before acceptance. The proposed correction is moving this
-communication-only script to `tools/debug_bridge.lua`, outside the H3-specific
-directory, with the Python script reference and this document updated; it requires
-the explicitly assigned Lua path ownership to be extended first. Do not weaken the
-planner, the closed-owner assertion, or an existing H3 fixture to admit this tool.
+complete Python suite was run in response. The accepted placement correction moves
+this communication-only script to `tools/debug_bridge.lua`, outside the H3-specific
+directory. The planner explicitly maps that path and
+`src/sf2tool/bizhawk_debug_bridge.py` to this tool's focused Python tests, preserving
+the source module's normal reverse-dependent selection. A Lua-only change therefore
+still selects the owning tests. Existing H3 classifications and the closed-owner
+assertion remain intact.
+
+The post-correction command
+`uv run pytest tests/python/test_bizhawk_debug_bridge.py tests/python/test_verification_plan.py`
+**passed all 113 tests**, including the previously failing closed-ownership node,
+source-only and Lua-only bridge mappings, and a synthetic future reverse-dependent
+consumer. These do not execute a full Python suite or any H3 scenario.
 
 Rough timings from launch 08: warm queries roughly 0.5–18 ms, three frames about
 51 ms, callback run about 167 ms. These are one local operational sample, including

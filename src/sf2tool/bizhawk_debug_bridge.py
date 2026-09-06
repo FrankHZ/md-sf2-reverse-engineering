@@ -21,7 +21,7 @@ from sf2tool.private_inputs import ROM_INPUT_IDENTITY, private_input_path
 from sf2tool.rom import verify_rom
 
 MAX_PAYLOAD = 65536
-SCRIPT = repo_path("tools/bizhawk/debug_bridge.lua")
+SCRIPT = repo_path("tools/debug_bridge.lua")
 
 
 def send_frame(connection: socket.socket, payload: str, *, timeout: float) -> None:
