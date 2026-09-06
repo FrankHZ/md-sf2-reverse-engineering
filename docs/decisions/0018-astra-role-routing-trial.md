@@ -1,15 +1,15 @@
-# ADR 0018: Astra Role Routing Trial
+# ADR 0018: Astra Role Routing After Trial
 
-- Status: **Accepted**; bounded trial complete, routing defaults retained
+- Status: **Accepted**; trial closed, Astra research default adopted
 - Proposal date: 2026-09-05
-- Decision date: 2026-09-05
+- Decision date: 2026-09-06
 - Scope: continuing role routing and task handoffs after the bounded trial
 
 ## Context
 
-The user is migrating the project's long-lived agents from Sol toward Astra and has designated a
-fresh Astra main-gate. The choice is whether to move every role immediately or first try Astra in
-roles with broad review and architecture responsibility. Model choice must preserve independent
+The project has completed a bounded Astra migration trial across main-gate, remake implementation,
+research, and a tooling investigation. The user authorized formal closeout and ordinary Astra work
+for main-gate, godot-architect, and research. Model choice continues to preserve independent
 integration, evidence boundaries, and proportional verification.
 
 A role is a continuing responsibility; a task/session hosts that role; a lane is its owned work;
@@ -17,15 +17,15 @@ a slice is one bounded change, normally one PR; a subagent is a temporary bounde
 
 ## Current Routing
 
-Retain these defaults after the two-slice trial. The routing decision and task-management smoke
-experiment are coordination work, not substantive product slices.
+Use these defaults for ordinary authorized work. No further slice or task-management smoke is
+required solely to evaluate the model; the completed startup/rename experiment stays closed.
 
 | Role | Default model / reasoning | Responsibility |
 | --- | --- | --- |
 | main-gate | `gpt-6-astra` / `xhigh` | cross-lane scope, independent review, and serialized integration |
 | godot-architect | `gpt-6-astra` / `xhigh` | remake architecture, evidence-to-product boundaries, and implementation ownership |
 | investigator | `gpt-6-astra` / `high` or `xhigh` | bounded investigation of suspected workflow or systemic problems |
-| research | `gpt-5.6-sol` / `xhigh` | complete evidence slices, static extraction, and justified H3 execution |
+| research | `gpt-6-astra` / `xhigh` | complete evidence slices, static extraction, and justified H3 execution |
 | design-doc | `gpt-5.6-sol` / `high` or `xhigh` | contracts and synthesis from accepted evidence |
 
 These are defaults, not an obligation to switch models between planning and implementation. A lane
@@ -72,35 +72,43 @@ Elapsed time and account usage are optional operational impressions, not per-rol
 Under ADR 0013, add no telemetry, benchmark harness, copied prompts, usage ledger, or extra test runs.
 API token prices do not establish Codex account quota consumption or project cost savings.
 
-The trial is complete after the accepted [Map 19 royal exit](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/305)
-and [controlled palace first-visit result](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/306).
-These two substantive slices support retaining the current division of responsibility. No third
-trial slice is needed. Astra continues as the main-gate and godot-architect default; research and
-design-doc retain Sol. The investigator default remains unexercised by this trial, and its existing
-task is not migrated by this decision. Terra retains its bounded reverse-engineering role.
+The accepted work supports Astra as the continuing main-gate, godot-architect, and research default:
 
-The ordinary review record supports this operational choice: both slices stayed within declared
-ownership, preserved static-versus-natural evidence boundaries, and reached independent acceptance.
-The first needed fixture repairs and a consolidated correction for PowerShell input resolution and
-local receipt redaction. The second needed no main-gate code correction. Completed test failures and
-smoke-parser failures were retained with targeted corrections; H0 input unavailability was disclosed
-instead of reported as a full verification pass. Exact execution details remain with those PRs.
+| Evaluated responsibility | Accepted evidence and limit |
+| --- | --- |
+| Main-gate and remake implementation | [Map 19 royal exit](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/305), [controlled palace first visit](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/306), and [royal return](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/308) reached independent acceptance within their declared ownership and evidence boundaries. Corrections and unavailable checks remain in the owning PR records. |
+| Research | [Original warp-record facing](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/309) and [warp-facing source guard](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/311) support adopting Astra for complete research slices. Source, fixture and regression checks passed independent acceptance without promoting source structure to natural runtime behavior. |
+| Bounded investigation | [BizHawk debug bridge](https://github.com/FrankHZ/md-sf2-reverse-engineering/pull/310) exercised a separately requested Astra task and retained unsuccessful experiments and runtime limitations. It supports the existing investigator default but did not migrate the old investigator task. |
+
+Design-doc remains on Sol because this trial did not exercise that role. Terra retains its bounded
+reverse-engineering role. Existing accepted work and frozen tasks remain valid; the routing decision
+does not require recreating tasks, repeating completed slices, or adding a benchmark program.
 
 The user also observed old instructions being replayed after compaction and had to request a reminder.
 Current-state anchors and explicit continuation instructions allowed work to proceed, but this trial
 does not establish that the underlying context-replay problem is fixed. The resumption rule above
 remains an operating requirement.
 
+The bridge investigation also exposed a main-gate scope error: its follow-up expanded into a large
+legacy regression queue that did not use the bridge. The user had to redirect the gate. Main-gate
+must reconcile broad planner selections with the actual change before launching an expensive queue,
+keep direct experiment evidence distinct from surrounding regression results, and record any
+explicitly authorized acceptance exception without changing the planner or relabeling unexecuted
+checks. The [bridge owner](../operations/bizhawk-debug-bridge.md#bounded-merge-acceptance-for-pr-310)
+retains that PR's failed full-suite discovery, separate corrections, and 47 paused H3 commands.
+Those commands remain **NOT RUN**; trial closeout does not resume them or generalize that exception.
+
 This is a small project-local acceptance sample with no matched Sol comparison, per-role cost
-measurement, or investigator/research/design migration exercise. It does not establish general Astra
-superiority, quota savings, or a reason to migrate all five tasks. Future routing changes use a
-concrete observed need and independent review. If a role regresses, correct the affected slice and
+measurement, or design-doc trial. It does not establish general Astra superiority or quota savings.
+Future routing changes use a concrete observed need and independent review. If a role regresses,
+correct the affected slice and
 recommend returning that role to Sol without automatically undoing accepted code or evidence.
 
 Verification remains governed by ADR 0012: normal public core and affected gates, retained failure
 history, targeted retries, and no full-suite rerun solely for a new model or task. Role migration alone
 does not resume game development; a separate user instruction does. This trial changes no product scope, original-game claim,
-private-input rule, runtime launch budget, or H4 acceptance requirement.
+private-input rule, runtime launch budget, or H4 acceptance requirement. Formal closeout adopts the
+routing above; it does not start a new product slice or authorize worktree/ref cleanup.
 
 ## References
 
