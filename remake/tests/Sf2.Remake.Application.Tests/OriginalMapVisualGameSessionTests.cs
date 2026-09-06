@@ -474,7 +474,8 @@ public sealed class OriginalMapVisualGameSessionTests
             AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime),
             AcceptedOriginalMapRuntimeCatalog.NorthTransition(),
             AcceptedOriginalMapRuntimeCatalog.RoyalTransition(),
-            AcceptedOriginalMapPalaceFirstVisit.Create());
+            AcceptedOriginalMapPalaceFirstVisit.Create(),
+            AcceptedOriginalMapRuntimeCatalog.RoyalReturn());
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>

@@ -28,6 +28,15 @@ public sealed class PrivateOriginalMapBattleBridgeTests
         Assert.Same(snapshot, session.PrivateOriginalMapSnapshot);
         Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
         Assert.Same(requested.Bridge, session.PrivateOriginalMapBattleBridge);
+        // The bridge can become busy only at its controlled Map 3 trigger. Its global movement
+        // guard also protects cross-map commands; no unsupported Map 20 battle state is seeded.
+        Assert.Throws<InvalidOperationException>(() => session.BeginPrivateOriginalMapPlayerLocomotion(
+            new MoveExplorationCommand(ExplorationDirection.North)));
+        Assert.Throws<InvalidOperationException>(() => session.ApplyPrivateOriginalMap(
+            new MoveExplorationCommand(ExplorationDirection.North)));
+        Assert.Same(snapshot, session.PrivateOriginalMapSnapshot);
+        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Same(requested.Bridge, session.PrivateOriginalMapBattleBridge);
     }
 
     [Fact]
@@ -557,7 +566,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime),
             AcceptedOriginalMapRuntimeCatalog.NorthTransition(),
             AcceptedOriginalMapRuntimeCatalog.RoyalTransition(),
-            AcceptedOriginalMapPalaceFirstVisit.Create());
+            AcceptedOriginalMapPalaceFirstVisit.Create(),
+            AcceptedOriginalMapRuntimeCatalog.RoyalReturn());
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>

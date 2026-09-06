@@ -106,6 +106,11 @@ public static class OriginalMapRuntimeAdmission
     public const int RoyalMap20WarpDestinationY = 37;
     public const byte RoyalMap20WarpDestinationOpaqueFacing = 3;
 
+    public const string RoyalReturnMap19TransitionCapability = "private-map20-royal-return-map19-transition-v1";
+    public const string RoyalReturnWarpResourceId = "Map20s6_WarpEvents";
+    public const int RoyalReturnWarpRecordOrdinal = 5;
+    public const byte RoyalReturnDestinationOpaqueFacing = 2;
+
     public const string PalaceFirstVisitCapability = "private-map20-controlled-first-visit-result-v1";
     public const string PalaceInitBodySha256 =
         "68809DD783F749F19112E33D7B70AC663C0101D5B720779437B7449706B6776C";
@@ -642,6 +647,7 @@ public static class OriginalMapRuntimeAdmission
                 NorthMap19TransitionCapability,
                 RoyalMap20TransitionCapability,
                 PalaceFirstVisitCapability,
+                RoyalReturnMap19TransitionCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -819,6 +825,21 @@ public static class OriginalMapRuntimeAdmission
                 RoyalMap20WarpDestinationY) &&
             transition.DestinationOpaqueFacing == RoyalMap20WarpDestinationOpaqueFacing;
     }
+
+    public static bool HasExactAcceptedRoyalReturnMap19Transition(
+        OriginalMapCrossMapTransitionDefinition? transition) =>
+        transition is not null &&
+        transition.Identity.Profile == ContentProfile.PrivateLocal &&
+        transition.Identity.SourceMap == new MapId(Map20Id) &&
+        transition.Identity.SourceResourceId == RoyalReturnWarpResourceId &&
+        transition.Identity.OneBasedRecordOrdinal == RoyalReturnWarpRecordOrdinal &&
+        transition.SourceTriggerX == 23 && transition.SourceTriggerY == 37 &&
+        transition.AdmittedApproach == new MapPosition(23, 38) &&
+        transition.AdmittedDirection == ExplorationDirection.North &&
+        transition.AdmittedTrigger == new MapPosition(23, 37) &&
+        transition.DestinationMap == new MapId(Map19Id) &&
+        transition.Destination == new MapPosition(23, 3) &&
+        transition.DestinationOpaqueFacing == RoyalReturnDestinationOpaqueFacing;
 
     public static bool HasExactAcceptedPalaceFirstVisit(
         OriginalMapPalaceFirstVisitDefinition? definition,

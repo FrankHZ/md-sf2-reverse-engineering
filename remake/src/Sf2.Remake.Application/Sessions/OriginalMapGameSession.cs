@@ -67,10 +67,12 @@ public sealed record PrivateOriginalMapSessionSnapshot
         CurrentRuntime = currentRuntime;
         if (palaceFirstVisit is not null &&
             (!ReferenceEquals(palaceFirstVisit.Definition, definition.PalaceFirstVisit) ||
-                currentRuntime.Map != palaceFirstVisit.Definition.Map ||
+                (currentRuntime.Map != palaceFirstVisit.Definition.Map &&
+                    currentRuntime.Map != new MapId(OriginalMapRuntimeAdmission.Map19Id)) ||
                 palaceFirstVisit.SimulationStep > simulationStep ||
                 (palaceFirstVisit.SimulationStep == simulationStep &&
-                    playerPosition != palaceFirstVisit.PlayerEndpoint)))
+                    (currentRuntime.Map != palaceFirstVisit.Definition.Map ||
+                        playerPosition != palaceFirstVisit.PlayerEndpoint))))
         {
             throw new ArgumentException(
                 "Controlled palace completion must retain its admitted definition, map, step, and endpoint.",
@@ -266,10 +268,13 @@ public sealed record PrivateOriginalMapSessionSnapshot
             OriginalMapCrossMapTransitionDefinition admitted =
                 (lastCrossMapTransition.DestinationMap == new MapId(OriginalMapRuntimeAdmission.Map20Id)
                     ? definition.RoyalMap20Transition
-                    : definition.NorthMap19Transition) ?? throw new ArgumentException(
+                    : lastCrossMapTransition.RecordIdentity.SourceMap == new MapId(OriginalMapRuntimeAdmission.Map20Id)
+                        ? definition.RoyalReturnMap19Transition
+                        : definition.NorthMap19Transition) ?? throw new ArgumentException(
                     "A cross-map receipt requires its admitted transition definition.",
                     nameof(lastCrossMapTransition));
             if (lastCrossMapTransition.SimulationStep != simulationStep ||
+                (ReferenceEquals(admitted, definition.RoyalReturnMap19Transition) && palaceFirstVisit is null) ||
                 lastCrossMapTransition.RecordIdentity != admitted.Identity ||
                 lastCrossMapTransition.Source != admitted.AdmittedApproach ||
                 lastCrossMapTransition.Trigger != admitted.AdmittedTrigger ||
@@ -1376,6 +1381,13 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.royalMap20Transition",
                 "The admitted definition does not retain the exact bounded Map 19 royal transition.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedRoyalReturnMap19Transition(
+                definition.RoyalReturnMap19Transition))
+        {
+            return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.royalReturnMap19Transition", "The controlled royal return source binding drifted.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedPalaceFirstVisit(

@@ -26,6 +26,11 @@ public sealed class PrivateMap3PresenterTests
         Assert.Contains("Controlled first-visit result applied", completed);
         Assert.Contains("scene skipped", completed);
         Assert.DoesNotContain("F apply", completed);
+        string returned = PrivateMap3PresentationPlan.RoyalReturnStatus(receipt);
+        Assert.Contains("Royal return", returned);
+        Assert.Contains("controlled first-visit result retained", returned);
+        Assert.Contains("diagnostic traversal", returned);
+        Assert.DoesNotContain("F apply", returned);
     }
 
     [Fact]

@@ -110,6 +110,11 @@ internal sealed record PrivateMap3PresentationPlan(
             $"{snapshot.PlayerPosition.Y})  Area {snapshot.CurrentArea.OneBasedRecordOrdinal}  " +
             $"Step {snapshot.SimulationStep}  {outcome}  |  " +
             "WASD semantic movement";
+        if (snapshot.Map.Value == "map19" && snapshot.PalaceFirstVisit is not null)
+        {
+            return status + "  |  " + RoyalReturnStatus(snapshot.PalaceFirstVisit);
+        }
+
         if (snapshot.Map.Value == "map20")
         {
             return status + "  |  " + PalaceFirstVisitStatus(snapshot.PalaceFirstVisit);
@@ -165,6 +170,12 @@ internal sealed record PrivateMap3PresentationPlan(
         }
 
         return status;
+    }
+
+    internal static string RoyalReturnStatus(PrivateOriginalMapPalaceFirstVisitReceipt receipt)
+    {
+        ArgumentNullException.ThrowIfNull(receipt);
+        return "Royal return; controlled first-visit result retained; diagnostic traversal";
     }
 
     internal static string PalaceFirstVisitStatus(PrivateOriginalMapPalaceFirstVisitReceipt? receipt) =>

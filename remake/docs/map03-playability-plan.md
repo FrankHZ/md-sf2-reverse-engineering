@@ -59,6 +59,10 @@ The Map 20 arrival is **before its selected init executes**. Its nullable first-
 unselected until the user presses F at the palace entrance to apply a controlled result while skipping
 the scene. Application owns that explicit preset and atomically moves the player to `(23,39)` facing
 down, records completion flag 605, and retains typed entity-131 endpoint and entity-130 hidden results.
+From that completed result, two north inputs pass `(23,38)` and trigger the exact return at `(23,37)`.
+Application atomically commits the catalog-owned Map 19 runtime at `(23,3)`, area record 1, with raw
+opaque facing `2` (left), retaining the first-visit receipt, previous Map 3 route state and manual bridge.
+Godot projects the returned state through traversal diagnostics; further movement retains completion.
 Arrival alone does not resolve natural caller flags or admit a natural palace player-ready lifecycle.
 Map 19/20 setup selection is fixed to the admitted default data; general init, event, entity, music,
 and rendering execution remains unsupported. Further Map 20 movement remains diagnostic traversal.
@@ -127,7 +131,8 @@ unchanged flags and import receipt, cleared transient receipts, and the unchange
 The test-only seed does not prove the preceding natural Map 3 route or execute either map's init.
 The same current session then explicitly applies the controlled palace result, verifies its fixed
 imported-token projection, player endpoint/facing and retained route state, rejects a duplicate without
-mutating snapshot, locomotion, or bridge, and retains the receipt through ordinary palace movement.
+mutating snapshot, locomotion, or bridge, and follows the two-input palace return through the same
+session, checking the Map 19 runtime, area, facing and retained first-visit/route/bridge state.
 
 After the locked build, reproduce the private check from `remake/`:
 
@@ -181,8 +186,49 @@ stale requests, wrong preset/map/position, locomotion busy, and battle bridge bu
 of all three session authorities. Content tests reject changed init guards, branch metadata, consumed
 effects, truncated source, and malformed tokens. Godot projects the typed outcome and labels the F
 action as applying a controlled result with the scene skipped; it never selects an original branch.
-Later F507 programs, royal return warps, natural init execution, and Battle 01 admission are outside
-this capability.
+Later F507 programs, other return warps, natural init execution, and Battle 01 admission are outside
+this capability. The exact royal return after this controlled result is bounded below.
+
+## Royal Return Acceptance Boundary
+
+**Confirmed:** the accepted castle-unlock fixture retains `map20-palace-return-to-royal-warp` as
+`Up, Up` from `(23,39)` through `(23,38)` to `(23,37)`. Its retained warp join connects that terminal
+to Map 19 `(23,3)`. The accepted canonical import's `Map20s6_WarpEvents` table at `0xA53DA` has
+11 records; one-based record 5 is the exact no-scroll return to Map 19, destination `(23,3)`, raw
+facing `2`, reserved `0`, `retainsCoordinates=false`, and `scrollDirection=null`. Content requires
+that exact record identity, shape and operands, then binds the existing cross-map definition.
+
+The facing discrepancy in accepted research is preserved explicitly. `static.warps.map20Royal`
+records `LEFT`, checked against the pinned source's `data/maps/entries/map20/6-warp-events.asm` by
+[`_warps`](../../src/sf2tool/h2/map3_castle_battle_unlock.py). The canonical
+[`_decode_warps`](../../src/sf2tool/h2/map_import.py) reads `facing` directly from byte offset 6 of each
+8-byte record; the accepted return byte is `2`, consistent with `LEFT`. In contrast, the same fixture's
+`static.routeGraph` segment `map20-to-map19-royal-return` has a separately hardcoded
+`to.facing="DOWN"`. That annotation is not derived from the warp byte and is not the product's facing
+authority. Its intended interpretation remains **Unknown**; neither a later init-facing change nor
+natural runtime orientation is inferred from it. The minimal research correction owner is the graph
+row in `map3_castle_battle_unlock.py` and its existing static fixture, outside this product slice.
+
+The controlled return requires the retained first-visit result, exact Map 20 approach `(23,38)`, and
+north direction. Entering the terminal without the completed result, from another approach, or with
+another direction does not produce a return receipt; existing diagnostic traversal still applies.
+The existing direction-only `MoveExplorationCommand` has no expected-step field, so stale-return
+rejection is **NotApplicable** and no new request protocol is introduced. An active locomotion cycle
+rejects a matching cross-map command. The existing busy manual-bridge guard rejects private movement;
+that bridge is activated only at its controlled Map 3 trigger, not by inventing a Map 20 battle state.
+
+The cross-map reducer constructs both the next validated snapshot and relocated locomotion before
+committing either. Transient operation receipts reset; the new cross-map receipt identifies this
+Map 20 source separately from the older north Map 3-to-Map 19 receipt. The first-visit/605 receipt and
+previous route state survive the return and subsequent Map 19 movement; a fresh session resets them.
+The optional private command above exercises the complete existing 38-input outbound route, explicit
+controlled first visit and two-input return. Its Map 19 entry seed remains test-only, not evidence of
+natural preceding continuity. Public tests cover both movement entry points, wrong admission/facing,
+incomplete and incompatible approaches, busy/invalid movement, atomic state retention and restart.
+
+Map 19 init and natural caller state remain **Unsupported / Unknown**. Astral interaction, flags
+608/607, tower routes, Map 21, F507 branches, general warp/script/NPC behavior, original presentation,
+and Battle 01 continuity remain outside this return capability.
 
 The current immutable snapshot is reconstructed by each specialized session reducer. Preserving the
 new castle-gate state across those boundaries exposed repeated mechanical pass-through work. That is a
@@ -191,8 +237,8 @@ capability or centralize event semantics now.
 
 ## Ordered Queue
 
-1. **Remaining Map 20 lifecycle:** follow accepted evidence beyond the explicit controlled first-visit
-   result, without treating the existing manual synthetic battle bridge as original admission or
+1. **Remaining lifecycle after the controlled royal return:** follow accepted evidence beyond the
+   Map 19 return endpoint, without treating the existing manual synthetic battle bridge as original admission or
    inventing setup, flag, program, entity, or natural-route semantics. Natural Battle 01 continuity
    remains a later acceptance boundary.
 2. **Setup entities, audio, and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
