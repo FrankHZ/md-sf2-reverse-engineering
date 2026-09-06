@@ -45,7 +45,8 @@ Status terms:
 | Private Map 3 live route-actor glyphs | the accepted session-owned Sarah and Zone 601 positions/facings plus the thin Godot base view | **Implemented as bounded modern presentation policy** | distinct project-authored diamond/square glyphs follow only these two live route exceptions; Sarah's glyph retires when Application marks her follower-ready and releases route occupancy; generic population visibility, original sprites, animation, AI, and fidelity remain unclaimed |
 | Private Map 3 project-authored camera follow | Godot-only immutable focus/crop projection over the authoritative private snapshot and Application locomotion state | **Implemented as modern 9A presentation policy** | follows accepted 32-unit transitions as two logical pixels, centers at column 6/row 3 when unclamped, and samples the current working layout; original camera target/dead-zone/clamp, plane A/B, parallax/autoscroll, layer, VInt, hardware/display/final-pixel, H4/8C behavior remains Unknown |
 | Full original visual presentation | no current product owner | **Unsupported** | original camera/layers/priority, color display, animation, UI, text, audio, timing, and final pixels remain outside the bounded project-authored base composition and atlas diagnostic |
-| Continuous Map 3-through-Battle 01 milestone | Research, design contracts, future Application/Domain/Godot work | **Unknown / NOT READY** | bounded relocations reach Map 20 before init; natural caller state, palace lifecycle, Battle 01 admission/playthrough/victory, endpoint, complete private presentation, and complete acceptance remain open; the bridge-seeded Map 21 H3 seam does not close this route |
+| Controlled palace first-visit result | Content source binding, Application command/receipt and locomotion, thin Godot interaction/status | **Implemented** | Map 20 arrival stays pre-init and unselected; explicit F at `(23,37)` applies the clear-605/507 preset with the scene skipped, player `(23,39)`/DOWN, completion 605, entity-131 endpoint `(20,39)`, and entity-130 hidden receipt; immutable source population stays unchanged; no natural flag resolution, general init/script/NPC execution, dialogue presentation, later F507 program, or return warp |
+| Continuous Map 3-through-Battle 01 milestone | Research, design contracts, future Application/Domain/Godot work | **Unknown / NOT READY** | bounded relocations reach Map 20 before init and an explicit controlled first-visit result can be applied; natural caller state, remaining palace lifecycle, Battle 01 admission/playthrough/victory, endpoint, complete private presentation, and complete acceptance remain open; the bridge-seeded Map 21 H3 seam does not close this route |
 | Save/load and persistence | future milestone and save-system owner | **Unsupported / deferred** | no player-facing save, checkpoint, suspend, migration, or persistence adapter |
 | Complete H4 and 8C reference parity | future layered observation owners | **Unknown** | exact reached frame, palette, audio, hardware chronology, capture conditions, and accepted tolerances remain open |
 
@@ -81,8 +82,11 @@ The next engineering frontier is product capability behind `GameSession`, with i
 Content decomposition only when an owning behavior change makes it necessary. The accepted bounded
 castle-gate route crosses the exact north relocation into Map 19 and the royal stair exit into a
 catalog-owned Map 20 runtime. Godot projects both destinations through traversal diagnostics and hides
-the Map 3-only atlas. Map 20 arrival remains explicitly pre-init. Map 19/20 init and generic event/entity
-execution remain **Unsupported**; natural caller state, original rendering, and continuity to Battle 01
+the Map 3-only atlas. Map 20 arrival remains explicitly pre-init, with its controlled first-visit
+result unselected. F at the palace entrance explicitly applies that result while skipping the scene;
+the once-only typed receipt survives further Map 20 traversal and resets in a fresh session. Map 19/20
+general init and event/entity execution remain **Unsupported**; natural caller state, original rendering, and continuity to Battle 01
 remain **Unknown / NOT READY**. The known static init shape and bounded route checks are recorded in
-the [playability plan](./map03-playability-plan.md#royal-route-acceptance-boundary).
+the [playability plan](./map03-playability-plan.md#royal-route-acceptance-boundary) and its
+[controlled first-visit boundary](./map03-playability-plan.md#controlled-palace-first-visit-result).
 See [Architecture](./architecture.md).

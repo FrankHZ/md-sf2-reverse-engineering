@@ -35,7 +35,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         PrivateOriginalMapCastleGateState? castleGate = null,
         PrivateOriginalMapCastleGateReceipt? lastCastleGate = null,
         OriginalMapExplorationRuntimeDefinition? currentRuntime = null,
-        PrivateOriginalMapCrossMapTransitionReceipt? lastCrossMapTransition = null)
+        PrivateOriginalMapCrossMapTransitionReceipt? lastCrossMapTransition = null,
+        PrivateOriginalMapPalaceFirstVisitReceipt? palaceFirstVisit = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -64,6 +65,17 @@ public sealed record PrivateOriginalMapSessionSnapshot
         }
 
         CurrentRuntime = currentRuntime;
+        if (palaceFirstVisit is not null &&
+            (!ReferenceEquals(palaceFirstVisit.Definition, definition.PalaceFirstVisit) ||
+                currentRuntime.Map != palaceFirstVisit.Definition.Map ||
+                palaceFirstVisit.SimulationStep > simulationStep ||
+                (palaceFirstVisit.SimulationStep == simulationStep &&
+                    playerPosition != palaceFirstVisit.PlayerEndpoint)))
+        {
+            throw new ArgumentException(
+                "Controlled palace completion must retain its admitted definition, map, step, and endpoint.",
+                nameof(palaceFirstVisit));
+        }
         MapBlockCopyLifecycleState admittedRoofLifecycle =
             roofOnLoadLifecycle ?? MapBlockCopyLifecycleState.Inactive;
         PrivateOriginalMapZone601State? admittedZone601 = zone601;
@@ -206,7 +218,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
             (lastCrossMapTransition is null ? 0 : 1) +
             (lastSarah is null ? 0 : 1) +
             (lastEntity142Request is null ? 0 : 1) +
-            (lastEntity142Acknowledgement is null ? 0 : 1);
+            (lastEntity142Acknowledgement is null ? 0 : 1) +
+            (palaceFirstVisit?.SimulationStep == simulationStep ? 1 : 0);
         if (simulationStep == 0 &&
             (completedOperations != 0 ||
                 controlledStepCopyApplied ||
@@ -673,6 +686,7 @@ public sealed record PrivateOriginalMapSessionSnapshot
         CastleGate = admittedCastleGate;
         LastCastleGate = lastCastleGate;
         LastCrossMapTransition = lastCrossMapTransition;
+        PalaceFirstVisit = palaceFirstVisit;
     }
 
     public ContentProfile Profile => ContentProfile.PrivateLocal;
@@ -755,6 +769,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public PrivateOriginalMapCastleGateReceipt? LastCastleGate { get; }
 
     public PrivateOriginalMapCrossMapTransitionReceipt? LastCrossMapTransition { get; }
+
+    public PrivateOriginalMapPalaceFirstVisitReceipt? PalaceFirstVisit { get; }
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -1025,7 +1041,8 @@ public sealed partial class GameSession
                 current.CastleGate,
                 lastCastleGate: null,
                 current.CurrentRuntime,
-                lastCrossMapTransition: null);
+                lastCrossMapTransition: null,
+                palaceFirstVisit: current.PalaceFirstVisit);
             _privateOriginalMapSnapshot = blocked;
             return new PrivateOriginalMapMoveApplied(blocked, occupied);
         }
@@ -1063,7 +1080,8 @@ public sealed partial class GameSession
             current.CastleGate,
             lastCastleGate: null,
             current.CurrentRuntime,
-            lastCrossMapTransition: null);
+            lastCrossMapTransition: null,
+            palaceFirstVisit: current.PalaceFirstVisit);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -1160,7 +1178,8 @@ public sealed partial class GameSession
             current.CastleGate,
             lastCastleGate: null,
             current.CurrentRuntime,
-            lastCrossMapTransition: null);
+            lastCrossMapTransition: null,
+            palaceFirstVisit: current.PalaceFirstVisit);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -1357,6 +1376,13 @@ public sealed partial class GameSession
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.royalMap20Transition",
                 "The admitted definition does not retain the exact bounded Map 19 royal transition.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedPalaceFirstVisit(
+                definition.PalaceFirstVisit, definition.RuntimeCatalog))
+        {
+            return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.palaceFirstVisit", "The controlled palace result source binding drifted.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedBlocksetProjection(

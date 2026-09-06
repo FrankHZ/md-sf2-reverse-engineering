@@ -473,7 +473,8 @@ public sealed class OriginalMapVisualGameSessionTests
             AcceptedOriginalMapCastleGate.Create(map),
             AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime),
             AcceptedOriginalMapRuntimeCatalog.NorthTransition(),
-            AcceptedOriginalMapRuntimeCatalog.RoyalTransition());
+            AcceptedOriginalMapRuntimeCatalog.RoyalTransition(),
+            AcceptedOriginalMapPalaceFirstVisit.Create());
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>

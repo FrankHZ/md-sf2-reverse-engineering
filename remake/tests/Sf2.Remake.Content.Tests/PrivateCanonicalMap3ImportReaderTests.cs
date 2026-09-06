@@ -65,6 +65,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.CastleGateOpeningCapability,
                 PrivateCanonicalMap3ImportReader.NorthMap19TransitionCapability,
                 PrivateCanonicalMap3ImportReader.RoyalMap20TransitionCapability,
+                OriginalMapRuntimeAdmission.PalaceFirstVisitCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -1103,6 +1104,41 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.True(entry.Entity142!.Flag261Set && entry.Entity142.Flag602Set);
         Assert.True(entry.MessengerAcceptance!.Accepted && entry.CastleGate!.Flag604Set);
         Assert.Equal(PrivateOriginalMapBattleBridgeStatus.Ready, bridge.Status);
+
+        OriginalMapPalaceFirstVisitDefinition palace = Assert.IsType<OriginalMapPalaceFirstVisitDefinition>(
+            definition.PalaceFirstVisit);
+        Assert.Equal(OriginalMapRuntimeAdmission.PalaceScriptProjectionSha256, palace.ScriptProjectionSha256);
+        Assert.NotEqual(OriginalMapRuntimeAdmission.PalaceSourceControlEffectSha256, palace.ScriptProjectionSha256);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedPalaceFirstVisit(palace, definition.RuntimeCatalog));
+        PrivateOriginalMapSessionSnapshot preInit = session.PrivateOriginalMapSnapshot;
+        Assert.Null(preInit.PalaceFirstVisit);
+        Assert.Equal(new MapPosition(23, 37), preInit.PlayerPosition);
+        var applied = Assert.IsType<PrivateOriginalMapPalaceFirstVisitApplied>(
+            session.RequestPrivateOriginalMapInteraction(preInit.SimulationStep));
+        Assert.Equal(preInit.SimulationStep + 1, applied.Snapshot.SimulationStep);
+        Assert.Equal(new MapPosition(23, 39), applied.Snapshot.PlayerPosition);
+        Assert.Equal((byte)3, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        Assert.Same(preInit.CurrentRuntime, applied.Snapshot.CurrentRuntime);
+        Assert.Same(preInit.EntityPopulation, applied.Snapshot.EntityPopulation);
+        Assert.Same(preInit.Zone601, applied.Snapshot.Zone601);
+        Assert.Same(preInit.Sarah, applied.Snapshot.Sarah);
+        Assert.Same(preInit.Entity142, applied.Snapshot.Entity142);
+        Assert.Same(preInit.MessengerAcceptance, applied.Snapshot.MessengerAcceptance);
+        Assert.Same(preInit.CastleGate, applied.Snapshot.CastleGate);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        Assert.True(applied.Receipt.CompletionFlag605Set && applied.Receipt.Entity130Hidden);
+        Assert.Equal(OriginalMapPalaceFirstVisitPreset.ControlledClear605And507, applied.Receipt.Preset);
+        Assert.Equal(new MapPosition(20, 39), applied.Receipt.Entity131Endpoint);
+        var animation = session.PrivateOriginalMapPlayerLocomotion;
+        var repeated = Assert.IsType<PrivateOriginalMapPalaceFirstVisitRejected>(
+            session.RequestPrivateOriginalMapInteraction(applied.Snapshot.SimulationStep));
+        Assert.Equal(PrivateOriginalMapPalaceFirstVisitFailureCode.AlreadyCompleted, repeated.Code);
+        Assert.Same(applied.Snapshot, session.PrivateOriginalMapSnapshot);
+        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        var moved = session.ApplyPrivateOriginalMap(new MoveExplorationCommand(ExplorationDirection.South));
+        Assert.Equal(new MapPosition(23, 40), moved.Snapshot.PlayerPosition);
+        Assert.Same(applied.Receipt, moved.Snapshot.PalaceFirstVisit);
     }
 
     private static OriginalMapImportResult Admit(JsonObject document)
@@ -1498,6 +1534,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         });
         JsonObject result = node!.AsObject();
         AddSyntheticRoyalPassage(result);
+        AddSyntheticPalaceFirstVisit(result);
         return result;
     }
 
@@ -1593,6 +1630,145 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         table["records"]!.AsArray()[0]!["resolvedTargetAddress"] = 339382;
         AssertCode(PrivateCanonicalMap3ImportReader.AdmitSemanticDocumentForTests(DocumentBytes(document)),
             OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Theory]
+    [InlineData(0, "#$22803781,((ENTITY_DATA-$1000000)).w")]
+    [InlineData(2, "608")]
+    [InlineData(3, "ms_map20_flag501_InitFunction")]
+    [InlineData(5, "606")]
+    [InlineData(8, "508")]
+    public void PalaceInitRejectsEntryAndBranchOperandDrift(int index, string operand)
+    {
+        JsonObject document = SampleDocument();
+        PalaceResource(document, "initFunctions", "ms_map20_InitFunction")["operations"]![index]!["operandText"] = operand;
+        AssertCode(Admit(document), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Theory]
+    [InlineData("cs_53996", 1, "ALLY_BOWIE,23,38,DOWN")]
+    [InlineData("cs_53996", 16, "2")]
+    [InlineData("cs_53996", 69, "2")]
+    [InlineData("cs_53996", 77, "2")]
+    [InlineData("cs_53B60", 0, "131")]
+    public void PalaceResultRejectsConsumedEndpointAndTailDrift(string program, int index, string operand)
+    {
+        JsonObject document = SampleDocument();
+        PalaceResource(document, "initSourcePrograms", program)["operations"]![index]!["operandText"] = operand;
+        AssertCode(Admit(document), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Theory]
+    [InlineData("count")]
+    [InlineData("branch")]
+    [InlineData("tail")]
+    [InlineData("malformed")]
+    [InlineData("null")]
+    public void PalaceSourceShapeRejectsTruncationBranchMetadataAndMalformedTokens(string drift)
+    {
+        JsonObject document = SampleDocument();
+        JsonArray main = PalaceResource(document, "initSourcePrograms", "cs_53996")["operations"]!.AsArray();
+        switch (drift)
+        {
+            case "count": main.RemoveAt(112); break;
+            case "branch": PalaceResource(document, "initFunctions", "ms_map20_InitFunction")["operations"]![3]!["localBranchTargetIndex"] = 8; break;
+            case "tail": PalaceResource(document, "initSourcePrograms", "cs_53B60")["operations"]![1]!["opcode"] = "csWait"; break;
+            case "malformed": main[40]!["opcode"] = 7; break;
+            case "null": main[40]!["operandText"] = null; break;
+        }
+
+        AssertCode(Admit(document), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void PalaceProjectionBindsUnconsumedTokensWithoutClaimingSourceTextIdentity()
+    {
+        JsonObject document = SampleDocument();
+        var before = Assert.IsType<OriginalMapImportAccepted>(Admit(document)).Definition.PalaceFirstVisit!;
+        PalaceResource(document, "initSourcePrograms", "cs_53996")["operations"]![40]!["operandText"] = "1";
+        var after = Assert.IsType<OriginalMapImportAccepted>(Admit(document)).Definition.PalaceFirstVisit!;
+        Assert.NotEqual(before.ScriptProjectionSha256, after.ScriptProjectionSha256);
+        // Synthetic source-shape tests are not the pinned production canonical input.
+        Assert.NotEqual(OriginalMapRuntimeAdmission.PalaceScriptProjectionSha256, before.ScriptProjectionSha256);
+        Assert.NotEqual(OriginalMapRuntimeAdmission.PalaceSourceControlEffectSha256, before.ScriptProjectionSha256);
+    }
+
+    private static JsonObject PalaceResource(JsonObject document, string collection, string id) =>
+        document["resources"]![collection]!.AsArray().OfType<JsonObject>()
+            .Single(row => row["id"]!.GetValue<string>() == id);
+
+    private static void AddSyntheticPalaceFirstVisit(JsonObject document)
+    {
+        JsonObject resources = document["resources"]!.AsObject();
+        JsonObject Find(string collection, string id) => resources[collection]!.AsArray()
+            .OfType<JsonObject>().Single(row => row["id"]!.GetValue<string>() == id);
+        JsonObject init = Find("initFunctions", "ms_map20_InitFunction");
+        init["address"] = 342374;
+        init["kind"] = "operationList";
+        init["bodySha256"] = OriginalMapRuntimeAdmission.PalaceInitBodySha256;
+        init["scriptTargets"] = JsonSerializer.SerializeToNode(new[] { "cs_53996", "cs_53B60", "cs_53FD8" });
+        init["callTargets"] = new JsonArray();
+        (string Opcode, string Operand)[] guards =
+        [
+            ("cmpi.l", "#$22803780,((ENTITY_DATA-$1000000)).w"),
+            ("bne.s", "ms_map20_flag501_InitFunction"), ("chkFlg", "605"),
+            ("bne.s", "byte_53982"), ("script", "cs_53996"), ("setFlg", "605"),
+            ("bra.s", "ms_map20_flag501_InitFunction"), ("script", "cs_53B60"),
+            ("chkFlg", "507"), ("beq.s", "return_53994"), ("script", "cs_53FD8"), ("rts", ""),
+        ];
+        init["operations"] = JsonSerializer.SerializeToNode(guards.Select((op, index) =>
+        {
+            int? target = index switch { 1 or 6 => 8, 3 => 7, 9 => 11, _ => null };
+            return new
+            {
+                index,
+                labels = index switch
+                {
+                    7 => new[] { "byte_53982" },
+                    8 => new[] { "ms_map20_flag501_InitFunction" },
+                    11 => new[] { "return_53994" },
+                    _ => Array.Empty<string>()
+                },
+                opcode = op.Opcode,
+                operandText = op.Operand,
+                branchTargetSymbol = target is null ? null : op.Operand,
+                branchTargetAddress = target switch { 8 => (int?)342408, 7 => 342402, 11 => 342420, _ => null },
+                localBranchTargetIndex = target,
+            };
+        }));
+        (string Opcode, string Operand)[] operations = Enumerable.Repeat(("csWait", "0"), 113).ToArray();
+        foreach (var op in new (int Index, string Opcode, string Operand)[]
+        {
+            (0, "textCursor", "2176"), (1, "setPos", "ALLY_BOWIE,23,39,DOWN"),
+            (15, "entityActionsWait", "131"), (16, "moveRight", "1"), (17, "endActions", ""),
+            (68, "entityActionsWait", "131"), (69, "moveUp", "1"), (70, "endActions", ""),
+            (76, "entityActionsWait", "131"), (77, "moveRight", "1"), (78, "endActions", ""),
+        }) operations[op.Index] = (op.Opcode, op.Operand);
+        foreach (var program in new[]
+        {
+            (Id: "cs_53996", Address: 342422, Operations: operations),
+            (Id: "cs_53B60", Address: 342880, Operations: new[] { (Opcode: "hide", Operand: "130"), (Opcode: "csc_end", Operand: "") }),
+        })
+        {
+            resources["initSourcePrograms"]!.AsArray().Add(JsonSerializer.SerializeToNode(new
+            {
+                id = program.Id,
+                address = program.Address,
+                path = "data/maps/entries/map20/mapsetups/s6_initfunction.asm",
+                kind = "cutscene",
+                operations = program.Operations.Select((op, index) => new
+                { index, opcode = op.Opcode, operandText = op.Operand, targetSymbols = Array.Empty<string>(), targetAddresses = Array.Empty<int>() }),
+            }));
+        }
+
+        JsonArray entities = Find("entityLists", "ms_map20_Entities")["records"]!.AsArray();
+        foreach (var actor in new[] { (Index: 2, X: 19, Y: 39), (Index: 3, X: 18, Y: 40) })
+        {
+            entities[actor.Index]!["x"] = actor.X;
+            entities[actor.Index]!["rawX"] = actor.X;
+            entities[actor.Index]!["y"] = actor.Y;
+            entities[actor.Index]!["rawY"] = actor.Y;
+        }
     }
 
     private static object[] Resource(string id) => [new { id }];

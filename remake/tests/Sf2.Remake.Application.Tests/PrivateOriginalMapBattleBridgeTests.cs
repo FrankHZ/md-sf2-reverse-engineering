@@ -9,6 +9,28 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalMapBattleBridgeTests
 {
     [Fact]
+    public void PalaceFirstVisitCannotMutateAnActiveBattleBridgeOrExploration()
+    {
+        PrivateOriginalMapGameSessionStarted started = Start();
+        GameSession session = started.Session;
+        PrivateOriginalMapBattleBridgeSnapshot ready = Bind(started);
+        var requested = Assert.IsType<PrivateOriginalMapBattleBridgeRequested>(
+            session.ApplyPrivateOriginalMapBattleBridge(
+                new RequestPrivateOriginalMapBattleBridgeCommand(ready.Definition.Bridge,
+                    session.PrivateOriginalMapSnapshot.SimulationStep)));
+        var snapshot = session.PrivateOriginalMapSnapshot;
+        var animation = session.PrivateOriginalMapPlayerLocomotion;
+        var rejected = Assert.IsType<PrivateOriginalMapPalaceFirstVisitRejected>(
+            session.CompletePrivateOriginalMapPalaceFirstVisit(new(snapshot.SimulationStep,
+                OriginalMapPalaceFirstVisitPreset.ControlledClear605And507)));
+        Assert.Equal(PrivateOriginalMapPalaceFirstVisitFailureCode.BattleBridgeBusy, rejected.Code);
+        Assert.Same(snapshot, rejected.Snapshot);
+        Assert.Same(snapshot, session.PrivateOriginalMapSnapshot);
+        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Same(requested.Bridge, session.PrivateOriginalMapBattleBridge);
+    }
+
+    [Fact]
     public void ExactPrivateSessionBindsOneControlledStartBridgeWithoutPresentationDependency()
     {
         PrivateOriginalMapGameSessionStarted started = Start();
@@ -534,7 +556,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             AcceptedOriginalMapCastleGate.Create(map),
             AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime),
             AcceptedOriginalMapRuntimeCatalog.NorthTransition(),
-            AcceptedOriginalMapRuntimeCatalog.RoyalTransition());
+            AcceptedOriginalMapRuntimeCatalog.RoyalTransition(),
+            AcceptedOriginalMapPalaceFirstVisit.Create());
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>

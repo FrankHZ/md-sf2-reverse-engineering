@@ -110,6 +110,11 @@ internal sealed record PrivateMap3PresentationPlan(
             $"{snapshot.PlayerPosition.Y})  Area {snapshot.CurrentArea.OneBasedRecordOrdinal}  " +
             $"Step {snapshot.SimulationStep}  {outcome}  |  " +
             "WASD semantic movement";
+        if (snapshot.Map.Value == "map20")
+        {
+            return status + "  |  " + PalaceFirstVisitStatus(snapshot.PalaceFirstVisit);
+        }
+
         PrivateOriginalMapZone601State? zone601 = snapshot.Zone601;
         if (zone601?.Flag601Set == true)
         {
@@ -161,6 +166,11 @@ internal sealed record PrivateMap3PresentationPlan(
 
         return status;
     }
+
+    internal static string PalaceFirstVisitStatus(PrivateOriginalMapPalaceFirstVisitReceipt? receipt) =>
+        receipt is null
+            ? "F apply controlled first-visit result at palace entrance (skip scene); result unselected"
+            : "Controlled first-visit result applied; scene skipped";
 
     internal static string CastleGateStatus(PrivateOriginalMapCastleGateState castleGate)
     {

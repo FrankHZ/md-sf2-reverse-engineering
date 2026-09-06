@@ -1166,6 +1166,120 @@ public sealed class OriginalMapGameSessionTests
     }
 
     [Fact]
+    public void PalaceFirstVisitExplicitlyCommitsOnceAndRetainsItsControlledResult()
+    {
+        GameSession session = ReachPalaceEntry();
+        PrivateOriginalMapSessionSnapshot before = session.PrivateOriginalMapSnapshot;
+        Assert.Null(before.PalaceFirstVisit);
+        Assert.Equal(new MapPosition(23, 37), before.PlayerPosition);
+        var bridge = session.PrivateOriginalMapBattleBridge;
+        var animation = session.PrivateOriginalMapPlayerLocomotion;
+
+        var applied = Assert.IsType<PrivateOriginalMapPalaceFirstVisitApplied>(
+            session.RequestPrivateOriginalMapInteraction(before.SimulationStep));
+        PrivateOriginalMapSessionSnapshot after = applied.Snapshot;
+        Assert.Equal(before.SimulationStep + 1, after.SimulationStep);
+        Assert.Equal(new MapPosition(23, 39), after.PlayerPosition);
+        Assert.Same(applied.Receipt, after.PalaceFirstVisit);
+        Assert.Equal(OriginalMapPalaceFirstVisitPreset.ControlledClear605And507, applied.Receipt.Preset);
+        Assert.True(applied.Receipt.CompletionFlag605Set);
+        Assert.True(applied.Receipt.Entity130Hidden);
+        Assert.Equal(new MapPosition(20, 39), applied.Receipt.Entity131Endpoint);
+        Assert.Same(before.CurrentRuntime, after.CurrentRuntime);
+        Assert.Same(before.WorkingLayout, after.WorkingLayout);
+        Assert.Same(before.EntityPopulation, after.EntityPopulation);
+        Assert.Same(before.Receipt, after.Receipt);
+        Assert.Same(before.Zone601, after.Zone601);
+        Assert.Same(before.Sarah, after.Sarah);
+        Assert.Same(before.Entity142, after.Entity142);
+        Assert.Same(before.MessengerAcceptance, after.MessengerAcceptance);
+        Assert.Same(before.CastleGate, after.CastleGate);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        Assert.Equal((byte)3, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        Assert.False(session.PrivateOriginalMapPlayerLocomotion.IsMoving);
+        Assert.Equal(animation.StoredCounter, session.PrivateOriginalMapPlayerLocomotion.StoredCounter);
+        Assert.Equal(animation.SelectedHalf, session.PrivateOriginalMapPlayerLocomotion.SelectedHalf);
+        AssertPalaceRejected(session, after.SimulationStep,
+            OriginalMapPalaceFirstVisitPreset.ControlledClear605And507,
+            PrivateOriginalMapPalaceFirstVisitFailureCode.AlreadyCompleted);
+
+        Move(session, ExplorationDirection.South, 1);
+        Assert.Equal(new MapPosition(23, 40), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        Assert.Same(applied.Receipt, session.PrivateOriginalMapSnapshot.PalaceFirstVisit);
+        Assert.Null(Start(Definition(EmptyWords())).PrivateOriginalMapSnapshot.PalaceFirstVisit);
+    }
+
+    [Theory]
+    [InlineData("stale", PrivateOriginalMapPalaceFirstVisitFailureCode.StaleSimulationStep)]
+    [InlineData("preset", PrivateOriginalMapPalaceFirstVisitFailureCode.InvalidPreset)]
+    [InlineData("position", PrivateOriginalMapPalaceFirstVisitFailureCode.EntryMismatch)]
+    [InlineData("moving", PrivateOriginalMapPalaceFirstVisitFailureCode.LocomotionBusy)]
+    [InlineData("map", PrivateOriginalMapPalaceFirstVisitFailureCode.EntryMismatch)]
+    public void PalaceFirstVisitRejectionsPreserveSnapshotLocomotionAndBridge(
+        string scenario, PrivateOriginalMapPalaceFirstVisitFailureCode code)
+    {
+        GameSession session = scenario == "map" ? Start(Definition(EmptyWords())) : ReachPalaceEntry();
+        if (scenario == "position") Move(session, ExplorationDirection.South, 1);
+        if (scenario == "moving")
+        {
+            session.BeginPrivateOriginalMapPlayerLocomotion(new MoveExplorationCommand(ExplorationDirection.South));
+            Assert.True(session.PrivateOriginalMapPlayerLocomotion.IsMoving);
+        }
+
+        AssertPalaceRejected(session,
+            session.PrivateOriginalMapSnapshot.SimulationStep + (scenario == "stale" ? 1 : 0),
+            scenario == "preset" ? (OriginalMapPalaceFirstVisitPreset)99 : OriginalMapPalaceFirstVisitPreset.ControlledClear605And507,
+            code);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void PalaceFirstVisitAdmissionRequiresExactSourceBinding(bool missing)
+    {
+        AssertRejectedDefinition(Definition(EmptyWords(), omitPalaceFirstVisit: missing,
+            palaceFirstVisit: new OriginalMapPalaceFirstVisitDefinition(
+                OriginalMapRuntimeAdmission.PalaceInitBodySha256, new string('A', 64))),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    private static void AssertPalaceRejected(GameSession session, long expectedStep,
+        OriginalMapPalaceFirstVisitPreset preset, PrivateOriginalMapPalaceFirstVisitFailureCode code)
+    {
+        var snapshot = session.PrivateOriginalMapSnapshot;
+        var animation = session.PrivateOriginalMapPlayerLocomotion;
+        var bridge = session.PrivateOriginalMapBattleBridge;
+        var rejected = Assert.IsType<PrivateOriginalMapPalaceFirstVisitRejected>(
+            session.CompletePrivateOriginalMapPalaceFirstVisit(new(expectedStep, preset)));
+        Assert.Equal(code, rejected.Code);
+        Assert.Same(snapshot, rejected.Snapshot);
+        Assert.Same(snapshot, session.PrivateOriginalMapSnapshot);
+        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+    }
+
+    private static GameSession ReachPalaceEntry()
+    {
+        GameSession session = Start(Definition(EmptyWords()));
+        CompleteRouteThroughMessenger(session);
+        MoveToCastleGateApproach(session);
+        Move(session, ExplorationDirection.North, 1);
+        Move(session, ExplorationDirection.West, 3);
+        Move(session, ExplorationDirection.North, 4);
+        Assert.Equal(new MapId("map19"), session.PrivateOriginalMapSnapshot.Map);
+        Move(session, ExplorationDirection.North, 1);
+        Move(session, ExplorationDirection.East, 3);
+        Move(session, ExplorationDirection.North, 16);
+        Move(session, ExplorationDirection.West, 9);
+        Move(session, ExplorationDirection.North, 5);
+        Move(session, ExplorationDirection.East, 2);
+        Move(session, ExplorationDirection.North, 1);
+        session.BeginPrivateOriginalMapPlayerLocomotion(new MoveExplorationCommand(ExplorationDirection.East));
+        Assert.Equal(new MapId("map20"), session.PrivateOriginalMapSnapshot.Map);
+        return session;
+    }
+
+    [Fact]
     public void RoyalExitCommitsMap20BeforeInitAndPreservesRouteState()
     {
         GameSession session = Start(Definition(EmptyWords()));
@@ -2644,7 +2758,8 @@ public sealed class OriginalMapGameSessionTests
             definition.CastleGate,
             runtimeCatalog,
             northTransition,
-            runtimeCatalog.Records.Count == 1 ? null : definition.RoyalMap20Transition);
+            runtimeCatalog.Records.Count == 1 ? null : definition.RoyalMap20Transition,
+            runtimeCatalog.Records.Count == 1 ? null : definition.PalaceFirstVisit);
 
     private static OriginalMapImportAccepted Accepted(
         OriginalMapImportDefinition? definition = null,
@@ -2673,7 +2788,9 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapMessengerAcceptanceDefinition? messengerAcceptance = null,
         bool omitMessengerAcceptance = false,
         OriginalMapCastleGateDefinition? castleGate = null,
-        bool omitCastleGate = false)
+        bool omitCastleGate = false,
+        OriginalMapPalaceFirstVisitDefinition? palaceFirstVisit = null,
+        bool omitPalaceFirstVisit = false)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -2761,7 +2878,8 @@ public sealed class OriginalMapGameSessionTests
                 : castleGate ?? AcceptedOriginalMapCastleGate.Create(map),
             runtimeCatalog,
             AcceptedOriginalMapRuntimeCatalog.NorthTransition(),
-            AcceptedOriginalMapRuntimeCatalog.RoyalTransition());
+            AcceptedOriginalMapRuntimeCatalog.RoyalTransition(),
+            omitPalaceFirstVisit ? null : palaceFirstVisit ?? AcceptedOriginalMapPalaceFirstVisit.Create());
     }
 
     private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
@@ -3404,10 +3522,8 @@ internal static class AcceptedOriginalMapRuntimeCatalog
                 new OriginalMapEntityRecordIdentity(
                     OriginalMapRuntimeAdmission.Map20EntityListResourceId,
                     index + 1),
-                rawX: checked((byte)(index + 1)),
-                rawY: index < OriginalMapRuntimeAdmission.Map20FixedEntityRecordCount
-                    ? (byte)1
-                    : (byte)2,
+                rawX: index switch { 2 => (byte)19, 3 => (byte)18, _ => checked((byte)(index + 1)) },
+                rawY: index switch { 2 => (byte)39, 3 => (byte)40, 7 => (byte)2, _ => (byte)1 },
                 opaqueFacing: 0,
                 mapSprite: checked((byte)(index + 1)),
                 index < OriginalMapRuntimeAdmission.Map20FixedEntityRecordCount
@@ -3431,6 +3547,13 @@ internal static class AcceptedOriginalMapRuntimeCatalog
             OriginalMapRuntimeAdmission.Map20CollisionProjectionDigest,
             useProjectionDigestOverride: true);
     }
+}
+
+internal static class AcceptedOriginalMapPalaceFirstVisit
+{
+    internal static OriginalMapPalaceFirstVisitDefinition Create() => new(
+        OriginalMapRuntimeAdmission.PalaceInitBodySha256,
+        OriginalMapRuntimeAdmission.PalaceScriptProjectionSha256);
 }
 
 internal static class AcceptedOriginalMapMessenger
