@@ -69,7 +69,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         if (palaceFirstVisit is not null &&
             (!ReferenceEquals(palaceFirstVisit.Definition, definition.PalaceFirstVisit) ||
                 (currentRuntime.Map != palaceFirstVisit.Definition.Map &&
-                    currentRuntime.Map != new MapId(OriginalMapRuntimeAdmission.Map19Id)) ||
+                    currentRuntime.Map != new MapId(OriginalMapRuntimeAdmission.Map19Id) &&
+                    currentRuntime.Map != new MapId(OriginalMapRuntimeAdmission.Map21Id)) ||
                 palaceFirstVisit.SimulationStep > simulationStep ||
                 (palaceFirstVisit.SimulationStep == simulationStep &&
                     (currentRuntime.Map != palaceFirstVisit.Definition.Map ||
@@ -287,7 +288,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
                     nameof(lastCrossMapTransition));
             if (lastCrossMapTransition.SimulationStep != simulationStep ||
                 (ReferenceEquals(admitted, definition.RoyalReturnMap19Transition) && palaceFirstVisit is null) ||
-                (ReferenceEquals(admitted, definition.WestTowerMap20Transition) &&
+                ((ReferenceEquals(admitted, definition.WestTowerMap20Transition) ||
+                    ReferenceEquals(admitted, definition.MiddleTowerMap21Transition)) &&
                     (admittedCastleGate?.Opened != true || palaceFirstVisit is null || astralAcceptance is null)) ||
                 lastCrossMapTransition.RecordIdentity != admitted.Identity ||
                 lastCrossMapTransition.Source != admitted.AdmittedApproach ||
@@ -1386,7 +1388,7 @@ public sealed partial class GameSession
             return Diagnostic(
                 OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.runtimeCatalog",
-                "The admitted definition does not retain the exact Map 3, Map 19 and Map 20 runtime catalog.");
+                "The admitted definition does not retain the exact Map 3, Map 19, Map 20 and Map 21 runtime catalog.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedNorthMap19Transition(
@@ -1419,6 +1421,13 @@ public sealed partial class GameSession
         {
             return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.westTowerMap20Transition", "The controlled west-tower source binding drifted.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedMiddleTowerMap21Transition(
+                definition.MiddleTowerMap21Transition))
+        {
+            return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.middleTowerMap21Transition", "The controlled Map 21 arrival source binding drifted.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedAstralAcceptance(

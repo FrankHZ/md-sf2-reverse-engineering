@@ -95,6 +95,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.PalaceFirstVisitCapability,
         OriginalMapRuntimeAdmission.RoyalReturnMap19TransitionCapability,
         OriginalMapRuntimeAdmission.WestTowerMap20TransitionCapability,
+        OriginalMapRuntimeAdmission.MiddleTowerMap21TransitionCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -335,7 +336,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             RequiredProperty(root, "runtimeQuestions", "runtimeQuestions"),
             "runtimeQuestions");
 
-        (JsonElement map3, JsonElement map19, JsonElement map20) =
+        (JsonElement map3, JsonElement map19, JsonElement map20, JsonElement map21) =
             SelectRuntimeMaps(RequiredProperty(root, "maps", "maps"));
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         OriginalMapVisualResourceSelection visualResourceSelection =
@@ -351,6 +352,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         ValidateCastleMapReferences(map19References, resources, 19);
         JsonElement map20References = RequiredProperty(map20, "references", "maps[20].references");
         ValidateCastleMapReferences(map20References, resources, 20);
+        JsonElement map21References = RequiredProperty(map21, "references", "maps[21].references");
+        ValidateCastleMapReferences(map21References, resources, 21);
 
         JsonElement blockset = RequiredResource(
             resources,
@@ -457,10 +460,12 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             ReadCastleRuntime(19, map19, map19References, resources);
         OriginalMapExplorationRuntimeDefinition map20Runtime =
             ReadCastleRuntime(20, map20, map20References, resources);
+        OriginalMapExplorationRuntimeDefinition map21Runtime =
+            ReadCastleRuntime(21, map21, map21References, resources);
         OriginalMapCrossMapTransitionDefinition royalMap20Transition =
             ReadAcceptedRoyalMap20Transition(map19References, resources);
         OriginalMapExplorationRuntimeCatalog runtimeCatalog = new(
-            [map3Runtime, map19Runtime, map20Runtime]);
+            [map3Runtime, map19Runtime, map20Runtime, map21Runtime]);
 
         OriginalMapControlledAdmission controlledAdmission = new(
             map,
@@ -496,7 +501,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             ReadPalaceFirstVisit(resources),
             ReadAcceptedRoyalReturn(map20References, resources),
             ReadAstralAcceptance(map19Runtime, resources),
-            ReadAcceptedWestTowerEntry(map19References, resources));
+            ReadAcceptedWestTowerEntry(map19References, resources),
+            ReadAcceptedMiddleTowerEntry(map20References, resources));
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -729,6 +735,51 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             checked((byte)RequiredInt(row, "facing", field)));
     }
 
+    private static OriginalMapCrossMapTransitionDefinition ReadAcceptedMiddleTowerEntry(
+        JsonElement references,
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        const string field = "map20.middleTowerWarp";
+        string id = RequiredString(references, "warpEventTable", field);
+        JsonElement table = RequiredResource(resources, "warpEventTables", id);
+        RequireExactProperties(table, field, "id", "address", "sourceKind", "records");
+        JsonElement rows = RequiredProperty(table, "records", field);
+        RequireArray(rows, field);
+        if (id != OriginalMapRuntimeAdmission.RoyalReturnWarpResourceId ||
+            RequiredInt(table, "address", field) != 676826 ||
+            RequiredString(table, "sourceKind", field) != "warpEvents" || rows.GetArrayLength() != 11)
+        {
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                "The admitted Map 20 middle tower warp table drifted.");
+        }
+
+        JsonElement row = rows[OriginalMapRuntimeAdmission.MiddleTowerWarpRecordOrdinal - 1];
+        RequireExactProperties(row, field, "trigger", "scrollMode", "retainsCoordinates",
+            "scrollDirection", "targetMap", "destination", "facing", "reserved");
+        JsonElement trigger = RequiredProperty(row, "trigger", field);
+        JsonElement destination = RequiredProperty(row, "destination", field);
+        RequireExactProperties(trigger, field, "x", "y");
+        RequireExactProperties(destination, field, "x", "y");
+        if (RequiredInt(trigger, "x", field) != 3 || RequiredInt(trigger, "y", field) != 36 ||
+            RequiredInt(row, "scrollMode", field) != 0 ||
+            RequiredProperty(row, "retainsCoordinates", field).ValueKind != JsonValueKind.False ||
+            RequiredProperty(row, "scrollDirection", field).ValueKind != JsonValueKind.Null ||
+            RequiredInt(row, "targetMap", field) != 21 ||
+            RequiredInt(destination, "x", field) != 3 || RequiredInt(destination, "y", field) != 16 ||
+            RequiredInt(row, "facing", field) != 0 ||
+            RequiredInt(row, "reserved", field) != 0)
+        {
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                "The exact middle tower arrival must retain its no-scroll Map 21 destination and raw facing byte.");
+        }
+
+        return new(new(ContentProfile.PrivateLocal, new MapId(OriginalMapRuntimeAdmission.Map20Id),
+                id, OriginalMapRuntimeAdmission.MiddleTowerWarpRecordOrdinal),
+            3, 36, new(4, 37), ExplorationDirection.West, new(3, 36),
+            new MapId(OriginalMapRuntimeAdmission.Map21Id), new(3, 16),
+            checked((byte)RequiredInt(row, "facing", field)));
+    }
+
     private static OriginalMapAstralAcceptanceDefinition ReadAstralAcceptance(
         OriginalMapExplorationRuntimeDefinition runtime,
         IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
@@ -890,7 +941,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         }
     }
 
-    private static (JsonElement Map3, JsonElement Map19, JsonElement Map20) SelectRuntimeMaps(JsonElement maps)
+    private static (JsonElement Map3, JsonElement Map19, JsonElement Map20, JsonElement Map21) SelectRuntimeMaps(JsonElement maps)
     {
         RequireArray(maps, "maps");
         if (maps.GetArrayLength() != 79)
@@ -905,6 +956,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         JsonElement? map3 = null;
         JsonElement? map19 = null;
         JsonElement? map20 = null;
+        JsonElement? map21 = null;
         int index = 0;
         foreach (JsonElement map in maps.EnumerateArray())
         {
@@ -959,11 +1011,15 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             {
                 map20 = map;
             }
+            else if (mapId == 21)
+            {
+                map21 = map;
+            }
 
             index++;
         }
 
-        if (mapIds.Count != 79 || map3 is null || map19 is null || map20 is null)
+        if (mapIds.Count != 79 || map3 is null || map19 is null || map20 is null || map21 is null)
         {
             throw Admission(
                 OriginalMapImportFailureCode.MissingReference,
@@ -1004,7 +1060,18 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 "Map 20 does not retain its accepted canonical identity.");
         }
 
-        return (map3.Value, map19.Value, map20.Value);
+        if (!string.Equals(
+                RequiredString(map21.Value, "sourceSymbol", "maps[21].sourceSymbol"),
+                "Map21",
+                StringComparison.Ordinal))
+        {
+            throw Admission(
+                OriginalMapImportFailureCode.InvalidMapProjection,
+                "maps[21].sourceSymbol",
+                "Map 21 does not retain its accepted canonical identity.");
+        }
+
+        return (map3.Value, map19.Value, map20.Value, map21.Value);
     }
 
     private static OriginalMapVisualResourceSelection ReadVisualResourceSelection(
@@ -1042,7 +1109,9 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapVisualResourceSelection selection = new(map, paletteIndex, slots);
         bool accepted = mapNumber == 3
             ? OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(selection)
-            : OriginalMapRuntimeAdmission.HasExactAcceptedCastleVisualResourceSelection(selection);
+            : mapNumber == 21
+                ? OriginalMapRuntimeAdmission.HasExactAcceptedMap21VisualResourceSelection(selection)
+                : OriginalMapRuntimeAdmission.HasExactAcceptedCastleVisualResourceSelection(selection);
         if (!accepted)
         {
             throw Admission(
@@ -1143,6 +1212,24 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 references,
                 reference,
                 $"maps[{mapNumber}].references." + reference);
+            if (mapNumber == 21 && id != (reference switch
+            {
+                "blockset" => "Map21s0_Blocks",
+                "layout" => "Map21s1_Layout",
+                "areaTable" => "Map21s2_Areas",
+                "flagEventTable" => "Map21s3_FlagEvents",
+                "stepEventTable" => "Map21s4_StepEvents",
+                "roofEventTable" => "Map21s5_RoofEvents",
+                "warpEventTable" => "Map21s6_WarpEvents",
+                "chestItemTable" => "Map21s7_ChestItems",
+                "otherItemTable" => "Map21s8_OtherItems",
+                "setupRoute" => "MapSetupRoute21",
+                _ => throw new InvalidOperationException("Unexpected Map 21 resource join."),
+            }))
+            {
+                throw Admission(OriginalMapImportFailureCode.InvalidMapProjection,
+                    $"maps[21].references.{reference}", "Map 21 must retain its exact resource identities.");
+            }
             _ = RequiredResource(resources, collection, id);
         }
 

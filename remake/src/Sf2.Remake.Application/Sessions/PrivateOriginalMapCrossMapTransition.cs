@@ -36,6 +36,9 @@ public sealed record PrivateOriginalMapCrossMapTransitionReceipt
             (ContentProfile.PrivateLocal, OriginalMapRuntimeAdmission.Map19Id,
                 OriginalMapRuntimeAdmission.RoyalMap20WarpResourceId, OriginalMapRuntimeAdmission.WestTowerWarpRecordOrdinal) =>
                 OriginalMapRuntimeAdmission.WestTowerMap20TransitionCapability,
+            (ContentProfile.PrivateLocal, OriginalMapRuntimeAdmission.Map20Id,
+                OriginalMapRuntimeAdmission.RoyalReturnWarpResourceId, OriginalMapRuntimeAdmission.MiddleTowerWarpRecordOrdinal) =>
+                OriginalMapRuntimeAdmission.MiddleTowerMap21TransitionCapability,
             _ => throw new InvalidOperationException("The cross-map receipt has no admitted source identity."),
         };
 
@@ -72,7 +75,9 @@ public sealed partial class GameSession
                         ? current.Definition.WestTowerMap20Transition
                         : current.Definition.RoyalMap20Transition
                     : current.Map == new MapId(OriginalMapRuntimeAdmission.Map20Id)
-                        ? current.Definition.RoyalReturnMap19Transition
+                        ? current.PlayerPosition == current.Definition.MiddleTowerMap21Transition?.AdmittedApproach
+                            ? current.Definition.MiddleTowerMap21Transition
+                            : current.Definition.RoyalReturnMap19Transition
                         : null;
         if (transition is null ||
             current.Map != transition.Identity.SourceMap ||
@@ -80,7 +85,8 @@ public sealed partial class GameSession
             command.Direction != transition.AdmittedDirection ||
             current.CastleGate?.Opened != true ||
             (current.Map == new MapId(OriginalMapRuntimeAdmission.Map20Id) && current.PalaceFirstVisit is null) ||
-            (ReferenceEquals(transition, current.Definition.WestTowerMap20Transition) &&
+            ((ReferenceEquals(transition, current.Definition.WestTowerMap20Transition) ||
+                ReferenceEquals(transition, current.Definition.MiddleTowerMap21Transition)) &&
                 (current.PalaceFirstVisit is null || current.AstralAcceptance is null)))
         {
             return false;

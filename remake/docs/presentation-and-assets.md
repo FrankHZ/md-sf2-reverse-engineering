@@ -604,7 +604,7 @@ owned, reviewable implementation slices.
 ## Current runtime castle base view
 
 The required visual selection belongs to each immutable runtime. Application's exact catalog
-admission checks Map 3 and Map 19/20 independently, including custom import-source ports. The base
+admission checks Maps 3/19/20/21 independently, including custom import-source ports. The base
 renderer uses that current selection, the snapshot's working layout, and the current runtime's blocks
 and areas. Map 3 uses its own atlas; Maps 19/20 share palette 0 and slots `[6,23,44,53,62]`, but
 switching between them still changes the selection's map and the working layout. Missing or mismatched
@@ -618,15 +618,23 @@ Map 3 static/current-area overlays, entity-142 diagnostic, Sarah and Zone601 gly
 Castle views retain the existing authored purple Astral diamond while Application reports its route
 tile occupied; accepting via F clears it. No original castle NPC sprite is admitted. Traversal-only
 launches still use their existing diagnostic display. General init, original rendering and timing,
-natural caller state, Map 21 and H4 remain outside this consumer.
+natural caller state and H4 remain outside this consumer.
+
+Map 21 arrival has palette 0 and slots `[6,23,44,53,8]`, which differ from the castle family.
+No Map 21 atlas is admitted. An exact admitted Map 21 runtime explicitly hides the retained base
+viewport and shows the existing traversal diagnostic with its current layout, area and player.
+The first status line names Map 21, the diagnostic and unexecuted init; it offers no guard action.
+Unknown or mismatched runtime/visual selections still reject instead of taking this diagnostic branch.
+This does not bind castle pixels to Map 21 or add an atlas/NPC asset.
 
 ### Reproduce the bounded native image review
 
 The [fixed probe](../tests/native/Map19Map20AtlasReviewProbe.cs) is test-owned instrumentation, excluded
 from the production project. It seeds the same validated Map 19 state as the private canonical test,
 then drives the accepted fixture through the 38-input royal route, controlled palace F, two-input
-return, Astral approach/F, and released west route. Six real Godot viewport captures cover Map 3,
-Map 19 entry, Map 20 royal, Astral before/after F, and Map 20 west. Map 3-to-19 is a seeded projection
+return, Astral approach/F, released west route, and three Left inputs into Map 21. Seven real Godot
+viewport captures cover Map 3,
+Map 19 entry, Map 20 royal, Astral before/after F, Map 20 west, and the Map 21 diagnostic. Map 3-to-19 is a seeded projection
 seam. This does not establish a complete natural player route, original init execution or H4.
 
 Use a clean committed head after the owning tests and official Godot gate. Export only `manifests`
@@ -642,7 +650,9 @@ source is the tracked probe; scene selection, seed/reflection, deterministic rou
 unsolicited callbacks and capture are instrumentation. The native process uses the actual Windows
 renderer with a hidden startup window; a headless/dummy renderer cannot substitute for these images.
 The process receipt records the code head, bounded exit/timeout/cleanup state and each step. Inspect
-all six PNGs and the per-frame selection/area/layout/atlas/glyph receipt. An image failure is a failed
+all seven PNGs and the per-frame selection/area/layout/atlas/glyph receipt. The first six retain
+the destination camera and player-rectangle checks. The seventh requires a visible traversal view,
+hidden base view, Map 21 `(3,16)`/area 1, crop `(0,13)`, raw facing 0 and the exact record-4 source receipt. An image failure is a failed
 native boundary even if startup markers pass. Images, inputs and process receipts remain private and
 ignored; no pixels enter a public PR.
 

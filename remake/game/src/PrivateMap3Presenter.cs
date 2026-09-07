@@ -119,6 +119,12 @@ internal sealed record PrivateMap3PresentationPlan(
                 "\n" + status;
         }
 
+        if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map21Id)
+        {
+            return "Middle tower Map 21 reached. Diagnostic traversal; no admitted atlas; init not executed." +
+                "\n" + status;
+        }
+
         if (snapshot.Map.Value == "map20")
         {
             if (WestTowerArrivalStatus(snapshot.LastCrossMapTransition) is string arrival)
@@ -503,7 +509,8 @@ internal sealed class PrivateMap3Presenter
         PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
         bool map3 = snapshot.Map.Value == OriginalMapRuntimeAdmission.MapId;
-        if (_baseViewport is { UsesLocalAtlas: true })
+        bool map21Diagnostic = OriginalMapRuntimeAdmission.HasExactAcceptedMap21Runtime(snapshot.CurrentRuntime);
+        if (_baseViewport is { UsesLocalAtlas: true } && !map21Diagnostic)
         {
             string? assetId = PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
                 snapshot.CurrentRuntime.VisualResourceSelection);
