@@ -776,7 +776,8 @@ public static class OriginalMapRuntimeAdmission
         {
             OriginalMapExplorationRuntimeDefinition map3 = catalog.Resolve(new MapId(MapId));
             OriginalMapExplorationRuntimeDefinition map19 = catalog.Resolve(new MapId(Map19Id));
-            return map3.SelectedSetup == new MapSetupId(SelectedSetupId) &&
+            return HasExactAcceptedVisualResourceSelection(map3.VisualResourceSelection) &&
+                map3.SelectedSetup == new MapSetupId(SelectedSetupId) &&
                 string.Equals(
                     map3.SelectedInitIdentity,
                     SelectedInitIdentity,
@@ -925,6 +926,7 @@ public static class OriginalMapRuntimeAdmission
         OriginalMapExplorationRuntimeDefinition runtime)
     {
         return runtime.Map == new MapId(Map19Id) &&
+            HasExactAcceptedCastleVisualResourceSelection(runtime.VisualResourceSelection) &&
             runtime.SelectedSetup == new MapSetupId(Map19SelectedSetupId) &&
             string.Equals(
                 runtime.SelectedInitIdentity,
@@ -971,6 +973,7 @@ public static class OriginalMapRuntimeAdmission
         OriginalMapExplorationRuntimeDefinition runtime)
     {
         return runtime.Map == new MapId(Map20Id) &&
+            HasExactAcceptedCastleVisualResourceSelection(runtime.VisualResourceSelection) &&
             runtime.SelectedSetup == new MapSetupId(Map20SelectedSetupId) &&
             string.Equals(
                 runtime.SelectedInitIdentity,
@@ -1069,6 +1072,15 @@ public static class OriginalMapRuntimeAdmission
                 Convert.ToHexString(SHA256.HashData(source)),
                 sourceDigest,
                 StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool HasExactAcceptedCastleVisualResourceSelection(
+        OriginalMapVisualResourceSelection selection)
+    {
+        ArgumentNullException.ThrowIfNull(selection);
+        return selection.Map.Value is Map19Id or Map20Id &&
+            selection.PaletteIndex == 0 &&
+            selection.TilesetSlots.SequenceEqual(new byte[] { 6, 23, 44, 53, 62 });
     }
 
     public static bool HasExactAcceptedVisualResourceSelection(

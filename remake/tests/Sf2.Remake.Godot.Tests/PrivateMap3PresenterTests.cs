@@ -8,6 +8,19 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateMap3PresenterTests
 {
+    [Theory]
+    [InlineData("map19", true, true)]
+    [InlineData("map20", true, true)]
+    [InlineData("map19", false, false)]
+    [InlineData("map21", true, false)]
+    public void CastleBaseVisibilityRequiresTheAcceptedMount(string map, bool mounted, bool expectedBase)
+    {
+        var visible = PrivateMap3Presenter.ProjectionVisibility(new(map), new("map3"),
+            hasBaseViewport: true, showTraversalOnInitialMap: false, hasCastleAtlas: mounted);
+        Assert.Equal(expectedBase, visible.BaseVisible);
+        Assert.Equal(!expectedBase, visible.TraversalVisible);
+    }
+
     [Fact]
     public void WestTowerArrivalStatusDistinguishesTwoExitsToTheSameMap()
     {
@@ -168,7 +181,7 @@ public sealed class PrivateMap3PresenterTests
         Assert.True(plan.IncludeBaseVisualViewport);
         Assert.Equal(PrivateMap3WorldTreatment.EdgeScale2x, plan.WorldTreatment);
         Assert.Equal(
-            "Project-authored base composition from admitted private Map 3 data. " +
+            "Project-authored base composition from admitted current-map data. " +
                 "Not full original fidelity.",
             plan.ExplanationText);
     }

@@ -47,13 +47,13 @@ operations. The transaction is once-only and a fresh session restores the closed
 bounded gate state is open, moving north from the accepted approach applies the exact admitted outbound
 warp and atomically replaces the authoritative runtime with the catalog-owned Map 19 layout, traversal,
 area, block, selected-setup, init-identity, and entity data. The destination is `(26,30)` with opaque
-facing `1`; Godot projects its typed position through the existing traversal diagnostics and hides the
-Map 3-only atlas. From Map 19 entry, the accepted 38-input royal route crosses the two default RTS
+facing `1`; the explicit private base-atlas view selects the accepted shared castle atlas and
+projects the current runtime. A traversal-only launch retains its diagnostic view. From Map 19 entry, the accepted 38-input royal route crosses the two default RTS
 zones and reaches `(22,4)`. Moving east resolves the stair target `(23,3)` and commits warp record 2
 into the catalog-owned Map 20 runtime at `(23,37)`, area record 2, with opaque facing `3`. The same
 Application transition reducer retains the Map 3 route flags, actor state, import receipt, and manual
-battle bridge; per-operation receipts retain the existing reset boundary. Godot continues to project
-typed traversal diagnostics. A fresh session still starts from controlled Map 3.
+battle bridge; per-operation receipts retain the existing reset boundary. Godot updates the Map 20
+selection and layout while reusing the shared castle atlas pixels. A fresh session still starts from controlled Map 3.
 
 The Map 20 arrival is **before its selected init executes**. Its nullable first-visit result remains
 unselected until the user presses F at the palace entrance to apply a controlled result while skipping
@@ -62,14 +62,15 @@ down, records completion flag 605, and retains typed entity-131 endpoint and ent
 From that completed result, two north inputs pass `(23,38)` and trigger the exact return at `(23,37)`.
 Application atomically commits the catalog-owned Map 19 runtime at `(23,3)`, area record 1, with raw
 opaque facing `2` (left), retaining the first-visit receipt, previous Map 3 route state and manual bridge.
-Godot projects the returned state through traversal diagnostics; further movement retains completion.
+Godot projects the returned current runtime and retains completion during further movement.
 After returning, the player can reach Astral at `(16,5)`, face him from `(16,6)`, and press F to
 explicitly apply his controlled acceptance result while skipping the scene. His project-authored
 marker then retires and his occupied tile becomes traversable. This once-only result retains caller
 flag 607 separately from program flag 608 and survives further movement and royal travel.
 Arrival alone does not resolve natural caller flags or admit a natural palace player-ready lifecycle.
 Map 19/20 setup selection is fixed to the admitted default data; general init, event, entity, music,
-and rendering execution remains unsupported. Further Map 20 movement remains diagnostic traversal.
+execution remains unsupported. The base renderer consumes only admitted current-map data; it does
+not execute original rendering code or establish original visual timing.
 Final guard facing, decoded text, original rendering, animation, audio, timing, natural caller state,
 execution order, and Battle 01 remain **Unknown**. This is not a general zone-event, warp, or script
 interpreter. The existing live
@@ -245,14 +246,15 @@ capability or centralize event semantics now.
 
 ## Controlled Astral Acceptance and Passage
 
-The current player-visible endpoint is a released Map 19 passage after the controlled palace visit.
+This Astral stage releases a Map 19 passage after the controlled palace visit, before the west-tower arrival.
 Follow the accepted `map19-royal-return-to-astral` segment's 11 inputs from `(23,3)` to `(16,6)`.
 The last input is left, so arrival still faces LEFT. One north attempt is blocked by actor 140 at
 `(16,5)` and turns the player to UP (raw facing `1`). F then explicitly selects this interaction's
-acceptance result; the scene is skipped. A subsequent north input enters `(16,5)`. The diagnostic
-viewport draws a project-authored diamond for this one waiting actor and removes it after acceptance.
+acceptance result; the scene is skipped. A subsequent north input enters `(16,5)`. Both the current
+base view and traversal-only viewport draw an authored diamond for this actor and clear it after F.
 The nearby F action is placed before the longer status diagnostics so it remains visible in the
-bounded label. Map 19/20 still use diagnostic rendering.
+bounded label. The explicit base view uses the accepted shared castle atlas and current runtime;
+original NPC pixels and original rendering execution remain unaccepted.
 
 **Confirmed:** the accepted [castle-unlock owner](../../docs/research/map3-castle-battle-unlock.md)
 and its [public H2 fixture](../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json) supply the
@@ -297,7 +299,7 @@ runtime boundary.
 
 The player can continue from the released Map 19 tile `(16,5)` with 14 inputs: Up, Left eleven times,
 Up, Right. The final input approaches from `(5,3)` and resolves the stair candidate `(6,2)`, then
-relocates to Map 20 `(6,37)`, area 2, RIGHT/raw 0. The same diagnostic traversal view displays the
+relocates to Map 20 `(6,37)`, area 2, RIGHT/raw 0. The current-runtime base view displays the
 arrival; its first status line identifies the controlled west-tower endpoint and unexecuted init.
 
 **Confirmed:** the accepted [castle-unlock owner](../../docs/research/map3-castle-battle-unlock.md)
@@ -338,19 +340,17 @@ Astral result, execute Map 20 init or F507, admit the west-tower return, or exte
 
 ## Ordered Queue
 
-1. **Map 19/20 visual readability:** the fixed shared-family
-   [atlas candidate builder](./presentation-and-assets.md#deterministic-derivation-and-cache) now emits
-   ignored local candidates from both maps' checked palette/tileset selections. Review a candidate,
-   accept its source/master/runtime/manifest transaction in the private asset owner, then bind a
-   bounded current-map consumer from those accepted code and asset objects. Existing Map 3 assets
-   are not castle atlases; the accepted pack and current diagnostic views remain unchanged by candidate
-   generation. The later consumer must resolve the current runtime's layout/blocks/area and the correct
-   atlas family, while limiting Map 3 overlays and actor-specific consumers to their owned map.
-2. **Map 21 arrival:** continue the accepted three Left inputs from Map 20 `(6,37)` through `(3,36)`,
+The current Map 19/20 base consumer uses the accepted shared castle atlas with each runtime's
+explicit selection, working layout, blocks and area. It retains the camera/player policy, scopes
+Map 3 overlays and route actors, and shows the authored Astral marker only while the route is occupied.
+The [native image review](./presentation-and-assets.md#reproduce-the-bounded-native-image-review)
+owns its six-frame seeded projection check and the precise distinction from natural reach/H4.
+
+1. **Map 21 arrival:** continue the accepted three Left inputs from Map 20 `(6,37)` through `(3,36)`,
    then bound record 4's Map 21 `(3,16)` arrival separately. The complete canonical import contains
    Map 21 references, but runtime admission currently selects only Maps 3/19/20; exact Map 21 runtime,
    area, entity and setup bindings are this later slice's prerequisite.
-3. **Bounded Map 21 guard interaction:** separately consume the accepted entity-128 interaction
+2. **Bounded Map 21 guard interaction:** separately consume the accepted entity-128 interaction
    contract and explicit endpoint. Verify which handler/program fields actually exist in the input;
    the static `cs_53EF4` behavior must not be presented as an imported general script interpreter.
    Natural map lifecycle and continuous Battle 01 admission remain later acceptance work.

@@ -537,7 +537,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             OriginalMapRuntimeAdmission.SelectedInitIdentity,
             OriginalMapRuntimeAdmission.AcceptedDecodedLayoutDigest,
             OriginalMapRuntimeAdmission.AcceptedCollisionProjectionDigest,
-            useProjectionDigestOverride: true);
+            useProjectionDigestOverride: true,
+            visualResourceSelection: new(map, 0, [0, 37, 43, 53, 66]));
         var runtimeCatalog = AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime);
         return new OriginalMapImportDefinition(
             map,

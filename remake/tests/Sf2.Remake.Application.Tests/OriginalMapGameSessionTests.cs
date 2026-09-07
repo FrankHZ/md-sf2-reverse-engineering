@@ -7,6 +7,23 @@ namespace Sf2.Remake.Application.Tests;
 
 public sealed class OriginalMapGameSessionTests
 {
+    [Theory]
+    [InlineData("map19")]
+    [InlineData("map20")]
+    public void SourcePortCannotAdmitCastleRuntimeWithMap3Tilesets(string mapId)
+    {
+        var accepted = Definition(EmptyWords());
+        var current = accepted.RuntimeCatalog.Resolve(new MapId(mapId));
+        var wrong = new OriginalMapExplorationRuntimeDefinition(current.Map, current.WorkingLayout,
+            current.BlockCatalog, current.AreaCatalog, current.EntityPopulation, current.SelectedSetup,
+            current.SelectedInitIdentity, current.DecodedLayoutDigest, current.CollisionProjectionDigest,
+            useProjectionDigestOverride: true, visualResourceSelection: new(current.Map, 0, [0, 37, 43, 53, 66]));
+        var catalog = new OriginalMapExplorationRuntimeCatalog(
+            accepted.RuntimeCatalog.Records.Select(runtime => runtime.Map == wrong.Map ? wrong : runtime));
+        AssertRejectedDefinition(Rebind(accepted, catalog, accepted.NorthMap19Transition),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
     [Fact]
     public void ExactAcceptedImportStartsASeparatedPrivateMap3Session()
     {
@@ -1787,7 +1804,8 @@ public sealed class OriginalMapGameSessionTests
                 admittedMap19.SelectedSetup,
                 admittedMap19.SelectedInitIdentity,
                 OriginalMapRuntimeAdmission.Map19DecodedLayoutDigest,
-                OriginalMapRuntimeAdmission.Map19CollisionProjectionDigest));
+                OriginalMapRuntimeAdmission.Map19CollisionProjectionDigest,
+                admittedMap19.VisualResourceSelection));
 
         Assert.Equal("decodedLayoutDigest", error.ParamName);
     }
@@ -3203,7 +3221,8 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapRuntimeAdmission.SelectedInitIdentity,
             OriginalMapRuntimeAdmission.AcceptedDecodedLayoutDigest,
             OriginalMapRuntimeAdmission.AcceptedCollisionProjectionDigest,
-            useProjectionDigestOverride: true);
+            useProjectionDigestOverride: true,
+            visualResourceSelection: visualResourceSelection ?? AcceptedVisualResourceSelection(map));
         OriginalMapExplorationRuntimeCatalog runtimeCatalog =
             AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime);
         return new OriginalMapImportDefinition(
@@ -3881,7 +3900,8 @@ internal static class AcceptedOriginalMapRuntimeCatalog
             OriginalMapRuntimeAdmission.Map19SelectedInitIdentity,
             OriginalMapRuntimeAdmission.Map19DecodedLayoutDigest,
             OriginalMapRuntimeAdmission.Map19CollisionProjectionDigest,
-            useProjectionDigestOverride: true);
+            useProjectionDigestOverride: true,
+            visualResourceSelection: new(map, 0, [6, 23, 44, 53, 62]));
     }
 
     private static OriginalMapExplorationRuntimeDefinition Map20Runtime()
@@ -3935,7 +3955,8 @@ internal static class AcceptedOriginalMapRuntimeCatalog
             OriginalMapRuntimeAdmission.Map20SelectedInitIdentity,
             OriginalMapRuntimeAdmission.Map20DecodedLayoutDigest,
             OriginalMapRuntimeAdmission.Map20CollisionProjectionDigest,
-            useProjectionDigestOverride: true);
+            useProjectionDigestOverride: true,
+            visualResourceSelection: new(map, 0, [6, 23, 44, 53, 62]));
     }
 }
 

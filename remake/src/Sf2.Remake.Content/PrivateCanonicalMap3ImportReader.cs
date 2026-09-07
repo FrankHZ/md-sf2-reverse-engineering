@@ -451,11 +451,12 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             new MapSetupId(Map3SetupIdentity),
             Map3InitIdentity,
             ComputeWordDigest(words),
-            ComputeCollisionProjectionDigest(words));
+            ComputeCollisionProjectionDigest(words),
+            visualResourceSelection);
         OriginalMapExplorationRuntimeDefinition map19Runtime =
-            ReadCastleRuntime(19, map19References, resources);
+            ReadCastleRuntime(19, map19, map19References, resources);
         OriginalMapExplorationRuntimeDefinition map20Runtime =
-            ReadCastleRuntime(20, map20References, resources);
+            ReadCastleRuntime(20, map20, map20References, resources);
         OriginalMapCrossMapTransitionDefinition royalMap20Transition =
             ReadAcceptedRoyalMap20Transition(map19References, resources);
         OriginalMapExplorationRuntimeCatalog runtimeCatalog = new(
@@ -514,7 +515,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
     }
 
     private static OriginalMapExplorationRuntimeDefinition ReadCastleRuntime(
-        int mapNumber, JsonElement references,
+        int mapNumber, JsonElement sourceMap, JsonElement references,
         IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
     {
         MapId map = new($"map{mapNumber}");
@@ -558,7 +559,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         return new OriginalMapExplorationRuntimeDefinition(
             map, castleWorkingLayout, castleBlockCatalog, castleAreaCatalog, castleEntityPopulation,
             new MapSetupId($"ms_map{mapNumber}"), $"ms_map{mapNumber}_InitFunction",
-            ComputeWordDigest(castleWords), ComputeCollisionProjectionDigest(castleWords));
+            ComputeWordDigest(castleWords), ComputeCollisionProjectionDigest(castleWords),
+            ReadVisualResourceSelection(sourceMap, map, mapNumber));
     }
 
     private static OriginalMapCrossMapTransitionDefinition ReadAcceptedRoyalMap20Transition(
@@ -1006,18 +1008,20 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
     }
 
     private static OriginalMapVisualResourceSelection ReadVisualResourceSelection(
-        JsonElement map3,
-        MapId map)
+        JsonElement sourceMap,
+        MapId map,
+        int mapNumber = 3)
     {
-        byte paletteIndex = RequiredByte(map3, "palette", "maps[3].palette");
-        JsonElement tilesets = RequiredProperty(map3, "tilesets", "maps[3].tilesets");
-        RequireArray(tilesets, "maps[3].tilesets");
+        string field = $"maps[{mapNumber}]";
+        byte paletteIndex = RequiredByte(sourceMap, "palette", field + ".palette");
+        JsonElement tilesets = RequiredProperty(sourceMap, "tilesets", field + ".tilesets");
+        RequireArray(tilesets, field + ".tilesets");
         if (tilesets.GetArrayLength() != OriginalMapVisualResourceSelection.TilesetSlotCount)
         {
             throw Admission(
                 OriginalMapImportFailureCode.InvalidMapProjection,
-                "maps[3].tilesets",
-                "Map 3 must retain exactly five ordered tileset references.");
+                field + ".tilesets",
+                "The map must retain exactly five ordered tileset references.");
         }
 
         byte[] slots = new byte[OriginalMapVisualResourceSelection.TilesetSlotCount];
@@ -1028,20 +1032,23 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             {
                 throw Admission(
                     OriginalMapImportFailureCode.InvalidMapProjection,
-                    $"maps[3].tilesets[{index}]",
-                    "Map 3 tileset references must remain byte-sized identities.");
+                    $"{field}.tilesets[{index}]",
+                    "Map tileset references must remain byte-sized identities.");
             }
 
             slots[index++] = value;
         }
 
         OriginalMapVisualResourceSelection selection = new(map, paletteIndex, slots);
-        if (!OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(selection))
+        bool accepted = mapNumber == 3
+            ? OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(selection)
+            : OriginalMapRuntimeAdmission.HasExactAcceptedCastleVisualResourceSelection(selection);
+        if (!accepted)
         {
             throw Admission(
                 OriginalMapImportFailureCode.InvalidMapProjection,
-                "maps[3].visualResourceSelection",
-                "Map 3 does not retain the accepted palette and ordered tileset reference projection.");
+                field + ".visualResourceSelection",
+                "The map does not retain the accepted palette and ordered tileset reference projection.");
         }
 
         return selection;

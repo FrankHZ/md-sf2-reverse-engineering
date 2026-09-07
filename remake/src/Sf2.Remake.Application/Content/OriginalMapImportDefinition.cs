@@ -551,9 +551,12 @@ public sealed class OriginalMapImportDefinition
                 areaCatalog,
                 entityPopulation,
                 controlledAdmission.SelectedSetup,
-                controlledAdmission.SelectedInitIdentity)
+                controlledAdmission.SelectedInitIdentity,
+                visualResourceSelection)
             : runtimeCatalog.Resolve(map);
-        if (!ReferenceEquals(initialRuntime.WorkingLayout, workingLayout) ||
+        if (initialRuntime.VisualResourceSelection.Map != visualResourceSelection.Map ||
+            initialRuntime.VisualResourceSelection.ProjectionDigest != visualResourceSelection.ProjectionDigest ||
+            !ReferenceEquals(initialRuntime.WorkingLayout, workingLayout) ||
             !ReferenceEquals(initialRuntime.BlockCatalog, blockCatalog) ||
             !ReferenceEquals(initialRuntime.AreaCatalog, areaCatalog) ||
             !ReferenceEquals(initialRuntime.EntityPopulation, entityPopulation) ||

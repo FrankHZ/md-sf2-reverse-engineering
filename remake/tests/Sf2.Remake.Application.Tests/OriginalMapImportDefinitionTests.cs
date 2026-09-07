@@ -963,6 +963,7 @@ public sealed class OriginalMapImportDefinitionTests
             areas,
             population,
             setup,
-            initIdentity);
+            initIdentity,
+            VisualSelection(map));
     }
 }

@@ -14,6 +14,30 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateLocalPresentationAssetCatalogTests
 {
+    [Fact]
+    public void CastleAtlasIsExplicitlySharedByMap19And20AndRejectsMap3OrDrift()
+    {
+        var castle = AtlasDefinition(assetId: PrivateLocalPresentationAssetCatalog.CastleBaseAtlasAssetId,
+            twoXDigest: PrivateLocalPresentationAssetCatalog.CastleBaseAtlas2xDigest,
+            fourXDigest: PrivateLocalPresentationAssetCatalog.CastleBaseAtlas4xDigest);
+        foreach (var bucket in castle.Buckets)
+        {
+            Assert.True(PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(castle, bucket));
+            Assert.False(PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(castle, bucket));
+        }
+        foreach (string map in new[] { "map19", "map20" })
+        {
+            Assert.Equal(castle.AssetId, PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
+                new(new(map), 0, [6, 23, 44, 53, 62])));
+            Assert.Null(PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
+                new(new(map), 0, [0, 37, 43, 53, 66])));
+        }
+        Assert.Null(PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
+            new(new("map21"), 0, [6, 23, 44, 53, 62])));
+        var wrong = AtlasDefinition(assetId: castle.AssetId);
+        Assert.False(PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(wrong, wrong.Buckets[0]));
+    }
+
     private const string Commit = "0123456789abcdef0123456789abcdef01234567";
     [Theory]
     [InlineData(1, 2)]
@@ -334,6 +358,16 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
         PrivateLocalPresentationAssetMounted entityFourX =
             Assert.IsType<PrivateLocalPresentationAssetMounted>(
                 catalog.MountMap3Entity142Reference(request, accepted, 3));
+        Assert.Equal(9, accepted.Receipt.AssetCount);
+        Assert.Equal(18, accepted.Receipt.BucketCount);
+        foreach (int scale in new[] { 2, 4 })
+        {
+            var castle = Assert.IsType<PrivateLocalPresentationAssetMounted>(
+                catalog.MountCastleBaseAtlas(request, accepted, scale));
+            Assert.Equal(scale, castle.Asset.Bucket.Scale);
+            Assert.True(PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(
+                castle.Asset.Definition, castle.Asset.Bucket));
+        }
         byte[] copied = twoX.Asset.CopyPngBytes();
         copied[0] = 0;
 
