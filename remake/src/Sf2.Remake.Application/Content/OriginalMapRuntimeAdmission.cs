@@ -841,6 +841,23 @@ public static class OriginalMapRuntimeAdmission
         transition.Destination == new MapPosition(23, 3) &&
         transition.DestinationOpaqueFacing == RoyalReturnDestinationOpaqueFacing;
 
+    public static bool HasExactAcceptedAstralAcceptance(
+        OriginalMapAstralAcceptanceDefinition? definition,
+        OriginalMapExplorationRuntimeCatalog catalog)
+    {
+        if (definition is null)
+        {
+            return false;
+        }
+
+        OriginalMapExplorationRuntimeDefinition runtime = catalog.Resolve(definition.Map);
+        return runtime.EntityPopulation.Records.Count == 13 &&
+            ReferenceEquals(runtime.EntityPopulation.Records[12], definition.Actor) &&
+            runtime.Traversal.IsWithinActiveArea(definition.InteractionPosition) &&
+            !OriginalMapTraversal.IsBlocked(runtime.WorkingLayout, definition.InteractionPosition) &&
+            !OriginalMapTraversal.IsBlocked(runtime.WorkingLayout, definition.Actor.Position);
+    }
+
     public static bool HasExactAcceptedPalaceFirstVisit(
         OriginalMapPalaceFirstVisitDefinition? definition,
         OriginalMapExplorationRuntimeCatalog catalog)

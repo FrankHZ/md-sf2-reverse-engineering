@@ -195,7 +195,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapCrossMapTransitionDefinition? northMap19Transition = null,
         OriginalMapCrossMapTransitionDefinition? royalMap20Transition = null,
         OriginalMapPalaceFirstVisitDefinition? palaceFirstVisit = null,
-        OriginalMapCrossMapTransitionDefinition? royalReturnMap19Transition = null)
+        OriginalMapCrossMapTransitionDefinition? royalReturnMap19Transition = null,
+        OriginalMapAstralAcceptanceDefinition? astralAcceptance = null)
     {
         ArgumentNullException.ThrowIfNull(map);
         ArgumentNullException.ThrowIfNull(workingLayout);
@@ -643,6 +644,13 @@ public sealed class OriginalMapImportDefinition
             }
         }
 
+        if (astralAcceptance is not null &&
+            !OriginalMapRuntimeAdmission.HasExactAcceptedAstralAcceptance(astralAcceptance, RuntimeCatalog))
+        {
+            throw new ArgumentException("Astral must bind the exact catalog-owned actor.", nameof(astralAcceptance));
+        }
+
+        AstralAcceptance = astralAcceptance;
         NorthMap19Transition = northMap19Transition;
         RoyalMap20Transition = royalMap20Transition;
         PalaceFirstVisit = palaceFirstVisit;
@@ -705,6 +713,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapCrossMapTransitionDefinition? RoyalMap20Transition { get; }
 
     public OriginalMapPalaceFirstVisitDefinition? PalaceFirstVisit { get; }
+
+    public OriginalMapAstralAcceptanceDefinition? AstralAcceptance { get; }
 
     public OriginalMapCrossMapTransitionDefinition? RoyalReturnMap19Transition { get; }
 

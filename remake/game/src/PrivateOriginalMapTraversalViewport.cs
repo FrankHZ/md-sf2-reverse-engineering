@@ -18,7 +18,8 @@ internal sealed record PrivateOriginalMapTraversalViewCell(
     int Column,
     int Row,
     PrivateOriginalMapTraversalCellCategory Category,
-    bool IsPlayer);
+    bool IsPlayer,
+    bool IsAstral);
 
 internal sealed class PrivateOriginalMapTraversalViewProjection
 {
@@ -84,7 +85,8 @@ internal sealed class PrivateOriginalMapTraversalViewProjection
                     column,
                     row,
                     category,
-                    position == snapshot.PlayerPosition));
+                    position == snapshot.PlayerPosition,
+                    snapshot.AstralOccupiesRouteTile && position == snapshot.Definition.AstralAcceptance!.Actor.Position));
             }
         }
 
@@ -155,6 +157,15 @@ public sealed partial class PrivateOriginalMapTraversalViewport : Node2D
                 new Vector2(cell.Column * TileSize, cell.Row * TileSize),
                 new Vector2(TileSize - 2, TileSize - 2));
             DrawRect(tile, fill);
+
+            if (cell.IsAstral)
+            {
+                // Authored interaction marker, not an original sprite or animation.
+                Vector2 center = tile.GetCenter();
+                DrawColoredPolygon(
+                    [center + new Vector2(0, -14), center + new Vector2(14, 0),
+                     center + new Vector2(0, 14), center + new Vector2(-14, 0)], new Color("b5a0ff"));
+            }
 
             if (cell.IsPlayer)
             {

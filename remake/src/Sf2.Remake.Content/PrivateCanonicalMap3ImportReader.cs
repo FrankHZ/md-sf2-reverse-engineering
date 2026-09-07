@@ -492,7 +492,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             northMap19Transition,
             royalMap20Transition,
             ReadPalaceFirstVisit(resources),
-            ReadAcceptedRoyalReturn(map20References, resources));
+            ReadAcceptedRoyalReturn(map20References, resources),
+            ReadAstralAcceptance(map19Runtime, resources));
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -678,6 +679,40 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             23, 37, new(23, 38), ExplorationDirection.North, new(23, 37),
             new MapId(OriginalMapRuntimeAdmission.Map19Id), new(23, 3),
             checked((byte)RequiredInt(row, "facing", field)));
+    }
+
+    private static OriginalMapAstralAcceptanceDefinition ReadAstralAcceptance(
+        OriginalMapExplorationRuntimeDefinition runtime,
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        const string field = "map19.astralEvent";
+        JsonElement handler = RequiredResource(resources, "entityEventHandlers", "ms_map19_EntityEvents");
+        RequireExactProperties(handler, field, "id", "address", "kind", "records");
+        JsonElement records = RequiredProperty(handler, "records", field);
+        RequireArray(records, field);
+        if (RequiredInt(handler, "address", field) != 0x52E02 ||
+            RequiredString(handler, "kind", field) != "table" || records.GetArrayLength() != 14)
+        {
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                "Astral requires the exact default Map 19 event table.");
+        }
+
+        JsonElement actorEvent = records[12];
+        RequireExactProperties(actorEvent, field, "address", "kind", "relativeOffset",
+            "resolvedTargetAddress", "entity", "flags");
+        if (RequiredInt(actorEvent, "address", field) != 0x52E32 ||
+            RequiredString(actorEvent, "kind", field) != "specific" ||
+            RequiredInt(actorEvent, "relativeOffset", field) != 240 ||
+            RequiredInt(actorEvent, "resolvedTargetAddress", field) != 0x52EF2 ||
+            RequiredInt(actorEvent, "entity", field) != 140 || RequiredInt(actorEvent, "flags", field) != 1)
+        {
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                "Astral's ordered event record or handler join drifted.");
+        }
+
+        // The accepted H2 fixture owns the compiled controlled result. This import contains
+        // only the actor and event entry, not Map19_EntityEvent12 or cs_52F0C/cs_52F40 bodies.
+        return new(runtime.EntityPopulation.Records[12]);
     }
 
     private static OriginalMapPalaceFirstVisitDefinition ReadPalaceFirstVisit(

@@ -9,6 +9,24 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateMap3PresenterTests
 {
     [Fact]
+    public void AstralActionIsFirstAndOnlyAvailableWhenThePlayerFacesTheWaitingActor()
+    {
+        var ready = PrivateOriginalMapTraversalViewportTests.AstralSnapshot(completed: false);
+        string action = PrivateMap3PresentationPlan.AstralStatus(ready, facing: 1, moving: false);
+        Assert.StartsWith("F accept", action);
+        Assert.Contains("controlled result", action);
+        Assert.Contains("skip scene", action);
+        Assert.DoesNotContain("F accept", PrivateMap3PresentationPlan.AstralStatus(ready, facing: 2, moving: false));
+        Assert.DoesNotContain("F accept", PrivateMap3PresentationPlan.AstralStatus(ready, facing: 1, moving: true));
+        var completed = PrivateOriginalMapTraversalViewportTests.AstralSnapshot(completed: true);
+        string status = PrivateMap3PresentationPlan.FormatStatus(completed, new string('x', 500));
+        Assert.StartsWith("Astral has left; passage open.", status);
+        Assert.DoesNotContain("F accept", status);
+        // Even a long diagnostic outcome follows the current action, outside its first line.
+        Assert.True(status.IndexOf('\n') < status.IndexOf(new string('x', 500), StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void PalaceStatusDistinguishesExplicitSkippedSceneResultFromUnselectedArrival()
     {
         string unselected = PrivateMap3PresentationPlan.PalaceFirstVisitStatus(null);

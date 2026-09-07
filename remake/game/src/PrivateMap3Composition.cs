@@ -616,6 +616,14 @@ public sealed partial class Map3Root
                 _session.PrivateOriginalMapSnapshot.SimulationStep);
         switch (result)
         {
+            case PrivateOriginalMapAstralAcceptanceApplied astral:
+                _privatePresenter?.Project(astral.Snapshot,
+                    "Astral accepted; passage open; scene skipped", _session.PrivateOriginalMapPlayerLocomotion);
+                break;
+            case PrivateOriginalMapAstralAcceptanceRejected astral:
+                _privatePresenter?.Project(astral.Snapshot,
+                    $"Astral acceptance unavailable: {astral.Code}", _session.PrivateOriginalMapPlayerLocomotion);
+                break;
             case PrivateOriginalMapPalaceFirstVisitApplied palace:
                 _privatePresenter?.Project(
                     palace.Snapshot,

@@ -36,7 +36,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         PrivateOriginalMapCastleGateReceipt? lastCastleGate = null,
         OriginalMapExplorationRuntimeDefinition? currentRuntime = null,
         PrivateOriginalMapCrossMapTransitionReceipt? lastCrossMapTransition = null,
-        PrivateOriginalMapPalaceFirstVisitReceipt? palaceFirstVisit = null)
+        PrivateOriginalMapPalaceFirstVisitReceipt? palaceFirstVisit = null,
+        PrivateOriginalMapAstralAcceptanceState? astralAcceptance = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -78,6 +79,20 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 "Controlled palace completion must retain its admitted definition, map, step, and endpoint.",
                 nameof(palaceFirstVisit));
         }
+        if (astralAcceptance is not null &&
+            (palaceFirstVisit is null ||
+                !ReferenceEquals(astralAcceptance.Definition, definition.AstralAcceptance) ||
+                astralAcceptance.SimulationStep <= palaceFirstVisit.SimulationStep ||
+                astralAcceptance.SimulationStep > simulationStep ||
+                (astralAcceptance.SimulationStep == simulationStep &&
+                    (currentRuntime.Map != astralAcceptance.Definition.Map ||
+                        playerPosition != astralAcceptance.Definition.InteractionPosition))))
+        {
+            throw new ArgumentException("Astral completion must retain its controlled visit and step.",
+                nameof(astralAcceptance));
+        }
+
+        AstralAcceptance = astralAcceptance;
         MapBlockCopyLifecycleState admittedRoofLifecycle =
             roofOnLoadLifecycle ?? MapBlockCopyLifecycleState.Inactive;
         PrivateOriginalMapZone601State? admittedZone601 = zone601;
@@ -221,7 +236,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
             (lastSarah is null ? 0 : 1) +
             (lastEntity142Request is null ? 0 : 1) +
             (lastEntity142Acknowledgement is null ? 0 : 1) +
-            (palaceFirstVisit?.SimulationStep == simulationStep ? 1 : 0);
+            (palaceFirstVisit?.SimulationStep == simulationStep ? 1 : 0) +
+            (astralAcceptance?.SimulationStep == simulationStep ? 1 : 0);
         if (simulationStep == 0 &&
             (completedOperations != 0 ||
                 controlledStepCopyApplied ||
@@ -776,6 +792,16 @@ public sealed record PrivateOriginalMapSessionSnapshot
     public PrivateOriginalMapCrossMapTransitionReceipt? LastCrossMapTransition { get; }
 
     public PrivateOriginalMapPalaceFirstVisitReceipt? PalaceFirstVisit { get; }
+
+    public PrivateOriginalMapAstralAcceptanceState? AstralAcceptance { get; }
+
+    public bool AstralOccupiesRouteTile => Definition.AstralAcceptance is { } astral &&
+        Map == astral.Map && PalaceFirstVisit is not null && AstralAcceptance is null;
+
+    public bool CanAcceptAstral(byte playerOpaqueFacing) => AstralOccupiesRouteTile &&
+        PlayerPosition == Definition.AstralAcceptance!.InteractionPosition &&
+        playerOpaqueFacing == Definition.AstralAcceptance.InteractionOpaqueFacing &&
+        PendingEntity142 is null;
 }
 
 public abstract record PrivateOriginalMapGameSessionStartResult;
@@ -997,12 +1023,12 @@ public sealed partial class GameSession
             current.WorkingLayout,
             current.PlayerPosition,
             command.Direction);
-        if (current.Map == current.Definition.Map &&
-            candidate is MapPosition occupiedPosition &&
-            ((current.Sarah?.OccupiesRouteTile == true &&
-                    occupiedPosition == current.Sarah.ActorPosition) ||
-                (current.Entity142?.OccupiesRouteTile == true &&
-                    occupiedPosition == current.Entity142.ActorPosition)))
+        if (candidate is MapPosition occupiedPosition &&
+            ((current.Map == current.Definition.Map &&
+                ((current.Sarah?.OccupiesRouteTile == true && occupiedPosition == current.Sarah.ActorPosition) ||
+                    (current.Entity142?.OccupiesRouteTile == true && occupiedPosition == current.Entity142.ActorPosition))) ||
+                (current.AstralOccupiesRouteTile &&
+                    occupiedPosition == current.Definition.AstralAcceptance!.Actor.Position)))
         {
             ushort sourceWord = current.WorkingLayout[
                 current.PlayerPosition.X,
@@ -1047,7 +1073,7 @@ public sealed partial class GameSession
                 lastCastleGate: null,
                 current.CurrentRuntime,
                 lastCrossMapTransition: null,
-                palaceFirstVisit: current.PalaceFirstVisit);
+                palaceFirstVisit: current.PalaceFirstVisit, astralAcceptance: current.AstralAcceptance);
             _privateOriginalMapSnapshot = blocked;
             return new PrivateOriginalMapMoveApplied(blocked, occupied);
         }
@@ -1086,7 +1112,7 @@ public sealed partial class GameSession
             lastCastleGate: null,
             current.CurrentRuntime,
             lastCrossMapTransition: null,
-            palaceFirstVisit: current.PalaceFirstVisit);
+            palaceFirstVisit: current.PalaceFirstVisit, astralAcceptance: current.AstralAcceptance);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -1184,7 +1210,7 @@ public sealed partial class GameSession
             lastCastleGate: null,
             current.CurrentRuntime,
             lastCrossMapTransition: null,
-            palaceFirstVisit: current.PalaceFirstVisit);
+            palaceFirstVisit: current.PalaceFirstVisit, astralAcceptance: current.AstralAcceptance);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -1388,6 +1414,13 @@ public sealed partial class GameSession
         {
             return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.royalReturnMap19Transition", "The controlled royal return source binding drifted.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedAstralAcceptance(
+                definition.AstralAcceptance, definition.RuntimeCatalog))
+        {
+            return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.astralAcceptance", "The controlled Astral actor binding drifted.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedPalaceFirstVisit(
