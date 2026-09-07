@@ -444,6 +444,7 @@ _MAP3_ATLAS = _WorldAtlasFamily("map3", (ACCEPTED_MAP_INDEX,), ACCEPTED_TILESET_
 _MAP19_20_ATLAS = _WorldAtlasFamily(
     "map19-20", ACCEPTED_CASTLE_MAP_INDICES, ACCEPTED_CASTLE_TILESET_SLOTS
 )
+_MAP21_ATLAS = _WorldAtlasFamily("map21", (21,), (6, 23, 44, 53, 8))
 
 
 @dataclass(frozen=True)
@@ -2751,6 +2752,36 @@ def build_map19_20_base_atlas_candidate(
     )
 
 
+def build_map21_base_atlas_candidate(
+    *,
+    asset_root: str,
+    expected_commit: str,
+    expected_tree: str,
+    rom_path: str,
+    expected_rom_sha256: str,
+    tileset_metadata_path: str,
+    expected_tileset_metadata_sha256: str,
+    palette_metadata_path: str,
+    expected_palette_metadata_sha256: str,
+    candidate_name: str,
+) -> dict[str, object]:
+    """Build the fixed Map 21 atlas candidate without promoting tracked assets."""
+
+    return _build_base_atlas_candidate(
+        family=_MAP21_ATLAS,
+        asset_root=asset_root,
+        expected_commit=expected_commit,
+        expected_tree=expected_tree,
+        rom_path=rom_path,
+        expected_rom_sha256=expected_rom_sha256,
+        tileset_metadata_path=tileset_metadata_path,
+        expected_tileset_metadata_sha256=expected_tileset_metadata_sha256,
+        palette_metadata_path=palette_metadata_path,
+        expected_palette_metadata_sha256=expected_palette_metadata_sha256,
+        candidate_name=candidate_name,
+    )
+
+
 def _build_base_atlas_candidate(
     *,
     family: _WorldAtlasFamily,
@@ -2765,7 +2796,7 @@ def _build_base_atlas_candidate(
     expected_palette_metadata_sha256: str,
     candidate_name: str,
 ) -> dict[str, object]:
-    """Share the bounded candidate transaction between the two fixed atlas families."""
+    """Share the bounded candidate transaction between the fixed atlas families."""
 
     candidate_relative = _require_world_candidate_name(candidate_name)
     try:
@@ -2992,7 +3023,7 @@ def _build_base_atlas_candidate(
             "manifestSha256": manifest_sha256,
             "cleanupStatus": "clean",
         }
-        if family == _MAP19_20_ATLAS:
+        if family != _MAP3_ATLAS:
             receipt["acceptedMapIndices"] = list(family.map_indices)
             receipt["acceptedPaletteIndex"] = ACCEPTED_PALETTE_INDEX
             receipt["inputIdentities"] = {
@@ -4229,7 +4260,11 @@ def _parser() -> argparse.ArgumentParser:
     candidate.add_argument("--expected-master-sha256", required=True)
     candidate.add_argument("--resvg-archive", required=True)
     candidate.add_argument("--candidate-name", required=True)
-    for command in ("map3-base-atlas-candidate", "map19-20-base-atlas-candidate"):
+    for command in (
+        "map3-base-atlas-candidate",
+        "map19-20-base-atlas-candidate",
+        "map21-base-atlas-candidate",
+    ):
         world = subparsers.add_parser(command)
         world.add_argument("--asset-root", required=True)
         world.add_argument("--expected-commit", required=True)
@@ -4278,12 +4313,16 @@ def main(argv: list[str] | None = None) -> int:
                 resvg_archive=arguments.resvg_archive,
                 candidate_name=arguments.candidate_name,
             )
-        elif arguments.command in ("map3-base-atlas-candidate", "map19-20-base-atlas-candidate"):
-            build_atlas = (
-                build_map3_base_atlas_candidate
-                if arguments.command == "map3-base-atlas-candidate"
-                else build_map19_20_base_atlas_candidate
-            )
+        elif arguments.command in (
+            "map3-base-atlas-candidate",
+            "map19-20-base-atlas-candidate",
+            "map21-base-atlas-candidate",
+        ):
+            build_atlas = {
+                "map3-base-atlas-candidate": build_map3_base_atlas_candidate,
+                "map19-20-base-atlas-candidate": build_map19_20_base_atlas_candidate,
+                "map21-base-atlas-candidate": build_map21_base_atlas_candidate,
+            }[arguments.command]
             receipt = build_atlas(
                 asset_root=arguments.asset_root,
                 expected_commit=arguments.expected_commit,
