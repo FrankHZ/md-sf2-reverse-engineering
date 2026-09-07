@@ -101,7 +101,8 @@ internal sealed record PrivateMap3PresentationPlan(
 
     internal static string FormatStatus(
         PrivateOriginalMapSessionSnapshot snapshot,
-        string outcome)
+        string outcome,
+        PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentException.ThrowIfNullOrWhiteSpace(outcome);
@@ -112,7 +113,9 @@ internal sealed record PrivateMap3PresentationPlan(
             "WASD semantic movement";
         if (snapshot.Map.Value == "map19" && snapshot.PalaceFirstVisit is not null)
         {
-            return status + "  |  " + RoyalReturnStatus(snapshot.PalaceFirstVisit);
+            // Put the current action before potentially long diagnostics in the clipped status label.
+            return AstralStatus(snapshot, playerLocomotion?.OpaqueFacing, playerLocomotion?.IsMoving == true) +
+                "\n" + status;
         }
 
         if (snapshot.Map.Value == "map20")
@@ -170,6 +173,24 @@ internal sealed record PrivateMap3PresentationPlan(
         }
 
         return status;
+    }
+
+    internal static string AstralStatus(
+        PrivateOriginalMapSessionSnapshot snapshot, byte? facing, bool moving)
+    {
+        if (snapshot.AstralAcceptance is not null)
+        {
+            return "Astral has left; passage open. Controlled result; scene skipped.";
+        }
+
+        if (snapshot.AstralOccupiesRouteTile)
+        {
+            return !moving && facing is byte direction && snapshot.CanAcceptAstral(direction)
+                ? "F accept Astral's invitation (controlled result; skip scene)"
+                : "Find Astral and face him to continue toward the tower.";
+        }
+
+        return "Astral interaction unavailable.";
     }
 
     internal static string RoyalReturnStatus(PrivateOriginalMapPalaceFirstVisitReceipt receipt)
@@ -476,7 +497,7 @@ internal sealed class PrivateMap3Presenter
                 _currentAreaOverlay);
         }
 
-        _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome);
+        _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome, playerLocomotion);
     }
 
     internal static (bool TraversalVisible, bool BaseVisible) ProjectionVisibility(

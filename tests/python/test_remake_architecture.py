@@ -435,7 +435,7 @@ def test_private_diagnostic_presentation_is_an_internal_godot_adapter() -> None:
         presenter_source
     )
     assert "_viewport?.Project(snapshot);" in presenter_source
-    assert "PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome)" in (
+    assert "PrivateMap3PresentationPlan.FormatStatus(" in (
         presenter_source
     )
     assert "public " not in presenter_source

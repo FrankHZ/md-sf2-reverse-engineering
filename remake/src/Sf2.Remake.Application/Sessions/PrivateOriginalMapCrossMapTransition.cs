@@ -109,7 +109,8 @@ public sealed partial class GameSession
             lastCastleGate: null,
             destinationRuntime,
             receipt,
-            current.PalaceFirstVisit);
+            current.PalaceFirstVisit,
+            current.AstralAcceptance);
         PrivateOriginalMapPlayerLocomotionSnapshot animation =
             PrivateOriginalMapPlayerLocomotionSnapshot.Relocate(PrivateOriginalMapPlayerLocomotion, receipt);
         _privateOriginalMapSnapshot = next;

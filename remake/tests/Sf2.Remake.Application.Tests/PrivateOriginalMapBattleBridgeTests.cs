@@ -538,6 +538,7 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             OriginalMapRuntimeAdmission.AcceptedDecodedLayoutDigest,
             OriginalMapRuntimeAdmission.AcceptedCollisionProjectionDigest,
             useProjectionDigestOverride: true);
+        var runtimeCatalog = AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime);
         return new OriginalMapImportDefinition(
             map,
             layout,
@@ -563,11 +564,12 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             AcceptedAstralZone(map),
             AcceptedOriginalMapMessenger.Create(map),
             AcceptedOriginalMapCastleGate.Create(map),
-            AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime),
+            runtimeCatalog,
             AcceptedOriginalMapRuntimeCatalog.NorthTransition(),
             AcceptedOriginalMapRuntimeCatalog.RoyalTransition(),
             AcceptedOriginalMapPalaceFirstVisit.Create(),
-            AcceptedOriginalMapRuntimeCatalog.RoyalReturn());
+            AcceptedOriginalMapRuntimeCatalog.RoyalReturn(),
+            new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]));
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>

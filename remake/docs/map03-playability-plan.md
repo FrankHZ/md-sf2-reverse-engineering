@@ -63,6 +63,10 @@ From that completed result, two north inputs pass `(23,38)` and trigger the exac
 Application atomically commits the catalog-owned Map 19 runtime at `(23,3)`, area record 1, with raw
 opaque facing `2` (left), retaining the first-visit receipt, previous Map 3 route state and manual bridge.
 Godot projects the returned state through traversal diagnostics; further movement retains completion.
+After returning, the player can reach Astral at `(16,5)`, face him from `(16,6)`, and press F to
+explicitly apply his controlled acceptance result while skipping the scene. His project-authored
+marker then retires and his occupied tile becomes traversable. This once-only result retains caller
+flag 607 separately from program flag 608 and survives further movement and royal travel.
 Arrival alone does not resolve natural caller flags or admit a natural palace player-ready lifecycle.
 Map 19/20 setup selection is fixed to the admitted default data; general init, event, entity, music,
 and rendering execution remains unsupported. Further Map 20 movement remains diagnostic traversal.
@@ -234,14 +238,68 @@ new castle-gate state across those boundaries exposed repeated mechanical pass-t
 current-state refactor candidate for a later independently reviewed slice, not a reason to broaden this
 capability or centralize event semantics now.
 
+## Controlled Astral Acceptance and Passage
+
+The current player-visible endpoint is a released Map 19 passage after the controlled palace visit.
+Follow the accepted `map19-royal-return-to-astral` segment's 11 inputs from `(23,3)` to `(16,6)`.
+The last input is left, so arrival still faces LEFT. One north attempt is blocked by actor 140 at
+`(16,5)` and turns the player to UP (raw facing `1`). F then explicitly selects this interaction's
+acceptance result; the scene is skipped. A subsequent north input enters `(16,5)`. The diagnostic
+viewport draws a project-authored diamond for this one waiting actor and removes it after acceptance.
+The nearby F action is placed before the longer status diagnostics so it remains visible in the
+bounded label. Map 19/20 still use diagnostic rendering.
+
+**Confirmed:** the accepted [castle-unlock owner](../../docs/research/map3-castle-battle-unlock.md)
+and its [public H2 fixture](../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json) supply the
+compiled controlled behavior. `Map19_EntityEvent12` checks 607 and sets it after its script call returns;
+`cs_52F0C` asks `yesNo` before its flag-89 branch. The accepted `cs_52F40` result moves actor 140 up one
+and left eight, then places him at `(63,63)` facing LEFT and sets 608. Application applies only that
+final controlled result and releases occupancy; it does not play the intermediate movement or dialogue.
+The prior messenger choice cannot answer this new prompt. F deliberately selects acceptance with the
+607/608 completion still clear, without implementing a general prompt or interpreting retained flag 89.
+The waiting actor is a controlled post-visit phase, not proof that natural init made him visible.
+
+The unchanged canonical input admits actor 140 as `ms_map19_Entities` record 13 and the default
+`ms_map19_EntityEvents` record 13: table `0x52E02`, row `0x52E32`, relative offset 240, target
+`0x52EF2`, entity 140, flags 1. Content checks those actual input fields and the selected setup/actor
+binding. **The input contains neither the handler body nor `cs_52F0C`/`cs_52F40` bodies.** It does not
+prove those programs at runtime: their behavior comes from the accepted H2 contract above. No new
+schema, resource collection, source digest, stage protocol, or script interpreter is introduced.
+
+`GameSession` reuses the existing F semantic interaction with an expected simulation step. It commits
+one completion state, retains the controlled visit/605, Map 3 route state and manual bridge, and clears
+transient operation state. Stale, duplicate, busy, wrong-position/facing, and pre-visit attempts cannot
+apply the result. Other maps retain their existing interaction routing. Completion survives movement
+and the existing royal transitions; a fresh session clears it. Immutable source entity records stay
+unchanged. The player's current facing is preserved as a controlled application policy, without a
+claim about the original script's final facing. No new battle state or tower transition is admitted.
+
+The optional private command in [Royal Route Acceptance Boundary](#royal-route-acceptance-boundary)
+now continues the same session through the 38-input outward route, explicit palace result, two-input
+return, 11-input Astral approach, blocked north, F acceptance and released north. The environment
+variable must be set to the isolated accepted input for that private check to execute. Its Map 19
+entry seed remains test-only and does not prove the preceding natural Map 3 route. Public Application
+checks cover this state transition, zero-mutation rejection, royal travel and reset; Content checks
+compare consumed behavior with the existing H2 fixture and reject event-join drift; Godot checks
+cover the marker and visible action priority.
+
+Natural caller flags, init execution, original visibility/facing/dialogue/choreography/audio/timing,
+refused or repeated original conversations, general NPC/script behavior, tower traversal, Map 21 and
+Battle 01 continuity remain **Unsupported / Unknown**. Source-guard acceptance does not change that
+runtime boundary.
+
 ## Ordered Queue
 
-1. **Remaining lifecycle after the controlled royal return:** follow accepted evidence beyond the
-   Map 19 return endpoint, without treating the existing manual synthetic battle bridge as original admission or
-   inventing setup, flag, program, entity, or natural-route semantics. Natural Battle 01 continuity
-   remains a later acceptance boundary.
-2. **Setup entities, audio, and remaining map lifecycle:** follow accepted evidence for remaining setup, entity, event,
-   door, warp, roof, music, and audio behavior without promoting Unknown presentation semantics.
+1. **West-tower entrance after Astral acceptance:** let the player continue from the released passage
+   to the exact accepted Map 19 stair exit, with a separately bounded Map 20 arrival. Confirm the
+   consumed warp, destination area and controlled state before extending the current transition reducer.
+   Stop at that arrival; do not fold Map 21 or Battle 01 admission into the same capability.
+2. **Map 19/20 visual readability:** treat the current diagnostic views as an explicit presentation gap.
+   Select a separate bounded consumer with its reviewed asset and source owners; do not infer original
+   rendering or expand the interaction slice to introduce an asset pipeline.
+3. **Further tower progression and remaining map lifecycle:** choose the next concrete player action
+   from accepted evidence, with explicit endpoints for setup/entity/event/audio work. General execution
+   machinery and natural Battle 01 continuity remain separate later acceptance work.
 
 ## Decision Rules
 

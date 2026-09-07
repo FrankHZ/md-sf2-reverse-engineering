@@ -454,6 +454,11 @@ public sealed partial class GameSession
     public PrivateOriginalMapInteractionResult RequestPrivateOriginalMapInteraction(
         long expectedSimulationStep)
     {
+        if (PrivateOriginalMapSnapshot.Map == new MapId(OriginalMapRuntimeAdmission.Map19Id))
+        {
+            return AcceptPrivateOriginalMapAstral(expectedSimulationStep);
+        }
+
         if (PrivateOriginalMapSnapshot.Map == new MapId(OriginalMapRuntimeAdmission.Map20Id))
         {
             return CompletePrivateOriginalMapPalaceFirstVisit(new(

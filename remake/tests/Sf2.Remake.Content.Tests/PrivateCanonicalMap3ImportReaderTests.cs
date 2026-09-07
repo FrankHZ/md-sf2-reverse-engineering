@@ -1178,6 +1178,53 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             Assert.False(session.PrivateOriginalMapPlayerLocomotion.IsMoving);
         }
         Assert.Equal(applied.Snapshot.SimulationStep + 2, session.PrivateOriginalMapSnapshot.SimulationStep);
+        JsonElement astralRoute = fixture.RootElement.GetProperty("static").GetProperty("routeGraph")
+            .GetProperty("segments").EnumerateArray()
+            .Single(row => row.GetProperty("id").GetString() == "map19-royal-return-to-astral");
+        PrivateOriginalMapPlayerLocomotionStarted CompleteMove(ExplorationDirection direction)
+        {
+            var move = session.BeginPrivateOriginalMapPlayerLocomotion(new(direction));
+            for (int tick = 0; tick < 13 && session.PrivateOriginalMapPlayerLocomotion.IsMoving; tick++)
+                session.AdvancePrivateOriginalMapPlayerLocomotion();
+            Assert.False(session.PrivateOriginalMapPlayerLocomotion.IsMoving);
+            return move;
+        }
+        Assert.Equal(11, astralRoute.GetProperty("inputs").GetArrayLength());
+        int pointIndex = 1;
+        foreach (JsonElement input in astralRoute.GetProperty("inputs").EnumerateArray())
+        {
+            var direction = input.GetString() switch
+            {
+                "Up" => ExplorationDirection.North, "Down" => ExplorationDirection.South,
+                "Left" => ExplorationDirection.West, "Right" => ExplorationDirection.East,
+                _ => throw new InvalidOperationException("Unexpected accepted route input."),
+            };
+            var move = CompleteMove(direction);
+            var point = astralRoute.GetProperty("points")[pointIndex++];
+            Assert.Equal(new MapPosition(point[0].GetInt32(), point[1].GetInt32()), move.Move.Snapshot.PlayerPosition);
+        }
+        Assert.Equal((byte)2, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        Assert.True(session.PrivateOriginalMapSnapshot.AstralOccupiesRouteTile);
+        var blocked = CompleteMove(ExplorationDirection.North);
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByOccupiedEntity, blocked.Move.Traversal.Outcome);
+        Assert.Equal(new MapPosition(16, 6), blocked.Move.Snapshot.PlayerPosition);
+        Assert.Equal((byte)1, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        var astral = Assert.IsType<PrivateOriginalMapAstralAcceptanceApplied>(
+            session.RequestPrivateOriginalMapInteraction(session.PrivateOriginalMapSnapshot.SimulationStep));
+        var completion = Assert.IsType<PrivateOriginalMapAstralAcceptanceState>(astral.Snapshot.AstralAcceptance);
+        Assert.True(completion.HandlerFlag607Set && completion.ProgramFlag608Set);
+        Assert.False(astral.Snapshot.AstralOccupiesRouteTile);
+        Assert.Same(applied.Receipt, astral.Snapshot.PalaceFirstVisit);
+        Assert.Same(entry.MessengerAcceptance, astral.Snapshot.MessengerAcceptance);
+        Assert.Same(entry.CastleGate, astral.Snapshot.CastleGate);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        Assert.Equal(PrivateOriginalMapAstralAcceptanceFailureCode.AlreadyCompleted,
+            Assert.IsType<PrivateOriginalMapAstralAcceptanceRejected>(
+                session.RequestPrivateOriginalMapInteraction(astral.Snapshot.SimulationStep)).Code);
+        Assert.Same(astral.Snapshot, session.PrivateOriginalMapSnapshot);
+        Assert.Equal(new MapPosition(16, 5), CompleteMove(ExplorationDirection.North).Move.Snapshot.PlayerPosition);
+        Assert.Same(completion, session.PrivateOriginalMapSnapshot.AstralAcceptance);
+
     }
 
     private static OriginalMapImportResult Admit(JsonObject document)
@@ -1574,6 +1621,27 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         JsonObject result = node!.AsObject();
         AddSyntheticRoyalPassage(result);
         AddSyntheticPalaceFirstVisit(result);
+        JsonArray astralActors = ResourceArray(result, "entityLists").OfType<JsonObject>()
+            .Single(row => row["id"]!.GetValue<string>() == "ms_map19_Entities")["records"]!.AsArray();
+        astralActors[8] = astralActors[12]!.DeepClone();
+        astralActors[12] = JsonSerializer.SerializeToNode(new
+        {
+            address = 338978, kind = "fixed", rawX = 16, rawY = 5, x = 16, y = 5,
+            facing = 3, mapSprite = 209, actionValue = 286926,
+        });
+        JsonObject astralTable = ResourceArray(result, "entityEventHandlers").OfType<JsonObject>()
+            .Single(row => row["id"]!.GetValue<string>() == "ms_map19_EntityEvents");
+        astralTable["address"] = 0x52E02;
+        astralTable["kind"] = "table";
+        astralTable["records"] = JsonSerializer.SerializeToNode(Enumerable.Range(0, 14).Select(index => new
+        {
+            address = 0x52E02 + index * 4,
+            kind = index == 13 ? "default" : "specific",
+            relativeOffset = index == 12 ? 240 : 0,
+            resolvedTargetAddress = index == 12 ? 0x52EF2 : 0x52E02,
+            entity = index == 13 ? 253 : 128 + index,
+            flags = 1,
+        }));
         return result;
     }
 
@@ -1732,6 +1800,55 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
             .Single(row => row.GetProperty("id").GetString() == "map20-to-map19-royal-return");
         Assert.Equal(source.GetProperty("warps").GetProperty("map20Royal")[0].GetProperty("facing").GetString(),
             graphWarp.GetProperty("to").GetProperty("facing").GetString());
+    }
+
+    [Fact]
+    public void AstralControlledResultConsumesTheAcceptedStaticContractWithoutImportingScriptBodies()
+    {
+        var document = SampleDocument();
+        var definition = Assert.IsType<OriginalMapImportAccepted>(Admit(document)).Definition.AstralAcceptance!;
+        string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+            "../../../../../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json"));
+        using JsonDocument fixture = JsonDocument.Parse(File.ReadAllText(path));
+        JsonElement source = fixture.RootElement.GetProperty("static");
+        var interaction = source.GetProperty("routeGraph").GetProperty("segments").EnumerateArray()
+            .Single(row => row.GetProperty("id").GetString() == "map19-astral-prompt-and-acceptance");
+        Assert.Equal(interaction.GetProperty("entity").GetInt32(), definition.Actor.Identity.OneBasedRecordOrdinal + 127);
+        Assert.Equal(new MapPosition(interaction.GetProperty("player")[0].GetInt32(),
+            interaction.GetProperty("player")[1].GetInt32()), definition.InteractionPosition);
+        Assert.Equal("UP", interaction.GetProperty("facing").GetString());
+        Assert.Equal((byte)1, definition.InteractionOpaqueFacing);
+        Assert.Equal(interaction.GetProperty("programs").EnumerateArray().Select(row => row.GetString()),
+            new[] { definition.PromptProgramIdentity, definition.AcceptanceProgramIdentity });
+        Assert.Equal(interaction.GetProperty("setFlags").EnumerateArray().Select(row => row.GetInt32()),
+            new[] { definition.ProgramCompletionFlag, definition.HandlerCompletionFlag });
+        var prompt = source.GetProperty("programs").GetProperty(definition.PromptProgramIdentity)
+            .GetProperty("operations").EnumerateArray().Select(row => row.GetString()).ToArray();
+        int promptIndex = Array.IndexOf(prompt, "yesNo");
+        int branchIndex = Array.IndexOf(prompt, "jumpIfFlagSet 89,cs_52F40");
+        Assert.True(promptIndex >= 0 && branchIndex >= 0);
+        Assert.True(promptIndex < branchIndex);
+        var accepted = source.GetProperty("programs").GetProperty(definition.AcceptanceProgramIdentity);
+        Assert.Contains($"setPos 140,{definition.AcceptedActorEndpoint.X},{definition.AcceptedActorEndpoint.Y},LEFT",
+            accepted.GetProperty("operations").EnumerateArray().Select(row => row.GetString()));
+        Assert.Equal((byte)2, definition.AcceptedActorOpaqueFacing);
+        Assert.Equal(new[] { definition.ProgramCompletionFlag },
+            accepted.GetProperty("semantics").GetProperty("setFlags").EnumerateArray().Select(row => row.GetInt32()));
+        Assert.DoesNotContain(ResourceArray(document, "standaloneScriptPrograms").OfType<JsonObject>(),
+            row => row["id"]!.GetValue<string>() == definition.AcceptanceProgramIdentity);
+    }
+
+    [Theory]
+    [InlineData("entity", 139)]
+    [InlineData("flags", 0)]
+    [InlineData("relativeOffset", 244)]
+    public void AstralRejectsAnUnboundEventEntry(string field, int value)
+    {
+        var document = SampleDocument();
+        var handler = ResourceArray(document, "entityEventHandlers").OfType<JsonObject>()
+            .Single(row => row["id"]!.GetValue<string>() == "ms_map19_EntityEvents");
+        handler["records"]![12]![field] = value;
+        Assert.IsType<OriginalMapImportRejected>(Admit(document));
     }
 
     [Theory]

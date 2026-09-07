@@ -1284,6 +1284,114 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
+    [Fact]
+    public void AstralAcceptanceReleasesTheOccupiedPassageOnceAndSurvivesRoyalTravel()
+    {
+        GameSession session = ReachAstral(faceActor: false);
+        var before = session.PrivateOriginalMapSnapshot;
+        var bridge = session.PrivateOriginalMapBattleBridge;
+        Assert.Equal(new MapPosition(16, 6), before.PlayerPosition);
+        Assert.Equal((byte)2, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        Assert.True(before.AstralOccupiesRouteTile);
+        Assert.True(before.MessengerAcceptance!.Accepted);
+        var blocked = FinishMove(session, ExplorationDirection.North);
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByOccupiedEntity, blocked.Move.Traversal.Outcome);
+        Assert.Equal(before.PlayerPosition, blocked.Move.Snapshot.PlayerPosition);
+        Assert.Equal((byte)1, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        var animation = session.PrivateOriginalMapPlayerLocomotion;
+        var accepted = Assert.IsType<PrivateOriginalMapAstralAcceptanceApplied>(
+            session.RequestPrivateOriginalMapInteraction(session.PrivateOriginalMapSnapshot.SimulationStep));
+        var completion = Assert.IsType<PrivateOriginalMapAstralAcceptanceState>(accepted.Snapshot.AstralAcceptance);
+        Assert.Equal(blocked.Move.Snapshot.SimulationStep + 1, completion.SimulationStep);
+        Assert.True(completion.HandlerFlag607Set && completion.ProgramFlag608Set);
+        Assert.False(accepted.Snapshot.AstralOccupiesRouteTile);
+        Assert.Same(before.PalaceFirstVisit, accepted.Snapshot.PalaceFirstVisit);
+        Assert.Same(before.MessengerAcceptance, accepted.Snapshot.MessengerAcceptance);
+        Assert.Same(before.CastleGate, accepted.Snapshot.CastleGate);
+        Assert.Same(before.EntityPopulation, accepted.Snapshot.EntityPopulation);
+        Assert.Equal(new MapPosition(16, 5), accepted.Snapshot.EntityPopulation.Records[12].Position);
+        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        AssertAstralRejected(session, accepted.Snapshot.SimulationStep,
+            PrivateOriginalMapAstralAcceptanceFailureCode.AlreadyCompleted);
+        Assert.Equal(new MapPosition(16, 5), FinishMove(session, ExplorationDirection.North).Move.Snapshot.PlayerPosition);
+        FinishMove(session, ExplorationDirection.South);
+        foreach (var direction in new[]
+        {
+            ExplorationDirection.East, ExplorationDirection.South,
+            ExplorationDirection.East, ExplorationDirection.East, ExplorationDirection.East, ExplorationDirection.East,
+            ExplorationDirection.North, ExplorationDirection.North, ExplorationDirection.East,
+            ExplorationDirection.North, ExplorationDirection.East,
+        }) FinishMove(session, direction);
+        Assert.Equal(new MapId("map20"), session.PrivateOriginalMapSnapshot.Map);
+        Assert.Same(completion, session.PrivateOriginalMapSnapshot.AstralAcceptance);
+        Assert.Same(before.PalaceFirstVisit, session.PrivateOriginalMapSnapshot.PalaceFirstVisit);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        var restarted = Start(before.Definition).PrivateOriginalMapSnapshot;
+        Assert.Null(restarted.AstralAcceptance);
+        Assert.False(restarted.AstralOccupiesRouteTile);
+    }
+
+    [Theory]
+    [InlineData("stale", PrivateOriginalMapAstralAcceptanceFailureCode.StaleSimulationStep)]
+    [InlineData("facing", PrivateOriginalMapAstralAcceptanceFailureCode.InteractionTargetMismatch)]
+    [InlineData("position", PrivateOriginalMapAstralAcceptanceFailureCode.InteractionTargetMismatch)]
+    [InlineData("busy", PrivateOriginalMapAstralAcceptanceFailureCode.LocomotionBusy)]
+    [InlineData("before-visit", PrivateOriginalMapAstralAcceptanceFailureCode.InteractionTargetMismatch)]
+    public void AstralAcceptanceRejectsInvalidRequestsWithoutMutation(
+        string scenario, PrivateOriginalMapAstralAcceptanceFailureCode code)
+    {
+        GameSession session = scenario == "before-visit" ? ReachPalaceEntry() : ReachAstral(scenario != "facing");
+        if (scenario == "before-visit")
+        {
+            // Reuse the admitted catalog in a controlled test seed before any palace result.
+            var before = session.PrivateOriginalMapSnapshot;
+            var map19 = before.Definition.RuntimeCatalog.Resolve(new MapId("map19"));
+            var seeded = new PrivateOriginalMapSessionSnapshot(before.Definition, before.Receipt, map19.WorkingLayout,
+                before.SimulationStep + 1, new(16, 6),
+                map19.Traversal.TryMove(map19.WorkingLayout, new(16, 7), ExplorationDirection.North), false, null,
+                zone601: before.Zone601, sarah: before.Sarah, entity142: before.Entity142,
+                messengerAcceptance: before.MessengerAcceptance, castleGate: before.CastleGate, currentRuntime: map19);
+            typeof(GameSession).GetField("_privateOriginalMapSnapshot",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.SetValue(session, seeded);
+        }
+        if (scenario == "position") FinishMove(session, ExplorationDirection.South);
+        if (scenario == "busy") session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.East));
+        AssertAstralRejected(session, session.PrivateOriginalMapSnapshot.SimulationStep + (scenario == "stale" ? 1 : 0), code);
+    }
+
+    private static void AssertAstralRejected(GameSession session, long step,
+        PrivateOriginalMapAstralAcceptanceFailureCode code)
+    {
+        var before = session.PrivateOriginalMapSnapshot;
+        var animation = session.PrivateOriginalMapPlayerLocomotion;
+        var bridge = session.PrivateOriginalMapBattleBridge;
+        var result = Assert.IsType<PrivateOriginalMapAstralAcceptanceRejected>(session.RequestPrivateOriginalMapInteraction(step));
+        Assert.Equal(code, result.Code);
+        Assert.Same(before, result.Snapshot);
+        Assert.Same(before, session.PrivateOriginalMapSnapshot);
+        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+    }
+
+    private static GameSession ReachAstral(bool faceActor)
+    {
+        GameSession session = ReachPalaceEntry();
+        Assert.IsType<PrivateOriginalMapPalaceFirstVisitApplied>(
+            session.RequestPrivateOriginalMapInteraction(session.PrivateOriginalMapSnapshot.SimulationStep));
+        FinishMove(session, ExplorationDirection.North);
+        FinishMove(session, ExplorationDirection.North);
+        foreach (var direction in new[]
+        {
+            ExplorationDirection.West, ExplorationDirection.South, ExplorationDirection.West,
+            ExplorationDirection.South, ExplorationDirection.South,
+            ExplorationDirection.West, ExplorationDirection.West, ExplorationDirection.West, ExplorationDirection.West,
+            ExplorationDirection.North, ExplorationDirection.West,
+        }) FinishMove(session, direction);
+        if (faceActor) FinishMove(session, ExplorationDirection.North);
+        return session;
+    }
+
     private static PrivateOriginalMapPlayerLocomotionStarted FinishMove(GameSession session, ExplorationDirection direction)
     {
         var started = session.BeginPrivateOriginalMapPlayerLocomotion(new MoveExplorationCommand(direction));
@@ -2888,7 +2996,8 @@ public sealed class OriginalMapGameSessionTests
             northTransition,
             runtimeCatalog.Records.Count == 1 ? null : definition.RoyalMap20Transition,
             runtimeCatalog.Records.Count == 1 ? null : definition.PalaceFirstVisit,
-            runtimeCatalog.Records.Count == 1 ? null : definition.RoyalReturnMap19Transition);
+            runtimeCatalog.Records.Count == 1 ? null : definition.RoyalReturnMap19Transition,
+            runtimeCatalog.Records.Count == 1 ? null : new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]));
 
     private static OriginalMapImportAccepted Accepted(
         OriginalMapImportDefinition? definition = null,
@@ -3011,7 +3120,8 @@ public sealed class OriginalMapGameSessionTests
             AcceptedOriginalMapRuntimeCatalog.NorthTransition(),
             AcceptedOriginalMapRuntimeCatalog.RoyalTransition(),
             omitPalaceFirstVisit ? null : palaceFirstVisit ?? AcceptedOriginalMapPalaceFirstVisit.Create(),
-            omitRoyalReturn ? null : royalReturn ?? AcceptedOriginalMapRuntimeCatalog.RoyalReturn());
+            omitRoyalReturn ? null : royalReturn ?? AcceptedOriginalMapRuntimeCatalog.RoyalReturn(),
+            new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]));
     }
 
     private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
@@ -3612,6 +3722,9 @@ internal static class AcceptedOriginalMapRuntimeCatalog
                     ? [0, 0, 0, 0]
                     : [0xFF, checked((byte)(index + 1)), 2, 1]))
             .ToArray();
+        // Add only the public actor facts consumed by the Astral interaction; keep the population denominator.
+        entities[8] = new(new("ms_map19_Entities", 9), 9, 2, 0, 9, [0xFF, 9, 2, 1]);
+        entities[12] = new(new("ms_map19_Entities", 13), 16, 5, 3, 209, [0, 4, 0x60, 0xCE]);
         OriginalMapEntityPopulation population = new(
             map,
             new MapSetupId(OriginalMapRuntimeAdmission.Map19SelectedSetupId),

@@ -174,6 +174,48 @@ public sealed class PrivateOriginalMapTraversalViewportTests
                 cell => cell.MapX == 41 && cell.MapY == 13).Category);
     }
 
+    [Fact]
+    public void AstralMarkerFollowsApplicationOccupancyAndRetiresAfterAcceptance()
+    {
+        var ready = AstralSnapshot(completed: false);
+        var visible = PrivateOriginalMapTraversalViewProjection.Create(ready);
+        var actor = Assert.Single(visible.Cells, cell => cell.IsAstral);
+        Assert.Equal((16, 5), (actor.MapX, actor.MapY));
+        Assert.False(actor.IsPlayer);
+        var completed = PrivateOriginalMapTraversalViewProjection.Create(AstralSnapshot(completed: true));
+        Assert.DoesNotContain(completed.Cells, cell => cell.IsAstral);
+        Assert.Single(completed.Cells, cell => cell.IsPlayer);
+    }
+
+    internal static PrivateOriginalMapSessionSnapshot AstralSnapshot(bool completed)
+    {
+        var basis = Snapshot(new ushort[WorkingMapLayout.WordCount], new MapPosition(16, 6), new OriginalMapTraversalArea(0, 0, 63, 63));
+        MapId map = new("map19");
+        var actors = Enumerable.Range(1, 13).Select(ordinal => new OriginalMapEntityDefinition(
+            new("ms_map19_Entities", ordinal), ordinal == 13 ? (byte)16 : (byte)1,
+            ordinal == 13 ? (byte)5 : (byte)1, 3, 209, [0, 4, 0x60, 0xCE])).ToArray();
+        var population = new OriginalMapEntityPopulation(map, new("ms_map19"), actors);
+        var runtime = new OriginalMapExplorationRuntimeDefinition(map, basis.WorkingLayout, basis.Definition.BlockCatalog,
+            basis.Definition.AreaCatalog, population, new("ms_map19"), "ms_map19_InitFunction",
+            basis.Definition.InitialRuntime.DecodedLayoutDigest, basis.Definition.InitialRuntime.CollisionProjectionDigest);
+        var palace = new OriginalMapPalaceFirstVisitDefinition(OriginalMapRuntimeAdmission.PalaceInitBodySha256,
+            OriginalMapRuntimeAdmission.PalaceScriptProjectionSha256);
+        var astral = new OriginalMapAstralAcceptanceDefinition(population.Records[12]);
+        var definition = new OriginalMapImportDefinition(basis.Definition.Map, basis.WorkingLayout,
+            basis.Definition.BlockCatalog, basis.Definition.AreaCatalog, basis.EntityPopulation,
+            basis.Definition.VisualResourceSelection, basis.Definition.ControlledAdmission,
+            null, null, basis.Definition.UnsupportedCapabilities, runtimeCatalog: new([basis.Definition.InitialRuntime, runtime]),
+            palaceFirstVisit: palace, astralAcceptance: astral);
+        T Construct<T>(params object[] args) => (T)Activator.CreateInstance(typeof(T),
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+            binder: null, args: args, culture: null)!;
+        var visit = Construct<PrivateOriginalMapPalaceFirstVisitReceipt>(palace, 1L);
+        var state = completed ? Construct<PrivateOriginalMapAstralAcceptanceState>(astral, 2L) : null;
+        return new(definition, basis.Receipt, runtime.WorkingLayout, 3, new(16, 6),
+            runtime.Traversal.TryMove(runtime.WorkingLayout, new(16, 7), ExplorationDirection.North), false, null,
+            currentRuntime: runtime, palaceFirstVisit: visit, astralAcceptance: state);
+    }
+
     private static int Count(
         PrivateOriginalMapTraversalViewProjection projection,
         PrivateOriginalMapTraversalCellCategory category) =>
