@@ -61,7 +61,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             Move(ExplorationDirection.West);
             Require(_session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(4, 37), "Middle route second Left");
             Move(ExplorationDirection.West);
-            await CaptureMiddleTowerDiagnostic();
+            await CaptureMiddleTowerArrival();
             ApplyGuardF(expectApplied: false); // Actual composition rejection at (3,16).
             Move(ExplorationDirection.East);
             _presenter.Project(_session.PrivateOriginalMapSnapshot, "Controlled guard approach", _session.PrivateOriginalMapPlayerLocomotion);
@@ -212,7 +212,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             width = image.GetWidth(), height = image.GetHeight() });
     }
 
-    private async Task CaptureMiddleTowerDiagnostic()
+    private async Task CaptureMiddleTowerArrival()
     {
         var snapshot = _session.PrivateOriginalMapSnapshot;
         var movement = _session.PrivateOriginalMapPlayerLocomotion;
@@ -231,36 +231,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             snapshot.AstralAcceptance?.HandlerFlag607Set == true && snapshot.AstralAcceptance.ProgramFlag608Set,
             "Retained controlled route completion");
         _presenter.Project(snapshot, "Controlled native visual review", movement);
-        var baseViewport = Field<PrivateOriginalMapBaseViewport>(_presenter, "_baseViewport");
-        var traversalViewport = Field<PrivateOriginalMapTraversalViewport>(_presenter, "_viewport");
-        var projection = traversalViewport.Projection!;
-        Require(!baseViewport.Visible && traversalViewport.Visible && projection.Map == snapshot.Map,
-            "Map21 visible diagnostic and hidden castle atlas");
-        var player = projection.Cells.Single(cell => cell.IsPlayer);
-        Require(player.MapX == 3 && player.MapY == 16 && player.Column == 3 && player.Row == 3 &&
-            projection.OriginX == 0 && projection.OriginY == 13, "Map21 visible player and diagnostic crop");
-        var statusLabel = Field<Label>(_presenter, "_status");
-        Require(statusLabel.Position.Y >= traversalViewport.Position.Y +
-            PrivateOriginalMapTraversalViewProjection.RowCount * 48, "Map21 status does not overlap the diagnostic grid");
-        string status = statusLabel.Text;
-        Require(status.StartsWith("Middle tower Map 21 reached.", StringComparison.Ordinal) &&
-            status.Contains("Diagnostic traversal", StringComparison.Ordinal) &&
-            status.Contains("init not executed", StringComparison.Ordinal) &&
-            !status.Contains("F ", StringComparison.Ordinal), "Map21 diagnostic status");
-        await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
-        using Image image = GetViewport().GetTexture().GetImage();
-        Require(!image.IsEmpty() && image.GetWidth() >= 960 && image.GetHeight() >= 540, "Native Map21 viewport");
-        const string name = "07-map21-diagnostic";
-        Require(image.SavePng(Path.Combine(_output, name + ".png")) == Error.Ok, "Map21 PNG write");
-        _frames.Add(new { name, map = snapshot.Map.Value, selectionMap = snapshot.CurrentRuntime.VisualResourceSelection.Map.Value,
-            area = snapshot.CurrentArea.OneBasedRecordOrdinal, layout = snapshot.CurrentRuntime.DecodedLayoutDigest,
-            baseVisible = baseViewport.Visible, traversalVisible = traversalViewport.Visible, status, statusY = statusLabel.Position.Y,
-            sourceMap = receipt!.RecordIdentity.SourceMap.Value, sourceRecord = receipt.RecordIdentity.OneBasedRecordOrdinal,
-            sourceX = receipt.Source.X, sourceY = receipt.Source.Y, triggerX = receipt.Trigger.X, triggerY = receipt.Trigger.Y,
-            facing = movement.OpaqueFacing, phase = movement.Phase.ToString(),
-            cameraOriginX = projection.OriginX, cameraOriginY = projection.OriginY,
-            playerColumn = player.Column, playerRow = player.Row, playerX = player.MapX, playerY = player.MapY,
-            width = image.GetWidth(), height = image.GetHeight() });
+        await CaptureGuard("07-map21-base-atlas", new(3, 16), new(5, 16), completed: false, arrival: true);
     }
 
     private void ApplyGuardF(bool expectApplied)
@@ -288,25 +259,49 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             "Actual composition F commits only the controlled guard result");
     }
 
-    private async Task CaptureGuard(string name, MapPosition playerPosition, MapPosition guardPosition, bool completed)
+    private async Task CaptureGuard(
+        string name, MapPosition playerPosition, MapPosition guardPosition, bool completed, bool arrival = false)
     {
         var snapshot = _session.PrivateOriginalMapSnapshot;
+        var movement = _session.PrivateOriginalMapPlayerLocomotion;
         var traversal = Field<PrivateOriginalMapTraversalViewport>(_presenter, "_viewport");
         var baseViewport = Field<PrivateOriginalMapBaseViewport>(_presenter, "_baseViewport");
-        var projection = traversal.Projection!;
-        Require(traversal.Visible && !baseViewport.Visible && projection.Map == new MapId("map21") &&
+        var projection = _presenter.BaseProjection!;
+        Require(!traversal.Visible && baseViewport.Visible && projection.Map == new MapId("map21") &&
             snapshot.PlayerPosition == playerPosition && snapshot.MiddleTowerGuardPosition == guardPosition &&
-            (snapshot.MiddleTowerGuard is not null) == completed, "Visible guard runtime/diagnostic state");
-        var player = projection.Cells.Single(cell => cell.IsPlayer);
-        var guard = projection.Cells.Single(cell => cell.IsMiddleTowerGuard);
-        Require(player.MapX == playerPosition.X && player.MapY == playerPosition.Y &&
-            guard.MapX == guardPosition.X && guard.MapY == guardPosition.Y && !guard.IsPlayer && !guard.IsAstral,
-            "Actual player and undirected guard marker match Application positions");
+            (snapshot.MiddleTowerGuard is not null) == completed &&
+            OriginalMapRuntimeAdmission.HasExactAcceptedMap21Runtime(snapshot.CurrentRuntime),
+            "Visible guard runtime and exact Map21 base atlas");
+        Require(_presenter.BaseAtlasAssetId == PrivateLocalPresentationAssetCatalog.Map21BaseAtlasAssetId &&
+            _presenter.BaseAtlasBucketDigest == (_presenter.BaseAtlasScale == 2
+                ? PrivateLocalPresentationAssetCatalog.Map21BaseAtlas2xDigest
+                : PrivateLocalPresentationAssetCatalog.Map21BaseAtlas4xDigest) &&
+            _presenter.UsesRequiredBaseAtlasSampling, "Map21 family and nearest bucket binding");
+        Require(!projection.StaticOverlayDiagnostic && !projection.CurrentAreaOverlay &&
+            _presenter.Entity142DiagnosticProjection is null, "Map3 overlays and actors remain scoped");
+        var camera = projection.Camera!;
+        Require(!movement.IsMoving && camera.FocusPixelX == playerPosition.X * 24 &&
+            camera.FocusPixelY == playerPosition.Y * 24 &&
+            camera.OriginX == Math.Clamp(playerPosition.X - 6, 0, 64 - 12) &&
+            camera.OriginY == Math.Clamp(playerPosition.Y - 3, 0, 64 - 7),
+            "Map21 settled camera uses the current player destination");
+        var player = PrivateOriginalMapBaseViewport.PlayerLocomotionRect(projection, movement);
+        Require(player.Position == new Vector2(camera.PlayerPixelX, camera.PlayerPixelY),
+            "Player drawing uses the current camera");
+        var guard = baseViewport.LiveRouteActorProjection!.Actors.Single();
+        Require(guard.Kind == PrivateMap3LiveRouteActorGlyphKind.MiddleTowerGuardDiamond &&
+            guard.LogicalActorId == 128 && guard.Position == guardPosition &&
+            guard.SourceRecord == snapshot.Definition.MiddleTowerGuard!.Actor.Identity &&
+            guard.DestinationRect.Position == new Vector2(guardPosition.X * 24 - camera.TopLeftPixelX + 5,
+                guardPosition.Y * 24 - camera.TopLeftPixelY + 5),
+            "Live guard diamond uses current occupancy within the current camera");
         var label = Field<Label>(_presenter, "_status");
-        Require(label.Position.Y >= traversal.Position.Y + PrivateOriginalMapTraversalViewProjection.RowCount * 48 &&
-            (completed ? label.Text.StartsWith("Guard moved; passage open.", StringComparison.Ordinal) :
-                label.Text.StartsWith("F apply controlled guard result", StringComparison.Ordinal)),
-            "Actual F action/status is readable below the grid");
+        Require(label.Position.Y >= baseViewport.Position.Y + PrivateOriginalMapBaseViewProjection.PixelHeight &&
+            label.Text.StartsWith(arrival ? "Middle tower Map 21 reached." :
+                completed ? "Guard moved; passage open." : "F apply controlled guard result",
+                StringComparison.Ordinal), "Current action/status is readable below the base viewport");
+        if (arrival) Require(label.Text.Contains("init not executed", StringComparison.Ordinal) &&
+            !label.Text.Contains("F ", StringComparison.Ordinal), "Arrival keeps the controlled boundary");
         Require(snapshot.Definition.MiddleTowerGuard!.Actor.Position == new MapPosition(5, 16) &&
             snapshot.Definition.MiddleTowerGuard.Actor.OpaqueFacing == 3, "Immutable guard source retained");
         if (completed)
@@ -316,9 +311,34 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         using Image image = GetViewport().GetTexture().GetImage();
         Require(!image.IsEmpty() && image.GetWidth() >= 960 && image.GetHeight() >= 540, "Native guard image");
         Require(image.SavePng(Path.Combine(_output, name + ".png")) == Error.Ok, "Native guard PNG write");
-        _frames.Add(new { name, map = snapshot.Map.Value, area = snapshot.CurrentArea.OneBasedRecordOrdinal,
-            playerX = player.MapX, playerY = player.MapY, guardX = guard.MapX, guardY = guard.MapY,
-            completed, facing = _session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing, status = label.Text, statusY = label.Position.Y,
+        // Sample inside the actual rendered diamond, where the old facing line would have appeared.
+        Transform2D localToImage = baseViewport.GetViewportTransform() * baseViewport.GetGlobalTransform();
+        List<object> guardPixels = [];
+        foreach (Vector2 offset in new[] { Vector2.Zero, new Vector2(0, 3) })
+        {
+            Vector2 sample = localToImage * (guard.DestinationRect.GetCenter() + offset);
+            int x = (int)Math.Round(sample.X), y = (int)Math.Round(sample.Y);
+            Color color = image.GetPixel(x, y);
+            Color purple = new("b5a0ff");
+            Require(Math.Abs(color.R - purple.R) < 0.01f && Math.Abs(color.G - purple.G) < 0.01f &&
+                Math.Abs(color.B - purple.B) < 0.01f, "Actual guard diamond has no source-facing line");
+            guardPixels.Add(new { x, y, rgba = color.ToHtml() });
+        }
+        var receipt = snapshot.LastCrossMapTransition;
+        Require(arrival ? receipt is not null : receipt is null,
+            "Only the arrival operation retains the cross-map receipt");
+        _frames.Add(new { name, map = snapshot.Map.Value, selectionMap = snapshot.CurrentRuntime.VisualResourceSelection.Map.Value,
+            area = snapshot.CurrentArea.OneBasedRecordOrdinal, layout = snapshot.CurrentRuntime.DecodedLayoutDigest,
+            atlas = _presenter.BaseAtlasAssetId, digest = _presenter.BaseAtlasBucketDigest,
+            cameraOriginX = camera.OriginX, cameraOriginY = camera.OriginY,
+            cameraFocusX = camera.FocusPixelX, cameraFocusY = camera.FocusPixelY,
+            playerPixelX = player.Position.X, playerPixelY = player.Position.Y,
+            playerX = playerPosition.X, playerY = playerPosition.Y, guardX = guard.Position.X, guardY = guard.Position.Y,
+            guardKind = guard.Kind.ToString(), guardPixels,
+            completed, facing = movement.OpaqueFacing, phase = movement.Phase.ToString(),
+            status = label.Text, statusY = label.Position.Y,
+            sourceMap = receipt?.RecordIdentity.SourceMap.Value, sourceRecord = receipt?.RecordIdentity.OneBasedRecordOrdinal,
+            sourceX = receipt?.Source.X, sourceY = receipt?.Source.Y, triggerX = receipt?.Trigger.X, triggerY = receipt?.Trigger.Y,
             sourceHandler = snapshot.Definition.MiddleTowerGuard.HandlerIdentity, textId = snapshot.Definition.MiddleTowerGuard.TextId,
             sourceProgram = snapshot.Definition.MiddleTowerGuard.ProgramIdentity,
             handler256 = snapshot.MiddleTowerGuard?.HandlerFlag256Set == true,

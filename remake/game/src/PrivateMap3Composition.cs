@@ -96,6 +96,7 @@ public sealed partial class Map3Root
         PrivateLocalPresentationRasterMount? tacticalCursor = null;
         PrivateLocalPresentationRasterMount? baseAtlas = null;
         PrivateLocalPresentationRasterMount? castleAtlas = null;
+        PrivateLocalPresentationRasterMount? map21Atlas = null;
         PrivateLocalPresentationRasterMount? playerReference = null;
         PrivateLocalPlayerLocomotionMount? playerLocomotion = null;
         PrivateLocalPresentationRasterMount? entity142Diagnostic = null;
@@ -108,6 +109,7 @@ public sealed partial class Map3Root
                 out tacticalCursor,
                 out baseAtlas,
                 out castleAtlas,
+                out map21Atlas,
                 out playerReference,
                 out playerLocomotion,
                 out entity142Diagnostic))
@@ -125,6 +127,7 @@ public sealed partial class Map3Root
                 tacticalCursor,
                 baseAtlas,
                 castleAtlas,
+                map21Atlas,
                 playerReference,
                 playerLocomotion,
                 entity142Diagnostic,
@@ -179,6 +182,7 @@ public sealed partial class Map3Root
         PrivateLocalPresentationRasterMount? tacticalCursor,
         PrivateLocalPresentationRasterMount? baseAtlas,
         PrivateLocalPresentationRasterMount? castleAtlas,
+        PrivateLocalPresentationRasterMount? map21Atlas,
         PrivateLocalPresentationRasterMount? playerReference,
         PrivateLocalPlayerLocomotionMount? playerLocomotion,
         PrivateLocalPresentationRasterMount? entity142Diagnostic,
@@ -235,6 +239,7 @@ public sealed partial class Map3Root
             !presenter.TryBindBaseAtlas(
                 baseAtlas,
                 castleAtlas!,
+                map21Atlas!,
                 started.Session.PrivateOriginalMapSnapshot,
                 out PrivateLocalPresentationAssetMountDiagnostic? atlasDiagnostic))
         {
@@ -306,6 +311,7 @@ public sealed partial class Map3Root
         out PrivateLocalPresentationRasterMount? tacticalCursor,
         out PrivateLocalPresentationRasterMount? baseAtlas,
         out PrivateLocalPresentationRasterMount? castleAtlas,
+        out PrivateLocalPresentationRasterMount? map21Atlas,
         out PrivateLocalPresentationRasterMount? playerReference,
         out PrivateLocalPlayerLocomotionMount? playerLocomotion,
         out PrivateLocalPresentationRasterMount? entity142Diagnostic)
@@ -314,6 +320,7 @@ public sealed partial class Map3Root
         tacticalCursor = null;
         baseAtlas = null;
         castleAtlas = null;
+        map21Atlas = null;
         playerReference = null;
         playerLocomotion = null;
         entity142Diagnostic = null;
@@ -428,6 +435,21 @@ public sealed partial class Map3Root
             }
 
             castleAtlas = mountedCastle.Asset;
+
+            PrivateLocalPresentationAssetMountResult map21Result =
+                catalog.MountMap21BaseAtlas(packRequest, acceptedPack, effectivePhysicalScale);
+            if (map21Result is not PrivateLocalPresentationAssetMounted mountedMap21)
+            {
+                PrivateLocalPresentationAssetMountRejected rejected =
+                    (PrivateLocalPresentationAssetMountRejected)map21Result;
+                FailPrivateStartup(
+                    $"PrivateLocal Map 21 base atlas unavailable ({rejected.Diagnostic.Code}).",
+                    selection.PrivateSmokeRequested,
+                    "private-local");
+                return false;
+            }
+
+            map21Atlas = mountedMap21.Asset;
 
             PrivateLocalPresentationAssetMountResult playerResult =
                 catalog.MountMap3PlayerReference(

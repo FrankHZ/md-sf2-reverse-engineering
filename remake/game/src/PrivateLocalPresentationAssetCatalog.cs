@@ -88,6 +88,11 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         "5637109BA25AFD5297BCDDE73D108DCA5D795E5A208E344ED3FEA93FA1C96355";
     internal const string CastleBaseAtlas4xDigest =
         "8C594E3C6DA3EEF570A33E4842F3F2611F734BFEBAD138E04A74A128E24F2161";
+    internal const string Map21BaseAtlasAssetId = "world.map21.base-tileset-atlas";
+    internal const string Map21BaseAtlas2xDigest =
+        "74BD8432C5353761BAD2EA382CE07321D576BC83B7DCB31D27786A091211A51C";
+    internal const string Map21BaseAtlas4xDigest =
+        "61959F00029BBAB322367B356FA61286584AA3A9B8002AFB3978905886A3C297";
     internal const int Map3BaseAtlasLogicalWidth = 128;
     internal const int Map3BaseAtlasLogicalHeight = 320;
     internal const string Map3PlayerReferenceAssetId =
@@ -107,9 +112,9 @@ internal sealed class PrivateLocalPresentationAssetCatalog
     internal const int Map3Entity142ReferenceLogicalWidth = 48;
     internal const int Map3Entity142ReferenceLogicalHeight = 24;
     internal const string Map3AssetRepositoryCommit =
-        "9acff63cd3285be07736c07839034487327cf41c";
+        "c8dcc451e7210a1cd433865431151a1de62a1573";
     internal const string Map3AssetManifestDigest =
-        "81834D1787BAECD27BC1757E0A76E493310821AD9D6A2F60753F3F08963E144A";
+        "520E15367DAB8D6669AA9ABDE9279A33231D81AE3667DE851EACAD2CEB5A1146";
     internal const string Map3BaseAtlas2xDigest =
         "E974F59E15E493C29D871574299A46079EBA195BB4CC0B10FF37C2F310682A0A";
     internal const string Map3BaseAtlas4xDigest =
@@ -175,19 +180,25 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         LocalPresentationAssetPackRequest request,
         LocalPresentationAssetPackAccepted accepted,
         double effectivePhysicalScale) =>
-        MountBaseAtlas(request, accepted, effectivePhysicalScale, castle: false);
+        MountBaseAtlas(request, accepted, effectivePhysicalScale, Map3BaseAtlasAssetId);
 
     internal PrivateLocalPresentationAssetMountResult MountCastleBaseAtlas(
         LocalPresentationAssetPackRequest request,
         LocalPresentationAssetPackAccepted accepted,
         double effectivePhysicalScale) =>
-        MountBaseAtlas(request, accepted, effectivePhysicalScale, castle: true);
+        MountBaseAtlas(request, accepted, effectivePhysicalScale, CastleBaseAtlasAssetId);
+
+    internal PrivateLocalPresentationAssetMountResult MountMap21BaseAtlas(
+        LocalPresentationAssetPackRequest request,
+        LocalPresentationAssetPackAccepted accepted,
+        double effectivePhysicalScale) =>
+        MountBaseAtlas(request, accepted, effectivePhysicalScale, Map21BaseAtlasAssetId);
 
     private PrivateLocalPresentationAssetMountResult MountBaseAtlas(
         LocalPresentationAssetPackRequest request,
         LocalPresentationAssetPackAccepted accepted,
         double effectivePhysicalScale,
-        bool castle)
+        string assetId)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(accepted);
@@ -209,7 +220,7 @@ internal sealed class PrivateLocalPresentationAssetCatalog
             request,
             accepted,
             effectivePhysicalScale,
-            castle ? CastleBaseAtlasAssetId : Map3BaseAtlasAssetId,
+            assetId,
             Map3BaseAtlasLogicalWidth,
             Map3BaseAtlasLogicalHeight,
             "private base atlas");
@@ -219,7 +230,7 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         }
 
         LocalPresentationRasterBucket bucket = mounted.Asset.Bucket;
-        if (!IsExactBaseAtlasBinding(mounted.Asset.Definition, bucket, castle))
+        if (!IsExactBaseAtlasBinding(mounted.Asset.Definition, bucket, assetId))
         {
             return Reject(
                 PrivateLocalPresentationAssetMountFailureCode.PayloadMismatch,
@@ -406,32 +417,42 @@ internal sealed class PrivateLocalPresentationAssetCatalog
             ? Map3BaseAtlasAssetId
             : OriginalMapRuntimeAdmission.HasExactAcceptedCastleVisualResourceSelection(selection)
                 ? CastleBaseAtlasAssetId
-                : null;
+                : OriginalMapRuntimeAdmission.HasExactAcceptedMap21VisualResourceSelection(selection)
+                    ? Map21BaseAtlasAssetId
+                    : null;
 
     internal static bool IsExactMap3BaseAtlasBinding(
         LocalPresentationRasterAssetDefinition definition, LocalPresentationRasterBucket bucket) =>
-        IsExactBaseAtlasBinding(definition, bucket, castle: false);
+        IsExactBaseAtlasBinding(definition, bucket, Map3BaseAtlasAssetId);
 
     internal static bool IsExactCastleBaseAtlasBinding(
         LocalPresentationRasterAssetDefinition definition, LocalPresentationRasterBucket bucket) =>
-        IsExactBaseAtlasBinding(definition, bucket, castle: true);
+        IsExactBaseAtlasBinding(definition, bucket, CastleBaseAtlasAssetId);
+
+    internal static bool IsExactMap21BaseAtlasBinding(
+        LocalPresentationRasterAssetDefinition definition, LocalPresentationRasterBucket bucket) =>
+        IsExactBaseAtlasBinding(definition, bucket, Map21BaseAtlasAssetId);
 
     private static bool IsExactBaseAtlasBinding(
         LocalPresentationRasterAssetDefinition definition,
         LocalPresentationRasterBucket bucket,
-        bool castle)
+        string assetId)
     {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(bucket);
-        string? expectedDigest = bucket.Scale switch
+        string? expectedDigest = (assetId, bucket.Scale) switch
         {
-            2 => castle ? CastleBaseAtlas2xDigest : Map3BaseAtlas2xDigest,
-            4 => castle ? CastleBaseAtlas4xDigest : Map3BaseAtlas4xDigest,
+            (Map3BaseAtlasAssetId, 2) => Map3BaseAtlas2xDigest,
+            (Map3BaseAtlasAssetId, 4) => Map3BaseAtlas4xDigest,
+            (CastleBaseAtlasAssetId, 2) => CastleBaseAtlas2xDigest,
+            (CastleBaseAtlasAssetId, 4) => CastleBaseAtlas4xDigest,
+            (Map21BaseAtlasAssetId, 2) => Map21BaseAtlas2xDigest,
+            (Map21BaseAtlasAssetId, 4) => Map21BaseAtlas4xDigest,
             _ => null,
         };
         return string.Equals(
                 definition.AssetId,
-                castle ? CastleBaseAtlasAssetId : Map3BaseAtlasAssetId,
+                assetId,
                 StringComparison.Ordinal) &&
             definition.LogicalSize.Width == Map3BaseAtlasLogicalWidth &&
             definition.LogicalSize.Height == Map3BaseAtlasLogicalHeight &&

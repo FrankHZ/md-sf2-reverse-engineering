@@ -367,12 +367,12 @@ The destination runtime, working layout, area, receipt and `Relocated` locomotio
 Palace 605, caller 607/program 608, route objects and the manual battle bridge retain their identities.
 A fresh session returns to controlled Map 3 and clears these results.
 
-The fifth tileset differs from the castle atlas's 62. Map 21 has no admitted atlas: its explicit
-base-view launch hides the previous base viewport and displays the existing player-centered traversal
-diagnostic, with the player at `(3,16)` and crop `(0,13)`. The status identifies Map 21, the diagnostic,
-and unexecuted init. Only the exact admitted Map 21 runtime takes this branch; unknown or mismatched
-selections still reject. The prior six native camera/focus checks remain, with a seventh frame for
-the actual visible diagnostic, current runtime, area, player and source receipt.
+The fifth tileset differs from the castle atlas's 62. The explicit base-atlas launch binds the
+independently accepted Map 21 family, with the player at `(3,16)` and crop `(0,13)`. It reads the
+current runtime's working layout, blocks and area through the existing camera and locomotion policy.
+The status identifies the controlled arrival and unexecuted init. Traversal-only launches retain
+their diagnostic grid; missing or mismatched atlas inputs reject. The prior six native camera/focus
+checks remain, with a seventh frame for the visible Map 21 atlas, player and source receipt.
 
 The required canonical test in [Royal Route Acceptance Boundary](#royal-route-acceptance-boundary)
 extends its same controlled session by those three Left inputs and checks the destination, raw facing,
@@ -382,7 +382,7 @@ missing prerequisites, selection drift and reset. The
 committed production sources and one tracked probe; its initial Map 19 seed remains test-only.
 Arrival alone does not perform the guard interaction or set StoryFlag1; the following
 [controlled guard boundary](#controlled-map-21-middle-tower-guard) owns that explicit result.
-Map 21 init, NPC art, atlas creation, natural Battle 01 continuity, original presentation
+Map 21 init, NPC art, natural Battle 01 continuity, original presentation
 and H4 remain **Unsupported / Unknown**.
 
 ## Controlled Map 21 middle-tower guard
@@ -425,10 +425,10 @@ A new session clears the guard completion. General script, init, dialogue, chore
 resolution, other interactions, backtracking, Map 40, natural Battle 01 continuity and H4 remain
 **Unsupported / Unknown**.
 
-Map 21 keeps its explicit traversal diagnostic. The guard uses the existing authored diamond without
-a direction claim; it follows the Application occupancy before and after F. The available F action
-appears first below the grid, then changes to the controlled completion status. No original NPC art
-or atlas is admitted. The required canonical test continues its existing seeded route through F,
+Map 21's base-atlas and traversal-only views use an authored diamond without a direction line;
+it follows the Application occupancy before and after F. The available F action appears first below
+the active viewport, then changes to the controlled completion status. No original NPC art is
+admitted. The required canonical test continues its existing seeded route through F,
 both occupancy checks and ordinary movement, including the retained historical Sarah 256 receipt.
 Public checks cover exact event joins, immutable actor facts, source-port admission, zero-mutation
 rejections, current-map retention and reset. The existing Map 3 busy bridge test also rejects the
@@ -437,10 +437,10 @@ direct guard command without inventing a Map 21 battle state.
 The [native review recipe](./presentation-and-assets.md#reproduce-the-bounded-native-image-review)
 adds before-F, after-F and walk-endpoint images. It invokes the production
 `Map3Root.ApplyPrivateInteractionRequest` adapter through test-only reflection, including wrong-position
-and duplicate F rejection, and checks the actual visible marker, player, status and grid separation.
+and duplicate F rejection, and checks the actual atlas, marker pixels, player, status and viewport separation.
 The initial Map 19 state remains explicitly seeded; it does not establish natural route continuity.
 
-## Fixed Map 21 atlas candidate
+## Fixed Map 21 atlas and consumer
 
 The maintained `build_map21_base_atlas_candidate` API and `map21-base-atlas-candidate` command
 reuse the existing fixed-family builder for palette 0 / `[6,23,44,53,8]`. They validate both
@@ -450,22 +450,22 @@ asset-cache directory after the existing two-pass determinism and rollback check
 identifies Map 21, palette 0, ordered slots and all fixed inputs; the castle slot 62 is not admitted.
 
 The [derivation owner](./presentation-and-assets.md#deterministic-derivation-and-cache) records
-the reproducible command and source-bundle format. Candidate generation does not accept a new
-asset pack, bind a consumer or change the diagnostic guard view. Independent local pixel review
-and asset acceptance still precede the consumer slice.
+the reproducible command and source-bundle format. The local asset transaction has passed independent
+pixel review and acceptance. The consumer binds its exact Map 21 ID, palette/slot selection and
+2x/4x digests from the accepted full pack. Candidate generation alone never promotes an asset.
+Required private checks exercise both real buckets and reject missing or changed copies; public
+checks cover cross-family binding, current-map layout/area/camera and the scoped guard glyph.
 
 ## Ordered Queue
 
 The current Map 19/20 base consumer uses the accepted shared castle atlas with each runtime's
 explicit selection, working layout, blocks and area. It retains the camera/player policy, scopes
 Map 3 overlays and route actors, and shows the authored Astral marker only while the route is occupied.
+Map 21 switches to its independent atlas and retains the controlled undirected guard projection.
 The [native image review](./presentation-and-assets.md#reproduce-the-bounded-native-image-review)
 owns its ten-frame seeded projection check and the precise distinction from natural reach/H4.
 
-1. Independently review and accept the local Map 21 palette 0 / `[6,23,44,53,8]` atlas candidate
-   produced by the fixed-family builder above.
-2. Only after asset acceptance, add the Map 21 atlas consumer; retain the controlled guard behavior.
-3. Then assess a bounded Map 21-to-Map 40 exit and exact destination-runtime admission.
+1. Assess a bounded Map 21-to-Map 40 exit and exact destination-runtime admission.
    Natural map lifecycle and continuous Battle 01 admission remain separate acceptance work.
 
 ## Decision Rules

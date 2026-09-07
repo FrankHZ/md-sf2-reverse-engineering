@@ -26,7 +26,8 @@ public sealed class PrivateOriginalMapBaseViewportTests
     [Theory]
     [InlineData("map19")]
     [InlineData("map20")]
-    public void CastlePixelsUseCurrentRuntimeBlocksAreaAndWorkingLayout(string mapId)
+    [InlineData("map21")]
+    public void CastleAndMiddleTowerPixelsUseCurrentRuntimeBlocksAreaAndWorkingLayout(string mapId)
     {
         var basis = Snapshot([Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
             new ushort[WorkingMapLayout.WordCount]);
@@ -44,7 +45,7 @@ public sealed class PrivateOriginalMapBaseViewportTests
             Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
                 words.SelectMany(word => new[] { (byte)(word >> 8), (byte)word }).ToArray())),
             Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(new byte[WorkingMapLayout.WordCount])),
-            new(map, 0, [6, 23, 44, 53, 62]));
+            new(map, 0, [6, 23, 44, 53, (byte)(mapId == "map21" ? 8 : 62)]));
         var initial = basis.Definition;
         var definition = new OriginalMapImportDefinition(initial.Map, initial.WorkingLayout,
             initial.BlockCatalog, initial.AreaCatalog, initial.EntityPopulation, initial.VisualResourceSelection,
@@ -90,6 +91,36 @@ public sealed class PrivateOriginalMapBaseViewportTests
             Assert.Throws<ArgumentException>(() => PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
                 new(new("map20"), 0, [6, 23, 44, 53, 62]), BuildNearestAtlas(VisualDefinition(), 2), 2));
         }
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    public void MiddleTowerBaseUsesDestinationCameraAndOnlyTheUndirectedGuardGlyph(int scale)
+    {
+        var snapshot = PrivateOriginalMapTraversalViewportTests.CrossMapSnapshot(middleTower: true);
+        var movement = PrivateMap3CameraProjectionTests.Relocate(new(4, 37), new(3, 16));
+        var projection = PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+            snapshot.CurrentRuntime.VisualResourceSelection, BuildNearestAtlas(VisualDefinition(), scale),
+            scale, staticOverlayDiagnostic: true, playerLocomotion: movement);
+        Assert.Equal(new MapId("map21"), projection.Map);
+        Assert.Equal((0, 13), (projection.OriginX, projection.OriginY));
+        Assert.Equal((3 * 24, 16 * 24), (projection.Camera!.FocusPixelX, projection.Camera.FocusPixelY));
+        Assert.False(projection.StaticOverlayDiagnostic);
+        Assert.False(projection.CurrentAreaOverlay);
+        Assert.Equal(PrivateOriginalMapBaseViewport.PlayerReferenceRect(projection),
+            PrivateOriginalMapBaseViewport.PlayerLocomotionRect(projection, movement));
+        Assert.True(PrivateMap3Entity142DiagnosticProjection.TryCreate(snapshot, projection, out var entity));
+        Assert.Null(entity);
+        Assert.True(PrivateMap3LiveRouteActorGlyphProjection.TryCreate(snapshot, projection, out var actors));
+        var guard = Assert.Single(actors!.Actors);
+        Assert.Equal(PrivateMap3LiveRouteActorGlyphKind.MiddleTowerGuardDiamond, guard.Kind);
+        Assert.Equal(128, guard.LogicalActorId);
+        Assert.Equal(new MapPosition(5, 16), guard.Position);
+        Assert.Equal(snapshot.Definition.MiddleTowerGuard!.Actor.Identity, guard.SourceRecord);
+        Assert.Equal(new global::Godot.Rect2(5 * 24 + 5, 3 * 24 + 5, 14, 14), guard.DestinationRect);
+        Assert.Throws<ArgumentException>(() => PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+            new(new("map21"), 0, [6, 23, 44, 53, 62]), BuildNearestAtlas(VisualDefinition(), scale), scale));
     }
 
     [Fact]
