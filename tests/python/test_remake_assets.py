@@ -931,7 +931,11 @@ def test_hud_svg_candidate_build_is_deterministic_ignored_and_path_free(
     assert not list((repository.root / "cache").glob(".sf2-hud-svg-build-*"))
 
 
-def _world_inputs() -> tuple[
+def _world_inputs(
+    *,
+    map_indices: tuple[int, ...] = (3,),
+    slots: tuple[int, ...] = (0, 37, 43, 53, 66),
+) -> tuple[
     bytes,
     dict[str, Any],
     dict[str, Any],
@@ -945,7 +949,7 @@ def _world_inputs() -> tuple[
     rom[63] = 0xEE
     decodes: dict[bytes, StackDecodeResult] = {}
     selected_rows: dict[int, dict[str, Any]] = {}
-    for position, index in enumerate(remake_asset_build.ACCEPTED_TILESET_SLOTS):
+    for position, index in enumerate(slots):
         compressed = bytes([0xA0 + position])
         address = 64 + position
         rom[address] = compressed[0]
@@ -969,6 +973,9 @@ def _world_inputs() -> tuple[
             "decodedSha256": _digest(decoded_bytes),
         }
 
+    map_addresses = {index: 128 + position * 6 for position, index in enumerate(map_indices)}
+    for address in map_addresses.values():
+        rom[address : address + 6] = bytes((0, *slots))
     rom_bytes = bytes(rom)
     common_provenance = {
         "repository": remake_asset_build.ACCEPTED_UPSTREAM_REPOSITORY,
@@ -1003,11 +1010,11 @@ def _world_inputs() -> tuple[
         {
             "mapIndex": index,
             "sourcePath": f"project-authored/map-{index:02}.asm",
-            "mapAddress": index,
+            "mapAddress": map_addresses.get(index, index),
             "paletteIndex": 0,
             "tilesetSlots": (
-                list(remake_asset_build.ACCEPTED_TILESET_SLOTS)
-                if index == remake_asset_build.ACCEPTED_MAP_INDEX
+                list(slots)
+                if index in map_indices
                 else [255, 255, 255, 255, 255]
             ),
         }
@@ -1057,7 +1064,7 @@ def _world_inputs() -> tuple[
             {
                 "mapIndex": index,
                 "sourcePath": f"project-authored/map-{index:02}.asm",
-                "mapAddress": index,
+                "mapAddress": map_addresses.get(index, index),
                 "paletteIndex": 0,
             }
             for index in range(79)
@@ -1125,9 +1132,15 @@ def _build_world_candidate(
     rom_path: Path,
     tileset_path: Path,
     palette_path: Path,
+    *,
+    castle: bool = False,
 ) -> dict[str, object]:
     commit, tree = repository.pins()
-    return remake_asset_build.build_map3_base_atlas_candidate(
+    build = (
+        remake_asset_build.build_map19_20_base_atlas_candidate
+        if castle else remake_asset_build.build_map3_base_atlas_candidate
+    )
+    return build(
         asset_root=str(repository.root),
         expected_commit=commit,
         expected_tree=tree,
@@ -1137,7 +1150,7 @@ def _build_world_candidate(
         expected_tileset_metadata_sha256=_digest(tileset_path.read_bytes()),
         palette_metadata_path=str(palette_path),
         expected_palette_metadata_sha256=_digest(palette_path.read_bytes()),
-        candidate_name="map3-world-candidate",
+        candidate_name="map19-20-base-atlas-test" if castle else "map3-world-candidate",
     )
 
 
@@ -1644,13 +1657,18 @@ def test_official_resvg_candidate_build_opt_in(tmp_path: Path) -> None:
     assert not list((repository.root / "cache").glob(".sf2-hud-svg-build-*"))
 
 
-def test_map3_world_atlas_candidate_is_exact_deterministic_and_ignored(
+@pytest.mark.parametrize("castle", (False, True))
+def test_fixed_world_atlas_candidate_is_exact_deterministic_and_ignored(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    castle: bool,
 ) -> None:
     repository = CandidateRepository.create(tmp_path / "asset-repository")
     (repository.root / "masters" / "ui" / "panel.svg").unlink()
-    inputs = _world_inputs()
+    maps = (19, 20) if castle else (3,)
+    slots = (6, 23, 44, 53, 62) if castle else (0, 37, 43, 53, 66)
+    name = "map19-20" if castle else "map3"
+    inputs = _world_inputs(map_indices=maps, slots=slots)
     rom_path, tileset_path, palette_path = _write_world_inputs(tmp_path / "inputs", inputs)
     _pin_world_inputs(monkeypatch, rom_path, tileset_path, palette_path)
     monkeypatch.setattr(
@@ -1660,27 +1678,47 @@ def test_map3_world_atlas_candidate_is_exact_deterministic_and_ignored(
     )
     before = (*repository.pins(), _run(repository.root, "status", "--porcelain=v2", "-z"))
 
-    receipt = _build_world_candidate(repository, rom_path, tileset_path, palette_path)
+    receipt = _build_world_candidate(
+        repository, rom_path, tileset_path, palette_path, castle=castle
+    )
 
-    candidate = repository.root / "cache" / "map3-world-candidate"
+    candidate_name = "map19-20-base-atlas-test" if castle else "map3-world-candidate"
+    candidate = repository.root / "cache" / candidate_name
     assert sorted(
         path.relative_to(candidate).as_posix() for path in candidate.rglob("*") if path.is_file()
     ) == [
         "manifests/presentation-assets-v1.json",
-        "masters/world/map3/base-tileset-atlas.png",
-        "runtime/world/map3/base-tileset-atlas@2x.png",
-        "runtime/world/map3/base-tileset-atlas@4x.png",
-        "source/world/map3/base-visual-selection-v1.bin",
+        f"masters/world/{name}/base-tileset-atlas.png",
+        f"runtime/world/{name}/base-tileset-atlas@2x.png",
+        f"runtime/world/{name}/base-tileset-atlas@4x.png",
+        f"source/world/{name}/base-visual-selection-v1.bin",
     ]
     manifest = json.loads(
         (candidate / "manifests" / "presentation-assets-v1.json").read_text(encoding="utf-8")
     )
     asset = manifest["assets"][0]
-    assert asset["assetId"] == "world.map3.base-tileset-atlas"
+    assert asset["assetId"] == f"world.{name}.base-tileset-atlas"
+    assert asset["source"]["assetId"] == f"source.world.{name}.base-visual-selection"
+    assert asset["derivation"]["policyId"] == f"private-local-{name}-base-nearest-rgba8-v1"
+    assert receipt["capability"] == f"private-local-{name}-base-tileset-atlas-candidate-build-v1"
+    bundle = candidate / f"source/world/{name}/base-visual-selection-v1.bin"
+    magic = (
+        b"SF2-MAP19-20-BASE-VISUAL-SELECTION-V1\0"
+        if castle else b"SF2-MAP3-BASE-VISUAL-SELECTION-V1\0"
+    )
+    assert bundle.read_bytes().startswith(magic + bytes((*maps, 0, *slots)))
+    assert len(bundle.read_bytes()) == len(magic) + len(maps) + 6 + 32 + 5 * 4096
+    assert asset["source"]["sha256"] == _digest(bundle.read_bytes())
+    if castle:
+        assert receipt["acceptedMapIndices"] == [19, 20]
+        assert receipt["acceptedPaletteIndex"] == 0
+        assert receipt["inputIdentities"]["romSha256"] == _digest(rom_path.read_bytes())
+    else:
+        assert "acceptedMapIndices" not in receipt
     assert asset["logicalSize"] == {"width": 128, "height": 320}
     assert [bucket["scale"] for bucket in asset["buckets"]] == [2, 4]
     assert all(bucket["filter"] == "nearest" for bucket in asset["buckets"])
-    assert receipt["acceptedTilesetSlots"] == [0, 37, 43, 53, 66]
+    assert receipt["acceptedTilesetSlots"] == list(slots)
     assert receipt["segmentCount"] == 5
     assert receipt["segmentSize"] == {"width": 128, "height": 64}
     assert receipt["tileGrid"] == {
@@ -1699,13 +1737,13 @@ def test_map3_world_atlas_candidate_is_exact_deterministic_and_ignored(
         "parityClaim": "project-authored-review-candidate-only",
     }
     master_width, master_height, master_pixels = _read_rgba_png(
-        candidate / "masters" / "world" / "map3" / "base-tileset-atlas.png"
+        candidate / "masters" / "world" / name / "base-tileset-atlas.png"
     )
     assert (master_width, master_height) == (128, 320)
     assert master_pixels[:8] == bytes([36, 0, 0, 255, 0, 0, 0, 0])
     assert master_pixels[64 * 128 * 4 : 64 * 128 * 4 + 4] == bytes([73, 0, 0, 255])
     two_width, two_height, two_pixels = _read_rgba_png(
-        candidate / "runtime" / "world" / "map3" / "base-tileset-atlas@2x.png"
+        candidate / "runtime" / "world" / name / "base-tileset-atlas@2x.png"
     )
     assert (two_width, two_height) == (256, 640)
     assert two_pixels[:16] == bytes([36, 0, 0, 255]) * 2 + bytes([0, 0, 0, 0]) * 2
@@ -1715,7 +1753,73 @@ def test_map3_world_atlas_candidate_is_exact_deterministic_and_ignored(
         assert forbidden not in encoded
     assert repository.pins() == before[:2]
     assert _run(repository.root, "status", "--porcelain=v2", "-z") == before[2]
-    assert not list((repository.root / "cache").glob(".sf2-map3-world-atlas-build-*"))
+    assert not list((repository.root / "cache").glob(".sf2-*-world-atlas-build-*"))
+
+
+@pytest.mark.parametrize("map_index", (19, 20))
+@pytest.mark.parametrize(
+    "drift", ("slots", "tileset-palette", "palette", "rom-header", "address-join")
+)
+def test_castle_atlas_checks_both_map_selections_and_rom_headers(
+    monkeypatch: pytest.MonkeyPatch, map_index: int, drift: str
+) -> None:
+    rom, tilesets, palettes, decodes = _world_inputs(
+        map_indices=(19, 20), slots=(6, 23, 44, 53, 62)
+    )
+    if drift == "slots":
+        tilesets["maps"][map_index]["tilesetSlots"][-1] = 8  # Map 21 is a different family.
+    elif drift == "tileset-palette":
+        tilesets["maps"][map_index]["paletteIndex"] = 1
+    elif drift == "palette":
+        palettes["maps"][map_index]["paletteIndex"] = 1
+    elif drift == "rom-header":
+        changed = bytearray(rom)
+        changed[tilesets["maps"][map_index]["mapAddress"] + 1] = 7
+        rom = bytes(changed)
+    else:
+        palettes["maps"][map_index]["mapAddress"] += 1
+    tilesets["romSha256"] = palettes["romSha256"] = _digest(rom)
+    monkeypatch.setattr(remake_asset_build, "ACCEPTED_ROM_SHA256", _digest(rom))
+    monkeypatch.setattr(remake_asset_build, "decode_stack_compressed", _fake_world_decoder(decodes))
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        remake_asset_build._build_world_atlas_source(
+            rom, tilesets, palettes, remake_asset_build._MAP19_20_ATLAS
+        )
+    expected = (
+        "SourcePayloadMismatch"
+        if drift in ("rom-header", "address-join") else "InvalidSelection"
+    )
+    assert rejected.value.code == expected
+    assert str(map_index) in rejected.value.field
+
+
+def test_castle_atlas_nondeterministic_png_rolls_back_ignored_candidate(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repository = CandidateRepository.create(tmp_path / "asset-repository")
+    (repository.root / "masters" / "ui" / "panel.svg").unlink()
+    inputs = _world_inputs(map_indices=(19, 20), slots=(6, 23, 44, 53, 62))
+    paths = _write_world_inputs(tmp_path / "inputs", inputs)
+    _pin_world_inputs(monkeypatch, *paths)
+    monkeypatch.setattr(
+        remake_asset_build, "decode_stack_compressed", _fake_world_decoder(inputs[3])
+    )
+    original_write = remake_asset_build.write_png_rgba
+
+    def change_second_master(path: Path, width: int, height: int, pixels: list[int]) -> None:
+        if path.parent.name == "run-b" and path.name == "master.png":
+            pixels = list(pixels)
+            pixels[0] ^= 1
+        original_write(path, width, height, pixels)
+
+    monkeypatch.setattr(remake_asset_build, "write_png_rgba", change_second_master)
+    before = (*repository.pins(), _run(repository.root, "status", "--porcelain=v2", "-z"))
+    with pytest.raises(remake_asset_build.AssetBuildError) as rejected:
+        _build_world_candidate(repository, *paths, castle=True)
+    assert rejected.value.code == "NonDeterministicOutput"
+    assert not (repository.root / "cache" / "map19-20-base-atlas-test").exists()
+    assert not list((repository.root / "cache").glob(".sf2-*-world-atlas-build-*"))
+    assert (*repository.pins(), _run(repository.root, "status", "--porcelain=v2", "-z")) == before
 
 
 @pytest.mark.parametrize(
@@ -1761,9 +1865,11 @@ def test_map3_world_atlas_semantics_fail_closed(
     assert rejected.value.code == code
 
 
-def test_map3_world_fixed_roots_precede_parse_and_reject_relative_paths(
+@pytest.mark.parametrize("castle", (False, True))
+def test_world_fixed_roots_precede_parse_and_reject_relative_paths(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    castle: bool,
 ) -> None:
     repository = CandidateRepository.create(tmp_path / "asset-repository")
     (repository.root / "masters" / "ui" / "panel.svg").unlink()
@@ -1782,14 +1888,19 @@ def test_map3_world_fixed_roots_precede_parse_and_reject_relative_paths(
     tileset_path.write_bytes(mutated)
 
     with pytest.raises(remake_asset_build.AssetBuildError) as digest_rejected:
-        _build_world_candidate(repository, rom_path, tileset_path, palette_path)
+        _build_world_candidate(repository, rom_path, tileset_path, palette_path, castle=castle)
     assert digest_rejected.value.code == "ContentDigestMismatch"
     assert _digest(mutated) != baseline_digest
-    assert not (repository.root / "cache" / "map3-world-candidate").exists()
+    candidate_name = "map19-20-base-atlas-test" if castle else "map3-world-candidate"
+    assert not (repository.root / "cache" / candidate_name).exists()
 
     commit, tree = repository.pins()
     with pytest.raises(remake_asset_build.AssetBuildError) as relative_rejected:
-        remake_asset_build.build_map3_base_atlas_candidate(
+        build = (
+            remake_asset_build.build_map19_20_base_atlas_candidate
+            if castle else remake_asset_build.build_map3_base_atlas_candidate
+        )
+        build(
             asset_root=str(repository.root),
             expected_commit=commit,
             expected_tree=tree,
