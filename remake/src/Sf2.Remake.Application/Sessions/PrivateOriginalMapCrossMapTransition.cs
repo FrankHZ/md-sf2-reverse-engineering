@@ -133,7 +133,7 @@ public sealed partial class GameSession
             destinationRuntime,
             receipt,
             current.PalaceFirstVisit,
-            current.AstralAcceptance);
+            current.AstralAcceptance, current.MiddleTowerGuard);
         PrivateOriginalMapPlayerLocomotionSnapshot animation =
             PrivateOriginalMapPlayerLocomotionSnapshot.Relocate(PrivateOriginalMapPlayerLocomotion, receipt);
         _privateOriginalMapSnapshot = next;

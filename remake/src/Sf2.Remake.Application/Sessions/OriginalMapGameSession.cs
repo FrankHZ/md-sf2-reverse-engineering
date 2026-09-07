@@ -37,7 +37,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
         OriginalMapExplorationRuntimeDefinition? currentRuntime = null,
         PrivateOriginalMapCrossMapTransitionReceipt? lastCrossMapTransition = null,
         PrivateOriginalMapPalaceFirstVisitReceipt? palaceFirstVisit = null,
-        PrivateOriginalMapAstralAcceptanceState? astralAcceptance = null)
+        PrivateOriginalMapAstralAcceptanceState? astralAcceptance = null,
+        PrivateOriginalMapMiddleTowerGuardReceipt? middleTowerGuard = null)
     {
         Definition = definition ?? throw new ArgumentNullException(nameof(definition));
         Receipt = receipt ?? throw new ArgumentNullException(nameof(receipt));
@@ -93,6 +94,19 @@ public sealed record PrivateOriginalMapSessionSnapshot
                 nameof(astralAcceptance));
         }
 
+        if (middleTowerGuard is not null &&
+            (!ReferenceEquals(middleTowerGuard.Definition, definition.MiddleTowerGuard) ||
+                currentRuntime.Map != middleTowerGuard.Definition.Map ||
+                palaceFirstVisit is null || astralAcceptance is null || castleGate?.Opened != true ||
+                middleTowerGuard.SimulationStep <= astralAcceptance.SimulationStep ||
+                middleTowerGuard.SimulationStep > simulationStep ||
+                (middleTowerGuard.SimulationStep == simulationStep &&
+                    playerPosition != middleTowerGuard.Definition.InteractionPosition)))
+        {
+            throw new ArgumentException("Guard completion must retain its controlled preset, Map 21 and ordered step.",
+                nameof(middleTowerGuard));
+        }
+        MiddleTowerGuard = middleTowerGuard;
         AstralAcceptance = astralAcceptance;
         MapBlockCopyLifecycleState admittedRoofLifecycle =
             roofOnLoadLifecycle ?? MapBlockCopyLifecycleState.Inactive;
@@ -238,7 +252,8 @@ public sealed record PrivateOriginalMapSessionSnapshot
             (lastEntity142Request is null ? 0 : 1) +
             (lastEntity142Acknowledgement is null ? 0 : 1) +
             (palaceFirstVisit?.SimulationStep == simulationStep ? 1 : 0) +
-            (astralAcceptance?.SimulationStep == simulationStep ? 1 : 0);
+            (astralAcceptance?.SimulationStep == simulationStep ? 1 : 0) +
+            (middleTowerGuard?.SimulationStep == simulationStep ? 1 : 0);
         if (simulationStep == 0 &&
             (completedOperations != 0 ||
                 controlledStepCopyApplied ||
@@ -795,6 +810,18 @@ public sealed record PrivateOriginalMapSessionSnapshot
 
     public PrivateOriginalMapAstralAcceptanceState? AstralAcceptance { get; }
 
+    public PrivateOriginalMapMiddleTowerGuardReceipt? MiddleTowerGuard { get; }
+
+    public MapPosition? MiddleTowerGuardPosition => Definition.MiddleTowerGuard is { } guard && Map == guard.Map
+        ? MiddleTowerGuard?.ActorPosition ?? guard.Actor.Position
+        : null;
+
+    public bool CanAcceptMiddleTowerGuard(byte playerOpaqueFacing) =>
+        Definition.MiddleTowerGuard is { } guard && Map == guard.Map &&
+        MiddleTowerGuard is null && CastleGate?.Opened == true && PalaceFirstVisit is not null &&
+        AstralAcceptance?.ProgramFlag608Set == true && PlayerPosition == guard.InteractionPosition &&
+        playerOpaqueFacing == guard.InteractionOpaqueFacing && PendingEntity142 is null;
+
     public bool AstralOccupiesRouteTile => Definition.AstralAcceptance is { } astral &&
         Map == astral.Map && PalaceFirstVisit is not null && AstralAcceptance is null;
 
@@ -1028,7 +1055,8 @@ public sealed partial class GameSession
                 ((current.Sarah?.OccupiesRouteTile == true && occupiedPosition == current.Sarah.ActorPosition) ||
                     (current.Entity142?.OccupiesRouteTile == true && occupiedPosition == current.Entity142.ActorPosition))) ||
                 (current.AstralOccupiesRouteTile &&
-                    occupiedPosition == current.Definition.AstralAcceptance!.Actor.Position)))
+                    occupiedPosition == current.Definition.AstralAcceptance!.Actor.Position) ||
+                occupiedPosition == current.MiddleTowerGuardPosition))
         {
             ushort sourceWord = current.WorkingLayout[
                 current.PlayerPosition.X,
@@ -1073,7 +1101,8 @@ public sealed partial class GameSession
                 lastCastleGate: null,
                 current.CurrentRuntime,
                 lastCrossMapTransition: null,
-                palaceFirstVisit: current.PalaceFirstVisit, astralAcceptance: current.AstralAcceptance);
+                palaceFirstVisit: current.PalaceFirstVisit, astralAcceptance: current.AstralAcceptance,
+                middleTowerGuard: current.MiddleTowerGuard);
             _privateOriginalMapSnapshot = blocked;
             return new PrivateOriginalMapMoveApplied(blocked, occupied);
         }
@@ -1112,7 +1141,8 @@ public sealed partial class GameSession
             lastCastleGate: null,
             current.CurrentRuntime,
             lastCrossMapTransition: null,
-            palaceFirstVisit: current.PalaceFirstVisit, astralAcceptance: current.AstralAcceptance);
+            palaceFirstVisit: current.PalaceFirstVisit, astralAcceptance: current.AstralAcceptance,
+                middleTowerGuard: current.MiddleTowerGuard);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapMoveApplied(next, traversal);
     }
@@ -1210,7 +1240,8 @@ public sealed partial class GameSession
             lastCastleGate: null,
             current.CurrentRuntime,
             lastCrossMapTransition: null,
-            palaceFirstVisit: current.PalaceFirstVisit, astralAcceptance: current.AstralAcceptance);
+            palaceFirstVisit: current.PalaceFirstVisit, astralAcceptance: current.AstralAcceptance,
+                middleTowerGuard: current.MiddleTowerGuard);
         _privateOriginalMapSnapshot = next;
         return new PrivateOriginalMapLayoutMutationApplied(next, receipt);
     }
@@ -1428,6 +1459,13 @@ public sealed partial class GameSession
         {
             return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.middleTowerMap21Transition", "The controlled Map 21 arrival source binding drifted.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedMiddleTowerGuard(
+                definition.MiddleTowerGuard, definition.RuntimeCatalog))
+        {
+            return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.middleTowerGuard", "The controlled Map 21 guard source binding drifted.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedAstralAcceptance(

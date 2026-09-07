@@ -625,7 +625,12 @@ No Map 21 atlas is admitted. An exact admitted Map 21 runtime explicitly hides t
 viewport and shows the existing traversal diagnostic with its current layout, area and player.
 The status moves below the taller diagnostic grid and returns to the original base-view position
 when that view is visible again.
-The first status line names Map 21, the diagnostic and unexecuted init; it offers no guard action.
+The first status line names Map 21, the diagnostic and unexecuted init until the bounded guard action
+is available. At `(4,16)` facing RIGHT, it offers the explicit controlled F result; after F it identifies
+the guard's completed move. The existing authored diamond follows guard occupancy from `(5,16)` to
+`(6,16)` without a direction or original-art claim. F preserves player position/facing by remake policy;
+ordinary Right/Up supplies the later `(5,15)`/UP endpoint. The real composition adapter handles both
+guard success and rejection. Neither source entity135's facing effect nor natural script timing is applied.
 Unknown or mismatched runtime/visual selections still reject instead of taking this diagnostic branch.
 This does not bind castle pixels to Map 21 or add an atlas/NPC asset.
 
@@ -634,9 +639,11 @@ This does not bind castle pixels to Map 21 or add an atlas/NPC asset.
 The [fixed probe](../tests/native/Map19Map20AtlasReviewProbe.cs) is test-owned instrumentation, excluded
 from the production project. It seeds the same validated Map 19 state as the private canonical test,
 then drives the accepted fixture through the 38-input royal route, controlled palace F, two-input
-return, Astral approach/F, released west route, and three Left inputs into Map 21. Seven real Godot
+return, Astral approach/F, released west route, three Left inputs into Map 21, and the controlled guard
+F followed by ordinary Right/Up. Ten real Godot
 viewport captures cover Map 3,
-Map 19 entry, Map 20 royal, Astral before/after F, Map 20 west, and the Map 21 diagnostic. Map 3-to-19 is a seeded projection
+Map 19 entry, Map 20 royal, Astral before/after F, Map 20 west, the Map 21 diagnostic, guard before/after
+F, and the actual walk endpoint. Map 3-to-19 is a seeded projection
 seam. This does not establish a complete natural player route, original init execution or H4.
 
 Use a clean committed head after the owning tests and official Godot gate. Export only `manifests`
@@ -652,10 +659,13 @@ source is the tracked probe; scene selection, seed/reflection, deterministic rou
 unsolicited callbacks and capture are instrumentation. The native process uses the actual Windows
 renderer with a hidden startup window; a headless/dummy renderer cannot substitute for these images.
 The process receipt records the code head, bounded exit/timeout/cleanup state and each step. Inspect
-all seven PNGs and the per-frame selection/area/layout/atlas/glyph receipt. The first six retain
+all ten PNGs and the per-frame selection/area/layout/atlas/glyph receipt. The first six retain
 the destination camera and player-rectangle checks. The seventh requires a visible traversal view,
 hidden base view, Map 21 `(3,16)`/area 1, crop `(0,13)`, raw facing 0 and the exact record-4 source receipt.
-Its status label must sit below the diagnostic grid without covering cells. An image failure is a failed
+Its status label must sit below the diagnostic grid without covering cells. Frames eight through ten
+check the visible player and undirected guard marker, the real F adapter's prompt/completion text, and
+the ordinary walk endpoint. Wrong-position and duplicate F calls use that same adapter and preserve
+snapshot/locomotion/bridge without throwing. An image failure is a failed
 native boundary even if startup markers pass. Images, inputs and process receipts remain private and
 ignored; no pixels enter a public PR.
 

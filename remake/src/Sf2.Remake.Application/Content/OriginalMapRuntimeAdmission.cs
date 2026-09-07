@@ -111,6 +111,7 @@ public static class OriginalMapRuntimeAdmission
     public const string Map21EntityProjectionDigest = "011A20F982191E5B2752A6AB2966C08190586B60237493915D466C6D85ED8DF6";
     public const string MiddleTowerMap21TransitionCapability = "private-map20-middle-tower-map21-transition-v1";
     public const int MiddleTowerWarpRecordOrdinal = 4;
+    public const string MiddleTowerGuardCapability = "private-map21-controlled-guard-result-v1";
 
     public const string RoyalMap20TransitionCapability = "private-map19-royal-map20-transition-v1";
     public const string WestTowerMap20TransitionCapability = "private-map19-west-tower-map20-transition-v1";
@@ -672,6 +673,7 @@ public static class OriginalMapRuntimeAdmission
                 RoyalReturnMap19TransitionCapability,
                 WestTowerMap20TransitionCapability,
                 MiddleTowerMap21TransitionCapability,
+                MiddleTowerGuardCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -891,6 +893,21 @@ public static class OriginalMapRuntimeAdmission
         transition.AdmittedTrigger == new MapPosition(3, 36) &&
         transition.DestinationMap == new MapId(Map21Id) &&
         transition.Destination == new MapPosition(3, 16) && transition.DestinationOpaqueFacing == 0;
+
+    public static bool HasExactAcceptedMiddleTowerGuard(
+        OriginalMapMiddleTowerGuardDefinition? definition, OriginalMapExplorationRuntimeCatalog catalog)
+    {
+        if (definition is null) return false;
+        var runtime = catalog.Resolve(definition.Map);
+        return runtime.EntityPopulation.Records.Count == 1 &&
+            ReferenceEquals(runtime.EntityPopulation.Records[0], definition.Actor) &&
+            runtime.Traversal.IsWithinActiveArea(definition.InteractionPosition) &&
+            runtime.Traversal.IsWithinActiveArea(definition.AcceptedActorEndpoint) &&
+            !OriginalMapTraversal.IsBlocked(runtime.WorkingLayout, definition.InteractionPosition) &&
+            !OriginalMapTraversal.IsBlocked(runtime.WorkingLayout, definition.Actor.Position) &&
+            runtime.Traversal.TryMove(runtime.WorkingLayout, definition.Actor.Position, ExplorationDirection.East).Position ==
+                definition.AcceptedActorEndpoint;
+    }
 
     public static bool HasExactAcceptedAstralAcceptance(
         OriginalMapAstralAcceptanceDefinition? definition,

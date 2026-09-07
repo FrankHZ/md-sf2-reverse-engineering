@@ -383,19 +383,74 @@ committed production sources and one tracked probe; its initial Map 19 seed rema
 Map 21 init, guard interaction, StoryFlag1, NPC art, atlas creation, natural Battle 01 continuity,
 original presentation and H4 remain **Unsupported / Unknown**.
 
+## Controlled Map 21 middle-tower guard
+
+**Confirmed:** the accepted [castle-unlock owner](../../docs/research/map3-castle-battle-unlock.md)
+and [H2 fixture](../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json) pin SF2DISASM
+`c834c652b6862bc5679fd7f69a38a7093206efc6`. The post-Astral branch of
+`Map21_EntityEvent0` at `0x53EAE` checks 608, selects numeric text 579, checks temporary flag 256,
+calls `cs_53EF4` if 256 is clear, then sets 256. The program at `0x53EF4` moves entity 128
+one tile right and sets StoryFlag1 (F401). Its `setFacing 135,DOWN` targets entity 135;
+that entity's identity/effect remains **Unknown** here and is not applied to the player or guard.
+
+Canonical data contains the exact default setup/actor/event bindings, but neither handler nor
+program body. Content checks `ms_map21` → `ms_map21_EntityEvents`, table address 343698 and exactly
+two closed rows: specific row 343698, relative 28 → 343726, entity 128, flags 3; default row 343702,
+relative 96 → 343794, entity 253, flags 0. The actor list and single record at 343672 retain
+`(5,16)`, raw facing 3, sprite 206 and action 286926. The compiled result cites the accepted
+program control-effect projection `08697EBB15C35F4AF661D38A32899E52EF13D09D53A6C52736DAD751BF6D3706`.
+This is source binding plus an accepted behavior contract, not a canonical script interpreter.
+
+From the existing Map 21 arrival `(3,16)`, ordinary Right reaches `(4,16)` facing RIGHT/raw 0.
+F selects only `ControlledPostAstralAndLocal256Clear`, requiring the open castle gate, controlled
+palace result, Astral completion, idle locomotion and the exact interaction target. The historical
+Sarah receipt's temporary 256 value is retained and does not supply Map 21's current local flag.
+No global flag store or natural flag-clear lifecycle is introduced. The once-only completion receipt
+distinguishes handler 256 from the program's StoryFlag1/F401 effect; the latter are two names for
+the same accepted program flag.
+
+The guard's live occupancy moves from `(5,16)` to `(6,16)`. The old tile becomes traversable and
+the new tile remains blocked. Source entities remain immutable, including the source-facing byte;
+no post-movement guard direction is claimed. As explicit remake policy, F preserves the player's
+`(4,16)` position, RIGHT/raw 0 facing and locomotion object. Ordinary Right, Up then reaches
+`(5,15)` facing UP/raw 1. The H2 navigation terminal's DOWN annotation is not a teleport/facing
+effect of F, and this endpoint is not a natural WaitForEvent or Battle 01 admission seam.
+
+Stale, duplicate, busy, wrong preset/map/position/facing and missing-prerequisite requests leave
+snapshot, locomotion and bridge unchanged. Current-map movement, including blocked movement, retains
+the completed guard receipt, 605/607/608, import and route objects and the manual battle bridge.
+A new session clears the guard completion. General script, init, dialogue, choreography, flag
+resolution, other interactions, backtracking, Map 40, natural Battle 01 continuity and H4 remain
+**Unsupported / Unknown**.
+
+Map 21 keeps its explicit traversal diagnostic. The guard uses the existing authored diamond without
+a direction claim; it follows the Application occupancy before and after F. The available F action
+appears first below the grid, then changes to the controlled completion status. No original NPC art
+or atlas is admitted. The required canonical test continues its existing seeded route through F,
+both occupancy checks and ordinary movement, including the retained historical Sarah 256 receipt.
+Public checks cover exact event joins, immutable actor facts, source-port admission, zero-mutation
+rejections, current-map retention and reset. The existing Map 3 busy bridge test also rejects the
+direct guard command without inventing a Map 21 battle state.
+
+The [native review recipe](./presentation-and-assets.md#reproduce-the-bounded-native-image-review)
+adds before-F, after-F and walk-endpoint images. It invokes the production
+`Map3Root.ApplyPrivateInteractionRequest` adapter through test-only reflection, including wrong-position
+and duplicate F rejection, and checks the actual visible marker, player, status and grid separation.
+The initial Map 19 state remains explicitly seeded; no completed full Python/H3/H4 suite is replayed.
+
 ## Ordered Queue
 
 The current Map 19/20 base consumer uses the accepted shared castle atlas with each runtime's
 explicit selection, working layout, blocks and area. It retains the camera/player policy, scopes
 Map 3 overlays and route actors, and shows the authored Astral marker only while the route is occupied.
 The [native image review](./presentation-and-assets.md#reproduce-the-bounded-native-image-review)
-owns its seven-frame seeded projection check and the precise distinction from natural reach/H4.
+owns its ten-frame seeded projection check and the precise distinction from natural reach/H4.
 
-The next slice is the bounded Map 21 entity-128 guard interaction. Consume its accepted handler
-and program contract separately; verify which fields exist in the input. The static `cs_53EF4`
-behavior must not be presented as an imported general script interpreter. Its entity movement,
-facing and StoryFlag1 effects do not authorize a player teleport to a navigation endpoint.
-Natural map lifecycle and continuous Battle 01 admission remain later acceptance work.
+1. Extend the existing fixed-family builder in a separately owned slice to produce the independent
+   Map 21 palette 0 / `[6,23,44,53,8]` atlas candidate. Review and accept that local asset separately.
+2. Only after asset acceptance, add the Map 21 atlas consumer; retain the controlled guard behavior.
+3. Then assess a bounded Map 21-to-Map 40 exit and exact destination-runtime admission.
+   Natural map lifecycle and continuous Battle 01 admission remain separate acceptance work.
 
 ## Decision Rules
 
