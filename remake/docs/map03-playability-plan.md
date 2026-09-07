@@ -440,6 +440,20 @@ adds before-F, after-F and walk-endpoint images. It invokes the production
 and duplicate F rejection, and checks the actual visible marker, player, status and grid separation.
 The initial Map 19 state remains explicitly seeded; it does not establish natural route continuity.
 
+## Fixed Map 21 atlas candidate
+
+The maintained `build_map21_base_atlas_candidate` API and `map21-base-atlas-candidate` command
+reuse the existing fixed-family builder for palette 0 / `[6,23,44,53,8]`. They validate both
+metadata tables against the actual ROM header, decode the selected five tilesets and produce one
+128-by-320 master with nearest 2x/4x buckets. The five-file candidate stays in a fresh ignored
+asset-cache directory after the existing two-pass determinism and rollback checks. Its receipt
+identifies Map 21, palette 0, ordered slots and all fixed inputs; the castle slot 62 is not admitted.
+
+The [derivation owner](./presentation-and-assets.md#deterministic-derivation-and-cache) records
+the reproducible command and source-bundle format. Candidate generation does not accept a new
+asset pack, bind a consumer or change the diagnostic guard view. Independent local pixel review
+and asset acceptance still precede the consumer slice.
+
 ## Ordered Queue
 
 The current Map 19/20 base consumer uses the accepted shared castle atlas with each runtime's
@@ -448,8 +462,8 @@ Map 3 overlays and route actors, and shows the authored Astral marker only while
 The [native image review](./presentation-and-assets.md#reproduce-the-bounded-native-image-review)
 owns its ten-frame seeded projection check and the precise distinction from natural reach/H4.
 
-1. Extend the existing fixed-family builder in a separately owned slice to produce the independent
-   Map 21 palette 0 / `[6,23,44,53,8]` atlas candidate. Review and accept that local asset separately.
+1. Independently review and accept the local Map 21 palette 0 / `[6,23,44,53,8]` atlas candidate
+   produced by the fixed-family builder above.
 2. Only after asset acceptance, add the Map 21 atlas consumer; retain the controlled guard behavior.
 3. Then assess a bounded Map 21-to-Map 40 exit and exact destination-runtime admission.
    Natural map lifecycle and continuous Battle 01 admission remain separate acceptance work.

@@ -266,11 +266,25 @@ also protects the retained Map 3 API. Original data provenance remains owned by
 [Technical Graphics](../../docs/research/technical-graphics.md), `sf2-map-tileset-decode-v1` and
 `sf2-map-palette-static-v1`; this adds no original rendering conclusion.
 
-The two fixed families share the existing Stack/palette/PNG pipeline, two-pass byte comparison,
+The fixed families share the existing Stack/palette/PNG pipeline, two-pass byte comparison,
 fresh ignored candidate transaction and zero-remote checkout checks. Callers supply input paths and
-identity pins, not arbitrary map indices, palettes or tileset slots. Map 21 has a different selection
-and is not included. Map 3 keeps its existing asset/source/policy IDs, source-bundle format, geometry
-and runtime paths.
+identity pins, not arbitrary map indices, palettes or tileset slots. Map 3 keeps its existing
+asset/source/policy IDs, source-bundle format, geometry, runtime paths and receipt shape.
+
+The separate `build_map21_base_atlas_candidate` API and `map21-base-atlas-candidate` command
+produce only the fixed middle-tower Map 21 family: palette 0 and ordered slots `[6,23,44,53,8]`.
+Its metadata address join and actual six-byte ROM header must agree with that selection; the shared
+castle family's final slot 62 cannot substitute for 8. The master and nearest 2x/4x buckets retain
+the same 128-by-320, 256-by-640 and 512-by-1280 shapes.
+
+Map 21 uses asset `world.map21.base-tileset-atlas`, source
+`source.world.map21.base-visual-selection`, policy `private-local-map21-base-nearest-rgba8-v1`,
+and capability `private-local-map21-base-tileset-atlas-candidate-build-v1`. Paths use
+`world/map21/` under `source/`, `masters/` and `runtime/`. Its source bundle starts with ASCII
+`SF2-MAP21-BASE-VISUAL-SELECTION-V1` plus NUL, bytes `[21,0,6,23,44,53,8]`, the 32-byte
+effective palette and the five 4,096-byte decoded tilesets. Its receipt explicitly records
+`acceptedMapIndices: [21]`, palette 0, the actual selected slots and all three fixed input digests,
+alongside the existing source/generator/output identities. It contains no local absolute paths.
 
 The castle candidate uses asset `world.map19-20.base-tileset-atlas`, source
 `source.world.map19-20.base-visual-selection`, policy `private-local-map19-20-base-nearest-rgba8-v1`
@@ -294,10 +308,13 @@ uv run python -m sf2tool.remake_asset_build map19-20-base-atlas-candidate `
     --candidate-name 'map19-20-base-atlas-review'
 ```
 
-The command only writes the named asset checkout's ignored `cache/` candidate and emits a receipt.
+For Map 21, use `map21-base-atlas-candidate` with the same input options and
+`--candidate-name 'map21-base-atlas-review'`. Each command writes exactly five files in the named
+asset checkout's fresh ignored `cache/` candidate and emits a receipt.
 Local image review and a separately accepted source/master/runtime/manifest transaction must precede
 consumer binding. This builder does not promote assets or change the current Godot runtime. The
-current consumer separately binds the accepted Map 19/20 family described below.
+current consumer separately binds the accepted Map 19/20 family described below. The Map 21
+candidate has no accepted asset pin or runtime consumer; Map 21 remains a diagnostic view.
 
 The current reviewed local pack at commit `9acff63cd3285be07736c07839034487327cf41c`, tree
 `dee294d65e6b4fccc33104f848a16130c085aea6`, and manifest SHA-256
