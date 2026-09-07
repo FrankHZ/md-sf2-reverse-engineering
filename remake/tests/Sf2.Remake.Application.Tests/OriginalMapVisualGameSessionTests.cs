@@ -477,7 +477,8 @@ public sealed class OriginalMapVisualGameSessionTests
             AcceptedOriginalMapRuntimeCatalog.RoyalTransition(),
             AcceptedOriginalMapPalaceFirstVisit.Create(),
             AcceptedOriginalMapRuntimeCatalog.RoyalReturn(),
-            new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]));
+            new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]),
+            AcceptedOriginalMapRuntimeCatalog.WestTower());
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>

@@ -93,6 +93,8 @@ public static class OriginalMapRuntimeAdmission
         "7350F0612C704C1DBEE16E9F48399CB21BE3CC1B653261A8910DBF6661BCB02D";
 
     public const string RoyalMap20TransitionCapability = "private-map19-royal-map20-transition-v1";
+    public const string WestTowerMap20TransitionCapability = "private-map19-west-tower-map20-transition-v1";
+    public const int WestTowerWarpRecordOrdinal = 1;
     public const string RoyalMap20WarpResourceId = "Map19s6_WarpEvents";
     public const int RoyalMap20WarpRecordOrdinal = 2;
     public const byte RoyalMap20WarpSourceTriggerX = 23;
@@ -648,6 +650,7 @@ public static class OriginalMapRuntimeAdmission
                 RoyalMap20TransitionCapability,
                 PalaceFirstVisitCapability,
                 RoyalReturnMap19TransitionCapability,
+                WestTowerMap20TransitionCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -840,6 +843,19 @@ public static class OriginalMapRuntimeAdmission
         transition.DestinationMap == new MapId(Map19Id) &&
         transition.Destination == new MapPosition(23, 3) &&
         transition.DestinationOpaqueFacing == RoyalReturnDestinationOpaqueFacing;
+
+    public static bool HasExactAcceptedWestTowerMap20Transition(
+        OriginalMapCrossMapTransitionDefinition? transition) =>
+        transition is not null &&
+        transition.Identity == new OriginalMapCrossMapTransitionIdentity(
+            ContentProfile.PrivateLocal, new MapId(Map19Id), RoyalMap20WarpResourceId, WestTowerWarpRecordOrdinal) &&
+        transition.SourceTriggerX == 6 && transition.SourceTriggerY == 2 &&
+        transition.AdmittedApproach == new MapPosition(5, 3) &&
+        transition.AdmittedDirection == ExplorationDirection.East &&
+        transition.AdmittedTrigger == new MapPosition(6, 2) &&
+        transition.DestinationMap == new MapId(Map20Id) &&
+        transition.Destination == new MapPosition(6, 37) &&
+        transition.DestinationOpaqueFacing == 0;
 
     public static bool HasExactAcceptedAstralAcceptance(
         OriginalMapAstralAcceptanceDefinition? definition,

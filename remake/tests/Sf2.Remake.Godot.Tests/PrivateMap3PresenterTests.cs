@@ -9,6 +9,31 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateMap3PresenterTests
 {
     [Fact]
+    public void WestTowerArrivalStatusDistinguishesTwoExitsToTheSameMap()
+    {
+        PrivateOriginalMapCrossMapTransitionReceipt Receipt(bool west)
+        {
+            OriginalMapCrossMapTransitionDefinition definition = new(
+                new(ContentProfile.PrivateLocal, new MapId("map19"), "Map19s6_WarpEvents", west ? 1 : 2),
+                (byte)(west ? 6 : 23), (byte)(west ? 2 : 3), new(west ? 5 : 22, west ? 3 : 4),
+                ExplorationDirection.East, new(west ? 6 : 23, west ? 2 : 3),
+                new MapId("map20"), new(west ? 6 : 23, 37), (byte)(west ? 0 : 3));
+            return (PrivateOriginalMapCrossMapTransitionReceipt)Activator.CreateInstance(
+                typeof(PrivateOriginalMapCrossMapTransitionReceipt),
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+                binder: null, args: [definition, 1L], culture: null)!;
+        }
+
+        string status = Assert.IsType<string>(PrivateMap3PresentationPlan.WestTowerArrivalStatus(Receipt(west: true)));
+        Assert.Contains("West tower reached", status);
+        Assert.Contains("Controlled arrival", status);
+        Assert.Contains("init not executed", status);
+        Assert.DoesNotContain("F apply", status);
+        Assert.Null(PrivateMap3PresentationPlan.WestTowerArrivalStatus(Receipt(west: false)));
+        Assert.Null(PrivateMap3PresentationPlan.WestTowerArrivalStatus(null));
+    }
+
+    [Fact]
     public void AstralActionIsFirstAndOnlyAvailableWhenThePlayerFacesTheWaitingActor()
     {
         var ready = PrivateOriginalMapTraversalViewportTests.AstralSnapshot(completed: false);

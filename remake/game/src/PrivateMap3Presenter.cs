@@ -1,4 +1,5 @@
 using Godot;
+using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Domain.Maps;
 
@@ -120,6 +121,11 @@ internal sealed record PrivateMap3PresentationPlan(
 
         if (snapshot.Map.Value == "map20")
         {
+            if (WestTowerArrivalStatus(snapshot.LastCrossMapTransition) is string arrival)
+            {
+                return arrival + "\n" + status;
+            }
+
             return status + "  |  " + PalaceFirstVisitStatus(snapshot.PalaceFirstVisit);
         }
 
@@ -192,6 +198,11 @@ internal sealed record PrivateMap3PresentationPlan(
 
         return "Astral interaction unavailable.";
     }
+
+    internal static string? WestTowerArrivalStatus(PrivateOriginalMapCrossMapTransitionReceipt? receipt) =>
+        receipt?.Capability == OriginalMapRuntimeAdmission.WestTowerMap20TransitionCapability
+            ? "West tower reached. Controlled arrival; init not executed."
+            : null;
 
     internal static string RoyalReturnStatus(PrivateOriginalMapPalaceFirstVisitReceipt receipt)
     {

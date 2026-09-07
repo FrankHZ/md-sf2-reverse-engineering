@@ -569,7 +569,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             AcceptedOriginalMapRuntimeCatalog.RoyalTransition(),
             AcceptedOriginalMapPalaceFirstVisit.Create(),
             AcceptedOriginalMapRuntimeCatalog.RoyalReturn(),
-            new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]));
+            new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]),
+            AcceptedOriginalMapRuntimeCatalog.WestTower());
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>
