@@ -17,6 +17,9 @@ the one-shot project-authored request before movement resumes. The explicit base
 selection uses the reviewed local 2x/4x nearest atlas directly while retaining the same Application
 snapshot, block/tile selection, crop, and player marker; playable startup does not reopen the ROM or
 tileset/palette extraction metadata.
+The controlled castle route selects the shared Map 19/20 atlas and then the independent Map 21
+atlas from the accepted local pack. Each view uses its current runtime layout and camera; the
+Map 21 guard remains an authored undirected diamond whose occupancy follows the controlled F result.
 The fixed private canonical import also admits the controlled setup's ordered entity population as
 immutable, source-shaped Application data. The private session snapshot exposes that same population
 without creating mutable NPC state. Coordinates are masked only into typed map positions; facing,
@@ -181,10 +184,10 @@ The reviewed local asset history now owns `hud.yes-no-window-frame`,
 `world.map3.player.initial-reference-frame`, plus the `up`, `horizontal`, and `down` members of
 `world.map3.player.locomotion.*`, and
 `world.map3.entity142.astral.up.two-half-reference`, plus
-`world.map19-20.base-tileset-atlas`. The current nine-asset checkpoint is local commit
-`9acff63cd3285be07736c07839034487327cf41c`, tree
-`dee294d65e6b4fccc33104f848a16130c085aea6`, with manifest SHA-256
-`81834D1787BAECD27BC1757E0A76E493310821AD9D6A2F60753F3F08963E144A`. The atlas and player runtime
+`world.map19-20.base-tileset-atlas` and `world.map21.base-tileset-atlas`. The current ten-asset pack is local commit
+`c8dcc451e7210a1cd433865431151a1de62a1573`, tree
+`4890d6d03ac62d099737ff6e4d24f4bce63f56d2`, with manifest SHA-256
+`520E15367DAB8D6669AA9ABDE9279A33231D81AE3667DE851EACAD2CEB5A1146`. The atlas and player runtime
 buckets are reviewed nearest 2x/4x outputs; source and master material remain review/provenance
 inputs, not runtime files. The initial-reference frame remains a separate, narrower retained asset;
 the lower-level viewport can still project it when no locomotion mount is supplied. The explicit

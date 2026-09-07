@@ -313,16 +313,14 @@ For Map 21, use `map21-base-atlas-candidate` with the same input options and
 asset checkout's fresh ignored `cache/` candidate and emits a receipt.
 Local image review and a separately accepted source/master/runtime/manifest transaction must precede
 consumer binding. This builder does not promote assets or change the current Godot runtime. The
-current consumer separately binds the accepted Map 19/20 family described below. The Map 21
-candidate has no accepted asset pin or runtime consumer; Map 21 remains a diagnostic view.
+current consumer binds the independently accepted Map 19/20 and Map 21 families described below.
 
-The current reviewed local pack at commit `9acff63cd3285be07736c07839034487327cf41c`, tree
-`dee294d65e6b4fccc33104f848a16130c085aea6`, and manifest SHA-256
-`81834D1787BAECD27BC1757E0A76E493310821AD9D6A2F60753F3F08963E144A` contains the two HUD assets,
-the exact Map 3 and shared Map 19/20 atlas families, the player initial-reference-frame family, the three controlled-player
-locomotion sheets, and one entity-142/Astral UP two-half reference sheet. The
-atlas's explicit
-PrivateLocal consumer mounts both explicit families at the selected 2x or 4x scale after Content
+The current reviewed local pack at commit `c8dcc451e7210a1cd433865431151a1de62a1573`, tree
+`4890d6d03ac62d099737ff6e4d24f4bce63f56d2`, and manifest SHA-256
+`520E15367DAB8D6669AA9ABDE9279A33231D81AE3667DE851EACAD2CEB5A1146` contains the two HUD assets,
+the exact Map 3, shared Map 19/20 and independent Map 21 atlas families, the player initial-reference-frame family, the three controlled-player
+locomotion sheets, and one entity-142/Astral UP two-half reference sheet. The explicit
+PrivateLocal consumer mounts all three fixed atlas families at the selected 2x or 4x scale after Content
 rechecks the closed pack; only the current family supplies the rendered base. Godot validates decoded RGBA8 dimensions and projects every physical bucket texel through the
 already authoritative working-layout/block/tile/slot/flip selection. A 2x bucket becomes a
 576-by-336 ImageTexture and a 4x bucket becomes a 1152-by-672 ImageTexture; `DrawTextureRect` maps
@@ -605,7 +603,7 @@ an admitted product font, Theme, original battle title, or presentation-fidelity
 | fixed after acceptance | 4x new-raster authoring; original raster as local master; deterministic 2x/4x buckets; one resident bucket; safe-frame/aspect/accessibility model; thin Godot catalog migration |
 | implemented product display policy | PrivateLocal adaptive windowed startup up to a fitting 1920-by-1080 client; runtime 960-by-540 minimum; explicit physical target preservation; HiDPI without double counting; centered `keep` frame; one startup-resident 2x/4x bucket; restart required for bucket reselection |
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
-| implemented world-family tooling prerequisite | two fixed families: Map 3 and shared Map 19/20; fixed private ROM/metadata roots, exact palette/slot selections and each selected map's ROM-header join; five-segment 128-by-320 atlas and deterministic nearest 2x/4x ignored candidate; candidate publication still requires separate local review and asset acceptance before consumer binding; no implicit promotion or update |
+| implemented world-family tooling prerequisite | three fixed families: Map 3, shared Map 19/20 and Map 21; fixed private ROM/metadata roots, exact palette/slot selections and each selected map's ROM-header join; five-segment 128-by-320 atlas and deterministic nearest 2x/4x ignored candidate; candidate publication still requires separate local review and asset acceptance before consumer binding; no implicit promotion or update |
 | implemented player-reference consumer | fixed private ROM root; exact controlled player, regular map-sprite, DOWN source-slot, no-mirror, and half-zero selection; bounded Basic decode; reviewed 24-by-24 `initial-reference-frame` master and nearest 2x/4x local transaction; exact Content mount and thin Godot logical-cell projection; no standing/idle, animation, or admission-visible claim |
 | implemented entity-reference tooling prerequisite and bounded consumer | fixed private ROM root plus accepted entity-142 fixture; exact record/slot/map-sprite/UP source; both decoded halves retained in source order as one reviewed 48-by-24 local sheet and nearest 2x/4x buckets; exact Content mount, Godot-only half-zero fresh bind, and `project-authored-two-half-diagnostic-cadence-v1` viewport state holding each half for 30 fixed physics callbacks; no original selected-half/idle/counter/cadence/visibility/interaction semantics, lifecycle, all-entity renderer, or fidelity claim |
 | implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop after exact-nearest scale-block validation; no playable ROM/metadata reopen, source/master runtime input, PCK, or fidelity claim |
@@ -637,19 +635,21 @@ tile occupied; accepting via F clears it. No original castle NPC sprite is admit
 launches still use their existing diagnostic display. General init, original rendering and timing,
 natural caller state and H4 remain outside this consumer.
 
-Map 21 arrival has palette 0 and slots `[6,23,44,53,8]`, which differ from the castle family.
-No Map 21 atlas is admitted. An exact admitted Map 21 runtime explicitly hides the retained base
-viewport and shows the existing traversal diagnostic with its current layout, area and player.
-The status moves below the taller diagnostic grid and returns to the original base-view position
-when that view is visible again.
-The first status line names Map 21, the diagnostic and unexecuted init until the bounded guard action
+Map 21 arrival has palette 0 and slots `[6,23,44,53,8]`, which differ from the shared castle family.
+The explicit base-atlas launch binds `world.map21.base-tileset-atlas` from the accepted full pack,
+using the exact 2x/4x digests and current runtime's working layout, blocks and area. Camera focus,
+crop and player drawing keep the existing destination/locomotion policy. Missing or changed assets
+fail closed; the shared castle atlas cannot substitute for the Map 21 selection. Traversal-only
+launches retain their diagnostic grid, with status placed below whichever viewport is active.
+The first status line names Map 21, the controlled arrival and unexecuted init until the bounded guard action
 is available. At `(4,16)` facing RIGHT, it offers the explicit controlled F result; after F it identifies
 the guard's completed move. The existing authored diamond follows guard occupancy from `(5,16)` to
-`(6,16)` without a direction or original-art claim. F preserves player position/facing by remake policy;
+`(6,16)` without a direction line or original-art claim. Its immutable source-facing byte is not drawn.
+F preserves player position/facing by remake policy;
 ordinary Right/Up supplies the later `(5,15)`/UP endpoint. The real composition adapter handles both
 guard success and rejection. Neither source entity135's facing effect nor natural script timing is applied.
-Unknown or mismatched runtime/visual selections still reject instead of taking this diagnostic branch.
-This does not bind castle pixels to Map 21 or add an atlas/NPC asset.
+Unknown or mismatched runtime/visual selections still reject. Only the fixed Map 21 atlas is newly
+consumed; Map 3 overlays and NPC diagnostics remain scoped to Map 3, and no NPC asset is added.
 
 ### Reproduce the bounded native image review
 
@@ -659,12 +659,12 @@ then drives the accepted fixture through the 38-input royal route, controlled pa
 return, Astral approach/F, released west route, three Left inputs into Map 21, and the controlled guard
 F followed by ordinary Right/Up. Ten real Godot
 viewport captures cover Map 3,
-Map 19 entry, Map 20 royal, Astral before/after F, Map 20 west, the Map 21 diagnostic, guard before/after
+Map 19 entry, Map 20 royal, Astral before/after F, Map 20 west, the Map 21 base atlas, guard before/after
 F, and the actual walk endpoint. Map 3-to-19 is a seeded projection
 seam. This does not establish a complete natural player route, original init execution or H4.
 
 Use a clean committed head after the owning tests and official Godot gate. Export only `manifests`
-and `runtime` from accepted asset commit `9acff63cd3285be07736c07839034487327cf41c` into a fresh
+and `runtime` from accepted asset commit `c8dcc451e7210a1cd433865431151a1de62a1573` into a fresh
 ignored directory. Set `SF2_PRIVATE_CANONICAL_MAP_IMPORT` and `SF2_PRIVATE_PRESENTATION_ASSET_ROOT`
 to the isolated accepted inputs. Set `SF2_CASTLE_REVIEW_EDITOR` to the official 4.7.2 Mono editor
 extracted inside this worktree by the Godot gate, and `SF2_CASTLE_REVIEW_ROOT` to a **fresh** absolute
@@ -675,11 +675,18 @@ The recipe copies production sources verbatim from the recorded Git head. Its on
 source is the tracked probe; scene selection, seed/reflection, deterministic route driving, disabled
 unsolicited callbacks and capture are instrumentation. The native process uses the actual Windows
 renderer with a hidden startup window; a headless/dummy renderer cannot substitute for these images.
+For required local tests, set `SF2_REQUIRE_PRIVATE_TESTS=1` with the canonical and runtime-asset
+input variables above. Point both `TEMP` and `TMP` at this worktree's ignored test scratch:
+the missing/changed-payload checks copy only manifests and runtime buckets there and never alter
+the supplied asset input.
+
 The process receipt records the code head, bounded exit/timeout/cleanup state and each step. Inspect
-all ten PNGs and the per-frame selection/area/layout/atlas/glyph receipt. The first six retain
-the destination camera and player-rectangle checks. The seventh requires a visible traversal view,
-hidden base view, Map 21 `(3,16)`/area 1, crop `(0,13)`, raw facing 0 and the exact record-4 source receipt.
-Its status label must sit below the diagnostic grid without covering cells. Frames eight through ten
+all ten PNGs and the per-frame selection/area/layout/atlas/glyph receipt. Each Map 21 frame also samples
+the rendered guard diamond's center and downward interior to reject a spurious facing line.
+The first six retain the destination camera and player-rectangle checks. The seventh requires a
+visible Map 21 base atlas and hidden traversal view, `(3,16)`/area 1, crop `(0,13)`, raw facing 0
+and the exact record-4 source receipt. Later operations clear that receipt under the existing
+per-operation contract. The status label must sit below the base viewport. Frames eight through ten
 check the visible player and undirected guard marker, the real F adapter's prompt/completion text, and
 the ordinary walk endpoint. Wrong-position and duplicate F calls use that same adapter and preserve
 snapshot/locomotion/bridge without throwing. An image failure is a failed
@@ -740,8 +747,8 @@ steps = [
                 "--canonical-map-import=" + os.environ["SF2_PRIVATE_CANONICAL_MAP_IMPORT"],
                 "--private-map3-base-view", "--private-map3-base-atlas",
                 "--presentation-asset-root=" + os.environ["SF2_PRIVATE_PRESENTATION_ASSET_ROOT"],
-                "--presentation-asset-commit=9acff63cd3285be07736c07839034487327cf41c",
-                "--presentation-manifest-sha256=81834D1787BAECD27BC1757E0A76E493310821AD9D6A2F60753F3F08963E144A"]),
+                "--presentation-asset-commit=c8dcc451e7210a1cd433865431151a1de62a1573",
+                "--presentation-manifest-sha256=520E15367DAB8D6669AA9ABDE9279A33231D81AE3667DE851EACAD2CEB5A1146"]),
 ]
 receipts = []
 for name, command in steps:

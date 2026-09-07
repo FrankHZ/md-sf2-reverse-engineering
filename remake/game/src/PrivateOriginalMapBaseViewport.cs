@@ -955,6 +955,7 @@ internal enum PrivateMap3LiveRouteActorGlyphKind
     SarahDiamond,
     Zone601Square,
     AstralDiamond,
+    MiddleTowerGuardDiamond,
 }
 
 internal sealed record PrivateMap3LiveRouteActorGlyph(
@@ -1043,6 +1044,13 @@ internal sealed class PrivateMap3LiveRouteActorGlyphProjection
             OriginalMapEntityDefinition actor = snapshot.Definition.AstralAcceptance!.Actor;
             actors.Add(Create(PrivateMap3LiveRouteActorGlyphKind.AstralDiamond, 140,
                 actor.Identity, actor.Position, actor.OpaqueFacing, baseProjection));
+        }
+
+        if (snapshot.MiddleTowerGuardPosition is { } guardPosition)
+        {
+            OriginalMapEntityDefinition actor = snapshot.Definition.MiddleTowerGuard!.Actor;
+            actors.Add(Create(PrivateMap3LiveRouteActorGlyphKind.MiddleTowerGuardDiamond, 128,
+                actor.Identity, guardPosition, actor.OpaqueFacing, baseProjection));
         }
 
         if (actors.Count > 0)
@@ -1359,7 +1367,8 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         if (PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
                 snapshot.CurrentRuntime.VisualResourceSelection) != mount.Definition.AssetId ||
             !(PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(mount.Definition, mount.Bucket) ||
-                PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(mount.Definition, mount.Bucket)) ||
+                PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(mount.Definition, mount.Bucket) ||
+                PrivateLocalPresentationAssetCatalog.IsExactMap21BaseAtlasBinding(mount.Definition, mount.Bucket)) ||
             mount.Bucket.Width != checked(
                 PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalWidth *
                 mount.Bucket.Scale) ||
@@ -1826,7 +1835,8 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         Vector2 center = rectangle.GetCenter();
         float half = rectangle.Size.X / 2;
         if (actor.Kind is PrivateMap3LiveRouteActorGlyphKind.SarahDiamond or
-            PrivateMap3LiveRouteActorGlyphKind.AstralDiamond)
+            PrivateMap3LiveRouteActorGlyphKind.AstralDiamond or
+            PrivateMap3LiveRouteActorGlyphKind.MiddleTowerGuardDiamond)
         {
             Vector2[] points =
             [
@@ -1835,8 +1845,8 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                 center + new Vector2(0, half),
                 center + new Vector2(-half, 0),
             ];
-            DrawColoredPolygon(points, actor.Kind == PrivateMap3LiveRouteActorGlyphKind.AstralDiamond
-                ? new Color("b5a0ff") : SarahGlyphColor);
+            DrawColoredPolygon(points, actor.Kind == PrivateMap3LiveRouteActorGlyphKind.SarahDiamond
+                ? SarahGlyphColor : new Color("b5a0ff"));
             DrawPolyline([.. points, points[0]], RouteActorOutlineColor, width: 2);
         }
         else
@@ -1849,6 +1859,12 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                 new Vector2(rectangle.Position.X, rectangle.End.Y),
                 RouteActorOutlineColor,
                 width: 2);
+        }
+
+        // The guard's immutable source facing does not establish a post-script facing effect.
+        if (actor.Kind == PrivateMap3LiveRouteActorGlyphKind.MiddleTowerGuardDiamond)
+        {
+            return;
         }
 
         Vector2 facing = actor.OpaqueFacing switch

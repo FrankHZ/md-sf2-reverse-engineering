@@ -21,13 +21,13 @@ public sealed class PrivateMap3PresenterTests
     }
 
     [Fact]
-    public void MiddleTowerStatusExplainsTheVisibleDiagnosticWithoutOfferingUnadmittedInteraction()
+    public void MiddleTowerArrivalStatusRetainsTheControlledBoundaryInEitherView()
     {
         var snapshot = PrivateOriginalMapTraversalViewportTests.CrossMapSnapshot(middleTower: true);
         string status = PrivateMap3PresentationPlan.FormatStatus(snapshot, new string('x', 500));
         Assert.StartsWith("Middle tower Map 21 reached.", status);
-        Assert.Contains("Diagnostic traversal", status);
-        Assert.Contains("no admitted atlas", status);
+        Assert.Contains("Controlled arrival", status);
+        Assert.DoesNotContain("no admitted atlas", status);
         Assert.Contains("init not executed", status);
         Assert.DoesNotContain("F ", status);
         Assert.DoesNotContain("Zone601", status);
@@ -46,6 +46,25 @@ public sealed class PrivateMap3PresenterTests
             hasBaseViewport: true, showTraversalOnInitialMap: false, hasCastleAtlas: mounted);
         Assert.Equal(expectedBase, visible.BaseVisible);
         Assert.Equal(!expectedBase, visible.TraversalVisible);
+    }
+
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, false, false)]
+    [InlineData(false, true, false)]
+    public void MiddleTowerBaseVisibilityRequiresItsOwnMountAndKeepsTraversalOnlyMode(
+        bool hasBaseViewport, bool hasMap21Atlas, bool expectedBase)
+    {
+        var visible = PrivateMap3Presenter.ProjectionVisibility(new("map21"), new("map3"),
+            hasBaseViewport, showTraversalOnInitialMap: false,
+            hasCastleAtlas: true, hasMap21Atlas: hasMap21Atlas);
+        Assert.Equal(expectedBase, visible.BaseVisible);
+        Assert.Equal(!expectedBase, visible.TraversalVisible);
+        var unsupported = PrivateMap3Presenter.ProjectionVisibility(new("map40"), new("map3"),
+            hasBaseViewport, showTraversalOnInitialMap: false,
+            hasCastleAtlas: true, hasMap21Atlas: hasMap21Atlas);
+        Assert.False(unsupported.BaseVisible);
+        Assert.True(unsupported.TraversalVisible);
     }
 
     [Fact]
