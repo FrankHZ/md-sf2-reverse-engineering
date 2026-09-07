@@ -10,6 +10,19 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateOriginalMapTraversalViewportTests
 {
     [Fact]
+    public void MiddleTowerDiagnosticMarksTheAdmittedGuardSeparatelyFromThePlayer()
+    {
+        var snapshot = CrossMapSnapshot(middleTower: true);
+        var projection = PrivateOriginalMapTraversalViewProjection.Create(snapshot);
+        var guard = Assert.Single(projection.Cells, cell => cell.IsMiddleTowerGuard);
+        Assert.Equal((5, 16), (guard.MapX, guard.MapY));
+        Assert.False(guard.IsPlayer);
+        Assert.False(guard.IsAstral);
+        Assert.DoesNotContain(PrivateOriginalMapTraversalViewProjection.Create(CrossMapSnapshot()).Cells,
+            cell => cell.IsMiddleTowerGuard);
+    }
+
+    [Fact]
     public void MiddleTowerDiagnosticUsesDestinationRuntimeAndPlayerWithinItsArea()
     {
         var snapshot = CrossMapSnapshot(middleTower: true);
@@ -396,7 +409,8 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             sameMapWarps: null,
             unsupportedCapabilities: ["project-authored-unknown"],
             runtimeCatalog: catalog,
-            northMap19Transition: transition);
+            northMap19Transition: transition,
+            middleTowerGuard: middleTower ? new(destination.EntityPopulation.Records[0]) : null);
         OriginalMapImportReceipt receipt = new(
             OriginalMapRuntimeAdmission.PackageId,
             OriginalMapRuntimeAdmission.SchemaVersion,
@@ -463,12 +477,12 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             setup,
         [
             new OriginalMapEntityDefinition(
-                new OriginalMapEntityRecordIdentity(blockResourceId + "-entities", 1),
-                checked((byte)entityPosition.X),
-                checked((byte)entityPosition.Y),
-                opaqueFacing: 0,
-                mapSprite: 0,
-                [0, 0, 0, 0]),
+                new OriginalMapEntityRecordIdentity(map.Value == "map21" ? "ms_map21_Entities" : blockResourceId + "-entities", 1),
+                map.Value == "map21" ? (byte)5 : checked((byte)entityPosition.X),
+                map.Value == "map21" ? (byte)16 : checked((byte)entityPosition.Y),
+                opaqueFacing: map.Value == "map21" ? (byte)3 : (byte)0,
+                mapSprite: map.Value == "map21" ? (byte)206 : (byte)0,
+                map.Value == "map21" ? [0, 4, 0x60, 0xCE] : [0, 0, 0, 0]),
         ]);
         return new OriginalMapExplorationRuntimeDefinition(
             map,

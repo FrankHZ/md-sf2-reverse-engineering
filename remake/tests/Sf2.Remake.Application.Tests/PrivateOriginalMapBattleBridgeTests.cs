@@ -9,7 +9,7 @@ namespace Sf2.Remake.Application.Tests;
 public sealed class PrivateOriginalMapBattleBridgeTests
 {
     [Fact]
-    public void PalaceFirstVisitCannotMutateAnActiveBattleBridgeOrExploration()
+    public void ControlledSceneResultsCannotMutateAnActiveBattleBridgeOrExploration()
     {
         PrivateOriginalMapGameSessionStarted started = Start();
         GameSession session = started.Session;
@@ -24,6 +24,11 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             session.CompletePrivateOriginalMapPalaceFirstVisit(new(snapshot.SimulationStep,
                 OriginalMapPalaceFirstVisitPreset.ControlledClear605And507)));
         Assert.Equal(PrivateOriginalMapPalaceFirstVisitFailureCode.BattleBridgeBusy, rejected.Code);
+        var guardRejected = Assert.IsType<PrivateOriginalMapMiddleTowerGuardRejected>(
+            session.CompletePrivateOriginalMapMiddleTowerGuard(new(snapshot.SimulationStep,
+                OriginalMapMiddleTowerGuardPreset.ControlledPostAstralAndLocal256Clear)));
+        Assert.Equal(PrivateOriginalMapMiddleTowerGuardFailureCode.BattleBridgeBusy, guardRejected.Code);
+        Assert.Same(snapshot, guardRejected.Snapshot);
         Assert.Same(snapshot, rejected.Snapshot);
         Assert.Same(snapshot, session.PrivateOriginalMapSnapshot);
         Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
@@ -572,7 +577,8 @@ public sealed class PrivateOriginalMapBattleBridgeTests
             AcceptedOriginalMapRuntimeCatalog.RoyalReturn(),
             new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]),
             AcceptedOriginalMapRuntimeCatalog.WestTower(),
-            AcceptedOriginalMapRuntimeCatalog.MiddleTower());
+            AcceptedOriginalMapRuntimeCatalog.MiddleTower(),
+            new(runtimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0]));
     }
 
     private static OriginalMapSameMapWarpCatalog SameMapWarps(MapId map) =>

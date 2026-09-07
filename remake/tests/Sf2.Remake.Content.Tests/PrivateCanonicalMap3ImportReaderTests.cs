@@ -85,6 +85,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 OriginalMapRuntimeAdmission.RoyalReturnMap19TransitionCapability,
                 OriginalMapRuntimeAdmission.WestTowerMap20TransitionCapability,
                 OriginalMapRuntimeAdmission.MiddleTowerMap21TransitionCapability,
+                OriginalMapRuntimeAdmission.MiddleTowerGuardCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -1318,7 +1319,48 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Same(west.MessengerAcceptance, middle.Snapshot.MessengerAcceptance);
         Assert.Same(west.CastleGate, middle.Snapshot.CastleGate);
         Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
-
+        CompleteMove(ExplorationDirection.East);
+        Assert.Equal(new MapPosition(4, 16), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByOccupiedEntity, CompleteMove(ExplorationDirection.East).Move.Traversal.Outcome);
+        var guardBefore = session.PrivateOriginalMapSnapshot;
+        var guardAnimation = session.PrivateOriginalMapPlayerLocomotion;
+        Assert.True(guardBefore.Sarah!.TemporaryRouteFlag256Set);
+        var guardApplied = Assert.IsType<PrivateOriginalMapMiddleTowerGuardApplied>(
+            session.RequestPrivateOriginalMapInteraction(guardBefore.SimulationStep));
+        Assert.Same(guardAnimation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Equal((byte)0, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        Assert.Equal(new MapPosition(4, 16), guardApplied.Snapshot.PlayerPosition);
+        Assert.Equal(new MapPosition(6, 16), guardApplied.Snapshot.MiddleTowerGuardPosition);
+        Assert.True(guardApplied.Receipt.HandlerFlag256Set && guardApplied.Receipt.ProgramFlag401Set &&
+            guardApplied.Receipt.ProgramStoryFlag1Set);
+        Assert.Equal(new MapPosition(5, 16), definition.MiddleTowerGuard!.Actor.Position);
+        Assert.Equal((byte)3, definition.MiddleTowerGuard.Actor.OpaqueFacing);
+        CompleteMove(ExplorationDirection.East);
+        Assert.Equal(new MapPosition(5, 16), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByOccupiedEntity, CompleteMove(ExplorationDirection.East).Move.Traversal.Outcome);
+        CompleteMove(ExplorationDirection.North);
+        var guardEndpoint = session.PrivateOriginalMapSnapshot;
+        Assert.Equal(new MapPosition(5, 15), guardEndpoint.PlayerPosition);
+        Assert.Equal((byte)1, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        Assert.Same(guardApplied.Receipt, guardEndpoint.MiddleTowerGuard);
+        Assert.Same(guardBefore.Receipt, guardEndpoint.Receipt);
+        Assert.Same(guardBefore.PalaceFirstVisit, guardEndpoint.PalaceFirstVisit);
+        Assert.Same(guardBefore.AstralAcceptance, guardEndpoint.AstralAcceptance);
+        Assert.Same(guardBefore.Zone601, guardEndpoint.Zone601);
+        Assert.Same(guardBefore.Sarah, guardEndpoint.Sarah);
+        Assert.Same(guardBefore.Entity142, guardEndpoint.Entity142);
+        Assert.Same(guardBefore.MessengerAcceptance, guardEndpoint.MessengerAcceptance);
+        Assert.Same(guardBefore.CastleGate, guardEndpoint.CastleGate);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        var duplicate = Assert.IsType<PrivateOriginalMapMiddleTowerGuardRejected>(
+            session.RequestPrivateOriginalMapInteraction(guardEndpoint.SimulationStep));
+        Assert.Equal(PrivateOriginalMapMiddleTowerGuardFailureCode.AlreadyCompleted, duplicate.Code);
+        Assert.Same(guardEndpoint, session.PrivateOriginalMapSnapshot);
+        using var canonicalBodies = JsonDocument.Parse(File.ReadAllText(
+            Environment.GetEnvironmentVariable("SF2_PRIVATE_CANONICAL_MAP_IMPORT")!));
+        Assert.DoesNotContain(canonicalBodies.RootElement.GetProperty("resources").EnumerateObject()
+                .SelectMany(collection => collection.Value.EnumerateArray()),
+            resource => resource.GetProperty("id").GetString() is "Map21_EntityEvent0" or "cs_53EF4");
     }
 
     private static OriginalMapImportResult Admit(JsonObject document)
@@ -1765,6 +1807,15 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         PalaceResource(document, "setupRoutes", "MapSetupRoute21")["map"] = 21;
         PalaceResource(document, "areaTables", "Map21s2_Areas")["records"] = JsonSerializer.SerializeToNode(
             new[] { AreaRecord(0, 0, 11, 21, secondForegroundY: 22, defaultMusic: 38) });
+        PalaceResource(document, "entityLists", "ms_map21_Entities")["address"] = 343672;
+        var guardEvents = PalaceResource(document, "entityEventHandlers", "ms_map21_EntityEvents");
+        guardEvents["address"] = 343698;
+        guardEvents["kind"] = "table";
+        guardEvents["records"] = JsonSerializer.SerializeToNode(new[]
+        {
+            new { address = 343698, kind = "specific", relativeOffset = 28, resolvedTargetAddress = 343726, entity = 128, flags = 3 },
+            new { address = 343702, kind = "default", relativeOffset = 96, resolvedTargetAddress = 343794, entity = 253, flags = 0 },
+        });
         PalaceResource(document, "entityLists", "ms_map21_Entities")["records"] = JsonSerializer.SerializeToNode(new[]
         {
             new { address = 343672, kind = "fixed", rawX = 5, rawY = 16, x = 5, y = 16,
@@ -2173,6 +2224,82 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(transition.Destination.X, edge.GetProperty("to").GetProperty("point")[0].GetInt32());
         Assert.Equal(transition.Destination.Y, edge.GetProperty("to").GetProperty("point")[1].GetInt32());
         Assert.Equal("RIGHT", edge.GetProperty("to").GetProperty("facing").GetString());
+    }
+
+    [Theory]
+    [InlineData(0, "address", 343702)]
+    [InlineData(0, "relativeOffset", 29)]
+    [InlineData(0, "resolvedTargetAddress", 343727)]
+    [InlineData(0, "entity", 129)]
+    [InlineData(0, "flags", 1)]
+    [InlineData(1, "address", 343698)]
+    [InlineData(1, "relativeOffset", 95)]
+    [InlineData(1, "resolvedTargetAddress", 343795)]
+    [InlineData(1, "entity", 128)]
+    [InlineData(1, "flags", 3)]
+    public void MiddleTowerGuardRejectsExactEventOperandDrift(int row, string field, int value)
+    {
+        var document = SampleDocument();
+        PalaceResource(document, "entityEventHandlers", "ms_map21_EntityEvents")["records"]![row]![field] = value;
+        AssertCode(Admit(document), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Theory]
+    [InlineData("setup")]
+    [InlineData("table-address")]
+    [InlineData("table-kind")]
+    [InlineData("missing-row")]
+    [InlineData("row-kind")]
+    [InlineData("unknown-field")]
+    [InlineData("actor-address")]
+    [InlineData("actor-x")]
+    [InlineData("actor-facing")]
+    [InlineData("actor-sprite")]
+    [InlineData("actor-action")]
+    public void MiddleTowerGuardRejectsSourceJoinAndActorDrift(string drift)
+    {
+        var document = SampleDocument();
+        var table = PalaceResource(document, "entityEventHandlers", "ms_map21_EntityEvents");
+        var actor = PalaceResource(document, "entityLists", "ms_map21_Entities")["records"]![0]!;
+        switch (drift)
+        {
+            case "setup": PalaceResource(document, "setupDefinitions", "ms_map21")["references"]!["entityEvents"] = "ms_map20_EntityEvents"; break;
+            case "table-address": table["address"] = 343700; break;
+            case "table-kind": table["kind"] = "function"; break;
+            case "missing-row": table["records"]!.AsArray().RemoveAt(1); break;
+            case "row-kind": table["records"]![0]!["kind"] = "default"; break;
+            case "unknown-field": table["records"]![0]!["unexpected"] = 0; break;
+            case "actor-address": actor["address"] = 343680; break;
+            case "actor-x": actor["rawX"] = 6; actor["x"] = 6; break;
+            case "actor-facing": actor["facing"] = 0; break;
+            case "actor-sprite": actor["mapSprite"] = 207; break;
+            case "actor-action": actor["actionValue"] = 286925; break;
+        }
+        AssertCode(Admit(document), drift == "unknown-field"
+            ? OriginalMapImportFailureCode.InvalidDocument : OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void MiddleTowerGuardBindsTheCompiledH2ContractWithoutInventingCanonicalScriptBodies()
+    {
+        var definition = Assert.IsType<OriginalMapImportAccepted>(Admit(SampleDocument())).Definition;
+        var guard = Assert.IsType<OriginalMapMiddleTowerGuardDefinition>(definition.MiddleTowerGuard);
+        Assert.Same(definition.RuntimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0], guard.Actor);
+        Assert.Equal("Map21_EntityEvent0", guard.HandlerIdentity);
+        Assert.Equal(343726, guard.HandlerAddress);
+        Assert.Equal(579, guard.TextId);
+        string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+            "../../../../../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json"));
+        using var fixture = JsonDocument.Parse(File.ReadAllText(path));
+        var program = fixture.RootElement.GetProperty("static").GetProperty("programs").GetProperty(guard.ProgramIdentity);
+        Assert.Equal(guard.ProgramAddress, program.GetProperty("address").GetInt32());
+        Assert.Equal(guard.ProgramControlEffectSha256, program.GetProperty("controlEffectSha256").GetString());
+        Assert.Equal(new[] { "entityActionsWait 128", "moveRight 1", "endActions", "setFacing 135,DOWN", "setStoryFlag 1", "csc_end" },
+            program.GetProperty("operations").EnumerateArray().Select(op => op.GetString()));
+        Assert.Equal(guard.HandlerCompletionFlag, program.GetProperty("semantics").GetProperty("handlerSetFlag").GetInt32());
+        Assert.Equal(guard.ProgramStoryFlag, program.GetProperty("semantics").GetProperty("setStoryFlag").GetInt32());
+        Assert.Equal(guard.ProgramCompletionFlag, program.GetProperty("semantics").GetProperty("battleUnlockFlag").GetInt32());
+        // No player endpoint/facing is inferred from the navigation segment or entity-135 operation.
     }
 
     private static JsonObject PalaceResource(JsonObject document, string collection, string id) =>

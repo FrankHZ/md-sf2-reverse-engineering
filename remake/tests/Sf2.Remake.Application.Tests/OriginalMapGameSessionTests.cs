@@ -1609,6 +1609,136 @@ public sealed class OriginalMapGameSessionTests
         Assert.Same(seeded.AstralAcceptance, result.Snapshot.AstralAcceptance);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void MiddleTowerGuardMovesOnlyItsOccupancyAndRetainsTheControlledRoute(bool semanticF)
+    {
+        var session = ReachMiddleTowerGuard();
+        Assert.Equal(new MapPosition(5, 16), session.PrivateOriginalMapSnapshot.MiddleTowerGuardPosition);
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByOccupiedEntity,
+            FinishMove(session, ExplorationDirection.East).Move.Traversal.Outcome);
+        var before = session.PrivateOriginalMapSnapshot;
+        var animation = session.PrivateOriginalMapPlayerLocomotion;
+        var bridge = session.PrivateOriginalMapBattleBridge;
+        Assert.True(before.Sarah!.TemporaryRouteFlag256Set);
+        var result = semanticF
+            ? session.RequestPrivateOriginalMapInteraction(before.SimulationStep)
+            : session.CompletePrivateOriginalMapMiddleTowerGuard(new(before.SimulationStep,
+                OriginalMapMiddleTowerGuardPreset.ControlledPostAstralAndLocal256Clear));
+        var applied = Assert.IsType<PrivateOriginalMapMiddleTowerGuardApplied>(result);
+        var after = applied.Snapshot;
+        Assert.Equal(before.SimulationStep + 1, after.SimulationStep);
+        Assert.Same(applied.Receipt, after.MiddleTowerGuard);
+        Assert.Same(before.CurrentRuntime, after.CurrentRuntime);
+        Assert.Same(before.WorkingLayout, after.WorkingLayout);
+        Assert.Equal(new MapPosition(4, 16), after.PlayerPosition);
+        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Equal((byte)0, animation.OpaqueFacing);
+        Assert.Equal(new MapPosition(6, 16), after.MiddleTowerGuardPosition);
+        Assert.Equal(new MapPosition(5, 16), after.Definition.MiddleTowerGuard!.Actor.Position);
+        Assert.Equal((byte)3, after.Definition.MiddleTowerGuard.Actor.OpaqueFacing);
+        Assert.True(applied.Receipt.HandlerFlag256Set);
+        Assert.True(applied.Receipt.ProgramStoryFlag1Set);
+        Assert.True(applied.Receipt.ProgramFlag401Set);
+        Assert.Equal(256, applied.Receipt.Definition.HandlerCompletionFlag);
+        Assert.Equal(1, applied.Receipt.Definition.ProgramStoryFlag);
+        Assert.Equal(401, applied.Receipt.Definition.ProgramCompletionFlag);
+        Assert.Same(before.Receipt, after.Receipt);
+        Assert.Same(before.PalaceFirstVisit, after.PalaceFirstVisit);
+        Assert.Same(before.AstralAcceptance, after.AstralAcceptance);
+        Assert.Same(before.Zone601, after.Zone601);
+        Assert.Same(before.Sarah, after.Sarah);
+        Assert.Same(before.Entity142, after.Entity142);
+        Assert.Same(before.MessengerAcceptance, after.MessengerAcceptance);
+        Assert.Same(before.CastleGate, after.CastleGate);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        FinishMove(session, ExplorationDirection.East);
+        Assert.Equal(new MapPosition(5, 16), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        Assert.Equal(OriginalMapTraversalOutcome.BlockedByOccupiedEntity,
+            FinishMove(session, ExplorationDirection.East).Move.Traversal.Outcome);
+        Assert.Equal(new MapPosition(5, 16), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        FinishMove(session, ExplorationDirection.North);
+        Assert.Equal(new MapPosition(5, 15), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        Assert.Equal((byte)1, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        Assert.Same(applied.Receipt, session.PrivateOriginalMapSnapshot.MiddleTowerGuard);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        var restarted = Start(before.Definition).PrivateOriginalMapSnapshot;
+        Assert.Equal(new MapId("map3"), restarted.Map);
+        Assert.Null(restarted.MiddleTowerGuard);
+        Assert.Null(restarted.MiddleTowerGuardPosition);
+    }
+
+    [Theory]
+    [InlineData("stale", PrivateOriginalMapMiddleTowerGuardFailureCode.StaleSimulationStep)]
+    [InlineData("preset", PrivateOriginalMapMiddleTowerGuardFailureCode.InvalidPreset)]
+    [InlineData("moving", PrivateOriginalMapMiddleTowerGuardFailureCode.LocomotionBusy)]
+    [InlineData("position", PrivateOriginalMapMiddleTowerGuardFailureCode.InteractionTargetMismatch)]
+    [InlineData("facing", PrivateOriginalMapMiddleTowerGuardFailureCode.InteractionTargetMismatch)]
+    [InlineData("map", PrivateOriginalMapMiddleTowerGuardFailureCode.InteractionTargetMismatch)]
+    [InlineData("duplicate", PrivateOriginalMapMiddleTowerGuardFailureCode.AlreadyCompleted)]
+    [InlineData("palace", PrivateOriginalMapMiddleTowerGuardFailureCode.InteractionTargetMismatch)]
+    [InlineData("astral", PrivateOriginalMapMiddleTowerGuardFailureCode.InteractionTargetMismatch)]
+    [InlineData("gate", PrivateOriginalMapMiddleTowerGuardFailureCode.InteractionTargetMismatch)]
+    public void MiddleTowerGuardRejectsInvalidRequestsWithoutMutation(
+        string scenario, PrivateOriginalMapMiddleTowerGuardFailureCode code)
+    {
+        var session = scenario == "map" ? ReachWestTower() : ReachMiddleTowerGuard();
+        if (scenario == "position") FinishMove(session, ExplorationDirection.South);
+        if (scenario == "facing")
+        {
+            FinishMove(session, ExplorationDirection.South);
+            FinishMove(session, ExplorationDirection.North);
+        }
+        if (scenario == "moving") session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.West));
+        if (scenario == "duplicate")
+            Assert.IsType<PrivateOriginalMapMiddleTowerGuardApplied>(
+                session.RequestPrivateOriginalMapInteraction(session.PrivateOriginalMapSnapshot.SimulationStep));
+        if (scenario is "palace" or "astral" or "gate")
+        {
+            var source = session.PrivateOriginalMapSnapshot;
+            var seeded = new PrivateOriginalMapSessionSnapshot(source.Definition, source.Receipt, source.WorkingLayout,
+                source.SimulationStep + 1, source.PlayerPosition,
+                source.CurrentRuntime.Traversal.TryMove(source.WorkingLayout, new(3, 16), ExplorationDirection.East),
+                false, null, zone601: source.Zone601, sarah: source.Sarah, entity142: source.Entity142,
+                messengerAcceptance: source.MessengerAcceptance,
+                castleGate: scenario == "gate" ? PrivateOriginalMapCastleGateState.Ready(source.Definition.CastleGate!) : source.CastleGate,
+                currentRuntime: source.CurrentRuntime, palaceFirstVisit: scenario == "palace" ? null : source.PalaceFirstVisit,
+                astralAcceptance: scenario is "palace" or "astral" ? null : source.AstralAcceptance);
+            typeof(GameSession).GetField("_privateOriginalMapSnapshot",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.SetValue(session, seeded);
+        }
+        var before = session.PrivateOriginalMapSnapshot;
+        var animation = session.PrivateOriginalMapPlayerLocomotion;
+        var bridge = session.PrivateOriginalMapBattleBridge;
+        var rejected = Assert.IsType<PrivateOriginalMapMiddleTowerGuardRejected>(
+            session.CompletePrivateOriginalMapMiddleTowerGuard(new(before.SimulationStep + (scenario == "stale" ? 1 : 0),
+                scenario == "preset" ? (OriginalMapMiddleTowerGuardPreset)99 :
+                    OriginalMapMiddleTowerGuardPreset.ControlledPostAstralAndLocal256Clear)));
+        Assert.Equal(code, rejected.Code);
+        Assert.Same(before, rejected.Snapshot);
+        Assert.Same(before, session.PrivateOriginalMapSnapshot);
+        Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+        Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+    }
+
+    [Fact]
+    public void MiddleTowerGuardCapabilityRequiresItsDefinition()
+    {
+        AssertRejectedDefinition(Definition(EmptyWords(), omitMiddleTowerGuard: true),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    private static GameSession ReachMiddleTowerGuard()
+    {
+        var session = ReachWestTower();
+        for (int input = 0; input < 3; input++) FinishMove(session, ExplorationDirection.West);
+        FinishMove(session, ExplorationDirection.East);
+        Assert.Equal(new MapId("map21"), session.PrivateOriginalMapSnapshot.Map);
+        Assert.Equal(new MapPosition(4, 16), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        return session;
+    }
+
     private static GameSession ReachWestTower()
     {
         var session = ReachAstral(faceActor: true);
@@ -3264,7 +3394,8 @@ public sealed class OriginalMapGameSessionTests
             runtimeCatalog.Records.Count == 1 ? null : definition.RoyalReturnMap19Transition,
             runtimeCatalog.Records.Count == 1 ? null : new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]),
             runtimeCatalog.Records.Count == 1 ? null : definition.WestTowerMap20Transition,
-            runtimeCatalog.Records.Count == 1 ? null : definition.MiddleTowerMap21Transition);
+            runtimeCatalog.Records.Count == 1 ? null : definition.MiddleTowerMap21Transition,
+            runtimeCatalog.Records.Count == 1 ? null : new(runtimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0]));
 
     private static OriginalMapImportAccepted Accepted(
         OriginalMapImportDefinition? definition = null,
@@ -3301,7 +3432,8 @@ public sealed class OriginalMapGameSessionTests
         OriginalMapCrossMapTransitionDefinition? westTower = null,
         bool omitWestTower = false,
         OriginalMapCrossMapTransitionDefinition? middleTower = null,
-        bool omitMiddleTower = false)
+        bool omitMiddleTower = false,
+        bool omitMiddleTowerGuard = false)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -3395,7 +3527,8 @@ public sealed class OriginalMapGameSessionTests
             omitRoyalReturn ? null : royalReturn ?? AcceptedOriginalMapRuntimeCatalog.RoyalReturn(),
             new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]),
             omitWestTower ? null : westTower ?? AcceptedOriginalMapRuntimeCatalog.WestTower(),
-            omitMiddleTower ? null : middleTower ?? AcceptedOriginalMapRuntimeCatalog.MiddleTower());
+            omitMiddleTower ? null : middleTower ?? AcceptedOriginalMapRuntimeCatalog.MiddleTower(),
+            omitMiddleTowerGuard ? null : new(runtimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0]));
     }
 
     private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>

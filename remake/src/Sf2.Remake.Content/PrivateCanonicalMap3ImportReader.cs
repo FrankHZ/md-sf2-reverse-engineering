@@ -96,6 +96,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         OriginalMapRuntimeAdmission.RoyalReturnMap19TransitionCapability,
         OriginalMapRuntimeAdmission.WestTowerMap20TransitionCapability,
         OriginalMapRuntimeAdmission.MiddleTowerMap21TransitionCapability,
+        OriginalMapRuntimeAdmission.MiddleTowerGuardCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -502,7 +503,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             ReadAcceptedRoyalReturn(map20References, resources),
             ReadAstralAcceptance(map19Runtime, resources),
             ReadAcceptedWestTowerEntry(map19References, resources),
-            ReadAcceptedMiddleTowerEntry(map20References, resources));
+            ReadAcceptedMiddleTowerEntry(map20References, resources),
+            ReadMiddleTowerGuard(map21Runtime, resources));
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -778,6 +780,49 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             3, 36, new(4, 37), ExplorationDirection.West, new(3, 36),
             new MapId(OriginalMapRuntimeAdmission.Map21Id), new(3, 16),
             checked((byte)RequiredInt(row, "facing", field)));
+    }
+
+    private static OriginalMapMiddleTowerGuardDefinition ReadMiddleTowerGuard(
+        OriginalMapExplorationRuntimeDefinition runtime,
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        const string field = "map21.middleTowerGuard";
+        JsonElement setup = RequiredResource(resources, "setupDefinitions", "ms_map21");
+        JsonElement references = RequiredProperty(setup, "references", field);
+        if (RequiredString(references, "entityEvents", field) != "ms_map21_EntityEvents")
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                "The guard must retain the exact Map 21 setup/event join.");
+        JsonElement table = RequiredResource(resources, "entityEventHandlers", "ms_map21_EntityEvents");
+        RequireExactProperties(table, field, "id", "address", "kind", "records");
+        JsonElement records = RequiredProperty(table, "records", field);
+        RequireArray(records, field);
+        if (RequiredInt(table, "address", field) != 343698 ||
+            RequiredString(table, "kind", field) != "table" || records.GetArrayLength() != 2)
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                "The guard requires the exact two-row Map 21 event table.");
+        for (int index = 0; index < 2; index++)
+        {
+            JsonElement row = records[index];
+            RequireExactProperties(row, field, "address", "kind", "relativeOffset",
+                "resolvedTargetAddress", "entity", "flags");
+            if (RequiredInt(row, "address", field) != (index == 0 ? 343698 : 343702) ||
+                RequiredString(row, "kind", field) != (index == 0 ? "specific" : "default") ||
+                RequiredInt(row, "relativeOffset", field) != (index == 0 ? 28 : 96) ||
+                RequiredInt(row, "resolvedTargetAddress", field) != (index == 0 ? 343726 : 343794) ||
+                RequiredInt(row, "entity", field) != (index == 0 ? 128 : 253) ||
+                RequiredInt(row, "flags", field) != (index == 0 ? 3 : 0))
+                throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                    "The guard's ordered event records or handler join drifted.");
+        }
+        JsonElement entities = RequiredResource(resources, "entityLists", "ms_map21_Entities");
+        JsonElement actorRows = RequiredProperty(entities, "records", field);
+        if (RequiredInt(entities, "address", field) != 343672 || actorRows.GetArrayLength() != 1 ||
+            RequiredInt(actorRows[0], "address", field) != 343672)
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                "The guard actor source identity drifted.");
+        // Canonical data supplies only actor/setup/event bindings. The accepted H2 owner supplies
+        // Map21_EntityEvent0/cs_53EF4 behavior; neither body is interpreted from this import.
+        return new(runtime.EntityPopulation.Records[0]);
     }
 
     private static OriginalMapAstralAcceptanceDefinition ReadAstralAcceptance(

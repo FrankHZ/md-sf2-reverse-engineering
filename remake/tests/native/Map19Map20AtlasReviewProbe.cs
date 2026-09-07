@@ -12,6 +12,7 @@ namespace Sf2.Remake.GodotAdapter;
 public partial class Map19Map20AtlasReviewProbe : Node2D
 {
     private GameSession _session = null!;
+    private Map3Root _root = null!;
     private PrivateMap3Presenter _presenter = null!;
     private readonly List<object> _frames = [];
     private string _output = null!;
@@ -26,6 +27,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 throw new InvalidOperationException("Capture output must be an existing empty directory.");
             _fixture = JsonDocument.Parse(File.ReadAllText(RequiredPath("SF2_CASTLE_REVIEW_FIXTURE")));
             Map3Root root = GD.Load<PackedScene>("res://Main.tscn").Instantiate<Map3Root>();
+            _root = root;
             AddChild(root);
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             root.ProcessMode = ProcessModeEnum.Disabled;
@@ -60,6 +62,19 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             Require(_session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(4, 37), "Middle route second Left");
             Move(ExplorationDirection.West);
             await CaptureMiddleTowerDiagnostic();
+            ApplyGuardF(expectApplied: false); // Actual composition rejection at (3,16).
+            Move(ExplorationDirection.East);
+            _presenter.Project(_session.PrivateOriginalMapSnapshot, "Controlled guard approach", _session.PrivateOriginalMapPlayerLocomotion);
+            await CaptureGuard("08-map21-guard-before", new(4, 16), new(5, 16), completed: false);
+            ApplyGuardF(expectApplied: true);
+            await CaptureGuard("09-map21-guard-after", new(4, 16), new(6, 16), completed: true);
+            ApplyGuardF(expectApplied: false); // Duplicate stays immutable and must not throw in composition.
+            Move(ExplorationDirection.East);
+            Require(_session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(5, 16), "Guard old occupancy released");
+            Move(ExplorationDirection.North);
+            Require(_session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing == 1, "Ordinary Up owns final facing");
+            _presenter.Project(_session.PrivateOriginalMapSnapshot, "Controlled guard walk endpoint", _session.PrivateOriginalMapPlayerLocomotion);
+            await CaptureGuard("10-map21-guard-walk-endpoint", new(5, 15), new(6, 16), completed: true);
 
             File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new
             {
@@ -69,12 +84,12 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                     "PrivateLocalPresentationAssetCatalog", "PrivateMap3Presenter", "PrivateOriginalMapBaseViewport",
                     "PrivateMap3CameraProjection", "GameSession", "Application-owned player locomotion" },
                 instrumentation = new[] { "validated Map19 snapshot seed via existing private state factories",
-                    "fixture route driving", "disabled unsolicited physics/input callbacks", "FramePostDraw/SavePng" },
+                    "fixture route driving", "actual Map3Root F adapter via test-only reflection", "disabled unsolicited physics/input callbacks", "FramePostDraw/SavePng" },
                 assetCommit = PrivateLocalPresentationAssetCatalog.Map3AssetRepositoryCommit,
                 assetManifest = PrivateLocalPresentationAssetCatalog.Map3AssetManifestDigest,
                 frames = _frames,
             }, new JsonSerializerOptions { WriteIndented = true }));
-            GD.Print("SF2_CASTLE_ATLAS_NATIVE_REVIEW Pass frames=7 seeded-projection-only");
+            GD.Print("SF2_CASTLE_ATLAS_NATIVE_REVIEW Pass frames=10 seeded-projection-only");
             _fixture.Dispose();
             GetTree().Quit();
         }
@@ -245,6 +260,70 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             facing = movement.OpaqueFacing, phase = movement.Phase.ToString(),
             cameraOriginX = projection.OriginX, cameraOriginY = projection.OriginY,
             playerColumn = player.Column, playerRow = player.Row, playerX = player.MapX, playerY = player.MapY,
+            width = image.GetWidth(), height = image.GetHeight() });
+    }
+
+    private void ApplyGuardF(bool expectApplied)
+    {
+        var before = _session.PrivateOriginalMapSnapshot;
+        var animation = _session.PrivateOriginalMapPlayerLocomotion;
+        var bridge = _session.PrivateOriginalMapBattleBridge;
+        typeof(Map3Root).GetMethod("ApplyPrivateInteractionRequest", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(_root, null);
+        var after = _session.PrivateOriginalMapSnapshot;
+        Require(ReferenceEquals(animation, _session.PrivateOriginalMapPlayerLocomotion) &&
+            ReferenceEquals(bridge, _session.PrivateOriginalMapBattleBridge), "F retains locomotion and bridge");
+        if (!expectApplied)
+        {
+            Require(ReferenceEquals(before, after), "Rejected or duplicate actual F leaves snapshot unchanged");
+            return;
+        }
+        Require(after.MiddleTowerGuard is not null && after.SimulationStep == before.SimulationStep + 1 &&
+            after.PlayerPosition == before.PlayerPosition && animation.OpaqueFacing == 0 &&
+            ReferenceEquals(before.PalaceFirstVisit, after.PalaceFirstVisit) &&
+            ReferenceEquals(before.AstralAcceptance, after.AstralAcceptance) &&
+            ReferenceEquals(before.Sarah, after.Sarah) && ReferenceEquals(before.Entity142, after.Entity142) &&
+            ReferenceEquals(before.Zone601, after.Zone601) && ReferenceEquals(before.MessengerAcceptance, after.MessengerAcceptance) &&
+            ReferenceEquals(before.CastleGate, after.CastleGate) && ReferenceEquals(before.Receipt, after.Receipt),
+            "Actual composition F commits only the controlled guard result");
+    }
+
+    private async Task CaptureGuard(string name, MapPosition playerPosition, MapPosition guardPosition, bool completed)
+    {
+        var snapshot = _session.PrivateOriginalMapSnapshot;
+        var traversal = Field<PrivateOriginalMapTraversalViewport>(_presenter, "_viewport");
+        var baseViewport = Field<PrivateOriginalMapBaseViewport>(_presenter, "_baseViewport");
+        var projection = traversal.Projection!;
+        Require(traversal.Visible && !baseViewport.Visible && projection.Map == new MapId("map21") &&
+            snapshot.PlayerPosition == playerPosition && snapshot.MiddleTowerGuardPosition == guardPosition &&
+            (snapshot.MiddleTowerGuard is not null) == completed, "Visible guard runtime/diagnostic state");
+        var player = projection.Cells.Single(cell => cell.IsPlayer);
+        var guard = projection.Cells.Single(cell => cell.IsMiddleTowerGuard);
+        Require(player.MapX == playerPosition.X && player.MapY == playerPosition.Y &&
+            guard.MapX == guardPosition.X && guard.MapY == guardPosition.Y && !guard.IsPlayer && !guard.IsAstral,
+            "Actual player and undirected guard marker match Application positions");
+        var label = Field<Label>(_presenter, "_status");
+        Require(label.Position.Y >= traversal.Position.Y + PrivateOriginalMapTraversalViewProjection.RowCount * 48 &&
+            (completed ? label.Text.StartsWith("Guard moved; passage open.", StringComparison.Ordinal) :
+                label.Text.StartsWith("F apply controlled guard result", StringComparison.Ordinal)),
+            "Actual F action/status is readable below the grid");
+        Require(snapshot.Definition.MiddleTowerGuard!.Actor.Position == new MapPosition(5, 16) &&
+            snapshot.Definition.MiddleTowerGuard.Actor.OpaqueFacing == 3, "Immutable guard source retained");
+        if (completed)
+            Require(snapshot.MiddleTowerGuard!.HandlerFlag256Set && snapshot.MiddleTowerGuard.ProgramStoryFlag1Set &&
+                snapshot.MiddleTowerGuard.ProgramFlag401Set, "Distinct controlled handler/program completion");
+        await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        using Image image = GetViewport().GetTexture().GetImage();
+        Require(!image.IsEmpty() && image.GetWidth() >= 960 && image.GetHeight() >= 540, "Native guard image");
+        Require(image.SavePng(Path.Combine(_output, name + ".png")) == Error.Ok, "Native guard PNG write");
+        _frames.Add(new { name, map = snapshot.Map.Value, area = snapshot.CurrentArea.OneBasedRecordOrdinal,
+            playerX = player.MapX, playerY = player.MapY, guardX = guard.MapX, guardY = guard.MapY,
+            completed, facing = _session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing, status = label.Text, statusY = label.Position.Y,
+            sourceHandler = snapshot.Definition.MiddleTowerGuard.HandlerIdentity, textId = snapshot.Definition.MiddleTowerGuard.TextId,
+            sourceProgram = snapshot.Definition.MiddleTowerGuard.ProgramIdentity,
+            handler256 = snapshot.MiddleTowerGuard?.HandlerFlag256Set == true,
+            storyFlag1 = snapshot.MiddleTowerGuard?.ProgramStoryFlag1Set == true,
+            baseVisible = baseViewport.Visible, traversalVisible = traversal.Visible,
             width = image.GetWidth(), height = image.GetHeight() });
     }
 

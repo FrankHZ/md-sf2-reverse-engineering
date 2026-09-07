@@ -454,6 +454,12 @@ public sealed partial class GameSession
     public PrivateOriginalMapInteractionResult RequestPrivateOriginalMapInteraction(
         long expectedSimulationStep)
     {
+        if (PrivateOriginalMapSnapshot.Map == new MapId(OriginalMapRuntimeAdmission.Map21Id))
+        {
+            return CompletePrivateOriginalMapMiddleTowerGuard(new(expectedSimulationStep,
+                OriginalMapMiddleTowerGuardPreset.ControlledPostAstralAndLocal256Clear));
+        }
+
         if (PrivateOriginalMapSnapshot.Map == new MapId(OriginalMapRuntimeAdmission.Map19Id))
         {
             return AcceptPrivateOriginalMapAstral(expectedSimulationStep);

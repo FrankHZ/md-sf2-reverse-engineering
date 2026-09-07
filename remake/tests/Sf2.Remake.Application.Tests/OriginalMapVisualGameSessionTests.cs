@@ -480,7 +480,8 @@ public sealed class OriginalMapVisualGameSessionTests
             AcceptedOriginalMapRuntimeCatalog.RoyalReturn(),
             new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]),
             AcceptedOriginalMapRuntimeCatalog.WestTower(),
-            AcceptedOriginalMapRuntimeCatalog.MiddleTower());
+            AcceptedOriginalMapRuntimeCatalog.MiddleTower(),
+            new(runtimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0]));
     }
 
     private static OriginalMapSameMapWarpCatalog AcceptedSameMapWarps(MapId map) =>

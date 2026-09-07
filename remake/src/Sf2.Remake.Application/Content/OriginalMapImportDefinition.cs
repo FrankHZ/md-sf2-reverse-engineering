@@ -198,7 +198,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapCrossMapTransitionDefinition? royalReturnMap19Transition = null,
         OriginalMapAstralAcceptanceDefinition? astralAcceptance = null,
         OriginalMapCrossMapTransitionDefinition? westTowerMap20Transition = null,
-        OriginalMapCrossMapTransitionDefinition? middleTowerMap21Transition = null)
+        OriginalMapCrossMapTransitionDefinition? middleTowerMap21Transition = null,
+        OriginalMapMiddleTowerGuardDefinition? middleTowerGuard = null)
     {
         ArgumentNullException.ThrowIfNull(map);
         ArgumentNullException.ThrowIfNull(workingLayout);
@@ -695,6 +696,13 @@ public sealed class OriginalMapImportDefinition
             throw new ArgumentException("Astral must bind the exact catalog-owned actor.", nameof(astralAcceptance));
         }
 
+        if (middleTowerGuard is not null &&
+            !OriginalMapRuntimeAdmission.HasExactAcceptedMiddleTowerGuard(middleTowerGuard, RuntimeCatalog))
+        {
+            throw new ArgumentException("The guard must bind the admitted Map 21 actor and traversable endpoints.",
+                nameof(middleTowerGuard));
+        }
+        MiddleTowerGuard = middleTowerGuard;
         AstralAcceptance = astralAcceptance;
         NorthMap19Transition = northMap19Transition;
         RoyalMap20Transition = royalMap20Transition;
@@ -762,6 +770,8 @@ public sealed class OriginalMapImportDefinition
     public OriginalMapPalaceFirstVisitDefinition? PalaceFirstVisit { get; }
 
     public OriginalMapAstralAcceptanceDefinition? AstralAcceptance { get; }
+
+    public OriginalMapMiddleTowerGuardDefinition? MiddleTowerGuard { get; }
 
     public OriginalMapCrossMapTransitionDefinition? RoyalReturnMap19Transition { get; }
 

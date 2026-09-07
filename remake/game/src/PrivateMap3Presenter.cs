@@ -121,8 +121,13 @@ internal sealed record PrivateMap3PresentationPlan(
 
         if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map21Id)
         {
-            return "Middle tower Map 21 reached. Diagnostic traversal; no admitted atlas; init not executed." +
-                "\n" + status;
+            string action = snapshot.MiddleTowerGuard is not null
+                ? "Guard moved; passage open. Controlled result; dialogue skipped."
+                : snapshot.CanAcceptMiddleTowerGuard(playerLocomotion?.OpaqueFacing ?? byte.MaxValue) &&
+                    playerLocomotion?.IsMoving != true
+                    ? "F apply controlled guard result (skip dialogue; local preset)"
+                    : "Middle tower Map 21 reached. Diagnostic traversal; no admitted atlas; init not executed.";
+            return action + "\n" + status;
         }
 
         if (snapshot.Map.Value == "map20")

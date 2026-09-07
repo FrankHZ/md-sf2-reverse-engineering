@@ -19,7 +19,8 @@ internal sealed record PrivateOriginalMapTraversalViewCell(
     int Row,
     PrivateOriginalMapTraversalCellCategory Category,
     bool IsPlayer,
-    bool IsAstral);
+    bool IsAstral,
+    bool IsMiddleTowerGuard = false);
 
 internal sealed class PrivateOriginalMapTraversalViewProjection
 {
@@ -86,7 +87,8 @@ internal sealed class PrivateOriginalMapTraversalViewProjection
                     row,
                     category,
                     position == snapshot.PlayerPosition,
-                    snapshot.AstralOccupiesRouteTile && position == snapshot.Definition.AstralAcceptance!.Actor.Position));
+                    snapshot.AstralOccupiesRouteTile && position == snapshot.Definition.AstralAcceptance!.Actor.Position,
+                    position == snapshot.MiddleTowerGuardPosition));
             }
         }
 
@@ -158,9 +160,9 @@ public sealed partial class PrivateOriginalMapTraversalViewport : Node2D
                 new Vector2(TileSize - 2, TileSize - 2));
             DrawRect(tile, fill);
 
-            if (cell.IsAstral)
+            if (cell.IsAstral || cell.IsMiddleTowerGuard)
             {
-                // Authored interaction marker, not an original sprite or animation.
+                // Authored marker without an orientation claim, not an original sprite or animation.
                 Vector2 center = tile.GetCenter();
                 DrawColoredPolygon(
                     [center + new Vector2(0, -14), center + new Vector2(14, 0),
