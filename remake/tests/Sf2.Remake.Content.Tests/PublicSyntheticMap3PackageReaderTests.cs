@@ -295,28 +295,6 @@ public sealed class PublicSyntheticMap3PackageReaderTests
     }
 
     [Theory]
-    [InlineData("public-synthetic-map3-tactical-battle-completion-v1", "public-synthetic-changed-capability")]
-    [InlineData("project-authored-tactical-battle-depth-v1", "project-authored-changed-depth")]
-    [InlineData("public-synthetic-map3-battle-completion-world-state-v1", "public-synthetic-changed-world-state")]
-    [InlineData("public-synthetic-map3-tactical-battle", "public-synthetic-changed-battle")]
-    [InlineData("public-synthetic-map3-battle-entry-request", "public-synthetic-changed-request")]
-    [InlineData("public-synthetic-outbound-shell-battle-zone", "public-synthetic-changed-zone")]
-    [InlineData("public-synthetic-map3-player-unit", "public-synthetic-changed-actor")]
-    [InlineData("public-synthetic-map3-placeholder-enemy", "public-synthetic-changed-enemy")]
-    [InlineData("public-synthetic-map3-battle-enemy-response", "public-synthetic-changed-response")]
-    [InlineData("public-synthetic-map3-battle-defeated", "public-synthetic-changed-defeat")]
-    [InlineData("public-synthetic-map3-battle-restarted", "public-synthetic-changed-restart")]
-    [InlineData("public-synthetic-map3-battle-completed", "public-synthetic-changed-cue")]
-    [InlineData("public-synthetic-map3-battle-completion-world-effect", "public-synthetic-changed-effect")]
-    public void TacticalBattleIdentityMutationFailsRawDigestAdmission(
-        string oldValue,
-        string newValue)
-    {
-        AssertDigestMismatch(original =>
-            original.Replace(oldValue, newValue, StringComparison.Ordinal));
-    }
-
-    [Theory]
     [InlineData(
         "\"requestId\": \"public-synthetic-map3-battle-entry-request\"",
         "\"unknownField\": true,\n        \"requestId\": \"public-synthetic-map3-battle-entry-request\"")]
@@ -478,34 +456,6 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 System.Reflection.BindingFlags.Static));
     }
 
-    [Theory]
-    [InlineData("public-synthetic-map3-outbound-cross-map-transition-v1", "changed-outbound-capability")]
-    [InlineData("public-synthetic-outbound-shell", "changed-outbound-shell")]
-    [InlineData("synthetic-map3-outbound-transition-request", "changed-outbound-request")]
-    [InlineData("synthetic-map3-outbound-transition", "changed-outbound-transition")]
-    [InlineData("synthetic-map3-outbound-transition-zone", "changed-outbound-zone")]
-    [InlineData("public-synthetic-outbound-shell-setup", "changed-outbound-setup")]
-    [InlineData("synthetic-map3-outbound-transition-ready", "changed-outbound-cue")]
-    public void OutboundIdentityOrCrossReferenceByteMutationFailsDigestAdmission(
-        string oldValue,
-        string newValue)
-    {
-        AssertDigestMismatch(original =>
-            original.Replace(oldValue, newValue, StringComparison.Ordinal));
-    }
-
-    [Theory]
-    [InlineData("\"destinationFacing\": \"east\"", "\"destinationFacing\": \"west\"")]
-    [InlineData("\"x\": 54", "\"x\": 53")]
-    [InlineData("\"width\": 2, \"height\": 2", "\"width\": 3, \"height\": 2")]
-    public void OutboundPoseFacingOrRuntimeByteMutationFailsDigestAdmission(
-        string oldValue,
-        string newValue)
-    {
-        AssertDigestMismatch(original =>
-            original.Replace(oldValue, newValue, StringComparison.Ordinal));
-    }
-
     [Fact]
     public void TrackedPackageSupportsOneLegalAndOneSyntheticBlockedMove()
     {
@@ -589,6 +539,12 @@ public sealed class PublicSyntheticMap3PackageReaderTests
     }
 
     [Fact]
+    public void MalformedBytesFailDigestAdmissionBeforeJsonParsing()
+    {
+        AssertDigestMismatch(_ => "{not-json");
+    }
+
+    [Fact]
     public void OtherwiseValidLayoutMutationUnderSamePackageIdFailsDigestAdmission()
     {
         AssertDigestMismatch(
@@ -596,189 +552,6 @@ public sealed class PublicSyntheticMap3PackageReaderTests
                 "\"x\": 54, \"y\": 1, \"word\": 1",
                 "\"x\": 54, \"y\": 1, \"word\": 2",
                 StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void OtherwiseValidWalkabilityMutationUnderSamePackageIdFailsDigestAdmission()
-    {
-        AssertDigestMismatch(
-            original => original.Replace(
-                "\"x\": 56, \"y\": 2",
-                "\"x\": 55, \"y\": 2",
-                StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void OtherwiseValidEventRequestCrossReferenceMutationFailsDigestAdmission()
-    {
-        AssertDigestMismatch(
-            original => original.Replace(
-                "\"zoneTargetId\": \"synthetic-map3-east-zone\"",
-                "\"zoneTargetId\": \"synthetic-no-zone\"",
-            StringComparison.Ordinal));
-    }
-
-    [Fact]
-    public void OtherwiseValidEventEffectCrossReferenceMutationFailsDigestAdmission()
-    {
-        AssertDigestMismatch(
-            original => original.Replace(
-                "\"flagId\": \"synthetic-map3-variant-enabled\"",
-                "\"flagId\": \"synthetic-map3-missing-variant\"",
-            StringComparison.Ordinal));
-    }
-
-    [Theory]
-    [InlineData(
-        "\"zoneTargetId\": \"synthetic-map3-local-transition-zone\"",
-        "\"zoneTargetId\": \"synthetic-no-zone\"")]
-    [InlineData(
-        "\"sourceMapId\": \"map3\"",
-        "\"sourceMapId\": \"missing-map\"")]
-    [InlineData(
-        "\"x\": 58,\n          \"y\": 3",
-        "\"x\": 57,\n          \"y\": 3")]
-    [InlineData(
-        "\"destinationMapId\": \"map3\"",
-        "\"destinationMapId\": \"missing-map\"")]
-    [InlineData(
-        "\"x\": 55,\n          \"y\": 4",
-        "\"x\": 56,\n          \"y\": 2")]
-    public void LocalTransitionIdentityOrCrossReferenceByteMutationFailsDigestAdmission(
-        string oldValue,
-        string newValue)
-    {
-        AssertDigestMismatch(
-            original => original.Replace(oldValue, newValue, StringComparison.Ordinal));
-    }
-
-    [Theory]
-    [InlineData(
-        "\"initialSemanticFacing\": \"east\"",
-        "\"initialSemanticFacing\": \"default\"")]
-    [InlineData(
-        "\"entityId\": \"synthetic-map3-placeholder-guide\"",
-        "\"entityId\": \"synthetic-map3-placeholder-guide-copy\"")]
-    [InlineData(
-        "\"x\": 55,\n          \"y\": 3",
-        "\"x\": 55,\n          \"y\": 4")]
-    [InlineData(
-        "\"interactionTargetId\": \"synthetic-map3-placeholder-guide-target\"",
-        "\"interactionTargetId\": \"missing-target\"")]
-    [InlineData(
-        "\"kind\": \"specific\"",
-        "\"kind\": \"default\"")]
-    [InlineData(
-        "\"targetId\": \"synthetic-map3-placeholder-guide-target\"",
-        "\"targetId\": \"missing-target\"")]
-    public void EntityIdentityPoseOrCrossReferenceByteMutationFailsDigestAdmission(
-        string oldValue,
-        string newValue)
-    {
-        AssertDigestMismatch(
-            original => original.Replace(oldValue, newValue, StringComparison.Ordinal));
-    }
-
-    [Theory]
-    [InlineData(
-        "\"kind\": \"specific\",\n        \"dialogueId\"",
-        "\"kind\": \"default\",\n        \"dialogueId\"")]
-    [InlineData(
-        "\"dialogueId\": \"synthetic-map3-placeholder-guide-dialogue\"",
-        "\"dialogueId\": \"default\"")]
-    [InlineData(
-        "\"interactionTargetId\": \"synthetic-map3-placeholder-guide-target\"",
-        "\"interactionTargetId\": \"missing-target\"")]
-    [InlineData(
-        "\"lineId\": \"synthetic-map3-placeholder-guide-line-2\"",
-        "\"lineId\": \"synthetic-map3-placeholder-guide-line-1\"")]
-    [InlineData(
-        "\"text\": \"Hello from a project-authored placeholder.\"",
-        "\"text\": \"\"")]
-    [InlineData(
-        "\"cueId\": \"synthetic-map3-placeholder-guide-line-2-presented\"",
-        "\"cueId\": \"synthetic-map3-placeholder-guide-line-1-presented\"")]
-    [InlineData(
-        "\"closeCueId\": \"synthetic-map3-placeholder-guide-dialogue-closed\"",
-        "\"closeCueId\": \"synthetic-map3-placeholder-guide-cue\"")]
-    public void DialogueIdentityTextCueOrCrossReferenceByteMutationFailsDigestAdmission(
-        string oldValue,
-        string newValue)
-    {
-        AssertDigestMismatch(
-            original => original.Replace(oldValue, newValue, StringComparison.Ordinal));
-    }
-
-    [Theory]
-    [InlineData(
-        "\"kind\": \"specific\",\n        \"contextId\"",
-        "\"kind\": \"default\",\n        \"contextId\"")]
-    [InlineData(
-        "\"contextId\": \"synthetic-map3-arrival-search-context\"",
-        "\"contextId\": \"default\"")]
-    [InlineData(
-        "\"requestId\": \"synthetic-map3-field-search-request\"",
-        "\"requestId\": \"default\"")]
-    [InlineData(
-        "\"resultId\": \"synthetic-map3-field-search-result\"",
-        "\"resultId\": \"default\"")]
-    [InlineData(
-        "\"discoveryId\": \"synthetic-map3-placeholder-discovery\"",
-        "\"discoveryId\": \"default\"")]
-    [InlineData(
-        "\"mapId\": \"map3\",\n        \"position\"",
-        "\"mapId\": \"missing-map\",\n        \"position\"")]
-    [InlineData(
-        "\"x\": 55,\n          \"y\": 4",
-        "\"x\": 56,\n          \"y\": 2")]
-    [InlineData(
-        "\"setupId\": \"synthetic-map3-variant\"",
-        "\"setupId\": \"missing-setup\"")]
-    [InlineData(
-        "\"zoneTargetId\": \"synthetic-no-zone\"",
-        "\"zoneTargetId\": \"missing-zone\"")]
-    [InlineData(
-        "\"discoveryCueId\": \"synthetic-map3-placeholder-discovered\"",
-        "\"discoveryCueId\": \"synthetic-map3-field-search-pending\"")]
-    public void FieldSearchIdentityLocationOrCrossReferenceByteMutationFailsDigestAdmission(
-        string oldValue,
-        string newValue)
-    {
-        AssertDigestMismatch(
-            original => original.Replace(oldValue, newValue, StringComparison.Ordinal));
-    }
-
-    [Theory]
-    [InlineData(
-        "\"kind\": \"specific\",\n        \"discoveryId\"",
-        "\"kind\": \"default\",\n        \"discoveryId\"")]
-    [InlineData(
-        "\"discoveryId\": \"synthetic-map3-placeholder-discovery\",\n        \"requestId\": \"synthetic-map3-placeholder-item-acquisition-request\"",
-        "\"discoveryId\": \"missing-discovery\",\n        \"requestId\": \"synthetic-map3-placeholder-item-acquisition-request\"")]
-    [InlineData(
-        "\"requestId\": \"synthetic-map3-placeholder-item-acquisition-request\"",
-        "\"requestId\": \"default\"")]
-    [InlineData(
-        "\"resultId\": \"synthetic-map3-placeholder-item-acquisition-result\"",
-        "\"resultId\": \"default\"")]
-    [InlineData(
-        "\"itemId\": \"synthetic-map3-placeholder-item\"",
-        "\"itemId\": \"default\"")]
-    [InlineData(
-        "\"requestCueId\": \"synthetic-map3-placeholder-item-acquisition-pending\"",
-        "\"requestCueId\": \"synthetic-map3-placeholder-discovered\"")]
-    [InlineData(
-        "\"acquiredCueId\": \"synthetic-map3-placeholder-item-acquired\"",
-        "\"acquiredCueId\": \"synthetic-map3-placeholder-item-acquisition-pending\"")]
-    [InlineData(
-        "\"acquiredCueId\": \"synthetic-map3-placeholder-item-acquired\"",
-        "\"acquiredCueId\": \"synthetic-map3-placeholder-item-acquired\",\n        \"unknownField\": true")]
-    public void ItemAcquisitionIdentityCueOrCrossReferenceByteMutationFailsDigestAdmission(
-        string oldValue,
-        string newValue)
-    {
-        AssertDigestMismatch(
-            original => original.Replace(oldValue, newValue, StringComparison.Ordinal));
     }
 
     [Fact]

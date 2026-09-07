@@ -1,5 +1,23 @@
 # Remake Test Suite Audit
 
+## Current repair status
+
+The counts and investigation below remain a snapshot of the named `f9dbfd5` base. Its statements
+about unimplemented recommendations describe that audit stage. The current tests resolve the bounded
+repair items: the three optional private checks report skipped when unselected, fail on required or
+partial missing configuration, and pass their original assertions with the accepted local inputs.
+The [private check contract](./development-and-verification.md#optional-private-net-checks) owns the
+exact `SF2_REQUIRE_PRIVATE_TESTS=1` invocation; `0` and `false` do not require execution.
+
+The public package's digest-only family now retains malformed-byte, valid-layout, and whitespace
+boundaries with the semantic tests preserved. The named presenter signature/name constraints and
+input-fixture self-checks are removed; presentation tests retain semantic state, mappings, disclosures,
+and stable marker/policy identifiers while allowing disposable copy to change. Catalog tests cover
+asset mount/admission binding; they do not establish execution of the presenter's bind methods.
+Natural route continuity, native presentation, timing, and H4 remain product acceptance work at their
+existing owners. Other setup/reflection suggestions below remain bounded follow-up considerations,
+not an instruction to repeat these completed test repairs.
+
 ## Finding and scope
 
 At the audited accepted base, the whole .NET solution reports **758 expanded cases from 508 test

@@ -53,12 +53,6 @@ public sealed class Map3InputAdapterTests
             Map3InputAdapter.Bindings.Select(
                 binding => (binding.ActionName, binding.PhysicalKey)));
         Assert.Equal(
-            expected.Length,
-            expected.Select(binding => binding.ActionName).Distinct().Count());
-        Assert.Equal(
-            expected.Length,
-            expected.Select(binding => binding.PhysicalKey).Distinct().Count());
-        Assert.Equal(
             new[]
             {
                 ExplorationDirection.North,

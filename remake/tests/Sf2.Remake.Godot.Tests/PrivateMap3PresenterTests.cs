@@ -52,19 +52,15 @@ public sealed class PrivateMap3PresenterTests
     }
 
     [Fact]
-    public void AvailablePrivateLocalPlanPreservesTheExactDiagnosticPresentation()
+    public void AvailablePrivateLocalPlanDisclosesDiagnosticScopeAndSelectsTraversal()
     {
         PrivateMap3PresentationPlan plan =
             PrivateMap3PresentationPlan.PrivateLocalAvailable();
 
         Assert.Equal(Map3Root.PrivateBannerText, plan.BannerText);
-        Assert.Equal(
-            "Project-authored traversal diagnostics from accepted Domain policy. " +
-                "Original presentation remains unavailable.",
-            plan.ExplanationText);
-        Assert.Equal(
-            "Admitting PrivateLocal canonical Map 3...",
-            plan.InitialStatus);
+        Assert.Contains("Project-authored traversal diagnostics", plan.ExplanationText);
+        Assert.Contains("Original presentation remains unavailable", plan.ExplanationText);
+        Assert.Contains("Admitting PrivateLocal", plan.InitialStatus);
         Assert.True(plan.IncludeTraversalViewport);
         Assert.True(plan.ShowTraversalViewport);
         Assert.False(plan.IncludeBaseVisualViewport);
@@ -78,10 +74,8 @@ public sealed class PrivateMap3PresenterTests
             PrivateMap3PresentationPlan.PrivateLocalWithBaseVisual();
 
         Assert.Equal(Map3Root.PrivateBannerText, plan.BannerText);
-        Assert.Equal(
-            "Project-authored base composition from admitted private Map 3 data. " +
-                "Not full original fidelity.",
-            plan.ExplanationText);
+        Assert.Contains("Project-authored base composition", plan.ExplanationText);
+        Assert.Contains("Not full original fidelity", plan.ExplanationText);
         Assert.True(plan.IncludeTraversalViewport);
         Assert.False(plan.ShowTraversalViewport);
         Assert.True(plan.IncludeBaseVisualViewport);
@@ -91,26 +85,29 @@ public sealed class PrivateMap3PresenterTests
         Assert.Equal(310, plan.StatusY);
     }
 
-    [Fact]
-    public void CrossMapRuntimeUsesTraversalDiagnosticsAndHidesTheMap3OnlyAtlas()
+    [Theory]
+    [InlineData(false, false, true, false)]
+    [InlineData(false, true, true, false)]
+    [InlineData(true, false, false, true)]
+    [InlineData(true, true, true, false)]
+    public void RequestedPlanAndCurrentMapControlWhichProjectionIsVisible(
+        bool requestBaseView,
+        bool crossMap,
+        bool expectedTraversal,
+        bool expectedBase)
     {
+        PrivateMap3PresentationPlan plan = requestBaseView
+            ? PrivateMap3PresentationPlan.PrivateLocalWithBaseVisual()
+            : PrivateMap3PresentationPlan.PrivateLocalAvailable();
         (bool traversalVisible, bool baseVisible) =
             PrivateMap3Presenter.ProjectionVisibility(
-                new MapId(OriginalMapRuntimeAdmission.Map19Id),
+                new MapId(crossMap ? "map19" : "map3"),
                 new MapId(OriginalMapRuntimeAdmission.MapId),
-                hasBaseViewport: true,
-                showTraversalOnInitialMap: false);
-        (bool restoredTraversal, bool restoredBase) =
-            PrivateMap3Presenter.ProjectionVisibility(
-                new MapId(OriginalMapRuntimeAdmission.MapId),
-                new MapId(OriginalMapRuntimeAdmission.MapId),
-                hasBaseViewport: true,
-                showTraversalOnInitialMap: false);
+                plan.IncludeBaseVisualViewport,
+                plan.ShowTraversalViewport);
 
-        Assert.True(traversalVisible);
-        Assert.False(baseVisible);
-        Assert.False(restoredTraversal);
-        Assert.True(restoredBase);
+        Assert.Equal(expectedTraversal, traversalVisible);
+        Assert.Equal(expectedBase, baseVisible);
     }
 
     [Fact]
@@ -123,10 +120,8 @@ public sealed class PrivateMap3PresenterTests
         Assert.True(plan.IncludeBaseVisualViewport);
         Assert.False(plan.StaticOverlayDiagnostic);
         Assert.True(plan.CurrentAreaOverlay);
-        Assert.Equal(
-            "Project-authored current-area second-layer composition from admitted private Map 3 data. " +
-                "Not original layer priority, timing, or full fidelity.",
-            plan.ExplanationText);
+        Assert.Contains("Project-authored current-area second-layer", plan.ExplanationText);
+        Assert.Contains("Not original layer priority, timing, or full fidelity", plan.ExplanationText);
     }
 
     [Fact]
@@ -174,24 +169,21 @@ public sealed class PrivateMap3PresenterTests
     [Fact]
     public void UnavailablePlansPreserveTheirExactDisclosureWithoutCreatingAViewport()
     {
+        const string diagnostic = "Project-authored unavailable diagnostic.";
         PrivateMap3PresentationPlan privatePlan =
             PrivateMap3PresentationPlan.PrivateLocalUnavailable(
-                "Project-authored unavailable diagnostic.");
+                diagnostic);
         PrivateMap3PresentationPlan profilePlan =
             PrivateMap3PresentationPlan.ProfileUnavailable(
-            "Project-authored unavailable diagnostic.");
+                diagnostic);
 
         Assert.Equal(Map3Root.PrivateBannerText, privatePlan.BannerText);
         Assert.Equal("PROFILE UNAVAILABLE — NO FALLBACK", profilePlan.BannerText);
-        Assert.Equal(
-            "Project-authored traversal diagnostics from accepted Domain policy. " +
-                "Original presentation remains unavailable.",
-            privatePlan.ExplanationText);
+        Assert.Contains("Original presentation remains unavailable", privatePlan.ExplanationText);
         foreach (PrivateMap3PresentationPlan plan in new[] { privatePlan, profilePlan })
         {
-            Assert.Equal(
-                "Unavailable: Project-authored unavailable diagnostic.",
-                plan.InitialStatus);
+            Assert.StartsWith("Unavailable", plan.InitialStatus);
+            Assert.Contains(diagnostic, plan.InitialStatus);
             Assert.False(plan.IncludeTraversalViewport);
             Assert.False(plan.ShowTraversalViewport);
             Assert.False(plan.IncludeBaseVisualViewport);
@@ -202,50 +194,10 @@ public sealed class PrivateMap3PresenterTests
     }
 
     [Fact]
-    public void BaseAtlasConsumerIsAnExplicitBoundedPresenterSurface()
+    public void PrivateVisualSmokeMarkersAndPoliciesRetainTheirObservationContract()
     {
-        System.Reflection.MethodInfo? bind = typeof(PrivateMap3Presenter).GetMethod(
-            "TryBindBaseAtlas",
-            System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.NonPublic);
-
-        Assert.NotNull(bind);
-        Assert.Equal(typeof(bool), bind.ReturnType);
-        Assert.Equal(
-            new[]
-            {
-                typeof(PrivateLocalPresentationRasterMount),
-                typeof(PrivateOriginalMapSessionSnapshot),
-                typeof(PrivateLocalPresentationAssetMountDiagnostic).MakeByRefType(),
-            },
-            bind.GetParameters().Select(parameter => parameter.ParameterType));
-        System.Reflection.MethodInfo? playerBind = typeof(PrivateMap3Presenter).GetMethod(
-            "TryBindPlayerReference",
-            System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.NonPublic);
-        Assert.NotNull(playerBind);
-        Assert.Equal(typeof(bool), playerBind.ReturnType);
-        Assert.Equal(
-            new[]
-            {
-                typeof(PrivateLocalPresentationRasterMount),
-                typeof(PrivateLocalPresentationAssetMountDiagnostic).MakeByRefType(),
-            },
-            playerBind.GetParameters().Select(parameter => parameter.ParameterType));
-        System.Reflection.MethodInfo? entityBind = typeof(PrivateMap3Presenter).GetMethod(
-            "TryBindEntity142Diagnostic",
-            System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.NonPublic);
-        Assert.NotNull(entityBind);
-        Assert.Equal(typeof(bool), entityBind.ReturnType);
-        Assert.Equal(
-            new[]
-            {
-                typeof(PrivateLocalPresentationRasterMount),
-                typeof(PrivateOriginalMapSessionSnapshot),
-                typeof(PrivateLocalPresentationAssetMountDiagnostic).MakeByRefType(),
-            },
-            entityBind.GetParameters().Select(parameter => parameter.ParameterType));
+        // PrivateLocalPresentationAssetCatalogTests cover asset mount/admission binding.
+        // This check protects marker/policy identifiers; Presenter.TryBind execution is outside it.
         Assert.Equal(
             "private-local-map3-entity142-half0-diagnostic-idle-consumer-v1",
             PrivateMap3Entity142DiagnosticProjection.Capability);
@@ -264,25 +216,6 @@ public sealed class PrivateMap3PresenterTests
         Assert.Equal(
             "private-local-map3-edge-scale2x-world-treatment-v1",
             Map3Root.PrivateWorldTreatmentCapability);
-        Assert.DoesNotContain(
-            typeof(Map3Root).GetFields(
-                System.Reflection.BindingFlags.Static |
-                System.Reflection.BindingFlags.Public |
-                System.Reflection.BindingFlags.NonPublic),
-            field => field.Name.Contains("PlayerReferenceSmoke", StringComparison.Ordinal));
-        Assert.DoesNotContain(
-            typeof(Map3Root).GetFields(
-                System.Reflection.BindingFlags.Static |
-                System.Reflection.BindingFlags.Public |
-                System.Reflection.BindingFlags.NonPublic),
-            field => field.Name.Contains("Entity142", StringComparison.Ordinal));
-        Assert.DoesNotContain(
-            typeof(PrivateMap3Presenter).GetProperties(
-                System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.NonPublic),
-            property => property.Name.Contains("Path", StringComparison.OrdinalIgnoreCase) ||
-                property.Name.Contains("Root", StringComparison.OrdinalIgnoreCase) ||
-                property.Name.Contains("Pixel", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

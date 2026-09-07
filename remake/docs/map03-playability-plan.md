@@ -143,15 +143,20 @@ After the locked build, reproduce the private check from `remake/`:
 ```powershell
 $env:SF2_PRIVATE_CANONICAL_MAP_IMPORT = (Resolve-Path -LiteralPath '../local/derived/canonical-map-import.json').ProviderPath
 try {
+    $env:SF2_REQUIRE_PRIVATE_TESTS = '1'
     dotnet test tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter 'FullyQualifiedName~AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput'
+    if ($LASTEXITCODE -ne 0) { throw 'Required private canonical check failed.' }
 } finally {
+    Remove-Item Env:SF2_REQUIRE_PRIVATE_TESTS
     Remove-Item Env:SF2_PRIVATE_CANONICAL_MAP_IMPORT
 }
 ```
 
-The caller supplies the accepted worktree-local input read-only. Without that environment variable,
-the optional test returns without running private checks; public test success alone is not private
-route evidence. Private payloads and test reports remain ignored.
+The caller supplies the accepted worktree-local input read-only. Without input selection or the
+required switch, xUnit explicitly skips the private test. A required run with missing configuration
+fails; public test success alone is not private route evidence. See the
+[optional private check contract](./development-and-verification.md#optional-private-net-checks).
+Private payloads and test reports remain ignored.
 
 ## Controlled Palace First-Visit Result
 

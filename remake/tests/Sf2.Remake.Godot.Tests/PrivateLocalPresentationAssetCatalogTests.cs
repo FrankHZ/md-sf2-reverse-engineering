@@ -291,15 +291,11 @@ public sealed class PrivateLocalPresentationAssetCatalogTests
             PrivateLocalPresentationAssetMountFailureCode.InvalidBinding);
     }
 
-    [Fact]
+    [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_PRESENTATION_ASSET_ROOT")]
     public void ExactLocalMap3BaseAtlasMountCanBeCheckedWithoutBecomingATestInput()
     {
-        string? root = Environment.GetEnvironmentVariable(
+        string root = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput(
             "SF2_PRIVATE_PRESENTATION_ASSET_ROOT");
-        if (string.IsNullOrWhiteSpace(root))
-        {
-            return;
-        }
 
         LocalPresentationAssetPackReader reader = new(
             root,

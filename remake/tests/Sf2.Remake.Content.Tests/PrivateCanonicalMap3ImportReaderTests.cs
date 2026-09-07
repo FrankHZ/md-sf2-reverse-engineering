@@ -816,14 +816,11 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         AssertCode(Admit(referenceDrift), OriginalMapImportFailureCode.MissingReference);
     }
 
-    [Fact]
+    [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
     public void AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput()
     {
-        string? path = Environment.GetEnvironmentVariable("SF2_PRIVATE_CANONICAL_MAP_IMPORT");
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return;
-        }
+        string path = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput(
+            "SF2_PRIVATE_CANONICAL_MAP_IMPORT");
 
         OriginalMapImportResult result = new PrivateCanonicalMap3ImportReader(path).Admit(
             new OriginalMapImportRequest(

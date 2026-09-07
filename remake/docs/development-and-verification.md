@@ -28,6 +28,48 @@ Use `dotnet format` in verify mode or against explicitly named changed projects 
 of the owning slice. A documentation-only change does not run .NET unless the committed planner selects
 `remake-dotnet`.
 
+## Optional Private .NET Checks
+
+Three tests can consume explicit local inputs. They use the existing xUnit skip mechanism and keep
+their production admission and private assertions unchanged. No private input is required by Public CI.
+
+| Test method | Required environment variables |
+| --- | --- |
+| `AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput` | `SF2_PRIVATE_CANONICAL_MAP_IMPORT` |
+| `AcceptedIgnoredInputsCloseExactPayloadAndMutationBoundaries` | `SF2_PRIVATE_ROM`, `SF2_PRIVATE_MAP_TILESET_METADATA`, `SF2_PRIVATE_MAP_PALETTE_METADATA` |
+| `ExactLocalMap3BaseAtlasMountCanBeCheckedWithoutBecomingATestInput` | `SF2_PRIVATE_PRESENTATION_ASSET_ROOT` |
+
+For each test, no selected inputs means an explicit **skipped / no private assertions ran** result.
+Configuring any of its input variables selects that private check; partial configuration fails instead
+of skipping. Complete configuration runs all its existing assertions, including fixed input identity
+and admission checks. Empty or whitespace-only values count as missing. Configuration diagnostics
+name environment variables without printing their values or local paths.
+
+For an explicitly required private run, also set `SF2_REQUIRE_PRIVATE_TESTS=1`. Only the exact value
+`1` requires execution of the selected private tests, so missing configuration produces a test failure
+and a nonzero process exit. `--filter` narrows tests but does not itself opt into private execution.
+Set the switch before invoking `dotnet test`, since xUnit decides skips during discovery. Use the
+existing project and fully qualified method filter, for example after the locked build and after
+configuring the canonical input:
+
+```powershell
+$env:SF2_REQUIRE_PRIVATE_TESTS = '1'
+try {
+    dotnet test tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter 'FullyQualifiedName~AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput'
+    if ($LASTEXITCODE -ne 0) { throw 'Required private canonical check failed.' }
+} finally {
+    Remove-Item Env:SF2_REQUIRE_PRIVATE_TESTS
+}
+```
+
+The [Map 3 route command](./map03-playability-plan.md#royal-route-acceptance-boundary) includes its
+input selection. The visual test belongs to the same Content test project; the asset-mount test
+belongs to `tests/Sf2.Remake.Godot.Tests/Sf2.Remake.Godot.Tests.csproj`. Use their tabled method names
+with the same required switch and filter. Scope the input variables to the owning run, and keep
+payloads and TRX/log output in that worktree's ignored directories. A required run with missing
+inputs is a failed availability check, not a private success or product regression. A public run
+with skipped private tests is public evidence only.
+
 ## Repository Planner
 
 Run from the repository root on a clean committed head:

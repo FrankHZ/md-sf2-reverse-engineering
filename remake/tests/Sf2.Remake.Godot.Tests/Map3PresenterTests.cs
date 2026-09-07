@@ -17,32 +17,27 @@ public sealed class Map3PresenterTests
         Map3PresentationProjection projection =
             Map3PresentationProjection.Create(session.Snapshot, "Ready");
 
-        Assert.Equal(
-            "MAP map3 · TILE 56,3 · FACE → East · STEP 0\nReady",
-            projection.Status);
+        AssertStatusProjectsSnapshot(session.Snapshot, "Ready", projection.Status);
         Assert.Contains("MOVE W/A/S/D · TURN ↑/←/↓/→", projection.ControlGuide);
         Assert.Contains("CONTEXT Enter · EVENT Z / ACK X · LOCAL C / ACK V", projection.ControlGuide);
         Assert.Contains("INTERACT F / ACK G · DIALOGUE H", projection.ControlGuide);
         Assert.Contains("SEARCH Q / ACK E · ACQUIRE R / ACK T · OUTBOUND Y / ACK U", projection.ControlGuide);
-        Assert.Equal(
-            "MAP SYMBOLS  ▲ player facing · ◆ placeholder entity · × blocked",
-            projection.MapLegend);
-        Assert.Equal("CONTEXT  Enter\nNot selected", projection.ContextStatus);
-        Assert.Equal("EVENT  Z / ACK X\nNo request", projection.EventRequestStatus);
-        Assert.Equal("EFFECT\nNone applied", projection.EffectStatus);
-        Assert.Equal("LOCAL  C / ACK V\nNo transition", projection.TransitionStatus);
-        Assert.Equal(
-            "ENTITIES\n◆ 1 current-map\nsynthetic-map3-placeholder-guide@(55,3)",
-            projection.EntityStatus);
-        Assert.Equal("INTERACT  F / ACK G\nNo request", projection.EntityInteractionStatus);
-        Assert.Equal("DIALOGUE  H\nClosed", projection.DialogueStatus);
-        Assert.Equal(
-            "SEARCH  Q / ACK E\nNo request · discovered 0",
-            projection.FieldSearchStatus);
-        Assert.Equal(
-            "ACQUIRE  R / ACK T\nInventory: empty",
-            projection.ItemAcquisitionStatus);
-        Assert.Equal("OUTBOUND  Y / ACK U\nNo transition", projection.OutboundTransitionStatus);
+        Assert.Contains("▲ player facing", projection.MapLegend);
+        Assert.Contains("◆ placeholder entity", projection.MapLegend);
+        Assert.Contains("× blocked", projection.MapLegend);
+        Assert.Contains("Not selected", projection.ContextStatus);
+        Assert.Contains("No request", projection.EventRequestStatus);
+        Assert.Contains("None applied", projection.EffectStatus);
+        Assert.Contains("No transition", projection.TransitionStatus);
+        MapEntityDefinition entity = Assert.Single(session.Snapshot.Entities);
+        Assert.Contains(entity.Entity.Value, projection.EntityStatus);
+        Assert.Contains($"{entity.Position.X},{entity.Position.Y}", projection.EntityStatus);
+        Assert.Contains("No request", projection.EntityInteractionStatus);
+        Assert.Contains("Closed", projection.DialogueStatus);
+        Assert.Contains("No request", projection.FieldSearchStatus);
+        Assert.Contains("discovered 0", projection.FieldSearchStatus);
+        Assert.Contains("Inventory: empty", projection.ItemAcquisitionStatus);
+        Assert.Contains("No transition", projection.OutboundTransitionStatus);
     }
 
     [Fact]
@@ -60,7 +55,7 @@ public sealed class Map3PresenterTests
     }
 
     [Fact]
-    public void ContextRequestAndEffectSnapshotsPreserveRichPresentationStrings()
+    public void ContextRequestAndEffectPresentationFollowsAuthoritativeState()
     {
         GameSession session = StartSession();
         Assert.IsType<GameSessionCommandApplied>(
@@ -75,15 +70,14 @@ public sealed class Map3PresenterTests
             requested.Snapshot,
             "Event request pending");
 
-        Assert.Equal(
-            "MAP map3 · TILE 57,3 · FACE → East · STEP 3\nEvent request pending",
-            pending.Status);
-        Assert.Equal(
-            "CONTEXT  Enter\nSetup ms_map3\nArea text 423/1000 · Zone selected",
-            pending.ContextStatus);
-        Assert.Equal(
-            "EVENT  Z / ACK X\nPending · Cue #1\nsynthetic-map3-east-zone-request",
-            pending.EventRequestStatus);
+        AssertStatusProjectsSnapshot(requested.Snapshot, "Event request pending", pending.Status);
+        Assert.Contains(selected.Selection.SelectedSetup.Value, pending.ContextStatus);
+        Assert.Contains("423/1000", pending.ContextStatus);
+        Assert.Contains("Zone selected", pending.ContextStatus);
+        Assert.DoesNotContain("Not selected", pending.ContextStatus);
+        Assert.Contains(requested.Request.Status.ToString(), pending.EventRequestStatus);
+        Assert.Contains($"Cue #{requested.Cue.Sequence}", pending.EventRequestStatus);
+        Assert.Contains(requested.Request.Request.Value, pending.EventRequestStatus);
 
         GameSessionEventEffectApplied applied = Assert.IsType<GameSessionEventEffectApplied>(
             session.Apply(
@@ -95,14 +89,26 @@ public sealed class Map3PresenterTests
             applied.Snapshot,
             "Synthetic effect applied; re-select context");
 
-        Assert.Equal("CONTEXT  Enter\nNot selected", effected.ContextStatus);
-        Assert.Equal(
-            "EVENT  Z / ACK X\nAcknowledged · Cue #1\nsynthetic-map3-east-zone-request",
-            effected.EventRequestStatus);
-        Assert.Equal(
-            "EFFECT\nApplied once · step 4\nFlag synthetic-map3-variant-enabled",
-            effected.EffectStatus);
+        Assert.Contains("Not selected", effected.ContextStatus);
+        Assert.DoesNotContain("Zone selected", effected.ContextStatus);
+        Assert.Contains("Acknowledged", effected.EventRequestStatus);
+        Assert.DoesNotContain("Pending", effected.EventRequestStatus);
+        Assert.Contains($"Cue #{requested.Cue.Sequence}", effected.EventRequestStatus);
+        Assert.Contains(requested.Request.Request.Value, effected.EventRequestStatus);
+        Assert.Contains("Applied once", effected.EffectStatus);
+        Assert.Contains($"step {applied.Snapshot.LastEventEffect!.AppliedAtStep}", effected.EffectStatus);
+        Assert.Contains(applied.Snapshot.LastEventEffect.Flag.Value, effected.EffectStatus);
         Assert.Equal(selected.Selection.Map, applied.Snapshot.Exploration.Map);
+    }
+
+    private static void AssertStatusProjectsSnapshot(
+        GameSessionSnapshot snapshot, string outcome, string status)
+    {
+        Assert.Contains(snapshot.Exploration.Map.Value, status);
+        Assert.Contains($"{snapshot.Exploration.PlayerPosition.X},{snapshot.Exploration.PlayerPosition.Y}", status);
+        Assert.Contains(snapshot.Facing.ToString(), status);
+        Assert.Contains($"STEP {snapshot.SimulationStep}", status);
+        Assert.Contains(outcome, status);
     }
 
     private static GameSession StartSession()

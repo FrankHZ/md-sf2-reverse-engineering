@@ -249,20 +249,15 @@ public sealed class PrivateOriginalMap3VisualPayloadReaderTests
         AssertCode(AdmitSemantic(effective), OriginalMapVisualPayloadFailureCode.PalettePayloadMismatch);
     }
 
-    [Fact]
+    [Sf2.Remake.TestSupport.PrivateInputFact(
+        "SF2_PRIVATE_ROM", "SF2_PRIVATE_MAP_TILESET_METADATA", "SF2_PRIVATE_MAP_PALETTE_METADATA")]
     public void AcceptedIgnoredInputsCloseExactPayloadAndMutationBoundaries()
     {
-        string? romPath = Environment.GetEnvironmentVariable("SF2_PRIVATE_ROM");
-        string? tilesetPath = Environment.GetEnvironmentVariable(
+        string romPath = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_ROM");
+        string tilesetPath = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput(
             "SF2_PRIVATE_MAP_TILESET_METADATA");
-        string? palettePath = Environment.GetEnvironmentVariable(
+        string palettePath = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput(
             "SF2_PRIVATE_MAP_PALETTE_METADATA");
-        if (string.IsNullOrWhiteSpace(romPath) ||
-            string.IsNullOrWhiteSpace(tilesetPath) ||
-            string.IsNullOrWhiteSpace(palettePath))
-        {
-            return;
-        }
 
         PrivateOriginalMap3VisualPayloadReader reader = new(
             romPath,

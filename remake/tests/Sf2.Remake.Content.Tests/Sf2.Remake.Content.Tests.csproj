@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\src\Sf2.Remake.Domain\Sf2.Remake.Domain.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Shared\PrivateInputFactAttribute.cs" Link="PrivateInputFactAttribute.cs" />
     <None Include="..\..\game\content\public-synthetic-map3-smoke-v1.json"
           Link="content\public-synthetic-map3-smoke-v1.json"
           CopyToOutputDirectory="PreserveNewest" />

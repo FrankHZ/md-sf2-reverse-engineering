@@ -14,6 +14,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Shared\PrivateInputFactAttribute.cs" Link="PrivateInputFactAttribute.cs" />
     <ProjectReference Include="..\..\game\Sf2.Remake.Godot.csproj" />
   </ItemGroup>
 </Project>
