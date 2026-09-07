@@ -22,7 +22,7 @@ internal sealed record PrivateMap3PresentationPlan(
         "Original presentation remains unavailable.";
 
     private const string BaseVisualExplanation =
-        "Project-authored base composition from admitted private Map 3 data. " +
+        "Project-authored base composition from admitted current-map data. " +
         "Not full original fidelity.";
 
     private const string StaticOverlayExplanation =
@@ -262,6 +262,8 @@ internal sealed class PrivateMap3Presenter
     private readonly PrivateOriginalMapBaseViewport? _baseViewport;
     private readonly PrivateOriginalMapTraversalViewport? _viewport;
     private readonly Label _status;
+    private PrivateLocalPresentationRasterMount? _map3Atlas;
+    private PrivateLocalPresentationRasterMount? _castleAtlas;
     private readonly PrivateMap3WorldTreatment _requestedWorldTreatment;
     private readonly bool _staticOverlayDiagnostic;
     private readonly bool _currentAreaOverlay;
@@ -403,10 +405,12 @@ internal sealed class PrivateMap3Presenter
 
     internal bool TryBindBaseAtlas(
         PrivateLocalPresentationRasterMount mount,
+        PrivateLocalPresentationRasterMount castleMount,
         PrivateOriginalMapSessionSnapshot snapshot,
         out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
     {
         ArgumentNullException.ThrowIfNull(mount);
+        ArgumentNullException.ThrowIfNull(castleMount);
         ArgumentNullException.ThrowIfNull(snapshot);
         if (_baseViewport is null)
         {
@@ -416,13 +420,28 @@ internal sealed class PrivateMap3Presenter
             return false;
         }
 
-        return _baseViewport.TryBindLocalAtlas(
+        if (!PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(
+                castleMount.Definition, castleMount.Bucket))
+        {
+            diagnostic = new(PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
+                "The private castle atlas requires its exact accepted binding.");
+            return false;
+        }
+
+        bool bound = _baseViewport.TryBindLocalAtlas(
             mount,
             snapshot,
             _requestedWorldTreatment,
             _staticOverlayDiagnostic,
             _currentAreaOverlay,
             out diagnostic);
+        if (bound)
+        {
+            _map3Atlas = mount;
+            _castleAtlas = castleMount;
+        }
+
+        return bound;
     }
 
     internal bool TryBindPlayerReference(
@@ -483,11 +502,36 @@ internal sealed class PrivateMap3Presenter
         string outcome,
         PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
+        bool map3 = snapshot.Map.Value == OriginalMapRuntimeAdmission.MapId;
+        if (_baseViewport is { UsesLocalAtlas: true })
+        {
+            string? assetId = PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
+                snapshot.CurrentRuntime.VisualResourceSelection);
+            PrivateLocalPresentationRasterMount? mount = assetId switch
+            {
+                PrivateLocalPresentationAssetCatalog.Map3BaseAtlasAssetId => _map3Atlas,
+                PrivateLocalPresentationAssetCatalog.CastleBaseAtlasAssetId => _castleAtlas,
+                _ => null,
+            };
+            if (mount is null)
+            {
+                throw new InvalidOperationException("The current runtime has no accepted base atlas.");
+            }
+
+            if (_baseViewport.AtlasAssetId != assetId &&
+                !_baseViewport.TryBindLocalAtlas(mount, snapshot, _requestedWorldTreatment,
+                    map3 && _staticOverlayDiagnostic, map3 && _currentAreaOverlay, out var diagnostic))
+            {
+                throw new InvalidOperationException($"The current runtime atlas could not bind ({diagnostic!.Code}).");
+            }
+        }
+
         (bool traversalVisible, bool baseVisible) = ProjectionVisibility(
             snapshot.Map,
             snapshot.Definition.Map,
             _baseViewport is not null,
-            _showTraversalOnInitialMap);
+            _showTraversalOnInitialMap,
+            _castleAtlas is not null);
         if (_viewport is not null)
         {
             _viewport.Visible = traversalVisible;
@@ -503,9 +547,9 @@ internal sealed class PrivateMap3Presenter
         {
             _baseViewport.ProjectMountedAtlas(
                 snapshot,
-                _staticOverlayDiagnostic,
+                map3 && _staticOverlayDiagnostic,
                 playerLocomotion,
-                _currentAreaOverlay);
+                map3 && _currentAreaOverlay);
         }
 
         _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome, playerLocomotion);
@@ -515,14 +559,17 @@ internal sealed class PrivateMap3Presenter
         MapId currentMap,
         MapId initialMap,
         bool hasBaseViewport,
-        bool showTraversalOnInitialMap)
+        bool showTraversalOnInitialMap,
+        bool hasCastleAtlas = false)
     {
         ArgumentNullException.ThrowIfNull(currentMap);
         ArgumentNullException.ThrowIfNull(initialMap);
         bool isInitialMap = currentMap == initialMap;
+        bool baseVisible = hasBaseViewport && (isInitialMap ||
+            (hasCastleAtlas && currentMap.Value is OriginalMapRuntimeAdmission.Map19Id or OriginalMapRuntimeAdmission.Map20Id));
         return (
-            TraversalVisible: !isInitialMap || showTraversalOnInitialMap,
-            BaseVisible: hasBaseViewport && isInitialMap);
+            TraversalVisible: !baseVisible || (isInitialMap && showTraversalOnInitialMap),
+            BaseVisible: baseVisible);
     }
 
     internal void ProjectStatus(string message)

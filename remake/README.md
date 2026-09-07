@@ -180,10 +180,11 @@ The reviewed local asset history now owns `hud.yes-no-window-frame`,
 `hud.tactical-selection-cursor`, `world.map3.base-tileset-atlas`, and
 `world.map3.player.initial-reference-frame`, plus the `up`, `horizontal`, and `down` members of
 `world.map3.player.locomotion.*`, and
-`world.map3.entity142.astral.up.two-half-reference`. The current eight-asset checkpoint is local commit
-`d89274972905742f8a02b8d8b20d2c96d2ff9ca9`, tree
-`fb2581bac58f662e4e5143b52776b15c2cf5ca25`, with manifest SHA-256
-`5599BBB898C298B21C05AAC8BF01B8926F79FD02E07F34AD91455C2013D0D6ED`. The atlas and player runtime
+`world.map3.entity142.astral.up.two-half-reference`, plus
+`world.map19-20.base-tileset-atlas`. The current nine-asset checkpoint is local commit
+`9acff63cd3285be07736c07839034487327cf41c`, tree
+`dee294d65e6b4fccc33104f848a16130c085aea6`, with manifest SHA-256
+`81834D1787BAECD27BC1757E0A76E493310821AD9D6A2F60753F3F08963E144A`. The atlas and player runtime
 buckets are reviewed nearest 2x/4x outputs; source and master material remain review/provenance
 inputs, not runtime files. The initial-reference frame remains a separate, narrower retained asset;
 the lower-level viewport can still project it when no locomotion mount is supplied. The explicit

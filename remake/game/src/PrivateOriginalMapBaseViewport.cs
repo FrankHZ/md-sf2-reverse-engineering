@@ -99,7 +99,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(visualDefinition);
         if (!SameSelection(
-                snapshot.Definition.VisualResourceSelection,
+                snapshot.CurrentRuntime.VisualResourceSelection,
                 visualDefinition.Selection))
         {
             throw new ArgumentException(
@@ -450,7 +450,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion,
         Func<int, int, int, int, int, int, SourcePixel> resolvePixel)
     {
-        if (!SameSelection(snapshot.Definition.VisualResourceSelection, selection))
+        if (!SameSelection(snapshot.CurrentRuntime.VisualResourceSelection, selection))
         {
             throw new ArgumentException(
                 "The private map snapshot and visual payload must retain the same admitted selection.",
@@ -464,6 +464,12 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                 nameof(currentAreaOverlay));
         }
 
+        if (snapshot.Map.Value != OriginalMapRuntimeAdmission.MapId)
+        {
+            staticOverlayDiagnostic = false;
+            currentAreaOverlay = false;
+        }
+
         OriginalMapAreaDefinition? overlayArea = null;
         int overlayDeltaX = 0;
         int overlayDeltaY = 0;
@@ -472,7 +478,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         PrivateMap3CameraProjection? camera = null;
         if (staticOverlayDiagnostic)
         {
-            OriginalMapAreaDefinition[] candidates = snapshot.Definition.AreaCatalog.Records
+            OriginalMapAreaDefinition[] candidates = snapshot.CurrentRuntime.AreaCatalog.Records
                 .Where(record =>
                     record.SecondLayerForegroundStart != record.SecondLayerBackgroundStart)
                 .Take(2)
@@ -631,7 +637,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                 }
 
                 OriginalMapBlockDefinition block =
-                    snapshot.Definition.BlockCatalog.Resolve(blockIndex);
+                    snapshot.CurrentRuntime.BlockCatalog.Resolve(blockIndex);
                 RenderBlock(
                     pixels,
                     blockColumn,
@@ -875,7 +881,7 @@ internal sealed record PrivateMap3Entity142DiagnosticProjection(
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentNullException.ThrowIfNull(baseProjection);
         projection = null;
-        if (baseProjection.StaticOverlayDiagnostic)
+        if (snapshot.Map.Value != OriginalMapRuntimeAdmission.MapId || baseProjection.StaticOverlayDiagnostic)
         {
             return true;
         }
@@ -948,6 +954,7 @@ internal enum PrivateMap3LiveRouteActorGlyphKind
 {
     SarahDiamond,
     Zone601Square,
+    AstralDiamond,
 }
 
 internal sealed record PrivateMap3LiveRouteActorGlyph(
@@ -1008,7 +1015,8 @@ internal sealed class PrivateMap3LiveRouteActorGlyphProjection
         }
 
         List<PrivateMap3LiveRouteActorGlyph> actors = [];
-        if (snapshot.Sarah is { } sarah && ShouldProjectSarah(sarah))
+        if (snapshot.Map.Value == OriginalMapRuntimeAdmission.MapId &&
+            snapshot.Sarah is { } sarah && ShouldProjectSarah(sarah))
         {
             actors.Add(Create(
                 PrivateMap3LiveRouteActorGlyphKind.SarahDiamond,
@@ -1019,7 +1027,7 @@ internal sealed class PrivateMap3LiveRouteActorGlyphProjection
                 baseProjection));
         }
 
-        if (snapshot.Zone601 is { } zone601)
+        if (snapshot.Map.Value == OriginalMapRuntimeAdmission.MapId && snapshot.Zone601 is { } zone601)
         {
             actors.Add(Create(
                 PrivateMap3LiveRouteActorGlyphKind.Zone601Square,
@@ -1028,6 +1036,13 @@ internal sealed class PrivateMap3LiveRouteActorGlyphProjection
                 zone601.ActorPosition,
                 zone601.ActorOpaqueFacing,
                 baseProjection));
+        }
+
+        if (snapshot.AstralOccupiesRouteTile)
+        {
+            OriginalMapEntityDefinition actor = snapshot.Definition.AstralAcceptance!.Actor;
+            actors.Add(Create(PrivateMap3LiveRouteActorGlyphKind.AstralDiamond, 140,
+                actor.Identity, actor.Position, actor.OpaqueFacing, baseProjection));
         }
 
         if (actors.Count > 0)
@@ -1156,7 +1171,9 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         ArgumentNullException.ThrowIfNull(animation);
         return PlayerLocomotionRect(
             projection,
-            animation.SourcePosition,
+            animation.Phase == PrivateOriginalMapPlayerLocomotionPhase.Relocated
+                ? animation.DestinationPosition
+                : animation.SourcePosition,
             animation.OffsetXUnits,
             animation.OffsetYUnits);
     }
@@ -1339,9 +1356,10 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
 
         diagnostic = null;
-        if (!PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(
-                mount.Definition,
-                mount.Bucket) ||
+        if (PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
+                snapshot.CurrentRuntime.VisualResourceSelection) != mount.Definition.AssetId ||
+            !(PrivateLocalPresentationAssetCatalog.IsExactMap3BaseAtlasBinding(mount.Definition, mount.Bucket) ||
+                PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(mount.Definition, mount.Bucket)) ||
             mount.Bucket.Width != checked(
                 PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalWidth *
                 mount.Bucket.Scale) ||
@@ -1382,7 +1400,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         PrivateOriginalMapBaseViewProjection atlasProjection =
             PrivateOriginalMapBaseViewProjection.CreateFromAtlas(
                 snapshot,
-                snapshot.Definition.VisualResourceSelection,
+                snapshot.CurrentRuntime.VisualResourceSelection,
                 rgbaBytes,
                 mount.Bucket.Scale,
                 staticOverlayDiagnostic,
@@ -1402,7 +1420,7 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         }
 
         _atlasRgbaBytes = [.. rgbaBytes];
-        _atlasSelection = snapshot.Definition.VisualResourceSelection;
+        _atlasSelection = snapshot.CurrentRuntime.VisualResourceSelection;
         _atlasScale = mount.Bucket.Scale;
         _atlasAssetId = mount.Definition.AssetId;
         _atlasBucketDigest = mount.Bucket.Sha256;
@@ -1631,7 +1649,9 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         bool currentAreaOverlay = false)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
-        if (_atlasRgbaBytes is null || _atlasSelection is null)
+        _atlasSelection = snapshot.CurrentRuntime.VisualResourceSelection;
+        if (_atlasRgbaBytes is null ||
+            PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(_atlasSelection) != _atlasAssetId)
         {
             throw new InvalidOperationException(
                 "The private base viewport requires an admitted local atlas before projection.");
@@ -1805,7 +1825,8 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
         Rect2 rectangle = actor.DestinationRect;
         Vector2 center = rectangle.GetCenter();
         float half = rectangle.Size.X / 2;
-        if (actor.Kind == PrivateMap3LiveRouteActorGlyphKind.SarahDiamond)
+        if (actor.Kind is PrivateMap3LiveRouteActorGlyphKind.SarahDiamond or
+            PrivateMap3LiveRouteActorGlyphKind.AstralDiamond)
         {
             Vector2[] points =
             [
@@ -1814,7 +1835,8 @@ public sealed partial class PrivateOriginalMapBaseViewport : Node2D
                 center + new Vector2(0, half),
                 center + new Vector2(-half, 0),
             ];
-            DrawColoredPolygon(points, SarahGlyphColor);
+            DrawColoredPolygon(points, actor.Kind == PrivateMap3LiveRouteActorGlyphKind.AstralDiamond
+                ? new Color("b5a0ff") : SarahGlyphColor);
             DrawPolyline([.. points, points[0]], RouteActorOutlineColor, width: 2);
         }
         else

@@ -13,6 +13,20 @@ namespace Sf2.Remake.Content.Tests;
 
 public sealed class PrivateCanonicalMap3ImportReaderTests
 {
+    [Theory]
+    [InlineData(19, "palette")]
+    [InlineData(20, "palette")]
+    [InlineData(19, "tilesets")]
+    [InlineData(20, "tilesets")]
+    public void CastleVisualSelectionDriftFailsAdmission(int mapId, string field)
+    {
+        JsonObject document = SampleDocument();
+        if (field == "palette") Map(document, mapId)[field] = 1;
+        else Map(document, mapId)[field]!.AsArray()[4] = 8;
+        var rejected = Assert.IsType<OriginalMapImportRejected>(Admit(document));
+        Assert.Equal(OriginalMapImportFailureCode.InvalidMapProjection, rejected.Diagnostic.Code);
+    }
+
     private const string AcceptedCanonicalDigest =
         "DDDA4FA05455DDBA9CDAF85497CEE0C1C89C6E625721A8FEAD301044C892E508";
     private const string AcceptedDecodedLayoutDigest =
@@ -1335,6 +1349,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 palette = 0,
                 tilesets = id == 3
                     ? new[] { 0, 37, 43, 53, 66 }
+                    : id is 19 or 20 ? new[] { 6, 23, 44, 53, 62 }
                     : new[] { 0, 1, 2, 3, 4 },
                 references = new
                 {

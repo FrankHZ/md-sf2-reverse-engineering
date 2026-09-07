@@ -83,6 +83,11 @@ internal sealed class PrivateLocalPresentationAssetCatalog
     internal const int TacticalCursorLogicalWidth = 58;
     internal const int TacticalCursorLogicalHeight = 58;
     internal const string Map3BaseAtlasAssetId = "world.map3.base-tileset-atlas";
+    internal const string CastleBaseAtlasAssetId = "world.map19-20.base-tileset-atlas";
+    internal const string CastleBaseAtlas2xDigest =
+        "5637109BA25AFD5297BCDDE73D108DCA5D795E5A208E344ED3FEA93FA1C96355";
+    internal const string CastleBaseAtlas4xDigest =
+        "8C594E3C6DA3EEF570A33E4842F3F2611F734BFEBAD138E04A74A128E24F2161";
     internal const int Map3BaseAtlasLogicalWidth = 128;
     internal const int Map3BaseAtlasLogicalHeight = 320;
     internal const string Map3PlayerReferenceAssetId =
@@ -102,9 +107,9 @@ internal sealed class PrivateLocalPresentationAssetCatalog
     internal const int Map3Entity142ReferenceLogicalWidth = 48;
     internal const int Map3Entity142ReferenceLogicalHeight = 24;
     internal const string Map3AssetRepositoryCommit =
-        "d89274972905742f8a02b8d8b20d2c96d2ff9ca9";
+        "9acff63cd3285be07736c07839034487327cf41c";
     internal const string Map3AssetManifestDigest =
-        "5599BBB898C298B21C05AAC8BF01B8926F79FD02E07F34AD91455C2013D0D6ED";
+        "81834D1787BAECD27BC1757E0A76E493310821AD9D6A2F60753F3F08963E144A";
     internal const string Map3BaseAtlas2xDigest =
         "E974F59E15E493C29D871574299A46079EBA195BB4CC0B10FF37C2F310682A0A";
     internal const string Map3BaseAtlas4xDigest =
@@ -169,7 +174,20 @@ internal sealed class PrivateLocalPresentationAssetCatalog
     internal PrivateLocalPresentationAssetMountResult MountMap3BaseAtlas(
         LocalPresentationAssetPackRequest request,
         LocalPresentationAssetPackAccepted accepted,
-        double effectivePhysicalScale)
+        double effectivePhysicalScale) =>
+        MountBaseAtlas(request, accepted, effectivePhysicalScale, castle: false);
+
+    internal PrivateLocalPresentationAssetMountResult MountCastleBaseAtlas(
+        LocalPresentationAssetPackRequest request,
+        LocalPresentationAssetPackAccepted accepted,
+        double effectivePhysicalScale) =>
+        MountBaseAtlas(request, accepted, effectivePhysicalScale, castle: true);
+
+    private PrivateLocalPresentationAssetMountResult MountBaseAtlas(
+        LocalPresentationAssetPackRequest request,
+        LocalPresentationAssetPackAccepted accepted,
+        double effectivePhysicalScale,
+        bool castle)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(accepted);
@@ -184,28 +202,28 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         {
             return Reject(
                 PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
-                "The Map 3 base-atlas mount requires the exact accepted local asset transaction.");
+                "The base-atlas mount requires the exact accepted local asset transaction.");
         }
 
         PrivateLocalPresentationAssetMountResult result = MountRaster(
             request,
             accepted,
             effectivePhysicalScale,
-            Map3BaseAtlasAssetId,
+            castle ? CastleBaseAtlasAssetId : Map3BaseAtlasAssetId,
             Map3BaseAtlasLogicalWidth,
             Map3BaseAtlasLogicalHeight,
-            "private Map 3 base atlas");
+            "private base atlas");
         if (result is not PrivateLocalPresentationAssetMounted mounted)
         {
             return result;
         }
 
         LocalPresentationRasterBucket bucket = mounted.Asset.Bucket;
-        if (!IsExactMap3BaseAtlasBinding(mounted.Asset.Definition, bucket))
+        if (!IsExactBaseAtlasBinding(mounted.Asset.Definition, bucket, castle))
         {
             return Reject(
                 PrivateLocalPresentationAssetMountFailureCode.PayloadMismatch,
-                "The Map 3 base-atlas bucket identity or nearest-sampling policy drifted.");
+                "The base-atlas bucket identity or nearest-sampling policy drifted.");
         }
 
         return mounted;
@@ -383,21 +401,37 @@ internal sealed class PrivateLocalPresentationAssetCatalog
         return mounted;
     }
 
+    internal static string? BaseAtlasAssetIdForSelection(OriginalMapVisualResourceSelection selection) =>
+        OriginalMapRuntimeAdmission.HasExactAcceptedVisualResourceSelection(selection)
+            ? Map3BaseAtlasAssetId
+            : OriginalMapRuntimeAdmission.HasExactAcceptedCastleVisualResourceSelection(selection)
+                ? CastleBaseAtlasAssetId
+                : null;
+
     internal static bool IsExactMap3BaseAtlasBinding(
+        LocalPresentationRasterAssetDefinition definition, LocalPresentationRasterBucket bucket) =>
+        IsExactBaseAtlasBinding(definition, bucket, castle: false);
+
+    internal static bool IsExactCastleBaseAtlasBinding(
+        LocalPresentationRasterAssetDefinition definition, LocalPresentationRasterBucket bucket) =>
+        IsExactBaseAtlasBinding(definition, bucket, castle: true);
+
+    private static bool IsExactBaseAtlasBinding(
         LocalPresentationRasterAssetDefinition definition,
-        LocalPresentationRasterBucket bucket)
+        LocalPresentationRasterBucket bucket,
+        bool castle)
     {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(bucket);
         string? expectedDigest = bucket.Scale switch
         {
-            2 => Map3BaseAtlas2xDigest,
-            4 => Map3BaseAtlas4xDigest,
+            2 => castle ? CastleBaseAtlas2xDigest : Map3BaseAtlas2xDigest,
+            4 => castle ? CastleBaseAtlas4xDigest : Map3BaseAtlas4xDigest,
             _ => null,
         };
         return string.Equals(
                 definition.AssetId,
-                Map3BaseAtlasAssetId,
+                castle ? CastleBaseAtlasAssetId : Map3BaseAtlasAssetId,
                 StringComparison.Ordinal) &&
             definition.LogicalSize.Width == Map3BaseAtlasLogicalWidth &&
             definition.LogicalSize.Height == Map3BaseAtlasLogicalHeight &&

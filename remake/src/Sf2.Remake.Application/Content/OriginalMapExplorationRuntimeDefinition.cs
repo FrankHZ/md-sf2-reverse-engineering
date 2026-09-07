@@ -13,7 +13,8 @@ public sealed class OriginalMapExplorationRuntimeDefinition
         OriginalMapAreaCatalog areaCatalog,
         OriginalMapEntityPopulation entityPopulation,
         MapSetupId selectedSetup,
-        string selectedInitIdentity)
+        string selectedInitIdentity,
+        OriginalMapVisualResourceSelection visualResourceSelection)
         : this(
             map,
             workingLayout,
@@ -24,7 +25,8 @@ public sealed class OriginalMapExplorationRuntimeDefinition
             selectedInitIdentity,
             ComputeWordDigest(workingLayout?.Words ??
                 throw new ArgumentNullException(nameof(workingLayout))),
-            ComputeCollisionProjectionDigest(workingLayout.Words))
+            ComputeCollisionProjectionDigest(workingLayout.Words),
+            visualResourceSelection)
     {
     }
 
@@ -37,7 +39,8 @@ public sealed class OriginalMapExplorationRuntimeDefinition
         MapSetupId selectedSetup,
         string selectedInitIdentity,
         string decodedLayoutDigest,
-        string collisionProjectionDigest)
+        string collisionProjectionDigest,
+        OriginalMapVisualResourceSelection visualResourceSelection)
         : this(
             map,
             workingLayout,
@@ -48,7 +51,8 @@ public sealed class OriginalMapExplorationRuntimeDefinition
             selectedInitIdentity,
             decodedLayoutDigest,
             collisionProjectionDigest,
-            useProjectionDigestOverride: false)
+            useProjectionDigestOverride: false,
+            visualResourceSelection)
     {
     }
 
@@ -62,9 +66,18 @@ public sealed class OriginalMapExplorationRuntimeDefinition
         string selectedInitIdentity,
         string decodedLayoutDigest,
         string collisionProjectionDigest,
-        bool useProjectionDigestOverride)
+        bool useProjectionDigestOverride,
+        OriginalMapVisualResourceSelection visualResourceSelection)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
+        VisualResourceSelection = visualResourceSelection ??
+            throw new ArgumentNullException(nameof(visualResourceSelection));
+        if (visualResourceSelection.Map != map)
+        {
+            throw new ArgumentException(
+                "The runtime visual selection must belong to its map.",
+                nameof(visualResourceSelection));
+        }
         WorkingLayout = workingLayout ?? throw new ArgumentNullException(nameof(workingLayout));
         BlockCatalog = blockCatalog ?? throw new ArgumentNullException(nameof(blockCatalog));
         AreaCatalog = areaCatalog ?? throw new ArgumentNullException(nameof(areaCatalog));
@@ -119,6 +132,8 @@ public sealed class OriginalMapExplorationRuntimeDefinition
     }
 
     public MapId Map { get; }
+
+    public OriginalMapVisualResourceSelection VisualResourceSelection { get; }
 
     public WorkingMapLayout WorkingLayout { get; }
 

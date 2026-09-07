@@ -296,17 +296,17 @@ uv run python -m sf2tool.remake_asset_build map19-20-base-atlas-candidate `
 
 The command only writes the named asset checkout's ignored `cache/` candidate and emits a receipt.
 Local image review and a separately accepted source/master/runtime/manifest transaction must precede
-consumer binding. This builder does not promote assets or change the current Godot runtime. Map 19/20
-remain diagnostic views until a later current-map consumer is independently accepted.
+consumer binding. This builder does not promote assets or change the current Godot runtime. The
+current consumer separately binds the accepted Map 19/20 family described below.
 
-The current reviewed local pack at commit `d89274972905742f8a02b8d8b20d2c96d2ff9ca9`, tree
-`fb2581bac58f662e4e5143b52776b15c2cf5ca25`, and manifest SHA-256
-`5599BBB898C298B21C05AAC8BF01B8926F79FD02E07F34AD91455C2013D0D6ED` contains the two HUD assets,
-the exact atlas family, the player initial-reference-frame family, the three controlled-player
+The current reviewed local pack at commit `9acff63cd3285be07736c07839034487327cf41c`, tree
+`dee294d65e6b4fccc33104f848a16130c085aea6`, and manifest SHA-256
+`81834D1787BAECD27BC1757E0A76E493310821AD9D6A2F60753F3F08963E144A` contains the two HUD assets,
+the exact Map 3 and shared Map 19/20 atlas families, the player initial-reference-frame family, the three controlled-player
 locomotion sheets, and one entity-142/Astral UP two-half reference sheet. The
 atlas's explicit
-PrivateLocal consumer mounts only one selected 2x or 4x runtime PNG after Content rechecks the closed
-pack. Godot validates decoded RGBA8 dimensions and projects every physical bucket texel through the
+PrivateLocal consumer mounts both explicit families at the selected 2x or 4x scale after Content
+rechecks the closed pack; only the current family supplies the rendered base. Godot validates decoded RGBA8 dimensions and projects every physical bucket texel through the
 already authoritative working-layout/block/tile/slot/flip selection. A 2x bucket becomes a
 576-by-336 ImageTexture and a 4x bucket becomes a 1152-by-672 ImageTexture; `DrawTextureRect` maps
 either onto the same 288-by-168 logical crop, and the current project-authored player marker remains
@@ -588,7 +588,7 @@ an admitted product font, Theme, original battle title, or presentation-fidelity
 | fixed after acceptance | 4x new-raster authoring; original raster as local master; deterministic 2x/4x buckets; one resident bucket; safe-frame/aspect/accessibility model; thin Godot catalog migration |
 | implemented product display policy | PrivateLocal adaptive windowed startup up to a fitting 1920-by-1080 client; runtime 960-by-540 minimum; explicit physical target preservation; HiDPI without double counting; centered `keep` frame; one startup-resident 2x/4x bucket; restart required for bucket reselection |
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
-| implemented world-family tooling prerequisite | two fixed families: Map 3 and shared Map 19/20; fixed private ROM/metadata roots, exact palette/slot selections and each selected map's ROM-header join; five-segment 128-by-320 atlas and deterministic nearest 2x/4x ignored candidate; the castle candidate still requires local review and asset acceptance before consumer binding; no implicit promotion or update |
+| implemented world-family tooling prerequisite | two fixed families: Map 3 and shared Map 19/20; fixed private ROM/metadata roots, exact palette/slot selections and each selected map's ROM-header join; five-segment 128-by-320 atlas and deterministic nearest 2x/4x ignored candidate; candidate publication still requires separate local review and asset acceptance before consumer binding; no implicit promotion or update |
 | implemented player-reference consumer | fixed private ROM root; exact controlled player, regular map-sprite, DOWN source-slot, no-mirror, and half-zero selection; bounded Basic decode; reviewed 24-by-24 `initial-reference-frame` master and nearest 2x/4x local transaction; exact Content mount and thin Godot logical-cell projection; no standing/idle, animation, or admission-visible claim |
 | implemented entity-reference tooling prerequisite and bounded consumer | fixed private ROM root plus accepted entity-142 fixture; exact record/slot/map-sprite/UP source; both decoded halves retained in source order as one reviewed 48-by-24 local sheet and nearest 2x/4x buckets; exact Content mount, Godot-only half-zero fresh bind, and `project-authored-two-half-diagnostic-cadence-v1` viewport state holding each half for 30 fixed physics callbacks; no original selected-half/idle/counter/cadence/visibility/interaction semantics, lifecycle, all-entity renderer, or fidelity claim |
 | implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop after exact-nearest scale-block validation; no playable ROM/metadata reopen, source/master runtime input, PCK, or fidelity claim |
@@ -596,7 +596,123 @@ an admitted product font, Theme, original battle title, or presentation-fidelity
 | separate implementation decision | live resize bucket remount and fullscreen/monitor transition UX; platform safe-area integration; original or generalized Yes/No behavior; admitted product font/theme/input glyphs; general window chrome/Theme migration; user-selectable UI scale beyond the current 100% limiting-frame calculation; tracked-master rebuild/update transactions; cache retention/review lifecycle beyond one fresh candidate |
 | Unknown | original background-layer palette source; camera/layer/priority-with-sprites/animation composition; final-pixel fidelity; natural route and timing; complete UI/text behavior; audio format/loop/streaming; H4 and 8C parity |
 
-The local asset repository and four bounded semantic consumers now exist, but this document still does
+The local asset repository and bounded semantic consumers now exist, but this document still does
 not authorize a product batch, PCK inclusion, presenter-wide migration, original Yes/No/cursor
 interaction, admitted product font/input glyphs, or a general Theme. Those changes require separately
 owned, reviewable implementation slices.
+
+## Current runtime castle base view
+
+The required visual selection belongs to each immutable runtime. Application's exact catalog
+admission checks Map 3 and Map 19/20 independently, including custom import-source ports. The base
+renderer uses that current selection, the snapshot's working layout, and the current runtime's blocks
+and areas. Map 3 uses its own atlas; Maps 19/20 share palette 0 and slots `[6,23,44,53,62]`, but
+switching between them still changes the selection's map and the working layout. Missing or mismatched
+selections are rejected. The existing camera and player locomotion policies apply across this seam.
+For the instantaneous `Relocated` phase, both camera focus and player drawing use the destination.
+Application retains the old source position as relocation provenance; it is not an interpolated
+destination-map position. Walking, stair movement, blocked attempts and the existing crop policy retain
+their accepted behavior.
+
+Map 3 static/current-area overlays, entity-142 diagnostic, Sarah and Zone601 glyphs are scoped to Map 3.
+Castle views retain the existing authored purple Astral diamond while Application reports its route
+tile occupied; accepting via F clears it. No original castle NPC sprite is admitted. Traversal-only
+launches still use their existing diagnostic display. General init, original rendering and timing,
+natural caller state, Map 21 and H4 remain outside this consumer.
+
+### Reproduce the bounded native image review
+
+The [fixed probe](../tests/native/Map19Map20AtlasReviewProbe.cs) is test-owned instrumentation, excluded
+from the production project. It seeds the same validated Map 19 state as the private canonical test,
+then drives the accepted fixture through the 38-input royal route, controlled palace F, two-input
+return, Astral approach/F, and released west route. Six real Godot viewport captures cover Map 3,
+Map 19 entry, Map 20 royal, Astral before/after F, and Map 20 west. Map 3-to-19 is a seeded projection
+seam. This does not establish a complete natural player route, original init execution or H4.
+
+Use a clean committed head after the owning tests and official Godot gate. Export only `manifests`
+and `runtime` from accepted asset commit `9acff63cd3285be07736c07839034487327cf41c` into a fresh
+ignored directory. Set `SF2_PRIVATE_CANONICAL_MAP_IMPORT` and `SF2_PRIVATE_PRESENTATION_ASSET_ROOT`
+to the isolated accepted inputs. Set `SF2_CASTLE_REVIEW_EDITOR` to the official 4.7.2 Mono editor
+extracted inside this worktree by the Godot gate, and `SF2_CASTLE_REVIEW_ROOT` to a **fresh** absolute
+child of this checkout's ignored `local/`. Run the following with `uv run python` from the checkout
+root (a local script or a PowerShell single-quoted here-string piped to `uv run python -X utf8 -`).
+
+The recipe copies production sources verbatim from the recorded Git head. Its only added compiled
+source is the tracked probe; scene selection, seed/reflection, deterministic route driving, disabled
+unsolicited callbacks and capture are instrumentation. The native process uses the actual Windows
+renderer with a hidden startup window; a headless/dummy renderer cannot substitute for these images.
+The process receipt records the code head, bounded exit/timeout/cleanup state and each step. Inspect
+all six PNGs and the per-frame selection/area/layout/atlas/glyph receipt. An image failure is a failed
+native boundary even if startup markers pass. Images, inputs and process receipts remain private and
+ignored; no pixels enter a public PR.
+
+The native review exposed a concrete failure that identity-only checks missed: the Map 20 west arrival
+reported `(6,37)` but used the retained Map 19 source `(5,3)` to crop Map 20 at `(0,0)`. This produced
+the wrong black/roof region. Map 20 area 2 is `(0,33)..(41,45)` and has equal zero second-layer offsets;
+that failure was not evidence of a missing layer or an init fix. The corrected stationary camera
+must focus on `(6,37)` and crop at `(0,34)`; the royal arrival `(23,37)` crops at `(17,34)`.
+The probe now checks actual focus/crop and the player rectangle, as well as map identities. Earlier
+process-success receipts without those assertions do not establish correct destination images.
+
+```python
+from pathlib import Path
+import json, os, shutil, subprocess, zipfile
+from sf2tool import remake_godot as gate
+
+repo = Path.cwd()
+review = Path(os.environ["SF2_CASTLE_REVIEW_ROOT"]).resolve()
+review.relative_to(repo / "local")
+review.mkdir(parents=True, exist_ok=False)
+head = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+subprocess.run(["git", "archive", "--format=zip", "--output", str(review / "source.zip"),
+                head, "remake"], check=True, timeout=60)
+workspace = review / "workspace"
+with zipfile.ZipFile(review / "source.zip") as archive:
+    archive.extractall(workspace)
+game = workspace / "remake/game"
+shutil.copyfile(workspace / "remake/tests/native/Map19Map20AtlasReviewProbe.cs",
+                game / "src/Map19Map20AtlasReviewProbe.cs")
+(game / "ReviewProbe.tscn").write_text(
+    '[gd_scene load_steps=2 format=3]\n'
+    '[ext_resource path="res://src/Map19Map20AtlasReviewProbe.cs" type="Script" id="1"]\n'
+    '[node name="AtlasReview" type="Node2D"]\nscript = ExtResource("1")\n', encoding="utf-8")
+captures = review / "captures"
+captures.mkdir()
+environment = gate._gate_environment(review)
+environment["SF2_CASTLE_REVIEW_OUTPUT"] = str(captures)
+environment["SF2_CASTLE_REVIEW_FIXTURE"] = str(repo / "tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json")
+# Only window visibility changes; the maintained runner still owns its job/timeout/reap contract.
+original_popen = subprocess.Popen
+def hidden_popen(*args, **kwargs):
+    startup = subprocess.STARTUPINFO()
+    startup.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    startup.wShowWindow = subprocess.SW_HIDE
+    kwargs["startupinfo"] = startup
+    return original_popen(*args, **kwargs)
+gate.subprocess.Popen = hidden_popen
+steps = [
+    ("restore", ["dotnet", "restore", str(game / "Sf2.Remake.Godot.csproj"), "--locked-mode"]),
+    ("build", ["dotnet", "build", str(game / "Sf2.Remake.Godot.csproj"), "--configuration", "Debug",
+               "--no-restore", "-p:UseSharedCompilation=false", "--disable-build-servers"]),
+    ("native", [os.environ["SF2_CASTLE_REVIEW_EDITOR"], "--path", str(game),
+                "--resolution", "1920x1080", "res://ReviewProbe.tscn", "--",
+                "--runtime-profile=private-local",
+                "--canonical-map-import=" + os.environ["SF2_PRIVATE_CANONICAL_MAP_IMPORT"],
+                "--private-map3-base-view", "--private-map3-base-atlas",
+                "--presentation-asset-root=" + os.environ["SF2_PRIVATE_PRESENTATION_ASSET_ROOT"],
+                "--presentation-asset-commit=9acff63cd3285be07736c07839034487327cf41c",
+                "--presentation-manifest-sha256=81834D1787BAECD27BC1757E0A76E493310821AD9D6A2F60753F3F08963E144A"]),
+]
+receipts = []
+for name, command in steps:
+    result = gate.run_bounded_process(name, command, cwd=game, environment=environment,
+                                      timeout=120, termination_timeout=15, reap_timeout=15)
+    receipts.append(result.as_dict())
+    (review / "process.json").write_text(json.dumps(
+        {"codeHead": head, "productionCopy": "git archive; production sources unchanged",
+         "instrumentation": "one copied tracked probe and ReviewProbe.tscn", "steps": receipts},
+        indent=2), encoding="utf-8")
+    print(name, result.passed, result.exit_code, result.timed_out, result.cleanup_status, flush=True)
+    if not result.passed:
+        raise SystemExit(1)
+```

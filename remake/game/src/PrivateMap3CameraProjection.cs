@@ -76,7 +76,9 @@ internal sealed record PrivateMap3CameraProjection
                     nameof(locomotion));
             }
 
-            source = locomotion.SourcePosition;
+            source = locomotion.Phase == PrivateOriginalMapPlayerLocomotionPhase.Relocated
+                ? locomotion.DestinationPosition
+                : locomotion.SourcePosition;
             offsetXUnits = locomotion.OffsetXUnits;
             offsetYUnits = locomotion.OffsetYUnits;
         }

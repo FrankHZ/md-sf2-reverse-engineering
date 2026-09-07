@@ -9,6 +9,90 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateOriginalMapBaseViewportTests
 {
     [Fact]
+    public void RelocatedPlayerFrameUsesDestinationWithinTheCurrentCamera()
+    {
+        var destination = new MapPosition(6, 37);
+        var animation = PrivateMap3CameraProjectionTests.Relocate(new(5, 3), destination);
+        var snapshot = Snapshot([new ushort[9]], new ushort[WorkingMapLayout.WordCount],
+            playerPosition: destination);
+        var projection = PrivateOriginalMapBaseViewProjection.Create(snapshot, VisualDefinition(),
+            playerLocomotion: animation);
+        Assert.Equal(34, projection.OriginY);
+        Assert.Equal(PrivateOriginalMapBaseViewport.PlayerReferenceRect(projection),
+            PrivateOriginalMapBaseViewport.PlayerLocomotionRect(projection, animation));
+        Assert.Equal(new MapPosition(5, 3), animation.SourcePosition);
+    }
+
+    [Theory]
+    [InlineData("map19")]
+    [InlineData("map20")]
+    public void CastlePixelsUseCurrentRuntimeBlocksAreaAndWorkingLayout(string mapId)
+    {
+        var basis = Snapshot([Enumerable.Repeat((ushort)0x0100, 9).ToArray()],
+            new ushort[WorkingMapLayout.WordCount]);
+        MapId map = new(mapId);
+        var blocks = new OriginalMapBlockCatalog(new[] { 0x0100, 0x0101 }.Select((tile, index) =>
+            new OriginalMapBlockDefinition(new("project-authored-castle-blocks", index),
+                Enumerable.Repeat((ushort)tile, 9))));
+        ushort[] words = Enumerable.Repeat((ushort)1, WorkingMapLayout.WordCount).ToArray();
+        var layout = new WorkingMapLayout(words);
+        var areas = new OriginalMapAreaCatalog([
+            Area(1, new(0, 0, 7, 7), new(0, 0)), Area(2, new(8, 8, 31, 31), new(0, 0))]);
+        var setup = basis.EntityPopulation.SelectedSetup;
+        var runtime = new OriginalMapExplorationRuntimeDefinition(map, layout, blocks, areas,
+            new(map, setup, basis.EntityPopulation.Records), setup, "project-authored-castle-init",
+            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+                words.SelectMany(word => new[] { (byte)(word >> 8), (byte)word }).ToArray())),
+            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(new byte[WorkingMapLayout.WordCount])),
+            new(map, 0, [6, 23, 44, 53, 62]));
+        var initial = basis.Definition;
+        var definition = new OriginalMapImportDefinition(initial.Map, initial.WorkingLayout,
+            initial.BlockCatalog, initial.AreaCatalog, initial.EntityPopulation, initial.VisualResourceSelection,
+            initial.ControlledAdmission, null, null, initial.UnsupportedCapabilities,
+            runtimeCatalog: new([initial.InitialRuntime, runtime]));
+        var snapshot = new PrivateOriginalMapSessionSnapshot(definition, basis.Receipt, layout, 1,
+            new(14, 12), runtime.Traversal.TryMove(layout, new(13, 12), ExplorationDirection.East),
+            false, null, currentRuntime: runtime);
+        var projection = PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+            runtime.VisualResourceSelection, BuildNearestAtlas(VisualDefinition(), 2), 2,
+            currentAreaOverlay: true);
+        Assert.Equal(map, projection.Map);
+        Assert.Equal(2, snapshot.CurrentArea.OneBasedRecordOrdinal);
+        Assert.False(projection.CurrentAreaOverlay);
+        Assert.Equal(new byte[] { 0, 255, 0, 255 }, Pixel(projection, 0, 0));
+        Assert.Throws<ArgumentException>(() => PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+            new(new(mapId == "map19" ? "map20" : "map19"), 0, [6, 23, 44, 53, 62]),
+            BuildNearestAtlas(VisualDefinition(), 2), 2));
+    }
+
+    [Fact]
+    public void CastleAstralGlyphRetiresAfterAcceptanceAndMap3DiagnosticIsAbsent()
+    {
+        foreach (bool completed in new[] { false, true })
+        {
+            var snapshot = PrivateOriginalMapTraversalViewportTests.AstralSnapshot(completed);
+            var projection = PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+                snapshot.CurrentRuntime.VisualResourceSelection, BuildNearestAtlas(VisualDefinition(), 2), 2,
+                staticOverlayDiagnostic: true);
+            Assert.False(projection.StaticOverlayDiagnostic);
+            Assert.True(PrivateMap3Entity142DiagnosticProjection.TryCreate(snapshot, projection, out var entity));
+            Assert.Null(entity);
+            Assert.True(PrivateMap3LiveRouteActorGlyphProjection.TryCreate(snapshot, projection, out var glyphs));
+            if (completed) Assert.Null(glyphs);
+            else
+            {
+                var astral = Assert.Single(glyphs!.Actors);
+                Assert.Equal(PrivateMap3LiveRouteActorGlyphKind.AstralDiamond, astral.Kind);
+                Assert.Equal(new MapPosition(16, 5), astral.Position);
+            }
+            Assert.Throws<ArgumentException>(() => PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+                snapshot.Definition.VisualResourceSelection, BuildNearestAtlas(VisualDefinition(), 2), 2));
+            Assert.Throws<ArgumentException>(() => PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+                new(new("map20"), 0, [6, 23, 44, 53, 62]), BuildNearestAtlas(VisualDefinition(), 2), 2));
+        }
+    }
+
+    [Fact]
     public void ViewportEnforcesNearestSamplingWithoutTextureRepeat()
     {
         Assert.Equal(

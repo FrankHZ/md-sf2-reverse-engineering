@@ -1,4 +1,5 @@
 using System.Reflection;
+using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Domain.Maps;
 using Sf2.Remake.GodotAdapter;
@@ -8,6 +9,43 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateMap3CameraProjectionTests
 {
+    [Theory]
+    [InlineData(22, 4, 23, 37)]
+    [InlineData(5, 3, 6, 37)]
+    [InlineData(23, 38, 23, 3)]
+    public void RelocationFocusesDestinationWithoutChangingSourceProvenance(int sx, int sy, int dx, int dy)
+    {
+        MapPosition source = new(sx, sy);
+        MapPosition destination = new(dx, dy);
+        var relocated = Relocate(source, destination);
+        Assert.Equal(source, relocated.SourcePosition);
+        Assert.Equal(destination, relocated.DestinationPosition);
+        Assert.Equal(PrivateOriginalMapPlayerLocomotionPhase.Relocated, relocated.Phase);
+        Assert.False(relocated.IsMoving);
+        var snapshot = Snapshot(destination);
+        var camera = PrivateMap3CameraProjection.Create(snapshot, relocated);
+        Assert.Equal(PrivateMap3CameraProjection.Create(snapshot), camera);
+        Assert.Equal(dx * 24, camera.FocusPixelX);
+        Assert.Equal(dy * 24, camera.FocusPixelY);
+    }
+
+    internal static PrivateOriginalMapPlayerLocomotionSnapshot Relocate(MapPosition source, MapPosition destination)
+    {
+        var current = BeginLocomotion(source, source, ExplorationDirection.East,
+            OriginalMapTraversalOutcome.BlockedByCollision);
+        var transition = new OriginalMapCrossMapTransitionDefinition(
+            new(ContentProfile.PrivateLocal, new("map19"), "project-authored-relocation", 1),
+            (byte)source.X, (byte)source.Y, source, ExplorationDirection.East, source,
+            new("map20"), destination, 0);
+        var receipt = (PrivateOriginalMapCrossMapTransitionReceipt)Activator.CreateInstance(
+            typeof(PrivateOriginalMapCrossMapTransitionReceipt), BindingFlags.Instance | BindingFlags.NonPublic,
+            binder: null, args: [transition, 1L], culture: null)!;
+        return (PrivateOriginalMapPlayerLocomotionSnapshot)typeof(PrivateOriginalMapPlayerLocomotionSnapshot)
+            .GetMethod("Relocate", BindingFlags.Static | BindingFlags.NonPublic, binder: null,
+                types: [typeof(PrivateOriginalMapPlayerLocomotionSnapshot), typeof(PrivateOriginalMapCrossMapTransitionReceipt)],
+                modifiers: null)!.Invoke(null, [current, receipt])!;
+    }
+
     [Fact]
     public void ControlledStartUsesTheExistingCenterAndClampsAtTheTopEdge()
     {

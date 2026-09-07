@@ -443,7 +443,8 @@ public sealed class OriginalMapVisualGameSessionTests
             OriginalMapRuntimeAdmission.SelectedInitIdentity,
             OriginalMapRuntimeAdmission.AcceptedDecodedLayoutDigest,
             OriginalMapRuntimeAdmission.AcceptedCollisionProjectionDigest,
-            useProjectionDigestOverride: true);
+            useProjectionDigestOverride: true,
+            visualResourceSelection: selection ?? ExactSelection());
         var runtimeCatalog = AcceptedOriginalMapRuntimeCatalog.Create(initialRuntime);
         return new OriginalMapImportDefinition(
             map,

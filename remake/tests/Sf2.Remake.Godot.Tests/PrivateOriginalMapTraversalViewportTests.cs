@@ -197,7 +197,8 @@ public sealed class PrivateOriginalMapTraversalViewportTests
         var population = new OriginalMapEntityPopulation(map, new("ms_map19"), actors);
         var runtime = new OriginalMapExplorationRuntimeDefinition(map, basis.WorkingLayout, basis.Definition.BlockCatalog,
             basis.Definition.AreaCatalog, population, new("ms_map19"), "ms_map19_InitFunction",
-            basis.Definition.InitialRuntime.DecodedLayoutDigest, basis.Definition.InitialRuntime.CollisionProjectionDigest);
+            basis.Definition.InitialRuntime.DecodedLayoutDigest, basis.Definition.InitialRuntime.CollisionProjectionDigest,
+            new(map, 0, [6, 23, 44, 53, 62]));
         var palace = new OriginalMapPalaceFirstVisitDefinition(OriginalMapRuntimeAdmission.PalaceInitBodySha256,
             OriginalMapRuntimeAdmission.PalaceScriptProjectionSha256);
         var astral = new OriginalMapAstralAcceptanceDefinition(population.Records[12]);
@@ -464,7 +465,8 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             setup,
             initIdentity,
             Convert.ToHexString(SHA256.HashData(new byte[WorkingMapLayout.WordCount * 2])),
-            Convert.ToHexString(SHA256.HashData(new byte[WorkingMapLayout.WordCount])));
+            Convert.ToHexString(SHA256.HashData(new byte[WorkingMapLayout.WordCount])),
+            new(map, 0, map.Value == "map3" ? [0, 37, 43, 53, 66] : [6, 23, 44, 53, 62]));
     }
 
     private static int Index(int x, int y) =>
