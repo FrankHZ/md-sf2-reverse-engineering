@@ -623,6 +623,8 @@ natural caller state and H4 remain outside this consumer.
 Map 21 arrival has palette 0 and slots `[6,23,44,53,8]`, which differ from the castle family.
 No Map 21 atlas is admitted. An exact admitted Map 21 runtime explicitly hides the retained base
 viewport and shows the existing traversal diagnostic with its current layout, area and player.
+The status moves below the taller diagnostic grid and returns to the original base-view position
+when that view is visible again.
 The first status line names Map 21, the diagnostic and unexecuted init; it offers no guard action.
 Unknown or mismatched runtime/visual selections still reject instead of taking this diagnostic branch.
 This does not bind castle pixels to Map 21 or add an atlas/NPC asset.
@@ -652,7 +654,8 @@ renderer with a hidden startup window; a headless/dummy renderer cannot substitu
 The process receipt records the code head, bounded exit/timeout/cleanup state and each step. Inspect
 all seven PNGs and the per-frame selection/area/layout/atlas/glyph receipt. The first six retain
 the destination camera and player-rectangle checks. The seventh requires a visible traversal view,
-hidden base view, Map 21 `(3,16)`/area 1, crop `(0,13)`, raw facing 0 and the exact record-4 source receipt. An image failure is a failed
+hidden base view, Map 21 `(3,16)`/area 1, crop `(0,13)`, raw facing 0 and the exact record-4 source receipt.
+Its status label must sit below the diagnostic grid without covering cells. An image failure is a failed
 native boundary even if startup markers pass. Images, inputs and process receipts remain private and
 ignored; no pixels enter a public PR.
 

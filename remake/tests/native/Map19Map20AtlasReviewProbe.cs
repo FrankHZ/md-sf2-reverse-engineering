@@ -224,7 +224,10 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         var player = projection.Cells.Single(cell => cell.IsPlayer);
         Require(player.MapX == 3 && player.MapY == 16 && player.Column == 3 && player.Row == 3 &&
             projection.OriginX == 0 && projection.OriginY == 13, "Map21 visible player and diagnostic crop");
-        string status = Field<Label>(_presenter, "_status").Text;
+        var statusLabel = Field<Label>(_presenter, "_status");
+        Require(statusLabel.Position.Y >= traversalViewport.Position.Y +
+            PrivateOriginalMapTraversalViewProjection.RowCount * 48, "Map21 status does not overlap the diagnostic grid");
+        string status = statusLabel.Text;
         Require(status.StartsWith("Middle tower Map 21 reached.", StringComparison.Ordinal) &&
             status.Contains("Diagnostic traversal", StringComparison.Ordinal) &&
             status.Contains("init not executed", StringComparison.Ordinal) &&
@@ -236,7 +239,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(image.SavePng(Path.Combine(_output, name + ".png")) == Error.Ok, "Map21 PNG write");
         _frames.Add(new { name, map = snapshot.Map.Value, selectionMap = snapshot.CurrentRuntime.VisualResourceSelection.Map.Value,
             area = snapshot.CurrentArea.OneBasedRecordOrdinal, layout = snapshot.CurrentRuntime.DecodedLayoutDigest,
-            baseVisible = baseViewport.Visible, traversalVisible = traversalViewport.Visible, status,
+            baseVisible = baseViewport.Visible, traversalVisible = traversalViewport.Visible, status, statusY = statusLabel.Position.Y,
             sourceMap = receipt!.RecordIdentity.SourceMap.Value, sourceRecord = receipt.RecordIdentity.OneBasedRecordOrdinal,
             sourceX = receipt.Source.X, sourceY = receipt.Source.Y, triggerX = receipt.Trigger.X, triggerY = receipt.Trigger.Y,
             facing = movement.OpaqueFacing, phase = movement.Phase.ToString(),

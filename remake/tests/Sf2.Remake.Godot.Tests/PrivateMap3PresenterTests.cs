@@ -8,6 +8,18 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateMap3PresenterTests
 {
+    [Theory]
+    [InlineData(true, 310, 450)]
+    [InlineData(false, 310, 310)]
+    [InlineData(true, 450, 450)]
+    [InlineData(false, 105, 105)]
+    public void DiagnosticStatusClearsTheTallerTraversalGridAndRestoresTheBasePosition(
+        bool traversalVisible, float initialY, float expectedY)
+    {
+        Assert.Equal(expectedY, PrivateMap3Presenter.ProjectionStatusY(traversalVisible, initialY));
+        if (traversalVisible) Assert.True(expectedY > 105 + 7 * 48);
+    }
+
     [Fact]
     public void MiddleTowerStatusExplainsTheVisibleDiagnosticWithoutOfferingUnadmittedInteraction()
     {

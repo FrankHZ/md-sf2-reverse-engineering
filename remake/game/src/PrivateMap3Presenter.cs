@@ -274,6 +274,7 @@ internal sealed class PrivateMap3Presenter
     private readonly bool _staticOverlayDiagnostic;
     private readonly bool _currentAreaOverlay;
     private readonly bool _showTraversalOnInitialMap;
+    private readonly float _initialStatusY;
 
     private PrivateMap3Presenter(
         PrivateOriginalMapBaseViewport? baseViewport,
@@ -287,6 +288,7 @@ internal sealed class PrivateMap3Presenter
         _baseViewport = baseViewport;
         _viewport = viewport;
         _status = status;
+        _initialStatusY = status.Position.Y;
         _requestedWorldTreatment = requestedWorldTreatment;
         _staticOverlayDiagnostic = staticOverlayDiagnostic;
         _currentAreaOverlay = currentAreaOverlay;
@@ -560,7 +562,11 @@ internal sealed class PrivateMap3Presenter
         }
 
         _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome, playerLocomotion);
+        _status.Position = new Vector2(StatusX, ProjectionStatusY(_viewport is not null && traversalVisible, _initialStatusY));
     }
+
+    internal static float ProjectionStatusY(bool traversalVisible, float initialStatusY) =>
+        traversalVisible ? Math.Max(450, initialStatusY) : initialStatusY;
 
     internal static (bool TraversalVisible, bool BaseVisible) ProjectionVisibility(
         MapId currentMap,
