@@ -199,7 +199,8 @@ public sealed class OriginalMapImportDefinition
         OriginalMapAstralAcceptanceDefinition? astralAcceptance = null,
         OriginalMapCrossMapTransitionDefinition? westTowerMap20Transition = null,
         OriginalMapCrossMapTransitionDefinition? middleTowerMap21Transition = null,
-        OriginalMapMiddleTowerGuardDefinition? middleTowerGuard = null)
+        OriginalMapMiddleTowerGuardDefinition? middleTowerGuard = null,
+        OriginalMapCrossMapTransitionDefinition? northMap40Transition = null)
     {
         ArgumentNullException.ThrowIfNull(map);
         ArgumentNullException.ThrowIfNull(workingLayout);
@@ -690,6 +691,27 @@ public sealed class OriginalMapImportDefinition
             }
         }
 
+        if (northMap40Transition is not null)
+        {
+            OriginalMapExplorationRuntimeDefinition sourceRuntime =
+                RuntimeCatalog.Resolve(northMap40Transition.Identity.SourceMap);
+            OriginalMapExplorationRuntimeDefinition destinationRuntime =
+                RuntimeCatalog.Resolve(northMap40Transition.DestinationMap);
+            if (!sourceRuntime.Traversal.IsWithinActiveArea(northMap40Transition.AdmittedApproach) ||
+                !sourceRuntime.Traversal.IsWithinActiveArea(northMap40Transition.AdmittedTrigger) ||
+                sourceRuntime.Traversal.ResolveCandidateTarget(sourceRuntime.WorkingLayout,
+                    northMap40Transition.AdmittedApproach, northMap40Transition.AdmittedDirection) !=
+                    northMap40Transition.AdmittedTrigger ||
+                sourceRuntime.WorkingLayout.Words[9 + 1 * 64] != 0x1007 ||
+                !destinationRuntime.Traversal.IsWithinActiveArea(northMap40Transition.Destination) ||
+                OriginalMapTraversal.IsBlocked(destinationRuntime.WorkingLayout, northMap40Transition.Destination))
+            {
+                throw new ArgumentException(
+                    "The north Map 40 transition must bind admitted source and destination runtimes.",
+                    nameof(northMap40Transition));
+            }
+        }
+
         if (astralAcceptance is not null &&
             !OriginalMapRuntimeAdmission.HasExactAcceptedAstralAcceptance(astralAcceptance, RuntimeCatalog))
         {
@@ -710,6 +732,7 @@ public sealed class OriginalMapImportDefinition
         RoyalReturnMap19Transition = royalReturnMap19Transition;
         WestTowerMap20Transition = westTowerMap20Transition;
         MiddleTowerMap21Transition = middleTowerMap21Transition;
+        NorthMap40Transition = northMap40Transition;
         ControlledStepCopy = controlledStepCopy;
         SameMapWarps = sameMapWarps;
         RoofOnLoadClear = roofOnLoadClear;
@@ -779,13 +802,16 @@ public sealed class OriginalMapImportDefinition
 
     public OriginalMapCrossMapTransitionDefinition? MiddleTowerMap21Transition { get; }
 
+    public OriginalMapCrossMapTransitionDefinition? NorthMap40Transition { get; }
+
     internal OriginalMapCrossMapTransitionDefinition? FindCrossMapTransition(
         OriginalMapCrossMapTransitionIdentity identity) =>
         NorthMap19Transition?.Identity == identity ? NorthMap19Transition :
         RoyalMap20Transition?.Identity == identity ? RoyalMap20Transition :
         RoyalReturnMap19Transition?.Identity == identity ? RoyalReturnMap19Transition :
         WestTowerMap20Transition?.Identity == identity ? WestTowerMap20Transition :
-        MiddleTowerMap21Transition?.Identity == identity ? MiddleTowerMap21Transition : null;
+        MiddleTowerMap21Transition?.Identity == identity ? MiddleTowerMap21Transition :
+        NorthMap40Transition?.Identity == identity ? NorthMap40Transition : null;
 
     public IReadOnlyList<string> UnsupportedCapabilities => _unsupportedCapabilities;
 }

@@ -11,6 +11,7 @@ public sealed class OriginalMapGameSessionTests
     [InlineData("map19")]
     [InlineData("map20")]
     [InlineData("map21")]
+    [InlineData("map40")]
     public void SourcePortCannotAdmitCastleRuntimeWithMap3Tilesets(string mapId)
     {
         var accepted = Definition(EmptyWords());
@@ -1729,6 +1730,191 @@ public sealed class OriginalMapGameSessionTests
             OriginalMapImportFailureCode.InvalidMapProjection);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void NorthMap40ArrivalIsAtomicAndRetainsControlledRoute(bool directCommand)
+    {
+        var session = ReachMiddleTowerGuard();
+        Assert.IsType<PrivateOriginalMapMiddleTowerGuardApplied>(
+            session.RequestPrivateOriginalMapInteraction(session.PrivateOriginalMapSnapshot.SimulationStep));
+        FinishMove(session, ExplorationDirection.East);
+        FinishMove(session, ExplorationDirection.North);
+        var before = session.PrivateOriginalMapSnapshot;
+        var bridge = session.PrivateOriginalMapBattleBridge;
+        Assert.Equal(new MapPosition(5, 15), before.PlayerPosition);
+        Assert.Equal((byte)1, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        ExplorationDirection[] inputs = [
+            ExplorationDirection.North, ExplorationDirection.North, ExplorationDirection.North,
+            ExplorationDirection.North, ExplorationDirection.North, ExplorationDirection.East,
+            ExplorationDirection.East, ExplorationDirection.North, ExplorationDirection.East,
+            ExplorationDirection.North, ExplorationDirection.North, ExplorationDirection.North,
+            ExplorationDirection.North, ExplorationDirection.North, ExplorationDirection.North,
+            ExplorationDirection.East, ExplorationDirection.North];
+        foreach (var direction in inputs) FinishMove(session, direction);
+        Assert.Equal(new MapPosition(9, 2), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        var result = directCommand ? session.ApplyPrivateOriginalMap(new(ExplorationDirection.North))
+            : FinishMove(session, ExplorationDirection.North).Move;
+        var after = result.Snapshot;
+        var receipt = Assert.IsType<PrivateOriginalMapCrossMapTransitionReceipt>(result.CrossMapTransition);
+        Assert.Equal(OriginalMapRuntimeAdmission.NorthMap40TransitionCapability, receipt.Capability);
+        Assert.Equal(new OriginalMapCrossMapTransitionIdentity(ContentProfile.PrivateLocal, new("map21"), "Map21s6_WarpEvents", 2), receipt.RecordIdentity);
+        Assert.Equal(new MapPosition(9, 2), receipt.Source);
+        Assert.Equal(new MapPosition(9, 1), receipt.Trigger);
+        Assert.Equal(new MapId("map40"), after.Map);
+        Assert.Equal(new MapPosition(4, 30), after.PlayerPosition);
+        Assert.Equal(new OriginalMapAreaRecordIdentity("Map40s2_Areas", 1), after.CurrentAreaDefinition.Identity);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedMap40Runtime(after.CurrentRuntime));
+        Assert.Same(after.Definition.RuntimeCatalog.Resolve(after.Map), after.CurrentRuntime);
+        Assert.Same(after.CurrentRuntime.WorkingLayout, after.WorkingLayout);
+        Assert.Equal(before.SimulationStep + 18, after.SimulationStep);
+        Assert.Same(receipt, after.LastCrossMapTransition);
+        Assert.Equal((byte)1, receipt.DestinationOpaqueFacing);
+        Assert.Equal((byte)1, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        Assert.Equal(PrivateOriginalMapPlayerLocomotionPhase.Relocated, session.PrivateOriginalMapPlayerLocomotion.Phase);
+        Assert.Equal(receipt.Source, session.PrivateOriginalMapPlayerLocomotion.SourcePosition);
+        Assert.Equal(after.PlayerPosition, session.PrivateOriginalMapPlayerLocomotion.DestinationPosition);
+        Assert.False(session.PrivateOriginalMapPlayerLocomotion.IsMoving);
+        Assert.Null(after.LastTraversal);
+        Assert.Null(after.LastLayoutMutation);
+        Assert.Null(after.PendingEntity142);
+        Assert.Null(after.MiddleTowerGuardPosition);
+        Assert.Empty(after.CurrentRuntime.EntityPopulation.Records);
+        Retained(after);
+        FinishMove(session, ExplorationDirection.North);
+        var walked = session.PrivateOriginalMapSnapshot;
+        Assert.Equal(new MapId("map40"), walked.Map);
+        Assert.Null(walked.LastCrossMapTransition);
+        Retained(walked);
+        var restarted = Start(before.Definition).PrivateOriginalMapSnapshot;
+        Assert.Equal(new MapId("map3"), restarted.Map);
+        Assert.Null(restarted.MiddleTowerGuard);
+        Assert.Null(restarted.PalaceFirstVisit);
+        Assert.Null(restarted.AstralAcceptance);
+        Assert.Null(restarted.LastCrossMapTransition);
+
+        void Retained(PrivateOriginalMapSessionSnapshot snapshot)
+        {
+            Assert.Same(before.MiddleTowerGuard, snapshot.MiddleTowerGuard);
+            Assert.True(snapshot.MiddleTowerGuard!.HandlerFlag256Set && snapshot.MiddleTowerGuard.ProgramFlag401Set &&
+                snapshot.MiddleTowerGuard.ProgramStoryFlag1Set);
+            Assert.Same(before.PalaceFirstVisit, snapshot.PalaceFirstVisit);
+            Assert.Same(before.AstralAcceptance, snapshot.AstralAcceptance);
+            Assert.Same(before.Receipt, snapshot.Receipt);
+            Assert.Same(before.Zone601, snapshot.Zone601);
+            Assert.Same(before.Sarah, snapshot.Sarah);
+            Assert.Same(before.Entity142, snapshot.Entity142);
+            Assert.Same(before.MessengerAcceptance, snapshot.MessengerAcceptance);
+            Assert.Same(before.CastleGate, snapshot.CastleGate);
+            Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+        }
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("facing")]
+    [InlineData("record")]
+    public void NorthMap40SourcePortRejectsMissingOrDriftedTransition(string drift) =>
+        AssertRejectedDefinition(Definition(EmptyWords(), omitNorthMap40: drift == "missing",
+            northMap40: AcceptedOriginalMapRuntimeCatalog.NorthMap40(
+                facing: drift == "facing" ? (byte)0 : (byte)1, ordinal: drift == "record" ? 1 : 2)),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+
+    [Theory]
+    [InlineData("guard")]
+    [InlineData("astral")]
+    [InlineData("palace")]
+    [InlineData("gate")]
+    [InlineData("approach")]
+    [InlineData("direction")]
+    [InlineData("moving")]
+    public void NorthMap40DoesNotRelocateOutsideItsControlledBoundary(string scenario)
+    {
+        var session = ReachMiddleTowerGuard();
+        Assert.IsType<PrivateOriginalMapMiddleTowerGuardApplied>(
+            session.RequestPrivateOriginalMapInteraction(session.PrivateOriginalMapSnapshot.SimulationStep));
+        var before = session.PrivateOriginalMapSnapshot;
+        var runtime = before.CurrentRuntime;
+        MapPosition position = new(scenario == "approach" ? 8 : 9, scenario == "moving" ? 3 : 2);
+        var seeded = new PrivateOriginalMapSessionSnapshot(before.Definition, before.Receipt, runtime.WorkingLayout,
+            before.SimulationStep + 1, position,
+            runtime.Traversal.TryMove(runtime.WorkingLayout, new(position.X, position.Y + 1), ExplorationDirection.North),
+            false, null, zone601: before.Zone601, sarah: before.Sarah, entity142: before.Entity142,
+            messengerAcceptance: before.MessengerAcceptance,
+            castleGate: scenario == "gate" ? PrivateOriginalMapCastleGateState.Ready(before.Definition.CastleGate!) : before.CastleGate,
+            currentRuntime: runtime, palaceFirstVisit: scenario == "palace" ? null : before.PalaceFirstVisit,
+            astralAcceptance: scenario is "astral" or "palace" ? null : before.AstralAcceptance,
+            middleTowerGuard: scenario is "guard" or "astral" or "palace" or "gate" ? null : before.MiddleTowerGuard);
+        typeof(GameSession).GetField("_privateOriginalMapSnapshot",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.SetValue(session, seeded);
+        if (scenario == "moving")
+        {
+            session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North));
+            var moving = session.PrivateOriginalMapSnapshot;
+            var animation = session.PrivateOriginalMapPlayerLocomotion;
+            var bridge = session.PrivateOriginalMapBattleBridge;
+            Assert.Equal(new MapPosition(9, 2), moving.PlayerPosition);
+            Assert.True(animation.IsMoving);
+            Assert.Throws<InvalidOperationException>(() => session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
+            Assert.Throws<InvalidOperationException>(() => session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North)));
+            Assert.Same(moving, session.PrivateOriginalMapSnapshot);
+            Assert.Same(animation, session.PrivateOriginalMapPlayerLocomotion);
+            Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+            return;
+        }
+        var result = session.ApplyPrivateOriginalMap(new(scenario == "direction" ? ExplorationDirection.East : ExplorationDirection.North));
+        Assert.Null(result.CrossMapTransition);
+        Assert.Equal(new MapId("map21"), result.Snapshot.Map);
+        Assert.Same(seeded.MiddleTowerGuard, result.Snapshot.MiddleTowerGuard);
+    }
+
+    [Fact]
+    public void NorthMap40SourcePortRequiresAllFiveCatalogRuntimes()
+    {
+        var definition = Definition(EmptyWords());
+        var four = new OriginalMapExplorationRuntimeCatalog(
+            definition.RuntimeCatalog.Records.Where(runtime => runtime.Map.Value != "map40"));
+        AssertRejectedDefinition(Rebind(definition, four, definition.NorthMap19Transition),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Theory]
+    [InlineData("entities")]
+    [InlineData("setup")]
+    [InlineData("init")]
+    [InlineData("layout")]
+    [InlineData("collision")]
+    public void NorthMap40SourcePortRejectsRuntimeIdentityDrift(string drift)
+    {
+        var definition = Definition(EmptyWords());
+        var current = definition.RuntimeCatalog.Resolve(new("map40"));
+        var wrong = new OriginalMapExplorationRuntimeDefinition(current.Map, current.WorkingLayout,
+            current.BlockCatalog, current.AreaCatalog,
+            drift is "entities" or "setup" ? OriginalMapEntityPopulation.Empty(current.Map,
+                drift == "setup" ? new("wrong-setup") : current.SelectedSetup,
+                drift == "entities" ? "wrong-entities" : current.EntityPopulation.ResourceId) : current.EntityPopulation,
+            drift == "setup" ? new("wrong-setup") : current.SelectedSetup,
+            drift == "init" ? "wrong-init" : current.SelectedInitIdentity,
+            drift == "layout" ? new string('0', 64) : current.DecodedLayoutDigest,
+            drift == "collision" ? new string('0', 64) : current.CollisionProjectionDigest,
+            useProjectionDigestOverride: true, visualResourceSelection: current.VisualResourceSelection);
+        var catalog = new OriginalMapExplorationRuntimeCatalog(
+            definition.RuntimeCatalog.Records.Select(runtime => runtime.Map == wrong.Map ? wrong : runtime));
+        AssertRejectedDefinition(Rebind(definition, catalog, definition.NorthMap19Transition),
+            OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void EmptyPopulationRequiresExplicitIdentityAndPreservesNonemptyConstructorConstraints()
+    {
+        Assert.Throws<ArgumentException>(() => new OriginalMapEntityPopulation(new("map40"), new("ms_map40"), []));
+        Assert.Throws<ArgumentException>(() => OriginalMapEntityPopulation.Empty(new("map40"), new("ms_map40"), " "));
+        var empty = OriginalMapEntityPopulation.Empty(new("map40"), new("ms_map40"), "ms_map40_Entities");
+        Assert.Empty(empty.Records);
+        Assert.Equal("ms_map40_Entities", empty.ResourceId);
+        Assert.Equal(OriginalMapRuntimeAdmission.Map40EntityProjectionDigest, empty.ProjectionDigest);
+    }
+
     private static GameSession ReachMiddleTowerGuard()
     {
         var session = ReachWestTower();
@@ -3395,7 +3581,8 @@ public sealed class OriginalMapGameSessionTests
             runtimeCatalog.Records.Count == 1 ? null : new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]),
             runtimeCatalog.Records.Count == 1 ? null : definition.WestTowerMap20Transition,
             runtimeCatalog.Records.Count == 1 ? null : definition.MiddleTowerMap21Transition,
-            runtimeCatalog.Records.Count == 1 ? null : new(runtimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0]));
+            runtimeCatalog.Records.Count == 1 ? null : new(runtimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0]),
+            runtimeCatalog.Records.Any(runtime => runtime.Map.Value == "map40") ? definition.NorthMap40Transition : null);
 
     private static OriginalMapImportAccepted Accepted(
         OriginalMapImportDefinition? definition = null,
@@ -3433,7 +3620,9 @@ public sealed class OriginalMapGameSessionTests
         bool omitWestTower = false,
         OriginalMapCrossMapTransitionDefinition? middleTower = null,
         bool omitMiddleTower = false,
-        bool omitMiddleTowerGuard = false)
+        bool omitMiddleTowerGuard = false,
+        bool omitNorthMap40 = false,
+        OriginalMapCrossMapTransitionDefinition? northMap40 = null)
     {
         MapId map = new(OriginalMapRuntimeAdmission.MapId);
         ushort[] admittedWords = [.. words];
@@ -3528,7 +3717,8 @@ public sealed class OriginalMapGameSessionTests
             new(runtimeCatalog.Resolve(new MapId("map19")).EntityPopulation.Records[12]),
             omitWestTower ? null : westTower ?? AcceptedOriginalMapRuntimeCatalog.WestTower(),
             omitMiddleTower ? null : middleTower ?? AcceptedOriginalMapRuntimeCatalog.MiddleTower(),
-            omitMiddleTowerGuard ? null : new(runtimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0]));
+            omitMiddleTowerGuard ? null : new(runtimeCatalog.Resolve(new("map21")).EntityPopulation.Records[0]),
+            omitNorthMap40 ? null : northMap40 ?? AcceptedOriginalMapRuntimeCatalog.NorthMap40());
     }
 
     private static OriginalMapStepCopyDefinition BowieDoorStepCopy(MapId map) =>
@@ -4022,9 +4212,13 @@ public sealed class OriginalMapGameSessionTests
 
 internal static class AcceptedOriginalMapRuntimeCatalog
 {
+    internal static OriginalMapCrossMapTransitionDefinition NorthMap40(byte facing = 1, int ordinal = 2) =>
+        new(new(ContentProfile.PrivateLocal, new("map21"), "Map21s6_WarpEvents", ordinal),
+            9, 1, new(9, 2), ExplorationDirection.North, new(9, 1), new("map40"), new(4, 30), facing);
+
     internal static OriginalMapExplorationRuntimeCatalog Create(
         OriginalMapExplorationRuntimeDefinition initialRuntime) =>
-        new([initialRuntime, Map19Runtime(), Map20Runtime(), Map21Runtime()]);
+        new([initialRuntime, Map19Runtime(), Map20Runtime(), Map21Runtime(), Map40Runtime()]);
 
     internal static OriginalMapCrossMapTransitionDefinition NorthTransition() =>
         new(
@@ -4221,7 +4415,9 @@ internal static class AcceptedOriginalMapRuntimeCatalog
     private static OriginalMapExplorationRuntimeDefinition Map21Runtime()
     {
         MapId map = new(OriginalMapRuntimeAdmission.Map21Id);
-        WorkingMapLayout layout = new(new ushort[WorkingMapLayout.WordCount]);
+        ushort[] words = new ushort[WorkingMapLayout.WordCount];
+        words[9 + 64] = 0x1007;
+        WorkingMapLayout layout = new(words);
         OriginalMapBlockCatalog blocks = new(
             Enumerable.Range(0, OriginalMapRuntimeAdmission.Map21BlockCount)
                 .Select(index => new OriginalMapBlockDefinition(
@@ -4257,6 +4453,40 @@ internal static class AcceptedOriginalMapRuntimeCatalog
             OriginalMapRuntimeAdmission.Map21CollisionProjectionDigest,
             useProjectionDigestOverride: true,
             visualResourceSelection: new(map, 0, [6, 23, 44, 53, 8]));
+    }
+
+    private static OriginalMapExplorationRuntimeDefinition Map40Runtime()
+    {
+        MapId map = new(OriginalMapRuntimeAdmission.Map40Id);
+        WorkingMapLayout layout = new(new ushort[WorkingMapLayout.WordCount]);
+        OriginalMapBlockCatalog blocks = new(
+            Enumerable.Range(0, OriginalMapRuntimeAdmission.Map40BlockCount)
+                .Select(index => new OriginalMapBlockDefinition(
+                    new OriginalMapBlockRecordIdentity(
+                        OriginalMapRuntimeAdmission.Map40BlocksetResourceId,
+                        index),
+                    new ushort[OriginalMapBlockDefinition.OpaqueWordCount])),
+            OriginalMapRuntimeAdmission.Map40BlocksetProjectionDigest);
+        OriginalMapAreaCatalog areas = new(
+        [
+            new OriginalMapAreaDefinition(new("Map40s2_Areas", 1), new(0, 0, 31, 31),
+                new(0, 0), new(0, 32), new(256, 256), new(128, 128),
+                new(0, 0), new(0, 0), mainLayerType: 255, defaultMusic: 38),
+        ]);
+        OriginalMapEntityPopulation population = OriginalMapEntityPopulation.Empty(
+            map, new(OriginalMapRuntimeAdmission.Map40SelectedSetupId), OriginalMapRuntimeAdmission.Map40EntityListResourceId);
+        return new OriginalMapExplorationRuntimeDefinition(
+            map,
+            layout,
+            blocks,
+            areas,
+            population,
+            new MapSetupId(OriginalMapRuntimeAdmission.Map40SelectedSetupId),
+            OriginalMapRuntimeAdmission.Map40SelectedInitIdentity,
+            OriginalMapRuntimeAdmission.Map40DecodedLayoutDigest,
+            OriginalMapRuntimeAdmission.Map40CollisionProjectionDigest,
+            useProjectionDigestOverride: true,
+            visualResourceSelection: new(map, 3, [94, 95, 96, 97, 58]));
     }
 }
 

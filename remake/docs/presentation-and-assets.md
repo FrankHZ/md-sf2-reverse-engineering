@@ -681,7 +681,7 @@ the missing/changed-payload checks copy only manifests and runtime buckets there
 the supplied asset input.
 
 The process receipt records the code head, bounded exit/timeout/cleanup state and each step. Inspect
-all ten PNGs and the per-frame selection/area/layout/atlas/glyph receipt. Each Map 21 frame also samples
+all eleven PNGs and the per-frame selection/area/layout/atlas/glyph receipt. Each Map 21 frame also samples
 the rendered guard diamond's center and downward interior to reject a spurious facing line.
 The first six retain the destination camera and player-rectangle checks. The seventh requires a
 visible Map 21 base atlas and hidden traversal view, `(3,16)`/area 1, crop `(0,13)`, raw facing 0
@@ -689,7 +689,14 @@ and the exact record-4 source receipt. Later operations clear that receipt under
 per-operation contract. The status label must sit below the base viewport. Frames eight through ten
 check the visible player and undirected guard marker, the real F adapter's prompt/completion text, and
 the ordinary walk endpoint. Wrong-position and duplicate F calls use that same adapter and preserve
-snapshot/locomotion/bridge without throwing. An image failure is a failed
+snapshot/locomotion/bridge without throwing. Frame eleven drives all 18 ordinary north-exit inputs
+from (5,15)/UP to exact Map 40 (4,30)/UP, area 1. The accepted Map 40 runtime uses palette 3 and
+slots [94,95,96,97,58], a separate family with no admitted atlas. Its traversal diagnostic crops at
+(0,27), draws the player at column 4/row 3, hides the retained Map 21 base viewport and guard glyph,
+and places controlled-arrival/diagnostic/init-not-executed status below the grid at Y=450.
+The probe checks the actual player pixel and retained route receipts. This admits neither Map 40
+init nor subsequent warps, original rendering, camera/parallax execution, or Battle 01.
+An image failure is a failed
 native boundary even if startup markers pass. Images, inputs and process receipts remain private and
 ignored; no pixels enter a public PR.
 
@@ -728,6 +735,7 @@ captures.mkdir()
 environment = gate._gate_environment(review)
 environment["SF2_CASTLE_REVIEW_OUTPUT"] = str(captures)
 environment["SF2_CASTLE_REVIEW_FIXTURE"] = str(repo / "tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json")
+environment["SF2_MAP40_REVIEW_FIXTURE"] = str(repo / "tests/fixtures/h2/map3-battle01-admission-static-v1.json")
 # Only window visibility changes; the maintained runner still owns its job/timeout/reap contract.
 original_popen = subprocess.Popen
 def hidden_popen(*args, **kwargs):

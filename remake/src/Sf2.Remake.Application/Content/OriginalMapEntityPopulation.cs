@@ -93,18 +93,34 @@ public sealed class OriginalMapEntityPopulation
     {
     }
 
+    public static OriginalMapEntityPopulation Empty(MapId map, MapSetupId selectedSetup, string resourceId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(resourceId);
+        return new(map, selectedSetup, [], projectionDigestOverride: null, emptyResourceId: resourceId);
+    }
+
     internal OriginalMapEntityPopulation(
         MapId map,
         MapSetupId selectedSetup,
         IEnumerable<OriginalMapEntityDefinition> records,
         string? projectionDigestOverride)
+        : this(map, selectedSetup, records, projectionDigestOverride, emptyResourceId: null)
+    {
+    }
+
+    private OriginalMapEntityPopulation(
+        MapId map,
+        MapSetupId selectedSetup,
+        IEnumerable<OriginalMapEntityDefinition> records,
+        string? projectionDigestOverride,
+        string? emptyResourceId)
     {
         Map = map ?? throw new ArgumentNullException(nameof(map));
         SelectedSetup = selectedSetup ?? throw new ArgumentNullException(nameof(selectedSetup));
         ArgumentNullException.ThrowIfNull(records);
 
         List<OriginalMapEntityDefinition> copied = [];
-        string? resourceId = null;
+        string? resourceId = emptyResourceId;
         foreach (OriginalMapEntityDefinition? record in records)
         {
             if (record is null)
@@ -132,7 +148,7 @@ public sealed class OriginalMapEntityPopulation
                 record.OpaqueTail));
         }
 
-        if (copied.Count == 0 || copied.Count > byte.MaxValue)
+        if ((copied.Count == 0 && string.IsNullOrWhiteSpace(emptyResourceId)) || copied.Count > byte.MaxValue)
         {
             throw new ArgumentException(
                 "An original map entity population requires one to 255 source records.",

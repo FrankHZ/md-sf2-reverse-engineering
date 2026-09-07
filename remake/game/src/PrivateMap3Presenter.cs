@@ -119,6 +119,11 @@ internal sealed record PrivateMap3PresentationPlan(
                 "\n" + status;
         }
 
+        if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map40Id)
+        {
+            return "Map 40 controlled arrival. Diagnostic view; init not executed.\n" + status;
+        }
+
         if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map21Id)
         {
             string action = snapshot.MiddleTowerGuard is not null
@@ -522,7 +527,12 @@ internal sealed class PrivateMap3Presenter
         PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
         bool map3 = snapshot.Map.Value == OriginalMapRuntimeAdmission.MapId;
-        if (_baseViewport is { UsesLocalAtlas: true })
+        bool map40Diagnostic = OriginalMapRuntimeAdmission.HasExactAcceptedMap40Runtime(snapshot.CurrentRuntime);
+        if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map40Id && !map40Diagnostic)
+        {
+            throw new InvalidOperationException("Map 40 diagnostic projection requires its exact admitted runtime.");
+        }
+        if (_baseViewport is { UsesLocalAtlas: true } && !map40Diagnostic)
         {
             string? assetId = PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
                 snapshot.CurrentRuntime.VisualResourceSelection);

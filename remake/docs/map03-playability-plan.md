@@ -422,7 +422,7 @@ Stale, duplicate, busy, wrong preset/map/position/facing and missing-prerequisit
 snapshot, locomotion and bridge unchanged. Current-map movement, including blocked movement, retains
 the completed guard receipt, 605/607/608, import and route objects and the manual battle bridge.
 A new session clears the guard completion. General script, init, dialogue, choreography, flag
-resolution, other interactions, backtracking, Map 40, natural Battle 01 continuity and H4 remain
+resolution, other interactions, backtracking, Map 40 lifecycle, natural Battle 01 continuity and H4 remain
 **Unsupported / Unknown**.
 
 Map 21's base-atlas and traversal-only views use an authored diamond without a direction line;
@@ -456,6 +456,58 @@ pixel review and acceptance. The consumer binds its exact Map 21 ID, palette/slo
 Required private checks exercise both real buckets and reject missing or changed copies; public
 checks cover cross-family binding, current-map layout/area/camera and the scoped guard glyph.
 
+## Controlled north exit to Map 40
+
+**Confirmed:** the accepted [Map 3 to Battle 01 admission owner](../../docs/research/map3-battle01-admission.md)
+and first two segments of fixture sf2-map3-battle01-admission-static-v1 bind Map21s6_WarpEvents,
+address 680440, record 2 of 2. From (9,2), ordinary Up resolves candidate (9,1), whose layout word is
+0x1007, and selects a no-scroll relocation to Map 40 (4,30), UP/raw 1, area 1. Scroll mode and reserved
+are zero, retained coordinates are false, and scroll direction is null. The 18-input selected route
+from the completed guard endpoint (5,15) is Up×5, Right×2, Up, Right, Up×6, Right, Up×2.
+The fixture's 46-input extension digest covers both maps; it is not an 18-input digest.
+The fixture's historical terminal Down annotation does not override the product's preceding ordinary
+Right/Up movement, which leaves the player UP/raw 1.
+
+Content joins the exact Map40 block/layout/area/event/item resources and MapSetupRoute40.
+It admits palette 3 and ordered slots [94,95,96,97,58] independently of the palette-0 castle families.
+The runtime binds 267 blocks, 4096 layout words, one area (0,0)..(31,31), default ms_map40,
+ordered variants 506→ms_map40_flag506 and 507→ms_map40, and the explicit empty ms_map40_Entities
+resource. The existing population type has an explicit empty factory so resource identity and the
+count-byte-zero digest remain checkable without a placeholder actor. The normal nonempty constructor
+retains its prior constraints. Exact layout/collision/block/area/entity digests are owned by
+OriginalMapRuntimeAdmission; every private source port must retain all five admitted runtimes.
+The selected ms_map40_InitFunction identity is admitted data only. Its static 507 branch does not
+establish a natural incoming flag or authorize execution.
+
+**Implemented remake policy:** the existing atomic cross-map reducer requires completed castle,
+palace, Astral and guard receipts before this transition. These are explicit product prerequisites;
+they are not claimed as original warp flag checks. Both movement entrypoints replace the current
+runtime and relocate the player while retaining the import, Map 3 route objects, 605, caller607/
+program608, guard handler256 and separate StoryFlag1/F401 result, and manual battle bridge.
+Ordinary movement in Map 40 keeps those persistent results and clears LastCrossMapTransition under
+the existing per-operation contract. A fresh session returns to the controlled Map 3 initial state.
+Wrong approach/direction or missing prerequisites do not cross maps; active locomotion rejects the
+transition without changing snapshot, locomotion or bridge.
+
+Map 40 has no admitted atlas. Only its exact admitted runtime enters the Godot diagnostic branch:
+the retained Map 21 base viewport is hidden, the current traversal grid shows crop (0,27), and the
+controlled-arrival/diagnostic/init-not-executed status sits below it. No retained guard marker is
+projected into Map 40. Unknown or drifted runtime/visual selections remain rejected.
+
+**Unknown / excluded:** natural castle continuity and caller state, Map 21→20 return, Map 40→57,
+wildcard exit handling, Map 40→21, Battle 01 admission/init, general flags/events/init/lifecycle,
+original art/audio/camera/parallax and H4. Walkable diagnostic cells do not admit later warp records.
+The H2 source shape and explicit-bridge H3 observation do not establish natural continuity.
+
+Reproduce the selected path with the existing required-private Content test
+AcceptedIgnoredCanonicalImportCanBeCheckedLocallyWithoutBecomingATestInput using
+SF2_REQUIRE_PRIVATE_TESTS=1 and SF2_PRIVATE_CANONICAL_MAP_IMPORT; it checks every input and all 19
+Map 21 points in the actual C# session, then verifies the destination and retained state.
+Application's NorthMap40 tests cover atomicity, source-port drift, prerequisites, busy/reset and
+ordinary movement; Godot's diagnostic test and the maintained native image recipe cover visibility,
+status and actual renderer output. Run the normal public verify and committed dependency planner;
+the source owner names the H2 reproduction, and this slice does not run new H3/H4 work.
+
 ## Ordered Queue
 
 The current Map 19/20 base consumer uses the accepted shared castle atlas with each runtime's
@@ -463,9 +515,9 @@ explicit selection, working layout, blocks and area. It retains the camera/playe
 Map 3 overlays and route actors, and shows the authored Astral marker only while the route is occupied.
 Map 21 switches to its independent atlas and retains the controlled undirected guard projection.
 The [native image review](./presentation-and-assets.md#reproduce-the-bounded-native-image-review)
-owns its ten-frame seeded projection check and the precise distinction from natural reach/H4.
+owns its eleven-frame seeded projection check and the precise distinction from natural reach/H4.
 
-1. Assess a bounded Map 21-to-Map 40 exit and exact destination-runtime admission.
+1. Build and review the independent Map 40 atlas/display family (palette 3, slots [94,95,96,97,58]).
    Natural map lifecycle and continuous Battle 01 admission remain separate acceptance work.
 
 ## Decision Rules

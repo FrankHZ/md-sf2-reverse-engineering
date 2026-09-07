@@ -75,6 +75,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             Require(_session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing == 1, "Ordinary Up owns final facing");
             _presenter.Project(_session.PrivateOriginalMapSnapshot, "Controlled guard walk endpoint", _session.PrivateOriginalMapPlayerLocomotion);
             await CaptureGuard("10-map21-guard-walk-endpoint", new(5, 15), new(6, 16), completed: true);
+            await CaptureNorthMap40Arrival();
 
             File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new
             {
@@ -89,7 +90,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 assetManifest = PrivateLocalPresentationAssetCatalog.Map3AssetManifestDigest,
                 frames = _frames,
             }, new JsonSerializerOptions { WriteIndented = true }));
-            GD.Print("SF2_CASTLE_ATLAS_NATIVE_REVIEW Pass frames=10 seeded-projection-only");
+            GD.Print("SF2_CASTLE_ATLAS_NATIVE_REVIEW Pass frames=11 seeded-projection-only");
             _fixture.Dispose();
             GetTree().Quit();
         }
@@ -209,6 +210,92 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             cameraFocusX = camera.FocusPixelX, cameraFocusY = camera.FocusPixelY,
             playerPixelX = player.Position.X, playerPixelY = player.Position.Y,
             playerX = snapshot.PlayerPosition.X, playerY = snapshot.PlayerPosition.Y,
+            width = image.GetWidth(), height = image.GetHeight() });
+    }
+
+    private async Task CaptureNorthMap40Arrival()
+    {
+        var before = _session.PrivateOriginalMapSnapshot;
+        var bridge = _session.PrivateOriginalMapBattleBridge;
+        using var fixture = JsonDocument.Parse(File.ReadAllText(RequiredPath("SF2_MAP40_REVIEW_FIXTURE")));
+        var segments = fixture.RootElement.GetProperty("static").GetProperty("extensionRoute").GetProperty("segments");
+        var route = segments[0];
+        Require(route.GetProperty("id").GetString() == "map21-terminal-to-north-exit" &&
+            route.GetProperty("inputs").GetArrayLength() == 18 && route.GetProperty("points").GetArrayLength() == 19,
+            "Fixed first extension segment");
+        Require(before.PlayerPosition == new MapPosition(5, 15) &&
+            _session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing == 1 && before.MiddleTowerGuard is not null,
+            "Ordinary Right/Up guard endpoint");
+        for (int index = 0; index < 18; index++)
+        {
+            var point = route.GetProperty("points")[index];
+            Require(_session.PrivateOriginalMapSnapshot.Map == new MapId("map21") &&
+                _session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(point[0].GetInt32(), point[1].GetInt32()),
+                "Every north route approach");
+            var direction = route.GetProperty("inputs")[index].GetString() switch {
+                "Up" => ExplorationDirection.North, "Right" => ExplorationDirection.East,
+                _ => throw new InvalidOperationException("Unknown north route input."),
+            };
+            var move = Move(direction);
+            var target = route.GetProperty("points")[index + 1];
+            Require((index == 17 ? move.CrossMapTransition?.Trigger : move.Snapshot.PlayerPosition) ==
+                new MapPosition(target[0].GetInt32(), target[1].GetInt32()), "Every north route target");
+        }
+        var snapshot = _session.PrivateOriginalMapSnapshot;
+        var movement = _session.PrivateOriginalMapPlayerLocomotion;
+        var receipt = snapshot.LastCrossMapTransition;
+        Require(snapshot.Map == new MapId("map40") && snapshot.PlayerPosition == new MapPosition(4, 30) &&
+            snapshot.CurrentArea.OneBasedRecordOrdinal == 1 &&
+            OriginalMapRuntimeAdmission.HasExactAcceptedMap40Runtime(snapshot.CurrentRuntime) &&
+            ReferenceEquals(snapshot.CurrentRuntime, snapshot.Definition.RuntimeCatalog.Resolve(snapshot.Map)),
+            "Exact Map40 runtime arrival");
+        Require(receipt?.Capability == OriginalMapRuntimeAdmission.NorthMap40TransitionCapability &&
+            receipt.RecordIdentity.SourceMap == new MapId("map21") && receipt.RecordIdentity.OneBasedRecordOrdinal == 2 &&
+            receipt.Source == new MapPosition(9, 2) && receipt.Trigger == new MapPosition(9, 1) &&
+            receipt.DestinationOpaqueFacing == 1 && movement.OpaqueFacing == 1 &&
+            movement.Phase == PrivateOriginalMapPlayerLocomotionPhase.Relocated && !movement.IsMoving &&
+            movement.DestinationPosition == snapshot.PlayerPosition, "Map40 source receipt and relocation");
+        Require(ReferenceEquals(before.MiddleTowerGuard, snapshot.MiddleTowerGuard) &&
+            ReferenceEquals(before.PalaceFirstVisit, snapshot.PalaceFirstVisit) &&
+            ReferenceEquals(before.AstralAcceptance, snapshot.AstralAcceptance) &&
+            ReferenceEquals(before.Receipt, snapshot.Receipt) && ReferenceEquals(before.Zone601, snapshot.Zone601) &&
+            ReferenceEquals(before.Sarah, snapshot.Sarah) && ReferenceEquals(before.Entity142, snapshot.Entity142) &&
+            ReferenceEquals(before.MessengerAcceptance, snapshot.MessengerAcceptance) &&
+            ReferenceEquals(before.CastleGate, snapshot.CastleGate) && ReferenceEquals(bridge, _session.PrivateOriginalMapBattleBridge),
+            "Map40 retains completed route and manual bridge");
+        _presenter.Project(snapshot, "Controlled native visual review", movement);
+        var traversal = Field<PrivateOriginalMapTraversalViewport>(_presenter, "_viewport");
+        var retainedBase = Field<PrivateOriginalMapBaseViewport>(_presenter, "_baseViewport");
+        var projection = traversal.Projection!;
+        Require(traversal.Visible && !retainedBase.Visible && projection.Map == snapshot.Map &&
+            projection.OriginX == 0 && projection.OriginY == 27 &&
+            projection.PlayerColumn == 4 && projection.PlayerRow == 3 &&
+            projection.Cells.Count(cell => cell.IsPlayer) == 1 &&
+            projection.Cells.All(cell => !cell.IsMiddleTowerGuard && !cell.IsAstral) &&
+            snapshot.MiddleTowerGuardPosition is null, "Map40 diagnostic crop and no retained guard glyph");
+        var status = Field<Label>(_presenter, "_status");
+        Require(status.Position.Y == 450 && status.Position.Y > traversal.Position.Y + 7 * 48 &&
+            status.Text.StartsWith("Map 40 controlled arrival. Diagnostic view; init not executed.", StringComparison.Ordinal),
+            "Map40 diagnostic status below grid");
+        await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        using Image image = GetViewport().GetTexture().GetImage();
+        Require(!image.IsEmpty() && image.GetWidth() >= 960 && image.GetHeight() >= 540, "Native Map40 image");
+        const string name = "11-map40-controlled-arrival-diagnostic";
+        Require(image.SavePng(Path.Combine(_output, name + ".png")) == Error.Ok, "Map40 PNG write");
+        Vector2 sample = traversal.GetViewportTransform() * traversal.GetGlobalTransform() *
+            new Vector2(projection.PlayerColumn * 48 + 23, projection.PlayerRow * 48 + 23);
+        Color playerPixel = image.GetPixel((int)sample.X, (int)sample.Y);
+        Color yellow = new("ffd166");
+        Require(Math.Abs(playerPixel.R - yellow.R) < 0.01f && Math.Abs(playerPixel.G - yellow.G) < 0.01f &&
+            Math.Abs(playerPixel.B - yellow.B) < 0.01f, "Actual diagnostic player pixel");
+        _frames.Add(new { name, map = snapshot.Map.Value, selectionMap = snapshot.CurrentRuntime.VisualResourceSelection.Map.Value,
+            palette = snapshot.CurrentRuntime.VisualResourceSelection.PaletteIndex, tilesets = snapshot.CurrentRuntime.VisualResourceSelection.TilesetSlots,
+            area = snapshot.CurrentArea.OneBasedRecordOrdinal, layout = snapshot.CurrentRuntime.DecodedLayoutDigest,
+            atlas = (string?)null, baseVisible = retainedBase.Visible, traversalVisible = traversal.Visible,
+            cameraOriginX = projection.OriginX, cameraOriginY = projection.OriginY, playerX = 4, playerY = 30,
+            facing = movement.OpaqueFacing, statusY = status.Position.Y, status = status.Text,
+            sourceMap = receipt!.RecordIdentity.SourceMap.Value, sourceRecord = receipt.RecordIdentity.OneBasedRecordOrdinal,
+            inputCount = 18, guardGlyphs = 0, playerPixel = playerPixel.ToHtml(),
             width = image.GetWidth(), height = image.GetHeight() });
     }
 
