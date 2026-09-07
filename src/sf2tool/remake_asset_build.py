@@ -85,6 +85,8 @@ ACCEPTED_PALETTE_METADATA_ID = "sf2-map-palette-static-v1"
 ACCEPTED_MAP_INDEX = 3
 ACCEPTED_PALETTE_INDEX = 0
 ACCEPTED_TILESET_SLOTS = (0, 37, 43, 53, 66)
+ACCEPTED_CASTLE_MAP_INDICES = (19, 20)
+ACCEPTED_CASTLE_TILESET_SLOTS = (6, 23, 44, 53, 62)
 WORLD_SCALES = (2, 4)
 WORLD_TILESET_COUNT = 5
 WORLD_DECODED_BYTES_PER_TILESET = 4_096
@@ -401,6 +403,50 @@ class WorldPaletteRecord:
 
 
 @dataclass(frozen=True)
+class _WorldAtlasFamily:
+    name: str
+    map_indices: tuple[int, ...]
+    slots: tuple[int, ...]
+
+    @property
+    def asset_id(self) -> str:
+        return f"world.{self.name}.base-tileset-atlas"
+
+    @property
+    def source_asset_id(self) -> str:
+        return f"source.world.{self.name}.base-visual-selection"
+
+    @property
+    def policy_id(self) -> str:
+        return f"private-local-{self.name}-base-nearest-rgba8-v1"
+
+    @property
+    def capability(self) -> str:
+        return f"private-local-{self.name}-base-tileset-atlas-candidate-build-v1"
+
+    @property
+    def source_file(self) -> str:
+        return f"source/world/{self.name}/base-visual-selection-v1.bin"
+
+    @property
+    def master_file(self) -> str:
+        return f"masters/world/{self.name}/base-tileset-atlas.png"
+
+    def runtime_file(self, scale: int) -> str:
+        return f"runtime/world/{self.name}/base-tileset-atlas@{scale}x.png"
+
+    @property
+    def source_magic(self) -> bytes:
+        return f"SF2-{self.name.upper()}-BASE-VISUAL-SELECTION-V1\0".encode("ascii")
+
+
+_MAP3_ATLAS = _WorldAtlasFamily("map3", (ACCEPTED_MAP_INDEX,), ACCEPTED_TILESET_SLOTS)
+_MAP19_20_ATLAS = _WorldAtlasFamily(
+    "map19-20", ACCEPTED_CASTLE_MAP_INDICES, ACCEPTED_CASTLE_TILESET_SLOTS
+)
+
+
+@dataclass(frozen=True)
 class WorldAtlasSource:
     source_bundle: bytes
     rgba_pixels: tuple[int, ...]
@@ -692,6 +738,7 @@ def _parse_json_bytes(data: bytes, field: str) -> Mapping[str, object]:
 def _parse_world_tileset_metadata(
     document: Mapping[str, object],
     rom_length: int,
+    family: _WorldAtlasFamily = _MAP3_ATLAS,
 ) -> tuple[WorldTilesetRecord, ...]:
     root = _metadata_object(document, _TILESET_ROOT_FIELDS, "tilesetMetadata")
     _require_metadata_provenance(root, ACCEPTED_TILESET_METADATA_ID, "tilesetMetadata")
@@ -744,7 +791,7 @@ def _parse_world_tileset_metadata(
             _metadata_int(row.get("maximumCopyOffsetWords"), f"{field}.maximumCopyOffsetWords"),
             _metadata_int(row.get("maximumCopyLengthWords"), f"{field}.maximumCopyLengthWords"),
         )
-        if index in ACCEPTED_TILESET_SLOTS:
+        if index in family.slots:
             selected[index] = record
 
     maps = _metadata_array(root.get("maps"), 79, "tilesetMetadata.maps")
@@ -760,23 +807,24 @@ def _parse_world_tileset_metadata(
         parsed_slots = tuple(_metadata_int(value, f"{field}.tilesetSlots") for value in slots)
         if any(value != 255 and value >= 115 for value in parsed_slots):
             raise _reject("InvalidSelection", field, "A map tileset slot is out of range.")
-        if ordinal == ACCEPTED_MAP_INDEX and (
-            palette != ACCEPTED_PALETTE_INDEX or parsed_slots != ACCEPTED_TILESET_SLOTS
+        if ordinal in family.map_indices and (
+            palette != ACCEPTED_PALETTE_INDEX or parsed_slots != family.slots
         ):
-            raise _reject("InvalidSelection", field, "The accepted Map 3 selection drifted.")
+            raise _reject("InvalidSelection", field, "An accepted atlas map selection drifted.")
 
-    if set(selected) != set(ACCEPTED_TILESET_SLOTS):
+    if set(selected) != set(family.slots):
         raise _reject(
             "InvalidSelection",
             "tilesetMetadata.tilesets",
-            "The accepted Map 3 tileset selection is incomplete.",
+            "The accepted atlas tileset selection is incomplete.",
         )
-    return tuple(selected[index] for index in ACCEPTED_TILESET_SLOTS)
+    return tuple(selected[index] for index in family.slots)
 
 
 def _parse_world_palette_metadata(
     document: Mapping[str, object],
     rom_length: int,
+    family: _WorldAtlasFamily = _MAP3_ATLAS,
 ) -> WorldPaletteRecord:
     root = _metadata_object(document, _PALETTE_ROOT_FIELDS, "paletteMetadata")
     _require_metadata_provenance(root, ACCEPTED_PALETTE_METADATA_ID, "paletteMetadata")
@@ -825,17 +873,17 @@ def _parse_world_palette_metadata(
         _metadata_string(row.get("sourcePath"), f"{field}.sourcePath")
         _metadata_int(row.get("mapAddress"), f"{field}.mapAddress")
         palette = _metadata_int(row.get("paletteIndex"), f"{field}.paletteIndex")
-        if palette > 15 or (ordinal == ACCEPTED_MAP_INDEX and palette != ACCEPTED_PALETTE_INDEX):
+        if palette > 15 or (ordinal in family.map_indices and palette != ACCEPTED_PALETTE_INDEX):
             raise _reject(
                 "InvalidSelection",
                 field,
-                "The accepted Map 3 palette selection drifted.",
+                "An accepted atlas map palette selection drifted.",
             )
     if selected is None:
         raise _reject(
             "InvalidSelection",
             "paletteMetadata.palettes",
-            "The accepted Map 3 palette is missing.",
+            "The accepted atlas palette is missing.",
         )
     return selected
 
@@ -857,9 +905,25 @@ def _build_world_atlas_source(
     rom: bytes,
     tileset_document: Mapping[str, object],
     palette_document: Mapping[str, object],
+    family: _WorldAtlasFamily = _MAP3_ATLAS,
 ) -> WorldAtlasSource:
-    tileset_records = _parse_world_tileset_metadata(tileset_document, len(rom))
-    palette_record = _parse_world_palette_metadata(palette_document, len(rom))
+    tileset_records = _parse_world_tileset_metadata(tileset_document, len(rom), family)
+    palette_record = _parse_world_palette_metadata(palette_document, len(rom), family)
+    # Both fixed metadata tables must identify each consumed map's six-byte ROM header.
+    for map_index in family.map_indices:
+        tileset_map = tileset_document["maps"][map_index]
+        palette_map = palette_document["maps"][map_index]
+        address = tileset_map["mapAddress"]
+        if (
+            palette_map["mapAddress"] != address
+            or address + 6 > len(rom)
+            or rom[address : address + 6] != bytes((ACCEPTED_PALETTE_INDEX, *family.slots))
+        ):
+            raise _reject(
+                "SourcePayloadMismatch",
+                f"mapHeader[{map_index}]",
+                "An accepted atlas map header disagrees with the ROM or metadata join.",
+            )
     palette_source = rom[
         palette_record.source_address : palette_record.source_address + WORLD_PALETTE_BYTES
     ]
@@ -938,13 +1002,13 @@ def _build_world_atlas_source(
         raise _reject("GeneratorOutputInvalid", "atlas", "The world atlas geometry drifted.")
     source_bundle = b"".join(
         (
-            WORLD_SOURCE_MAGIC,
-            bytes((ACCEPTED_MAP_INDEX, ACCEPTED_PALETTE_INDEX, *ACCEPTED_TILESET_SLOTS)),
+            family.source_magic,
+            bytes((*family.map_indices, ACCEPTED_PALETTE_INDEX, *family.slots)),
             effective_palette_bytes,
             *decoded_buffers,
         )
     )
-    return WorldAtlasSource(source_bundle, tuple(atlas_pixels), ACCEPTED_TILESET_SLOTS)
+    return WorldAtlasSource(source_bundle, tuple(atlas_pixels), family.slots)
 
 
 def _build_player_reference_source(rom: bytes) -> PlayerReferenceSource:
@@ -2529,13 +2593,14 @@ def _world_manifest(
     source: WorldAtlasSource,
     generator_artifact_sha256: str,
     buckets: tuple[PngIdentity, PngIdentity],
+    family: _WorldAtlasFamily = _MAP3_ATLAS,
 ) -> dict[str, object]:
     bucket_records = []
     for scale, identity in zip(WORLD_SCALES, buckets, strict=True):
         bucket_records.append(
             {
                 "scale": scale,
-                "runtimePath": WORLD_RUNTIME_TEMPLATE.format(scale=scale),
+                "runtimePath": family.runtime_file(scale),
                 "width": identity.width,
                 "height": identity.height,
                 "byteLength": identity.byte_length,
@@ -2557,15 +2622,15 @@ def _world_manifest(
         "logicalPresentation": {"width": 960, "height": 540},
         "assets": [
             {
-                "assetId": WORLD_ASSET_ID,
+                "assetId": family.asset_id,
                 "kind": "raster-image",
                 "logicalSize": {"width": WORLD_ATLAS_WIDTH, "height": WORLD_ATLAS_HEIGHT},
                 "source": {
-                    "assetId": WORLD_SOURCE_ASSET_ID,
+                    "assetId": family.source_asset_id,
                     "sha256": _sha256(source.source_bundle),
                 },
                 "derivation": {
-                    "policyId": WORLD_POLICY_ID,
+                    "policyId": family.policy_id,
                     "generatorId": WORLD_GENERATOR_ID,
                     "generatorVersion": WORLD_GENERATOR_VERSION,
                     "generatorArtifactSha256": generator_artifact_sha256,
@@ -2582,19 +2647,20 @@ def _write_world_candidate(
     master: Path,
     outputs: Mapping[int, Path],
     manifest: Mapping[str, object],
+    family: _WorldAtlasFamily = _MAP3_ATLAS,
 ) -> tuple[str, bytes]:
     candidate = destination / "candidate"
     try:
         candidate.mkdir()
-        source_target = candidate.joinpath(*PurePosixPath(WORLD_SOURCE_FILE).parts)
+        source_target = candidate.joinpath(*PurePosixPath(family.source_file).parts)
         source_target.parent.mkdir(parents=True)
         source_target.write_bytes(source.source_bundle)
-        master_target = candidate.joinpath(*PurePosixPath(WORLD_MASTER_FILE).parts)
+        master_target = candidate.joinpath(*PurePosixPath(family.master_file).parts)
         master_target.parent.mkdir(parents=True)
         shutil.copyfile(master, master_target)
         for scale, output in outputs.items():
             runtime_target = candidate.joinpath(
-                *PurePosixPath(WORLD_RUNTIME_TEMPLATE.format(scale=scale)).parts
+                *PurePosixPath(family.runtime_file(scale)).parts
             )
             runtime_target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(output, runtime_target)
@@ -2640,6 +2706,67 @@ def build_map3_base_atlas_candidate(
 ) -> dict[str, object]:
     """Build one ignored private Map 3 atlas candidate without changing tracked assets."""
 
+    return _build_base_atlas_candidate(
+        family=_MAP3_ATLAS,
+        asset_root=asset_root,
+        expected_commit=expected_commit,
+        expected_tree=expected_tree,
+        rom_path=rom_path,
+        expected_rom_sha256=expected_rom_sha256,
+        tileset_metadata_path=tileset_metadata_path,
+        expected_tileset_metadata_sha256=expected_tileset_metadata_sha256,
+        palette_metadata_path=palette_metadata_path,
+        expected_palette_metadata_sha256=expected_palette_metadata_sha256,
+        candidate_name=candidate_name,
+    )
+
+
+def build_map19_20_base_atlas_candidate(
+    *,
+    asset_root: str,
+    expected_commit: str,
+    expected_tree: str,
+    rom_path: str,
+    expected_rom_sha256: str,
+    tileset_metadata_path: str,
+    expected_tileset_metadata_sha256: str,
+    palette_metadata_path: str,
+    expected_palette_metadata_sha256: str,
+    candidate_name: str,
+) -> dict[str, object]:
+    """Build the fixed Map 19/20 shared atlas candidate without promoting tracked assets."""
+
+    return _build_base_atlas_candidate(
+        family=_MAP19_20_ATLAS,
+        asset_root=asset_root,
+        expected_commit=expected_commit,
+        expected_tree=expected_tree,
+        rom_path=rom_path,
+        expected_rom_sha256=expected_rom_sha256,
+        tileset_metadata_path=tileset_metadata_path,
+        expected_tileset_metadata_sha256=expected_tileset_metadata_sha256,
+        palette_metadata_path=palette_metadata_path,
+        expected_palette_metadata_sha256=expected_palette_metadata_sha256,
+        candidate_name=candidate_name,
+    )
+
+
+def _build_base_atlas_candidate(
+    *,
+    family: _WorldAtlasFamily,
+    asset_root: str,
+    expected_commit: str,
+    expected_tree: str,
+    rom_path: str,
+    expected_rom_sha256: str,
+    tileset_metadata_path: str,
+    expected_tileset_metadata_sha256: str,
+    palette_metadata_path: str,
+    expected_palette_metadata_sha256: str,
+    candidate_name: str,
+) -> dict[str, object]:
+    """Share the bounded candidate transaction between the two fixed atlas families."""
+
     candidate_relative = _require_world_candidate_name(candidate_name)
     try:
         checkout = validate_asset_checkout_identity(
@@ -2675,6 +2802,7 @@ def build_map3_base_atlas_candidate(
         rom,
         _parse_json_bytes(tileset_metadata, "tilesetMetadata"),
         _parse_json_bytes(palette_metadata, "paletteMetadata"),
+        family,
     )
     generator_artifact_sha256 = _world_generator_artifact_sha256()
 
@@ -2695,7 +2823,8 @@ def build_map3_base_atlas_candidate(
     _require_no_reparse_chain(destination, "candidate")
     if os.path.lexists(destination):
         raise _reject("CandidateExists", "candidate", "The candidate destination must be fresh.")
-    staging = cache / f"{_WORLD_STAGING_PREFIX}{uuid.uuid4().hex}.tmp"
+    staging_prefix = f".sf2-{family.name}-world-atlas-build-"
+    staging = cache / f"{staging_prefix}{uuid.uuid4().hex}.tmp"
     if os.path.lexists(staging):
         raise _reject("CandidateExists", "candidate", "The owned staging identity already exists.")
 
@@ -2762,12 +2891,13 @@ def build_map3_base_atlas_candidate(
             raise _reject(
                 "NonDeterministicOutput",
                 "atlas",
-                "The Map 3 atlas derivation did not produce byte-identical outputs.",
+                "The atlas derivation did not produce byte-identical outputs.",
             )
         manifest = _world_manifest(
             source,
             generator_artifact_sha256,
             (bucket_identities[0], bucket_identities[1]),
+            family,
         )
         manifest_sha256, _manifest_bytes = _write_world_candidate(
             staging,
@@ -2775,6 +2905,7 @@ def build_map3_base_atlas_candidate(
             first_master,
             first_outputs,
             manifest,
+            family,
         )
         try:
             repeated = validate_asset_checkout_identity(
@@ -2814,19 +2945,19 @@ def build_map3_base_atlas_candidate(
             )
         receipt = {
             "schemaVersion": 1,
-            "capability": WORLD_BUILD_CAPABILITY,
+            "capability": family.capability,
             "status": "Pass",
             "assetRepositoryCommit": checkout.identity.commit,
             "assetRepositoryTree": checkout.identity.tree,
-            "assetId": WORLD_ASSET_ID,
-            "sourceAssetId": WORLD_SOURCE_ASSET_ID,
+            "assetId": family.asset_id,
+            "sourceAssetId": family.source_asset_id,
             "sourceBundleByteLength": len(source.source_bundle),
             "sourceBundleSha256": _sha256(source.source_bundle),
             "masterSha256": master_identity.sha256,
             "generatorId": WORLD_GENERATOR_ID,
             "generatorVersion": WORLD_GENERATOR_VERSION,
             "generatorArtifactSha256": generator_artifact_sha256,
-            "policyId": WORLD_POLICY_ID,
+            "policyId": family.policy_id,
             "acceptedTilesetSlots": list(source.selected_slots),
             "segmentCount": WORLD_TILESET_COUNT,
             "segmentSize": {"width": WORLD_SHEET_WIDTH, "height": WORLD_SHEET_HEIGHT},
@@ -2861,6 +2992,14 @@ def build_map3_base_atlas_candidate(
             "manifestSha256": manifest_sha256,
             "cleanupStatus": "clean",
         }
+        if family == _MAP19_20_ATLAS:
+            receipt["acceptedMapIndices"] = list(family.map_indices)
+            receipt["acceptedPaletteIndex"] = ACCEPTED_PALETTE_INDEX
+            receipt["inputIdentities"] = {
+                "romSha256": ACCEPTED_ROM_SHA256,
+                "tilesetMetadataSha256": ACCEPTED_TILESET_METADATA_SHA256,
+                "paletteMetadataSha256": ACCEPTED_PALETTE_METADATA_SHA256,
+            }
     except AssetBuildError:
         raise
     except OSError as error:
@@ -2882,7 +3021,7 @@ def build_map3_base_atlas_candidate(
                 cleanup_error.__cause__ = error
         if os.path.lexists(staging):
             try:
-                _cleanup_owned(staging, cache, _WORLD_STAGING_PREFIX)
+                _cleanup_owned(staging, cache, staging_prefix)
             except AssetBuildError as error:
                 if cleanup_error is None:
                     cleanup_error = error
@@ -4079,7 +4218,7 @@ def build_map3_player_locomotion_animation_candidate(
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Build one deterministic ignored local HUD SVG presentation candidate."
+        description="Build a deterministic ignored local presentation candidate."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     candidate = subparsers.add_parser("hud-svg-candidate")
@@ -4090,17 +4229,18 @@ def _parser() -> argparse.ArgumentParser:
     candidate.add_argument("--expected-master-sha256", required=True)
     candidate.add_argument("--resvg-archive", required=True)
     candidate.add_argument("--candidate-name", required=True)
-    world = subparsers.add_parser("map3-base-atlas-candidate")
-    world.add_argument("--asset-root", required=True)
-    world.add_argument("--expected-commit", required=True)
-    world.add_argument("--expected-tree", required=True)
-    world.add_argument("--rom", required=True)
-    world.add_argument("--expected-rom-sha256", required=True)
-    world.add_argument("--tileset-metadata", required=True)
-    world.add_argument("--expected-tileset-metadata-sha256", required=True)
-    world.add_argument("--palette-metadata", required=True)
-    world.add_argument("--expected-palette-metadata-sha256", required=True)
-    world.add_argument("--candidate-name", required=True)
+    for command in ("map3-base-atlas-candidate", "map19-20-base-atlas-candidate"):
+        world = subparsers.add_parser(command)
+        world.add_argument("--asset-root", required=True)
+        world.add_argument("--expected-commit", required=True)
+        world.add_argument("--expected-tree", required=True)
+        world.add_argument("--rom", required=True)
+        world.add_argument("--expected-rom-sha256", required=True)
+        world.add_argument("--tileset-metadata", required=True)
+        world.add_argument("--expected-tileset-metadata-sha256", required=True)
+        world.add_argument("--palette-metadata", required=True)
+        world.add_argument("--expected-palette-metadata-sha256", required=True)
+        world.add_argument("--candidate-name", required=True)
     player = subparsers.add_parser("map3-player-reference-frame-candidate")
     player.add_argument("--asset-root", required=True)
     player.add_argument("--expected-commit", required=True)
@@ -4138,8 +4278,13 @@ def main(argv: list[str] | None = None) -> int:
                 resvg_archive=arguments.resvg_archive,
                 candidate_name=arguments.candidate_name,
             )
-        elif arguments.command == "map3-base-atlas-candidate":
-            receipt = build_map3_base_atlas_candidate(
+        elif arguments.command in ("map3-base-atlas-candidate", "map19-20-base-atlas-candidate"):
+            build_atlas = (
+                build_map3_base_atlas_candidate
+                if arguments.command == "map3-base-atlas-candidate"
+                else build_map19_20_base_atlas_candidate
+            )
+            receipt = build_atlas(
                 asset_root=arguments.asset_root,
                 expected_commit=arguments.expected_commit,
                 expected_tree=arguments.expected_tree,

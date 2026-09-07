@@ -338,10 +338,14 @@ Astral result, execute Map 20 init or F507, admit the west-tower return, or exte
 
 ## Ordered Queue
 
-1. **Map 19/20 visual readability:** extend the smallest existing atlas builder to produce local
-   candidates for review, accept the assets in their private owner, then bind a bounded current-map
-   consumer. Existing Map 3 assets are not castle atlases. Keep asset acceptance before consumption and
-   retain the diagnostic view's explicit presentation boundary until the consumer is accepted.
+1. **Map 19/20 visual readability:** the fixed shared-family
+   [atlas candidate builder](./presentation-and-assets.md#deterministic-derivation-and-cache) now emits
+   ignored local candidates from both maps' checked palette/tileset selections. Review a candidate,
+   accept its source/master/runtime/manifest transaction in the private asset owner, then bind a
+   bounded current-map consumer from those accepted code and asset objects. Existing Map 3 assets
+   are not castle atlases; the accepted pack and current diagnostic views remain unchanged by candidate
+   generation. The later consumer must resolve the current runtime's layout/blocks/area and the correct
+   atlas family, while limiting Map 3 overlays and actor-specific consumers to their owned map.
 2. **Map 21 arrival:** continue the accepted three Left inputs from Map 20 `(6,37)` through `(3,36)`,
    then bound record 4's Map 21 `(3,16)` arrival separately. The complete canonical import contains
    Map 21 references, but runtime admission currently selects only Maps 3/19/20; exact Map 21 runtime,

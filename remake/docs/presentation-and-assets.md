@@ -257,6 +257,48 @@ the existing `v << 5 | v << 2 | v >> 1` channel expansion into straight-alpha sR
 project-authored color-preserving review/runtime candidate policy. It does not prove Mega Drive
 analog output, display behavior, colorimetry, hardware chronology, or final-pixel parity.
 
+The separate `build_map19_20_base_atlas_candidate` API and `map19-20-base-atlas-candidate` command
+produce one fixed shared Map 19/20 family: palette 0 and ordered slots `[6, 23, 44, 53, 62]`.
+Both maps must retain that selection in the complete fixed metadata tables. After the existing
+closed-shape and provenance checks, each map's tileset/palette metadata addresses must agree and its
+six-byte ROM header must contain the selected palette and five ordered slots. The same header join
+also protects the retained Map 3 API. Original data provenance remains owned by
+[Technical Graphics](../../docs/research/technical-graphics.md), `sf2-map-tileset-decode-v1` and
+`sf2-map-palette-static-v1`; this adds no original rendering conclusion.
+
+The two fixed families share the existing Stack/palette/PNG pipeline, two-pass byte comparison,
+fresh ignored candidate transaction and zero-remote checkout checks. Callers supply input paths and
+identity pins, not arbitrary map indices, palettes or tileset slots. Map 21 has a different selection
+and is not included. Map 3 keeps its existing asset/source/policy IDs, source-bundle format, geometry
+and runtime paths.
+
+The castle candidate uses asset `world.map19-20.base-tileset-atlas`, source
+`source.world.map19-20.base-visual-selection`, policy `private-local-map19-20-base-nearest-rgba8-v1`
+and capability `private-local-map19-20-base-tileset-atlas-candidate-build-v1`. Its master and nearest
+2x/4x buckets have the same 128-by-320, 256-by-640 and 512-by-1280 shapes. Paths use the
+`world/map19-20/` family under `source/`, `masters/` and `runtime/`; the source bundle starts with
+ASCII `SF2-MAP19-20-BASE-VISUAL-SELECTION-V1` plus NUL, bytes `[19,20,0,6,23,44,53,62]`, the 32-byte
+effective palette and the five 4,096-byte decoded tilesets. Its receipt records both map indices,
+palette, fixed input identities and the existing generator/source/output identities without local
+absolute paths.
+
+From the code repository root, with explicit absolute input and asset-root variables and exact Git
+pins already selected, generate a fresh ignored candidate:
+
+```powershell
+uv run python -m sf2tool.remake_asset_build map19-20-base-atlas-candidate `
+    --asset-root $assetRoot --expected-commit $assetCommit --expected-tree $assetTree `
+    --rom $romPath --expected-rom-sha256 '9ADF662D09881F58EC37D174AB01E87A7FCFB24700B5F84B26C0CD4F351509E9' `
+    --tileset-metadata $tilesetMetadataPath --expected-tileset-metadata-sha256 '2EA6AB3485CAE4F92F31647C05233F0E1C07E81CCB02806706A51F9F0C1E087F' `
+    --palette-metadata $paletteMetadataPath --expected-palette-metadata-sha256 '4F977B4B3EB8E731D2ABB6664F36030487DC186D267E66E9C2DAF3CB211007AB' `
+    --candidate-name 'map19-20-base-atlas-review'
+```
+
+The command only writes the named asset checkout's ignored `cache/` candidate and emits a receipt.
+Local image review and a separately accepted source/master/runtime/manifest transaction must precede
+consumer binding. This builder does not promote assets or change the current Godot runtime. Map 19/20
+remain diagnostic views until a later current-map consumer is independently accepted.
+
 The current reviewed local pack at commit `d89274972905742f8a02b8d8b20d2c96d2ff9ca9`, tree
 `fb2581bac58f662e4e5143b52776b15c2cf5ca25`, and manifest SHA-256
 `5599BBB898C298B21C05AAC8BF01B8926F79FD02E07F34AD91455C2013D0D6ED` contains the two HUD assets,
@@ -546,7 +588,7 @@ an admitted product font, Theme, original battle title, or presentation-fidelity
 | fixed after acceptance | 4x new-raster authoring; original raster as local master; deterministic 2x/4x buckets; one resident bucket; safe-frame/aspect/accessibility model; thin Godot catalog migration |
 | implemented product display policy | PrivateLocal adaptive windowed startup up to a fitting 1920-by-1080 client; runtime 960-by-540 minimum; explicit physical target preservation; HiDPI without double counting; centered `keep` frame; one startup-resident 2x/4x bucket; restart required for bucket reselection |
 | implemented tooling prerequisite | exact product manifest path; pinned resvg 0.47.0 Windows archive/version; closed static HUD SVG subset; deterministic ignored-cache 2x/4x candidate build with path-free receipt and no tracked mutation |
-| implemented world-family tooling prerequisite | fixed private Map 3 ROM/metadata roots; exact palette/slot selection; five-segment 128-by-320 source-crisp atlas; deterministic nearest 2x/4x ignored candidate; no implicit promotion or update |
+| implemented world-family tooling prerequisite | two fixed families: Map 3 and shared Map 19/20; fixed private ROM/metadata roots, exact palette/slot selections and each selected map's ROM-header join; five-segment 128-by-320 atlas and deterministic nearest 2x/4x ignored candidate; the castle candidate still requires local review and asset acceptance before consumer binding; no implicit promotion or update |
 | implemented player-reference consumer | fixed private ROM root; exact controlled player, regular map-sprite, DOWN source-slot, no-mirror, and half-zero selection; bounded Basic decode; reviewed 24-by-24 `initial-reference-frame` master and nearest 2x/4x local transaction; exact Content mount and thin Godot logical-cell projection; no standing/idle, animation, or admission-visible claim |
 | implemented entity-reference tooling prerequisite and bounded consumer | fixed private ROM root plus accepted entity-142 fixture; exact record/slot/map-sprite/UP source; both decoded halves retained in source order as one reviewed 48-by-24 local sheet and nearest 2x/4x buckets; exact Content mount, Godot-only half-zero fresh bind, and `project-authored-two-half-diagnostic-cadence-v1` viewport state holding each half for 30 fixed physics callbacks; no original selected-half/idle/counter/cadence/visibility/interaction semantics, lifecycle, all-entity renderer, or fidelity claim |
 | implemented bounded consumer | reviewed frame/cursor/base-atlas master/runtime/manifest transactions; explicit independent HUD, base-view-plus-atlas, and static-overlay-diagnostic opt-ins; exact semantic lookups; 2x/4x selection; Content-owned contained payload recheck; chrome-only fallback; typed ENTER/STAY and cursor overlays; full selected base-atlas physical raster mapped through the authoritative project-authored logical crop after exact-nearest scale-block validation; no playable ROM/metadata reopen, source/master runtime input, PCK, or fidelity claim |
