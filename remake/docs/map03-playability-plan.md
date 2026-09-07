@@ -380,8 +380,10 @@ runtime and retained state. Public tests cover source joins and warp drift, both
 missing prerequisites, selection drift and reset. The
 [native recipe](./presentation-and-assets.md#reproduce-the-bounded-native-image-review) uses the exact
 committed production sources and one tracked probe; its initial Map 19 seed remains test-only.
-Map 21 init, guard interaction, StoryFlag1, NPC art, atlas creation, natural Battle 01 continuity,
-original presentation and H4 remain **Unsupported / Unknown**.
+Arrival alone does not perform the guard interaction or set StoryFlag1; the following
+[controlled guard boundary](#controlled-map-21-middle-tower-guard) owns that explicit result.
+Map 21 init, NPC art, atlas creation, natural Battle 01 continuity, original presentation
+and H4 remain **Unsupported / Unknown**.
 
 ## Controlled Map 21 middle-tower guard
 
@@ -436,7 +438,7 @@ The [native review recipe](./presentation-and-assets.md#reproduce-the-bounded-na
 adds before-F, after-F and walk-endpoint images. It invokes the production
 `Map3Root.ApplyPrivateInteractionRequest` adapter through test-only reflection, including wrong-position
 and duplicate F rejection, and checks the actual visible marker, player, status and grid separation.
-The initial Map 19 state remains explicitly seeded; no completed full Python/H3/H4 suite is replayed.
+The initial Map 19 state remains explicitly seeded; it does not establish natural route continuity.
 
 ## Ordered Queue
 
