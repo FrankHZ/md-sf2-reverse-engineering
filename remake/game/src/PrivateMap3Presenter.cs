@@ -119,6 +119,12 @@ internal sealed record PrivateMap3PresentationPlan(
                 "\n" + status;
         }
 
+        if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map21Id)
+        {
+            return "Middle tower Map 21 reached. Diagnostic traversal; no admitted atlas; init not executed." +
+                "\n" + status;
+        }
+
         if (snapshot.Map.Value == "map20")
         {
             if (WestTowerArrivalStatus(snapshot.LastCrossMapTransition) is string arrival)
@@ -268,6 +274,7 @@ internal sealed class PrivateMap3Presenter
     private readonly bool _staticOverlayDiagnostic;
     private readonly bool _currentAreaOverlay;
     private readonly bool _showTraversalOnInitialMap;
+    private readonly float _initialStatusY;
 
     private PrivateMap3Presenter(
         PrivateOriginalMapBaseViewport? baseViewport,
@@ -281,6 +288,7 @@ internal sealed class PrivateMap3Presenter
         _baseViewport = baseViewport;
         _viewport = viewport;
         _status = status;
+        _initialStatusY = status.Position.Y;
         _requestedWorldTreatment = requestedWorldTreatment;
         _staticOverlayDiagnostic = staticOverlayDiagnostic;
         _currentAreaOverlay = currentAreaOverlay;
@@ -503,7 +511,8 @@ internal sealed class PrivateMap3Presenter
         PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
         bool map3 = snapshot.Map.Value == OriginalMapRuntimeAdmission.MapId;
-        if (_baseViewport is { UsesLocalAtlas: true })
+        bool map21Diagnostic = OriginalMapRuntimeAdmission.HasExactAcceptedMap21Runtime(snapshot.CurrentRuntime);
+        if (_baseViewport is { UsesLocalAtlas: true } && !map21Diagnostic)
         {
             string? assetId = PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
                 snapshot.CurrentRuntime.VisualResourceSelection);
@@ -553,7 +562,11 @@ internal sealed class PrivateMap3Presenter
         }
 
         _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome, playerLocomotion);
+        _status.Position = new Vector2(StatusX, ProjectionStatusY(_viewport is not null && traversalVisible, _initialStatusY));
     }
+
+    internal static float ProjectionStatusY(bool traversalVisible, float initialStatusY) =>
+        traversalVisible ? Math.Max(450, initialStatusY) : initialStatusY;
 
     internal static (bool TraversalVisible, bool BaseVisible) ProjectionVisibility(
         MapId currentMap,

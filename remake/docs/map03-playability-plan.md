@@ -338,22 +338,64 @@ Natural init/caller order, later facing changes, general entity/event execution,
 dialogue/audio/timing and H4 remain **Unsupported / Unknown**. Arrival does not replay the palace or
 Astral result, execute Map 20 init or F507, admit the west-tower return, or extend to Map 21/Battle 01.
 
+## Controlled middle-tower Map 21 arrival
+
+**Confirmed:** the accepted [castle-unlock source owner](../../docs/research/map3-castle-battle-unlock.md)
+and [static fixture](../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json), pinned to the
+same canonical SF2DISASM revision, identify Map 20 warp record 4 as the middle-tower edge.
+From the controlled west arrival `(6,37)`, Left, Left, Left reaches `(5,37)`, `(4,37)`, then the
+stair candidate `(3,36)`. The `Map20s6_WarpEvents` table at address 676826 has 11 records;
+record 4 is no-scroll, retains no coordinates, has no scroll direction, and has reserved byte 0.
+It relocates to Map 21 `(3,16)`, area 1, RIGHT/raw 0. This source topology does not establish
+natural caller state or original input timing.
+
+Content binds Map 21's exact resource joins, palette 0 and ordered tilesets `[6,23,44,53,8]`.
+The fourth admitted runtime contains `Map21s1_Layout` (address 680900; 4096 words),
+`Map21s0_Blocks` (680462; 65 blocks), `Map21s2_Areas` (680402; one record), and the default
+`MapSetupRoute21` selection `ms_map21` with ordered variants 501/609/506/543. Its selected
+`ms_map21_InitFunction` is an identity only and is not executed. The single fixed
+`ms_map21_Entities` record (343672) retains `(5,16)`, raw facing 3, sprite 206 and action 286926.
+Area 1 spans `(0,0)..(11,21)`, foreground offset `(0,22)`, background `(0,0)`, both parallax
+pairs `(256,256)`, zero autoscroll, main layer type 0 and music 38. Application checks the exact
+layout, collision, block, full area and population projection identities in
+[OriginalMapRuntimeAdmission](../src/Sf2.Remake.Application/Content/OriginalMapRuntimeAdmission.cs).
+Custom source ports and changed Map 21 visual selections must satisfy the same admission.
+
+Both movement entrypoints require the open castle gate, controlled palace completion and Astral
+completion. These are bounded remake prerequisites, not claims about the original warp's flag tests.
+The destination runtime, working layout, area, receipt and `Relocated` locomotion commit atomically.
+Palace 605, caller 607/program 608, route objects and the manual battle bridge retain their identities.
+A fresh session returns to controlled Map 3 and clears these results.
+
+The fifth tileset differs from the castle atlas's 62. Map 21 has no admitted atlas: its explicit
+base-view launch hides the previous base viewport and displays the existing player-centered traversal
+diagnostic, with the player at `(3,16)` and crop `(0,13)`. The status identifies Map 21, the diagnostic,
+and unexecuted init. Only the exact admitted Map 21 runtime takes this branch; unknown or mismatched
+selections still reject. The prior six native camera/focus checks remain, with a seventh frame for
+the actual visible diagnostic, current runtime, area, player and source receipt.
+
+The required canonical test in [Royal Route Acceptance Boundary](#royal-route-acceptance-boundary)
+extends its same controlled session by those three Left inputs and checks the destination, raw facing,
+runtime and retained state. Public tests cover source joins and warp drift, both movement entrypoints,
+missing prerequisites, selection drift and reset. The
+[native recipe](./presentation-and-assets.md#reproduce-the-bounded-native-image-review) uses the exact
+committed production sources and one tracked probe; its initial Map 19 seed remains test-only.
+Map 21 init, guard interaction, StoryFlag1, NPC art, atlas creation, natural Battle 01 continuity,
+original presentation and H4 remain **Unsupported / Unknown**.
+
 ## Ordered Queue
 
 The current Map 19/20 base consumer uses the accepted shared castle atlas with each runtime's
 explicit selection, working layout, blocks and area. It retains the camera/player policy, scopes
 Map 3 overlays and route actors, and shows the authored Astral marker only while the route is occupied.
 The [native image review](./presentation-and-assets.md#reproduce-the-bounded-native-image-review)
-owns its six-frame seeded projection check and the precise distinction from natural reach/H4.
+owns its seven-frame seeded projection check and the precise distinction from natural reach/H4.
 
-1. **Map 21 arrival:** continue the accepted three Left inputs from Map 20 `(6,37)` through `(3,36)`,
-   then bound record 4's Map 21 `(3,16)` arrival separately. The complete canonical import contains
-   Map 21 references, but runtime admission currently selects only Maps 3/19/20; exact Map 21 runtime,
-   area, entity and setup bindings are this later slice's prerequisite.
-2. **Bounded Map 21 guard interaction:** separately consume the accepted entity-128 interaction
-   contract and explicit endpoint. Verify which handler/program fields actually exist in the input;
-   the static `cs_53EF4` behavior must not be presented as an imported general script interpreter.
-   Natural map lifecycle and continuous Battle 01 admission remain later acceptance work.
+The next slice is the bounded Map 21 entity-128 guard interaction. Consume its accepted handler
+and program contract separately; verify which fields exist in the input. The static `cs_53EF4`
+behavior must not be presented as an imported general script interpreter. Its entity movement,
+facing and StoryFlag1 effects do not authorize a player teleport to a navigation endpoint.
+Natural map lifecycle and continuous Battle 01 admission remain later acceptance work.
 
 ## Decision Rules
 

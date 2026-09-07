@@ -92,6 +92,26 @@ public static class OriginalMapRuntimeAdmission
     public const string Map20EntityProjectionDigest =
         "7350F0612C704C1DBEE16E9F48399CB21BE3CC1B653261A8910DBF6661BCB02D";
 
+    public const string Map21Id = "map21";
+    public const string Map21BlocksetResourceId = "Map21s0_Blocks";
+    public const int Map21BlockCount = 65;
+    public const string Map21BlocksetProjectionDigest = "9603A8DDC69F2563390924DD2AE03A6BC1E614C49CAB8DBB57F75604128088A6";
+    public const string Map21DecodedLayoutDigest = "7EEF772BAED9705330F6964F5A5BD50D21A166D3475846CC1F1DE074533AABD0";
+    public const string Map21CollisionProjectionDigest = "C15CA638AB6C71E670B5F4DFB33BECAB8E532B9BD46156A312E9970BFC00D2AA";
+    public const string Map21AreaResourceId = "Map21s2_Areas";
+    public const int Map21AreaRecordCount = 1;
+    public const string Map21AreaProjectionDigest = "501E3472F060B9C2F933792E68744766A0F640C27E6955FE3DE9FAF2D4387639";
+    public const string Map21AreaSourceProjectionDigest = "255FB3F107D38472044EEAC9362E45FDB4C21A478D18DE5BD0E031EDF97DE99A";
+    public const string Map21SelectedSetupId = "ms_map21";
+    public const string Map21SelectedInitIdentity = "ms_map21_InitFunction";
+    public const string Map21EntityListResourceId = "ms_map21_Entities";
+    public const int Map21EntityRecordCount = 1;
+    public const int Map21FixedEntityRecordCount = 1;
+    public const int Map21WalkingEntityRecordCount = 0;
+    public const string Map21EntityProjectionDigest = "011A20F982191E5B2752A6AB2966C08190586B60237493915D466C6D85ED8DF6";
+    public const string MiddleTowerMap21TransitionCapability = "private-map20-middle-tower-map21-transition-v1";
+    public const int MiddleTowerWarpRecordOrdinal = 4;
+
     public const string RoyalMap20TransitionCapability = "private-map19-royal-map20-transition-v1";
     public const string WestTowerMap20TransitionCapability = "private-map19-west-tower-map20-transition-v1";
     public const int WestTowerWarpRecordOrdinal = 1;
@@ -651,6 +671,7 @@ public static class OriginalMapRuntimeAdmission
                 PalaceFirstVisitCapability,
                 RoyalReturnMap19TransitionCapability,
                 WestTowerMap20TransitionCapability,
+                MiddleTowerMap21TransitionCapability,
             });
 
     private static readonly ReadOnlyCollection<string> ReadOnlyRequiredEvidenceOwners =
@@ -767,7 +788,7 @@ public static class OriginalMapRuntimeAdmission
         OriginalMapExplorationRuntimeCatalog catalog)
     {
         ArgumentNullException.ThrowIfNull(catalog);
-        if (catalog.Records.Count != 3)
+        if (catalog.Records.Count != 4)
         {
             return false;
         }
@@ -795,7 +816,8 @@ public static class OriginalMapRuntimeAdmission
                 HasExactAcceptedAreaSourceProjection(map3.AreaCatalog) &&
                 HasExactAcceptedEntityPopulation(map3.EntityPopulation) &&
                 HasExactAcceptedMap19Runtime(map19) &&
-                HasExactAcceptedMap20Runtime(catalog.Resolve(new MapId(Map20Id)));
+                HasExactAcceptedMap20Runtime(catalog.Resolve(new MapId(Map20Id))) &&
+                HasExactAcceptedMap21Runtime(catalog.Resolve(new MapId(Map21Id)));
         }
         catch (KeyNotFoundException)
         {
@@ -857,6 +879,18 @@ public static class OriginalMapRuntimeAdmission
         transition.DestinationMap == new MapId(Map20Id) &&
         transition.Destination == new MapPosition(6, 37) &&
         transition.DestinationOpaqueFacing == 0;
+
+    public static bool HasExactAcceptedMiddleTowerMap21Transition(
+        OriginalMapCrossMapTransitionDefinition? transition) =>
+        transition is not null &&
+        transition.Identity == new OriginalMapCrossMapTransitionIdentity(
+            ContentProfile.PrivateLocal, new MapId(Map20Id), RoyalReturnWarpResourceId, MiddleTowerWarpRecordOrdinal) &&
+        transition.SourceTriggerX == 3 && transition.SourceTriggerY == 36 &&
+        transition.AdmittedApproach == new MapPosition(4, 37) &&
+        transition.AdmittedDirection == ExplorationDirection.West &&
+        transition.AdmittedTrigger == new MapPosition(3, 36) &&
+        transition.DestinationMap == new MapId(Map21Id) &&
+        transition.Destination == new MapPosition(3, 16) && transition.DestinationOpaqueFacing == 0;
 
     public static bool HasExactAcceptedAstralAcceptance(
         OriginalMapAstralAcceptanceDefinition? definition,
@@ -1016,6 +1050,53 @@ public static class OriginalMapRuntimeAdmission
                 StringComparison.OrdinalIgnoreCase);
     }
 
+    public static bool HasExactAcceptedMap21Runtime(
+        OriginalMapExplorationRuntimeDefinition runtime)
+    {
+        return runtime.Map == new MapId(Map21Id) &&
+            HasExactAcceptedMap21VisualResourceSelection(runtime.VisualResourceSelection) &&
+            runtime.SelectedSetup == new MapSetupId(Map21SelectedSetupId) &&
+            string.Equals(
+                runtime.SelectedInitIdentity,
+                Map21SelectedInitIdentity,
+                StringComparison.Ordinal) &&
+            string.Equals(
+                runtime.DecodedLayoutDigest,
+                Map21DecodedLayoutDigest,
+                StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(
+                runtime.CollisionProjectionDigest,
+                Map21CollisionProjectionDigest,
+                StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(
+                runtime.BlockCatalog.ResourceId,
+                Map21BlocksetResourceId,
+                StringComparison.Ordinal) &&
+            runtime.BlockCatalog.Records.Count == Map21BlockCount &&
+            string.Equals(
+                runtime.BlockCatalog.ProjectionDigest,
+                Map21BlocksetProjectionDigest,
+                StringComparison.OrdinalIgnoreCase) &&
+            HasExactMap21AreaProjection(runtime.AreaCatalog) &&
+            runtime.EntityPopulation.Map == new MapId(Map21Id) &&
+            runtime.EntityPopulation.SelectedSetup == new MapSetupId(Map21SelectedSetupId) &&
+            string.Equals(
+                runtime.EntityPopulation.ResourceId,
+                Map21EntityListResourceId,
+                StringComparison.Ordinal) &&
+            runtime.EntityPopulation.Records.Count == Map21EntityRecordCount &&
+            runtime.EntityPopulation.Records.Count(record =>
+                record.Kind == OriginalMapEntityRecordKind.Fixed) ==
+                Map21FixedEntityRecordCount &&
+            runtime.EntityPopulation.Records.Count(record =>
+                record.Kind == OriginalMapEntityRecordKind.Walking) ==
+                Map21WalkingEntityRecordCount &&
+            string.Equals(
+                runtime.EntityPopulation.ProjectionDigest,
+                Map21EntityProjectionDigest,
+                StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool HasExactMap19AreaProjection(OriginalMapAreaCatalog catalog) =>
         HasExactCastleAreaProjection(catalog, Map19AreaResourceId, Map19AreaRecordCount,
             Map19AreaProjectionDigest, Map19AreaSourceProjectionDigest);
@@ -1023,6 +1104,10 @@ public static class OriginalMapRuntimeAdmission
     private static bool HasExactMap20AreaProjection(OriginalMapAreaCatalog catalog) =>
         HasExactCastleAreaProjection(catalog, Map20AreaResourceId, Map20AreaRecordCount,
             Map20AreaProjectionDigest, Map20AreaSourceProjectionDigest);
+
+    private static bool HasExactMap21AreaProjection(OriginalMapAreaCatalog catalog) =>
+        HasExactCastleAreaProjection(catalog, Map21AreaResourceId, Map21AreaRecordCount,
+            Map21AreaProjectionDigest, Map21AreaSourceProjectionDigest);
 
     private static bool HasExactCastleAreaProjection(
         OriginalMapAreaCatalog catalog, string resourceId, int recordCount,
@@ -1072,6 +1157,13 @@ public static class OriginalMapRuntimeAdmission
                 Convert.ToHexString(SHA256.HashData(source)),
                 sourceDigest,
                 StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool HasExactAcceptedMap21VisualResourceSelection(OriginalMapVisualResourceSelection selection)
+    {
+        ArgumentNullException.ThrowIfNull(selection);
+        return selection.Map.Value == Map21Id && selection.PaletteIndex == 0 &&
+            selection.TilesetSlots.SequenceEqual(new byte[] { 6, 23, 44, 53, 8 });
     }
 
     public static bool HasExactAcceptedCastleVisualResourceSelection(

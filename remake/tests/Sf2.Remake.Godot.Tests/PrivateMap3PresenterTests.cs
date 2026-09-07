@@ -9,6 +9,33 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateMap3PresenterTests
 {
     [Theory]
+    [InlineData(true, 310, 450)]
+    [InlineData(false, 310, 310)]
+    [InlineData(true, 450, 450)]
+    [InlineData(false, 105, 105)]
+    public void DiagnosticStatusClearsTheTallerTraversalGridAndRestoresTheBasePosition(
+        bool traversalVisible, float initialY, float expectedY)
+    {
+        Assert.Equal(expectedY, PrivateMap3Presenter.ProjectionStatusY(traversalVisible, initialY));
+        if (traversalVisible) Assert.True(expectedY > 105 + 7 * 48);
+    }
+
+    [Fact]
+    public void MiddleTowerStatusExplainsTheVisibleDiagnosticWithoutOfferingUnadmittedInteraction()
+    {
+        var snapshot = PrivateOriginalMapTraversalViewportTests.CrossMapSnapshot(middleTower: true);
+        string status = PrivateMap3PresentationPlan.FormatStatus(snapshot, new string('x', 500));
+        Assert.StartsWith("Middle tower Map 21 reached.", status);
+        Assert.Contains("Diagnostic traversal", status);
+        Assert.Contains("no admitted atlas", status);
+        Assert.Contains("init not executed", status);
+        Assert.DoesNotContain("F ", status);
+        Assert.DoesNotContain("Zone601", status);
+        Assert.DoesNotContain("StoryFlag", status);
+        Assert.True(status.IndexOf('\n') < status.IndexOf(new string('x', 500), StringComparison.Ordinal));
+    }
+
+    [Theory]
     [InlineData("map19", true, true)]
     [InlineData("map20", true, true)]
     [InlineData("map19", false, false)]

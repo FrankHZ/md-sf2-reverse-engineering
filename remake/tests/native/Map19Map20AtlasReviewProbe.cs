@@ -54,6 +54,12 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             DriveSegment("map19-astral-to-west-tower-warp", 15, skip: 1);
             Require(_session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(6, 37), "West arrival");
             await Capture("06-map20-west", "map20", 0);
+            Move(ExplorationDirection.West);
+            Require(_session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(5, 37), "Middle route first Left");
+            Move(ExplorationDirection.West);
+            Require(_session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(4, 37), "Middle route second Left");
+            Move(ExplorationDirection.West);
+            await CaptureMiddleTowerDiagnostic();
 
             File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new
             {
@@ -68,7 +74,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 assetManifest = PrivateLocalPresentationAssetCatalog.Map3AssetManifestDigest,
                 frames = _frames,
             }, new JsonSerializerOptions { WriteIndented = true }));
-            GD.Print("SF2_CASTLE_ATLAS_NATIVE_REVIEW Pass frames=6 seeded-projection-only");
+            GD.Print("SF2_CASTLE_ATLAS_NATIVE_REVIEW Pass frames=7 seeded-projection-only");
             _fixture.Dispose();
             GetTree().Quit();
         }
@@ -188,6 +194,57 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             cameraFocusX = camera.FocusPixelX, cameraFocusY = camera.FocusPixelY,
             playerPixelX = player.Position.X, playerPixelY = player.Position.Y,
             playerX = snapshot.PlayerPosition.X, playerY = snapshot.PlayerPosition.Y,
+            width = image.GetWidth(), height = image.GetHeight() });
+    }
+
+    private async Task CaptureMiddleTowerDiagnostic()
+    {
+        var snapshot = _session.PrivateOriginalMapSnapshot;
+        var movement = _session.PrivateOriginalMapPlayerLocomotion;
+        var receipt = snapshot.LastCrossMapTransition;
+        Require(snapshot.Map == new MapId("map21") && snapshot.PlayerPosition == new MapPosition(3, 16) &&
+            snapshot.CurrentArea.OneBasedRecordOrdinal == 1 &&
+            ReferenceEquals(snapshot.CurrentRuntime, snapshot.Definition.RuntimeCatalog.Resolve(new("map21"))) &&
+            OriginalMapRuntimeAdmission.HasExactAcceptedMap21Runtime(snapshot.CurrentRuntime), "Exact Map21 runtime arrival");
+        Require(receipt?.Capability == OriginalMapRuntimeAdmission.MiddleTowerMap21TransitionCapability &&
+            receipt.RecordIdentity.SourceMap == new MapId("map20") && receipt.RecordIdentity.OneBasedRecordOrdinal == 4 &&
+            receipt.Source == new MapPosition(4, 37) && receipt.Trigger == new MapPosition(3, 36) &&
+            receipt.DestinationOpaqueFacing == 0 && movement.OpaqueFacing == 0 &&
+            movement.Phase == PrivateOriginalMapPlayerLocomotionPhase.Relocated && !movement.IsMoving &&
+            movement.DestinationPosition == snapshot.PlayerPosition, "Map21 source receipt and relocation");
+        Require(snapshot.PalaceFirstVisit?.CompletionFlag605Set == true &&
+            snapshot.AstralAcceptance?.HandlerFlag607Set == true && snapshot.AstralAcceptance.ProgramFlag608Set,
+            "Retained controlled route completion");
+        _presenter.Project(snapshot, "Controlled native visual review", movement);
+        var baseViewport = Field<PrivateOriginalMapBaseViewport>(_presenter, "_baseViewport");
+        var traversalViewport = Field<PrivateOriginalMapTraversalViewport>(_presenter, "_viewport");
+        var projection = traversalViewport.Projection!;
+        Require(!baseViewport.Visible && traversalViewport.Visible && projection.Map == snapshot.Map,
+            "Map21 visible diagnostic and hidden castle atlas");
+        var player = projection.Cells.Single(cell => cell.IsPlayer);
+        Require(player.MapX == 3 && player.MapY == 16 && player.Column == 3 && player.Row == 3 &&
+            projection.OriginX == 0 && projection.OriginY == 13, "Map21 visible player and diagnostic crop");
+        var statusLabel = Field<Label>(_presenter, "_status");
+        Require(statusLabel.Position.Y >= traversalViewport.Position.Y +
+            PrivateOriginalMapTraversalViewProjection.RowCount * 48, "Map21 status does not overlap the diagnostic grid");
+        string status = statusLabel.Text;
+        Require(status.StartsWith("Middle tower Map 21 reached.", StringComparison.Ordinal) &&
+            status.Contains("Diagnostic traversal", StringComparison.Ordinal) &&
+            status.Contains("init not executed", StringComparison.Ordinal) &&
+            !status.Contains("F ", StringComparison.Ordinal), "Map21 diagnostic status");
+        await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        using Image image = GetViewport().GetTexture().GetImage();
+        Require(!image.IsEmpty() && image.GetWidth() >= 960 && image.GetHeight() >= 540, "Native Map21 viewport");
+        const string name = "07-map21-diagnostic";
+        Require(image.SavePng(Path.Combine(_output, name + ".png")) == Error.Ok, "Map21 PNG write");
+        _frames.Add(new { name, map = snapshot.Map.Value, selectionMap = snapshot.CurrentRuntime.VisualResourceSelection.Map.Value,
+            area = snapshot.CurrentArea.OneBasedRecordOrdinal, layout = snapshot.CurrentRuntime.DecodedLayoutDigest,
+            baseVisible = baseViewport.Visible, traversalVisible = traversalViewport.Visible, status, statusY = statusLabel.Position.Y,
+            sourceMap = receipt!.RecordIdentity.SourceMap.Value, sourceRecord = receipt.RecordIdentity.OneBasedRecordOrdinal,
+            sourceX = receipt.Source.X, sourceY = receipt.Source.Y, triggerX = receipt.Trigger.X, triggerY = receipt.Trigger.Y,
+            facing = movement.OpaqueFacing, phase = movement.Phase.ToString(),
+            cameraOriginX = projection.OriginX, cameraOriginY = projection.OriginY,
+            playerColumn = player.Column, playerRow = player.Row, playerX = player.MapX, playerY = player.MapY,
             width = image.GetWidth(), height = image.GetHeight() });
     }
 

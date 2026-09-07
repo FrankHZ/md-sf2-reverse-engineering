@@ -10,6 +10,19 @@ namespace Sf2.Remake.Godot.Tests;
 public sealed class PrivateOriginalMapTraversalViewportTests
 {
     [Fact]
+    public void MiddleTowerDiagnosticUsesDestinationRuntimeAndPlayerWithinItsArea()
+    {
+        var snapshot = CrossMapSnapshot(middleTower: true);
+        var projection = PrivateOriginalMapTraversalViewProjection.Create(snapshot);
+        Assert.Equal(new MapId("map21"), projection.Map);
+        Assert.Equal((0, 13), (projection.OriginX, projection.OriginY));
+        var player = Assert.Single(projection.Cells, cell => cell.IsPlayer);
+        Assert.Equal((3, 16, 3, 3), (player.MapX, player.MapY, player.Column, player.Row));
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedMap21VisualResourceSelection(
+            snapshot.CurrentRuntime.VisualResourceSelection));
+    }
+
+    [Fact]
     public void ProjectionUsesTheExactTwelveBySevenPlayerCenteredCrop()
     {
         PrivateOriginalMapTraversalViewProjection projection =
@@ -331,10 +344,11 @@ public sealed class PrivateOriginalMapTraversalViewportTests
                     [0, 0, 0, 0]),
             ]);
 
-    private static PrivateOriginalMapSessionSnapshot CrossMapSnapshot()
+    internal static PrivateOriginalMapSessionSnapshot CrossMapSnapshot(bool middleTower = false)
     {
         MapId map3 = new(OriginalMapRuntimeAdmission.MapId);
-        MapId map19 = new(OriginalMapRuntimeAdmission.Map19Id);
+        MapId destinationMap = new(middleTower ? OriginalMapRuntimeAdmission.Map21Id : OriginalMapRuntimeAdmission.Map19Id);
+        MapPosition destinationPosition = middleTower ? new(3, 16) : new(26, 30);
         OriginalMapExplorationRuntimeDefinition initial = Runtime(
             map3,
             new MapSetupId(OriginalMapRuntimeAdmission.SelectedSetupId),
@@ -343,12 +357,12 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             new OriginalMapTraversalArea(0, 0, 63, 63),
             new MapPosition(56, 3));
         OriginalMapExplorationRuntimeDefinition destination = Runtime(
-            map19,
-            new MapSetupId(OriginalMapRuntimeAdmission.Map19SelectedSetupId),
-            OriginalMapRuntimeAdmission.Map19SelectedInitIdentity,
-            "project-authored-map19-blocks",
-            new OriginalMapTraversalArea(24, 28, 28, 31),
-            new MapPosition(26, 30));
+            destinationMap,
+            new MapSetupId(middleTower ? OriginalMapRuntimeAdmission.Map21SelectedSetupId : OriginalMapRuntimeAdmission.Map19SelectedSetupId),
+            middleTower ? OriginalMapRuntimeAdmission.Map21SelectedInitIdentity : OriginalMapRuntimeAdmission.Map19SelectedInitIdentity,
+            middleTower ? "project-authored-map21-blocks" : "project-authored-map19-blocks",
+            middleTower ? new OriginalMapTraversalArea(0, 0, 11, 21) : new OriginalMapTraversalArea(24, 28, 28, 31),
+            destinationPosition);
         OriginalMapExplorationRuntimeCatalog catalog = new([initial, destination]);
         OriginalMapCrossMapTransitionDefinition transition = new(
             new OriginalMapCrossMapTransitionIdentity(
@@ -361,8 +375,8 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             new MapPosition(28, 2),
             ExplorationDirection.North,
             new MapPosition(28, 1),
-            map19,
-            new MapPosition(26, 30),
+            destinationMap,
+            destinationPosition,
             OriginalMapRuntimeAdmission.NorthMap19WarpDestinationOpaqueFacing);
         OriginalMapImportDefinition definition = new(
             map3,
@@ -402,10 +416,10 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             receipt,
             destination.WorkingLayout,
             simulationStep: 1,
-            new MapPosition(26, 30),
+            destinationPosition,
             lastTraversal: new OriginalMapTraversalResult(
-                new MapPosition(26, 30),
-                new MapPosition(26, 30),
+                destinationPosition,
+                destinationPosition,
                 ExplorationDirection.North,
                 OriginalMapTraversalOutcome.BlockedByBoundary,
                 sourceWord: 0,
@@ -466,7 +480,7 @@ public sealed class PrivateOriginalMapTraversalViewportTests
             initIdentity,
             Convert.ToHexString(SHA256.HashData(new byte[WorkingMapLayout.WordCount * 2])),
             Convert.ToHexString(SHA256.HashData(new byte[WorkingMapLayout.WordCount])),
-            new(map, 0, map.Value == "map3" ? [0, 37, 43, 53, 66] : [6, 23, 44, 53, 62]));
+            new(map, 0, map.Value == "map3" ? [0, 37, 43, 53, 66] : map.Value == "map21" ? [6, 23, 44, 53, 8] : [6, 23, 44, 53, 62]));
     }
 
     private static int Index(int x, int y) =>
