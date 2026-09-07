@@ -319,9 +319,8 @@ The current reviewed local pack at commit `c8dcc451e7210a1cd433865431151a1de62a1
 `4890d6d03ac62d099737ff6e4d24f4bce63f56d2`, and manifest SHA-256
 `520E15367DAB8D6669AA9ABDE9279A33231D81AE3667DE851EACAD2CEB5A1146` contains the two HUD assets,
 the exact Map 3, shared Map 19/20 and independent Map 21 atlas families, the player initial-reference-frame family, the three controlled-player
-locomotion sheets, and one entity-142/Astral UP two-half reference sheet. The
-atlas's explicit
-PrivateLocal consumer mounts both explicit families at the selected 2x or 4x scale after Content
+locomotion sheets, and one entity-142/Astral UP two-half reference sheet. The explicit
+PrivateLocal consumer mounts all three fixed atlas families at the selected 2x or 4x scale after Content
 rechecks the closed pack; only the current family supplies the rendered base. Godot validates decoded RGBA8 dimensions and projects every physical bucket texel through the
 already authoritative working-layout/block/tile/slot/flip selection. A 2x bucket becomes a
 576-by-336 ImageTexture and a 4x bucket becomes a 1152-by-672 ImageTexture; `DrawTextureRect` maps
@@ -684,10 +683,10 @@ the supplied asset input.
 The process receipt records the code head, bounded exit/timeout/cleanup state and each step. Inspect
 all ten PNGs and the per-frame selection/area/layout/atlas/glyph receipt. Each Map 21 frame also samples
 the rendered guard diamond's center and downward interior to reject a spurious facing line.
-The first six retain
-the destination camera and player-rectangle checks. The seventh requires a visible traversal view,
-hidden base view, Map 21 `(3,16)`/area 1, crop `(0,13)`, raw facing 0 and the exact record-4 source receipt.
-Its status label must sit below the diagnostic grid without covering cells. Frames eight through ten
+The first six retain the destination camera and player-rectangle checks. The seventh requires a
+visible Map 21 base atlas and hidden traversal view, `(3,16)`/area 1, crop `(0,13)`, raw facing 0
+and the exact record-4 source receipt. Later operations clear that receipt under the existing
+per-operation contract. The status label must sit below the base viewport. Frames eight through ten
 check the visible player and undirected guard marker, the real F adapter's prompt/completion text, and
 the ordinary walk endpoint. Wrong-position and duplicate F calls use that same adapter and preserve
 snapshot/locomotion/bridge without throwing. An image failure is a failed
