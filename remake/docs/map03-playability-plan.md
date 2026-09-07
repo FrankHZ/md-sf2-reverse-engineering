@@ -293,18 +293,63 @@ refused or repeated original conversations, general NPC/script behavior, tower t
 Battle 01 continuity remain **Unsupported / Unknown**. Source-guard acceptance does not change that
 runtime boundary.
 
+## Controlled West-Tower Arrival
+
+The player can continue from the released Map 19 tile `(16,5)` with 14 inputs: Up, Left eleven times,
+Up, Right. The final input approaches from `(5,3)` and resolves the stair candidate `(6,2)`, then
+relocates to Map 20 `(6,37)`, area 2, RIGHT/raw 0. The same diagnostic traversal view displays the
+arrival; its first status line identifies the controlled west-tower endpoint and unexecuted init.
+
+**Confirmed:** the accepted [castle-unlock owner](../../docs/research/map3-castle-battle-unlock.md)
+and its [static fixture](../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json) own the
+15-input `map19-astral-to-west-tower-warp` segment from `(16,6)` and the following warp edge. The
+first input is the already released north step to `(16,5)`. Its default-zone hit is at that first
+point; the remaining 14 inputs have no zone hit. This is source-derived topology, not natural runtime
+reach or input cadence.
+
+Content consumes the existing canonical `Map19s6_WarpEvents` table at `0xA464E`, seven records,
+record 1: trigger `(6,2)`, no scroll, no retained coordinates or scroll direction, destination map 20
+at `(6,37)`, facing 0 and reserved byte 0. `Map20s2_Areas` record 2 has bounds `(0,33)..(41,45)`.
+The accepted runtime catalog already owns this area's data, layout, blocks, setup and entity population.
+No new canonical resource, schema, script body, content digest or map is needed.
+
+Application distinguishes the west-tower record 1 from royal record 2 by admitted source map,
+resource and record identity in transition selection, receipt capability and snapshot validation.
+Both movement entrypoints require the open castle gate, controlled palace result and Astral completion
+for this new relocation. These prerequisites bound the remake capability; they do not claim that the
+original warp tests flags 605/607/608. The destination snapshot and player locomotion relocate atomically,
+preserving the palace 605 result, caller 607 and program 608 completion, prior route objects and the
+existing battle bridge. The old royal outbound and return remain available under their existing rules.
+A fresh session clears these controlled results.
+
+The required private command in [Royal Route Acceptance Boundary](#royal-route-acceptance-boundary)
+continues its same session through the outward 38 inputs, explicit palace result, two-input return,
+11-input Astral approach, blocked north, F acceptance, released north, and the 14-input west-tower
+segment. It checks each intermediate point and the destination map, area, runtime, raw facing,
+locomotion and retained state. Required mode with explicit input executes this private check; a public
+SKIP is not evidence for it. Its initial Map 19 seed remains test-only. Public tests cover both movement
+entrypoints, missing prerequisites, wrong approach/direction, busy rejection, identity/facing drift,
+royal/Astral regression, reset and distinct arrival status. The native private startup smoke checks only
+startup and its existing markers; it does not prove native input to the west tower or visual fidelity.
+
+Natural init/caller order, later facing changes, general entity/event execution, original rendering,
+dialogue/audio/timing and H4 remain **Unsupported / Unknown**. Arrival does not replay the palace or
+Astral result, execute Map 20 init or F507, admit the west-tower return, or extend to Map 21/Battle 01.
+
 ## Ordered Queue
 
-1. **West-tower entrance after Astral acceptance:** let the player continue from the released passage
-   to the exact accepted Map 19 stair exit, with a separately bounded Map 20 arrival. Confirm the
-   consumed warp, destination area and controlled state before extending the current transition reducer.
-   Stop at that arrival; do not fold Map 21 or Battle 01 admission into the same capability.
-2. **Map 19/20 visual readability:** treat the current diagnostic views as an explicit presentation gap.
-   Select a separate bounded consumer with its reviewed asset and source owners; do not infer original
-   rendering or expand the interaction slice to introduce an asset pipeline.
-3. **Further tower progression and remaining map lifecycle:** choose the next concrete player action
-   from accepted evidence, with explicit endpoints for setup/entity/event/audio work. General execution
-   machinery and natural Battle 01 continuity remain separate later acceptance work.
+1. **Map 19/20 visual readability:** extend the smallest existing atlas builder to produce local
+   candidates for review, accept the assets in their private owner, then bind a bounded current-map
+   consumer. Existing Map 3 assets are not castle atlases. Keep asset acceptance before consumption and
+   retain the diagnostic view's explicit presentation boundary until the consumer is accepted.
+2. **Map 21 arrival:** continue the accepted three Left inputs from Map 20 `(6,37)` through `(3,36)`,
+   then bound record 4's Map 21 `(3,16)` arrival separately. The complete canonical import contains
+   Map 21 references, but runtime admission currently selects only Maps 3/19/20; exact Map 21 runtime,
+   area, entity and setup bindings are this later slice's prerequisite.
+3. **Bounded Map 21 guard interaction:** separately consume the accepted entity-128 interaction
+   contract and explicit endpoint. Verify which handler/program fields actually exist in the input;
+   the static `cs_53EF4` behavior must not be presented as an imported general script interpreter.
+   Natural map lifecycle and continuous Battle 01 admission remain later acceptance work.
 
 ## Decision Rules
 

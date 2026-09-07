@@ -94,6 +94,7 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
         RoyalMap20TransitionCapability,
         OriginalMapRuntimeAdmission.PalaceFirstVisitCapability,
         OriginalMapRuntimeAdmission.RoyalReturnMap19TransitionCapability,
+        OriginalMapRuntimeAdmission.WestTowerMap20TransitionCapability,
     ];
 
     private static readonly string[] UnsupportedCapabilities =
@@ -493,7 +494,8 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
             royalMap20Transition,
             ReadPalaceFirstVisit(resources),
             ReadAcceptedRoyalReturn(map20References, resources),
-            ReadAstralAcceptance(map19Runtime, resources));
+            ReadAstralAcceptance(map19Runtime, resources),
+            ReadAcceptedWestTowerEntry(map19References, resources));
         OriginalMapImportReceipt receipt = new(
             PackageId,
             schemaVersion,
@@ -633,6 +635,50 @@ public sealed class PrivateCanonicalMap3ImportReader : IOriginalMapImportSource
                 OriginalMapRuntimeAdmission.RoyalMap20WarpTriggerY),
             new MapId(OriginalMapRuntimeAdmission.Map20Id),
             new MapPosition(RequiredInt(destination, "x", field), RequiredInt(destination, "y", field)),
+            checked((byte)RequiredInt(row, "facing", field)));
+    }
+
+    private static OriginalMapCrossMapTransitionDefinition ReadAcceptedWestTowerEntry(
+        JsonElement references,
+        IReadOnlyDictionary<string, Dictionary<string, JsonElement>> resources)
+    {
+        const string field = "map19.westTowerWarp";
+        string id = RequiredString(references, "warpEventTable", field);
+        JsonElement table = RequiredResource(resources, "warpEventTables", id);
+        RequireExactProperties(table, field, "id", "address", "sourceKind", "records");
+        JsonElement rows = RequiredProperty(table, "records", field);
+        RequireArray(rows, field);
+        if (id != OriginalMapRuntimeAdmission.RoyalMap20WarpResourceId ||
+            RequiredInt(table, "address", field) != 673358 ||
+            RequiredString(table, "sourceKind", field) != "warpEvents" || rows.GetArrayLength() != 7)
+        {
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                "The admitted Map 19 west-tower warp table drifted.");
+        }
+
+        JsonElement row = rows[OriginalMapRuntimeAdmission.WestTowerWarpRecordOrdinal - 1];
+        RequireExactProperties(row, field, "trigger", "scrollMode", "retainsCoordinates",
+            "scrollDirection", "targetMap", "destination", "facing", "reserved");
+        JsonElement trigger = RequiredProperty(row, "trigger", field);
+        JsonElement destination = RequiredProperty(row, "destination", field);
+        RequireExactProperties(trigger, field, "x", "y");
+        RequireExactProperties(destination, field, "x", "y");
+        if (RequiredInt(trigger, "x", field) != 6 || RequiredInt(trigger, "y", field) != 2 ||
+            RequiredInt(row, "scrollMode", field) != 0 ||
+            RequiredProperty(row, "retainsCoordinates", field).ValueKind != JsonValueKind.False ||
+            RequiredProperty(row, "scrollDirection", field).ValueKind != JsonValueKind.Null ||
+            RequiredInt(row, "targetMap", field) != 20 ||
+            RequiredInt(destination, "x", field) != 6 || RequiredInt(destination, "y", field) != 37 ||
+            RequiredInt(row, "facing", field) != 0 || RequiredInt(row, "reserved", field) != 0)
+        {
+            throw Admission(OriginalMapImportFailureCode.InvalidMapProjection, field,
+                "The west-tower entry requires its exact no-scroll Map 20 relocation and raw facing.");
+        }
+
+        return new(new(ContentProfile.PrivateLocal, new MapId(OriginalMapRuntimeAdmission.Map19Id),
+                id, OriginalMapRuntimeAdmission.WestTowerWarpRecordOrdinal),
+            6, 2, new(5, 3), ExplorationDirection.East, new(6, 2),
+            new MapId(OriginalMapRuntimeAdmission.Map20Id), new(6, 37),
             checked((byte)RequiredInt(row, "facing", field)));
     }
 

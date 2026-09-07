@@ -282,15 +282,13 @@ public sealed record PrivateOriginalMapSessionSnapshot
         if (lastCrossMapTransition is not null)
         {
             OriginalMapCrossMapTransitionDefinition admitted =
-                (lastCrossMapTransition.DestinationMap == new MapId(OriginalMapRuntimeAdmission.Map20Id)
-                    ? definition.RoyalMap20Transition
-                    : lastCrossMapTransition.RecordIdentity.SourceMap == new MapId(OriginalMapRuntimeAdmission.Map20Id)
-                        ? definition.RoyalReturnMap19Transition
-                        : definition.NorthMap19Transition) ?? throw new ArgumentException(
+                definition.FindCrossMapTransition(lastCrossMapTransition.RecordIdentity) ?? throw new ArgumentException(
                     "A cross-map receipt requires its admitted transition definition.",
                     nameof(lastCrossMapTransition));
             if (lastCrossMapTransition.SimulationStep != simulationStep ||
                 (ReferenceEquals(admitted, definition.RoyalReturnMap19Transition) && palaceFirstVisit is null) ||
+                (ReferenceEquals(admitted, definition.WestTowerMap20Transition) &&
+                    (admittedCastleGate?.Opened != true || palaceFirstVisit is null || astralAcceptance is null)) ||
                 lastCrossMapTransition.RecordIdentity != admitted.Identity ||
                 lastCrossMapTransition.Source != admitted.AdmittedApproach ||
                 lastCrossMapTransition.Trigger != admitted.AdmittedTrigger ||
@@ -1414,6 +1412,13 @@ public sealed partial class GameSession
         {
             return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
                 "definition.royalReturnMap19Transition", "The controlled royal return source binding drifted.");
+        }
+
+        if (!OriginalMapRuntimeAdmission.HasExactAcceptedWestTowerMap20Transition(
+                definition.WestTowerMap20Transition))
+        {
+            return Diagnostic(OriginalMapImportFailureCode.InvalidMapProjection,
+                "definition.westTowerMap20Transition", "The controlled west-tower source binding drifted.");
         }
 
         if (!OriginalMapRuntimeAdmission.HasExactAcceptedAstralAcceptance(

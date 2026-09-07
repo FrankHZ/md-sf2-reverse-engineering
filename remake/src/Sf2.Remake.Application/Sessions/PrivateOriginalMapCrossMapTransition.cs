@@ -20,11 +20,24 @@ public sealed record PrivateOriginalMapCrossMapTransitionReceipt
         SimulationStep = simulationStep;
     }
 
-    public string Capability => DestinationMap == new MapId(OriginalMapRuntimeAdmission.Map20Id)
-        ? OriginalMapRuntimeAdmission.RoyalMap20TransitionCapability
-        : RecordIdentity.SourceMap == new MapId(OriginalMapRuntimeAdmission.Map20Id)
-            ? OriginalMapRuntimeAdmission.RoyalReturnMap19TransitionCapability
-            : OriginalMapRuntimeAdmission.NorthMap19TransitionCapability;
+    public string Capability =>
+        (RecordIdentity.Profile, RecordIdentity.SourceMap.Value,
+            RecordIdentity.SourceResourceId, RecordIdentity.OneBasedRecordOrdinal) switch
+        {
+            (ContentProfile.PrivateLocal, OriginalMapRuntimeAdmission.MapId,
+                OriginalMapRuntimeAdmission.SameMapWarpResourceId, OriginalMapRuntimeAdmission.NorthMap19WarpRecordOrdinal) =>
+                OriginalMapRuntimeAdmission.NorthMap19TransitionCapability,
+            (ContentProfile.PrivateLocal, OriginalMapRuntimeAdmission.Map19Id,
+                OriginalMapRuntimeAdmission.RoyalMap20WarpResourceId, OriginalMapRuntimeAdmission.RoyalMap20WarpRecordOrdinal) =>
+                OriginalMapRuntimeAdmission.RoyalMap20TransitionCapability,
+            (ContentProfile.PrivateLocal, OriginalMapRuntimeAdmission.Map20Id,
+                OriginalMapRuntimeAdmission.RoyalReturnWarpResourceId, OriginalMapRuntimeAdmission.RoyalReturnWarpRecordOrdinal) =>
+                OriginalMapRuntimeAdmission.RoyalReturnMap19TransitionCapability,
+            (ContentProfile.PrivateLocal, OriginalMapRuntimeAdmission.Map19Id,
+                OriginalMapRuntimeAdmission.RoyalMap20WarpResourceId, OriginalMapRuntimeAdmission.WestTowerWarpRecordOrdinal) =>
+                OriginalMapRuntimeAdmission.WestTowerMap20TransitionCapability,
+            _ => throw new InvalidOperationException("The cross-map receipt has no admitted source identity."),
+        };
 
     public OriginalMapCrossMapTransitionIdentity RecordIdentity { get; }
 
@@ -55,7 +68,9 @@ public sealed partial class GameSession
             current.Map == current.Definition.Map
                 ? current.Definition.NorthMap19Transition
                 : current.Map == new MapId(OriginalMapRuntimeAdmission.Map19Id)
-                    ? current.Definition.RoyalMap20Transition
+                    ? current.PlayerPosition == current.Definition.WestTowerMap20Transition?.AdmittedApproach
+                        ? current.Definition.WestTowerMap20Transition
+                        : current.Definition.RoyalMap20Transition
                     : current.Map == new MapId(OriginalMapRuntimeAdmission.Map20Id)
                         ? current.Definition.RoyalReturnMap19Transition
                         : null;
@@ -64,7 +79,9 @@ public sealed partial class GameSession
             current.PlayerPosition != transition.AdmittedApproach ||
             command.Direction != transition.AdmittedDirection ||
             current.CastleGate?.Opened != true ||
-            (current.Map == new MapId(OriginalMapRuntimeAdmission.Map20Id) && current.PalaceFirstVisit is null))
+            (current.Map == new MapId(OriginalMapRuntimeAdmission.Map20Id) && current.PalaceFirstVisit is null) ||
+            (ReferenceEquals(transition, current.Definition.WestTowerMap20Transition) &&
+                (current.PalaceFirstVisit is null || current.AstralAcceptance is null)))
         {
             return false;
         }

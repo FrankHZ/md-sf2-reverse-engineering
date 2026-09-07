@@ -67,6 +67,7 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
                 PrivateCanonicalMap3ImportReader.RoyalMap20TransitionCapability,
                 OriginalMapRuntimeAdmission.PalaceFirstVisitCapability,
                 OriginalMapRuntimeAdmission.RoyalReturnMap19TransitionCapability,
+                OriginalMapRuntimeAdmission.WestTowerMap20TransitionCapability,
             },
             accepted.Receipt.Capabilities);
         Assert.Equal(new MapId("map3"), accepted.Definition.Map);
@@ -1222,6 +1223,56 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         Assert.Equal(new MapPosition(16, 5), CompleteMove(ExplorationDirection.North).Move.Snapshot.PlayerPosition);
         Assert.Same(completion, session.PrivateOriginalMapSnapshot.AstralAcceptance);
 
+        JsonElement towerRoute = fixture.RootElement.GetProperty("static").GetProperty("routeGraph")
+            .GetProperty("segments").EnumerateArray()
+            .Single(segment => segment.GetProperty("id").GetString() == "map19-astral-to-west-tower-warp");
+        Assert.Equal(15, towerRoute.GetProperty("inputs").GetArrayLength());
+        var released = session.PrivateOriginalMapSnapshot;
+        for (int index = 1; index < 15; index++)
+        {
+            JsonElement from = towerRoute.GetProperty("points")[index];
+            Assert.Equal(new MapPosition(from[0].GetInt32(), from[1].GetInt32()),
+                session.PrivateOriginalMapSnapshot.PlayerPosition);
+            ExplorationDirection direction = towerRoute.GetProperty("inputs")[index].GetString() switch
+            {
+                "Up" => ExplorationDirection.North,
+                "Left" => ExplorationDirection.West,
+                "Right" => ExplorationDirection.East,
+                _ => throw new InvalidOperationException("Unexpected west-tower route input."),
+            };
+            var move = CompleteMove(direction).Move;
+            Assert.Same(completion, move.Snapshot.AstralAcceptance);
+            Assert.Same(applied.Receipt, move.Snapshot.PalaceFirstVisit);
+            Assert.Same(released.Zone601, move.Snapshot.Zone601);
+            Assert.Same(released.Sarah, move.Snapshot.Sarah);
+            Assert.Same(released.Entity142, move.Snapshot.Entity142);
+            Assert.Same(released.MessengerAcceptance, move.Snapshot.MessengerAcceptance);
+            Assert.Same(released.CastleGate, move.Snapshot.CastleGate);
+            Assert.Same(bridge, session.PrivateOriginalMapBattleBridge);
+            if (index < 14)
+            {
+                Assert.Null(move.CrossMapTransition);
+                Assert.Equal(new MapId("map19"), move.Snapshot.Map);
+                JsonElement to = towerRoute.GetProperty("points")[index + 1];
+                Assert.Equal(new MapPosition(to[0].GetInt32(), to[1].GetInt32()), move.Snapshot.PlayerPosition);
+            }
+            else
+            {
+                var warp = Assert.IsType<PrivateOriginalMapCrossMapTransitionReceipt>(move.CrossMapTransition);
+                Assert.Equal(OriginalMapRuntimeAdmission.WestTowerMap20TransitionCapability, warp.Capability);
+                Assert.Equal(1, warp.RecordIdentity.OneBasedRecordOrdinal);
+                Assert.Equal(new MapPosition(6, 2), warp.Trigger);
+                Assert.Equal(new MapId("map20"), move.Snapshot.Map);
+                Assert.Equal(new MapPosition(6, 37), move.Snapshot.PlayerPosition);
+                Assert.Equal(new OriginalMapAreaRecordIdentity("Map20s2_Areas", 2), move.Snapshot.CurrentAreaDefinition.Identity);
+                Assert.Equal((byte)0, warp.DestinationOpaqueFacing);
+                Assert.Equal((byte)0, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+                Assert.Equal(PrivateOriginalMapPlayerLocomotionPhase.Relocated, session.PrivateOriginalMapPlayerLocomotion.Phase);
+                Assert.False(session.PrivateOriginalMapPlayerLocomotion.IsMoving);
+                Assert.Same(definition.RuntimeCatalog.Resolve(new MapId("map20")), move.Snapshot.CurrentRuntime);
+            }
+        }
+        Assert.Equal(released.SimulationStep + 14, session.PrivateOriginalMapSnapshot.SimulationStep);
     }
 
     private static OriginalMapImportResult Admit(JsonObject document)
@@ -1684,6 +1735,8 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         JsonArray words = Find("layouts", "Map19s1_Layout")["words"]!.AsArray();
         words[Index(22, 4)] = OriginalMapTraversal.RightStairMask;
         words[Index(23, 3)] = OriginalMapTraversal.RightStairMask | 0x1000;
+        words[Index(5, 3)] = OriginalMapTraversal.RightStairMask;
+        words[Index(6, 2)] = OriginalMapTraversal.RightStairMask | 0x1000;
         words[Index(29, 15)] = 0x1400;
         words[Index(25, 13)] = 0x1400;
         JsonObject warp = Find("warpEventTables", "Map19s6_WarpEvents");
@@ -1691,13 +1744,13 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         warp["sourceKind"] = "warpEvents";
         warp["records"] = JsonSerializer.SerializeToNode(Enumerable.Range(0, 7).Select(index => new
         {
-            trigger = Point(index == 1 ? 23 : 60, index == 1 ? 3 : index),
+            trigger = Point(index == 0 ? 6 : index == 1 ? 23 : 60, index == 0 ? 2 : index == 1 ? 3 : index),
             scrollMode = 0,
             retainsCoordinates = false,
             scrollDirection = (int?)null,
             targetMap = 20,
-            destination = Point(23, 37),
-            facing = 3,
+            destination = Point(index == 0 ? 6 : 23, 37),
+            facing = index == 0 ? 0 : 3,
             reserved = 0,
         }));
         JsonObject zone = Find("zoneEventHandlers", "ms_map19_ZoneEvents");
@@ -1723,6 +1776,64 @@ public sealed class PrivateCanonicalMap3ImportReaderTests
         table["records"]!.AsArray()[1]![field] = value;
         AssertCode(PrivateCanonicalMap3ImportReader.AdmitSemanticDocumentForTests(DocumentBytes(document)),
             OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Theory]
+    [InlineData("trigger")]
+    [InlineData("destination")]
+    [InlineData("targetMap")]
+    [InlineData("facing")]
+    [InlineData("scrollMode")]
+    [InlineData("retainsCoordinates")]
+    [InlineData("scrollDirection")]
+    [InlineData("reserved")]
+    [InlineData("record-order")]
+    public void WestTowerEntryRejectsChangedWarpMeaningBeforeRuntimeAdmission(string drift)
+    {
+        JsonObject document = SampleDocument();
+        JsonArray records = ResourceArray(document, "warpEventTables").OfType<JsonObject>()
+            .Single(row => row["id"]!.GetValue<string>() == "Map19s6_WarpEvents")["records"]!.AsArray();
+        JsonObject warp = records[0]!.AsObject();
+        switch (drift)
+        {
+            case "trigger": warp["trigger"]!["x"] = 7; break;
+            case "destination": warp["destination"]!["y"] = 38; break;
+            case "targetMap": warp["targetMap"] = 21; break;
+            case "facing": warp["facing"] = 3; break;
+            case "scrollMode": warp["scrollMode"] = 16; break;
+            case "retainsCoordinates": warp["retainsCoordinates"] = true; break;
+            case "scrollDirection": warp["scrollDirection"] = 0; break;
+            case "reserved": warp["reserved"] = 1; break;
+            case "record-order": records[0] = records[1]!.DeepClone(); break;
+        }
+        // Bypass only the outer fixed digest, so these checks exercise consumed source operands.
+        AssertCode(Admit(document), OriginalMapImportFailureCode.InvalidMapProjection);
+    }
+
+    [Fact]
+    public void WestTowerEntryBindsTheAcceptedStaticRouteAndDistinctRoyalRecord()
+    {
+        var definition = Assert.IsType<OriginalMapImportAccepted>(Admit(SampleDocument())).Definition;
+        var west = Assert.IsType<OriginalMapCrossMapTransitionDefinition>(definition.WestTowerMap20Transition);
+        Assert.True(OriginalMapRuntimeAdmission.HasExactAcceptedWestTowerMap20Transition(west));
+        Assert.NotEqual(west.Identity, definition.RoyalMap20Transition!.Identity);
+        string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+            "../../../../../../tests/fixtures/h2/map3-castle-battle-unlock-static-v1.json"));
+        using JsonDocument fixture = JsonDocument.Parse(File.ReadAllText(path));
+        JsonElement segments = fixture.RootElement.GetProperty("static").GetProperty("routeGraph").GetProperty("segments");
+        JsonElement edge = segments.EnumerateArray().Single(row => row.GetProperty("id").GetString() == "map19-to-map20-west-tower-warp");
+        JsonElement route = segments.EnumerateArray().Single(row => row.GetProperty("id").GetString() == "map19-astral-to-west-tower-warp");
+        Assert.Equal(15, route.GetProperty("inputs").GetArrayLength());
+        Assert.Equal("Right", route.GetProperty("inputs")[14].GetString());
+        Assert.Equal(west.AdmittedApproach.X, route.GetProperty("points")[14][0].GetInt32());
+        Assert.Equal(west.AdmittedApproach.Y, route.GetProperty("points")[14][1].GetInt32());
+        Assert.Equal(west.AdmittedTrigger.X, edge.GetProperty("from").GetProperty("point")[0].GetInt32());
+        Assert.Equal(west.AdmittedTrigger.Y, edge.GetProperty("from").GetProperty("point")[1].GetInt32());
+        Assert.Equal(20, edge.GetProperty("to").GetProperty("map").GetInt32());
+        Assert.Equal(west.Destination.X, edge.GetProperty("to").GetProperty("point")[0].GetInt32());
+        Assert.Equal(west.Destination.Y, edge.GetProperty("to").GetProperty("point")[1].GetInt32());
+        Assert.Equal("RIGHT", edge.GetProperty("to").GetProperty("facing").GetString());
+        Assert.Equal((byte)0, west.DestinationOpaqueFacing);
     }
 
     [Fact]
