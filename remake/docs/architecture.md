@@ -125,7 +125,21 @@ checks the battle flow stage before reading the closed exploration locomotion ge
 `PrivateBattle01Presenter` projects immutable live positions, terrain/range and preview data into
 24-pixel grid geometry. It owns no cursor, roster, RNG or turn state. Root hides the complete old
 Map40/HUD/synthetic canvas subtrees before attaching it. Existing I/J/K/L, Space and Backspace keys
-route once through the private battle poller; action choice accepts only cancellation.
+route once through the private battle poller; action choice accepts STAY or cancellation.
+
+`CommitPrivateOriginalBattle01Stay` requires the exact current snapshot and the accepted comparison
+party, then applies the named controlled unchanged-effective-stats policy. Domain checks the defeated
+wrapper's early return, empty death cleanup, both factions, no-effect after-turn admission, another
+empty cleanup and both factions again before advancing. It retains the same immutable stats and
+live roster/occupancy, clears `FirstControl`, and installs a `TurnCompletion` receipt with both counts.
+The movement range retains its actor's immutable entry stats for drift rejection; it is not a second
+stat authority. No generic stat refresh, death processing or action resolver is introduced.
+
+`FirstRound.CurrentTurnOffset` is a raw byte offset; `CurrentCandidate` uses offset divided by the
+two-byte entry size. Advancing from 0 to 2 shares the complete unchanged 64-slot order and preserves
+the historical `FirstCandidate`. `FirstPlayerTurnCompleted` stops before dispatching that candidate.
+The presenter shows completed actor and next candidate separately, with no current actor, range,
+path or cursor. Old battle and exploration inputs cannot reopen or advance the endpoint.
 
 When base art and Battle01 inputs are both requested, the existing catalog requires the separately
 accepted Map57 asset transaction and exact bucket. `PrivateBattle01BaseViewProjection` reads only
@@ -136,7 +150,7 @@ The 384-by-480 logical base maps the full 2x/4x raster with nearest sampling. No
 camera, parallel layout or position authority is created. All nine units remain diagnostic markers.
 The existing diagnostic mode remains available without requesting art. Missing/wrong requested art
 fails visibly; a failed base projection closes input without displaying a substitute battlefield.
-Original scene/layers, animation, VRAM persistence, fidelity and battle actions/turn completion remain
+Original scene/layers, animation, VRAM persistence, fidelity, other battle actions and later turns remain
 outside this consumer.
 
 Two areas currently concentrate more responsibility than the target shape:

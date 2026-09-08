@@ -32,9 +32,9 @@ internal static class PrivateBattle01Ui
             if (round is not PrivateOriginalBattle01FirstRoundEntered entered)
                 return "First round rejected: " + ((PrivateOriginalBattle01FirstRoundRejected)round).Diagnostic.Message;
             var order = entered.Snapshot.Battle.FirstRound!;
-            var candidate = order.Slots[order.CurrentTurnOffset];
-            if (candidate.IsSentinel) return "First control unavailable: current slot is sentinel.";
-            return session.EnterPrivateOriginalBattle01FirstControl(entered.Snapshot, candidate.CombatantIndex) switch
+            var candidate = order.CurrentCandidate;
+            if (candidate is null) return "First control unavailable: current slot is sentinel.";
+            return session.EnterPrivateOriginalBattle01FirstControl(entered.Snapshot, candidate.Value.CombatantIndex) switch
             {
                 PrivateOriginalBattle01FirstControlEntered => "First player ready. Select a reachable tile.",
                 PrivateOriginalBattle01FirstControlUnavailable unavailable =>
@@ -45,13 +45,24 @@ internal static class PrivateBattle01Ui
             };
         }
 
+        if (current.Battle.TurnCompletion is not null)
+            return "STAY already complete. Next candidate is not dispatched.";
         if (current.Battle.FirstControl is not { } control)
             return "Current battle retained. First player control is unavailable; relaunch starts Map 3.";
         if (input == PrivateBattle01Input.Enter)
             return "Battle already initialized; current actor and round retained.";
-        if (control.Movement.Stage == Battle01PlayerMovementStage.ActionChoice &&
-            input != PrivateBattle01Input.Cancel)
-            return "Action choice: only Backspace cancel is connected.";
+        if (control.Movement.Stage == Battle01PlayerMovementStage.ActionChoice)
+        {
+            if (input == PrivateBattle01Input.Confirm)
+                return session.CommitPrivateOriginalBattle01Stay(current, control.ActorIndex) switch
+                {
+                    PrivateOriginalBattle01StayCommitted => "STAY complete. Next candidate is not dispatched.",
+                    PrivateOriginalBattle01TurnCompletionRejected rejected => "STAY rejected: " + rejected.Diagnostic.Message,
+                    _ => "STAY unavailable.",
+                };
+            if (input != PrivateBattle01Input.Cancel)
+                return "Action choice: Space commits STAY; Backspace cancels.";
+        }
 
         PrivateOriginalBattle01PlayerMovementResult result;
         if (input == PrivateBattle01Input.Confirm)

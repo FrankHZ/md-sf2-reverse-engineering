@@ -116,12 +116,14 @@ filter `FullyQualifiedName~PrivateOriginalBattle01StartupReaderTests` with
 `SF2_REQUIRE_PRIVATE_TESTS=1`. The additional required test seeds a completed controlled Map40 route
 through accepted test-only factories, issues ordinary moves to exact Pending, reads the selected
 inputs and calls the real session initializer followed by `EnterPrivateOriginalBattle01FirstRound`,
-`EnterPrivateOriginalBattle01FirstControl` and the public movement select/confirm/cancel APIs.
+`EnterPrivateOriginalBattle01FirstControl`, movement select/confirm/cancel and `CommitPrivateOriginalBattle01Stay`.
 It verifies the nine-unit projection, immutable terrain/occupancy, computed enemy ATT, activation bits
 and active/tested-region distinction, the complete ordered buffer/current offset and final RNG image,
 input preservation and duplicate rejection. The real class/status/MOV and named activation-word policy
 feed the control entry; a cost2 move from (9,18) to (9,17), blocked (9,19) rejection, provisional
-occupancy and cancel restoration exercise the complete API chain. Only shared player-ready fixture
+occupancy, cancel restoration and a subsequent STAY exercise the complete API chain. STAY must retain
+nine units and seed0xA4991234, advance raw byte offset0 to2 and expose next candidate2 without
+dispatch. Only shared player-ready fixture
 fields are compared; the test does not claim original control execution, elapsed time or RNG chronology.
 This seed is explicit and is not a natural Map3-continuity claim. Missing any selected dependency
 fails; no private assertions are silently omitted.
@@ -153,11 +155,20 @@ cost10 route, direction replay, terminators, return to origin and current/source
 it is not an original move-string or H4 compatibility test. Use the committed planner
 for subsequent .NET and official Godot selection.
 
+STAY ownership is `FullyQualifiedName~Battle01TurnCompletionTests` in Domain and
+`FullyQualifiedName~PrivateOriginalBattle01TurnCompletionTests` in Application. These cover the
+retained provisional position and immutable stats, both continuing-faction results, missing/changed
+policy inputs, status/equipment/placement/occupancy rejection, byte-offset selection and next-slot
+sentinel preservation. Exact-current application checks close stale/foreign/duplicate/wrong-phase
+requests and old movement/control/round entry. Use the required selected-input test above for the
+actual full chain; no optional skip substitutes for it.
+
 The thin Battle01 Godot consumer adds the focused Godot filters
 `Map3RuntimeProfileSelectionTests|Map3InputAdapterTests|PrivateMap3PresenterTests|PrivateBattle01PresenterTests`
 (each prefixed by `FullyQualifiedName~`). They cover all-or-none/private-only/path-free admission,
 old callback isolation, current phase, a deliberately authored actor2 first candidate, live versus
-deployment position, path/cost projection and confirm/cancel controls.
+deployment position, path/cost projection, confirm/cancel/STAY controls and the completed actor versus
+undispatched candidate without old range/path/cursor.
 Pair them with the required selected-input Content class above, the locked solution and official
 seven-step Godot gate. Native acceptance uses the existing probe's explicit Battle01 mode:
 [launch and bounded recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
@@ -165,7 +176,11 @@ It seeds Map40 once, drives the 28-input Pending route and N/I/Space/Backspace t
 physical-key input events, captures Pending/ready/selected/provisional/cancelled/rejected frames,
 and checks snapshot/occupancy/RNG/offset retention and old-layer/input isolation. Inspect the images
 for overlap and clipping in addition to the receipt. This mode does not replay the old twelve frames
-or assert natural Map3 continuity, original scene fidelity, action completion or H3/H4 closure.
+or assert natural Map3 continuity, original scene fidelity or H3/H4 closure. For first STAY
+completion, use only the bounded `stay` mode after the owning managed gates: three captures at
+provisional action choice, completed STAY and the closed-input endpoint. The same real key adapter
+must retain live placement, show the actual next candidate at byte offset2 without dispatch, and
+reject old battle/exploration keys. Do not replay earlier native modes solely for a new commit.
 
 For the Map57 base consumer, add focused `PrivateBattle01BaseViewProjectionTests`,
 `PrivateOriginalMapBaseViewportTests` and `PrivateLocalPresentationAssetCatalogTests`. They cover

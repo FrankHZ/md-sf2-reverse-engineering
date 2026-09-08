@@ -48,7 +48,7 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Equal(new MapPosition(2, 2), action.Units.Single(unit => unit.Index == 2).Position);
         Assert.Equal(new MapPosition(2, 1), confirmed.Roster[2].Deployment.Position);
         Assert.False(action.CanConfirm);
-        Assert.DoesNotContain("Space", action.Controls);
+        Assert.Contains("Space: STAY", action.Controls);
         Assert.Contains("Backspace", action.Controls);
         var cancelled = Battle01PlayerMovement.Cancel(confirmed, 2);
         var restored = PrivateBattle01Presenter.BuildProjection(cancelled, "cancelled");
@@ -94,6 +94,21 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Equal(24, PrivateBattle01Presenter.Cell(selected.Cursor!).Y -
             PrivateBattle01Presenter.Cell(selected.Units.Single(unit => unit.Index == 2).Position).Y);
         Assert.Equal(PrivateBattle01Presenter.Cell(selected.Cursor!), PrivateBattle01Presenter.Cell(selected.Path[^1]));
+    }
+
+    [Fact]
+    public void CompletedStayShowsHistoricalActorAndUndispatchedCandidateWithoutOldInteraction()
+    {
+        var ready = Battle01FirstControl.Enter(Battle01FirstRound.Enter(AuthoredBattle()), 2).State!;
+        var action = Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(ready, 2, new(2, 2)), 2);
+        var completed = Battle01TurnCompletion.CommitStay(action, 2, Battle01StayCompletionPolicy.ControlledUnchangedEffectiveStats);
+        var view = PrivateBattle01Presenter.BuildProjection(completed, "STAY complete");
+        Assert.Null(view.ActorIndex); Assert.Equal(2, view.CompletedActorIndex);
+        Assert.Equal((int?)action.FirstRound!.Slots[1].CombatantIndex, view.NextCandidateIndex);
+        Assert.Equal(new MapPosition(2, 2), view.Units.Single(unit => unit.Index == 2).Position);
+        Assert.Null(view.Cursor); Assert.Empty(view.Path); Assert.Null(view.GridCost); Assert.Null(view.PathCost); Assert.Null(view.Budget);
+        Assert.All(view.Tiles, tile => { Assert.False(tile.Reachable); Assert.False(tile.CanStop); });
+        Assert.False(view.CanConfirm); Assert.DoesNotContain("Space", view.Controls); Assert.Contains("Next unit has not acted", view.Controls);
     }
 
     // Public authored geometry and party, deliberately with actor 2 as the first candidate.

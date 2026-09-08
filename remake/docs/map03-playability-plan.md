@@ -514,7 +514,8 @@ the source owner names the H2 reproduction, and this slice does not run new H3/H
 ## Ordered Queue
 
 Current controlled play reaches diagnostic Battle 01 first-player movement, provisional confirmation
-and cancellation through the explicit selected-input N entry at Pending. The manual battle bridge
+and cancellation through the explicit selected-input N entry at Pending, followed by one controlled
+no-effect STAY completion before the next candidate is dispatched. The manual battle bridge
 remains public-synthetic. An explicit base-atlas launch now shows reviewed fixed Map57 base art with
 diagnostic units. Natural castle continuity, original Map57 presentation fidelity and complete
 Battle 01 play remain **Unknown**.
@@ -1006,7 +1007,51 @@ order, flags and current actor unchanged. Valid movement preserves image `0xA499
 offset0; it does not reseed or rerun control/RNG/initialization. Old exploration remains closed, and
 a fresh session returns to controlled Map3. No action resolution, later actor/round, AI execution or
 victory is implemented. The Godot consumer renders `FirstControl.Movement` and calls the
-three movement facades, retaining this one battle authority and exposing the action-choice stop.
+three movement facades, retaining this one battle authority. A separate STAY transition consumes
+action choice at the bounded endpoint below.
+
+### Implemented first-player STAY completion
+
+`CommitPrivateOriginalBattle01Stay(expectedSnapshot, actorIndex)` consumes only the first player's
+current `PlayerActionChoice`. It commits the already provisional live position and occupancy,
+removes `FirstControl`, and stops at `FirstPlayerTurnCompleted`. No second unit is dispatched.
+Wrong actor/phase, absent/foreign/stale snapshot and repeated STAY reject before session mutation;
+old select/confirm/cancel, control entry and round entry cannot reopen this endpoint.
+
+**Explicit controlled policy:** `battle01-controlled-stay-unchanged-effective-stats-v1` is a
+main-gate-approved remake input policy. Application admits only the already accepted player-ready
+comparison party. Domain requires the complete nine-unit living/placed roster, zero statuses,
+consistent occupancy, no equipped HOLY_STAFF/MYSTERY_STAFF/LIFE_RING recovery, and the same immutable
+actor stats held at control entry. Missing policy, changed stats/equipment or an unconsumed branch
+reject before commit. The no-effect seam retains effective stats as supplied; it neither reconstructs
+base stats nor stacks equipment or claims to execute general `UpdateCombatantStats`. Death cannot be
+constructed by the current initialized-stats admission; missing/dead/outcome or unsupported states
+must not be interpreted as a successful no-op. STAY constructs no battle scene or kill worklist and
+consumes no RNG.
+
+The [individual-turn contract](../../docs/design/contracts/battle-functions-control-flow.md#individual-turn-control),
+[post-action controller](../../docs/design/contracts/battle-control-lifecycle.md#post-action-and-after-turn-order),
+[defeated wrapper](../../docs/design/contracts/battle-cutscene-routing.md#enemy-defeated-admission-and-cleanup-tail)
+and [static finalization owner](../../docs/research/map3-battle01-turn-finalization.md) supply the ordered
+boundary: defeated wrapper, empty killed cleanup, faction/outcome check, controlled no-effect
+after-turn normalization, second empty cleanup, second faction/outcome check, then advance. In these
+fixed inputs Bowie is alive and enemy128 retains HP5, so the wrapper returns before script and tail.
+Both count results are recorded as allies3/enemies6; outcome branches are not completed here.
+
+Pinned `ShiningForceCentral/SF2DISASM` revision `c834c652b6862bc5679fd7f69a38a7093206efc6`,
+`disasm/code/gameflow/battle/battleloop_1.asm` individual-turn loop and `disasm/sf2enums.asm`
+`TURN_ORDER_ENTRY_SIZE` establish that `CURRENT_BATTLE_TURN` is a **byte offset**, with two bytes per
+entry. Offset0 becomes2, selecting `Slots[1]`, not `Slots[2]`. `FirstCandidate` remains historical;
+`CurrentCandidate` reads the actual offset without skipping sentinels or changing signed/tie order.
+The real admitted sequence yields completed actor1 and next candidate2. The complete 64 slots,
+seed image `0xA4991234`, all nine stats/positions, flags and provenance remain intact. The after-turn
+source owner is `disasm/code/gameflow/battle/battleloop/processafterturneffects.asm`; item IDs61/64/7C
+and equipped bit7 are bounded rejection facts, not an equipment/stat subsystem implementation.
+
+Original after-turn fidelity, status/passive effects, battle scenes, other actions, AI, next-unit
+control, later rounds, death/outcome resolution, natural continuity and H4 remain **Unknown** or
+unimplemented at their existing owners. The required actual-input test and bounded native `stay`
+mode verify this controlled endpoint, not original runtime execution.
 
 ### Controlled Godot Battle01 consumer
 
@@ -1034,10 +1079,12 @@ The right column holds status and controls; live units, range, legal stops, curr
 and costs/budget share the same 24-pixel grid. Units remain project-authored markers. Terrain is shown
 at the current cursor; without requested art, authored cells also show terrain IDs.
 I/J/K/L request adjacent cursor destinations; out-of-area and unreachable steps preserve state with
-an explanation. Space provisionally relocates only a legal stop. At `PlayerActionChoice`, only
-Backspace cancellation is connected. Backspace also cancels a selection to turn origin; repeated
-origin cancellation remains a rejection. No attack, spell, item, STAY, turn completion, AI,
-next actor/round, victory or original cancellation animation is introduced.
+an explanation. Space provisionally relocates only a legal stop. At `PlayerActionChoice`, a separate
+Space press commits STAY; Backspace still cancels before that commit. Backspace also cancels a
+selection to turn origin; repeated origin cancellation remains a rejection. After STAY the view
+shows the completed actor and actual next candidate, clears old range/path/cursor interaction and
+labels the next unit as not dispatched. No attack, spell, item, AI, next actor/round execution,
+victory or original cancellation animation is introduced.
 
 Root input and physics route on current battle authority before any closed exploration getter.
 Entering battle hides all old exploration/HUD/synthetic canvas subtrees. Fresh process/session
@@ -1071,7 +1118,8 @@ visual acceptance belong to [presentation and assets](./presentation-and-assets.
    control result remains unavailable at this bounded endpoint; never skip or reshuffle turn order. The accepted bridge-seeded player-ready H3 case is
    a bounded comparison input, not a naturally carried save or a universal “actor 1 first” rule.
    The API has deterministic semantic movement tests and the diagnostic consumer has a bounded native
-   input/capture recipe. Attack resolution, enemy turns, later rounds and victory remain later slices.
+   input/capture recipe. One no-effect STAY now closes the first turn under the policy above and stops
+   before next dispatch. Attack resolution, enemy turns, later rounds and victory remain later slices.
    The fixed Map57 atlas candidate now uses the palette8/unloaded-slot proof and controlled storage
    policy above. Its accepted local asset now feeds the fixed-layout Godot base composition;
    original scene/layers/VRAM/animation fidelity remains separate acceptance work.

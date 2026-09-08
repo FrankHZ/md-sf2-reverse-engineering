@@ -40,9 +40,9 @@ public static class Battle01FirstControl
     public static Battle01FirstControlTransition Enter(Battle01InitializedState current, int expectedActor)
     {
         ArgumentNullException.ThrowIfNull(current);
-        if (current.Phase != Battle01Phase.FirstRoundGenerated)
+        if (current.Phase != Battle01Phase.FirstRoundGenerated || current.FirstRound?.CurrentTurnOffset != 0)
             throw new ArgumentException("First control requires the generated round before player entry.", "phase");
-        var candidate = current.FirstRound!.FirstCandidate;
+        var candidate = current.FirstRound!.CurrentCandidate;
         if (candidate is null) return Unavailable(null, Battle01FirstControlAvailability.Sentinel);
         int index = candidate.Value.CombatantIndex;
         if (expectedActor != index) throw new ArgumentException("The request must name the current first candidate.", "actor");

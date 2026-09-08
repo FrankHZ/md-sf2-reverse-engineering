@@ -8,7 +8,7 @@ namespace Sf2.Remake.GodotAdapter;
 internal sealed record PrivateBattle01Tile(MapPosition Position, byte Terrain, bool Reachable, bool CanStop);
 internal sealed record PrivateBattle01Unit(int Index, MapPosition Position, ushort Hp);
 internal sealed record PrivateBattle01Projection(
-    Battle01Phase Phase, int Width, int Height, int? ActorIndex,
+    Battle01Phase Phase, int Width, int Height, int? ActorIndex, int? CompletedActorIndex, int? NextCandidateIndex,
     IReadOnlyList<PrivateBattle01Tile> Tiles, IReadOnlyList<PrivateBattle01Unit> Units,
     MapPosition? Cursor, IReadOnlyList<MapPosition> Path, int? GridCost, int? PathCost, int? Budget,
     bool CanConfirm, string Controls, string Status);
@@ -85,14 +85,17 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                 movement?.Range.Grid.CostAt(position) is not null,
                 movement?.Range.CanStopAt(position) == true));
         }
-        int? actor = control?.ActorIndex ?? battle.FirstRound?.FirstCandidate?.CombatantIndex;
+        var completion = battle.TurnCompletion;
+        int? actor = completion is null ? control?.ActorIndex ?? battle.FirstRound?.CurrentCandidate?.CombatantIndex : null;
         string controls = battle.Phase switch
         {
             Battle01Phase.PlayerMovementSelection => "I / J / K / L: cursor   Space: confirm   Backspace: cancel",
-            Battle01Phase.PlayerActionChoice => "Backspace: cancel relocation. Actions and turn completion are not connected.",
+            Battle01Phase.PlayerActionChoice => "Space: STAY and end this turn   Backspace: cancel relocation",
+            Battle01Phase.FirstPlayerTurnCompleted => "Input closed. Next unit has not acted. Relaunch starts Map 3.",
             _ => "Current battle retained. Relaunch starts Map 3.",
         };
-        return new(battle.Phase, battle.AreaWidth, battle.AreaHeight, actor, tiles.AsReadOnly(),
+        return new(battle.Phase, battle.AreaWidth, battle.AreaHeight, actor, completion?.CompletedActorIndex,
+            completion is null ? null : battle.FirstRound?.CurrentCandidate?.CombatantIndex, tiles.AsReadOnly(),
             Array.AsReadOnly(battle.Roster.Select(unit => new PrivateBattle01Unit(unit.Index, unit.Position, unit.Stats.HpCurrent)).ToArray()),
             movement?.Cursor, movement?.Preview.Positions ?? Array.Empty<MapPosition>(),
             movement?.GridCost, movement?.Preview.Cost, movement?.Range.Budget,
@@ -117,7 +120,11 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         var view = _projection;
         string cursor = view.Cursor is null ? "unavailable" : $"({view.Cursor.X},{view.Cursor.Y})";
         string terrain = view.Cursor is null ? "-" : battle.TerrainAt(view.Cursor).ToString("X2");
-        _details.Text = $"Stage: {view.Phase}\n" +
+        var completedPosition = battle.Roster.SingleOrDefault(unit => unit.Index == view.CompletedActorIndex)?.Position;
+        _details.Text = view.CompletedActorIndex is { } completed ?
+            $"Stage: {view.Phase}\nSTAY completed: {UnitTag(completed)} at ({completedPosition!.X},{completedPosition.Y})\n" +
+            $"Next candidate: {(view.NextCandidateIndex is { } next ? UnitTag(next) : "sentinel")} (not dispatched)\n" +
+            $"Turn byte offset: {battle.FirstRound!.CurrentTurnOffset}" : $"Stage: {view.Phase}\n" +
             $"Current actor: {view.ActorIndex?.ToString() ?? "-"}    Cursor: {cursor}    Terrain: {terrain}\n" +
             $"Grid cost: {view.GridCost?.ToString() ?? "-"}   Path cost: {view.PathCost?.ToString() ?? "-"}   Budget: {view.Budget?.ToString() ?? "-"}\n" +
             $"Confirm: {(view.CanConfirm ? "available" : "unavailable")}";
@@ -126,7 +133,8 @@ public sealed partial class PrivateBattle01Presenter : Node2D
         _allies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index < 128).Select(UnitLine));
         _enemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Take(3).Select(UnitLine));
         _remainingEnemies!.Text = string.Join("\n", view.Units.Where(unit => unit.Index >= 128).Skip(3).Select(UnitLine));
-        _status!.Text = "Teal: reachable  |  gold: actor / path\n" +
+        _status!.Text = view.CompletedActorIndex is not null ?
+            "Controlled no-effect STAY; effective stats retained.\n" + view.Status : "Teal: reachable  |  gold: actor / path\n" +
             (_baseView is null ? "Tile number: terrain ID; dots: legal stops\n" :
                 "Terrain: current cursor; dots: legal stops\n") + view.Status;
         _controls!.Text = view.Controls;
