@@ -517,7 +517,16 @@ Map 21 switches to its independent atlas and retains the controlled undirected g
 The [native image review](./presentation-and-assets.md#reproduce-the-bounded-native-image-review)
 owns its eleven-frame seeded projection check and the precise distinction from natural reach/H4.
 
-1. Build and review the independent Map 40 atlas/display family (palette 3, slots [94,95,96,97,58]).
+The fixed Map 40 candidate builder now owns palette 3 and slots `[94,95,96,97,58]` through the
+existing source/palette/PNG pipeline. It produces a fresh ignored five-file candidate, with a
+128-by-320 master and exact nearest 2x/4x buckets, for independent pixel and asset review.
+The [presentation owner](./presentation-and-assets.md) defines its IDs, source bytes, CLI and
+acceptance boundary. Its parameterized public tests distinguish actual palette-3 bytes from palette 0,
+check complete master/bucket pixels, reject source/header/metadata drift and exercise rollback.
+The accepted Map 40 runtime continues to show the diagnostic grid until asset acceptance and a
+separate consumer slice are complete.
+
+1. Independently review and accept the Map 40 atlas candidate, then bind its fixed display family.
    Natural map lifecycle and continuous Battle 01 admission remain separate acceptance work.
 
 ## Decision Rules
