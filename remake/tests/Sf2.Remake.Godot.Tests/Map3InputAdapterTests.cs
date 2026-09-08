@@ -10,6 +10,36 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class Map3InputAdapterTests
 {
+    [Theory]
+    [InlineData(Key.N, PrivateBattle01Input.Enter)]
+    [InlineData(Key.I, PrivateBattle01Input.North)]
+    [InlineData(Key.J, PrivateBattle01Input.West)]
+    [InlineData(Key.K, PrivateBattle01Input.South)]
+    [InlineData(Key.L, PrivateBattle01Input.East)]
+    [InlineData(Key.Space, PrivateBattle01Input.Confirm)]
+    [InlineData(Key.Backspace, PrivateBattle01Input.Cancel)]
+    [InlineData(Key.W, PrivateBattle01Input.None)]
+    [InlineData(Key.F, PrivateBattle01Input.None)]
+    [InlineData(Key.B, PrivateBattle01Input.None)]
+    [InlineData(Key.M, PrivateBattle01Input.None)]
+    public void Battle01PollingUsesExistingKeysWithoutDispatchingOldCallbacks(Key key, object expected)
+    {
+        ActionProbe probe = new();
+        string action = Map3InputAdapter.Bindings.Single(binding => binding.PhysicalKey == key).ActionName;
+        var adapter = new Map3InputAdapter(CreateRecordingActions(probe), candidate => candidate == action);
+        Assert.Equal((PrivateBattle01Input)expected, adapter.PollPrivateBattle01());
+        Assert.Equal(0, probe.TotalCalls);
+    }
+
+    [Fact]
+    public void Battle01PollingIgnoresExplorationPriorityAndConsumesOneBattleInput()
+    {
+        ActionProbe probe = new();
+        var adapter = new Map3InputAdapter(CreateRecordingActions(probe), _ => true);
+        Assert.Equal(PrivateBattle01Input.Enter, adapter.PollPrivateBattle01());
+        Assert.Equal(0, probe.TotalCalls);
+    }
+
     [Fact]
     public void BindingsPreserveExactActionAndKeyOrder()
     {

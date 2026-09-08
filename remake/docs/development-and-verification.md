@@ -150,8 +150,21 @@ including LIFO expansion, budget128 bucket wrap and flat row-edge behavior, with
 The source-mask counterexample checks the explicitly controlled preview policy with a complete
 cost10 route, direction replay, terminators, return to origin and current/source position separation;
 it is not an original move-string or H4 compatibility test. Use the committed planner
-for subsequent .NET and official Godot selection. This API-only boundary adds no native image review
-and does not rerun the already accepted twelve-frame pending-admission recipe or any H3/H4 seam.
+for subsequent .NET and official Godot selection.
+
+The thin Battle01 Godot consumer adds the focused Godot filters
+`Map3RuntimeProfileSelectionTests|Map3InputAdapterTests|PrivateMap3PresenterTests|PrivateBattle01PresenterTests`
+(each prefixed by `FullyQualifiedName~`). They cover all-or-none/private-only/path-free admission,
+old callback isolation, current phase, a deliberately authored actor2 first candidate, live versus
+deployment position, path/cost projection and confirm/cancel controls.
+Pair them with the required selected-input Content class above, the locked solution and official
+seven-step Godot gate. Native acceptance uses the existing probe's explicit Battle01 mode:
+[launch and bounded recipe](./presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
+It seeds Map40 once, drives the 28-input Pending route and N/I/Space/Backspace through real Godot
+physical-key input events, captures Pending/ready/selected/provisional/cancelled/rejected frames,
+and checks snapshot/occupancy/RNG/offset retention and old-layer/input isolation. Inspect the images
+for overlap and clipping in addition to the receipt. This mode does not replay the old twelve frames
+or assert natural Map3 continuity, original graphics, action completion or H3/H4 closure.
 
 ## Repository Planner
 

@@ -29,8 +29,12 @@ exploration commands close and Map 40 survives as frozen provenance. A separate 
 computes activation, the empty region-cutscene/spawn seams and the complete ordered turn buffer,
 then atomically replaces the current battle. The first-control API now selects the actual current
 player candidate and exposes terrain-weighted movement preview, provisional confirmation and cancel
-through the same session authority. This stops before committing a battle action; a Godot UI consumer
-remains pending. See the [player-control boundary](./docs/map03-playability-plan.md#implemented-controlled-first-player-api).
+through the same session authority. With all three explicit private Battle 01 input paths selected,
+N at Pending connects this chain to a diagnostic Map 57 grid. I/J/K/L select, Space provisionally
+confirms movement, and Backspace cancels. The view shows nine live unit positions, terrain, range,
+path and costs; original Map 57 graphics are unavailable. It stops at player action choice without
+committing an action or turn. See the [native consumer](./docs/map03-playability-plan.md#controlled-godot-battle01-consumer)
+and its [launch options](./docs/presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
 The fixed private canonical import also admits the controlled setup's ordered entity population as
 immutable, source-shaped Application data. The private session snapshot exposes that same population
 without creating mutable NPC state. Coordinates are masked only into typed map positions; facing,
@@ -350,8 +354,10 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
   state, while naming destination Map 57 `(8,18)`/UP and candidate Battle 1. Its explicit new-battle
   preset supplies F501/F88/F451 clear and requires the completed guard StoryFlag1/F401. The separate
   Map 57 destination preserves null setup/animation and does not extend the five exploration runtimes.
-  Further actions are blocked; restart the private launch to return to Map 3. Battle initialization,
-  Map 57 rendering and the first controllable turn remain separate work. See the
+  With explicit Battle 01 inputs, N prepares and initializes the controlled diagnostic battlefield,
+  generates the first round and enters supported first-player control. Without those options,
+  Pending remains the endpoint. Relaunch returns to Map 3. Original Map 57 graphics, action/turn
+  completion and natural continuity remain open. See the
   [pending boundary and focused checks](./docs/map03-playability-plan.md#implemented-boundary-visible-pending-admission-before-relocation).
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
   ignored and local. None is committed, uploaded, or embedded in the public package.

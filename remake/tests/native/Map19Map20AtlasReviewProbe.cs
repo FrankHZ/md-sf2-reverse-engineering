@@ -6,6 +6,7 @@ using Godot;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Content;
 
 namespace Sf2.Remake.GodotAdapter;
@@ -34,6 +35,13 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             root.ProcessMode = ProcessModeEnum.Disabled;
             _session = Field<GameSession>(root, "_session");
             _presenter = Field<PrivateMap3Presenter>(root, "_privatePresenter");
+            if (Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "1")
+            {
+                await ReviewBattle01Control();
+                _fixture.Dispose();
+                GetTree().Quit();
+                return;
+            }
             await Capture("01-map3", "map3", null);
 
             SeedMap19();
@@ -103,6 +111,156 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
                 File.WriteAllText(Path.Combine(_output, "failure.txt"), error.ToString());
             GD.PushError($"SF2_CASTLE_ATLAS_NATIVE_REVIEW Fail {error.GetType().Name}");
             GetTree().Quit(1);
+        }
+    }
+
+    private async Task ReviewBattle01Control()
+    {
+        var initial = _session.PrivateOriginalMapSnapshot;
+        var definition = initial.Definition;
+        var runtime = definition.RuntimeCatalog.Resolve(new MapId("map40"));
+        static T Receipt<T>(params object[] args) => (T)Activator.CreateInstance(typeof(T),
+            BindingFlags.Instance | BindingFlags.NonPublic, null, args, null)!;
+        // Explicit controlled Map40 entry seed. All subsequent moves and battle operations
+        // pass through real Godot Input events, Map3Root polling and Application APIs.
+        var entry = new PrivateOriginalMapSessionSnapshot(definition, initial.Receipt, runtime.WorkingLayout,
+            5, new(14, 14), runtime.Traversal.TryMove(runtime.WorkingLayout, new(14, 15), ExplorationDirection.North),
+            false, null,
+            zone601: State<PrivateOriginalMapZone601State>("AstralZoneRepositioned", definition.Zone601!, definition.AstralZone!),
+            sarah: State<PrivateOriginalMapSarahState>("MessengerFollowerReady", definition.Sarah!, definition.AstralZone!, definition.MessengerAcceptance!),
+            entity142: State<PrivateOriginalMapEntity142State>("ReleaseRouteOccupancy", definition.Entity142!,
+                State<PrivateOriginalMapEntity142State>("Acknowledged", definition.Entity142!, 1L), definition.MessengerAcceptance!),
+            castleGate: State<PrivateOriginalMapCastleGateState>("Completed", definition.CastleGate!),
+            currentRuntime: runtime,
+            palaceFirstVisit: Receipt<PrivateOriginalMapPalaceFirstVisitReceipt>(definition.PalaceFirstVisit!, 2L),
+            astralAcceptance: Receipt<PrivateOriginalMapAstralAcceptanceState>(definition.AstralAcceptance!, 3L),
+            middleTowerGuard: Receipt<PrivateOriginalMapMiddleTowerGuardReceipt>(definition.MiddleTowerGuard!, 4L));
+        typeof(GameSession).GetField("_privateOriginalMapSnapshot", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(_session, entry);
+        typeof(GameSession).GetField("_privateOriginalMapPlayerLocomotion", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(_session,
+            State<PrivateOriginalMapPlayerLocomotionSnapshot>("ControlledAdmission", entry.PlayerPosition));
+        _presenter.Project(entry, "Controlled Map40 seed", _session.PrivateOriginalMapPlayerLocomotion);
+        _root.ProcessMode = ProcessModeEnum.Inherit;
+        using var fixture = JsonDocument.Parse(File.ReadAllText(RequiredPath("SF2_MAP40_REVIEW_FIXTURE")));
+        var route = fixture.RootElement.GetProperty("static").GetProperty("extensionRoute").GetProperty("segments")[2];
+        Require(route.GetProperty("id").GetString() == "map40-entry-to-wildcard-battle-warp" &&
+            route.GetProperty("inputs").GetArrayLength() == 28, "Bounded Map40 route identity");
+        for (int index = 0; index < 28; index++)
+        {
+            var point = route.GetProperty("points")[index];
+            Require(_session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(point[0].GetInt32(), point[1].GetInt32()),
+                "Godot movement source point");
+            Key key = route.GetProperty("inputs")[index].GetString() switch {
+                "Up" => Key.W, "Right" => Key.D, "Down" => Key.S, "Left" => Key.A,
+                _ => throw new InvalidOperationException("Unknown route input."),
+            };
+            await PressBattleKey(key);
+            for (int frame = 0; frame < 120 && _session.PrivateOriginalMapPlayerLocomotion.IsMoving; frame++)
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            Require(!_session.PrivateOriginalMapPlayerLocomotion.IsMoving, "Movement settles within bounded frames");
+        }
+        var pending = _session.PrivateOriginalBattle01Admission;
+        Require(pending is not null && _session.PrivateOriginalBattle01 is null &&
+            _session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(14, 13), "Actual Pending from Godot movement");
+        Require(Field<Label>(_presenter, "_status").Text.Contains("N: start controlled diagnostic"), "Visible explicit N admission");
+        await CaptureControl("01-pending");
+        await PressBattleKey(Key.N);
+        var ready = _session.PrivateOriginalBattle01!;
+        Require(ready is not null && _session.PrivateOriginalBattle01Admission is null &&
+            ready.Battle.Phase == Battle01Phase.PlayerMovementSelection, "N reaches real first control");
+        var battle = ready!.Battle;
+        int actor = battle.FirstControl!.ActorIndex;
+        var origin = battle.FirstControl.Movement.Range.Origin;
+        var destination = new MapPosition(origin.X, origin.Y - 1);
+        Require(battle.Roster.Count == 9 && origin == new MapPosition(9, 18) &&
+            battle.FirstRound!.Slots[battle.FirstRound.CurrentTurnOffset].CombatantIndex == actor, "Actual current candidate and nine units");
+        await CaptureControl("02-ready");
+        await PressBattleKey(Key.I);
+        var selected = _session.PrivateOriginalBattle01!;
+        Require(!ReferenceEquals(ready, selected) && selected.Battle.FirstControl!.Movement.Cursor == destination &&
+            selected.Battle.Roster.Single(unit => unit.Index == actor).Position == origin &&
+            selected.Battle.FirstControl.Movement.Preview.Cost == 2, "Godot I selects without relocating");
+        await CaptureControl("03-selected");
+        await PressBattleKey(Key.Space);
+        var moved = _session.PrivateOriginalBattle01!;
+        Require(moved.Battle.Phase == Battle01Phase.PlayerActionChoice &&
+            moved.Battle.Roster.Single(unit => unit.Index == actor).Position == destination &&
+            moved.Battle.OccupantAt(origin) == -1 && moved.Battle.OccupantAt(destination) == actor, "Godot Space provisional live relocation");
+        await CaptureControl("04-provisional");
+        foreach (Key key in new[] { Key.I, Key.Space, Key.W, Key.F, Key.B, Key.M, Key.N })
+        {
+            await PressBattleKey(key);
+            Require(ReferenceEquals(moved, _session.PrivateOriginalBattle01), "Action-choice boundary and old-input isolation");
+        }
+        await PressBattleKey(Key.Backspace);
+        var cancelled = _session.PrivateOriginalBattle01!;
+        Require(cancelled.Battle.Phase == Battle01Phase.PlayerMovementSelection &&
+            cancelled.Battle.Roster.Single(unit => unit.Index == actor).Position == origin &&
+            cancelled.Battle.Occupancy.SequenceEqual(battle.Occupancy), "Godot Backspace restores origin and occupancy");
+        await CaptureControl("05-cancelled");
+        await PressBattleKey(Key.K);
+        Require(ReferenceEquals(cancelled, _session.PrivateOriginalBattle01) &&
+            Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter").Projection!.Status.Contains("unreachable"),
+            "Illegal cursor input explains immutable rejection");
+        await CaptureControl("06-rejected");
+        await PressBattleKey(Key.Backspace);
+        Require(ReferenceEquals(cancelled, _session.PrivateOriginalBattle01), "Origin cancel rejects without replacement");
+        await PressBattleKey(Key.I);
+        await PressBattleKey(Key.Backspace);
+        var final = _session.PrivateOriginalBattle01!;
+        Require(final.Battle.FirstControl!.Movement.Cursor == origin && final.Battle.Occupancy.SequenceEqual(battle.Occupancy) &&
+            final.Battle.RandomSeedImage == battle.RandomSeedImage && ReferenceEquals(final.Battle.FirstRound, battle.FirstRound) &&
+            final.Battle.FirstRound!.CurrentTurnOffset == 0 && ReferenceEquals(final.Preparation, ready.Preparation) &&
+            ReferenceEquals(final.SourceSnapshot, pending!.SourceSnapshot), "Selection cancel, RNG, order, offset and provenance retained");
+        var oldCanvas = _root.GetChildren().OfType<CanvasItem>().Where(child => child is not PrivateBattle01Presenter).ToArray();
+        Require(oldCanvas.Length > 0 && oldCanvas.All(child => !child.Visible),
+            "All Map40, guard, overlay, HUD and synthetic canvas subtrees hidden");
+        File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
+            status = "Pass", scope = "controlled Map40 seed; real Godot physical-key Input events and production polling; natural Map3/H4 Unknown",
+            production = new[] { "Map3Root", "PrivateBattle01Composition", "Map3InputAdapter", "PrivateBattle01Presenter", "GameSession", "PrivateOriginalBattle01StartupReader" },
+            instrumentation = new[] { "existing private state factories for Map40 seed only", "Input.ParseInputEvent physical keys", "bounded ProcessFrame waits", "FramePostDraw/SavePng" },
+            committedMap40Inputs = 27, pendingMap40Inputs = 1, actor, origin, destination,
+            rng = battle.RandomSeedImage, offset = final.Battle.FirstRound.CurrentTurnOffset,
+            oldCanvasHidden = oldCanvas.Length, inputIsolation = "W F B M and action-choice I Space N preserve exact snapshot",
+            provisionalOccupancyChecked = true, bothCancelStagesChecked = true, frames = _frames,
+        }, new JsonSerializerOptions { WriteIndented = true }));
+        GD.Print("SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames=6 controlled-Map40-seed");
+    }
+
+    private async Task PressBattleKey(Key key)
+    {
+        Input.ParseInputEvent(new InputEventKey { PhysicalKeycode = key, Pressed = true });
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        Input.ParseInputEvent(new InputEventKey { PhysicalKeycode = key, Pressed = false });
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+    }
+
+    private async Task CaptureControl(string name)
+    {
+        await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+        using Image image = GetViewport().GetTexture().GetImage();
+        Require(!image.IsEmpty() && image.SavePng(Path.Combine(_output, name + ".png")) == Error.Ok, "Control native PNG");
+        if (_session.PrivateOriginalBattle01 is { } current)
+        {
+            var presenter = Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter");
+            var view = presenter.Projection!;
+            Require(view.Phase == current.Battle.Phase &&
+                view.Units.All(unit => unit.Position == current.Battle.Roster.Single(row => row.Index == unit.Index).Position),
+                "Visible projection matches live battle");
+            foreach (var label in presenter.GetChildren().OfType<Label>())
+                Require(label.GetLineCount() == label.GetVisibleLineCount() &&
+                    label.Position.Y + label.GetMinimumSize().Y <= 540, "All battlefield labels fit logical canvas");
+            _frames.Add(new { name, map = current.Map.Value, phase = view.Phase.ToString(), actor = view.ActorIndex,
+                cursor = view.Cursor, units = view.Units, path = view.Path, gridCost = view.GridCost, pathCost = view.PathCost,
+                budget = view.Budget, status = view.Status, controls = view.Controls, width = image.GetWidth(), height = image.GetHeight() });
+        }
+        else
+        {
+            var status = Field<Label>(_presenter, "_status");
+            Require(status.GetLineCount() == status.GetVisibleLineCount(), "Pending admission text visible");
+            _frames.Add(new { name, map = _session.PrivateOriginalCurrentMap.Value, phase = "Pending",
+                status = status.Text, width = image.GetWidth(), height = image.GetHeight() });
         }
     }
 

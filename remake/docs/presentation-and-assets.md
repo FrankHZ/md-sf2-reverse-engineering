@@ -804,6 +804,12 @@ steps = [
                 "--presentation-asset-commit=b41d12ddfb1704f3a0494c3d6ed23f866ff20dac",
                 "--presentation-manifest-sha256=5EE25EB32152F57E6022065BA484E7B0AF46FABA47DD20642FDEF793B0987281"]),
 ]
+if environment.get("SF2_BATTLE01_CONTROL_REVIEW") == "1":
+    steps[-1][1].extend([
+        "--private-battle01-data=" + environment["SF2_PRIVATE_BATTLE01_DATA"],
+        "--private-battle01-scene=" + environment["SF2_PRIVATE_BATTLE01_SCENE"],
+        "--private-battle01-terrain=" + environment["SF2_PRIVATE_BATTLE01_TERRAIN"],
+    ])
 receipts = []
 for name, command in steps:
     result = gate.run_bounded_process(name, command, cwd=game, environment=environment,
@@ -817,3 +823,48 @@ for name, command in steps:
     if not result.passed:
         raise SystemExit(1)
 ```
+
+## Diagnostic Battle01 launch and native review
+
+An ordinary private launch can additionally select these three inputs together, alongside its
+existing canonical import and optional reviewed exploration atlas options:
+
+```powershell
+# Each variable names an explicitly selected, existing fully qualified private input.
+$battleArgs = @(
+    "--private-battle01-data=$env:SF2_PRIVATE_BATTLE01_DATA"
+    "--private-battle01-scene=$env:SF2_PRIVATE_BATTLE01_SCENE"
+    "--private-battle01-terrain=$env:SF2_PRIVATE_BATTLE01_TERRAIN"
+)
+```
+
+Append these arguments after Godot's `--` separator to the private-local user arguments.
+The [selected-input owner](./development-and-verification.md#selected-battle01-startup-inputs)
+defines their fixed identities and required Content check. There is no default lookup, fallback
+fixture, copied canonical ROM, or new asset transaction. Missing/malformed input diagnostics display
+the admission stage without displaying selected paths. Syntax/profile rejection makes startup
+unavailable; file or payload rejection at N retains the current Pending.
+
+At the actual Map40 Pending, N starts the controlled Prepare/Initialize/FirstRound/FirstControl chain.
+I/J/K/L move its cursor, Space provisionally confirms movement and Backspace returns to the turn
+origin. The diagnostic Map57 grid shows raw terrain IDs, reachable/legal-stop cells, all nine live
+unit positions, actor, cursor, path and costs/budget. The heading explicitly marks controlled inputs
+and unavailable original Map57 graphics. Action choice offers cancellation only. The complete old
+Map40/HUD/synthetic canvas subtrees are hidden; relaunch starts Map3.
+
+For this boundary, reuse the bounded recipe immediately above with
+`SF2_BATTLE01_CONTROL_REVIEW=1` and the three selected-input environment variables set.
+Choose a fresh ignored `SF2_CASTLE_REVIEW_ROOT` and the editor from the owning official toolchain gate.
+This mode compiles the same tracked probe into the exact committed source copy, seeds controlled
+Map40 entry through existing test-owned factories, and drives the 27 committed moves plus prospective
+Pending move through `Input.ParseInputEvent` physical keys and real production polling. It then
+injects N/I/Space/Backspace and illegal/old keys through the same path. It does not call Domain
+battle transitions directly or replay the unrelated twelve-frame castle recipe.
+
+Require six captures: Pending, ready, selected, provisional, cancelled and rejected. Inspect them
+for text clipping, path/actor distinction and retained map/guard/overlay layers. The receipt checks
+actual snapshot/actor/live-position/occupancy changes, both cancel stages, immutable rejection,
+unchanged RNG/order/current offset, all old canvas subtrees hidden, and closed exploration inputs.
+The existing bounded process runner retains 120-second step limits, job termination/reap evidence
+and private failure output. This is controlled seeded native UI evidence; natural Map3 continuity,
+original Map57 art, original scene/timing, battle actions, later turns/victory and H4 remain Unknown.
