@@ -6,6 +6,7 @@ using Godot;
 using Sf2.Remake.Application.Content;
 using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Domain.Maps;
+using Sf2.Remake.Content;
 
 namespace Sf2.Remake.GodotAdapter;
 
@@ -265,38 +266,98 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             "Map40 retains completed route and manual bridge");
         _presenter.Project(snapshot, "Controlled native visual review", movement);
         var traversal = Field<PrivateOriginalMapTraversalViewport>(_presenter, "_viewport");
-        var retainedBase = Field<PrivateOriginalMapBaseViewport>(_presenter, "_baseViewport");
-        var projection = traversal.Projection!;
-        Require(traversal.Visible && !retainedBase.Visible && projection.Map == snapshot.Map &&
+        var baseViewport = Field<PrivateOriginalMapBaseViewport>(_presenter, "_baseViewport");
+        var projection = _presenter.BaseProjection!;
+        Require(!traversal.Visible && baseViewport.Visible && projection.Map == snapshot.Map &&
             projection.OriginX == 0 && projection.OriginY == 27 &&
             projection.PlayerColumn == 4 && projection.PlayerRow == 3 &&
-            projection.Cells.Count(cell => cell.IsPlayer) == 1 &&
-            projection.Cells.All(cell => !cell.IsMiddleTowerGuard && !cell.IsAstral) &&
-            snapshot.MiddleTowerGuardPosition is null, "Map40 diagnostic crop and no retained guard glyph");
+            baseViewport.LiveRouteActorProjection is null && snapshot.MiddleTowerGuardPosition is null &&
+            _presenter.Entity142DiagnosticProjection is null && !projection.StaticOverlayDiagnostic &&
+            !projection.CurrentAreaOverlay, "Map40 base crop and no retained actors or Map3 overlays");
+        Require(_presenter.BaseAtlasAssetId == PrivateLocalPresentationAssetCatalog.Map40BaseAtlasAssetId &&
+            _presenter.BaseAtlasBucketDigest == (_presenter.BaseAtlasScale == 2
+                ? PrivateLocalPresentationAssetCatalog.Map40BaseAtlas2xDigest
+                : PrivateLocalPresentationAssetCatalog.Map40BaseAtlas4xDigest) &&
+            _presenter.UsesRequiredBaseAtlasSampling, "Exact Map40 family and nearest bucket");
+        var camera = projection.Camera!;
+        var player = PrivateOriginalMapBaseViewport.PlayerLocomotionRect(projection, movement);
+        Require(camera.FocusPixelX == 4 * 24 && camera.FocusPixelY == 30 * 24 &&
+            player.Position == new Vector2(4 * 24, 3 * 24) &&
+            player.Position == new Vector2(camera.PlayerPixelX, camera.PlayerPixelY),
+            "Map40 camera and player use the relocated destination");
         var status = Field<Label>(_presenter, "_status");
-        Require(status.Position.Y == 450 && status.Position.Y > traversal.Position.Y + 7 * 48 &&
-            status.Text.StartsWith("Map 40 controlled arrival. Diagnostic view; init not executed.", StringComparison.Ordinal),
-            "Map40 diagnostic status below grid");
+        Require(status.Position.Y == 310 &&
+            status.Position.Y >= baseViewport.Position.Y + PrivateOriginalMapBaseViewProjection.PixelHeight &&
+            status.Text.StartsWith("Map 40 controlled arrival. Base atlas; init not executed.", StringComparison.Ordinal),
+            "Map40 atlas status below the base viewport");
+        VerifyMap40BucketPixels(snapshot, movement);
         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         using Image image = GetViewport().GetTexture().GetImage();
         Require(!image.IsEmpty() && image.GetWidth() >= 960 && image.GetHeight() >= 540, "Native Map40 image");
-        const string name = "11-map40-controlled-arrival-diagnostic";
+        const string name = "11-map40-base-atlas";
         Require(image.SavePng(Path.Combine(_output, name + ".png")) == Error.Ok, "Map40 PNG write");
-        Vector2 sample = traversal.GetViewportTransform() * traversal.GetGlobalTransform() *
-            new Vector2(projection.PlayerColumn * 48 + 23, projection.PlayerRow * 48 + 23);
-        Color playerPixel = image.GetPixel((int)sample.X, (int)sample.Y);
-        Color yellow = new("ffd166");
-        Require(Math.Abs(playerPixel.R - yellow.R) < 0.01f && Math.Abs(playerPixel.G - yellow.G) < 0.01f &&
-            Math.Abs(playerPixel.B - yellow.B) < 0.01f, "Actual diagnostic player pixel");
+        int checkedPixels = 0;
+        for (int y = 0; y < PrivateOriginalMapBaseViewProjection.PixelHeight; y++)
+        for (int x = 0; x < PrivateOriginalMapBaseViewProjection.PixelWidth; x++)
+        {
+            if (player.HasPoint(new Vector2(x, y))) continue;
+            int offset = ((y * projection.RasterScale * projection.RasterPixelWidth) + x * projection.RasterScale) * 4;
+            if (projection.RgbaBytes[offset + 3] != 255) continue;
+            Vector2 sample = baseViewport.GetViewportTransform() * baseViewport.GetGlobalTransform() * new Vector2(x + 0.25f, y + 0.25f);
+            Color actual = image.GetPixel((int)sample.X, (int)sample.Y);
+            Require(Math.Abs(actual.R * 255 - projection.RgbaBytes[offset]) < 1.1f &&
+                Math.Abs(actual.G * 255 - projection.RgbaBytes[offset + 1]) < 1.1f &&
+                Math.Abs(actual.B * 255 - projection.RgbaBytes[offset + 2]) < 1.1f,
+                "Actual Map40 rendered base pixel");
+            checkedPixels++;
+        }
+        Require(checkedPixels > 10000, "Substantial actual Map40 base pixel coverage");
         _frames.Add(new { name, map = snapshot.Map.Value, selectionMap = snapshot.CurrentRuntime.VisualResourceSelection.Map.Value,
             palette = snapshot.CurrentRuntime.VisualResourceSelection.PaletteIndex, tilesets = snapshot.CurrentRuntime.VisualResourceSelection.TilesetSlots,
             area = snapshot.CurrentArea.OneBasedRecordOrdinal, layout = snapshot.CurrentRuntime.DecodedLayoutDigest,
-            atlas = (string?)null, baseVisible = retainedBase.Visible, traversalVisible = traversal.Visible,
-            cameraOriginX = projection.OriginX, cameraOriginY = projection.OriginY, playerX = 4, playerY = 30,
+            atlas = _presenter.BaseAtlasAssetId, digest = _presenter.BaseAtlasBucketDigest,
+            baseVisible = baseViewport.Visible, traversalVisible = traversal.Visible,
+            cameraOriginX = projection.OriginX, cameraOriginY = projection.OriginY,
+            cameraFocusX = camera.FocusPixelX, cameraFocusY = camera.FocusPixelY,
+            playerPixelX = player.Position.X, playerPixelY = player.Position.Y, playerX = 4, playerY = 30,
             facing = movement.OpaqueFacing, statusY = status.Position.Y, status = status.Text,
             sourceMap = receipt!.RecordIdentity.SourceMap.Value, sourceRecord = receipt.RecordIdentity.OneBasedRecordOrdinal,
-            inputCount = 18, guardGlyphs = 0, playerPixel = playerPixel.ToHtml(),
+            inputCount = 18, guardGlyphs = 0, checkedPixels, verifiedBucketScales = new[] { 2, 4 },
             width = image.GetWidth(), height = image.GetHeight() });
+    }
+
+    private static void VerifyMap40BucketPixels(PrivateOriginalMapSessionSnapshot snapshot,
+        PrivateOriginalMapPlayerLocomotionSnapshot movement)
+    {
+        var reader = new LocalPresentationAssetPackReader(RequiredPath("SF2_PRIVATE_PRESENTATION_ASSET_ROOT"),
+            PrivateLocalPresentationAssetCatalog.Map3AssetRepositoryCommit);
+        var request = new LocalPresentationAssetPackRequest(LocalPresentationAssetPackAdmission.PackageId,
+            ContentProfile.PrivateLocal, LocalPresentationAssetPackAdmission.RepositoryId,
+            PrivateLocalPresentationAssetCatalog.Map3AssetRepositoryCommit,
+            PrivateLocalPresentationAssetCatalog.Map3AssetManifestDigest);
+        var accepted = (LocalPresentationAssetPackAccepted)reader.Admit(request);
+        var catalog = new PrivateLocalPresentationAssetCatalog(reader);
+        List<PrivateOriginalMapBaseViewProjection> projections = [];
+        foreach (int scale in new[] { 2, 4 })
+        {
+            var mounted = (PrivateLocalPresentationAssetMounted)catalog.MountMap40BaseAtlas(request, accepted, scale);
+            using Image atlas = new();
+            Require(atlas.LoadPngFromBuffer(mounted.Asset.CopyPngBytes()) == Error.Ok &&
+                atlas.GetFormat() == Image.Format.Rgba8 && atlas.GetWidth() == 128 * scale &&
+                atlas.GetHeight() == 320 * scale, "Actual accepted Map40 bucket decoded");
+            projections.Add(PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+                snapshot.CurrentRuntime.VisualResourceSelection, atlas.GetData(), scale, playerLocomotion: movement));
+        }
+        var two = projections[0];
+        var four = projections[1];
+        Require(two.OriginX == 0 && two.OriginY == 27 && four.OriginX == 0 && four.OriginY == 27,
+            "Both actual buckets retain the destination crop");
+        for (int y = 0; y < four.RasterPixelHeight; y++)
+        for (int x = 0; x < four.RasterPixelWidth; x++)
+        for (int channel = 0; channel < 4; channel++)
+            Require(four.RgbaBytes[(y * four.RasterPixelWidth + x) * 4 + channel] ==
+                two.RgbaBytes[((y / 2) * two.RasterPixelWidth + x / 2) * 4 + channel],
+                "Both accepted Map40 buckets project exact nearest-equivalent pixels");
     }
 
     private async Task CaptureMiddleTowerArrival()

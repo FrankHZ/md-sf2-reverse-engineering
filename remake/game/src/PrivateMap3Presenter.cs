@@ -103,7 +103,8 @@ internal sealed record PrivateMap3PresentationPlan(
     internal static string FormatStatus(
         PrivateOriginalMapSessionSnapshot snapshot,
         string outcome,
-        PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
+        PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null,
+        bool baseAtlasVisible = false)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         ArgumentException.ThrowIfNullOrWhiteSpace(outcome);
@@ -121,7 +122,7 @@ internal sealed record PrivateMap3PresentationPlan(
 
         if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map40Id)
         {
-            return "Map 40 controlled arrival. Diagnostic view; init not executed.\n" + status;
+            return $"Map 40 controlled arrival. {(baseAtlasVisible ? "Base atlas" : "Diagnostic view")}; init not executed.\n" + status;
         }
 
         if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map21Id)
@@ -281,6 +282,7 @@ internal sealed class PrivateMap3Presenter
     private PrivateLocalPresentationRasterMount? _map3Atlas;
     private PrivateLocalPresentationRasterMount? _castleAtlas;
     private PrivateLocalPresentationRasterMount? _map21Atlas;
+    private PrivateLocalPresentationRasterMount? _map40Atlas;
     private readonly PrivateMap3WorldTreatment _requestedWorldTreatment;
     private readonly bool _staticOverlayDiagnostic;
     private readonly bool _currentAreaOverlay;
@@ -426,12 +428,14 @@ internal sealed class PrivateMap3Presenter
         PrivateLocalPresentationRasterMount mount,
         PrivateLocalPresentationRasterMount castleMount,
         PrivateLocalPresentationRasterMount map21Mount,
+        PrivateLocalPresentationRasterMount map40Mount,
         PrivateOriginalMapSessionSnapshot snapshot,
         out PrivateLocalPresentationAssetMountDiagnostic? diagnostic)
     {
         ArgumentNullException.ThrowIfNull(mount);
         ArgumentNullException.ThrowIfNull(castleMount);
         ArgumentNullException.ThrowIfNull(map21Mount);
+        ArgumentNullException.ThrowIfNull(map40Mount);
         ArgumentNullException.ThrowIfNull(snapshot);
         if (_baseViewport is null)
         {
@@ -444,10 +448,12 @@ internal sealed class PrivateMap3Presenter
         if (!PrivateLocalPresentationAssetCatalog.IsExactCastleBaseAtlasBinding(
                 castleMount.Definition, castleMount.Bucket) ||
             !PrivateLocalPresentationAssetCatalog.IsExactMap21BaseAtlasBinding(
-                map21Mount.Definition, map21Mount.Bucket))
+                map21Mount.Definition, map21Mount.Bucket) ||
+            !PrivateLocalPresentationAssetCatalog.IsExactMap40BaseAtlasBinding(
+                map40Mount.Definition, map40Mount.Bucket))
         {
             diagnostic = new(PrivateLocalPresentationAssetMountFailureCode.InvalidBinding,
-                "The private castle and Map 21 atlases require their exact accepted bindings.");
+                "The private castle, Map 21, and Map 40 atlases require their exact accepted bindings.");
             return false;
         }
 
@@ -463,6 +469,7 @@ internal sealed class PrivateMap3Presenter
             _map3Atlas = mount;
             _castleAtlas = castleMount;
             _map21Atlas = map21Mount;
+            _map40Atlas = map40Mount;
         }
 
         return bound;
@@ -527,12 +534,12 @@ internal sealed class PrivateMap3Presenter
         PrivateOriginalMapPlayerLocomotionSnapshot? playerLocomotion = null)
     {
         bool map3 = snapshot.Map.Value == OriginalMapRuntimeAdmission.MapId;
-        bool map40Diagnostic = OriginalMapRuntimeAdmission.HasExactAcceptedMap40Runtime(snapshot.CurrentRuntime);
-        if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map40Id && !map40Diagnostic)
+        bool exactMap40 = OriginalMapRuntimeAdmission.HasExactAcceptedMap40Runtime(snapshot.CurrentRuntime);
+        if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map40Id && !exactMap40)
         {
-            throw new InvalidOperationException("Map 40 diagnostic projection requires its exact admitted runtime.");
+            throw new InvalidOperationException("Map 40 projection requires its exact admitted runtime.");
         }
-        if (_baseViewport is { UsesLocalAtlas: true } && !map40Diagnostic)
+        if (_baseViewport is { UsesLocalAtlas: true })
         {
             string? assetId = PrivateLocalPresentationAssetCatalog.BaseAtlasAssetIdForSelection(
                 snapshot.CurrentRuntime.VisualResourceSelection);
@@ -541,6 +548,7 @@ internal sealed class PrivateMap3Presenter
                 PrivateLocalPresentationAssetCatalog.Map3BaseAtlasAssetId => _map3Atlas,
                 PrivateLocalPresentationAssetCatalog.CastleBaseAtlasAssetId => _castleAtlas,
                 PrivateLocalPresentationAssetCatalog.Map21BaseAtlasAssetId => _map21Atlas,
+                PrivateLocalPresentationAssetCatalog.Map40BaseAtlasAssetId => _map40Atlas,
                 _ => null,
             };
             if (mount is null)
@@ -562,7 +570,8 @@ internal sealed class PrivateMap3Presenter
             _baseViewport is not null,
             _showTraversalOnInitialMap,
             _castleAtlas is not null,
-            _map21Atlas is not null);
+            _map21Atlas is not null,
+            _map40Atlas is not null);
         if (_viewport is not null)
         {
             _viewport.Visible = traversalVisible;
@@ -583,7 +592,8 @@ internal sealed class PrivateMap3Presenter
                 map3 && _currentAreaOverlay);
         }
 
-        _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome, playerLocomotion);
+        _status.Text = PrivateMap3PresentationPlan.FormatStatus(snapshot, outcome, playerLocomotion,
+            baseVisible && _baseViewport is { UsesLocalAtlas: true });
         _status.Position = new Vector2(StatusX, ProjectionStatusY(_viewport is not null && traversalVisible, _initialStatusY));
     }
 
@@ -596,14 +606,16 @@ internal sealed class PrivateMap3Presenter
         bool hasBaseViewport,
         bool showTraversalOnInitialMap,
         bool hasCastleAtlas = false,
-        bool hasMap21Atlas = false)
+        bool hasMap21Atlas = false,
+        bool hasMap40Atlas = false)
     {
         ArgumentNullException.ThrowIfNull(currentMap);
         ArgumentNullException.ThrowIfNull(initialMap);
         bool isInitialMap = currentMap == initialMap;
         bool baseVisible = hasBaseViewport && (isInitialMap ||
             (hasCastleAtlas && currentMap.Value is OriginalMapRuntimeAdmission.Map19Id or OriginalMapRuntimeAdmission.Map20Id) ||
-            (hasMap21Atlas && currentMap.Value == OriginalMapRuntimeAdmission.Map21Id));
+            (hasMap21Atlas && currentMap.Value == OriginalMapRuntimeAdmission.Map21Id) ||
+            (hasMap40Atlas && currentMap.Value == OriginalMapRuntimeAdmission.Map40Id));
         return (
             TraversalVisible: !baseVisible || (isInitialMap && showTraversalOnInitialMap),
             BaseVisible: baseVisible);

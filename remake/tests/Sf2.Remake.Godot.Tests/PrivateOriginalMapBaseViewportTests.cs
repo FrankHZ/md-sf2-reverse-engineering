@@ -8,6 +8,36 @@ namespace Sf2.Remake.Godot.Tests;
 
 public sealed class PrivateOriginalMapBaseViewportTests
 {
+    [Theory]
+    [InlineData(2, false)]
+    [InlineData(2, true)]
+    [InlineData(4, false)]
+    [InlineData(4, true)]
+    public void NorthMap40AtlasUsesArrivalCameraAndHidesPriorMapActorsAndOverlays(int scale, bool currentArea)
+    {
+        var snapshot = PrivateOriginalMapTraversalViewportTests.CrossMapSnapshot(northMap40: true);
+        var movement = PrivateMap3CameraProjectionTests.Relocate(new(9, 2), new(4, 30));
+        var projection = PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+            snapshot.CurrentRuntime.VisualResourceSelection, BuildNearestAtlas(VisualDefinition(), scale), scale,
+            staticOverlayDiagnostic: !currentArea, playerLocomotion: movement, currentAreaOverlay: currentArea);
+        Assert.Equal(new MapId("map40"), projection.Map);
+        Assert.Equal((0, 27), (projection.OriginX, projection.OriginY));
+        Assert.Equal((4, 3), (projection.PlayerColumn, projection.PlayerRow));
+        Assert.Equal((96, 720), (projection.Camera!.FocusPixelX, projection.Camera.FocusPixelY));
+        Assert.False(projection.StaticOverlayDiagnostic);
+        Assert.False(projection.CurrentAreaOverlay);
+        Assert.Equal(PrivateOriginalMapBaseViewport.PlayerReferenceRect(projection),
+            PrivateOriginalMapBaseViewport.PlayerLocomotionRect(projection, movement));
+        Assert.True(PrivateMap3Entity142DiagnosticProjection.TryCreate(snapshot, projection, out var entity));
+        Assert.Null(entity);
+        Assert.True(PrivateMap3LiveRouteActorGlyphProjection.TryCreate(snapshot, projection, out var actors));
+        Assert.Null(actors);
+        Assert.Throws<ArgumentException>(() => PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+            new(new("map40"), 0, [94, 95, 96, 97, 58]), BuildNearestAtlas(VisualDefinition(), scale), scale));
+        Assert.Throws<ArgumentException>(() => PrivateOriginalMapBaseViewProjection.CreateFromAtlas(snapshot,
+            new(new("map21"), 0, [6, 23, 44, 53, 8]), BuildNearestAtlas(VisualDefinition(), scale), scale));
+    }
+
     [Fact]
     public void RelocatedPlayerFrameUsesDestinationWithinTheCurrentCamera()
     {
