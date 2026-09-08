@@ -50,7 +50,7 @@ public sealed class PrivateBattle01BaseViewProjectionTests
     [Fact]
     public void UnusedCatalogSlotsAreAllowedButAnyReferencedUnloadedSlotRejects()
     {
-        var blocks = new OriginalMapBlockCatalog(new ushort[] { 0x100, 0x300, 0x380 }.Select((word, index) =>
+        var blocks = new OriginalMapBlockCatalog(new ushort[] { 0x27F, 0x280, 0x300 }.Select((word, index) =>
             new OriginalMapBlockDefinition(new("authored", index), Enumerable.Repeat(word, 9))));
         ushort[] words = new ushort[WorkingMapLayout.WordCount];
         PrivateBattle01BaseViewProjection.ValidateReferencedSlots(new(words), blocks);
