@@ -124,7 +124,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         // Explicit controlled Map40 entry seed. All subsequent moves and battle operations
         // pass through real Godot Input events, Map3Root polling and Application APIs.
         var entry = new PrivateOriginalMapSessionSnapshot(definition, initial.Receipt, runtime.WorkingLayout,
-            5, new(14, 14), runtime.Traversal.TryMove(runtime.WorkingLayout, new(14, 15), ExplorationDirection.North),
+            5, new(4, 30), runtime.Traversal.TryMove(runtime.WorkingLayout, new(4, 31), ExplorationDirection.North),
             false, null,
             zone601: State<PrivateOriginalMapZone601State>("AstralZoneRepositioned", definition.Zone601!, definition.AstralZone!),
             sarah: State<PrivateOriginalMapSarahState>("MessengerFollowerReady", definition.Sarah!, definition.AstralZone!, definition.MessengerAcceptance!),
@@ -148,7 +148,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         {
             var point = route.GetProperty("points")[index];
             Require(_session.PrivateOriginalMapSnapshot.PlayerPosition == new MapPosition(point[0].GetInt32(), point[1].GetInt32()),
-                "Godot movement source point");
+                $"Godot movement source point {index}: actual {_session.PrivateOriginalMapSnapshot.PlayerPosition.X},{_session.PrivateOriginalMapSnapshot.PlayerPosition.Y}; expected {point[0].GetInt32()},{point[1].GetInt32()}");
             Key key = route.GetProperty("inputs")[index].GetString() switch {
                 "Up" => Key.W, "Right" => Key.D, "Down" => Key.S, "Left" => Key.A,
                 _ => throw new InvalidOperationException("Unknown route input."),
