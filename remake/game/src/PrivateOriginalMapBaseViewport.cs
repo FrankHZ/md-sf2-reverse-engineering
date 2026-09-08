@@ -556,7 +556,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
 
         RenderLayoutRegion(
             renderedPixels,
-            snapshot,
+            snapshot.WorkingLayout,
+            snapshot.CurrentRuntime.BlockCatalog,
             originX,
             originY,
             renderedColumns,
@@ -569,7 +570,8 @@ internal sealed record PrivateOriginalMapBaseViewProjection
         {
             RenderLayoutRegion(
                 renderedPixels,
-                snapshot,
+                snapshot.WorkingLayout,
+                snapshot.CurrentRuntime.BlockCatalog,
                 checked(originX + overlayDeltaX),
                 checked(originY + overlayDeltaY),
                 renderedColumns,
@@ -608,9 +610,39 @@ internal sealed record PrivateOriginalMapBaseViewProjection
             pixels);
     }
 
+    // Shared atlas sampling for exploration crops and the fixed Battle01 area.
+    // Admission and unloaded-slot checks belong to the caller's projection.
+    internal static byte[] RenderAtlasRegion(
+        WorkingMapLayout layout, OriginalMapBlockCatalog blocks, IReadOnlyList<byte> atlas,
+        int scale, int originX, int originY, int columns, int rows)
+    {
+        ArgumentNullException.ThrowIfNull(layout);
+        ArgumentNullException.ThrowIfNull(blocks);
+        ArgumentNullException.ThrowIfNull(atlas);
+        if (!LocalPresentationAssetPackAdmission.BucketScales.Contains(scale))
+            throw new ArgumentOutOfRangeException(nameof(scale));
+        if (columns <= 0 || rows <= 0 || !IsWithinLayoutRegion(originX, originY, columns, rows))
+            throw new ArgumentOutOfRangeException(nameof(columns));
+        int atlasWidth = PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalWidth * scale;
+        if (atlas.Count != atlasWidth * PrivateLocalPresentationAssetCatalog.Map3BaseAtlasLogicalHeight * scale * 4)
+            throw new ArgumentException("The admitted atlas RGBA shape drifted.", nameof(atlas));
+        int width = columns * BlockPixelSize * scale;
+        byte[] pixels = new byte[width * rows * BlockPixelSize * scale * 4];
+        FillBackground(pixels);
+        RenderLayoutRegion(pixels, layout, blocks, originX, originY, columns, rows, scale, width,
+            transparentZeroBlock: false,
+            (slot, tile, row, column, subRow, subColumn) =>
+                ResolveAtlasPixel(atlas, scale, atlasWidth, slot, tile, row, column, subRow, subColumn));
+        return pixels;
+    }
+
+    internal static bool ReferencesUnloadedAtlasSlot(OriginalMapBlockDefinition block) =>
+        block.OpaqueWords.Any(word => (word & TileIndexMask) >= TileIndexOffset + 3 * TilesPerSlot);
+
     private static void RenderLayoutRegion(
         byte[] pixels,
-        PrivateOriginalMapSessionSnapshot snapshot,
+        WorkingMapLayout layout,
+        OriginalMapBlockCatalog blocks,
         int sourceOriginX,
         int sourceOriginY,
         int columnCount,
@@ -629,7 +661,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                     sourceOriginY + blockRow);
                 int linearIndex = checked(
                     (position.Y * WorkingMapLayout.ColumnCount) + position.X);
-                int blockIndex = snapshot.WorkingLayout.GetWord(linearIndex) &
+                int blockIndex = layout.GetWord(linearIndex) &
                     OriginalMapTraversal.LayoutBlockIndexMask;
                 if (transparentZeroBlock && blockIndex == 0)
                 {
@@ -637,7 +669,7 @@ internal sealed record PrivateOriginalMapBaseViewProjection
                 }
 
                 OriginalMapBlockDefinition block =
-                    snapshot.CurrentRuntime.BlockCatalog.Resolve(blockIndex);
+                    blocks.Resolve(blockIndex);
                 RenderBlock(
                     pixels,
                     blockColumn,

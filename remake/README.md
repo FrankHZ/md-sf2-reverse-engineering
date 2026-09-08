@@ -32,7 +32,9 @@ player candidate and exposes terrain-weighted movement preview, provisional conf
 through the same session authority. With all three explicit private Battle 01 input paths selected,
 N at Pending connects this chain to a diagnostic Map 57 grid. I/J/K/L select, Space provisionally
 confirms movement, and Backspace cancels. The view shows nine live unit positions, terrain, range,
-path and costs; original Map 57 graphics are unavailable. It stops at player action choice without
+path and costs. With the explicit base-atlas option, the reviewed fixed Map57 base art appears
+beneath diagnostic unit markers on a 24-pixel grid; without it, terrain cells remain diagnostic.
+It stops at player action choice without
 committing an action or turn. See the [native consumer](./docs/map03-playability-plan.md#controlled-godot-battle01-consumer)
 and its [launch options](./docs/presentation-and-assets.md#diagnostic-battle01-launch-and-native-review).
 The fixed private canonical import also admits the controlled setup's ordered entity population as
@@ -200,14 +202,21 @@ The reviewed local asset history now owns `hud.yes-no-window-frame`,
 `world.map3.player.locomotion.*`, and
 `world.map3.entity142.astral.up.two-half-reference`, plus
 `world.map19-20.base-tileset-atlas`, `world.map21.base-tileset-atlas`, and
-`world.map40.base-tileset-atlas`. The current eleven-asset pack is local commit
-`b41d12ddfb1704f3a0494c3d6ed23f866ff20dac`, tree
-`429636d9aa323411f79ad4ec00dc4ee421328e89`, with manifest SHA-256
-`5EE25EB32152F57E6022065BA484E7B0AF46FABA47DD20642FDEF793B0987281`. The atlas and player runtime
-buckets are reviewed nearest 2x/4x outputs. Explicit base-atlas startup requires all four fixed
+`world.map40.base-tileset-atlas` and `world.map57.base-tileset-atlas`. The current twelve-asset pack is local commit
+`3bf31fa02c4ca9ee04e06be1efc97bcc2bac5880`, tree
+`880d845e1368a87f185cb8bb18b7a3cc6d5882f2`, with manifest SHA-256
+`4F0F6BEFE809A3163704C6AAF4DC007A31B30D8DC8B58256DCE5AFF7BBAB0E40`. The atlas and player runtime
+buckets are reviewed nearest 2x/4x outputs. Explicit base-atlas startup requires all four exploration
 map families; Map 40 uses palette 3/slots `[94,95,96,97,58]` and its own atlas at the controlled
 `(4,30)`/UP arrival, crop `(0,27)`, with init still unexecuted. Traversal-only mode retains diagnostics;
 missing or mismatched Map 40 assets reject without a retained-map fallback.
+Selecting Battle01 inputs with the same base-atlas option also requires the exact Map57 atlas.
+Its fixed 16-by-20 area uses 24-pixel blocks and preserves full 2x/4x texels in the physical raster.
+The accepted source/policy is bound by the full manifest, and the catalog separately fixes each PNG
+identity. Missing Map57 art rejects visibly before startup; it cannot retain Map40 or report a
+diagnostic fallback as base-art success. Unused catalog blocks 1/2 contain unloaded-slot references;
+only the unchanged admitted layout is drawable. Original layers, VRAM persistence, animation and
+final fidelity remain Unknown. Live units remain authored diagnostic markers, not Map3 player art.
 Source and master material remain review/provenance inputs, not runtime files. The initial-reference frame remains a separate, narrower retained asset;
 the lower-level viewport can still project it when no locomotion mount is supplied. The explicit
 base-atlas composition mounts the three player two-half sheets through Application-owned locomotion
@@ -356,7 +365,7 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
   Map 57 destination preserves null setup/animation and does not extend the five exploration runtimes.
   With explicit Battle 01 inputs, N prepares and initializes the controlled diagnostic battlefield,
   generates the first round and enters supported first-player control. Without those options,
-  Pending remains the endpoint. Relaunch returns to Map 3. Original Map 57 graphics, action/turn
+  Pending remains the endpoint. Relaunch returns to Map 3. Original Map57 scene fidelity, action/turn
   completion and natural continuity remain open. See the
   [pending boundary and focused checks](./docs/map03-playability-plan.md#implemented-boundary-visible-pending-admission-before-relocation).
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain

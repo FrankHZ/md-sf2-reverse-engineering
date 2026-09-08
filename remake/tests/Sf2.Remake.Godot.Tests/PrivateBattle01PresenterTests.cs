@@ -79,6 +79,23 @@ public sealed class PrivateBattle01PresenterTests
         Assert.Contains("Original Map 57 graphics unavailable", PrivateBattle01Presenter.Boundary);
     }
 
+    [Fact]
+    public void BaseArtAndLiveOverlaysShareTheUnscaledTwentyFourPixelGrid()
+    {
+        Assert.Equal(24, PrivateBattle01Presenter.TileSize);
+        Assert.Equal(PrivateOriginalMapBaseViewProjection.BlockPixelSize, PrivateBattle01Presenter.TileSize);
+        var origin = PrivateBattle01Presenter.Cell(new(0, 0));
+        Assert.Equal(384, PrivateBattle01Presenter.Cell(new(16, 0)).X - origin.X);
+        Assert.Equal(480, PrivateBattle01Presenter.Cell(new(0, 20)).Y - origin.Y);
+        Assert.True(origin.Y + 480 <= 540);
+        Assert.Contains("DIAGNOSTIC UNITS", PrivateBattle01Presenter.BaseArtHeading);
+        var ready = Battle01FirstControl.Enter(Battle01FirstRound.Enter(AuthoredBattle()), 2).State!;
+        var selected = PrivateBattle01Presenter.BuildProjection(Battle01PlayerMovement.SelectDestination(ready, 2, new(2, 2)), "");
+        Assert.Equal(24, PrivateBattle01Presenter.Cell(selected.Cursor!).Y -
+            PrivateBattle01Presenter.Cell(selected.Units.Single(unit => unit.Index == 2).Position).Y);
+        Assert.Equal(PrivateBattle01Presenter.Cell(selected.Cursor!), PrivateBattle01Presenter.Cell(selected.Path[^1]));
+    }
+
     // Public authored geometry and party, deliberately with actor 2 as the first candidate.
     private static Battle01InitializedState AuthoredBattle()
     {

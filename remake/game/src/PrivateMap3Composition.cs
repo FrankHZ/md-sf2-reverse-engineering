@@ -473,6 +473,20 @@ public sealed partial class Map3Root
 
             map40Atlas = mountedMap40.Asset;
 
+            if (selection.Battle01Inputs is not null)
+            {
+                var map57Result = catalog.MountMap57BaseAtlas(packRequest, acceptedPack, effectivePhysicalScale);
+                if (map57Result is not PrivateLocalPresentationAssetMounted mountedMap57)
+                {
+                    var rejected = (PrivateLocalPresentationAssetMountRejected)map57Result;
+                    FailPrivateStartup(
+                        $"PrivateLocal Map 57 base art unavailable ({rejected.Diagnostic.Code}).",
+                        selection.PrivateSmokeRequested, "private-local");
+                    return false;
+                }
+                _privateBattle01Atlas = mountedMap57.Asset;
+            }
+
             PrivateLocalPresentationAssetMountResult playerResult =
                 catalog.MountMap3PlayerReference(
                     packRequest,

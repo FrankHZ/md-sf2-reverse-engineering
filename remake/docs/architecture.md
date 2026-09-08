@@ -74,8 +74,7 @@ alongside source locomotion and bridge. Its historical Exploration flow and Map4
 describe the current map. A new session starts at controlled Map3 without Pending or Battle01.
 No broad snapshot-reducer refactor or second mutable battle authority is introduced.
 
-This API has no Godot consumer yet. A later presenter must branch on private flow before reading an
-exploration snapshot; it must not label retained Map40 art as Map57. The initialization output is the
+The Godot consumer branches on private flow before reading an exploration snapshot. The initialization output is the
 next round-entry input, before activation, spawn admission, turn ordering or actor selection. Its
 fixed enemy difficulty and already-refreshed effective ally policies are recorded in the
 [owning plan](./map03-playability-plan.md#implemented-controlled-initialization).
@@ -124,10 +123,21 @@ The process router prioritizes battle state over exploration and the synthetic b
 checks the battle flow stage before reading the closed exploration locomotion getter.
 
 `PrivateBattle01Presenter` projects immutable live positions, terrain/range and preview data into
-authored grid geometry. It owns no cursor, roster, RNG or turn state. Root hides the complete old
+24-pixel grid geometry. It owns no cursor, roster, RNG or turn state. Root hides the complete old
 Map40/HUD/synthetic canvas subtrees before attaching it. Existing I/J/K/L, Space and Backspace keys
-route once through the private battle poller; action choice accepts only cancellation. Original
-Map57 art and all battle actions/turn completion remain outside this diagnostic consumer.
+route once through the private battle poller; action choice accepts only cancellation.
+
+When base art and Battle01 inputs are both requested, the existing catalog requires the separately
+accepted Map57 asset transaction and exact bucket. `PrivateBattle01BaseViewProjection` reads only
+`Preparation.Pending.Definition` from the current battle: its validated layout, block catalog,
+area and visual selection. It rejects definition drift and any referenced unloaded slot, then
+reuses `PrivateOriginalMapBaseViewProjection` block/tile sampling for the fixed 16-by-20 area.
+The 384-by-480 logical base maps the full 2x/4x raster with nearest sampling. No exploration runtime,
+camera, parallel layout or position authority is created. All nine units remain diagnostic markers.
+The existing diagnostic mode remains available without requesting art. Missing/wrong requested art
+fails visibly; a failed base projection closes input without displaying a substitute battlefield.
+Original scene/layers, animation, VRAM persistence, fidelity and battle actions/turn completion remain
+outside this consumer.
 
 Two areas currently concentrate more responsibility than the target shape:
 

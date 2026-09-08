@@ -33,9 +33,25 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             AddChild(root);
             await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
             root.ProcessMode = ProcessModeEnum.Disabled;
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "missing-atlas")
+            {
+                Require(typeof(Map3Root).GetField("_session", BindingFlags.Instance | BindingFlags.NonPublic)!
+                    .GetValue(root) is null, "Missing Map57 asset must fail before session startup");
+                var status = Field<Label>(Field<PrivateMap3Presenter>(root, "_privatePresenter"), "_status");
+                Require(status.Text.Contains("Map 57 base art unavailable") &&
+                    status.GetLineCount() == status.GetVisibleLineCount(), "Missing Map57 art has a visible failure");
+                await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+                using var failedImage = GetViewport().GetTexture().GetImage();
+                Require(failedImage.SavePng(Path.Combine(_output, "01-map57-asset-rejected.png")) == Error.Ok, "Failure PNG");
+                File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
+                    status = "Pass", scope = "explicit base art; missing Map57 runtime payload", sessionStarted = false,
+                    fallback = false, message = status.Text, frames = 1 }));
+                GD.Print("SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames=1 missing-atlas");
+                _fixture.Dispose(); GetTree().Quit(); return;
+            }
             _session = Field<GameSession>(root, "_session");
             _presenter = Field<PrivateMap3Presenter>(root, "_privatePresenter");
-            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") is "1" or "missing-input" or "base-art" or "diagnostic")
             {
                 await ReviewBattle01Control();
                 _fixture.Dispose();
@@ -190,6 +206,21 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         Require(battle.Roster.Count == 9 && origin == new MapPosition(9, 18) &&
             battle.FirstRound!.Slots[battle.FirstRound.CurrentTurnOffset].CombatantIndex == actor, "Actual current candidate and nine units");
         await CaptureControl("02-ready");
+        if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "diagnostic")
+        {
+            Require(Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter").BaseView is null,
+                "No base-art request retains the explicit diagnostic mode");
+            await PressBattleKey(Key.I); await PressBattleKey(Key.Space); await PressBattleKey(Key.Backspace);
+            Require(_session.PrivateOriginalBattle01!.Battle.Roster.Single(unit => unit.Index == actor).Position == origin &&
+                _session.PrivateOriginalBattle01.Battle.FirstRound!.CurrentTurnOffset == 0 &&
+                _session.PrivateOriginalBattle01.Battle.RandomSeedImage == battle.RandomSeedImage,
+                "Diagnostic movement confirm and cancel retain origin, RNG and offset");
+            File.WriteAllText(Path.Combine(_output, "receipt.json"), JsonSerializer.Serialize(new {
+                status = "Pass", scope = "unrequested base art; real N/I/Space/Backspace regression",
+                frames = _frames, baseArt = false, actor, origin, rng = battle.RandomSeedImage }));
+            GD.Print("SF2_BATTLE01_CONTROL_NATIVE_REVIEW Pass frames=2 diagnostic");
+            return;
+        }
         await PressBattleKey(Key.I);
         var selected = _session.PrivateOriginalBattle01!;
         Require(!ReferenceEquals(ready, selected) && selected.Battle.FirstControl!.Movement.Cursor == destination &&
@@ -261,20 +292,25 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
         {
             var presenter = Field<PrivateBattle01Presenter>(_root, "_privateBattle01Presenter");
             var view = presenter.Projection!;
+            bool baseArt = System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") != "diagnostic";
+            Require(baseArt == (presenter.BaseView is not null), "Explicit base-art mode matches actual binding");
+            int baseSamples = baseArt ? CheckBattleBasePixels(presenter, current, image) : 0;
             Require(view.Phase == current.Battle.Phase &&
                 view.Units.All(unit => unit.Position == current.Battle.Roster.Single(row => row.Index == unit.Index).Position),
                 "Visible projection matches live battle");
             var labels = presenter.GetChildren().OfType<Label>().ToArray();
             foreach (var label in labels)
                 Require(label.GetLineCount() == label.GetVisibleLineCount() &&
-                    label.Position.Y + label.GetMinimumSize().Y <= 540, "All battlefield labels fit logical canvas");
+                    label.Position.Y + label.GetMinimumSize().Y <= 540 &&
+                    label.Position.X + label.GetMinimumSize().X <= 960, "All battlefield labels fit logical canvas");
             for (int left = 0; left < labels.Length; left++)
             for (int right = left + 1; right < labels.Length; right++)
                 Require(!new Rect2(labels[left].Position, labels[left].Size).Intersects(
                     new Rect2(labels[right].Position, labels[right].Size)), "Battlefield text regions must not overlap");
             _frames.Add(new { name, map = current.Map.Value, phase = view.Phase.ToString(), actor = view.ActorIndex,
                 cursor = view.Cursor, units = view.Units, path = view.Path, gridCost = view.GridCost, pathCost = view.PathCost,
-                budget = view.Budget, status = view.Status, controls = view.Controls, width = image.GetWidth(), height = image.GetHeight() });
+                budget = view.Budget, status = view.Status, controls = view.Controls, baseArt, baseSamples,
+                blockPixels = PrivateBattle01Presenter.TileSize, width = image.GetWidth(), height = image.GetHeight() });
         }
         else
         {
@@ -283,6 +319,36 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             _frames.Add(new { name, map = _session.PrivateOriginalCurrentMap.Value, phase = "Pending",
                 status = status.Text, width = image.GetWidth(), height = image.GetHeight() });
         }
+    }
+
+    private static int CheckBattleBasePixels(PrivateBattle01Presenter presenter,
+        PrivateOriginalBattle01SessionSnapshot snapshot, Image image)
+    {
+        var view = presenter.BaseView!;
+        var overlay = presenter.Projection!;
+        Require(ReferenceEquals(view.Definition, snapshot.Preparation.Pending.Definition) &&
+            view.Definition.DestinationMap.Value == "map57" && view.Definition.DecodedLayoutDigest == OriginalBattle01AdmissionDefinition.LayoutDigest,
+            "Base projection uses the current battle's fixed admission, never frozen Map40 provenance");
+        Require(view.PixelWidth == 384 && view.PixelHeight == 480 && PrivateBattle01Presenter.TileSize == 24 &&
+            presenter.TextureFilter == CanvasItem.TextureFilterEnum.Nearest &&
+            presenter.TextureRepeat == CanvasItem.TextureRepeatEnum.Disabled, "24px full area and nearest sampling");
+        int checkedPixels = 0;
+        foreach (var tile in overlay.Tiles.Where(tile => !tile.Reachable &&
+            !overlay.Units.Any(unit => unit.Position == tile.Position) && tile.Position != overlay.Cursor))
+        {
+            int x = tile.Position.X * 24 + 5, y = tile.Position.Y * 24 + 5;
+            int offset = ((y * view.RasterScale * view.PixelWidth * view.RasterScale) + x * view.RasterScale) * 4;
+            var expected = new Color(view.RgbaBytes[offset] / 255f, view.RgbaBytes[offset + 1] / 255f,
+                view.RgbaBytes[offset + 2] / 255f, 1);
+            if (expected.IsEqualApprox(new Color(0x12 / 255f, 0x18 / 255f, 0x20 / 255f))) continue;
+            var origin = PrivateBattle01Presenter.GridOrigin;
+            var actual = image.GetPixel((int)((origin.X + x) * image.GetWidth() / 960),
+                (int)((origin.Y + y) * image.GetHeight() / 540));
+            Require(actual.IsEqualApprox(expected), "Native visible Map57 texel at real 24px cell coordinate");
+            checkedPixels++;
+        }
+        Require(checkedPixels >= 12, "Enough visible base-art samples outside live overlays");
+        return checkedPixels;
     }
 
     private void SeedMap19()
