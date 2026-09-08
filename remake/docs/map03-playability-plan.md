@@ -936,13 +936,13 @@ requests leave the current word, candidate, phase and snapshot intact.
 
 **Movement profile and provenance:** source baseline remains
 `ShiningForceCentral/SF2DISASM` commit `c834c652b6862bc5679fd7f69a38a7093206efc6`.
-The current candidate's class4 is PRST; `data/stats/allies/classes/classdefs.asm` row4 stores
+The first candidate's class4 is PRST; `data/stats/allies/classes/classdefs.asm` row4 stores
 HEALER, movement type12. Class storage belongs to
 [ally definition data](../../docs/design/contracts/ally-definition-data.md#class-and-promotion-definition-topology)
 and [ally data inventory](../../docs/research/ally-data-inventory.md). The movement-type field occupies
 the high nibble at combatant offset49; `GetMovetype` in `code/common/stats/combatantstats_1.asm` reads
-that nibble. This bounded consumer resolves only the accepted class4 profile; it adds no general
-class importer and does not replace the current effective MOV with the class's source MOV.
+that nibble. This first-candidate case uses the class4 profile; the next-player seam below adds
+class1/CENTAUR2. Neither needs a general class importer or replaces effective MOV with source MOV.
 
 `data/battles/global/landeffectsettingsandmovecosts.asm` row12 and `PopulateMoveCostsTable` in
 `code/gameflow/battle/battlefield/battlefieldengine.asm` supply sixteen costs. The low nibble15 becomes
