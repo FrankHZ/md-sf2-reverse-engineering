@@ -17,7 +17,7 @@ public sealed class Battle01TurnCompletionTests
         var action = Battle01PlayerMovement.Confirm(Battle01PlayerMovement.SelectDestination(ready, 1, destination), 1);
         string before = JsonSerializer.Serialize(action);
         var completed = Battle01TurnCompletion.CommitStay(action, 1, Policy);
-        Assert.Equal(Battle01Phase.FirstPlayerTurnCompleted, completed.Phase); Assert.Null(completed.FirstControl);
+        Assert.Equal(Battle01Phase.PlayerTurnCompleted, completed.Phase); Assert.Null(completed.FirstControl);
         Assert.Equal(1, completed.TurnCompletion!.CompletedActorIndex); Assert.Same(Policy, completed.TurnCompletion.Policy);
         Assert.Equal(new Battle01FactionCounts(3, 6), completed.TurnCompletion.BeforeAfterTurn);
         Assert.Equal(completed.TurnCompletion.BeforeAfterTurn, completed.TurnCompletion.AfterAfterTurn);

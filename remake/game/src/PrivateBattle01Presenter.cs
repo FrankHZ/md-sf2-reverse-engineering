@@ -85,13 +85,13 @@ public sealed partial class PrivateBattle01Presenter : Node2D
                 movement?.Range.Grid.CostAt(position) is not null,
                 movement?.Range.CanStopAt(position) == true));
         }
-        var completion = battle.TurnCompletion;
+        var completion = control is null ? battle.TurnCompletion : null;
         int? actor = completion is null ? control?.ActorIndex ?? battle.FirstRound?.CurrentCandidate?.CombatantIndex : null;
         string controls = battle.Phase switch
         {
             Battle01Phase.PlayerMovementSelection => "I / J / K / L: cursor   Space: confirm   Backspace: cancel",
             Battle01Phase.PlayerActionChoice => "Space: STAY and end this turn   Backspace: cancel relocation",
-            Battle01Phase.FirstPlayerTurnCompleted => "Input closed. Next unit has not acted. Relaunch starts Map 3.",
+            Battle01Phase.PlayerTurnCompleted => "Input closed. Candidate not started. Relaunch starts Map 3.",
             _ => "Current battle retained. Relaunch starts Map 3.",
         };
         return new(battle.Phase, battle.AreaWidth, battle.AreaHeight, actor, completion?.CompletedActorIndex,

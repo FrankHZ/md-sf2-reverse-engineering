@@ -14,7 +14,7 @@ internal static class PrivateBattle01Ui
     internal static bool OwnsInput(GameFlowStage stage, bool pending, bool inputsSelected) =>
         stage == GameFlowStage.Battle || (pending && inputsSelected);
 
-    internal static string Apply(GameSession session, IOriginalBattle01StartupSource? source,
+    internal static string? Apply(GameSession session, IOriginalBattle01StartupSource? source,
         PrivateBattle01Input input)
     {
         if (session.PrivateOriginalBattle01 is not { } current)
@@ -45,8 +45,9 @@ internal static class PrivateBattle01Ui
             };
         }
 
-        if (current.Battle.TurnCompletion is not null)
-            return "STAY already complete. Next candidate is not dispatched.";
+        // An unavailable next dispatch has already been reported. Unrelated keys cannot retry it
+        // or overwrite its precise reason; the existing presenter retains that result.
+        if (current.Battle.Phase == Battle01Phase.PlayerTurnCompleted) return null;
         if (current.Battle.FirstControl is not { } control)
             return "Current battle retained. First player control is unavailable; relaunch starts Map 3.";
         if (input == PrivateBattle01Input.Enter)
@@ -56,7 +57,7 @@ internal static class PrivateBattle01Ui
             if (input == PrivateBattle01Input.Confirm)
                 return session.CommitPrivateOriginalBattle01Stay(current, control.ActorIndex) switch
                 {
-                    PrivateOriginalBattle01StayCommitted => "STAY complete. Next candidate is not dispatched.",
+                    PrivateOriginalBattle01StayCommitted committed => EnterNextPlayer(session, committed.Snapshot),
                     PrivateOriginalBattle01TurnCompletionRejected rejected => "STAY rejected: " + rejected.Diagnostic.Message,
                     _ => "STAY unavailable.",
                 };
@@ -98,6 +99,22 @@ internal static class PrivateBattle01Ui
             _ => "Movement unavailable.",
         };
     }
+
+    private static string EnterNextPlayer(GameSession session, PrivateOriginalBattle01SessionSnapshot completed)
+    {
+        int candidate = completed.Battle.FirstRound!.CurrentCandidate?.CombatantIndex ?? 255;
+        // Exactly one dispatch after this successful STAY result; no frame or key-based retry loop.
+        return session.EnterPrivateOriginalBattle01NextPlayerControl(completed, candidate) switch
+        {
+            PrivateOriginalBattle01NextPlayerControlEntered entered =>
+                $"STAY complete. Player {entered.Snapshot.Battle.FirstControl!.ActorIndex} ready.",
+            PrivateOriginalBattle01NextPlayerControlUnavailable unavailable =>
+                $"Next control unavailable: candidate {unavailable.Decision.ActorIndex?.ToString() ?? "sentinel"} / {unavailable.Decision.Availability}.",
+            PrivateOriginalBattle01NextPlayerControlRejected rejected =>
+                $"Next control rejected: {rejected.Diagnostic.Field}; candidate {candidate}; STAY retained.",
+            _ => "Next control unavailable; committed STAY retained.",
+        };
+    }
 }
 
 public sealed partial class Map3Root
@@ -114,7 +131,8 @@ public sealed partial class Map3Root
         if (_privateBattle01Presenter?.BaseArtUnavailable == true) return true;
         var input = _inputAdapter?.PollPrivateBattle01() ?? PrivateBattle01Input.None;
         if (input == PrivateBattle01Input.None) return true;
-        string outcome = PrivateBattle01Ui.Apply(_session, _privateBattle01Source, input);
+        string? outcome = PrivateBattle01Ui.Apply(_session, _privateBattle01Source, input);
+        if (outcome is null) return true;
         if (_session.PrivateOriginalBattle01 is { } battle)
         {
             if (_privateBattle01Presenter is null)

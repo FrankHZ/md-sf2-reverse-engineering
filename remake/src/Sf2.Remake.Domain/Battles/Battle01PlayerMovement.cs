@@ -4,17 +4,26 @@ namespace Sf2.Remake.Domain.Battles;
 
 public sealed class Battle01MovementProfile
 {
-    private Battle01MovementProfile() { }
-    public static Battle01MovementProfile Priest { get; } = new();
-    public string Id => "battle01-class4-healer12-source-profile-v1";
-    public byte ClassId => 4;
-    public byte MovementType => 12;
-    // Bounded classdefs row4 + landEffectSettingsAndMoveCosts row12, pinned c834c652.
-    // Low nibble 15 becomes signed -1; the upper nibble is a separate land-effect setting.
-    public IReadOnlyList<sbyte> Costs { get; } = Array.AsReadOnly<sbyte>(
+    private Battle01MovementProfile(string id, byte classId, byte movementType, sbyte[] costs)
+    {
+        Id = id; ClassId = classId; MovementType = movementType; Costs = Array.AsReadOnly(costs);
+    }
+    public static Battle01MovementProfile Priest { get; } = new("battle01-class4-healer12-source-profile-v1", 4, 12,
         [-1, 2, 2, 3, 4, 3, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1]);
+    public static Battle01MovementProfile Centaur { get; } = new("battle01-class1-centaur2-source-profile-v1", 1, 2,
+        [-1, 2, 2, 3, 5, 5, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1]);
+    public string Id { get; }
+    public byte ClassId { get; }
+    public byte MovementType { get; }
+    // Bounded classdefs rows4/1 + landEffectSettingsAndMoveCosts rows12/2, pinned c834c652.
+    // Low nibble 15 becomes signed -1; the upper nibble is a separate land-effect setting.
+    public IReadOnlyList<sbyte> Costs { get; }
     public IReadOnlyList<byte> LandEffects { get; } = Array.AsReadOnly<byte>(
         [0, 1, 0, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    internal static Battle01MovementProfile? ForClass(byte? classId) => classId switch
+    {
+        4 => Priest, 1 => Centaur, _ => null,
+    };
 }
 
 public sealed class Battle01MovementGrid
@@ -191,9 +200,8 @@ public static class Battle01PlayerMovement
 
     internal static Battle01MovementRange CreateRange(Battle01InitializedState battle, Battle01Combatant actor)
     {
-        var profile = Battle01MovementProfile.Priest;
-        if (actor.ClassId != profile.ClassId)
-            throw new ArgumentException("Only the admitted class4/HEALER movement profile is implemented.", "movementProfile");
+        var profile = Battle01MovementProfile.ForClass(actor.ClassId) ??
+            throw new ArgumentException("Only the admitted PRST/HEALER and KNTE/CENTAUR movement profiles are implemented.", "movementProfile");
         var terrain = battle.Terrain.ToArray();
         foreach (var opponent in battle.Roster.Where(unit => (unit.Index < 128) != (actor.Index < 128)))
         {

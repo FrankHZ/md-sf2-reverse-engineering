@@ -57,6 +57,21 @@ public sealed class Battle01PlayerMovementTests
         Assert.Equal(4, profile.ClassId); Assert.Equal(12, profile.MovementType);
     }
 
+    [Fact]
+    public void CentaurForestHillsAndDesertCostsChangeReachabilityUnderTheSameBudget()
+    {
+        var terrain = Enumerable.Repeat((byte)255, 2304).ToArray();
+        int start = 10 * 48 + 4;
+        terrain[start] = 1; terrain[start + 1] = 4; terrain[start + 2] = 5; terrain[start + 3] = 6;
+        var priest = Battle01PlayerMovement.BuildWeightedGrid(terrain, Battle01MovementProfile.Priest.Costs, start, 14);
+        var centaur = Battle01PlayerMovement.BuildWeightedGrid(terrain, Battle01MovementProfile.Centaur.Costs, start, 14);
+        Assert.Equal(new int?[] { 4, 7, 10 }, Enumerable.Range(1, 3).Select(index => priest.CostAtOffset(start + index)));
+        Assert.Equal(new int?[] { 5, 10, null }, Enumerable.Range(1, 3).Select(index => centaur.CostAtOffset(start + index)));
+        var larger = Battle01PlayerMovement.BuildWeightedGrid(terrain, Battle01MovementProfile.Centaur.Costs, start, 16);
+        Assert.Equal(15, larger.CostAtOffset(start + 3));
+        Assert.Equal(Battle01MovementProfile.Priest.LandEffects, Battle01MovementProfile.Centaur.LandEffects);
+    }
+
     internal static JsonDocument Fixture(string tier, string name) => JsonDocument.Parse(File.ReadAllText(Path.GetFullPath(
         Path.Combine(AppContext.BaseDirectory, "../../../../../../tests/fixtures", tier, name + ".json"))));
 

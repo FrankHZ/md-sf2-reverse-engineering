@@ -515,7 +515,7 @@ the source owner names the H2 reproduction, and this slice does not run new H3/H
 
 Current controlled play reaches diagnostic Battle 01 first-player movement, provisional confirmation
 and cancellation through the explicit selected-input N entry at Pending, followed by one controlled
-no-effect STAY completion before the next candidate is dispatched. The manual battle bridge
+no-effect STAY, then the next supported player's movement/cancel/STAY before stopping at enemy AI. The manual battle bridge
 remains public-synthetic. An explicit base-atlas launch now shows reviewed fixed Map57 base art with
 diagnostic units. Natural castle continuity, original Map57 presentation fidelity and complete
 Battle 01 play remain **Unknown**.
@@ -936,13 +936,13 @@ requests leave the current word, candidate, phase and snapshot intact.
 
 **Movement profile and provenance:** source baseline remains
 `ShiningForceCentral/SF2DISASM` commit `c834c652b6862bc5679fd7f69a38a7093206efc6`.
-The current candidate's class4 is PRST; `data/stats/allies/classes/classdefs.asm` row4 stores
+The first candidate's class4 is PRST; `data/stats/allies/classes/classdefs.asm` row4 stores
 HEALER, movement type12. Class storage belongs to
 [ally definition data](../../docs/design/contracts/ally-definition-data.md#class-and-promotion-definition-topology)
 and [ally data inventory](../../docs/research/ally-data-inventory.md). The movement-type field occupies
 the high nibble at combatant offset49; `GetMovetype` in `code/common/stats/combatantstats_1.asm` reads
-that nibble. This bounded consumer resolves only the accepted class4 profile; it adds no general
-class importer and does not replace the current effective MOV with the class's source MOV.
+that nibble. This first-candidate case uses the class4 profile; the next-player seam below adds
+class1/CENTAUR2. Neither needs a general class importer or replaces effective MOV with source MOV.
 
 `data/battles/global/landeffectsettingsandmovecosts.asm` row12 and `PopulateMoveCostsTable` in
 `code/gameflow/battle/battlefield/battlefieldengine.asm` supply sixteen costs. The low nibble15 becomes
@@ -1012,11 +1012,11 @@ action choice at the bounded endpoint below.
 
 ### Implemented first-player STAY completion
 
-`CommitPrivateOriginalBattle01Stay(expectedSnapshot, actorIndex)` consumes only the first player's
+`CommitPrivateOriginalBattle01Stay(expectedSnapshot, actorIndex)` consumes the current supported player's
 current `PlayerActionChoice`. It commits the already provisional live position and occupancy,
-removes `FirstControl`, and stops at `FirstPlayerTurnCompleted`. No second unit is dispatched.
+removes `FirstControl`, and commits `PlayerTurnCompleted`. Next entry is a separate transition below.
 Wrong actor/phase, absent/foreign/stale snapshot and repeated STAY reject before session mutation;
-old select/confirm/cancel, control entry and round entry cannot reopen this endpoint.
+old select/confirm/cancel, first-control entry and round entry cannot reopen this endpoint.
 
 **Explicit controlled policy:** `battle01-controlled-stay-unchanged-effective-stats-v1` is a
 main-gate-approved remake input policy. Application admits only the already accepted player-ready
@@ -1048,10 +1048,43 @@ seed image `0xA4991234`, all nine stats/positions, flags and provenance remain i
 source owner is `disasm/code/gameflow/battle/battleloop/processafterturneffects.asm`; item IDs61/64/7C
 and equipped bit7 are bounded rejection facts, not an equipment/stat subsystem implementation.
 
-Original after-turn fidelity, status/passive effects, battle scenes, other actions, AI, next-unit
-control, later rounds, death/outcome resolution, natural continuity and H4 remain **Unknown** or
-unimplemented at their existing owners. The required actual-input test and bounded native `stay`
-mode verify this controlled endpoint, not original runtime execution.
+Original after-turn fidelity, status/passive effects, battle scenes, other actions, AI execution,
+later rounds, death/outcome resolution, natural continuity and H4 remain **Unknown** or unimplemented
+at their existing owners. Required actual-input and native tests verify controlled remake behavior.
+
+### Implemented next-player control
+
+`EnterPrivateOriginalBattle01NextPlayerControl(expectedSnapshot, actorIndex)` requires the exact
+committed `PlayerTurnCompleted` snapshot and actual `CurrentCandidate`. It shares the existing
+classifier, control toggles, candidate-only missing ally word0 supplement, weighted propagation,
+preview and movement transitions. The first-control API still admits only generated offset0.
+It never searches for another ally, skips a sentinel/unsupported candidate or regenerates the order.
+
+**Confirmed static profile:** at the pinned SF2DISASM revision above,
+`disasm/data/stats/allies/classes/classdefs.asm` assigns KNTE (class1) to CENTAUR (movement type2);
+`disasm/sf2enums.asm` names those IDs. The Centaur row in
+`disasm/data/battles/global/landeffectsettingsandmovecosts.asm` supplies costs
+`[-1,2,2,3,5,5,5,-1,-1,-1,-1,-1,-1,-1,-1,-1]` and land-effect indices
+`[0,1,0,2,2,2,2,0,0,0,0,0,0,0,0,0]`. This is the only additional movement profile.
+Budget is current effective MOV times2; the accepted candidate2 has MOV7. Terrain4/5/6 therefore
+cost5 each, unlike HEALER. The existing source-mask/controlled-preview disagreement remains explicit.
+
+The next range captures **current live occupancy**, including actor1's committed (9,17) position.
+Candidate2 begins at (7,18); confirmation at (7,17) is provisional and cancellation restores (7,18)
+without undoing actor1. Missing-word supplementation and the complete range/preview are allocated
+before session replacement; late failure keeps the exact prior STAY and candidate word unchanged.
+The historical `TurnCompletion` survives active movement, whose phase and projection take priority.
+A new completion receipt links the previous one through `Previous`; these receipts are provenance,
+not a second command authority.
+
+Godot attempts next entry once immediately after a successful STAY. The second player reuses the
+same no-effect policy, status/equipment/effective-stat checks and both faction gates. Its completion
+advances offset2 to4, reading slot2 as actual enemy128 / `OpponentAi`; both completed moves, all nine
+units, original 64 entries and seed0xA4991234 remain. Unsupported or rejected entry keeps that committed
+STAY and displays the actual candidate/reason. Frames and unrelated keys do not retry or replace the
+diagnostic. No enemy action, turn skip, next-ally search or round regeneration is implemented.
+Domain/Application next-player tests, the required selected-input chain and native `next-player`
+mode own this boundary; `stay` remains a compatible recipe name for the same current chain.
 
 ### Controlled Godot Battle01 consumer
 
@@ -1081,9 +1114,10 @@ at the current cursor; without requested art, authored cells also show terrain I
 I/J/K/L request adjacent cursor destinations; out-of-area and unreachable steps preserve state with
 an explanation. Space provisionally relocates only a legal stop. At `PlayerActionChoice`, a separate
 Space press commits STAY; Backspace still cancels before that commit. Backspace also cancels a
-selection to turn origin; repeated origin cancellation remains a rejection. After STAY the view
-shows the completed actor and actual next candidate, clears old range/path/cursor interaction and
-labels the next unit as not dispatched. No attack, spell, item, AI, next actor/round execution,
+selection to turn origin; repeated origin cancellation remains a rejection. After STAY the UI tries
+the actual next candidate once and displays its active range when supported. At an unsupported
+candidate it shows the completed actor and candidate/reason with old range/path/cursor cleared.
+No attack, spell, item, AI action, later-round execution,
 victory or original cancellation animation is introduced.
 
 Root input and physics route on current battle authority before any closed exploration getter.
@@ -1118,8 +1152,9 @@ visual acceptance belong to [presentation and assets](./presentation-and-assets.
    control result remains unavailable at this bounded endpoint; never skip or reshuffle turn order. The accepted bridge-seeded player-ready H3 case is
    a bounded comparison input, not a naturally carried save or a universal “actor 1 first” rule.
    The API has deterministic semantic movement tests and the diagnostic consumer has a bounded native
-   input/capture recipe. One no-effect STAY now closes the first turn under the policy above and stops
-   before next dispatch. Attack resolution, enemy turns, later rounds and victory remain later slices.
+   input/capture recipe. No-effect STAY closes the first turn and dispatches the next supported player
+   once; its movement/cancel/STAY stops at the actual enemy candidate under the policy above.
+   Attack resolution, enemy turns, later rounds and victory remain later slices.
    The fixed Map57 atlas candidate now uses the palette8/unloaded-slot proof and controlled storage
    policy above. Its accepted local asset now feeds the fixed-layout Godot base composition;
    original scene/layers/VRAM/animation fidelity remains separate acceptance work.

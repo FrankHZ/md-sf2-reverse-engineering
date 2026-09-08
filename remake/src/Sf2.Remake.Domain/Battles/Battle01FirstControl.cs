@@ -42,10 +42,15 @@ public static class Battle01FirstControl
         ArgumentNullException.ThrowIfNull(current);
         if (current.Phase != Battle01Phase.FirstRoundGenerated || current.FirstRound?.CurrentTurnOffset != 0)
             throw new ArgumentException("First control requires the generated round before player entry.", "phase");
+        return EnterCurrentCandidate(current, expectedActor);
+    }
+
+    internal static Battle01FirstControlTransition EnterCurrentCandidate(Battle01InitializedState current, int expectedActor)
+    {
         var candidate = current.FirstRound!.CurrentCandidate;
         if (candidate is null) return Unavailable(null, Battle01FirstControlAvailability.Sentinel);
         int index = candidate.Value.CombatantIndex;
-        if (expectedActor != index) throw new ArgumentException("The request must name the current first candidate.", "actor");
+        if (expectedActor != index) throw new ArgumentException("The request must name the current candidate.", "actor");
         var actor = current.Roster.SingleOrDefault(unit => unit.Index == index);
         if (actor is null) return Unavailable(index, Battle01FirstControlAvailability.MissingCombatant);
         var preset = Battle01FirstControlPreset.ControlledPlayer;
@@ -54,7 +59,7 @@ public static class Battle01FirstControl
         var availability = Classify(actor.Index, actor.Stats.HpCurrent, actor.Position.X, actor.Position.Y,
             actor.Stats.Status, activationWord, preset.AllyAutoBattle, preset.OpponentControl);
         if (availability != Battle01FirstControlAvailability.Player) return Unavailable(index, availability);
-        if (actor.ClassId != Battle01MovementProfile.Priest.ClassId)
+        if (Battle01MovementProfile.ForClass(actor.ClassId) is null)
             return Unavailable(index, Battle01FirstControlAvailability.UnsupportedMovementProfile);
         var range = Battle01PlayerMovement.CreateRange(current, actor);
         var movement = new Battle01PlayerMovementSelection(range,

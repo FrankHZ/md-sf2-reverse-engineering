@@ -95,7 +95,7 @@ public sealed class Battle01Combatant
         ? this : new(Deployment, Stats, ClassId, EnemySource, AiBitfield, position);
 }
 
-public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, FirstPlayerTurnCompleted }
+public enum Battle01Phase { BeforeFirstRound, FirstRoundGenerated, PlayerMovementSelection, PlayerActionChoice, PlayerTurnCompleted }
 
 public sealed class Battle01InitializedState
 {
@@ -120,6 +120,7 @@ public sealed class Battle01InitializedState
         AiLastTargets = source.AiLastTargets; AiMemory = source.AiMemory;
         RegionFlags90Through105 = source.RegionFlags90Through105; NewlyTestedRegionMask = source.NewlyTestedRegionMask;
         RandomSeedImage = source.RandomSeedImage; FirstRound = source.FirstRound; FirstControl = firstControl;
+        TurnCompletion = source.TurnCompletion;
     }
     internal Battle01InitializedState(Battle01InitializedState source, Battle01FirstRoundOrder firstRound,
         Battle01TurnCompletionReceipt completion)
@@ -160,8 +161,9 @@ public sealed class Battle01InitializedState
     public bool IntroFlag451 => true;
     public bool CompletedFlag501 => false;
     public bool UnlockFlag401 => true;
-    public Battle01Phase Phase => TurnCompletion is not null ? Battle01Phase.FirstPlayerTurnCompleted : FirstControl is { } control
+    public Battle01Phase Phase => FirstControl is { } control
         ? control.Movement.Stage == Battle01PlayerMovementStage.Selection ? Battle01Phase.PlayerMovementSelection : Battle01Phase.PlayerActionChoice
+        : TurnCompletion is not null ? Battle01Phase.PlayerTurnCompleted
         : FirstRound is null ? Battle01Phase.BeforeFirstRound : Battle01Phase.FirstRoundGenerated;
     public byte TerrainAt(MapPosition position) => Terrain[TerrainIndex(position)];
     public int OccupantAt(MapPosition position) => Occupancy[TerrainIndex(position)];
