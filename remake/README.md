@@ -366,8 +366,8 @@ The dependency and delegation map is documented in [Architecture](./docs/archite
   Map 57 destination preserves null setup/animation and does not extend the five exploration runtimes.
   With explicit Battle 01 inputs, N prepares and initializes the controlled diagnostic battlefield,
   generates the first round and enters supported first-player control. Without those options,
-  Pending remains the endpoint. Relaunch returns to Map 3. Original Map57 scene fidelity, other actions/later turns,
-  completion and natural continuity remain open. See the
+  Pending remains the endpoint. Relaunch returns to Map 3. Original Map57 scene fidelity,
+  other actions, later turns and natural continuity remain open. See the
   [pending boundary and focused checks](./docs/map03-playability-plan.md#implemented-boundary-visible-pending-admission-before-relocation).
 - Private ROMs, canonical imports, decoded payloads, captures, tools, and generated exports remain
   ignored and local. None is committed, uploaded, or embedded in the public package.
