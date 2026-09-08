@@ -55,8 +55,8 @@ public sealed class PrivateMap3PresenterTests
         var pending = (PrivateOriginalBattle01PendingAdmission)constructor.Invoke([definition, snapshot, new MapPosition(14, 12)]);
         string status = PrivateMap3PresentationPlan.FormatStatus(snapshot, "Moved", baseAtlasVisible: true,
             battle01Admission: pending);
-        Assert.Equal("Battle 01 admission pending. Destination Map 57 (8,18)/UP; battle not started.\n" +
-            "Map 40 retained; controlled new-battle preset. Restart to return to Map 3.", status);
+        Assert.Equal("Battle 01 admission pending. Battle not started.\n" +
+            "Map 40 retained; destination Map 57 (8,18)/UP.\nRestart to return to Map 3.", status);
         Assert.DoesNotContain("ENTER", status);
         Assert.DoesNotContain("Continue", status);
         Assert.Throws<ArgumentException>(() => PrivateMap3PresentationPlan.FormatStatus(

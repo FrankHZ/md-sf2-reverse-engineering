@@ -125,8 +125,9 @@ internal sealed record PrivateMap3PresentationPlan(
         {
             if (!ReferenceEquals(snapshot, battle01Admission.SourceSnapshot))
                 throw new ArgumentException("Pending admission status requires its retained source snapshot.", nameof(battle01Admission));
-            return "Battle 01 admission pending. Destination Map 57 (8,18)/UP; battle not started.\n" +
-                "Map 40 retained; controlled new-battle preset. Restart to return to Map 3.";
+            return "Battle 01 admission pending. Battle not started.\n" +
+                "Map 40 retained; destination Map 57 (8,18)/UP.\n" +
+                "Restart to return to Map 3.";
         }
         if (snapshot.Map.Value == OriginalMapRuntimeAdmission.Map40Id)
         {

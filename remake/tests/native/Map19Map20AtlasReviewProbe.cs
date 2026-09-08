@@ -388,12 +388,15 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             "Pending retains the Map40 atlas and no Map57 or guard projection");
         Require(status.Position.Y == 310 &&
             status.Position.Y >= baseViewport.Position.Y + PrivateOriginalMapBaseViewProjection.PixelHeight &&
-            pendingText.StartsWith("Battle 01 admission pending. Destination Map 57 (8,18)/UP; battle not started.", StringComparison.Ordinal) &&
+            pendingText.StartsWith("Battle 01 admission pending. Battle not started.", StringComparison.Ordinal) &&
+            pendingText.Contains("destination Map 57 (8,18)/UP.", StringComparison.Ordinal) &&
             pendingText.Contains("Map 40 retained", StringComparison.Ordinal) &&
             pendingText.Contains("Restart", StringComparison.Ordinal) && !pendingText.Contains("ENTER", StringComparison.Ordinal),
             "Pending display and restart recovery below retained Map40");
         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         using Image image = GetViewport().GetTexture().GetImage();
+        Require(status.GetLineCount() == 3 && status.GetVisibleLineCount() == status.GetLineCount(),
+            "All pending status lines, including restart recovery, are visible without clipping");
         const string name = "12-battle01-admission-pending";
         Require(image.SavePng(Path.Combine(_output, name + ".png")) == Error.Ok, "Pending PNG write");
         _frames.Add(new { name, map = source.Map.Value, destinationMap = pending!.Definition.DestinationMap.Value,
@@ -404,7 +407,8 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             atlas = _presenter.BaseAtlasAssetId, digest = _presenter.BaseAtlasBucketDigest,
             cameraOriginX = projection.OriginX, cameraOriginY = projection.OriginY,
             baseVisible = baseViewport.Visible, traversalVisible = traversal.Visible,
-            statusY = status.Position.Y, status = pendingText, identitiesRetained = true,
+            statusY = status.Position.Y, status = pendingText, statusLines = status.GetLineCount(),
+            visibleStatusLines = status.GetVisibleLineCount(), identitiesRetained = true,
             width = image.GetWidth(), height = image.GetHeight() });
     }
 

@@ -737,7 +737,8 @@ and checks camera/player coordinates and retained route receipts. Frame twelve t
 Map 40 fixture points: 27 committed moves reach (14,13)/UP, and the real production move adapter
 receives the last Up as prospective (14,12). It captures `12-battle01-admission-pending.png` with
 the Map 40 atlas retained, destination Map 57 (8,18)/UP, battle not started and restart recovery
-below the base viewport. Duplicate movement, F, bridge request and physics tick leave source,
+below the base viewport. All three status lines, including the complete restart instruction, must
+be visible without clipping. Duplicate movement, F, bridge request and physics tick leave source,
 animation, bridge, pending identity and status unchanged. The accepted first eleven PNGs must
 remain byte-identical. This does not admit Map 40 init, completed Map57 relocation, original
 rendering, camera/parallax execution, battle startup or a controllable turn.
