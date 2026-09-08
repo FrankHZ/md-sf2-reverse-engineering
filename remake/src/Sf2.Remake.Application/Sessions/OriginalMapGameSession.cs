@@ -977,7 +977,9 @@ public sealed partial class GameSession
     }
 
     public PrivateOriginalMapSessionSnapshot PrivateOriginalMapSnapshot =>
-        _privateOriginalMapSnapshot ?? throw new InvalidOperationException(
+        PrivateOriginalBattle01 is not null
+            ? throw new InvalidOperationException("Battle 01 owns current Map 57; exploration is frozen as battle provenance.")
+            : _privateOriginalMapSnapshot ?? throw new InvalidOperationException(
             "This GameSession does not own a private original-map runtime.");
 
     public static PrivateOriginalMapGameSessionStartResult StartPrivateOriginalMap(

@@ -23,8 +23,11 @@ Map 21 guard remains an authored undirected diamond whose occupancy follows the 
 The controlled Map 40 exit now retains a visible Battle 01 pending admission. A separate Content/
 Application preparation API validates selected Battle 01 placement/scene inputs and the full 48-by-48
 terrain, then returns them with an explicit party/RNG comparison preset. It preserves Pending and
-all current session state. Battle initialization, turn generation and a UI consumer remain pending;
-see the [startup input boundary](./docs/map03-playability-plan.md#implemented-startup-input-preparation).
+all current session state. A separate one-time initialization API consumes that Prepared request into
+battle-owned Map 57 with nine initialized combatants, raw terrain and separate occupancy. Old
+exploration commands close and Map 40 survives as frozen provenance. This stops before first-round
+activation/turn generation; a UI consumer remains pending. See the
+[initialization boundary](./docs/map03-playability-plan.md#implemented-controlled-initialization).
 The fixed private canonical import also admits the controlled setup's ordered entity population as
 immutable, source-shaped Application data. The private session snapshot exposes that same population
 without creating mutable NPC state. Coordinates are masked only into typed map positions; facing,

@@ -14,7 +14,7 @@ a service mesh, a general ECS, or an emulator-backed gameplay core.
 
 | Assembly | Current responsibility | Dependency direction |
 | --- | --- | --- |
-| `Sf2.Remake.Domain` | typed values, immutable state, deterministic reducers, map traversal, working-layout mutation, and inventory rules | .NET base libraries only |
+| `Sf2.Remake.Domain` | typed values, immutable state, deterministic reducers, map traversal, working-layout mutation, inventory rules, and bounded Battle01 initialization | .NET base libraries only |
 | `Sf2.Remake.Application` | `GameSession`, semantic commands, orchestration, content ports, admission compatibility, snapshots, cues, and diagnostics | Domain |
 | `Sf2.Remake.Content` | tracked public-synthetic and ignored private-local readers, fixed identity checks, closed parsing, semantic validation, and mapping | Application and Domain |
 | `Sf2.Remake.Godot` | profile selection, dependency composition, `InputMap`, scene/view projection, local diagnostics, smoke hosting, and platform lifecycle | Application, Content, Domain, and Godot |
@@ -51,13 +51,34 @@ not share a weaker content reader or silently convert one profile into the other
 
 The implemented Domain boundaries are already independently testable and engine-free. Application
 owns public-synthetic session lifecycles plus a separate admitted private Map 3 traversal state behind
-the same logical `GameSession` facade. Content exposes three public readers: one tracked synthetic
-package reader and two private-local readers for canonical map import and offline base visual payload
-admission. Playable PrivateLocal composition consumes the canonical import plus the separately reviewed
+the same logical `GameSession` facade. Content readers own tracked synthetic packages and fixed
+private-local admission for canonical maps, offline visual payloads, and selected Battle01 startup
+data. Playable PrivateLocal composition consumes the canonical import plus the separately reviewed
 local presentation pack; it does not reopen ROM or extraction metadata at startup.
 The canonical reader also admits the selected setup's entity population behind the same fixed private
 trust boundary. This is typed session context only; neither `GameSession` nor Godot currently creates
 mutable entity lifecycles or presentation from it.
+
+Controlled Battle01 initialization is a distinct Domain transition, independent of the synthetic
+`TacticalBattle` duel. Application maps the admitted startup definition and named effective party
+preset into Domain values. `GameSession.InitializePrivateOriginalBattle01` validates the exact
+current Prepared/Pending, performs all potentially failing projections, then consumes Pending and
+installs one `PrivateOriginalBattle01SessionSnapshot`. Its `Battle` owns current Map57, roster,
+terrain/occupancy, cleared AI/region state, RNG and the pre-first-round phase.
+
+`PrivateOriginalFlowStage` and `PrivateOriginalCurrentMap` identify the live private state.
+After initialization, `PrivateOriginalMapSnapshot` and locomotion access reject; all old movement,
+animation, interaction and bridge mutation entries consequently close. The old backing map remains
+only as the private-profile marker and the exact frozen `SourceSnapshot` under battle provenance,
+alongside source locomotion and bridge. Its historical Exploration flow and Map40 identity do not
+describe the current map. A new session starts at controlled Map3 without Pending or Battle01.
+No broad snapshot-reducer refactor or second mutable battle authority is introduced.
+
+This API has no Godot consumer yet. A later presenter must branch on private flow before reading an
+exploration snapshot; it must not label retained Map40 art as Map57. The initialization output is the
+next round-entry input, before activation, spawn admission, turn ordering or actor selection. Its
+fixed enemy difficulty and already-refreshed effective ally policies are recorded in the
+[owning plan](./map03-playability-plan.md#implemented-controlled-initialization).
 
 Two areas currently concentrate more responsibility than the target shape:
 

@@ -1,8 +1,11 @@
 using System.Security.Cryptography;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Sf2.Remake.Application.Content;
+using Sf2.Remake.Application.Sessions;
 using Sf2.Remake.Content;
+using Sf2.Remake.Domain.Battles;
 using Sf2.Remake.Domain.Maps;
 using Xunit;
 
@@ -161,6 +164,122 @@ public sealed class PrivateOriginalBattle01StartupReaderTests
             Assert.Equal(new MapPosition(row.GetProperty("x").GetInt32(), row.GetProperty("y").GetInt32()), entity.Position);
         }
         // Those positions corroborate placement only; activation bits/turn scores are deliberately not imported.
+    }
+
+    [Sf2.Remake.TestSupport.PrivateInputFact("SF2_PRIVATE_BATTLE01_DATA", "SF2_PRIVATE_BATTLE01_SCENE",
+        "SF2_PRIVATE_BATTLE01_TERRAIN", "SF2_PRIVATE_CANONICAL_MAP_IMPORT")]
+    public void AcceptedSelectedInputsInitializeRealNineUnitProjectionFromControlledPending()
+    {
+        string placement = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_BATTLE01_DATA");
+        string scene = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_BATTLE01_SCENE");
+        string terrain = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_BATTLE01_TERRAIN");
+        string canonical = Sf2.Remake.TestSupport.PrivateInputFactAttribute.RequireInput("SF2_PRIVATE_CANONICAL_MAP_IMPORT");
+        var session = SeedControlledPending(canonical);
+        var prepared = Assert.IsType<PrivateOriginalBattle01StartupPrepared>(session.PreparePrivateOriginalBattle01Startup(
+            session.PrivateOriginalBattle01Admission, new PrivateOriginalBattle01StartupReader(placement, scene, terrain),
+            OriginalBattle01ControlledPartyPreset.PlayerReadyComparison));
+        var initialized = Assert.IsType<PrivateOriginalBattle01Initialized>(session.InitializePrivateOriginalBattle01(prepared)).Snapshot;
+        var state = initialized.Battle;
+        Assert.Equal(GameFlowStage.Battle, session.PrivateOriginalFlowStage);
+        Assert.Equal(new MapId("map57"), session.PrivateOriginalCurrentMap);
+        Assert.Equal(new MapId("map40"), initialized.SourceSnapshot.Map); Assert.Null(session.PrivateOriginalBattle01Admission);
+        Assert.Equal(Battle01Phase.BeforeFirstRound, state.Phase); Assert.Equal(0x1234u, state.RandomSeed);
+        Assert.Equal(9, state.Roster.Count); Assert.Equal(9, state.Occupancy.Count(index => index >= 0));
+        Assert.Equal(prepared.Inputs.Terrain, state.Terrain); Assert.NotSame(prepared.Inputs.Terrain, state.Terrain);
+        Assert.Equal(2304, state.Terrain.Count);
+        Assert.Equal(0, state.ElapsedSeconds); Assert.True(state.IntroFlag451); Assert.True(state.UnlockFlag401);
+        Assert.False(state.CompletedFlag501); Assert.False(state.SuspendedFlag88);
+        Assert.All(state.RegionFlags90Through105, flag => Assert.False(flag));
+        Assert.All(state.AiLastTargets, value => Assert.Equal(255, value)); Assert.All(state.AiMemory, value => Assert.Equal(0, value));
+        string fixturePath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory,
+            "../../../../../../tests/fixtures/h3/map3-battle01-player-ready-v1.json"));
+        using var fixture = JsonDocument.Parse(File.ReadAllText(fixturePath));
+        var observed = fixture.RootElement.GetProperty("expectedObservation").GetProperty("records")[0]
+            .GetProperty("scenario").GetProperty("combatants");
+        for (int index = 0; index < 9; index++)
+        {
+            var actual = state.Roster[index]; var source = prepared.Inputs.Entities[index];
+            var comparison = observed.EnumerateArray().Single(row => row.GetProperty("id").GetInt32() == actual.Index);
+            Assert.Equal(source.Position, actual.Position); Assert.Equal(actual.Index, state.OccupantAt(actual.Position));
+            Assert.Equal(source.Ordinal, actual.Deployment.Ordinal);
+            Assert.Equal((byte)source.AiCommandSet, actual.Deployment.AiCommandSet);
+            Assert.Equal(source.ItemWord, actual.Deployment.ItemWord);
+            Assert.Equal(source.PrimaryOrder, actual.Deployment.PrimaryOrder);
+            Assert.Equal(source.PrimaryRegion, actual.Deployment.PrimaryRegion);
+            Assert.Equal(source.SecondaryOrder, actual.Deployment.SecondaryOrder);
+            Assert.Equal(source.SecondaryRegion, actual.Deployment.SecondaryRegion);
+            Assert.Equal(source.Filler, actual.Deployment.SourceFiller); Assert.Equal((byte)source.Spawn, actual.Deployment.Spawn);
+            Assert.Equal(comparison.GetProperty("hpMax").GetUInt16(), actual.Stats.HpMax);
+            Assert.Equal(comparison.GetProperty("mpMax").GetByte(), actual.Stats.MpMax);
+            Assert.Equal(actual.Stats.HpMax, actual.Stats.HpCurrent); Assert.Equal(actual.Stats.MpMax, actual.Stats.MpCurrent);
+            Assert.Equal(comparison.GetProperty("attack").GetByte(), actual.Stats.Attack);
+            Assert.Equal(comparison.GetProperty("defense").GetByte(), actual.Stats.Defense);
+            Assert.Equal(comparison.GetProperty("agility").GetByte(), actual.Stats.Agility);
+            Assert.Equal(comparison.GetProperty("move").GetByte(), actual.Stats.Move);
+            Assert.Equal(0, actual.Stats.Status);
+            if (index < 3)
+            {
+                Assert.Equal(prepared.Party.Allies[index].Items, actual.Stats.Items);
+                Assert.Equal(prepared.Party.Allies[index].Spells, actual.Stats.Spells);
+            }
+            else
+            {
+                Assert.Equal(7, actual.EnemySource!.SourceStats.Attack); Assert.Equal(8, actual.Stats.Attack);
+                // STARTING keeps the source initialization byte; it is not necessarily zero.
+                Assert.Equal((ushort?)(0x2000 | source.Filler), actual.InitializationAiBitfield);
+                Assert.Equal((byte?)((6 << 4) | (byte)source.AiCommandSet), actual.MovementTypeAndAiCommandSet);
+                Assert.Equal((ushort?)0x40E3, actual.Resistance);
+            }
+        }
+        for (int index = 0; index < 3; index++)
+        {
+            Assert.Equal(prepared.Inputs.Regions[index].Vertices, state.Regions[index].Vertices);
+            Assert.Equal(prepared.Inputs.Regions[index].Unknown, state.Regions[index].SourceUnknown);
+            Assert.Equal(prepared.Inputs.Regions[index].TrailingByte0, state.Regions[index].TrailingByte0);
+            Assert.Equal(prepared.Inputs.Regions[index].TrailingByte1, state.Regions[index].TrailingByte1);
+        }
+        // H3 stats corroborate this bounded result; observed activation/order/consumed RNG are never imported.
+        Assert.Equal("battle", Assert.IsType<PrivateOriginalBattle01InitializationRejected>(
+            session.InitializePrivateOriginalBattle01(prepared)).Diagnostic.Field);
+        Assert.Same(initialized, session.PrivateOriginalBattle01); Assert.Equal(7, prepared.Inputs.EnemyBaseline.BaseAttack);
+        Assert.Throws<InvalidOperationException>(() => session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)));
+    }
+
+    private static GameSession SeedControlledPending(string canonical)
+    {
+        const string digest = "DDDA4FA05455DDBA9CDAF85497CEE0C1C89C6E625721A8FEAD301044C892E508";
+        var session = Assert.IsType<PrivateOriginalMapGameSessionStarted>(GameSession.StartPrivateOriginalMap(
+            new PrivateCanonicalMap3ImportReader(canonical),
+            new(PrivateCanonicalMap3ImportReader.PackageId, ContentProfile.PrivateLocal, digest))).Session;
+        var initial = session.PrivateOriginalMapSnapshot; var definition = initial.Definition;
+        var runtime = definition.RuntimeCatalog.Resolve(new MapId("map40"));
+        static T State<T>(string method, params object[] args) => (T)typeof(T)
+            .GetMethod(method, BindingFlags.Static | BindingFlags.NonPublic)!.Invoke(null, args)!;
+        static T Receipt<T>(params object[] args) => (T)Activator.CreateInstance(typeof(T),
+            BindingFlags.Instance | BindingFlags.NonPublic, null, args, null)!;
+        // Explicit test-owned completed-route seed using accepted factories and the real canonical import.
+        // This establishes the startup seam, not natural continuity or execution of the skipped programs.
+        var entry = new PrivateOriginalMapSessionSnapshot(definition, initial.Receipt, runtime.WorkingLayout,
+            5, new(14, 14), runtime.Traversal.TryMove(runtime.WorkingLayout, new(14, 15), ExplorationDirection.North),
+            false, null,
+            zone601: State<PrivateOriginalMapZone601State>("AstralZoneRepositioned", definition.Zone601!, definition.AstralZone!),
+            sarah: State<PrivateOriginalMapSarahState>("MessengerFollowerReady", definition.Sarah!, definition.AstralZone!, definition.MessengerAcceptance!),
+            entity142: State<PrivateOriginalMapEntity142State>("ReleaseRouteOccupancy", definition.Entity142!,
+                State<PrivateOriginalMapEntity142State>("Acknowledged", definition.Entity142!, 1L), definition.MessengerAcceptance!),
+            castleGate: State<PrivateOriginalMapCastleGateState>("Completed", definition.CastleGate!),
+            currentRuntime: runtime,
+            palaceFirstVisit: Receipt<PrivateOriginalMapPalaceFirstVisitReceipt>(definition.PalaceFirstVisit!, 2L),
+            astralAcceptance: Receipt<PrivateOriginalMapAstralAcceptanceState>(definition.AstralAcceptance!, 3L),
+            middleTowerGuard: Receipt<PrivateOriginalMapMiddleTowerGuardReceipt>(definition.MiddleTowerGuard!, 4L));
+        typeof(GameSession).GetField("_privateOriginalMapSnapshot", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(session, entry);
+        typeof(GameSession).GetField("_privateOriginalMapPlayerLocomotion", BindingFlags.Instance | BindingFlags.NonPublic)!.SetValue(session,
+            State<PrivateOriginalMapPlayerLocomotionSnapshot>("ControlledAdmission", entry.PlayerPosition));
+        session.BeginPrivateOriginalMapPlayerLocomotion(new(ExplorationDirection.North));
+        while (session.PrivateOriginalMapPlayerLocomotion.IsMoving) session.AdvancePrivateOriginalMapPlayerLocomotion();
+        Assert.Equal(new MapPosition(14, 13), session.PrivateOriginalMapSnapshot.PlayerPosition);
+        Assert.Equal(1, session.PrivateOriginalMapPlayerLocomotion.OpaqueFacing);
+        Assert.NotNull(session.ApplyPrivateOriginalMap(new(ExplorationDirection.North)).Battle01Admission);
+        return session;
     }
 
     private static OriginalBattle01StartupImportResult Admit(JsonObject placement, JsonObject scene, byte[] terrain) =>

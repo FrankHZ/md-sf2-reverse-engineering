@@ -40,6 +40,7 @@ their production admission and private assertions unchanged. No private input is
 | `ExactLocalMap3BaseAtlasMountCanBeCheckedWithoutBecomingATestInput` | `SF2_PRIVATE_PRESENTATION_ASSET_ROOT` |
 | `ExactLocalMap21AndMap40BucketsRejectMissingOrChangedPayloads` | `SF2_PRIVATE_PRESENTATION_ASSET_ROOT` |
 | `AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader` | `SF2_PRIVATE_BATTLE01_DATA`, `SF2_PRIVATE_BATTLE01_SCENE`, `SF2_PRIVATE_BATTLE01_TERRAIN` |
+| `AcceptedSelectedInputsInitializeRealNineUnitProjectionFromControlledPending` | the three selected Battle01 variables above plus `SF2_PRIVATE_CANONICAL_MAP_IMPORT` |
 
 For each test, no selected inputs means an explicit **skipped / no private assertions ran** result.
 Configuring any of its input variables selects that private check; partial configuration fails instead
@@ -94,7 +95,7 @@ $env:SF2_PRIVATE_BATTLE01_TERRAIN = Join-Path $upstream 'disasm/data/battles/ent
 & ./scripts/Export-Battle01Data.ps1 -UpstreamPath $upstream -OutputPath $env:SF2_PRIVATE_BATTLE01_DATA
 & ./scripts/Export-Battle01Scene.ps1 -UpstreamPath $upstream -OutputPath $env:SF2_PRIVATE_BATTLE01_SCENE
 $env:SF2_REQUIRE_PRIVATE_TESTS = '1'
-dotnet test remake/tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter 'FullyQualifiedName~PrivateOriginalBattle01StartupReaderTests'
+dotnet test remake/tests/Sf2.Remake.Content.Tests/Sf2.Remake.Content.Tests.csproj --configuration Release --no-build --no-restore --filter 'FullyQualifiedName=Sf2.Remake.Content.Tests.PrivateOriginalBattle01StartupReaderTests.AcceptedSelectedBattle01InputsAreRequiredToExerciseTheRealReader'
 ```
 
 Verify the two export SHA values against `manifests/extractions/battle01-data.json` and
@@ -106,10 +107,26 @@ Missing/partial required configuration fails, while an unselected optional run e
 Keep these environment variables scoped to the owning command and put TEMP/TMP, logs and generated
 outputs in the same worktree. Never mutate the supplied upstream terrain file.
 
-The owning Application filter is `FullyQualifiedName~PrivateOriginalBattle01StartupTests`. It checks
+Existing frozen selected exports may be consumed read-only after identity verification; do not rerun
+the exporters solely for a new candidate SHA. To exercise final initialization, also supply the
+registered read-only canonical import through `SF2_PRIVATE_CANONICAL_MAP_IMPORT`, with SHA
+`DDDA4FA05455DDBA9CDAF85497CEE0C1C89C6E625721A8FEAD301044C892E508`. Then use the full Content
+filter `FullyQualifiedName~PrivateOriginalBattle01StartupReaderTests` with
+`SF2_REQUIRE_PRIVATE_TESTS=1`. The additional required test seeds a completed controlled Map40 route
+through accepted test-only factories, issues ordinary moves to exact Pending, reads the selected
+inputs and calls the real session initializer. It verifies the nine-unit final projection, immutable
+terrain/occupancy, AI/region resets, computed enemy ATT, input preservation and duplicate rejection.
+This seed is explicit and is not a natural Map3-continuity claim. Missing any selected dependency
+fails; no private assertions are silently omitted.
+
+The preparation Application filter is `FullyQualifiedName~PrivateOriginalBattle01StartupTests`. It checks
 valid/repeated preparation, exact current Pending, rejection before source reads, custom-port
-validation, party/RNG constraints and read-only collection/stride behavior. Use the committed planner
-for subsequent .NET and official Godot selection. This data-only boundary adds no native image review
+validation, party/RNG constraints and read-only collection/stride behavior. Initialization belongs to
+`FullyQualifiedName~Battle01InitializationTests` in Domain and
+`FullyQualifiedName~PrivateOriginalBattle01InitializationTests` in Application. These cover
+deterministic initialization, healing without double equipment, late rejection before commit, stale/
+foreign/duplicate requests, frozen provenance, closed old commands and reset. Use the committed planner
+for subsequent .NET and official Godot selection. This API-only boundary adds no native image review
 and does not rerun the already accepted twelve-frame pending-admission recipe or any H3/H4 seam.
 
 ## Repository Planner
