@@ -35,7 +35,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             root.ProcessMode = ProcessModeEnum.Disabled;
             _session = Field<GameSession>(root, "_session");
             _presenter = Field<PrivateMap3Presenter>(root, "_privatePresenter");
-            if (Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "1")
+            if (System.Environment.GetEnvironmentVariable("SF2_BATTLE01_CONTROL_REVIEW") == "1")
             {
                 await ReviewBattle01Control();
                 _fixture.Dispose();
@@ -219,7 +219,7 @@ public partial class Map19Map20AtlasReviewProbe : Node2D
             production = new[] { "Map3Root", "PrivateBattle01Composition", "Map3InputAdapter", "PrivateBattle01Presenter", "GameSession", "PrivateOriginalBattle01StartupReader" },
             instrumentation = new[] { "existing private state factories for Map40 seed only", "Input.ParseInputEvent physical keys", "bounded ProcessFrame waits", "FramePostDraw/SavePng" },
             committedMap40Inputs = 27, pendingMap40Inputs = 1, actor, origin, destination,
-            rng = battle.RandomSeedImage, offset = final.Battle.FirstRound.CurrentTurnOffset,
+            rng = battle.RandomSeedImage, offset = final.Battle.FirstRound!.CurrentTurnOffset,
             oldCanvasHidden = oldCanvas.Length, inputIsolation = "W F B M and action-choice I Space N preserve exact snapshot",
             provisionalOccupancyChecked = true, bothCancelStagesChecked = true, frames = _frames,
         }, new JsonSerializerOptions { WriteIndented = true }));
